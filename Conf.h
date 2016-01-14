@@ -154,8 +154,8 @@ private:
   bool         m_dmrNetworkDebug;
 
   bool         m_fusionNetworkEnabled;
-  unsigned int m_fusionNetworkPort;
   std::string  m_fusionNetworkAddress;
+  unsigned int m_fusionNetworkPort;
   bool         m_fusionNetworkDebug;
 
   std::string  m_tftSerialPort;

@@ -27,7 +27,7 @@ CSBK.o:	CSBK.cpp CSBK.h Utils.h DMRDefines.h BPTC19696.h CRC.h Log.h
 Display.o:	Display.cpp Display.h
 		$(CC) $(CFLAGS) -c Display.cpp
 
-DMRControl.o:	DMRControl.cpp DMRControl.h DMRSlot.h DMRData.h Modem.h HomebrewDMRIPSC.h Defines.h CSBK.h Log.h DIsplay.h
+DMRControl.o:	DMRControl.cpp DMRControl.h DMRSlot.h DMRData.h Modem.h HomebrewDMRIPSC.h Defines.h CSBK.h Log.h Display.h
 		$(CC) $(CFLAGS) -c DMRControl.cpp
 
 DMRData.o:	DMRData.cpp DMRData.h DMRDefines.h Utils.h Log.h
