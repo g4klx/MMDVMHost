@@ -1,0 +1,12 @@
+Debug
+Release
+x64
+*.bak
+*.obj
+*~
+*.sdf
+*.log
+*.zip
+*.exe
+*.user
+.vs
