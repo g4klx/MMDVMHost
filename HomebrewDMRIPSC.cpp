@@ -263,10 +263,19 @@ void CHomebrewDMRIPSC::clock(unsigned int ms)
 			m_rxData.addData(&len, 1U);
 			m_rxData.addData(m_buffer, len);
 		} else if (::memcmp(m_buffer, "MSTNAK",  6U) == 0) {
-			LogError("Login to the master has failed");
-			m_status = DISCONNECTED;		// XXX
-			m_timeoutTimer.stop();
-			m_retryTimer.stop();
+			if (m_status == RUNNING) {
+				LogWarning("The master is restarting, logging back in");
+				m_status = WAITING_LOGIN;
+				m_timeoutTimer.start();
+				m_retryTimer.start();
+				m_pingTimer.stop();
+			} else {
+				LogError("Login to the master has failed");
+				m_status = DISCONNECTED;
+				m_timeoutTimer.stop();
+				m_retryTimer.stop();
+				m_pingTimer.stop();
+			}
 		} else if (::memcmp(m_buffer, "RPTACK",  6U) == 0) {
 			switch (m_status) {
 				case WAITING_LOGIN:

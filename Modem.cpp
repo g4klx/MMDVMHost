@@ -320,6 +320,14 @@ void CModem::clock(unsigned int ms)
 					if (adcOverflow)
 						LogWarning("MMDVM ADC levels have overflowed");
 
+					bool rxOverflow = (m_buffer[5U] & 0x04U) == 0x04U;
+					if (rxOverflow)
+						LogWarning("RX buffer has overflowed");
+
+					bool txOverflow = (m_buffer[5U] & 0x08U) == 0x08U;
+					if (txOverflow)
+						LogWarning("TX buffer has overflowed");
+
 					m_dstarSpace = m_buffer[6U];
 					m_dmrSpace1  = m_buffer[7U];
 					m_dmrSpace2  = m_buffer[8U];

@@ -1,6 +1,7 @@
 Debug
 Release
 x64
+*.opendb
 *.bak
 *.obj
 *~
