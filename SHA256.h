@@ -20,11 +20,7 @@
 #ifndef SHA256_H
 #define SHA256_H
 
-#if defined(_WIN32) || defined(_WIN64)
-typedef unsigned int uint32_t;
-#else
 #include <cstdint>
-#endif
 
 enum {
 	SHA256_DIGEST_SIZE = 256 / 8

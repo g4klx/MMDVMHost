@@ -25,14 +25,7 @@
 #include "DMRData.h"
 
 #include <string>
-
-#if defined(_WIN32) || defined(_WIN64)
-typedef unsigned int   uint32_t;
-typedef unsigned short uint16_t;
-typedef unsigned char  uint8_t;
-#else
 #include <cstdint>
-#endif
 
 class CHomebrewDMRIPSC
 {

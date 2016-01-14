@@ -26,12 +26,11 @@
 
 #include <cmath>
 #include <cassert>
+#include <cstdint>
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <Windows.h>
-typedef unsigned int uint32_t;
 #else
-#include <cstdint>
 #include <unistd.h>
 #endif
 
