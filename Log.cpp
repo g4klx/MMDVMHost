@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -53,7 +53,7 @@ static bool LogOpen()
 	}
 
 	char filename[50U];
-#if defined(WIN32)
+#if defined(_WIN32) || defined(_WIN64)
 	::sprintf(filename, "%s\\%s-%04d-%02d-%02d.log", m_path.c_str(), m_root.c_str(), tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
 #else
 	::sprintf(filename, "%s/%s-%04d-%02d-%02d.log", m_path.c_str(), m_root.c_str(), tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);

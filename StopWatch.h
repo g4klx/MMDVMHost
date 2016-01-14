@@ -35,7 +35,7 @@ public:
 	unsigned int  elapsed();
 
 private:
-#if defined(WIN32)
+#if defined(_WIN32) || defined(_WIN64)
 	LARGE_INTEGER m_frequency;
 	LARGE_INTEGER m_start;
 #else

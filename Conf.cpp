@@ -71,6 +71,7 @@ m_modemDebug(false),
 m_dstarEnabled(true),
 m_dstarModule("C"),
 m_dmrEnabled(true),
+m_dmrBeacons(false),
 m_dmrId(0U),
 m_dmrColorCode(2U),
 m_fusionEnabled(true),
@@ -209,6 +210,8 @@ bool CConf::read()
 	} else if (section == SECTION_DMR) {
 		if (::strcmp(key, "Enabled") == 0)
 			m_dmrEnabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "Beacons") == 0)
+			m_dmrBeacons = ::atoi(value) == 1;
 		else if (::strcmp(key, "Id") == 0)
 			m_dmrId = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "ColorCode") == 0)
@@ -401,6 +404,11 @@ std::string CConf::getDStarModule() const
 bool CConf::getDMREnabled() const
 {
 	return m_dmrEnabled;
+}
+
+bool CConf::getDMRBeacons() const
+{
+	return m_dmrBeacons;
 }
 
 unsigned int CConf::getDMRId() const

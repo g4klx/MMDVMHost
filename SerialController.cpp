@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2002-2004,2007-2011,2013,2014,2015 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2002-2004,2007-2011,2013,2014-2016 by Jonathan Naylor G4KLX
  *   Copyright (C) 1999-2001 by Thomas Sailor HB9JNX
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,7 @@
 
 #include <sys/types.h>
 
-#if defined(WIN32)
+#if defined(_WIN32) || defined(_WIN64)
 #include <setupapi.h>
 #include <winioctl.h>
 #else
@@ -37,7 +37,7 @@
 #endif
 
 
-#if defined(WIN32)
+#if defined(_WIN32) || defined(_WIN64)
 
 const unsigned int BUFFER_LENGTH = 1000U;
 

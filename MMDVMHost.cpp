@@ -30,14 +30,14 @@
 
 #include <cstdio>
 
-#if !defined(WIN32)
+#if !defined(_WIN32) && !defined(_WIN64)
 #include <unistd.h>
 #include <signal.h>
 #endif
 
 static bool m_killed = false;
 
-#if !defined(WIN32)
+#if !defined(_WIN32) && !defined(_WIN64)
 static void sigHandler(int)
 {
   m_killed = true;
@@ -55,7 +55,7 @@ int main(int argc, char** argv)
     return 1;
   }
 
-#if !defined(WIN32)
+#if !defined(_WIN32) && !defined(_WIN64)
   ::signal(SIGUSR1, sigHandler);
 #endif
 
@@ -119,6 +119,9 @@ int CMMDVMHost::run()
 		if (!ret)
 			return 1;
 	}
+
+	CTimer dmrBeaconTimer(1000U, 4U);
+	bool dmrBeaconsEnabled = m_dmrEnabled && m_conf.getDMRBeacons();
 
 	CStopWatch stopWatch;
 	stopWatch.start();
@@ -188,6 +191,7 @@ int CMMDVMHost::run()
 				}
 			} else if (mode == MODE_DMR) {
 				dmr->writeModemSlot1(data);
+				dmrBeaconTimer.stop();
 				modeTimer.start();
 			} else {
 				LogWarning("DMR data received when in mode %u", mode);
@@ -208,6 +212,7 @@ int CMMDVMHost::run()
 				}
 			} else if (mode == MODE_DMR) {
 				dmr->writeModemSlot2(data);
+				dmrBeaconTimer.stop();
 				modeTimer.start();
 			} else {
 				LogWarning("DMR data received when in mode %u", mode);
@@ -272,6 +277,7 @@ int CMMDVMHost::run()
 				}
 				if (len > 0U && mode == MODE_DMR) {
 					m_modem->writeDMRData1(data, len);
+					dmrBeaconTimer.stop();
 					modeTimer.start();
 				}
 			}
@@ -285,6 +291,7 @@ int CMMDVMHost::run()
 				}
 				if (len > 0U && mode == MODE_DMR) {
 					m_modem->writeDMRData2(data, len);
+					dmrBeaconTimer.stop();
 					modeTimer.start();
 				}
 			}
@@ -306,6 +313,16 @@ int CMMDVMHost::run()
 			}
 		}
 
+		if (m_dmrNetwork != NULL) {
+			bool run = m_dmrNetwork->wantsBeacon();
+
+			if (dmrBeaconsEnabled && run && mode == MODE_IDLE) {
+				mode = MODE_DMR;
+				m_modem->writeDMRStart(true);
+				dmrBeaconTimer.start();
+			}
+		}
+
 		unsigned int ms = stopWatch.elapsed();
 		m_modem->clock(ms);
 		modeTimer.clock(ms);
@@ -317,8 +334,15 @@ int CMMDVMHost::run()
 			ysf->clock(ms);
 		stopWatch.start();
 
+		dmrBeaconTimer.clock(ms);
+		if (dmrBeaconTimer.isRunning() && dmrBeaconTimer.hasExpired()) {
+			dmrBeaconTimer.stop();
+			m_modem->writeDMRStart(false);
+			mode = MODE_IDLE;
+		}
+
 		if (ms < 5U) {
-#if defined(WIN32)
+#if defined(_WIN32) || defined(_WIN64)
 			::Sleep(5UL);		// 5ms
 #else
 			::usleep(5000);		// 5ms

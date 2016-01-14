@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2005, 2006, 2008, 2009 Free Software Foundation, Inc.
- *   Copyright (C) 2011,2015 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2011,2015,2016 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #ifndef SHA256_H
 #define SHA256_H
 
-#if defined(WIN32)
+#if defined(_WIN32) || defined(_WIN64)
 typedef unsigned int uint32_t;
 #else
 #include <cstdint>

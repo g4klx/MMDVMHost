@@ -69,6 +69,7 @@ public:
 
   // The DMR section
   bool         getDMREnabled() const;
+  bool         getDMRBeacons() const;
   unsigned int getDMRId() const;
   unsigned int getDMRColorCode() const;
 
@@ -134,6 +135,7 @@ private:
   std::string  m_dstarModule;
 
   bool         m_dmrEnabled;
+  bool         m_dmrBeacons;
   unsigned int m_dmrId;
   unsigned int m_dmrColorCode;
 
