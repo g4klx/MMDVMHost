@@ -43,7 +43,7 @@ unsigned char     CDMRSlot::m_id2 = 0U;
 CDMRSlot::CDMRSlot(unsigned int slotNo, unsigned int timeout) :
 m_slotNo(slotNo),
 m_radioQueue(1000U),
-m_networkQueue(100U),
+m_networkQueue(1000U),
 m_state(SS_LISTENING),
 m_embeddedLC(),
 m_lc(NULL),
@@ -349,8 +349,10 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		if (m_state != SS_RELAYING_NETWORK) {
 			CFullLC fullLC;
 			m_lc = fullLC.decode(data + 2U, DT_VOICE_LC_HEADER);
-			if (m_lc == NULL)
+			if (m_lc == NULL) {
+				LogMessage("DMR Slot %u, bad LC received, substituting", m_slotNo);
 				m_lc = new CLC(dmrData.getFLCO(), dmrData.getSrcId(), dmrData.getDstId());
+			}
 
 			// Regenerate the LC
 			fullLC.encode(*m_lc, data + 2U, DT_VOICE_LC_HEADER);
@@ -510,6 +512,8 @@ void CDMRSlot::clock(unsigned int ms)
 
 	m_playoutTimer.clock(ms);
 	if (m_playoutTimer.isRunning() && m_playoutTimer.hasExpired()) {
+		m_playoutTimer.stop();
+
 		while (!m_networkQueue.isEmpty()) {
 			unsigned char len = 0U;
 			m_networkQueue.getData(&len, 1U);
@@ -550,11 +554,17 @@ void CDMRSlot::writeRadioQueue(const unsigned char *data)
 void CDMRSlot::writeNetworkQueue(const unsigned char *data)
 {
 	// If the timeout has expired, send nothing
-	if (!m_timeoutTimer.isRunning() || !m_timeoutTimer.hasExpired()) {
+	if (m_timeoutTimer.isRunning() && m_timeoutTimer.hasExpired())
+		return;
+
+	if (m_playoutTimer.isRunning() && !m_playoutTimer.hasExpired()) {
 		unsigned char len = DMR_FRAME_LENGTH_BYTES + 2U;
 		m_networkQueue.addData(&len, 1U);
-
 		m_networkQueue.addData(data, len);
+	} else {
+		unsigned char len = DMR_FRAME_LENGTH_BYTES + 2U;
+		m_radioQueue.addData(&len, 1U);
+		m_radioQueue.addData(data, len);
 	}
 }
 

@@ -183,6 +183,7 @@
     <ClInclude Include="Timer.h" />
     <ClInclude Include="UDPSocket.h" />
     <ClInclude Include="Utils.h" />
+    <ClInclude Include="Version.h" />
     <ClInclude Include="YSFDefines.h" />
     <ClInclude Include="YSFEcho.h" />
   </ItemGroup>
