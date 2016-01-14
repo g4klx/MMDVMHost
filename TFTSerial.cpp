@@ -19,6 +19,8 @@
 #include "TFTSerial.h"
 #include "Log.h"
 
+#include <cstring>
+
 CTFTSerial::CTFTSerial(const std::string& port) :
 m_serial(port, SERIAL_9600)
 {
