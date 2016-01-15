@@ -98,8 +98,8 @@ void CDMRSlot::writeModem(unsigned char *data)
 					return;
 				}
 
-				// Regenerate the LC
-				fullLC.encode(*m_lc, data + 2U, DT_VOICE_LC_HEADER);
+				// Regenerate the LC, XXX
+				// fullLC.encode(*m_lc, data + 2U, DT_VOICE_LC_HEADER);
 
 				// Regenerate the Slot Type
 				slotType.getData(data + 2U);
@@ -161,15 +161,23 @@ void CDMRSlot::writeModem(unsigned char *data)
 			if (m_state == SS_RELAYING_RF) {
 				unsigned char end[DMR_FRAME_LENGTH_BYTES + 2U];
 
-				// Generate the LC
-				CFullLC fullLC;
-				fullLC.encode(*m_lc, end + 2U, DT_TERMINATOR_WITH_LC);
+				if (dataType != DT_TERMINATOR_WITH_LC) {
+					// Generate the LC
+					CFullLC fullLC;
+					fullLC.encode(*m_lc, end + 2U, DT_TERMINATOR_WITH_LC);
 
-				// Generate the Slot Type
-				CSlotType slotType;
-				slotType.setColorCode(m_colorCode);
-				slotType.setDataType(DT_TERMINATOR_WITH_LC);
-				slotType.getData(end + 2U);
+					// Generate the Slot Type
+					CSlotType slotType;
+					slotType.setColorCode(m_colorCode);
+					slotType.setDataType(DT_TERMINATOR_WITH_LC);
+					slotType.getData(end + 2U);
+				} else {
+					// Use the original LC
+					::memcpy(end + 2U, data + 2U, DMR_FRAME_LENGTH_BYTES);
+
+					// Regenerate the Slot Type
+					slotType.getData(end + 2U);
+				}
 
 				// Set the Data Sync to be from the BS
 				CDMRSync sync;
@@ -354,8 +362,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				return;
 			}
 
-			// Regenerate the LC
-			fullLC.encode(*m_lc, data + 2U, DT_VOICE_LC_HEADER);
+			// Regenerate the LC, XXX
+			// fullLC.encode(*m_lc, data + 2U, DT_VOICE_LC_HEADER);
 
 			// Regenerate the Slot Type
 			CSlotType slotType;
@@ -414,9 +422,9 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		if (m_state != SS_RELAYING_NETWORK)
 			return;
 
-		// Regenerate the LC
-		CFullLC fullLC;
-		fullLC.encode(*m_lc, data + 2U, DT_TERMINATOR_WITH_LC);
+		// Regenerate the LC, XXX
+		// CFullLC fullLC;
+		// fullLC.encode(*m_lc, data + 2U, DT_TERMINATOR_WITH_LC);
 
 		// Regenerate the Slot Type
 		CSlotType slotType;
