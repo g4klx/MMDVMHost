@@ -32,8 +32,10 @@
 enum SLOT_STATE {
 	SS_LISTENING,
 	SS_LATE_ENTRY,
-	SS_RELAYING_RF,
-	SS_RELAYING_NETWORK
+	SS_RELAYING_RF_AUDIO,
+	SS_RELAYING_NETWORK_AUDIO,
+	SS_RELAYING_RF_DATA,
+	SS_RELAYING_NETWORK_DATA
 };
 
 class CDMRSlot {
@@ -53,14 +55,12 @@ public:
 
 private:
 	unsigned int                 m_slotNo;
-	CRingBuffer<unsigned char>   m_radioQueue;
-	CRingBuffer<unsigned char>   m_networkQueue;
+	CRingBuffer<unsigned char>   m_queue;
 	SLOT_STATE                   m_state;
 	CEmbeddedLC                  m_embeddedLC;
 	CLC*                         m_lc;
 	unsigned char                m_seqNo;
 	unsigned char                m_n;
-	CTimer                       m_playoutTimer;
 	CTimer                       m_networkWatchdog;
 	CTimer                       m_timeoutTimer;
 	FILE*                        m_fp;
@@ -77,8 +77,7 @@ private:
 	static FLCO                m_flco2;
 	static unsigned char       m_id2;
 
-	void writeRadioQueue(const unsigned char* data);
-	void writeNetworkQueue(const unsigned char* data);
+	void writeQueue(const unsigned char* data);
 	void writeNetwork(const unsigned char* data, unsigned char dataType);
 
 	void writeEndOfTransmission();
