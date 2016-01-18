@@ -114,7 +114,7 @@ int CMMDVMHost::run()
 
 	createDisplay();
 
-	if (m_dmrEnabled) {
+	if (m_dmrEnabled && m_conf.getDMRNetworkEnabled()) {
 		ret = createDMRNetwork();
 		if (!ret)
 			return 1;

@@ -203,12 +203,12 @@ bool CConf::read()
 		else if (::strcmp(key, "Debug") == 0)
 			m_modemDebug = ::atoi(value) == 1;
 	} else if (section == SECTION_DSTAR) {
-		if (::strcmp(key, "Enabled") == 0)
+		if (::strcmp(key, "Enable") == 0)
 			m_dstarEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "Module") == 0)
 			m_dstarModule = value;
 	} else if (section == SECTION_DMR) {
-		if (::strcmp(key, "Enabled") == 0)
+		if (::strcmp(key, "Enable") == 0)
 			m_dmrEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "Beacons") == 0)
 			m_dmrBeacons = ::atoi(value) == 1;
@@ -217,10 +217,10 @@ bool CConf::read()
 		else if (::strcmp(key, "ColorCode") == 0)
 			m_dmrColorCode = (unsigned int)::atoi(value);
 	} else if (section == SECTION_FUSION) {
-		if (::strcmp(key, "Enabled") == 0)
+		if (::strcmp(key, "Enable") == 0)
 			m_fusionEnabled = ::atoi(value) == 1;
 	} else if (section == SECTION_DSTAR_NETWORK) {
-		if (::strcmp(key, "Enabled") == 0)
+		if (::strcmp(key, "Enable") == 0)
 			m_dstarNetworkEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "GatewayAddress") == 0)
 			m_dstarGatewayAddress = value;
@@ -231,7 +231,7 @@ bool CConf::read()
 		else if (::strcmp(key, "Debug") == 0)
 			m_dstarNetworkDebug = ::atoi(value) == 1;
 	} else if (section == SECTION_DMR_NETWORK) {
-		if (::strcmp(key, "Enabled") == 0)
+		if (::strcmp(key, "Enable") == 0)
 			m_dmrNetworkEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "Address") == 0)
 			m_dmrNetworkAddress = value;
@@ -242,7 +242,7 @@ bool CConf::read()
 		else if (::strcmp(key, "Debug") == 0)
 			m_dmrNetworkDebug = ::atoi(value) == 1;
 	} else if (section == SECTION_FUSION_NETWORK) {
-		if (::strcmp(key, "Enabled") == 0)
+		if (::strcmp(key, "Enable") == 0)
 			m_fusionNetworkEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "Address") == 0)
 			m_fusionNetworkAddress = value;
