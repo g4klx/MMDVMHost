@@ -317,21 +317,21 @@ void CModem::clock(unsigned int ms)
 
 					bool adcOverflow = (m_buffer[5U] & 0x02U) == 0x02U;
 					if (adcOverflow)
-						LogWarning("MMDVM ADC levels have overflowed");
+						LogError("MMDVM ADC levels have overflowed");
 
 					bool rxOverflow = (m_buffer[5U] & 0x04U) == 0x04U;
 					if (rxOverflow)
-						LogWarning("RX buffer has overflowed");
+						LogError("MMDVM RX buffer has overflowed");
 
 					bool txOverflow = (m_buffer[5U] & 0x08U) == 0x08U;
 					if (txOverflow)
-						LogWarning("TX buffer has overflowed");
+						LogError("MMDVM TX buffer has overflowed");
 
 					m_dstarSpace = m_buffer[6U];
 					m_dmrSpace1  = m_buffer[7U];
 					m_dmrSpace2  = m_buffer[8U];
 					m_ysfSpace   = m_buffer[9U];
-					// LogMessage("tx=%d, space=%u,%u,%u,%u", int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace);
+					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u", m_buffer[5U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace);
 				}
 				break;
 
@@ -364,28 +364,37 @@ void CModem::clock(unsigned int ms)
 	}
 
 	if (m_dstarSpace > 1U && !m_txDStarData.isEmpty()) {
-		unsigned char len = 0U;
-		m_txDStarData.getData(&len, 1U);
-		m_txDStarData.getData(m_buffer, len);
+		unsigned char buffer[2U];
+		m_txDStarData.peek(buffer, 2U);
 
-		if (m_debug) {
-			if (len > (DSTAR_FRAME_LENGTH_BYTES + 3U))
-				CUtils::dump(1U, "TX D-Star Header", m_buffer, len);
-			else if (len == (DSTAR_FRAME_LENGTH_BYTES + 3U))
-				CUtils::dump(1U, "TX D-Star Data", m_buffer, len);
-			else
-				CUtils::dump(1U, "TX D-Star EOT", m_buffer, len);
+		if ((buffer[1U] == TAG_HEADER && m_dstarSpace > 4U) ||
+			(buffer[1U] == TAG_DATA   && m_dstarSpace > 1U) ||
+			(buffer[1U] == TAG_EOT    && m_dstarSpace > 1U)) {
+			unsigned char len = 0U;
+			m_txDStarData.getData(&len, 1U);
+			m_txDStarData.getData(m_buffer, len);
+
+			if (m_debug) {
+				switch (buffer[1U]) {
+				case TAG_HEADER:
+					CUtils::dump(1U, "TX D-Star Header", m_buffer, len);
+					m_dstarSpace -= 4U;
+					break;
+				case TAG_DATA:
+					CUtils::dump(1U, "TX D-Star Data", m_buffer, len);
+					m_dstarSpace -= 1U;
+					break;
+				default:
+					CUtils::dump(1U, "TX D-Star EOT", m_buffer, len);
+					m_dstarSpace -= 1U;
+					break;
+				}
+			}
+
+			int ret = m_serial.write(m_buffer, len);
+			if (ret != int(len))
+				LogWarning("Error when writing D-Star data to the MMDVM");
 		}
-
-		int ret = m_serial.write(m_buffer, len);
-		if (ret != int(len))
-			LogWarning("Error when writing D-Star data to the MMDVM");
-
-		// Headers take four slots in the queues in the modem
-		if (len > (DSTAR_FRAME_LENGTH_BYTES + 3U))
-			m_dstarSpace -= 4U;
-		else
-			m_dstarSpace -= 1U;
 	}
 
 	if (m_dmrSpace1 > 1U && !m_txDMRData1.isEmpty()) {
