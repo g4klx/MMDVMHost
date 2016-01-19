@@ -146,6 +146,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AMBEFEC.h" />
     <ClInclude Include="BPTC19696.h" />
     <ClInclude Include="Conf.h" />
     <ClInclude Include="CRC.h" />
@@ -188,6 +189,7 @@
     <ClInclude Include="YSFEcho.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AMBEFEC.cpp" />
     <ClCompile Include="BPTC19696.cpp" />
     <ClCompile Include="Conf.cpp" />
     <ClCompile Include="CRC.cpp" />

@@ -54,6 +54,9 @@ m_packetTimer(1000U, 0U, 200U),
 m_elapsed(),
 m_frames(0U),
 m_lost(0U),
+m_fec(),
+m_bits(0U),
+m_errs(0U),
 m_fp(NULL)
 {
 	m_lastFrame = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
@@ -67,7 +70,10 @@ CDMRSlot::~CDMRSlot()
 void CDMRSlot::writeModem(unsigned char *data)
 {
 	if (data[0U] == TAG_LOST && (m_state == RS_RELAYING_RF_AUDIO || m_state == RS_RELAYING_RF_DATA)) {
-		LogMessage("DMR Slot %u, transmission lost", m_slotNo);
+		if (m_bits > 0U)
+			LogMessage("DMR Slot %u, transmission lost, BER: %u%%", m_slotNo, (m_errs * 100U) / m_bits);
+		else
+			LogMessage("DMR Slot %u, transmission lost", m_slotNo);
 		writeEndOfTransmission();
 		return;
 	}
@@ -115,6 +121,9 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			m_seqNo = 0U;
 			m_n     = 0U;
+
+			m_bits = 0U;
+			m_errs = 0U;
 
 			// Put a small delay into starting retransmission
 			writeQueue(m_idle);
@@ -165,7 +174,10 @@ void CDMRSlot::writeModem(unsigned char *data)
 			writeNetwork(data, DT_TERMINATOR_WITH_LC);
 			writeQueue(data);
 
-			LogMessage("DMR Slot %u, received RF end of voice transmission", m_slotNo);
+			if (m_bits > 0U)
+				LogMessage("DMR Slot %u, received RF end of voice transmission, BER: %u%%", m_slotNo, (m_errs * 100U) / m_bits);
+			else
+				LogMessage("DMR Slot %u, received RF end of voice transmission", m_slotNo);
 
 			// 480ms of idle to space things out
 			for (unsigned int i = 0U; i < 8U; i++)
@@ -228,7 +240,8 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			unsigned char fid = m_lc->getFID();
 			if (fid == FID_ETSI || fid == FID_DMRA)
-				; // AMBE FEC
+				m_errs += m_fec.regenerateDMR(data + 2U);
+			m_bits += 216U;
 
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
@@ -251,7 +264,8 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			unsigned char fid = m_lc->getFID();
 			if (fid == FID_ETSI || fid == FID_DMRA)
-				; // AMBE FEC
+				m_errs += m_fec.regenerateDMR(data + 2U);
+			m_bits += 216U;
 
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
@@ -291,6 +305,9 @@ void CDMRSlot::writeModem(unsigned char *data)
 				m_seqNo = 0U;
 				m_n     = 0U;
 
+				m_bits = 0U;
+				m_errs = 0U;
+
 				for (unsigned int i = 0U; i < 3U; i++) {
 					writeNetwork(start, DT_VOICE_LC_HEADER);
 					writeQueue(start);
@@ -302,7 +319,8 @@ void CDMRSlot::writeModem(unsigned char *data)
 				// Send the original audio frame out
 				unsigned char fid = m_lc->getFID();
 				if (fid == FID_ETSI || fid == FID_DMRA)
-					; // AMBE FEC
+					m_errs += m_fec.regenerateDMR(data + 2U);
+				m_bits += 216U;
 
 				data[0U] = TAG_DATA;
 				data[1U] = 0x00U;
@@ -516,7 +534,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		unsigned char fid = m_lc->getFID();
 		if (fid == FID_ETSI || fid == FID_DMRA)
-			; // AMBE FEC
+			m_fec.regenerateDMR(data + 2U);
 
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
@@ -550,7 +568,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		unsigned char fid = m_lc->getFID();
 		if (fid == FID_ETSI || fid == FID_DMRA)
-			; // AMBE FEC
+			m_fec.regenerateDMR(data + 2U);
 
 		// Change the color code in the EMB
 		CEMB emb;

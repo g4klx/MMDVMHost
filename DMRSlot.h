@@ -23,6 +23,7 @@
 #include "StopWatch.h"
 #include "EmbeddedLC.h"
 #include "RingBuffer.h"
+#include "AMBEFEC.h"
 #include "DMRSlot.h"
 #include "DMRData.h"
 #include "Display.h"
@@ -61,6 +62,9 @@ private:
 	CStopWatch                 m_elapsed;
 	unsigned int               m_frames;
 	unsigned int               m_lost;
+	CAMBEFEC                   m_fec;
+	unsigned int               m_bits;
+	unsigned int               m_errs;
 	FILE*                      m_fp;
 
 	static unsigned int        m_colorCode;
