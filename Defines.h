@@ -29,4 +29,13 @@ const unsigned char TAG_DATA   = 0x01U;
 const unsigned char TAG_LOST   = 0x02U;
 const unsigned char TAG_EOT    = 0x03U;
 
+enum RPT_STATE {
+	RS_LISTENING,
+	RS_LATE_ENTRY,
+	RS_RELAYING_RF_AUDIO,
+	RS_RELAYING_NETWORK_AUDIO,
+	RS_RELAYING_RF_DATA,
+	RS_RELAYING_NETWORK_DATA
+};
+
 #endif

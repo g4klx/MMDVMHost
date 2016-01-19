@@ -25,18 +25,10 @@
 #include "DMRSlot.h"
 #include "DMRData.h"
 #include "Display.h"
+#include "Defines.h"
 #include "Timer.h"
 #include "Modem.h"
 #include "LC.h"
-
-enum SLOT_STATE {
-	SS_LISTENING,
-	SS_LATE_ENTRY,
-	SS_RELAYING_RF_AUDIO,
-	SS_RELAYING_NETWORK_AUDIO,
-	SS_RELAYING_RF_DATA,
-	SS_RELAYING_NETWORK_DATA
-};
 
 class CDMRSlot {
 public:
@@ -54,16 +46,16 @@ public:
 	static void init(unsigned int colorCode, CModem* modem, CHomebrewDMRIPSC* network, IDisplay* display);
 
 private:
-	unsigned int                 m_slotNo;
-	CRingBuffer<unsigned char>   m_queue;
-	SLOT_STATE                   m_state;
-	CEmbeddedLC                  m_embeddedLC;
-	CLC*                         m_lc;
-	unsigned char                m_seqNo;
-	unsigned char                m_n;
-	CTimer                       m_networkWatchdog;
-	CTimer                       m_timeoutTimer;
-	FILE*                        m_fp;
+	unsigned int               m_slotNo;
+	CRingBuffer<unsigned char> m_queue;
+	RPT_STATE                  m_state;
+	CEmbeddedLC                m_embeddedLC;
+	CLC*                       m_lc;
+	unsigned char              m_seqNo;
+	unsigned char              m_n;
+	CTimer                     m_networkWatchdog;
+	CTimer                     m_timeoutTimer;
+	FILE*                      m_fp;
 
 	static unsigned int        m_colorCode;
 	static CModem*             m_modem;
