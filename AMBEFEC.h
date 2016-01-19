@@ -30,8 +30,7 @@ public:
 	unsigned int regenerateDStar(unsigned char* bytes) const;
 
 private:
-	unsigned int regenerateDMR(unsigned int& a, unsigned int& b, unsigned int& c) const;
-	unsigned int regenerateDStar(unsigned int& a, unsigned int& b, unsigned int& c) const;
+	unsigned int regenerate(unsigned int& a, unsigned int& b, unsigned int& c, const unsigned int* prng) const;
 };
 
 #endif

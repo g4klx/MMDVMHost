@@ -20,7 +20,16 @@
 
 #include <cassert>
 
-static const unsigned int PRNG_TABLE[] = {
+const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U};
+
+#define WRITE_BIT(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
+#define READ_BIT(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
+
+const unsigned int PRNG_TABLE_DMR[] = {
+	0x00
+};
+
+const unsigned int PRNG_TABLE_DSTAR[] = {
 	0x42CC47U, 0x19D6FEU, 0x304729U, 0x6B2CD0U, 0x60BF47U, 0x39650EU, 0x7354F1U, 0xEACF60U, 0x819C9FU, 0xDE25CEU, 
 	0xD7B745U, 0x8CC8B8U, 0x8D592BU, 0xF71257U, 0xBCA084U, 0xA5B329U, 0xEE6AFAU, 0xF7D9A7U, 0xBCC21CU, 0x4712D9U, 
 	0x4F2922U, 0x14FA37U, 0x5D43ECU, 0x564115U, 0x299A92U, 0x20A9EBU, 0x7B707DU, 0x3BE3A4U, 0x20D95BU, 0x6B085AU, 
@@ -432,6 +441,13 @@ static const unsigned int PRNG_TABLE[] = {
 	0xECDB0FU, 0xB542DAU, 0x9E5131U, 0xC7ABA5U, 0x8C38FEU, 0x97010BU, 0xDED290U, 0xA4CC7DU, 0xAD3D2EU, 0xF6B6B3U, 
 	0xF9A540U, 0x205ED9U, 0x634EB6U, 0x5A9567U, 0x11A6D8U, 0x0B3F09U};
 
+const unsigned int DSTAR_A_TABLE[] = {0U,  6U, 12U, 18U, 24U, 30U, 36U, 42U, 48U, 54U, 60U, 66U,
+									  1U,  7U, 13U, 19U, 25U, 31U, 37U, 43U, 49U, 55U, 61U, 67U};
+const unsigned int DSTAR_B_TABLE[] = {2U,  8U, 14U, 20U, 26U, 32U, 38U, 44U, 50U, 56U, 62U, 68U,
+									  3U,  9U, 15U, 21U, 27U, 33U, 39U, 45U, 51U, 57U, 63U, 69U};
+const unsigned int DSTAR_C_TABLE[] = {4U, 10U, 16U, 22U, 28U, 34U, 40U, 46U, 52U, 58U, 64U, 70U,
+									  5U, 11U, 17U, 23U, 29U, 35U, 41U, 47U, 53U, 59U, 65U, 71U};
+
 CAMBEFEC::CAMBEFEC()
 {
 }
@@ -445,94 +461,93 @@ unsigned int CAMBEFEC::regenerateDMR(unsigned char* bytes) const
 	assert(bytes != NULL);
 
 	return 0U;
+
+#ifdef notdef
+	unsigned int a1 = 0U, a2 = 0U, a3 = 0U;
+	unsigned int b1 = 0U, b2 = 0U, b3 = 0U;
+	unsigned int c1 = 0U, c2 = 0U, c3 = 0U;
+
+	unsigned int MASK = 0x800000U;
+	for (unsigned int i = 0U; i < 24U; i++) {
+		if (READ_BIT(bytes, DMR_A1_TABLE[i]))
+			a1 |= MASK;
+		if (READ_BIT(bytes, DMR_A2_TABLE[i]))
+			a2 |= MASK;
+		if (READ_BIT(bytes, DMR_A3_TABLE[i]))
+			a3 |= MASK;
+		if (READ_BIT(bytes, DMR_B1_TABLE[i]))
+			b1 |= MASK;
+		if (READ_BIT(bytes, DMR_B2_TABLE[i]))
+			b2 |= MASK;
+		if (READ_BIT(bytes, DMR_B3_TABLE[i]))
+			b3 |= MASK;
+		if (READ_BIT(bytes, DMR_C1_TABLE[i]))
+			c1 |= MASK;
+		if (READ_BIT(bytes, DMR_C2_TABLE[i]))
+			c2 |= MASK;
+		if (READ_BIT(bytes, DMR_C3_TABLE[i]))
+			c3 |= MASK;
+		MASK >>= 1;
+	}
+
+	unsigned int errors = regenerate(a1, b1, c1, PRNG_TABLE_DMR);
+	errors += regenerate(a2, b2, c2, PRNG_TABLE_DMR);
+	errors += regenerate(a3, b3, c3, PRNG_TABLE_DMR);
+
+	MASK = 0x800000U;
+	for (unsigned int i = 0U; i < 24U; i++) {
+		WRITE_BIT(bytes, DMR_A1_TABLE[i], a1 & MASK);
+		WRITE_BIT(bytes, DMR_A2_TABLE[i], a2 & MASK);
+		WRITE_BIT(bytes, DMR_A3_TABLE[i], a3 & MASK);
+		WRITE_BIT(bytes, DMR_B1_TABLE[i], b1 & MASK);
+		WRITE_BIT(bytes, DMR_B2_TABLE[i], b2 & MASK);
+		WRITE_BIT(bytes, DMR_B3_TABLE[i], b3 & MASK);
+		WRITE_BIT(bytes, DMR_C1_TABLE[i], c1 & MASK);
+		WRITE_BIT(bytes, DMR_C2_TABLE[i], c2 & MASK);
+		WRITE_BIT(bytes, DMR_C3_TABLE[i], c3 & MASK);
+		MASK >>= 1;
+	}
+
+	return errors;
+#endif
 }
 
 unsigned int CAMBEFEC::regenerateDStar(unsigned char* bytes) const
 {
 	assert(bytes != NULL);
 
-	unsigned int a = ((bytes[0] & 0x80) ? 0x800000 : 0x000000) | ((bytes[0] & 0x02) ? 0x400000 : 0x000000) |
-					 ((bytes[1] & 0x08) ? 0x200000 : 0x000000) | ((bytes[2] & 0x20) ? 0x100000 : 0x000000) |
-					 ((bytes[3] & 0x80) ? 0x080000 : 0x000000) | ((bytes[3] & 0x02) ? 0x040000 : 0x000000) |
-					 ((bytes[4] & 0x08) ? 0x020000 : 0x000000) | ((bytes[5] & 0x20) ? 0x010000 : 0x000000) |
-					 ((bytes[6] & 0x80) ? 0x008000 : 0x000000) | ((bytes[6] & 0x02) ? 0x004000 : 0x000000) |
-					 ((bytes[7] & 0x08) ? 0x002000 : 0x000000) | ((bytes[8] & 0x20) ? 0x001000 : 0x000000) |
-					 ((bytes[0] & 0x40) ? 0x000800 : 0x000000) | ((bytes[0] & 0x01) ? 0x000400 : 0x000000) |
-					 ((bytes[1] & 0x04) ? 0x000200 : 0x000000) | ((bytes[2] & 0x10) ? 0x000100 : 0x000000) |
-					 ((bytes[3] & 0x40) ? 0x000080 : 0x000000) | ((bytes[3] & 0x01) ? 0x000040 : 0x000000) |
-					 ((bytes[4] & 0x04) ? 0x000020 : 0x000000) | ((bytes[5] & 0x10) ? 0x000010 : 0x000000) |
-					 ((bytes[6] & 0x40) ? 0x000008 : 0x000000) | ((bytes[6] & 0x01) ? 0x000004 : 0x000000) |
-					 ((bytes[7] & 0x04) ? 0x000002 : 0x000000) | ((bytes[8] & 0x10) ? 0x000001 : 0x000000);
+	unsigned int a = 0U;
+	unsigned int b = 0U;
+	unsigned int c = 0U;
 
-	unsigned int b = ((bytes[0] & 0x20) ? 0x800000 : 0x000000) | ((bytes[1] & 0x80) ? 0x400000 : 0x000000) |
-					 ((bytes[1] & 0x02) ? 0x200000 : 0x000000) | ((bytes[2] & 0x08) ? 0x100000 : 0x000000) |
-					 ((bytes[3] & 0x20) ? 0x080000 : 0x000000) | ((bytes[4] & 0x80) ? 0x040000 : 0x000000) |
-					 ((bytes[4] & 0x02) ? 0x020000 : 0x000000) | ((bytes[5] & 0x08) ? 0x010000 : 0x000000) |
-					 ((bytes[6] & 0x20) ? 0x008000 : 0x000000) | ((bytes[7] & 0x80) ? 0x004000 : 0x000000) |
-					 ((bytes[7] & 0x02) ? 0x002000 : 0x000000) | ((bytes[8] & 0x08) ? 0x001000 : 0x000000) |
-					 ((bytes[0] & 0x10) ? 0x000800 : 0x000000) | ((bytes[1] & 0x40) ? 0x000400 : 0x000000) |
-					 ((bytes[1] & 0x01) ? 0x000200 : 0x000000) | ((bytes[2] & 0x04) ? 0x000100 : 0x000000) |
-					 ((bytes[3] & 0x10) ? 0x000080 : 0x000000) | ((bytes[4] & 0x40) ? 0x000040 : 0x000000) |
-					 ((bytes[4] & 0x01) ? 0x000020 : 0x000000) | ((bytes[5] & 0x04) ? 0x000010 : 0x000000) |
-					 ((bytes[6] & 0x10) ? 0x000008 : 0x000000) | ((bytes[7] & 0x40) ? 0x000004 : 0x000000) |
-					 ((bytes[7] & 0x01) ? 0x000002 : 0x000000) | ((bytes[8] & 0x04) ? 0x000001 : 0x000000);
+	unsigned int MASK = 0x800000U;
+	for (unsigned int i = 0U; i < 24U; i++) {
+		if (READ_BIT(bytes, DSTAR_A_TABLE[i]))
+			a |= MASK;
+		if (READ_BIT(bytes, DSTAR_B_TABLE[i]))
+			b |= MASK;
+		if (READ_BIT(bytes, DSTAR_C_TABLE[i]))
+			c |= MASK;
+		MASK >>= 1;
+	}
 
-	unsigned int c = ((bytes[0] & 0x08) ? 0x800000 : 0x000000) | ((bytes[1] & 0x20) ? 0x400000 : 0x000000) |
-					 ((bytes[2] & 0x80) ? 0x200000 : 0x000000) | ((bytes[2] & 0x02) ? 0x100000 : 0x000000) |
-					 ((bytes[3] & 0x08) ? 0x080000 : 0x000000) | ((bytes[4] & 0x20) ? 0x040000 : 0x000000) |
-					 ((bytes[5] & 0x80) ? 0x020000 : 0x000000) | ((bytes[5] & 0x02) ? 0x010000 : 0x000000) |
-					 ((bytes[6] & 0x08) ? 0x008000 : 0x000000) | ((bytes[7] & 0x20) ? 0x004000 : 0x000000) |
-					 ((bytes[8] & 0x80) ? 0x002000 : 0x000000) | ((bytes[8] & 0x02) ? 0x001000 : 0x000000) |
-					 ((bytes[0] & 0x04) ? 0x000800 : 0x000000) | ((bytes[1] & 0x10) ? 0x000400 : 0x000000) |
-					 ((bytes[2] & 0x40) ? 0x000200 : 0x000000) | ((bytes[2] & 0x01) ? 0x000100 : 0x000000) |
-					 ((bytes[3] & 0x04) ? 0x000080 : 0x000000) | ((bytes[4] & 0x10) ? 0x000040 : 0x000000) |
-					 ((bytes[5] & 0x40) ? 0x000020 : 0x000000) | ((bytes[5] & 0x01) ? 0x000010 : 0x000000) |
-					 ((bytes[6] & 0x04) ? 0x000008 : 0x000000) | ((bytes[7] & 0x10) ? 0x000004 : 0x000000) |
-					 ((bytes[8] & 0x40) ? 0x000002 : 0x000000) | ((bytes[8] & 0x01) ? 0x000001 : 0x000000);
+	unsigned int errors = regenerate(a, b, c, PRNG_TABLE_DSTAR);
 
-	unsigned int errors = regenerateDStar(a, b, c);
-
-	bytes[0] = ((a & 0x800000) ? 0x80 : 0x00) | ((a & 0x000800) ? 0x40 : 0x00) | ((b & 0x800000) ? 0x20 : 0x00) |
-			   ((b & 0x000800) ? 0x10 : 0x00) | ((c & 0x800000) ? 0x08 : 0x00) | ((c & 0x000800) ? 0x04 : 0x00) |
-			   ((a & 0x400000) ? 0x02 : 0x00) | ((a & 0x000400) ? 0x01 : 0x00);
-
-	bytes[1] = ((b & 0x400000) ? 0x80 : 0x00) | ((b & 0x000400) ? 0x40 : 0x00) | ((c & 0x400000) ? 0x20 : 0x00) |
-			   ((c & 0x000400) ? 0x10 : 0x00) | ((a & 0x200000) ? 0x08 : 0x00) | ((a & 0x000200) ? 0x04 : 0x00) |
-			   ((b & 0x200000) ? 0x02 : 0x00) | ((b & 0x000200) ? 0x01 : 0x00);
-
-	bytes[2] = ((c & 0x200000) ? 0x80 : 0x00) | ((c & 0x000200) ? 0x40 : 0x00) | ((a & 0x100000) ? 0x20 : 0x00) |
-			   ((a & 0x000100) ? 0x10 : 0x00) | ((b & 0x100000) ? 0x08 : 0x00) | ((b & 0x000100) ? 0x04 : 0x00) |
-			   ((c & 0x100000) ? 0x02 : 0x00) | ((c & 0x000100) ? 0x01 : 0x00);
-
-	bytes[3] = ((a & 0x080000) ? 0x80 : 0x00) | ((a & 0x000080) ? 0x40 : 0x00) | ((b & 0x080000) ? 0x20 : 0x00) |
-			   ((b & 0x000080) ? 0x10 : 0x00) | ((c & 0x080000) ? 0x08 : 0x00) | ((c & 0x000080) ? 0x04 : 0x00) |
-			   ((a & 0x040000) ? 0x02 : 0x00) | ((a & 0x000040) ? 0x01 : 0x00);
-
-	bytes[4] = ((b & 0x040000) ? 0x80 : 0x00) | ((b & 0x000040) ? 0x40 : 0x00) | ((c & 0x040000) ? 0x20 : 0x00) |
-			   ((c & 0x000040) ? 0x10 : 0x00) | ((a & 0x020000) ? 0x08 : 0x00) | ((a & 0x000020) ? 0x04 : 0x00) |
-			   ((b & 0x020000) ? 0x02 : 0x00) | ((b & 0x000020) ? 0x01 : 0x00);
-
-	bytes[5] = ((c & 0x020000) ? 0x80 : 0x00) | ((c & 0x000020) ? 0x40 : 0x00) | ((a & 0x010000) ? 0x20 : 0x00) |
-			   ((a & 0x000010) ? 0x10 : 0x00) | ((b & 0x010000) ? 0x08 : 0x00) | ((b & 0x000010) ? 0x04 : 0x00) |
-			   ((c & 0x010000) ? 0x02 : 0x00) | ((c & 0x000010) ? 0x01 : 0x00);
-
-	bytes[6] = ((a & 0x008000) ? 0x80 : 0x00) | ((a & 0x000008) ? 0x40 : 0x00) | ((b & 0x008000) ? 0x20 : 0x00) |
-			   ((b & 0x000008) ? 0x10 : 0x00) | ((c & 0x008000) ? 0x08 : 0x00) | ((c & 0x000008) ? 0x04 : 0x00) |
-			   ((a & 0x004000) ? 0x02 : 0x00) | ((a & 0x000004) ? 0x01 : 0x00);
-
-	bytes[7] = ((b & 0x004000) ? 0x80 : 0x00) | ((b & 0x000004) ? 0x40 : 0x00) | ((c & 0x004000) ? 0x20 : 0x00) |
-			   ((c & 0x000004) ? 0x10 : 0x00) | ((a & 0x002000) ? 0x08 : 0x00) | ((a & 0x000002) ? 0x04 : 0x00) |
-			   ((b & 0x002000) ? 0x02 : 0x00) | ((b & 0x000002) ? 0x01 : 0x00);
-
-	bytes[8] = ((c & 0x002000) ? 0x80 : 0x00) | ((c & 0x000002) ? 0x40 : 0x00) | ((a & 0x001000) ? 0x20 : 0x00) |
-			   ((a & 0x000001) ? 0x10 : 0x00) | ((b & 0x001000) ? 0x08 : 0x00) | ((b & 0x000001) ? 0x04 : 0x00) |
-			   ((c & 0x001000) ? 0x02 : 0x00) | ((c & 0x000001) ? 0x01 : 0x00);
+	MASK = 0x800000U;
+	for (unsigned int i = 0U; i < 24U; i++) {
+		WRITE_BIT(bytes, DSTAR_A_TABLE[i], a & MASK);
+		WRITE_BIT(bytes, DSTAR_B_TABLE[i], b & MASK);
+		WRITE_BIT(bytes, DSTAR_C_TABLE[i], c & MASK);
+		MASK >>= 1;
+	}
 
 	return errors;
 }
 
-unsigned int CAMBEFEC::regenerateDStar(unsigned int& a, unsigned int& b, unsigned int& c) const
+unsigned int CAMBEFEC::regenerate(unsigned int& a, unsigned int& b, unsigned int& c, const unsigned int* prng) const
 {
+	assert(prng != NULL);
+
 	unsigned int old_a = a;
 	unsigned int old_b = b;
 
@@ -541,7 +556,7 @@ unsigned int CAMBEFEC::regenerateDStar(unsigned int& a, unsigned int& b, unsigne
 	unsigned int new_a = CGolay24128::encode24128(data);
 
 	// The PRNG
-	unsigned int p = PRNG_TABLE[data];
+	unsigned int p = prng[data];
 
 	b ^= p;
 
