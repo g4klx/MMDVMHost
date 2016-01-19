@@ -20,6 +20,7 @@
 #define	DMRSlot_H
 
 #include "HomebrewDMRIPSC.h"
+#include "StopWatch.h"
 #include "EmbeddedLC.h"
 #include "RingBuffer.h"
 #include "DMRSlot.h"
@@ -53,8 +54,13 @@ private:
 	CLC*                       m_lc;
 	unsigned char              m_seqNo;
 	unsigned char              m_n;
+	unsigned char*             m_lastFrame;
 	CTimer                     m_networkWatchdog;
 	CTimer                     m_timeoutTimer;
+	CTimer                     m_packetTimer;
+	CStopWatch                 m_elapsed;
+	unsigned int               m_frames;
+	unsigned int               m_lost;
 	FILE*                      m_fp;
 
 	static unsigned int        m_colorCode;
@@ -77,6 +83,8 @@ private:
 	bool openFile();
 	bool writeFile(const unsigned char* data);
 	void closeFile();
+
+	void insertSilence(unsigned char seqNo);
 
 	static void setShortLC(unsigned int slotNo, unsigned int id, FLCO flco = FLCO_GROUP);
 };

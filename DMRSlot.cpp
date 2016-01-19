@@ -47,14 +47,21 @@ m_embeddedLC(),
 m_lc(NULL),
 m_seqNo(0U),
 m_n(0U),
-m_networkWatchdog(1000U, 2U),
+m_lastFrame(NULL),
+m_networkWatchdog(1000U, 1U),
 m_timeoutTimer(1000U, timeout),
+m_packetTimer(1000U, 0U, 200U),
+m_elapsed(),
+m_frames(0U),
+m_lost(0U),
 m_fp(NULL)
 {
+	m_lastFrame = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
 }
 
 CDMRSlot::~CDMRSlot()
 {
+	delete[] m_lastFrame;
 }
 
 void CDMRSlot::writeModem(unsigned char *data)
@@ -141,8 +148,6 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			writeNetwork(data, DT_VOICE_PI_HEADER);
 			writeQueue(data);
-
-			LogMessage("DMR Slot %u, received PI header", m_slotNo);
 		} else if (dataType == DT_TERMINATOR_WITH_LC) {
 			if (m_state != RS_RELAYING_RF_AUDIO)
 				return;
@@ -342,6 +347,7 @@ void CDMRSlot::writeEndOfTransmission()
 
 	m_networkWatchdog.stop();
 	m_timeoutTimer.stop();
+	m_packetTimer.stop();
 
 	delete m_lc;
 	m_lc = NULL;
@@ -388,6 +394,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		data[1U] = 0x00U;
 
 		m_timeoutTimer.start();
+
+		m_frames = 0U;
 
 		// 540ms of idle to give breathing space for lost frames
 		for (unsigned int i = 0U; i < 9U; i++)
@@ -453,7 +461,9 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		writeFile(data);
 		closeFile();
 #endif
-		LogMessage("DMR Slot %u, received network end of voice transmission", m_slotNo);
+		// We've received the voice header and terminator haven't we?
+		m_frames += 2U;
+		LogMessage("DMR Slot %u, received network end of voice transmission, %u%% packet loss", m_slotNo, (m_lost * 100U) / m_frames);
 	} else if (dataType == DT_DATA_HEADER) {
 		if (m_state == RS_RELAYING_NETWORK_DATA)
 			return;
@@ -471,10 +481,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
 
-		m_seqNo = 0U;
-		m_n = 0U;
-
-		// Put a small delay into starting retransmission
+		// Put a small delay into starting transmission
 		writeQueue(m_idle);
 		writeQueue(m_idle);
 
@@ -482,6 +489,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			writeQueue(data);
 
 		m_state = RS_RELAYING_NETWORK_DATA;
+
 		// setShortLC(m_slotNo, m_lc->getDstId(), m_lc->getFLCO());
 
 		// m_display->writeDMR(m_slotNo, m_lc->getSrcId(), m_lc->getFLCO() == FLCO_GROUP, m_lc->getDstId());
@@ -491,6 +499,16 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 	} else if (dataType == DT_VOICE_SYNC) {
 		if (m_state != RS_RELAYING_NETWORK_AUDIO)
 			return;
+
+		// Initialise the lost packet data
+		if (m_frames == 0U) {
+			m_seqNo = dmrData.getSeqNo();
+			m_n     = dmrData.getN();
+			m_elapsed.start();
+			m_lost = 0U;
+		} else {
+			insertSilence(dmrData.getSeqNo());
+		}
 
 		// Convert the Audio Sync to be from the BS
 		CDMRSync sync;
@@ -505,12 +523,30 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		writeQueue(data);
 
+		m_packetTimer.start();
+		m_frames++;
+
+		// Save details in case we need to infill data
+		m_seqNo = dmrData.getSeqNo();
+		m_n     = dmrData.getN();
+		::memcpy(m_lastFrame, data, DMR_FRAME_LENGTH_BYTES + 2U);
+
 #if defined(DUMP_DMR)
 		writeFile(data);
 #endif
 	} else if (dataType == DT_VOICE) {
 		if (m_state != RS_RELAYING_NETWORK_AUDIO)
 			return;
+
+		// Initialise the lost packet data
+		if (m_frames == 0U) {
+			m_seqNo = dmrData.getSeqNo();
+			m_n     = dmrData.getN();
+			m_elapsed.start();
+			m_lost = 0U;
+		} else {
+			insertSilence(dmrData.getSeqNo());
+		}
 
 		unsigned char fid = m_lc->getFID();
 		if (fid == FID_ETSI || fid == FID_DMRA)
@@ -526,6 +562,14 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		data[1U] = 0x00U;
 
 		writeQueue(data);
+
+		m_packetTimer.start();
+		m_frames++;
+
+		// Save details in case we need to infill data
+		m_seqNo = dmrData.getSeqNo();
+		m_n     = dmrData.getN();
+		::memcpy(m_lastFrame, data, DMR_FRAME_LENGTH_BYTES + 2U);
 
 #if defined(DUMP_DMR)
 		writeFile(data);
@@ -560,11 +604,29 @@ void CDMRSlot::clock(unsigned int ms)
 		m_networkWatchdog.clock(ms);
 
 		if (m_networkWatchdog.hasExpired()) {
-			LogMessage("DMR Slot %u, network watchdog has expired", m_slotNo);
+			// We've received the voice header haven't we?
+			m_frames += 1U;
+			LogMessage("DMR Slot %u, network watchdog has expired, %u%% packet loss", m_slotNo, (m_lost * 100U) / m_frames);
 			writeEndOfTransmission();
 #if defined(DUMP_DMR)
 			closeFile();
 #endif
+		}
+	}
+
+	if (m_state == RS_RELAYING_NETWORK_AUDIO) {
+		m_packetTimer.clock(ms);
+
+		if (m_packetTimer.hasExpired()) {
+			unsigned int frames = m_elapsed.elapsed() / DMR_SLOT_TIME;
+
+			if (frames > m_frames) {
+				unsigned int count = frames - m_frames;
+				if (count > 5U)
+					insertSilence(m_seqNo + count - 2U);
+			}
+
+			m_packetTimer.start();
 		}
 	}
 }
@@ -738,4 +800,57 @@ void CDMRSlot::closeFile()
 		::fclose(m_fp);
 		m_fp = NULL;
 	}
+}
+
+void CDMRSlot::insertSilence(unsigned char newSeqNo)
+{
+	// Check to see if we have any spaces to fill
+	unsigned char seqNo = m_seqNo + 1U;
+	if (newSeqNo == seqNo)
+		return;
+
+	unsigned char data[DMR_FRAME_LENGTH_BYTES + 2U];
+	::memcpy(data, m_lastFrame, DMR_FRAME_LENGTH_BYTES + 2U);
+
+	data[0U] = TAG_DATA;
+	data[1U] = 0x00U;
+
+	unsigned char n = (m_n + 1U) % 6U;
+
+	unsigned int count = 0U;
+	while (seqNo < newSeqNo) {
+		if (n == 0U) {
+			// Add the voice sync
+			CDMRSync sync;
+			sync.addSync(data + 2U, DST_BS_AUDIO);
+		} else {
+			// Set the embedded signalling to be nulls
+			::memset(data + 16U, 0x00U, 5U);
+
+			// Change the color code in the EMB
+			// XXX Note that the PI flag is lost here
+			CEMB emb;
+			emb.setPI(false);
+			emb.setLCSS(0U);
+			emb.setColorCode(m_colorCode);
+			emb.getData(data + 2U);
+		}
+
+		data[0U] = TAG_DATA;
+		data[1U] = 0x00U;
+
+		writeQueue(data);
+
+		m_seqNo = seqNo;
+		m_n     = n;
+
+		count++;
+		m_frames++;
+		m_lost++;
+
+		seqNo++;
+		n = (n + 1U) % 6U;
+	}
+
+	LogMessage("DMR Slot %u, inserted %u audio frames", m_slotNo, count);
 }
