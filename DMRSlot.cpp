@@ -640,8 +640,8 @@ void CDMRSlot::clock(unsigned int ms)
 
 			if (frames > m_frames) {
 				unsigned int count = frames - m_frames;
-				if (count > 5U)
-					insertSilence(m_seqNo + count - 2U);
+				if (count > 3U)
+					insertSilence(m_seqNo + count - 1U);
 			}
 
 			m_packetTimer.start();
