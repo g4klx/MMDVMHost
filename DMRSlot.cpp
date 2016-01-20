@@ -69,11 +69,14 @@ CDMRSlot::~CDMRSlot()
 
 void CDMRSlot::writeModem(unsigned char *data)
 {
-	if (data[0U] == TAG_LOST && (m_state == RS_RELAYING_RF_AUDIO || m_state == RS_RELAYING_RF_DATA)) {
-		if (m_bits > 0U)
-			LogMessage("DMR Slot %u, transmission lost, BER: %u%%", m_slotNo, (m_errs * 100U) / m_bits);
-		else
-			LogMessage("DMR Slot %u, transmission lost", m_slotNo);
+	if (data[0U] == TAG_LOST && m_state == RS_RELAYING_RF_AUDIO) {
+		LogMessage("DMR Slot %u, transmission lost, BER: %u%%", m_slotNo, (m_errs * 100U) / m_bits);
+		writeEndOfTransmission();
+		return;
+	}
+
+	if (data[0U] == TAG_LOST && m_state == RS_RELAYING_RF_DATA) {
+		LogMessage("DMR Slot %u, transmission lost", m_slotNo);
 		writeEndOfTransmission();
 		return;
 	}
@@ -122,7 +125,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			m_seqNo = 0U;
 			m_n     = 0U;
 
-			m_bits = 0U;
+			m_bits = 1U;
 			m_errs = 0U;
 
 			// Put a small delay into starting retransmission
@@ -174,10 +177,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			writeNetwork(data, DT_TERMINATOR_WITH_LC);
 			writeQueue(data);
 
-			if (m_bits > 0U)
-				LogMessage("DMR Slot %u, received RF end of voice transmission, BER: %u%%", m_slotNo, (m_errs * 100U) / m_bits);
-			else
-				LogMessage("DMR Slot %u, received RF end of voice transmission", m_slotNo);
+			LogMessage("DMR Slot %u, received RF end of voice transmission, BER: %u%%", m_slotNo, (m_errs * 100U) / m_bits);
 
 			// 480ms of idle to space things out
 			for (unsigned int i = 0U; i < 8U; i++)
@@ -305,7 +305,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 				m_seqNo = 0U;
 				m_n     = 0U;
 
-				m_bits = 0U;
+				m_bits = 1U;
 				m_errs = 0U;
 
 				for (unsigned int i = 0U; i < 3U; i++) {
@@ -415,6 +415,9 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		m_frames = 0U;
 
+		m_bits = 1U;
+		m_errs = 0U;
+
 		// 540ms of idle to give breathing space for lost frames
 		for (unsigned int i = 0U; i < 9U; i++)
 			writeQueue(m_idle);
@@ -481,7 +484,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 #endif
 		// We've received the voice header and terminator haven't we?
 		m_frames += 2U;
-		LogMessage("DMR Slot %u, received network end of voice transmission, %u%% packet loss", m_slotNo, (m_lost * 100U) / m_frames);
+		LogMessage("DMR Slot %u, received network end of voice transmission, %u%% packet loss, BER: %u%%", m_slotNo, (m_lost * 100U) / m_frames, (m_errs * 100U) / m_bits);
 	} else if (dataType == DT_DATA_HEADER) {
 		if (m_state == RS_RELAYING_NETWORK_DATA)
 			return;
@@ -534,7 +537,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		unsigned char fid = m_lc->getFID();
 		if (fid == FID_ETSI || fid == FID_DMRA)
-			m_fec.regenerateDMR(data + 2U);
+			m_errs += m_fec.regenerateDMR(data + 2U);
+		m_bits += 216U;
 
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
@@ -568,7 +572,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		unsigned char fid = m_lc->getFID();
 		if (fid == FID_ETSI || fid == FID_DMRA)
-			m_fec.regenerateDMR(data + 2U);
+			m_errs += m_fec.regenerateDMR(data + 2U);
+		m_bits += 216U;
 
 		// Change the color code in the EMB
 		CEMB emb;
@@ -624,7 +629,10 @@ void CDMRSlot::clock(unsigned int ms)
 		if (m_networkWatchdog.hasExpired()) {
 			// We've received the voice header haven't we?
 			m_frames += 1U;
-			LogMessage("DMR Slot %u, network watchdog has expired, %u%% packet loss", m_slotNo, (m_lost * 100U) / m_frames);
+			if (m_state == RS_RELAYING_NETWORK_AUDIO)
+				LogMessage("DMR Slot %u, network watchdog has expired, %u%% packet loss, BER: %u%%", m_slotNo, (m_lost * 100U) / m_frames, (m_errs * 100U) / m_bits);
+			else
+				LogMessage("DMR Slot %u, network watchdog has expired", m_slotNo);
 			writeEndOfTransmission();
 #if defined(DUMP_DMR)
 			closeFile();
