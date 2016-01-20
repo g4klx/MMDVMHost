@@ -467,6 +467,8 @@ unsigned int CAMBEFEC::regenerateDMR(unsigned char* bytes) const
 {
 	assert(bytes != NULL);
 
+	return 0U;
+
 	unsigned int a1 = 0U, a2 = 0U, a3 = 0U;
 	unsigned int b1 = 0U, b2 = 0U, b3 = 0U;
 	unsigned int c1 = 0U, c2 = 0U, c3 = 0U;
