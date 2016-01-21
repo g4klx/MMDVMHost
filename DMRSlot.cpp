@@ -31,6 +31,7 @@ CHomebrewDMRIPSC* CDMRSlot::m_network = NULL;
 IDisplay*         CDMRSlot::m_display = NULL;
 
 unsigned char*    CDMRSlot::m_idle = NULL;
+unsigned char*    CDMRSlot::m_silence = NULL;
 
 FLCO              CDMRSlot::m_flco1;
 unsigned char     CDMRSlot::m_id1 = 0U;
@@ -47,8 +48,7 @@ m_embeddedLC(),
 m_lc(NULL),
 m_seqNo(0U),
 m_n(0U),
-m_lastFrame(NULL),
-m_networkWatchdog(1000U, 1U),
+m_networkWatchdog(1000U, 0U, 1500U),
 m_timeoutTimer(1000U, timeout),
 m_packetTimer(1000U, 0U, 200U),
 m_elapsed(),
@@ -59,12 +59,10 @@ m_bits(0U),
 m_errs(0U),
 m_fp(NULL)
 {
-	m_lastFrame = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
 }
 
 CDMRSlot::~CDMRSlot()
 {
-	delete[] m_lastFrame;
 }
 
 void CDMRSlot::writeModem(unsigned char *data)
@@ -77,6 +75,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 	if (data[0U] == TAG_LOST && m_state == RS_RELAYING_RF_DATA) {
 		LogMessage("DMR Slot %u, transmission lost", m_slotNo);
+		writeTerminator(true);
 		writeEndOfTransmission();
 		return;
 	}
@@ -175,13 +174,12 @@ void CDMRSlot::writeModem(unsigned char *data)
 			data[1U] = 0x00U;
 
 			writeNetwork(data, DT_TERMINATOR_WITH_LC);
-			writeQueue(data);
+
+			// 480ms of terminator to space things out
+			for (unsigned int i = 0U; i < 8U; i++)
+				writeQueue(data);
 
 			LogMessage("DMR Slot %u, received RF end of voice transmission, BER: %u%%", m_slotNo, (m_errs * 100U) / m_bits);
-
-			// 480ms of idle to space things out
-			for (unsigned int i = 0U; i < 8U; i++)
-				writeQueue(m_idle);
 
 			writeEndOfTransmission();
 		} else if (dataType == DT_DATA_HEADER) {
@@ -475,7 +473,10 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		data[0U] = TAG_EOT;
 		data[1U] = 0x00U;
 
-		writeQueue(data);
+		// 480ms of terminator to space things out
+		for (unsigned int i = 0U; i < 8U; i++)
+			writeQueue(data);
+
 		writeEndOfTransmission();
 
 #if defined(DUMP_DMR)
@@ -551,7 +552,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		// Save details in case we need to infill data
 		m_seqNo = dmrData.getSeqNo();
 		m_n     = dmrData.getN();
-		::memcpy(m_lastFrame, data, DMR_FRAME_LENGTH_BYTES + 2U);
 
 #if defined(DUMP_DMR)
 		writeFile(data);
@@ -592,7 +592,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		// Save details in case we need to infill data
 		m_seqNo = dmrData.getSeqNo();
 		m_n     = dmrData.getN();
-		::memcpy(m_lastFrame, data, DMR_FRAME_LENGTH_BYTES + 2U);
 
 #if defined(DUMP_DMR)
 		writeFile(data);
@@ -627,12 +626,15 @@ void CDMRSlot::clock(unsigned int ms)
 		m_networkWatchdog.clock(ms);
 
 		if (m_networkWatchdog.hasExpired()) {
-			// We've received the voice header haven't we?
-			m_frames += 1U;
-			if (m_state == RS_RELAYING_NETWORK_AUDIO)
+			if (m_state == RS_RELAYING_NETWORK_AUDIO) {
+				// We've received the voice header haven't we?
+				m_frames += 1U;
 				LogMessage("DMR Slot %u, network watchdog has expired, %u%% packet loss, BER: %u%%", m_slotNo, (m_lost * 100U) / m_frames, (m_errs * 100U) / m_bits);
-			else
+				writeTerminator(false);
+			} else {
 				LogMessage("DMR Slot %u, network watchdog has expired", m_slotNo);
+			}
+
 			writeEndOfTransmission();
 #if defined(DUMP_DMR)
 			closeFile();
@@ -667,6 +669,41 @@ void CDMRSlot::writeQueue(const unsigned char *data)
 		m_queue.addData(m_idle, len);
 	else
 		m_queue.addData(data, len);
+}
+
+// XXX Once the PF flag is fixed in the LC, always use this for the terminator
+void CDMRSlot::writeTerminator(bool toNetwork)
+{
+	unsigned char data[DMR_FRAME_LENGTH_BYTES + 2U];
+
+	// Generate the LC
+	CFullLC fullLC;
+	fullLC.encode(*m_lc, data + 2U, DT_TERMINATOR_WITH_LC);
+
+	// Generate the Slot Type
+	CSlotType slotType;
+	slotType.setColorCode(m_colorCode);
+	slotType.setDataType(DT_TERMINATOR_WITH_LC);
+	slotType.getData(data + 2U);
+
+	// Set the Data Sync to be from the BS
+	CDMRSync sync;
+	sync.addSync(data + 2U, DST_BS_DATA);
+
+	data[0U] = TAG_EOT;
+	data[1U] = 0x00U;
+
+	// 480ms of terminator to space things out
+	for (unsigned int i = 0U; i < 8U; i++)
+		writeQueue(data);
+
+	if (toNetwork)
+		writeNetwork(data, DT_TERMINATOR_WITH_LC);
+
+#if defined(DUMP_DMR)
+	writeFile(data);
+	closeFile();
+#endif
 }
 
 void CDMRSlot::writeNetwork(const unsigned char* data, unsigned char dataType)
@@ -706,18 +743,25 @@ void CDMRSlot::init(unsigned int colorCode, CModem* modem, CHomebrewDMRIPSC* net
 	m_network   = network;
 	m_display   = display;
 
-	m_idle = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
+	m_silence = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
+	m_idle    = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
 
-	::memcpy(m_idle + 2U, IDLE_DATA, DMR_FRAME_LENGTH_BYTES);
+	::memset(m_silence, 0x00U, DMR_FRAME_LENGTH_BYTES + 2U);
+	m_silence[0U] = TAG_DATA;
 
-	// Generate the Slot Type
+	// ::memcpy(m_silence, DMR_SILENCE_DATA, DMR_FRAME_LENGTH_BYTES + 2U);
+	::memcpy(m_idle,    DMR_IDLE_DATA,    DMR_FRAME_LENGTH_BYTES + 2U);
+
+	// Generate the Slot Type for the Idle frame
 	CSlotType slotType;
 	slotType.setColorCode(colorCode);
 	slotType.setDataType(DT_IDLE);
 	slotType.getData(m_idle + 2U);
 
-	m_idle[0U] = TAG_DATA;
-	m_idle[1U] = 0x00U;
+	// Generate the EMB for the silence frame
+	CEMB emb;
+	emb.setColorCode(colorCode);
+	emb.getData(m_silence + 2U);
 }
 
 void CDMRSlot::setShortLC(unsigned int slotNo, unsigned int id, FLCO flco)
@@ -835,35 +879,18 @@ void CDMRSlot::insertSilence(unsigned char newSeqNo)
 	if (newSeqNo == seqNo)
 		return;
 
-	unsigned char data[DMR_FRAME_LENGTH_BYTES + 2U];
-	::memcpy(data, m_lastFrame, DMR_FRAME_LENGTH_BYTES + 2U);
-
-	data[0U] = TAG_DATA;
-	data[1U] = 0x00U;
-
 	unsigned char n = (m_n + 1U) % 6U;
 
 	unsigned int count = 0U;
 	while (seqNo < newSeqNo) {
+		unsigned char data[DMR_FRAME_LENGTH_BYTES + 2U];
+		::memcpy(data, m_silence, DMR_FRAME_LENGTH_BYTES + 2U);
+
 		if (n == 0U) {
-			// Add the voice sync
+			// Replace the EMB and Null Short LC with a voice sync
 			CDMRSync sync;
 			sync.addSync(data + 2U, DST_BS_AUDIO);
-		} else {
-			// Set the embedded signalling to be nulls
-			::memset(data + 16U, 0x00U, 5U);
-
-			// Change the color code in the EMB
-			// XXX Note that the PI flag is lost here
-			CEMB emb;
-			emb.setPI(false);
-			emb.setLCSS(0U);
-			emb.setColorCode(m_colorCode);
-			emb.getData(data + 2U);
 		}
-
-		data[0U] = TAG_DATA;
-		data[1U] = 0x00U;
 
 		writeQueue(data);
 

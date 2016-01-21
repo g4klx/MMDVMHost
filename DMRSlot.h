@@ -55,7 +55,6 @@ private:
 	CLC*                       m_lc;
 	unsigned char              m_seqNo;
 	unsigned char              m_n;
-	unsigned char*             m_lastFrame;
 	CTimer                     m_networkWatchdog;
 	CTimer                     m_timeoutTimer;
 	CTimer                     m_packetTimer;
@@ -73,6 +72,7 @@ private:
 	static IDisplay*           m_display;
 
 	static unsigned char*      m_idle;
+	static unsigned char*      m_silence;
 
 	static FLCO                m_flco1;
 	static unsigned char       m_id1;
@@ -82,6 +82,7 @@ private:
 	void writeQueue(const unsigned char* data);
 	void writeNetwork(const unsigned char* data, unsigned char dataType);
 
+	void writeTerminator(bool toNetwork);
 	void writeEndOfTransmission();
 
 	bool openFile();
