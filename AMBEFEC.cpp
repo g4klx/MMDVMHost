@@ -18,19 +18,12 @@
 
 #include "AMBEFEC.h"
 
-#include "Log.h"		// XXX
-
-
 #include <cassert>
 
 const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U};
 
 #define WRITE_BIT(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
-
-const unsigned int PRNG_TABLE_DMR[] = {
-	0x00
-};
 
 const unsigned int PRNG_TABLE[] = {
 	0x42CC47U, 0x19D6FEU, 0x304729U, 0x6B2CD0U, 0x60BF47U, 0x39650EU, 0x7354F1U, 0xEACF60U, 0x819C9FU, 0xDE25CEU, 
@@ -444,9 +437,12 @@ const unsigned int PRNG_TABLE[] = {
 	0xECDB0FU, 0xB542DAU, 0x9E5131U, 0xC7ABA5U, 0x8C38FEU, 0x97010BU, 0xDED290U, 0xA4CC7DU, 0xAD3D2EU, 0xF6B6B3U, 
 	0xF9A540U, 0x205ED9U, 0x634EB6U, 0x5A9567U, 0x11A6D8U, 0x0B3F09U};
 
-const unsigned int DMR_A_TABLE[] = {0U};
-const unsigned int DMR_B_TABLE[] = { 0U };
-const unsigned int DMR_C_TABLE[] = { 0U };
+const unsigned int DMR_A_TABLE[] = { 0U,  4U,  8U, 12U, 16U, 20U, 24U, 28U, 32U, 36U, 40U, 44U,
+									48U, 52U, 56U, 60U, 64U, 68U,  1U,  5U,  9U, 13U, 17U, 21U};
+const unsigned int DMR_B_TABLE[] = {25U, 29U, 33U, 37U, 41U, 45U, 49U, 53U, 57U, 61U, 65U, 69U,
+									 2U,  6U, 10U, 14U, 18U, 22U, 26U, 30U, 34U, 38U, 42U, 46U};
+const unsigned int DMR_C_TABLE[] = {50U, 54U, 58U, 62U, 66U, 70U,  3U,  7U, 11U, 15U, 19U, 23U,
+									27U, 31U, 35U, 39U, 43U, 47U, 51U, 55U, 59U, 63U, 67U, 71U};
 
 const unsigned int DSTAR_A_TABLE[] = {0U,  6U, 12U, 18U, 24U, 30U, 36U, 42U, 48U, 54U, 60U, 66U,
 									  1U,  7U, 13U, 19U, 25U, 31U, 37U, 43U, 49U, 55U, 61U, 67U};
@@ -466,8 +462,6 @@ CAMBEFEC::~CAMBEFEC()
 unsigned int CAMBEFEC::regenerateDMR(unsigned char* bytes) const
 {
 	assert(bytes != NULL);
-
-	return 0U;
 
 	unsigned int a1 = 0U, a2 = 0U, a3 = 0U;
 	unsigned int b1 = 0U, b2 = 0U, b3 = 0U;
@@ -515,23 +509,9 @@ unsigned int CAMBEFEC::regenerateDMR(unsigned char* bytes) const
 		MASK >>= 1;
 	}
 
-	unsigned int old_a1 = a1;
-	unsigned int data = CGolay24128::decode24128(a1);
-
-	unsigned int new_a1 = CGolay24128::encode24128(data);
-
-	unsigned int errors = 0U;
-	unsigned int mask = 0x01;
-	for (unsigned int i = 0U; i < 24U; i++, mask <<= 1) {
-		if ((old_a1 & mask) != (new_a1 & mask))
-			errors++;
-	}
-
-	LogMessage("FEC: Old/New: %06X %06X Diff: %06X, errs: %u", old_a1, new_a1, old_a1 ^ new_a1, errors);
-
-//	unsigned int errors = regenerate(a1, b1, c1);
-//	errors += regenerate(a2, b2, c2);
-//	errors += regenerate(a3, b3, c3);
+	unsigned int errors = regenerate(a1, b1, c1);
+	errors += regenerate(a2, b2, c2);
+	errors += regenerate(a3, b3, c3);
 
 	MASK = 0x800000U;
 	for (unsigned int i = 0U; i < 24U; i++) {

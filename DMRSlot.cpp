@@ -645,13 +645,15 @@ void CDMRSlot::clock(unsigned int ms)
 	if (m_state == RS_RELAYING_NETWORK_AUDIO) {
 		m_packetTimer.clock(ms);
 
-		if (m_packetTimer.hasExpired()) {
+		if (m_packetTimer.isRunning() && m_packetTimer.hasExpired()) {
 			unsigned int frames = m_elapsed.elapsed() / DMR_SLOT_TIME;
 
 			if (frames > m_frames) {
 				unsigned int count = frames - m_frames;
-				if (count > 3U)
+				if (count > 3U) {
+					LogMessage("DMR Slot %u, lost audio for 200ms filling in", m_slotNo);
 					insertSilence(m_seqNo + count - 1U);
+				}
 			}
 
 			m_packetTimer.start();
@@ -819,12 +821,8 @@ void CDMRSlot::setShortLC(unsigned int slotNo, unsigned int id, FLCO flco)
 
 	unsigned char sLC[9U];
 
-	CUtils::dump(1U, "Input Short LC", lc, 5U);
-
 	CShortLC shortLC;
 	shortLC.encode(lc, sLC);
-
-	CUtils::dump(1U, "Output Short LC", sLC, 9U);
 
 	m_modem->writeDMRShortLC(sLC);
 }
