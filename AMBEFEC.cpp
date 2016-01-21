@@ -18,6 +18,7 @@
 
 #include "AMBEFEC.h"
 
+#include <cstdio>
 #include <cassert>
 
 const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U};
