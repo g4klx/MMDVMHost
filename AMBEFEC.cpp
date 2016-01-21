@@ -602,12 +602,17 @@ unsigned int CAMBEFEC::regenerate(unsigned int& a, unsigned int& b, unsigned int
 	new_b ^= p;
 
 	unsigned int errors = 0U;
-	unsigned int mask = 0x01;
-	for (unsigned int i = 0U; i < 24U; i++, mask <<= 1) {
-		if ((old_a & mask) != (new_a & mask))
-			errors++;
-		if ((old_b & mask) != (new_b & mask))
-			errors++;
+
+	unsigned int v = new_a ^ old_a;
+	while (v != 0U) {
+		v &= v - 1U;
+		errors++;
+	}
+
+	v = new_b ^ old_b;
+	while (v != 0U) {
+		v &= v - 1U;
+		errors++;
 	}
 
 	a = new_a;
