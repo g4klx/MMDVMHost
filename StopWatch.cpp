@@ -77,7 +77,7 @@ unsigned int CStopWatch::elapsed()
 	} else {
 		long temp = -m_start.tv_nsec / 1000000L;
 		temp += (now.tv_sec - m_start.tv_sec) * 1000L;
-		temp += m_start.tv_nsec / 1000000L;
+		temp += now.tv_nsec / 1000000L;
 		return temp;
 	}
 }
