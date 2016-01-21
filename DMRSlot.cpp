@@ -746,10 +746,7 @@ void CDMRSlot::init(unsigned int colorCode, CModem* modem, CHomebrewDMRIPSC* net
 	m_silence = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
 	m_idle    = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
 
-	::memset(m_silence, 0x00U, DMR_FRAME_LENGTH_BYTES + 2U);
-	m_silence[0U] = TAG_DATA;
-
-	// ::memcpy(m_silence, DMR_SILENCE_DATA, DMR_FRAME_LENGTH_BYTES + 2U);
+	::memcpy(m_silence, DMR_SILENCE_DATA, DMR_FRAME_LENGTH_BYTES + 2U);
 	::memcpy(m_idle,    DMR_IDLE_DATA,    DMR_FRAME_LENGTH_BYTES + 2U);
 
 	// Generate the Slot Type for the Idle frame
