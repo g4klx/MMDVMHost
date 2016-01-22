@@ -82,13 +82,13 @@ private:
 	void writeQueue(const unsigned char* data);
 	void writeNetwork(const unsigned char* data, unsigned char dataType);
 
-	void writeTerminator(bool toNetwork);
 	void writeEndOfTransmission();
 
 	bool openFile();
 	bool writeFile(const unsigned char* data);
 	void closeFile();
 
+	bool insertSilence(const CDMRData& dmrData);
 	void insertSilence(unsigned char seqNo);
 
 	static void setShortLC(unsigned int slotNo, unsigned int id, FLCO flco = FLCO_GROUP);

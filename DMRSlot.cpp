@@ -50,7 +50,7 @@ m_seqNo(0U),
 m_n(0U),
 m_networkWatchdog(1000U, 0U, 1500U),
 m_timeoutTimer(1000U, timeout),
-m_packetTimer(1000U, 0U, 200U),
+m_packetTimer(1000U, 0U, 300U),
 m_elapsed(),
 m_frames(0U),
 m_lost(0U),
@@ -75,17 +75,16 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 	if (data[0U] == TAG_LOST && m_state == RS_RELAYING_RF_DATA) {
 		LogMessage("DMR Slot %u, transmission lost", m_slotNo);
-		writeTerminator(true);
 		writeEndOfTransmission();
 		return;
 	}
 
-	if (data[0U] == TAG_LOST && m_state == RS_RF_LATE_ENTRY) {
+	if (data[0U] == TAG_LOST && m_state == RS_LATE_ENTRY) {
 		m_state = RS_LISTENING;
 		return;
 	}
 
-	if (m_state == RS_RELAYING_NETWORK_AUDIO || m_state == RS_RELAYING_NETWORK_DATA || m_state == RS_NETWORK_LATE_ENTRY)
+	if (m_state == RS_RELAYING_NETWORK_AUDIO || m_state == RS_RELAYING_NETWORK_DATA)
 		return;
 
 	bool dataSync  = (data[1U] & DMR_SYNC_DATA)  == DMR_SYNC_DATA;
@@ -249,7 +248,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			writeQueue(data);
 			writeNetwork(data, DT_VOICE_SYNC);
 		} else if (m_state == RS_LISTENING) {
-			m_state = RS_RF_LATE_ENTRY;
+			m_state = RS_LATE_ENTRY;
 		}
 	} else {
 		CEMB emb;
@@ -272,7 +271,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			writeQueue(data);
 			writeNetwork(data, DT_VOICE);
-		} else if (m_state == RS_RF_LATE_ENTRY) {
+		} else if (m_state == RS_LATE_ENTRY) {
 			// If we haven't received an LC yet, then be strict on the color code
 			unsigned char colorCode = emb.getColorCode();
 			if (colorCode != m_colorCode)
@@ -375,7 +374,7 @@ void CDMRSlot::writeEndOfTransmission()
 
 void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 {
-	if (m_state == RS_RELAYING_RF_AUDIO || m_state == RS_RELAYING_RF_DATA || m_state == RS_RF_LATE_ENTRY)
+	if (m_state == RS_RELAYING_RF_AUDIO || m_state == RS_RELAYING_RF_DATA || m_state == RS_LATE_ENTRY)
 		return;
 
 	m_networkWatchdog.start();
@@ -519,6 +518,32 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		// LogMessage("DMR Slot %u, received network data header from %u to %s%u", m_slotNo, m_lc->getSrcId(), m_lc->getFLCO() == FLCO_GROUP ? "TG " : "", m_lc->getDstId());
 		LogMessage("DMR Slot %u, received network data header", m_slotNo);
 	} else if (dataType == DT_VOICE_SYNC) {
+		if (m_state == RS_LISTENING) {
+			m_lc = new CLC(dmrData.getFLCO(), dmrData.getSrcId(), dmrData.getDstId());
+
+			m_timeoutTimer.start();
+
+			// 540ms of idle to give breathing space for lost frames
+			for (unsigned int i = 0U; i < 9U; i++)
+				writeQueue(m_idle);
+
+#if defined(DUMP_DMR)
+			openFile();
+#endif
+			m_frames = 0U;
+
+			m_bits = 1U;
+			m_errs = 0U;
+
+			m_state = RS_RELAYING_NETWORK_AUDIO;
+
+			setShortLC(m_slotNo, m_lc->getDstId(), m_lc->getFLCO());
+
+			m_display->writeDMR(m_slotNo, m_lc->getSrcId(), m_lc->getFLCO() == FLCO_GROUP, m_lc->getDstId());
+
+			LogMessage("DMR Slot %u, received network late entry from %u to %s%u", m_slotNo, m_lc->getSrcId(), m_lc->getFLCO() == FLCO_GROUP ? "TG " : "", m_lc->getDstId());
+		}
+
 		if (m_state == RS_RELAYING_NETWORK_AUDIO) {
 			// Initialise the lost packet data
 			if (m_frames == 0U) {
@@ -527,7 +552,9 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				m_elapsed.start();
 				m_lost = 0U;
 			} else {
-				insertSilence(dmrData.getSeqNo());
+				bool allow = insertSilence(dmrData);
+				if (!allow)
+					return;
 			}
 
 			// Convert the Audio Sync to be from the BS
@@ -554,122 +581,49 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 #if defined(DUMP_DMR)
 			writeFile(data);
 #endif
-		} else {
-			m_state = RS_NETWORK_LATE_ENTRY;
 		}
-	}
-	else if (dataType == DT_VOICE) {
-		CEMB emb;
-		emb.putData(data + 2U);
+	} else if (dataType == DT_VOICE) {
+		if (m_state != RS_RELAYING_NETWORK_AUDIO)
+			return;
 
-		if (m_state == RS_RELAYING_NETWORK_AUDIO) {
-			// Initialise the lost packet data
-			if (m_frames == 0U) {
-				m_seqNo = dmrData.getSeqNo();
-				m_n = dmrData.getN();
-				m_elapsed.start();
-				m_lost = 0U;
-			} else {
-				insertSilence(dmrData.getSeqNo());
-			}
-
-			unsigned char fid = m_lc->getFID();
-			if (fid == FID_ETSI || fid == FID_DMRA)
-				m_errs += m_fec.regenerateDMR(data + 2U);
-			m_bits += 216U;
-
-			// Change the color code in the EMB
-			emb.setColorCode(m_colorCode);
-			emb.getData(data + 2U);
-
-			data[0U] = TAG_DATA;
-			data[1U] = 0x00U;
-
-			writeQueue(data);
-
-			m_packetTimer.start();
-			m_frames++;
-
-			// Save details in case we need to infill data
+		// Initialise the lost packet data
+		if (m_frames == 0U) {
 			m_seqNo = dmrData.getSeqNo();
 			m_n = dmrData.getN();
-
-#if defined(DUMP_DMR)
-			writeFile(data);
-#endif
-		} else if (m_state == RS_NETWORK_LATE_ENTRY) {
-			// If we haven't received an LC yet, then be strict on the color code
-			unsigned char colorCode = emb.getColorCode();
-			if (colorCode != m_colorCode)
+			m_elapsed.start();
+			m_lost = 0U;
+		} else {
+			bool allow = insertSilence(dmrData);
+			if (!allow)
 				return;
-
-			m_lc = m_embeddedLC.addData(data + 2U, emb.getLCSS());
-			if (m_lc != NULL) {
-				// Create a dummy start frame to replace the received frame
-				unsigned char start[DMR_FRAME_LENGTH_BYTES + 2U];
-
-				CDMRSync sync;
-				sync.addSync(start + 2U, DST_BS_DATA);
-
-				CFullLC fullLC;
-				fullLC.encode(*m_lc, start + 2U, DT_VOICE_LC_HEADER);
-
-				CSlotType slotType;
-				slotType.setColorCode(m_colorCode);
-				slotType.setDataType(DT_VOICE_LC_HEADER);
-				slotType.getData(start + 2U);
-
-				m_timeoutTimer.start();
-
-				// 540ms of idle to give breathing space for lost frames
-				for (unsigned int i = 0U; i < 9U; i++)
-					writeQueue(m_idle);
-
-				for (unsigned int i = 0U; i < 3U; i++)
-					writeQueue(start);
-
-#if defined(DUMP_DMR)
-				openFile();
-				writeFile(start);
-#endif
-
-				// Change the color code in the EMB
-				emb.setColorCode(m_colorCode);
-				emb.getData(data + 2U);
-
-				// Initialise the lost packet data
-				m_seqNo = dmrData.getSeqNo();
-				m_n = dmrData.getN();
-				m_elapsed.start();
-				m_lost = 0U;
-
-				// Send the original audio frame out
-				unsigned char fid = m_lc->getFID();
-				if (fid == FID_ETSI || fid == FID_DMRA)
-					m_errs = m_fec.regenerateDMR(data + 2U);
-				m_bits = 216U;
-
-				data[0U] = TAG_DATA;
-				data[1U] = 0x00U;
-
-				writeQueue(data);
-
-				m_packetTimer.start();
-				m_frames = 1U;
-
-#if defined(DUMP_DMR)
-				writeFile(data);
-#endif
-
-				m_state = RS_RELAYING_NETWORK_AUDIO;
-
-				setShortLC(m_slotNo, m_lc->getDstId(), m_lc->getFLCO());
-
-				m_display->writeDMR(m_slotNo, m_lc->getSrcId(), m_lc->getFLCO() == FLCO_GROUP, m_lc->getDstId());
-
-				LogMessage("DMR Slot %u, received network late entry from %u to %s%u", m_slotNo, m_lc->getSrcId(), m_lc->getFLCO() == FLCO_GROUP ? "TG " : "", m_lc->getDstId());
-			}
 		}
+
+		unsigned char fid = m_lc->getFID();
+		if (fid == FID_ETSI || fid == FID_DMRA)
+			m_errs += m_fec.regenerateDMR(data + 2U);
+		m_bits += 216U;
+
+		// Change the color code in the EMB
+		CEMB emb;
+		emb.putData(data + 2U);
+		emb.setColorCode(m_colorCode);
+		emb.getData(data + 2U);
+
+		data[0U] = TAG_DATA;
+		data[1U] = 0x00U;
+
+		writeQueue(data);
+
+		m_packetTimer.start();
+		m_frames++;
+
+		// Save details in case we need to infill data
+		m_seqNo = dmrData.getSeqNo();
+		m_n = dmrData.getN();
+
+#if defined(DUMP_DMR)
+		writeFile(data);
+#endif
 	} else {
 		// Change the Color Code of the Slot Type
 		CSlotType slotType;
@@ -696,7 +650,7 @@ void CDMRSlot::clock(unsigned int ms)
 {
 	m_timeoutTimer.clock(ms);
 
-	if (m_state == RS_RELAYING_NETWORK_AUDIO || m_state == RS_RELAYING_NETWORK_DATA || m_state == RS_NETWORK_LATE_ENTRY) {
+	if (m_state == RS_RELAYING_NETWORK_AUDIO || m_state == RS_RELAYING_NETWORK_DATA) {
 		m_networkWatchdog.clock(ms);
 
 		if (m_networkWatchdog.hasExpired()) {
@@ -704,19 +658,16 @@ void CDMRSlot::clock(unsigned int ms)
 				// We've received the voice header haven't we?
 				m_frames += 1U;
 				LogMessage("DMR Slot %u, network watchdog has expired, %u%% packet loss, BER: %u%%", m_slotNo, (m_lost * 100U) / m_frames, (m_errs * 100U) / m_bits);
-				writeTerminator(false);
-				writeEndOfTransmission();
-#if defined(DUMP_DMR)
-				closeFile();
-#endif
-			} else if (m_state == RS_RELAYING_NETWORK_DATA) {
-				LogMessage("DMR Slot %u, network watchdog has expired", m_slotNo);
 				writeEndOfTransmission();
 #if defined(DUMP_DMR)
 				closeFile();
 #endif
 			} else {
-				m_state = RS_LISTENING;
+				LogMessage("DMR Slot %u, network watchdog has expired", m_slotNo);
+				writeEndOfTransmission();
+#if defined(DUMP_DMR)
+				closeFile();
+#endif
 			}
 		}
 	}
@@ -730,8 +681,9 @@ void CDMRSlot::clock(unsigned int ms)
 			if (frames > m_frames) {
 				unsigned int count = frames - m_frames;
 				if (count > 3U) {
-					LogMessage("DMR Slot %u, lost audio for 200ms filling in", m_slotNo);
-					insertSilence(m_seqNo + count - 1U);
+					count -= 1U;
+					LogMessage("DMR Slot %u, lost audio for 300ms filling in", m_slotNo);
+					insertSilence(m_seqNo + count);
 				}
 			}
 
@@ -750,41 +702,6 @@ void CDMRSlot::writeQueue(const unsigned char *data)
 		m_queue.addData(m_idle, len);
 	else
 		m_queue.addData(data, len);
-}
-
-// XXX Once the PF flag is fixed in the LC, always use this for the terminator
-void CDMRSlot::writeTerminator(bool toNetwork)
-{
-	unsigned char data[DMR_FRAME_LENGTH_BYTES + 2U];
-
-	// Generate the LC
-	CFullLC fullLC;
-	fullLC.encode(*m_lc, data + 2U, DT_TERMINATOR_WITH_LC);
-
-	// Generate the Slot Type
-	CSlotType slotType;
-	slotType.setColorCode(m_colorCode);
-	slotType.setDataType(DT_TERMINATOR_WITH_LC);
-	slotType.getData(data + 2U);
-
-	// Set the Data Sync to be from the BS
-	CDMRSync sync;
-	sync.addSync(data + 2U, DST_BS_DATA);
-
-	data[0U] = TAG_EOT;
-	data[1U] = 0x00U;
-
-	// 480ms of terminator to space things out
-	for (unsigned int i = 0U; i < 8U; i++)
-		writeQueue(data);
-
-	if (toNetwork)
-		writeNetwork(data, DT_TERMINATOR_WITH_LC);
-
-#if defined(DUMP_DMR)
-	writeFile(data);
-	closeFile();
-#endif
 }
 
 void CDMRSlot::writeNetwork(const unsigned char* data, unsigned char dataType)
@@ -944,6 +861,29 @@ void CDMRSlot::closeFile()
 		::fclose(m_fp);
 		m_fp = NULL;
 	}
+}
+
+bool CDMRSlot::insertSilence(const CDMRData& dmrData)
+{
+	unsigned int oldSeqNo = m_seqNo;
+	unsigned int newSeqNo = dmrData.getSeqNo();
+
+	unsigned int count;
+	if (newSeqNo > oldSeqNo)
+		count = newSeqNo - oldSeqNo;
+	else
+		count = (256U + newSeqNo) - oldSeqNo;
+
+	if (count > 10U) {
+		LogMessage("DMR Slot %u, rejecting frame as being too old", m_slotNo);
+		return false;
+	}
+
+	insertSilence(dmrData.getSeqNo());
+
+	// Store frame for last frame here if needed
+
+	return true;
 }
 
 void CDMRSlot::insertSilence(unsigned char newSeqNo)
