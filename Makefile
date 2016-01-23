@@ -1,7 +1,7 @@
 CC      = g++
-CFLAGS  = -O2 -Wall -std=c++11
+CFLAGS  = -g -O2 -Wall -std=c++11
 LIBS    =
-LDFLAGS = 
+LDFLAGS = -g
 
 all:		MMDVMHost
 
