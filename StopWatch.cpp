@@ -62,24 +62,20 @@ CStopWatch::~CStopWatch()
 
 unsigned long CStopWatch::start()
 {
-	::clock_gettime(CLOCK_MONOTONIC, &m_start);
+	::gettimeofday(&m_start, NULL);
 
-	return m_start.tv_nsec;
+	return m_start.tv_usec;
 }
 
 unsigned int CStopWatch::elapsed()
 {
-	timespec now;
-	::clock_gettime(CLOCK_MONOTONIC, &now);
+	struct timeval now;
+	::gettimeofday(&now, NULL);
 
-	if (m_start.tv_sec == now.tv_sec) {
-		return (now.tv_nsec - m_start.tv_nsec) / 1000000U;
-	} else {
-		long temp = -m_start.tv_nsec / 1000000L;
-		temp += (now.tv_sec - m_start.tv_sec) * 1000L;
-		temp += now.tv_nsec / 1000000L;
-		return temp;
-	}
+	unsigned long long a = m_start.tv_sec * 1000ULL + m_start.tv_usec / 1000ULL;
+	unsigned long long b = now.tv_sec * 1000ULL + now.tv_usec / 1000ULL;
+
+	return (unsigned int)(b - a);
 }
 
 #endif

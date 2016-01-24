@@ -22,7 +22,7 @@
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #else
-#include <ctime>
+#include <sys/time.h>
 #endif
 
 class CStopWatch
@@ -36,10 +36,10 @@ public:
 
 private:
 #if defined(_WIN32) || defined(_WIN64)
-	LARGE_INTEGER m_frequency;
-	LARGE_INTEGER m_start;
+	LARGE_INTEGER  m_frequency;
+	LARGE_INTEGER  m_start;
 #else
-	timespec      m_start;
+	struct timeval m_start;
 #endif
 };
 
