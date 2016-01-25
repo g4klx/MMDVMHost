@@ -436,9 +436,6 @@ bool CMMDVMHost::createModem()
 
 bool CMMDVMHost::createDStarNetwork()
 {
-	if (!m_conf.getDStarNetworkEnabled())
-		return false;
-
 	std::string gatewayAddress = m_conf.getDStarGatewayAddress();
 	unsigned int gatewayPort = m_conf.getDStarGatewayPort();
 	unsigned int localPort = m_conf.getDStarLocalPort();
@@ -449,7 +446,7 @@ bool CMMDVMHost::createDStarNetwork()
 	LogInfo("    Gateway Port: %u", gatewayPort);
 	LogInfo("    Local Port: %u", localPort);
 
-	m_dstarNetwork = new CDStarNetwork(gatewayAddress, gatewayPort, localPort, debug);
+	m_dstarNetwork = new CDStarNetwork(gatewayAddress, gatewayPort, localPort, VERSION, debug);
 
 	bool ret = m_dstarNetwork->open();
 	if (!ret) {
@@ -465,9 +462,6 @@ bool CMMDVMHost::createDStarNetwork()
 
 bool CMMDVMHost::createDMRNetwork()
 {
-	if (!m_conf.getDMRNetworkEnabled())
-		return false;
-
 	std::string address  = m_conf.getDMRNetworkAddress();
 	unsigned int port    = m_conf.getDMRNetworkPort();
 	unsigned int id      = m_conf.getDMRId();

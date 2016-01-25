@@ -46,7 +46,7 @@ DMRSync.o:	DMRSync.cpp DMRSync.h DMRDefines.h
 DStarEcho.o:	DStarEcho.cpp DStarEcho.h RingBuffer.h Timer.h
 		$(CC) $(CFLAGS) -c DStarEcho.cpp
 
-DStarNetwork.o:	DStarNetwork.cpp DStarNetwork.h Log.h UDPSocket.h RingBuffer.h Utils.h StopWatch.h DStarDefines.h Defines.h
+DStarNetwork.o:	DStarNetwork.cpp DStarNetwork.h Log.h UDPSocket.h RingBuffer.h Utils.h StopWatch.h DStarDefines.h Defines.h Timer.h
 		$(CC) $(CFLAGS) -c DStarNetwork.cpp
 
 EMB.o:		EMB.cpp EMB.h

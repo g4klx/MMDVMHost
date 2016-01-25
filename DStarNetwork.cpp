@@ -25,24 +25,29 @@
 
 #include <cstdio>
 #include <cassert>
+#include <cstring>
 
 const unsigned int BUFFER_LENGTH = 100U;
 
-CDStarNetwork::CDStarNetwork(const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int localPort, bool debug) :
+CDStarNetwork::CDStarNetwork(const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int localPort, const std::string& version, bool debug) :
 m_socket(localPort),
 m_address(),
 m_port(gatewayPort),
+m_version(version),
 m_debug(debug),
 m_enabled(false),
 m_outId(0U),
 m_outSeq(0U),
 m_inId(0U),
-m_buffer(1000U)
+m_buffer(1000U),
+m_pollTimer(1000U, 60U)
 {
 	m_address = CUDPSocket::lookup(gatewayAddress);
 
 	CStopWatch stopWatch;
 	::srand(stopWatch.start());
+
+	m_pollTimer.start();
 }
 
 CDStarNetwork::~CDStarNetwork()
@@ -134,8 +139,10 @@ bool CDStarNetwork::writeData(const unsigned char* data, unsigned int length, un
 	return m_socket.write(buffer, length + 9U, m_address, m_port);
 }
 
-bool CDStarNetwork::writePoll(const std::string& text)
+bool CDStarNetwork::writePoll(const char* text)
 {
+	assert(text != NULL);
+
 	unsigned char buffer[40U];
 
 	buffer[0] = 'D';
@@ -145,12 +152,10 @@ bool CDStarNetwork::writePoll(const std::string& text)
 
 	buffer[4] = 0x0A;				// Poll with text
 
-	unsigned int length = text.length();
+	unsigned int length = ::strlen(text);
 
-	for (unsigned int i = 0U; i < length; i++)
-		buffer[5U + i] = text.at(i);
-
-	buffer[5U + length] = 0x00;
+	// Include the nul at the end also
+	::memcpy(buffer + 5U, text, length + 1U);
 
 	if (m_debug)
 		CUtils::dump(1U, "D-Star Transmitted", buffer, 6U + length);
@@ -160,6 +165,18 @@ bool CDStarNetwork::writePoll(const std::string& text)
 
 void CDStarNetwork::clock(unsigned int ms)
 {
+	m_pollTimer.clock(ms);
+	if (m_pollTimer.hasExpired()) {
+		char text[60U];
+#if defined(_WIN32) || defined(_WIN64)
+		::sprintf(text, "win_mmdvm-%s", m_version.c_str());
+#else
+		::sprintf(text, "linux_mmdvm-%s", m_version.c_str());
+#endif
+		writePoll(text);
+		m_pollTimer.start();
+	}
+
 	unsigned char buffer[BUFFER_LENGTH];
 
 	in_addr address;

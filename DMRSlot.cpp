@@ -171,7 +171,8 @@ void CDMRSlot::writeModem(unsigned char *data)
 			data[0U] = TAG_EOT;
 			data[1U] = 0x00U;
 
-			writeNetwork(data, DT_TERMINATOR_WITH_LC);
+			for (unsigned int i = 0U; i < 2U; i++)
+				writeNetwork(data, DT_TERMINATOR_WITH_LC);
 
 			// 480ms of terminator to space things out
 			for (unsigned int i = 0U; i < 8U; i++)
@@ -442,10 +443,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		m_bits = 1U;
 		m_errs = 0U;
-
-		// 120ms of idle to give breathing space for lost frames
-		for (unsigned int i = 0U; i < 2U; i++)
-			writeQueue(m_idle);
 
 		for (unsigned int i = 0U; i < 3U; i++)
 			writeQueue(data);

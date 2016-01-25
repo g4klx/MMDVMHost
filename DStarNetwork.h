@@ -22,13 +22,14 @@
 #include "DStarDefines.h"
 #include "RingBuffer.h"
 #include "UDPSocket.h"
+#include "Timer.h"
 
 #include <cstdint>
 #include <string>
 
 class CDStarNetwork {
 public:
-	CDStarNetwork(const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int localPort, bool debug);
+	CDStarNetwork(const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int localPort, const std::string& version, bool debug);
 	~CDStarNetwork();
 
 	bool open();
@@ -37,7 +38,6 @@ public:
 
 	bool writeHeader(const unsigned char* header, unsigned int length, bool busy);
 	bool writeData(const unsigned char* data, unsigned int length, unsigned int errors, bool end, bool busy);
-	bool writePoll(const std::string& text);
 
 	unsigned int read(unsigned char* data, unsigned int length);
 
@@ -51,12 +51,16 @@ private:
 	CUDPSocket   m_socket;
 	in_addr      m_address;
 	unsigned int m_port;
+	std::string  m_version;
 	bool         m_debug;
 	bool         m_enabled;
 	uint16_t     m_outId;
 	uint8_t      m_outSeq;
 	uint16_t     m_inId;
 	CRingBuffer<unsigned char> m_buffer;
+	CTimer       m_pollTimer;
+
+	bool writePoll(const char* text);
 };
 
 #endif
