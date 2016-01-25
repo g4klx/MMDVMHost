@@ -59,7 +59,7 @@ bool CDStarNetwork::open()
 	return m_socket.open();
 }
 
-bool CDStarNetwork::writeHeader(const unsigned char* header, unsigned int length)
+bool CDStarNetwork::writeHeader(const unsigned char* header, unsigned int length, bool busy)
 {
 	assert(header != NULL);
 
@@ -70,7 +70,7 @@ bool CDStarNetwork::writeHeader(const unsigned char* header, unsigned int length
 	buffer[2] = 'R';
 	buffer[3] = 'P';
 
-	buffer[4] = 0x20U;
+	buffer[4] = busy ? 0x22U : 0x20U;
 
 	// Create a random id for this transmission
 	m_outId = (::rand() % 65535U) + 1U;
@@ -96,7 +96,7 @@ bool CDStarNetwork::writeHeader(const unsigned char* header, unsigned int length
 	return true;
 }
 
-bool CDStarNetwork::writeData(const unsigned char* data, unsigned int length, unsigned int errors, bool end)
+bool CDStarNetwork::writeData(const unsigned char* data, unsigned int length, unsigned int errors, bool end, bool busy)
 {
 	assert(data != NULL);
 
@@ -107,76 +107,7 @@ bool CDStarNetwork::writeData(const unsigned char* data, unsigned int length, un
 	buffer[2] = 'R';
 	buffer[3] = 'P';
 
-	buffer[4] = 0x21U;
-
-	buffer[5] = m_outId / 256U;	// Unique session id
-	buffer[6] = m_outId % 256U;
-
-	// If this is a data sync, reset the sequence to zero
-	if (data[9] == 0x55 && data[10] == 0x2D && data[11] == 0x16)
-		m_outSeq = 0U;
-
-	buffer[7] = m_outSeq;
-	if (end)
-		buffer[7] |= 0x40U;			// End of data marker
-
-	buffer[8] = errors;
-
-	m_outSeq++;
-	if (m_outSeq > 0x14U)
-		m_outSeq = 0U;
-
-	::memcpy(buffer + 9U, data, length);
-
-	if (m_debug)
-		CUtils::dump(1U, "D-Star Transmitted", buffer, length + 9U);
-
-	return m_socket.write(buffer, length + 9U, m_address, m_port);
-}
-
-bool CDStarNetwork::writeBusyHeader(const unsigned char* header, unsigned int length)
-{
-	assert(header != NULL);
-
-	unsigned char buffer[50U];
-
-	buffer[0] = 'D';
-	buffer[1] = 'S';
-	buffer[2] = 'R';
-	buffer[3] = 'P';
-
-	buffer[4] = 0x22U;
-
-	// Create a random id for this header
-	m_outId = (::rand() % 65535U) + 1U;
-
-	buffer[5] = m_outId / 256U;		// Unique session id
-	buffer[6] = m_outId % 256U;
-
-	buffer[7] = 0U;
-
-	::memcpy(buffer + 8U, header, length);
-
-	m_outSeq = 0U;
-
-	if (m_debug)
-		CUtils::dump(1U, "D-Star Transmitted", buffer, 49U);
-
-	return m_socket.write(buffer, 49U, m_address, m_port);
-}
-
-bool CDStarNetwork::writeBusyData(const unsigned char* data, unsigned int length, unsigned int errors, bool end)
-{
-	assert(data != NULL);
-
-	unsigned char buffer[30U];
-
-	buffer[0] = 'D';
-	buffer[1] = 'S';
-	buffer[2] = 'R';
-	buffer[3] = 'P';
-
-	buffer[4] = 0x23U;
+	buffer[4] = busy ? 0x23U :  0x21U;
 
 	buffer[5] = m_outId / 256U;	// Unique session id
 	buffer[6] = m_outId % 256U;

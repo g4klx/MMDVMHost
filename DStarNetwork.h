@@ -35,10 +35,8 @@ public:
 
 	void enable(bool enabled);
 
-	bool writeHeader(const unsigned char* header, unsigned int length);
-	bool writeBusyHeader(const unsigned char* header, unsigned int length);
-	bool writeData(const unsigned char* data, unsigned int length, unsigned int errors, bool end);
-	bool writeBusyData(const unsigned char* data, unsigned int length, unsigned int errors, bool end);
+	bool writeHeader(const unsigned char* header, unsigned int length, bool busy);
+	bool writeData(const unsigned char* data, unsigned int length, unsigned int errors, bool end, bool busy);
 	bool writePoll(const std::string& text);
 
 	unsigned int read(unsigned char* data, unsigned int length);
