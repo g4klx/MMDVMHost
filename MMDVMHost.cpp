@@ -459,6 +459,8 @@ bool CMMDVMHost::createDMRNetwork()
 		return false;
 	}
 
+	m_dmrNetwork->enable(true);
+
 	return true;
 }
 

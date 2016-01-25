@@ -38,6 +38,7 @@ m_debug(debug),
 m_software(software),
 m_version(version),
 m_socket(),
+m_enabled(false),
 m_status(DISCONNECTED),
 m_retryTimer(1000U, 10U),
 m_timeoutTimer(1000U, 600U),
@@ -125,6 +126,11 @@ bool CHomebrewDMRIPSC::open()
 	m_retryTimer.start();
 
 	return true;
+}
+
+void CHomebrewDMRIPSC::enable(bool enabled)
+{
+	m_enabled = enabled;
 }
 
 bool CHomebrewDMRIPSC::read(CDMRData& data)
@@ -259,9 +265,11 @@ void CHomebrewDMRIPSC::clock(unsigned int ms)
 
 	if (length > 0 && m_address.s_addr == address.s_addr && m_port == port) {
 		if (::memcmp(m_buffer, "DMRD", 4U) == 0) {
-			unsigned char len = length;
-			m_rxData.addData(&len, 1U);
-			m_rxData.addData(m_buffer, len);
+			if (m_enabled) {
+				unsigned char len = length;
+				m_rxData.addData(&len, 1U);
+				m_rxData.addData(m_buffer, len);
+			}
 		} else if (::memcmp(m_buffer, "MSTNAK",  6U) == 0) {
 			if (m_status == RUNNING) {
 				LogWarning("The master is restarting, logging back in");

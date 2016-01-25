@@ -37,6 +37,8 @@ public:
 
 	bool open();
 
+	void enable(bool enabled);
+
 	bool read(CDMRData& data);
 
 	bool write(const CDMRData& data);
@@ -56,6 +58,7 @@ private:
 	const char*  m_software;
 	const char*  m_version;
 	CUDPSocket   m_socket;
+	bool         m_enabled;
 
 	enum STATUS {
 		DISCONNECTED,
