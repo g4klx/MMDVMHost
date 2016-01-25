@@ -24,7 +24,7 @@ Conf.o:	Conf.cpp Conf.h Log.h
 CRC.o:	CRC.cpp CRC.h Utils.h
 		$(CC) $(CFLAGS) -c CRC.cpp
 
-CSBK.o:	CSBK.cpp CSBK.h Utils.h DMRDefines.h BPTC19696.h CRC.h Log.h
+CSBK.o:	CSBK.cpp CSBK.h Utils.h DMRDefines.h BPTC19696.h CRC.h
 		$(CC) $(CFLAGS) -c CSBK.cpp
 
 Display.o:	Display.cpp Display.h

@@ -18,10 +18,8 @@
 
 #include "CSBK.h"
 #include "BPTC19696.h"
-#include "CRC.h"
-#include "Log.h"		// XXXX
-
 #include "Utils.h"
+#include "CRC.h"
 
 #include <cstdio>
 #include <cassert>
@@ -31,6 +29,7 @@ m_CSBKO(CSBKO_NONE),
 m_FID(0x00U),
 m_bsId(0U),
 m_srcId(0U),
+m_dstId(0U),
 m_valid(false)
 {
 	assert(bytes != NULL);
@@ -45,12 +44,40 @@ m_valid(false)
 	m_CSBKO = CSBKO(data[0U] & 0x3FU);
 	m_FID   = data[1U];
 
-	if (m_CSBKO == CSBKO_BSDWNACT) {
+	switch (m_CSBKO) {
+	case CSBKO_BSDWNACT:
 		m_bsId  = data[4U] << 16 | data[5U] << 8 | data[6U];
 		m_srcId = data[7U] << 16 | data[8U] << 8 | data[9U]; 
-		CUtils::dump("Download activate CSBK", data, 12U);
-	} else {
+		CUtils::dump("Download Activate CSBK", data, 12U);
+		break;
+
+	case CSBKO_UUVREQ:
+		m_dstId = data[4U] << 16 | data[5U] << 8 | data[6U];
+		m_srcId = data[7U] << 16 | data[8U] << 8 | data[9U];
+		CUtils::dump("Unit to Unit Service Request CSBK", data, 12U);
+		break;
+
+	case CSBKO_UUANSRSP:
+		m_dstId = data[4U] << 16 | data[5U] << 8 | data[6U];
+		m_srcId = data[7U] << 16 | data[8U] << 8 | data[9U];
+		CUtils::dump("Unit to Unit Service Answer Response CSBK", data, 12U);
+		break;
+
+	case CSBKO_PRECCSBK:
+		m_dstId = data[4U] << 16 | data[5U] << 8 | data[6U];
+		m_srcId = data[7U] << 16 | data[8U] << 8 | data[9U];
+		CUtils::dump("Preamble CSBK", data, 12U);
+		break;
+
+	case CSBKO_NACKRSP:
+		m_srcId = data[4U] << 16 | data[5U] << 8 | data[6U];
+		m_dstId = data[7U] << 16 | data[8U] << 8 | data[9U];
+		CUtils::dump("Negative Acknowledge Response CSBK", data, 12U);
+		break;
+
+	default:
 		CUtils::dump("Unhandled CSBK type", data, 12U);
+		break;
 	}
 }
 
@@ -81,4 +108,9 @@ unsigned int CCSBK::getBSId() const
 unsigned int CCSBK::getSrcId() const
 {
 	return m_srcId;
+}
+
+unsigned int CCSBK::getDstId() const
+{
+	return m_dstId;
 }

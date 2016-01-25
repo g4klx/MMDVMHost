@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -45,13 +45,16 @@ public:
 
 	// For BS Dwn Act
 	unsigned int  getBSId() const;
+
 	unsigned int  getSrcId() const;
+	unsigned int  getDstId() const;
 
 private:
 	CSBKO         m_CSBKO;
 	unsigned char m_FID;
 	unsigned int  m_bsId;
 	unsigned int  m_srcId;
+	unsigned int  m_dstId;
 	bool          m_valid;
 };
 

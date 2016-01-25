@@ -30,6 +30,7 @@
 #include "Defines.h"
 #include "Timer.h"
 #include "Modem.h"
+#include "EMB.h"
 #include "LC.h"
 
 class CDMRSlot {
@@ -64,6 +65,8 @@ private:
 	CAMBEFEC                   m_fec;
 	unsigned int               m_bits;
 	unsigned int               m_errs;
+	unsigned char*             m_lastFrame;
+	CEMB                       m_lastEMB;
 	FILE*                      m_fp;
 
 	static unsigned int        m_colorCode;
@@ -72,7 +75,6 @@ private:
 	static IDisplay*           m_display;
 
 	static unsigned char*      m_idle;
-	static unsigned char*      m_silence;
 
 	static FLCO                m_flco1;
 	static unsigned char       m_id1;
@@ -81,6 +83,7 @@ private:
 
 	void writeQueue(const unsigned char* data);
 	void writeNetwork(const unsigned char* data, unsigned char dataType);
+	void writeNetwork(const unsigned char* data, unsigned char dataType, FLCO flco, unsigned int srcId, unsigned int dstId);
 
 	void writeEndOfTransmission();
 
@@ -88,8 +91,8 @@ private:
 	bool writeFile(const unsigned char* data);
 	void closeFile();
 
-	bool insertSilence(const CDMRData& dmrData);
-	void insertSilence(unsigned char seqNo);
+	bool insertSilence(const unsigned char* data, unsigned char seqNo);
+	void insertSilence(unsigned int count);
 
 	static void setShortLC(unsigned int slotNo, unsigned int id, FLCO flco = FLCO_GROUP);
 };
