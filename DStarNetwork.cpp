@@ -51,6 +51,8 @@ CDStarNetwork::~CDStarNetwork()
 
 bool CDStarNetwork::open()
 {
+	LogMessage("Opening D-Star network connection");
+
 	if (m_address.s_addr == INADDR_NONE)
 		return false;
 
@@ -83,7 +85,7 @@ bool CDStarNetwork::writeHeader(const unsigned char* header, unsigned int length
 	m_outSeq = 0U;
 
 	if (m_debug)
-		CUtils::dump(1U, "Sending D-Star Header", buffer, 49U);
+		CUtils::dump(1U, "D-Star Transmitted", buffer, 49U);
 
 	for (unsigned int i = 0U; i < 2U; i++) {
 		bool ret = m_socket.write(buffer, 49U, m_address, m_port);
@@ -127,7 +129,7 @@ bool CDStarNetwork::writeData(const unsigned char* data, unsigned int length, un
 	::memcpy(buffer + 9U, data, length);
 
 	if (m_debug)
-		CUtils::dump(1U, "Sending D-Star Data", buffer, length + 9U);
+		CUtils::dump(1U, "D-Star Transmitted", buffer, length + 9U);
 
 	return m_socket.write(buffer, length + 9U, m_address, m_port);
 }
@@ -158,7 +160,7 @@ bool CDStarNetwork::writeBusyHeader(const unsigned char* header, unsigned int le
 	m_outSeq = 0U;
 
 	if (m_debug)
-		CUtils::dump(1U, "Sending D-Star Busy Header", buffer, 49U);
+		CUtils::dump(1U, "D-Star Transmitted", buffer, 49U);
 
 	return m_socket.write(buffer, 49U, m_address, m_port);
 }
@@ -196,7 +198,7 @@ bool CDStarNetwork::writeBusyData(const unsigned char* data, unsigned int length
 	::memcpy(buffer + 9U, data, length);
 
 	if (m_debug)
-		CUtils::dump(1U, "Sending D-Star Busy Data", buffer, length + 9U);
+		CUtils::dump(1U, "D-Star Transmitted", buffer, length + 9U);
 
 	return m_socket.write(buffer, length + 9U, m_address, m_port);
 }
@@ -220,7 +222,7 @@ bool CDStarNetwork::writePoll(const std::string& text)
 	buffer[5U + length] = 0x00;
 
 	if (m_debug)
-		CUtils::dump(1U, "Sending D-Star Poll", buffer, 6U + length);
+		CUtils::dump(1U, "D-Star Transmitted", buffer, 6U + length);
 
 	return m_socket.write(buffer, 6U + length, m_address, m_port);
 }
@@ -235,10 +237,12 @@ void CDStarNetwork::clock(unsigned int ms)
 	if (length <= 0)
 		return;
 
+	if (m_debug)
+		CUtils::dump(1U, "D-Star Received", buffer, length);
+
 	// Check if the data is for us
 	if (m_address.s_addr != address.s_addr || m_port != port) {
 		LogMessage("D-Star packet received from an invalid source, %08X != %08X and/or %u != %u", m_address.s_addr, address.s_addr, m_port, port);
-		CUtils::dump("D-Star Data", buffer, length);
 		return;
 	}
 
@@ -332,6 +336,8 @@ void CDStarNetwork::reset()
 void CDStarNetwork::close()
 {
 	m_socket.close();
+
+	LogMessage("Closing D-Star network connection");
 }
 
 void CDStarNetwork::enable(bool enabled)
