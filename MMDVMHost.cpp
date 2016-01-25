@@ -73,6 +73,7 @@ int main(int argc, char** argv)
 CMMDVMHost::CMMDVMHost(const std::string& confFile) :
 m_conf(confFile),
 m_modem(NULL),
+m_dstarNetwork(NULL),
 m_dmrNetwork(NULL),
 m_display(NULL),
 m_dstarEnabled(false),
@@ -115,6 +116,12 @@ int CMMDVMHost::run()
 		return 1;
 
 	createDisplay();
+
+	if (m_dstarEnabled && m_conf.getDStarNetworkEnabled()) {
+		ret = createDStarNetwork();
+		if (!ret)
+			return 1;
+	}
 
 	if (m_dmrEnabled && m_conf.getDMRNetworkEnabled()) {
 		ret = createDMRNetwork();
@@ -375,6 +382,11 @@ int CMMDVMHost::run()
 	m_display->close();
 	delete m_display;
 
+	if (m_dstarNetwork != NULL) {
+		m_dstarNetwork->close();
+		delete m_dstarNetwork;
+	}
+
 	if (m_dmrNetwork != NULL) {
 		m_dmrNetwork->close();
 		delete m_dmrNetwork;
@@ -418,6 +430,35 @@ bool CMMDVMHost::createModem()
 		m_modem = NULL;
 		return false;
 	}
+
+	return true;
+}
+
+bool CMMDVMHost::createDStarNetwork()
+{
+	if (!m_conf.getDStarNetworkEnabled())
+		return false;
+
+	std::string gatewayAddress = m_conf.getDStarGatewayAddress();
+	unsigned int gatewayPort = m_conf.getDStarGatewayPort();
+	unsigned int localPort = m_conf.getDStarLocalPort();
+	bool debug = m_conf.getDStarNetworkDebug();
+
+	LogInfo("D-Star Network Parameters");
+	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
+	LogInfo("    Gateway Port: %u", gatewayPort);
+	LogInfo("    Local Port: %u", localPort);
+
+	m_dstarNetwork = new CDStarNetwork(gatewayAddress, gatewayPort, localPort, debug);
+
+	bool ret = m_dstarNetwork->open();
+	if (!ret) {
+		delete m_dstarNetwork;
+		m_dstarNetwork = NULL;
+		return false;
+	}
+
+	m_dstarNetwork->enable(true);
 
 	return true;
 }
