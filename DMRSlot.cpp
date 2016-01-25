@@ -234,15 +234,15 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 					writeNetwork(data, DT_CSBK, FLCO_USER_USER, csbk.getSrcId(), csbk.getDstId());
 					writeQueue(data);
+
+					LogMessage("DMR Slot %u, received RF CSBK from %u to %u", m_slotNo, csbk.getSrcId(), csbk.getDstId());
 				}
 				break;
 
 			default:
-				LogWarning("DMR Slot %u, unhandled CSBK type - 0x%02X", m_slotNo, csbko);
+				LogWarning("DMR Slot %u, unhandled RF CSBK type - 0x%02X", m_slotNo, csbko);
 				break;
 			}
-
-			LogMessage("DMR Slot %u, received CSBK", m_slotNo);
 		} else {
 			// Regenerate the Slot Type
 			slotType.getData(data + 2U);

@@ -37,6 +37,7 @@
 class CUDPSocket {
 public:
 	CUDPSocket(const std::string& address, unsigned int port);
+	CUDPSocket(unsigned int port);
 	CUDPSocket();
 	~CUDPSocket();
 
