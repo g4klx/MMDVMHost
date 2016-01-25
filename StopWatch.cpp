@@ -72,8 +72,9 @@ unsigned int CStopWatch::elapsed()
 	struct timeval now;
 	::gettimeofday(&now, NULL);
 
-	unsigned long long a = m_start.tv_sec * 1000ULL + m_start.tv_usec / 1000ULL;
-	unsigned long long b = now.tv_sec * 1000ULL + now.tv_usec / 1000ULL;
+	unsigned int elapsed = (now.tv_sec - m_start.tv_sec) * 1000U;
+	elapsed += now.tv_usec / 1000U;
+	elapsed -= m_start.tv_usec / 1000U;
 
 	return (unsigned int)(b - a);
 }
