@@ -51,6 +51,8 @@ unsigned int CStopWatch::elapsed()
 
 #else
 
+#include <cstdio>
+
 CStopWatch::CStopWatch() :
 m_start()
 {
