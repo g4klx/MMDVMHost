@@ -162,20 +162,18 @@ int CMMDVMHost::run()
 
 		len = m_modem->readDStarData(data);
 		if (dstar != NULL && len > 0U) {
-			if (mode == MODE_IDLE && (data[0U] == TAG_HEADER || data[0U] == TAG_DATA)) {
+			if (mode == MODE_IDLE) {
 				LogMessage("Mode set to D-Star");
 				mode = MODE_DSTAR;
 				m_display->setDStar();
 				m_modem->setMode(MODE_DSTAR);
-				modeTimer.start();
+				if (m_dmrNetwork != NULL)
+					m_dmrNetwork->enable(false);
 			}
-			if (mode != MODE_DSTAR) {
-				LogWarning("D-Star data received when in mode %u", mode);
-			} else {
-				if (data[0U] == TAG_HEADER || data[0U] == TAG_DATA || data[0U] == TAG_EOT) {
-					dstar->writeData(data, len);
-					modeTimer.start();
-				}
+
+			if (mode == MODE_DSTAR) {
+				dstar->writeData(data, len);
+				modeTimer.start();
 			}
 		}
 
@@ -195,8 +193,6 @@ int CMMDVMHost::run()
 				dmr->writeModemSlot1(data);
 				dmrBeaconTimer.stop();
 				modeTimer.start();
-			} else {
-				LogWarning("DMR data received when in mode %u", mode);
 			}
 		}
 
@@ -216,28 +212,23 @@ int CMMDVMHost::run()
 				dmr->writeModemSlot2(data);
 				dmrBeaconTimer.stop();
 				modeTimer.start();
-			} else {
-				LogWarning("DMR data received when in mode %u", mode);
 			}
 		}
 
 		len = m_modem->readYSFData(data);
 		if (ysf != NULL && len > 0U) {
-			if (mode == MODE_IDLE && data[0U] == TAG_DATA) {
+			if (mode == MODE_IDLE) {
 				LogMessage("Mode set to System Fusion");
 				mode = MODE_YSF;
 				m_display->setFusion();
 				m_modem->setMode(MODE_YSF);
-				modeTimer.start();
+				if (m_dmrNetwork != NULL)
+					m_dmrNetwork->enable(false);
 			}
-			if (mode != MODE_YSF) {
-				LogWarning("System Fusion data received when in mode %u", mode);
-			} else {
-				if (data[0U] == TAG_DATA) {
-					data[1U] = 0x00U;		// FICH digest
-					ysf->writeData(data, len);
-					modeTimer.start();
-				}
+
+			if (mode == MODE_YSF) {
+				ysf->writeData(data, len);
+				modeTimer.start();
 			}
 		}
 
@@ -250,21 +241,30 @@ int CMMDVMHost::run()
 			mode = MODE_IDLE;
 			m_display->setIdle();
 			m_modem->setMode(MODE_IDLE);
+
+			if (m_dmrNetwork != NULL)
+				m_dmrNetwork->enable(true);
+
 			modeTimer.stop();
 		}
 
 		if (dstar != NULL) {
-			ret = dstar->hasData();
+			ret = m_modem->hasDStarSpace();
 			if (ret) {
-				ret = m_modem->hasDStarSpace();
-				if (ret) {
-					len = dstar->readData(data);
-					if (mode != MODE_DSTAR) {
-						LogWarning("D-Star echo data received when in mode %u", mode);
-					} else {
-						m_modem->writeDStarData(data, len);
-						modeTimer.start();
-					}
+				len = dstar->readData(data);
+
+				if (len > 0U && mode != MODE_DSTAR) {
+					LogMessage("Mode set to D-Star");
+					mode = MODE_DSTAR;
+					m_display->setDStar();
+					m_modem->setMode(MODE_DSTAR);
+					if (m_dmrNetwork != NULL)
+						m_dmrNetwork->enable(false);
+				}
+
+				if (len > 0U && mode == MODE_DSTAR) {
+					m_modem->writeDStarData(data, len);
+					modeTimer.start();
 				}
 			}
 		}
@@ -273,10 +273,14 @@ int CMMDVMHost::run()
 			ret = m_modem->hasDMRSpace1();
 			if (ret) {
 				len = dmr->readModemSlot1(data);
+
 				if (len > 0U && mode == MODE_IDLE) {
+					LogMessage("Mode set to DMR");
+					m_modem->setMode(MODE_DMR);
 					m_display->setDMR();
 					mode = MODE_DMR;
 				}
+
 				if (len > 0U && mode == MODE_DMR) {
 					m_modem->writeDMRData1(data, len);
 					dmrBeaconTimer.stop();
@@ -287,10 +291,14 @@ int CMMDVMHost::run()
 			ret = m_modem->hasDMRSpace2();
 			if (ret) {
 				len = dmr->readModemSlot2(data);
+
 				if (len > 0U && mode == MODE_IDLE) {
+					LogMessage("Mode set to DMR");
+					m_modem->setMode(MODE_DMR);
 					m_display->setDMR();
 					mode = MODE_DMR;
 				}
+
 				if (len > 0U && mode == MODE_DMR) {
 					m_modem->writeDMRData2(data, len);
 					dmrBeaconTimer.stop();
@@ -300,17 +308,22 @@ int CMMDVMHost::run()
 		}
 
 		if (ysf != NULL) {
-			ret = ysf->hasData();
+			ret = m_modem->hasYSFSpace();
 			if (ret) {
-				ret = m_modem->hasYSFSpace();
-				if (ret) {
-					len = ysf->readData(data);
-					if (mode != MODE_YSF) {
-						LogWarning("System Fusion echo data received when in mode %u", mode);
-					} else {
-						m_modem->writeYSFData(data, len);
-						modeTimer.start();
-					}
+				len = ysf->readData(data);
+
+				if (len > 0U && mode != MODE_YSF) {
+					LogMessage("Mode set to System Fusion");
+					mode = MODE_YSF;
+					m_display->setFusion();
+					m_modem->setMode(MODE_YSF);
+					if (m_dmrNetwork != NULL)
+						m_dmrNetwork->enable(false);
+				}
+
+				if (len > 0U && mode == MODE_YSF) {
+					m_modem->writeYSFData(data, len);
+					modeTimer.start();
 				}
 			}
 		}
