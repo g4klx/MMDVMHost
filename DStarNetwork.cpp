@@ -46,8 +46,6 @@ m_pollTimer(1000U, 60U)
 
 	CStopWatch stopWatch;
 	::srand(stopWatch.start());
-
-	m_pollTimer.start();
 }
 
 CDStarNetwork::~CDStarNetwork()
@@ -60,6 +58,8 @@ bool CDStarNetwork::open()
 
 	if (m_address.s_addr == INADDR_NONE)
 		return false;
+
+	m_pollTimer.start();
 
 	return m_socket.open();
 }

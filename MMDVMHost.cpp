@@ -194,6 +194,8 @@ int CMMDVMHost::run()
 					m_display->setDMR();
 					// This sets the mode to DMR within the modem
 					m_modem->writeDMRStart(true);
+					if (m_dstarNetwork != NULL)
+						m_dstarNetwork->enable(false);
 					modeTimer.start();
 				}
 			} else if (mode == MODE_DMR) {
@@ -213,6 +215,8 @@ int CMMDVMHost::run()
 					m_display->setDMR();
 					// This sets the mode to DMR within the modem
 					m_modem->writeDMRStart(true);
+					if (m_dstarNetwork != NULL)
+						m_dstarNetwork->enable(false);
 					modeTimer.start();
 				}
 			} else if (mode == MODE_DMR) {
@@ -231,6 +235,8 @@ int CMMDVMHost::run()
 				m_modem->setMode(MODE_YSF);
 				if (m_dmrNetwork != NULL)
 					m_dmrNetwork->enable(false);
+				if (m_dstarNetwork != NULL)
+					m_dstarNetwork->enable(false);
 			}
 
 			if (mode == MODE_YSF) {
@@ -251,6 +257,8 @@ int CMMDVMHost::run()
 
 			if (m_dmrNetwork != NULL)
 				m_dmrNetwork->enable(true);
+			if (m_dstarNetwork != NULL)
+				m_dstarNetwork->enable(true);
 
 			modeTimer.stop();
 		}
@@ -286,6 +294,8 @@ int CMMDVMHost::run()
 					m_modem->setMode(MODE_DMR);
 					m_display->setDMR();
 					mode = MODE_DMR;
+					if (m_dstarNetwork != NULL)
+						m_dstarNetwork->enable(false);
 				}
 
 				if (len > 0U && mode == MODE_DMR) {
@@ -304,6 +314,8 @@ int CMMDVMHost::run()
 					m_modem->setMode(MODE_DMR);
 					m_display->setDMR();
 					mode = MODE_DMR;
+					if (m_dstarNetwork != NULL)
+						m_dstarNetwork->enable(false);
 				}
 
 				if (len > 0U && mode == MODE_DMR) {
@@ -326,6 +338,8 @@ int CMMDVMHost::run()
 					m_modem->setMode(MODE_YSF);
 					if (m_dmrNetwork != NULL)
 						m_dmrNetwork->enable(false);
+					if (m_dstarNetwork != NULL)
+						m_dstarNetwork->enable(false);
 				}
 
 				if (len > 0U && mode == MODE_YSF) {
