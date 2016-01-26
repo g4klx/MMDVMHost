@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ public:
 	static void encodeFiveBit(const bool* in, unsigned int& tcrc);
 
 	static bool checkCCITT16(const unsigned char* in, unsigned int length);
+	static void addCCITT16(unsigned char* in, unsigned int length);
 
 	static unsigned char encodeEightBit(const unsigned char* in, unsigned int length);
 
