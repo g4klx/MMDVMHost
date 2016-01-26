@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,20 +16,34 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(CRC_H)
-#define	CRC_H
+#ifndef DMRDataHeader_H
+#define DMRDataHeader_H
 
-class CCRC
+#include "BPTC19696.h"
+
+class CDMRDataHeader
 {
 public:
-	static bool checkFiveBit(bool* in, unsigned int tcrc);
-	static void encodeFiveBit(const bool* in, unsigned int& tcrc);
+	CDMRDataHeader(const unsigned char* data);
+	~CDMRDataHeader();
 
-	static bool checkCCITT16(const unsigned char* in, unsigned int length);
+	bool isValid() const;
 
-	static unsigned char encodeEightBit(const unsigned char* in, unsigned int length);
+	bool getGI() const;
 
-	static unsigned char crc8(const unsigned char* in, unsigned int length);
+	unsigned int getSrcId() const;
+	unsigned int getDstId() const;
+
+	unsigned int getBlocks() const;
+
+private:
+	CBPTC19696   m_bptc;
+	bool         m_valid;
+	bool         m_gi;
+	unsigned int m_srcId;
+	unsigned int m_dstId;
+	unsigned int m_blocks;
 };
 
 #endif
+

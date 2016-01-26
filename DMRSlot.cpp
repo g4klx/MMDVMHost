@@ -11,6 +11,7 @@
  *	GNU General Public License for more details.
  */
 
+#include "DMRDataHeader.h"
 #include "SlotType.h"
 #include "ShortLC.h"
 #include "DMRSlot.h"
@@ -51,6 +52,7 @@ m_timeoutTimer(1000U, timeout),
 m_packetTimer(1000U, 0U, 100U),
 m_elapsed(),
 m_frames(0U),
+m_blocks(0U),
 m_lost(0U),
 m_fec(),
 m_bits(0U),
@@ -185,6 +187,20 @@ void CDMRSlot::writeModem(unsigned char *data)
 			if (m_state == RS_RELAYING_RF_DATA)
 				return;
 
+			CDMRDataHeader dataHeader(data + 2U);
+			// if (!dataHeader.isValid()) {
+			//	LogMessage("DMR Slot %u: unable to decode the data header", m_slotNo);
+			//	return;
+			// }
+
+			bool gi = dataHeader.getGI();
+			unsigned int srcId = dataHeader.getSrcId();
+			unsigned int dstId = dataHeader.getDstId();
+
+			m_blocks = dataHeader.getBlocks();
+
+			m_lc = new CLC(gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
+
 			// Regenerate the Slot Type
 			slotType.getData(data + 2U);
 
@@ -206,14 +222,18 @@ void CDMRSlot::writeModem(unsigned char *data)
 			}
 
 			m_state = RS_RELAYING_RF_DATA;
-			// setShortLC(m_slotNo, m_lc->getDstId(), m_lc->getFLCO());
 
-			// m_display->writeDMR(m_slotNo, m_lc->getSrcId(), m_lc->getFLCO() == FLCO_GROUP, m_lc->getDstId());
+			setShortLC(m_slotNo, m_lc->getDstId(), gi ? FLCO_GROUP : FLCO_USER_USER);
 
-			// LogMessage("DMR Slot %u, received RF data header from %u to %s%u", m_slotNo, m_lc->getSrcId(), m_lc->getFLCO() == FLCO_GROUP ? "TG " : "", m_lc->getDstId());
-			LogMessage("DMR Slot %u, received RF data header", m_slotNo);
+			m_display->writeDMR(m_slotNo, srcId, gi, dstId);
+
+			LogMessage("DMR Slot %u, received RF data header from %u to %s%u, %u blocks", m_slotNo, srcId, gi ? "TG ": "", dstId, m_blocks);
 		} else if (dataType == DT_CSBK) {
 			CCSBK csbk(data + 2U);
+			// if (!csbk.isValid()) {
+			//	LogMessage("DMR Slot %u: unable to decode the CSBK", m_slotNo);
+			//	return;
+			// }
 
 			CSBKO csbko = csbk.getCSBKO();
 			switch (csbko) {
@@ -224,6 +244,9 @@ void CDMRSlot::writeModem(unsigned char *data)
 			case CSBKO_UUANSRSP:
 			case CSBKO_NACKRSP:
 			case CSBKO_PRECCSBK: {
+					// Regenerate the Slot Type
+					slotType.getData(data + 2U);
+
 					// Convert the Data Sync to be from the BS
 					CDMRSync sync;
 					sync.addSync(data + 2U, DST_BS_DATA);
@@ -244,7 +267,10 @@ void CDMRSlot::writeModem(unsigned char *data)
 				LogWarning("DMR Slot %u, unhandled RF CSBK type - 0x%02X", m_slotNo, csbko);
 				break;
 			}
-		} else {
+		} else if (dataType == DT_RATE_12_DATA || dataType == DT_RATE_34_DATA || dataType == DT_RATE_1_DATA) {
+			if (m_state != RS_RELAYING_RF_DATA)
+				return;
+
 			// Regenerate the Slot Type
 			slotType.getData(data + 2U);
 
@@ -252,11 +278,21 @@ void CDMRSlot::writeModem(unsigned char *data)
 			CDMRSync sync;
 			sync.addSync(data + 2U, DST_BS_DATA);
 
-			data[0U] = TAG_DATA;
+			m_blocks--;
+
+			data[0U] = m_blocks == 0U ? TAG_EOT : TAG_DATA;
 			data[1U] = 0x00U;
 
 			writeNetwork(data, dataType);
 			writeQueue(data);
+
+			if (m_blocks == 0U) {
+				LogMessage("DMR Slot %u, ended RF data transmission", m_slotNo);
+				writeEndOfTransmission();
+			}
+		} else {
+			// Unhandled data type
+			LogWarning("DMR Slot %u, unhandled RF data type - 0x%02X", m_slotNo, dataType);
 		}
 	} else if (audioSync) {
 		if (m_state == RS_RELAYING_RF_AUDIO) {
@@ -514,6 +550,20 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		if (m_state == RS_RELAYING_NETWORK_DATA)
 			return;
 
+		CDMRDataHeader dataHeader(data + 2U);
+		// if (!dataHeader.isValid()) {
+		//	LogMessage("DMR Slot %u: unable to decode the data header", m_slotNo);
+		//	return;
+		// }
+
+		bool gi = dataHeader.getGI();
+		unsigned int srcId = dataHeader.getSrcId();
+		unsigned int dstId = dataHeader.getDstId();
+
+		m_blocks = dataHeader.getBlocks();
+
+		m_lc = new CLC(gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
+
 		// Regenerate the Slot Type
 		CSlotType slotType;
 		slotType.setColorCode(m_colorCode);
@@ -536,12 +586,11 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		m_state = RS_RELAYING_NETWORK_DATA;
 
-		// setShortLC(m_slotNo, m_lc->getDstId(), m_lc->getFLCO());
+		setShortLC(m_slotNo, dmrData.getDstId(), gi ? FLCO_GROUP : FLCO_USER_USER);
 
-		// m_display->writeDMR(m_slotNo, m_lc->getSrcId(), m_lc->getFLCO() == FLCO_GROUP, m_lc->getDstId());
+		m_display->writeDMR(m_slotNo, dmrData.getSrcId(), gi, dmrData.getDstId());
 
-		// LogMessage("DMR Slot %u, received network data header from %u to %s%u", m_slotNo, m_lc->getSrcId(), m_lc->getFLCO() == FLCO_GROUP ? "TG " : "", m_lc->getDstId());
-		LogMessage("DMR Slot %u, received network data header", m_slotNo);
+		LogMessage("DMR Slot %u, received network data header from %u to %s%u, %u blocks", m_slotNo, dmrData.getSrcId(), gi ? "TG ": "", dmrData.getDstId(), m_blocks);
 	} else if (dataType == DT_VOICE_SYNC) {
 		if (m_state == RS_LISTENING) {
 			m_lc = new CLC(dmrData.getFLCO(), dmrData.getSrcId(), dmrData.getDstId());
@@ -650,8 +699,55 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 #if defined(DUMP_DMR)
 		writeFile(data);
 #endif
-	} else {
-		// Change the Color Code of the Slot Type
+	} else if (dataType == DT_CSBK) {
+		CCSBK csbk(data + 2U);
+		// if (!csbk.isValid()) {
+		//	LogMessage("DMR Slot %u: unable to decode the CSBK", m_slotNo);
+		//	return;
+		// }
+
+		CSBKO csbko = csbk.getCSBKO();
+		switch (csbko) {
+		case CSBKO_BSDWNACT:
+			return;
+
+		case CSBKO_UUVREQ:
+		case CSBKO_UUANSRSP:
+		case CSBKO_NACKRSP:
+		case CSBKO_PRECCSBK: {
+				// Regenerate the Slot Type
+				CSlotType slotType;
+				slotType.putData(data + 2U);
+				slotType.setColorCode(m_colorCode);
+				slotType.getData(data + 2U);
+
+				// Convert the Data Sync to be from the BS
+				CDMRSync sync;
+				sync.addSync(data + 2U, DST_BS_DATA);
+
+				data[0U] = TAG_DATA;
+				data[1U] = 0x00U;
+
+				writeQueue(data);
+
+#if defined(DUMP_DMR)
+				openFile();
+				writeFile(data);
+				closeFile();
+#endif
+				LogMessage("DMR Slot %u, received network CSBK from %u to %u", m_slotNo, csbk.getSrcId(), csbk.getDstId());
+			}
+			break;
+
+		default:
+			LogWarning("DMR Slot %u, unhandled network CSBK type - 0x%02X", m_slotNo, csbko);
+			break;
+		}
+	} else if (dataType == DT_RATE_12_DATA || dataType == DT_RATE_34_DATA || dataType == DT_RATE_1_DATA) {
+		if (m_state != RS_RELAYING_NETWORK_DATA)
+			return;
+
+		// Regenerate the Slot Type
 		CSlotType slotType;
 		slotType.putData(data + 2U);
 		slotType.setColorCode(m_colorCode);
@@ -661,14 +757,23 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		CDMRSync sync;
 		sync.addSync(data + 2U, DST_BS_DATA);
 
-		data[0U] = TAG_DATA;
-		data[1U] = 0x00U;
+		m_blocks--;
 
-		writeQueue(data);
+		data[0U] = m_blocks == 0U ? TAG_EOT : TAG_DATA;
+		data[1U] = 0x00U;
 
 #if defined(DUMP_DMR)
 		writeFile(data);
 #endif
+		writeQueue(data);
+
+		if (m_blocks == 0U) {
+			LogMessage("DMR Slot %u, ended network data transmission", m_slotNo);
+			writeEndOfTransmission();
+		}
+	} else {
+		// Unhandled data type
+		LogWarning("DMR Slot %u, unhandled network data type - 0x%02X", m_slotNo, dataType);
 	}
 }
 

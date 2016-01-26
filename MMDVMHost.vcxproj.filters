@@ -137,6 +137,9 @@
     <ClInclude Include="DStarNetwork.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DMRDataHeader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -245,6 +248,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DStarNetwork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DMRDataHeader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

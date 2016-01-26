@@ -39,7 +39,10 @@ m_valid(false)
 	unsigned char data[12U];
 	bptc.decode(bytes, data);
 
-	m_valid = CCRC::checkCSBK(data);
+	data[10U] ^= CSBK_CRC_MASK[0U];
+	data[11U] ^= CSBK_CRC_MASK[1U];
+
+	m_valid = CCRC::checkCCITT16(data, 12U);
 
 	m_CSBKO = CSBKO(data[0U] & 0x3FU);
 	m_FID   = data[1U];

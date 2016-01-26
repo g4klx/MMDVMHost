@@ -155,6 +155,7 @@
     <ClInclude Include="Display.h" />
     <ClInclude Include="DMRControl.h" />
     <ClInclude Include="DMRData.h" />
+    <ClInclude Include="DMRDataHeader.h" />
     <ClInclude Include="DMRDefines.h" />
     <ClInclude Include="DMRSlot.h" />
     <ClInclude Include="DMRSync.h" />
@@ -198,6 +199,7 @@
     <ClCompile Include="Display.cpp" />
     <ClCompile Include="DMRControl.cpp" />
     <ClCompile Include="DMRData.cpp" />
+    <ClCompile Include="DMRDataHeader.cpp" />
     <ClCompile Include="DMRSlot.cpp" />
     <ClCompile Include="DMRSync.cpp" />
     <ClCompile Include="DStarEcho.cpp" />

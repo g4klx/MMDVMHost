@@ -19,6 +19,7 @@
 #include "CRC.h"
 
 #include "Utils.h"
+#include "Log.h"
 
 #include <cstdio>
 #include <cassert>
@@ -72,17 +73,15 @@ unsigned char CCRC::encodeEightBit(const unsigned char *in, unsigned int length)
 	return crc;
 }
 
-bool CCRC::checkCSBK(const unsigned char *in)
+bool CCRC::checkCCITT16(const unsigned char *in, unsigned int length)
 {
+	assert(in != NULL);
+	assert(length > 2U);
+
 	unsigned short crc16 = 0U;
 
-	// Run through all 12 bits
-	for (unsigned int a = 0; a < 12U; a++)	{
+	for (unsigned int a = 0; a < (length - 2U); a++)	{
 		unsigned char val = in[a];
-
-		// Allow for the CSBK CRC mask
-		if (a > 9U)
-			val ^= 0xA5U;
 
 		for (unsigned int i = 0U; i < 8U; i++) {
 			bool c15 = (crc16 >> 15 & 0x01U) == 0x01U;
@@ -93,7 +92,9 @@ bool CCRC::checkCSBK(const unsigned char *in)
 		}
 	}
 
-	return crc16 == 0x1D0FU;
+	LogMessage("CCITT16, %04X == %02X %02X", crc16, in[length - 2U], in[length - 1U]);
+
+	return crc16 == (in[length - 2U] << 8 | in[length - 1U]);
 }
 
 unsigned char CCRC::crc8(const unsigned char *in, unsigned int length)

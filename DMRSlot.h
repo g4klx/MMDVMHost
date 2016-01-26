@@ -61,6 +61,7 @@ private:
 	CTimer                     m_packetTimer;
 	CStopWatch                 m_elapsed;
 	unsigned int               m_frames;
+	unsigned int               m_blocks;
 	unsigned int               m_lost;
 	CAMBEFEC                   m_fec;
 	unsigned int               m_bits;
