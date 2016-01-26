@@ -368,6 +368,10 @@ int CMMDVMHost::run()
 			dmr->clock(ms);
 		if (ysf != NULL)
 			ysf->clock(ms);
+		if (m_dstarNetwork != NULL)
+			m_dstarNetwork->clock(ms);
+		if (m_dmrNetwork != NULL)
+			m_dmrNetwork->clock(ms);
 		stopWatch.start();
 
 		dmrBeaconTimer.clock(ms);

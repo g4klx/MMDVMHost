@@ -93,8 +93,6 @@ void CDMRControl::clock(unsigned int ms)
 				default: LogError("Invalid slot no %u", slotNo); break;
 			}
 		}
-
-		m_network->clock(ms);
 	}
 
 	m_slot1.clock(ms);
