@@ -79,8 +79,10 @@ private:
 
 	static FLCO                m_flco1;
 	static unsigned char       m_id1;
+	static bool                m_voice1;
 	static FLCO                m_flco2;
 	static unsigned char       m_id2;
+	static bool                m_voice2;
 
 	void writeQueue(const unsigned char* data);
 	void writeNetwork(const unsigned char* data, unsigned char dataType);
@@ -95,7 +97,7 @@ private:
 	bool insertSilence(const unsigned char* data, unsigned char seqNo);
 	void insertSilence(unsigned int count);
 
-	static void setShortLC(unsigned int slotNo, unsigned int id, FLCO flco = FLCO_GROUP);
+	static void setShortLC(unsigned int slotNo, unsigned int id, FLCO flco = FLCO_GROUP, bool voice = true);
 };
 
 #endif

@@ -34,8 +34,10 @@ unsigned char*    CDMRSlot::m_idle = NULL;
 
 FLCO              CDMRSlot::m_flco1;
 unsigned char     CDMRSlot::m_id1 = 0U;
+bool              CDMRSlot::m_voice1 = true;
 FLCO              CDMRSlot::m_flco2;
 unsigned char     CDMRSlot::m_id2 = 0U;
+bool              CDMRSlot::m_voice2 = true;
 
 // #define	DUMP_DMR
 
@@ -136,7 +138,8 @@ void CDMRSlot::writeModem(unsigned char *data)
 			}
 
 			m_state = RS_RELAYING_RF_AUDIO;
-			setShortLC(m_slotNo, m_lc->getDstId(), m_lc->getFLCO());
+
+			setShortLC(m_slotNo, m_lc->getDstId(), m_lc->getFLCO(), true);
 
 			m_display->writeDMR(m_slotNo, m_lc->getSrcId(), m_lc->getFLCO() == FLCO_GROUP, m_lc->getDstId());
 
@@ -223,7 +226,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			m_state = RS_RELAYING_RF_DATA;
 
-			setShortLC(m_slotNo, m_lc->getDstId(), gi ? FLCO_GROUP : FLCO_USER_USER);
+			setShortLC(m_slotNo, m_lc->getDstId(), gi ? FLCO_GROUP : FLCO_USER_USER, false);
 
 			m_display->writeDMR(m_slotNo, srcId, gi, dstId);
 
@@ -394,7 +397,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 				m_state = RS_RELAYING_RF_AUDIO;
 
-				setShortLC(m_slotNo, m_lc->getDstId(), m_lc->getFLCO());
+				setShortLC(m_slotNo, m_lc->getDstId(), m_lc->getFLCO(), true);
 
 				m_display->writeDMR(m_slotNo, m_lc->getSrcId(), m_lc->getFLCO() == FLCO_GROUP, m_lc->getDstId());
 
@@ -485,7 +488,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		m_state = RS_RELAYING_NETWORK_AUDIO;
 
-		setShortLC(m_slotNo, m_lc->getDstId(), m_lc->getFLCO());
+		setShortLC(m_slotNo, m_lc->getDstId(), m_lc->getFLCO(), true);
 
 		m_display->writeDMR(m_slotNo, m_lc->getSrcId(), m_lc->getFLCO() == FLCO_GROUP, m_lc->getDstId());
 
@@ -586,7 +589,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		m_state = RS_RELAYING_NETWORK_DATA;
 
-		setShortLC(m_slotNo, dmrData.getDstId(), gi ? FLCO_GROUP : FLCO_USER_USER);
+		setShortLC(m_slotNo, dmrData.getDstId(), gi ? FLCO_GROUP : FLCO_USER_USER, false);
 
 		m_display->writeDMR(m_slotNo, dmrData.getSrcId(), gi, dmrData.getDstId());
 
@@ -611,7 +614,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 			m_state = RS_RELAYING_NETWORK_AUDIO;
 
-			setShortLC(m_slotNo, m_lc->getDstId(), m_lc->getFLCO());
+			setShortLC(m_slotNo, m_lc->getDstId(), m_lc->getFLCO(), true);
 
 			m_display->writeDMR(m_slotNo, m_lc->getSrcId(), m_lc->getFLCO() == FLCO_GROUP, m_lc->getDstId());
 
@@ -890,14 +893,15 @@ void CDMRSlot::init(unsigned int colorCode, CModem* modem, CHomebrewDMRIPSC* net
 	slotType.getData(m_idle + 2U);
 }
 
-void CDMRSlot::setShortLC(unsigned int slotNo, unsigned int id, FLCO flco)
+void CDMRSlot::setShortLC(unsigned int slotNo, unsigned int id, FLCO flco, bool voice)
 {
 	assert(m_modem != NULL);
 
 	switch (slotNo) {
 		case 1U:
-			m_id1   = 0U;
-			m_flco1 = flco;
+			m_id1    = 0U;
+			m_flco1  = flco;
+			m_voice1 = voice;
 			if (id != 0U) {
 				unsigned char buffer[3U];
 				buffer[0U] = (id << 16) & 0xFFU;
@@ -907,8 +911,9 @@ void CDMRSlot::setShortLC(unsigned int slotNo, unsigned int id, FLCO flco)
 			}
 			break;
 		case 2U:
-			m_id2   = 0U;
-			m_flco2 = flco;
+			m_id2    = 0U;
+			m_flco2  = flco;
+			m_voice2 = voice;
 			if (id != 0U) {
 				unsigned char buffer[3U];
 				buffer[0U] = (id << 16) & 0xFFU;
@@ -930,18 +935,32 @@ void CDMRSlot::setShortLC(unsigned int slotNo, unsigned int id, FLCO flco)
 
 	if (m_id1 != 0U) {
 		lc[2U] = m_id1;
-		if (m_flco1 == FLCO_GROUP)
-			lc[1U] |= 0x80U;
-		else
-			lc[1U] |= 0x90U;
+		if (m_voice1) {
+			if (m_flco1 == FLCO_GROUP)
+				lc[1U] |= 0x80U;
+			else
+				lc[1U] |= 0x90U;
+		} else {
+			if (m_flco1 == FLCO_GROUP)
+				lc[1U] |= 0xB0U;
+			else
+				lc[1U] |= 0xA0U;
+		}
 	}
 
 	if (m_id2 != 0U) {
 		lc[3U] = m_id2;
-		if (m_flco2 == FLCO_GROUP)
-			lc[1U] |= 0x08U;
-		else
-			lc[1U] |= 0x09U;
+		if (m_voice2) {
+			if (m_flco2 == FLCO_GROUP)
+				lc[1U] |= 0x08U;
+			else
+				lc[1U] |= 0x09U;
+		} else {
+			if (m_flco2 == FLCO_GROUP)
+				lc[1U] |= 0x0BU;
+			else
+				lc[1U] |= 0x0AU;
+		}
 	}
 
 	lc[4U] = CCRC::crc8(lc, 4U);
@@ -1040,6 +1059,9 @@ void CDMRSlot::insertSilence(unsigned int count)
 			CDMRSync sync;
 			sync.addSync(data + 2U, DST_BS_AUDIO);
 		} else {
+			// Set the Embedded LC to 0x00
+			::memset(data + 2U + 13U, 0x00U, 5U);
+
 			// Color Code will have been set earlier
 			m_lastEMB.setLCSS(0U);
 			m_lastEMB.getData(data + 2U);
