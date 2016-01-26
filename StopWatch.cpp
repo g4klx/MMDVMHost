@@ -78,7 +78,7 @@ unsigned int CStopWatch::elapsed()
 	elapsed += now.tv_usec / 1000U;
 	elapsed -= m_start.tv_usec / 1000U;
 
-	return (unsigned int)(b - a);
+	return elapsed;
 }
 
 #endif
