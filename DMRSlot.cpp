@@ -812,7 +812,7 @@ void CDMRSlot::clock(unsigned int ms)
 			if (frames > m_frames) {
 				unsigned int count = frames - m_frames;
 				if (count > 2U) {
-					LogMessage("DMR Slot %u, lost audio for 100ms filling in", m_slotNo);
+					LogMessage("DMR Slot %u, lost audio for 100ms filling in, %u %u", m_slotNo, frames, m_frames);
 					insertSilence(count - 1U);
 				}
 			}
@@ -1015,8 +1015,8 @@ bool CDMRSlot::insertSilence(const unsigned char* data, unsigned char seqNo)
 	else
 		count = (256U + newSeqNo) - oldSeqNo;
 
-	if (count > 10U) {
-		LogMessage("DMR Slot %u, rejecting frame as being too old", m_slotNo);
+	if (count > 127U) {
+		LogMessage("DMR Slot %u, rejecting frame as being too old, %u %u > 127", m_slotNo, newSeqNo, oldSeqNo);
 		return false;
 	}
 
