@@ -6,11 +6,12 @@ LDFLAGS = -g
 all:		MMDVMHost
 
 MMDVMHost:	AMBEFEC.o BPTC19696.o Conf.o CRC.o CSBK.o Display.o DMRControl.o DMRData.o DMRDataHeader.o DMRSlot.o DMRSync.o DStarEcho.o DStarHeader.o DStarNetwork.o \
-						EMB.o EmbeddedLC.o FullLC.o Golay2087.o Golay24128.o Hamming.o HomebrewDMRIPSC.o LC.o Log.o MMDVMHost.o Modem.o NullDisplay.o QR1676.o RS129.o \
-						SerialController.o SHA256.o ShortLC.o SlotType.o StopWatch.o TFTSerial.o Timer.o UDPSocket.o Utils.o YSFEcho.o
+						DStarSlowData.o EMB.o EmbeddedLC.o FullLC.o Golay2087.o Golay24128.o Hamming.o HomebrewDMRIPSC.o LC.o Log.o MMDVMHost.o Modem.o NullDisplay.o QR1676.o \
+						RS129.o SerialController.o SHA256.o ShortLC.o SlotType.o StopWatch.o TFTSerial.o Timer.o UDPSocket.o Utils.o YSFEcho.o
 		$(CC) $(LDFLAGS) -o MMDVMHost AMBEFEC.o BPTC19696.o Conf.o CRC.o CSBK.o Display.o DMRControl.o DMRData.o DMRDataHeader.o DMRSlot.o DMRSync.o DStarEcho.o \
-						DStarHeader.o DStarNetwork.o EMB.o EmbeddedLC.o FullLC.o Golay2087.o Golay24128.o  Hamming.o HomebrewDMRIPSC.o LC.o Log.o MMDVMHost.o Modem.o \
-						NullDisplay.o QR1676.o RS129.o SerialController.o SHA256.o ShortLC.o SlotType.o StopWatch.o TFTSerial.o Timer.o UDPSocket.o Utils.o YSFEcho.o $(LIBS)
+						DStarHeader.o DStarNetwork.o DStarSlowData.o EMB.o EmbeddedLC.o FullLC.o Golay2087.o Golay24128.o  Hamming.o HomebrewDMRIPSC.o LC.o Log.o MMDVMHost.o \
+						Modem.o NullDisplay.o QR1676.o RS129.o SerialController.o SHA256.o ShortLC.o SlotType.o StopWatch.o TFTSerial.o Timer.o UDPSocket.o Utils.o YSFEcho.o \
+						$(LIBS)
 
 AMBEFEC.o:	AMBEFEC.cpp AMBEFEC.h Golay24128.h
 		$(CC) $(CFLAGS) -c AMBEFEC.cpp
@@ -54,6 +55,9 @@ DStarHeader.o:	DStarHeader.cpp DStarHeader.h DStarDefines.h CRC.h
 
 DStarNetwork.o:	DStarNetwork.cpp DStarNetwork.h Log.h UDPSocket.h RingBuffer.h Utils.h StopWatch.h DStarDefines.h Defines.h Timer.h
 		$(CC) $(CFLAGS) -c DStarNetwork.cpp
+
+DStarSlowData.o:	DStarSlowData.cpp DStarSlowData.h DStarHeader.h DStarDefines.h CRC.h
+		$(CC) $(CFLAGS) -c DStarSlowData.cpp
 
 EMB.o:		EMB.cpp EMB.h
 		$(CC) $(CFLAGS) -c EMB.cpp

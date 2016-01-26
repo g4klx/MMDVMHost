@@ -163,6 +163,7 @@
     <ClInclude Include="DStarEcho.h" />
     <ClInclude Include="DStarHeader.h" />
     <ClInclude Include="DStarNetwork.h" />
+    <ClInclude Include="DStarSlowData.h" />
     <ClInclude Include="EMB.h" />
     <ClInclude Include="EmbeddedLC.h" />
     <ClInclude Include="FullLC.h" />
@@ -206,6 +207,7 @@
     <ClCompile Include="DStarEcho.cpp" />
     <ClCompile Include="DStarHeader.cpp" />
     <ClCompile Include="DStarNetwork.cpp" />
+    <ClCompile Include="DStarSlowData.cpp" />
     <ClCompile Include="EMB.cpp" />
     <ClCompile Include="EmbeddedLC.cpp" />
     <ClCompile Include="FullLC.cpp" />

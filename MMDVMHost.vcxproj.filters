@@ -143,6 +143,9 @@
     <ClInclude Include="DStarHeader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DStarSlowData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -257,6 +260,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DStarHeader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DStarSlowData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

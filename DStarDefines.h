@@ -45,9 +45,13 @@ const unsigned char DSTAR_SLOW_DATA_TYPE_HEADER  = 0x50U;
 const unsigned char DSTAR_SLOW_DATA_TYPE_SQUELCH = 0xC0U;
 const unsigned char DSTAR_SLOW_DATA_LENGTH_MASK  = 0x0FU;
 
-const unsigned char DSTAR_SCRAMBLER_BYTEs[] = {0x70U, 0x4FU, 0x93U};
+const unsigned char DSTAR_SCRAMBLER_BYTES[] = {0x70U, 0x4FU, 0x93U};
 
-const unsigned char DSTAR_REPEATER_CONTROL = 0x07U;
+const unsigned char DSTAR_DATA_MASK           = 0x80U;
+const unsigned char DSTAR_REPEATER_MASK       = 0x40U;
+const unsigned char DSTAR_INTERRUPTED_MASK    = 0x20U;
+const unsigned char DSTAR_CONTROL_SIGNAL_MASK = 0x10U;
+const unsigned char DSTAR_URGENT_MASK         = 0x08U;
 
 const unsigned char DSTAR_SYNC_BYTES[] = {0x55U, 0x2DU, 0x16U};
 

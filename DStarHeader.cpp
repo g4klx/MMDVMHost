@@ -41,15 +41,15 @@ CDStarHeader::~CDStarHeader()
 
 bool CDStarHeader::isRepeater() const
 {
-	return (m_header[0U] & DSTAR_REPEATER_CONTROL) == DSTAR_REPEATER_CONTROL;
+	return (m_header[0U] & DSTAR_REPEATER_MASK) == DSTAR_REPEATER_MASK;
 }
 
 void CDStarHeader::setRepeater(bool on)
 {
 	if (on)
-		m_header[0U] |= DSTAR_REPEATER_CONTROL;
+		m_header[0U] |= DSTAR_REPEATER_MASK;
 	else
-		m_header[0U] &= ~DSTAR_REPEATER_CONTROL;
+		m_header[0U] &= ~DSTAR_REPEATER_MASK;
 }
 
 void CDStarHeader::getMyCall1(unsigned char* call1) const
