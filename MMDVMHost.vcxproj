@@ -159,8 +159,8 @@
     <ClInclude Include="DMRDefines.h" />
     <ClInclude Include="DMRSlot.h" />
     <ClInclude Include="DMRSync.h" />
+    <ClInclude Include="DStarControl.h" />
     <ClInclude Include="DStarDefines.h" />
-    <ClInclude Include="DStarEcho.h" />
     <ClInclude Include="DStarHeader.h" />
     <ClInclude Include="DStarNetwork.h" />
     <ClInclude Include="DStarSlowData.h" />
@@ -204,7 +204,7 @@
     <ClCompile Include="DMRDataHeader.cpp" />
     <ClCompile Include="DMRSlot.cpp" />
     <ClCompile Include="DMRSync.cpp" />
-    <ClCompile Include="DStarEcho.cpp" />
+    <ClCompile Include="DStarControl.cpp" />
     <ClCompile Include="DStarHeader.cpp" />
     <ClCompile Include="DStarNetwork.cpp" />
     <ClCompile Include="DStarSlowData.cpp" />

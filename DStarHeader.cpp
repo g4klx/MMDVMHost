@@ -72,6 +72,16 @@ void CDStarHeader::getRPTCall2(unsigned char* call2) const
 	::memcpy(call2, m_header + 3U, DSTAR_LONG_CALLSIGN_LENGTH);
 }
 
+void CDStarHeader::setRPTCall1(const unsigned char* call1)
+{
+	::memcpy(m_header + 11U, call1, DSTAR_LONG_CALLSIGN_LENGTH);
+}
+
+void CDStarHeader::setRPTCall2(const unsigned char* call2)
+{
+	::memcpy(m_header + 3U, call2, DSTAR_LONG_CALLSIGN_LENGTH);
+}
+
 void CDStarHeader::getYourCall(unsigned char* call) const
 {
 	::memcpy(call, m_header + 19U, DSTAR_LONG_CALLSIGN_LENGTH);

@@ -33,6 +33,9 @@ public:
 	void getRPTCall1(unsigned char* call1) const;
 	void getRPTCall2(unsigned char* call2) const;
 
+	void setRPTCall1(const unsigned char* call1);
+	void setRPTCall2(const unsigned char* call2);
+
 	void getYourCall(unsigned char* call) const;
 
 	void get(unsigned char* header) const;

@@ -21,11 +21,10 @@
 #include "Version.h"
 #include "StopWatch.h"
 #include "Defines.h"
+#include "DStarControl.h"
 #include "DMRControl.h"
 #include "TFTSerial.h"
 #include "NullDisplay.h"
-
-#include "DStarEcho.h"
 #include "YSFEcho.h"
 
 #include <cstdio>
@@ -135,9 +134,20 @@ int CMMDVMHost::run()
 	CStopWatch stopWatch;
 	stopWatch.start();
 
-	CDStarEcho* dstar = NULL;
-	if (m_dstarEnabled)
-		dstar = new CDStarEcho(2U, 10000U);
+	CDStarControl* dstar = NULL;
+	if (m_dstarEnabled) {
+		std::string callsign = m_conf.getCallsign();
+		std::string module   = m_conf.getDStarModule();
+		unsigned int timeout = m_conf.getTimeout();
+		bool duplex          = m_conf.getDuplex();
+
+		LogInfo("D-Star Parameters");
+		LogInfo("    Callsign: %s", callsign.c_str());
+		LogInfo("    Module: %s", module.c_str());
+		LogInfo("    Timeout: %us", timeout);
+
+		dstar = new CDStarControl(callsign, module, m_dstarNetwork, m_display, timeout, duplex);
+	}
 
 	CDMRControl* dmr = NULL;
 	if (m_dmrEnabled) {
@@ -179,7 +189,7 @@ int CMMDVMHost::run()
 			}
 
 			if (mode == MODE_DSTAR) {
-				dstar->writeData(data, len);
+				dstar->writeModem(data);
 				modeTimer.start();
 			}
 		}
@@ -266,9 +276,9 @@ int CMMDVMHost::run()
 		if (dstar != NULL) {
 			ret = m_modem->hasDStarSpace();
 			if (ret) {
-				len = dstar->readData(data);
+				len = dstar->readModem(data);
 
-				if (len > 0U && mode != MODE_DSTAR) {
+				if (len > 0U && mode == MODE_IDLE) {
 					LogMessage("Mode set to D-Star");
 					mode = MODE_DSTAR;
 					m_display->setDStar();
@@ -331,7 +341,7 @@ int CMMDVMHost::run()
 			if (ret) {
 				len = ysf->readData(data);
 
-				if (len > 0U && mode != MODE_YSF) {
+				if (len > 0U && mode == MODE_IDLE) {
 					LogMessage("Mode set to System Fusion");
 					mode = MODE_YSF;
 					m_display->setFusion();

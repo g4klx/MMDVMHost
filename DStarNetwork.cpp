@@ -209,13 +209,13 @@ void CDStarNetwork::clock(unsigned int ms)
 		if (m_inId == 0U && m_enabled) {
 			m_inId = buffer[5] * 256U + buffer[6];
 
-			unsigned char c = length - 6U;
+			unsigned char c = length - 7U;
 			m_buffer.addData(&c, 1U);
 
 			c = TAG_HEADER;
 			m_buffer.addData(&c, 1U);
 
-			m_buffer.addData(buffer + 7U, length - 7U);
+			m_buffer.addData(buffer + 8U, length - 8U);
 		}
 		break;
 
@@ -225,17 +225,21 @@ void CDStarNetwork::clock(unsigned int ms)
 
 			// Check that the stream id matches the valid header, reject otherwise
 			if (id == m_inId && m_enabled) {
-				unsigned char c = length - 8U;
-				m_buffer.addData(&c, 1U);
+				unsigned char ctrl[3U];
+
+				ctrl[0U] = length - 7U;
 
 				// Is this the last packet in the stream?
 				if ((buffer[7] & 0x40) == 0x40) {
 					m_inId = 0U;
-					c = TAG_EOT;
+					ctrl[1U] = TAG_EOT;
 				} else {
-					c = TAG_DATA;
+					ctrl[1U] = TAG_DATA;
 				}
-				m_buffer.addData(&c, 1U);
+
+				ctrl[2U] = buffer[7] & 0x3FU;
+
+				m_buffer.addData(ctrl, 3U);
 
 				m_buffer.addData(buffer + 9U, length - 9U);
 			}
