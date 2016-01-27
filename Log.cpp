@@ -18,6 +18,12 @@
 
 #include "Log.h"
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <Windows.h>
+#else
+#include <sys/time.h>
+#endif
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstdarg>
@@ -96,14 +102,23 @@ void Log(unsigned int level, const char* fmt, ...)
     if (!ret)
         return;
 
-    time_t now;
-    ::time(&now);
+#if defined(_WIN32) || defined(_WIN64)
+	SYSTEMTIME st;
+	::GetSystemTime(&st);
 
-    struct tm* tm = ::gmtime(&now);
-
-    ::fprintf(m_fpLog, "%c: %04d-%02d-%02d %02d:%02d:%02d ", LEVELS[level], tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+	::fprintf(m_fpLog, "%c: %04u-%02u-%02u %02u:%02u:%02u.%03u ", LEVELS[level], st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 	if (m_display)
-	    ::fprintf(stdout, "%c: %04d-%02d-%02d %02d:%02d:%02d ", LEVELS[level], tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+		::fprintf(stdout, "%c: %04u-%02u-%02u %02u:%02u:%02u.%03u ", LEVELS[level], st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+#else
+	struct timeval now;
+	::gettimeofday(&now, NULL);
+
+    struct tm* tm = ::gmtime(&now.tv_sec);
+
+    ::fprintf(m_fpLog, "%c: %04d-%02d-%02d %02d:%02d:%02d.%03u ", LEVELS[level], tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, now.tv_usec / 1000U);
+	if (m_display)
+	    ::fprintf(stdout, "%c: %04d-%02d-%02d %02d:%02d:%02d.%03u ", LEVELS[level], tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, now.tv_usec / 1000U);
+#endif
 
     va_list vl;
     va_start(vl, fmt);
