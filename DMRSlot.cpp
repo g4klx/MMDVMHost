@@ -305,7 +305,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			unsigned char fid = m_lc->getFID();
 			if (fid == FID_ETSI || fid == FID_DMRA)
 				m_errs += m_fec.regenerateDMR(data + 2U);
-			m_bits += 216U;
+			m_bits += 144U;
 
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
@@ -329,7 +329,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			unsigned char fid = m_lc->getFID();
 			if (fid == FID_ETSI || fid == FID_DMRA)
 				m_errs += m_fec.regenerateDMR(data + 2U);
-			m_bits += 216U;
+			m_bits += 144U;
 
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
@@ -384,7 +384,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 				unsigned char fid = m_lc->getFID();
 				if (fid == FID_ETSI || fid == FID_DMRA)
 					m_errs += m_fec.regenerateDMR(data + 2U);
-				m_bits += 216U;
+				m_bits += 144U;
 
 				data[0U] = TAG_DATA;
 				data[1U] = 0x00U;
@@ -634,7 +634,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			unsigned char fid = m_lc->getFID();
 			if (fid == FID_ETSI || fid == FID_DMRA)
 				m_errs += m_fec.regenerateDMR(data + 2U);
-			m_bits += 216U;
+			m_bits += 144U;
 
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
@@ -674,7 +674,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		unsigned char fid = m_lc->getFID();
 		if (fid == FID_ETSI || fid == FID_DMRA)
 			m_errs += m_fec.regenerateDMR(data + 2U);
-		m_bits += 216U;
+		m_bits += 144U;
 
 		// Change the color code in the EMB
 		m_lastEMB.putData(data + 2U);
