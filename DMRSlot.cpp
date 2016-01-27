@@ -73,6 +73,7 @@ CDMRSlot::~CDMRSlot()
 void CDMRSlot::writeModem(unsigned char *data)
 {
 	if (data[0U] == TAG_LOST && m_state == RS_RELAYING_RF_AUDIO) {
+		if (m_bits == 0U) m_bits = 1U;
 		LogMessage("DMR Slot %u, transmission lost, BER: %u%%", m_slotNo, (m_errs * 100U) / m_bits);
 		writeEndOfTransmission();
 		return;
@@ -182,6 +183,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			for (unsigned int i = 0U; i < 8U; i++)
 				writeQueue(data);
 
+			if (m_bits == 0U) m_bits = 1U;
 			LogMessage("DMR Slot %u, received RF end of voice transmission, BER: %u%%", m_slotNo, (m_errs * 100U) / m_bits);
 
 			writeEndOfTransmission();
@@ -557,6 +559,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 #endif
 		// We've received the voice header and terminator haven't we?
 		m_frames += 2U;
+		if (m_bits == 0U) m_bits = 1U;
 		LogMessage("DMR Slot %u, received network end of voice transmission, %u%% packet loss, BER: %u%%", m_slotNo, (m_lost * 100U) / m_frames, (m_errs * 100U) / m_bits);
 	} else if (dataType == DT_DATA_HEADER) {
 		if (m_state == RS_RELAYING_NETWORK_DATA)
@@ -796,6 +799,7 @@ void CDMRSlot::clock(unsigned int ms)
 			if (m_state == RS_RELAYING_NETWORK_AUDIO) {
 				// We've received the voice header haven't we?
 				m_frames += 1U;
+				if (m_bits == 0U) m_bits = 1U;
 				LogMessage("DMR Slot %u, network watchdog has expired, %u%% packet loss, BER: %u%%", m_slotNo, (m_lost * 100U) / m_frames, (m_errs * 100U) / m_bits);
 				writeEndOfTransmission();
 #if defined(DUMP_DMR)

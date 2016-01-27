@@ -81,6 +81,7 @@ void CDStarControl::writeModem(unsigned char *data)
 	unsigned char type = data[0U];
 
 	if (type == TAG_LOST && m_state == RS_RELAYING_RF_AUDIO) {
+		if (m_bits == 0U) m_bits = 1U;
 		LogMessage("D-Star, transmission lost, BER: %u%%", (m_errs * 100U) / m_bits);
 		writeEndOfTransmission();
 		return;
@@ -185,6 +186,7 @@ void CDStarControl::writeModem(unsigned char *data)
 					writeQueueData(data);
 			}
 
+			if (m_bits == 0U) m_bits = 1U;
 			LogMessage("D-Star, received RF end of transmission, BER: %u%%", (m_errs * 100U) / m_bits);
 
 			writeEndOfTransmission();
@@ -446,6 +448,7 @@ void CDStarControl::writeNetwork()
 #endif
 		// We've received the header and EOT haven't we?
 		m_frames += 2U;
+		if (m_bits == 0U) m_bits = 1U;
 		LogMessage("D-Star, received network end of voice transmission, %u%% packet loss, BER: %u%%", (m_lost * 100U) / m_frames, (m_errs * 100U) / m_bits);
 
 		writeEndOfTransmission();
@@ -493,6 +496,9 @@ void CDStarControl::clock(unsigned int ms)
 		m_networkWatchdog.clock(ms);
 
 		if (m_networkWatchdog.hasExpired()) {
+			// We're received the header haven't we?
+			m_frames += 1U;
+			if (m_bits == 0U) m_bits = 1U;
 			LogMessage("D-Star, network watchdog has expired, %u%% packet loss, BER: %u%%", (m_lost * 100U) / m_frames, (m_errs * 100U) / m_bits);
 			writeEndOfTransmission();
 #if defined(DUMP_DSTAR)
