@@ -61,7 +61,6 @@ private:
 	CTimer                     m_packetTimer;
 	CStopWatch                 m_elapsed;
 	unsigned int               m_frames;
-	unsigned int               m_blocks;
 	unsigned int               m_lost;
 	CAMBEFEC                   m_fec;
 	unsigned int               m_bits;
@@ -94,7 +93,7 @@ private:
 	bool writeFile(const unsigned char* data);
 	void closeFile();
 
-	bool insertSilence(const unsigned char* data, unsigned char seqNo);
+	void insertSilence(const unsigned char* data, unsigned char seqNo);
 	void insertSilence(unsigned int count);
 
 	static void setShortLC(unsigned int slotNo, unsigned int id, FLCO flco = FLCO_GROUP, bool voice = true);
