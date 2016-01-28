@@ -383,24 +383,10 @@ void CDStarControl::writeNetwork()
 	unsigned char n    = data[1U];
 
 	if (type == TAG_HEADER) {
-		if (m_state == RS_RELAYING_NETWORK_AUDIO)
+		if (m_state != RS_LISTENING)
 			return;
 
 		CDStarHeader header(data + 2U);
-
-		// Is this a transmission destined for a repeater?
-		if (!header.isRepeater())
-			return;
-
-		unsigned char callsign[DSTAR_LONG_CALLSIGN_LENGTH];
-		header.getRPTCall1(callsign);
-
-		// Is it for us?
-		if (::memcmp(callsign, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH) != 0)
-			return;
-
-		unsigned char gateway[DSTAR_LONG_CALLSIGN_LENGTH];
-		header.getRPTCall2(gateway);
 
 		unsigned char my1[DSTAR_LONG_CALLSIGN_LENGTH];
 		header.getMyCall1(my1);
