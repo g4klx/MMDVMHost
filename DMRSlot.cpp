@@ -1051,12 +1051,20 @@ void CDMRSlot::insertSilence(const unsigned char* data, unsigned char seqNo)
 
 void CDMRSlot::insertSilence(unsigned int count)
 {
+	unsigned char data[DMR_FRAME_LENGTH_BYTES + 2U];
+
+	::memcpy(data, m_lastFrame, 2U);					// The control data
+	::memcpy(data + 2U, m_lastFrame + 24U + 2U, 9U);	// Copy the last audio block to the first
+	::memcpy(data + 24U + 2U, data + 2U, 9U);			// Copy the last audio block to the last
+	::memcpy(data + 9U + 2U, data + 2U, 5U);			// Copy the last audio block to the middle (1/2)
+	::memcpy(data + 19U + 2U, data + 4U + 2U, 5U);		// Copy the last audio block to the middle (2/2)
+
 	unsigned char n = (m_n + 1U) % 6U;
 	unsigned char seqNo = m_seqNo + 1U;
 
 	for (unsigned int i = 0U; i < count; i++) {
-		unsigned char data[DMR_FRAME_LENGTH_BYTES + 2U];
-		::memcpy(data, m_lastFrame, DMR_FRAME_LENGTH_BYTES + 2U);
+		if (i > 0U)
+			::memcpy(data, DMR_SILENCE_DATA, DMR_FRAME_LENGTH_BYTES + 2U);
 
 		if (n == 0U) {
 			CDMRSync sync;

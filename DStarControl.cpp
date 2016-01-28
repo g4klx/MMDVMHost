@@ -654,7 +654,10 @@ void CDStarControl::insertSilence(unsigned int count)
 
 	for (unsigned int i = 0U; i < count; i++) {
 		unsigned char data[DSTAR_FRAME_LENGTH_BYTES + 1U];
-		::memcpy(data, m_lastFrame, DSTAR_FRAME_LENGTH_BYTES + 1U);
+		if (i < 3U)
+			::memcpy(data + 1U, m_lastFrame + 1U, DSTAR_FRAME_LENGTH_BYTES);
+		else
+			::memcpy(data + 1U, DSTAR_NULL_AMBE_DATA_BYTES, DSTAR_FRAME_LENGTH_BYTES);
 
 		if (n == 0U) {
 			// Regenerate the sync
