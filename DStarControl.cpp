@@ -149,8 +149,8 @@ void CDStarControl::writeModem(unsigned char *data)
 			if (m_net) {
 				// Modify the header
 				header.setRepeater(false);
-				header.setRPTCall1(m_gateway);
-				header.setRPTCall2(m_callsign);
+				header.setRPTCall1(m_callsign);
+				header.setRPTCall2(m_gateway);
 				header.get(data + 1U);
 
 				for (unsigned i = 0U; i < 3U; i++)
@@ -386,7 +386,7 @@ void CDStarControl::writeNetwork()
 		if (m_state != RS_LISTENING)
 			return;
 
-		CDStarHeader header(data + 2U);
+		CDStarHeader header(data + 1U);
 
 		unsigned char my1[DSTAR_LONG_CALLSIGN_LENGTH];
 		header.getMyCall1(my1);
