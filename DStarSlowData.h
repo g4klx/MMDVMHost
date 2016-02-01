@@ -31,10 +31,15 @@ public:
 	void start();
 	void reset();
 
+	void setText(const char* text);
+	void get(unsigned char* data);
+
 private:
 	unsigned char* m_header;
 	unsigned int   m_ptr;
 	unsigned char* m_buffer;
+	unsigned char* m_text;
+	unsigned int   m_textPtr;
 	
 	enum SDD_STATE {
 		SDD_FIRST,

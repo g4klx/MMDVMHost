@@ -51,6 +51,7 @@ private:
 	IDisplay*                  m_display;
 	bool                       m_duplex;
 	CRingBuffer<unsigned char> m_queue;
+	CDStarHeader               m_header;
 	RPT_STATE                  m_state;
 	bool                       m_net;
 	CDStarSlowData             m_slowData;
@@ -59,6 +60,7 @@ private:
 	CTimer                     m_holdoffTimer;
 	CTimer                     m_timeoutTimer;
 	CTimer                     m_packetTimer;
+	CTimer                     m_ackTimer;
 	CStopWatch                 m_elapsed;
 	unsigned int               m_frames;
 	unsigned int               m_lost;
@@ -86,6 +88,8 @@ private:
 
 	void blankDTMF(unsigned char* data) const;
 	unsigned int matchSync(const unsigned char* data) const;
+
+	void sendAck();
 };
 
 #endif

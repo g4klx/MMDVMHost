@@ -28,16 +28,20 @@ CDStarSlowData::CDStarSlowData() :
 m_header(NULL),
 m_ptr(0U),
 m_buffer(NULL),
+m_text(NULL),
+m_textPtr(0U),
 m_state(SDD_FIRST)
 {
 	m_header = new unsigned char[50U];		// DSTAR_HEADER_LENGTH_BYTES
 	m_buffer = new unsigned char[DSTAR_DATA_FRAME_LENGTH_BYTES * 2U];
+	m_text   = new unsigned char[24U];
 }
 
 CDStarSlowData::~CDStarSlowData()
 {
 	delete[] m_header;
 	delete[] m_buffer;
+	delete[] m_text;
 }
 
 CDStarHeader* CDStarSlowData::add(const unsigned char* data)
@@ -105,4 +109,54 @@ void CDStarSlowData::reset()
 {
 	m_ptr = 0U;
 	m_state = SDD_FIRST;
+}
+
+void CDStarSlowData::setText(const char* text)
+{
+	assert(text != NULL);
+
+	m_text[0U] = DSTAR_SLOW_DATA_TYPE_TEXT | 0U;
+	m_text[1U] = text[0U];
+	m_text[2U] = text[1U];
+	m_text[3U] = text[2U];
+	m_text[4U] = text[3U];
+	m_text[5U] = text[4U];
+
+	m_text[6U] = DSTAR_SLOW_DATA_TYPE_TEXT | 1U;
+	m_text[7U] = text[5U];
+	m_text[8U] = text[6U];
+	m_text[9U] = text[7U];
+	m_text[10U] = text[8U];
+	m_text[11U] = text[9U];
+
+	m_text[12U] = DSTAR_SLOW_DATA_TYPE_TEXT | 2U;
+	m_text[13U] = text[10U];
+	m_text[14U] = text[11U];
+	m_text[15U] = text[12U];
+	m_text[16U] = text[13U];
+	m_text[17U] = text[14U];
+
+	m_text[18U] = DSTAR_SLOW_DATA_TYPE_TEXT | 3U;
+	m_text[19U] = text[15U];
+	m_text[20U] = text[16U];
+	m_text[21U] = text[17U];
+	m_text[22U] = text[18U];
+	m_text[23U] = text[19U];
+
+	m_textPtr = 0U;
+}
+
+void CDStarSlowData::get(unsigned char* data)
+{
+	assert(data != NULL);
+
+	if (m_textPtr < 24U) {
+		data[0U] = m_text[m_textPtr++] ^ DSTAR_SCRAMBLER_BYTES[0U];
+		data[1U] = m_text[m_textPtr++] ^ DSTAR_SCRAMBLER_BYTES[1U];
+		data[2U] = m_text[m_textPtr++] ^ DSTAR_SCRAMBLER_BYTES[2U];
+	} else {
+		data[0U] = 'f' ^ DSTAR_SCRAMBLER_BYTES[0U];
+		data[1U] = 'f' ^ DSTAR_SCRAMBLER_BYTES[1U];
+		data[2U] = 'f' ^ DSTAR_SCRAMBLER_BYTES[2U];
+	}
 }

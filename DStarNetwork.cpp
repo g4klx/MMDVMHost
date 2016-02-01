@@ -40,9 +40,13 @@ m_outId(0U),
 m_outSeq(0U),
 m_inId(0U),
 m_buffer(1000U),
-m_pollTimer(1000U, 60U)
+m_pollTimer(1000U, 60U),
+m_linkStatus(LS_NONE),
+m_linkReflector(NULL)
 {
 	m_address = CUDPSocket::lookup(gatewayAddress);
+
+	m_linkReflector = new unsigned char[DSTAR_LONG_CALLSIGN_LENGTH];
 
 	CStopWatch stopWatch;
 	::srand(stopWatch.start());
@@ -50,6 +54,7 @@ m_pollTimer(1000U, 60U)
 
 CDStarNetwork::~CDStarNetwork()
 {
+	delete[] m_linkReflector;
 }
 
 bool CDStarNetwork::open()
@@ -200,6 +205,10 @@ void CDStarNetwork::clock(unsigned int ms)
 
 	switch (buffer[4]) {
 	case 0x00U:			// NETWORK_TEXT;
+		m_linkStatus = LINK_STATUS(buffer[25U]);
+		::memcpy(m_linkReflector, buffer + 26U, DSTAR_LONG_CALLSIGN_LENGTH);
+		return;
+
 	case 0x01U:			// NETWORK_TEMPTEXT;
 	case 0x04U:			// NETWORK_STATUS1..5
 	case 0x24U:			// NETWORK_DD_DATA
@@ -295,4 +304,13 @@ void CDStarNetwork::close()
 void CDStarNetwork::enable(bool enabled)
 {
 	m_enabled = enabled;
+}
+
+void CDStarNetwork::getStatus(LINK_STATUS& status, unsigned char* reflector)
+{
+	assert(reflector != NULL);
+
+	status = m_linkStatus;
+
+	::memcpy(reflector, m_linkReflector, DSTAR_LONG_CALLSIGN_LENGTH);
 }

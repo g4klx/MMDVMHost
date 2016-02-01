@@ -34,9 +34,29 @@ m_header(NULL)
 	::memcpy(m_header, header, DSTAR_HEADER_LENGTH_BYTES);
 }
 
+CDStarHeader::CDStarHeader() :
+m_header(NULL)
+{
+	m_header = new unsigned char[DSTAR_HEADER_LENGTH_BYTES];
+
+	::memset(m_header, ' ', DSTAR_HEADER_LENGTH_BYTES);
+
+	m_header[0U] = 0x00U;
+	m_header[1U] = 0x00U;
+	m_header[2U] = 0x00U;
+}
+
 CDStarHeader::~CDStarHeader()
 {
 	delete[] m_header;
+}
+
+CDStarHeader& CDStarHeader::operator=(const CDStarHeader& header)
+{
+	if (&header != this)
+		::memcpy(m_header, header.m_header, DSTAR_HEADER_LENGTH_BYTES);
+
+	return *this;
 }
 
 bool CDStarHeader::isRepeater() const
@@ -52,6 +72,14 @@ void CDStarHeader::setRepeater(bool on)
 		m_header[0U] &= ~DSTAR_REPEATER_MASK;
 }
 
+void CDStarHeader::setUnavailable(bool on)
+{
+	if (on)
+		m_header[0U] |= DSTAR_RELAY_UNAVAILABLE;
+	else
+		m_header[0U] &= ~DSTAR_RELAY_UNAVAILABLE;
+}
+
 void CDStarHeader::getMyCall1(unsigned char* call1) const
 {
 	::memcpy(call1, m_header + 27U, DSTAR_LONG_CALLSIGN_LENGTH);
@@ -60,6 +88,16 @@ void CDStarHeader::getMyCall1(unsigned char* call1) const
 void CDStarHeader::getMyCall2(unsigned char* call2) const
 {
 	::memcpy(call2, m_header + 35U, DSTAR_SHORT_CALLSIGN_LENGTH);
+}
+
+void CDStarHeader::setMyCall1(const unsigned char* call1)
+{
+	::memcpy(m_header + 27U, call1, DSTAR_LONG_CALLSIGN_LENGTH);
+}
+
+void CDStarHeader::setMyCall2(const unsigned char* call2)
+{
+	::memcpy(m_header + 35U, call2, DSTAR_SHORT_CALLSIGN_LENGTH);
 }
 
 void CDStarHeader::getRPTCall1(unsigned char* call1) const
@@ -85,6 +123,11 @@ void CDStarHeader::setRPTCall2(const unsigned char* call2)
 void CDStarHeader::getYourCall(unsigned char* call) const
 {
 	::memcpy(call, m_header + 19U, DSTAR_LONG_CALLSIGN_LENGTH);
+}
+
+void CDStarHeader::setYourCall(const unsigned char* call)
+{
+	::memcpy(m_header + 19U, call, DSTAR_LONG_CALLSIGN_LENGTH);
 }
 
 void CDStarHeader::get(unsigned char* header) const

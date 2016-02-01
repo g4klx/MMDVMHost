@@ -29,6 +29,7 @@ m_network(network),
 m_display(display),
 m_duplex(duplex),
 m_queue(1000U),
+m_header(),
 m_state(RS_LISTENING),
 m_net(false),
 m_slowData(),
@@ -37,6 +38,7 @@ m_networkWatchdog(1000U, 0U, 1500U),
 m_holdoffTimer(1000U, 0U, 500U),
 m_timeoutTimer(1000U, timeout),
 m_packetTimer(1000U, 0U, 300U),
+m_ackTimer(1000U, 0U, 750U),
 m_elapsed(),
 m_frames(0U),
 m_lost(0U),
@@ -82,7 +84,8 @@ void CDStarControl::writeModem(unsigned char *data)
 
 	if (type == TAG_LOST && m_state == RS_RELAYING_RF_AUDIO) {
 		if (m_bits == 0U) m_bits = 1U;
-		LogMessage("D-Star, transmission lost, %.1f seconds, BER: %u%%", float(m_frames) / 50.0F, (m_errs * 100U) / m_bits);
+		LogMessage("D-Star, transmission lost, %.1f seconds, BER: %.1f%%", float(m_frames) / 50.0F, float(m_errs * 100U) / float(m_bits));
+		m_ackTimer.start();
 		writeEndOfTransmission();
 		return;
 	}
@@ -124,17 +127,23 @@ void CDStarControl::writeModem(unsigned char *data)
 		m_net = ::memcmp(gateway, m_gateway, DSTAR_LONG_CALLSIGN_LENGTH) == 0;
 
 		if (m_state == RS_LISTENING) {
+			// Only reset the timeout if the ack is not pending
+			if (!m_ackTimer.isRunning()) {
+				m_timeoutTimer.start();
+				m_bits = 1U;
+				m_errs = 0U;
+			}
+
+			m_header = header;
+
 			m_networkWatchdog.stop();
-			m_timeoutTimer.start();
 			m_holdoffTimer.stop();
+			m_ackTimer.stop();
 
 			m_frames = 1U;
 			m_lost = 0U;
 
 			m_n = 0U;
-
-			m_bits = 1U;
-			m_errs = 0U;
 
 			if (m_duplex) {
 				// Modify the header
@@ -186,8 +195,10 @@ void CDStarControl::writeModem(unsigned char *data)
 					writeQueueData(data);
 			}
 
+			m_ackTimer.start();
+
 			if (m_bits == 0U) m_bits = 1U;
-			LogMessage("D-Star, received RF end of transmission, %.1f seconds, BER: %u%%", float(m_frames) / 50.0F, (m_errs * 100U) / m_bits);
+			LogMessage("D-Star, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_frames) / 50.0F, float(m_errs * 100U) / float(m_bits));
 
 			writeEndOfTransmission();
 		} else if (m_state == RS_RELAYING_NETWORK_AUDIO) {
@@ -268,9 +279,18 @@ void CDStarControl::writeModem(unsigned char *data)
 
 			m_net = ::memcmp(gateway, m_gateway, DSTAR_LONG_CALLSIGN_LENGTH) == 0;
 
+			// Only reset the timeout if the ack is not pending
+			if (!m_ackTimer.isRunning()) {
+				m_timeoutTimer.start();
+				m_bits = 1U;
+				m_errs = 0U;
+			}
+
 			// Create a dummy start frame to replace the received frame
 			m_networkWatchdog.stop();
-			m_timeoutTimer.start();
+			m_ackTimer.stop();
+
+			m_header = *header;
 
 			m_frames = 1U;
 			m_lost = 0U;
@@ -307,8 +327,8 @@ void CDStarControl::writeModem(unsigned char *data)
 			delete header;
 
 			unsigned int errors = m_fec.regenerateDMR(data + 1U);
-			m_errs = errors;
-			m_bits = 48U;
+			m_errs += errors;
+			m_bits += 48U;
 
 			if (m_net)
 				writeNetworkData(data, errors, false, false);
@@ -351,14 +371,7 @@ void CDStarControl::writeEndOfTransmission()
 	m_display->clearDStar();
 
 	m_networkWatchdog.stop();
-	m_timeoutTimer.stop();
 	m_packetTimer.stop();
-
-	m_frames = 0U;
-	m_lost   = 0U;
-
-	m_errs = 0U;
-	m_bits = 0U;
 
 #if defined(DUMP_DSTAR)
 	closeFile();
@@ -397,8 +410,11 @@ void CDStarControl::writeNetwork()
 		unsigned char your[DSTAR_LONG_CALLSIGN_LENGTH];
 		header.getYourCall(your);
 
+		m_header = header;
+
 		m_timeoutTimer.start();
 		m_elapsed.start();
+		m_ackTimer.stop();
 
 		m_frames = 0U;
 		m_lost = 0U;
@@ -424,6 +440,8 @@ void CDStarControl::writeNetwork()
 		if (m_state != RS_RELAYING_NETWORK_AUDIO)
 			return;
 
+		m_timeoutTimer.stop();
+
 		data[1U] = TAG_EOT;
 		for (unsigned int i = 0U; i < 3U; i++)
 			writeQueueData(data + 1U);
@@ -435,7 +453,7 @@ void CDStarControl::writeNetwork()
 		// We've received the header and EOT haven't we?
 		m_frames += 2U;
 		if (m_bits == 0U) m_bits = 1U;
-		LogMessage("D-Star, received network end of transmission, %.1f seconds, %u%% packet loss, BER: %u%%", float(m_frames) / 50.0F, (m_lost * 100U) / m_frames, (m_errs * 100U) / m_bits);
+		LogMessage("D-Star, received network end of transmission, %.1f seconds, %u%% packet loss, BER: %.1f%%", float(m_frames) / 50.0F, (m_lost * 100U) / m_frames, float(m_errs * 100U) / float(m_bits));
 
 		writeEndOfTransmission();
 	} else {
@@ -472,6 +490,13 @@ void CDStarControl::clock(unsigned int ms)
 	if (m_network != NULL)
 		writeNetwork();
 
+	m_ackTimer.clock(ms);
+	if (m_ackTimer.isRunning() && m_ackTimer.hasExpired()) {
+		sendAck();
+		m_timeoutTimer.stop();
+		m_ackTimer.stop();
+	}
+
 	m_holdoffTimer.clock(ms);
 	if (m_holdoffTimer.isRunning() && m_holdoffTimer.hasExpired())
 		m_holdoffTimer.stop();
@@ -485,7 +510,8 @@ void CDStarControl::clock(unsigned int ms)
 			// We're received the header haven't we?
 			m_frames += 1U;
 			if (m_bits == 0U) m_bits = 1U;
-			LogMessage("D-Star, network watchdog has expired, %.1f seconds,  %u%% packet loss, BER: %u%%", float(m_frames) / 50.0F, (m_lost * 100U) / m_frames, (m_errs * 100U) / m_bits);
+			LogMessage("D-Star, network watchdog has expired, %.1f seconds,  %u%% packet loss, BER: %.1f%%", float(m_frames) / 50.0F, (m_lost * 100U) / m_frames, float(m_errs * 100U) / float(m_bits));
+			m_timeoutTimer.stop();
 			writeEndOfTransmission();
 #if defined(DUMP_DSTAR)
 			closeFile();
@@ -639,23 +665,14 @@ void CDStarControl::insertSilence(unsigned int count)
 	unsigned char n = (m_n + 1U) % 21U;
 
 	for (unsigned int i = 0U; i < count; i++) {
-		unsigned char data[DSTAR_FRAME_LENGTH_BYTES + 1U];
-		if (i < 3U)
-			::memcpy(data + 1U, m_lastFrame + 1U, DSTAR_FRAME_LENGTH_BYTES);
-		else
-			::memcpy(data + 1U, DSTAR_NULL_AMBE_DATA_BYTES, DSTAR_FRAME_LENGTH_BYTES);
-
-		if (n == 0U) {
-			// Regenerate the sync
-			::memcpy(data + DSTAR_VOICE_FRAME_LENGTH_BYTES + 1U, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES);
+		if (i < 3U) {
+			writeQueueData(m_lastFrame);
 		} else {
-			// Dummy slow data values
-			::memcpy(data + DSTAR_VOICE_FRAME_LENGTH_BYTES + 1U, DSTAR_NULL_SLOW_DATA_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES);
+			if (n == 0U)
+				writeQueueData(DSTAR_NULL_FRAME_SYNC_BYTES);
+			else
+				writeQueueData(DSTAR_NULL_FRAME_DATA_BYTES);
 		}
-
-		data[0U] = TAG_DATA;
-
-		writeQueueData(data);
 
 		m_n = n;
 
@@ -698,4 +715,46 @@ unsigned int CDStarControl::matchSync(const unsigned char* data) const
 	}
 
 	return errors;
+}
+
+void CDStarControl::sendAck()
+{
+	unsigned char user[DSTAR_LONG_CALLSIGN_LENGTH];
+	m_header.getMyCall1(user);
+
+	CDStarHeader header;
+	header.setUnavailable(true);
+	header.setMyCall1(m_callsign);
+	header.setYourCall(user);
+	header.setRPTCall1(m_gateway);
+	header.setRPTCall2(m_callsign);
+
+	unsigned char data[DSTAR_HEADER_LENGTH_BYTES + 1U];
+	header.get(data + 1U);
+	data[0U] = TAG_HEADER;
+
+	writeQueueHeader(data);
+
+	writeQueueData(DSTAR_NULL_FRAME_SYNC_BYTES);
+
+	LINK_STATUS status = LS_NONE;
+	unsigned char reflector[DSTAR_LONG_CALLSIGN_LENGTH];
+	if (m_network != NULL)
+		m_network->getStatus(status, reflector);
+
+	char text[20U];
+	if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
+		::sprintf(text, "%-8.8s  BER: %.1f%%         ", reflector, float(m_errs * 100U) / float(m_bits));
+	else
+		::sprintf(text, "BER: %.1f%%                 ", float(m_errs * 100U) / float(m_bits));
+	m_slowData.setText(text);
+
+	::memcpy(data, DSTAR_NULL_FRAME_DATA_BYTES, DSTAR_FRAME_LENGTH_BYTES + 1U);
+
+	for (unsigned int i = 0U; i < 19U; i++) {
+		m_slowData.get(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES);
+		writeQueueData(data);
+	}
+
+	writeQueueData(DSTAR_END_PATTERN_BYTES);
 }

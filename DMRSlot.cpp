@@ -74,7 +74,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 {
 	if (data[0U] == TAG_LOST && m_state == RS_RELAYING_RF_AUDIO) {
 		if (m_bits == 0U) m_bits = 1U;
-		LogMessage("DMR Slot %u, transmission lost, %.1f seconds, BER: %u%%", m_slotNo, float(m_frames) / 16.667F, (m_errs * 100U) / m_bits);
+		LogMessage("DMR Slot %u, transmission lost, %.1f seconds, BER: %.1f%%", m_slotNo, float(m_frames) / 16.667F, float(m_errs * 100U) / float(m_bits));
 		writeEndOfTransmission();
 		return;
 	}
@@ -184,7 +184,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 				writeQueue(data);
 
 			if (m_bits == 0U) m_bits = 1U;
-			LogMessage("DMR Slot %u, received RF end of voice transmission, %.1f seconds, BER: %u%%", m_slotNo, float(m_frames) / 16.667F, (m_errs * 100U) / m_bits);
+			LogMessage("DMR Slot %u, received RF end of voice transmission, %.1f seconds, BER: %.1f%%", m_slotNo, float(m_frames) / 16.667F, float(m_errs * 100U) / float(m_bits));
 
 			writeEndOfTransmission();
 		} else if (dataType == DT_DATA_HEADER) {
@@ -560,7 +560,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		// We've received the voice header and terminator haven't we?
 		m_frames += 2U;
 		if (m_bits == 0U) m_bits = 1U;
-		LogMessage("DMR Slot %u, received network end of voice transmission, %.1f seconds, %u%% packet loss, BER: %u%%", m_slotNo, float(m_frames) / 16.667F, (m_lost * 100U) / m_frames, (m_errs * 100U) / m_bits);
+		LogMessage("DMR Slot %u, received network end of voice transmission, %.1f seconds, %u%% packet loss, BER: %.1f%%", m_slotNo, float(m_frames) / 16.667F, (m_lost * 100U) / m_frames, float(m_errs * 100U) / float(m_bits));
 	} else if (dataType == DT_DATA_HEADER) {
 		if (m_state == RS_RELAYING_NETWORK_DATA)
 			return;
@@ -800,7 +800,7 @@ void CDMRSlot::clock(unsigned int ms)
 				// We've received the voice header haven't we?
 				m_frames += 1U;
 				if (m_bits == 0U) m_bits = 1U;
-				LogMessage("DMR Slot %u, network watchdog has expired, %.1f seconds, %u%% packet loss, BER: %u%%", m_slotNo, float(m_frames) / 16.667F, (m_lost * 100U) / m_frames, (m_errs * 100U) / m_bits);
+				LogMessage("DMR Slot %u, network watchdog has expired, %.1f seconds, %u%% packet loss, BER: %.1f%%", m_slotNo, float(m_frames) / 16.667F, (m_lost * 100U) / m_frames, float(m_errs * 100U) / float(m_bits));
 				writeEndOfTransmission();
 #if defined(DUMP_DMR)
 				closeFile();

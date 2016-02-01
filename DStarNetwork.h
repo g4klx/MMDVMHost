@@ -39,6 +39,8 @@ public:
 	bool writeHeader(const unsigned char* header, unsigned int length, bool busy);
 	bool writeData(const unsigned char* data, unsigned int length, unsigned int errors, bool end, bool busy);
 
+	void getStatus(LINK_STATUS& status, unsigned char* reflector);
+
 	unsigned int read(unsigned char* data, unsigned int length);
 
 	void reset();
@@ -48,17 +50,19 @@ public:
 	void clock(unsigned int ms);
 
 private:
-	CUDPSocket   m_socket;
-	in_addr      m_address;
-	unsigned int m_port;
-	std::string  m_version;
-	bool         m_debug;
-	bool         m_enabled;
-	uint16_t     m_outId;
-	uint8_t      m_outSeq;
-	uint16_t     m_inId;
+	CUDPSocket     m_socket;
+	in_addr        m_address;
+	unsigned int   m_port;
+	std::string    m_version;
+	bool           m_debug;
+	bool           m_enabled;
+	uint16_t       m_outId;
+	uint8_t        m_outSeq;
+	uint16_t       m_inId;
 	CRingBuffer<unsigned char> m_buffer;
-	CTimer       m_pollTimer;
+	CTimer         m_pollTimer;
+	LINK_STATUS    m_linkStatus;
+	unsigned char* m_linkReflector;
 
 	bool writePoll(const char* text);
 };

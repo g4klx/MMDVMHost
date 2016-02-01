@@ -22,13 +22,19 @@
 class CDStarHeader {
 public:
 	CDStarHeader(const unsigned char* header);
+	CDStarHeader();
 	~CDStarHeader();
 
 	bool isRepeater() const;
 	void setRepeater(bool on);
 
+	void setUnavailable(bool on);
+
 	void getMyCall1(unsigned char* call1) const;
 	void getMyCall2(unsigned char* call2) const;
+
+	void setMyCall1(const unsigned char* call1);
+	void setMyCall2(const unsigned char* call2);
 
 	void getRPTCall1(unsigned char* call1) const;
 	void getRPTCall2(unsigned char* call2) const;
@@ -37,8 +43,11 @@ public:
 	void setRPTCall2(const unsigned char* call2);
 
 	void getYourCall(unsigned char* call) const;
+	void setYourCall(const unsigned char* call);
 
 	void get(unsigned char* header) const;
+
+	CDStarHeader& operator=(const CDStarHeader& header);
 
 private:
 	unsigned char* m_header;
