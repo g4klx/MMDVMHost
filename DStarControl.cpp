@@ -181,18 +181,14 @@ void CDStarControl::writeModem(unsigned char *data)
 		}
 	} else if (type == TAG_EOT) {
 		if (m_state == RS_RELAYING_RF_AUDIO) {
-			unsigned int errors = m_fec.regenerateDStar(data + 1U);
-			m_errs += errors;
-			m_bits += 48U;
-
 			if (m_net) {
 				for (unsigned int i = 0U; i < 2U; i++)
-					writeNetworkData(data, errors, true, false);
+					writeNetworkData(DSTAR_END_PATTERN_BYTES, 0U, true, false);
 			}
 
 			if (m_duplex) {
 				for (unsigned int i = 0U; i < 3U; i++)
-					writeQueueData(data);
+					writeQueueData(DSTAR_END_PATTERN_BYTES);
 			}
 
 			m_ackTimer.start();
@@ -202,11 +198,9 @@ void CDStarControl::writeModem(unsigned char *data)
 
 			writeEndOfTransmission();
 		} else if (m_state == RS_RELAYING_NETWORK_AUDIO) {
-			m_fec.regenerateDStar(data + 1U);
-
 			if (m_net) {
 				for (unsigned int i = 0U; i < 2U; i++)
-					writeNetworkData(data, 0U, true, true);
+					writeNetworkData(DSTAR_END_PATTERN_BYTES, 0U, true, true);
 			}
 		}
 	} else {
