@@ -207,6 +207,7 @@ void CDStarNetwork::clock(unsigned int ms)
 	case 0x00U:			// NETWORK_TEXT;
 		m_linkStatus = LINK_STATUS(buffer[25U]);
 		::memcpy(m_linkReflector, buffer + 26U, DSTAR_LONG_CALLSIGN_LENGTH);
+		LogMessage("D-Star link status set to \"%s\"", buffer + 5U);
 		return;
 
 	case 0x01U:			// NETWORK_TEMPTEXT;

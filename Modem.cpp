@@ -364,23 +364,23 @@ void CModem::clock(unsigned int ms)
 	}
 
 	if (m_dstarSpace > 1U && !m_txDStarData.isEmpty()) {
-		unsigned char buffer[2U];
-		m_txDStarData.peek(buffer, 2U);
+		unsigned char buffer[4U];
+		m_txDStarData.peek(buffer, 4U);
 
-		if ((buffer[1U] == TAG_HEADER && m_dstarSpace > 4U) ||
-			(buffer[1U] == TAG_DATA   && m_dstarSpace > 1U) ||
-			(buffer[1U] == TAG_EOT    && m_dstarSpace > 1U)) {
+		if ((buffer[3U] == MMDVM_DSTAR_HEADER && m_dstarSpace > 4U) ||
+			(buffer[3U] == MMDVM_DSTAR_DATA   && m_dstarSpace > 1U) ||
+			(buffer[3U] == MMDVM_DSTAR_EOT    && m_dstarSpace > 1U)) {
 			unsigned char len = 0U;
 			m_txDStarData.getData(&len, 1U);
 			m_txDStarData.getData(m_buffer, len);
 
 			if (m_debug) {
-				switch (buffer[1U]) {
-				case TAG_HEADER:
+				switch (buffer[3U]) {
+				case MMDVM_DSTAR_HEADER:
 					CUtils::dump(1U, "TX D-Star Header", m_buffer, len);
 					m_dstarSpace -= 4U;
 					break;
-				case TAG_DATA:
+				case MMDVM_DSTAR_DATA:
 					CUtils::dump(1U, "TX D-Star Data", m_buffer, len);
 					m_dstarSpace -= 1U;
 					break;

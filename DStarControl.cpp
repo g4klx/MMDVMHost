@@ -215,6 +215,8 @@ void CDStarControl::writeModem(unsigned char *data)
 			m_errs += errors;
 			m_bits += 48U;
 
+			m_frames++;
+
 			unsigned int bits = matchSync(data + 1U);
 			if (bits <= MAX_SYNC_BIT_ERRORS)
 				m_n = 0U;
@@ -736,7 +738,7 @@ void CDStarControl::sendAck()
 	if (m_network != NULL)
 		m_network->getStatus(status, reflector);
 
-	char text[20U];
+	char text[40U];
 	if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
 		::sprintf(text, "%-8.8s  BER: %.1f%%         ", reflector, float(m_errs * 100U) / float(m_bits));
 	else
