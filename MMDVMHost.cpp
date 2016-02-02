@@ -179,14 +179,8 @@ int CMMDVMHost::run()
 
 		len = m_modem->readDStarData(data);
 		if (dstar != NULL && len > 0U) {
-			if (mode == MODE_IDLE) {
-				LogMessage("Mode set to D-Star");
-				mode = MODE_DSTAR;
-				m_display->setDStar();
-				m_modem->setMode(MODE_DSTAR);
-				if (m_dmrNetwork != NULL)
-					m_dmrNetwork->enable(false);
-			}
+			if (mode == MODE_IDLE)
+				dstar->writeModem(data);
 
 			if (mode == MODE_DSTAR) {
 				dstar->writeModem(data);
@@ -238,16 +232,8 @@ int CMMDVMHost::run()
 
 		len = m_modem->readYSFData(data);
 		if (ysf != NULL && len > 0U) {
-			if (mode == MODE_IDLE) {
-				LogMessage("Mode set to System Fusion");
-				mode = MODE_YSF;
-				m_display->setFusion();
-				m_modem->setMode(MODE_YSF);
-				if (m_dmrNetwork != NULL)
-					m_dmrNetwork->enable(false);
-				if (m_dstarNetwork != NULL)
-					m_dstarNetwork->enable(false);
-			}
+			if (mode == MODE_IDLE)
+				ysf->writeData(data, len);
 
 			if (mode == MODE_YSF) {
 				ysf->writeData(data, len);
