@@ -88,7 +88,7 @@ Log.o:	Log.cpp Log.h
 		$(CC) $(CFLAGS) -c Log.cpp
 
 MMDVMHost.o:	MMDVMHost.cpp MMDVMHost.h Conf.h Log.h Version.h Modem.h StopWatch.h Defines.h DMRSync.h DStarControl.h YSFEcho.h DMRControl.h HomebrewDMRIPSC.h \
-							Display.h TFTSerial.h NullDisplay.h DStarNetwork.h
+							Display.h TFTSerial.h NullDisplay.h DStarNetwork.h Timer.h
 		$(CC) $(CFLAGS) -c MMDVMHost.cpp
 
 Modem.o:	Modem.cpp Modem.h Log.h SerialController.h Timer.h RingBuffer.h Utils.o DMRDefines.h DStarDefines.h YSFDefines.h Defines.h

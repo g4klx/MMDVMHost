@@ -85,7 +85,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 		return;
 	}
 
-	if (data[0U] == TAG_LOST && m_state == RS_LATE_ENTRY) {
+	if (data[0U] == TAG_LOST) {
 		m_state = RS_LISTENING;
 		return;
 	}

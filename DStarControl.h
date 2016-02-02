@@ -38,7 +38,7 @@ public:
 	CDStarControl(const std::string& callsign, const std::string& module, CDStarNetwork* network, IDisplay* display, unsigned int timeout, bool duplex);
 	~CDStarControl();
 
-	void writeModem(unsigned char* data);
+	bool writeModem(unsigned char* data);
 
 	unsigned int readModem(unsigned char* data);
 

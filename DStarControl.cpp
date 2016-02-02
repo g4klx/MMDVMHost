@@ -78,7 +78,7 @@ CDStarControl::~CDStarControl()
 	delete[] m_lastFrame;
 }
 
-void CDStarControl::writeModem(unsigned char *data)
+bool CDStarControl::writeModem(unsigned char *data)
 {
 	unsigned char type = data[0U];
 
@@ -87,30 +87,30 @@ void CDStarControl::writeModem(unsigned char *data)
 		LogMessage("D-Star, transmission lost, %.1f seconds, BER: %.1f%%", float(m_frames) / 50.0F, float(m_errs * 100U) / float(m_bits));
 		m_ackTimer.start();
 		writeEndOfTransmission();
-		return;
+		return false;
 	}
 
-	if (type == TAG_LOST && (m_state == RS_LATE_ENTRY || m_state == RS_RELAYING_RF_DATA)) {
+	if (type == TAG_LOST && m_state != RS_RELAYING_NETWORK_AUDIO) {
 		m_state = RS_LISTENING;
-		return;
+		return false;
 	}
 
 	if (type == TAG_HEADER) {
 		if (m_state == RS_RELAYING_RF_AUDIO)
-			return;
+			return false;
 
 		CDStarHeader header(data + 1U);
 
 		// Is this a transmission destined for a repeater?
 		if (!header.isRepeater())
-			return;
+			return false;
 
 		unsigned char callsign[DSTAR_LONG_CALLSIGN_LENGTH];
 		header.getRPTCall1(callsign);
 
 		// Is it for us?
 		if (::memcmp(callsign, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH) != 0)
-			return;
+			return false;
 
 		unsigned char gateway[DSTAR_LONG_CALLSIGN_LENGTH];
 		header.getRPTCall2(gateway);
@@ -178,6 +178,8 @@ void CDStarControl::writeModem(unsigned char *data)
 			}
 
 			LogMessage("D-Star, received RF busy header from %8.8s/%4.4s to %8.8s", my1, my2, your);
+
+			return false;
 		}
 	} else if (type == TAG_EOT) {
 		if (m_state == RS_RELAYING_RF_AUDIO) {
@@ -203,6 +205,8 @@ void CDStarControl::writeModem(unsigned char *data)
 					writeNetworkData(DSTAR_END_PATTERN_BYTES, 0U, true, true);
 			}
 		}
+
+		return false;
 	} else {
 		if (m_state == RS_LISTENING) {
 			unsigned int bits = matchSync(data + 1U);
@@ -210,6 +214,8 @@ void CDStarControl::writeModem(unsigned char *data)
 				m_slowData.start();
 				m_state = RS_LATE_ENTRY;
 			}
+
+			return false;
 		} else if (m_state == RS_RELAYING_RF_AUDIO) {
 			unsigned int errors = m_fec.regenerateDStar(data + 1U);
 			m_errs += errors;
@@ -239,27 +245,29 @@ void CDStarControl::writeModem(unsigned char *data)
 
 			if (m_net)
 				writeNetworkData(data, 0U, false, true);
+
+			return false;
 		} else if (m_state == RS_LATE_ENTRY) {
 			unsigned int bits = matchSync(data + 1U);
 			if (bits <= MAX_SYNC_BIT_ERRORS) {
 				m_slowData.reset();
-				return;
+				return false;
 			}
 
 			CDStarHeader* header = m_slowData.add(data + 1U);
 			if (header == NULL)
-				return;
+				return false;
 
 			// Is this a transmission destined for a repeater?
 			if (!header->isRepeater())
-				return;
+				return false;
 
 			unsigned char callsign[DSTAR_LONG_CALLSIGN_LENGTH];
 			header->getRPTCall1(callsign);
 
 			// Is it for us?
 			if (::memcmp(callsign, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH) != 0)
-				return;
+				return false;
 
 			unsigned char gateway[DSTAR_LONG_CALLSIGN_LENGTH];
 			header->getRPTCall2(gateway);
@@ -341,6 +349,8 @@ void CDStarControl::writeModem(unsigned char *data)
 			LogMessage("D-Star, received RF late entry from %8.8s/%4.4s to %8.8s", my1, my2, your);
 		}
 	}
+
+	return true;
 }
 
 unsigned int CDStarControl::readModem(unsigned char* data)

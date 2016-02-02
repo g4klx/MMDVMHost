@@ -22,6 +22,7 @@
 #include "HomebrewDMRIPSC.h"
 #include "DStarNetwork.h"
 #include "Display.h"
+#include "Timer.h"
 #include "Modem.h"
 #include "Conf.h"
 
@@ -41,6 +42,8 @@ private:
   CDStarNetwork*    m_dstarNetwork;
   CHomebrewDMRIPSC* m_dmrNetwork;
   IDisplay*         m_display;
+  unsigned char     m_mode;
+  CTimer            m_modeTimer;
   bool              m_dstarEnabled;
   bool              m_dmrEnabled;
   bool              m_ysfEnabled;
@@ -50,6 +53,8 @@ private:
   bool createDStarNetwork();
   bool createDMRNetwork();
   void createDisplay();
+
+  void setMode(unsigned char mode);
 };
 
 #endif

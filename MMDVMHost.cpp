@@ -75,6 +75,8 @@ m_modem(NULL),
 m_dstarNetwork(NULL),
 m_dmrNetwork(NULL),
 m_display(NULL),
+m_mode(MODE_IDLE),
+m_modeTimer(1000U),
 m_dstarEnabled(false),
 m_dmrEnabled(false),
 m_ysfEnabled(false)
@@ -167,10 +169,9 @@ int CMMDVMHost::run()
 	if (m_ysfEnabled)
 		ysf = new CYSFEcho(2U, 10000U);
 
-	unsigned char mode = MODE_IDLE;
-	CTimer modeTimer(1000U, m_conf.getModeHang());
+	m_modeTimer.setTimeout(m_conf.getModeHang());
 
-	m_display->setIdle();
+	setMode(MODE_IDLE);
 
 	while (!m_killed) {
 		unsigned char data[200U];
@@ -179,103 +180,68 @@ int CMMDVMHost::run()
 
 		len = m_modem->readDStarData(data);
 		if (dstar != NULL && len > 0U) {
-			if (mode == MODE_IDLE)
+			if (m_mode == MODE_IDLE) {
+				bool ret = dstar->writeModem(data);
+				if (ret)
+					setMode(MODE_DSTAR);
+			} else if (m_mode == MODE_DSTAR) {
 				dstar->writeModem(data);
-
-			if (mode == MODE_DSTAR) {
-				dstar->writeModem(data);
-				modeTimer.start();
+				m_modeTimer.start();
 			}
 		}
 
 		len = m_modem->readDMRData1(data);
 		if (dmr != NULL && len > 0U) {
-			if (mode == MODE_IDLE) {
+			if (m_mode == MODE_IDLE) {
 				bool ret = dmr->processWakeup(data);
-				if (ret) {
-					LogMessage("Mode set to DMR");
-					mode = MODE_DMR;
-					m_display->setDMR();
-					// This sets the mode to DMR within the modem
-					m_modem->writeDMRStart(true);
-					if (m_dstarNetwork != NULL)
-						m_dstarNetwork->enable(false);
-					modeTimer.start();
-				}
-			} else if (mode == MODE_DMR) {
+				if (ret)
+					setMode(MODE_DMR);
+			} else if (m_mode == MODE_DMR) {
 				dmr->writeModemSlot1(data);
 				dmrBeaconTimer.stop();
-				modeTimer.start();
+				m_modeTimer.start();
 			}
 		}
 
 		len = m_modem->readDMRData2(data);
 		if (dmr != NULL && len > 0U) {
-			if (mode == MODE_IDLE) {
+			if (m_mode == MODE_IDLE) {
 				bool ret = dmr->processWakeup(data);
-				if (ret) {
-					LogMessage("Mode set to DMR");
-					mode = MODE_DMR;
-					m_display->setDMR();
-					// This sets the mode to DMR within the modem
-					m_modem->writeDMRStart(true);
-					if (m_dstarNetwork != NULL)
-						m_dstarNetwork->enable(false);
-					modeTimer.start();
-				}
-			} else if (mode == MODE_DMR) {
+				if (ret)
+					setMode(MODE_DMR);
+			} else if (m_mode == MODE_DMR) {
 				dmr->writeModemSlot2(data);
 				dmrBeaconTimer.stop();
-				modeTimer.start();
+				m_modeTimer.start();
 			}
 		}
 
 		len = m_modem->readYSFData(data);
 		if (ysf != NULL && len > 0U) {
-			if (mode == MODE_IDLE)
+			if (m_mode == MODE_IDLE) {
+				bool ret = ysf->writeData(data, len);
+				if (ret)
+					setMode(MODE_YSF);
+			} else if (m_mode == MODE_YSF) {
 				ysf->writeData(data, len);
-
-			if (mode == MODE_YSF) {
-				ysf->writeData(data, len);
-				modeTimer.start();
+				m_modeTimer.start();
 			}
 		}
 
-		if (modeTimer.isRunning() && modeTimer.hasExpired()) {
-			LogMessage("Mode set to Idle");
-
-			if (mode == MODE_DMR)
-				m_modem->writeDMRStart(false);
-
-			mode = MODE_IDLE;
-			m_display->setIdle();
-			m_modem->setMode(MODE_IDLE);
-
-			if (m_dmrNetwork != NULL)
-				m_dmrNetwork->enable(true);
-			if (m_dstarNetwork != NULL)
-				m_dstarNetwork->enable(true);
-
-			modeTimer.stop();
-		}
+		if (m_modeTimer.isRunning() && m_modeTimer.hasExpired())
+			setMode(MODE_IDLE);
 
 		if (dstar != NULL) {
 			ret = m_modem->hasDStarSpace();
 			if (ret) {
 				len = dstar->readModem(data);
 
-				if (len > 0U && mode == MODE_IDLE) {
-					LogMessage("Mode set to D-Star");
-					mode = MODE_DSTAR;
-					m_display->setDStar();
-					m_modem->setMode(MODE_DSTAR);
-					if (m_dmrNetwork != NULL)
-						m_dmrNetwork->enable(false);
-				}
+				if (len > 0U && m_mode == MODE_IDLE)
+					setMode(MODE_DSTAR);
 
-				if (len > 0U && mode == MODE_DSTAR) {
+				if (len > 0U && m_mode == MODE_DSTAR) {
 					m_modem->writeDStarData(data, len);
-					modeTimer.start();
+					m_modeTimer.start();
 				}
 			}
 		}
@@ -285,19 +251,13 @@ int CMMDVMHost::run()
 			if (ret) {
 				len = dmr->readModemSlot1(data);
 
-				if (len > 0U && mode == MODE_IDLE) {
-					LogMessage("Mode set to DMR");
-					m_modem->setMode(MODE_DMR);
-					m_display->setDMR();
-					mode = MODE_DMR;
-					if (m_dstarNetwork != NULL)
-						m_dstarNetwork->enable(false);
-				}
+				if (len > 0U && m_mode == MODE_IDLE)
+					setMode(MODE_DMR);
 
-				if (len > 0U && mode == MODE_DMR) {
+				if (len > 0U && m_mode == MODE_DMR) {
 					m_modem->writeDMRData1(data, len);
 					dmrBeaconTimer.stop();
-					modeTimer.start();
+					m_modeTimer.start();
 				}
 			}
 
@@ -305,19 +265,13 @@ int CMMDVMHost::run()
 			if (ret) {
 				len = dmr->readModemSlot2(data);
 
-				if (len > 0U && mode == MODE_IDLE) {
-					LogMessage("Mode set to DMR");
-					m_modem->setMode(MODE_DMR);
-					m_display->setDMR();
-					mode = MODE_DMR;
-					if (m_dstarNetwork != NULL)
-						m_dstarNetwork->enable(false);
-				}
+				if (len > 0U && m_mode == MODE_IDLE)
+					setMode(MODE_DMR);
 
-				if (len > 0U && mode == MODE_DMR) {
+				if (len > 0U && m_mode == MODE_DMR) {
 					m_modem->writeDMRData2(data, len);
 					dmrBeaconTimer.stop();
-					modeTimer.start();
+					m_modeTimer.start();
 				}
 			}
 		}
@@ -327,20 +281,12 @@ int CMMDVMHost::run()
 			if (ret) {
 				len = ysf->readData(data);
 
-				if (len > 0U && mode == MODE_IDLE) {
-					LogMessage("Mode set to System Fusion");
-					mode = MODE_YSF;
-					m_display->setFusion();
-					m_modem->setMode(MODE_YSF);
-					if (m_dmrNetwork != NULL)
-						m_dmrNetwork->enable(false);
-					if (m_dstarNetwork != NULL)
-						m_dstarNetwork->enable(false);
-				}
+				if (len > 0U && m_mode == MODE_IDLE)
+					setMode(MODE_YSF);
 
-				if (len > 0U && mode == MODE_YSF) {
+				if (len > 0U && m_mode == MODE_YSF) {
 					m_modem->writeYSFData(data, len);
-					modeTimer.start();
+					m_modeTimer.start();
 				}
 			}
 		}
@@ -348,8 +294,8 @@ int CMMDVMHost::run()
 		if (m_dmrNetwork != NULL) {
 			bool run = m_dmrNetwork->wantsBeacon();
 
-			if (dmrBeaconsEnabled && run && mode == MODE_IDLE) {
-				mode = MODE_DMR;
+			if (dmrBeaconsEnabled && run && m_mode == MODE_IDLE) {
+				m_mode = MODE_DMR;
 				m_modem->writeDMRStart(true);
 				dmrBeaconTimer.start();
 			}
@@ -357,7 +303,7 @@ int CMMDVMHost::run()
 
 		unsigned int ms = stopWatch.elapsed();
 		m_modem->clock(ms);
-		modeTimer.clock(ms);
+		m_modeTimer.clock(ms);
 		if (dstar != NULL)
 			dstar->clock(ms);
 		if (dmr != NULL)
@@ -374,7 +320,7 @@ int CMMDVMHost::run()
 		if (dmrBeaconTimer.isRunning() && dmrBeaconTimer.hasExpired()) {
 			dmrBeaconTimer.stop();
 			m_modem->writeDMRStart(false);
-			mode = MODE_IDLE;
+			m_mode = MODE_IDLE;
 		}
 
 		if (ms < 5U) {
@@ -388,7 +334,7 @@ int CMMDVMHost::run()
 
 	LogMessage("MMDVMHost is exiting on receipt of SIGHUP1");
 
-	m_display->setIdle();
+	setMode(MODE_IDLE);
 
 	m_modem->close();
 	delete m_modem;
@@ -559,5 +505,59 @@ void CMMDVMHost::createDisplay()
 	if (!ret) {
 		delete m_display;
 		m_display = new CNullDisplay;
+	}
+}
+
+void CMMDVMHost::setMode(unsigned char mode)
+{
+	assert(m_modem != NULL);
+	assert(m_display != NULL);
+
+	switch (mode) {
+	case MODE_DSTAR:
+		LogMessage("Mode set to D-Star");
+		if (m_dmrNetwork != NULL)
+			m_dmrNetwork->enable(false);
+		m_display->setDStar();
+		m_modem->setMode(MODE_DSTAR);
+		m_mode = MODE_DSTAR;
+		m_modeTimer.start();
+		break;
+
+	case MODE_DMR:
+		LogMessage("Mode set to DMR");
+		if (m_dstarNetwork != NULL)
+			m_dstarNetwork->enable(false);
+		m_display->setDMR();
+		m_modem->writeDMRStart(true);
+		m_mode = MODE_DMR;
+		m_modeTimer.start();
+		break;
+
+	case MODE_YSF:
+		LogMessage("Mode set to System Fusion");
+		if (m_dstarNetwork != NULL)
+			m_dstarNetwork->enable(false);
+		if (m_dmrNetwork != NULL)
+			m_dmrNetwork->enable(false);
+		m_display->setFusion();
+		m_modem->setMode(MODE_YSF);
+		m_mode = MODE_YSF;
+		m_modeTimer.start();
+		break;
+
+	default:
+		LogMessage("Mode set to Idle");
+		if (m_dstarNetwork != NULL)
+			m_dstarNetwork->enable(true);
+		if (m_dmrNetwork != NULL)
+			m_dmrNetwork->enable(true);
+		if (m_mode == MODE_DMR)
+			m_modem->writeDMRStart(false);
+		m_display->setIdle();
+		m_modem->setMode(MODE_IDLE);
+		m_mode = MODE_IDLE;
+		m_modeTimer.stop();
+		break;
 	}
 }
