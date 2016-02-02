@@ -67,11 +67,11 @@ CDStarHeader* CDStarSlowData::add(const unsigned char* data)
 	if ((m_buffer[0U] & DSTAR_SLOW_DATA_TYPE_MASK) != DSTAR_SLOW_DATA_TYPE_HEADER)
 		return NULL;
 
+	if (m_ptr >= 45U)
+		return NULL;
+
 	::memcpy(m_header + m_ptr, m_buffer + 1U, 5U);
 	m_ptr += 5U;
-
-	if (m_ptr < DSTAR_HEADER_LENGTH_BYTES)
-		return NULL;
 
 	// Clean up the data
 	m_header[0U] &= (DSTAR_INTERRUPTED_MASK | DSTAR_URGENT_MASK | DSTAR_REPEATER_MASK);
@@ -88,11 +88,12 @@ CDStarHeader* CDStarSlowData::add(const unsigned char* data)
 	// Add the new CRC
 	CCRC::addCCITT16(m_header, DSTAR_HEADER_LENGTH_BYTES);
 
-	m_ptr = 0U;
-
 	// Compare them
-	if (crc[0U] != m_header[39U] || crc[1U] != m_header[40U])
+	if (crc[0U] != m_header[39U] || crc[1U] != m_header[40U]) {
+		m_header[39U] = 0x00U;
+		m_header[40U] = 0x00U;
 		return NULL;
+	}
 
 	return new CDStarHeader(m_header);
 }
