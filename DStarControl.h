@@ -87,7 +87,6 @@ private:
 	void insertSilence(unsigned int count);
 
 	void blankDTMF(unsigned char* data) const;
-	unsigned int matchSync(const unsigned char* data) const;
 
 	void sendAck();
 };

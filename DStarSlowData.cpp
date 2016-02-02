@@ -89,9 +89,8 @@ CDStarHeader* CDStarSlowData::add(const unsigned char* data)
 	CCRC::addCCITT16(m_header, DSTAR_HEADER_LENGTH_BYTES);
 
 	// Compare them
-	if (crc[0U] != m_header[39U] || crc[1U] != m_header[40U]) {
-		m_header[39U] = 0x00U;
-		m_header[40U] = 0x00U;
+	if (::memcmp(crc, m_header + 39U, 2U) != 0) {
+		::memcpy(m_header + 39U, crc, 2U);
 		return NULL;
 	}
 
