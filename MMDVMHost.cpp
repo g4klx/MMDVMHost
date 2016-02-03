@@ -187,6 +187,8 @@ int CMMDVMHost::run()
 			} else if (m_mode == MODE_DSTAR) {
 				dstar->writeModem(data);
 				m_modeTimer.start();
+			} else {
+				LogWarning("D-Star modem data received when in mode %u", m_mode);
 			}
 		}
 
@@ -200,6 +202,8 @@ int CMMDVMHost::run()
 				dmr->writeModemSlot1(data);
 				dmrBeaconTimer.stop();
 				m_modeTimer.start();
+			} else {
+				LogWarning("DMR modem data received when in mode %u", m_mode);
 			}
 		}
 
@@ -213,6 +217,8 @@ int CMMDVMHost::run()
 				dmr->writeModemSlot2(data);
 				dmrBeaconTimer.stop();
 				m_modeTimer.start();
+			} else {
+				LogWarning("DMR modem data received when in mode %u", m_mode);
 			}
 		}
 
@@ -225,6 +231,8 @@ int CMMDVMHost::run()
 			} else if (m_mode == MODE_YSF) {
 				ysf->writeData(data, len);
 				m_modeTimer.start();
+			} else {
+				LogWarning("System Fusion modem data received when in mode %u", m_mode);
 			}
 		}
 
@@ -235,13 +243,15 @@ int CMMDVMHost::run()
 			ret = m_modem->hasDStarSpace();
 			if (ret) {
 				len = dstar->readModem(data);
-
-				if (len > 0U && m_mode == MODE_IDLE)
-					setMode(MODE_DSTAR);
-
-				if (len > 0U && m_mode == MODE_DSTAR) {
-					m_modem->writeDStarData(data, len);
-					m_modeTimer.start();
+				if (len > 0U) {
+					if (m_mode == MODE_IDLE) {
+						setMode(MODE_DSTAR);
+					} else if (m_mode == MODE_DSTAR) {
+						m_modem->writeDStarData(data, len);
+						m_modeTimer.start();
+					} else {
+						LogWarning("D-Star data received when in mode %u", m_mode);
+					}
 				}
 			}
 		}
@@ -250,28 +260,32 @@ int CMMDVMHost::run()
 			ret = m_modem->hasDMRSpace1();
 			if (ret) {
 				len = dmr->readModemSlot1(data);
-
-				if (len > 0U && m_mode == MODE_IDLE)
-					setMode(MODE_DMR);
-
-				if (len > 0U && m_mode == MODE_DMR) {
-					m_modem->writeDMRData1(data, len);
-					dmrBeaconTimer.stop();
-					m_modeTimer.start();
+				if (len > 0U) {
+					if (m_mode == MODE_IDLE) {
+						setMode(MODE_DMR);
+					} else if (m_mode == MODE_DMR) {
+						m_modem->writeDMRData1(data, len);
+						dmrBeaconTimer.stop();
+						m_modeTimer.start();
+					} else {
+						LogWarning("DMR data received when in mode %u", m_mode);
+					}
 				}
 			}
 
 			ret = m_modem->hasDMRSpace2();
 			if (ret) {
 				len = dmr->readModemSlot2(data);
-
-				if (len > 0U && m_mode == MODE_IDLE)
-					setMode(MODE_DMR);
-
-				if (len > 0U && m_mode == MODE_DMR) {
-					m_modem->writeDMRData2(data, len);
-					dmrBeaconTimer.stop();
-					m_modeTimer.start();
+				if (len > 0U) {
+					if (m_mode == MODE_IDLE) {
+						setMode(MODE_DMR);
+					} else if (m_mode == MODE_DMR) {
+						m_modem->writeDMRData2(data, len);
+						dmrBeaconTimer.stop();
+						m_modeTimer.start();
+					} else {
+						LogWarning("DMR data received when in mode %u", m_mode);
+					}
 				}
 			}
 		}
@@ -280,13 +294,15 @@ int CMMDVMHost::run()
 			ret = m_modem->hasYSFSpace();
 			if (ret) {
 				len = ysf->readData(data);
-
-				if (len > 0U && m_mode == MODE_IDLE)
-					setMode(MODE_YSF);
-
-				if (len > 0U && m_mode == MODE_YSF) {
-					m_modem->writeYSFData(data, len);
-					m_modeTimer.start();
+				if (len > 0U) {
+					if (m_mode == MODE_IDLE) {
+						setMode(MODE_YSF);
+					} else if (m_mode == MODE_YSF) {
+						m_modem->writeYSFData(data, len);
+						m_modeTimer.start();
+					} else {
+						LogWarning("System Fusion data received when in mode %u", m_mode);
+					}
 				}
 			}
 		}
