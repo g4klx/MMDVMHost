@@ -19,6 +19,7 @@
 #include "DStarSlowData.h"
 #include "DStarDefines.h"
 #include "CRC.h"
+#include "Log.h"
 
 #include <cstdio>
 #include <cassert>
@@ -90,6 +91,8 @@ CDStarHeader* CDStarSlowData::add(const unsigned char* data)
 
 	// Compare them
 	if (::memcmp(crc, m_header + 39U, 2U) != 0) {
+		if (m_ptr == 45U)
+			LogMessage("D-Star, invalid slow data header");
 		::memcpy(m_header + 39U, crc, 2U);
 		return NULL;
 	}

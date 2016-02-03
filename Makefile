@@ -57,7 +57,7 @@ DStarHeader.o:	DStarHeader.cpp DStarHeader.h DStarDefines.h CRC.h
 DStarNetwork.o:	DStarNetwork.cpp DStarNetwork.h Log.h UDPSocket.h RingBuffer.h Utils.h StopWatch.h DStarDefines.h Defines.h Timer.h
 		$(CC) $(CFLAGS) -c DStarNetwork.cpp
 
-DStarSlowData.o:	DStarSlowData.cpp DStarSlowData.h DStarHeader.h DStarDefines.h CRC.h
+DStarSlowData.o:	DStarSlowData.cpp DStarSlowData.h DStarHeader.h DStarDefines.h CRC.h Log.h
 		$(CC) $(CFLAGS) -c DStarSlowData.cpp
 
 EMB.o:		EMB.cpp EMB.h
