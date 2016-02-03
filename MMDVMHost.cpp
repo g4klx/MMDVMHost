@@ -309,9 +309,7 @@ int CMMDVMHost::run()
 
 		if (m_dmrNetwork != NULL) {
 			bool run = m_dmrNetwork->wantsBeacon();
-
 			if (dmrBeaconsEnabled && run && m_mode == MODE_IDLE) {
-				m_mode = MODE_DMR;
 				m_modem->writeDMRStart(true);
 				dmrBeaconTimer.start();
 			}
@@ -336,7 +334,6 @@ int CMMDVMHost::run()
 		if (dmrBeaconTimer.isRunning() && dmrBeaconTimer.hasExpired()) {
 			dmrBeaconTimer.stop();
 			m_modem->writeDMRStart(false);
-			m_mode = MODE_IDLE;
 		}
 
 		if (ms < 5U) {
@@ -570,8 +567,9 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dmrNetwork->enable(true);
 		if (m_mode == MODE_DMR)
 			m_modem->writeDMRStart(false);
+		else
+			m_modem->setMode(MODE_IDLE);
 		m_display->setIdle();
-		m_modem->setMode(MODE_IDLE);
 		m_mode = MODE_IDLE;
 		m_modeTimer.stop();
 		break;
