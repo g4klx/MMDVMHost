@@ -310,7 +310,7 @@ int CMMDVMHost::run()
 		if (m_dmrNetwork != NULL) {
 			bool run = m_dmrNetwork->wantsBeacon();
 			if (dmrBeaconsEnabled && run && m_mode == MODE_IDLE) {
-				m_modem->writeDMRStart(true);
+				setMode(MODE_DMR, false);
 				dmrBeaconTimer.start();
 			}
 		}
@@ -332,8 +332,8 @@ int CMMDVMHost::run()
 
 		dmrBeaconTimer.clock(ms);
 		if (dmrBeaconTimer.isRunning() && dmrBeaconTimer.hasExpired()) {
+			setMode(MODE_IDLE, false);
 			dmrBeaconTimer.stop();
-			m_modem->writeDMRStart(false);
 		}
 
 		if (ms < 5U) {
@@ -521,14 +521,15 @@ void CMMDVMHost::createDisplay()
 	}
 }
 
-void CMMDVMHost::setMode(unsigned char mode)
+void CMMDVMHost::setMode(unsigned char mode, bool logging)
 {
 	assert(m_modem != NULL);
 	assert(m_display != NULL);
 
 	switch (mode) {
 	case MODE_DSTAR:
-		LogMessage("Mode set to D-Star");
+		if (logging)
+			LogMessage("Mode set to D-Star");
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(false);
 		m_display->setDStar();
@@ -538,7 +539,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 		break;
 
 	case MODE_DMR:
-		LogMessage("Mode set to DMR");
+		if (logging)
+			LogMessage("Mode set to DMR");
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(false);
 		m_display->setDMR();
@@ -548,7 +550,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 		break;
 
 	case MODE_YSF:
-		LogMessage("Mode set to System Fusion");
+		if (logging)
+			LogMessage("Mode set to System Fusion");
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(false);
 		if (m_dmrNetwork != NULL)
@@ -560,7 +563,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 		break;
 
 	default:
-		LogMessage("Mode set to Idle");
+		if (logging)
+			LogMessage("Mode set to Idle");
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(true);
 		if (m_dmrNetwork != NULL)

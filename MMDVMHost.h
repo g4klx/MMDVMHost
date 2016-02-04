@@ -54,7 +54,7 @@ private:
   bool createDMRNetwork();
   void createDisplay();
 
-  void setMode(unsigned char mode);
+  void setMode(unsigned char mode, bool logging = true);
 };
 
 #endif
