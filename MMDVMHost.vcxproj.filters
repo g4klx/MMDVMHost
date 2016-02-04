@@ -146,6 +146,12 @@
     <ClInclude Include="DStarControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="YSFConvolution.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="YSFFICH.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -263,6 +269,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DStarControl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="YSFConvolution.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="YSFFICH.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

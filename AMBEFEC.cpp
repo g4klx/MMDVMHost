@@ -16,6 +16,7 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include "Golay24128.h"
 #include "AMBEFEC.h"
 
 #include <cstdio>

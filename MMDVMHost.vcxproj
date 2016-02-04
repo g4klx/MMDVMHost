@@ -189,8 +189,10 @@
     <ClInclude Include="UDPSocket.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Version.h" />
+    <ClInclude Include="YSFConvolution.h" />
     <ClInclude Include="YSFDefines.h" />
     <ClInclude Include="YSFEcho.h" />
+    <ClInclude Include="YSFFICH.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AMBEFEC.cpp" />
@@ -231,7 +233,9 @@
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="UDPSocket.cpp" />
     <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="YSFConvolution.cpp" />
     <ClCompile Include="YSFEcho.cpp" />
+    <ClCompile Include="YSFFICH.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2010,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,17 +16,28 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef Golay24128_H
-#define Golay24128_H
+#if !defined(YSFConvolution_H)
+#define  YSFConvolution_H
 
-class CGolay24128 {
+#include "YSFConvolution.h"
+
+class CYSFConvolution {
 public:
-	static unsigned int encode23127(unsigned int data);
-	static unsigned int encode24128(unsigned int data);
+	CYSFConvolution();
+	~CYSFConvolution();
 
-	static unsigned int decode23127(unsigned int code);
-	static unsigned int decode24128(unsigned int code);
-	static unsigned int decode24128(unsigned char* bytes);
+	void start();
+	void decode(unsigned char s0, unsigned char s1);
+	void chainback(unsigned char* out);
+
+private:
+	unsigned short*     m_metrics1;
+	unsigned short*     m_metrics2;
+	unsigned short*     m_oldMetrics;
+	unsigned short*     m_newMetrics;
+	unsigned long long* m_decisions;
+	unsigned long long* m_dp;
 };
 
 #endif
+

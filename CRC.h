@@ -31,6 +31,8 @@ public:
 	static unsigned char encodeEightBit(const unsigned char* in, unsigned int length);
 
 	static unsigned char crc8(const unsigned char* in, unsigned int length);
+
+	static bool crcFICH(const unsigned char* fich);
 };
 
 #endif

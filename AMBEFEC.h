@@ -19,8 +19,6 @@
 #ifndef	AMBEFEC_H
 #define	AMBEFEC_H
 
-#include "Golay24128.h"
-
 class CAMBEFEC {
 public:
 	CAMBEFEC();
