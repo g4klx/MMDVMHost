@@ -95,7 +95,7 @@ bool CDStarNetwork::writeHeader(const unsigned char* header, unsigned int length
 	m_outSeq = 0U;
 
 	if (m_debug)
-		CUtils::dump(1U, "D-Star Transmitted", buffer, 49U);
+		CUtils::dump(1U, "D-Star Network Header Sent", buffer, 49U);
 
 	for (unsigned int i = 0U; i < 2U; i++) {
 		bool ret = m_socket.write(buffer, 49U, m_address, m_port);
@@ -139,7 +139,7 @@ bool CDStarNetwork::writeData(const unsigned char* data, unsigned int length, un
 	::memcpy(buffer + 9U, data, length);
 
 	if (m_debug)
-		CUtils::dump(1U, "D-Star Transmitted", buffer, length + 9U);
+		CUtils::dump(1U, "D-Star Network Data Sent", buffer, length + 9U);
 
 	return m_socket.write(buffer, length + 9U, m_address, m_port);
 }
@@ -163,7 +163,7 @@ bool CDStarNetwork::writePoll(const char* text)
 	::memcpy(buffer + 5U, text, length + 1U);
 
 	if (m_debug)
-		CUtils::dump(1U, "D-Star Transmitted", buffer, 6U + length);
+		CUtils::dump(1U, "D-Star Network Poll Sent", buffer, 6U + length);
 
 	return m_socket.write(buffer, 6U + length, m_address, m_port);
 }
@@ -190,9 +190,6 @@ void CDStarNetwork::clock(unsigned int ms)
 	if (length <= 0)
 		return;
 
-	if (m_debug)
-		CUtils::dump(1U, "D-Star Received", buffer, length);
-
 	// Check if the data is for us
 	if (m_address.s_addr != address.s_addr || m_port != port) {
 		LogMessage("D-Star packet received from an invalid source, %08X != %08X and/or %u != %u", m_address.s_addr, address.s_addr, m_port, port);
@@ -205,6 +202,9 @@ void CDStarNetwork::clock(unsigned int ms)
 
 	switch (buffer[4]) {
 	case 0x00U:			// NETWORK_TEXT;
+		if (m_debug)
+			CUtils::dump(1U, "D-Star Network Status Received", buffer, length);
+
 		m_linkStatus = LINK_STATUS(buffer[25U]);
 		::memcpy(m_linkReflector, buffer + 26U, DSTAR_LONG_CALLSIGN_LENGTH);
 		LogMessage("D-Star link status set to \"%20.20s\"", buffer + 5U);
@@ -217,6 +217,9 @@ void CDStarNetwork::clock(unsigned int ms)
 
 	case 0x20U:			// NETWORK_HEADER
 		if (m_inId == 0U && m_enabled) {
+			if (m_debug)
+				CUtils::dump(1U, "D-Star Network Header Received", buffer, length);
+
 			m_inId = buffer[5] * 256U + buffer[6];
 
 			unsigned char c = length - 7U;
@@ -231,6 +234,9 @@ void CDStarNetwork::clock(unsigned int ms)
 
 	case 0x21U:			// NETWORK_DATA
 		if (m_enabled) {
+			if (m_debug)
+				CUtils::dump(1U, "D-Star Network Data Received", buffer, length);
+
 			uint16_t id = buffer[5] * 256U + buffer[6];
 
 			// Check that the stream id matches the valid header, reject otherwise

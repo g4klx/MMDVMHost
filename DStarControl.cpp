@@ -387,6 +387,9 @@ void CDStarControl::writeEndOfTransmission()
 	m_networkWatchdog.stop();
 	m_packetTimer.stop();
 
+	if (m_network != NULL)
+		m_network->reset();
+
 #if defined(DUMP_DSTAR)
 	closeFile();
 #endif
