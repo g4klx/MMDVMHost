@@ -69,7 +69,7 @@ DMR_SYNC_TYPE CDMRSync::matchDirectSync(const unsigned char* bytes) const
 	if (diffs < THRESHOLD)
 		return DST_DIRECT_SLOT2_DATA;
 
-	return DST_NONE;
+	return DST_NONE_;
 }
 
 DMR_SYNC_TYPE CDMRSync::matchMSSync(const unsigned char* bytes) const
@@ -84,7 +84,7 @@ DMR_SYNC_TYPE CDMRSync::matchMSSync(const unsigned char* bytes) const
 	if (diffs < THRESHOLD)
 		return DST_MS_DATA;
 
-	return DST_NONE;
+	return DST_NONE_;
 }
 
 DMR_SYNC_TYPE CDMRSync::matchBSSync(const unsigned char* bytes) const
@@ -99,7 +99,7 @@ DMR_SYNC_TYPE CDMRSync::matchBSSync(const unsigned char* bytes) const
 	if (diffs < THRESHOLD)
 		return DST_BS_DATA;
 
-	return DST_NONE;
+	return DST_NONE_;
 }
 
 void CDMRSync::addSync(unsigned char* data, DMR_SYNC_TYPE type) const
