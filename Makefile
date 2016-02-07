@@ -19,4 +19,4 @@ MMDVMHost:	$(OBJECTS)
 		$(CXX) $(CFLAGS) -c -o $@ $<
 
 clean:
-		$(RM) MMDVMHost *.o *.bak *~
+		$(RM) MMDVMHost *.o *.d *.bak *~
