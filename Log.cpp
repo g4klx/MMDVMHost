@@ -120,20 +120,23 @@ void Log(unsigned int level, const char* fmt, ...)
 	    ::fprintf(stdout, "%c: %04d-%02d-%02d %02d:%02d:%02d.%03lu ", LEVELS[level], tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, now.tv_usec / 1000U);
 #endif
 
-    va_list vl;
-    va_start(vl, fmt);
-    vfprintf(m_fpLog, fmt, vl);
+	char* buffer = NULL;
+
+	va_list vl;
+	va_start(vl, fmt);
+	vasprintf(&buffer, fmt, vl);
+	va_end(vl);
+
+	fprintf(m_fpLog, "%s\n", buffer);
+	fflush(m_fpLog);
+
 	if (m_display)
-	    vfprintf(stdout, fmt, vl);
-    va_end(vl);
-
-    ::fprintf(m_fpLog, "\n");
-    ::fflush(m_fpLog);
-
-	if (m_display) {
-	    ::fprintf(stdout, "\n");
-		::fflush(stdout);
+	{
+		fprintf(stdout, "%s\n", buffer);
+		fflush(stdout);
 	}
+
+	free(buffer);
 
     if (level == 6U) {		// Fatal
         ::fclose(m_fpLog);
