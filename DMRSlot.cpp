@@ -75,7 +75,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 	if (data[0U] == TAG_LOST && m_state == RS_RELAYING_RF_AUDIO) {
 		if (m_bits == 0U) m_bits = 1U;
 		LogMessage("DMR Slot %u, transmission lost, %.1f seconds, BER: %.1f%%", m_slotNo, float(m_frames) / 16.667F, float(m_errs * 100U) / float(m_bits));
-		writeEndOfTransmission();
+		writeEndOfTransmission(true);
 		return;
 	}
 
@@ -118,7 +118,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			// Convert the Data Sync to be from the BS
 			CDMRSync sync;
-			sync.addSync(data + 2U, DST_BS_DATA);
+			sync.addDataSync(data + 2U);
 
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
@@ -153,7 +153,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			// Convert the Data Sync to be from the BS
 			CDMRSync sync;
-			sync.addSync(data + 2U, DST_BS_DATA);
+			sync.addDataSync(data + 2U);
 
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
@@ -171,7 +171,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			// Set the Data Sync to be from the BS
 			CDMRSync sync;
-			sync.addSync(data + 2U, DST_BS_DATA);
+			sync.addDataSync(data + 2U);
 
 			data[0U] = TAG_EOT;
 			data[1U] = 0x00U;
@@ -210,7 +210,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			// Convert the Data Sync to be from the BS
 			CDMRSync sync;
-			sync.addSync(data + 2U, DST_BS_DATA);
+			sync.addDataSync(data + 2U);
 
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
@@ -253,7 +253,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 					// Convert the Data Sync to be from the BS
 					CDMRSync sync;
-					sync.addSync(data + 2U, DST_BS_DATA);
+					sync.addDataSync(data + 2U);
 
 					data[0U] = TAG_DATA;
 					data[1U] = 0x00U;
@@ -280,7 +280,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			// Convert the Data Sync to be from the BS
 			CDMRSync sync;
-			sync.addSync(data + 2U, DST_BS_DATA);
+			sync.addDataSync(data + 2U);
 
 			m_frames--;
 
@@ -302,7 +302,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 		if (m_state == RS_RELAYING_RF_AUDIO) {
 			// Convert the Audio Sync to be from the BS
 			CDMRSync sync;
-			sync.addSync(data + 2U, DST_BS_AUDIO);
+			sync.addAudioSync(data + 2U);
 
 			unsigned char fid = m_lc->getFID();
 			if (fid == FID_ETSI || fid == FID_DMRA)
@@ -352,7 +352,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 				unsigned char start[DMR_FRAME_LENGTH_BYTES + 2U];
 
 				CDMRSync sync;
-				sync.addSync(start + 2U, DST_BS_DATA);
+				sync.addDataSync(start + 2U);
 
 				CFullLC fullLC;
 				fullLC.encode(*m_lc, start + 2U, DT_VOICE_LC_HEADER);
@@ -421,7 +421,7 @@ unsigned int CDMRSlot::readModem(unsigned char* data)
 	return len;
 }
 
-void CDMRSlot::writeEndOfTransmission()
+void CDMRSlot::writeEndOfTransmission(bool writeEnd)
 {
 	m_state = RS_LISTENING;
 
@@ -438,6 +438,29 @@ void CDMRSlot::writeEndOfTransmission()
 
 	m_errs = 0U;
 	m_bits = 0U;
+
+	if (writeEnd) {
+		// Create a dummy start end frame
+		unsigned char data[DMR_FRAME_LENGTH_BYTES + 2U];
+
+		CDMRSync sync;
+		sync.addDataSync(data + 2U);
+
+		CFullLC fullLC;
+		fullLC.encode(*m_lc, data + 2U, DT_TERMINATOR_WITH_LC);
+
+		CSlotType slotType;
+		slotType.setColorCode(m_colorCode);
+		slotType.setDataType(DT_TERMINATOR_WITH_LC);
+		slotType.getData(data + 2U);
+
+		data[0U] = TAG_DATA;
+		data[1U] = 0x00U;
+
+		// 480ms of terminator to space things out
+		for (unsigned int i = 0U; i < 8U; i++)
+			writeQueue(data);
+	}
 
 	delete m_lc;
 	m_lc = NULL;
@@ -478,7 +501,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		// Convert the Data Sync to be from the BS
 		CDMRSync sync;
-		sync.addSync(data + 2U, DST_BS_DATA);
+		sync.addDataSync(data + 2U);
 
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
@@ -520,7 +543,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		// Convert the Data Sync to be from the BS
 		CDMRSync sync;
-		sync.addSync(data + 2U, DST_BS_DATA);
+		sync.addDataSync(data + 2U);
 
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
@@ -542,7 +565,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		// Convert the Data Sync to be from the BS
 		CDMRSync sync;
-		sync.addSync(data + 2U, DST_BS_DATA);
+		sync.addDataSync(data + 2U);
 
 		data[0U] = TAG_EOT;
 		data[1U] = 0x00U;
@@ -587,7 +610,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		// Convert the Data Sync to be from the BS
 		CDMRSync sync;
-		sync.addSync(data + 2U, DST_BS_DATA);
+		sync.addDataSync(data + 2U);
 
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
@@ -655,7 +678,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 			// Convert the Audio Sync to be from the BS
 			CDMRSync sync;
-			sync.addSync(data + 2U, DST_BS_AUDIO);
+			sync.addAudioSync(data + 2U);
 
 			writeQueue(data);
 
@@ -734,7 +757,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 				// Convert the Data Sync to be from the BS
 				CDMRSync sync;
-				sync.addSync(data + 2U, DST_BS_DATA);
+				sync.addDataSync(data + 2U);
 
 				data[0U] = TAG_DATA;
 				data[1U] = 0x00U;
@@ -766,7 +789,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		// Convert the Data Sync to be from the BS
 		CDMRSync sync;
-		sync.addSync(data + 2U, DST_BS_DATA);
+		sync.addDataSync(data + 2U);
 
 		m_frames--;
 
@@ -801,7 +824,7 @@ void CDMRSlot::clock(unsigned int ms)
 				m_frames += 1U;
 				if (m_bits == 0U) m_bits = 1U;
 				LogMessage("DMR Slot %u, network watchdog has expired, %.1f seconds, %u%% packet loss, BER: %.1f%%", m_slotNo, float(m_frames) / 16.667F, (m_lost * 100U) / m_frames, float(m_errs * 100U) / float(m_bits));
-				writeEndOfTransmission();
+				writeEndOfTransmission(true);
 #if defined(DUMP_DMR)
 				closeFile();
 #endif
@@ -1068,7 +1091,7 @@ void CDMRSlot::insertSilence(unsigned int count)
 
 		if (n == 0U) {
 			CDMRSync sync;
-			sync.addSync(data + 2U, DST_BS_AUDIO);
+			sync.addAudioSync(data + 2U);
 		} else {
 			// Set the Embedded LC to 0x00
 			::memset(data + 2U + 13U, 0x00U, 5U);

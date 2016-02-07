@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,38 +19,17 @@
 #if !defined(DMRSYNC_H)
 #define	DMRSYNC_H
 
-enum DMR_SYNC_TYPE {
-	DST_BS_AUDIO,
-	DST_BS_DATA,
-
-	DST_MS_AUDIO,
-	DST_MS_DATA,
-
-	DST_DIRECT_SLOT1_AUDIO,
-	DST_DIRECT_SLOT1_DATA,
-
-	DST_DIRECT_SLOT2_AUDIO,
-	DST_DIRECT_SLOT2_DATA,
-
-	DST_NONE
-};
-
 class CDMRSync
 {
 public:
 	CDMRSync();
 	~CDMRSync();
 
-	DMR_SYNC_TYPE matchDirectSync(const unsigned char* bytes) const;
+	void addDataSync(unsigned char* data) const;
 
-	DMR_SYNC_TYPE matchMSSync(const unsigned char* bytes) const;
-
-	DMR_SYNC_TYPE matchBSSync(const unsigned char* bytes) const;
-
-	void addSync(unsigned char* data, DMR_SYNC_TYPE type) const;
+	void addAudioSync(unsigned char* data) const;
 
 private:
-	unsigned int compareBytes(const unsigned char* bytes1, const unsigned char* bytes2) const;
 };
 
 #endif

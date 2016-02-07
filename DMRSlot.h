@@ -87,7 +87,7 @@ private:
 	void writeNetwork(const unsigned char* data, unsigned char dataType);
 	void writeNetwork(const unsigned char* data, unsigned char dataType, FLCO flco, unsigned int srcId, unsigned int dstId);
 
-	void writeEndOfTransmission();
+	void writeEndOfTransmission(bool writeEnd = false);
 
 	bool openFile();
 	bool writeFile(const unsigned char* data);

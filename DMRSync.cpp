@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -22,24 +22,6 @@
 #include <cstdio>
 #include <cassert>
 
-const unsigned int BITS_LOOKUP[] = {0U, 1U, 1U, 2U, 1U, 2U, 2U, 3U, 1U, 2U, 2U, 3U, 2U, 3U, 3U, 4U,
-									1U, 2U, 2U, 3U, 2U, 3U, 3U, 4U, 2U, 3U, 3U, 4U, 3U, 4U, 4U, 5U,
-									1U, 2U, 2U, 3U, 2U, 3U, 3U, 4U, 2U, 3U, 3U, 4U, 3U, 4U, 4U, 5U,
-									2U, 3U, 3U, 4U, 3U, 4U, 4U, 5U, 3U, 4U, 4U, 5U, 4U, 5U, 5U, 6U,
-									1U, 2U, 2U, 3U, 2U, 3U, 3U, 4U, 2U, 3U, 3U, 4U, 3U, 4U, 4U, 5U,
-									2U, 3U, 3U, 4U, 3U, 4U, 4U, 5U, 3U, 4U, 4U, 5U, 4U, 5U, 5U, 6U,
-									2U, 3U, 3U, 4U, 3U, 4U, 4U, 5U, 3U, 4U, 4U, 5U, 4U, 5U, 5U, 6U,
-									3U, 4U, 4U, 5U, 4U, 5U, 5U, 6U, 4U, 5U, 5U, 6U, 5U, 6U, 6U, 7U,
-									1U, 2U, 2U, 3U, 2U, 3U, 3U, 4U, 2U, 3U, 3U, 4U, 3U, 4U, 4U, 5U,
-									2U, 3U, 3U, 4U, 3U, 4U, 4U, 5U, 3U, 4U, 4U, 5U, 4U, 5U, 5U, 6U,
-									2U, 3U, 3U, 4U, 3U, 4U, 4U, 5U, 3U, 4U, 4U, 5U, 4U, 5U, 5U, 6U,
-									3U, 4U, 4U, 5U, 4U, 5U, 5U, 6U, 4U, 5U, 5U, 6U, 5U, 6U, 6U, 7U,
-									2U, 3U, 3U, 4U, 3U, 4U, 4U, 5U, 3U, 4U, 4U, 5U, 4U, 5U, 5U, 6U,
-									3U, 4U, 4U, 5U, 4U, 5U, 5U, 6U, 4U, 5U, 5U, 6U, 5U, 6U, 6U, 7U,
-									3U, 4U, 4U, 5U, 4U, 5U, 5U, 6U, 4U, 5U, 5U, 6U, 5U, 6U, 6U, 7U,
-									4U, 5U, 5U, 6U, 5U, 6U, 6U, 7U, 5U, 6U, 6U, 7U, 6U, 7U, 7U, 8U};
-
-const unsigned int THRESHOLD = 4U;
 
 CDMRSync::CDMRSync()
 {
@@ -49,107 +31,18 @@ CDMRSync::~CDMRSync()
 {
 }
 
-DMR_SYNC_TYPE CDMRSync::matchDirectSync(const unsigned char* bytes) const
-{
-	assert(bytes != NULL);
-
-	unsigned int diffs = compareBytes(bytes + 13U, DIRECT_SLOT1_AUDIO_SYNC);
-	if (diffs < THRESHOLD)
-		return DST_DIRECT_SLOT1_AUDIO;
-
-	diffs = compareBytes(bytes + 13U, DIRECT_SLOT2_AUDIO_SYNC);
-	if (diffs < THRESHOLD)
-		return DST_DIRECT_SLOT2_AUDIO;
-
-	diffs = compareBytes(bytes + 13U, DIRECT_SLOT1_DATA_SYNC);
-	if (diffs < THRESHOLD)
-		return DST_DIRECT_SLOT1_DATA;
-
-	diffs = compareBytes(bytes + 13U, DIRECT_SLOT2_DATA_SYNC);
-	if (diffs < THRESHOLD)
-		return DST_DIRECT_SLOT2_DATA;
-
-	return DST_NONE;
-}
-
-DMR_SYNC_TYPE CDMRSync::matchMSSync(const unsigned char* bytes) const
-{
-	assert(bytes != NULL);
-
-	unsigned int diffs = compareBytes(bytes + 13U, MS_SOURCED_AUDIO_SYNC);
-	if (diffs < THRESHOLD)
-		return DST_MS_AUDIO;
-
-	diffs = compareBytes(bytes + 13U, MS_SOURCED_DATA_SYNC);
-	if (diffs < THRESHOLD)
-		return DST_MS_DATA;
-
-	return DST_NONE;
-}
-
-DMR_SYNC_TYPE CDMRSync::matchBSSync(const unsigned char* bytes) const
-{
-	assert(bytes != NULL);
-
-	unsigned int diffs = compareBytes(bytes + 13U, BS_SOURCED_AUDIO_SYNC);
-	if (diffs < THRESHOLD)
-		return DST_BS_AUDIO;
-
-	diffs = compareBytes(bytes + 13U, BS_SOURCED_DATA_SYNC);
-	if (diffs < THRESHOLD)
-		return DST_BS_DATA;
-
-	return DST_NONE;
-}
-
-void CDMRSync::addSync(unsigned char* data, DMR_SYNC_TYPE type) const
+void CDMRSync::addDataSync(unsigned char* data) const
 {
 	assert(data != NULL);
 
-	const unsigned char* sync = NULL;
-	switch (type) {
-		case DST_BS_AUDIO:
-			sync = BS_SOURCED_AUDIO_SYNC;
-			break;
-		case DST_BS_DATA:
-			sync = BS_SOURCED_DATA_SYNC;
-			break;
-		case DST_MS_AUDIO:
-			sync = MS_SOURCED_AUDIO_SYNC;
-			break;
-		case DST_MS_DATA:
-			sync = MS_SOURCED_DATA_SYNC;
-			break;
-		case DST_DIRECT_SLOT1_AUDIO:
-			sync = DIRECT_SLOT1_AUDIO_SYNC;
-			break;
-		case DST_DIRECT_SLOT1_DATA:
-			sync = DIRECT_SLOT1_DATA_SYNC;
-			break;
-		case DST_DIRECT_SLOT2_AUDIO:
-			sync = DIRECT_SLOT2_AUDIO_SYNC;
-			break;
-		case DST_DIRECT_SLOT2_DATA:
-			sync = DIRECT_SLOT2_DATA_SYNC;
-			break;
-		default:
-			return;
-	}
-
 	for (unsigned int i = 0U; i < 7U; i++)
-		data[i + 13U] = (data[i + 13U] & ~SYNC_MASK[i]) | sync[i];
+		data[i + 13U] = (data[i + 13U] & ~SYNC_MASK[i]) | BS_SOURCED_DATA_SYNC[i];
 }
 
-unsigned int CDMRSync::compareBytes(const unsigned char *bytes1, const unsigned char* bytes2) const
+void CDMRSync::addAudioSync(unsigned char* data) const
 {
-	assert(bytes1 != NULL);
-	assert(bytes2 != NULL);
+	assert(data != NULL);
 
-	unsigned int diffs = 0U;
-	for (unsigned int i = 0U; i < 7U; i++) {
-		unsigned char b = SYNC_MASK[i] & (bytes1[i] ^ bytes2[i]);
-		diffs += BITS_LOOKUP[b];
-	}
-
-	return diffs;
+	for (unsigned int i = 0U; i < 7U; i++)
+		data[i + 13U] = (data[i + 13U] & ~SYNC_MASK[i]) | BS_SOURCED_AUDIO_SYNC[i];
 }
