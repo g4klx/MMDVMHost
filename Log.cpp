@@ -122,16 +122,17 @@ void Log(unsigned int level, const char* fmt, ...)
 
     va_list vl;
     va_start(vl, fmt);
-    vfprintf(m_fpLog, fmt, vl);
-	if (m_display)
-	    vfprintf(stdout, fmt, vl);
-    va_end(vl);
 
-    ::fprintf(m_fpLog, "\n");
+	char buffer[200U];
+    ::vsprintf(buffer, fmt, vl);
+
+	va_end(vl);
+
+    ::fprintf(m_fpLog, "%s\n", buffer);
     ::fflush(m_fpLog);
 
 	if (m_display) {
-	    ::fprintf(stdout, "\n");
+	    ::fprintf(stdout, "%s\n", buffer);
 		::fflush(stdout);
 	}
 
