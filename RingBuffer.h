@@ -32,8 +32,7 @@ public:
 	m_name(name),
 	m_buffer(NULL),
 	m_iPtr(0U),
-	m_oPtr(0U),
-	m_full(false)
+	m_oPtr(0U)
 	{
 		assert(length > 0U);
 		assert(name != NULL);
@@ -50,49 +49,44 @@ public:
 
 	bool addData(const T* buffer, unsigned int nSamples)
 	{
-		for (unsigned int i = 0U; i < nSamples; i++) {
-			if (m_full) {
-				LogError("**** Overflow in %s ring buffer", m_name);
-				return false;
-			}
+		if (nSamples >= freeSpace()) {
+			LogError("**** Overflow in %s ring buffer, %u >= %u", m_name, nSamples, freeSpace());
+			return false;
+		}
 
+		for (unsigned int i = 0U; i < nSamples; i++) {
 			m_buffer[m_iPtr++] = buffer[i];
 
 			if (m_iPtr == m_length)
 				m_iPtr = 0U;
-
-			if (m_iPtr == m_oPtr)
-				m_full = true;
 		}
 
 		return true;
 	}
 
-	unsigned int getData(T* buffer, unsigned int nSamples)
+	bool getData(T* buffer, unsigned int nSamples)
 	{
-		unsigned int data = dataSize();
-
-		if (data < nSamples)
-			nSamples = data;
+		if (dataSize() < nSamples) {
+			LogError("**** Underflow in %s ring buffer, %u < %u", m_name, dataSize(), nSamples);
+			return false;
+		}
 
 		for (unsigned int i = 0U; i < nSamples; i++) {
-			m_full = false;
-
 			buffer[i] = m_buffer[m_oPtr++];
 
 			if (m_oPtr == m_length)
 				m_oPtr = 0U;
 		}
 
-		return nSamples;
+		return true;
 	}
 
-	unsigned int peek(T* buffer, unsigned int nSamples)
+	bool peek(T* buffer, unsigned int nSamples)
 	{
-		unsigned int data = dataSize();
-
-		if (data < nSamples)
-			nSamples = data;
+		if (dataSize() < nSamples) {
+			LogError("**** Underflow peek in %s ring buffer, %u < %u", m_name, dataSize(), nSamples);
+			return false;
+		}
 
 		unsigned int ptr = m_oPtr;
 		for (unsigned int i = 0U; i < nSamples; i++) {
@@ -102,25 +96,21 @@ public:
 				ptr = 0U;
 		}
 
-		return nSamples;
+		return true;
 	}
 
 	void clear()
 	{
 		m_iPtr = 0U;
 		m_oPtr = 0U;
-		m_full = false;
 
 		::memset(m_buffer, 0x00, m_length * sizeof(T));
 	}
 
 	unsigned int freeSpace() const
 	{
-		if (m_oPtr == m_iPtr && !m_full)
+		if (m_oPtr == m_iPtr)
 			return m_length;
-
-		if (m_oPtr == m_iPtr && m_full)
-			return 0U;
 
 		if (m_iPtr > m_oPtr)
 			return m_iPtr - m_oPtr;
@@ -140,21 +130,20 @@ public:
 
 	bool hasData() const
 	{
-		return m_oPtr != m_iPtr || (m_oPtr == m_iPtr && m_full);
+		return m_oPtr != m_iPtr;
 	}
 
 	bool isEmpty() const
 	{
-		return m_oPtr == m_iPtr && !m_full;
+		return m_oPtr == m_iPtr;
 	}
 
 private:
-	unsigned int          m_length;
-	const char*           m_name;
-	T*                    m_buffer;
-	volatile unsigned int m_iPtr;
-	volatile unsigned int m_oPtr;
-	volatile bool         m_full;
+	unsigned int m_length;
+	const char*  m_name;
+	T*           m_buffer;
+	unsigned int m_iPtr;
+	unsigned int m_oPtr;
 };
 
 #endif
