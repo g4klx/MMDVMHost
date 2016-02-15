@@ -446,7 +446,7 @@ bool CMMDVMHost::createDMRNetwork()
 	LogInfo("    Address: %s", address.c_str());
 	LogInfo("    Port: %u", port);
 
-	m_dmrNetwork = new CHomebrewDMRIPSC(address, port, id, password, VERSION, "MMDVM", debug);
+	m_dmrNetwork = new CDMRIPSC(address, port, id, password, VERSION, "MMDVM", debug);
 
 	std::string callsign     = m_conf.getCallsign();
 	unsigned int rxFrequency = m_conf.getRxFrequency();

@@ -19,8 +19,8 @@
 #if !defined(MMDVMHOST_H)
 #define	MMDVMHOST_H
 
-#include "HomebrewDMRIPSC.h"
 #include "DStarNetwork.h"
+#include "DMRIPSC.h"
 #include "Display.h"
 #include "Timer.h"
 #include "Modem.h"
@@ -37,16 +37,16 @@ public:
   int run();
 
 private:
-  CConf             m_conf;
-  CModem*           m_modem;
-  CDStarNetwork*    m_dstarNetwork;
-  CHomebrewDMRIPSC* m_dmrNetwork;
-  IDisplay*         m_display;
-  unsigned char     m_mode;
-  CTimer            m_modeTimer;
-  bool              m_dstarEnabled;
-  bool              m_dmrEnabled;
-  bool              m_ysfEnabled;
+  CConf          m_conf;
+  CModem*        m_modem;
+  CDStarNetwork* m_dstarNetwork;
+  CDMRIPSC*      m_dmrNetwork;
+  IDisplay*      m_display;
+  unsigned char  m_mode;
+  CTimer         m_modeTimer;
+  bool           m_dstarEnabled;
+  bool           m_dmrEnabled;
+  bool           m_ysfEnabled;
 
   void readParams();
   bool createModem();

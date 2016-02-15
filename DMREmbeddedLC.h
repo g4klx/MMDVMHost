@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,45 +16,35 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(LC_H)
-#define LC_H
+#ifndef DMREmbeddedLC_H
+#define DMREmbeddedLC_H
 
-#include "DMRDefines.h"
+#include "DMRLC.h"
 
-class CLC
+enum LC_STATE {
+	LCS_NONE,
+	LCS_FIRST,
+	LCS_SECOND,
+	LCS_THIRD
+};
+
+class CDMREmbeddedLC
 {
 public:
-	CLC(FLCO flco, unsigned int srcId, unsigned int dstId);
-	CLC(const unsigned char* bytes);
-	CLC(const bool* bits);
-	CLC();
-	~CLC();
+	CDMREmbeddedLC();
+	~CDMREmbeddedLC();
 
-	void getData(unsigned char* bytes) const;
-	void getData(bool* bits) const;
+	CDMRLC* addData(const unsigned char* data, unsigned char lcss);
 
-	bool getPF() const;
-	void setPF(bool pf);
-
-	FLCO getFLCO() const;
-	void setFLCO(FLCO flco);
-
-	unsigned char getFID() const;
-	void setFID(unsigned char fid);
-
-	unsigned int getSrcId() const;
-	void setSrcId(unsigned int id);
-
-	unsigned int getDstId() const;
-	void setDstId(unsigned int id);
+	void setData(const CDMRLC& lc);
+	unsigned int getData(unsigned char* data, unsigned int n) const;
 
 private:
-	bool          m_PF;
-	FLCO          m_FLCO;
-	unsigned char m_FID;
-	unsigned int  m_srcId;
-	unsigned int  m_dstId;
+	bool*    m_rawLC;
+	LC_STATE m_state;
+
+	CDMRLC* processMultiBlockEmbeddedLC();
+	void    processSingleBlockEmbeddedLC(const bool* data);
 };
 
 #endif
-

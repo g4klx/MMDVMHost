@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,14 +16,14 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "LC.h"
+#include "DMRLC.h"
 
 #include "Utils.h"
 
 #include <cstdio>
 #include <cassert>
 
-CLC::CLC(FLCO flco, unsigned int srcId, unsigned int dstId) :
+CDMRLC::CDMRLC(FLCO flco, unsigned int srcId, unsigned int dstId) :
 m_PF(false),
 m_FLCO(flco),
 m_FID(0U),
@@ -32,7 +32,7 @@ m_dstId(dstId)
 {
 }
 
-CLC::CLC(const unsigned char* bytes) :
+CDMRLC::CDMRLC(const unsigned char* bytes) :
 m_PF(false),
 m_FLCO(FLCO_GROUP),
 m_FID(0U),
@@ -51,7 +51,7 @@ m_dstId(0U)
 	m_srcId = bytes[6U] << 16 | bytes[7U] << 8 | bytes[8U];
 }
 
-CLC::CLC(const bool* bits) :
+CDMRLC::CDMRLC(const bool* bits) :
 m_PF(false),
 m_FLCO(FLCO_GROUP),
 m_FID(0U),
@@ -83,7 +83,7 @@ m_dstId(0U)
 	m_dstId = d1 << 16 | d2 << 8 | d3;
 }
 
-CLC::CLC() :
+CDMRLC::CDMRLC() :
 m_PF(false),
 m_FLCO(FLCO_GROUP),
 m_FID(0U),
@@ -92,11 +92,11 @@ m_dstId(0U)
 {
 }
 
-CLC::~CLC()
+CDMRLC::~CDMRLC()
 {
 }
 
-void CLC::getData(unsigned char* bytes) const
+void CDMRLC::getData(unsigned char* bytes) const
 {
 	assert(bytes != NULL);
 
@@ -116,7 +116,7 @@ void CLC::getData(unsigned char* bytes) const
 	bytes[8U] = m_srcId >> 0;
 }
 
-void CLC::getData(bool* bits) const
+void CDMRLC::getData(bool* bits) const
 {
 	unsigned char bytes[9U];
 	getData(bytes);
@@ -132,52 +132,52 @@ void CLC::getData(bool* bits) const
 	CUtils::byteToBitsBE(bytes[8U], bits + 64U);
 }
 
-bool CLC::getPF() const
+bool CDMRLC::getPF() const
 {
 	return m_PF;
 }
 
-void CLC::setPF(bool pf)
+void CDMRLC::setPF(bool pf)
 {
 	m_PF = pf;
 }
 
-FLCO CLC::getFLCO() const
+FLCO CDMRLC::getFLCO() const
 {
 	return m_FLCO;
 }
 
-void CLC::setFLCO(FLCO flco)
+void CDMRLC::setFLCO(FLCO flco)
 {
 	m_FLCO = flco;
 }
 
-unsigned char CLC::getFID() const
+unsigned char CDMRLC::getFID() const
 {
 	return m_FID;
 }
 
-void CLC::setFID(unsigned char fid)
+void CDMRLC::setFID(unsigned char fid)
 {
 	m_FID = fid;
 }
 
-unsigned int CLC::getSrcId() const
+unsigned int CDMRLC::getSrcId() const
 {
 	return m_srcId;
 }
 
-void CLC::setSrcId(unsigned int id)
+void CDMRLC::setSrcId(unsigned int id)
 {
 	m_srcId = id;
 }
 
-unsigned int CLC::getDstId() const
+unsigned int CDMRLC::getDstId() const
 {
 	return m_dstId;
 }
 
-void CLC::setDstId(unsigned int id)
+void CDMRLC::setDstId(unsigned int id)
 {
 	m_dstId = id;
 }

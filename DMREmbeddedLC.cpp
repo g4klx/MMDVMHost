@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "EmbeddedLC.h"
+#include "DMREmbeddedLC.h"
 
 #include "Hamming.h"
 #include "Utils.h"
@@ -27,20 +27,20 @@
 #include <cassert>
 #include <cstring>
 
-CEmbeddedLC::CEmbeddedLC() :
+CDMREmbeddedLC::CDMREmbeddedLC() :
 m_rawLC(NULL),
 m_state(LCS_NONE)
 {
 	m_rawLC = new bool[128U];
 }
 
-CEmbeddedLC::~CEmbeddedLC()
+CDMREmbeddedLC::~CDMREmbeddedLC()
 {
 	delete[] m_rawLC;
 }
 
 // Add LC data (which may consist of 4 blocks) to the data store
-CLC* CEmbeddedLC::addData(const unsigned char* data, unsigned char lcss)
+CDMRLC* CDMREmbeddedLC::addData(const unsigned char* data, unsigned char lcss)
 {
 	assert(data != NULL);
 
@@ -99,7 +99,7 @@ CLC* CEmbeddedLC::addData(const unsigned char* data, unsigned char lcss)
 	return NULL;
 }
 
-void CEmbeddedLC::setData(const CLC& lc)
+void CDMREmbeddedLC::setData(const CDMRLC& lc)
 {
 	bool lcData[72U];
 	lc.getData(lcData);
@@ -150,7 +150,7 @@ void CEmbeddedLC::setData(const CLC& lc)
 	}
 }
 
-unsigned int CEmbeddedLC::getData(unsigned char* data, unsigned int n) const
+unsigned int CDMREmbeddedLC::getData(unsigned char* data, unsigned int n) const
 {
 	assert(data != NULL);
 
@@ -193,7 +193,7 @@ unsigned int CEmbeddedLC::getData(unsigned char* data, unsigned int n) const
 }
 
 // Unpack and error check an embedded LC
-CLC* CEmbeddedLC::processMultiBlockEmbeddedLC()
+CDMRLC* CDMREmbeddedLC::processMultiBlockEmbeddedLC()
 {
 	// The data is unpacked downwards in columns
 	bool data[128U];
@@ -256,11 +256,11 @@ CLC* CEmbeddedLC::processMultiBlockEmbeddedLC()
 		return NULL;
 	}
 
-	return new CLC(lcData);
+	return new CDMRLC(lcData);
 }
 
 // Deal with a single block embedded LC
-void CEmbeddedLC::processSingleBlockEmbeddedLC(const bool* data)
+void CDMREmbeddedLC::processSingleBlockEmbeddedLC(const bool* data)
 {
 	// Nothing interesting, or just NULL (I think)
 }

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,27 +16,25 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef FullLC_H
-#define FullLC_H
+#include "Sync.h"
+#include "DMRDefines.h"
 
-#include "LC.h"
-#include "SlotType.h"
+#include <cstdio>
+#include <cassert>
 
-#include "BPTC19696.h"
 
-class CFullLC
+void CSync::addDMRDataSync(unsigned char* data)
 {
-public:
-	CFullLC();
-	~CFullLC();
+	assert(data != NULL);
 
-	CLC* decode(const unsigned char* data, unsigned char type);
+	for (unsigned int i = 0U; i < 7U; i++)
+		data[i + 13U] = (data[i + 13U] & ~SYNC_MASK[i]) | BS_SOURCED_DATA_SYNC[i];
+}
 
-	void encode(const CLC& lc, unsigned char* data, unsigned char type);
+void CSync::addDMRAudioSync(unsigned char* data)
+{
+	assert(data != NULL);
 
-private:
-	CBPTC19696 m_bptc;
-};
-
-#endif
-
+	for (unsigned int i = 0U; i < 7U; i++)
+		data[i + 13U] = (data[i + 13U] & ~SYNC_MASK[i]) | BS_SOURCED_AUDIO_SYNC[i];
+}

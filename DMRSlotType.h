@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,36 +16,27 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef EmbeddedLC_H
-#define EmbeddedLC_H
+#if !defined(DMRSLOTTYPE_H)
+#define DMRSLOTTYPE_H
 
-#include "LC.h"
-
-enum LC_STATE {
-	LCS_NONE,
-	LCS_FIRST,
-	LCS_SECOND,
-	LCS_THIRD
-};
-
-class CEmbeddedLC
+class CDMRSlotType
 {
 public:
-	CEmbeddedLC();
-	~CEmbeddedLC();
+	CDMRSlotType();
+	~CDMRSlotType();
 
-	CLC* addData(const unsigned char* data, unsigned char lcss);
+	void putData(const unsigned char* data);
+	void getData(unsigned char* data) const;
 
-	void setData(const CLC& lc);
-	unsigned int getData(unsigned char* data, unsigned int n) const;
+	unsigned char getColorCode() const;
+	void setColorCode(unsigned char code);
+
+	unsigned char getDataType() const;
+	void setDataType(unsigned char type);
 
 private:
-	bool*    m_rawLC;
-	LC_STATE m_state;
-
-	CLC* processMultiBlockEmbeddedLC();
-	void processSingleBlockEmbeddedLC(const bool* data);
+	unsigned char m_colorCode;
+	unsigned char m_dataType;
 };
 
 #endif
-

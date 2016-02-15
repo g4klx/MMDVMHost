@@ -19,19 +19,19 @@
 #if !defined(DMRSlot_H)
 #define	DMRSlot_H
 
-#include "HomebrewDMRIPSC.h"
+#include "DMREmbeddedLC.h"
 #include "StopWatch.h"
-#include "EmbeddedLC.h"
 #include "RingBuffer.h"
 #include "AMBEFEC.h"
 #include "DMRSlot.h"
 #include "DMRData.h"
 #include "Display.h"
 #include "Defines.h"
+#include "DMRIPSC.h"
+#include "DMREMB.h"
 #include "Timer.h"
 #include "Modem.h"
-#include "EMB.h"
-#include "LC.h"
+#include "DMRLC.h"
 
 class CDMRSlot {
 public:
@@ -46,14 +46,14 @@ public:
 
 	void clock(unsigned int ms);
 
-	static void init(unsigned int colorCode, CModem* modem, CHomebrewDMRIPSC* network, IDisplay* display, bool duplex);
+	static void init(unsigned int colorCode, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex);
 
 private:
 	unsigned int               m_slotNo;
 	CRingBuffer<unsigned char> m_queue;
 	RPT_STATE                  m_state;
-	CEmbeddedLC                m_embeddedLC;
-	CLC*                       m_lc;
+	CDMREmbeddedLC             m_embeddedLC;
+	CDMRLC*                    m_lc;
 	unsigned char              m_seqNo;
 	unsigned char              m_n;
 	CTimer                     m_networkWatchdog;
@@ -66,12 +66,12 @@ private:
 	unsigned int               m_bits;
 	unsigned int               m_errs;
 	unsigned char*             m_lastFrame;
-	CEMB                       m_lastEMB;
+	CDMREMB                    m_lastEMB;
 	FILE*                      m_fp;
 
 	static unsigned int        m_colorCode;
 	static CModem*             m_modem;
-	static CHomebrewDMRIPSC*   m_network;
+	static CDMRIPSC*           m_network;
 	static IDisplay*           m_display;
 	static bool                m_duplex;
 

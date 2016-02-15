@@ -16,7 +16,7 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "CSBK.h"
+#include "DMRCSBK.h"
 #include "BPTC19696.h"
 #include "Utils.h"
 #include "CRC.h"
@@ -24,7 +24,7 @@
 #include <cstdio>
 #include <cassert>
 
-CCSBK::CCSBK(const unsigned char* bytes) :
+CDMRCSBK::CDMRCSBK(const unsigned char* bytes) :
 m_CSBKO(CSBKO_NONE),
 m_FID(0x00U),
 m_bsId(0U),
@@ -84,36 +84,36 @@ m_valid(false)
 	}
 }
 
-CCSBK::~CCSBK()
+CDMRCSBK::~CDMRCSBK()
 {
 }
 
-bool CCSBK::isValid() const
+bool CDMRCSBK::isValid() const
 {
 	return m_valid;
 }
 
-CSBKO CCSBK::getCSBKO() const
+CSBKO CDMRCSBK::getCSBKO() const
 {
 	return m_CSBKO;
 }
 
-unsigned char CCSBK::getFID() const
+unsigned char CDMRCSBK::getFID() const
 {
 	return m_FID;
 }
 
-unsigned int CCSBK::getBSId() const
+unsigned int CDMRCSBK::getBSId() const
 {
 	return m_bsId;
 }
 
-unsigned int CCSBK::getSrcId() const
+unsigned int CDMRCSBK::getSrcId() const
 {
 	return m_srcId;
 }
 
-unsigned int CCSBK::getDstId() const
+unsigned int CDMRCSBK::getDstId() const
 {
 	return m_dstId;
 }

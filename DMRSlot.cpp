@@ -12,33 +12,33 @@
  */
 
 #include "DMRDataHeader.h"
-#include "SlotType.h"
-#include "ShortLC.h"
+#include "DMRSlotType.h"
+#include "DMRShortLC.h"
+#include "DMRFullLC.h"
 #include "DMRSlot.h"
-#include "DMRSync.h"
-#include "FullLC.h"
+#include "DMRCSBK.h"
 #include "Utils.h"
-#include "CSBK.h"
+#include "Sync.h"
 #include "CRC.h"
 #include "Log.h"
 
 #include <cassert>
 #include <ctime>
 
-unsigned int      CDMRSlot::m_colorCode = 0U;
-CModem*           CDMRSlot::m_modem = NULL;
-CHomebrewDMRIPSC* CDMRSlot::m_network = NULL;
-IDisplay*         CDMRSlot::m_display = NULL;
-bool              CDMRSlot::m_duplex = true;
+unsigned int   CDMRSlot::m_colorCode = 0U;
+CModem*        CDMRSlot::m_modem = NULL;
+CDMRIPSC*      CDMRSlot::m_network = NULL;
+IDisplay*      CDMRSlot::m_display = NULL;
+bool           CDMRSlot::m_duplex = true;
 
-unsigned char*    CDMRSlot::m_idle = NULL;
+unsigned char* CDMRSlot::m_idle = NULL;
 
-FLCO              CDMRSlot::m_flco1;
-unsigned char     CDMRSlot::m_id1 = 0U;
-bool              CDMRSlot::m_voice1 = true;
-FLCO              CDMRSlot::m_flco2;
-unsigned char     CDMRSlot::m_id2 = 0U;
-bool              CDMRSlot::m_voice2 = true;
+FLCO           CDMRSlot::m_flco1;
+unsigned char  CDMRSlot::m_id1 = 0U;
+bool           CDMRSlot::m_voice1 = true;
+FLCO           CDMRSlot::m_flco2;
+unsigned char  CDMRSlot::m_id2 = 0U;
+bool           CDMRSlot::m_voice2 = true;
 
 // #define	DUMP_DMR
 
@@ -98,7 +98,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 	bool audioSync = (data[1U] & DMR_SYNC_AUDIO) == DMR_SYNC_AUDIO;
 
 	if (dataSync) {
-		CSlotType slotType;
+		CDMRSlotType slotType;
 		slotType.putData(data + 2U);
 
 		unsigned char dataType = slotType.getDataType();
@@ -107,7 +107,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			if (m_state == RS_RELAYING_RF_AUDIO)
 				return;
 
-			CFullLC fullLC;
+			CDMRFullLC fullLC;
 			m_lc = fullLC.decode(data + 2U, DT_VOICE_LC_HEADER);
 			if (m_lc == NULL) {
 				LogMessage("DMR Slot %u: unable to decode the LC", m_slotNo);
@@ -118,8 +118,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			slotType.getData(data + 2U);
 
 			// Convert the Data Sync to be from the BS
-			CDMRSync sync;
-			sync.addDataSync(data + 2U);
+			CSync::addDMRDataSync(data + 2U);
 
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
@@ -156,8 +155,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			slotType.getData(data + 2U);
 
 			// Convert the Data Sync to be from the BS
-			CDMRSync sync;
-			sync.addDataSync(data + 2U);
+			CSync::addDMRDataSync(data + 2U);
 
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
@@ -176,8 +174,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			slotType.getData(data + 2U);
 
 			// Set the Data Sync to be from the BS
-			CDMRSync sync;
-			sync.addDataSync(data + 2U);
+			CSync::addDMRDataSync(data + 2U);
 
 			data[0U] = TAG_EOT;
 			data[1U] = 0x00U;
@@ -211,14 +208,13 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			m_frames = dataHeader.getBlocks();
 
-			m_lc = new CLC(gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
+			m_lc = new CDMRLC(gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
 
 			// Regenerate the Slot Type
 			slotType.getData(data + 2U);
 
 			// Convert the Data Sync to be from the BS
-			CDMRSync sync;
-			sync.addDataSync(data + 2U);
+			CSync::addDMRDataSync(data + 2U);
 
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
@@ -244,7 +240,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			LogMessage("DMR Slot %u, received RF data header from %u to %s%u, %u blocks", m_slotNo, srcId, gi ? "TG ": "", dstId, m_frames);
 		} else if (dataType == DT_CSBK) {
-			CCSBK csbk(data + 2U);
+			CDMRCSBK csbk(data + 2U);
 			// if (!csbk.isValid()) {
 			//	LogMessage("DMR Slot %u: unable to decode the CSBK", m_slotNo);
 			//	return;
@@ -263,8 +259,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 					slotType.getData(data + 2U);
 
 					// Convert the Data Sync to be from the BS
-					CDMRSync sync;
-					sync.addDataSync(data + 2U);
+					CSync::addDMRDataSync(data + 2U);
 
 					data[0U] = TAG_DATA;
 					data[1U] = 0x00U;
@@ -292,8 +287,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			slotType.getData(data + 2U);
 
 			// Convert the Data Sync to be from the BS
-			CDMRSync sync;
-			sync.addDataSync(data + 2U);
+			CSync::addDMRDataSync(data + 2U);
 
 			m_frames--;
 
@@ -316,8 +310,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 	} else if (audioSync) {
 		if (m_state == RS_RELAYING_RF_AUDIO) {
 			// Convert the Audio Sync to be from the BS
-			CDMRSync sync;
-			sync.addAudioSync(data + 2U);
+			CSync::addDMRAudioSync(data + 2U);
 
 			unsigned char fid = m_lc->getFID();
 			if (fid == FID_ETSI || fid == FID_DMRA)
@@ -337,7 +330,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			m_state = RS_LATE_ENTRY;
 		}
 	} else {
-		CEMB emb;
+		CDMREMB emb;
 		emb.putData(data + 2U);
 
 		if (m_state == RS_RELAYING_RF_AUDIO) {
@@ -370,13 +363,12 @@ void CDMRSlot::writeModem(unsigned char *data)
 				// Create a dummy start frame to replace the received frame
 				unsigned char start[DMR_FRAME_LENGTH_BYTES + 2U];
 
-				CDMRSync sync;
-				sync.addDataSync(start + 2U);
+				CSync::addDMRDataSync(data + 2U);
 
-				CFullLC fullLC;
+				CDMRFullLC fullLC;
 				fullLC.encode(*m_lc, start + 2U, DT_VOICE_LC_HEADER);
 
-				CSlotType slotType;
+				CDMRSlotType slotType;
 				slotType.setColorCode(m_colorCode);
 				slotType.setDataType(DT_VOICE_LC_HEADER);
 				slotType.getData(start + 2U);
@@ -468,13 +460,12 @@ void CDMRSlot::writeEndOfTransmission(bool writeEnd)
 			// Create a dummy start end frame
 			unsigned char data[DMR_FRAME_LENGTH_BYTES + 2U];
 
-			CDMRSync sync;
-			sync.addDataSync(data + 2U);
+			CSync::addDMRDataSync(data + 2U);
 
-			CFullLC fullLC;
+			CDMRFullLC fullLC;
 			fullLC.encode(*m_lc, data + 2U, DT_TERMINATOR_WITH_LC);
 
-			CSlotType slotType;
+			CDMRSlotType slotType;
 			slotType.setColorCode(m_colorCode);
 			slotType.setDataType(DT_TERMINATOR_WITH_LC);
 			slotType.getData(data + 2U);
@@ -512,7 +503,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		if (m_state == RS_RELAYING_NETWORK_AUDIO)
 			return;
 
-		CFullLC fullLC;
+		CDMRFullLC fullLC;
 		m_lc = fullLC.decode(data + 2U, DT_VOICE_LC_HEADER);
 		if (m_lc == NULL) {
 			LogMessage("DMR Slot %u, bad LC received from the network", m_slotNo);
@@ -520,14 +511,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		}
 
 		// Regenerate the Slot Type
-		CSlotType slotType;
+		CDMRSlotType slotType;
 		slotType.setColorCode(m_colorCode);
 		slotType.setDataType(DT_VOICE_LC_HEADER);
 		slotType.getData(data + 2U);
 
 		// Convert the Data Sync to be from the BS
-		CDMRSync sync;
-		sync.addDataSync(data + 2U);
+		CSync::addDMRDataSync(data + 2U);
 
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
@@ -562,14 +552,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			return;
 
 		// Regenerate the Slot Type
-		CSlotType slotType;
+		CDMRSlotType slotType;
 		slotType.setColorCode(m_colorCode);
 		slotType.setDataType(DT_VOICE_PI_HEADER);
 		slotType.getData(data + 2U);
 
 		// Convert the Data Sync to be from the BS
-		CDMRSync sync;
-		sync.addDataSync(data + 2U);
+		CSync::addDMRDataSync(data + 2U);
 
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
@@ -584,14 +573,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			return;
 
 		// Regenerate the Slot Type
-		CSlotType slotType;
+		CDMRSlotType slotType;
 		slotType.setColorCode(m_colorCode);
 		slotType.setDataType(DT_TERMINATOR_WITH_LC);
 		slotType.getData(data + 2U);
 
 		// Convert the Data Sync to be from the BS
-		CDMRSync sync;
-		sync.addDataSync(data + 2U);
+		CSync::addDMRDataSync(data + 2U);
 
 		data[0U] = TAG_EOT;
 		data[1U] = 0x00U;
@@ -626,17 +614,16 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		m_frames = dataHeader.getBlocks();
 
-		m_lc = new CLC(gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
+		m_lc = new CDMRLC(gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
 
 		// Regenerate the Slot Type
-		CSlotType slotType;
+		CDMRSlotType slotType;
 		slotType.setColorCode(m_colorCode);
 		slotType.setDataType(DT_DATA_HEADER);
 		slotType.getData(data + 2U);
 
 		// Convert the Data Sync to be from the BS
-		CDMRSync sync;
-		sync.addDataSync(data + 2U);
+		CSync::addDMRDataSync(data + 2U);
 
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
@@ -657,7 +644,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		LogMessage("DMR Slot %u, received network data header from %u to %s%u, %u blocks", m_slotNo, dmrData.getSrcId(), gi ? "TG ": "", dmrData.getDstId(), m_frames);
 	} else if (dataType == DT_VOICE_SYNC) {
 		if (m_state == RS_LISTENING) {
-			m_lc = new CLC(dmrData.getFLCO(), dmrData.getSrcId(), dmrData.getDstId());
+			m_lc = new CDMRLC(dmrData.getFLCO(), dmrData.getSrcId(), dmrData.getDstId());
 
 			m_timeoutTimer.start();
 
@@ -703,8 +690,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			}
 
 			// Convert the Audio Sync to be from the BS
-			CDMRSync sync;
-			sync.addAudioSync(data + 2U);
+			CSync::addDMRAudioSync(data + 2U);
 
 			writeQueue(data);
 
@@ -760,7 +746,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		writeFile(data);
 #endif
 	} else if (dataType == DT_CSBK) {
-		CCSBK csbk(data + 2U);
+		CDMRCSBK csbk(data + 2U);
 		// if (!csbk.isValid()) {
 		//	LogMessage("DMR Slot %u: unable to decode the CSBK", m_slotNo);
 		//	return;
@@ -776,14 +762,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		case CSBKO_NACKRSP:
 		case CSBKO_PRECCSBK: {
 				// Regenerate the Slot Type
-				CSlotType slotType;
+				CDMRSlotType slotType;
 				slotType.putData(data + 2U);
 				slotType.setColorCode(m_colorCode);
 				slotType.getData(data + 2U);
 
 				// Convert the Data Sync to be from the BS
-				CDMRSync sync;
-				sync.addDataSync(data + 2U);
+				CSync::addDMRDataSync(data + 2U);
 
 				data[0U] = TAG_DATA;
 				data[1U] = 0x00U;
@@ -808,14 +793,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			return;
 
 		// Regenerate the Slot Type
-		CSlotType slotType;
+		CDMRSlotType slotType;
 		slotType.putData(data + 2U);
 		slotType.setColorCode(m_colorCode);
 		slotType.getData(data + 2U);
 
 		// Convert the Data Sync to be from the BS
-		CDMRSync sync;
-		sync.addDataSync(data + 2U);
+		CSync::addDMRDataSync(data + 2U);
 
 		m_frames--;
 
@@ -930,7 +914,7 @@ void CDMRSlot::writeNetwork(const unsigned char* data, unsigned char dataType)
 	writeNetwork(data, dataType, m_lc->getFLCO(), m_lc->getSrcId(), m_lc->getDstId());
 }
 
-void CDMRSlot::init(unsigned int colorCode, CModem* modem, CHomebrewDMRIPSC* network, IDisplay* display, bool duplex)
+void CDMRSlot::init(unsigned int colorCode, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex)
 {
 	assert(modem != NULL);
 	assert(display != NULL);
@@ -946,7 +930,7 @@ void CDMRSlot::init(unsigned int colorCode, CModem* modem, CHomebrewDMRIPSC* net
 	::memcpy(m_idle, DMR_IDLE_DATA, DMR_FRAME_LENGTH_BYTES + 2U);
 
 	// Generate the Slot Type for the Idle frame
-	CSlotType slotType;
+	CDMRSlotType slotType;
 	slotType.setColorCode(colorCode);
 	slotType.setDataType(DT_IDLE);
 	slotType.getData(m_idle + 2U);
@@ -1026,7 +1010,7 @@ void CDMRSlot::setShortLC(unsigned int slotNo, unsigned int id, FLCO flco, bool 
 
 	unsigned char sLC[9U];
 
-	CShortLC shortLC;
+	CDMRShortLC shortLC;
 	shortLC.encode(lc, sLC);
 
 	m_modem->writeDMRShortLC(sLC);
@@ -1117,8 +1101,7 @@ void CDMRSlot::insertSilence(unsigned int count)
 			::memcpy(data, DMR_SILENCE_DATA, DMR_FRAME_LENGTH_BYTES + 2U);
 
 		if (n == 0U) {
-			CDMRSync sync;
-			sync.addAudioSync(data + 2U);
+			CSync::addDMRAudioSync(data + 2U);
 		} else {
 			// Set the Embedded LC to 0x00
 			::memset(data + 2U + 13U, 0x00U, 5U);

@@ -16,33 +16,27 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "DMRSync.h"
-#include "DMRDefines.h"
+#ifndef DMRFullLC_H
+#define DMRFullLC_H
 
-#include <cstdio>
-#include <cassert>
+#include "DMRLC.h"
+#include "DMRSlotType.h"
 
+#include "BPTC19696.h"
 
-CDMRSync::CDMRSync()
+class CDMRFullLC
 {
-}
+public:
+	CDMRFullLC();
+	~CDMRFullLC();
 
-CDMRSync::~CDMRSync()
-{
-}
+	CDMRLC* decode(const unsigned char* data, unsigned char type);
 
-void CDMRSync::addDataSync(unsigned char* data) const
-{
-	assert(data != NULL);
+	void encode(const CDMRLC& lc, unsigned char* data, unsigned char type);
 
-	for (unsigned int i = 0U; i < 7U; i++)
-		data[i + 13U] = (data[i + 13U] & ~SYNC_MASK[i]) | BS_SOURCED_DATA_SYNC[i];
-}
+private:
+	CBPTC19696 m_bptc;
+};
 
-void CDMRSync::addAudioSync(unsigned char* data) const
-{
-	assert(data != NULL);
+#endif
 
-	for (unsigned int i = 0U; i < 7U; i++)
-		data[i + 13U] = (data[i + 13U] & ~SYNC_MASK[i]) | BS_SOURCED_AUDIO_SYNC[i];
-}

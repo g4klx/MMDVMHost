@@ -19,7 +19,7 @@
 #if !defined(DMRControl_H)
 #define	DMRControl_H
 
-#include "HomebrewDMRIPSC.h"
+#include "DMRIPSC.h"
 #include "Display.h"
 #include "DMRSlot.h"
 #include "DMRData.h"
@@ -28,7 +28,7 @@
 
 class CDMRControl {
 public:
-	CDMRControl(unsigned int id, unsigned int colorCode, unsigned int timeout, CModem* modem, CHomebrewDMRIPSC* network, IDisplay* display, bool duplex);
+	CDMRControl(unsigned int id, unsigned int colorCode, unsigned int timeout, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex);
 	~CDMRControl();
 
 	bool processWakeup(const unsigned char* data);
@@ -42,12 +42,12 @@ public:
 	void clock(unsigned int ms);
 
 private:
-	unsigned int      m_id;
-	unsigned int      m_colorCode;
-	CModem*           m_modem;
-	CHomebrewDMRIPSC* m_network;
-	CDMRSlot          m_slot1;
-	CDMRSlot          m_slot2;
+	unsigned int m_id;
+	unsigned int m_colorCode;
+	CModem*      m_modem;
+	CDMRIPSC*    m_network;
+	CDMRSlot     m_slot1;
+	CDMRSlot     m_slot2;
 };
 
 #endif

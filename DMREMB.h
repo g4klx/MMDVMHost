@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,14 +16,14 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(SLOTTYPE_H)
-#define SLOTTYPE_H
+#if !defined(DMREMB_H)
+#define DMREMB_H
 
-class CSlotType
+class CDMREMB
 {
 public:
-	CSlotType();
-	~CSlotType();
+	CDMREMB();
+	~CDMREMB();
 
 	void putData(const unsigned char* data);
 	void getData(unsigned char* data) const;
@@ -31,12 +31,16 @@ public:
 	unsigned char getColorCode() const;
 	void setColorCode(unsigned char code);
 
-	unsigned char getDataType() const;
-	void setDataType(unsigned char type);
+	bool getPI() const;
+	void setPI(bool pi);
+
+	unsigned char getLCSS() const;
+	void setLCSS(unsigned char lcss);
 
 private:
 	unsigned char m_colorCode;
-	unsigned char m_dataType;
+	bool          m_PI;
+	unsigned char m_LCSS;
 };
 
 #endif

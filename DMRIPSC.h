@@ -16,8 +16,8 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(HOMEBREWDMRIPSC_H)
-#define	HOMEBREWDMRIPSC_H
+#if !defined(DMRIPSC_H)
+#define	DMRIPSC_H
 
 #include "UDPSocket.h"
 #include "Timer.h"
@@ -27,11 +27,11 @@
 #include <string>
 #include <cstdint>
 
-class CHomebrewDMRIPSC
+class CDMRIPSC
 {
 public:
-	CHomebrewDMRIPSC(const std::string& address, unsigned int port, unsigned int id, const std::string& password, const char* software, const char* version, bool debug);
-	~CHomebrewDMRIPSC();
+	CDMRIPSC(const std::string& address, unsigned int port, unsigned int id, const std::string& password, const char* software, const char* version, bool debug);
+	~CDMRIPSC();
 
 	void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url);
 

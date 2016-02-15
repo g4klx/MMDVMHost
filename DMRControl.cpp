@@ -13,12 +13,12 @@
 
 #include "DMRControl.h"
 #include "Defines.h"
-#include "CSBK.h"
+#include "DMRCSBK.h"
 #include "Log.h"
 
 #include <cassert>
 
-CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, unsigned int timeout, CModem* modem, CHomebrewDMRIPSC* network, IDisplay* display, bool duplex) :
+CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, unsigned int timeout, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex) :
 m_id(id),
 m_colorCode(colorCode),
 m_modem(modem),
@@ -42,7 +42,7 @@ bool CDMRControl::processWakeup(const unsigned char* data)
 	if (data[0U] != TAG_DATA || data[1U] != (DMR_IDLE_RX | DMR_SYNC_DATA | DT_CSBK))
 		return false;
 
-	CCSBK csbk(data + 2U);
+	CDMRCSBK csbk(data + 2U);
 
 	CSBKO csbko = csbk.getCSBKO();
 	if (csbko != CSBKO_BSDWNACT)

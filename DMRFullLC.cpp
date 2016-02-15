@@ -17,24 +17,25 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "FullLC.h"
-#include "Log.h"
+#include "DMRFullLC.h"
+
 #include "DMRDefines.h"
 #include "RS129.h"
+#include "Log.h"
 
 #include <cstdio>
 #include <cassert>
 
-CFullLC::CFullLC() :
+CDMRFullLC::CDMRFullLC() :
 m_bptc()
 {
 }
 
-CFullLC::~CFullLC()
+CDMRFullLC::~CDMRFullLC()
 {
 }
 
-CLC* CFullLC::decode(const unsigned char* data, unsigned char type)
+CDMRLC* CDMRFullLC::decode(const unsigned char* data, unsigned char type)
 {
 	assert(data != NULL);
 
@@ -61,15 +62,15 @@ CLC* CFullLC::decode(const unsigned char* data, unsigned char type)
 
 	if (!CRS129::check(lcData)) {
 		::LogDebug("Checksum failed for the LC");
-		CLC lc(lcData);
+		CDMRLC lc(lcData);
 		LogDebug("Invalid LC, src = %u, dst = %s%u", lc.getSrcId(), lc.getFLCO() == FLCO_GROUP ? "TG " : "", lc.getDstId());
 		return NULL;
 	}
 
-	return new CLC(lcData);
+	return new CDMRLC(lcData);
 }
 
-void CFullLC::encode(const CLC& lc, unsigned char* data, unsigned char type)
+void CDMRFullLC::encode(const CDMRLC& lc, unsigned char* data, unsigned char type)
 {
 	assert(data != NULL);
 

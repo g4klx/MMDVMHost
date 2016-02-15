@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,7 +16,8 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "HomebrewDMRIPSC.h"
+#include "DMRIPSC.h"
+
 #include "StopWatch.h"
 #include "SHA256.h"
 #include "Utils.h"
@@ -29,7 +30,7 @@ const unsigned int BUFFER_LENGTH = 500U;
 const unsigned int HOMEBREW_DATA_PACKET_LENGTH = 53U;
 
 
-CHomebrewDMRIPSC::CHomebrewDMRIPSC(const std::string& address, unsigned int port, unsigned int id, const std::string& password, const char* software, const char* version, bool debug) :
+CDMRIPSC::CDMRIPSC(const std::string& address, unsigned int port, unsigned int id, const std::string& password, const char* software, const char* version, bool debug) :
 m_address(),
 m_port(port),
 m_id(NULL),
@@ -84,7 +85,7 @@ m_beacon(false)
 	::srand(stopWatch.start());
 }
 
-CHomebrewDMRIPSC::~CHomebrewDMRIPSC()
+CDMRIPSC::~CDMRIPSC()
 {
 	delete[] m_buffer;
 	delete[] m_salt;
@@ -92,7 +93,7 @@ CHomebrewDMRIPSC::~CHomebrewDMRIPSC()
 	delete[] m_id;
 }
 
-void CHomebrewDMRIPSC::setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url)
+void CDMRIPSC::setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url)
 {
 	m_callsign    = callsign;
 	m_rxFrequency = rxFrequency;
@@ -107,7 +108,7 @@ void CHomebrewDMRIPSC::setConfig(const std::string& callsign, unsigned int rxFre
 	m_url         = url;
 }
 
-bool CHomebrewDMRIPSC::open()
+bool CDMRIPSC::open()
 {
 	LogMessage("Opening DMR IPSC");
 
@@ -128,12 +129,12 @@ bool CHomebrewDMRIPSC::open()
 	return true;
 }
 
-void CHomebrewDMRIPSC::enable(bool enabled)
+void CDMRIPSC::enable(bool enabled)
 {
 	m_enabled = enabled;
 }
 
-bool CHomebrewDMRIPSC::read(CDMRData& data)
+bool CDMRIPSC::read(CDMRData& data)
 {
 	if (m_status != RUNNING)
 		return false;
@@ -188,7 +189,7 @@ bool CHomebrewDMRIPSC::read(CDMRData& data)
 	return true;
 }
 
-bool CHomebrewDMRIPSC::write(const CDMRData& data)
+bool CDMRIPSC::write(const CDMRData& data)
 {
 	if (m_status != RUNNING)
 		return false;
@@ -242,7 +243,7 @@ bool CHomebrewDMRIPSC::write(const CDMRData& data)
 	return write(buffer, HOMEBREW_DATA_PACKET_LENGTH);
 }
 
-void CHomebrewDMRIPSC::close()
+void CDMRIPSC::close()
 {
 	LogMessage("Closing DMR IPSC");
 
@@ -254,7 +255,7 @@ void CHomebrewDMRIPSC::close()
 	m_socket.close();
 }
 
-void CHomebrewDMRIPSC::clock(unsigned int ms)
+void CDMRIPSC::clock(unsigned int ms)
 {
 	in_addr address;
 	unsigned int port;
@@ -359,7 +360,7 @@ void CHomebrewDMRIPSC::clock(unsigned int ms)
 	}
 }
 
-bool CHomebrewDMRIPSC::writeLogin()
+bool CDMRIPSC::writeLogin()
 {
 	unsigned char buffer[8U];
 
@@ -369,7 +370,7 @@ bool CHomebrewDMRIPSC::writeLogin()
 	return write(buffer, 8U);
 }
 
-bool CHomebrewDMRIPSC::writeAuthorisation()
+bool CDMRIPSC::writeAuthorisation()
 {
 	unsigned int size = m_password.size();
 
@@ -390,7 +391,7 @@ bool CHomebrewDMRIPSC::writeAuthorisation()
 	return write(out, 40U);
 }
 
-bool CHomebrewDMRIPSC::writeConfig()
+bool CDMRIPSC::writeConfig()
 {
 	char buffer[400U];
 
@@ -404,7 +405,7 @@ bool CHomebrewDMRIPSC::writeConfig()
 	return write((unsigned char*)buffer, 302U);
 }
 
-bool CHomebrewDMRIPSC::writePing()
+bool CDMRIPSC::writePing()
 {
 	unsigned char buffer[11U];
 
@@ -414,7 +415,7 @@ bool CHomebrewDMRIPSC::writePing()
 	return write(buffer, 11U);
 }
 
-bool CHomebrewDMRIPSC::wantsBeacon()
+bool CDMRIPSC::wantsBeacon()
 {
 	bool beacon = m_beacon;
 
@@ -423,7 +424,7 @@ bool CHomebrewDMRIPSC::wantsBeacon()
 	return beacon;
 }
 
-bool CHomebrewDMRIPSC::write(const unsigned char* data, unsigned int length)
+bool CDMRIPSC::write(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
 	assert(length > 0U);

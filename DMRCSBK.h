@@ -16,20 +16,46 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(DMRSYNC_H)
-#define	DMRSYNC_H
+#if !defined(DMRCSBK_H)
+#define DMRCSBK_H
 
-class CDMRSync
+#include "DMRDefines.h"
+
+enum CSBKO {
+	CSBKO_NONE     = 0x00,
+	CSBKO_UUVREQ   = 0x04,
+	CSBKO_UUANSRSP = 0x05,
+	CSBKO_CTCSBK   = 0x07,
+	CSBKO_NACKRSP  = 0x26,
+	CSBKO_BSDWNACT = 0x38,
+	CSBKO_PRECCSBK = 0x3D
+};
+
+class CDMRCSBK
 {
 public:
-	CDMRSync();
-	~CDMRSync();
+	CDMRCSBK(const unsigned char* bytes);
+	~CDMRCSBK();
 
-	void addDataSync(unsigned char* data) const;
+	bool isValid() const;
 
-	void addAudioSync(unsigned char* data) const;
+	// Generic fields
+	CSBKO         getCSBKO() const;
+	unsigned char getFID() const;
+
+	// For BS Dwn Act
+	unsigned int  getBSId() const;
+
+	unsigned int  getSrcId() const;
+	unsigned int  getDstId() const;
 
 private:
+	CSBKO         m_CSBKO;
+	unsigned char m_FID;
+	unsigned int  m_bsId;
+	unsigned int  m_srcId;
+	unsigned int  m_dstId;
+	bool          m_valid;
 };
 
 #endif

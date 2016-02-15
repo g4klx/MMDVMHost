@@ -16,46 +16,45 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(CSBK_H)
-#define CSBK_H
+#if !defined(DMRLC_H)
+#define DMRLC_H
 
 #include "DMRDefines.h"
 
-enum CSBKO {
-	CSBKO_NONE     = 0x00,
-	CSBKO_UUVREQ   = 0x04,
-	CSBKO_UUANSRSP = 0x05,
-	CSBKO_CTCSBK   = 0x07,
-	CSBKO_NACKRSP  = 0x26,
-	CSBKO_BSDWNACT = 0x38,
-	CSBKO_PRECCSBK = 0x3D
-};
-
-class CCSBK
+class CDMRLC
 {
 public:
-	CCSBK(const unsigned char* bytes);
-	~CCSBK();
+	CDMRLC(FLCO flco, unsigned int srcId, unsigned int dstId);
+	CDMRLC(const unsigned char* bytes);
+	CDMRLC(const bool* bits);
+	CDMRLC();
+	~CDMRLC();
 
-	bool isValid() const;
+	void getData(unsigned char* bytes) const;
+	void getData(bool* bits) const;
 
-	// Generic fields
-	CSBKO         getCSBKO() const;
+	bool getPF() const;
+	void setPF(bool pf);
+
+	FLCO getFLCO() const;
+	void setFLCO(FLCO flco);
+
 	unsigned char getFID() const;
+	void setFID(unsigned char fid);
 
-	// For BS Dwn Act
-	unsigned int  getBSId() const;
+	unsigned int getSrcId() const;
+	void setSrcId(unsigned int id);
 
-	unsigned int  getSrcId() const;
-	unsigned int  getDstId() const;
+	unsigned int getDstId() const;
+	void setDstId(unsigned int id);
 
 private:
-	CSBKO         m_CSBKO;
+	bool          m_PF;
+	FLCO          m_FLCO;
 	unsigned char m_FID;
-	unsigned int  m_bsId;
 	unsigned int  m_srcId;
 	unsigned int  m_dstId;
-	bool          m_valid;
 };
 
 #endif
+

@@ -16,32 +16,16 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(SHORTLC_H)
-#define	SHORTLC_H
+#if !defined(SYNC_H)
+#define	SYNC_H
 
-class CShortLC
+class CSync
 {
 public:
-	CShortLC();
-	~CShortLC();
-
-	bool decode(const unsigned char* in, unsigned char* out);
-
-	void encode(const unsigned char* in, unsigned char* out);
+	static void addDMRDataSync(unsigned char* data);
+	static void addDMRAudioSync(unsigned char* data);
 
 private:
-	bool* m_rawData;
-	bool* m_deInterData;
-
-	void decodeExtractBinary(const unsigned char* in);
-	bool decodeErrorCheck();
-	void decodeDeInterleave();
-	void decodeExtractData(unsigned char* data) const;
-
-	void encodeExtractData(const unsigned char* in) const;
-	void encodeInterleave();
-	void encodeErrorCheck();
-	void encodeExtractBinary(unsigned char* data);
 };
 
 #endif

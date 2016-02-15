@@ -5,10 +5,9 @@ LIBS    =
 LDFLAGS = -g
 
 OBJECTS = \
-		AMBEFEC.o BPTC19696.o Conf.o CRC.o CSBK.o Display.o DMRControl.o DMRData.o DMRDataHeader.o DMRSlot.o DMRSync.o DStarControl.o DStarHeader.o \
-		DStarNetwork.o DStarSlowData.o EMB.o EmbeddedLC.o FullLC.o Golay2087.o Golay24128.o Hamming.o HomebrewDMRIPSC.o LC.o Log.o MMDVMHost.o Modem.o \
-		NullDisplay.o QR1676.o RS129.o SerialController.o SHA256.o ShortLC.o SlotType.o StopWatch.o TFTSerial.o Timer.o UDPSocket.o Utils.o YSFConvolution.o \
-		YSFEcho.o YSFFICH.o
+		AMBEFEC.o BPTC19696.o Conf.o CRC.o Display.o DMRControl.o DMRCSBK.o DMRData.o DMRDataHeader.o DMREMB.o DMREmbeddedLC.o DMRFullLC.o DMRIPSC.o DMRLC.o DMRShortLC.o \
+		DMRSlot.o DMRSlotType.o DStarControl.o DStarHeader.o DStarNetwork.o DStarSlowData.o Golay2087.o Golay24128.o Hamming.o Log.o MMDVMHost.o Modem.o NullDisplay.o \
+		QR1676.o RS129.o SerialController.o SHA256.o StopWatch.o Sync.o TFTSerial.o Timer.o UDPSocket.o Utils.o YSFConvolution.o YSFEcho.o YSFFICH.o
 
 all:		MMDVMHost
 

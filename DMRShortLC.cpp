@@ -16,7 +16,7 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "ShortLC.h"
+#include "DMRShortLC.h"
 
 #include "Hamming.h"
 #include "Utils.h"
@@ -25,7 +25,7 @@
 #include <cassert>
 #include <cstring>
 
-CShortLC::CShortLC() :
+CDMRShortLC::CDMRShortLC() :
 m_rawData(NULL),
 m_deInterData(NULL)
 {
@@ -33,14 +33,14 @@ m_deInterData(NULL)
 	m_deInterData = new bool[68U];
 }
 
-CShortLC::~CShortLC()
+CDMRShortLC::~CDMRShortLC()
 {
 	delete[] m_rawData;
 	delete[] m_deInterData;
 }
 
 // The main decode function
-bool CShortLC::decode(const unsigned char* in, unsigned char* out)
+bool CDMRShortLC::decode(const unsigned char* in, unsigned char* out)
 {
 	assert(in != NULL);
 	assert(out != NULL);
@@ -63,7 +63,7 @@ bool CShortLC::decode(const unsigned char* in, unsigned char* out)
 }
 
 // The main encode function
-void CShortLC::encode(const unsigned char* in, unsigned char* out)
+void CDMRShortLC::encode(const unsigned char* in, unsigned char* out)
 {
 	assert(in != NULL);
 	assert(out != NULL);
@@ -81,7 +81,7 @@ void CShortLC::encode(const unsigned char* in, unsigned char* out)
 	encodeExtractBinary(out);
 }
 
-void CShortLC::decodeExtractBinary(const unsigned char* in)
+void CDMRShortLC::decodeExtractBinary(const unsigned char* in)
 {
 	CUtils::byteToBitsBE(in[0U], m_rawData + 0U);
 	CUtils::byteToBitsBE(in[1U], m_rawData + 8U);
@@ -95,7 +95,7 @@ void CShortLC::decodeExtractBinary(const unsigned char* in)
 }
 
 // Deinterleave the raw data
-void CShortLC::decodeDeInterleave()
+void CDMRShortLC::decodeDeInterleave()
 {
 	for (unsigned int i = 0U; i < 68U; i++)
 		m_deInterData[i] = false;
@@ -111,7 +111,7 @@ void CShortLC::decodeDeInterleave()
 }
 	
 // Check each row with a Hamming (17,12,3) code and each column with a parity bit
-bool CShortLC::decodeErrorCheck()
+bool CDMRShortLC::decodeErrorCheck()
 {
 	// Run through each of the 3 rows containing data
 	CHamming::decode17123(m_deInterData + 0U);
@@ -129,7 +129,7 @@ bool CShortLC::decodeErrorCheck()
 }
 
 // Extract the 36 bits of payload
-void CShortLC::decodeExtractData(unsigned char* data) const
+void CDMRShortLC::decodeExtractData(unsigned char* data) const
 {
 	bool bData[40U];
 
@@ -154,7 +154,7 @@ void CShortLC::decodeExtractData(unsigned char* data) const
 }
 
 // Extract the 36 bits of payload
-void CShortLC::encodeExtractData(const unsigned char* in) const
+void CDMRShortLC::encodeExtractData(const unsigned char* in) const
 {
 	bool bData[40U];
 	CUtils::byteToBitsBE(in[0U], bData + 0U);
@@ -178,7 +178,7 @@ void CShortLC::encodeExtractData(const unsigned char* in) const
 }
 
 // Check each row with a Hamming (17,12,3) code and each column with a parity bit
-void CShortLC::encodeErrorCheck()
+void CDMRShortLC::encodeErrorCheck()
 {
 	// Run through each of the 3 rows containing data
 	CHamming::encode17123(m_deInterData + 0U);
@@ -191,7 +191,7 @@ void CShortLC::encodeErrorCheck()
 }
 
 // Interleave the raw data
-void CShortLC::encodeInterleave()
+void CDMRShortLC::encodeInterleave()
 {
 	for (unsigned int i = 0U; i < 72U; i++)
 		m_rawData[i] = false;
@@ -206,7 +206,7 @@ void CShortLC::encodeInterleave()
 	m_rawData[67U] = m_deInterData[67U];
 }
 
-void CShortLC::encodeExtractBinary(unsigned char* data)
+void CDMRShortLC::encodeExtractBinary(unsigned char* data)
 {
 	CUtils::bitsToByteBE(m_rawData + 0U,  data[0U]);
 	CUtils::bitsToByteBE(m_rawData + 8U,  data[1U]);

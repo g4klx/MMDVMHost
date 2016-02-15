@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,32 +16,32 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(EMB_H)
-#define EMB_H
+#if !defined(DMRSHORTLC_H)
+#define	DMRSHORTLC_H
 
-class CEMB
+class CDMRShortLC
 {
 public:
-	CEMB();
-	~CEMB();
+	CDMRShortLC();
+	~CDMRShortLC();
 
-	void putData(const unsigned char* data);
-	void getData(unsigned char* data) const;
+	bool decode(const unsigned char* in, unsigned char* out);
 
-	unsigned char getColorCode() const;
-	void setColorCode(unsigned char code);
-
-	bool getPI() const;
-	void setPI(bool pi);
-
-	unsigned char getLCSS() const;
-	void setLCSS(unsigned char lcss);
+	void encode(const unsigned char* in, unsigned char* out);
 
 private:
-	unsigned char m_colorCode;
-	bool          m_PI;
-	unsigned char m_LCSS;
+	bool* m_rawData;
+	bool* m_deInterData;
+
+	void decodeExtractBinary(const unsigned char* in);
+	bool decodeErrorCheck();
+	void decodeDeInterleave();
+	void decodeExtractData(unsigned char* data) const;
+
+	void encodeExtractData(const unsigned char* in) const;
+	void encodeInterleave();
+	void encodeErrorCheck();
+	void encodeExtractBinary(unsigned char* data);
 };
 
 #endif
-

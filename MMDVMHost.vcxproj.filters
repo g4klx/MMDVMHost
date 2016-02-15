@@ -20,9 +20,6 @@
     <ClInclude Include="CRC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CSBK.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Defines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -41,19 +38,7 @@
     <ClInclude Include="DMRSlot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DMRSync.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DStarDefines.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EMB.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="EmbeddedLC.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FullLC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Golay2087.h">
@@ -63,12 +48,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Hamming.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HomebrewDMRIPSC.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="LC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Log.h">
@@ -96,12 +75,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SHA256.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ShortLC.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SlotType.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StopWatch.h">
@@ -152,6 +125,33 @@
     <ClInclude Include="YSFFICH.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DMRCSBK.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Sync.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DMREMB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DMREmbeddedLC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DMRFullLC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DMRIPSC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DMRLC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DMRShortLC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DMRSlotType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -161,9 +161,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CRC.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CSBK.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Display.cpp">
@@ -178,18 +175,6 @@
     <ClCompile Include="DMRSlot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DMRSync.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EMB.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="EmbeddedLC.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FullLC.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Golay2087.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -197,12 +182,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Hamming.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="HomebrewDMRIPSC.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="LC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Log.cpp">
@@ -227,12 +206,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SHA256.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ShortLC.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SlotType.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StopWatch.cpp">
@@ -275,6 +248,33 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="YSFFICH.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DMRCSBK.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Sync.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DMREMB.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DMREmbeddedLC.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DMRFullLC.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DMRIPSC.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DMRLC.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DMRShortLC.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DMRSlotType.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
