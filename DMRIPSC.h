@@ -30,7 +30,7 @@
 class CDMRIPSC
 {
 public:
-	CDMRIPSC(const std::string& address, unsigned int port, unsigned int id, const std::string& password, const char* software, const char* version, bool debug);
+	CDMRIPSC(const std::string& address, unsigned int port, unsigned int id, const std::string& password, const char* software, const char* version, bool debug, bool slot1, bool slot2);
 	~CDMRIPSC();
 
 	void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url);
@@ -59,6 +59,8 @@ private:
 	const char*  m_version;
 	CUDPSocket   m_socket;
 	bool         m_enabled;
+	bool         m_slot1;
+	bool         m_slot2;
 
 	enum STATUS {
 		DISCONNECTED,

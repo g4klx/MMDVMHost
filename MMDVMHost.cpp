@@ -441,12 +441,16 @@ bool CMMDVMHost::createDMRNetwork()
 	unsigned int id      = m_conf.getDMRId();
 	std::string password = m_conf.getDMRNetworkPassword();
 	bool debug           = m_conf.getDMRNetworkDebug();
+	bool slot1           = m_conf.getDMRNetworkSlot1();
+	bool slot2           = m_conf.getDMRNetworkSlot2();
 
 	LogInfo("DMR Network Parameters");
 	LogInfo("    Address: %s", address.c_str());
 	LogInfo("    Port: %u", port);
+	LogInfo("    Slot 1: %s", slot1 ? "enabled" : "disabled");
+	LogInfo("    Slot 2: %s", slot2 ? "enabled" : "disabled");
 
-	m_dmrNetwork = new CDMRIPSC(address, port, id, password, VERSION, "MMDVM", debug);
+	m_dmrNetwork = new CDMRIPSC(address, port, id, password, VERSION, "MMDVM", debug, slot1, slot2);
 
 	std::string callsign     = m_conf.getCallsign();
 	unsigned int rxFrequency = m_conf.getRxFrequency();

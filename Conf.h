@@ -89,6 +89,8 @@ public:
   unsigned int getDMRNetworkPort() const;
   std::string  getDMRNetworkPassword() const;
   bool         getDMRNetworkDebug() const;
+  bool         getDMRNetworkSlot1() const;
+  bool         getDMRNetworkSlot2() const;
 
   // The System Fusion Network section
   bool         getFusionNetworkEnabled() const;
@@ -152,6 +154,8 @@ private:
   unsigned int m_dmrNetworkPort;
   std::string  m_dmrNetworkPassword;
   bool         m_dmrNetworkDebug;
+  bool         m_dmrNetworkSlot1;
+  bool         m_dmrNetworkSlot2;
 
   bool         m_fusionNetworkEnabled;
   std::string  m_fusionNetworkAddress;

@@ -85,6 +85,8 @@ m_dmrNetworkAddress(),
 m_dmrNetworkPort(0U),
 m_dmrNetworkPassword(),
 m_dmrNetworkDebug(false),
+m_dmrNetworkSlot1(true),
+m_dmrNetworkSlot2(true),
 m_fusionNetworkEnabled(false),
 m_fusionNetworkAddress(),
 m_fusionNetworkPort(0U),
@@ -241,6 +243,10 @@ bool CConf::read()
 			m_dmrNetworkPassword = value;
 		else if (::strcmp(key, "Debug") == 0)
 			m_dmrNetworkDebug = ::atoi(value) == 1;
+		else if (::strcmp(key, "Slot1") == 0)
+			m_dmrNetworkSlot1 = ::atoi(value) == 1;
+		else if (::strcmp(key, "Slot2") == 0)
+			m_dmrNetworkSlot2 = ::atoi(value) == 1;
 	} else if (section == SECTION_FUSION_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fusionNetworkEnabled = ::atoi(value) == 1;
@@ -474,6 +480,16 @@ std::string CConf::getDMRNetworkPassword() const
 bool CConf::getDMRNetworkDebug() const
 {
 	return m_dmrNetworkDebug;
+}
+
+bool CConf::getDMRNetworkSlot1() const
+{
+	return m_dmrNetworkSlot1;
+}
+
+bool CConf::getDMRNetworkSlot2() const
+{
+	return m_dmrNetworkSlot2;
 }
 
 bool CConf::getFusionNetworkEnabled() const

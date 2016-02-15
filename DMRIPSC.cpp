@@ -30,7 +30,7 @@ const unsigned int BUFFER_LENGTH = 500U;
 const unsigned int HOMEBREW_DATA_PACKET_LENGTH = 53U;
 
 
-CDMRIPSC::CDMRIPSC(const std::string& address, unsigned int port, unsigned int id, const std::string& password, const char* software, const char* version, bool debug) :
+CDMRIPSC::CDMRIPSC(const std::string& address, unsigned int port, unsigned int id, const std::string& password, const char* software, const char* version, bool debug, bool slot1, bool slot2) :
 m_address(),
 m_port(port),
 m_id(NULL),
@@ -40,6 +40,8 @@ m_software(software),
 m_version(version),
 m_socket(),
 m_enabled(false),
+m_slot1(slot1),
+m_slot2(slot2),
 m_status(DISCONNECTED),
 m_retryTimer(1000U, 10U),
 m_timeoutTimer(1000U, 600U),
@@ -159,6 +161,12 @@ bool CDMRIPSC::read(CDMRData& data)
 
 	unsigned int slotNo = (m_buffer[15U] & 0x80U) == 0x80U ? 2U : 1U;
 
+	// Individual slot disabling
+	if (slotNo == 1U && !m_slot1)
+		return false;
+	if (slotNo == 2U && !m_slot2)
+		return false;
+
 	FLCO flco = (m_buffer[15U] & 0x40U) == 0x40U ? FLCO_USER_USER : FLCO_GROUP;
 
 	data.setSeqNo(seqNo);
@@ -215,6 +223,13 @@ bool CDMRIPSC::write(const CDMRData& data)
 	::memcpy(buffer + 11U, m_id, 4U);
 
 	unsigned int slotNo = data.getSlotNo();
+
+	// Individual slot disabling
+	if (slotNo == 1U && !m_slot1)
+		return false;
+	if (slotNo == 2U && !m_slot2)
+		return false;
+
 	buffer[15U] = slotNo == 1U ? 0x00U : 0x80U;
 
 	FLCO flco = data.getFLCO();
