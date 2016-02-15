@@ -112,10 +112,10 @@ public:
 		if (m_oPtr == m_iPtr)
 			return m_length;
 
-		if (m_iPtr > m_oPtr)
-			return m_iPtr - m_oPtr;
+		if (m_oPtr > m_iPtr)
+			return m_oPtr - m_iPtr;
 
-		return (m_length + m_iPtr) - m_oPtr;
+		return (m_length + m_oPtr) - m_iPtr;
 	}
 
 	unsigned int dataSize() const
