@@ -22,8 +22,12 @@
 class CSync
 {
 public:
+	static void addDStarSync(unsigned char* data);
+
 	static void addDMRDataSync(unsigned char* data);
 	static void addDMRAudioSync(unsigned char* data);
+
+	static void addYSFSync(unsigned char* data);
 
 private:
 };

@@ -13,6 +13,7 @@
 
 #include "DStarControl.h"
 #include "Utils.h"
+#include "Sync.h"
 #include "Log.h"
 
 #include <cassert>
@@ -231,7 +232,7 @@ bool CDStarControl::writeModem(unsigned char *data)
 
 			// Regenerate the sync
 			if (m_n == 0U)
-				::memcpy(data + DSTAR_VOICE_FRAME_LENGTH_BYTES + 1U, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES);
+				CSync::addDStarSync(data + 1U);
 
 			m_n = (m_n + 1U) % 21U;
 
@@ -486,7 +487,7 @@ void CDStarControl::writeNetwork()
 
 		// Regenerate the sync
 		if (n == 0U)
-			::memcpy(data + DSTAR_VOICE_FRAME_LENGTH_BYTES + 2U, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES);
+			CSync::addDStarSync(data + 2U);
 
 		m_n = n;
 

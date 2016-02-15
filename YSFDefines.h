@@ -22,6 +22,7 @@
 const unsigned int YSF_FRAME_LENGTH_BYTES = 120U;
 
 const unsigned char YSF_SYNC_BYTES[] = {0xD4U, 0x71U, 0xC9U, 0x63U, 0x4DU};
+const unsigned int YSF_SYNC_LENGTH_BYTES = 5U;
 
 const unsigned char YSF_FI_MASK = 0xC0U;
 const unsigned char YSF_DT_MASK = 0x30U;

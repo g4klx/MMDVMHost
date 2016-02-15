@@ -17,11 +17,22 @@
  */
 
 #include "Sync.h"
+
+#include "DStarDefines.h"
 #include "DMRDefines.h"
+#include "YSFDefines.h"
 
 #include <cstdio>
 #include <cassert>
+#include <cstring>
 
+
+void CSync::addDStarSync(unsigned char* data)
+{
+	assert(data != NULL);
+
+	::memcpy(data + DSTAR_VOICE_FRAME_LENGTH_BYTES, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES);
+}
 
 void CSync::addDMRDataSync(unsigned char* data)
 {
@@ -37,4 +48,11 @@ void CSync::addDMRAudioSync(unsigned char* data)
 
 	for (unsigned int i = 0U; i < 7U; i++)
 		data[i + 13U] = (data[i + 13U] & ~SYNC_MASK[i]) | BS_SOURCED_AUDIO_SYNC[i];
+}
+
+void CSync::addYSFSync(unsigned char* data)
+{
+	assert(data != NULL);
+
+	::memcpy(data, YSF_SYNC_BYTES, YSF_SYNC_LENGTH_BYTES);
 }
