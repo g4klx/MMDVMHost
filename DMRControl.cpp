@@ -18,7 +18,7 @@
 
 #include <cassert>
 
-CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, unsigned int timeout, CModem* modem, CHomebrewDMRIPSC* network, IDisplay* display) :
+CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, unsigned int timeout, CModem* modem, CHomebrewDMRIPSC* network, IDisplay* display, bool duplex) :
 m_id(id),
 m_colorCode(colorCode),
 m_modem(modem),
@@ -29,7 +29,7 @@ m_slot2(2U, timeout)
 	assert(modem != NULL);
 	assert(display != NULL);
 
-	CDMRSlot::init(colorCode, modem, network, display);
+	CDMRSlot::init(colorCode, modem, network, display, duplex);
 }
 
 CDMRControl::~CDMRControl()

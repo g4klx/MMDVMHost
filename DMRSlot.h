@@ -46,7 +46,7 @@ public:
 
 	void clock(unsigned int ms);
 
-	static void init(unsigned int colorCode, CModem* modem, CHomebrewDMRIPSC* network, IDisplay* display);
+	static void init(unsigned int colorCode, CModem* modem, CHomebrewDMRIPSC* network, IDisplay* display, bool duplex);
 
 private:
 	unsigned int               m_slotNo;
@@ -73,6 +73,7 @@ private:
 	static CModem*             m_modem;
 	static CHomebrewDMRIPSC*   m_network;
 	static IDisplay*           m_display;
+	static bool                m_duplex;
 
 	static unsigned char*      m_idle;
 

@@ -29,6 +29,7 @@ unsigned int      CDMRSlot::m_colorCode = 0U;
 CModem*           CDMRSlot::m_modem = NULL;
 CHomebrewDMRIPSC* CDMRSlot::m_network = NULL;
 IDisplay*         CDMRSlot::m_display = NULL;
+bool              CDMRSlot::m_duplex = true;
 
 unsigned char*    CDMRSlot::m_idle = NULL;
 
@@ -132,10 +133,13 @@ void CDMRSlot::writeModem(unsigned char *data)
 			m_bits = 1U;
 			m_errs = 0U;
 
-			for (unsigned i = 0U; i < 3U; i++) {
-				writeNetwork(data, DT_VOICE_LC_HEADER);
-				writeQueue(data);
+			if (m_duplex) {
+				for (unsigned i = 0U; i < 3U; i++)
+					writeQueue(data);
 			}
+
+			for (unsigned i = 0U; i < 3U; i++)
+				writeNetwork(data, DT_VOICE_LC_HEADER);
 
 			m_state = RS_RELAYING_RF_AUDIO;
 
@@ -160,8 +164,10 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			m_n = 0U;
 
+			if (m_duplex)
+				writeQueue(data);
+
 			writeNetwork(data, DT_VOICE_PI_HEADER);
-			writeQueue(data);
 		} else if (dataType == DT_TERMINATOR_WITH_LC) {
 			if (m_state != RS_RELAYING_RF_AUDIO)
 				return;
@@ -180,8 +186,10 @@ void CDMRSlot::writeModem(unsigned char *data)
 				writeNetwork(data, DT_TERMINATOR_WITH_LC);
 
 			// 480ms of terminator to space things out
-			for (unsigned int i = 0U; i < 8U; i++)
-				writeQueue(data);
+			if (m_duplex) {
+				for (unsigned int i = 0U; i < 8U; i++)
+					writeQueue(data);
+			}
 
 			if (m_bits == 0U) m_bits = 1U;
 			LogMessage("DMR Slot %u, received RF end of voice transmission, %.1f seconds, BER: %.1f%%", m_slotNo, float(m_frames) / 16.667F, float(m_errs * 100U) / float(m_bits));
@@ -220,10 +228,13 @@ void CDMRSlot::writeModem(unsigned char *data)
 			m_seqNo = 0U;
 			m_n = 0U;
 
-			for (unsigned i = 0U; i < 3U; i++) {
-				writeNetwork(data, DT_DATA_HEADER);
-				writeQueue(data);
+			if (m_duplex) {
+				for (unsigned i = 0U; i < 3U; i++)
+					writeQueue(data);
 			}
+
+			for (unsigned i = 0U; i < 3U; i++)
+				writeNetwork(data, DT_DATA_HEADER);
 
 			m_state = RS_RELAYING_RF_DATA;
 
@@ -260,8 +271,10 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 					m_seqNo = 0U;
 
+					if (m_duplex)
+						writeQueue(data);
+
 					writeNetwork(data, DT_CSBK, FLCO_USER_USER, csbk.getSrcId(), csbk.getDstId());
-					writeQueue(data);
 
 					LogMessage("DMR Slot %u, received RF CSBK from %u to %u", m_slotNo, csbk.getSrcId(), csbk.getDstId());
 				}
@@ -287,8 +300,10 @@ void CDMRSlot::writeModem(unsigned char *data)
 			data[0U] = m_frames == 0U ? TAG_EOT : TAG_DATA;
 			data[1U] = 0x00U;
 
+			if (m_duplex)
+				writeQueue(data);
+
 			writeNetwork(data, dataType);
-			writeQueue(data);
 
 			if (m_frames == 0U) {
 				LogMessage("DMR Slot %u, ended RF data transmission", m_slotNo);
@@ -314,7 +329,9 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			m_n = 0U;
 
-			writeQueue(data);
+			if (m_duplex)
+				writeQueue(data);
+
 			writeNetwork(data, DT_VOICE_SYNC);
 		} else if (m_state == RS_LISTENING) {
 			m_state = RS_LATE_ENTRY;
@@ -338,7 +355,9 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			m_n++;
 
-			writeQueue(data);
+			if (m_duplex)
+				writeQueue(data);
+
 			writeNetwork(data, DT_VOICE);
 		} else if (m_state == RS_LATE_ENTRY) {
 			// If we haven't received an LC yet, then be strict on the color code
@@ -374,10 +393,13 @@ void CDMRSlot::writeModem(unsigned char *data)
 				m_bits = 1U;
 				m_errs = 0U;
 
-				for (unsigned int i = 0U; i < 3U; i++) {
-					writeNetwork(start, DT_VOICE_LC_HEADER);
-					writeQueue(start);
+				if (m_duplex) {
+					for (unsigned int i = 0U; i < 3U; i++)
+						writeQueue(start);
 				}
+
+				for (unsigned int i = 0U; i < 3U; i++)
+					writeNetwork(start, DT_VOICE_LC_HEADER);
 
 				// Regenerate the EMB
 				emb.getData(data + 2U);
@@ -393,7 +415,9 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 				m_n++;
 
-				writeQueue(data);
+				if (m_duplex)
+					writeQueue(data);
+
 				writeNetwork(data, DT_VOICE);
 
 				m_state = RS_RELAYING_RF_AUDIO;
@@ -440,26 +464,28 @@ void CDMRSlot::writeEndOfTransmission(bool writeEnd)
 	m_bits = 0U;
 
 	if (writeEnd) {
-		// Create a dummy start end frame
-		unsigned char data[DMR_FRAME_LENGTH_BYTES + 2U];
+		if (m_state == RS_RELAYING_NETWORK_AUDIO || (m_state == RS_RELAYING_RF_AUDIO && m_duplex)) {
+			// Create a dummy start end frame
+			unsigned char data[DMR_FRAME_LENGTH_BYTES + 2U];
 
-		CDMRSync sync;
-		sync.addDataSync(data + 2U);
+			CDMRSync sync;
+			sync.addDataSync(data + 2U);
 
-		CFullLC fullLC;
-		fullLC.encode(*m_lc, data + 2U, DT_TERMINATOR_WITH_LC);
+			CFullLC fullLC;
+			fullLC.encode(*m_lc, data + 2U, DT_TERMINATOR_WITH_LC);
 
-		CSlotType slotType;
-		slotType.setColorCode(m_colorCode);
-		slotType.setDataType(DT_TERMINATOR_WITH_LC);
-		slotType.getData(data + 2U);
+			CSlotType slotType;
+			slotType.setColorCode(m_colorCode);
+			slotType.setDataType(DT_TERMINATOR_WITH_LC);
+			slotType.getData(data + 2U);
 
-		data[0U] = TAG_DATA;
-		data[1U] = 0x00U;
+			data[0U] = TAG_DATA;
+			data[1U] = 0x00U;
 
-		// 480ms of terminator to space things out
-		for (unsigned int i = 0U; i < 8U; i++)
-			writeQueue(data);
+			// 480ms of terminator to space things out
+			for (unsigned int i = 0U; i < 8U; i++)
+				writeQueue(data);
+		}
 	}
 
 	delete m_lc;
@@ -904,7 +930,7 @@ void CDMRSlot::writeNetwork(const unsigned char* data, unsigned char dataType)
 	writeNetwork(data, dataType, m_lc->getFLCO(), m_lc->getSrcId(), m_lc->getDstId());
 }
 
-void CDMRSlot::init(unsigned int colorCode, CModem* modem, CHomebrewDMRIPSC* network, IDisplay* display)
+void CDMRSlot::init(unsigned int colorCode, CModem* modem, CHomebrewDMRIPSC* network, IDisplay* display, bool duplex)
 {
 	assert(modem != NULL);
 	assert(display != NULL);
@@ -913,6 +939,7 @@ void CDMRSlot::init(unsigned int colorCode, CModem* modem, CHomebrewDMRIPSC* net
 	m_modem     = modem;
 	m_network   = network;
 	m_display   = display;
+	m_duplex    = duplex;
 
 	m_idle    = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
 

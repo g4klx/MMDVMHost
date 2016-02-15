@@ -156,13 +156,14 @@ int CMMDVMHost::run()
 		unsigned int id        = m_conf.getDMRId();
 		unsigned int colorCode = m_conf.getDMRColorCode();
 		unsigned int timeout   = m_conf.getTimeout();
+		bool duplex            = m_conf.getDuplex();
 
 		LogInfo("DMR Parameters");
 		LogInfo("    Id: %u", id);
 		LogInfo("    Color Code: %u", colorCode);
 		LogInfo("    Timeout: %us", timeout);
 
-		dmr = new CDMRControl(id, colorCode, timeout, m_modem, m_dmrNetwork, m_display);
+		dmr = new CDMRControl(id, colorCode, timeout, m_modem, m_dmrNetwork, m_display, duplex);
 	}
 
 	CYSFEcho* ysf = NULL;
@@ -490,11 +491,6 @@ void CMMDVMHost::readParams()
 	m_dstarEnabled = m_conf.getDStarEnabled();
 	m_dmrEnabled   = m_conf.getDMREnabled();
 	m_ysfEnabled   = m_conf.getFusionEnabled();
-
-	if (!m_conf.getDuplex() && m_dmrEnabled) {
-		LogWarning("DMR operation disabled because system is not duplex");
-		m_dmrEnabled = false;
-	}
 }
 
 void CMMDVMHost::createDisplay()
