@@ -44,7 +44,7 @@ bool           CDMRSlot::m_voice2 = true;
 
 CDMRSlot::CDMRSlot(unsigned int slotNo, unsigned int timeout) :
 m_slotNo(slotNo),
-m_queue(1000U),
+m_queue(1000U, "DMR Slot"),
 m_state(RS_LISTENING),
 m_embeddedLC(),
 m_lc(NULL),

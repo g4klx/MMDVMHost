@@ -21,7 +21,7 @@
 #include "YSFDefines.h"
 
 CYSFEcho::CYSFEcho(unsigned int delay, unsigned int space) :
-m_buffer(space),
+m_buffer(space, "YSF Echo"),
 m_timer(1000U, delay)
 {
 }

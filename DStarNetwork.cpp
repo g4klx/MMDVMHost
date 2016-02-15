@@ -39,7 +39,7 @@ m_enabled(false),
 m_outId(0U),
 m_outSeq(0U),
 m_inId(0U),
-m_buffer(1000U),
+m_buffer(1000U, "D-Star Network"),
 m_pollTimer(1000U, 60U),
 m_linkStatus(LS_NONE),
 m_linkReflector(NULL)
