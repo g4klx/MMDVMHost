@@ -21,6 +21,14 @@
 
 // #define	DUMP_YSF
 
+/*
+ * TODO:
+ * AMBE FEC reconstruction.
+ * FICH regeneration.
+ * Callsign extraction + late entry.
+ * Uplink and downlink callsign addition.
+ */
+
 CYSFControl::CYSFControl(const std::string& callsign, IDisplay* display, unsigned int timeout, bool duplex) :
 m_display(display),
 m_duplex(duplex),
@@ -60,6 +68,9 @@ bool CYSFControl::writeModem(unsigned char *data)
 		m_display->writeFusion("XXXXXX");
 		m_state = RS_RELAYING_RF_AUDIO;
 		LogMessage("YSF, received RF header");
+#if defined(DUMP_YSF)
+		openFile();
+#endif
 	}
 
 	if (m_state != RS_RELAYING_RF_AUDIO)
@@ -76,6 +87,10 @@ bool CYSFControl::writeModem(unsigned char *data)
 			writeQueue(data);
 		}
 
+#if defined(DUMP_YSF)
+		writeFile(data + 2U);
+#endif
+
 		LogMessage("YSF, received RF end of transmission, %.1f seconds", float(m_frames) / 10.0F);
 
 		writeEndOfTransmission();
@@ -91,6 +106,10 @@ bool CYSFControl::writeModem(unsigned char *data)
 			data[1U] = 0x00U;
 			writeQueue(data);
 		}
+
+#if defined(DUMP_YSF)
+		writeFile(data + 2U);
+#endif
 	}
 
 	return true;
