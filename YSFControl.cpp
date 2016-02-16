@@ -57,6 +57,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 	if (valid && m_state == RS_LISTENING) {
 		m_frames = 0U;
 		m_timeoutTimer.start();
+		m_display->writeFusion("XXXXXX");
 		m_state = RS_RELAYING_RF_AUDIO;
 		LogMessage("YSF, received RF header");
 	}

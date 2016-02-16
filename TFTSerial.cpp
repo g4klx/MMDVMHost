@@ -52,68 +52,61 @@ bool CTFTSerial::open()
 void CTFTSerial::setIdle()
 {
 	// Clear the screen
-	m_serial.write((unsigned char*)"\x1B\x00\xFF", 3U);
+	clearScreen();
 
 	// Draw MMDVM logo
-	m_serial.write((unsigned char*)"\x1B\x0D\x00\x00MMDVM_sm.bmp\xFF", 15U);
+	writeImage(0U, 0U, "MMDVM_sm.bmp");
 
 	// Draw all mode insignias
-	m_serial.write((unsigned char*)"\x1B\x0D\x00\x00ALL_sm.bmp\xFF", 15U);
+	writeImage(0U, 30U, "ALL_sm.bmp");
 }
 
 void CTFTSerial::setDStar()
 {
 	// Clear the screen
-	m_serial.write((unsigned char*)"\x1B\x00\xFF", 3U);
+	clearScreen();
 
 	// Draw MMDVM logo
-	m_serial.write((unsigned char*)"\x1B\x0D\x00\x00MMDVM_sm.bmp\xFF", 15U);
+	writeImage(0U, 0U, "MMDVM_sm.bmp");
 
 	// Draw D-Star insignia
-	m_serial.write((unsigned char*)"\x1B\x0D\x00\x00DStar_sm.bmp\xFF", 17U);
+	writeImage(0U, 30U, "DStar_sm.bmp");
 
-	m_serial.write((unsigned char*)"\x1B\x06\x00\x08\xFF", 5U);
-	m_serial.write((unsigned char*)"Listening", 9U);
+	writeText(0U, 8U, "Listening");
 }
 
 void CTFTSerial::writeDStar(const std::string& call1, const std::string& call2)
 {
-	m_serial.write((unsigned char*)"\x1B\x06\x00\x08\xFF", 5U);
-
 	char text[20U];
 	::sprintf(text, "%s/%s", call1.c_str(), call2.c_str());
 
-	m_serial.write((unsigned char*)text, ::strlen(text));
+	writeText(0U, 8U, text);
 }
 
 void CTFTSerial::clearDStar()
 {
 	// Draw MMDVM logo
-	m_serial.write((unsigned char*)"\x1B\x0D\x00\x00MMDVM_sm.bmp\xFF", 15U);
+	writeImage(0U, 0U, "MMDVM_sm.bmp");
 
 	// Draw D-Star insignia
-	m_serial.write((unsigned char*)"\x1B\x0D\x00\x00DStar_sm.bmp\xFF", 17U);
+	writeImage(0U, 30U, "DStar_sm.bmp");
 
-	m_serial.write((unsigned char*)"\x1B\x06\x00\x08\xFF", 5U);
-	m_serial.write((unsigned char*)"Listening", 9U);
+	writeText(0U, 8U, "Listening");
 }
 
 void CTFTSerial::setDMR()
 {
 	// Clear the screen
-	m_serial.write((unsigned char*)"\x1B\x00\xFF", 3U);
+	clearScreen();
 
 	// Draw MMDVM logo
-	m_serial.write((unsigned char*)"\x1B\x0D\x00\x00MMDVM_sm.bmp\xFF", 15U);
+	writeImage(0U, 0U, "MMDVM_sm.bmp");
 
 	// Draw DMR insignia
-	m_serial.write((unsigned char*)"\x1B\x0D\x00\x00DMR_sm.bmp\xFF", 15U);
+	writeImage(0U, 30U, "DMR_sm.bmp");
 
-	m_serial.write((unsigned char*)"\x1B\x06\x00\x08\xFF", 5U);
-	m_serial.write((unsigned char*)"1: Listening", 9U);
-
-	m_serial.write((unsigned char*)"\x1B\x06\x00\x09\xFF", 5U);
-	m_serial.write((unsigned char*)"2: Listening", 9U);
+	writeText(0U, 8U, "1: Listening");
+	writeText(0U, 9U, "2: Listening");
 }
 
 void CTFTSerial::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, unsigned int dstId)
@@ -122,62 +115,76 @@ void CTFTSerial::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, u
 	::sprintf(text, "%u: %u %s%u", slotNo, srcId, group ? "TG " : "", dstId);
 
 	if (slotNo == 1U)
-		m_serial.write((unsigned char*)"\x1B\x06\x00\x08\xFF", 5U);
+		writeText(0U, 8U, text);
 	else
-		m_serial.write((unsigned char*)"\x1B\x06\x00\x09\xFF", 5U);
-
-	m_serial.write((unsigned char*)text, ::strlen(text));
+		writeText(0U, 9U, text);
 }
 
 void CTFTSerial::clearDMR(unsigned int slotNo)
 {
-	if (slotNo == 1U) {
-		m_serial.write((unsigned char*)"\x1B\x06\x00\x08\xFF", 5U);
-		m_serial.write((unsigned char*)"1: Listening", 11U);
-	} else {
-		m_serial.write((unsigned char*)"\x1B\x06\x00\x09\xFF", 5U);
-		m_serial.write((unsigned char*)"2: Listening", 11U);
-	}
+	if (slotNo == 1U)
+		writeText(0U, 8U, "1: Listening");
+	else
+		writeText(0U, 9U, "2: Listening");
 }
 
 void CTFTSerial::setFusion()
 {
 	// Clear the screen
-	m_serial.write((unsigned char*)"\x1B\x00\xFF", 3U);
+	clearScreen();
 
 	// Draw MMDVM logo
-	m_serial.write((unsigned char*)"\x1B\x0D\x00\x00MMDVM_sm.bmp\xFF", 15U);
+	writeImage(0U, 0U, "MMDVM_sm.bmp");
 
 	// Draw the System Fusion insignia
-	m_serial.write((unsigned char*)"\x1B\x0D\x00\x00YSF_sm.bmp\xFF", 15U);
+	writeImage(0U, 30U, "YSF_sm.bmp");
 
-	m_serial.write((unsigned char*)"\x1B\x06\x00\x08\xFF", 5U);
-	m_serial.write((unsigned char*)"Listening", 9U);
+	writeText(0U, 8U, "Listening");
 }
 
 void CTFTSerial::writeFusion(const std::string& callsign)
 {
-	m_serial.write((unsigned char*)"\x1B\x06\x00\x08\xFF", 5U);
-
 	char text[20U];
 	::sprintf(text, "%s", callsign.c_str());
 
-	m_serial.write((unsigned char*)text, ::strlen(text));
+	writeText(0U, 8U, text);
 }
 
 void CTFTSerial::clearFusion()
 {
 	// Draw MMDVM logo
-	m_serial.write((unsigned char*)"\x1B\x0D\x00\x00MMDVM_sm.bmp\xFF", 15U);
+	writeImage(0U, 0U, "MMDVM_sm.bmp");
 
 	// Draw the System Fusion insignia
-	m_serial.write((unsigned char*)"\x1B\x0D\x00\x00YSF_sm.bmp\xFF", 15U);
+	writeImage(0U, 30U, "YSF_sm.bmp");
 
-	m_serial.write((unsigned char*)"\x1B\x06\x00\x08\xFF", 5U);
-	m_serial.write((unsigned char*)"Listening", 9U);
+	writeText(0U, 8U, "Listening");
 }
 
 void CTFTSerial::close()
 {
 	m_serial.close();
+}
+
+void CTFTSerial::clearScreen()
+{
+	m_serial.write((unsigned char*)"\x1B\x00\xFF", 3U);
+}
+
+void CTFTSerial::writeText(unsigned char x, unsigned char y, const char* text)
+{
+	m_serial.write((unsigned char*)"\x1B\x06", 2U);
+	m_serial.write(&x, 1U);
+	m_serial.write(&y, 1U);
+	m_serial.write((unsigned char*)"\xFF", 1U);
+	m_serial.write((unsigned char*)text, ::strlen(text));
+}
+
+void CTFTSerial::writeImage(unsigned char x, unsigned char y, const char* filename)
+{
+	m_serial.write((unsigned char*)"\x1B\x0D", 2U);
+	m_serial.write(&x, 1U);
+	m_serial.write(&y, 1U);
+	m_serial.write((unsigned char*)filename, ::strlen(filename));
+	m_serial.write((unsigned char*)"\xFF", 1U);
 }

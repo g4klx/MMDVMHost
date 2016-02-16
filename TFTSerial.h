@@ -50,6 +50,10 @@ public:
 
 private:
   CSerialController m_serial;
+
+  void clearScreen();
+  void writeText(unsigned char x, unsigned char y, const char* text);
+  void writeImage(unsigned char x, unsigned char y, const char* filename);
 };
 
 #endif
