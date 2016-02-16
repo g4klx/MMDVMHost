@@ -54,7 +54,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 	unsigned char fi = data[1U] & YSF_FI_MASK;
 	unsigned char dt = data[1U] & YSF_DT_MASK;
 
-	if (valid && m_state == RS_LISTENING) {
+	if (type == TAG_DATA && valid && m_state == RS_LISTENING) {
 		m_frames = 0U;
 		m_timeoutTimer.start();
 		m_display->writeFusion("XXXXXX");
@@ -62,22 +62,23 @@ bool CYSFControl::writeModem(unsigned char *data)
 		LogMessage("YSF, received RF header");
 	}
 
-	if (fi == YSF_DT_TERMINATOR_CHANNEL) {
-		if (m_state == RS_RELAYING_RF_AUDIO) {
-			CSync::addYSFSync(data + 2U);
+	if (m_state != RS_RELAYING_RF_AUDIO)
+		return false;
 
-			m_frames++;
+	if (type == TAG_EOT) {
+		CSync::addYSFSync(data + 2U);
 
-			if (m_duplex) {
-				data[0U] = TAG_DATA;
-				data[1U] = 0x00U;
-				writeQueue(data);
-			}
+		m_frames++;
 
-			LogMessage("YSF, received RF end of transmission, %.1f seconds", float(m_frames) / 10.0F);
-
-			writeEndOfTransmission();
+		if (m_duplex) {
+			data[0U] = TAG_EOT;
+			data[1U] = 0x00U;
+			writeQueue(data);
 		}
+
+		LogMessage("YSF, received RF end of transmission, %.1f seconds", float(m_frames) / 10.0F);
+
+		writeEndOfTransmission();
 
 		return false;
 	} else {
