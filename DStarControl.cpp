@@ -171,7 +171,7 @@ bool CDStarControl::writeModem(unsigned char *data)
 
 			m_state = RS_RELAYING_RF_AUDIO;
 
-			m_display->writeDStar(std::string((char*)my1, 8U), std::string((char*)my2, 4U));
+			m_display->writeDStar((char*)my1, (char*)my2, (char*)your);
 
 			LogMessage("D-Star, received RF header from %8.8s/%4.4s to %8.8s", my1, my2, your);
 		} else if (m_state == RS_RELAYING_NETWORK_AUDIO) {
@@ -351,7 +351,7 @@ bool CDStarControl::writeModem(unsigned char *data)
 
 			m_state = RS_RELAYING_RF_AUDIO;
 
-			m_display->writeDStar(std::string((char*)my1, 8U), std::string((char*)my2, 4U));
+			m_display->writeDStar((char*)my1, (char*)my2, (char*)your);
 
 			LogMessage("D-Star, received RF late entry from %8.8s/%4.4s to %8.8s", my1, my2, your);
 		}
@@ -449,7 +449,7 @@ void CDStarControl::writeNetwork()
 #endif
 		m_state = RS_RELAYING_NETWORK_AUDIO;
 
-		m_display->writeDStar(std::string((char*)my1, 8U), std::string((char*)my2, 4U));
+		m_display->writeDStar((char*)my1, (char*)my2, (char*)your);
 
 		LogMessage("D-Star, received network header from %8.8s/%4.4s to %8.8s", my1, my2, your);
 	} else if (type == TAG_EOT) {

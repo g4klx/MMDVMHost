@@ -27,7 +27,7 @@
 class CTFTSerial : public IDisplay
 {
 public:
-  CTFTSerial(const std::string& port);
+  CTFTSerial(const std::string& port, unsigned int brightness);
   virtual ~CTFTSerial();
 
   virtual bool open();
@@ -35,11 +35,11 @@ public:
   virtual void setIdle();
 
   virtual void setDStar();
-  virtual void writeDStar(const std::string& call1, const std::string& call2);
+  virtual void writeDStar(const char* my1, const char* my2, const char* your);
   virtual void clearDStar();
 
   virtual void setDMR();
-  virtual void writeDMR(unsigned int slotNo, unsigned int srdId, bool group, unsigned int dstId);
+  virtual void writeDMR(unsigned int slotNo, unsigned int srdId, bool group, unsigned int dstId, const char* type);
   virtual void clearDMR(unsigned int slotNo);
 
   virtual void setFusion();
@@ -50,10 +50,19 @@ public:
 
 private:
   CSerialController m_serial;
+  unsigned int      m_brightness;
 
   void clearScreen();
-  void writeText(unsigned char x, unsigned char y, const char* text);
-  void writeImage(unsigned char x, unsigned char y, const char* filename);
+  void setBackground(unsigned char colour);
+  void setForeground(unsigned char colour);
+  void setRotation(unsigned char rotation);
+  void setFontSize(unsigned char size);
+  void displayText(unsigned char x, unsigned char y, const char* text);
+  void drawLine(unsigned char x1, unsigned char y1, unsigned char x2, unsigned char y2);
+  void drawBox(unsigned char x1, unsigned char y1, unsigned char x2, unsigned char y2, bool filled);
+  void drawCircle(unsigned char x, unsigned char y, unsigned char radius, bool filled);
+  void displayImage(unsigned char x, unsigned char y, const char* filename);
+  void setBrightness(unsigned char brightness);
 };
 
 #endif

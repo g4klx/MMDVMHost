@@ -34,11 +34,11 @@ public:
   virtual void setIdle();
 
   virtual void setDStar();
-  virtual void writeDStar(const std::string& call1, const std::string& call2);
+  virtual void writeDStar(const char* my1, const char* my2, const char* your);
   virtual void clearDStar();
 
   virtual void setDMR();
-  virtual void writeDMR(unsigned int slotNo, unsigned int srdId, bool group, unsigned int dstId);
+  virtual void writeDMR(unsigned int slotNo, unsigned int srdId, bool group, unsigned int dstId, const char* type);
   virtual void clearDMR(unsigned int slotNo);
 
   virtual void setFusion();

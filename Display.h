@@ -31,11 +31,11 @@ public:
   virtual void setIdle() = 0;
 
   virtual void setDStar() = 0;
-  virtual void writeDStar(const std::string& call1, const std::string& call2) = 0;
+  virtual void writeDStar(const char* my1, const char* my2, const char* your) = 0;
   virtual void clearDStar() = 0;
 
   virtual void setDMR() = 0;
-  virtual void writeDMR(unsigned int slotNo, unsigned int srdId, bool group, unsigned int dstId) = 0;
+  virtual void writeDMR(unsigned int slotNo, unsigned int srdId, bool group, unsigned int dstId, const char* type) = 0;
   virtual void clearDMR(unsigned int slotNo) = 0;
 
   virtual void setFusion() = 0;

@@ -91,7 +91,8 @@ m_fusionNetworkEnabled(false),
 m_fusionNetworkAddress(),
 m_fusionNetworkPort(0U),
 m_fusionNetworkDebug(false),
-m_tftSerialPort()
+m_tftSerialPort(),
+m_tftSerialBrightness(50U)
 {
 }
 
@@ -259,6 +260,8 @@ bool CConf::read()
 	} else if (section == SECTION_TFTSERIAL) {
 		if (::strcmp(key, "Port") == 0)
 			m_tftSerialPort = value;
+		else if (::strcmp(key, "Brightness") == 0)
+			m_tftSerialBrightness = (unsigned int)::atoi(value);
 	}
   }
 
@@ -515,4 +518,9 @@ bool CConf::getFusionNetworkDebug() const
 std::string CConf::getTFTSerialPort() const
 {
   return m_tftSerialPort;
+}
+
+unsigned int CConf::getTFTSerialBrightness() const
+{
+	return m_tftSerialBrightness;
 }

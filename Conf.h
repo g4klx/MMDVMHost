@@ -100,6 +100,7 @@ public:
 
   // The TFTSERIAL section
   std::string  getTFTSerialPort() const;
+  unsigned int getTFTSerialBrightness() const;
 
 private:
   std::string  m_file;
@@ -163,6 +164,7 @@ private:
   bool         m_fusionNetworkDebug;
 
   std::string  m_tftSerialPort;
+  unsigned int m_tftSerialBrightness;
 };
 
 #endif

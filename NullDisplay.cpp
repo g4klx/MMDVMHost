@@ -39,7 +39,7 @@ void CNullDisplay::setDStar()
 {
 }
 
-void CNullDisplay::writeDStar(const std::string& call1, const std::string& call2)
+void CNullDisplay::writeDStar(const char* my1, const char* my2, const char* your)
 {
 }
 
@@ -51,7 +51,7 @@ void CNullDisplay::setDMR()
 {
 }
 
-void CNullDisplay::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, unsigned int dstId)
+void CNullDisplay::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, unsigned int dstId, const char* type)
 {
 }
 

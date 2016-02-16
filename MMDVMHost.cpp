@@ -514,11 +514,13 @@ void CMMDVMHost::createDisplay()
 	LogInfo("    Type: %s", type.c_str());
 
 	if (type == "TFT Serial") {
-		std::string port = m_conf.getTFTSerialPort();
+		std::string port        = m_conf.getTFTSerialPort();
+		unsigned int brightness = m_conf.getTFTSerialBrightness();
 
 		LogInfo("    Port: %s", port.c_str());
+		LogInfo("    Brightness: %s", brightness);
 
-		m_display = new CTFTSerial(port);
+		m_display = new CTFTSerial(port, brightness);
 	} else {
 		m_display = new CNullDisplay;
 	}
