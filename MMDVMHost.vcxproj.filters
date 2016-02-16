@@ -95,9 +95,6 @@
     <ClInclude Include="YSFDefines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="YSFEcho.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Version.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -150,6 +147,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DMRSlotType.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="YSFControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -223,9 +223,6 @@
     <ClCompile Include="Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="YSFEcho.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="AMBEFEC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -275,6 +272,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DMRSlotType.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="YSFControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

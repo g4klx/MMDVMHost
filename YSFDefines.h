@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@ const unsigned int YSF_SYNC_LENGTH_BYTES = 5U;
 const unsigned char YSF_FI_MASK = 0xC0U;
 const unsigned char YSF_DT_MASK = 0x30U;
 
+const unsigned char YSF_DT_HEADER_CHANNEL     = 0x00U;
 const unsigned char YSF_DT_TERMINATOR_CHANNEL = 0x80U;
 
 const unsigned char YSF_CKSUM_OK = 0x01U;

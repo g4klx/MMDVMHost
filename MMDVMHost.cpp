@@ -25,7 +25,7 @@
 #include "DMRControl.h"
 #include "TFTSerial.h"
 #include "NullDisplay.h"
-#include "YSFEcho.h"
+#include "YSFControl.h"
 
 #include <cstdio>
 
@@ -166,9 +166,18 @@ int CMMDVMHost::run()
 		dmr = new CDMRControl(id, colorCode, timeout, m_modem, m_dmrNetwork, m_display, duplex);
 	}
 
-	CYSFEcho* ysf = NULL;
-	if (m_ysfEnabled)
-		ysf = new CYSFEcho(2U, 10000U);
+	CYSFControl* ysf = NULL;
+	if (m_ysfEnabled) {
+		std::string callsign = m_conf.getCallsign();
+		unsigned int timeout = m_conf.getTimeout();
+		bool duplex          = m_conf.getDuplex();
+
+		LogInfo("System Fusion Parameters");
+		LogInfo("    Callsign: %s", callsign.c_str());
+		LogInfo("    Timeout: %us", timeout);
+
+		ysf = new CYSFControl(callsign, m_display, timeout, duplex);
+	}
 
 	m_modeTimer.setTimeout(m_conf.getModeHang());
 
@@ -226,11 +235,11 @@ int CMMDVMHost::run()
 		len = m_modem->readYSFData(data);
 		if (ysf != NULL && len > 0U) {
 			if (m_mode == MODE_IDLE) {
-				bool ret = ysf->writeData(data, len);
+				bool ret = ysf->writeModem(data);
 				if (ret)
 					setMode(MODE_YSF);
 			} else if (m_mode == MODE_YSF) {
-				ysf->writeData(data, len);
+				ysf->writeModem(data);
 				m_modeTimer.start();
 			} else {
 				LogWarning("System Fusion modem data received when in mode %u", m_mode);
@@ -294,7 +303,7 @@ int CMMDVMHost::run()
 		if (ysf != NULL) {
 			ret = m_modem->hasYSFSpace();
 			if (ret) {
-				len = ysf->readData(data);
+				len = ysf->readModem(data);
 				if (len > 0U) {
 					if (m_mode == MODE_IDLE) {
 						setMode(MODE_YSF);
