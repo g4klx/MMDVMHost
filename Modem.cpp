@@ -96,6 +96,7 @@ m_txDMRData2(1000U, "Modem TX DMR2"),
 m_rxYSFData(1000U, "Modem RX YSF"),
 m_txYSFData(1000U, "Modem TX YSF"),
 m_statusTimer(1000U, 0U, 100U),
+m_inactivityTimer(1000U, 0U, 1500U),
 m_dstarSpace(0U),
 m_dmrSpace1(0U),
 m_dmrSpace2(0U),
@@ -147,6 +148,7 @@ bool CModem::open()
 	}
 
 	m_statusTimer.start();
+	m_inactivityTimer.start();
 
 	return true;
 }
@@ -158,6 +160,19 @@ void CModem::clock(unsigned int ms)
 	if (m_statusTimer.hasExpired()) {
 		readStatus();
 		m_statusTimer.start();
+	}
+
+	m_inactivityTimer.clock(ms);
+	if (m_inactivityTimer.hasExpired()) {
+		LogError("No reply from the modem for some time, resetting it");
+		close();
+		while (!open()) {
+#if defined(_WIN32) || defined(_WIN64)
+			::Sleep(1000UL);	// 1s
+#else
+			::sleep(1UL);			// 1s
+#endif
+		}
 	}
 
 	unsigned int length;
@@ -331,6 +346,8 @@ void CModem::clock(unsigned int ms)
 					m_dmrSpace1  = m_buffer[7U];
 					m_dmrSpace2  = m_buffer[8U];
 					m_ysfSpace   = m_buffer[9U];
+
+					m_inactivityTimer.start();
 					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u", m_buffer[5U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace);
 				}
 				break;
@@ -447,8 +464,6 @@ void CModem::close()
 {
 	::LogMessage("Closing the MMDVM");
 
-	delete[] m_buffer;
-	
 	m_serial.close();
 }
 

@@ -89,6 +89,7 @@ private:
 	CRingBuffer<unsigned char> m_rxYSFData;
 	CRingBuffer<unsigned char> m_txYSFData;
 	CTimer                     m_statusTimer;
+	CTimer                     m_inactivityTimer;
 	unsigned int               m_dstarSpace;
 	unsigned int               m_dmrSpace1;
 	unsigned int               m_dmrSpace2;
