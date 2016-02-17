@@ -161,8 +161,8 @@ bool CDStarControl::writeModem(unsigned char *data)
 			if (m_net) {
 				// Modify the header
 				header.setRepeater(false);
-				header.setRPTCall1(m_callsign);
-				header.setRPTCall2(m_gateway);
+				header.setRPTCall1(m_gateway);
+				header.setRPTCall2(m_callsign);
 				header.get(data + 1U);
 
 				for (unsigned i = 0U; i < 3U; i++)
