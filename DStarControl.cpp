@@ -191,10 +191,8 @@ bool CDStarControl::writeModem(unsigned char *data)
 					writeNetworkData(DSTAR_END_PATTERN_BYTES, 0U, true, false);
 			}
 
-			if (m_duplex) {
-				for (unsigned int i = 0U; i < 3U; i++)
-					writeQueueData(DSTAR_END_PATTERN_BYTES);
-			}
+			if (m_duplex)
+				writeQueueEOT();
 
 			m_ackTimer.start();
 
@@ -458,9 +456,9 @@ void CDStarControl::writeNetwork()
 
 		m_timeoutTimer.stop();
 
+		writeQueueEOT();
+
 		data[1U] = TAG_EOT;
-		for (unsigned int i = 0U; i < 3U; i++)
-			writeQueueData(data + 1U);
 
 #if defined(DUMP_DSTAR)
 		writeFile(data + 1U, length - 1U);
@@ -581,6 +579,18 @@ void CDStarControl::writeQueueData(const unsigned char *data)
 	m_queue.addData(&len, 1U);
 
 	m_queue.addData(data, len);
+}
+
+void CDStarControl::writeQueueEOT()
+{
+	if (m_timeoutTimer.isRunning() && m_timeoutTimer.hasExpired())
+		return;
+
+	unsigned char len = 1U;
+	m_queue.addData(&len, 1U);
+
+	unsigned char data = TAG_EOT;
+	m_queue.addData(&data, len);
 }
 
 void CDStarControl::writeNetworkHeader(const unsigned char* data, bool busy)
@@ -758,5 +768,5 @@ void CDStarControl::sendAck()
 		writeQueueData(data);
 	}
 
-	writeQueueData(DSTAR_END_PATTERN_BYTES);
+	writeQueueEOT();
 }

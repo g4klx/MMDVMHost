@@ -74,6 +74,7 @@ private:
 
 	void writeQueueHeader(const unsigned char* data);
 	void writeQueueData(const unsigned char* data);
+	void writeQueueEOT();
 	void writeNetworkHeader(const unsigned char* data, bool busy);
 	void writeNetworkData(const unsigned char* data, unsigned int errors, bool end, bool busy);
 
