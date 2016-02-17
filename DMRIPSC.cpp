@@ -408,14 +408,22 @@ bool CDMRIPSC::writeAuthorisation()
 
 bool CDMRIPSC::writeConfig()
 {
+	char slots = '0';
+	if (m_slot1 && m_slot2)
+		slots = '3';
+	else if (m_slot1 && !m_slot2)
+		slots = '1';
+	else if (!m_slot1 && m_slot2)
+		slots = '2';
+
 	char buffer[400U];
 
 	::memcpy(buffer + 0U, "RPTC", 4U);
 	::memcpy(buffer + 4U, m_id, 4U);
 
-	::sprintf(buffer + 8U, "%-8.8s%09u%09u%02u%02u%08f%09f%03d%-20.20s%-20.20s%-124.124s%-40.40s%-40.40s", m_callsign.c_str(),
+	::sprintf(buffer + 8U, "%-8.8s%09u%09u%02u%02u%08f%09f%03d%-20.20s%-19.19s%c%-124.124s%-40.40s%-40.40s", m_callsign.c_str(),
 		m_rxFrequency, m_txFrequency, m_power, m_colorCode, m_latitude, m_longitude, m_height, m_location.c_str(),
-		m_description.c_str(), m_url.c_str(), m_software, m_version);
+		m_description.c_str(), slots, m_url.c_str(), m_software, m_version);
 
 	return write((unsigned char*)buffer, 302U);
 }
