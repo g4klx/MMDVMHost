@@ -310,6 +310,9 @@ void CDStarNetwork::close()
 
 void CDStarNetwork::enable(bool enabled)
 {
+	if (enabled && !m_enabled)
+		reset();
+
 	m_enabled = enabled;
 }
 
