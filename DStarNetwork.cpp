@@ -162,8 +162,8 @@ bool CDStarNetwork::writePoll(const char* text)
 	// Include the nul at the end also
 	::memcpy(buffer + 5U, text, length + 1U);
 
-	if (m_debug)
-		CUtils::dump(1U, "D-Star Network Poll Sent", buffer, 6U + length);
+	// if (m_debug)
+	//	CUtils::dump(1U, "D-Star Network Poll Sent", buffer, 6U + length);
 
 	return m_socket.write(buffer, 6U + length, m_address, m_port);
 }

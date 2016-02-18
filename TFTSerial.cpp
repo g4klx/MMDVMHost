@@ -23,6 +23,18 @@
 #include <cassert>
 #include <cstring>
 
+const unsigned char ROTATION_PORTRAIT_LEFT  = 0U;
+const unsigned char ROTATION_LANDSCAPE_UD   = 1U;
+const unsigned char ROTATION_PORTRAIT_RIGHT = 2U;
+const unsigned char ROTATION_LANDSCAPE      = 3U;
+
+const unsigned char FONT_SMALL  = 0U;
+const unsigned char FONT_MEDIUM = 1U;
+const unsigned char FONT_LARGE  = 2U;
+
+// x = 0 to 159, y = 0 to 127 - Landscape
+// x = 0 to 127, y = 0 to 159 - Portrait
+
 CTFTSerial::CTFTSerial(const std::string& port, unsigned int brightness) :
 m_serial(port, SERIAL_9600),
 m_brightness(brightness)
@@ -42,9 +54,9 @@ bool CTFTSerial::open()
 		return false;
 	}
 
-	setRotation(3U);
+	setRotation(ROTATION_LANDSCAPE);
 
-	setFontSize(1U);
+	setFontSize(FONT_MEDIUM);
 
 	setBrightness(m_brightness);
 
