@@ -313,8 +313,12 @@ void CDMRSlot::writeModem(unsigned char *data)
 			CSync::addDMRAudioSync(data + 2U);
 
 			unsigned char fid = m_lc->getFID();
-			if (fid == FID_ETSI || fid == FID_DMRA)
-				m_errs += m_fec.regenerateDMR(data + 2U);
+			if (fid == FID_ETSI || fid == FID_DMRA) {
+				unsigned int errors = m_fec.regenerateDMR(data + 2U);
+				LogDebug("DMR Slot %u, audio sequence no. 0, errs: %u/144", m_slotNo, errors);
+				m_errs += errors;
+			}
+
 			m_bits += 144U;
 
 			data[0U] = TAG_DATA;
@@ -339,8 +343,13 @@ void CDMRSlot::writeModem(unsigned char *data)
 			emb.getData(data + 2U);
 
 			unsigned char fid = m_lc->getFID();
-			if (fid == FID_ETSI || fid == FID_DMRA)
-				m_errs += m_fec.regenerateDMR(data + 2U);
+			if (fid == FID_ETSI || fid == FID_DMRA) {
+				unsigned int errors = m_fec.regenerateDMR(data + 2U);
+				unsigned char n = data[1U] & 0x0FU;
+				LogDebug("DMR Slot %u, audio sequence no. %u, errs: %u/144", m_slotNo, n, errors);
+				m_errs += errors;
+			}
+
 			m_bits += 144U;
 
 			data[0U] = TAG_DATA;
@@ -398,8 +407,13 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 				// Send the original audio frame out
 				unsigned char fid = m_lc->getFID();
-				if (fid == FID_ETSI || fid == FID_DMRA)
-					m_errs += m_fec.regenerateDMR(data + 2U);
+				if (fid == FID_ETSI || fid == FID_DMRA) {
+					unsigned int errors = m_fec.regenerateDMR(data + 2U);
+					unsigned char n = data[1U] & 0x0FU;
+					LogDebug("DMR Slot %u, audio sequence no. %u, errs: %u/144", m_slotNo, n, errors);
+					m_errs += errors;
+				}
+
 				m_bits += 144U;
 
 				data[0U] = TAG_DATA;

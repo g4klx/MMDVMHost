@@ -219,6 +219,8 @@ bool CDStarControl::writeModem(unsigned char *data)
 			return false;
 		} else if (m_state == RS_RELAYING_RF_AUDIO) {
 			unsigned int errors = m_fec.regenerateDStar(data + 1U);
+			LogDebug("D-Star, audio sequence no. %u, errs: %u/48", m_n, errors);
+
 			m_errs += errors;
 			m_bits += 48U;
 
@@ -335,7 +337,9 @@ bool CDStarControl::writeModem(unsigned char *data)
 
 			delete header;
 
-			unsigned int errors = m_fec.regenerateDMR(data + 1U);
+			unsigned int errors = m_fec.regenerateDStar(data + 1U);
+			LogDebug("D-Star, audio sequence no. %u, errs: %u/48", m_n, errors);
+
 			m_errs += errors;
 			m_bits += 48U;
 
@@ -479,7 +483,9 @@ void CDStarControl::writeNetwork()
 
 		insertSilence(data + 2U, n);
 
-		m_errs += m_fec.regenerateDStar(data + 2U);
+		unsigned int errors = m_fec.regenerateDStar(data + 2U);
+
+		m_errs += errors;
 		m_bits += 48U;
 
 		blankDTMF(data + 2U);
