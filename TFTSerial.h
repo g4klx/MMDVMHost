@@ -57,12 +57,15 @@ private:
   void setForeground(unsigned char colour);
   void setRotation(unsigned char rotation);
   void setFontSize(unsigned char size);
-  void displayText(unsigned char x, unsigned char y, const char* text);
+  void gotoBegOfLine();
+  void gotoPosText(unsigned char x, unsigned char y);
+  void gotoPosPixel(unsigned char x, unsigned char y);
   void drawLine(unsigned char x1, unsigned char y1, unsigned char x2, unsigned char y2);
   void drawBox(unsigned char x1, unsigned char y1, unsigned char x2, unsigned char y2, bool filled);
   void drawCircle(unsigned char x, unsigned char y, unsigned char radius, bool filled);
-  void displayImage(unsigned char x, unsigned char y, const char* filename);
+  void displayBitmap(unsigned char x, unsigned char y, const char* filename);
   void setBrightness(unsigned char brightness);
+  void displayText(const char* text);
 };
 
 #endif
