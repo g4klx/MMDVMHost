@@ -82,18 +82,11 @@ CDStarHeader* CDStarSlowData::add(const unsigned char* data)
 	for (unsigned int i = 3U; i < 39U; i++)
 		m_header[i] &= 0x7FU;
 
-	// Save the CRC for later comparison
-	unsigned char crc[2U];
-	::memcpy(crc, m_header + 39U, 2U);
-
-	// Add the new CRC
-	CCRC::addCCITT16(m_header, DSTAR_HEADER_LENGTH_BYTES);
-
-	// Compare them
-	if (::memcmp(crc, m_header + 39U, 2U) != 0) {
+	// Check the CRC
+	bool ret = CCRC::checkCCITT161(m_header, DSTAR_HEADER_LENGTH_BYTES);
+	if (!ret) {
 		if (m_ptr == 45U)
 			LogMessage("D-Star, invalid slow data header");
-		::memcpy(m_header + 39U, crc, 2U);
 		return NULL;
 	}
 

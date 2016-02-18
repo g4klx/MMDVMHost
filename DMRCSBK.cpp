@@ -42,7 +42,9 @@ m_valid(false)
 	data[10U] ^= CSBK_CRC_MASK[0U];
 	data[11U] ^= CSBK_CRC_MASK[1U];
 
-	m_valid = CCRC::checkCCITT16(data, 12U);
+	m_valid = CCRC::checkCCITT162(data, 12U);
+	if (!m_valid)
+		return;
 
 	m_CSBKO = CSBKO(data[0U] & 0x3FU);
 	m_FID   = data[1U];

@@ -136,5 +136,5 @@ void CDStarHeader::get(unsigned char* header) const
 
 	::memcpy(header, m_header, DSTAR_HEADER_LENGTH_BYTES);
 
-	CCRC::addCCITT16(header, DSTAR_HEADER_LENGTH_BYTES);
+	CCRC::addCCITT161(header, DSTAR_HEADER_LENGTH_BYTES);
 }

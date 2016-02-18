@@ -41,7 +41,7 @@ m_blocks(0U)
 	header[10U] ^= DATA_HEADER_CRC_MASK[0U];
 	header[11U] ^= DATA_HEADER_CRC_MASK[1U];
 
-	m_valid = CCRC::checkCCITT16(header, 12U);
+	m_valid = CCRC::checkCCITT162(header, 12U);
 
 	m_gi = (header[0U] & 0x80U) == 0x80U;
 

@@ -197,10 +197,10 @@ void CDMRSlot::writeModem(unsigned char *data)
 				return;
 
 			CDMRDataHeader dataHeader(data + 2U);
-			// if (!dataHeader.isValid()) {
-			//	LogMessage("DMR Slot %u: unable to decode the data header", m_slotNo);
-			//	return;
-			// }
+			if (!dataHeader.isValid()) {
+				LogMessage("DMR Slot %u: unable to decode the RF data header", m_slotNo);
+				return;
+			}
 
 			bool gi = dataHeader.getGI();
 			unsigned int srcId = dataHeader.getSrcId();
@@ -241,10 +241,10 @@ void CDMRSlot::writeModem(unsigned char *data)
 			LogMessage("DMR Slot %u, received RF data header from %u to %s%u, %u blocks", m_slotNo, srcId, gi ? "TG ": "", dstId, m_frames);
 		} else if (dataType == DT_CSBK) {
 			CDMRCSBK csbk(data + 2U);
-			// if (!csbk.isValid()) {
-			//	LogMessage("DMR Slot %u: unable to decode the CSBK", m_slotNo);
-			//	return;
-			// }
+			if (!csbk.isValid()) {
+				LogMessage("DMR Slot %u: unable to decode the RF CSBK", m_slotNo);
+				return;
+			}
 
 			CSBKO csbko = csbk.getCSBKO();
 			switch (csbko) {
@@ -617,10 +617,10 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			return;
 
 		CDMRDataHeader dataHeader(data + 2U);
-		// if (!dataHeader.isValid()) {
-		//	LogMessage("DMR Slot %u: unable to decode the data header", m_slotNo);
-		//	return;
-		// }
+		if (!dataHeader.isValid()) {
+			LogMessage("DMR Slot %u: unable to decode the network data header", m_slotNo);
+			return;
+		}
 
 		bool gi = dataHeader.getGI();
 		unsigned int srcId = dataHeader.getSrcId();
@@ -761,10 +761,10 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 #endif
 	} else if (dataType == DT_CSBK) {
 		CDMRCSBK csbk(data + 2U);
-		// if (!csbk.isValid()) {
-		//	LogMessage("DMR Slot %u: unable to decode the CSBK", m_slotNo);
-		//	return;
-		// }
+		if (!csbk.isValid()) {
+			LogMessage("DMR Slot %u: unable to decode the network CSBK", m_slotNo);
+			return;
+		}
 
 		CSBKO csbko = csbk.getCSBKO();
 		switch (csbko) {
@@ -1023,10 +1023,14 @@ void CDMRSlot::setShortLC(unsigned int slotNo, unsigned int id, FLCO flco, bool 
 
 	lc[4U] = CCRC::crc8(lc, 4U);
 
+	CUtils::dump("Short LC", lc, 5U);
+
 	unsigned char sLC[9U];
 
 	CDMRShortLC shortLC;
 	shortLC.encode(lc, sLC);
+
+	CUtils::dump("Short LC with FEC", sLC, 9U);
 
 	m_modem->writeDMRShortLC(sLC);
 }

@@ -25,8 +25,10 @@ public:
 	static bool checkFiveBit(bool* in, unsigned int tcrc);
 	static void encodeFiveBit(const bool* in, unsigned int& tcrc);
 
-	static bool checkCCITT16(const unsigned char* in, unsigned int length);
-	static void addCCITT16(unsigned char* in, unsigned int length);
+	static void addCCITT161(unsigned char* in, unsigned int length);
+
+	static bool checkCCITT161(const unsigned char* in, unsigned int length);
+	static bool checkCCITT162(const unsigned char* in, unsigned int length);
 
 	static unsigned char encodeEightBit(const unsigned char* in, unsigned int length);
 

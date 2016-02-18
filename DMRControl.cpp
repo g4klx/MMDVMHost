@@ -44,6 +44,9 @@ bool CDMRControl::processWakeup(const unsigned char* data)
 
 	CDMRCSBK csbk(data + 2U);
 
+	if (!csbk.isValid())
+		return false;
+
 	CSBKO csbko = csbk.getCSBKO();
 	if (csbko != CSBKO_BSDWNACT)
 		return false;
