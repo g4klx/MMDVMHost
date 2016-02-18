@@ -150,13 +150,13 @@ bool CModem::open()
 		return false;
 	}
 
-	ret = setConfig();
+	ret = setFrequency();
 	if (!ret) {
 		m_serial.close();
 		return false;
 	}
 
-	ret = setFrequency();
+	ret = setConfig();
 	if (!ret) {
 		m_serial.close();
 		return false;
@@ -815,7 +815,7 @@ bool CModem::setFrequency()
 	// CUtils::dump("Written", buffer, 12U);
 
 	int ret = m_serial.write(buffer, 12U);
-	if (ret != 10)
+	if (ret != 12)
 		return false;
 
 	unsigned int count = 0U;
