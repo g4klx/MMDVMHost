@@ -231,10 +231,10 @@ unsigned char CCRC::crc8(const unsigned char *in, unsigned int length)
 {
 	assert(in != NULL);
 
-	uint32_t crc = 0U;
+	uint8_t crc = 0U;
 
 	for (unsigned int i = 0U; i < length; i++)
-		crc = CRC8_TABLE[uint8_t(crc) ^ in[i]] ^ (crc >> 8);
+		crc = CRC8_TABLE[crc ^ in[i]];
 
 	return crc;
 }
