@@ -866,12 +866,13 @@ void CDMRSlot::clock(unsigned int ms)
 		m_packetTimer.clock(ms);
 
 		if (m_packetTimer.isRunning() && m_packetTimer.hasExpired()) {
-			unsigned int frames = m_elapsed.elapsed() / DMR_SLOT_TIME;
+			unsigned int elapsed = m_elapsed.elapsed();
+			unsigned int frames  = elapsed / DMR_SLOT_TIME;
 
 			if (frames > m_frames) {
 				unsigned int count = frames - m_frames;
 				if (count > 3U) {
-					LogMessage("DMR Slot %u, lost audio for 300ms filling in, %u %u", m_slotNo, frames, m_frames);
+					LogMessage("DMR Slot %u, lost audio for 300ms filling in, elapsed: %ums, expected: %u, received: %u", m_slotNo, elapsed, frames, m_frames);
 					insertSilence(count - 1U);
 				}
 			}

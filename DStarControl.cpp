@@ -186,10 +186,8 @@ bool CDStarControl::writeModem(unsigned char *data)
 		}
 	} else if (type == TAG_EOT) {
 		if (m_state == RS_RELAYING_RF_AUDIO) {
-			if (m_net) {
-				for (unsigned int i = 0U; i < 2U; i++)
-					writeNetworkData(DSTAR_END_PATTERN_BYTES, 0U, true, false);
-			}
+			if (m_net)
+				writeNetworkData(DSTAR_END_PATTERN_BYTES, 0U, true, false);
 
 			if (m_duplex)
 				writeQueueEOT();
@@ -201,10 +199,8 @@ bool CDStarControl::writeModem(unsigned char *data)
 
 			writeEndOfTransmission();
 		} else if (m_state == RS_RELAYING_NETWORK_AUDIO) {
-			if (m_net) {
-				for (unsigned int i = 0U; i < 2U; i++)
-					writeNetworkData(DSTAR_END_PATTERN_BYTES, 0U, true, true);
-			}
+			if (m_net)
+				writeNetworkData(DSTAR_END_PATTERN_BYTES, 0U, true, true);
 		}
 
 		return false;
@@ -547,12 +543,13 @@ void CDStarControl::clock(unsigned int ms)
 		m_packetTimer.clock(ms);
 
 		if (m_packetTimer.isRunning() && m_packetTimer.hasExpired()) {
-			unsigned int frames = m_elapsed.elapsed() / DSTAR_FRAME_TIME;
+			unsigned int elapsed = m_elapsed.elapsed();
+			unsigned int frames  = elapsed / DSTAR_FRAME_TIME;
 
 			if (frames > m_frames) {
 				unsigned int count = frames - m_frames;
 				if (count > 5U) {
-					LogMessage("D-Star, lost audio for 200ms filling in, %u %u", frames, m_frames);
+					LogMessage("D-Star, lost audio for 200ms filling in, elapsed: %ums, expected: %u, received: %u", elapsed, frames, m_frames);
 					insertSilence(count - 2U);
 				}
 			}
