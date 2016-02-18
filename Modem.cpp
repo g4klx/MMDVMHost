@@ -40,6 +40,7 @@ const unsigned char MMDVM_GET_VERSION = 0x00U;
 const unsigned char MMDVM_GET_STATUS  = 0x01U;
 const unsigned char MMDVM_SET_CONFIG  = 0x02U;
 const unsigned char MMDVM_SET_MODE    = 0x03U;
+const unsigned char MMDVM_SET_FREQ    = 0x04U;
 
 const unsigned char MMDVM_DSTAR_HEADER = 0x10U;
 const unsigned char MMDVM_DSTAR_DATA   = 0x11U;
@@ -82,6 +83,8 @@ m_txDelay(txDelay),
 m_rxLevel(rxLevel),
 m_txLevel(txLevel),
 m_debug(debug),
+m_rxFrequency(0U),
+m_txFrequency(0U),
 m_dstarEnabled(false),
 m_dmrEnabled(false),
 m_ysfEnabled(false),
@@ -113,6 +116,12 @@ CModem::~CModem()
 	delete[] m_buffer;
 }
 
+void CModem::setRFParams(unsigned int rxFrequency, unsigned int txFrequency)
+{
+	m_rxFrequency = rxFrequency;
+	m_txFrequency = txFrequency;
+}
+
 void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled)
 {
 	m_dstarEnabled = dstarEnabled;
@@ -142,6 +151,12 @@ bool CModem::open()
 	}
 
 	ret = setConfig();
+	if (!ret) {
+		m_serial.close();
+		return false;
+	}
+
+	ret = setFrequency();
 	if (!ret) {
 		m_serial.close();
 		return false;
@@ -769,6 +784,64 @@ bool CModem::setConfig()
 
 	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
 		LogError("Received a NAK to the SET_CONFIG command from the modem");
+		return false;
+	}
+
+	return true;
+}
+
+bool CModem::setFrequency()
+{
+	unsigned char buffer[15U];
+
+	buffer[0U]  = MMDVM_FRAME_START;
+
+	buffer[1U]  = 12U;
+
+	buffer[2U]  = MMDVM_SET_FREQ;
+
+	buffer[3U]  = 0x00U;
+
+	buffer[4U]  = (m_rxFrequency >> 0) & 0xFFU;
+	buffer[5U]  = (m_rxFrequency >> 8) & 0xFFU;
+	buffer[6U]  = (m_rxFrequency >> 16) & 0xFFU;
+	buffer[7U]  = (m_rxFrequency >> 24) & 0xFFU;
+
+	buffer[8U]  = (m_txFrequency >> 0) & 0xFFU;
+	buffer[9U]  = (m_txFrequency >> 8) & 0xFFU;
+	buffer[10U] = (m_txFrequency >> 16) & 0xFFU;
+	buffer[11U] = (m_txFrequency >> 24) & 0xFFU;
+
+	// CUtils::dump("Written", buffer, 12U);
+
+	int ret = m_serial.write(buffer, 12U);
+	if (ret != 10)
+		return false;
+
+	unsigned int count = 0U;
+	unsigned int length;
+	RESP_TYPE_MMDVM resp;
+	do {
+#if defined(_WIN32) || defined(_WIN64)
+		::Sleep(10UL);
+#else
+		::usleep(10000UL);
+#endif
+		resp = getResponse(m_buffer, length);
+
+		if (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK) {
+			count++;
+			if (count >= MAX_RESPONSES) {
+				LogError("The MMDVM is not responding to the SET_FREQ command");
+				return false;
+			}
+		}
+	} while (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK);
+
+	// CUtils::dump("Response", m_buffer, length);
+
+	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
+		LogError("Received a NAK to the SET_FREQ command from the modem");
 		return false;
 	}
 

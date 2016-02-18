@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2011-2015 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2011-2016 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -34,36 +34,37 @@ enum RESP_TYPE_MMDVM {
 class CModem {
 public:
 	CModem(const std::string& port, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int rxLevel, unsigned int txLevel, bool debug = false);
-	virtual ~CModem();
+	~CModem();
 
-	virtual void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled);
-	virtual void setDMRParams(unsigned int colorCode);
+	void setRFParams(unsigned int rxFrequency, unsigned int txFrequency);
+	void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled);
+	void setDMRParams(unsigned int colorCode);
 
-	virtual bool open();
+	bool open();
 
-	virtual unsigned int readDStarData(unsigned char* data);
-	virtual unsigned int readDMRData1(unsigned char* data);
-	virtual unsigned int readDMRData2(unsigned char* data);
-	virtual unsigned int readYSFData(unsigned char* data);
+	unsigned int readDStarData(unsigned char* data);
+	unsigned int readDMRData1(unsigned char* data);
+	unsigned int readDMRData2(unsigned char* data);
+	unsigned int readYSFData(unsigned char* data);
 
-	virtual bool hasDStarSpace() const;
-	virtual bool hasDMRSpace1() const;
-	virtual bool hasDMRSpace2() const;
-	virtual bool hasYSFSpace() const;
+	bool hasDStarSpace() const;
+	bool hasDMRSpace1() const;
+	bool hasDMRSpace2() const;
+	bool hasYSFSpace() const;
 
-	virtual bool writeDStarData(const unsigned char* data, unsigned int length);
-	virtual bool writeDMRData1(const unsigned char* data, unsigned int length);
-	virtual bool writeDMRData2(const unsigned char* data, unsigned int length);
-	virtual bool writeYSFData(const unsigned char* data, unsigned int length);
+	bool writeDStarData(const unsigned char* data, unsigned int length);
+	bool writeDMRData1(const unsigned char* data, unsigned int length);
+	bool writeDMRData2(const unsigned char* data, unsigned int length);
+	bool writeYSFData(const unsigned char* data, unsigned int length);
 
-	virtual bool writeDMRStart(bool tx);
-	virtual bool writeDMRShortLC(const unsigned char* lc);
+	bool writeDMRStart(bool tx);
+	bool writeDMRShortLC(const unsigned char* lc);
 
-	virtual bool setMode(unsigned char mode);
+	bool setMode(unsigned char mode);
 
-	virtual void clock(unsigned int ms);
+	void clock(unsigned int ms);
 
-	virtual void close();
+	void close();
 
 private:
 	std::string                m_port;
@@ -75,6 +76,8 @@ private:
 	unsigned int               m_rxLevel;
 	unsigned int               m_txLevel;
 	bool                       m_debug;
+	unsigned int               m_rxFrequency;
+	unsigned int               m_txFrequency;
 	bool                       m_dstarEnabled;
 	bool                       m_dmrEnabled;
 	bool                       m_ysfEnabled;
@@ -99,6 +102,7 @@ private:
 	bool readVersion();
 	bool readStatus();
 	bool setConfig();
+	bool setFrequency();
 
 	void printDebug();
 

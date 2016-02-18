@@ -384,15 +384,17 @@ int CMMDVMHost::run()
 
 bool CMMDVMHost::createModem()
 {
-    std::string port       = m_conf.getModemPort();
-    bool rxInvert          = m_conf.getModemRXInvert();
-    bool txInvert          = m_conf.getModemTXInvert();
-    bool pttInvert         = m_conf.getModemPTTInvert();
-    unsigned int txDelay   = m_conf.getModemTXDelay();
-    unsigned int rxLevel   = m_conf.getModemRXLevel();
-    unsigned int txLevel   = m_conf.getModemTXLevel();
-    bool debug             = m_conf.getModemDebug();
-	unsigned int colorCode = m_conf.getDMRColorCode();
+    std::string port         = m_conf.getModemPort();
+    bool rxInvert            = m_conf.getModemRXInvert();
+    bool txInvert            = m_conf.getModemTXInvert();
+    bool pttInvert           = m_conf.getModemPTTInvert();
+    unsigned int txDelay     = m_conf.getModemTXDelay();
+    unsigned int rxLevel     = m_conf.getModemRXLevel();
+    unsigned int txLevel     = m_conf.getModemTXLevel();
+    bool debug               = m_conf.getModemDebug();
+	unsigned int colorCode   = m_conf.getDMRColorCode();
+	unsigned int rxFrequency = m_conf.getRxFrequency();
+	unsigned int txFrequency = m_conf.getTxFrequency();
 
 	LogInfo("Modem Parameters");
 	LogInfo("    Port: %s", port.c_str());
@@ -402,9 +404,12 @@ bool CMMDVMHost::createModem()
 	LogInfo("    TX Delay: %u", txDelay);
 	LogInfo("    RX Level: %u", rxLevel);
 	LogInfo("    TX Level: %u", txLevel);
+	LogInfo("    RX Frequency: %uHz", rxFrequency);
+	LogInfo("    TX Frequency: %uHz", txFrequency);
 
 	m_modem = new CModem(port, rxInvert, txInvert, pttInvert, txDelay, rxLevel, txLevel, debug);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled);
+	m_modem->setRFParams(rxFrequency, txFrequency);
 	m_modem->setDMRParams(colorCode);
 
 	bool ret = m_modem->open();
