@@ -38,7 +38,7 @@ m_n(0U),
 m_networkWatchdog(1000U, 0U, 1500U),
 m_holdoffTimer(1000U, 0U, 500U),
 m_timeoutTimer(1000U, timeout),
-m_packetTimer(1000U, 0U, 300U),
+m_packetTimer(1000U, 0U, 200U),
 m_ackTimer(1000U, 0U, 750U),
 m_elapsed(),
 m_frames(0U),
@@ -428,6 +428,7 @@ void CDStarControl::writeNetwork()
 		m_header = header;
 
 		m_timeoutTimer.start();
+		m_packetTimer.start();
 		m_elapsed.start();
 		m_ackTimer.stop();
 
@@ -544,9 +545,9 @@ void CDStarControl::clock(unsigned int ms)
 
 			if (frames > m_frames) {
 				unsigned int count = frames - m_frames;
-				if (count > 3U) {
-					LogMessage("D-Star, lost audio for 300ms filling in, %u %u", frames, m_frames);
-					insertSilence(count - 1U);
+				if (count > 5U) {
+					LogMessage("D-Star, lost audio for 200ms filling in, %u %u", frames, m_frames);
+					insertSilence(count - 2U);
 				}
 			}
 
