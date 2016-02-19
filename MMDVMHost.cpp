@@ -326,19 +326,22 @@ int CMMDVMHost::run()
 		}
 
 		unsigned int ms = stopWatch.elapsed();
+		stopWatch.start();
+
 		m_modem->clock(ms);
 		m_modeTimer.clock(ms);
+
 		if (dstar != NULL)
 			dstar->clock(ms);
 		if (dmr != NULL)
 			dmr->clock(ms);
 		if (ysf != NULL)
 			ysf->clock(ms);
+
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->clock(ms);
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->clock(ms);
-		stopWatch.start();
 
 		dmrBeaconTimer.clock(ms);
 		if (dmrBeaconTimer.isRunning() && dmrBeaconTimer.hasExpired()) {

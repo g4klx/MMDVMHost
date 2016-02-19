@@ -26,6 +26,7 @@ public:
 	static void encodeFiveBit(const bool* in, unsigned int& tcrc);
 
 	static void addCCITT161(unsigned char* in, unsigned int length);
+	static void addCCITT162(unsigned char* in, unsigned int length);
 
 	static bool checkCCITT161(const unsigned char* in, unsigned int length);
 	static bool checkCCITT162(const unsigned char* in, unsigned int length);
