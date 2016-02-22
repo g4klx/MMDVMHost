@@ -75,6 +75,7 @@ public:
 
   // The System Fusion section
   bool         getFusionEnabled() const;
+  bool         getFusionParrotEnabled() const;
 
   // The D-Star Network section
   bool         getDStarNetworkEnabled() const;
@@ -143,6 +144,7 @@ private:
   unsigned int m_dmrColorCode;
 
   bool         m_fusionEnabled;
+  bool         m_fusionParrotEnabled;
 
   bool         m_dstarNetworkEnabled;
   std::string  m_dstarGatewayAddress;

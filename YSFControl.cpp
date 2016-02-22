@@ -29,20 +29,25 @@
  * Uplink and downlink callsign addition.
  */
 
-CYSFControl::CYSFControl(const std::string& callsign, IDisplay* display, unsigned int timeout, bool duplex) :
+CYSFControl::CYSFControl(const std::string& callsign, IDisplay* display, unsigned int timeout, bool duplex, bool parrot) :
 m_display(display),
 m_duplex(duplex),
 m_queue(1000U, "YSF Control"),
 m_state(RS_LISTENING),
 m_timeoutTimer(1000U, timeout),
 m_frames(0U),
+m_parrot(NULL),
 m_fp(NULL)
 {
 	assert(display != NULL);
+
+	if (parrot)
+		m_parrot = new CYSFParrot(timeout);
 }
 
 CYSFControl::~CYSFControl()
 {
+	delete m_parrot;
 }
 
 bool CYSFControl::writeModem(unsigned char *data)
@@ -87,12 +92,17 @@ bool CYSFControl::writeModem(unsigned char *data)
 			writeQueue(data);
 		}
 
+		if (m_parrot != NULL) {
+			data[0U] = TAG_EOT;
+			data[1U] = 0x00U;
+			writeParrot(data);
+		}
+
 #if defined(DUMP_YSF)
 		writeFile(data + 2U);
 #endif
 
 		LogMessage("YSF, received RF end of transmission, %.1f seconds", float(m_frames) / 10.0F);
-
 		writeEndOfTransmission();
 
 		return false;
@@ -105,6 +115,12 @@ bool CYSFControl::writeModem(unsigned char *data)
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
 			writeQueue(data);
+		}
+
+		if (m_parrot != NULL) {
+			data[0U] = TAG_DATA;
+			data[1U] = 0x00U;
+			writeParrot(data);
 		}
 
 #if defined(DUMP_YSF)
@@ -144,6 +160,19 @@ void CYSFControl::writeEndOfTransmission()
 void CYSFControl::clock(unsigned int ms)
 {
 	m_timeoutTimer.clock(ms);
+
+	if (m_parrot != NULL) {
+		m_parrot->clock(ms);
+
+		unsigned int space = m_queue.freeSpace();
+		bool hasData = m_parrot->hasData();
+
+		if (space > (YSF_FRAME_LENGTH_BYTES + 2U) && hasData) {
+			unsigned char data[YSF_FRAME_LENGTH_BYTES + 2U];
+			m_parrot->read(data);
+			writeQueue(data);
+		}
+	}
 }
 
 void CYSFControl::writeQueue(const unsigned char *data)
@@ -157,6 +186,16 @@ void CYSFControl::writeQueue(const unsigned char *data)
 	m_queue.addData(&len, 1U);
 
 	m_queue.addData(data, len);
+}
+
+void CYSFControl::writeParrot(const unsigned char *data)
+{
+	assert(data != NULL);
+
+	if (m_timeoutTimer.isRunning() && m_timeoutTimer.hasExpired())
+		return;
+
+	m_parrot->write(data);
 }
 
 bool CYSFControl::openFile()

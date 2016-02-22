@@ -171,12 +171,14 @@ int CMMDVMHost::run()
 		std::string callsign = m_conf.getCallsign();
 		unsigned int timeout = m_conf.getTimeout();
 		bool duplex          = m_conf.getDuplex();
+		bool parrot          = m_conf.getFusionParrotEnabled();
 
 		LogInfo("System Fusion Parameters");
 		LogInfo("    Callsign: %s", callsign.c_str());
 		LogInfo("    Timeout: %us", timeout);
+		LogInfo("    Parrot: %s", parrot ? "enabled" : "disabled");
 
-		ysf = new CYSFControl(callsign, m_display, timeout, duplex);
+		ysf = new CYSFControl(callsign, m_display, timeout, duplex, parrot);
 	}
 
 	m_modeTimer.setTimeout(m_conf.getModeHang());

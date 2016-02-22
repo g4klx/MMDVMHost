@@ -21,6 +21,7 @@
 
 #include "YSFDefines.h"
 #include "RingBuffer.h"
+#include "YSFParrot.h"
 #include "Display.h"
 #include "Defines.h"
 #include "Timer.h"
@@ -30,7 +31,7 @@
 
 class CYSFControl {
 public:
-	CYSFControl(const std::string& callsign, IDisplay* display, unsigned int timeout, bool duplex);
+	CYSFControl(const std::string& callsign, IDisplay* display, unsigned int timeout, bool duplex, bool parrot);
 	~CYSFControl();
 
 	bool writeModem(unsigned char* data);
@@ -46,9 +47,11 @@ private:
 	RPT_STATE                  m_state;
 	CTimer                     m_timeoutTimer;
 	unsigned int               m_frames;
+	CYSFParrot*                m_parrot;
 	FILE*                      m_fp;
 
 	void writeQueue(const unsigned char* data);
+	void writeParrot(const unsigned char* data);
 
 	void writeEndOfTransmission();
 
