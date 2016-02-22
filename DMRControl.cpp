@@ -53,7 +53,7 @@ bool CDMRControl::processWakeup(const unsigned char* data)
 
 	unsigned int bsId = csbk.getBSId();
 	if (bsId == 0xFFFFFFU) {
-		LogMessage("CSBK BS_Dwn_Act for any received from %u", csbk.getSrcId());
+		LogMessage("CSBK BS_Dwn_Act for ANY received from %u", csbk.getSrcId());
 		return true;
 	} else if (bsId == m_id) {
 		LogMessage("CSBK BS_Dwn_Act for %u received from %u", bsId, csbk.getSrcId());

@@ -118,6 +118,7 @@ const uint16_t CCITT16_TABLE2[] = {
 	0xEF1F, 0xFF3E, 0xCF5D, 0xDF7C, 0xAF9B, 0xBFBA, 0x8FD9, 0x9FF8,
 	0x6E17, 0x7E36, 0x4E55, 0x5E74, 0x2E93, 0x3EB2, 0x0ED1, 0x1EF0 };
 
+
 bool CCRC::checkFiveBit(bool* in, unsigned int tcrc)
 {
 	assert(in != NULL);
@@ -142,28 +143,6 @@ void CCRC::encodeFiveBit(const bool* in, unsigned int& tcrc)
 	total %= 31U;
 
 	tcrc = total;
-}
-
-unsigned char CCRC::encodeEightBit(const unsigned char *in, unsigned int length)
-{
-	assert(in != NULL);
-
-	unsigned char crc = 0x00U;
-
-	for (unsigned int i = 0U; i < length; i++) {
-		crc ^= in[i];
-	
-		for (unsigned int j = 0U; j < 8U; j++) {
-			if ((crc & 0x80U) == 0x80U) {
-				crc <<= 1;
-				crc ^= 0x07U;
-			} else {
-				crc <<= 1;
-			}
-		}
-	}
-
-	return crc;
 }
 
 void CCRC::addCCITT162(unsigned char *in, unsigned int length)
