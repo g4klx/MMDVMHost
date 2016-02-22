@@ -114,6 +114,9 @@ void CDMRSlot::writeModem(unsigned char *data)
 				return;
 			}
 
+			// Regenerate the LC data
+			fullLC.encode(*m_lc, data + 2U, DT_VOICE_LC_HEADER);
+
 			// Regenerate the Slot Type
 			slotType.getData(data + 2U);
 
@@ -170,6 +173,10 @@ void CDMRSlot::writeModem(unsigned char *data)
 			if (m_state != RS_RELAYING_RF_AUDIO)
 				return;
 
+			// Regenerate the LC data
+			CDMRFullLC fullLC;
+			fullLC.encode(*m_lc, data + 2U, DT_TERMINATOR_WITH_LC);
+
 			// Regenerate the Slot Type
 			slotType.getData(data + 2U);
 
@@ -196,8 +203,9 @@ void CDMRSlot::writeModem(unsigned char *data)
 			if (m_state == RS_RELAYING_RF_DATA)
 				return;
 
-			CDMRDataHeader dataHeader(data + 2U);
-			if (!dataHeader.isValid()) {
+			CDMRDataHeader dataHeader;
+			bool valid = dataHeader.put(data + 2U);
+			if (!valid) {
 				LogMessage("DMR Slot %u: unable to decode the RF data header", m_slotNo);
 				return;
 			}
@@ -209,6 +217,9 @@ void CDMRSlot::writeModem(unsigned char *data)
 			m_frames = dataHeader.getBlocks();
 
 			m_lc = new CDMRLC(gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
+
+			// Regenerate the data header
+			dataHeader.get(data + 2U);
 
 			// Regenerate the Slot Type
 			slotType.getData(data + 2U);
@@ -240,8 +251,9 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			LogMessage("DMR Slot %u, received RF data header from %u to %s%u, %u blocks", m_slotNo, srcId, gi ? "TG ": "", dstId, m_frames);
 		} else if (dataType == DT_CSBK) {
-			CDMRCSBK csbk(data + 2U);
-			if (!csbk.isValid()) {
+			CDMRCSBK csbk;
+			bool valid = csbk.put(data + 2U);
+			if (!valid) {
 				LogMessage("DMR Slot %u: unable to decode the RF CSBK", m_slotNo);
 				return;
 			}
@@ -255,6 +267,9 @@ void CDMRSlot::writeModem(unsigned char *data)
 			case CSBKO_UUANSRSP:
 			case CSBKO_NACKRSP:
 			case CSBKO_PRECCSBK: {
+					// Regenerate the CSBK data
+					csbk.get(data + 2U);
+
 					// Regenerate the Slot Type
 					slotType.getData(data + 2U);
 
@@ -524,6 +539,9 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			return;
 		}
 
+		// Regenerate the LC data
+		fullLC.encode(*m_lc, data + 2U, DT_VOICE_LC_HEADER);
+
 		// Regenerate the Slot Type
 		CDMRSlotType slotType;
 		slotType.setColorCode(m_colorCode);
@@ -586,6 +604,10 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		if (m_state != RS_RELAYING_NETWORK_AUDIO)
 			return;
 
+		// Regenerate the LC data
+		CDMRFullLC fullLC;
+		fullLC.encode(*m_lc, data + 2U, DT_TERMINATOR_WITH_LC);
+
 		// Regenerate the Slot Type
 		CDMRSlotType slotType;
 		slotType.setColorCode(m_colorCode);
@@ -616,8 +638,9 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		if (m_state == RS_RELAYING_NETWORK_DATA)
 			return;
 
-		CDMRDataHeader dataHeader(data + 2U);
-		if (!dataHeader.isValid()) {
+		CDMRDataHeader dataHeader;
+		bool valid = dataHeader.put(data + 2U);
+		if (!valid) {
 			LogMessage("DMR Slot %u: unable to decode the network data header", m_slotNo);
 			return;
 		}
@@ -629,6 +652,9 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		m_frames = dataHeader.getBlocks();
 
 		m_lc = new CDMRLC(gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
+
+		// Regenerate the data header
+		dataHeader.get(data + 2U);
 
 		// Regenerate the Slot Type
 		CDMRSlotType slotType;
@@ -760,8 +786,9 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		writeFile(data);
 #endif
 	} else if (dataType == DT_CSBK) {
-		CDMRCSBK csbk(data + 2U);
-		if (!csbk.isValid()) {
+		CDMRCSBK csbk;
+		bool valid = csbk.put(data + 2U);
+		if (!valid) {
 			LogMessage("DMR Slot %u: unable to decode the network CSBK", m_slotNo);
 			return;
 		}
@@ -775,6 +802,9 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		case CSBKO_UUANSRSP:
 		case CSBKO_NACKRSP:
 		case CSBKO_PRECCSBK: {
+				// Regenerate the CSBK data
+				csbk.get(data + 2U);
+
 				// Regenerate the Slot Type
 				CDMRSlotType slotType;
 				slotType.putData(data + 2U);
@@ -1023,14 +1053,14 @@ void CDMRSlot::setShortLC(unsigned int slotNo, unsigned int id, FLCO flco, bool 
 
 	lc[4U] = CCRC::crc8(lc, 4U);
 
-	CUtils::dump("Short LC", lc, 5U);
+	CUtils::dump(1U, "Short LC", lc, 5U);
 
 	unsigned char sLC[9U];
 
 	CDMRShortLC shortLC;
 	shortLC.encode(lc, sLC);
 
-	CUtils::dump("Short LC with FEC", sLC, 9U);
+	CUtils::dump(1U, "Short LC with FEC", sLC, 9U);
 
 	m_modem->writeDMRShortLC(sLC);
 }

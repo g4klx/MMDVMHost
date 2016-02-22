@@ -19,45 +19,65 @@
 
 #include "DMRDataHeader.h"
 #include "DMRDefines.h"
+#include "BPTC19696.h"
+#include "Utils.h"
 #include "CRC.h"
 #include "Log.h"
 
 #include <cstdio>
 #include <cassert>
 
-CDMRDataHeader::CDMRDataHeader(const unsigned char* data) :
-m_bptc(),
-m_valid(false),
+CDMRDataHeader::CDMRDataHeader() :
+m_data(NULL),
 m_gi(false),
 m_srcId(0U),
 m_dstId(0U),
 m_blocks(0U)
 {
-	assert(data != NULL);
-
-	unsigned char header[12U];
-	m_bptc.decode(data, header);
-
-	header[10U] ^= DATA_HEADER_CRC_MASK[0U];
-	header[11U] ^= DATA_HEADER_CRC_MASK[1U];
-
-	m_valid = CCRC::checkCCITT162(header, 12U);
-
-	m_gi = (header[0U] & 0x80U) == 0x80U;
-
-	m_dstId = data[2U] << 16 | data[3U] << 8 | data[4U];
-	m_srcId = data[5U] << 16 | data[6U] << 8 | data[7U];
-
-	m_blocks = data[8U] & 0x7FU;
+	m_data = new unsigned char[12U];
 }
 
 CDMRDataHeader::~CDMRDataHeader()
 {
+	delete[] m_data;
 }
 
-bool CDMRDataHeader::isValid() const
+bool CDMRDataHeader::put(const unsigned char* bytes)
 {
-	return m_valid;
+	assert(bytes != NULL);
+
+	CBPTC19696 bptc;
+	bptc.decode(bytes, m_data);
+
+	m_data[10U] ^= DATA_HEADER_CRC_MASK[0U];
+	m_data[11U] ^= DATA_HEADER_CRC_MASK[1U];
+
+	bool valid = CCRC::checkCCITT162(m_data, 12U);
+	if (!valid)
+		return false;
+
+	// Restore the checksum
+	m_data[10U] ^= DATA_HEADER_CRC_MASK[0U];
+	m_data[11U] ^= DATA_HEADER_CRC_MASK[1U];
+
+	m_gi = (m_data[0U] & 0x80U) == 0x80U;
+
+	m_dstId = m_data[2U] << 16 | m_data[3U] << 8 | m_data[4U];
+	m_srcId = m_data[5U] << 16 | m_data[6U] << 8 | m_data[7U];
+
+	m_blocks = m_data[8U] & 0x7FU;
+
+	CUtils::dump("Data Header", m_data, 12U);
+
+	return true;
+}
+
+void CDMRDataHeader::get(unsigned char* bytes) const
+{
+	assert(bytes != NULL);
+
+	CBPTC19696 bptc;
+	bptc.encode(m_data, bytes);
 }
 
 bool CDMRDataHeader::getGI() const

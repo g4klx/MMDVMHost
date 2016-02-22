@@ -42,9 +42,9 @@ bool CDMRControl::processWakeup(const unsigned char* data)
 	if (data[0U] != TAG_DATA || data[1U] != (DMR_IDLE_RX | DMR_SYNC_DATA | DT_CSBK))
 		return false;
 
-	CDMRCSBK csbk(data + 2U);
-
-	if (!csbk.isValid())
+	CDMRCSBK csbk;
+	bool valid = csbk.put(data + 2U);
+	if (!valid)
 		return false;
 
 	CSBKO csbko = csbk.getCSBKO();

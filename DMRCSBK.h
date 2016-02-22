@@ -34,10 +34,12 @@ enum CSBKO {
 class CDMRCSBK
 {
 public:
-	CDMRCSBK(const unsigned char* bytes);
+	CDMRCSBK();
 	~CDMRCSBK();
 
-	bool isValid() const;
+	bool put(const unsigned char* bytes);
+
+	void get(unsigned char* bytes) const;
 
 	// Generic fields
 	CSBKO         getCSBKO() const;
@@ -50,12 +52,12 @@ public:
 	unsigned int  getDstId() const;
 
 private:
-	CSBKO         m_CSBKO;
-	unsigned char m_FID;
-	unsigned int  m_bsId;
-	unsigned int  m_srcId;
-	unsigned int  m_dstId;
-	bool          m_valid;
+	unsigned char* m_data;
+	CSBKO          m_CSBKO;
+	unsigned char  m_FID;
+	unsigned int   m_bsId;
+	unsigned int   m_srcId;
+	unsigned int   m_dstId;
 };
 
 #endif

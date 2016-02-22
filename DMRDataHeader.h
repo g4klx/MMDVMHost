@@ -19,15 +19,15 @@
 #ifndef DMRDataHeader_H
 #define DMRDataHeader_H
 
-#include "BPTC19696.h"
-
 class CDMRDataHeader
 {
 public:
-	CDMRDataHeader(const unsigned char* data);
+	CDMRDataHeader();
 	~CDMRDataHeader();
 
-	bool isValid() const;
+	bool put(const unsigned char* bytes);
+
+	void get(unsigned char* bytes) const;
 
 	bool getGI() const;
 
@@ -37,12 +37,11 @@ public:
 	unsigned int getBlocks() const;
 
 private:
-	CBPTC19696   m_bptc;
-	bool         m_valid;
-	bool         m_gi;
-	unsigned int m_srcId;
-	unsigned int m_dstId;
-	unsigned int m_blocks;
+	unsigned char* m_data;
+	bool           m_gi;
+	unsigned int   m_srcId;
+	unsigned int   m_dstId;
+	unsigned int   m_blocks;
 };
 
 #endif

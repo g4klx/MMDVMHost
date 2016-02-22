@@ -676,7 +676,7 @@ bool CModem::readVersion()
 		buffer[1U] = 3U;
 		buffer[2U] = MMDVM_GET_VERSION;
 
-		// CUtils::dump("Written", buffer, 3U);
+		// CUtils::dump(1U, "Written", buffer, 3U);
 
 		int ret = m_serial.write(buffer, 3U);
 		if (ret != 3)
@@ -754,7 +754,7 @@ bool CModem::setConfig()
 
 	buffer[9U] = m_colorCode;
 
-	// CUtils::dump("Written", buffer, 10U);
+	// CUtils::dump(1U, "Written", buffer, 10U);
 
 	int ret = m_serial.write(buffer, 10U);
 	if (ret != 10)
@@ -780,7 +780,7 @@ bool CModem::setConfig()
 		}
 	} while (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK);
 
-	// CUtils::dump("Response", m_buffer, length);
+	// CUtils::dump(1U, "Response", m_buffer, length);
 
 	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
 		LogError("Received a NAK to the SET_CONFIG command from the modem");
@@ -812,7 +812,7 @@ bool CModem::setFrequency()
 	buffer[10U] = (m_txFrequency >> 16) & 0xFFU;
 	buffer[11U] = (m_txFrequency >> 24) & 0xFFU;
 
-	// CUtils::dump("Written", buffer, 12U);
+	// CUtils::dump(1U, "Written", buffer, 12U);
 
 	int ret = m_serial.write(buffer, 12U);
 	if (ret != 12)
@@ -838,7 +838,7 @@ bool CModem::setFrequency()
 		}
 	} while (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK);
 
-	// CUtils::dump("Response", m_buffer, length);
+	// CUtils::dump(1U, "Response", m_buffer, length);
 
 	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
 		LogError("Received a NAK to the SET_FREQ command from the modem");
@@ -899,7 +899,7 @@ RESP_TYPE_MMDVM CModem::getResponse(unsigned char *buffer, unsigned int& length)
 #endif
 	}
 
-	// CUtils::dump("Received", buffer, length);
+	// CUtils::dump(1U, "Received", buffer, length);
 
 	return RTM_OK;
 }
@@ -913,7 +913,7 @@ bool CModem::setMode(unsigned char mode)
 	buffer[2U] = MMDVM_SET_MODE;
 	buffer[3U] = mode;
 
-	// CUtils::dump("Written", buffer, 4U);
+	// CUtils::dump(1U, "Written", buffer, 4U);
 
 	return m_serial.write(buffer, 4U) == 4;
 }
@@ -932,7 +932,7 @@ bool CModem::writeDMRStart(bool tx)
 	buffer[2U] = MMDVM_DMR_START;
 	buffer[3U] = tx ? 0x01U : 0x00U;
 
-	// CUtils::dump("Written", buffer, 4U);
+	// CUtils::dump(1U, "Written", buffer, 4U);
 
 	return m_serial.write(buffer, 4U) == 4;
 }
@@ -956,7 +956,7 @@ bool CModem::writeDMRShortLC(const unsigned char* lc)
 	buffer[10U] = lc[7U];
 	buffer[11U] = lc[8U];
 
-	// CUtils::dump("Written", buffer, 12U);
+	// CUtils::dump(1U, "Written", buffer, 12U);
 
 	return m_serial.write(buffer, 12U) == 12;
 }

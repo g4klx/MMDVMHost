@@ -24,75 +24,88 @@
 #include <cstdio>
 #include <cassert>
 
-CDMRCSBK::CDMRCSBK(const unsigned char* bytes) :
+CDMRCSBK::CDMRCSBK() :
+m_data(NULL),
 m_CSBKO(CSBKO_NONE),
 m_FID(0x00U),
 m_bsId(0U),
 m_srcId(0U),
-m_dstId(0U),
-m_valid(false)
+m_dstId(0U)
 {
-	assert(bytes != NULL);
-
-	CBPTC19696 bptc;
-
-	unsigned char data[12U];
-	bptc.decode(bytes, data);
-
-	data[10U] ^= CSBK_CRC_MASK[0U];
-	data[11U] ^= CSBK_CRC_MASK[1U];
-
-	m_valid = CCRC::checkCCITT162(data, 12U);
-	if (!m_valid)
-		return;
-
-	m_CSBKO = CSBKO(data[0U] & 0x3FU);
-	m_FID   = data[1U];
-
-	switch (m_CSBKO) {
-	case CSBKO_BSDWNACT:
-		m_bsId  = data[4U] << 16 | data[5U] << 8 | data[6U];
-		m_srcId = data[7U] << 16 | data[8U] << 8 | data[9U]; 
-		CUtils::dump("Download Activate CSBK", data, 12U);
-		break;
-
-	case CSBKO_UUVREQ:
-		m_dstId = data[4U] << 16 | data[5U] << 8 | data[6U];
-		m_srcId = data[7U] << 16 | data[8U] << 8 | data[9U];
-		CUtils::dump("Unit to Unit Service Request CSBK", data, 12U);
-		break;
-
-	case CSBKO_UUANSRSP:
-		m_dstId = data[4U] << 16 | data[5U] << 8 | data[6U];
-		m_srcId = data[7U] << 16 | data[8U] << 8 | data[9U];
-		CUtils::dump("Unit to Unit Service Answer Response CSBK", data, 12U);
-		break;
-
-	case CSBKO_PRECCSBK:
-		m_dstId = data[4U] << 16 | data[5U] << 8 | data[6U];
-		m_srcId = data[7U] << 16 | data[8U] << 8 | data[9U];
-		CUtils::dump("Preamble CSBK", data, 12U);
-		break;
-
-	case CSBKO_NACKRSP:
-		m_srcId = data[4U] << 16 | data[5U] << 8 | data[6U];
-		m_dstId = data[7U] << 16 | data[8U] << 8 | data[9U];
-		CUtils::dump("Negative Acknowledge Response CSBK", data, 12U);
-		break;
-
-	default:
-		CUtils::dump("Unhandled CSBK type", data, 12U);
-		break;
-	}
+	m_data = new unsigned char[12U];
 }
 
 CDMRCSBK::~CDMRCSBK()
 {
+	delete[] m_data;
 }
 
-bool CDMRCSBK::isValid() const
+bool CDMRCSBK::put(const unsigned char* bytes)
 {
-	return m_valid;
+	assert(bytes != NULL);
+
+	CBPTC19696 bptc;
+	bptc.decode(bytes, m_data);
+
+	m_data[10U] ^= CSBK_CRC_MASK[0U];
+	m_data[11U] ^= CSBK_CRC_MASK[1U];
+
+	bool valid = CCRC::checkCCITT162(m_data, 12U);
+	if (!valid)
+		return false;
+
+	// Restore the checksum
+	m_data[10U] ^= CSBK_CRC_MASK[0U];
+	m_data[11U] ^= CSBK_CRC_MASK[1U];
+
+	m_CSBKO = CSBKO(m_data[0U] & 0x3FU);
+	m_FID   = m_data[1U];
+
+	switch (m_CSBKO) {
+	case CSBKO_BSDWNACT:
+		m_bsId  = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
+		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U]; 
+		CUtils::dump("Download Activate CSBK", m_data, 12U);
+		break;
+
+	case CSBKO_UUVREQ:
+		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
+		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
+		CUtils::dump("Unit to Unit Service Request CSBK", m_data, 12U);
+		break;
+
+	case CSBKO_UUANSRSP:
+		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
+		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
+		CUtils::dump("Unit to Unit Service Answer Response CSBK", m_data, 12U);
+		break;
+
+	case CSBKO_PRECCSBK:
+		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
+		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
+		CUtils::dump("Preamble CSBK", m_data, 12U);
+		break;
+
+	case CSBKO_NACKRSP:
+		m_srcId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
+		m_dstId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
+		CUtils::dump("Negative Acknowledge Response CSBK", m_data, 12U);
+		break;
+
+	default:
+		CUtils::dump("Unhandled CSBK type", m_data, 12U);
+		break;
+	}
+
+	return true;
+}
+
+void CDMRCSBK::get(unsigned char* bytes) const
+{
+	assert(bytes != NULL);
+
+	CBPTC19696 bptc;
+	bptc.encode(m_data, bytes);
 }
 
 CSBKO CDMRCSBK::getCSBKO() const
