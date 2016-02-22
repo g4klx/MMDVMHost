@@ -25,8 +25,10 @@
 
 CDMRLC::CDMRLC(FLCO flco, unsigned int srcId, unsigned int dstId) :
 m_PF(false),
+m_R(false),
 m_FLCO(flco),
 m_FID(0U),
+m_options(0U),
 m_srcId(srcId),
 m_dstId(dstId)
 {
@@ -34,18 +36,23 @@ m_dstId(dstId)
 
 CDMRLC::CDMRLC(const unsigned char* bytes) :
 m_PF(false),
+m_R(false),
 m_FLCO(FLCO_GROUP),
 m_FID(0U),
+m_options(0U),
 m_srcId(0U),
 m_dstId(0U)
 {
 	assert(bytes != NULL);
 
 	m_PF = (bytes[0U] & 0x80U) == 0x80U;
+	m_R  = (bytes[0U] & 0x40U) == 0x40U;
 
 	m_FLCO = FLCO(bytes[0U] & 0x3FU);
 
 	m_FID = bytes[1U];
+
+	m_options = bytes[2U];
 
 	m_dstId = bytes[3U] << 16 | bytes[4U] << 8 | bytes[5U];
 	m_srcId = bytes[6U] << 16 | bytes[7U] << 8 | bytes[8U];
@@ -53,21 +60,27 @@ m_dstId(0U)
 
 CDMRLC::CDMRLC(const bool* bits) :
 m_PF(false),
+m_R(false),
 m_FLCO(FLCO_GROUP),
 m_FID(0U),
+m_options(0U),
 m_srcId(0U),
 m_dstId(0U)
 {
 	assert(bits != NULL);
 
 	m_PF = bits[0U];
+	m_R  = bits[1U];
 
-	unsigned char temp1, temp2;
+	unsigned char temp1, temp2, temp3;
 	CUtils::bitsToByteBE(bits + 0U, temp1);
 	m_FLCO = FLCO(temp1 & 0x3FU);
 
 	CUtils::bitsToByteBE(bits + 8U, temp2);
 	m_FID = temp2;
+
+	CUtils::bitsToByteBE(bits + 16U, temp3);
+	m_options = temp3;
 
 	unsigned char d1, d2, d3;
 	CUtils::bitsToByteBE(bits + 24U, d1);
@@ -85,8 +98,10 @@ m_dstId(0U)
 
 CDMRLC::CDMRLC() :
 m_PF(false),
+m_R(false),
 m_FLCO(FLCO_GROUP),
 m_FID(0U),
+m_options(0U),
 m_srcId(0U),
 m_dstId(0U)
 {
@@ -105,7 +120,12 @@ void CDMRLC::getData(unsigned char* bytes) const
 	if (m_PF)
 		bytes[0U] |= 0x80U;
 
+	if (m_R)
+		bytes[0U] |= 0x40U;
+
 	bytes[1U] = m_FID;
+
+	bytes[2U] = m_options;
 
 	bytes[3U] = m_dstId >> 16;
 	bytes[4U] = m_dstId >> 8;

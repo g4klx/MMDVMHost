@@ -50,8 +50,10 @@ public:
 
 private:
 	bool          m_PF;
+	bool          m_R;
 	FLCO          m_FLCO;
 	unsigned char m_FID;
+	unsigned char m_options;
 	unsigned int  m_srcId;
 	unsigned int  m_dstId;
 };

@@ -21,6 +21,7 @@
 
 #include "DMRDefines.h"
 #include "RS129.h"
+#include "Utils.h"
 #include "Log.h"
 
 #include <cstdio>
@@ -60,12 +61,8 @@ CDMRLC* CDMRFullLC::decode(const unsigned char* data, unsigned char type)
 			return NULL;
 	}
 
-	if (!CRS129::check(lcData)) {
-		::LogDebug("Checksum failed for the LC");
-		CDMRLC lc(lcData);
-		LogDebug("Invalid LC, src = %u, dst = %s%u", lc.getSrcId(), lc.getFLCO() == FLCO_GROUP ? "TG " : "", lc.getDstId());
+	if (!CRS129::check(lcData))
 		return NULL;
-	}
 
 	return new CDMRLC(lcData);
 }
