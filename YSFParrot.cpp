@@ -56,7 +56,8 @@ bool CYSFParrot::write(const unsigned char* data)
 
 void CYSFParrot::end()
 {
-	m_timer.start();
+	if (m_used > 0U)
+		m_timer.start();
 
 	m_ptr = 0U;
 }

@@ -245,7 +245,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			m_state = RS_RELAYING_RF_DATA;
 
-			setShortLC(m_slotNo, m_lc->getDstId(), gi ? FLCO_GROUP : FLCO_USER_USER, false);
+			setShortLC(m_slotNo, dstId, gi ? FLCO_GROUP : FLCO_USER_USER, false);
 
 			m_display->writeDMR(m_slotNo, srcId, gi, dstId, "RD");
 
@@ -349,10 +349,38 @@ void CDMRSlot::writeModem(unsigned char *data)
 			m_state = RS_LATE_ENTRY;
 		}
 	} else {
-		CDMREMB emb;
-		emb.putData(data + 2U);
+		if (m_state == RS_RELAYING_RF_DATA) {
+			CDMRSlotType slotType;
+			slotType.putData(data + 2U);
 
-		if (m_state == RS_RELAYING_RF_AUDIO) {
+			unsigned char dataType = slotType.getDataType();
+
+			if (dataType == DT_RATE_12_DATA || dataType == DT_RATE_34_DATA || dataType == DT_RATE_1_DATA) {
+				// Regenerate the Slot Type
+				slotType.getData(data + 2U);
+
+				m_frames--;
+
+				data[0U] = m_frames == 0U ? TAG_EOT : TAG_DATA;
+				data[1U] = 0x00U;
+
+				if (m_duplex)
+					writeQueue(data);
+
+				writeNetwork(data, dataType);
+
+				if (m_frames == 0U) {
+					LogMessage("DMR Slot %u, ended RF data transmission", m_slotNo);
+					writeEndOfTransmission();
+				}
+			} else {
+				// Unhandled data type
+				LogWarning("DMR Slot %u, unhandled RF data type - 0x%02X", m_slotNo, dataType);
+			}
+		} else if (m_state == RS_RELAYING_RF_AUDIO) {
+			CDMREMB emb;
+			emb.putData(data + 2U);
+
 			// Regenerate the EMB
 			emb.setColorCode(m_colorCode);
 			emb.getData(data + 2U);
@@ -377,6 +405,9 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			writeNetwork(data, DT_VOICE);
 		} else if (m_state == RS_LATE_ENTRY) {
+			CDMREMB emb;
+			emb.putData(data + 2U);
+
 			// If we haven't received an LC yet, then be strict on the color code
 			unsigned char colorCode = emb.getColorCode();
 			if (colorCode != m_colorCode)
