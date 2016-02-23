@@ -238,23 +238,3 @@ unsigned char CCRC::crc8(const unsigned char *in, unsigned int length)
 
 	return crc;
 }
-
-bool CCRC::crcFICH(const unsigned char* fich)
-{
-	assert(fich != NULL);
-
-	union {
-		uint16_t crc16;
-		uint8_t  crc8[2U];
-	};
-
-	crc16 = 0U;
-	crc16 = (uint16_t(crc8[0U]) << 8) ^ CCITT16_TABLE2[crc8[1U] ^ fich[0U]];
-	crc16 = (uint16_t(crc8[0U]) << 8) ^ CCITT16_TABLE2[crc8[1U] ^ fich[1U]];
-	crc16 = (uint16_t(crc8[0U]) << 8) ^ CCITT16_TABLE2[crc8[1U] ^ fich[2U]];
-	crc16 = (uint16_t(crc8[0U]) << 8) ^ CCITT16_TABLE2[crc8[1U] ^ fich[3U]];
-
-	crc16 = ~crc16;
-
-	return crc8[0U] == fich[5U] && crc8[1U] == fich[4U];
-}

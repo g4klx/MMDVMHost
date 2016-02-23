@@ -31,6 +31,8 @@ public:
 
 	void read(unsigned char* data);
 
+	void end();
+
 	bool hasData();
 
 	void clock(unsigned int ms);

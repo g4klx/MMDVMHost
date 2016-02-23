@@ -17,9 +17,11 @@
  */
 
 #include "YSFConvolution.h"
+#include "YSFDefines.h"
 #include "Golay24128.h"
 #include "YSFFICH.h"
 #include "CRC.h"
+#include "Log.h"
 
 #include <cstdio>
 #include <cassert>
@@ -30,7 +32,7 @@ const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U
 #define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
-const unsigned int INTERLEAVE_TABLE_RX[] = {
+const unsigned int INTERLEAVE_TABLE[] = {
    0U, 40U,  80U, 120U, 160U,
    2U, 42U,  82U, 122U, 162U,
    4U, 44U,  84U, 124U, 164U,
@@ -52,32 +54,37 @@ const unsigned int INTERLEAVE_TABLE_RX[] = {
   36U, 76U, 116U, 156U, 196U,
   38U, 78U, 118U, 158U, 198U};
 
-CYSFFICH::CYSFFICH()
+CYSFFICH::CYSFFICH() :
+m_fich(NULL)
 {
+	m_fich = new unsigned char[6U];
 }
 
 CYSFFICH::~CYSFFICH()
 {
+	delete[] m_fich;
 }
 
-bool CYSFFICH::decode(const unsigned char* data, unsigned char* fich) const
+bool CYSFFICH::decode(const unsigned char* bytes)
 {
-	assert(data != NULL);
-	assert(fich != NULL);
+	assert(bytes != NULL);
+
+	// Skip the sync bytes
+	bytes += YSF_SYNC_LENGTH_BYTES;
 
 	CYSFConvolution viterbi;
 	viterbi.start();
 
 	// Deinterleave the FICH and send bits to the Viterbi decoder
 	for (unsigned int i = 0U; i < 100U; i++) {
-		unsigned int n = INTERLEAVE_TABLE_RX[i];
-		unsigned int s0 = READ_BIT1(data, n) ? 1U : 0U;
+		unsigned int n = INTERLEAVE_TABLE[i];
+		uint8_t s0 = READ_BIT1(bytes, n) ? 1U : 0U;
 
 		n++;
-		unsigned int s1 = READ_BIT1(data, n) ? 1U : 0U;
+		uint8_t s1 = READ_BIT1(bytes, n) ? 1U : 0U;
 
 		viterbi.decode(s0, s1);
-  }
+	}
 
 	unsigned char output[13U];
 	viterbi.chainback(output);
@@ -87,12 +94,96 @@ bool CYSFFICH::decode(const unsigned char* data, unsigned char* fich) const
 	unsigned int b2 = CGolay24128::decode24128(output + 6U);
 	unsigned int b3 = CGolay24128::decode24128(output + 9U);
 
-	fich[0U] = (b0 >> 16) & 0xFFU;
-	fich[1U] = ((b0 >> 8) & 0xF0U) | ((b1 >> 20) & 0x0FU);
-	fich[2U] = (b1 >> 12) & 0xFFU;
-	fich[3U] = (b2 >> 16) & 0xFFU;
-	fich[4U] = ((b2 >> 8) & 0xF0U) | ((b3 >> 20) & 0x0FU);
-	fich[5U] = (b3 >> 12) & 0xFFU;
+	m_fich[0U] = (b0 >> 4) & 0xFFU;
+	m_fich[1U] = ((b0 << 4) & 0xF0U) | ((b1 >> 8) & 0x0FU);
+	m_fich[2U] = (b1 >> 0) & 0xFFU;
+	m_fich[3U] = (b2 >> 4) & 0xFFU;
+	m_fich[4U] = ((b2 << 4) & 0xF0U) | ((b3 >> 8) & 0x0FU);
+	m_fich[5U] = (b3 >> 0) & 0xFFU;
 
-	return CCRC::crcFICH(fich);
+	return CCRC::checkCCITT162(m_fich, 6U);
+}
+
+void CYSFFICH::encode(unsigned char* bytes)
+{
+	assert(bytes != NULL);
+
+	// Skip the sync bytes
+	bytes += YSF_SYNC_LENGTH_BYTES;
+
+	CCRC::addCCITT162(m_fich, 6U);
+
+	unsigned int b0 = ((m_fich[0U] << 4) & 0xFF0U) | ((m_fich[1U] >> 4) & 0x00FU);
+	unsigned int b1 = ((m_fich[1U] << 8) & 0xF00U) | ((m_fich[2U] >> 0) & 0x0FFU);
+	unsigned int b2 = ((m_fich[3U] << 4) & 0xFF0U) | ((m_fich[4U] >> 4) & 0x00FU);
+	unsigned int b3 = ((m_fich[4U] << 8) & 0xF00U) | ((m_fich[5U] >> 0) & 0x0FFU);
+
+	unsigned int c0 = CGolay24128::encode24128(b0);
+	unsigned int c1 = CGolay24128::encode24128(b1);
+	unsigned int c2 = CGolay24128::encode24128(b2);
+	unsigned int c3 = CGolay24128::encode24128(b3);
+
+	unsigned char conv[13U];
+	conv[0U]  = (c0 >> 16) & 0xFFU;
+	conv[1U]  = (c0 >> 8) & 0xFFU;
+	conv[2U]  = (c0 >> 0) & 0xFFU;
+	conv[3U]  = (c1 >> 16) & 0xFFU;
+	conv[4U]  = (c1 >> 8) & 0xFFU;
+	conv[5U]  = (c1 >> 0) & 0xFFU;
+	conv[6U]  = (c2 >> 16) & 0xFFU;
+	conv[7U]  = (c2 >> 8) & 0xFFU;
+	conv[8U]  = (c2 >> 0) & 0xFFU;
+	conv[9U]  = (c3 >> 16) & 0xFFU;
+	conv[10U] = (c3 >> 8) & 0xFFU;
+	conv[11U] = (c3 >> 0) & 0xFFU;
+	conv[12U] = 0x00U;
+
+	CYSFConvolution convolution;
+	unsigned char convolved[25U];
+	convolution.encode(conv, convolved, 100U);
+
+	unsigned int j = 0U;
+	for (unsigned int i = 0U; i < 100U; i++) {
+		unsigned int n = INTERLEAVE_TABLE[i];
+
+		bool s0 = READ_BIT1(convolved, j) != 0U;
+		j++;
+
+		bool s1 = READ_BIT1(convolved, j) != 0U;
+		j++;
+
+		WRITE_BIT1(bytes, n, s0);
+
+		n++;
+		WRITE_BIT1(bytes, n, s1);
+	}
+}
+
+unsigned char CYSFFICH::getCM() const
+{
+	return m_fich[0U] & 0x0CU;
+}
+
+unsigned char CYSFFICH::getFT() const
+{
+	return m_fich[1U] & 0x07U;
+}
+
+unsigned char CYSFFICH::getFN() const
+{
+	return (m_fich[1U] & 0x38U) >> 3;
+}
+
+void CYSFFICH::setMR(unsigned char mr)
+{
+	m_fich[2U] &= 0xC7U;
+	m_fich[2U] |= mr;
+}
+
+void CYSFFICH::setVoIP(bool on)
+{
+	if (on)
+		m_fich[2U] |= 0x04U;
+	else
+		m_fich[2U] &= 0xFBU;
 }

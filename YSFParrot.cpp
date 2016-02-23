@@ -51,12 +51,14 @@ bool CYSFParrot::write(const unsigned char* data)
 	::memcpy(m_data + m_used, data, YSF_FRAME_LENGTH_BYTES + 2U);
 	m_used += YSF_FRAME_LENGTH_BYTES + 2U;
 
-	if (data[0U] == TAG_EOT) {
-		m_timer.start();
-		m_ptr = 0U;
-	}
-
 	return true;
+}
+
+void CYSFParrot::end()
+{
+	m_timer.start();
+
+	m_ptr = 0U;
 }
 
 void CYSFParrot::read(unsigned char* data)

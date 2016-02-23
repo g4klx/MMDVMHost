@@ -12,6 +12,7 @@
  */
 
 #include "YSFControl.h"
+#include "YSFFICH.h"
 #include "Utils.h"
 #include "Sync.h"
 #include "Log.h"
@@ -24,7 +25,6 @@
 /*
  * TODO:
  * AMBE FEC reconstruction.
- * FICH regeneration.
  * Callsign extraction + late entry.
  * Uplink and downlink callsign addition.
  */
@@ -56,6 +56,10 @@ bool CYSFControl::writeModem(unsigned char *data)
 
 	if (type == TAG_LOST && m_state == RS_RELAYING_RF_AUDIO) {
 		LogMessage("YSF, transmission lost, %.1f seconds", float(m_frames) / 10.0F);
+
+		if (m_parrot != NULL)
+			m_parrot->end();
+
 		writeEndOfTransmission();
 		return false;
 	}
@@ -84,15 +88,24 @@ bool CYSFControl::writeModem(unsigned char *data)
 	if (type == TAG_EOT) {
 		CSync::addYSFSync(data + 2U);
 
+		CYSFFICH fich;
+		fich.decode(data + 2U);
+
 		m_frames++;
 
 		if (m_duplex) {
+			fich.setMR(YSF_MR_BUSY);
+			fich.encode(data + 2U);
+
 			data[0U] = TAG_EOT;
 			data[1U] = 0x00U;
 			writeQueue(data);
 		}
 
 		if (m_parrot != NULL) {
+			fich.setMR(YSF_MR_NOT_BUSY);
+			fich.encode(data + 2U);
+
 			data[0U] = TAG_EOT;
 			data[1U] = 0x00U;
 			writeParrot(data);
@@ -109,15 +122,24 @@ bool CYSFControl::writeModem(unsigned char *data)
 	} else {
 		CSync::addYSFSync(data + 2U);
 
+		CYSFFICH fich;
+		fich.decode(data + 2U);
+
 		m_frames++;
 
 		if (m_duplex) {
+			fich.setMR(YSF_MR_BUSY);
+			fich.encode(data + 2U);
+
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
 			writeQueue(data);
 		}
 
 		if (m_parrot != NULL) {
+			fich.setMR(YSF_MR_NOT_BUSY);
+			fich.encode(data + 2U);
+
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
 			writeParrot(data);
@@ -196,6 +218,9 @@ void CYSFControl::writeParrot(const unsigned char *data)
 		return;
 
 	m_parrot->write(data);
+
+	if (data[0U] == TAG_EOT)
+		m_parrot->end();
 }
 
 bool CYSFControl::openFile()

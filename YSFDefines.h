@@ -32,4 +32,10 @@ const unsigned char YSF_DT_TERMINATOR_CHANNEL = 0x80U;
 
 const unsigned char YSF_CKSUM_OK = 0x01U;
 
+const unsigned char YSF_CM_GROUP      = 0x00U;
+const unsigned char YSF_CM_INDIVIDUAL = 0x0CU;
+
+const unsigned char YSF_MR_NOT_BUSY = 0x08U;
+const unsigned char YSF_MR_BUSY     = 0x10U;
+
 #endif

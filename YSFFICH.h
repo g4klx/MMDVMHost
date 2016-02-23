@@ -24,9 +24,19 @@ public:
 	CYSFFICH();
 	~CYSFFICH();
 
-	bool decode(const unsigned char* frame, unsigned char* fich) const;
+	bool decode(const unsigned char* bytes);
+
+	void encode(unsigned char* bytes);
+
+	unsigned char getCM() const;
+	unsigned char getFT() const;
+	unsigned char getFN() const;
+
+	void setMR(unsigned char mr);
+	void setVoIP(bool set);
 
 private:
+	unsigned char* m_fich;
 };
 
 #endif
