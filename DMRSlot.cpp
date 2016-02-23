@@ -1053,14 +1053,10 @@ void CDMRSlot::setShortLC(unsigned int slotNo, unsigned int id, FLCO flco, bool 
 
 	lc[4U] = CCRC::crc8(lc, 4U);
 
-	CUtils::dump(1U, "Short LC", lc, 5U);
-
 	unsigned char sLC[9U];
 
 	CDMRShortLC shortLC;
 	shortLC.encode(lc, sLC);
-
-	CUtils::dump(1U, "Short LC with FEC", sLC, 9U);
 
 	m_modem->writeDMRShortLC(sLC);
 }
