@@ -32,6 +32,16 @@ const unsigned char YSF_DT_TERMINATOR_CHANNEL = 0x80U;
 
 const unsigned char YSF_CKSUM_OK = 0x01U;
 
+const unsigned char YSF_FI_HEADER         = 0x00U;
+const unsigned char YSF_FI_COMMUNICATIONS = 0x40U;
+const unsigned char YSF_FI_TERMINATOR     = 0x80U;
+const unsigned char YSF_FI_TEST           = 0xC0U;
+
+const unsigned char YSF_DT_VD_MODE1      = 0x00U;
+const unsigned char YSF_DT_DATA_FR_MODE  = 0x10U;
+const unsigned char YSF_DT_VD_MODE2      = 0x20U;
+const unsigned char YSF_DT_VOICE_FR_MODE = 0x30U;
+
 const unsigned char YSF_CM_GROUP      = 0x00U;
 const unsigned char YSF_CM_INDIVIDUAL = 0x0CU;
 

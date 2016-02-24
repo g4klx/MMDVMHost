@@ -40,7 +40,7 @@ m_dp(NULL)
 {
 	m_metrics1  = new uint16_t[16U];
 	m_metrics2  = new uint16_t[16U];
-	m_decisions = new uint64_t[100U];
+	m_decisions = new uint64_t[360U];
 }
 
 CYSFConvolution::~CYSFConvolution()
