@@ -330,11 +330,11 @@ void CDMRSlot::writeModem(unsigned char *data)
 			unsigned char fid = m_lc->getFID();
 			if (fid == FID_ETSI || fid == FID_DMRA) {
 				unsigned int errors = m_fec.regenerateDMR(data + 2U);
-				LogDebug("DMR Slot %u, audio sequence no. 0, errs: %u/144", m_slotNo, errors);
+				LogDebug("DMR Slot %u, audio sequence no. 0, errs: %u/141", m_slotNo, errors);
 				m_errs += errors;
 			}
 
-			m_bits += 144U;
+			m_bits += 141U;
 
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
@@ -389,11 +389,11 @@ void CDMRSlot::writeModem(unsigned char *data)
 			if (fid == FID_ETSI || fid == FID_DMRA) {
 				unsigned int errors = m_fec.regenerateDMR(data + 2U);
 				unsigned char n = data[1U] & 0x0FU;
-				LogDebug("DMR Slot %u, audio sequence no. %u, errs: %u/144", m_slotNo, n, errors);
+				LogDebug("DMR Slot %u, audio sequence no. %u, errs: %u/141", m_slotNo, n, errors);
 				m_errs += errors;
 			}
 
-			m_bits += 144U;
+			m_bits += 141U;
 
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
@@ -456,11 +456,11 @@ void CDMRSlot::writeModem(unsigned char *data)
 				if (fid == FID_ETSI || fid == FID_DMRA) {
 					unsigned int errors = m_fec.regenerateDMR(data + 2U);
 					unsigned char n = data[1U] & 0x0FU;
-					LogDebug("DMR Slot %u, audio sequence no. %u, errs: %u/144", m_slotNo, n, errors);
+					LogDebug("DMR Slot %u, audio sequence no. %u, errs: %u/141", m_slotNo, n, errors);
 					m_errs += errors;
 				}
 
-				m_bits += 144U;
+				m_bits += 141U;
 
 				data[0U] = TAG_DATA;
 				data[1U] = 0x00U;
@@ -742,9 +742,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		if (m_state == RS_RELAYING_NETWORK_AUDIO) {
 			unsigned char fid = m_lc->getFID();
-			if (fid == FID_ETSI || fid == FID_DMRA)
-				m_errs += m_fec.regenerateDMR(data + 2U);
-			m_bits += 144U;
+			if (fid == FID_ETSI || fid == FID_DMRA) {
+				unsigned int errors = m_fec.regenerateDMR(data + 2U);
+				LogDebug("DMR Slot %u, audio, errs: %u/141", m_slotNo, errors);
+				m_errs += errors;
+			}
+
+			m_bits += 141U;
 
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
@@ -781,9 +785,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			return;
 
 		unsigned char fid = m_lc->getFID();
-		if (fid == FID_ETSI || fid == FID_DMRA)
-			m_errs += m_fec.regenerateDMR(data + 2U);
-		m_bits += 144U;
+		if (fid == FID_ETSI || fid == FID_DMRA) {
+			unsigned int errors = m_fec.regenerateDMR(data + 2U);
+			LogDebug("DMR Slot %u, audio, errs: %u/141", m_slotNo, errors);
+			m_errs += errors;
+		}
+
+		m_bits += 141U;
 
 		// Change the color code in the EMB
 		m_lastEMB.putData(data + 2U);

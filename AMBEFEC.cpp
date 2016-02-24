@@ -511,9 +511,9 @@ unsigned int CAMBEFEC::regenerateDMR(unsigned char* bytes) const
 		MASK >>= 1;
 	}
 
-	unsigned int errors = regenerate(a1, b1, c1);
-	errors += regenerate(a2, b2, c2);
-	errors += regenerate(a3, b3, c3);
+	unsigned int errors = regenerate(a1, b1, c1, true);
+	errors += regenerate(a2, b2, c2, true);
+	errors += regenerate(a3, b3, c3, true);
 
 	MASK = 0x800000U;
 	for (unsigned int i = 0U; i < 24U; i++) {
@@ -570,7 +570,7 @@ unsigned int CAMBEFEC::regenerateDStar(unsigned char* bytes) const
 		MASK >>= 1;
 	}
 
-	unsigned int errors = regenerate(a, b, c);
+	unsigned int errors = regenerate(a, b, c, false);
 
 	MASK = 0x800000U;
 	for (unsigned int i = 0U; i < 24U; i++) {
@@ -583,10 +583,13 @@ unsigned int CAMBEFEC::regenerateDStar(unsigned char* bytes) const
 	return errors;
 }
 
-unsigned int CAMBEFEC::regenerate(unsigned int& a, unsigned int& b, unsigned int& c) const
+unsigned int CAMBEFEC::regenerate(unsigned int& a, unsigned int& b, unsigned int& c, bool b23) const
 {
 	unsigned int old_a = a;
 	unsigned int old_b = b;
+
+	// For the b23 bypass
+	bool b24 = (b & 0x01U) == 0x01U;
 
 	unsigned int data = CGolay24128::decode24128(a);
 
@@ -602,6 +605,11 @@ unsigned int CAMBEFEC::regenerate(unsigned int& a, unsigned int& b, unsigned int
 	unsigned int new_b = CGolay24128::encode24128(datb);
 
 	new_b ^= p;
+
+	if (b23) {
+		new_b &= 0xFFFFFEU;
+		new_b |= b24 ? 0x01U : 0x00U;
+	}
 
 	unsigned int errors = 0U;
 
