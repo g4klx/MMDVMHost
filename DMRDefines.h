@@ -100,6 +100,14 @@ const unsigned char DMR_SYNC_AUDIO = 0x20U;
 const unsigned char DMR_SLOT1      = 0x00U;
 const unsigned char DMR_SLOT2      = 0x80U;
 
+const unsigned char DPF_UDT              = 0x00U;
+const unsigned char DPF_RESPONSE         = 0x01U;
+const unsigned char DPF_UNCONFIRMED_DATA = 0x02U;
+const unsigned char DPF_CONFIRMED_DATA   = 0x03U;
+const unsigned char DPF_DEFINED_SHORT    = 0x0DU;
+const unsigned char DPF_DEFINED_RAW      = 0x0EU;
+const unsigned char DPF_PROPRIETARY      = 0x0FU;
+
 const unsigned char FID_ETSI = 0U;
 const unsigned char FID_DMRA = 16U;
 

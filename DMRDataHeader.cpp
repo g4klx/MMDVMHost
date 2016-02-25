@@ -29,10 +29,14 @@
 
 CDMRDataHeader::CDMRDataHeader() :
 m_data(NULL),
-m_gi(false),
+m_GI(false),
+m_A(false),
 m_srcId(0U),
 m_dstId(0U),
-m_blocks(0U)
+m_blocks(0U),
+m_F(false),
+m_S(false),
+m_Ns(0U)
 {
 	m_data = new unsigned char[12U];
 }
@@ -60,14 +64,61 @@ bool CDMRDataHeader::put(const unsigned char* bytes)
 	m_data[10U] ^= DATA_HEADER_CRC_MASK[0U];
 	m_data[11U] ^= DATA_HEADER_CRC_MASK[1U];
 
-	m_gi = (m_data[0U] & 0x80U) == 0x80U;
+	m_GI = (m_data[0U] & 0x80U) == 0x80U;
+	m_A  = (m_data[0U] & 0x40U) == 0x40U;
+
+	unsigned char dpf = m_data[0U] & 0x0FU;
+	if (dpf == DPF_PROPRIETARY)
+		return true;
 
 	m_dstId = m_data[2U] << 16 | m_data[3U] << 8 | m_data[4U];
 	m_srcId = m_data[5U] << 16 | m_data[6U] << 8 | m_data[7U];
 
-	m_blocks = m_data[8U] & 0x7FU;
+	// XXX check these, add logging like CSBK?
+	switch (dpf) {
+	case DPF_UNCONFIRMED_DATA:
+		CUtils::dump("Unconfirmed Data Header", m_data, 12U);
+		m_F = (m_data[8U] & 0x80U) == 0x80U;
+		m_blocks = m_data[8U] & 0x7FU;
+		break;
 
-	CUtils::dump("Data Header", m_data, 12U);
+	case DPF_CONFIRMED_DATA:
+		CUtils::dump("Confirmed Data Header", m_data, 12U);
+		m_F = (m_data[8U] & 0x80U) == 0x80U;
+		m_blocks = m_data[8U] & 0x7FU;
+		m_S = (m_data[9U] & 0x80U) == 0x80U;
+		m_Ns = (m_data[9U] >> 4) & 0x07U;
+		break;
+
+	case DPF_RESPONSE:
+		CUtils::dump("Response Data Header", m_data, 12U);
+		m_blocks = m_data[8U] & 0x7FU;
+		break;
+
+	case DPF_PROPRIETARY:
+		CUtils::dump("Proprietary Data Header", m_data, 12U);
+		break;
+
+	case DPF_DEFINED_RAW:
+		CUtils::dump("Raw or Status/Precoded Short Data Header", m_data, 12U);
+		m_F = (m_data[8U] & 0x01U) == 0x01U;
+		m_S = (m_data[8U] & 0x02U) == 0x02U;
+		break;
+
+	case DPF_DEFINED_SHORT:
+		CUtils::dump("Defined Short Data Header", m_data, 12U);
+		m_F = (m_data[8U] & 0x01U) == 0x01U;
+		m_S = (m_data[8U] & 0x02U) == 0x02U;
+		break;
+
+	case DPF_UDT:
+		CUtils::dump("Unified Data Transport Header", m_data, 12U);
+		break;
+
+	default:
+		CUtils::dump("Unknown Data Header", m_data, 12U);
+		break;
+	}
 
 	return true;
 }
@@ -82,7 +133,12 @@ void CDMRDataHeader::get(unsigned char* bytes) const
 
 bool CDMRDataHeader::getGI() const
 {
-	return m_gi;
+	return m_GI;
+}
+
+bool CDMRDataHeader::getA() const
+{
+	return m_A;
 }
 
 unsigned int CDMRDataHeader::getSrcId() const
@@ -98,4 +154,19 @@ unsigned int CDMRDataHeader::getDstId() const
 unsigned int CDMRDataHeader::getBlocks() const
 {
 	return m_blocks;
+}
+
+bool CDMRDataHeader::getF() const
+{
+	return m_F;
+}
+
+bool CDMRDataHeader::getS() const
+{
+	return m_S;
+}
+
+unsigned char CDMRDataHeader::getNs() const
+{
+	return m_Ns;
 }

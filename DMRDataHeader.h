@@ -29,19 +29,28 @@ public:
 
 	void get(unsigned char* bytes) const;
 
-	bool getGI() const;
+	bool          getGI() const;
+	bool          getA() const;
 
-	unsigned int getSrcId() const;
-	unsigned int getDstId() const;
+	unsigned int  getSrcId() const;
+	unsigned int  getDstId() const;
 
-	unsigned int getBlocks() const;
+	unsigned int  getBlocks() const;
+
+	bool          getF() const;
+	bool          getS() const;
+	unsigned char getNs() const;
 
 private:
 	unsigned char* m_data;
-	bool           m_gi;
+	bool           m_GI;
+	bool           m_A;
 	unsigned int   m_srcId;
 	unsigned int   m_dstId;
 	unsigned int   m_blocks;
+	bool           m_F;
+	bool           m_S;
+	unsigned char  m_Ns;
 };
 
 #endif
