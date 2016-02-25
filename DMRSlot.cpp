@@ -162,6 +162,12 @@ void CDMRSlot::writeModem(unsigned char *data)
 			// Convert the Data Sync to be from the BS
 			CSync::addDMRDataSync(data + 2U);
 
+			// Regenerate the payload
+			CBPTC19696 bptc;
+			unsigned char payload[12U];
+			bptc.decode(data + 2U, payload);
+			bptc.encode(payload, data + 2U);
+
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
 
@@ -666,6 +672,12 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		// Convert the Data Sync to be from the BS
 		CSync::addDMRDataSync(data + 2U);
+
+		// Regenerate the payload
+		CBPTC19696 bptc;
+		unsigned char payload[12U];
+		bptc.decode(data + 2U, payload);
+		bptc.encode(payload, data + 2U);
 
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;

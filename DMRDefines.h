@@ -70,6 +70,7 @@ const unsigned char PAYLOAD_RIGHT_MASK[]      = {0x0FU, 0xFFU, 0xFFU, 0xFFU, 0xF
 
 const unsigned char VOICE_LC_HEADER_CRC_MASK[]    = {0x96U, 0x96U, 0x96U};
 const unsigned char TERMINATOR_WITH_LC_CRC_MASK[] = {0x99U, 0x99U, 0x99U};
+const unsigned char PI_HEADER_CRC_MASK[]          = {0x69U, 0x69U};
 const unsigned char DATA_HEADER_CRC_MASK[]        = {0xCCU, 0xCCU};
 const unsigned char CSBK_CRC_MASK[]               = {0xA5U, 0xA5U};
 
