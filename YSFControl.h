@@ -44,7 +44,7 @@ private:
 	IDisplay*                  m_display;
 	bool                       m_duplex;
 	CRingBuffer<unsigned char> m_queue;
-	RPT_STATE                  m_state;
+	RPT_RF_STATE               m_state;
 	CTimer                     m_timeoutTimer;
 	unsigned int               m_frames;
 	CYSFParrot*                m_parrot;

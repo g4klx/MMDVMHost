@@ -51,20 +51,26 @@ public:
 private:
 	unsigned int               m_slotNo;
 	CRingBuffer<unsigned char> m_queue;
-	RPT_STATE                  m_state;
+	RPT_RF_STATE               m_rfState;
+	RPT_NET_STATE              m_netState;
 	CDMREmbeddedLC             m_embeddedLC;
-	CDMRLC*                    m_lc;
+	CDMRLC*                    m_rfLC;
+	CDMRLC*                    m_netLC;
 	unsigned char              m_seqNo;
 	unsigned char              m_n;
 	CTimer                     m_networkWatchdog;
-	CTimer                     m_timeoutTimer;
+	CTimer                     m_rfTimeoutTimer;
+	CTimer                     m_netTimeoutTimer;
 	CTimer                     m_packetTimer;
 	CStopWatch                 m_elapsed;
-	unsigned int               m_frames;
-	unsigned int               m_lost;
+	unsigned int               m_rfFrames;
+	unsigned int               m_netFrames;
+	unsigned int               m_netLost;
 	CAMBEFEC                   m_fec;
-	unsigned int               m_bits;
-	unsigned int               m_errs;
+	unsigned int               m_rfBits;
+	unsigned int               m_netBits;
+	unsigned int               m_rfErrs;
+	unsigned int               m_netErrs;
 	unsigned char*             m_lastFrame;
 	CDMREMB                    m_lastEMB;
 	FILE*                      m_fp;
@@ -84,11 +90,13 @@ private:
 	static unsigned char       m_id2;
 	static bool                m_voice2;
 
-	void writeQueue(const unsigned char* data);
-	void writeNetwork(const unsigned char* data, unsigned char dataType);
-	void writeNetwork(const unsigned char* data, unsigned char dataType, FLCO flco, unsigned int srcId, unsigned int dstId);
+	void writeQueueRF(const unsigned char* data);
+	void writeQueueNet(const unsigned char* data);
+	void writeNetworkRF(const unsigned char* data, unsigned char dataType);
+	void writeNetworkRF(const unsigned char* data, unsigned char dataType, FLCO flco, unsigned int srcId, unsigned int dstId);
 
-	void writeEndOfTransmission(bool writeEnd = false);
+	void writeEndRF(bool writeEnd = false);
+	void writeEndNet(bool writeEnd = false);
 
 	bool openFile();
 	bool writeFile(const unsigned char* data);

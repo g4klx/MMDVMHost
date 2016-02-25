@@ -51,34 +51,44 @@ private:
 	IDisplay*                  m_display;
 	bool                       m_duplex;
 	CRingBuffer<unsigned char> m_queue;
-	CDStarHeader               m_header;
-	RPT_STATE                  m_state;
+	CDStarHeader               m_rfHeader;
+	CDStarHeader               m_netHeader;
+	RPT_RF_STATE               m_rfState;
+	RPT_NET_STATE              m_netState;
 	bool                       m_net;
 	CDStarSlowData             m_slowData;
 	unsigned char              m_n;
 	CTimer                     m_networkWatchdog;
 	CTimer                     m_holdoffTimer;
-	CTimer                     m_timeoutTimer;
+	CTimer                     m_rfTimeoutTimer;
+	CTimer                     m_netTimeoutTimer;
 	CTimer                     m_packetTimer;
 	CTimer                     m_ackTimer;
 	CStopWatch                 m_elapsed;
-	unsigned int               m_frames;
-	unsigned int               m_lost;
+	unsigned int               m_rfFrames;
+	unsigned int               m_netFrames;
+	unsigned int               m_netLost;
 	CAMBEFEC                   m_fec;
-	unsigned int               m_bits;
-	unsigned int               m_errs;
+	unsigned int               m_rfBits;
+	unsigned int               m_netBits;
+	unsigned int               m_rfErrs;
+	unsigned int               m_netErrs;
 	unsigned char*             m_lastFrame;
 	FILE*                      m_fp;
 
 	void writeNetwork();
 
-	void writeQueueHeader(const unsigned char* data);
-	void writeQueueData(const unsigned char* data);
-	void writeQueueEOT();
-	void writeNetworkHeader(const unsigned char* data, bool busy);
-	void writeNetworkData(const unsigned char* data, unsigned int errors, bool end, bool busy);
+	void writeQueueHeaderRF(const unsigned char* data);
+	void writeQueueDataRF(const unsigned char* data);
+	void writeQueueEOTRF();
+	void writeQueueHeaderNet(const unsigned char* data);
+	void writeQueueDataNet(const unsigned char* data);
+	void writeQueueEOTNet();
+	void writeNetworkHeaderRF(const unsigned char* data);
+	void writeNetworkDataRF(const unsigned char* data, unsigned int errors, bool end);
 
-	void writeEndOfTransmission();
+	void writeEndRF();
+	void writeEndNet();
 
 	bool openFile();
 	bool writeFile(const unsigned char* data, unsigned int length);

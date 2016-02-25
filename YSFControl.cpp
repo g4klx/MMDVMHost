@@ -33,7 +33,7 @@ CYSFControl::CYSFControl(const std::string& callsign, IDisplay* display, unsigne
 m_display(display),
 m_duplex(duplex),
 m_queue(1000U, "YSF Control"),
-m_state(RS_LISTENING),
+m_state(RS_RF_LISTENING),
 m_timeoutTimer(1000U, timeout),
 m_frames(0U),
 m_parrot(NULL),
@@ -54,7 +54,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 {
 	unsigned char type = data[0U];
 
-	if (type == TAG_LOST && m_state == RS_RELAYING_RF_AUDIO) {
+	if (type == TAG_LOST && m_state == RS_RF_AUDIO) {
 		LogMessage("YSF, transmission lost, %.1f seconds", float(m_frames) / 10.0F);
 
 		if (m_parrot != NULL)
@@ -71,18 +71,18 @@ bool CYSFControl::writeModem(unsigned char *data)
 	unsigned char fi = data[1U] & YSF_FI_MASK;
 	unsigned char dt = data[1U] & YSF_DT_MASK;
 
-	if (type == TAG_DATA && valid && m_state == RS_LISTENING) {
+	if (type == TAG_DATA && valid && m_state == RS_RF_LISTENING) {
 		m_frames = 0U;
 		m_timeoutTimer.start();
 		m_display->writeFusion("XXXXXX");
-		m_state = RS_RELAYING_RF_AUDIO;
+		m_state = RS_RF_AUDIO;
 		LogMessage("YSF, received RF header");
 #if defined(DUMP_YSF)
 		openFile();
 #endif
 	}
 
-	if (m_state != RS_RELAYING_RF_AUDIO)
+	if (m_state != RS_RF_AUDIO)
 		return false;
 
 	if (type == TAG_EOT) {
@@ -168,7 +168,7 @@ unsigned int CYSFControl::readModem(unsigned char* data)
 
 void CYSFControl::writeEndOfTransmission()
 {
-	m_state = RS_LISTENING;
+	m_state = RS_RF_LISTENING;
 
 	m_timeoutTimer.stop();
 
