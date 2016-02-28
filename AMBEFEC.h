@@ -16,7 +16,7 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef	AMBEFEC_H
+#if !defined(AMBEFEC_H)
 #define	AMBEFEC_H
 
 class CAMBEFEC {
