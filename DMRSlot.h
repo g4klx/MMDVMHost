@@ -50,14 +50,15 @@ public:
 
 private:
 	unsigned int               m_slotNo;
-	CRingBuffer<unsigned char> m_queue;
+	CRingBuffer<unsigned char> m_rfQueue;
 	RPT_RF_STATE               m_rfState;
 	RPT_NET_STATE              m_netState;
-	CDMREmbeddedLC             m_embeddedLC;
+	CDMREmbeddedLC             m_rfEmbeddedLC;
 	CDMRLC*                    m_rfLC;
 	CDMRLC*                    m_netLC;
-	unsigned char              m_seqNo;
-	unsigned char              m_n;
+	unsigned char              m_netSeqNo;
+	unsigned char              m_netN;
+	unsigned char              m_rfN;
 	CTimer                     m_networkWatchdog;
 	CTimer                     m_rfTimeoutTimer;
 	CTimer                     m_netTimeoutTimer;

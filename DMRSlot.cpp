@@ -45,14 +45,15 @@ bool           CDMRSlot::m_voice2 = true;
 
 CDMRSlot::CDMRSlot(unsigned int slotNo, unsigned int timeout) :
 m_slotNo(slotNo),
-m_queue(1000U, "DMR Slot"),
+m_rfQueue(1000U, "DMR Slot"),
 m_rfState(RS_RF_LISTENING),
 m_netState(RS_NET_IDLE),
-m_embeddedLC(),
+m_rfEmbeddedLC(),
 m_rfLC(NULL),
 m_netLC(NULL),
-m_seqNo(0U),
-m_n(0U),
+m_netSeqNo(0U),
+m_rfN(0U),
+m_netN(0U),
 m_networkWatchdog(1000U, 0U, 1500U),
 m_rfTimeoutTimer(1000U, timeout),
 m_netTimeoutTimer(1000U, timeout),
@@ -425,7 +426,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			if (colorCode != m_colorCode)
 				return;
 
-			m_rfLC = m_embeddedLC.addData(data + 2U, emb.getLCSS());
+			m_rfLC = m_rfEmbeddedLC.addData(data + 2U, emb.getLCSS());
 			if (m_rfLC != NULL) {
 				// Create a dummy start frame to replace the received frame
 				unsigned char start[DMR_FRAME_LENGTH_BYTES + 2U];
@@ -494,13 +495,13 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 unsigned int CDMRSlot::readModem(unsigned char* data)
 {
-	if (m_queue.isEmpty())
+	if (m_rfQueue.isEmpty())
 		return 0U;
 
 	unsigned char len = 0U;
-	m_queue.getData(&len, 1U);
+	m_rfQueue.getData(&len, 1U);
 
-	m_queue.getData(data, len);
+	m_rfQueue.getData(data, len);
 
 	return len;
 }
@@ -812,8 +813,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			// Initialise the lost packet data
 			if (m_netFrames == 0U) {
 				::memcpy(m_lastFrame, data, DMR_FRAME_LENGTH_BYTES + 2U);
-				m_seqNo = dmrData.getSeqNo();
-				m_n = dmrData.getN();
+				m_netSeqNo = dmrData.getSeqNo();
+				m_netN = dmrData.getN();
 				m_elapsed.start();
 				m_netLost = 0U;
 			} else {
@@ -829,8 +830,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			m_netFrames++;
 
 			// Save details in case we need to infill data
-			m_seqNo = dmrData.getSeqNo();
-			m_n = dmrData.getN();
+			m_netSeqNo = dmrData.getSeqNo();
+			m_netN = dmrData.getN();
 
 #if defined(DUMP_DMR)
 			writeFile(data);
@@ -860,8 +861,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		// Initialise the lost packet data
 		if (m_netFrames == 0U) {
 			::memcpy(m_lastFrame, data, DMR_FRAME_LENGTH_BYTES + 2U);
-			m_seqNo = dmrData.getSeqNo();
-			m_n = dmrData.getN();
+			m_netSeqNo = dmrData.getSeqNo();
+			m_netN = dmrData.getN();
 			m_elapsed.start();
 			m_netLost = 0U;
 		} else {
@@ -874,8 +875,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		m_netFrames++;
 
 		// Save details in case we need to infill data
-		m_seqNo = dmrData.getSeqNo();
-		m_n = dmrData.getN();
+		m_netSeqNo = dmrData.getSeqNo();
+		m_netN = dmrData.getN();
 
 #if defined(DUMP_DMR)
 		writeFile(data);
@@ -1022,13 +1023,13 @@ void CDMRSlot::writeQueueRF(const unsigned char *data)
 		return;
 
 	unsigned char len = DMR_FRAME_LENGTH_BYTES + 2U;
-	m_queue.addData(&len, 1U);
+	m_rfQueue.addData(&len, 1U);
 
 	// If the timeout has expired, replace the audio with idles to keep the slot busy
 	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired())
-		m_queue.addData(m_idle, len);
+		m_rfQueue.addData(m_idle, len);
 	else
-		m_queue.addData(data, len);
+		m_rfQueue.addData(data, len);
 }
 
 void CDMRSlot::writeNetworkRF(const unsigned char* data, unsigned char dataType, FLCO flco, unsigned int srcId, unsigned int dstId)
@@ -1051,10 +1052,10 @@ void CDMRSlot::writeNetworkRF(const unsigned char* data, unsigned char dataType,
 	dmrData.setSrcId(srcId);
 	dmrData.setDstId(dstId);
 	dmrData.setFLCO(flco);
-	dmrData.setN(m_n);
-	dmrData.setSeqNo(m_seqNo);
+	dmrData.setN(m_netN);
+	dmrData.setSeqNo(m_netSeqNo);
 
-	m_seqNo++;
+	m_netSeqNo++;
 
 	dmrData.setData(data + 2U);
 
@@ -1072,13 +1073,13 @@ void CDMRSlot::writeNetworkRF(const unsigned char* data, unsigned char dataType)
 void CDMRSlot::writeQueueNet(const unsigned char *data)
 {
 	unsigned char len = DMR_FRAME_LENGTH_BYTES + 2U;
-	m_queue.addData(&len, 1U);
+	m_rfQueue.addData(&len, 1U);
 
 	// If the timeout has expired, replace the audio with idles to keep the slot busy
 	if (m_netTimeoutTimer.isRunning() && m_netTimeoutTimer.hasExpired())
-		m_queue.addData(m_idle, len);
+		m_rfQueue.addData(m_idle, len);
 	else
-		m_queue.addData(data, len);
+		m_rfQueue.addData(data, len);
 }
 
 void CDMRSlot::init(unsigned int colorCode, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex)
@@ -1228,14 +1229,14 @@ void CDMRSlot::insertSilence(const unsigned char* data, unsigned char seqNo)
 	assert(data != NULL);
 
 	// Check to see if we have any spaces to fill?
-	unsigned char seq = m_seqNo + 1U;
+	unsigned char seq = m_netSeqNo + 1U;
 	if (seq == seqNo) {
 		// Just copy the data, nothing else to do here
 		::memcpy(m_lastFrame, data, DMR_FRAME_LENGTH_BYTES + 2U);
 		return;
 	}
 
-	unsigned int oldSeqNo = m_seqNo + 1U;
+	unsigned int oldSeqNo = m_netSeqNo + 1U;
 	unsigned int newSeqNo = seqNo;
 
 	unsigned int count;
@@ -1260,8 +1261,8 @@ void CDMRSlot::insertSilence(unsigned int count)
 	::memcpy(data + 9U + 2U, data + 2U, 5U);			// Copy the last audio block to the middle (1/2)
 	::memcpy(data + 19U + 2U, data + 4U + 2U, 5U);		// Copy the last audio block to the middle (2/2)
 
-	unsigned char n = (m_n + 1U) % 6U;
-	unsigned char seqNo = m_seqNo + 1U;
+	unsigned char n = (m_netN + 1U) % 6U;
+	unsigned char seqNo = m_netSeqNo + 1U;
 
 	for (unsigned int i = 0U; i < count; i++) {
 		if (i > 0U)
@@ -1280,8 +1281,8 @@ void CDMRSlot::insertSilence(unsigned int count)
 
 		writeQueueNet(data);
 
-		m_seqNo = seqNo;
-		m_n     = n;
+		m_netSeqNo = seqNo;
+		m_netN     = n;
 
 		m_netFrames++;
 		m_netLost++;
