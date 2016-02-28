@@ -136,16 +136,16 @@ bool CDStarControl::writeModem(unsigned char *data)
 		m_net = ::memcmp(gateway, m_gateway, DSTAR_LONG_CALLSIGN_LENGTH) == 0;
 
 		// Only start the timeout if not already running
-		if (!m_rfTimeoutTimer.isRunning()) {
+		if (!m_rfTimeoutTimer.isRunning())
 			m_rfTimeoutTimer.start();
-			m_rfBits = 1U;
-			m_rfErrs = 0U;
-		}
 
 		m_rfHeader = header;
 
 		m_holdoffTimer.stop();
 		m_ackTimer.stop();
+
+		m_rfBits = 1U;
+		m_rfErrs = 0U;
 
 		m_rfFrames = 1U;
 		m_rfN = 0U;
@@ -167,8 +167,7 @@ bool CDStarControl::writeModem(unsigned char *data)
 			header.setRPTCall2(m_gateway);
 			header.get(data + 1U);
 
-			for (unsigned i = 0U; i < 3U; i++)
-				writeNetworkHeaderRF(data);
+			writeNetworkHeaderRF(data);
 		}
 
 		m_rfState = RS_RF_AUDIO;
@@ -269,16 +268,16 @@ bool CDStarControl::writeModem(unsigned char *data)
 			m_net = ::memcmp(gateway, m_gateway, DSTAR_LONG_CALLSIGN_LENGTH) == 0;
 
 			// Only reset the timeout if the timeout is not running
-			if (!m_rfTimeoutTimer.isRunning()) {
+			if (!m_rfTimeoutTimer.isRunning())
 				m_rfTimeoutTimer.start();
-				m_rfBits = 1U;
-				m_rfErrs = 0U;
-			}
 
 			// Create a dummy start frame to replace the received frame
 			m_ackTimer.stop();
 
 			m_rfHeader = *header;
+
+			m_rfBits = 1U;
+			m_rfErrs = 0U;
 
 			m_rfN = 0U;
 			m_rfFrames = 1U;
@@ -306,8 +305,7 @@ bool CDStarControl::writeModem(unsigned char *data)
 				header->setRPTCall2(m_gateway);
 				header->get(start + 1U);
 
-				for (unsigned int i = 0U; i < 3U; i++)
-					writeNetworkHeaderRF(start);
+				writeNetworkHeaderRF(start);
 			}
 
 			delete header;
@@ -454,8 +452,6 @@ void CDStarControl::writeNetwork()
 		if (m_netState != RS_NET_AUDIO)
 			return;
 
-		m_netTimeoutTimer.stop();
-
 		writeQueueEOTNet();
 
 		data[1U] = TAG_EOT;
@@ -531,7 +527,6 @@ void CDStarControl::clock(unsigned int ms)
 			m_netFrames += 1U;
 			if (m_netBits == 0U) m_netBits = 1U;
 			LogMessage("D-Star, network watchdog has expired, %.1f seconds,  %u%% packet loss, BER: %.1f%%", float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
-			m_netTimeoutTimer.stop();
 			writeEndNet();
 #if defined(DUMP_DSTAR)
 			closeFile();

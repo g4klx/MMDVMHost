@@ -237,14 +237,18 @@ bool CDMRIPSC::write(const CDMRData& data)
 
 	unsigned int slotIndex = slotNo - 1U;
 
+	unsigned int count = 1U;
+
 	unsigned char dataType = data.getDataType();
 	if (dataType == DT_VOICE_SYNC) {
 		buffer[15U] |= 0x10U;
 	} else if (dataType == DT_VOICE) {
 		buffer[15U] |= data.getN();
 	} else {
-		if ((dataType == DT_VOICE_LC_HEADER || dataType == DT_DATA_HEADER) && data.getSeqNo() == 0U)
+		if ((dataType == DT_VOICE_LC_HEADER || dataType == DT_DATA_HEADER) && data.getSeqNo() == 0U) {
 			m_streamId[slotIndex] = ::rand() + 1U;
+			count = 3U;
+		}
 
 		buffer[15U] |= (0x20U | dataType);
 	}
@@ -258,7 +262,10 @@ bool CDMRIPSC::write(const CDMRData& data)
 	if (m_debug)
 		CUtils::dump(1U, "IPSC Transmitted", buffer, HOMEBREW_DATA_PACKET_LENGTH);
 
-	return write(buffer, HOMEBREW_DATA_PACKET_LENGTH);
+	for (unsigned int i = 0U; i < count; i++)
+		write(buffer, HOMEBREW_DATA_PACKET_LENGTH);
+
+	return true;
 }
 
 void CDMRIPSC::close()

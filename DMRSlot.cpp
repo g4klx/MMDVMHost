@@ -51,6 +51,7 @@ m_netState(RS_NET_IDLE),
 m_rfEmbeddedLC(),
 m_rfLC(NULL),
 m_netLC(NULL),
+m_rfSeqNo(0U),
 m_netSeqNo(0U),
 m_rfN(0U),
 m_netN(0U),
@@ -134,6 +135,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			m_rfTimeoutTimer.start();
 
 			m_rfFrames = 0U;
+			m_rfSeqNo  = 0U;
 			m_rfBits   = 1U;
 			m_rfErrs   = 0U;
 
@@ -142,8 +144,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 					writeQueueRF(data);
 			}
 
-			for (unsigned i = 0U; i < 3U; i++)
-				writeNetworkRF(data, DT_VOICE_LC_HEADER);
+			writeNetworkRF(data, DT_VOICE_LC_HEADER);
 
 			m_rfState = RS_RF_AUDIO;
 
@@ -222,6 +223,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			unsigned int dstId = dataHeader.getDstId();
 
 			m_rfFrames = dataHeader.getBlocks();
+			m_rfSeqNo  = 0U;
 
 			m_rfLC = new CDMRLC(gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
 
@@ -242,8 +244,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 					writeQueueRF(data);
 			}
 
-			for (unsigned i = 0U; i < 3U; i++)
-				writeNetworkRF(data, DT_DATA_HEADER);
+			writeNetworkRF(data, DT_DATA_HEADER);
 
 			m_rfState = RS_RF_DATA;
 
@@ -278,6 +279,8 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 					// Convert the Data Sync to be from the BS
 					CSync::addDMRDataSync(data + 2U);
+
+					m_rfSeqNo = 0U;
 
 					data[0U] = TAG_DATA;
 					data[1U] = 0x00U;
@@ -447,16 +450,16 @@ void CDMRSlot::writeModem(unsigned char *data)
 				m_rfTimeoutTimer.start();
 
 				m_rfFrames = 0U;
-				m_rfBits = 1U;
-				m_rfErrs = 0U;
+				m_rfSeqNo  = 0U;
+				m_rfBits   = 1U;
+				m_rfErrs   = 0U;
 
 				if (m_duplex) {
 					for (unsigned int i = 0U; i < 3U; i++)
 						writeQueueRF(start);
 				}
 
-				for (unsigned int i = 0U; i < 3U; i++)
-					writeNetworkRF(start, DT_VOICE_LC_HEADER);
+				writeNetworkRF(start, DT_VOICE_LC_HEADER);
 
 				// Regenerate the EMB
 				emb.getData(data + 2U);
@@ -1052,10 +1055,10 @@ void CDMRSlot::writeNetworkRF(const unsigned char* data, unsigned char dataType,
 	dmrData.setSrcId(srcId);
 	dmrData.setDstId(dstId);
 	dmrData.setFLCO(flco);
-	dmrData.setN(m_netN);
-	dmrData.setSeqNo(m_netSeqNo);
+	dmrData.setN(m_rfN);
+	dmrData.setSeqNo(m_rfSeqNo);
 
-	m_netSeqNo++;
+	m_rfSeqNo++;
 
 	dmrData.setData(data + 2U);
 
