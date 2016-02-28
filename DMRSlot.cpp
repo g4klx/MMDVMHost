@@ -11,7 +11,6 @@
  *	GNU General Public License for more details.
  */
 
-#include "DMRDataHeader.h"
 #include "DMRSlotType.h"
 #include "DMRShortLC.h"
 #include "DMRFullLC.h"
@@ -51,6 +50,8 @@ m_netState(RS_NET_IDLE),
 m_rfEmbeddedLC(),
 m_rfLC(NULL),
 m_netLC(NULL),
+m_rfDataHeader(),
+m_netDataHeader(),
 m_rfSeqNo(0U),
 m_netSeqNo(0U),
 m_rfN(0U),
@@ -218,6 +219,8 @@ void CDMRSlot::writeModem(unsigned char *data)
 				return;
 			}
 
+			m_rfDataHeader = dataHeader;
+
 			bool gi = dataHeader.getGI();
 			unsigned int srcId = dataHeader.getSrcId();
 			unsigned int dstId = dataHeader.getDstId();
@@ -328,6 +331,26 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			if (m_rfFrames == 0U) {
 				LogMessage("DMR Slot %u, ended RF data transmission", m_slotNo);
+
+				if (m_duplex) {
+					unsigned char bytes[DMR_FRAME_LENGTH_BYTES + 2U];
+
+					CSync::addDMRDataSync(bytes + 2U);
+
+					CDMRSlotType slotType;
+					slotType.setDataType(DT_TERMINATOR_WITH_LC);
+					slotType.setColorCode(m_colorCode);
+					slotType.getData(bytes + 2U);
+
+					m_rfDataHeader.getTerminator(bytes + 2U);
+
+					bytes[0U] = TAG_DATA;
+					bytes[1U] = 0x00U;
+
+					for (unsigned int i = 0U; i < 5U; i++)
+						writeQueueRF(bytes);
+				}
+
 				writeEndRF();
 			}
 		} else {
@@ -389,6 +412,26 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 				if (m_rfFrames == 0U) {
 					LogMessage("DMR Slot %u, ended RF data transmission", m_slotNo);
+
+					if (m_duplex) {
+						unsigned char bytes[DMR_FRAME_LENGTH_BYTES + 2U];
+
+						CSync::addDMRDataSync(bytes + 2U);
+
+						CDMRSlotType slotType;
+						slotType.setDataType(DT_TERMINATOR_WITH_LC);
+						slotType.setColorCode(m_colorCode);
+						slotType.getData(bytes + 2U);
+
+						m_rfDataHeader.getTerminator(bytes + 2U);
+
+						bytes[0U] = TAG_DATA;
+						bytes[1U] = 0x00U;
+
+						for (unsigned int i = 0U; i < 5U; i++)
+							writeQueueRF(bytes);
+					}
+
 					writeEndRF();
 				}
 			} else {
@@ -736,6 +779,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			return;
 		}
 
+		m_netDataHeader = dataHeader;
+
 		bool gi = dataHeader.getGI();
 		unsigned int srcId = dataHeader.getSrcId();
 		unsigned int dstId = dataHeader.getDstId();
@@ -964,6 +1009,26 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		if (m_netFrames == 0U) {
 			LogMessage("DMR Slot %u, ended network data transmission", m_slotNo);
+
+			if (m_duplex) {
+				unsigned char bytes[DMR_FRAME_LENGTH_BYTES + 2U];
+
+				CSync::addDMRDataSync(bytes + 2U);
+
+				CDMRSlotType slotType;
+				slotType.setDataType(DT_TERMINATOR_WITH_LC);
+				slotType.setColorCode(m_colorCode);
+				slotType.getData(bytes + 2U);
+
+				m_netDataHeader.getTerminator(bytes + 2U);
+
+				bytes[0U] = TAG_DATA;
+				bytes[1U] = 0x00U;
+
+				for (unsigned int i = 0U; i < 5U; i++)
+					writeQueueRF(bytes);
+			}
+
 			writeEndNet();
 		}
 	} else {

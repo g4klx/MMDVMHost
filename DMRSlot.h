@@ -20,8 +20,9 @@
 #define	DMRSlot_H
 
 #include "DMREmbeddedLC.h"
-#include "StopWatch.h"
+#include "DMRDataHeader.h"
 #include "RingBuffer.h"
+#include "StopWatch.h"
 #include "AMBEFEC.h"
 #include "DMRSlot.h"
 #include "DMRData.h"
@@ -56,6 +57,8 @@ private:
 	CDMREmbeddedLC             m_rfEmbeddedLC;
 	CDMRLC*                    m_rfLC;
 	CDMRLC*                    m_netLC;
+	CDMRDataHeader             m_rfDataHeader;
+	CDMRDataHeader             m_netDataHeader;
 	unsigned char              m_rfSeqNo;
 	unsigned char              m_netSeqNo;
 	unsigned char              m_netN;

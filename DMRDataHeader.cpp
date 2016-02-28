@@ -20,6 +20,7 @@
 #include "DMRDataHeader.h"
 #include "DMRDefines.h"
 #include "BPTC19696.h"
+#include "RS129.h"
 #include "Utils.h"
 #include "CRC.h"
 #include "Log.h"
@@ -74,7 +75,6 @@ bool CDMRDataHeader::put(const unsigned char* bytes)
 	m_dstId = m_data[2U] << 16 | m_data[3U] << 8 | m_data[4U];
 	m_srcId = m_data[5U] << 16 | m_data[6U] << 8 | m_data[7U];
 
-	// XXX check these, add logging like CSBK?
 	switch (dpf) {
 	case DPF_UNCONFIRMED_DATA:
 		CUtils::dump("Unconfirmed Data Header", m_data, 12U);
@@ -136,11 +136,6 @@ bool CDMRDataHeader::getGI() const
 	return m_GI;
 }
 
-bool CDMRDataHeader::getA() const
-{
-	return m_A;
-}
-
 unsigned int CDMRDataHeader::getSrcId() const
 {
 	return m_srcId;
@@ -156,17 +151,55 @@ unsigned int CDMRDataHeader::getBlocks() const
 	return m_blocks;
 }
 
-bool CDMRDataHeader::getF() const
+void CDMRDataHeader::getTerminator(unsigned char* bytes) const
 {
-	return m_F;
+	assert(bytes != NULL);
+
+	unsigned char payload[12U];
+	::memset(payload, 0x00U, 12U);
+
+	payload[0U] = m_GI ? FLCO_GROUP : FLCO_USER_USER;
+
+	payload[1U] = FID_ETSI;
+
+	payload[2U] = (m_dstId >> 16) & 0xFFU;
+	payload[3U] = (m_dstId >> 8) & 0xFFU;
+	payload[4U] = (m_dstId >> 0) & 0xFFU;
+
+	payload[5U] = (m_srcId >> 16) & 0xFFU;
+	payload[6U] = (m_srcId >> 8) & 0xFFU;
+	payload[7U] = (m_srcId >> 0) & 0xFFU;
+
+	payload[8U] |= m_GI ? 0x80U : 0x00U;
+	payload[8U] |= m_A  ? 0x40U : 0x00U;
+	payload[8U] |= m_F  ? 0x20U : 0x00U;
+	payload[8U] |= m_S  ? 0x08U : 0x00U;
+	payload[8U] |= m_Ns & 0x07U;
+
+	unsigned char parity[4U];
+	CRS129::encode(payload, 9U, parity);
+
+	payload[9U]  = parity[2U] ^ TERMINATOR_WITH_LC_CRC_MASK[0U];
+	payload[10U] = parity[1U] ^ TERMINATOR_WITH_LC_CRC_MASK[1U];
+	payload[11U] = parity[0U] ^ TERMINATOR_WITH_LC_CRC_MASK[2U];
+
+	CBPTC19696 bptc;
+	bptc.encode(payload, bytes);
 }
 
-bool CDMRDataHeader::getS() const
+CDMRDataHeader& CDMRDataHeader::operator=(const CDMRDataHeader& header)
 {
-	return m_S;
-}
+	if (&header != this) {
+		::memcpy(m_data, header.m_data, 12U);
+		m_GI     = header.m_GI;
+		m_A      = header.m_A;
+		m_srcId  = header.m_srcId;
+		m_dstId  = header.m_dstId;
+		m_blocks = header.m_blocks;
+		m_F      = header.m_F;
+		m_S      = header.m_S;
+		m_Ns     = header.m_Ns;
+	}
 
-unsigned char CDMRDataHeader::getNs() const
-{
-	return m_Ns;
+	return *this;
 }
