@@ -155,6 +155,9 @@
     <ClInclude Include="YSFParrot.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="YSFPayload.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -281,6 +284,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="YSFParrot.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="YSFPayload.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

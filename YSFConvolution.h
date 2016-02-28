@@ -30,7 +30,7 @@ public:
 
 	void start();
 	void decode(uint8_t s0, uint8_t s1);
-	void chainback(unsigned char* out);
+	void chainback(unsigned char* out, unsigned int nBits);
 
 	void encode(const unsigned char* in, unsigned char* out, unsigned int nBits) const;
 

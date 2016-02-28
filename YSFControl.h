@@ -24,6 +24,7 @@
 #include "YSFParrot.h"
 #include "Display.h"
 #include "Defines.h"
+#include "YSFFICH.h"
 #include "Timer.h"
 #include "Modem.h"
 
@@ -47,6 +48,7 @@ private:
 	RPT_RF_STATE               m_state;
 	CTimer                     m_timeoutTimer;
 	unsigned int               m_frames;
+	CYSFFICH                   m_fich;
 	CYSFParrot*                m_parrot;
 	FILE*                      m_fp;
 

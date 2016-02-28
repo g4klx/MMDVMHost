@@ -194,6 +194,7 @@
     <ClInclude Include="YSFDefines.h" />
     <ClInclude Include="YSFFICH.h" />
     <ClInclude Include="YSFParrot.h" />
+    <ClInclude Include="YSFPayload.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AMBEFEC.cpp" />
@@ -234,6 +235,7 @@
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="UDPSocket.cpp" />
     <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="YSFPayload.cpp" />
     <ClCompile Include="YSFControl.cpp" />
     <ClCompile Include="YSFConvolution.cpp" />
     <ClCompile Include="YSFFICH.cpp" />

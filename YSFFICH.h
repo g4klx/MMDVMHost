@@ -28,10 +28,19 @@ public:
 
 	void encode(unsigned char* bytes);
 
+	unsigned char getFI() const;
 	unsigned char getCM() const;
-	unsigned char getFT() const;
+	unsigned char getBN() const;
+	unsigned char getBT() const;
 	unsigned char getFN() const;
+	unsigned char getFT() const;
+	unsigned char getDT() const;
 
+	void setFI(unsigned char fi);
+	void setBN(unsigned char bn);
+	void setBT(unsigned char bt);
+	void setFN(unsigned char fn);
+	void setFT(unsigned char ft);
 	void setMR(unsigned char mr);
 	void setVoIP(bool set);
 

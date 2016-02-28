@@ -40,7 +40,7 @@ m_dp(NULL)
 {
 	m_metrics1  = new uint16_t[16U];
 	m_metrics2  = new uint16_t[16U];
-	m_decisions = new uint64_t[360U];
+	m_decisions = new uint64_t[180U];
 }
 
 CYSFConvolution::~CYSFConvolution()
@@ -89,26 +89,27 @@ void CYSFConvolution::decode(uint8_t s0, uint8_t s1)
 
   ++m_dp;
 
+  assert((m_dp - m_decisions) <= 180U);
+
   uint16_t* tmp = m_oldMetrics;
   m_oldMetrics = m_newMetrics;
   m_newMetrics = tmp;
 }
 
-void CYSFConvolution::chainback(unsigned char* out)
+void CYSFConvolution::chainback(unsigned char* out, unsigned int nBits)
 {
 	assert(out != NULL);
 
 	uint32_t state = 0U;
 
-	uint8_t nbits = 96U;
-	while (nbits-- > 0) {
+	while (nBits-- > 0) {
 		--m_dp;
 
 		uint32_t  i = state >> (9 - K);
 		uint8_t bit = uint8_t(*m_dp >> i) & 1;
 		state = (bit << 7) | (state >> 1);
 
-		WRITE_BIT1(out, nbits, bit != 0U);
+		WRITE_BIT1(out, nBits, bit != 0U);
 	}
 }
 

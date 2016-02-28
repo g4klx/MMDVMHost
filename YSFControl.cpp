@@ -12,7 +12,7 @@
  */
 
 #include "YSFControl.h"
-#include "YSFFICH.h"
+#include "YSFPayload.h"
 #include "Utils.h"
 #include "Sync.h"
 #include "Log.h"
@@ -36,6 +36,7 @@ m_queue(1000U, "YSF Control"),
 m_state(RS_RF_LISTENING),
 m_timeoutTimer(1000U, timeout),
 m_frames(0U),
+m_fich(),
 m_parrot(NULL),
 m_fp(NULL)
 {
@@ -91,6 +92,17 @@ bool CYSFControl::writeModem(unsigned char *data)
 		CYSFFICH fich;
 		fich.decode(data + 2U);
 
+		unsigned char fi = fich.getFI();
+		unsigned char fn = fich.getFN();
+		unsigned char ft = fich.getFT();
+		unsigned char dt = fich.getDT();
+
+		LogMessage("YSF, EOT, FI=%X BN=%u BT=%u FN=%u FT=%u DT=%X", fich.getFI(), fich.getBN(), fich.getBT(), fich.getFN(), fich.getFT(), fich.getDT());
+
+		CYSFPayload payload;
+		payload.decode(data + 2U, fi, fn, ft, dt);
+		payload.encode(data + 2U);
+
 		m_frames++;
 
 		if (m_duplex) {
@@ -122,14 +134,46 @@ bool CYSFControl::writeModem(unsigned char *data)
 	} else {
 		CSync::addYSFSync(data + 2U);
 
-		CYSFFICH fich;
-		fich.decode(data + 2U);
+		if (valid) {
+			bool ret = m_fich.decode(data + 2U);
+			assert(ret);
+
+			LogMessage("YSF, Valid FICH, FI=%X BN=%u BT=%u FN=%u FT=%u DT=%X", m_fich.getFI(), m_fich.getBN(), m_fich.getBT(), m_fich.getFN(), m_fich.getFT(), m_fich.getDT());
+		} else {
+			LogMessage("YSF, invalid FICH");
+
+			// Reconstruct FICH based on the last valid frame
+			m_fich.setFI(0x01U);		// Communication channel
+
+			unsigned char fn = m_fich.getFN();
+			unsigned char ft = m_fich.getFT();
+
+			fn++;
+			if (fn >= 8U) {
+				fn = 0U;
+				ft++;
+				if (ft >= 8U)
+					ft = 0U;
+			}
+
+			m_fich.setFN(fn);
+			m_fich.setFT(ft);
+		}
+
+		unsigned char fi = m_fich.getFI();
+		unsigned char fn = m_fich.getFN();
+		unsigned char ft = m_fich.getFT();
+		unsigned char dt = m_fich.getDT();
+
+		CYSFPayload payload;
+		payload.decode(data + 2U, fi, fn, ft, dt);
+		// payload.encode(data + 2U);
 
 		m_frames++;
 
 		if (m_duplex) {
-			fich.setMR(YSF_MR_BUSY);
-			fich.encode(data + 2U);
+			m_fich.setMR(YSF_MR_BUSY);
+			m_fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
@@ -137,8 +181,8 @@ bool CYSFControl::writeModem(unsigned char *data)
 		}
 
 		if (m_parrot != NULL) {
-			fich.setMR(YSF_MR_NOT_BUSY);
-			fich.encode(data + 2U);
+			m_fich.setMR(YSF_MR_NOT_BUSY);
+			m_fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
