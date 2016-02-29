@@ -37,7 +37,7 @@ public:
 	CDMRLC* addData(const unsigned char* data, unsigned char lcss);
 
 	void setData(const CDMRLC& lc);
-	unsigned int getData(unsigned char* data, unsigned int n) const;
+	unsigned char getData(unsigned char* data, unsigned char n) const;
 
 private:
 	bool*    m_rawLC;

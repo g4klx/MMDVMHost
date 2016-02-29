@@ -48,6 +48,7 @@ m_rfQueue(1000U, "DMR Slot"),
 m_rfState(RS_RF_LISTENING),
 m_netState(RS_NET_IDLE),
 m_rfEmbeddedLC(),
+m_netEmbeddedLC(),
 m_rfLC(NULL),
 m_netLC(NULL),
 m_rfDataHeader(),
@@ -120,6 +121,9 @@ void CDMRSlot::writeModem(unsigned char *data)
 				LogMessage("DMR Slot %u: unable to decode the RF LC", m_slotNo);
 				return;
 			}
+
+			// Store the LC for the embedded LC
+			m_rfEmbeddedLC.setData(*m_rfLC);
 
 			// Regenerate the LC data
 			fullLC.encode(*m_rfLC, data + 2U, DT_VOICE_LC_HEADER);
@@ -385,11 +389,15 @@ void CDMRSlot::writeModem(unsigned char *data)
 		if (m_rfState == RS_RF_AUDIO) {
 			m_rfN = data[1U] & 0x0FU;
 
+			// Regenerate the embedded LC
+			unsigned char lcss = m_rfEmbeddedLC.getData(data + 2U, m_rfN);
+
 			CDMREMB emb;
 			emb.putData(data + 2U);
 
 			// Regenerate the EMB
 			emb.setColorCode(m_colorCode);
+			emb.setLCSS(lcss);
 			emb.getData(data + 2U);
 
 			unsigned char fid = m_rfLC->getFID();
@@ -419,6 +427,9 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			m_rfLC = m_rfEmbeddedLC.addData(data + 2U, emb.getLCSS());
 			if (m_rfLC != NULL) {
+				// Store the LC for the embedded LC
+				m_rfEmbeddedLC.setData(*m_rfLC);
+
 				// Create a dummy start frame to replace the received frame
 				unsigned char start[DMR_FRAME_LENGTH_BYTES + 2U];
 
@@ -451,7 +462,11 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 				m_rfN = data[1U] & 0x0FU;
 
+				// Regenerate the embedded LC
+				unsigned char lcss = m_rfEmbeddedLC.getData(data + 2U, m_rfN);
+
 				// Regenerate the EMB
+				emb.setLCSS(lcss);
 				emb.getData(data + 2U);
 
 				// Send the original audio frame out
@@ -611,6 +626,9 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			LogMessage("DMR Slot %u, bad LC received from the network", m_slotNo);
 			return;
 		}
+
+		// Store the LC for the embedded LC
+		m_netEmbeddedLC.setData(*m_netLC);
 
 		// Regenerate the LC data
 		fullLC.encode(*m_netLC, data + 2U, DT_VOICE_LC_HEADER);
@@ -844,9 +862,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		m_netBits += 141U;
 
+		// Regenerate the embedded LC
+		unsigned char lcss = m_netEmbeddedLC.getData(data + 2U, dmrData.getN());
+
 		// Change the color code in the EMB
 		m_lastEMB.putData(data + 2U);
 		m_lastEMB.setColorCode(m_colorCode);
+		m_lastEMB.setLCSS(lcss);
 		m_lastEMB.getData(data + 2U);
 
 		data[0U] = TAG_DATA;

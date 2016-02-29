@@ -150,11 +150,13 @@ void CDMREmbeddedLC::setData(const CDMRLC& lc)
 	}
 }
 
-unsigned int CDMREmbeddedLC::getData(unsigned char* data, unsigned int n) const
+unsigned char CDMREmbeddedLC::getData(unsigned char* data, unsigned char n) const
 {
 	assert(data != NULL);
 
-	if (n < 4U) {
+	if (n >= 1U && n < 5U) {
+		n--;
+
 		bool bits[40U];
 		::memset(bits, 0x00U, 40U * sizeof(bool));
 		::memcpy(bits + 4U, m_rawLC + n * 32U, 32U * sizeof(bool));
@@ -171,24 +173,23 @@ unsigned int CDMREmbeddedLC::getData(unsigned char* data, unsigned int n) const
 		data[16U] = bytes[2U];
 		data[17U] = bytes[3U];
 		data[18U] = (data[18U] & 0x0FU) | (bytes[4U] & 0xF0U);
+
+		switch (n) {
+		case 0U:
+			return 1U;
+		case 3U:
+			return 2U;
+		default:
+			return 3U;
+		}
 	} else {
 		data[14U] &= 0xF0U;
 		data[15U]  = 0x00U;
 		data[16U]  = 0x00U;
 		data[17U]  = 0x00U;
 		data[18U] &= 0x0FU;
-	}
 
-	switch (n) {
-		case 0U:
-			return 1U;
-		case 1U:
-		case 2U:
-			return 3U;
-		case 3U:
-			return 2U;
-		default:
-			return 0U;
+		return 0U;
 	}
 }
 
