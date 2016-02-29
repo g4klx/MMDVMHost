@@ -382,63 +382,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			m_rfState = RS_RF_LATE_ENTRY;
 		}
 	} else {
-		if (m_rfState == RS_RF_DATA) {
-			CDMRSlotType slotType;
-			slotType.putData(data + 2U);
-
-			unsigned char dataType = slotType.getDataType();
-
-			if (dataType == DT_RATE_12_DATA || dataType == DT_RATE_34_DATA || dataType == DT_RATE_1_DATA) {
-				// Regenerate the payload if possible
-				if (dataType == DT_RATE_12_DATA) {
-					CBPTC19696 bptc;
-					unsigned char payload[12U];
-					bptc.decode(data + 2U, payload);
-					bptc.encode(payload, data + 2U);
-				}
-
-				// Regenerate the Slot Type
-				slotType.getData(data + 2U);
-
-				m_rfFrames--;
-
-				data[0U] = m_rfFrames == 0U ? TAG_EOT : TAG_DATA;
-				data[1U] = 0x00U;
-
-				if (m_duplex)
-					writeQueueRF(data);
-
-				writeNetworkRF(data, dataType);
-
-				if (m_rfFrames == 0U) {
-					LogMessage("DMR Slot %u, ended RF data transmission", m_slotNo);
-
-					if (m_duplex) {
-						unsigned char bytes[DMR_FRAME_LENGTH_BYTES + 2U];
-
-						CSync::addDMRDataSync(bytes + 2U);
-
-						CDMRSlotType slotType;
-						slotType.setDataType(DT_TERMINATOR_WITH_LC);
-						slotType.setColorCode(m_colorCode);
-						slotType.getData(bytes + 2U);
-
-						m_rfDataHeader.getTerminator(bytes + 2U);
-
-						bytes[0U] = TAG_DATA;
-						bytes[1U] = 0x00U;
-
-						for (unsigned int i = 0U; i < 5U; i++)
-							writeQueueRF(bytes);
-					}
-
-					writeEndRF();
-				}
-			} else {
-				// Unhandled data type
-				LogWarning("DMR Slot %u, unhandled RF data type - 0x%02X", m_slotNo, dataType);
-			}
-		} else if (m_rfState == RS_RF_AUDIO) {
+		if (m_rfState == RS_RF_AUDIO) {
 			CDMREMB emb;
 			emb.putData(data + 2U);
 
