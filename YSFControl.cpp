@@ -97,12 +97,11 @@ bool CYSFControl::writeModem(unsigned char *data)
 
 		unsigned char fi = fich.getFI();
 		unsigned char fn = fich.getFN();
-		unsigned char ft = fich.getFT();
 		unsigned char dt = fich.getDT();
 
-		LogMessage("YSF, EOT, FI=%X BN=%u BT=%u FN=%u FT=%u DT=%X", fich.getFI(), fich.getBN(), fich.getBT(), fich.getFN(), fich.getFT(), fich.getDT());
+		LogMessage("YSF, EOT, FI=%X FN=%u DT=%X", fi, fn, dt);
 
-		m_payload.decode(data + 2U, fi, fn, ft, dt);
+		m_payload.decode(data + 2U, fi, fn, dt);
 		// m_payload.encode(data + 2U);
 
 		m_frames++;
@@ -140,25 +139,20 @@ bool CYSFControl::writeModem(unsigned char *data)
 			bool ret = m_fich.decode(data + 2U);
 			assert(ret);
 
-			LogMessage("YSF, Valid FICH, FI=%X BN=%u BT=%u FN=%u FT=%u DT=%X", m_fich.getFI(), m_fich.getBN(), m_fich.getBT(), m_fich.getFN(), m_fich.getFT(), m_fich.getDT());
+			unsigned char fi = m_fich.getFI();
+			unsigned char fn = m_fich.getFN();
+			unsigned char dt = m_fich.getDT();
+
+			LogMessage("YSF, Valid FICH, FI=%X FN=%u DT=%X", m_fich.getFI(), m_fich.getFN(), m_fich.getDT());
+
+			m_payload.decode(data + 2U, fi, fn, dt);
+			// payload.encode(data + 2U);
 		} else {
 			LogMessage("YSF, invalid FICH");
 
 			// Reconstruct FICH based on the last valid frame
 			m_fich.setFI(0x01U);		// Communication channel
-
-			unsigned char fn = m_fich.getFN();
-			fn = (fn + 1U) % 8U;
-			m_fich.setFN(fn);
 		}
-
-		unsigned char fi = m_fich.getFI();
-		unsigned char fn = m_fich.getFN();
-		unsigned char ft = m_fich.getFT();
-		unsigned char dt = m_fich.getDT();
-
-		m_payload.decode(data + 2U, fi, fn, ft, dt);
-		// payload.encode(data + 2U);
 
 		m_frames++;
 

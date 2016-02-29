@@ -91,7 +91,7 @@ CYSFPayload::~CYSFPayload()
 	delete[] m_downlink;
 }
 
-bool CYSFPayload::decode(const unsigned char* bytes, unsigned char fi, unsigned char fn, unsigned char ft, unsigned char dt)
+bool CYSFPayload::decode(const unsigned char* bytes, unsigned char fi, unsigned char fn, unsigned char dt)
 {
 	assert(bytes != NULL);
 
@@ -103,15 +103,15 @@ bool CYSFPayload::decode(const unsigned char* bytes, unsigned char fi, unsigned 
 
 	// V/D Mode 1
 	if (dt == 0U)
-		return decodeVDMode1(fn, ft);
+		return decodeVDMode1(fn);
 
 	// V/D Mode 2
 	if (dt == 2U)
-		return decodeVDMode2(fn, ft);
+		return decodeVDMode2(fn);
 
 	// Data FR Mode
 	if (dt == 1U)
-		return decodeDataFRMode(fn, ft);
+		return decodeDataFRMode(fn);
 
 	// Voice FR Mode
 	return true;
@@ -126,73 +126,123 @@ void CYSFPayload::encode(unsigned char* bytes)
 
 bool CYSFPayload::decodeHeader()
 {
-	unsigned char dch1[45U];
-	unsigned char dch2[45U];
+	unsigned char dch[45U];
 
 	unsigned char* p1 = m_data;
-	unsigned char* p2 = dch1;
-	unsigned char* p3 = dch2;
+	unsigned char* p2 = dch;
 	for (unsigned int i = 0U; i < 5U; i++) {
 		::memcpy(p2, p1, 9U);
-		p1 += 9U; p2 += 9U;
-		::memcpy(p3, p1, 9U);
-		p1 += 9U; p3 += 9U;
+		p1 += 18U; p2 += 9U;
 	}
 
 	CYSFConvolution conv;
 	conv.start();
 
-	// Deinterleave the FICH and send bits to the Viterbi decoder
 	for (unsigned int i = 0U; i < 180U; i++) {
 		unsigned int n = INTERLEAVE_TABLE_9_20[i];
-		uint8_t s0 = READ_BIT1(dch1, n) ? 1U : 0U;
+		uint8_t s0 = READ_BIT1(dch, n) ? 1U : 0U;
 
 		n++;
-		uint8_t s1 = READ_BIT1(dch1, n) ? 1U : 0U;
+		uint8_t s1 = READ_BIT1(dch, n) ? 1U : 0U;
 
 		conv.decode(s0, s1);
 	}
 
-	unsigned char output1[23U];
-	conv.chainback(output1, 176U);
+	unsigned char output[23U];
+	conv.chainback(output, 180U);
 
-	bool ret1 = CCRC::checkCCITT162(output1, 22U);
-	if (ret1) {
+	bool ret = CCRC::checkCCITT162(output, 22U);
+	if (ret) {
 		for (unsigned int i = 0U; i < 20U; i++)
-			output1[i] ^= WHITENING_DATA[i];
+			output[i] ^= WHITENING_DATA[i];
 
-		CUtils::dump("Header/Trailer, valid DCH1", output1, 20U);
+		CUtils::dump("Header/Trailer, Source", output + 0U, 10U);
+		CUtils::dump("Header/Trailer, Destination", output + 10U, 10U);
+
+		if (m_source == NULL)
+			m_source = new unsigned char[10U];
+		if (m_dest == NULL)
+			m_dest = new unsigned char[10U];
+
+		::memcpy(m_source, output + 0U, 10U);
+		::memcpy(m_dest, output + 10U, 10U);
+
+		for (unsigned int i = 0U; i < 20U; i++)
+			output[i] ^= WHITENING_DATA[i];
+
+		CCRC::addCCITT162(output, 22U);
+		output[22U] = 0x00U;
+
+		unsigned char convolved[45U];
+		conv.encode(output, convolved, 180U);
+
+		unsigned char bytes[45U];
+		unsigned int j = 0U;
+		for (unsigned int i = 0U; i < 180U; i++) {
+			unsigned int n = INTERLEAVE_TABLE_9_20[i];
+
+			bool s0 = READ_BIT1(convolved, j) != 0U;
+			j++;
+
+			bool s1 = READ_BIT1(convolved, j) != 0U;
+			j++;
+
+			WRITE_BIT1(bytes, n, s0);
+
+			n++;
+			WRITE_BIT1(bytes, n, s1);
+		}
+
+		p1 = m_data;
+		p2 = bytes;
+		for (unsigned int i = 0U; i < 5U; i++) {
+			::memcpy(p1, p2, 9U);
+			p1 += 18U; p2 += 9U;
+		}
 	}
 
-	conv.start();
+	::memset(output, ' ', 20U);
+	if (m_downlink != NULL)
+		::memcpy(output + 0U, m_downlink, 10U);
+	if (m_uplink != NULL)
+		::memcpy(output + 10U, m_uplink, 10U);
+	for (unsigned int i = 0U; i < 20U; i++)
+		output[i] ^= WHITENING_DATA[i];
 
-	// Deinterleave the FICH and send bits to the Viterbi decoder
+	CCRC::addCCITT162(output, 22U);
+	output[22U] = 0x00U;
+
+	unsigned char convolved[45U];
+	conv.encode(output, convolved, 180U);
+
+	unsigned char bytes[45U];
+	unsigned int j = 0U;
 	for (unsigned int i = 0U; i < 180U; i++) {
 		unsigned int n = INTERLEAVE_TABLE_9_20[i];
-		uint8_t s0 = READ_BIT1(dch2, n) ? 1U : 0U;
+
+		bool s0 = READ_BIT1(convolved, j) != 0U;
+		j++;
+
+		bool s1 = READ_BIT1(convolved, j) != 0U;
+		j++;
+
+		WRITE_BIT1(bytes, n, s0);
 
 		n++;
-		uint8_t s1 = READ_BIT1(dch2, n) ? 1U : 0U;
-
-		conv.decode(s0, s1);
+		WRITE_BIT1(bytes, n, s1);
 	}
 
-	unsigned char output2[23U];
-	conv.chainback(output2, 176U);
-
-
-	bool ret2 = CCRC::checkCCITT162(output2, 22U);
-	if (ret2) {
-		for (unsigned int i = 0U; i < 20U; i++)
-			output2[i] ^= WHITENING_DATA[i];
-
-		CUtils::dump("Header/Trailer, valid DCH2", output2, 20U);
+	p1 = m_data + 9U;
+	p2 = bytes;
+	for (unsigned int i = 0U; i < 5U; i++) {
+		::memcpy(p1, p2, 9U);
+		p1 += 18U; p2 += 9U;
 	}
 
 	return true;
 }
 
-bool CYSFPayload::decodeVDMode1(unsigned char fn, unsigned char ft)
+bool CYSFPayload::decodeVDMode1(unsigned char fn)
 {
 	unsigned char dch[45U];
 
@@ -206,7 +256,6 @@ bool CYSFPayload::decodeVDMode1(unsigned char fn, unsigned char ft)
 	CYSFConvolution conv;
 	conv.start();
 
-	// Deinterleave the FICH and send bits to the Viterbi decoder
 	for (unsigned int i = 0U; i < 180U; i++) {
 		unsigned int n = INTERLEAVE_TABLE_9_20[i];
 		uint8_t s0 = READ_BIT1(dch, n) ? 1U : 0U;
@@ -218,20 +267,87 @@ bool CYSFPayload::decodeVDMode1(unsigned char fn, unsigned char ft)
 	}
 
 	unsigned char output[23U];
-	conv.chainback(output, 176U);
+	conv.chainback(output, 180U);
 
 	bool ret = CCRC::checkCCITT162(output, 22U);
 	if (ret) {
 		for (unsigned int i = 0U; i < 20U; i++)
 			output[i] ^= WHITENING_DATA[i];
 
-		CUtils::dump("V/D Mode 1, valid DCH", output, 20U);
+		switch (fn) {
+		case 0U:
+			CUtils::dump("V/D Mode 1, Destination", output + 0U, 10U);
+			CUtils::dump("V/D Mode 1, Source", output + 10U, 10U);
+			if (m_dest == NULL)
+				m_dest = new unsigned char[10U];
+			if (m_source == NULL)
+				m_source = new unsigned char[10U];
+			::memcpy(m_dest, output, 10U);
+			::memcpy(m_source, output, 10U);
+			break;
+		case 2U:
+			CUtils::dump("V/D Mode 1, Rem 1+2", output + 0U, 10U);
+			CUtils::dump("V/D Mode 1, Rem 3+4", output + 10U, 10U);
+			break;
+		default:
+			break;
+		}
 	}
 
-	return true;
+	if (fn == 1U) {
+		::memset(output, ' ', 20U);
+
+		if (m_downlink != NULL)
+			::memcpy(output + 0U, m_downlink, 10U);
+
+		if (m_uplink != NULL)
+			::memcpy(output + 10U, m_uplink, 10U);
+
+		ret = true;
+	}
+
+	// Data isn't corrupt so regenerate it
+	if (!ret) {
+		for (unsigned int i = 0U; i < 20U; i++)
+			output[i] ^= WHITENING_DATA[i];
+
+		CCRC::addCCITT162(output, 22U);
+		output[22U] = 0x00U;
+
+		unsigned char convolved[45U];
+		conv.encode(output, convolved, 180U);
+
+		unsigned char bytes[45U];
+		unsigned int j = 0U;
+		for (unsigned int i = 0U; i < 180U; i++) {
+			unsigned int n = INTERLEAVE_TABLE_9_20[i];
+
+			bool s0 = READ_BIT1(convolved, j) != 0U;
+			j++;
+
+			bool s1 = READ_BIT1(convolved, j) != 0U;
+			j++;
+
+			WRITE_BIT1(bytes, n, s0);
+
+			n++;
+			WRITE_BIT1(bytes, n, s1);
+		}
+
+		p1 = m_data;
+		p2 = bytes;
+		for (unsigned int i = 0U; i < 5U; i++) {
+			::memcpy(p1, p2, 9U);
+			p1 += 18U; p2 += 9U;
+		}
+
+		return true;
+	}
+
+	return false;
 }
 
-bool CYSFPayload::decodeVDMode2(unsigned char fn, unsigned char ft)
+bool CYSFPayload::decodeVDMode2(unsigned char fn)
 {
 	unsigned char dch[25U];
 
@@ -245,7 +361,6 @@ bool CYSFPayload::decodeVDMode2(unsigned char fn, unsigned char ft)
 	CYSFConvolution conv;
 	conv.start();
 
-	// Deinterleave the FICH and send bits to the Viterbi decoder
 	for (unsigned int i = 0U; i < 100U; i++) {
 		unsigned int n = INTERLEAVE_TABLE_5_20[i];
 		uint8_t s0 = READ_BIT1(dch, n) ? 1U : 0U;
@@ -288,120 +403,222 @@ bool CYSFPayload::decodeVDMode2(unsigned char fn, unsigned char ft)
 		}
 	}
 
-	if (fn == 2U && m_downlink != NULL) {
-		for (unsigned int i = 0U; i < 10U; i++)
-			output[i] = WHITENING_DATA[i] ^ m_downlink[i];
+	if (fn == 2U) {
+		if (m_downlink != NULL)
+			::memcpy(output, m_downlink, 10U);
+		else
+			::memset(output, ' ', 10U);
 		ret = true;
 	}
 
-	if (fn == 3U && m_uplink != NULL) {
-		for (unsigned int i = 0U; i < 10U; i++)
-			output[i] = WHITENING_DATA[i] ^ m_uplink[i];
+	if (fn == 3U) {
+		if (m_uplink != NULL)
+			::memcpy(output, m_uplink, 10U);
+		else
+			::memset(output, ' ', 10U);
 		ret = true;
 	}
 
-	// Data is corrupt so don't try and regenerate it
-	if (!ret)
-		return false;
+	// Data isn't corrupt so regenerate it
+	if (ret) {
+		for (unsigned int i = 0U; i < 10U; i++)
+			output[i] ^= WHITENING_DATA[i];
 
-	CCRC::addCCITT162(output, 12U);
-	output[12U] = 0x00U;
+		CCRC::addCCITT162(output, 12U);
+		output[12U] = 0x00U;
 
-	unsigned char convolved[25U];
-	conv.encode(output, convolved, 100U);
+		unsigned char convolved[25U];
+		conv.encode(output, convolved, 100U);
 
-	unsigned char bytes[25U];
-	unsigned int j = 0U;
-	for (unsigned int i = 0U; i < 100U; i++) {
-		unsigned int n = INTERLEAVE_TABLE_5_20[i];
+		unsigned char bytes[25U];
+		unsigned int j = 0U;
+		for (unsigned int i = 0U; i < 100U; i++) {
+			unsigned int n = INTERLEAVE_TABLE_5_20[i];
 
-		bool s0 = READ_BIT1(convolved, j) != 0U;
-		j++;
+			bool s0 = READ_BIT1(convolved, j) != 0U;
+			j++;
 
-		bool s1 = READ_BIT1(convolved, j) != 0U;
-		j++;
+			bool s1 = READ_BIT1(convolved, j) != 0U;
+			j++;
 
-		WRITE_BIT1(bytes, n, s0);
+			WRITE_BIT1(bytes, n, s0);
 
-		n++;
-		WRITE_BIT1(bytes, n, s1);
+			n++;
+			WRITE_BIT1(bytes, n, s1);
+		}
+
+		p1 = m_data;
+		p2 = bytes;
+		for (unsigned int i = 0U; i < 5U; i++) {
+			::memcpy(p1, p2, 5U);
+			p1 += 18U; p2 += 5U;
+		}
+
+		return true;
 	}
 
-	p1 = m_data;
-	p2 = bytes;
-	for (unsigned int i = 0U; i < 5U; i++) {
-		::memcpy(p1, p2, 5U);
-		p1 += 18U; p2 += 5U;
-	}
-
-	return true;
+	return false;
 }
 
-bool CYSFPayload::decodeDataFRMode(unsigned char fn, unsigned char ft)
+bool CYSFPayload::decodeDataFRMode(unsigned char fn)
 {
-	unsigned char dch1[45U];
-	unsigned char dch2[45U];
+	unsigned char dch[45U];
 
 	unsigned char* p1 = m_data;
-	unsigned char* p2 = dch1;
-	unsigned char* p3 = dch2;
+	unsigned char* p2 = dch;
 	for (unsigned int i = 0U; i < 5U; i++) {
 		::memcpy(p2, p1, 9U);
-		p1 += 9U; p2 += 9U;
-		::memcpy(p3, p1, 9U);
-		p1 += 9U; p3 += 9U;
+		p1 += 18U; p2 += 9U;
 	}
 
 	CYSFConvolution conv;
 	conv.start();
 
-	// Deinterleave the FICH and send bits to the Viterbi decoder
 	for (unsigned int i = 0U; i < 180U; i++) {
 		unsigned int n = INTERLEAVE_TABLE_9_20[i];
-		uint8_t s0 = READ_BIT1(dch1, n) ? 1U : 0U;
+		uint8_t s0 = READ_BIT1(dch, n) ? 1U : 0U;
 
 		n++;
-		uint8_t s1 = READ_BIT1(dch1, n) ? 1U : 0U;
+		uint8_t s1 = READ_BIT1(dch, n) ? 1U : 0U;
 
 		conv.decode(s0, s1);
 	}
 
-	unsigned char output1[23U];
-	conv.chainback(output1, 176U);
+	unsigned char output[23U];
+	conv.chainback(output, 180U);
 
-	bool ret1 = CCRC::checkCCITT162(output1, 22U);
-	if (ret1) {
+	bool ret = CCRC::checkCCITT162(output, 22U);
+	if (ret) {
 		for (unsigned int i = 0U; i < 20U; i++)
-			output1[i] ^= WHITENING_DATA[i];
+			output[i] ^= WHITENING_DATA[i];
 
-		CUtils::dump("Data FR Mode, valid DCH1", output1, 20U);
+		switch (fn) {
+		case 0U:
+			CUtils::dump("Data FR Mode, Destination", output + 0U, 10U);
+			CUtils::dump("Data FR Mode, Source", output + 10U, 10U);
+			if (m_dest == NULL)
+				m_dest = new unsigned char[10U];
+			if (m_source == NULL)
+				m_source = new unsigned char[10U];
+			::memcpy(m_dest, output, 10U);
+			::memcpy(m_source, output, 10U);
+			break;
+		case 1U:
+			CUtils::dump("Data FR Mode, Rem 1+2", output + 0U, 10U);
+			CUtils::dump("Data FR Mode, Rem 3+4", output + 10U, 10U);
+			break;
+		default:
+			break;
+		}
+
+		for (unsigned int i = 0U; i < 20U; i++)
+			output[i] ^= WHITENING_DATA[i];
+
+		CCRC::addCCITT162(output, 22U);
+		output[22U] = 0x00U;
+
+		unsigned char convolved[45U];
+		conv.encode(output, convolved, 180U);
+
+		unsigned char bytes[45U];
+		unsigned int j = 0U;
+		for (unsigned int i = 0U; i < 180U; i++) {
+			unsigned int n = INTERLEAVE_TABLE_9_20[i];
+
+			bool s0 = READ_BIT1(convolved, j) != 0U;
+			j++;
+
+			bool s1 = READ_BIT1(convolved, j) != 0U;
+			j++;
+
+			WRITE_BIT1(bytes, n, s0);
+
+			n++;
+			WRITE_BIT1(bytes, n, s1);
+		}
+
+		p1 = m_data;
+		p2 = bytes;
+		for (unsigned int i = 0U; i < 5U; i++) {
+			::memcpy(p1, p2, 9U);
+			p1 += 18U; p2 += 9U;
+		}
+	}
+
+	p1 = m_data + 9U;
+	p2 = dch;
+	for (unsigned int i = 0U; i < 5U; i++) {
+		::memcpy(p2, p1, 9U);
+		p1 += 18U; p2 += 9U;
 	}
 
 	conv.start();
 
-	// Deinterleave the FICH and send bits to the Viterbi decoder
 	for (unsigned int i = 0U; i < 180U; i++) {
 		unsigned int n = INTERLEAVE_TABLE_9_20[i];
-		uint8_t s0 = READ_BIT1(dch2, n) ? 1U : 0U;
+		uint8_t s0 = READ_BIT1(dch, n) ? 1U : 0U;
 
 		n++;
-		uint8_t s1 = READ_BIT1(dch2, n) ? 1U : 0U;
+		uint8_t s1 = READ_BIT1(dch, n) ? 1U : 0U;
 
 		conv.decode(s0, s1);
 	}
 
-	unsigned char output2[23U];
-	conv.chainback(output2, 176U);
+	conv.chainback(output, 180U);
 
-	bool ret2 = CCRC::checkCCITT162(output2, 22U);
-	if (ret2) {
-		for (unsigned int i = 0U; i < 20U; i++)
-			output2[i] ^= WHITENING_DATA[i];
+	ret = CCRC::checkCCITT162(output, 22U);
 
-		CUtils::dump("Data FR Mode, valid DCH2", output2, 20U);
+	if (fn == 0U) {
+		::memset(output, ' ', 20U);
+
+		if (m_downlink != NULL)
+			::memcpy(output + 0U, m_downlink, 10U);
+
+		if (m_uplink != NULL)
+			::memcpy(output + 10U, m_uplink, 10U);
+
+		ret = true;
 	}
 
-	return true;
+	// Data isn't corrupt so regenerate it
+	if (ret) {
+		for (unsigned int i = 0U; i < 20U; i++)
+			output[i] ^= WHITENING_DATA[i];
+
+		CCRC::addCCITT162(output, 22U);
+		output[22U] = 0x00U;
+
+		unsigned char convolved[45U];
+		conv.encode(output, convolved, 180U);
+
+		unsigned char bytes[45U];
+		unsigned int j = 0U;
+		for (unsigned int i = 0U; i < 180U; i++) {
+			unsigned int n = INTERLEAVE_TABLE_9_20[i];
+
+			bool s0 = READ_BIT1(convolved, j) != 0U;
+			j++;
+
+			bool s1 = READ_BIT1(convolved, j) != 0U;
+			j++;
+
+			WRITE_BIT1(bytes, n, s0);
+
+			n++;
+			WRITE_BIT1(bytes, n, s1);
+		}
+
+		p1 = m_data + 9U;
+		p2 = bytes;
+		for (unsigned int i = 0U; i < 5U; i++) {
+			::memcpy(p1, p2, 9U);
+			p1 += 18U; p2 += 9U;
+		}
+
+		return true;
+	}
+
+	return false;
 }
 
 void CYSFPayload::setUplink(const std::string& callsign)

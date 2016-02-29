@@ -26,7 +26,7 @@ public:
 	CYSFPayload();
 	~CYSFPayload();
 
-	bool decode(const unsigned char* bytes, unsigned char fi, unsigned char fn, unsigned char ft, unsigned char dt);
+	bool decode(const unsigned char* bytes, unsigned char fi, unsigned char fn, unsigned char dt);
 
 	void encode(unsigned char* bytes);
 
@@ -44,9 +44,9 @@ private:
 	unsigned char* m_dest;
 
 	bool decodeHeader();
-	bool decodeVDMode1(unsigned char fn, unsigned char ft);
-	bool decodeVDMode2(unsigned char fn, unsigned char ft);
-	bool decodeDataFRMode(unsigned char fn, unsigned char ft);
+	bool decodeVDMode1(unsigned char fn);
+	bool decodeVDMode2(unsigned char fn);
+	bool decodeDataFRMode(unsigned char fn);
 };
 
 #endif

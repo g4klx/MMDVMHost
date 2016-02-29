@@ -169,24 +169,9 @@ unsigned char CYSFFICH::getCM() const
 	return (m_fich[0U] >> 2) & 0x03U;
 }
 
-unsigned char CYSFFICH::getBN() const
-{
-	return m_fich[0U] & 0x03U;
-}
-
-unsigned char CYSFFICH::getBT() const
-{
-	return (m_fich[1U] >> 6) & 0x03U;
-}
-
 unsigned char CYSFFICH::getFN() const
 {
 	return (m_fich[1U] >> 3) & 0x07U;
-}
-
-unsigned char CYSFFICH::getFT() const
-{
-	return m_fich[1U] & 0x07U;
 }
 
 unsigned char CYSFFICH::getDT() const
@@ -198,30 +183,6 @@ void CYSFFICH::setFI(unsigned char fi)
 {
 	m_fich[0U] &= 0x3FU;
 	m_fich[0U] |= (fi << 6) & 0xC0U;
-}
-
-void CYSFFICH::setBN(unsigned char bn)
-{
-	m_fich[0U] &= 0xFCU;
-	m_fich[0U] |= bn;
-}
-
-void CYSFFICH::setBT(unsigned char bt)
-{
-	m_fich[1U] &= 0x3FU;
-	m_fich[1U] |= (bt << 6) & 0xC0U;
-}
-
-void CYSFFICH::setFN(unsigned char fn)
-{
-	m_fich[1U] &= 0xE7U;
-	m_fich[1U] |= (fn << 3) & 0x1CU;
-}
-
-void CYSFFICH::setFT(unsigned char ft)
-{
-	m_fich[1U] &= 0xF8U;
-	m_fich[1U] |= ft;
 }
 
 void CYSFFICH::setMR(unsigned char mr)
