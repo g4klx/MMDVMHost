@@ -27,6 +27,7 @@
 
 #include <cstdio>
 #include <cassert>
+#include <cstring>
 
 CDMRDataHeader::CDMRDataHeader() :
 m_data(NULL),
