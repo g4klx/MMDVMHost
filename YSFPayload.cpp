@@ -66,13 +66,20 @@ const unsigned int INTERLEAVE_TABLE_5_20[] = {
 	36U, 76U, 116U, 156U, 196U,
 	38U, 78U, 118U, 158U, 198U};
 
+const unsigned char WHITENING_DATA[] = {0x93U, 0xD7U, 0x51U, 0x21U, 0x9CU, 0x2FU, 0x6CU, 0xD0U, 0xEFU, 0x0FU,
+										0xF8U, 0x3DU, 0xF1U, 0x73U, 0x20U, 0x94U, 0xEDU, 0x1EU, 0x7CU, 0xD8U};
+
 const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U};
 
 #define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
 CYSFPayload::CYSFPayload() :
-m_data(NULL)
+m_data(NULL),
+m_uplink(NULL),
+m_downlink(NULL),
+m_source(NULL),
+m_dest(NULL)
 {
 	m_data = new unsigned char[90U];
 }
@@ -80,6 +87,8 @@ m_data(NULL)
 CYSFPayload::~CYSFPayload()
 {
 	delete[] m_data;
+	delete[] m_uplink;
+	delete[] m_downlink;
 }
 
 bool CYSFPayload::decode(const unsigned char* bytes, unsigned char fi, unsigned char fn, unsigned char ft, unsigned char dt)
@@ -148,8 +157,12 @@ bool CYSFPayload::decodeHeader()
 	conv.chainback(output1, 176U);
 
 	bool ret1 = CCRC::checkCCITT162(output1, 22U);
-	if (ret1)
-		CUtils::dump("Header/Trailer, valid DCH1", output1, 22U);
+	if (ret1) {
+		for (unsigned int i = 0U; i < 20U; i++)
+			output1[i] ^= WHITENING_DATA[i];
+
+		CUtils::dump("Header/Trailer, valid DCH1", output1, 20U);
+	}
 
 	conv.start();
 
@@ -169,8 +182,12 @@ bool CYSFPayload::decodeHeader()
 
 
 	bool ret2 = CCRC::checkCCITT162(output2, 22U);
-	if (ret2)
-		CUtils::dump("Header/Trailer, valid DCH2", output2, 22U);
+	if (ret2) {
+		for (unsigned int i = 0U; i < 20U; i++)
+			output2[i] ^= WHITENING_DATA[i];
+
+		CUtils::dump("Header/Trailer, valid DCH2", output2, 20U);
+	}
 
 	return true;
 }
@@ -204,8 +221,12 @@ bool CYSFPayload::decodeVDMode1(unsigned char fn, unsigned char ft)
 	conv.chainback(output, 176U);
 
 	bool ret = CCRC::checkCCITT162(output, 22U);
-	if (ret)
-		CUtils::dump("V/D Mode 1, valid DCH", output, 22U);
+	if (ret) {
+		for (unsigned int i = 0U; i < 20U; i++)
+			output[i] ^= WHITENING_DATA[i];
+
+		CUtils::dump("V/D Mode 1, valid DCH", output, 20U);
+	}
 
 	return true;
 }
@@ -239,8 +260,79 @@ bool CYSFPayload::decodeVDMode2(unsigned char fn, unsigned char ft)
 	conv.chainback(output, 96U);
 
 	bool ret = CCRC::checkCCITT162(output, 12U);
-	if (ret)
-		CUtils::dump("V/D Mode 2, valid DCH", output, 12U);
+	if (ret) {
+		for (unsigned int i = 0U; i < 10U; i++)
+			output[i] ^= WHITENING_DATA[i];
+
+		switch (fn) {
+		case 0U:
+			CUtils::dump("V/D Mode 2, Destination", output, 10U);
+			if (m_dest == NULL)
+				m_dest = new unsigned char[10U];
+			::memcpy(m_dest, output, 10U);
+			break;
+		case 1U:
+			CUtils::dump("V/D Mode 2, Source", output, 10U);
+			if (m_source == NULL)
+				m_source = new unsigned char[10U];
+			::memcpy(m_source, output, 10U);
+			break;
+		case 4U:
+			CUtils::dump("V/D Mode 2, Rem 1+2", output, 10U);
+			break;
+		case 5U:
+			CUtils::dump("V/D Mode 2, Rem 3+4", output, 10U);
+			break;
+		default:
+			break;
+		}
+	}
+
+	if (fn == 2U && m_downlink != NULL) {
+		for (unsigned int i = 0U; i < 10U; i++)
+			output[i] = WHITENING_DATA[i] ^ m_downlink[i];
+		ret = true;
+	}
+
+	if (fn == 3U && m_uplink != NULL) {
+		for (unsigned int i = 0U; i < 10U; i++)
+			output[i] = WHITENING_DATA[i] ^ m_uplink[i];
+		ret = true;
+	}
+
+	// Data is corrupt so don't try and regenerate it
+	if (!ret)
+		return false;
+
+	CCRC::addCCITT162(output, 12U);
+	output[12U] = 0x00U;
+
+	unsigned char convolved[25U];
+	conv.encode(output, convolved, 100U);
+
+	unsigned char bytes[25U];
+	unsigned int j = 0U;
+	for (unsigned int i = 0U; i < 100U; i++) {
+		unsigned int n = INTERLEAVE_TABLE_5_20[i];
+
+		bool s0 = READ_BIT1(convolved, j) != 0U;
+		j++;
+
+		bool s1 = READ_BIT1(convolved, j) != 0U;
+		j++;
+
+		WRITE_BIT1(bytes, n, s0);
+
+		n++;
+		WRITE_BIT1(bytes, n, s1);
+	}
+
+	p1 = m_data;
+	p2 = bytes;
+	for (unsigned int i = 0U; i < 5U; i++) {
+		::memcpy(p1, p2, 5U);
+		p1 += 18U; p2 += 5U;
+	}
 
 	return true;
 }
@@ -278,8 +370,12 @@ bool CYSFPayload::decodeDataFRMode(unsigned char fn, unsigned char ft)
 	conv.chainback(output1, 176U);
 
 	bool ret1 = CCRC::checkCCITT162(output1, 22U);
-	if (ret1)
-		CUtils::dump("Data FR Mode, valid DCH1", output1, 22U);
+	if (ret1) {
+		for (unsigned int i = 0U; i < 20U; i++)
+			output1[i] ^= WHITENING_DATA[i];
+
+		CUtils::dump("Data FR Mode, valid DCH1", output1, 20U);
+	}
 
 	conv.start();
 
@@ -297,10 +393,65 @@ bool CYSFPayload::decodeDataFRMode(unsigned char fn, unsigned char ft)
 	unsigned char output2[23U];
 	conv.chainback(output2, 176U);
 
-
 	bool ret2 = CCRC::checkCCITT162(output2, 22U);
-	if (ret2)
-		CUtils::dump("Data FR Mode, valid DCH2", output2, 22U);
+	if (ret2) {
+		for (unsigned int i = 0U; i < 20U; i++)
+			output2[i] ^= WHITENING_DATA[i];
+
+		CUtils::dump("Data FR Mode, valid DCH2", output2, 20U);
+	}
+
+	return true;
+}
+
+void CYSFPayload::setUplink(const std::string& callsign)
+{
+	m_uplink = new unsigned char[10U];
+
+	std::string uplink = callsign;
+	uplink.resize(10U, ' ');
+
+	for (unsigned int i = 0U; i < 10U; i++)
+		m_uplink[i] = uplink.at(i);
+}
+
+void CYSFPayload::setDownlink(const std::string& callsign)
+{
+	m_downlink = new unsigned char[10U];
+
+	std::string downlink = callsign;
+	downlink.resize(10U, ' ');
+
+	for (unsigned int i = 0U; i < 10U; i++)
+		m_downlink[i] = downlink.at(i);
+}
+
+bool CYSFPayload::getSource(unsigned char* callsign)
+{
+	assert(callsign != NULL);
+
+	if (m_source == NULL)
+		return false;
+
+	::memcpy(callsign, m_source, 10U);
+
+	delete[] m_source;
+	m_source = NULL;
+
+	return true;
+}
+
+bool CYSFPayload::getDest(unsigned char* callsign)
+{
+	assert(callsign != NULL);
+
+	if (m_dest == NULL)
+		return false;
+
+	::memcpy(callsign, m_dest, 10U);
+
+	delete[] m_dest;
+	m_dest = NULL;
 
 	return true;
 }

@@ -20,6 +20,7 @@
 #define	YSFControl_H
 
 #include "YSFDefines.h"
+#include "YSFPayload.h"
 #include "RingBuffer.h"
 #include "YSFParrot.h"
 #include "Display.h"
@@ -49,6 +50,7 @@ private:
 	CTimer                     m_timeoutTimer;
 	unsigned int               m_frames;
 	CYSFFICH                   m_fich;
+	CYSFPayload                m_payload;
 	CYSFParrot*                m_parrot;
 	FILE*                      m_fp;
 

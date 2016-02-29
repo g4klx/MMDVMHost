@@ -12,7 +12,6 @@
  */
 
 #include "YSFControl.h"
-#include "YSFPayload.h"
 #include "Utils.h"
 #include "Sync.h"
 #include "Log.h"
@@ -37,6 +36,7 @@ m_state(RS_RF_LISTENING),
 m_timeoutTimer(1000U, timeout),
 m_frames(0U),
 m_fich(),
+m_payload(),
 m_parrot(NULL),
 m_fp(NULL)
 {
@@ -44,6 +44,9 @@ m_fp(NULL)
 
 	if (parrot)
 		m_parrot = new CYSFParrot(timeout);
+
+	m_payload.setUplink(callsign);
+	m_payload.setDownlink(callsign);
 }
 
 CYSFControl::~CYSFControl()
@@ -99,9 +102,8 @@ bool CYSFControl::writeModem(unsigned char *data)
 
 		LogMessage("YSF, EOT, FI=%X BN=%u BT=%u FN=%u FT=%u DT=%X", fich.getFI(), fich.getBN(), fich.getBT(), fich.getFN(), fich.getFT(), fich.getDT());
 
-		CYSFPayload payload;
-		payload.decode(data + 2U, fi, fn, ft, dt);
-		payload.encode(data + 2U);
+		m_payload.decode(data + 2U, fi, fn, ft, dt);
+		// m_payload.encode(data + 2U);
 
 		m_frames++;
 
@@ -146,18 +148,8 @@ bool CYSFControl::writeModem(unsigned char *data)
 			m_fich.setFI(0x01U);		// Communication channel
 
 			unsigned char fn = m_fich.getFN();
-			unsigned char ft = m_fich.getFT();
-
-			fn++;
-			if (fn >= 8U) {
-				fn = 0U;
-				ft++;
-				if (ft >= 8U)
-					ft = 0U;
-			}
-
+			fn = (fn + 1U) % 8U;
 			m_fich.setFN(fn);
-			m_fich.setFT(ft);
 		}
 
 		unsigned char fi = m_fich.getFI();
@@ -165,8 +157,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 		unsigned char ft = m_fich.getFT();
 		unsigned char dt = m_fich.getDT();
 
-		CYSFPayload payload;
-		payload.decode(data + 2U, fi, fn, ft, dt);
+		m_payload.decode(data + 2U, fi, fn, ft, dt);
 		// payload.encode(data + 2U);
 
 		m_frames++;

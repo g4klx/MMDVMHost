@@ -19,6 +19,8 @@
 #if !defined(YSFPayload_H)
 #define	YSFPayload_H
 
+#include <string>
+
 class CYSFPayload {
 public:
 	CYSFPayload();
@@ -28,8 +30,18 @@ public:
 
 	void encode(unsigned char* bytes);
 
+	bool getSource(unsigned char* callsign);
+	bool getDest(unsigned char* callsign);
+
+	void setUplink(const std::string& callsign);
+	void setDownlink(const std::string& callsign);
+
 private:
 	unsigned char* m_data;
+	unsigned char* m_uplink;
+	unsigned char* m_downlink;
+	unsigned char* m_source;
+	unsigned char* m_dest;
 
 	bool decodeHeader();
 	bool decodeVDMode1(unsigned char fn, unsigned char ft);
