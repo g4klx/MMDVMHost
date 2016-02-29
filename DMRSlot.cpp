@@ -383,6 +383,8 @@ void CDMRSlot::writeModem(unsigned char *data)
 		}
 	} else {
 		if (m_rfState == RS_RF_AUDIO) {
+			m_rfN = data[1U] & 0x0FU;
+
 			CDMREMB emb;
 			emb.putData(data + 2U);
 
@@ -393,8 +395,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			unsigned char fid = m_rfLC->getFID();
 			if (fid == FID_ETSI || fid == FID_DMRA) {
 				unsigned int errors = m_fec.regenerateDMR(data + 2U);
-				unsigned char n = data[1U] & 0x0FU;
-				LogDebug("DMR Slot %u, audio sequence no. %u, errs: %u/141", m_slotNo, n, errors);
+				LogDebug("DMR Slot %u, audio sequence no. %u, errs: %u/141", m_slotNo, m_rfN, errors);
 				m_rfErrs += errors;
 			}
 
@@ -448,6 +449,8 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 				writeNetworkRF(start, DT_VOICE_LC_HEADER);
 
+				m_rfN = data[1U] & 0x0FU;
+
 				// Regenerate the EMB
 				emb.getData(data + 2U);
 
@@ -455,8 +458,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 				unsigned char fid = m_rfLC->getFID();
 				if (fid == FID_ETSI || fid == FID_DMRA) {
 					unsigned int errors = m_fec.regenerateDMR(data + 2U);
-					unsigned char n = data[1U] & 0x0FU;
-					LogDebug("DMR Slot %u, audio sequence no. %u, errs: %u/141", m_slotNo, n, errors);
+					LogDebug("DMR Slot %u, audio sequence no. %u, errs: %u/141", m_slotNo, m_rfN, errors);
 					m_rfErrs += errors;
 				}
 
