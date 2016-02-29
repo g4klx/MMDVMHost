@@ -42,7 +42,7 @@ public:
   virtual void clearDMR(unsigned int slotNo);
 
   virtual void setFusion();
-  virtual void writeFusion(const std::string& callsign);
+  virtual void writeFusion(const char* source, const char* dest);
   virtual void clearFusion();
 
   virtual void close();

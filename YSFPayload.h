@@ -30,11 +30,13 @@ public:
 
 	void encode(unsigned char* bytes);
 
-	bool getSource(unsigned char* callsign);
-	bool getDest(unsigned char* callsign);
+	unsigned char* getSource();
+	unsigned char* getDest();
 
 	void setUplink(const std::string& callsign);
 	void setDownlink(const std::string& callsign);
+
+	void reset();
 
 private:
 	unsigned char* m_data;

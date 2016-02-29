@@ -50,6 +50,8 @@ private:
 	CTimer                     m_timeoutTimer;
 	unsigned int               m_frames;
 	CYSFFICH                   m_fich;
+	unsigned char*             m_source;
+	unsigned char*             m_dest;
 	CYSFPayload                m_payload;
 	CYSFParrot*                m_parrot;
 	FILE*                      m_fp;

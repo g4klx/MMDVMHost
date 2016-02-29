@@ -104,7 +104,7 @@ void CTFTSerial::writeDStar(const char* my1, const char* my2, const char* your)
 	assert(my2 != NULL);
 	assert(your != NULL);
 
-	char text[20U];
+	char text[30U];
 	::sprintf(text, "%8.8s/%4.4s -> %8.8s", my1, my2, your);
 
 	gotoPosText(0U, 8U);
@@ -146,12 +146,12 @@ void CTFTSerial::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, u
 	assert(type != NULL);
 
 	if (slotNo == 1U) {
-		char text[20U];
+		char text[30U];
 		::sprintf(text, "1: %s %u -> %s%u", type, srcId, group ? "TG" : "", dstId);
 		gotoPosText(0U, 8U);
 		displayText(text);
 	} else {
-		char text[20U];
+		char text[30U];
 		::sprintf(text, "2: %s %u -> %s%u", type, srcId, group ? "TG" : "", dstId);
 		gotoPosText(0U, 9U);
 		displayText(text);
@@ -184,10 +184,13 @@ void CTFTSerial::setFusion()
 	displayText("Listening");
 }
 
-void CTFTSerial::writeFusion(const std::string& callsign)
+void CTFTSerial::writeFusion(const char* source, const char* dest)
 {
-	char text[20U];
-	::sprintf(text, "%s", callsign.c_str());
+	assert(source != NULL);
+	assert(dest != NULL);
+
+	char text[30U];
+	::sprintf(text, "%s -> %s", source, dest);
 
 	gotoPosText(0U, 8U);
 	displayText(text);

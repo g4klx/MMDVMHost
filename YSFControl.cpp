@@ -36,6 +36,8 @@ m_state(RS_RF_LISTENING),
 m_timeoutTimer(1000U, timeout),
 m_frames(0U),
 m_fich(),
+m_source(NULL),
+m_dest(NULL),
 m_payload(),
 m_parrot(NULL),
 m_fp(NULL)
@@ -78,9 +80,8 @@ bool CYSFControl::writeModem(unsigned char *data)
 	if (type == TAG_DATA && valid && m_state == RS_RF_LISTENING) {
 		m_frames = 0U;
 		m_timeoutTimer.start();
-		m_display->writeFusion("XXXXXX");
+		m_payload.reset();
 		m_state = RS_RF_AUDIO;
-		LogMessage("YSF, received RF header");
 #if defined(DUMP_YSF)
 		openFile();
 #endif
@@ -92,23 +93,22 @@ bool CYSFControl::writeModem(unsigned char *data)
 	if (type == TAG_EOT) {
 		CSync::addYSFSync(data + 2U);
 
-		CYSFFICH fich;
-		fich.decode(data + 2U);
+		m_fich.decode(data + 2U);
 
-		unsigned char fi = fich.getFI();
-		unsigned char fn = fich.getFN();
-		unsigned char dt = fich.getDT();
+		unsigned char fi = m_fich.getFI();
+		unsigned char fn = m_fich.getFN();
+		unsigned char dt = m_fich.getDT();
 
 		LogMessage("YSF, EOT, FI=%X FN=%u DT=%X", fi, fn, dt);
 
 		m_payload.decode(data + 2U, fi, fn, dt);
-		// m_payload.encode(data + 2U);
+		// m_payload.encode(data + 2U);			XXX
 
 		m_frames++;
 
 		if (m_duplex) {
-			fich.setMR(YSF_MR_BUSY);
-			fich.encode(data + 2U);
+			m_fich.setMR(YSF_MR_BUSY);
+			m_fich.encode(data + 2U);
 
 			data[0U] = TAG_EOT;
 			data[1U] = 0x00U;
@@ -116,8 +116,8 @@ bool CYSFControl::writeModem(unsigned char *data)
 		}
 
 		if (m_parrot != NULL) {
-			fich.setMR(YSF_MR_NOT_BUSY);
-			fich.encode(data + 2U);
+			m_fich.setMR(YSF_MR_NOT_BUSY);
+			m_fich.encode(data + 2U);
 
 			data[0U] = TAG_EOT;
 			data[1U] = 0x00U;
@@ -140,13 +140,42 @@ bool CYSFControl::writeModem(unsigned char *data)
 			assert(ret);
 
 			unsigned char fi = m_fich.getFI();
+			unsigned char cm = m_fich.getCM();
 			unsigned char fn = m_fich.getFN();
 			unsigned char dt = m_fich.getDT();
 
 			LogMessage("YSF, Valid FICH, FI=%X FN=%u DT=%X", m_fich.getFI(), m_fich.getFN(), m_fich.getDT());
 
 			m_payload.decode(data + 2U, fi, fn, dt);
-			// payload.encode(data + 2U);
+			// payload.encode(data + 2U);			XXX
+
+			bool change = false;
+
+			if (cm == 0x00U && m_dest == NULL) {
+				m_dest = (unsigned char*)"CQCQCQ";
+				change = true;
+			}
+
+			if (m_source == NULL) {
+				m_source = m_payload.getSource();
+				if (m_source != NULL)
+					change = true;
+			}
+
+			if (m_dest == NULL) {
+				m_dest = m_payload.getDest();
+				if (m_dest != NULL)
+					change = true;
+			}
+
+			if (change) {
+				if (m_source != NULL && m_dest != NULL)
+					m_display->writeFusion((char*)m_source, (char*)m_dest);
+				if (m_source != NULL && m_dest == NULL)
+					m_display->writeFusion((char*)m_source, "??????");
+				if (m_source == NULL && m_dest != NULL)
+					m_display->writeFusion("??????", (char*)m_dest);
+			}
 		} else {
 			LogMessage("YSF, invalid FICH");
 
@@ -201,7 +230,13 @@ void CYSFControl::writeEndOfTransmission()
 
 	m_timeoutTimer.stop();
 
+	m_payload.reset();
+
 	m_display->clearFusion();
+
+	// These variables are free'd by YSFPayload
+	m_source = NULL;
+	m_dest = NULL;
 
 #if defined(DUMP_YSF)
 	closeFile();

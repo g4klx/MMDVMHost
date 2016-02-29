@@ -89,6 +89,8 @@ CYSFPayload::~CYSFPayload()
 	delete[] m_data;
 	delete[] m_uplink;
 	delete[] m_downlink;
+	delete[] m_source;
+	delete[] m_dest;
 }
 
 bool CYSFPayload::decode(const unsigned char* bytes, unsigned char fi, unsigned char fn, unsigned char dt)
@@ -159,13 +161,15 @@ bool CYSFPayload::decodeHeader()
 		CUtils::dump("Header/Trailer, Source", output + 0U, 10U);
 		CUtils::dump("Header/Trailer, Destination", output + 10U, 10U);
 
-		if (m_source == NULL)
+		if (m_source == NULL) {
 			m_source = new unsigned char[10U];
-		if (m_dest == NULL)
-			m_dest = new unsigned char[10U];
+			::memcpy(m_source, output + 0U, 10U);
+		}
 
-		::memcpy(m_source, output + 0U, 10U);
-		::memcpy(m_dest, output + 10U, 10U);
+		if (m_dest == NULL) {
+			m_dest = new unsigned char[10U];
+			::memcpy(m_dest, output + 10U, 10U);
+		}
 
 		for (unsigned int i = 0U; i < 20U; i++)
 			output[i] ^= WHITENING_DATA[i];
@@ -278,17 +282,24 @@ bool CYSFPayload::decodeVDMode1(unsigned char fn)
 		case 0U:
 			CUtils::dump("V/D Mode 1, Destination", output + 0U, 10U);
 			CUtils::dump("V/D Mode 1, Source", output + 10U, 10U);
-			if (m_dest == NULL)
+
+			if (m_dest == NULL) {
 				m_dest = new unsigned char[10U];
-			if (m_source == NULL)
+				::memcpy(m_dest, output + 0U, 10U);
+			}
+
+			if (m_source == NULL) {
 				m_source = new unsigned char[10U];
-			::memcpy(m_dest, output, 10U);
-			::memcpy(m_source, output, 10U);
+				::memcpy(m_source, output + 10U, 10U);
+			}
+
 			break;
+
 		case 2U:
 			CUtils::dump("V/D Mode 1, Rem 1+2", output + 0U, 10U);
 			CUtils::dump("V/D Mode 1, Rem 3+4", output + 10U, 10U);
 			break;
+
 		default:
 			break;
 		}
@@ -382,15 +393,17 @@ bool CYSFPayload::decodeVDMode2(unsigned char fn)
 		switch (fn) {
 		case 0U:
 			CUtils::dump("V/D Mode 2, Destination", output, 10U);
-			if (m_dest == NULL)
+			if (m_dest == NULL) {
 				m_dest = new unsigned char[10U];
-			::memcpy(m_dest, output, 10U);
+				::memcpy(m_dest, output, 10U);
+			}
 			break;
 		case 1U:
 			CUtils::dump("V/D Mode 2, Source", output, 10U);
-			if (m_source == NULL)
+			if (m_source == NULL) {
 				m_source = new unsigned char[10U];
-			::memcpy(m_source, output, 10U);
+				::memcpy(m_source, output, 10U);
+			}
 			break;
 		case 4U:
 			CUtils::dump("V/D Mode 2, Rem 1+2", output, 10U);
@@ -496,13 +509,19 @@ bool CYSFPayload::decodeDataFRMode(unsigned char fn)
 		case 0U:
 			CUtils::dump("Data FR Mode, Destination", output + 0U, 10U);
 			CUtils::dump("Data FR Mode, Source", output + 10U, 10U);
-			if (m_dest == NULL)
+
+			if (m_dest == NULL) {
 				m_dest = new unsigned char[10U];
-			if (m_source == NULL)
+				::memcpy(m_dest, output + 0U, 10U);
+			}
+
+			if (m_source == NULL) {
 				m_source = new unsigned char[10U];
-			::memcpy(m_dest, output, 10U);
-			::memcpy(m_source, output, 10U);
+				::memcpy(m_source, output + 10U, 10U);
+			}
+
 			break;
+
 		case 1U:
 			CUtils::dump("Data FR Mode, Rem 1+2", output + 0U, 10U);
 			CUtils::dump("Data FR Mode, Rem 3+4", output + 10U, 10U);
@@ -643,32 +662,21 @@ void CYSFPayload::setDownlink(const std::string& callsign)
 		m_downlink[i] = downlink.at(i);
 }
 
-bool CYSFPayload::getSource(unsigned char* callsign)
+unsigned char* CYSFPayload::getSource()
 {
-	assert(callsign != NULL);
-
-	if (m_source == NULL)
-		return false;
-
-	::memcpy(callsign, m_source, 10U);
-
-	delete[] m_source;
-	m_source = NULL;
-
-	return true;
+	return m_source;
 }
 
-bool CYSFPayload::getDest(unsigned char* callsign)
+unsigned char* CYSFPayload::getDest()
 {
-	assert(callsign != NULL);
+	return m_dest;
+}
 
-	if (m_dest == NULL)
-		return false;
-
-	::memcpy(callsign, m_dest, 10U);
-
+void CYSFPayload::reset()
+{
+	delete[] m_source;
 	delete[] m_dest;
-	m_dest = NULL;
 
-	return true;
+	m_source = NULL;
+	m_dest = NULL;
 }

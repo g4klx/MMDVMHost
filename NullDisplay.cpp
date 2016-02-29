@@ -63,7 +63,7 @@ void CNullDisplay::setFusion()
 {
 }
 
-void CNullDisplay::writeFusion(const std::string& callsign)
+void CNullDisplay::writeFusion(const char* source, const char* dest)
 {
 }
 
