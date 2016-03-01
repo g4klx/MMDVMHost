@@ -587,111 +587,43 @@ unsigned int CAMBEFEC::regenerateYSF1(unsigned char* bytes) const
 {
 	assert(bytes != NULL);
 
-	unsigned int a1 = 0U, a2 = 0U, a3 = 0U, a4 = 0U, a5 = 0U;
-	unsigned int b1 = 0U, b2 = 0U, b3 = 0U, b4 = 0U, b5 = 0U;
-	unsigned int c1 = 0U, c2 = 0U, c3 = 0U, c4 = 0U, c5 = 0U;
+	unsigned int errors = 0U;
+	unsigned int offset = 72U;
+	for (unsigned int j = 0U; j < 5U; j++, offset += 144U) {
+		unsigned int a = 0U;
+		unsigned int b = 0U;
+		unsigned int c = 0U;
 
-	unsigned int MASK = 0x800000U;
-	for (unsigned int i = 0U; i < 24U; i++) {
-		unsigned int a1Pos = DMR_A_TABLE[i] + 72U;
-		unsigned int b1Pos = DMR_B_TABLE[i] + 72U;
-		unsigned int c1Pos = DMR_C_TABLE[i] + 72U;
+		unsigned int MASK = 0x800000U;
+		for (unsigned int i = 0U; i < 24U; i++) {
+			unsigned int aPos = DMR_A_TABLE[i] + offset;
+			unsigned int bPos = DMR_B_TABLE[i] + offset;
+			unsigned int cPos = DMR_C_TABLE[i] + offset;
 
-		unsigned int a2Pos = a1Pos + 144U;
-		unsigned int b2Pos = b1Pos + 144U;
-		unsigned int c2Pos = c1Pos + 144U;
+			if (READ_BIT(bytes, aPos))
+				a |= MASK;
+			if (READ_BIT(bytes, bPos))
+				b |= MASK;
+			if (READ_BIT(bytes, cPos))
+				c |= MASK;
 
-		unsigned int a3Pos = a2Pos + 144U;
-		unsigned int b3Pos = b2Pos + 144U;
-		unsigned int c3Pos = c2Pos + 144U;
+			MASK >>= 1;
+		}
 
-		unsigned int a4Pos = a3Pos + 144U;
-		unsigned int b4Pos = b3Pos + 144U;
-		unsigned int c4Pos = c3Pos + 144U;
+		errors += regenerate(a, b, c, true);
 
-		unsigned int a5Pos = a4Pos + 144U;
-		unsigned int b5Pos = b4Pos + 144U;
-		unsigned int c5Pos = c4Pos + 144U;
+		MASK = 0x800000U;
+		for (unsigned int i = 0U; i < 24U; i++) {
+			unsigned int aPos = DMR_A_TABLE[i] + offset;
+			unsigned int bPos = DMR_B_TABLE[i] + offset;
+			unsigned int cPos = DMR_C_TABLE[i] + offset;
 
-		if (READ_BIT(bytes, a1Pos))
-			a1 |= MASK;
-		if (READ_BIT(bytes, a2Pos))
-			a2 |= MASK;
-		if (READ_BIT(bytes, a3Pos))
-			a3 |= MASK;
-		if (READ_BIT(bytes, a4Pos))
-			a4 |= MASK;
-		if (READ_BIT(bytes, a5Pos))
-			a5 |= MASK;
-		if (READ_BIT(bytes, b1Pos))
-			b1 |= MASK;
-		if (READ_BIT(bytes, b2Pos))
-			b2 |= MASK;
-		if (READ_BIT(bytes, b3Pos))
-			b3 |= MASK;
-		if (READ_BIT(bytes, b4Pos))
-			b4 |= MASK;
-		if (READ_BIT(bytes, b5Pos))
-			b5 |= MASK;
-		if (READ_BIT(bytes, c1Pos))
-			c1 |= MASK;
-		if (READ_BIT(bytes, c2Pos))
-			c2 |= MASK;
-		if (READ_BIT(bytes, c3Pos))
-			c3 |= MASK;
-		if (READ_BIT(bytes, c4Pos))
-			c4 |= MASK;
-		if (READ_BIT(bytes, c5Pos))
-			c5 |= MASK;
+			WRITE_BIT(bytes, aPos, a & MASK);
+			WRITE_BIT(bytes, bPos, b & MASK);
+			WRITE_BIT(bytes, cPos, c & MASK);
 
-		MASK >>= 1;
-	}
-
-	unsigned int errors = regenerate(a1, b1, c1, true);
-	errors += regenerate(a2, b2, c2, true);
-	errors += regenerate(a3, b3, c3, true);
-	errors += regenerate(a4, b4, c4, true);
-	errors += regenerate(a5, b5, c5, true);
-
-	MASK = 0x800000U;
-	for (unsigned int i = 0U; i < 24U; i++) {
-		unsigned int a1Pos = DMR_A_TABLE[i] + 72U;
-		unsigned int b1Pos = DMR_B_TABLE[i] + 72U;
-		unsigned int c1Pos = DMR_C_TABLE[i] + 72U;
-
-		unsigned int a2Pos = a1Pos + 144U;
-		unsigned int b2Pos = b1Pos + 144U;
-		unsigned int c2Pos = c1Pos + 144U;
-
-		unsigned int a3Pos = a2Pos + 144U;
-		unsigned int b3Pos = b2Pos + 144U;
-		unsigned int c3Pos = c2Pos + 144U;
-
-		unsigned int a4Pos = a3Pos + 144U;
-		unsigned int b4Pos = b3Pos + 144U;
-		unsigned int c4Pos = c3Pos + 144U;
-
-		unsigned int a5Pos = a4Pos + 144U;
-		unsigned int b5Pos = b4Pos + 144U;
-		unsigned int c5Pos = c4Pos + 144U;
-
-		WRITE_BIT(bytes, a1Pos, a1 & MASK);
-		WRITE_BIT(bytes, a2Pos, a2 & MASK);
-		WRITE_BIT(bytes, a3Pos, a3 & MASK);
-		WRITE_BIT(bytes, a4Pos, a4 & MASK);
-		WRITE_BIT(bytes, a5Pos, a5 & MASK);
-		WRITE_BIT(bytes, b1Pos, b1 & MASK);
-		WRITE_BIT(bytes, b2Pos, b2 & MASK);
-		WRITE_BIT(bytes, b3Pos, b3 & MASK);
-		WRITE_BIT(bytes, b4Pos, b4 & MASK);
-		WRITE_BIT(bytes, b5Pos, b5 & MASK);
-		WRITE_BIT(bytes, c1Pos, c1 & MASK);
-		WRITE_BIT(bytes, c2Pos, c2 & MASK);
-		WRITE_BIT(bytes, c3Pos, c3 & MASK);
-		WRITE_BIT(bytes, c4Pos, c4 & MASK);
-		WRITE_BIT(bytes, c5Pos, c5 & MASK);
-
-		MASK >>= 1;
+			MASK >>= 1;
+		}
 	}
 
 	return errors;
