@@ -190,7 +190,7 @@ void CTFTSerial::writeFusion(const char* source, const char* dest)
 	assert(dest != NULL);
 
 	char text[30U];
-	::sprintf(text, "%s -> %s", source, dest);
+	::sprintf(text, "%10.10s -> %10.10s", source, dest);
 
 	gotoPosText(0U, 8U);
 	displayText(text);

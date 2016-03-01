@@ -152,7 +152,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 			bool change = false;
 
 			if (cm == 0x00U && m_dest == NULL) {
-				m_dest = (unsigned char*)"CQCQCQ";
+				m_dest = (unsigned char*)"CQCQCQ    ";
 				change = true;
 			}
 
@@ -169,16 +169,20 @@ bool CYSFControl::writeModem(unsigned char *data)
 			}
 
 			if (change) {
-				if (m_source != NULL && m_dest != NULL)
+				if (m_source != NULL && m_dest != NULL) {
 					m_display->writeFusion((char*)m_source, (char*)m_dest);
-				if (m_source != NULL && m_dest == NULL)
-					m_display->writeFusion((char*)m_source, "??????");
-				if (m_source == NULL && m_dest != NULL)
-					m_display->writeFusion("??????", (char*)m_dest);
+					LogMessage("YSF, received transmission from %10.10s to %10.10s", m_source, m_dest);
+				}
+				if (m_source != NULL && m_dest == NULL) {
+					m_display->writeFusion((char*)m_source, "??????????");
+					LogMessage("YSF, received transmission from %10.10s to ??????????", m_source);
+				}
+				if (m_source == NULL && m_dest != NULL) {
+					m_display->writeFusion("??????????", (char*)m_dest);
+					LogMessage("YSF, received transmission from ?????????? to %10.10s", m_dest);
+				}
 			}
 		} else {
-			LogMessage("YSF, invalid FICH");
-
 			// Reconstruct FICH based on the last valid frame
 			m_fich.setFI(0x01U);		// Communication channel
 		}
