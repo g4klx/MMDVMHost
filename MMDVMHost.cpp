@@ -528,7 +528,7 @@ void CMMDVMHost::createDisplay()
 		unsigned int brightness = m_conf.getTFTSerialBrightness();
 
 		LogInfo("    Port: %s", port.c_str());
-		LogInfo("    Brightness: %s", brightness);
+		LogInfo("    Brightness: %u", brightness);
 
 		m_display = new CTFTSerial(port, brightness);
 	} else {
