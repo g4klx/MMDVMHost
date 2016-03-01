@@ -1307,11 +1307,10 @@ void CDMRSlot::insertSilence(unsigned int count)
 		if (n == 0U) {
 			CSync::addDMRAudioSync(data + 2U);
 		} else {
-			// Set the Embedded LC to 0x00
-			::memset(data + 2U + 13U, 0x00U, 5U);
+			unsigned char lcss = m_netEmbeddedLC.getData(data + 2U, n);
 
-			// Color Code will have been set earlier
-			m_lastEMB.setLCSS(0U);
+			m_lastEMB.setColorCode(m_colorCode);
+			m_lastEMB.setLCSS(lcss);
 			m_lastEMB.getData(data + 2U);
 		}
 
