@@ -19,6 +19,8 @@
 #if !defined(YSFPayload_H)
 #define	YSFPayload_H
 
+#include "AMBEFEC.h"
+
 #include <string>
 
 class CYSFPayload {
@@ -26,7 +28,7 @@ public:
 	CYSFPayload();
 	~CYSFPayload();
 
-	bool decode(const unsigned char* bytes, unsigned char fi, unsigned char fn, unsigned char dt);
+	void decode(const unsigned char* bytes, unsigned char fi, unsigned char fn, unsigned char dt);
 
 	void encode(unsigned char* bytes);
 
@@ -44,11 +46,12 @@ private:
 	unsigned char* m_downlink;
 	unsigned char* m_source;
 	unsigned char* m_dest;
+	CAMBEFEC       m_fec;
 
-	bool decodeHeader();
-	bool decodeVDMode1(unsigned char fn);
-	bool decodeVDMode2(unsigned char fn);
-	bool decodeDataFRMode(unsigned char fn);
+	void decodeHeader();
+	void decodeVDMode1(unsigned char fn);
+	void decodeVDMode2(unsigned char fn);
+	void decodeDataFRMode(unsigned char fn);
 };
 
 #endif

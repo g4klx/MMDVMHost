@@ -79,7 +79,8 @@ m_data(NULL),
 m_uplink(NULL),
 m_downlink(NULL),
 m_source(NULL),
-m_dest(NULL)
+m_dest(NULL),
+m_fec()
 {
 	m_data = new unsigned char[90U];
 }
@@ -93,30 +94,37 @@ CYSFPayload::~CYSFPayload()
 	delete[] m_dest;
 }
 
-bool CYSFPayload::decode(const unsigned char* bytes, unsigned char fi, unsigned char fn, unsigned char dt)
+void CYSFPayload::decode(const unsigned char* bytes, unsigned char fi, unsigned char fn, unsigned char dt)
 {
 	assert(bytes != NULL);
 
 	::memcpy(m_data, bytes + YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES, 90U);
 
 	// Header and trailer
-	if (fi == 0U || fi == 2U)
-		return decodeHeader();
+	if (fi == 0U || fi == 2U) {
+		decodeHeader();
+		return;
+	}
 
 	// V/D Mode 1
-	if (dt == 0U)
-		return decodeVDMode1(fn);
+	if (dt == 0U) {
+		decodeVDMode1(fn);
+		return;
+	}
 
 	// V/D Mode 2
-	if (dt == 2U)
-		return decodeVDMode2(fn);
+	if (dt == 2U) {
+		decodeVDMode2(fn);
+		return;
+	}
 
 	// Data FR Mode
-	if (dt == 1U)
-		return decodeDataFRMode(fn);
+	if (dt == 1U) {
+		decodeDataFRMode(fn);
+		return;
+	}
 
 	// Voice FR Mode
-	return true;
 }
 
 void CYSFPayload::encode(unsigned char* bytes)
@@ -126,7 +134,7 @@ void CYSFPayload::encode(unsigned char* bytes)
 	::memcpy(bytes + YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES, m_data, 90U);
 }
 
-bool CYSFPayload::decodeHeader()
+void CYSFPayload::decodeHeader()
 {
 	unsigned char dch[45U];
 
@@ -242,12 +250,20 @@ bool CYSFPayload::decodeHeader()
 		::memcpy(p1, p2, 9U);
 		p1 += 18U; p2 += 9U;
 	}
-
-	return true;
 }
 
-bool CYSFPayload::decodeVDMode1(unsigned char fn)
+void CYSFPayload::decodeVDMode1(unsigned char fn)
 {
+	// Regenerate the AMBE FEC
+	unsigned int errors = 0U;
+	unsigned char* p = m_data + 9U;
+	for (unsigned int i = 0U; i < 5U; i++) {
+		errors += m_fec.regenerateDMR(p);
+		p += 9U;
+	}
+
+	LogMessage("YSF, V/D Mode 1, AMBE FEC %u/235 (%.1f%%)", errors, float(errors) / 235.0F);
+
 	unsigned char dch[45U];
 
 	unsigned char* p1 = m_data;
@@ -351,14 +367,10 @@ bool CYSFPayload::decodeVDMode1(unsigned char fn)
 			::memcpy(p1, p2, 9U);
 			p1 += 18U; p2 += 9U;
 		}
-
-		return true;
 	}
-
-	return false;
 }
 
-bool CYSFPayload::decodeVDMode2(unsigned char fn)
+void CYSFPayload::decodeVDMode2(unsigned char fn)
 {
 	unsigned char dch[25U];
 
@@ -466,14 +478,10 @@ bool CYSFPayload::decodeVDMode2(unsigned char fn)
 			::memcpy(p1, p2, 5U);
 			p1 += 18U; p2 += 5U;
 		}
-
-		return true;
 	}
-
-	return false;
 }
 
-bool CYSFPayload::decodeDataFRMode(unsigned char fn)
+void CYSFPayload::decodeDataFRMode(unsigned char fn)
 {
 	unsigned char dch[45U];
 
@@ -633,11 +641,7 @@ bool CYSFPayload::decodeDataFRMode(unsigned char fn)
 			::memcpy(p1, p2, 9U);
 			p1 += 18U; p2 += 9U;
 		}
-
-		return true;
 	}
-
-	return false;
 }
 
 void CYSFPayload::setUplink(const std::string& callsign)
