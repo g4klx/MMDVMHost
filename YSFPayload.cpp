@@ -255,12 +255,7 @@ void CYSFPayload::decodeHeader()
 void CYSFPayload::decodeVDMode1(unsigned char fn)
 {
 	// Regenerate the AMBE FEC
-	unsigned int errors = 0U;
-	unsigned char* p = m_data + 9U;
-	for (unsigned int i = 0U; i < 5U; i++) {
-		errors += m_fec.regenerateDMR(p);
-		p += 9U;
-	}
+	unsigned int errors = m_fec.regenerateYSF1(m_data);
 
 	LogMessage("YSF, V/D Mode 1, AMBE FEC %u/235 (%.1f%%)", errors, float(errors) / 235.0F);
 
