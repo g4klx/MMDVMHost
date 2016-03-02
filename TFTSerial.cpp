@@ -28,9 +28,18 @@ const unsigned char ROTATION_LANDSCAPE_UD   = 1U;
 const unsigned char ROTATION_PORTRAIT_RIGHT = 2U;
 const unsigned char ROTATION_LANDSCAPE      = 3U;
 
-const unsigned char FONT_SMALL  = 0U;
-const unsigned char FONT_MEDIUM = 1U;
-const unsigned char FONT_LARGE  = 2U;
+const unsigned char COLOUR_BLACK   = 0U;
+const unsigned char COLOUR_BLUE    = 1U;
+const unsigned char COLOUR_RED     = 2U;
+const unsigned char COLOUR_GREEN   = 3U;
+const unsigned char COLOUR_CYAN    = 4U;
+const unsigned char COLOUR_MAGENTA = 5U;
+const unsigned char COLOUR_YELLOW  = 6U;
+const unsigned char COLOUR_WHITE   = 7U;
+
+const unsigned char FONT_SMALL  = 1U;
+const unsigned char FONT_MEDIUM = 2U;
+const unsigned char FONT_LARGE  = 3U;
 
 // x = 0 to 159, y = 0 to 127 - Landscape
 // x = 0 to 127, y = 0 to 159 - Portrait
@@ -56,15 +65,15 @@ bool CTFTSerial::open()
 
 	setRotation(ROTATION_LANDSCAPE);
 
-	setFontSize(FONT_MEDIUM);
+	setFontSize(FONT_SMALL);
 
 	setBrightness(m_brightness);
 
 	// Set background white
-	setBackground(7U);
+	setBackground(COLOUR_WHITE);
 
 	// Set foreground black
-	setForeground(0U);
+	setForeground(COLOUR_BLACK);
 
 	setIdle();
 
@@ -247,7 +256,7 @@ void CTFTSerial::setRotation(unsigned char rotation)
 
 void CTFTSerial::setFontSize(unsigned char size)
 {
-	assert(size >= 0U && size <= 2U);
+	assert(size >= 1U && size <= 3U);
 
 	m_serial.write((unsigned char*)"\x1B\x04", 2U);
 	m_serial.write(&size, 1U);
