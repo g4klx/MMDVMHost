@@ -1300,9 +1300,14 @@ void CDMRSlot::insertSilence(unsigned int count)
 	unsigned char n = (m_netN + 1U) % 6U;
 	unsigned char seqNo = m_netSeqNo + 1U;
 
+	unsigned char fid = m_netLC->getFID();
+
 	for (unsigned int i = 0U; i < count; i++) {
-		if (i > 0U)
-			::memcpy(data, DMR_SILENCE_DATA, DMR_FRAME_LENGTH_BYTES + 2U);
+		// Only use our silence frame if its AMBE audio data
+		if (fid == FID_ETSI || fid == FID_DMRA) {
+			if (i > 0U)
+				::memcpy(data, DMR_SILENCE_DATA, DMR_FRAME_LENGTH_BYTES + 2U);
+		}
 
 		if (n == 0U) {
 			CSync::addDMRAudioSync(data + 2U);
