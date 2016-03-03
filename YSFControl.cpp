@@ -74,8 +74,6 @@ bool CYSFControl::writeModem(unsigned char *data)
 		return false;
 
 	bool valid = (data[1U] & YSF_CKSUM_OK) == YSF_CKSUM_OK;
-	unsigned char fi = data[1U] & YSF_FI_MASK;
-	unsigned char dt = data[1U] & YSF_DT_MASK;
 
 	if (type == TAG_DATA && valid && m_state == RS_RF_LISTENING) {
 		m_frames = 0U;
@@ -144,7 +142,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 			unsigned char fn = m_fich.getFN();
 			unsigned char dt = m_fich.getDT();
 
-			LogMessage("YSF, Valid FICH, FI=%X FN=%u DT=%X", m_fich.getFI(), m_fich.getFN(), m_fich.getDT());
+			LogMessage("YSF, Valid FICH, FI=%X FN=%u DT=%X", fi, fn, dt);
 
 			m_payload.decode(data + 2U, fi, fn, dt);
 			// payload.encode(data + 2U);			XXX

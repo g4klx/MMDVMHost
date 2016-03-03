@@ -62,8 +62,8 @@ private:
 	CDMRDataHeader             m_netDataHeader;
 	unsigned char              m_rfSeqNo;
 	unsigned char              m_netSeqNo;
-	unsigned char              m_netN;
 	unsigned char              m_rfN;
+	unsigned char              m_netN;
 	CTimer                     m_networkWatchdog;
 	CTimer                     m_rfTimeoutTimer;
 	CTimer                     m_netTimeoutTimer;

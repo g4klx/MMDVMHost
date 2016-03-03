@@ -89,7 +89,7 @@ void CYSFConvolution::decode(uint8_t s0, uint8_t s1)
 
   ++m_dp;
 
-  assert((m_dp - m_decisions) <= 180U);
+  assert((m_dp - m_decisions) <= 180);
 
   uint16_t* tmp = m_oldMetrics;
   m_oldMetrics = m_newMetrics;
