@@ -583,6 +583,22 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 		m_modeTimer.start();
 		break;
 
+	case MODE_LOCKOUT:
+		if (logging)
+			LogMessage("Mode set to Lockout");
+		if (m_dstarNetwork != NULL)
+			m_dstarNetwork->enable(false);
+		if (m_dmrNetwork != NULL)
+			m_dmrNetwork->enable(false);
+		if (m_mode == MODE_DMR)
+			m_modem->writeDMRStart(false);
+		else
+			m_modem->setMode(MODE_IDLE);
+		m_display->setLockout();
+		m_mode = MODE_LOCKOUT;
+		m_modeTimer.stop();
+		break;
+
 	default:
 		if (logging)
 			LogMessage("Mode set to Idle");

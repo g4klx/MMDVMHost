@@ -34,6 +34,8 @@ public:
 
   virtual void setIdle();
 
+  virtual void setLockout();
+
   virtual void setDStar();
   virtual void writeDStar(const char* my1, const char* my2, const char* your);
   virtual void clearDStar();

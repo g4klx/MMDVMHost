@@ -90,6 +90,24 @@ void CTFTSerial::setIdle()
 
 	// Draw all mode insignias
 	displayBitmap(0U, 30U, "ALL_sm.bmp");
+
+	gotoPosText(0U, 8U);
+	displayText("IDLE");
+}
+
+void CTFTSerial::setLockout()
+{
+	// Clear the screen
+	clearScreen();
+
+	// Draw MMDVM logo
+	displayBitmap(0U, 0U, "MMDVM_sm.bmp");
+
+	// Draw all mode insignias
+	displayBitmap(0U, 30U, "ALL_sm.bmp");
+
+	gotoPosText(0U, 8U);
+	displayText("LOCKOUT");
 }
 
 void CTFTSerial::setDStar()

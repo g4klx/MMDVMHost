@@ -104,7 +104,8 @@ m_dstarSpace(0U),
 m_dmrSpace1(0U),
 m_dmrSpace2(0U),
 m_ysfSpace(0U),
-m_tx(false)
+m_tx(false),
+m_lockout(false)
 {
 	assert(!port.empty());
 
@@ -357,13 +358,15 @@ void CModem::clock(unsigned int ms)
 					if (txOverflow)
 						LogError("MMDVM TX buffer has overflowed");
 
+					m_lockout = (m_buffer[5U] & 0x10U) == 0x10U;
+
 					m_dstarSpace = m_buffer[6U];
 					m_dmrSpace1  = m_buffer[7U];
 					m_dmrSpace2  = m_buffer[8U];
 					m_ysfSpace   = m_buffer[9U];
 
 					m_inactivityTimer.start();
-					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u", m_buffer[5U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace);
+					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u, lockout=%d", m_buffer[5U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, int(m_lockout));
 				}
 				break;
 
@@ -636,6 +639,11 @@ bool CModem::hasYSFSpace() const
 	unsigned int space = m_txYSFData.freeSpace() / (YSF_FRAME_LENGTH_BYTES + 4U);
 
 	return space > 1U;
+}
+
+bool CModem::hasLockout() const
+{
+	return m_lockout;
 }
 
 bool CModem::writeYSFData(const unsigned char* data, unsigned int length)

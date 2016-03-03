@@ -52,6 +52,8 @@ public:
 	bool hasDMRSpace2() const;
 	bool hasYSFSpace() const;
 
+	bool hasLockout() const;
+
 	bool writeDStarData(const unsigned char* data, unsigned int length);
 	bool writeDMRData1(const unsigned char* data, unsigned int length);
 	bool writeDMRData2(const unsigned char* data, unsigned int length);
@@ -98,6 +100,7 @@ private:
 	unsigned int               m_dmrSpace2;
 	unsigned int               m_ysfSpace;
 	bool                       m_tx;
+	bool                       m_lockout;
 
 	bool readVersion();
 	bool readStatus();

@@ -35,6 +35,10 @@ void CNullDisplay::setIdle()
 {
 }
 
+void CNullDisplay::setLockout()
+{
+}
+
 void CNullDisplay::setDStar()
 {
 }
