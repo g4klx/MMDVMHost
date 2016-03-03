@@ -186,6 +186,12 @@ int CMMDVMHost::run()
 	setMode(MODE_IDLE);
 
 	while (!m_killed) {
+		bool lockout = m_modem->hasLockout();
+		if (lockout && m_mode != MODE_LOCKOUT)
+			setMode(MODE_LOCKOUT);
+		else if (!lockout && m_mode == MODE_LOCKOUT)
+			setMode(MODE_IDLE);
+
 		unsigned char data[200U];
 		unsigned int len;
 		bool ret;

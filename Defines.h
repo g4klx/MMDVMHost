@@ -20,10 +20,10 @@
 #define	Defines_H
 
 const unsigned char MODE_IDLE    = 0U;
-const unsigned char MODE_LOCKOUT = 1U;
-const unsigned char MODE_DSTAR   = 2U;
-const unsigned char MODE_DMR     = 3U;
-const unsigned char MODE_YSF     = 4U;
+const unsigned char MODE_DSTAR   = 1U;
+const unsigned char MODE_DMR     = 2U;
+const unsigned char MODE_YSF     = 3U;
+const unsigned char MODE_LOCKOUT = 99U;
 
 const unsigned char TAG_HEADER = 0x00U;
 const unsigned char TAG_DATA   = 0x01U;
