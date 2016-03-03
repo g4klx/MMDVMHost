@@ -85,13 +85,12 @@ void CTFTSerial::setIdle()
 	// Clear the screen
 	clearScreen();
 
+	setFontSize(FONT_LARGE);
+
 	// Draw MMDVM logo
 	displayBitmap(0U, 0U, "MMDVM_sm.bmp");
 
-	// Draw all mode insignias
-	displayBitmap(0U, 30U, "ALL_sm.bmp");
-
-	gotoPosText(0U, 8U);
+	gotoPosPixel(45U, 60U);
 	displayText("IDLE");
 }
 
@@ -100,13 +99,12 @@ void CTFTSerial::setLockout()
 	// Clear the screen
 	clearScreen();
 
+	setFontSize(FONT_LARGE);
+
 	// Draw MMDVM logo
 	displayBitmap(0U, 0U, "MMDVM_sm.bmp");
 
-	// Draw all mode insignias
-	displayBitmap(0U, 30U, "ALL_sm.bmp");
-
-	gotoPosText(0U, 8U);
+	gotoPosPixel(20U, 60U);
 	displayText("LOCKOUT");
 }
 
@@ -115,13 +113,12 @@ void CTFTSerial::setDStar()
 	// Clear the screen
 	clearScreen();
 
-	// Draw MMDVM logo
-	displayBitmap(0U, 0U, "MMDVM_sm.bmp");
+	setFontSize(FONT_MEDIUM);
 
 	// Draw D-Star insignia
-	displayBitmap(0U, 30U, "DStar_sm.bmp");
+	displayBitmap(0U, 0U, "DStar_sm.bmp");
 
-	gotoPosText(0U, 8U);
+	gotoPosPixel(30U, 80U);
 	displayText("Listening");
 }
 
@@ -132,22 +129,24 @@ void CTFTSerial::writeDStar(const char* my1, const char* my2, const char* your)
 	assert(your != NULL);
 
 	char text[30U];
-	::sprintf(text, "%8.8s/%4.4s -> %8.8s", my1, my2, your);
+	::sprintf(text, "%.8s/%4.4s", my1, my2);
 
-	gotoPosText(0U, 8U);
+	gotoPosPixel(5U, 80U);
+	displayText(text);
+
+	::sprintf(text, "%.8s", your);
+
+	gotoPosPixel(5U, 100U);
 	displayText(text);
 }
 
 void CTFTSerial::clearDStar()
 {
-	// Draw MMDVM logo
-	displayBitmap(0U, 0U, "MMDVM_sm.bmp");
+	gotoPosPixel(5U, 80U);
+	displayText("  Listening  ");
 
-	// Draw D-Star insignia
-	displayBitmap(0U, 30U, "DStar_sm.bmp");
-
-	gotoPosText(0U, 8U);
-	displayText("Listening");
+	gotoPosPixel(5U, 100U);
+	displayText("         ");
 }
 
 void CTFTSerial::setDMR()
@@ -155,16 +154,15 @@ void CTFTSerial::setDMR()
 	// Clear the screen
 	clearScreen();
 
-	// Draw MMDVM logo
-	displayBitmap(0U, 0U, "MMDVM_sm.bmp");
+	setFontSize(FONT_MEDIUM);
 
 	// Draw DMR insignia
-	displayBitmap(0U, 30U, "DMR_sm.bmp");
+	displayBitmap(0U, 0U, "DMR_sm.bmp");
 
-	gotoPosText(0U, 8U);
+	gotoPosPixel(5U, 55U);
 	displayText("1: Listening");
 
-	gotoPosText(0U, 9U);
+	gotoPosPixel(5U, 90U);
 	displayText("2: Listening");
 }
 
@@ -174,13 +172,23 @@ void CTFTSerial::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, u
 
 	if (slotNo == 1U) {
 		char text[30U];
-		::sprintf(text, "1: %s %u -> %s%u", type, srcId, group ? "TG" : "", dstId);
-		gotoPosText(0U, 8U);
+
+		::sprintf(text, "1: %s %u", type, srcId);
+		gotoPosPixel(5U, 55U);
+		displayText(text);
+
+		::sprintf(text, "%s%u", group ? "TG" : "", dstId);
+		gotoPosPixel(65U, 72U);
 		displayText(text);
 	} else {
 		char text[30U];
-		::sprintf(text, "2: %s %u -> %s%u", type, srcId, group ? "TG" : "", dstId);
-		gotoPosText(0U, 9U);
+
+		::sprintf(text, "2: %s %u", type, srcId);
+		gotoPosPixel(5U, 90U);
+		displayText(text);
+
+		::sprintf(text, "%s%u", group ? "TG" : "", dstId);
+		gotoPosPixel(65U, 107U);
 		displayText(text);
 	}
 }
@@ -188,11 +196,17 @@ void CTFTSerial::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, u
 void CTFTSerial::clearDMR(unsigned int slotNo)
 {
 	if (slotNo == 1U) {
-		gotoPosText(0U, 8U);
-		displayText("1: Listening");
+		gotoPosPixel(5U, 55U);
+		displayText("1: Listening ");
+
+		gotoPosPixel(65U, 72U);
+		displayText("       ");
 	} else {
-		gotoPosText(0U, 9U);
-		displayText("2: Listening");
+		gotoPosPixel(5U, 90U);
+		displayText("2: Listening ");
+
+		gotoPosPixel(65U, 107U);
+		displayText("       ");
 	}
 }
 
@@ -201,13 +215,12 @@ void CTFTSerial::setFusion()
 	// Clear the screen
 	clearScreen();
 
-	// Draw MMDVM logo
-	displayBitmap(0U, 0U, "MMDVM_sm.bmp");
+	setFontSize(FONT_MEDIUM);
 
 	// Draw the System Fusion insignia
-	displayBitmap(0U, 30U, "YSF_sm.bmp");
+	displayBitmap(0U, 0U, "YSF_sm.bmp");
 
-	gotoPosText(0U, 8U);
+	gotoPosPixel(30U, 80U);
 	displayText("Listening");
 }
 
@@ -217,22 +230,24 @@ void CTFTSerial::writeFusion(const char* source, const char* dest)
 	assert(dest != NULL);
 
 	char text[30U];
-	::sprintf(text, "%10.10s -> %10.10s", source, dest);
+	::sprintf(text, "%.10s", source);
 
-	gotoPosText(0U, 8U);
+	gotoPosPixel(5U, 80U);
+	displayText(text);
+
+	::sprintf(text, "%.10s", dest);
+
+	gotoPosPixel(5U, 100U);
 	displayText(text);
 }
 
 void CTFTSerial::clearFusion()
 {
-	// Draw MMDVM logo
-	displayBitmap(0U, 0U, "MMDVM_sm.bmp");
+	gotoPosPixel(5U, 80U);
+	displayText("  Listening ");
 
-	// Draw the System Fusion insignia
-	displayBitmap(0U, 30U, "YSF_sm.bmp");
-
-	gotoPosText(0U, 8U);
-	displayText("Listening");
+	gotoPosPixel(5U, 100U);
+	displayText("           ");
 }
 
 void CTFTSerial::close()
