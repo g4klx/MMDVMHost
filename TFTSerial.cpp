@@ -160,10 +160,10 @@ void CTFTSerial::setDMR()
 	displayBitmap(0U, 0U, "DMR_sm.bmp");
 
 	gotoPosPixel(5U, 55U);
-	displayText("1: Listening");
+	displayText("1 Listening");
 
 	gotoPosPixel(5U, 90U);
-	displayText("2: Listening");
+	displayText("2 Listening");
 }
 
 void CTFTSerial::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, unsigned int dstId, const char* type)
@@ -173,7 +173,7 @@ void CTFTSerial::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, u
 	if (slotNo == 1U) {
 		char text[30U];
 
-		::sprintf(text, "1: %s %u", type, srcId);
+		::sprintf(text, "1 %s %u", type, srcId);
 		gotoPosPixel(5U, 55U);
 		displayText(text);
 
@@ -183,7 +183,7 @@ void CTFTSerial::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, u
 	} else {
 		char text[30U];
 
-		::sprintf(text, "2: %s %u", type, srcId);
+		::sprintf(text, "2 %s %u", type, srcId);
 		gotoPosPixel(5U, 90U);
 		displayText(text);
 
@@ -197,13 +197,13 @@ void CTFTSerial::clearDMR(unsigned int slotNo)
 {
 	if (slotNo == 1U) {
 		gotoPosPixel(5U, 55U);
-		displayText("1: Listening ");
+		displayText("1 Listening ");
 
 		gotoPosPixel(65U, 72U);
 		displayText("       ");
 	} else {
 		gotoPosPixel(5U, 90U);
-		displayText("2: Listening ");
+		displayText("2 Listening ");
 
 		gotoPosPixel(65U, 107U);
 		displayText("       ");
