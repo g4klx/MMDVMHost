@@ -44,6 +44,7 @@ private:
   IDisplay*      m_display;
   unsigned char  m_mode;
   CTimer         m_modeTimer;
+  bool           m_duplex;
   bool           m_dstarEnabled;
   bool           m_dmrEnabled;
   bool           m_ysfEnabled;

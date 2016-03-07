@@ -77,6 +77,7 @@ m_dmrNetwork(NULL),
 m_display(NULL),
 m_mode(MODE_IDLE),
 m_modeTimer(1000U),
+m_duplex(false),
 m_dstarEnabled(false),
 m_dmrEnabled(false),
 m_ysfEnabled(false)
@@ -139,14 +140,13 @@ int CMMDVMHost::run()
 		std::string callsign = m_conf.getCallsign();
 		std::string module   = m_conf.getDStarModule();
 		unsigned int timeout = m_conf.getTimeout();
-		bool duplex          = m_conf.getDuplex();
 
 		LogInfo("D-Star Parameters");
 		LogInfo("    Callsign: %s", callsign.c_str());
 		LogInfo("    Module: %s", module.c_str());
 		LogInfo("    Timeout: %us", timeout);
 
-		dstar = new CDStarControl(callsign, module, m_dstarNetwork, m_display, timeout, duplex);
+		dstar = new CDStarControl(callsign, module, m_dstarNetwork, m_display, timeout, m_duplex);
 	}
 
 	CDMRControl* dmr = NULL;
@@ -154,21 +154,19 @@ int CMMDVMHost::run()
 		unsigned int id        = m_conf.getDMRId();
 		unsigned int colorCode = m_conf.getDMRColorCode();
 		unsigned int timeout   = m_conf.getTimeout();
-		bool duplex            = m_conf.getDuplex();
 
 		LogInfo("DMR Parameters");
 		LogInfo("    Id: %u", id);
 		LogInfo("    Color Code: %u", colorCode);
 		LogInfo("    Timeout: %us", timeout);
 
-		dmr = new CDMRControl(id, colorCode, timeout, m_modem, m_dmrNetwork, m_display, duplex);
+		dmr = new CDMRControl(id, colorCode, timeout, m_modem, m_dmrNetwork, m_display, m_duplex);
 	}
 
 	CYSFControl* ysf = NULL;
 	if (m_ysfEnabled) {
 		std::string callsign = m_conf.getCallsign();
 		unsigned int timeout = m_conf.getTimeout();
-		bool duplex          = m_conf.getDuplex();
 		bool parrot          = m_conf.getFusionParrotEnabled();
 
 		LogInfo("System Fusion Parameters");
@@ -176,7 +174,7 @@ int CMMDVMHost::run()
 		LogInfo("    Timeout: %us", timeout);
 		LogInfo("    Parrot: %s", parrot ? "enabled" : "disabled");
 
-		ysf = new CYSFControl(callsign, m_display, timeout, duplex, parrot);
+		ysf = new CYSFControl(callsign, m_display, timeout, m_duplex, parrot);
 	}
 
 	m_modeTimer.setTimeout(m_conf.getModeHang());
@@ -203,7 +201,7 @@ int CMMDVMHost::run()
 			} else if (m_mode == MODE_DSTAR) {
 				dstar->writeModem(data);
 				m_modeTimer.start();
-			} else {
+			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("D-Star modem data received when in mode %u", m_mode);
 			}
 		}
@@ -211,14 +209,20 @@ int CMMDVMHost::run()
 		len = m_modem->readDMRData1(data);
 		if (dmr != NULL && len > 0U) {
 			if (m_mode == MODE_IDLE) {
-				bool ret = dmr->processWakeup(data);
-				if (ret)
+				if (m_duplex) {
+					bool ret = dmr->processWakeup(data);
+					if (ret)
+						setMode(MODE_DMR);
+				} else {
 					setMode(MODE_DMR);
+					dmr->writeModemSlot1(data);
+					dmrBeaconTimer.stop();
+				}
 			} else if (m_mode == MODE_DMR) {
 				dmr->writeModemSlot1(data);
 				dmrBeaconTimer.stop();
 				m_modeTimer.start();
-			} else {
+			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("DMR modem data received when in mode %u", m_mode);
 			}
 		}
@@ -226,14 +230,20 @@ int CMMDVMHost::run()
 		len = m_modem->readDMRData2(data);
 		if (dmr != NULL && len > 0U) {
 			if (m_mode == MODE_IDLE) {
-				bool ret = dmr->processWakeup(data);
-				if (ret)
+				if (m_duplex) {
+					bool ret = dmr->processWakeup(data);
+					if (ret)
+						setMode(MODE_DMR);
+				} else {
 					setMode(MODE_DMR);
+					dmr->writeModemSlot2(data);
+					dmrBeaconTimer.stop();
+				}
 			} else if (m_mode == MODE_DMR) {
 				dmr->writeModemSlot2(data);
 				dmrBeaconTimer.stop();
 				m_modeTimer.start();
-			} else {
+			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("DMR modem data received when in mode %u", m_mode);
 			}
 		}
@@ -247,7 +257,7 @@ int CMMDVMHost::run()
 			} else if (m_mode == MODE_YSF) {
 				ysf->writeModem(data);
 				m_modeTimer.start();
-			} else {
+			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("System Fusion modem data received when in mode %u", m_mode);
 			}
 		}
@@ -260,12 +270,12 @@ int CMMDVMHost::run()
 			if (ret) {
 				len = dstar->readModem(data);
 				if (len > 0U) {
-					if (m_mode == MODE_IDLE) {
+					if (m_mode == MODE_IDLE)
 						setMode(MODE_DSTAR);
-					} else if (m_mode == MODE_DSTAR) {
+					if (m_mode == MODE_DSTAR) {
 						m_modem->writeDStarData(data, len);
 						m_modeTimer.start();
-					} else {
+					} else if (m_mode != MODE_LOCKOUT) {
 						LogWarning("D-Star data received when in mode %u", m_mode);
 					}
 				}
@@ -277,13 +287,13 @@ int CMMDVMHost::run()
 			if (ret) {
 				len = dmr->readModemSlot1(data);
 				if (len > 0U) {
-					if (m_mode == MODE_IDLE) {
+					if (m_mode == MODE_IDLE)
 						setMode(MODE_DMR);
-					} else if (m_mode == MODE_DMR) {
+					if (m_mode == MODE_DMR) {
 						m_modem->writeDMRData1(data, len);
 						dmrBeaconTimer.stop();
 						m_modeTimer.start();
-					} else {
+					} else if (m_mode != MODE_LOCKOUT) {
 						LogWarning("DMR data received when in mode %u", m_mode);
 					}
 				}
@@ -293,13 +303,13 @@ int CMMDVMHost::run()
 			if (ret) {
 				len = dmr->readModemSlot2(data);
 				if (len > 0U) {
-					if (m_mode == MODE_IDLE) {
+					if (m_mode == MODE_IDLE)
 						setMode(MODE_DMR);
-					} else if (m_mode == MODE_DMR) {
+					if (m_mode == MODE_DMR) {
 						m_modem->writeDMRData2(data, len);
 						dmrBeaconTimer.stop();
 						m_modeTimer.start();
-					} else {
+					} else if (m_mode != MODE_LOCKOUT) {
 						LogWarning("DMR data received when in mode %u", m_mode);
 					}
 				}
@@ -311,12 +321,12 @@ int CMMDVMHost::run()
 			if (ret) {
 				len = ysf->readModem(data);
 				if (len > 0U) {
-					if (m_mode == MODE_IDLE) {
+					if (m_mode == MODE_IDLE)
 						setMode(MODE_YSF);
-					} else if (m_mode == MODE_YSF) {
+					if (m_mode == MODE_YSF) {
 						m_modem->writeYSFData(data, len);
 						m_modeTimer.start();
-					} else {
+					} else if (m_mode != MODE_LOCKOUT) {
 						LogWarning("System Fusion data received when in mode %u", m_mode);
 					}
 				}
@@ -518,6 +528,7 @@ void CMMDVMHost::readParams()
 	m_dstarEnabled = m_conf.getDStarEnabled();
 	m_dmrEnabled   = m_conf.getDMREnabled();
 	m_ysfEnabled   = m_conf.getFusionEnabled();
+	m_duplex       = m_conf.getDuplex();
 }
 
 void CMMDVMHost::createDisplay()
