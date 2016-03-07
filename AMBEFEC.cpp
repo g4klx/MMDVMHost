@@ -671,10 +671,12 @@ unsigned int CAMBEFEC::regenerate(unsigned int& a, unsigned int& b, unsigned int
 		errsB++;
 	}
 
-	if (errsA >= 4U || ((errsA + errsB) >= 6U && errsA >= 2U)) {
-		a = 0xF00292U;
-		b = 0x0E0B20U;
-		c = 0x000000U;
+	if (b23) {
+		if (errsA >= 4U || ((errsA + errsB) >= 6U && errsA >= 2U)) {
+			a = 0xF00292U;
+			b = 0x0E0B20U;
+			c = 0x000000U;
+		}
 	}
 
 	a = new_a;
