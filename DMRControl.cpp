@@ -16,6 +16,7 @@
 #include "DMRCSBK.h"
 #include "Log.h"
 
+#include <cstdio>
 #include <cassert>
 
 CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, unsigned int timeout, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex) :
@@ -38,6 +39,8 @@ CDMRControl::~CDMRControl()
 
 bool CDMRControl::processWakeup(const unsigned char* data)
 {
+	assert(data != NULL);
+
 	// Wakeups always come in on slot 1
 	if (data[0U] != TAG_DATA || data[1U] != (DMR_IDLE_RX | DMR_SYNC_DATA | DT_CSBK))
 		return false;
@@ -65,21 +68,29 @@ bool CDMRControl::processWakeup(const unsigned char* data)
 
 void CDMRControl::writeModemSlot1(unsigned char *data)
 {
+	assert(data != NULL);
+
 	m_slot1.writeModem(data);
 }
 
 void CDMRControl::writeModemSlot2(unsigned char *data)
 {
+	assert(data != NULL);
+
 	m_slot2.writeModem(data);
 }
 
 unsigned int CDMRControl::readModemSlot1(unsigned char *data)
 {
+	assert(data != NULL);
+
 	return m_slot1.readModem(data);
 }
 
 unsigned int CDMRControl::readModemSlot2(unsigned char *data)
 {
+	assert(data != NULL);
+
 	return m_slot2.readModem(data);
 }
 

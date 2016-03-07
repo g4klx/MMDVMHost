@@ -83,6 +83,8 @@ void CDMRShortLC::encode(const unsigned char* in, unsigned char* out)
 
 void CDMRShortLC::decodeExtractBinary(const unsigned char* in)
 {
+	assert(in != NULL);
+
 	CUtils::byteToBitsBE(in[0U], m_rawData + 0U);
 	CUtils::byteToBitsBE(in[1U], m_rawData + 8U);
 	CUtils::byteToBitsBE(in[2U], m_rawData + 16U);
@@ -131,6 +133,8 @@ bool CDMRShortLC::decodeErrorCheck()
 // Extract the 36 bits of payload
 void CDMRShortLC::decodeExtractData(unsigned char* data) const
 {
+	assert(data != NULL);
+
 	bool bData[40U];
 
 	for (unsigned int i = 0U; i < 40U; i++)
@@ -156,6 +160,8 @@ void CDMRShortLC::decodeExtractData(unsigned char* data) const
 // Extract the 36 bits of payload
 void CDMRShortLC::encodeExtractData(const unsigned char* in) const
 {
+	assert(in != NULL);
+
 	bool bData[40U];
 	CUtils::byteToBitsBE(in[0U], bData + 0U);
 	CUtils::byteToBitsBE(in[1U], bData + 8U);
@@ -208,6 +214,8 @@ void CDMRShortLC::encodeInterleave()
 
 void CDMRShortLC::encodeExtractBinary(unsigned char* data)
 {
+	assert(data != NULL);
+
 	CUtils::bitsToByteBE(m_rawData + 0U,  data[0U]);
 	CUtils::bitsToByteBE(m_rawData + 8U,  data[1U]);
 	CUtils::bitsToByteBE(m_rawData + 16U, data[2U]);

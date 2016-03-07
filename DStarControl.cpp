@@ -16,6 +16,7 @@
 #include "Sync.h"
 #include "Log.h"
 
+#include <cstdio>
 #include <cassert>
 #include <ctime>
 
@@ -88,6 +89,8 @@ CDStarControl::~CDStarControl()
 
 bool CDStarControl::writeModem(unsigned char *data)
 {
+	assert(data != NULL);
+
 	unsigned char type = data[0U];
 
 	if (type == TAG_LOST && m_rfState == RS_RF_AUDIO) {
@@ -343,6 +346,8 @@ bool CDStarControl::writeModem(unsigned char *data)
 
 unsigned int CDStarControl::readModem(unsigned char* data)
 {
+	assert(data != NULL);
+
 	if (m_queue.isEmpty())
 		return 0U;
 

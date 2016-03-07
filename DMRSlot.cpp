@@ -84,6 +84,8 @@ CDMRSlot::~CDMRSlot()
 
 void CDMRSlot::writeModem(unsigned char *data)
 {
+	assert(data != NULL);
+
 	if (data[0U] == TAG_LOST && m_rfState == RS_RF_AUDIO) {
 		if (m_rfBits == 0U) m_rfBits = 1U;
 		LogMessage("DMR Slot %u, RF transmission lost, %.1f seconds, BER: %.1f%%", m_slotNo, float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
@@ -502,6 +504,8 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 unsigned int CDMRSlot::readModem(unsigned char* data)
 {
+	assert(data != NULL);
+
 	if (m_queue.isEmpty())
 		return 0U;
 
@@ -1055,6 +1059,8 @@ void CDMRSlot::clock(unsigned int ms)
 
 void CDMRSlot::writeQueueRF(const unsigned char *data)
 {
+	assert(data != NULL);
+
 	if (m_netState != RS_NET_IDLE)
 		return;
 
@@ -1115,6 +1121,8 @@ void CDMRSlot::writeNetworkRF(const unsigned char* data, unsigned char dataType)
 
 void CDMRSlot::writeQueueNet(const unsigned char *data)
 {
+	assert(data != NULL);
+
 	unsigned char len = DMR_FRAME_LENGTH_BYTES + 2U;
 
 	unsigned int space = m_queue.freeSpace();

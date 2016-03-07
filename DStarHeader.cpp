@@ -82,51 +82,71 @@ void CDStarHeader::setUnavailable(bool on)
 
 void CDStarHeader::getMyCall1(unsigned char* call1) const
 {
+	assert(call1 != NULL);
+
 	::memcpy(call1, m_header + 27U, DSTAR_LONG_CALLSIGN_LENGTH);
 }
 
 void CDStarHeader::getMyCall2(unsigned char* call2) const
 {
+	assert(call2 != NULL);
+
 	::memcpy(call2, m_header + 35U, DSTAR_SHORT_CALLSIGN_LENGTH);
 }
 
 void CDStarHeader::setMyCall1(const unsigned char* call1)
 {
+	assert(call1 != NULL);
+
 	::memcpy(m_header + 27U, call1, DSTAR_LONG_CALLSIGN_LENGTH);
 }
 
 void CDStarHeader::setMyCall2(const unsigned char* call2)
 {
+	assert(call2 != NULL);
+
 	::memcpy(m_header + 35U, call2, DSTAR_SHORT_CALLSIGN_LENGTH);
 }
 
 void CDStarHeader::getRPTCall1(unsigned char* call1) const
 {
+	assert(call1 != NULL);
+
 	::memcpy(call1, m_header + 11U, DSTAR_LONG_CALLSIGN_LENGTH);
 }
 
 void CDStarHeader::getRPTCall2(unsigned char* call2) const
 {
+	assert(call2 != NULL);
+
 	::memcpy(call2, m_header + 3U, DSTAR_LONG_CALLSIGN_LENGTH);
 }
 
 void CDStarHeader::setRPTCall1(const unsigned char* call1)
 {
+	assert(call1 != NULL);
+
 	::memcpy(m_header + 11U, call1, DSTAR_LONG_CALLSIGN_LENGTH);
 }
 
 void CDStarHeader::setRPTCall2(const unsigned char* call2)
 {
+	assert(call2 != NULL);
+
 	::memcpy(m_header + 3U, call2, DSTAR_LONG_CALLSIGN_LENGTH);
 }
 
 void CDStarHeader::getYourCall(unsigned char* call) const
 {
+	assert(call != NULL);
+
 	::memcpy(call, m_header + 19U, DSTAR_LONG_CALLSIGN_LENGTH);
 }
 
 void CDStarHeader::setYourCall(const unsigned char* call)
 {
+	assert(call != NULL);
+
 	::memcpy(m_header + 19U, call, DSTAR_LONG_CALLSIGN_LENGTH);
 }
 

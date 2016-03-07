@@ -23,6 +23,7 @@
 #include "Utils.h"
 #include "Log.h"
 
+#include <cstdio>
 #include <cassert>
 
 const unsigned int BUFFER_LENGTH = 500U;

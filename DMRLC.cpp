@@ -138,6 +138,8 @@ void CDMRLC::getData(unsigned char* bytes) const
 
 void CDMRLC::getData(bool* bits) const
 {
+	assert(bits != NULL);
+
 	unsigned char bytes[9U];
 	getData(bytes);
 

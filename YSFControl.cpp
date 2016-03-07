@@ -16,6 +16,7 @@
 #include "Sync.h"
 #include "Log.h"
 
+#include <cstdio>
 #include <cassert>
 #include <ctime>
 
@@ -58,6 +59,8 @@ CYSFControl::~CYSFControl()
 
 bool CYSFControl::writeModem(unsigned char *data)
 {
+	assert(data != NULL);
+
 	unsigned char type = data[0U];
 
 	if (type == TAG_LOST && m_state == RS_RF_AUDIO) {
@@ -215,6 +218,8 @@ bool CYSFControl::writeModem(unsigned char *data)
 
 unsigned int CYSFControl::readModem(unsigned char* data)
 {
+	assert(data != NULL);
+
 	if (m_queue.isEmpty())
 		return 0U;
 

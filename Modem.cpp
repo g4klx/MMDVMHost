@@ -25,6 +25,7 @@
 #include "Log.h"
 
 #include <cmath>
+#include <cstdio>
 #include <cassert>
 #include <cstdint>
 
@@ -858,6 +859,8 @@ bool CModem::setFrequency()
 
 RESP_TYPE_MMDVM CModem::getResponse(unsigned char *buffer, unsigned int& length)
 {
+	assert(buffer != NULL);
+
 	// Get the start of the frame or nothing at all
 	int ret = m_serial.read(buffer + 0U, 1U);
 	if (ret < 0) {

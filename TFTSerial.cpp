@@ -65,8 +65,6 @@ bool CTFTSerial::open()
 
 	setRotation(ROTATION_LANDSCAPE);
 
-	setFontSize(FONT_SMALL);
-
 	setBrightness(m_brightness);
 
 	// Set background white
