@@ -657,22 +657,28 @@ unsigned int CAMBEFEC::regenerate(unsigned int& a, unsigned int& b, unsigned int
 		new_b |= b24 ? 0x01U : 0x00U;
 	}
 
-	unsigned int errors = 0U;
+	unsigned int errsA = 0U, errsB = 0U;
 
 	unsigned int v = new_a ^ old_a;
 	while (v != 0U) {
 		v &= v - 1U;
-		errors++;
+		errsA++;
 	}
 
 	v = new_b ^ old_b;
 	while (v != 0U) {
 		v &= v - 1U;
-		errors++;
+		errsB++;
+	}
+
+	if (errsA >= 4U || ((errsA + errsB) >= 6U && errsA >= 2U)) {
+		a = 0xF00292U;
+		b = 0x0E0B20U;
+		c = 0x000000U;
 	}
 
 	a = new_a;
 	b = new_b;
 
-	return errors;
+	return errsA + errsB;
 }
