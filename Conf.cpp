@@ -56,10 +56,10 @@ m_height(0),
 m_location(),
 m_description(),
 m_url(),
-m_logLevel(0U),
-m_logPath(),
-m_logRoot(),
-m_logDisplay(true),
+m_logDisplayLevel(0U),
+m_logFileLevel(0U),
+m_logFilePath(),
+m_logFileRoot(),
 m_modemPort(),
 m_modemRXInvert(false),
 m_modemTXInvert(false),
@@ -181,14 +181,14 @@ bool CConf::read()
 		else if (::strcmp(key, "URL") == 0)
 			m_url = value;
 	} else if (section == SECTION_LOG) {
-		if (::strcmp(key, "Path") == 0)
-			m_logPath = value;
-		else if (::strcmp(key, "Root") == 0)
-			m_logRoot = value;
-		else if (::strcmp(key, "Level") == 0)
-			m_logLevel = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "Display") == 0)
-			m_logDisplay = ::atoi(value) == 1;
+		if (::strcmp(key, "FilePath") == 0)
+			m_logFilePath = value;
+		else if (::strcmp(key, "FileRoot") == 0)
+			m_logFileRoot = value;
+		else if (::strcmp(key, "FileLevel") == 0)
+			m_logFileLevel = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "DisplayLevel") == 0)
+			m_logDisplayLevel = (unsigned int)::atoi(value);
 	} else if (section == SECTION_MODEM) {
 		if (::strcmp(key, "Port") == 0)
 			m_modemPort = value;
@@ -343,24 +343,24 @@ std::string CConf::getURL() const
 	return m_url;
 }
 
-unsigned int CConf::getLogLevel() const
+unsigned int CConf::getLogDisplayLevel() const
 {
-	return m_logLevel;
+	return m_logDisplayLevel;
 }
 
-std::string CConf::getLogPath() const
+unsigned int CConf::getLogFileLevel() const
 {
-  return m_logPath;
+	return m_logFileLevel;
 }
 
-std::string CConf::getLogRoot() const
+std::string CConf::getLogFilePath() const
 {
-  return m_logRoot;
+  return m_logFilePath;
 }
 
-bool CConf::getLogDisplay() const
+std::string CConf::getLogFileRoot() const
 {
-  return m_logDisplay;
+  return m_logFileRoot;
 }
 
 std::string CConf::getModemPort() const

@@ -48,10 +48,10 @@ public:
   std::string  getURL() const;
 
   // The Log section
-  std::string  getLogPath() const;
-  std::string  getLogRoot() const;
-  unsigned int getLogLevel() const;
-  bool         getLogDisplay() const;
+  unsigned int getLogDisplayLevel() const;
+  unsigned int getLogFileLevel() const;
+  std::string  getLogFilePath() const;
+  std::string  getLogFileRoot() const;
 
   // The Modem section
   std::string  getModemPort() const;
@@ -121,10 +121,10 @@ private:
   std::string  m_description;
   std::string  m_url;
 
-  unsigned int m_logLevel;
-  std::string  m_logPath;
-  std::string  m_logRoot;
-  bool         m_logDisplay;
+  unsigned int m_logDisplayLevel;
+  unsigned int m_logFileLevel;
+  std::string  m_logFilePath;
+  std::string  m_logFileRoot;
 
   std::string  m_modemPort;
   bool         m_modemRXInvert;

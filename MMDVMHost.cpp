@@ -95,13 +95,11 @@ int CMMDVMHost::run()
 		return 1;
 	}
 
-	ret = ::LogInitialise(m_conf.getLogPath(), m_conf.getLogRoot(), m_conf.getLogDisplay());
+	ret = ::LogInitialise(m_conf.getLogFilePath(), m_conf.getLogFileRoot(), m_conf.getLogFileLevel(), m_conf.getLogDisplayLevel());
 	if (!ret) {
 		::fprintf(stderr, "MMDVMHost: unable to open the log file\n");
 		return 1;
 	}
-
-	::LogSetLevel(m_conf.getLogLevel());
 
 	LogInfo(HEADER1);
 	LogInfo(HEADER2);
