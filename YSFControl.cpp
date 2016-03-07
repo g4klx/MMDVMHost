@@ -271,6 +271,13 @@ void CYSFControl::writeQueue(const unsigned char *data)
 		return;
 
 	unsigned char len = YSF_FRAME_LENGTH_BYTES + 2U;
+
+	unsigned int space = m_queue.freeSpace();
+	if (space < (len + 1U)) {
+		LogError("YSF, overflow in the System Fusion RF queue");
+		return;
+	}
+
 	m_queue.addData(&len, 1U);
 
 	m_queue.addData(data, len);

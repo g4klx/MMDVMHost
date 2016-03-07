@@ -29,7 +29,7 @@ m_gateway(NULL),
 m_network(network),
 m_display(display),
 m_duplex(duplex),
-m_rfQueue(1000U, "D-Star Control"),
+m_queue(1000U, "D-Star Control"),
 m_rfHeader(),
 m_netHeader(),
 m_rfState(RS_RF_LISTENING),
@@ -343,7 +343,7 @@ bool CDStarControl::writeModem(unsigned char *data)
 
 unsigned int CDStarControl::readModem(unsigned char* data)
 {
-	if (m_rfQueue.isEmpty())
+	if (m_queue.isEmpty())
 		return 0U;
 
 	// Don't relay data until the timer has stopped.
@@ -351,9 +351,9 @@ unsigned int CDStarControl::readModem(unsigned char* data)
 		return 0U;
 
 	unsigned char len = 0U;
-	m_rfQueue.getData(&len, 1U);
+	m_queue.getData(&len, 1U);
 
-	m_rfQueue.getData(data, len);
+	m_queue.getData(data, len);
 
 	return len;
 }
@@ -565,9 +565,16 @@ void CDStarControl::writeQueueHeaderRF(const unsigned char *data)
 		return;
 
 	unsigned char len = DSTAR_HEADER_LENGTH_BYTES + 1U;
-	m_rfQueue.addData(&len, 1U);
 
-	m_rfQueue.addData(data, len);
+	unsigned int space = m_queue.freeSpace();
+	if (space < (len + 1U)) {
+		LogError("D-Star, overflow in the D-Star RF queue");
+		return;
+	}
+
+	m_queue.addData(&len, 1U);
+
+	m_queue.addData(data, len);
 }
 
 void CDStarControl::writeQueueDataRF(const unsigned char *data)
@@ -581,9 +588,16 @@ void CDStarControl::writeQueueDataRF(const unsigned char *data)
 		return;
 
 	unsigned char len = DSTAR_FRAME_LENGTH_BYTES + 1U;
-	m_rfQueue.addData(&len, 1U);
 
-	m_rfQueue.addData(data, len);
+	unsigned int space = m_queue.freeSpace();
+	if (space < (len + 1U)) {
+		LogError("D-Star, overflow in the D-Star RF queue");
+		return;
+	}
+
+	m_queue.addData(&len, 1U);
+
+	m_queue.addData(data, len);
 }
 
 void CDStarControl::writeQueueEOTRF()
@@ -595,10 +609,17 @@ void CDStarControl::writeQueueEOTRF()
 		return;
 
 	unsigned char len = 1U;
-	m_rfQueue.addData(&len, 1U);
+
+	unsigned int space = m_queue.freeSpace();
+	if (space < (len + 1U)) {
+		LogError("D-Star, overflow in the D-Star RF queue");
+		return;
+	}
+
+	m_queue.addData(&len, 1U);
 
 	unsigned char data = TAG_EOT;
-	m_rfQueue.addData(&data, len);
+	m_queue.addData(&data, len);
 }
 
 void CDStarControl::writeQueueHeaderNet(const unsigned char *data)
@@ -609,9 +630,16 @@ void CDStarControl::writeQueueHeaderNet(const unsigned char *data)
 		return;
 
 	unsigned char len = DSTAR_HEADER_LENGTH_BYTES + 1U;
-	m_rfQueue.addData(&len, 1U);
 
-	m_rfQueue.addData(data, len);
+	unsigned int space = m_queue.freeSpace();
+	if (space < (len + 1U)) {
+		LogError("D-Star, overflow in the D-Star RF queue");
+		return;
+	}
+
+	m_queue.addData(&len, 1U);
+
+	m_queue.addData(data, len);
 }
 
 void CDStarControl::writeQueueDataNet(const unsigned char *data)
@@ -622,9 +650,16 @@ void CDStarControl::writeQueueDataNet(const unsigned char *data)
 		return;
 
 	unsigned char len = DSTAR_FRAME_LENGTH_BYTES + 1U;
-	m_rfQueue.addData(&len, 1U);
 
-	m_rfQueue.addData(data, len);
+	unsigned int space = m_queue.freeSpace();
+	if (space < (len + 1U)) {
+		LogError("D-Star, overflow in the D-Star RF queue");
+		return;
+	}
+
+	m_queue.addData(&len, 1U);
+
+	m_queue.addData(data, len);
 }
 
 void CDStarControl::writeQueueEOTNet()
@@ -633,10 +668,17 @@ void CDStarControl::writeQueueEOTNet()
 		return;
 
 	unsigned char len = 1U;
-	m_rfQueue.addData(&len, 1U);
+
+	unsigned int space = m_queue.freeSpace();
+	if (space < (len + 1U)) {
+		LogError("D-Star, overflow in the D-Star RF queue");
+		return;
+	}
+
+	m_queue.addData(&len, 1U);
 
 	unsigned char data = TAG_EOT;
-	m_rfQueue.addData(&data, len);
+	m_queue.addData(&data, len);
 }
 
 void CDStarControl::writeNetworkHeaderRF(const unsigned char* data)

@@ -44,7 +44,7 @@ bool           CDMRSlot::m_voice2 = true;
 
 CDMRSlot::CDMRSlot(unsigned int slotNo, unsigned int timeout) :
 m_slotNo(slotNo),
-m_rfQueue(1000U, "DMR Slot"),
+m_queue(1000U, "DMR Slot"),
 m_rfState(RS_RF_LISTENING),
 m_netState(RS_NET_IDLE),
 m_rfEmbeddedLC(),
@@ -502,13 +502,13 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 unsigned int CDMRSlot::readModem(unsigned char* data)
 {
-	if (m_rfQueue.isEmpty())
+	if (m_queue.isEmpty())
 		return 0U;
 
 	unsigned char len = 0U;
-	m_rfQueue.getData(&len, 1U);
+	m_queue.getData(&len, 1U);
 
-	m_rfQueue.getData(data, len);
+	m_queue.getData(data, len);
 
 	return len;
 }
@@ -1059,13 +1059,20 @@ void CDMRSlot::writeQueueRF(const unsigned char *data)
 		return;
 
 	unsigned char len = DMR_FRAME_LENGTH_BYTES + 2U;
-	m_rfQueue.addData(&len, 1U);
+
+	unsigned int space = m_queue.freeSpace();
+	if (space < (len + 1U)) {
+		LogError("DMR Slot %u, overflow in the DMR slot RF queue", m_slotNo);
+		return;
+	}
+
+	m_queue.addData(&len, 1U);
 
 	// If the timeout has expired, replace the audio with idles to keep the slot busy
 	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired())
-		m_rfQueue.addData(m_idle, len);
+		m_queue.addData(m_idle, len);
 	else
-		m_rfQueue.addData(data, len);
+		m_queue.addData(data, len);
 }
 
 void CDMRSlot::writeNetworkRF(const unsigned char* data, unsigned char dataType, FLCO flco, unsigned int srcId, unsigned int dstId)
@@ -1109,13 +1116,20 @@ void CDMRSlot::writeNetworkRF(const unsigned char* data, unsigned char dataType)
 void CDMRSlot::writeQueueNet(const unsigned char *data)
 {
 	unsigned char len = DMR_FRAME_LENGTH_BYTES + 2U;
-	m_rfQueue.addData(&len, 1U);
+
+	unsigned int space = m_queue.freeSpace();
+	if (space < (len + 1U)) {
+		LogError("DMR Slot %u, overflow in the DMR slot RF queue", m_slotNo);
+		return;
+	}
+
+	m_queue.addData(&len, 1U);
 
 	// If the timeout has expired, replace the audio with idles to keep the slot busy
 	if (m_netTimeoutTimer.isRunning() && m_netTimeoutTimer.hasExpired())
-		m_rfQueue.addData(m_idle, len);
+		m_queue.addData(m_idle, len);
 	else
-		m_rfQueue.addData(data, len);
+		m_queue.addData(data, len);
 }
 
 void CDMRSlot::init(unsigned int colorCode, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex)

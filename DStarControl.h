@@ -50,7 +50,7 @@ private:
 	CDStarNetwork*             m_network;
 	IDisplay*                  m_display;
 	bool                       m_duplex;
-	CRingBuffer<unsigned char> m_rfQueue;
+	CRingBuffer<unsigned char> m_queue;
 	CDStarHeader               m_rfHeader;
 	CDStarHeader               m_netHeader;
 	RPT_RF_STATE               m_rfState;

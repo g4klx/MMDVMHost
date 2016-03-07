@@ -51,7 +51,7 @@ public:
 
 private:
 	unsigned int               m_slotNo;
-	CRingBuffer<unsigned char> m_rfQueue;
+	CRingBuffer<unsigned char> m_queue;
 	RPT_RF_STATE               m_rfState;
 	RPT_NET_STATE              m_netState;
 	CDMREmbeddedLC             m_rfEmbeddedLC;
