@@ -29,6 +29,7 @@
 #include <cstdarg>
 #include <ctime>
 #include <cassert>
+#include <cstring>
 
 static unsigned int m_fileLevel = 2U;
 static std::string m_filePath;
