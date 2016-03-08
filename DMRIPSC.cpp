@@ -31,14 +31,14 @@ const unsigned int BUFFER_LENGTH = 500U;
 const unsigned int HOMEBREW_DATA_PACKET_LENGTH = 53U;
 
 
-CDMRIPSC::CDMRIPSC(const std::string& address, unsigned int port, unsigned int id, const std::string& password, const char* software, const char* version, bool debug, bool slot1, bool slot2) :
+CDMRIPSC::CDMRIPSC(const std::string& address, unsigned int port, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2) :
 m_address(),
 m_port(port),
 m_id(NULL),
 m_password(password),
-m_debug(debug),
-m_software(software),
+m_duplex(duplex),
 m_version(version),
+m_debug(debug),
 m_socket(),
 m_enabled(false),
 m_slot1(slot1),
@@ -427,13 +427,19 @@ bool CDMRIPSC::writeAuthorisation()
 
 bool CDMRIPSC::writeConfig()
 {
+	char* software = "MMDVM";
 	char slots = '0';
-	if (m_slot1 && m_slot2)
-		slots = '3';
-	else if (m_slot1 && !m_slot2)
-		slots = '1';
-	else if (!m_slot1 && m_slot2)
-		slots = '2';
+	if (m_duplex) {
+		if (m_slot1 && m_slot2)
+			slots = '3';
+		else if (m_slot1 && !m_slot2)
+			slots = '1';
+		else if (!m_slot1 && m_slot2)
+			slots = '2';
+	} else {
+		software = "MMDVM-DVMega";
+		slots = '4';
+	}
 
 	char buffer[400U];
 
@@ -442,7 +448,7 @@ bool CDMRIPSC::writeConfig()
 
 	::sprintf(buffer + 8U, "%-8.8s%09u%09u%02u%02u%08f%09f%03d%-20.20s%-19.19s%c%-124.124s%-40.40s%-40.40s", m_callsign.c_str(),
 		m_rxFrequency, m_txFrequency, m_power, m_colorCode, m_latitude, m_longitude, m_height, m_location.c_str(),
-		m_description.c_str(), slots, m_url.c_str(), m_software, m_version);
+		m_description.c_str(), slots, m_url.c_str(), m_version, software);
 
 	return write((unsigned char*)buffer, 302U);
 }

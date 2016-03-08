@@ -453,7 +453,7 @@ bool CMMDVMHost::createDStarNetwork()
 	LogInfo("    Gateway Port: %u", gatewayPort);
 	LogInfo("    Local Port: %u", localPort);
 
-	m_dstarNetwork = new CDStarNetwork(gatewayAddress, gatewayPort, localPort, VERSION, debug);
+	m_dstarNetwork = new CDStarNetwork(gatewayAddress, gatewayPort, localPort, m_duplex, VERSION, debug);
 
 	bool ret = m_dstarNetwork->open();
 	if (!ret) {
@@ -483,7 +483,7 @@ bool CMMDVMHost::createDMRNetwork()
 	LogInfo("    Slot 1: %s", slot1 ? "enabled" : "disabled");
 	LogInfo("    Slot 2: %s", slot2 ? "enabled" : "disabled");
 
-	m_dmrNetwork = new CDMRIPSC(address, port, id, password, VERSION, "MMDVM", debug, slot1, slot2);
+	m_dmrNetwork = new CDMRIPSC(address, port, id, password, m_duplex, VERSION, debug, slot1, slot2);
 
 	std::string callsign     = m_conf.getCallsign();
 	unsigned int rxFrequency = m_conf.getRxFrequency();

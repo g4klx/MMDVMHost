@@ -29,10 +29,11 @@
 
 const unsigned int BUFFER_LENGTH = 100U;
 
-CDStarNetwork::CDStarNetwork(const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int localPort, const std::string& version, bool debug) :
+CDStarNetwork::CDStarNetwork(const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int localPort, bool duplex, const char* version, bool debug) :
 m_socket(localPort),
 m_address(),
 m_port(gatewayPort),
+m_duplex(duplex),
 m_version(version),
 m_debug(debug),
 m_enabled(false),
@@ -174,9 +175,15 @@ void CDStarNetwork::clock(unsigned int ms)
 	if (m_pollTimer.hasExpired()) {
 		char text[60U];
 #if defined(_WIN32) || defined(_WIN64)
-		::sprintf(text, "win_mmdvm-%s", m_version.c_str());
+		if (m_duplex)
+			::sprintf(text, "win_mmdvm-%s", m_version);
+		else
+			::sprintf(text, "win_mmdvm-dvmega-%s", m_version);
 #else
-		::sprintf(text, "linux_mmdvm-%s", m_version.c_str());
+		if (m_duplex)
+			::sprintf(text, "linux_mmdvm-%s", m_version);
+		else
+			::sprintf(text, "linux_mmdvm-dvmega-%s", m_version);
 #endif
 		writePoll(text);
 		m_pollTimer.start();

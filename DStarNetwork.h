@@ -29,7 +29,7 @@
 
 class CDStarNetwork {
 public:
-	CDStarNetwork(const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int localPort, const std::string& version, bool debug);
+	CDStarNetwork(const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int localPort, bool duplex, const char* version, bool debug);
 	~CDStarNetwork();
 
 	bool open();
@@ -53,7 +53,8 @@ private:
 	CUDPSocket     m_socket;
 	in_addr        m_address;
 	unsigned int   m_port;
-	std::string    m_version;
+	bool           m_duplex;
+	const char*    m_version;
 	bool           m_debug;
 	bool           m_enabled;
 	uint16_t       m_outId;

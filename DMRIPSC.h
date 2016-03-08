@@ -30,7 +30,7 @@
 class CDMRIPSC
 {
 public:
-	CDMRIPSC(const std::string& address, unsigned int port, unsigned int id, const std::string& password, const char* software, const char* version, bool debug, bool slot1, bool slot2);
+	CDMRIPSC(const std::string& address, unsigned int port, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2);
 	~CDMRIPSC();
 
 	void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url);
@@ -54,9 +54,9 @@ private:
 	unsigned int m_port;
 	uint8_t*     m_id;
 	std::string  m_password;
-	bool         m_debug;
-	const char*  m_software;
+	bool         m_duplex;
 	const char*  m_version;
+	bool         m_debug;
 	CUDPSocket   m_socket;
 	bool         m_enabled;
 	bool         m_slot1;
