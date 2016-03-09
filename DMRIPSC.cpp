@@ -437,7 +437,7 @@ bool CDMRIPSC::writeConfig()
 		else if (!m_slot1 && m_slot2)
 			slots = '2';
 	} else {
-		software = "MMDVM DVMega";
+		software = "MMDVM_DVMega";
 		slots = '4';
 	}
 
