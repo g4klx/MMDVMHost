@@ -237,7 +237,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			m_rfLC = new CDMRLC(gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
 
 			// Regenerate the data header
-			dataHeader.get(data + 2U);
+			// dataHeader.get(data + 2U);
 
 			// Regenerate the Slot Type
 			slotType.getData(data + 2U);
