@@ -311,6 +311,14 @@ void CDMRSlot::writeModem(unsigned char *data)
 			if (m_rfState != RS_RF_DATA)
 				return;
 
+			// Regenerate the payload if possible
+			if (dataType == DT_RATE_12_DATA) {
+				CBPTC19696 bptc;
+				unsigned char payload[12U];
+				bptc.decode(data + 2U, payload);
+				bptc.encode(payload, data + 2U);
+			}
+
 			// Regenerate the Slot Type
 			slotType.getData(data + 2U);
 
@@ -943,6 +951,14 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 	} else if (dataType == DT_RATE_12_DATA || dataType == DT_RATE_34_DATA || dataType == DT_RATE_1_DATA) {
 		if (m_netState != RS_NET_DATA)
 			return;
+
+		// Regenerate the payload if possible
+		if (dataType == DT_RATE_12_DATA) {
+			CBPTC19696 bptc;
+			unsigned char payload[12U];
+			bptc.decode(data + 2U, payload);
+			bptc.encode(payload, data + 2U);
+		}
 
 		// Regenerate the Slot Type
 		CDMRSlotType slotType;
