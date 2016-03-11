@@ -78,13 +78,13 @@ bool CDMRDataHeader::put(const unsigned char* bytes)
 
 	switch (dpf) {
 	case DPF_UNCONFIRMED_DATA:
-		CUtils::dump("Unconfirmed Data Header", m_data, 12U);
+		CUtils::dump(1U, "Unconfirmed Data Header", m_data, 12U);
 		m_F = (m_data[8U] & 0x80U) == 0x80U;
 		m_blocks = m_data[8U] & 0x7FU;
 		break;
 
 	case DPF_CONFIRMED_DATA:
-		CUtils::dump("Confirmed Data Header", m_data, 12U);
+		CUtils::dump(1U, "Confirmed Data Header", m_data, 12U);
 		m_F = (m_data[8U] & 0x80U) == 0x80U;
 		m_blocks = m_data[8U] & 0x7FU;
 		m_S = (m_data[9U] & 0x80U) == 0x80U;
@@ -92,28 +92,28 @@ bool CDMRDataHeader::put(const unsigned char* bytes)
 		break;
 
 	case DPF_RESPONSE:
-		CUtils::dump("Response Data Header", m_data, 12U);
+		CUtils::dump(1U, "Response Data Header", m_data, 12U);
 		m_blocks = m_data[8U] & 0x7FU;
 		break;
 
 	case DPF_PROPRIETARY:
-		CUtils::dump("Proprietary Data Header", m_data, 12U);
+		CUtils::dump(1U, "Proprietary Data Header", m_data, 12U);
 		break;
 
 	case DPF_DEFINED_RAW:
-		CUtils::dump("Raw or Status/Precoded Short Data Header", m_data, 12U);
+		CUtils::dump(1U, "Raw or Status/Precoded Short Data Header", m_data, 12U);
 		m_F = (m_data[8U] & 0x01U) == 0x01U;
 		m_S = (m_data[8U] & 0x02U) == 0x02U;
 		break;
 
 	case DPF_DEFINED_SHORT:
-		CUtils::dump("Defined Short Data Header", m_data, 12U);
+		CUtils::dump(1U, "Defined Short Data Header", m_data, 12U);
 		m_F = (m_data[8U] & 0x01U) == 0x01U;
 		m_S = (m_data[8U] & 0x02U) == 0x02U;
 		break;
 
 	case DPF_UDT:
-		CUtils::dump("Unified Data Transport Header", m_data, 12U);
+		CUtils::dump(1U, "Unified Data Transport Header", m_data, 12U);
 		break;
 
 	default:
