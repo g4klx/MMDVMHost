@@ -237,7 +237,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			m_rfLC = new CDMRLC(gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
 
 			// Regenerate the data header
-			// dataHeader.get(data + 2U);
+			// dataHeader.get(data + 2U);			XXX
 
 			// Regenerate the Slot Type
 			slotType.getData(data + 2U);
@@ -248,10 +248,8 @@ void CDMRSlot::writeModem(unsigned char *data)
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
 
-			if (m_duplex) {
-				for (unsigned i = 0U; i < 3U; i++)
-					writeQueueRF(data);
-			}
+			if (m_duplex)
+				writeQueueRF(data);
 
 			writeNetworkRF(data, DT_DATA_HEADER);
 
@@ -758,7 +756,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		m_netLC = new CDMRLC(gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
 
 		// Regenerate the data header
-		dataHeader.get(data + 2U);
+		// dataHeader.get(data + 2U);		XXX
 
 		// Regenerate the Slot Type
 		CDMRSlotType slotType;
@@ -776,8 +774,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		writeQueueNet(m_idle);
 		writeQueueNet(m_idle);
 
-		for (unsigned i = 0U; i < 3U; i++)
-			writeQueueNet(data);
+		writeQueueNet(data);
 
 		m_netState = RS_NET_DATA;
 
