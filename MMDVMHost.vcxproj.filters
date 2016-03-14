@@ -158,6 +158,9 @@
     <ClInclude Include="YSFPayload.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Trellis.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -287,6 +290,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="YSFPayload.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Trellis.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

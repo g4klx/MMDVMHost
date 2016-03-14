@@ -15,6 +15,7 @@
 #include "DMRShortLC.h"
 #include "DMRFullLC.h"
 #include "BPTC19696.h"
+#include "Trellis.h"
 #include "DMRSlot.h"
 #include "DMRCSBK.h"
 #include "Utils.h"
@@ -313,12 +314,26 @@ void CDMRSlot::writeModem(unsigned char *data)
 			if (m_rfState != RS_RF_DATA)
 				return;
 
-			// Regenerate the payload if possible
+			// Regenerate and display the payload
 			if (dataType == DT_RATE_12_DATA) {
 				CBPTC19696 bptc;
 				unsigned char payload[12U];
 				bptc.decode(data + 2U, payload);
+				LogDebug("DMR Slot %u, Rate 1/2 Data", m_slotNo);
+				CUtils::dump(1U, "Payload", payload, 12U);
 				bptc.encode(payload, data + 2U);
+			} else if (dataType == DT_RATE_34_DATA) {
+				CTrellis trellis;
+				unsigned char payload[12U];
+				trellis.decode(data + 2U, payload);
+				LogDebug("DMR Slot %u, Rate 3/4 Data", m_slotNo);
+				CUtils::dump(1U, "Payload", payload, 12U);
+			} else {
+				unsigned char payload[24U];
+				::memcpy(payload + 0U, data + 2U + 0U, 12U);
+				::memcpy(payload + 12U, data + 2U + 21U, 12U);
+				LogDebug("DMR Slot %u, Rate 1 Data", m_slotNo);
+				CUtils::dump(1U, "Payload", payload, 24U);
 			}
 
 			// Regenerate the Slot Type
@@ -958,12 +973,26 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		if (m_netState != RS_NET_DATA)
 			return;
 
-		// Regenerate the payload if possible
+		// Regenerate and display the payload
 		if (dataType == DT_RATE_12_DATA) {
 			CBPTC19696 bptc;
 			unsigned char payload[12U];
 			bptc.decode(data + 2U, payload);
+			LogDebug("DMR Slot %u, Rate 1/2 Data", m_slotNo);
+			CUtils::dump(1U, "Payload", payload, 12U);
 			bptc.encode(payload, data + 2U);
+		} else if (dataType == DT_RATE_34_DATA) {
+			CTrellis trellis;
+			unsigned char payload[12U];
+			trellis.decode(data + 2U, payload);
+			LogDebug("DMR Slot %u, Rate 3/4 Data", m_slotNo);
+			CUtils::dump(1U, "Payload", payload, 12U);
+		} else {
+			unsigned char payload[24U];
+			::memcpy(payload + 0U, data + 2U + 0U, 12U);
+			::memcpy(payload + 12U, data + 2U + 21U, 12U);
+			LogDebug("DMR Slot %u, Rate 1 Data", m_slotNo);
+			CUtils::dump(1U, "Payload", payload, 24U);
 		}
 
 		// Regenerate the Slot Type
