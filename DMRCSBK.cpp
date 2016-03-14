@@ -28,6 +28,7 @@ CDMRCSBK::CDMRCSBK() :
 m_data(NULL),
 m_CSBKO(CSBKO_NONE),
 m_FID(0x00U),
+m_GI(false),
 m_bsId(0U),
 m_srcId(0U),
 m_dstId(0U)
@@ -81,6 +82,7 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 		break;
 
 	case CSBKO_PRECCSBK:
+		m_GI    = (m_data[2U] & 0x40U) == 0x40U;
 		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
 		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
 		CUtils::dump(1U, "Preamble CSBK", m_data, 12U);
@@ -116,6 +118,11 @@ CSBKO CDMRCSBK::getCSBKO() const
 unsigned char CDMRCSBK::getFID() const
 {
 	return m_FID;
+}
+
+bool CDMRCSBK::getGI() const
+{
+	return m_GI;
 }
 
 unsigned int CDMRCSBK::getBSId() const

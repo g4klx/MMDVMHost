@@ -124,7 +124,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			CDMRFullLC fullLC;
 			m_rfLC = fullLC.decode(data + 2U, DT_VOICE_LC_HEADER);
 			if (m_rfLC == NULL) {
-				LogMessage("DMR Slot %u: unable to decode the RF LC", m_slotNo);
+				LogMessage("DMR Slot %u, unable to decode the RF LC", m_slotNo);
 				return;
 			}
 
@@ -222,7 +222,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			CDMRDataHeader dataHeader;
 			bool valid = dataHeader.put(data + 2U);
 			if (!valid) {
-				LogMessage("DMR Slot %u: unable to decode the RF data header", m_slotNo);
+				LogMessage("DMR Slot %u, unable to decode the RF data header", m_slotNo);
 				return;
 			}
 
@@ -266,13 +266,17 @@ void CDMRSlot::writeModem(unsigned char *data)
 			CDMRCSBK csbk;
 			bool valid = csbk.put(data + 2U);
 			if (!valid) {
-				LogMessage("DMR Slot %u: unable to decode the RF CSBK", m_slotNo);
+				LogMessage("DMR Slot %u, unable to decode the RF CSBK", m_slotNo);
 				return;
 			}
 
 			CSBKO csbko = csbk.getCSBKO();
 			if (csbko == CSBKO_BSDWNACT)
 				return;
+
+			bool gi = csbk.getGI();
+			unsigned int srcId = csbk.getSrcId();
+			unsigned int dstId = csbk.getDstId();
 
 			// Regenerate the CSBK data
 			csbk.get(data + 2U);
@@ -291,27 +295,27 @@ void CDMRSlot::writeModem(unsigned char *data)
 			if (m_duplex)
 				writeQueueRF(data);
 
-			writeNetworkRF(data, DT_CSBK, FLCO_USER_USER, csbk.getSrcId(), csbk.getDstId());
+			writeNetworkRF(data, DT_CSBK, gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
 
 			switch (csbko) {
 			case CSBKO_UUVREQ:
-				LogMessage("DMR Slot %u, received RF Unit to Unit Voice Service Request CSBK from %u to %u", m_slotNo, csbk.getSrcId(), csbk.getDstId());
+				LogMessage("DMR Slot %u, received RF Unit to Unit Voice Service Request CSBK from %u to %u", m_slotNo, srcId, dstId);
 				break;
 			case CSBKO_UUANSRSP:
-				LogMessage("DMR Slot %u, received RF Unit to Unit Voice Service Answer Response CSBK from %u to %u", m_slotNo, csbk.getSrcId(), csbk.getDstId());
+				LogMessage("DMR Slot %u, received RF Unit to Unit Voice Service Answer Response CSBK from %u to %u", m_slotNo, srcId, dstId);
 				break;
 			case CSBKO_NACKRSP:
-				LogMessage("DMR Slot %u, received RF Negative Acknowledgment Response CSBK from %u to %u", m_slotNo, csbk.getSrcId(), csbk.getDstId());
+				LogMessage("DMR Slot %u, received RF Negative Acknowledgment Response CSBK from %u to %u", m_slotNo, srcId, dstId);
 				break;
 			case CSBKO_PRECCSBK:
-				LogMessage("DMR Slot %u, received RF Preamble CSBK from %u to %u", m_slotNo, csbk.getSrcId(), csbk.getDstId());
+				LogMessage("DMR Slot %u, received RF Preamble CSBK from %u to %s%u", m_slotNo, srcId, gi ? "TG" : "", dstId);
 				break;
 			default:
 				LogWarning("DMR Slot %u, unhandled RF CSBK type - 0x%02X", m_slotNo, csbko);
 				break;
 			}
 		} else if (dataType == DT_RATE_12_DATA || dataType == DT_RATE_34_DATA || dataType == DT_RATE_1_DATA) {
-			if (m_rfState != RS_RF_DATA)
+			if (m_rfState != RS_RF_DATA || m_rfFrames == 0U)
 				return;
 
 			// Regenerate and display the payload
@@ -757,7 +761,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		CDMRDataHeader dataHeader;
 		bool valid = dataHeader.put(data + 2U);
 		if (!valid) {
-			LogMessage("DMR Slot %u: unable to decode the network data header", m_slotNo);
+			LogMessage("DMR Slot %u, unable to decode the network data header", m_slotNo);
 			return;
 		}
 
@@ -918,13 +922,17 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		CDMRCSBK csbk;
 		bool valid = csbk.put(data + 2U);
 		if (!valid) {
-			LogMessage("DMR Slot %u: unable to decode the network CSBK", m_slotNo);
+			LogMessage("DMR Slot %u, unable to decode the network CSBK", m_slotNo);
 			return;
 		}
 
 		CSBKO csbko = csbk.getCSBKO();
 		if (csbko == CSBKO_BSDWNACT)
 			return;
+
+		bool gi = csbk.getGI();
+		unsigned int srcId = csbk.getSrcId();
+		unsigned int dstId = csbk.getDstId();
 
 		// Regenerate the CSBK data
 		csbk.get(data + 2U);
@@ -951,23 +959,23 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		switch (csbko) {
 		case CSBKO_UUVREQ:
-			LogMessage("DMR Slot %u, received network Unit to Unit Voice Service Request CSBK from %u to %u", m_slotNo, csbk.getSrcId(), csbk.getDstId());
+			LogMessage("DMR Slot %u, received network Unit to Unit Voice Service Request CSBK from %u to %u", m_slotNo, srcId, dstId);
 			break;
 		case CSBKO_UUANSRSP:
-			LogMessage("DMR Slot %u, received network Unit to Unit Voice Service Answer Response CSBK from %u to %u", m_slotNo, csbk.getSrcId(), csbk.getDstId());
+			LogMessage("DMR Slot %u, received network Unit to Unit Voice Service Answer Response CSBK from %u to %u", m_slotNo, srcId, dstId);
 			break;
 		case CSBKO_NACKRSP:
-			LogMessage("DMR Slot %u, received network Negative Acknowledgment Response CSBK from %u to %u", m_slotNo, csbk.getSrcId(), csbk.getDstId());
+			LogMessage("DMR Slot %u, received network Negative Acknowledgment Response CSBK from %u to %u", m_slotNo, srcId, dstId);
 			break;
 		case CSBKO_PRECCSBK:
-			LogMessage("DMR Slot %u, received network Preamble CSBK from %u to %u", m_slotNo, csbk.getSrcId(), csbk.getDstId());
+			LogMessage("DMR Slot %u, received network Preamble CSBK from %u to %s%u", m_slotNo, srcId, gi ? "TG" : "", dstId);
 			break;
 		default:
 			LogWarning("DMR Slot %u, unhandled network CSBK type - 0x%02X", m_slotNo, csbko);
 			break;
 		}
 	} else if (dataType == DT_RATE_12_DATA || dataType == DT_RATE_34_DATA || dataType == DT_RATE_1_DATA) {
-		if (m_netState != RS_NET_DATA)
+		if (m_netState != RS_NET_DATA || m_netFrames == 0U)
 			return;
 
 		// Regenerate and display the payload

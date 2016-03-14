@@ -48,6 +48,9 @@ public:
 	// For BS Dwn Act
 	unsigned int  getBSId() const;
 
+	// For Pre
+	bool getGI() const;
+
 	unsigned int  getSrcId() const;
 	unsigned int  getDstId() const;
 
@@ -55,6 +58,7 @@ private:
 	unsigned char* m_data;
 	CSBKO          m_CSBKO;
 	unsigned char  m_FID;
+	bool           m_GI;
 	unsigned int   m_bsId;
 	unsigned int   m_srcId;
 	unsigned int   m_dstId;
