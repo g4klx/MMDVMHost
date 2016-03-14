@@ -216,9 +216,6 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			writeEndRF();
 		} else if (dataType == DT_DATA_HEADER) {
-			if (m_rfState == RS_RF_DATA)
-				return;
-
 			CDMRDataHeader dataHeader;
 			bool valid = dataHeader.put(data + 2U);
 			if (!valid) {
@@ -754,9 +751,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		if (m_netBits == 0U) m_netBits = 1U;
 		LogMessage("DMR Slot %u, received network end of voice transmission, %.1f seconds, %u%% packet loss, BER: %.1f%%", m_slotNo, float(m_netFrames) / 16.667F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
 	} else if (dataType == DT_DATA_HEADER) {
-		if (m_netState == RS_NET_DATA)
-			return;
-
 		CDMRDataHeader dataHeader;
 		bool valid = dataHeader.put(data + 2U);
 		if (!valid) {

@@ -184,8 +184,12 @@ void CDMRDataHeader::getTerminator(unsigned char* bytes) const
 	payload[10U] = parity[1U] ^ TERMINATOR_WITH_LC_CRC_MASK[1U];
 	payload[11U] = parity[0U] ^ TERMINATOR_WITH_LC_CRC_MASK[2U];
 
+	CUtils::dump(1U, "Data Terminator payload", payload, 12U);
+
 	CBPTC19696 bptc;
 	bptc.encode(payload, bytes);
+
+	CUtils::dump(1U, "Data Terminator bytes", bytes, DMR_FRAME_LENGTH_BYTES);
 }
 
 CDMRDataHeader& CDMRDataHeader::operator=(const CDMRDataHeader& header)
