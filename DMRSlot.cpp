@@ -237,7 +237,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			m_rfLC = new CDMRLC(gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
 
 			// Regenerate the data header
-			// dataHeader.get(data + 2U);			XXX
+			dataHeader.get(data + 2U);
 
 			// Regenerate the Slot Type
 			slotType.getData(data + 2U);
@@ -270,37 +270,41 @@ void CDMRSlot::writeModem(unsigned char *data)
 			}
 
 			CSBKO csbko = csbk.getCSBKO();
-			switch (csbko) {
-			case CSBKO_BSDWNACT:
+			if (csbko == CSBKO_BSDWNACT)
 				return;
 
+			// Regenerate the CSBK data
+			csbk.get(data + 2U);
+
+			// Regenerate the Slot Type
+			slotType.getData(data + 2U);
+
+			// Convert the Data Sync to be from the BS
+			CSync::addDMRDataSync(data + 2U);
+
+			m_rfSeqNo = 0U;
+
+			data[0U] = TAG_DATA;
+			data[1U] = 0x00U;
+
+			if (m_duplex)
+				writeQueueRF(data);
+
+			writeNetworkRF(data, DT_CSBK, FLCO_USER_USER, csbk.getSrcId(), csbk.getDstId());
+
+			switch (csbko) {
 			case CSBKO_UUVREQ:
-			case CSBKO_UUANSRSP:
-			case CSBKO_NACKRSP:
-			case CSBKO_PRECCSBK: {
-					// Regenerate the CSBK data
-					csbk.get(data + 2U);
-
-					// Regenerate the Slot Type
-					slotType.getData(data + 2U);
-
-					// Convert the Data Sync to be from the BS
-					CSync::addDMRDataSync(data + 2U);
-
-					m_rfSeqNo = 0U;
-
-					data[0U] = TAG_DATA;
-					data[1U] = 0x00U;
-
-					if (m_duplex)
-						writeQueueRF(data);
-
-					writeNetworkRF(data, DT_CSBK, FLCO_USER_USER, csbk.getSrcId(), csbk.getDstId());
-
-					LogMessage("DMR Slot %u, received RF CSBK from %u to %u", m_slotNo, csbk.getSrcId(), csbk.getDstId());
-				}
+				LogMessage("DMR Slot %u, received RF Unit to Unit Voice Service Request CSBK from %u to %u", m_slotNo, csbk.getSrcId(), csbk.getDstId());
 				break;
-
+			case CSBKO_UUANSRSP:
+				LogMessage("DMR Slot %u, received RF Unit to Unit Voice Service Answer Response CSBK from %u to %u", m_slotNo, csbk.getSrcId(), csbk.getDstId());
+				break;
+			case CSBKO_NACKRSP:
+				LogMessage("DMR Slot %u, received RF Negative Acknowledgment Response CSBK from %u to %u", m_slotNo, csbk.getSrcId(), csbk.getDstId());
+				break;
+			case CSBKO_PRECCSBK:
+				LogMessage("DMR Slot %u, received RF Preamble CSBK from %u to %u", m_slotNo, csbk.getSrcId(), csbk.getDstId());
+				break;
 			default:
 				LogWarning("DMR Slot %u, unhandled RF CSBK type - 0x%02X", m_slotNo, csbko);
 				break;
@@ -756,7 +760,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		m_netLC = new CDMRLC(gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
 
 		// Regenerate the data header
-		// dataHeader.get(data + 2U);		XXX
+		dataHeader.get(data + 2U);
 
 		// Regenerate the Slot Type
 		CDMRSlotType slotType;
@@ -907,40 +911,45 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		}
 
 		CSBKO csbko = csbk.getCSBKO();
-		switch (csbko) {
-		case CSBKO_BSDWNACT:
+		if (csbko == CSBKO_BSDWNACT)
 			return;
 
-		case CSBKO_UUVREQ:
-		case CSBKO_UUANSRSP:
-		case CSBKO_NACKRSP:
-		case CSBKO_PRECCSBK: {
-				// Regenerate the CSBK data
-				csbk.get(data + 2U);
+		// Regenerate the CSBK data
+		csbk.get(data + 2U);
 
-				// Regenerate the Slot Type
-				CDMRSlotType slotType;
-				slotType.putData(data + 2U);
-				slotType.setColorCode(m_colorCode);
-				slotType.getData(data + 2U);
+		// Regenerate the Slot Type
+		CDMRSlotType slotType;
+		slotType.putData(data + 2U);
+		slotType.setColorCode(m_colorCode);
+		slotType.getData(data + 2U);
 
-				// Convert the Data Sync to be from the BS
-				CSync::addDMRDataSync(data + 2U);
+		// Convert the Data Sync to be from the BS
+		CSync::addDMRDataSync(data + 2U);
 
-				data[0U] = TAG_DATA;
-				data[1U] = 0x00U;
+		data[0U] = TAG_DATA;
+		data[1U] = 0x00U;
 
-				writeQueueNet(data);
+		writeQueueNet(data);
 
 #if defined(DUMP_DMR)
-				openFile();
-				writeFile(data);
-				closeFile();
+		openFile();
+		writeFile(data);
+		closeFile();
 #endif
-				LogMessage("DMR Slot %u, received network CSBK from %u to %u", m_slotNo, csbk.getSrcId(), csbk.getDstId());
-			}
-			break;
 
+		switch (csbko) {
+		case CSBKO_UUVREQ:
+			LogMessage("DMR Slot %u, received network Unit to Unit Voice Service Request CSBK from %u to %u", m_slotNo, csbk.getSrcId(), csbk.getDstId());
+			break;
+		case CSBKO_UUANSRSP:
+			LogMessage("DMR Slot %u, received network Unit to Unit Voice Service Answer Response CSBK from %u to %u", m_slotNo, csbk.getSrcId(), csbk.getDstId());
+			break;
+		case CSBKO_NACKRSP:
+			LogMessage("DMR Slot %u, received network Negative Acknowledgment Response CSBK from %u to %u", m_slotNo, csbk.getSrcId(), csbk.getDstId());
+			break;
+		case CSBKO_PRECCSBK:
+			LogMessage("DMR Slot %u, received network Preamble CSBK from %u to %u", m_slotNo, csbk.getSrcId(), csbk.getDstId());
+			break;
 		default:
 			LogWarning("DMR Slot %u, unhandled network CSBK type - 0x%02X", m_slotNo, csbko);
 			break;
