@@ -183,11 +183,16 @@ void CModem::clock(unsigned int ms)
 	if (m_inactivityTimer.hasExpired()) {
 		LogError("No reply from the modem for some time, resetting it");
 		close();
+#if defined(_WIN32) || defined(_WIN64)
+		::Sleep(2000UL);		// 2s
+#else
+		::sleep(2UL);			// 2s
+#endif
 		while (!open()) {
 #if defined(_WIN32) || defined(_WIN64)
-			::Sleep(1000UL);	// 1s
+			::Sleep(5000UL);		// 5s
 #else
-			::sleep(1UL);			// 1s
+			::sleep(5UL);			// 5s
 #endif
 		}
 	}
