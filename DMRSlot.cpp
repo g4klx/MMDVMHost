@@ -62,6 +62,7 @@ m_networkWatchdog(1000U, 0U, 1500U),
 m_rfTimeoutTimer(1000U, timeout),
 m_netTimeoutTimer(1000U, timeout),
 m_packetTimer(1000U, 0U, 300U),
+m_interval(),
 m_elapsed(),
 m_rfFrames(0U),
 m_netFrames(0U),
@@ -76,6 +77,8 @@ m_lastEMB(),
 m_fp(NULL)
 {
 	m_lastFrame = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
+
+	m_interval.start();
 }
 
 CDMRSlot::~CDMRSlot()
@@ -1038,8 +1041,11 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 	}
 }
 
-void CDMRSlot::clock(unsigned int ms)
+void CDMRSlot::clock()
 {
+	unsigned int ms = m_interval.elapsed();
+	m_interval.start();
+
 	m_rfTimeoutTimer.clock(ms);
 	m_netTimeoutTimer.clock(ms);
 

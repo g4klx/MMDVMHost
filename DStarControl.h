@@ -23,8 +23,8 @@
 #include "DStarSlowData.h"
 #include "DStarDefines.h"
 #include "DStarHeader.h"
-#include "StopWatch.h"
 #include "RingBuffer.h"
+#include "StopWatch.h"
 #include "AMBEFEC.h"
 #include "Display.h"
 #include "Defines.h"
@@ -42,7 +42,7 @@ public:
 
 	unsigned int readModem(unsigned char* data);
 
-	void clock(unsigned int ms);
+	void clock();
 
 private:
 	unsigned char*             m_callsign;
@@ -65,6 +65,7 @@ private:
 	CTimer                     m_netTimeoutTimer;
 	CTimer                     m_packetTimer;
 	CTimer                     m_ackTimer;
+	CStopWatch                 m_interval;
 	CStopWatch                 m_elapsed;
 	unsigned int               m_rfFrames;
 	unsigned int               m_netFrames;

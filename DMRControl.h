@@ -39,7 +39,7 @@ public:
 	unsigned int readModemSlot1(unsigned char* data);
 	unsigned int readModemSlot2(unsigned char* data);
 
-	void clock(unsigned int ms);
+	void clock();
 
 private:
 	unsigned int m_id;

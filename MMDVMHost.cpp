@@ -348,11 +348,11 @@ int CMMDVMHost::run()
 		m_modeTimer.clock(ms);
 
 		if (dstar != NULL)
-			dstar->clock(ms);
+			dstar->clock();
 		if (dmr != NULL)
-			dmr->clock(ms);
+			dmr->clock();
 		if (ysf != NULL)
-			ysf->clock(ms);
+			ysf->clock();
 
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->clock(ms);

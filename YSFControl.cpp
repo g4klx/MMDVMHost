@@ -35,6 +35,7 @@ m_duplex(duplex),
 m_queue(1000U, "YSF Control"),
 m_state(RS_RF_LISTENING),
 m_timeoutTimer(1000U, timeout),
+m_interval(),
 m_frames(0U),
 m_fich(),
 m_source(NULL),
@@ -50,6 +51,8 @@ m_fp(NULL)
 
 	m_payload.setUplink(callsign);
 	m_payload.setDownlink(callsign);
+
+	m_interval.start();
 }
 
 CYSFControl::~CYSFControl()
@@ -250,8 +253,11 @@ void CYSFControl::writeEndOfTransmission()
 #endif
 }
 
-void CYSFControl::clock(unsigned int ms)
+void CYSFControl::clock()
 {
+	unsigned int ms = m_interval.elapsed();
+	m_interval.start();
+
 	m_timeoutTimer.clock(ms);
 
 	if (m_parrot != NULL) {

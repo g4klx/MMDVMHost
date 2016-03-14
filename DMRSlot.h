@@ -45,7 +45,7 @@ public:
 
 	void writeNetwork(const CDMRData& data);
 
-	void clock(unsigned int ms);
+	void clock();
 
 	static void init(unsigned int colorCode, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex);
 
@@ -68,6 +68,7 @@ private:
 	CTimer                     m_rfTimeoutTimer;
 	CTimer                     m_netTimeoutTimer;
 	CTimer                     m_packetTimer;
+	CStopWatch                 m_interval;
 	CStopWatch                 m_elapsed;
 	unsigned int               m_rfFrames;
 	unsigned int               m_netFrames;

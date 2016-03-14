@@ -94,7 +94,7 @@ unsigned int CDMRControl::readModemSlot2(unsigned char *data)
 	return m_slot2.readModem(data);
 }
 
-void CDMRControl::clock(unsigned int ms)
+void CDMRControl::clock()
 {
 	if (m_network != NULL) {
 		CDMRData data;
@@ -109,6 +109,6 @@ void CDMRControl::clock(unsigned int ms)
 		}
 	}
 
-	m_slot1.clock(ms);
-	m_slot2.clock(ms);
+	m_slot1.clock();
+	m_slot2.clock();
 }

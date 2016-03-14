@@ -22,6 +22,7 @@
 #include "YSFDefines.h"
 #include "YSFPayload.h"
 #include "RingBuffer.h"
+#include "StopWatch.h"
 #include "YSFParrot.h"
 #include "Display.h"
 #include "Defines.h"
@@ -40,7 +41,7 @@ public:
 
 	unsigned int readModem(unsigned char* data);
 
-	void clock(unsigned int ms);
+	void clock();
 
 private:
 	IDisplay*                  m_display;
@@ -48,6 +49,7 @@ private:
 	CRingBuffer<unsigned char> m_queue;
 	RPT_RF_STATE               m_state;
 	CTimer                     m_timeoutTimer;
+	CStopWatch                 m_interval;
 	unsigned int               m_frames;
 	CYSFFICH                   m_fich;
 	unsigned char*             m_source;

@@ -45,6 +45,7 @@ m_rfTimeoutTimer(1000U, timeout),
 m_netTimeoutTimer(1000U, timeout),
 m_packetTimer(1000U, 0U, 200U),
 m_ackTimer(1000U, 0U, 750U),
+m_interval(),
 m_elapsed(),
 m_rfFrames(0U),
 m_netFrames(0U),
@@ -78,6 +79,8 @@ m_fp(NULL)
 		m_callsign[i] = call.at(i);
 		m_gateway[i]  = gate.at(i);
 	}
+
+	m_interval.start();
 }
 
 CDStarControl::~CDStarControl()
@@ -506,8 +509,11 @@ void CDStarControl::writeNetwork()
 	}
 }
 
-void CDStarControl::clock(unsigned int ms)
+void CDStarControl::clock()
 {
+	unsigned int ms = m_interval.elapsed();
+	m_interval.start();
+
 	if (m_network != NULL)
 		writeNetwork();
 
