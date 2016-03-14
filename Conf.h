@@ -103,6 +103,10 @@ public:
   std::string  getTFTSerialPort() const;
   unsigned int getTFTSerialBrightness() const;
 
+  // The HD44780 section
+  unsigned int getHD44780Rows() const;
+  unsigned int getHD44780Columns() const;
+
 private:
   std::string  m_file;
   std::string  m_callsign;
@@ -167,6 +171,9 @@ private:
 
   std::string  m_tftSerialPort;
   unsigned int m_tftSerialBrightness;
+
+  unsigned int m_hd44780Rows;
+  unsigned int m_hd44780Columns;
 };
 
 #endif

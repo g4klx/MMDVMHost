@@ -37,7 +37,8 @@ enum SECTION {
   SECTION_DSTAR_NETWORK,
   SECTION_DMR_NETWORK,
   SECTION_FUSION_NETWORK,
-  SECTION_TFTSERIAL
+  SECTION_TFTSERIAL,
+  SECTION_HD44780
 };
 
 CConf::CConf(const std::string& file) :
@@ -93,7 +94,9 @@ m_fusionNetworkAddress(),
 m_fusionNetworkPort(0U),
 m_fusionNetworkDebug(false),
 m_tftSerialPort(),
-m_tftSerialBrightness(50U)
+m_tftSerialBrightness(50U),
+m_hd44780Rows(2U),
+m_hd44780Columns(16U)
 {
 }
 
@@ -137,9 +140,11 @@ bool CConf::read()
         section = SECTION_DMR_NETWORK;
       else if (::strncmp(buffer, "[System Fusion Network]", 23U) == 0)
         section = SECTION_FUSION_NETWORK;
-      else if (::strncmp(buffer, "[TFT Serial]", 11U) == 0)
+      else if (::strncmp(buffer, "[TFT Serial]", 12U) == 0)
         section = SECTION_TFTSERIAL;
-      else
+	  else if (::strncmp(buffer, "[HD44780]", 9U) == 0)
+		  section = SECTION_HD44780;
+	  else
         section = SECTION_NONE;
 
       continue;
@@ -265,6 +270,11 @@ bool CConf::read()
 			m_tftSerialPort = value;
 		else if (::strcmp(key, "Brightness") == 0)
 			m_tftSerialBrightness = (unsigned int)::atoi(value);
+	} else if (section == SECTION_HD44780) {
+		if (::strcmp(key, "Rows") == 0)
+			m_hd44780Rows = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "Columns") == 0)
+			m_hd44780Columns = (unsigned int)::atoi(value);
 	}
   }
 
@@ -531,4 +541,14 @@ std::string CConf::getTFTSerialPort() const
 unsigned int CConf::getTFTSerialBrightness() const
 {
 	return m_tftSerialBrightness;
+}
+
+unsigned int CConf::getHD44780Rows() const
+{
+	return m_hd44780Rows;
+}
+
+unsigned int CConf::getHD44780Columns() const
+{
+	return m_hd44780Columns;
 }

@@ -27,6 +27,10 @@
 #include "NullDisplay.h"
 #include "YSFControl.h"
 
+#if defined(RASPBERRY_PI)
+#include "HD44780.h"
+#endif
+
 #include <cstdio>
 
 #if !defined(_WIN32) && !defined(_WIN64)
@@ -539,13 +543,23 @@ void CMMDVMHost::createDisplay()
 	LogInfo("    Type: %s", type.c_str());
 
 	if (type == "TFT Serial") {
-		std::string port        = m_conf.getTFTSerialPort();
+		std::string port = m_conf.getTFTSerialPort();
 		unsigned int brightness = m_conf.getTFTSerialBrightness();
 
 		LogInfo("    Port: %s", port.c_str());
 		LogInfo("    Brightness: %u", brightness);
 
 		m_display = new CTFTSerial(port, brightness);
+#if defined(RASPBERRY_PI)
+	} else if (type == "HD44780") {
+		unsigned int rows    = m_conf.getHD44780Rows();
+		unsigned int columns = m_conf.getHD44780Columns();
+
+		LogInfo("    Rows: %u", rows);
+		LogInfo("    Columns: %u", columns);
+
+		m_display = new CHD44780(rows, columns);
+#endif
 	} else {
 		m_display = new CNullDisplay;
 	}
