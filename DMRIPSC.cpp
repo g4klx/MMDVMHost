@@ -427,7 +427,7 @@ bool CDMRIPSC::writeAuthorisation()
 
 bool CDMRIPSC::writeConfig()
 {
-	char* software = "MMDVM";
+	const char* software = "MMDVM";
 	char slots = '0';
 	if (m_duplex) {
 		if (m_slot1 && m_slot2)

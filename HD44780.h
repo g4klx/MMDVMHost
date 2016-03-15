@@ -19,8 +19,6 @@
 #if !defined(HD44780_H)
 #define	HD44780_H
 
-#if defined(RASPBERRY_PI)
-
 #include "Display.h"
 
 #include <string>
@@ -56,7 +54,5 @@ private:
 	unsigned int m_cols;
 	int          m_fd;
 };
-
-#endif
 
 #endif

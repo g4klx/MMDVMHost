@@ -16,8 +16,6 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if defined(RASPBERRY_PI)
-
 #include "HD44780.h"
 #include "Log.h"
 
@@ -26,6 +24,8 @@
 
 #include <cstdio>
 #include <cassert>
+
+const char* LISTENING = "Listening                                      ";
 
 CHD44780::CHD44780(unsigned int rows, unsigned int cols) :
 m_rows(rows),
@@ -83,52 +83,75 @@ void CHD44780::setDStar()
 	::lcdPuts(m_fd, "D-Star");
 
 	::lcdPosition(m_fd, 0, 1);
-	::lcdPuts(m_fd, "Listening");
+	::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
 }
 
 void CHD44780::writeDStar(const char* my1, const char* my2, const char* your)
 {
+	char buffer[40U];
+	::sprintf(buffer, "%s/%s > %s", my1, my2, your);
+
 	::lcdPosition(m_fd, 0, 1);
-	::lcdPrintf(m_fd, "%s/%s > %s", my1, my2, your);
+	::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
 }
 
 void CHD44780::clearDStar()
 {
 	::lcdPosition(m_fd, 0, 1);
-	::lcdPuts(m_fd, "Listening       ");
+	::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
 }
 
 void CHD44780::setDMR()
 {
 	::lcdClear(m_fd);
 
-	::lcdPosition(m_fd, 0, 0);
-	::lcdPuts(m_fd, "1 DMR Listening");
+	int row = 0;
+	if (m_rows > 2U) {
+		::lcdPosition(m_fd, 0, row);
+		::lcdPuts(m_fd, "DMR");
+		row++;
+	}
 
-	::lcdPosition(m_fd, 0, 1);
-	::lcdPuts(m_fd, "2 DMR Listening");
+	::lcdPosition(m_fd, 0, row);
+	::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
+
+	row++;
+
+	::lcdPosition(m_fd, 0, row);
+	::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
 }
 
 void CHD44780::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, unsigned int dstId, const char* type)
 {
 	if (slotNo == 1U) {
-		::lcdPosition(m_fd, 0, 0);
-		::lcdPrintf(m_fd, "1 %s %u > %s%u", type, srcId, group ? "TG" : "", dstId);
-	}
-	else {
-		::lcdPosition(m_fd, 0, 1);
-		::lcdPrintf(m_fd, "2 %s %u > %s%u", type, srcId, group ? "TG" : "", dstId);
+		char buffer[40U];
+		if (m_cols > 16U)
+			::sprintf(buffer, "%s %u > %s%u", type, srcId, group ? "TG" : "", dstId);
+		else
+			::sprintf(buffer, "%u > %s%u", srcId, group ? "TG" : "", dstId);
+
+		::lcdPosition(m_fd, 0, m_rows > 2U ? 1 : 0);
+		::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
+	} else {
+		char buffer[40U];
+		if (m_cols > 16U)
+			::sprintf(buffer, "%s %u > %s%u", type, srcId, group ? "TG" : "", dstId);
+		else
+			::sprintf(buffer, "%u > %s%u", srcId, group ? "TG" : "", dstId);
+
+		::lcdPosition(m_fd, 0, m_rows > 2U ? 2 : 1);
+		::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 	}
 }
 
 void CHD44780::clearDMR(unsigned int slotNo)
 {
 	if (slotNo == 1U) {
-		::lcdPosition(m_fd, 0, 0);
-		::lcdPuts(m_fd, "1 Listening     ");
+		::lcdPosition(m_fd, 0, m_rows > 2U ? 1 : 0);
+		::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
 	} else {
-		::lcdPosition(m_fd, 0, 1);
-		::lcdPuts(m_fd, "2 Listening     ");
+		::lcdPosition(m_fd, 0, m_rows > 2U ? 2 : 1);
+		::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
 	}
 }
 
@@ -140,23 +163,24 @@ void CHD44780::setFusion()
 	::lcdPuts(m_fd, "System Fusion");
 
 	::lcdPosition(m_fd, 0, 1);
-	::lcdPuts(m_fd, "Listening");
+	::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
 }
 
 void CHD44780::writeFusion(const char* source, const char* dest)
 {
+	char buffer[40U];
+	::sprintf(buffer, "%s > %s", source, dest);
+
 	::lcdPosition(m_fd, 0, 1);
-	::lcdPrintf(m_fd, "%s > %s", source, dest);
+	::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
 }
 
 void CHD44780::clearFusion()
 {
 	::lcdPosition(m_fd, 0, 1);
-	::lcdPuts(m_fd, "Listening       ");
+	::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
 }
 
 void CHD44780::close()
 {
 }
-
-#endif
