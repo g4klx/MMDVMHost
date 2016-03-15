@@ -116,6 +116,7 @@ bool CDMRDataHeader::put(const unsigned char* bytes)
 
 	case DPF_UDT:
 		CUtils::dump(1U, "Unified Data Transport Header", m_data, 12U);
+		m_blocks = m_data[8U] & 0x03U;
 		break;
 
 	default:
