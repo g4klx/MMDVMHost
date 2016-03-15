@@ -90,17 +90,37 @@ void CHD44780::setDStar()
 
 void CHD44780::writeDStar(const char* my1, const char* my2, const char* your)
 {
-	char buffer[40U];
-	::sprintf(buffer, "%s/%s > %s", my1, my2, your);
+	if (m_rows > 2U) {
+		char buffer[40U];
 
-	::lcdPosition(m_fd, 0, 1);
-	::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+		::sprintf(buffer, "%.8s/%.4s >", my1, my2);
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+
+		::sprintf(buffer, "%.8s", your);
+		::lcdPosition(m_fd, 0, 2);
+		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+	} else {
+		char buffer[40U];
+		::sprintf(buffer, "%.8s/%.4s > %.8s", my1, my2, your);
+
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+	}
 }
 
 void CHD44780::clearDStar()
 {
-	::lcdPosition(m_fd, 0, 1);
-	::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+	if (m_rows > 2U) {
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+
+		::lcdPosition(m_fd, 0, 2);
+		::lcdPrintf(m_fd, "%.*s", m_cols, "");
+	} else {
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+	}
 }
 
 void CHD44780::setDMR()
@@ -170,17 +190,37 @@ void CHD44780::setFusion()
 
 void CHD44780::writeFusion(const char* source, const char* dest)
 {
-	char buffer[40U];
-	::sprintf(buffer, "%s > %s", source, dest);
+	if (m_rows > 2U) {
+		char buffer[40U];
 
-	::lcdPosition(m_fd, 0, 1);
-	::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+		::sprintf(buffer, "%.10s >", source);
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+
+		::sprintf(buffer, "%.10s", dest);
+		::lcdPosition(m_fd, 0, 2);
+		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+	} else {
+		char buffer[40U];
+		::sprintf(buffer, "%.10s > %.10s", source, dest);
+
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+	}
 }
 
 void CHD44780::clearFusion()
 {
-	::lcdPosition(m_fd, 0, 1);
-	::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+	if (m_rows > 2U) {
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+
+		::lcdPosition(m_fd, 0, 2);
+		::lcdPrintf(m_fd, "%.*s", m_cols, "");
+	} else {
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+	}
 }
 
 void CHD44780::close()
