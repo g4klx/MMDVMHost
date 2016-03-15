@@ -262,6 +262,31 @@ void CDMRSlot::writeModem(unsigned char *data)
 			}
 
 			LogMessage("DMR Slot %u, received RF data header from %u to %s%u, %u blocks", m_slotNo, srcId, gi ? "TG ": "", dstId, m_rfFrames);
+
+			if (m_rfFrames == 0U) {
+				LogMessage("DMR Slot %u, ended RF data transmission", m_slotNo);
+
+				if (m_duplex) {
+					unsigned char bytes[DMR_FRAME_LENGTH_BYTES + 2U];
+
+					CSync::addDMRDataSync(bytes + 2U);
+
+					CDMRSlotType slotType;
+					slotType.setDataType(DT_TERMINATOR_WITH_LC);
+					slotType.setColorCode(m_colorCode);
+					slotType.getData(bytes + 2U);
+
+					m_rfDataHeader.getTerminator(bytes + 2U);
+
+					bytes[0U] = TAG_DATA;
+					bytes[1U] = 0x00U;
+
+					for (unsigned int i = 0U; i < 5U; i++)
+						writeQueueRF(bytes);
+				}
+
+				writeEndRF();
+			}
 		} else if (dataType == DT_CSBK) {
 			CDMRCSBK csbk;
 			bool valid = csbk.put(data + 2U);
@@ -803,6 +828,31 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		m_display->writeDMR(m_slotNo, dmrData.getSrcId(), gi, dmrData.getDstId(), "N");
 
 		LogMessage("DMR Slot %u, received network data header from %u to %s%u, %u blocks", m_slotNo, dmrData.getSrcId(), gi ? "TG ": "", dmrData.getDstId(), m_netFrames);
+
+		if (m_netFrames == 0U) {
+			LogMessage("DMR Slot %u, ended network data transmission", m_slotNo);
+
+			if (m_duplex) {
+				unsigned char bytes[DMR_FRAME_LENGTH_BYTES + 2U];
+
+				CSync::addDMRDataSync(bytes + 2U);
+
+				CDMRSlotType slotType;
+				slotType.setDataType(DT_TERMINATOR_WITH_LC);
+				slotType.setColorCode(m_colorCode);
+				slotType.getData(bytes + 2U);
+
+				m_netDataHeader.getTerminator(bytes + 2U);
+
+				bytes[0U] = TAG_DATA;
+				bytes[1U] = 0x00U;
+
+				for (unsigned int i = 0U; i < 5U; i++)
+					writeQueueNet(bytes);
+			}
+
+			writeEndNet();
+		}
 	} else if (dataType == DT_VOICE_SYNC) {
 		if (m_netState == RS_NET_IDLE) {
 			m_netLC = new CDMRLC(dmrData.getFLCO(), dmrData.getSrcId(), dmrData.getDstId());
@@ -1038,7 +1088,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				bytes[1U] = 0x00U;
 
 				for (unsigned int i = 0U; i < 5U; i++)
-					writeQueueRF(bytes);
+					writeQueueNet(bytes);
 			}
 
 			writeEndNet();
