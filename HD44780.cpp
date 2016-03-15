@@ -32,6 +32,8 @@ m_rows(rows),
 m_cols(cols),
 m_fd(-1)
 {
+	assert(rows > 1U);
+	assert(cols > 15U);
 }
 
 CHD44780::~CHD44780()
@@ -90,6 +92,10 @@ void CHD44780::setDStar()
 
 void CHD44780::writeDStar(const char* my1, const char* my2, const char* your)
 {
+	assert(my1 != NULL);
+	assert(my2 != NULL);
+	assert(your != NULL);
+
 	if (m_rows > 2U) {
 		char buffer[40U];
 
@@ -145,6 +151,8 @@ void CHD44780::setDMR()
 
 void CHD44780::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, unsigned int dstId, const char* type)
 {
+	assert(type != NULL);
+
 	if (slotNo == 1U) {
 		char buffer[40U];
 		if (m_cols > 16U)
@@ -190,6 +198,9 @@ void CHD44780::setFusion()
 
 void CHD44780::writeFusion(const char* source, const char* dest)
 {
+	assert(source != NULL);
+	assert(dest != NULL);
+
 	if (m_rows > 2U) {
 		char buffer[40U];
 
