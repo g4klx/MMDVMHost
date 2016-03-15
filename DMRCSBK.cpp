@@ -66,7 +66,7 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 	case CSBKO_BSDWNACT:
 		m_bsId  = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
 		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U]; 
-		CUtils::dump(1U, "Download Activate CSBK", m_data, 12U);
+		CUtils::dump(1U, "Downlink Activate CSBK", m_data, 12U);
 		break;
 
 	case CSBKO_UUVREQ:
