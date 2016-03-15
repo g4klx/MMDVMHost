@@ -331,7 +331,7 @@ void CBPTC19696::encodeExtractBinary(unsigned char* data)
 	data[12U] = (data[12U] & 0x3FU) | ((byte >> 0) & 0xC0U);
 	data[20U] = (data[20U] & 0xFCU) | ((byte >> 4) & 0x03U);
 
-// Second block
+	// Second block
 	CUtils::bitsToByteBE(m_rawData + 100U,  data[21U]);
 	CUtils::bitsToByteBE(m_rawData + 108U,  data[22U]);
 	CUtils::bitsToByteBE(m_rawData + 116U,  data[23U]);
