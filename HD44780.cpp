@@ -40,6 +40,8 @@ CHD44780::~CHD44780()
 
 bool CHD44780::open()
 {
+	wiringPiSetup();
+
 	m_fd = ::lcdInit(m_rows, m_cols, 4, 11, 10, 0, 1, 2, 3, 0, 0, 0, 0);
 	if (m_fd == -1) {
 		LogError("Unable to open the HD44780");
