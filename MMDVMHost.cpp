@@ -27,7 +27,7 @@
 #include "NullDisplay.h"
 #include "YSFControl.h"
 
-#if defined(RASPBERRY_PI)
+#if defined(HD44780)
 #include "HD44780.h"
 #endif
 
@@ -550,7 +550,7 @@ void CMMDVMHost::createDisplay()
 		LogInfo("    Brightness: %u", brightness);
 
 		m_display = new CTFTSerial(port, brightness);
-#if defined(RASPBERRY_PI)
+#if defined(HD44780)
 	} else if (type == "HD44780") {
 		unsigned int rows    = m_conf.getHD44780Rows();
 		unsigned int columns = m_conf.getHD44780Columns();
