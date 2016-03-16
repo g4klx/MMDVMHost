@@ -203,7 +203,7 @@ void CModem::clock(unsigned int ms)
 	if (type == RTM_TIMEOUT) {
 		// Nothing to do
 	} else if (type == RTM_ERROR) {
-		LogError("Error when reading from the MMDVM");
+		// Nothing to do
 	} else {
 		// type == RTM_OK
 		switch (m_buffer[2U]) {
@@ -890,12 +890,49 @@ RESP_TYPE_MMDVM CModem::getResponse(unsigned char *buffer, unsigned int& length)
 
 	length = buffer[1U];
 
-	if (length >= 200U) {
-		LogError("Invalid data received from the modem");
+	if (length >= 150U) {
+		LogError("Invalid length received from the modem - %u", length);
 		return RTM_ERROR;
 	}
 
-	unsigned int offset = 2U;
+	ret = m_serial.read(buffer + 2U, 1U);
+	if (ret < 0) {
+		LogError("Error when reading from the modem");
+		return RTM_ERROR;
+	}
+
+	if (ret == 0)
+		return RTM_TIMEOUT;
+
+	switch (buffer[2U]) {
+	case MMDVM_DSTAR_HEADER:
+	case MMDVM_DSTAR_DATA:
+	case MMDVM_DSTAR_LOST:
+	case MMDVM_DSTAR_EOT:
+	case MMDVM_DMR_DATA1:
+	case MMDVM_DMR_DATA2:
+	case MMDVM_DMR_LOST1:
+	case MMDVM_DMR_LOST2:
+	case MMDVM_YSF_DATA:
+	case MMDVM_YSF_LOST:
+	case MMDVM_GET_STATUS:
+	case MMDVM_GET_VERSION:
+	case MMDVM_ACK:
+	case MMDVM_NAK:
+	case MMDVM_DEBUG1:
+	case MMDVM_DEBUG2:
+	case MMDVM_DEBUG3:
+	case MMDVM_DEBUG4:
+	case MMDVM_DEBUG5:
+	case MMDVM_SAMPLES:
+		break;
+
+	default:
+		LogError("Unknown message, type: %02X", m_buffer[2U]);
+		return RTM_ERROR;
+	}
+
+	unsigned int offset = 3U;
 
 	while (offset < length) {
 		int ret = m_serial.read(buffer + offset, length - offset);
