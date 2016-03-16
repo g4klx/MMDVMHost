@@ -867,19 +867,21 @@ RESP_TYPE_MMDVM CModem::getResponse(unsigned char *buffer, unsigned int& length)
 	assert(buffer != NULL);
 
 	// Get the start of the frame or nothing at all
-	int ret = m_serial.read(buffer + 0U, 1U);
-	if (ret < 0) {
-		LogError("Error when reading from the modem");
-		return RTM_ERROR;
+	for (;;) {
+		int ret = m_serial.read(buffer + 0U, 1U);
+		if (ret < 0) {
+			LogError("Error when reading from the modem");
+			return RTM_ERROR;
+		}
+
+		if (ret == 0)
+			return RTM_TIMEOUT;
+
+		if (buffer[0U] == MMDVM_FRAME_START)
+			break;
 	}
 
-	if (ret == 0)
-		return RTM_TIMEOUT;
-
-	if (buffer[0U] != MMDVM_FRAME_START)
-		return RTM_TIMEOUT;
-
-	ret = m_serial.read(buffer + 1U, 1U);
+	int ret = m_serial.read(buffer + 1U, 1U);
 	if (ret < 0) {
 		LogError("Error when reading from the modem");
 		return RTM_ERROR;
