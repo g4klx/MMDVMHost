@@ -887,8 +887,10 @@ RESP_TYPE_MMDVM CModem::getResponse(unsigned char *buffer, unsigned int& length)
 		return RTM_ERROR;
 	}
 
-	if (ret == 0)
+	if (ret == 0) {
+		LogWarning("Timed out after receiving the frame start");
 		return RTM_TIMEOUT;
+	}
 
 	length = buffer[1U];
 
@@ -903,8 +905,10 @@ RESP_TYPE_MMDVM CModem::getResponse(unsigned char *buffer, unsigned int& length)
 		return RTM_ERROR;
 	}
 
-	if (ret == 0)
+	if (ret == 0) {
+		LogWarning("Timed out after receiving the length");
 		return RTM_TIMEOUT;
+	}
 
 	switch (buffer[2U]) {
 	case MMDVM_DSTAR_HEADER:
