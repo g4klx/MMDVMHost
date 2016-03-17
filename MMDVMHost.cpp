@@ -412,7 +412,8 @@ bool CMMDVMHost::createModem()
     bool txInvert            = m_conf.getModemTXInvert();
     bool pttInvert           = m_conf.getModemPTTInvert();
     unsigned int txDelay     = m_conf.getModemTXDelay();
-    unsigned int rxLevel     = m_conf.getModemRXLevel();
+	unsigned int dmrDelay    = m_conf.getModemDMRDelay();
+	unsigned int rxLevel     = m_conf.getModemRXLevel();
     unsigned int txLevel     = m_conf.getModemTXLevel();
     bool debug               = m_conf.getModemDebug();
 	unsigned int colorCode   = m_conf.getDMRColorCode();
@@ -424,13 +425,14 @@ bool CMMDVMHost::createModem()
 	LogInfo("    RX Invert: %s", rxInvert ? "yes" : "no");
 	LogInfo("    TX Invert: %s", txInvert ? "yes" : "no");
 	LogInfo("    PTT Invert: %s", pttInvert ? "yes" : "no");
-	LogInfo("    TX Delay: %u", txDelay);
-	LogInfo("    RX Level: %u", rxLevel);
-	LogInfo("    TX Level: %u", txLevel);
+	LogInfo("    TX Delay: %ums", txDelay);
+	LogInfo("    DMR Delay: %u", dmrDelay);
+	LogInfo("    RX Level: %u%%", rxLevel);
+	LogInfo("    TX Level: %u%%", txLevel);
 	LogInfo("    RX Frequency: %uHz", rxFrequency);
 	LogInfo("    TX Frequency: %uHz", txFrequency);
 
-	m_modem = new CModem(port, rxInvert, txInvert, pttInvert, txDelay, rxLevel, txLevel, debug);
+	m_modem = new CModem(port, rxInvert, txInvert, pttInvert, txDelay, rxLevel, txLevel, dmrDelay, debug);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled);
 	m_modem->setRFParams(rxFrequency, txFrequency);
 	m_modem->setDMRParams(colorCode);

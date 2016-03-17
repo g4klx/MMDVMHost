@@ -66,6 +66,7 @@ m_modemRXInvert(false),
 m_modemTXInvert(false),
 m_modemPTTInvert(false),
 m_modemTXDelay(100U),
+m_modemDMRDelay(0U),
 m_modemRXLevel(100U),
 m_modemTXLevel(100U),
 m_modemDebug(false),
@@ -205,6 +206,8 @@ bool CConf::read()
 			m_modemPTTInvert = ::atoi(value) == 1;
 		else if (::strcmp(key, "TXDelay") == 0)
 			m_modemTXDelay = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "DMRDelay") == 0)
+			m_modemDMRDelay = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "RXLevel") == 0)
 			m_modemRXLevel = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "TXLevel") == 0)
@@ -396,6 +399,11 @@ bool CConf::getModemPTTInvert() const
 unsigned int CConf::getModemTXDelay() const
 {
 	return m_modemTXDelay;
+}
+
+unsigned int CConf::getModemDMRDelay() const
+{
+	return m_modemDMRDelay;
 }
 
 unsigned int CConf::getModemRXLevel() const

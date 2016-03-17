@@ -59,6 +59,7 @@ public:
   bool         getModemTXInvert() const;
   bool         getModemPTTInvert() const;
   unsigned int getModemTXDelay() const;
+  unsigned int getModemDMRDelay() const;
   unsigned int getModemRXLevel() const;
   unsigned int getModemTXLevel() const;
   bool         getModemDebug() const;
@@ -135,6 +136,7 @@ private:
   bool         m_modemTXInvert;
   bool         m_modemPTTInvert;
   unsigned int m_modemTXDelay;
+  unsigned int m_modemDMRDelay;
   unsigned int m_modemRXLevel;
   unsigned int m_modemTXLevel;
   bool         m_modemDebug;
