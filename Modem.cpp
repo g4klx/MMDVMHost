@@ -61,13 +61,11 @@ const unsigned char MMDVM_YSF_LOST    = 0x21U;
 const unsigned char MMDVM_ACK         = 0x70U;
 const unsigned char MMDVM_NAK         = 0x7FU;
 
-const unsigned char MMDVM_DUMP        = 0xF0U;
 const unsigned char MMDVM_DEBUG1      = 0xF1U;
 const unsigned char MMDVM_DEBUG2      = 0xF2U;
 const unsigned char MMDVM_DEBUG3      = 0xF3U;
 const unsigned char MMDVM_DEBUG4      = 0xF4U;
 const unsigned char MMDVM_DEBUG5      = 0xF5U;
-const unsigned char MMDVM_SAMPLES     = 0xF8U;
 
 const unsigned int MAX_RESPONSES = 30U;
 
@@ -384,18 +382,6 @@ void CModem::clock(unsigned int ms)
 
 			case MMDVM_NAK:
 				LogWarning("Received a NAK from the MMDVM, command = 0x%02X, reason = %u", m_buffer[3U], m_buffer[4U]);
-				break;
-
-			case MMDVM_DEBUG1:
-			case MMDVM_DEBUG2:
-			case MMDVM_DEBUG3:
-			case MMDVM_DEBUG4:
-			case MMDVM_DEBUG5:
-				printDebug();
-				break;
-
-			case MMDVM_SAMPLES:
-				// printSamples();
 				break;
 
 			default:
@@ -933,7 +919,6 @@ RESP_TYPE_MMDVM CModem::getResponse(unsigned char *buffer, unsigned int& length)
 	case MMDVM_DEBUG3:
 	case MMDVM_DEBUG4:
 	case MMDVM_DEBUG5:
-	case MMDVM_SAMPLES:
 		break;
 
 	default:
@@ -961,9 +946,19 @@ RESP_TYPE_MMDVM CModem::getResponse(unsigned char *buffer, unsigned int& length)
 #endif
 	}
 
-	// CUtils::dump(1U, "Received", buffer, length);
+	switch (buffer[2U]) {
+	case MMDVM_DEBUG1:
+	case MMDVM_DEBUG2:
+	case MMDVM_DEBUG3:
+	case MMDVM_DEBUG4:
+	case MMDVM_DEBUG5:
+		printDebug();
+		return RTM_TIMEOUT;
 
-	return RTM_OK;
+	default:
+		// CUtils::dump(1U, "Received", buffer, length);
+		return RTM_OK;
+	}
 }
 
 bool CModem::setMode(unsigned char mode)
