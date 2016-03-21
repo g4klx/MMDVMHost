@@ -62,6 +62,7 @@ public:
   unsigned int getModemDMRDelay() const;
   unsigned int getModemRXLevel() const;
   unsigned int getModemTXLevel() const;
+  int          getModemOscOffset() const;
   bool         getModemDebug() const;
 
   // The D-Star section
@@ -139,6 +140,7 @@ private:
   unsigned int m_modemDMRDelay;
   unsigned int m_modemRXLevel;
   unsigned int m_modemTXLevel;
+  int          m_modemOscOffset;
   bool         m_modemDebug;
 
   bool         m_dstarEnabled;

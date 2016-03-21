@@ -69,6 +69,7 @@ m_modemTXDelay(100U),
 m_modemDMRDelay(0U),
 m_modemRXLevel(100U),
 m_modemTXLevel(100U),
+m_modemOscOffset(0),
 m_modemDebug(false),
 m_dstarEnabled(true),
 m_dstarModule("C"),
@@ -212,6 +213,8 @@ bool CConf::read()
 			m_modemRXLevel = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "TXLevel") == 0)
 			m_modemTXLevel = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "OscOffset") == 0)
+			m_modemOscOffset = ::atoi(value);
 		else if (::strcmp(key, "Debug") == 0)
 			m_modemDebug = ::atoi(value) == 1;
 	} else if (section == SECTION_DSTAR) {
@@ -414,6 +417,11 @@ unsigned int CConf::getModemRXLevel() const
 unsigned int CConf::getModemTXLevel() const
 {
 	return m_modemTXLevel;
+}
+
+int CConf::getModemOscOffset() const
+{
+	return m_modemOscOffset;
 }
 
 bool CConf::getModemDebug() const
