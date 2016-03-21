@@ -68,6 +68,19 @@ void CHD44780::setIdle()
 	::lcdPuts(m_fd, "Idle");
 }
 
+void CHD44780::setError(const char* text)
+{
+	assert(text != NULL);
+
+	::lcdClear(m_fd);
+
+	::lcdPosition(m_fd, 0, 0);
+	::lcdPuts(m_fd, "MMDVM");
+
+	::lcdPosition(m_fd, 0, 1);
+	::lcdPrintf(m_fd, "%s ERROR", text);
+}
+
 void CHD44780::setLockout()
 {
 	::lcdClear(m_fd);

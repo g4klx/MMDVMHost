@@ -34,6 +34,7 @@ public:
 
   virtual void setIdle();
 
+  virtual void setError(const char* text);
   virtual void setLockout();
 
   virtual void setDStar();

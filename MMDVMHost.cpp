@@ -192,6 +192,12 @@ int CMMDVMHost::run()
 		else if (!lockout && m_mode == MODE_LOCKOUT)
 			setMode(MODE_IDLE);
 
+		bool error = m_modem->hasError();
+		if (error && m_mode != MODE_ERROR)
+			setMode(MODE_ERROR);
+		else if (!error && m_mode == MODE_ERROR)
+			setMode(MODE_IDLE);
+
 		unsigned char data[200U];
 		unsigned int len;
 		bool ret;
@@ -629,6 +635,18 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 			m_modem->setMode(MODE_IDLE);
 		m_display->setLockout();
 		m_mode = MODE_LOCKOUT;
+		m_modeTimer.stop();
+		break;
+
+	case MODE_ERROR:
+		if (logging)
+			LogMessage("Mode set to Error");
+		if (m_dstarNetwork != NULL)
+			m_dstarNetwork->enable(false);
+		if (m_dmrNetwork != NULL)
+			m_dmrNetwork->enable(false);
+		m_display->setError("MODEM");
+		m_mode = MODE_ERROR;
 		m_modeTimer.stop();
 		break;
 

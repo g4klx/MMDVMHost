@@ -53,6 +53,7 @@ public:
 	bool hasYSFSpace() const;
 
 	bool hasLockout() const;
+	bool hasError() const;
 
 	bool writeDStarData(const unsigned char* data, unsigned int length);
 	bool writeDMRData1(const unsigned char* data, unsigned int length);
@@ -105,6 +106,7 @@ private:
 	unsigned int               m_ysfSpace;
 	bool                       m_tx;
 	bool                       m_lockout;
+	bool                       m_error;
 
 	bool readVersion();
 	bool readStatus();

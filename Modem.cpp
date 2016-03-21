@@ -108,7 +108,8 @@ m_dmrSpace1(0U),
 m_dmrSpace2(0U),
 m_ysfSpace(0U),
 m_tx(false),
-m_lockout(false)
+m_lockout(false),
+m_error(false)
 {
 	assert(!port.empty());
 
@@ -169,6 +170,7 @@ bool CModem::open()
 	m_statusTimer.start();
 	m_inactivityTimer.start();
 
+	m_error  = false;
 	m_offset = 0U;
 
 	return true;
@@ -186,6 +188,7 @@ void CModem::clock(unsigned int ms)
 	m_inactivityTimer.clock(ms);
 	if (m_inactivityTimer.hasExpired()) {
 		LogError("No reply from the modem for some time, resetting it");
+		m_error = true;
 		close();
 #if defined(_WIN32) || defined(_WIN64)
 		::Sleep(2000UL);		// 2s
@@ -641,6 +644,11 @@ bool CModem::hasYSFSpace() const
 bool CModem::hasLockout() const
 {
 	return m_lockout;
+}
+
+bool CModem::hasError() const
+{
+	return m_error;
 }
 
 bool CModem::writeYSFData(const unsigned char* data, unsigned int length)

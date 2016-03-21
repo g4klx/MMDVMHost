@@ -35,6 +35,10 @@ void CNullDisplay::setIdle()
 {
 }
 
+void CNullDisplay::setError(const char* text)
+{
+}
+
 void CNullDisplay::setLockout()
 {
 }

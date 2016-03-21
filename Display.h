@@ -31,6 +31,7 @@ public:
   virtual void setIdle() = 0;
 
   virtual void setLockout() = 0;
+  virtual void setError(const char* text) = 0;
 
   virtual void setDStar() = 0;
   virtual void writeDStar(const char* my1, const char* my2, const char* your) = 0;

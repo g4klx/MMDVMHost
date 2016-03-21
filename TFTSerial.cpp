@@ -67,10 +67,8 @@ bool CTFTSerial::open()
 
 	setBrightness(m_brightness);
 
-	// Set background white
 	setBackground(COLOUR_WHITE);
 
-	// Set foreground black
 	setForeground(COLOUR_BLACK);
 
 	setIdle();
@@ -90,6 +88,29 @@ void CTFTSerial::setIdle()
 
 	gotoPosPixel(45U, 60U);
 	displayText("IDLE");
+}
+
+void CTFTSerial::setError(const char* text)
+{
+	assert(text != NULL);
+
+	// Clear the screen
+	clearScreen();
+
+	setFontSize(FONT_MEDIUM);
+
+	// Draw MMDVM logo
+	displayBitmap(0U, 0U, "MMDVM_sm.bmp");
+
+	setForeground(COLOUR_RED);
+
+	gotoPosPixel(18U, 55U);
+	displayText(text);
+
+	gotoPosPixel(18U, 90U);
+	displayText("ERROR");
+
+	setForeground(COLOUR_BLACK);
 }
 
 void CTFTSerial::setLockout()
