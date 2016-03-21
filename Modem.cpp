@@ -90,6 +90,8 @@ m_dmrEnabled(false),
 m_ysfEnabled(false),
 m_serial(port, SERIAL_115200, true),
 m_buffer(NULL),
+m_length(0U),
+m_offset(0U),
 m_rxDStarData(1000U, "Modem RX D-Star"),
 m_txDStarData(1000U, "Modem TX D-Star"),
 m_rxDMRData1(1000U, "Modem RX DMR1"),
@@ -166,6 +168,8 @@ bool CModem::open()
 	m_statusTimer.start();
 	m_inactivityTimer.start();
 
+	m_offset = 0U;
+
 	return true;
 }
 
@@ -196,8 +200,7 @@ void CModem::clock(unsigned int ms)
 		}
 	}
 
-	unsigned int length;
-	RESP_TYPE_MMDVM type = getResponse(m_buffer, length);
+	RESP_TYPE_MMDVM type = getResponse();
 
 	if (type == RTM_TIMEOUT) {
 		// Nothing to do
@@ -208,35 +211,35 @@ void CModem::clock(unsigned int ms)
 		switch (m_buffer[2U]) {
 			case MMDVM_DSTAR_HEADER: {
 					if (m_debug)
-						CUtils::dump(1U, "RX D-Star Header", m_buffer, length);
+						CUtils::dump(1U, "RX D-Star Header", m_buffer, m_length);
 
-					unsigned char data = length - 2U;
+					unsigned char data = m_length - 2U;
 					m_rxDStarData.addData(&data, 1U);
 
 					data = TAG_HEADER;
 					m_rxDStarData.addData(&data, 1U);
 
-					m_rxDStarData.addData(m_buffer + 3U, length - 3U);
+					m_rxDStarData.addData(m_buffer + 3U, m_length - 3U);
 				}
 				break;
 
 			case MMDVM_DSTAR_DATA: {
 					if (m_debug)
-						CUtils::dump(1U, "RX D-Star Data", m_buffer, length);
+						CUtils::dump(1U, "RX D-Star Data", m_buffer, m_length);
 
-					unsigned char data = length - 2U;
+					unsigned char data = m_length - 2U;
 					m_rxDStarData.addData(&data, 1U);
 
 					data = TAG_DATA;
 					m_rxDStarData.addData(&data, 1U);
 
-					m_rxDStarData.addData(m_buffer + 3U, length - 3U);
+					m_rxDStarData.addData(m_buffer + 3U, m_length - 3U);
 				}
 				break;
 
 			case MMDVM_DSTAR_LOST: {
 					if (m_debug)
-						CUtils::dump(1U, "RX D-Star Lost", m_buffer, length);
+						CUtils::dump(1U, "RX D-Star Lost", m_buffer, m_length);
 
 					unsigned char data = 1U;
 					m_rxDStarData.addData(&data, 1U);
@@ -248,7 +251,7 @@ void CModem::clock(unsigned int ms)
 
 			case MMDVM_DSTAR_EOT: {
 					if (m_debug)
-						CUtils::dump(1U, "RX D-Star EOT", m_buffer, length);
+						CUtils::dump(1U, "RX D-Star EOT", m_buffer, m_length);
 
 					unsigned char data = 1U;
 					m_rxDStarData.addData(&data, 1U);
@@ -260,9 +263,9 @@ void CModem::clock(unsigned int ms)
 
 			case MMDVM_DMR_DATA1: {
 					if (m_debug)
-						CUtils::dump(1U, "RX DMR Data 1", m_buffer, length);
+						CUtils::dump(1U, "RX DMR Data 1", m_buffer, m_length);
 
-					unsigned char data = length - 2U;
+					unsigned char data = m_length - 2U;
 					m_rxDMRData1.addData(&data, 1U);
 
 					if (m_buffer[3U] == (DMR_SYNC_DATA | DT_TERMINATOR_WITH_LC))
@@ -271,15 +274,15 @@ void CModem::clock(unsigned int ms)
 						data = TAG_DATA;
 					m_rxDMRData1.addData(&data, 1U);
 
-					m_rxDMRData1.addData(m_buffer + 3U, length - 3U);
+					m_rxDMRData1.addData(m_buffer + 3U, m_length - 3U);
 				}
 				break;
 
 			case MMDVM_DMR_DATA2: {
 					if (m_debug)
-						CUtils::dump(1U, "RX DMR Data 2", m_buffer, length);
+						CUtils::dump(1U, "RX DMR Data 2", m_buffer, m_length);
 
-					unsigned char data = length - 2U;
+					unsigned char data = m_length - 2U;
 					m_rxDMRData2.addData(&data, 1U);
 
 					if (m_buffer[3U] == (DMR_SYNC_DATA | DT_TERMINATOR_WITH_LC))
@@ -288,13 +291,13 @@ void CModem::clock(unsigned int ms)
 						data = TAG_DATA;
 					m_rxDMRData2.addData(&data, 1U);
 
-					m_rxDMRData2.addData(m_buffer + 3U, length - 3U);
+					m_rxDMRData2.addData(m_buffer + 3U, m_length - 3U);
 				}
 				break;
 
 			case MMDVM_DMR_LOST1: {
 					if (m_debug)
-						CUtils::dump(1U, "RX DMR Lost 1", m_buffer, length);
+						CUtils::dump(1U, "RX DMR Lost 1", m_buffer, m_length);
 
 					unsigned char data = 1U;
 					m_rxDMRData1.addData(&data, 1U);
@@ -306,7 +309,7 @@ void CModem::clock(unsigned int ms)
 
 			case MMDVM_DMR_LOST2: {
 					if (m_debug)
-						CUtils::dump(1U, "RX DMR Lost 2", m_buffer, length);
+						CUtils::dump(1U, "RX DMR Lost 2", m_buffer, m_length);
 
 					unsigned char data = 1U;
 					m_rxDMRData2.addData(&data, 1U);
@@ -318,9 +321,9 @@ void CModem::clock(unsigned int ms)
 
 			case MMDVM_YSF_DATA: {
 					if (m_debug)
-						CUtils::dump(1U, "RX YSF Data", m_buffer, length);
+						CUtils::dump(1U, "RX YSF Data", m_buffer, m_length);
 
-					unsigned char data = length - 2U;
+					unsigned char data = m_length - 2U;
 					m_rxYSFData.addData(&data, 1U);
 
 					if ((m_buffer[3U] & (YSF_CKSUM_OK | YSF_FI_MASK)) == (YSF_CKSUM_OK | YSF_DT_TERMINATOR_CHANNEL))
@@ -329,13 +332,13 @@ void CModem::clock(unsigned int ms)
 						data = TAG_DATA;
 					m_rxYSFData.addData(&data, 1U);
 
-					m_rxYSFData.addData(m_buffer + 3U, length - 3U);
+					m_rxYSFData.addData(m_buffer + 3U, m_length - 3U);
 				}
 				break;
 
 			case MMDVM_YSF_LOST: {
 					if (m_debug)
-						CUtils::dump(1U, "RX YSF Lost", m_buffer, length);
+						CUtils::dump(1U, "RX YSF Lost", m_buffer, m_length);
 
 					unsigned char data = 1U;
 					m_rxYSFData.addData(&data, 1U);
@@ -347,7 +350,7 @@ void CModem::clock(unsigned int ms)
 
 			case MMDVM_GET_STATUS: {
 					// if (m_debug)
-					//	CUtils::dump(1U, "GET_STATUS", m_buffer, length);
+					//	CUtils::dump(1U, "GET_STATUS", m_buffer, m_length);
 
 					m_tx = (m_buffer[5U] & 0x01U) == 0x01U;
 
@@ -386,7 +389,7 @@ void CModem::clock(unsigned int ms)
 
 			default:
 				LogMessage("Unknown message, type: %02X", m_buffer[2U]);
-				CUtils::dump("Buffer dump", m_buffer, length);
+				CUtils::dump("Buffer dump", m_buffer, m_length);
 				break;
 		}
 	}
@@ -689,10 +692,9 @@ bool CModem::readVersion()
 #else
 			::usleep(10000UL);
 #endif
-			unsigned int length;
-			RESP_TYPE_MMDVM resp = getResponse(m_buffer, length);
+			RESP_TYPE_MMDVM resp = getResponse();
 			if (resp == RTM_OK && m_buffer[2U] == MMDVM_GET_VERSION) {
-				LogInfo("MMDVM protocol version: %u, description: %.*s", m_buffer[3U], length - 4U, m_buffer + 4U);
+				LogInfo("MMDVM protocol version: %u, description: %.*s", m_buffer[3U], m_length - 4U, m_buffer + 4U);
 				return true;
 			}
 		}
@@ -764,7 +766,6 @@ bool CModem::setConfig()
 		return false;
 
 	unsigned int count = 0U;
-	unsigned int length;
 	RESP_TYPE_MMDVM resp;
 	do {
 #if defined(_WIN32) || defined(_WIN64)
@@ -772,7 +773,7 @@ bool CModem::setConfig()
 #else
 		::usleep(10000UL);
 #endif
-		resp = getResponse(m_buffer, length);
+		resp = getResponse();
 
 		if (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK) {
 			count++;
@@ -783,7 +784,7 @@ bool CModem::setConfig()
 		}
 	} while (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK);
 
-	// CUtils::dump(1U, "Response", m_buffer, length);
+	// CUtils::dump(1U, "Response", m_buffer, m_length);
 
 	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
 		LogError("Received a NAK to the SET_CONFIG command from the modem");
@@ -822,7 +823,6 @@ bool CModem::setFrequency()
 		return false;
 
 	unsigned int count = 0U;
-	unsigned int length;
 	RESP_TYPE_MMDVM resp;
 	do {
 #if defined(_WIN32) || defined(_WIN64)
@@ -830,7 +830,7 @@ bool CModem::setFrequency()
 #else
 		::usleep(10000UL);
 #endif
-		resp = getResponse(m_buffer, length);
+		resp = getResponse();
 
 		if (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK) {
 			count++;
@@ -841,7 +841,7 @@ bool CModem::setFrequency()
 		}
 	} while (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK);
 
-	// CUtils::dump(1U, "Response", m_buffer, length);
+	// CUtils::dump(1U, "Response", m_buffer, m_length);
 
 	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
 		LogError("Received a NAK to the SET_FREQ command from the modem");
@@ -851,13 +851,11 @@ bool CModem::setFrequency()
 	return true;
 }
 
-RESP_TYPE_MMDVM CModem::getResponse(unsigned char *buffer, unsigned int& length)
+RESP_TYPE_MMDVM CModem::getResponse()
 {
-	assert(buffer != NULL);
-
-	// Get the start of the frame or nothing at all
-	for (;;) {
-		int ret = m_serial.read(buffer + 0U, 1U);
+	if (m_offset == 0U) {
+		// Get the start of the frame or nothing at all
+		int ret = m_serial.read(m_buffer + 0U, 1U);
 		if (ret < 0) {
 			LogError("Error when reading from the modem");
 			return RTM_ERROR;
@@ -866,87 +864,97 @@ RESP_TYPE_MMDVM CModem::getResponse(unsigned char *buffer, unsigned int& length)
 		if (ret == 0)
 			return RTM_TIMEOUT;
 
-		if (buffer[0U] == MMDVM_FRAME_START)
-			break;
+		if (m_buffer[0U] != MMDVM_FRAME_START)
+			return RTM_TIMEOUT;
+
+		m_offset = 1U;
 	}
 
-	int ret = m_serial.read(buffer + 1U, 1U);
-	if (ret < 0) {
-		LogError("Error when reading from the modem");
-		return RTM_ERROR;
-	}
-
-	if (ret == 0) {
-		LogWarning("Timed out after receiving the frame start");
-		return RTM_TIMEOUT;
-	}
-
-	length = buffer[1U];
-
-	if (length >= 150U) {
-		LogError("Invalid length received from the modem - %u", length);
-		return RTM_ERROR;
-	}
-
-	ret = m_serial.read(buffer + 2U, 1U);
-	if (ret < 0) {
-		LogError("Error when reading from the modem");
-		return RTM_ERROR;
-	}
-
-	if (ret == 0) {
-		LogWarning("Timed out after receiving the length");
-		return RTM_TIMEOUT;
-	}
-
-	switch (buffer[2U]) {
-	case MMDVM_DSTAR_HEADER:
-	case MMDVM_DSTAR_DATA:
-	case MMDVM_DSTAR_LOST:
-	case MMDVM_DSTAR_EOT:
-	case MMDVM_DMR_DATA1:
-	case MMDVM_DMR_DATA2:
-	case MMDVM_DMR_LOST1:
-	case MMDVM_DMR_LOST2:
-	case MMDVM_YSF_DATA:
-	case MMDVM_YSF_LOST:
-	case MMDVM_GET_STATUS:
-	case MMDVM_GET_VERSION:
-	case MMDVM_ACK:
-	case MMDVM_NAK:
-	case MMDVM_DEBUG1:
-	case MMDVM_DEBUG2:
-	case MMDVM_DEBUG3:
-	case MMDVM_DEBUG4:
-	case MMDVM_DEBUG5:
-		break;
-
-	default:
-		LogError("Unknown message, type: %02X", m_buffer[2U]);
-		return RTM_ERROR;
-	}
-
-	unsigned int offset = 3U;
-
-	while (offset < length) {
-		int ret = m_serial.read(buffer + offset, length - offset);
+	if (m_offset == 1U) {
+		// Get the length of the frame
+		int ret = m_serial.read(m_buffer + 1U, 1U);
 		if (ret < 0) {
 			LogError("Error when reading from the modem");
+			m_offset = 0U;
 			return RTM_ERROR;
 		}
 
-		if (ret > 0)
-			offset += ret;
-
 		if (ret == 0)
-#if defined(_WIN32) || defined(_WIN64)
-			::Sleep(5UL);		// 5ms
-#else
-			::usleep(5000);		// 5ms
-#endif
+			return RTM_TIMEOUT;
+
+		if (m_buffer[1U] >= 150U) {
+			LogError("Invalid length received from the modem - %u", m_buffer[1U]);
+			m_offset = 0U;
+			return RTM_ERROR;
+		}
+
+		m_length = m_buffer[1U];
+		m_offset = 2U;
 	}
 
-	switch (buffer[2U]) {
+	if (m_offset == 2U) {
+		// Get the frame type
+		int ret = m_serial.read(m_buffer + 2U, 1U);
+		if (ret < 0) {
+			LogError("Error when reading from the modem");
+			m_offset = 0U;
+			return RTM_ERROR;
+		}
+
+		if (ret == 0)
+			return RTM_TIMEOUT;
+
+		switch (m_buffer[2U]) {
+		case MMDVM_DSTAR_HEADER:
+		case MMDVM_DSTAR_DATA:
+		case MMDVM_DSTAR_LOST:
+		case MMDVM_DSTAR_EOT:
+		case MMDVM_DMR_DATA1:
+		case MMDVM_DMR_DATA2:
+		case MMDVM_DMR_LOST1:
+		case MMDVM_DMR_LOST2:
+		case MMDVM_YSF_DATA:
+		case MMDVM_YSF_LOST:
+		case MMDVM_GET_STATUS:
+		case MMDVM_GET_VERSION:
+		case MMDVM_ACK:
+		case MMDVM_NAK:
+		case MMDVM_DEBUG1:
+		case MMDVM_DEBUG2:
+		case MMDVM_DEBUG3:
+		case MMDVM_DEBUG4:
+		case MMDVM_DEBUG5:
+			break;
+
+		default:
+			LogError("Unknown message, type: %02X", m_buffer[2U]);
+			m_offset = 0U;
+			return RTM_ERROR;
+		}
+
+		m_offset = 3U;
+	}
+
+	if (m_offset >= 3U) {
+		while (m_offset < m_length) {
+			int ret = m_serial.read(m_buffer + m_offset, m_length - m_offset);
+			if (ret < 0) {
+				LogError("Error when reading from the modem");
+				m_offset = 0U;
+				return RTM_ERROR;
+			}
+
+			if (ret == 0)
+				return RTM_TIMEOUT;
+
+			if (ret > 0)
+				m_offset += ret;
+		}
+	}
+
+	m_offset = 0U;
+
+	switch (m_buffer[2U]) {
 	case MMDVM_DEBUG1:
 	case MMDVM_DEBUG2:
 	case MMDVM_DEBUG3:
@@ -956,7 +964,7 @@ RESP_TYPE_MMDVM CModem::getResponse(unsigned char *buffer, unsigned int& length)
 		return RTM_TIMEOUT;
 
 	default:
-		// CUtils::dump(1U, "Received", buffer, length);
+		// CUtils::dump(1U, "Received", m_buffer, m_length);
 		return RTM_OK;
 	}
 }
@@ -1020,26 +1028,25 @@ bool CModem::writeDMRShortLC(const unsigned char* lc)
 
 void CModem::printDebug()
 {
-	unsigned int length = m_buffer[1U];
 	if (m_buffer[2U] == 0xF1U) {
-		LogMessage("Debug: %.*s", length - 3U, m_buffer + 3U);
+		LogMessage("Debug: %.*s", m_length - 3U, m_buffer + 3U);
 	} else if (m_buffer[2U] == 0xF2U) {
-		short val1 = (m_buffer[length - 2U] << 8) | m_buffer[length - 1U];
-		LogMessage("Debug: %.*s %d", length - 5U, m_buffer + 3U, val1);
+		short val1 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
+		LogMessage("Debug: %.*s %d", m_length - 5U, m_buffer + 3U, val1);
 	} else if (m_buffer[2U] == 0xF3U) {
-		short val1 = (m_buffer[length - 4U] << 8) | m_buffer[length - 3U];
-		short val2 = (m_buffer[length - 2U] << 8) | m_buffer[length - 1U];
-		LogMessage("Debug: %.*s %d %d", length - 7U, m_buffer + 3U, val1, val2);
+		short val1 = (m_buffer[m_length - 4U] << 8) | m_buffer[m_length - 3U];
+		short val2 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
+		LogMessage("Debug: %.*s %d %d", m_length - 7U, m_buffer + 3U, val1, val2);
 	} else if (m_buffer[2U] == 0xF4U) {
-		short val1 = (m_buffer[length - 6U] << 8) | m_buffer[length - 5U];
-		short val2 = (m_buffer[length - 4U] << 8) | m_buffer[length - 3U];
-		short val3 = (m_buffer[length - 2U] << 8) | m_buffer[length - 1U];
-		LogMessage("Debug: %.*s %d %d %d", length - 9U, m_buffer + 3U, val1, val2, val3);
+		short val1 = (m_buffer[m_length - 6U] << 8) | m_buffer[m_length - 5U];
+		short val2 = (m_buffer[m_length - 4U] << 8) | m_buffer[m_length - 3U];
+		short val3 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
+		LogMessage("Debug: %.*s %d %d %d", m_length - 9U, m_buffer + 3U, val1, val2, val3);
 	} else if (m_buffer[2U] == 0xF5U) {
-		short val1 = (m_buffer[length - 8U] << 8) | m_buffer[length - 7U];
-		short val2 = (m_buffer[length - 6U] << 8) | m_buffer[length - 5U];
-		short val3 = (m_buffer[length - 4U] << 8) | m_buffer[length - 3U];
-		short val4 = (m_buffer[length - 2U] << 8) | m_buffer[length - 1U];
-		LogMessage("Debug: %.*s %d %d %d %d", length - 11U, m_buffer + 3U, val1, val2, val3, val4);
+		short val1 = (m_buffer[m_length - 8U] << 8) | m_buffer[m_length - 7U];
+		short val2 = (m_buffer[m_length - 6U] << 8) | m_buffer[m_length - 5U];
+		short val3 = (m_buffer[m_length - 4U] << 8) | m_buffer[m_length - 3U];
+		short val4 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
+		LogMessage("Debug: %.*s %d %d %d %d", m_length - 11U, m_buffer + 3U, val1, val2, val3, val4);
 	}
 }

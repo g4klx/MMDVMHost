@@ -86,6 +86,8 @@ private:
 	bool                       m_ysfEnabled;
 	CSerialController          m_serial;
 	unsigned char*             m_buffer;
+	unsigned int               m_length;
+	unsigned int               m_offset;
 	CRingBuffer<unsigned char> m_rxDStarData;
 	CRingBuffer<unsigned char> m_txDStarData;
 	CRingBuffer<unsigned char> m_rxDMRData1;
@@ -110,7 +112,7 @@ private:
 
 	void printDebug();
 
-	RESP_TYPE_MMDVM getResponse(unsigned char* buffer, unsigned int& length);
+	RESP_TYPE_MMDVM getResponse();
 };
 
 #endif
