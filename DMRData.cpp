@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015,2016 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -29,7 +29,9 @@ m_dstId(data.m_dstId),
 m_flco(data.m_flco),
 m_dataType(data.m_dataType),
 m_seqNo(data.m_seqNo),
-m_n(data.m_n)
+m_n(data.m_n),
+m_ber(data.m_ber),
+m_rssi(data.m_rssi)
 {
 	m_data = new unsigned char[2U * DMR_FRAME_LENGTH_BYTES];
 	::memcpy(m_data, data.m_data, 2U * DMR_FRAME_LENGTH_BYTES);
@@ -43,7 +45,9 @@ m_dstId(0U),
 m_flco(FLCO_GROUP),
 m_dataType(0U),
 m_seqNo(0U),
-m_n(0U)
+m_n(0U),
+m_ber(0U),
+m_rssi(0U)
 {
 	m_data = new unsigned char[2U * DMR_FRAME_LENGTH_BYTES];
 }
@@ -65,6 +69,8 @@ CDMRData& CDMRData::operator=(const CDMRData& data)
 		m_dataType = data.m_dataType;
 		m_seqNo    = data.m_seqNo;
 		m_n        = data.m_n;
+		m_ber      = data.m_ber;
+		m_rssi     = data.m_rssi;
 	}
 
 	return *this;
@@ -140,6 +146,26 @@ unsigned char CDMRData::getN() const
 void CDMRData::setN(unsigned char n)
 {
 	m_n = n;
+}
+
+unsigned char CDMRData::getBER() const
+{
+	return m_ber;
+}
+
+void CDMRData::setBER(unsigned char ber)
+{
+	m_ber = ber;
+}
+
+unsigned char CDMRData::getRSSI() const
+{
+	return m_rssi;
+}
+
+void CDMRData::setRSSI(unsigned char rssi)
+{
+	m_rssi = rssi;
 }
 
 unsigned int CDMRData::getData(unsigned char* buffer) const

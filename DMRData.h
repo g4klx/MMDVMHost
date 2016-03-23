@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015 by Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015,2016 by Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -45,6 +45,12 @@ public:
 	unsigned char getDataType() const;
 	void setDataType(unsigned char dataType);
 
+	unsigned char getBER() const;
+	void setBER(unsigned char ber);
+
+	unsigned char getRSSI() const;
+	void setRSSI(unsigned char ber);
+
 	void setData(const unsigned char* buffer);
 	unsigned int getData(unsigned char* buffer) const;
 
@@ -57,6 +63,8 @@ private:
 	unsigned char  m_dataType;
 	unsigned char  m_seqNo;
 	unsigned char  m_n;
+	unsigned char  m_ber;
+	unsigned char  m_rssi;
 };
 
 #endif

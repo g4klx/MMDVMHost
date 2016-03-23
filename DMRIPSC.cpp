@@ -28,7 +28,7 @@
 
 const unsigned int BUFFER_LENGTH = 500U;
 
-const unsigned int HOMEBREW_DATA_PACKET_LENGTH = 53U;
+const unsigned int HOMEBREW_DATA_PACKET_LENGTH = 55U;
 
 
 CDMRIPSC::CDMRIPSC(const std::string& address, unsigned int port, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2) :
@@ -264,6 +264,10 @@ bool CDMRIPSC::write(const CDMRData& data)
 	::memcpy(buffer + 16U, m_streamId + slotIndex, 4U);
 
 	data.getData(buffer + 20U);
+
+	buffer[53U] = data.getBER();
+
+	buffer[54U] = data.getRSSI();
 
 	if (m_debug)
 		CUtils::dump(1U, "IPSC Transmitted", buffer, HOMEBREW_DATA_PACKET_LENGTH);
