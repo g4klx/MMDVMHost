@@ -101,7 +101,7 @@ m_txDMRData1(1000U, "Modem TX DMR1"),
 m_txDMRData2(1000U, "Modem TX DMR2"),
 m_rxYSFData(1000U, "Modem RX YSF"),
 m_txYSFData(1000U, "Modem TX YSF"),
-m_statusTimer(1000U, 0U, 100U),
+m_statusTimer(1000U, 0U, 250U),
 m_inactivityTimer(1000U, 0U, 1500U),
 m_dstarSpace(0U),
 m_dmrSpace1(0U),
@@ -178,7 +178,7 @@ bool CModem::open()
 
 void CModem::clock(unsigned int ms)
 {
-	// Poll the modem status every 100ms
+	// Poll the modem status every 250ms
 	m_statusTimer.clock(ms);
 	if (m_statusTimer.hasExpired()) {
 		readStatus();
