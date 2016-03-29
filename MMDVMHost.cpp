@@ -604,10 +604,9 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(false);
 		m_display->setDMR();
+		m_modem->setMode(MODE_DMR);
 		if (m_duplex)
 			m_modem->writeDMRStart(true);
-		else
-			m_modem->setMode(MODE_DMR);
 		m_mode = MODE_DMR;
 		m_modeTimer.start();
 		break;
@@ -634,8 +633,7 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 			m_dmrNetwork->enable(false);
 		if (m_mode == MODE_DMR && m_duplex)
 			m_modem->writeDMRStart(false);
-		else
-			m_modem->setMode(MODE_IDLE);
+		m_modem->setMode(MODE_IDLE);
 		m_display->setLockout();
 		m_mode = MODE_LOCKOUT;
 		m_modeTimer.stop();
@@ -662,8 +660,7 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 			m_dmrNetwork->enable(true);
 		if (m_mode == MODE_DMR && m_duplex)
 			m_modem->writeDMRStart(false);
-		else
-			m_modem->setMode(MODE_IDLE);
+		m_modem->setMode(MODE_IDLE);
 		m_display->setIdle();
 		m_mode = MODE_IDLE;
 		m_modeTimer.stop();
