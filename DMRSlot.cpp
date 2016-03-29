@@ -151,8 +151,8 @@ void CDMRSlot::writeModem(unsigned char *data)
 			m_rfErrs   = 0U;
 
 			if (m_duplex) {
-				for (unsigned i = 0U; i < 3U; i++)
-					writeQueueRF(data);
+				writeQueueRF(data);
+				writeQueueRF(data);
 			}
 
 			writeNetworkRF(data, DT_VOICE_LC_HEADER);
@@ -205,8 +205,8 @@ void CDMRSlot::writeModem(unsigned char *data)
 			data[0U] = TAG_EOT;
 			data[1U] = 0x00U;
 
-			for (unsigned int i = 0U; i < 2U; i++)
-				writeNetworkRF(data, DT_TERMINATOR_WITH_LC);
+			writeNetworkRF(data, DT_TERMINATOR_WITH_LC);
+			writeNetworkRF(data, DT_TERMINATOR_WITH_LC);
 
 			// 480ms of terminator to space things out
 			if (m_duplex) {
@@ -484,8 +484,8 @@ void CDMRSlot::writeModem(unsigned char *data)
 				m_rfErrs   = 0U;
 
 				if (m_duplex) {
-					for (unsigned int i = 0U; i < 3U; i++)
-						writeQueueRF(start);
+					writeQueueRF(start);
+					writeQueueRF(start);
 				}
 
 				writeNetworkRF(start, DT_VOICE_LC_HEADER);
@@ -690,8 +690,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		for (unsigned int i = 0U; i < 5U; i++)
 			writeQueueNet(m_idle);
 
-		for (unsigned int i = 0U; i < 3U; i++)
-			writeQueueNet(data);
+		writeQueueNet(data);
+		writeQueueNet(data);
 
 		m_netState = RS_NET_AUDIO;
 

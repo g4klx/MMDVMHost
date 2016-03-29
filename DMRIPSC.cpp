@@ -248,7 +248,7 @@ bool CDMRIPSC::write(const CDMRData& data)
 	} else {
 		if (dataType == DT_VOICE_LC_HEADER) {
 			m_streamId[slotIndex] = ::rand() + 1U;
-			count = 3U;
+			count = 2U;
 		}
 
 		if (dataType == DT_CSBK || dataType == DT_DATA_HEADER) {
