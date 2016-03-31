@@ -100,6 +100,7 @@ private:
 	CRingBuffer<unsigned char> m_txYSFData;
 	CTimer                     m_statusTimer;
 	CTimer                     m_inactivityTimer;
+	CTimer                     m_playoutTimer;
 	unsigned int               m_dstarSpace;
 	unsigned int               m_dmrSpace1;
 	unsigned int               m_dmrSpace2;

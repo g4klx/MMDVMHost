@@ -103,6 +103,7 @@ m_rxYSFData(1000U, "Modem RX YSF"),
 m_txYSFData(1000U, "Modem TX YSF"),
 m_statusTimer(1000U, 0U, 250U),
 m_inactivityTimer(1000U, 0U, 1500U),
+m_playoutTimer(1000U, 0U, 10U),
 m_dstarSpace(0U),
 m_dmrSpace1(0U),
 m_dmrSpace2(0U),
@@ -398,6 +399,11 @@ void CModem::clock(unsigned int ms)
 		}
 	}
 
+	// Only feed data to the modem if the playout timer has expired
+	m_playoutTimer.clock(ms);
+	if (!m_playoutTimer.hasExpired())
+		return;
+
 	if (m_dstarSpace > 1U && !m_txDStarData.isEmpty()) {
 		unsigned char buffer[4U];
 		m_txDStarData.peek(buffer, 4U);
@@ -429,6 +435,8 @@ void CModem::clock(unsigned int ms)
 			int ret = m_serial.write(m_buffer, len);
 			if (ret != int(len))
 				LogWarning("Error when writing D-Star data to the MMDVM");
+
+			m_playoutTimer.start();
 		}
 	}
 
@@ -443,6 +451,8 @@ void CModem::clock(unsigned int ms)
 		int ret = m_serial.write(m_buffer, len);
 		if (ret != int(len))
 			LogWarning("Error when writing DMR data to the MMDVM");
+
+		m_playoutTimer.start();
 
 		m_dmrSpace1--;
 	}
@@ -459,6 +469,8 @@ void CModem::clock(unsigned int ms)
 		if (ret != int(len))
 			LogWarning("Error when writing DMR data to the MMDVM");
 
+		m_playoutTimer.start();
+
 		m_dmrSpace2--;
 	}
 
@@ -473,6 +485,8 @@ void CModem::clock(unsigned int ms)
 		int ret = m_serial.write(m_buffer, len);
 		if (ret != int(len))
 			LogWarning("Error when writing YSF data to the MMDVM");
+
+		m_playoutTimer.start();
 
 		m_ysfSpace--;
 	}
@@ -801,6 +815,8 @@ bool CModem::setConfig()
 		LogError("Received a NAK to the SET_CONFIG command from the modem");
 		return false;
 	}
+
+	m_playoutTimer.start();
 
 	return true;
 }
