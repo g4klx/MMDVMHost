@@ -87,6 +87,7 @@ m_dstarNetworkDebug(false),
 m_dmrNetworkEnabled(true),
 m_dmrNetworkAddress(),
 m_dmrNetworkPort(0U),
+m_dmrNetworkLocal(0U),
 m_dmrNetworkPassword(),
 m_dmrNetworkDebug(false),
 m_dmrNetworkSlot1(true),
@@ -254,6 +255,8 @@ bool CConf::read()
 			m_dmrNetworkAddress = value;
 		else if (::strcmp(key, "Port") == 0)
 			m_dmrNetworkPort = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "Local") == 0)
+			m_dmrNetworkLocal = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Password") == 0)
 			m_dmrNetworkPassword = value;
 		else if (::strcmp(key, "Debug") == 0)
@@ -507,6 +510,11 @@ std::string CConf::getDMRNetworkAddress() const
 unsigned int CConf::getDMRNetworkPort() const
 {
   return m_dmrNetworkPort;
+}
+
+unsigned int CConf::getDMRNetworkLocal() const
+{
+	return m_dmrNetworkLocal;
 }
 
 std::string CConf::getDMRNetworkPassword() const

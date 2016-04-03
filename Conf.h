@@ -90,6 +90,7 @@ public:
   bool         getDMRNetworkEnabled() const;
   std::string  getDMRNetworkAddress() const;
   unsigned int getDMRNetworkPort() const;
+  unsigned int getDMRNetworkLocal() const;
   std::string  getDMRNetworkPassword() const;
   bool         getDMRNetworkDebug() const;
   bool         getDMRNetworkSlot1() const;
@@ -163,6 +164,7 @@ private:
   bool         m_dmrNetworkEnabled;
   std::string  m_dmrNetworkAddress;
   unsigned int m_dmrNetworkPort;
+  unsigned int m_dmrNetworkLocal;
   std::string  m_dmrNetworkPassword;
   bool         m_dmrNetworkDebug;
   bool         m_dmrNetworkSlot1;

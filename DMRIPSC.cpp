@@ -31,7 +31,7 @@ const unsigned int BUFFER_LENGTH = 500U;
 const unsigned int HOMEBREW_DATA_PACKET_LENGTH = 55U;
 
 
-CDMRIPSC::CDMRIPSC(const std::string& address, unsigned int port, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2) :
+CDMRIPSC::CDMRIPSC(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2) :
 m_address(),
 m_port(port),
 m_id(NULL),
@@ -39,7 +39,7 @@ m_password(password),
 m_duplex(duplex),
 m_version(version),
 m_debug(debug),
-m_socket(),
+m_socket(local),
 m_enabled(false),
 m_slot1(slot1),
 m_slot2(slot2),

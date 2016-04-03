@@ -485,6 +485,7 @@ bool CMMDVMHost::createDMRNetwork()
 {
 	std::string address  = m_conf.getDMRNetworkAddress();
 	unsigned int port    = m_conf.getDMRNetworkPort();
+	unsigned int local   = m_conf.getDMRNetworkLocal();
 	unsigned int id      = m_conf.getDMRId();
 	std::string password = m_conf.getDMRNetworkPassword();
 	bool debug           = m_conf.getDMRNetworkDebug();
@@ -494,10 +495,14 @@ bool CMMDVMHost::createDMRNetwork()
 	LogInfo("DMR Network Parameters");
 	LogInfo("    Address: %s", address.c_str());
 	LogInfo("    Port: %u", port);
+	if (local > 0U)
+		LogInfo("    Local: %u", local);
+	else
+		LogInfo("    Local: random");
 	LogInfo("    Slot 1: %s", slot1 ? "enabled" : "disabled");
 	LogInfo("    Slot 2: %s", slot2 ? "enabled" : "disabled");
 
-	m_dmrNetwork = new CDMRIPSC(address, port, id, password, m_duplex, VERSION, debug, slot1, slot2);
+	m_dmrNetwork = new CDMRIPSC(address, port, local, id, password, m_duplex, VERSION, debug, slot1, slot2);
 
 	std::string callsign     = m_conf.getCallsign();
 	unsigned int rxFrequency = m_conf.getRxFrequency();
