@@ -33,7 +33,6 @@ m_port(port),
 m_fd(-1)
 {
 	assert(!address.empty());
-	assert(port > 0U);
 
 #if defined(_WIN32) || defined(_WIN64)
 	WSAData data;
@@ -46,21 +45,6 @@ m_fd(-1)
 CUDPSocket::CUDPSocket(unsigned int port) :
 m_address(),
 m_port(port),
-m_fd(-1)
-{
-	assert(port > 0U);
-
-#if defined(_WIN32) || defined(_WIN64)
-	WSAData data;
-	int wsaRet = ::WSAStartup(MAKEWORD(2, 2), &data);
-	if (wsaRet != 0)
-		LogError("Error from WSAStartup");
-#endif
-}
-
-CUDPSocket::CUDPSocket() :
-m_address(),
-m_port(0U),
 m_fd(-1)
 {
 #if defined(_WIN32) || defined(_WIN64)
