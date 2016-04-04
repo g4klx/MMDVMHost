@@ -20,6 +20,7 @@
 #define	CONF_H
 
 #include <string>
+#include <vector>
 
 class CConf
 {
@@ -76,6 +77,7 @@ public:
   unsigned int getDMRId() const;
   unsigned int getDMRColorCode() const;
   bool         getDMRSelfOnly() const;
+  std::vector<unsigned int> getDMRPrefixes() const;
 
   // The System Fusion section
   bool         getFusionEnabled() const;
@@ -155,6 +157,7 @@ private:
   unsigned int m_dmrId;
   unsigned int m_dmrColorCode;
   bool         m_dmrSelfOnly;
+  std::vector<unsigned int> m_dmrPrefixes;
 
   bool         m_fusionEnabled;
   bool         m_fusionParrotEnabled;

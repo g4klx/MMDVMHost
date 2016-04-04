@@ -79,6 +79,7 @@ m_dmrBeacons(false),
 m_dmrId(0U),
 m_dmrColorCode(2U),
 m_dmrSelfOnly(false),
+m_dmrPrefixes(),
 m_fusionEnabled(true),
 m_fusionParrotEnabled(false),
 m_dstarNetworkEnabled(true),
@@ -238,6 +239,15 @@ bool CConf::read()
 			m_dmrColorCode = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "SelfOnly") == 0)
 			m_dmrSelfOnly = ::atoi(value) == 1;
+		else if (::strcmp(key, "Prefixes") == 0) {
+			char* p = ::strtok(value, ",\r\n");
+			while (p != NULL) {
+				unsigned int prefix = (unsigned int)::atoi(p);
+				if (prefix > 0U && prefix <= 999U)
+					m_dmrPrefixes.push_back(prefix);
+				p = ::strtok(NULL, ",\r\n");
+			}
+		}
 	} else if (section == SECTION_FUSION) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fusionEnabled = ::atoi(value) == 1;
@@ -476,6 +486,11 @@ unsigned int CConf::getDMRColorCode() const
 bool CConf::getDMRSelfOnly() const
 {
 	return m_dmrSelfOnly;
+}
+
+std::vector<unsigned int> CConf::getDMRPrefixes() const
+{
+	return m_dmrPrefixes;
 }
 
 bool CConf::getFusionEnabled() const

@@ -29,6 +29,7 @@
 unsigned int   CDMRSlot::m_id = 0U;
 unsigned int   CDMRSlot::m_colorCode = 0U;
 bool           CDMRSlot::m_selfOnly = false;
+std::vector<unsigned int> CDMRSlot::m_prefixes;
 CModem*        CDMRSlot::m_modem = NULL;
 CDMRIPSC*      CDMRSlot::m_network = NULL;
 IDisplay*      CDMRSlot::m_display = NULL;
@@ -131,8 +132,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			}
 
 			unsigned int id = lc->getSrcId();
-
-			if (m_selfOnly && id != m_id) {
+			if (!validateId(id)) {
 				LogMessage("DMR Slot %u, invalid access atemmpt from %u", m_slotNo, id);
 				delete lc;
 				return;
@@ -242,7 +242,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			unsigned int srcId = dataHeader.getSrcId();
 			unsigned int dstId = dataHeader.getDstId();
 
-			if (m_selfOnly && srcId != m_id) {
+			if (!validateId(srcId)) {
 				LogMessage("DMR Slot %u, invalid access atemmpt from %u", m_slotNo, srcId);
 				return;
 			}
@@ -300,7 +300,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			unsigned int srcId = csbk.getSrcId();
 			unsigned int dstId = csbk.getDstId();
 
-			if (m_selfOnly && srcId != m_id) {
+			if (!validateId(srcId)) {
 				LogMessage("DMR Slot %u, invalid access atemmpt from %u", m_slotNo, srcId);
 				return;
 			}
@@ -480,7 +480,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			CDMRLC* lc = m_rfEmbeddedLC.addData(data + 2U, emb.getLCSS());
 			if (lc != NULL) {
 				unsigned int id = lc->getSrcId();
-				if (m_selfOnly && id != m_id) {
+				if (!validateId(id)) {
 					LogMessage("DMR Slot %u, invalid access atemmpt from %u", m_slotNo, id);
 					delete lc;
 					return;
@@ -1227,7 +1227,7 @@ void CDMRSlot::writeQueueNet(const unsigned char *data)
 		m_queue.addData(data, len);
 }
 
-void CDMRSlot::init(unsigned int id, unsigned int colorCode, bool selfOnly, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex)
+void CDMRSlot::init(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex)
 {
 	assert(id != 0U);
 	assert(modem != NULL);
@@ -1236,6 +1236,7 @@ void CDMRSlot::init(unsigned int id, unsigned int colorCode, bool selfOnly, CMod
 	m_id        = id;
 	m_colorCode = colorCode;
 	m_selfOnly  = selfOnly;
+	m_prefixes  = prefixes;
 	m_modem     = modem;
 	m_network   = network;
 	m_display   = display;
@@ -1250,6 +1251,27 @@ void CDMRSlot::init(unsigned int id, unsigned int colorCode, bool selfOnly, CMod
 	slotType.setColorCode(colorCode);
 	slotType.setDataType(DT_IDLE);
 	slotType.getData(m_idle + 2U);
+}
+
+bool CDMRSlot::validateId(unsigned int id)
+{
+	if (m_selfOnly) {
+		return id == m_id;
+	} else {
+		unsigned int prefix = id / 10000U;
+		if (prefix == 0U || prefix > 999U)
+			return false;
+
+		if (m_prefixes.size() == 0U)
+			return true;
+
+		for (std::vector<unsigned int>::const_iterator it = m_prefixes.begin(); it != m_prefixes.end(); ++it) {
+			if (prefix == *it)
+				return true;
+		}
+
+		return false;
+	}
 }
 
 void CDMRSlot::setShortLC(unsigned int slotNo, unsigned int id, FLCO flco, bool voice)

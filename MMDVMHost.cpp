@@ -32,6 +32,7 @@
 #endif
 
 #include <cstdio>
+#include <vector>
 
 #if !defined(_WIN32) && !defined(_WIN64)
 #include <unistd.h>
@@ -161,15 +162,17 @@ int CMMDVMHost::run()
 		unsigned int id        = m_conf.getDMRId();
 		unsigned int colorCode = m_conf.getDMRColorCode();
 		bool selfOnly          = m_conf.getDMRSelfOnly();
+		std::vector<unsigned int> prefixes = m_conf.getDMRPrefixes();
 		unsigned int timeout   = m_conf.getTimeout();
 
 		LogInfo("DMR Parameters");
 		LogInfo("    Id: %u", id);
 		LogInfo("    Color Code: %u", colorCode);
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
+		LogInfo("    Prefixes: %u", prefixes.size());
 		LogInfo("    Timeout: %us", timeout);
 
-		dmr = new CDMRControl(id, colorCode, selfOnly, timeout, m_modem, m_dmrNetwork, m_display, m_duplex);
+		dmr = new CDMRControl(id, colorCode, selfOnly, prefixes, timeout, m_modem, m_dmrNetwork, m_display, m_duplex);
 	}
 
 	CYSFControl* ysf = NULL;

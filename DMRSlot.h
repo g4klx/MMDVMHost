@@ -34,6 +34,8 @@
 #include "Modem.h"
 #include "DMRLC.h"
 
+#include <vector>
+
 class CDMRSlot {
 public:
 	CDMRSlot(unsigned int slotNo, unsigned int timeout);
@@ -47,7 +49,7 @@ public:
 
 	void clock();
 
-	static void init(unsigned int id, unsigned int colorCode, bool selfOnly, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex);
+	static void init(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex);
 
 private:
 	unsigned int               m_slotNo;
@@ -85,6 +87,7 @@ private:
 	static unsigned int        m_id;
 	static unsigned int        m_colorCode;
 	static bool                m_selfOnly;
+	static std::vector<unsigned int> m_prefixes;
 	static CModem*             m_modem;
 	static CDMRIPSC*           m_network;
 	static IDisplay*           m_display;
@@ -115,6 +118,7 @@ private:
 	void insertSilence(unsigned int count);
 
 	static void setShortLC(unsigned int slotNo, unsigned int id, FLCO flco = FLCO_GROUP, bool voice = true);
+	static bool validateId(unsigned int id);
 };
 
 #endif
