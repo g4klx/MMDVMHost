@@ -19,9 +19,10 @@
 #include <cstdio>
 #include <cassert>
 
-CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, unsigned int timeout, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex) :
+CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, bool selfOnly, unsigned int timeout, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex) :
 m_id(id),
 m_colorCode(colorCode),
+m_selfOnly(selfOnly),
 m_modem(modem),
 m_network(network),
 m_slot1(1U, timeout),
@@ -30,7 +31,7 @@ m_slot2(2U, timeout)
 	assert(modem != NULL);
 	assert(display != NULL);
 
-	CDMRSlot::init(colorCode, modem, network, display, duplex);
+	CDMRSlot::init(id, colorCode, selfOnly, modem, network, display, duplex);
 }
 
 CDMRControl::~CDMRControl()
@@ -54,13 +55,25 @@ bool CDMRControl::processWakeup(const unsigned char* data)
 	if (csbko != CSBKO_BSDWNACT)
 		return false;
 
-	unsigned int bsId = csbk.getBSId();
+	unsigned int srcId = csbk.getSrcId();
+	unsigned int bsId  = csbk.getBSId();
+
 	if (bsId == 0xFFFFFFU) {
-		LogMessage("CSBK BS_Dwn_Act for ANY received from %u", csbk.getSrcId());
-		return true;
+		if (m_selfOnly && srcId != m_id) {
+			LogMessage("Invalid CSBK BS_Dwn_Act for ANY received from %u", srcId);
+			return false;
+		} else {
+			LogMessage("CSBK BS_Dwn_Act for ANY received from %u", srcId);
+			return true;
+		}
 	} else if (bsId == m_id) {
-		LogMessage("CSBK BS_Dwn_Act for %u received from %u", bsId, csbk.getSrcId());
-		return true;
+		if (m_selfOnly && srcId != m_id) {
+			LogMessage("Invalid CSBK BS_Dwn_Act for %u received from %u", bsId, srcId);
+			return false;
+		} else {
+			LogMessage("CSBK BS_Dwn_Act for %u received from %u", bsId, srcId);
+			return true;
+		}
 	}
 
 	return false;

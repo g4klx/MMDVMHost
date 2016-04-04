@@ -73,10 +73,12 @@ m_modemOscOffset(0),
 m_modemDebug(false),
 m_dstarEnabled(true),
 m_dstarModule("C"),
+m_dstarSelfOnly(false),
 m_dmrEnabled(true),
 m_dmrBeacons(false),
 m_dmrId(0U),
 m_dmrColorCode(2U),
+m_dmrSelfOnly(false),
 m_fusionEnabled(true),
 m_fusionParrotEnabled(false),
 m_dstarNetworkEnabled(true),
@@ -223,6 +225,8 @@ bool CConf::read()
 			m_dstarEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "Module") == 0)
 			m_dstarModule = value;
+		else if (::strcmp(key, "SelfOnly") == 0)
+			m_dstarSelfOnly = ::atoi(value) == 1;
 	} else if (section == SECTION_DMR) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dmrEnabled = ::atoi(value) == 1;
@@ -232,6 +236,8 @@ bool CConf::read()
 			m_dmrId = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "ColorCode") == 0)
 			m_dmrColorCode = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "SelfOnly") == 0)
+			m_dmrSelfOnly = ::atoi(value) == 1;
 	} else if (section == SECTION_FUSION) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fusionEnabled = ::atoi(value) == 1;
@@ -442,6 +448,11 @@ std::string CConf::getDStarModule() const
 	return m_dstarModule;
 }
 
+bool CConf::getDStarSelfOnly() const
+{
+	return m_dstarSelfOnly;
+}
+
 bool CConf::getDMREnabled() const
 {
 	return m_dmrEnabled;
@@ -460,6 +471,11 @@ unsigned int CConf::getDMRId() const
 unsigned int CConf::getDMRColorCode() const
 {
 	return m_dmrColorCode;
+}
+
+bool CConf::getDMRSelfOnly() const
+{
+	return m_dmrSelfOnly;
 }
 
 bool CConf::getFusionEnabled() const

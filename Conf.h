@@ -68,12 +68,14 @@ public:
   // The D-Star section
   bool         getDStarEnabled() const;
   std::string  getDStarModule() const;
+  bool         getDStarSelfOnly() const;
 
   // The DMR section
   bool         getDMREnabled() const;
   bool         getDMRBeacons() const;
   unsigned int getDMRId() const;
   unsigned int getDMRColorCode() const;
+  bool         getDMRSelfOnly() const;
 
   // The System Fusion section
   bool         getFusionEnabled() const;
@@ -146,11 +148,13 @@ private:
 
   bool         m_dstarEnabled;
   std::string  m_dstarModule;
+  bool         m_dstarSelfOnly;
 
   bool         m_dmrEnabled;
   bool         m_dmrBeacons;
   unsigned int m_dmrId;
   unsigned int m_dmrColorCode;
+  bool         m_dmrSelfOnly;
 
   bool         m_fusionEnabled;
   bool         m_fusionParrotEnabled;

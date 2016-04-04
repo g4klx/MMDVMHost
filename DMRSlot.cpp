@@ -26,7 +26,9 @@
 #include <cassert>
 #include <ctime>
 
+unsigned int   CDMRSlot::m_id = 0U;
 unsigned int   CDMRSlot::m_colorCode = 0U;
+bool           CDMRSlot::m_selfOnly = false;
 CModem*        CDMRSlot::m_modem = NULL;
 CDMRIPSC*      CDMRSlot::m_network = NULL;
 IDisplay*      CDMRSlot::m_display = NULL;
@@ -122,11 +124,21 @@ void CDMRSlot::writeModem(unsigned char *data)
 				return;
 
 			CDMRFullLC fullLC;
-			m_rfLC = fullLC.decode(data + 2U, DT_VOICE_LC_HEADER);
-			if (m_rfLC == NULL) {
+			CDMRLC* lc = fullLC.decode(data + 2U, DT_VOICE_LC_HEADER);
+			if (lc == NULL) {
 				LogMessage("DMR Slot %u, unable to decode the RF LC", m_slotNo);
 				return;
 			}
+
+			unsigned int id = lc->getSrcId();
+
+			if (m_selfOnly && id != m_id) {
+				LogMessage("DMR Slot %u, invalid access atemmpt from %u", m_slotNo, id);
+				delete lc;
+				return;
+			}
+
+			m_rfLC = lc;
 
 			// Store the LC for the embedded LC
 			m_rfEmbeddedLC.setData(*m_rfLC);
@@ -161,10 +173,10 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			if (m_netState == RS_NET_IDLE) {
 				setShortLC(m_slotNo, m_rfLC->getDstId(), m_rfLC->getFLCO(), true);
-				m_display->writeDMR(m_slotNo, m_rfLC->getSrcId(), m_rfLC->getFLCO() == FLCO_GROUP, m_rfLC->getDstId(), "R");
+				m_display->writeDMR(m_slotNo, id, m_rfLC->getFLCO() == FLCO_GROUP, m_rfLC->getDstId(), "R");
 			}
 
-			LogMessage("DMR Slot %u, received RF voice header from %u to %s%u", m_slotNo, m_rfLC->getSrcId(), m_rfLC->getFLCO() == FLCO_GROUP ? "TG " : "", m_rfLC->getDstId());
+			LogMessage("DMR Slot %u, received RF voice header from %u to %s%u", m_slotNo, id, m_rfLC->getFLCO() == FLCO_GROUP ? "TG " : "", m_rfLC->getDstId());
 		} else if (dataType == DT_VOICE_PI_HEADER) {
 			if (m_rfState != RS_RF_AUDIO)
 				return;
@@ -226,6 +238,15 @@ void CDMRSlot::writeModem(unsigned char *data)
 				return;
 			}
 
+			bool gi = dataHeader.getGI();
+			unsigned int srcId = dataHeader.getSrcId();
+			unsigned int dstId = dataHeader.getDstId();
+
+			if (m_selfOnly && srcId != m_id) {
+				LogMessage("DMR Slot %u, invalid access atemmpt from %u", m_slotNo, srcId);
+				return;
+			}
+
 			m_rfFrames = dataHeader.getBlocks();
 			if (m_rfFrames == 0U) {
 				LogMessage("DMR Slot %u, unknown RF data header type, no block count information found", m_slotNo);
@@ -233,10 +254,6 @@ void CDMRSlot::writeModem(unsigned char *data)
 			}
 
 			m_rfDataHeader = dataHeader;
-
-			bool gi = dataHeader.getGI();
-			unsigned int srcId = dataHeader.getSrcId();
-			unsigned int dstId = dataHeader.getDstId();
 
 			m_rfSeqNo  = 0U;
 
@@ -282,6 +299,11 @@ void CDMRSlot::writeModem(unsigned char *data)
 			bool gi = csbk.getGI();
 			unsigned int srcId = csbk.getSrcId();
 			unsigned int dstId = csbk.getDstId();
+
+			if (m_selfOnly && srcId != m_id) {
+				LogMessage("DMR Slot %u, invalid access atemmpt from %u", m_slotNo, srcId);
+				return;
+			}
 
 			// Regenerate the CSBK data
 			csbk.get(data + 2U);
@@ -455,8 +477,17 @@ void CDMRSlot::writeModem(unsigned char *data)
 			if (colorCode != m_colorCode)
 				return;
 
-			m_rfLC = m_rfEmbeddedLC.addData(data + 2U, emb.getLCSS());
-			if (m_rfLC != NULL) {
+			CDMRLC* lc = m_rfEmbeddedLC.addData(data + 2U, emb.getLCSS());
+			if (lc != NULL) {
+				unsigned int id = lc->getSrcId();
+				if (m_selfOnly && id != m_id) {
+					LogMessage("DMR Slot %u, invalid access atemmpt from %u", m_slotNo, id);
+					delete lc;
+					return;
+				}
+
+				m_rfLC = lc;
+
 				// Store the LC for the embedded LC
 				m_rfEmbeddedLC.setData(*m_rfLC);
 
@@ -1196,12 +1227,15 @@ void CDMRSlot::writeQueueNet(const unsigned char *data)
 		m_queue.addData(data, len);
 }
 
-void CDMRSlot::init(unsigned int colorCode, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex)
+void CDMRSlot::init(unsigned int id, unsigned int colorCode, bool selfOnly, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex)
 {
+	assert(id != 0U);
 	assert(modem != NULL);
 	assert(display != NULL);
 
+	m_id        = id;
 	m_colorCode = colorCode;
+	m_selfOnly  = selfOnly;
 	m_modem     = modem;
 	m_network   = network;
 	m_display   = display;

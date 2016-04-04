@@ -47,7 +47,7 @@ public:
 
 	void clock();
 
-	static void init(unsigned int colorCode, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex);
+	static void init(unsigned int id, unsigned int colorCode, bool selfOnly, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex);
 
 private:
 	unsigned int               m_slotNo;
@@ -82,7 +82,9 @@ private:
 	CDMREMB                    m_lastEMB;
 	FILE*                      m_fp;
 
+	static unsigned int        m_id;
 	static unsigned int        m_colorCode;
+	static bool                m_selfOnly;
 	static CModem*             m_modem;
 	static CDMRIPSC*           m_network;
 	static IDisplay*           m_display;

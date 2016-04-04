@@ -24,9 +24,10 @@ const unsigned int MAX_SYNC_BIT_ERRORS = 2U;
 
 // #define	DUMP_DSTAR
 
-CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, CDStarNetwork* network, IDisplay* display, unsigned int timeout, bool duplex) :
+CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, CDStarNetwork* network, IDisplay* display, unsigned int timeout, bool duplex) :
 m_callsign(NULL),
 m_gateway(NULL),
+m_selfOnly(selfOnly),
 m_network(network),
 m_display(display),
 m_duplex(duplex),
@@ -118,6 +119,14 @@ bool CDStarControl::writeModem(unsigned char *data)
 			return false;
 		}
 
+		unsigned char my1[DSTAR_LONG_CALLSIGN_LENGTH];
+		header.getMyCall1(my1);
+
+		if (m_selfOnly && ::memcmp(my1, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH - 1U) != 0) {
+			LogMessage("D-Star, invalid access attempt from %8.8s", my1);
+			return false;
+		}
+
 		unsigned char callsign[DSTAR_LONG_CALLSIGN_LENGTH];
 		header.getRPTCall1(callsign);
 
@@ -129,9 +138,6 @@ bool CDStarControl::writeModem(unsigned char *data)
 
 		unsigned char gateway[DSTAR_LONG_CALLSIGN_LENGTH];
 		header.getRPTCall2(gateway);
-
-		unsigned char my1[DSTAR_LONG_CALLSIGN_LENGTH];
-		header.getMyCall1(my1);
 
 		unsigned char my2[DSTAR_SHORT_CALLSIGN_LENGTH];
 		header.getMyCall2(my2);
