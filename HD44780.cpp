@@ -135,7 +135,7 @@ void CHD44780::clearDStar()
 		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
 
 		::lcdPosition(m_fd, 0, 2);
-		::lcdPrintf(m_fd, "%.*s", m_cols, "");
+		::lcdPrintf(m_fd, "%.*s", m_cols, "        ");
 	} else {
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
