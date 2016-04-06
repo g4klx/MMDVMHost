@@ -22,11 +22,12 @@
 #include "Display.h"
 
 #include <string>
+#include <vector>
 
 class CHD44780 : public IDisplay
 {
 public:
-  CHD44780(unsigned int rows, unsigned int cols);
+  CHD44780(unsigned int rows, unsigned int cols, const std::vector<unsigned int>& pins);
   virtual ~CHD44780();
 
   virtual bool open();
@@ -53,6 +54,12 @@ public:
 private:
 	unsigned int m_rows;
 	unsigned int m_cols;
+	unsigned int m_rb;
+	unsigned int m_strb;
+	unsigned int m_d0;
+	unsigned int m_d1;
+	unsigned int m_d2;
+	unsigned int m_d3;
 	int          m_fd;
 };
 

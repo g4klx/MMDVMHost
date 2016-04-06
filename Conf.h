@@ -113,6 +113,7 @@ public:
   // The HD44780 section
   unsigned int getHD44780Rows() const;
   unsigned int getHD44780Columns() const;
+  std::vector<unsigned int> getHD44780Pins() const;
 
 private:
   std::string  m_file;
@@ -187,6 +188,7 @@ private:
 
   unsigned int m_hd44780Rows;
   unsigned int m_hd44780Columns;
+  std::vector<unsigned int> m_hd44780Pins;
 };
 
 #endif

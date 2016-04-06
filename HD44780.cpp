@@ -27,9 +27,15 @@
 
 const char* LISTENING = "Listening                                      ";
 
-CHD44780::CHD44780(unsigned int rows, unsigned int cols) :
+CHD44780::CHD44780(unsigned int rows, unsigned int cols, const std::vector<unsigned int>& pins) :
 m_rows(rows),
 m_cols(cols),
+m_rb(pins.at(0U)),
+m_strb(pins.at(1U)),
+m_d0(pins.at(2U)),
+m_d1(pins.at(3U)),
+m_d2(pins.at(4U)),
+m_d3(pins.at(5U)),
 m_fd(-1)
 {
 	assert(rows > 1U);
@@ -44,7 +50,7 @@ bool CHD44780::open()
 {
 	::wiringPiSetup();
 
-	m_fd = ::lcdInit(m_rows, m_cols, 4, 11, 10, 0, 1, 2, 3, 0, 0, 0, 0);
+	m_fd = ::lcdInit(m_rows, m_cols, 4, m_rb, m_strb, m_d0, m_d1, m_d2, m_d3, 0, 0, 0, 0);
 	if (m_fd == -1) {
 		LogError("Unable to open the HD44780");
 		return false;

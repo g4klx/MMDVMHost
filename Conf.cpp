@@ -102,7 +102,8 @@ m_fusionNetworkDebug(false),
 m_tftSerialPort(),
 m_tftSerialBrightness(50U),
 m_hd44780Rows(2U),
-m_hd44780Columns(16U)
+m_hd44780Columns(16U),
+m_hd44780Pins()
 {
 }
 
@@ -300,6 +301,14 @@ bool CConf::read()
 			m_hd44780Rows = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Columns") == 0)
 			m_hd44780Columns = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "Pins") == 0) {
+			char* p = ::strtok(value, ",\r\n");
+			while (p != NULL) {
+				unsigned int pin = (unsigned int)::atoi(p);
+				m_hd44780Pins.push_back(pin);
+				p = ::strtok(NULL, ",\r\n");
+			}
+		}
 	}
   }
 
@@ -606,4 +615,9 @@ unsigned int CConf::getHD44780Rows() const
 unsigned int CConf::getHD44780Columns() const
 {
 	return m_hd44780Columns;
+}
+
+std::vector<unsigned int> CConf::getHD44780Pins() const
+{
+	return m_hd44780Pins;
 }

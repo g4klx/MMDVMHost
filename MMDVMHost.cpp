@@ -577,11 +577,15 @@ void CMMDVMHost::createDisplay()
 	} else if (type == "HD44780") {
 		unsigned int rows    = m_conf.getHD44780Rows();
 		unsigned int columns = m_conf.getHD44780Columns();
+		std::vector<unsigned int> pins = m_conf.getHD44780Pins();
 
-		LogInfo("    Rows: %u", rows);
-		LogInfo("    Columns: %u", columns);
+		if (pins.size() == 6U) {
+			LogInfo("    Rows: %u", rows);
+			LogInfo("    Columns: %u", columns);
+			LogInfo("    Pins: %u,%u,%u,%u,%u,%u", pins.at(0U), pins.at(1U), pins.at(2U), pins.at(3U), pins.at(4U), pins.at(5U));
 
-		m_display = new CHD44780(rows, columns);
+			m_display = new CHD44780(rows, columns, pins);
+		}
 #endif
 	} else {
 		m_display = new CNullDisplay;
