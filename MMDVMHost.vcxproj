@@ -176,6 +176,7 @@
     <ClInclude Include="Log.h" />
     <ClInclude Include="MMDVMHost.h" />
     <ClInclude Include="Modem.h" />
+    <ClInclude Include="Nextion.h" />
     <ClInclude Include="NullDisplay.h" />
     <ClInclude Include="QR1676.h" />
     <ClInclude Include="RingBuffer.h" />
@@ -225,6 +226,7 @@
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MMDVMHost.cpp" />
     <ClCompile Include="Modem.cpp" />
+    <ClCompile Include="Nextion.cpp" />
     <ClCompile Include="NullDisplay.cpp" />
     <ClCompile Include="QR1676.cpp" />
     <ClCompile Include="RS129.cpp" />

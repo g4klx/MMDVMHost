@@ -40,7 +40,8 @@ enum SECTION {
   SECTION_DMR_NETWORK,
   SECTION_FUSION_NETWORK,
   SECTION_TFTSERIAL,
-  SECTION_HD44780
+  SECTION_HD44780,
+  SECTION_NEXTION
 };
 
 CConf::CConf(const std::string& file) :
@@ -107,7 +108,9 @@ m_tftSerialPort(),
 m_tftSerialBrightness(50U),
 m_hd44780Rows(2U),
 m_hd44780Columns(16U),
-m_hd44780Pins()
+m_hd44780Pins(),
+m_nextionPort(),
+m_nextionBrightness(50U)
 {
 }
 
@@ -155,6 +158,8 @@ bool CConf::read()
         section = SECTION_TFTSERIAL;
 	  else if (::strncmp(buffer, "[HD44780]", 9U) == 0)
 		  section = SECTION_HD44780;
+	  else if (::strncmp(buffer, "[Nextion]", 9U) == 0)
+		  section = SECTION_NEXTION;
 	  else
         section = SECTION_NONE;
 
@@ -334,6 +339,11 @@ bool CConf::read()
 				p = ::strtok(NULL, ",\r\n");
 			}
 		}
+	} else if (section == SECTION_NEXTION) {
+		if (::strcmp(key, "Port") == 0)
+			m_nextionPort = value;
+		else if (::strcmp(key, "Brightness") == 0)
+			m_nextionBrightness = (unsigned int)::atoi(value);
 	}
   }
 
@@ -655,4 +665,14 @@ unsigned int CConf::getHD44780Columns() const
 std::vector<unsigned int> CConf::getHD44780Pins() const
 {
 	return m_hd44780Pins;
+}
+
+std::string CConf::getNextionPort() const
+{
+	return m_nextionPort;
+}
+
+unsigned int CConf::getNextionBrightness() const
+{
+	return m_nextionBrightness;
 }

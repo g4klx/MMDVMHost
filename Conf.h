@@ -117,6 +117,10 @@ public:
   unsigned int getHD44780Columns() const;
   std::vector<unsigned int> getHD44780Pins() const;
 
+  // The Nextion section
+  std::string  getNextionPort() const;
+  unsigned int getNextionBrightness() const;
+
 private:
   std::string  m_file;
   std::string  m_callsign;
@@ -193,6 +197,9 @@ private:
   unsigned int m_hd44780Rows;
   unsigned int m_hd44780Columns;
   std::vector<unsigned int> m_hd44780Pins;
+
+  std::string  m_nextionPort;
+  unsigned int m_nextionBrightness;
 };
 
 #endif

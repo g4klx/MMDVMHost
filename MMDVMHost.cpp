@@ -26,6 +26,7 @@
 #include "TFTSerial.h"
 #include "NullDisplay.h"
 #include "YSFControl.h"
+#include "Nextion.h"
 
 #if defined(HD44780)
 #include "HD44780.h"
@@ -571,13 +572,21 @@ void CMMDVMHost::createDisplay()
 	LogInfo("    Type: %s", type.c_str());
 
 	if (type == "TFT Serial") {
-		std::string port = m_conf.getTFTSerialPort();
+		std::string port        = m_conf.getTFTSerialPort();
 		unsigned int brightness = m_conf.getTFTSerialBrightness();
 
 		LogInfo("    Port: %s", port.c_str());
 		LogInfo("    Brightness: %u", brightness);
 
 		m_display = new CTFTSerial(port, brightness);
+	} else if (type == "Nextion") {
+		std::string port        = m_conf.getNextionPort();
+		unsigned int brightness = m_conf.getNextionBrightness();
+
+		LogInfo("    Port: %s", port.c_str());
+		LogInfo("    Brightness: %u", brightness);
+
+		m_display = new CNextion(port, brightness);
 #if defined(HD44780)
 	} else if (type == "HD44780") {
 		unsigned int rows    = m_conf.getHD44780Rows();
