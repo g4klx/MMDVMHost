@@ -25,6 +25,7 @@
 
 #include <cassert>
 #include <ctime>
+#include <algorithm>
 
 unsigned int   CDMRSlot::m_id = 0U;
 unsigned int   CDMRSlot::m_colorCode = 0U;
@@ -1265,12 +1266,7 @@ bool CDMRSlot::validateId(unsigned int id)
 		if (m_prefixes.size() == 0U)
 			return true;
 
-		for (std::vector<unsigned int>::const_iterator it = m_prefixes.begin(); it != m_prefixes.end(); ++it) {
-			if (prefix == *it)
-				return true;
-		}
-
-		return false;
+		return std::find(m_prefixes.begin(), m_prefixes.end(), prefix) != m_prefixes.end();
 	}
 }
 

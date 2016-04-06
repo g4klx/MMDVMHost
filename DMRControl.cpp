@@ -18,6 +18,7 @@
 
 #include <cstdio>
 #include <cassert>
+#include <algorithm>
 
 CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, unsigned int timeout, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex) :
 m_id(id),
@@ -71,21 +72,11 @@ bool CDMRControl::processWakeup(const unsigned char* data)
 			return false;
 		}
 
-		bool found = false;
-
-		if (m_prefixes.size() == 0U)
-			found = true;
-
-		for (std::vector<unsigned int>::const_iterator it = m_prefixes.begin(); it != m_prefixes.end(); ++it) {
-			if (prefix == *it) {
-				found = true;
-				break;
+		if (m_prefixes.size() > 0U) {
+			if (std::find(m_prefixes.begin(), m_prefixes.end(), prefix) == m_prefixes.end()) {
+				LogMessage("Invalid CSBK BS_Dwn_Act received from %u", srcId);
+				return false;
 			}
-		}
-
-		if (!found) {
-			LogMessage("Invalid CSBK BS_Dwn_Act received from %u", srcId);
-			return false;
 		}
 	}
 
