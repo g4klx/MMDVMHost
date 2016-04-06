@@ -31,6 +31,7 @@ unsigned int   CDMRSlot::m_id = 0U;
 unsigned int   CDMRSlot::m_colorCode = 0U;
 bool           CDMRSlot::m_selfOnly = false;
 std::vector<unsigned int> CDMRSlot::m_prefixes;
+std::vector<unsigned int> CDMRSlot::m_blackList;
 CModem*        CDMRSlot::m_modem = NULL;
 CDMRIPSC*      CDMRSlot::m_network = NULL;
 IDisplay*      CDMRSlot::m_display = NULL;
@@ -1228,7 +1229,7 @@ void CDMRSlot::writeQueueNet(const unsigned char *data)
 		m_queue.addData(data, len);
 }
 
-void CDMRSlot::init(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex)
+void CDMRSlot::init(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex)
 {
 	assert(id != 0U);
 	assert(modem != NULL);
@@ -1238,6 +1239,7 @@ void CDMRSlot::init(unsigned int id, unsigned int colorCode, bool selfOnly, cons
 	m_colorCode = colorCode;
 	m_selfOnly  = selfOnly;
 	m_prefixes  = prefixes;
+	m_blackList = blackList;
 	m_modem     = modem;
 	m_network   = network;
 	m_display   = display;
@@ -1259,6 +1261,9 @@ bool CDMRSlot::validateId(unsigned int id)
 	if (m_selfOnly) {
 		return id == m_id;
 	} else {
+		if (std::find(m_blackList.begin(), m_blackList.end(), id) != m_blackList.end())
+			return false;
+
 		unsigned int prefix = id / 10000U;
 		if (prefix == 0U || prefix > 999U)
 			return false;

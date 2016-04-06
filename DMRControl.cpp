@@ -20,11 +20,12 @@
 #include <cassert>
 #include <algorithm>
 
-CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, unsigned int timeout, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex) :
+CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, unsigned int timeout, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex) :
 m_id(id),
 m_colorCode(colorCode),
 m_selfOnly(selfOnly),
 m_prefixes(prefixes),
+m_blackList(blackList),
 m_modem(modem),
 m_network(network),
 m_slot1(1U, timeout),
@@ -33,7 +34,7 @@ m_slot2(2U, timeout)
 	assert(modem != NULL);
 	assert(display != NULL);
 
-	CDMRSlot::init(id, colorCode, selfOnly, prefixes, modem, network, display, duplex);
+	CDMRSlot::init(id, colorCode, selfOnly, prefixes, blackList, modem, network, display, duplex);
 }
 
 CDMRControl::~CDMRControl()
@@ -66,6 +67,11 @@ bool CDMRControl::processWakeup(const unsigned char* data)
 			return false;
 		}
 	} else {
+		if (std::find(m_blackList.begin(), m_blackList.end(), srcId) != m_blackList.end()) {
+			LogMessage("Invalid CSBK BS_Dwn_Act received from %u", srcId);
+			return false;
+		}
+
 		unsigned int prefix = srcId / 10000U;
 		if (prefix == 0U || prefix > 999U) {
 			LogMessage("Invalid CSBK BS_Dwn_Act received from %u", srcId);

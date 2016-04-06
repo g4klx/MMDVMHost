@@ -143,18 +143,20 @@ int CMMDVMHost::run()
 	CDStarControl* dstar = NULL;
 	if (m_dstarEnabled) {
 		std::string callsign = m_conf.getCallsign();
-		std::string module   = m_conf.getDStarModule();
-		bool selfOnly        = m_conf.getDStarSelfOnly();
+		std::string module = m_conf.getDStarModule();
+		bool selfOnly = m_conf.getDStarSelfOnly();
 		unsigned int timeout = m_conf.getTimeout();
+		std::vector<std::string> blackList = m_conf.getDStarBlackList();
 
 		LogInfo("D-Star Parameters");
 		LogInfo("    Callsign: %s", callsign.c_str());
 		LogInfo("    Module: %s", module.c_str());
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
+		if (blackList.size() > 0U)
+			LogInfo("    Black List: %u", blackList.size());
 		LogInfo("    Timeout: %us", timeout);
 
-
-		dstar = new CDStarControl(callsign, module, selfOnly, m_dstarNetwork, m_display, timeout, m_duplex);
+		dstar = new CDStarControl(callsign, module, selfOnly, blackList, m_dstarNetwork, m_display, timeout, m_duplex);
 	}
 
 	CDMRControl* dmr = NULL;
@@ -163,6 +165,7 @@ int CMMDVMHost::run()
 		unsigned int colorCode = m_conf.getDMRColorCode();
 		bool selfOnly          = m_conf.getDMRSelfOnly();
 		std::vector<unsigned int> prefixes = m_conf.getDMRPrefixes();
+		std::vector<unsigned int> blackList = m_conf.getDMRBlackList();
 		unsigned int timeout   = m_conf.getTimeout();
 
 		LogInfo("DMR Parameters");
@@ -170,9 +173,11 @@ int CMMDVMHost::run()
 		LogInfo("    Color Code: %u", colorCode);
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
 		LogInfo("    Prefixes: %u", prefixes.size());
+		if (blackList.size() > 0U)
+			LogInfo("    Black List: %u", blackList.size());
 		LogInfo("    Timeout: %us", timeout);
 
-		dmr = new CDMRControl(id, colorCode, selfOnly, prefixes, timeout, m_modem, m_dmrNetwork, m_display, m_duplex);
+		dmr = new CDMRControl(id, colorCode, selfOnly, prefixes, blackList, timeout, m_modem, m_dmrNetwork, m_display, m_duplex);
 	}
 
 	CYSFControl* ysf = NULL;

@@ -16,12 +16,14 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include "DStarDefines.h"
 #include "Conf.h"
 #include "Log.h"
 
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <cctype>
 
 const int BUFFER_SIZE = 500;
 
@@ -74,12 +76,14 @@ m_modemDebug(false),
 m_dstarEnabled(true),
 m_dstarModule("C"),
 m_dstarSelfOnly(false),
+m_dstarBlackList(),
 m_dmrEnabled(true),
 m_dmrBeacons(false),
 m_dmrId(0U),
 m_dmrColorCode(2U),
 m_dmrSelfOnly(false),
 m_dmrPrefixes(),
+m_dmrBlackList(),
 m_fusionEnabled(true),
 m_fusionParrotEnabled(false),
 m_dstarNetworkEnabled(true),
@@ -229,6 +233,19 @@ bool CConf::read()
 			m_dstarModule = value;
 		else if (::strcmp(key, "SelfOnly") == 0)
 			m_dstarSelfOnly = ::atoi(value) == 1;
+		else if (::strcmp(key, "BlackList") == 0) {
+			char* p = ::strtok(value, ",\r\n");
+			while (p != NULL) {
+				if (::strlen(p) > 0U) {
+					for (unsigned int i = 0U; p[i] != 0U; i++)
+						p[i] = ::toupper(p[i]);
+					std::string callsign = std::string(p);
+					callsign.resize(DSTAR_LONG_CALLSIGN_LENGTH, ' ');
+					m_dstarBlackList.push_back(callsign);
+				}
+				p = ::strtok(NULL, ",\r\n");
+			}
+		}
 	} else if (section == SECTION_DMR) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dmrEnabled = ::atoi(value) == 1;
@@ -246,6 +263,14 @@ bool CConf::read()
 				unsigned int prefix = (unsigned int)::atoi(p);
 				if (prefix > 0U && prefix <= 999U)
 					m_dmrPrefixes.push_back(prefix);
+				p = ::strtok(NULL, ",\r\n");
+			}
+		} else if (::strcmp(key, "BlackList") == 0) {
+			char* p = ::strtok(value, ",\r\n");
+			while (p != NULL) {
+				unsigned int id = (unsigned int)::atoi(p);
+				if (id > 0U)
+					m_dmrBlackList.push_back(id);
 				p = ::strtok(NULL, ",\r\n");
 			}
 		}
@@ -472,6 +497,11 @@ bool CConf::getDStarSelfOnly() const
 	return m_dstarSelfOnly;
 }
 
+std::vector<std::string> CConf::getDStarBlackList() const
+{
+	return m_dstarBlackList;
+}
+
 bool CConf::getDMREnabled() const
 {
 	return m_dmrEnabled;
@@ -500,6 +530,11 @@ bool CConf::getDMRSelfOnly() const
 std::vector<unsigned int> CConf::getDMRPrefixes() const
 {
 	return m_dmrPrefixes;
+}
+
+std::vector<unsigned int> CConf::getDMRBlackList() const
+{
+	return m_dmrBlackList;
 }
 
 bool CConf::getFusionEnabled() const

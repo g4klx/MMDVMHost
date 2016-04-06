@@ -70,6 +70,7 @@ public:
   bool         getDStarEnabled() const;
   std::string  getDStarModule() const;
   bool         getDStarSelfOnly() const;
+  std::vector<std::string> getDStarBlackList() const;
 
   // The DMR section
   bool         getDMREnabled() const;
@@ -78,6 +79,7 @@ public:
   unsigned int getDMRColorCode() const;
   bool         getDMRSelfOnly() const;
   std::vector<unsigned int> getDMRPrefixes() const;
+  std::vector<unsigned int> getDMRBlackList() const;
 
   // The System Fusion section
   bool         getFusionEnabled() const;
@@ -152,6 +154,7 @@ private:
   bool         m_dstarEnabled;
   std::string  m_dstarModule;
   bool         m_dstarSelfOnly;
+  std::vector<std::string> m_dstarBlackList;
 
   bool         m_dmrEnabled;
   bool         m_dmrBeacons;
@@ -159,6 +162,7 @@ private:
   unsigned int m_dmrColorCode;
   bool         m_dmrSelfOnly;
   std::vector<unsigned int> m_dmrPrefixes;
+  std::vector<unsigned int> m_dmrBlackList;
 
   bool         m_fusionEnabled;
   bool         m_fusionParrotEnabled;

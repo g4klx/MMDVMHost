@@ -32,10 +32,11 @@
 #include "Modem.h"
 
 #include <string>
+#include <vector>
 
 class CDStarControl {
 public:
-	CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, CDStarNetwork* network, IDisplay* display, unsigned int timeout, bool duplex);
+	CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, const std::vector<std::string>& blackList, CDStarNetwork* network, IDisplay* display, unsigned int timeout, bool duplex);
 	~CDStarControl();
 
 	bool writeModem(unsigned char* data);
@@ -48,6 +49,7 @@ private:
 	unsigned char*             m_callsign;
 	unsigned char*             m_gateway;
 	bool                       m_selfOnly;
+	std::vector<std::string>   m_blackList;
 	CDStarNetwork*             m_network;
 	IDisplay*                  m_display;
 	bool                       m_duplex;

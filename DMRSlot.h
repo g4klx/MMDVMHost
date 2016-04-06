@@ -49,7 +49,7 @@ public:
 
 	void clock();
 
-	static void init(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex);
+	static void init(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex);
 
 private:
 	unsigned int               m_slotNo;
@@ -88,6 +88,7 @@ private:
 	static unsigned int        m_colorCode;
 	static bool                m_selfOnly;
 	static std::vector<unsigned int> m_prefixes;
+	static std::vector<unsigned int> m_blackList;
 	static CModem*             m_modem;
 	static CDMRIPSC*           m_network;
 	static IDisplay*           m_display;
