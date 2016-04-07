@@ -48,12 +48,12 @@ bool CNextion::open()
 	::sprintf(command, "dim=%u", m_brightness);
 	sendCommand(command);
 
-	setIdle();
+	setIdle("");
 
 	return true;
 }
 
-void CNextion::setIdle()
+void CNextion::setIdle(const char* callsign)
 {
 	sendCommand("page MMDVM");
 

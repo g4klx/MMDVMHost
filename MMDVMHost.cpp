@@ -692,7 +692,8 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 		if (m_mode == MODE_DMR && m_duplex)
 			m_modem->writeDMRStart(false);
 		m_modem->setMode(MODE_IDLE);
-		m_display->setIdle();
+                std::string callsign = m_conf.getCallsign();
+		m_display->setIdle(callsign.c_str());
 		m_mode = MODE_IDLE;
 		m_modeTimer.stop();
 		break;

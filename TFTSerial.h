@@ -32,7 +32,7 @@ public:
 
   virtual bool open();
 
-  virtual void setIdle();
+  virtual void setIdle(const char* callsign);
 
   virtual void setError(const char* text);
   virtual void setLockout();
