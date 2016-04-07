@@ -63,12 +63,12 @@ bool CHD44780::open()
 	return true;
 }
 
-void CHD44780::setIdle()
+void CHD44780::setIdle(const char* callsign)
 {
 	::lcdClear(m_fd);
 
 	::lcdPosition(m_fd, 0, 0);
-	::lcdPuts(m_fd, "MMDVM");
+	::lcdPrintf(m_fd, "MMDVM %s", callsign);
 
 	::lcdPosition(m_fd, 0, 1);
 	::lcdPuts(m_fd, "Idle");
