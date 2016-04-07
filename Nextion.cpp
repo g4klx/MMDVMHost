@@ -23,7 +23,9 @@
 #include <cassert>
 #include <cstring>
 
-CNextion::CNextion(const std::string& port, unsigned int brightness) :
+CNextion::CNextion(const char* callsign, unsigned int dmrid, const std::string& port, unsigned int brightness) :
+m_callsign(callsign),
+m_dmrid(dmrid),
 m_serial(port, SERIAL_9600),
 m_brightness(brightness)
 {
@@ -57,7 +59,11 @@ void CNextion::setIdle()
 {
 	sendCommand("page MMDVM");
 
-	sendCommand("t0.txt=\"IDLE\"");
+	char command[20];
+	::sprintf(command, "t0.txt=\"%-6s / %u\"", m_callsign, m_dmrid);
+
+	sendCommand(command);
+	sendCommand("t1.txt=\"MMDVM IDLE\"");
 }
 
 void CNextion::setError(const char* text)
