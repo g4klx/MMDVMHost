@@ -28,7 +28,7 @@ public:
 
   virtual bool open() = 0;
 
-  virtual void setIdle(const char* callsign) = 0;
+  virtual void setIdle() = 0;
 
   virtual void setLockout() = 0;
   virtual void setError(const char* text) = 0;

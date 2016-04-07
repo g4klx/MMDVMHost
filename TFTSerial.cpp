@@ -71,12 +71,12 @@ bool CTFTSerial::open()
 
 	setForeground(COLOUR_BLACK);
 
-	setIdle("");
+	setIdle();
 
 	return true;
 }
 
-void CTFTSerial::setIdle(const char* callsign)
+void CTFTSerial::setIdle()
 {
 	// Clear the screen
 	clearScreen();

@@ -31,7 +31,7 @@ bool CNullDisplay::open()
 	return true;
 }
 
-void CNullDisplay::setIdle(const char* callsign)
+void CNullDisplay::setIdle()
 {
 }
 
