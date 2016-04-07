@@ -567,6 +567,8 @@ void CMMDVMHost::readParams()
 void CMMDVMHost::createDisplay()
 {
 	std::string type = m_conf.getDisplay();
+	std::string callsign = m_conf.getCallsign();
+	unsigned int dmrid   = m_conf.getDMRId();
 
 	LogInfo("Display Parameters");
 	LogInfo("    Type: %s", type.c_str());
@@ -598,7 +600,7 @@ void CMMDVMHost::createDisplay()
 			LogInfo("    Columns: %u", columns);
 			LogInfo("    Pins: %u,%u,%u,%u,%u,%u", pins.at(0U), pins.at(1U), pins.at(2U), pins.at(3U), pins.at(4U), pins.at(5U));
 
-			m_display = new CHD44780(rows, columns, pins);
+			m_display = new CHD44780(rows, columns, callsign.c_str(), dmrid, pins);
 		}
 #endif
 	} else {
