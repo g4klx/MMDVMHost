@@ -59,7 +59,7 @@ void CNextion::setIdle()
 {
 	sendCommand("page MMDVM");
 
-	char command[20];
+	char command[30];
 	::sprintf(command, "t0.txt=\"%-6s / %u\"", m_callsign, m_dmrid);
 
 	sendCommand(command);
