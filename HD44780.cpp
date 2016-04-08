@@ -27,9 +27,11 @@
 
 const char* LISTENING = "Listening                                      ";
 
-CHD44780::CHD44780(unsigned int rows, unsigned int cols, const std::vector<unsigned int>& pins) :
+CHD44780::CHD44780(unsigned int rows, unsigned int cols, const char* callsign, unsigned int dmrid, const std::vector<unsigned int>& pins) :
 m_rows(rows),
 m_cols(cols),
+m_callsign(callsign),
+m_dmrid(dmrid),
 m_rb(pins.at(0U)),
 m_strb(pins.at(1U)),
 m_d0(pins.at(2U)),
@@ -68,10 +70,10 @@ void CHD44780::setIdle()
 	::lcdClear(m_fd);
 
 	::lcdPosition(m_fd, 0, 0);
-	::lcdPuts(m_fd, "MMDVM");
+	::lcdPrintf(m_fd, "%-6s / %u", m_callsign, m_dmrid);
 
 	::lcdPosition(m_fd, 0, 1);
-	::lcdPuts(m_fd, "Idle");
+	::lcdPuts(m_fd, "MMDVM Idle");
 }
 
 void CHD44780::setError(const char* text)
