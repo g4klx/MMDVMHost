@@ -57,7 +57,13 @@ bool CDMRLookup::read()
 		}
 	}
 
-	LogInfo("Loaded %u DMR Ids to the callsign lookup table", m_table.size());
+	::fclose(fp);
+
+	size_t size = m_table.size();
+	if (size == 0U)
+		return false;
+
+	LogInfo("Loaded %u DMR Ids to the callsign lookup table", size);
 
 	return true;
 }
