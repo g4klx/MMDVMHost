@@ -44,7 +44,9 @@ const unsigned char FONT_LARGE  = 3U;
 // x = 0 to 159, y = 0 to 127 - Landscape
 // x = 0 to 127, y = 0 to 159 - Portrait
 
-CTFTSerial::CTFTSerial(const std::string& port, unsigned int brightness) :
+CTFTSerial::CTFTSerial(const char* callsign, unsigned int dmrid, const std::string& port, unsigned int brightness) :
+m_callsign(callsign),
+m_dmrid(dmrid),
 m_serial(port, SERIAL_9600),
 m_brightness(brightness)
 {
@@ -86,7 +88,13 @@ void CTFTSerial::setIdle()
 	// Draw MMDVM logo
 	displayBitmap(0U, 0U, "MMDVM_sm.bmp");
 
-	gotoPosPixel(45U, 60U);
+	char text[30];
+	::sprintf(text, "%-6s / %u", m_callsign, m_dmrid);
+
+	gotoPosPixel(18U, 55U);
+	displayText(text);
+
+	gotoPosPixel(45U, 90U);
 	displayText("IDLE");
 }
 

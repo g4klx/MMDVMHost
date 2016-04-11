@@ -52,8 +52,8 @@ public:
   virtual void close();
 
 private:
-  const char*  m_callsign;
-  unsigned int m_dmrid;
+  const char*       m_callsign;
+  unsigned int      m_dmrid;
   CSerialController m_serial;
   unsigned int      m_brightness;
 

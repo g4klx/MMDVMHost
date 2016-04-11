@@ -566,7 +566,7 @@ void CMMDVMHost::readParams()
 
 void CMMDVMHost::createDisplay()
 {
-	std::string type = m_conf.getDisplay();
+	std::string type     = m_conf.getDisplay();
 	std::string callsign = m_conf.getCallsign();
 	unsigned int dmrid   = m_conf.getDMRId();
 
@@ -580,7 +580,7 @@ void CMMDVMHost::createDisplay()
 		LogInfo("    Port: %s", port.c_str());
 		LogInfo("    Brightness: %u", brightness);
 
-		m_display = new CTFTSerial(port, brightness);
+		m_display = new CTFTSerial(callsign.c_str(), dmrid, port, brightness);
 	} else if (type == "Nextion") {
 		std::string port        = m_conf.getNextionPort();
 		unsigned int brightness = m_conf.getNextionBrightness();

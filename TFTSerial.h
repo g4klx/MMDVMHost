@@ -27,7 +27,7 @@
 class CTFTSerial : public IDisplay
 {
 public:
-  CTFTSerial(const std::string& port, unsigned int brightness);
+  CTFTSerial(const char* callsign, unsigned int dmrid, const std::string& port, unsigned int brightness);
   virtual ~CTFTSerial();
 
   virtual bool open();
@@ -52,8 +52,10 @@ public:
   virtual void close();
 
 private:
-  CSerialController m_serial;
-  unsigned int      m_brightness;
+	const char*       m_callsign;
+	unsigned int      m_dmrid;
+	CSerialController m_serial;
+	unsigned int      m_brightness;
 
   void clearScreen();
   void setBackground(unsigned char colour);
