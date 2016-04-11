@@ -93,7 +93,7 @@ void CNextion::setLockout()
 	m_mode = MODE_LOCKOUT;
 }
 
-void CNextion::writeDStar(const char* my1, const char* my2, const char* your)
+void CNextion::writeDStar(const char* my1, const char* my2, const char* your, const char* type)
 {
 	assert(my1 != NULL);
 	assert(my2 != NULL);

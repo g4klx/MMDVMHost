@@ -107,7 +107,7 @@ void CHD44780::setLockout()
 	m_dmr = false;
 }
 
-void CHD44780::writeDStar(const char* my1, const char* my2, const char* your)
+void CHD44780::writeDStar(const char* my1, const char* my2, const char* your, const char* type)
 {
 	assert(my1 != NULL);
 	assert(my2 != NULL);
@@ -121,7 +121,7 @@ void CHD44780::writeDStar(const char* my1, const char* my2, const char* your)
 	if (m_rows > 2U) {
 		char buffer[40U];
 
-		::sprintf(buffer, "%.8s/%.4s >", my1, my2);
+		::sprintf(buffer, "%s %.8s/%.4s >", type, my1, my2);
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
 

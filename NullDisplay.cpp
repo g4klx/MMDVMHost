@@ -43,7 +43,7 @@ void CNullDisplay::setLockout()
 {
 }
 
-void CNullDisplay::writeDStar(const char* my1, const char* my2, const char* your)
+void CNullDisplay::writeDStar(const char* my1, const char* my2, const char* your, const char* type)
 {
 }
 
