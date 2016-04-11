@@ -173,6 +173,7 @@
     <ClInclude Include="Golay2087.h" />
     <ClInclude Include="Golay24128.h" />
     <ClInclude Include="Hamming.h" />
+    <ClInclude Include="DMRLookup.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MMDVMHost.h" />
     <ClInclude Include="Modem.h" />
@@ -213,6 +214,7 @@
     <ClCompile Include="DMRFullLC.cpp" />
     <ClCompile Include="DMRIPSC.cpp" />
     <ClCompile Include="DMRLC.cpp" />
+    <ClCompile Include="DMRLookup.cpp" />
     <ClCompile Include="DMRShortLC.cpp" />
     <ClCompile Include="DMRSlot.cpp" />
     <ClCompile Include="DMRSlotType.cpp" />
