@@ -27,7 +27,8 @@ CNextion::CNextion(const char* callsign, unsigned int dmrid, const std::string& 
 m_callsign(callsign),
 m_dmrid(dmrid),
 m_serial(port, SERIAL_9600),
-m_brightness(brightness)
+m_brightness(brightness),
+m_mode(MODE_IDLE)
 {
 	assert(brightness >= 0U && brightness <= 100U);
 }
@@ -64,6 +65,8 @@ void CNextion::setIdle()
 
 	sendCommand(command);
 	sendCommand("t1.txt=\"MMDVM IDLE\"");
+
+	m_mode = MODE_IDLE;
 }
 
 void CNextion::setError(const char* text)
@@ -77,6 +80,8 @@ void CNextion::setError(const char* text)
 
 	sendCommand(command);
 	sendCommand("t1.txt=\"ERROR\"");
+
+	m_mode = MODE_ERROR;
 }
 
 void CNextion::setLockout()
@@ -84,13 +89,8 @@ void CNextion::setLockout()
 	sendCommand("page MMDVM");
 
 	sendCommand("t0.txt=\"LOCKOUT\"");
-}
 
-void CNextion::setDStar()
-{
-	sendCommand("page DStar");
-
-	sendCommand("t0.txt=\"Listening\"");
+	m_mode = MODE_LOCKOUT;
 }
 
 void CNextion::writeDStar(const char* my1, const char* my2, const char* your)
@@ -99,12 +99,17 @@ void CNextion::writeDStar(const char* my1, const char* my2, const char* your)
 	assert(my2 != NULL);
 	assert(your != NULL);
 
+	if (m_mode != MODE_DSTAR)
+		sendCommand("page DStar");
+
 	char text[30U];
 	::sprintf(text, "t0.txt=\"%.8s/%4.4s\"", my1, my2);
 	sendCommand(text);
 
 	::sprintf(text, "t1.txt=\"%.8s\"", your);
 	sendCommand(text);
+
+	m_mode = MODE_DSTAR;
 }
 
 void CNextion::clearDStar()
@@ -113,17 +118,18 @@ void CNextion::clearDStar()
 	sendCommand("t1.txt=\"\"");
 }
 
-void CNextion::setDMR()
-{
-	sendCommand("page DMR");
-
-	sendCommand("t0.txt=\"1 Listening\"");
-	sendCommand("t2.txt=\"2 Listening\"");
-}
-
 void CNextion::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, unsigned int dstId, const char* type)
 {
 	assert(type != NULL);
+
+	if (m_mode != MODE_DMR) {
+		sendCommand("page DMR");
+
+		if (slotNo == 1U)
+			sendCommand("t2.txt=\"2 Listening\"");
+		else
+			sendCommand("t0.txt=\"1 Listening\"");
+	}
 
 	if (slotNo == 1U) {
 		char text[30U];
@@ -142,6 +148,8 @@ void CNextion::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, uns
 		::sprintf(text, "t3.txt=\"%s%u\"", group ? "TG" : "", dstId);
 		sendCommand(text);
 	}
+
+	m_mode = MODE_DMR;
 }
 
 void CNextion::clearDMR(unsigned int slotNo)
@@ -155,17 +163,13 @@ void CNextion::clearDMR(unsigned int slotNo)
 	}
 }
 
-void CNextion::setFusion()
-{
-	sendCommand("page YSF");
-
-	sendCommand("t0.txt=\"Listening\"");
-}
-
 void CNextion::writeFusion(const char* source, const char* dest)
 {
 	assert(source != NULL);
 	assert(dest != NULL);
+
+	if (m_mode != MODE_YSF)
+		sendCommand("page YSF");
 
 	char text[30U];
 	::sprintf(text, "t0.txt=\"%.10s\"", source);
@@ -173,6 +177,8 @@ void CNextion::writeFusion(const char* source, const char* dest)
 
 	::sprintf(text, "t1.txt=\"%.10s\"", dest);
 	sendCommand(text);
+
+	m_mode = MODE_YSF;
 }
 
 void CNextion::clearFusion()

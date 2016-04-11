@@ -33,15 +33,12 @@ public:
   virtual void setLockout() = 0;
   virtual void setError(const char* text) = 0;
 
-  virtual void setDStar() = 0;
   virtual void writeDStar(const char* my1, const char* my2, const char* your) = 0;
   virtual void clearDStar() = 0;
 
-  virtual void setDMR() = 0;
   virtual void writeDMR(unsigned int slotNo, unsigned int srdId, bool group, unsigned int dstId, const char* type) = 0;
   virtual void clearDMR(unsigned int slotNo) = 0;
 
-  virtual void setFusion() = 0;
   virtual void writeFusion(const char* source, const char* dest) = 0;
   virtual void clearFusion() = 0;
 

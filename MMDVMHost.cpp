@@ -625,7 +625,6 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 			LogMessage("Mode set to D-Star");
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(false);
-		m_display->setDStar();
 		m_modem->setMode(MODE_DSTAR);
 		m_mode = MODE_DSTAR;
 		m_modeTimer.start();
@@ -636,7 +635,6 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 			LogMessage("Mode set to DMR");
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(false);
-		m_display->setDMR();
 		m_modem->setMode(MODE_DMR);
 		if (m_duplex)
 			m_modem->writeDMRStart(true);
@@ -651,7 +649,6 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 			m_dstarNetwork->enable(false);
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(false);
-		m_display->setFusion();
 		m_modem->setMode(MODE_YSF);
 		m_mode = MODE_YSF;
 		m_modeTimer.start();

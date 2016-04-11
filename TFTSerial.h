@@ -20,6 +20,7 @@
 #define	TFTSERIAL_H
 
 #include "Display.h"
+#include "Defines.h"
 #include "SerialController.h"
 
 #include <string>
@@ -37,15 +38,12 @@ public:
   virtual void setError(const char* text);
   virtual void setLockout();
 
-  virtual void setDStar();
   virtual void writeDStar(const char* my1, const char* my2, const char* your);
   virtual void clearDStar();
 
-  virtual void setDMR();
   virtual void writeDMR(unsigned int slotNo, unsigned int srdId, bool group, unsigned int dstId, const char* type);
   virtual void clearDMR(unsigned int slotNo);
 
-  virtual void setFusion();
   virtual void writeFusion(const char* source, const char* dest);
   virtual void clearFusion();
 
@@ -56,6 +54,7 @@ private:
    unsigned int      m_dmrid;
    CSerialController m_serial;
    unsigned int      m_brightness;
+   unsigned char     m_mode;
 
   void clearScreen();
   void setBackground(unsigned char colour);

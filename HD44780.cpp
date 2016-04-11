@@ -38,7 +38,8 @@ m_d0(pins.at(2U)),
 m_d1(pins.at(3U)),
 m_d2(pins.at(4U)),
 m_d3(pins.at(5U)),
-m_fd(-1)
+m_fd(-1),
+m_dmr(false)
 {
 	assert(rows > 1U);
 	assert(cols > 15U);
@@ -74,6 +75,8 @@ void CHD44780::setIdle()
 
 	::lcdPosition(m_fd, 0, 1);
 	::lcdPuts(m_fd, "MMDVM Idle");
+
+	m_dmr = false;
 }
 
 void CHD44780::setError(const char* text)
@@ -87,6 +90,8 @@ void CHD44780::setError(const char* text)
 
 	::lcdPosition(m_fd, 0, 1);
 	::lcdPrintf(m_fd, "%s ERROR", text);
+
+	m_dmr = false;
 }
 
 void CHD44780::setLockout()
@@ -98,17 +103,8 @@ void CHD44780::setLockout()
 
 	::lcdPosition(m_fd, 0, 1);
 	::lcdPuts(m_fd, "Lockout");
-}
 
-void CHD44780::setDStar()
-{
-	::lcdClear(m_fd);
-
-	::lcdPosition(m_fd, 0, 0);
-	::lcdPuts(m_fd, "D-Star");
-
-	::lcdPosition(m_fd, 0, 1);
-	::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+	m_dmr = false;
 }
 
 void CHD44780::writeDStar(const char* my1, const char* my2, const char* your)
@@ -116,6 +112,11 @@ void CHD44780::writeDStar(const char* my1, const char* my2, const char* your)
 	assert(my1 != NULL);
 	assert(my2 != NULL);
 	assert(your != NULL);
+
+	::lcdClear(m_fd);
+
+	::lcdPosition(m_fd, 0, 0);
+	::lcdPuts(m_fd, "D-Star");
 
 	if (m_rows > 2U) {
 		char buffer[40U];
@@ -134,6 +135,8 @@ void CHD44780::writeDStar(const char* my1, const char* my2, const char* your)
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
 	}
+
+	m_dmr = false;
 }
 
 void CHD44780::clearDStar()
@@ -150,29 +153,26 @@ void CHD44780::clearDStar()
 	}
 }
 
-void CHD44780::setDMR()
-{
-	::lcdClear(m_fd);
-
-	int row = 0;
-	if (m_rows > 2U) {
-		::lcdPosition(m_fd, 0, row);
-		::lcdPuts(m_fd, "DMR");
-		row++;
-	}
-
-	::lcdPosition(m_fd, 0, row);
-	::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
-
-	row++;
-
-	::lcdPosition(m_fd, 0, row);
-	::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
-}
-
 void CHD44780::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, unsigned int dstId, const char* type)
 {
 	assert(type != NULL);
+
+	::lcdClear(m_fd);
+
+	if (m_rows > 2U) {
+		::lcdPosition(m_fd, 0, 0);
+		::lcdPuts(m_fd, "DMR");
+	}
+
+	if (!m_dmr) {
+		if (slotNo == 1U) {
+			::lcdPosition(m_fd, 0, m_rows > 2U ? 2 : 1);
+			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
+		} else {
+			::lcdPosition(m_fd, 0, m_rows > 2U ? 1 : 0);
+			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
+		}
+	}
 
 	if (slotNo == 1U) {
 		char buffer[40U];
@@ -193,6 +193,8 @@ void CHD44780::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, uns
 		::lcdPosition(m_fd, 0, m_rows > 2U ? 2 : 1);
 		::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 	}
+
+	m_dmr = true;
 }
 
 void CHD44780::clearDMR(unsigned int slotNo)
@@ -206,21 +208,15 @@ void CHD44780::clearDMR(unsigned int slotNo)
 	}
 }
 
-void CHD44780::setFusion()
-{
-	::lcdClear(m_fd);
-
-	::lcdPosition(m_fd, 0, 0);
-	::lcdPuts(m_fd, "System Fusion");
-
-	::lcdPosition(m_fd, 0, 1);
-	::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
-}
-
 void CHD44780::writeFusion(const char* source, const char* dest)
 {
 	assert(source != NULL);
 	assert(dest != NULL);
+
+	::lcdClear(m_fd);
+
+	::lcdPosition(m_fd, 0, 0);
+	::lcdPuts(m_fd, "System Fusion");
 
 	if (m_rows > 2U) {
 		char buffer[40U];
@@ -239,6 +235,8 @@ void CHD44780::writeFusion(const char* source, const char* dest)
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
 	}
+
+	m_dmr = false;
 }
 
 void CHD44780::clearFusion()

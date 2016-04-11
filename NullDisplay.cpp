@@ -43,10 +43,6 @@ void CNullDisplay::setLockout()
 {
 }
 
-void CNullDisplay::setDStar()
-{
-}
-
 void CNullDisplay::writeDStar(const char* my1, const char* my2, const char* your)
 {
 }
@@ -55,19 +51,11 @@ void CNullDisplay::clearDStar()
 {
 }
 
-void CNullDisplay::setDMR()
-{
-}
-
 void CNullDisplay::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, unsigned int dstId, const char* type)
 {
 }
 
 void CNullDisplay::clearDMR(unsigned int slotNo)
-{
-}
-
-void CNullDisplay::setFusion()
 {
 }
 

@@ -48,7 +48,8 @@ CTFTSerial::CTFTSerial(const char* callsign, unsigned int dmrid, const std::stri
 m_callsign(callsign),
 m_dmrid(dmrid),
 m_serial(port, SERIAL_9600),
-m_brightness(brightness)
+m_brightness(brightness),
+m_mode(MODE_IDLE)
 {
 	assert(brightness >= 0U && brightness <= 100U);
 }
@@ -96,6 +97,8 @@ void CTFTSerial::setIdle()
 
 	gotoPosPixel(45U, 90U);
 	displayText("IDLE");
+
+	m_mode = MODE_IDLE;
 }
 
 void CTFTSerial::setError(const char* text)
@@ -119,6 +122,8 @@ void CTFTSerial::setError(const char* text)
 	displayText("ERROR");
 
 	setForeground(COLOUR_BLACK);
+
+	m_mode = MODE_ERROR;
 }
 
 void CTFTSerial::setLockout()
@@ -133,20 +138,8 @@ void CTFTSerial::setLockout()
 
 	gotoPosPixel(20U, 60U);
 	displayText("LOCKOUT");
-}
 
-void CTFTSerial::setDStar()
-{
-	// Clear the screen
-	clearScreen();
-
-	setFontSize(FONT_MEDIUM);
-
-	// Draw D-Star insignia
-	displayBitmap(0U, 0U, "DStar_sm.bmp");
-
-	gotoPosPixel(30U, 80U);
-	displayText("Listening");
+	m_mode = MODE_LOCKOUT;
 }
 
 void CTFTSerial::writeDStar(const char* my1, const char* my2, const char* your)
@@ -154,6 +147,16 @@ void CTFTSerial::writeDStar(const char* my1, const char* my2, const char* your)
 	assert(my1 != NULL);
 	assert(my2 != NULL);
 	assert(your != NULL);
+
+	if (m_mode != MODE_DSTAR) {
+		// Clear the screen
+		clearScreen();
+
+		setFontSize(FONT_MEDIUM);
+
+		// Draw D-Star insignia
+		displayBitmap(0U, 0U, "DStar_sm.bmp");
+	}
 
 	char text[30U];
 	::sprintf(text, "%.8s/%4.4s", my1, my2);
@@ -165,6 +168,8 @@ void CTFTSerial::writeDStar(const char* my1, const char* my2, const char* your)
 
 	gotoPosPixel(5U, 100U);
 	displayText(text);
+
+	m_mode = MODE_DSTAR;
 }
 
 void CTFTSerial::clearDStar()
@@ -176,26 +181,27 @@ void CTFTSerial::clearDStar()
 	displayText("         ");
 }
 
-void CTFTSerial::setDMR()
-{
-	// Clear the screen
-	clearScreen();
-
-	setFontSize(FONT_MEDIUM);
-
-	// Draw DMR insignia
-	displayBitmap(0U, 0U, "DMR_sm.bmp");
-
-	gotoPosPixel(5U, 55U);
-	displayText("1 Listening");
-
-	gotoPosPixel(5U, 90U);
-	displayText("2 Listening");
-}
-
 void CTFTSerial::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, unsigned int dstId, const char* type)
 {
 	assert(type != NULL);
+
+	if (m_mode != MODE_DMR) {
+		// Clear the screen
+		clearScreen();
+
+		setFontSize(FONT_MEDIUM);
+
+		// Draw DMR insignia
+		displayBitmap(0U, 0U, "DMR_sm.bmp");
+
+		if (slotNo == 1U) {
+			gotoPosPixel(5U, 90U);
+			displayText("2 Listening");
+		} else {
+			gotoPosPixel(5U, 55U);
+			displayText("1 Listening");
+		}
+	}
 
 	if (slotNo == 1U) {
 		char text[30U];
@@ -218,6 +224,8 @@ void CTFTSerial::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, u
 		gotoPosPixel(65U, 107U);
 		displayText(text);
 	}
+
+	m_mode = MODE_DMR;
 }
 
 void CTFTSerial::clearDMR(unsigned int slotNo)
@@ -237,24 +245,20 @@ void CTFTSerial::clearDMR(unsigned int slotNo)
 	}
 }
 
-void CTFTSerial::setFusion()
-{
-	// Clear the screen
-	clearScreen();
-
-	setFontSize(FONT_MEDIUM);
-
-	// Draw the System Fusion insignia
-	displayBitmap(0U, 0U, "YSF_sm.bmp");
-
-	gotoPosPixel(30U, 80U);
-	displayText("Listening");
-}
-
 void CTFTSerial::writeFusion(const char* source, const char* dest)
 {
 	assert(source != NULL);
 	assert(dest != NULL);
+
+	if (m_mode != MODE_YSF) {
+		// Clear the screen
+		clearScreen();
+
+		setFontSize(FONT_MEDIUM);
+
+		// Draw the System Fusion insignia
+		displayBitmap(0U, 0U, "YSF_sm.bmp");
+	}
 
 	char text[30U];
 	::sprintf(text, "%.10s", source);
@@ -266,6 +270,8 @@ void CTFTSerial::writeFusion(const char* source, const char* dest)
 
 	gotoPosPixel(5U, 100U);
 	displayText(text);
+
+	m_mode = MODE_YSF;
 }
 
 void CTFTSerial::clearFusion()
