@@ -130,7 +130,7 @@ void CHD44780::writeDStar(const char* my1, const char* my2, const char* your, co
 		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
 	} else {
 		char buffer[40U];
-		::sprintf(buffer, "%.8s/%.4s > %.8s", my1, my2, your);
+		::sprintf(buffer, "%s %.8s/%.4s > %.8s", type, my1, my2, your);
 
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
