@@ -74,7 +74,7 @@ std::string CDMRLookup::find(unsigned int id) const
 
 	try {
 		callsign = m_table.at(id);
-	} catch (std::out_of_range& e) {
+	} catch (...) {
 		char text[10U];
 		::sprintf(text, "%u", id);
 		callsign = std::string(text);
