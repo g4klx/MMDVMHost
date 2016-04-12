@@ -103,7 +103,7 @@ void CNextion::writeDStar(const char* my1, const char* my2, const char* your, co
 		sendCommand("page DStar");
 
 	char text[30U];
-	::sprintf(text, "t0.txt=\"%.8s/%4.4s\"", my1, my2);
+	::sprintf(text, "t0.txt=\"%s %.8s/%4.4s\"", type, my1, my2);
 	sendCommand(text);
 
 	::sprintf(text, "t1.txt=\"%.8s\"", your);
