@@ -19,6 +19,7 @@
 #if !defined(DMRControl_H)
 #define	DMRControl_H
 
+#include "DMRLookup.h"
 #include "DMRIPSC.h"
 #include "Display.h"
 #include "DMRSlot.h"
@@ -29,7 +30,7 @@
 
 class CDMRControl {
 public:
-	CDMRControl(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, unsigned int timeout, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex);
+	CDMRControl(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, unsigned int timeout, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex, const std::string& lookupFile);
 	~CDMRControl();
 
 	bool processWakeup(const unsigned char* data);
@@ -52,6 +53,7 @@ private:
 	CDMRIPSC*                 m_network;
 	CDMRSlot                  m_slot1;
 	CDMRSlot                  m_slot2;
+	CDMRLookup*               m_lookup;
 };
 
 #endif

@@ -154,8 +154,9 @@ void CHD44780::clearDStar()
 	}
 }
 
-void CHD44780::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, unsigned int dstId, const char* type)
+void CHD44780::writeDMR(unsigned int slotNo, const char* src, bool group, unsigned int dstId, const char* type)
 {
+	assert(src != NULL);
 	assert(type != NULL);
 
 	if (!m_dmr) {
@@ -178,18 +179,18 @@ void CHD44780::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, uns
 	if (slotNo == 1U) {
 		char buffer[40U];
 		if (m_cols > 16U)
-			::sprintf(buffer, "%s %u > %s%u", type, srcId, group ? "TG" : "", dstId);
+			::sprintf(buffer, "%s %s > %s%u", type, src, group ? "TG" : "", dstId);
 		else
-			::sprintf(buffer, "%u > %s%u", srcId, group ? "TG" : "", dstId);
+			::sprintf(buffer, "%s > %s%u", src, group ? "TG" : "", dstId);
 
 		::lcdPosition(m_fd, 0, m_rows > 2U ? 1 : 0);
 		::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
 	} else {
 		char buffer[40U];
 		if (m_cols > 16U)
-			::sprintf(buffer, "%s %u > %s%u", type, srcId, group ? "TG" : "", dstId);
+			::sprintf(buffer, "%s %s > %s%u", type, src, group ? "TG" : "", dstId);
 		else
-			::sprintf(buffer, "%u > %s%u", srcId, group ? "TG" : "", dstId);
+			::sprintf(buffer, "%s > %s%u", src, group ? "TG" : "", dstId);
 
 		::lcdPosition(m_fd, 0, m_rows > 2U ? 2 : 1);
 		::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);

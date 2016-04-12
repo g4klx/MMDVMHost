@@ -182,8 +182,9 @@ void CTFTSerial::clearDStar()
 	displayText("         ");
 }
 
-void CTFTSerial::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, unsigned int dstId, const char* type)
+void CTFTSerial::writeDMR(unsigned int slotNo, const char* src, bool group, unsigned int dstId, const char* type)
 {
+	assert(src != NULL);
 	assert(type != NULL);
 
 	if (m_mode != MODE_DMR) {
@@ -207,7 +208,7 @@ void CTFTSerial::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, u
 	if (slotNo == 1U) {
 		char text[30U];
 
-		::sprintf(text, "1 %s %u", type, srcId);
+		::sprintf(text, "1 %s %s", type, src);
 		gotoPosPixel(5U, 55U);
 		displayText(text);
 
@@ -217,7 +218,7 @@ void CTFTSerial::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, u
 	} else {
 		char text[30U];
 
-		::sprintf(text, "2 %s %u", type, srcId);
+		::sprintf(text, "2 %s %s", type, src);
 		gotoPosPixel(5U, 90U);
 		displayText(text);
 

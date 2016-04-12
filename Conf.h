@@ -80,6 +80,7 @@ public:
   bool         getDMRSelfOnly() const;
   std::vector<unsigned int> getDMRPrefixes() const;
   std::vector<unsigned int> getDMRBlackList() const;
+  std::string  getDMRLookupFile() const;
 
   // The System Fusion section
   bool         getFusionEnabled() const;
@@ -167,6 +168,7 @@ private:
   bool         m_dmrSelfOnly;
   std::vector<unsigned int> m_dmrPrefixes;
   std::vector<unsigned int> m_dmrBlackList;
+  std::string  m_dmrLookupFile;
 
   bool         m_fusionEnabled;
   bool         m_fusionParrotEnabled;

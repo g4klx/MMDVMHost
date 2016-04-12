@@ -39,7 +39,7 @@ public:
   virtual void writeDStar(const char* my1, const char* my2, const char* your, const char* type);
   virtual void clearDStar();
 
-  virtual void writeDMR(unsigned int slotNo, unsigned int srdId, bool group, unsigned int dstId, const char* type);
+  virtual void writeDMR(unsigned int slotNo, const char* src, bool group, unsigned int dstId, const char* type);
   virtual void clearDMR(unsigned int slotNo);
 
   virtual void writeFusion(const char* source, const char* dest);

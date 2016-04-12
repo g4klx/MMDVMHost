@@ -85,6 +85,7 @@ m_dmrColorCode(2U),
 m_dmrSelfOnly(false),
 m_dmrPrefixes(),
 m_dmrBlackList(),
+m_dmrLookupFile(),
 m_fusionEnabled(true),
 m_fusionParrotEnabled(false),
 m_dstarNetworkEnabled(true),
@@ -278,7 +279,8 @@ bool CConf::read()
 					m_dmrBlackList.push_back(id);
 				p = ::strtok(NULL, ",\r\n");
 			}
-		}
+		} else if (::strcmp(key, "LookupFile") == 0)
+			m_dmrLookupFile = value;
 	} else if (section == SECTION_FUSION) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fusionEnabled = ::atoi(value) == 1;
@@ -545,6 +547,11 @@ std::vector<unsigned int> CConf::getDMRPrefixes() const
 std::vector<unsigned int> CConf::getDMRBlackList() const
 {
 	return m_dmrBlackList;
+}
+
+std::string CConf::getDMRLookupFile() const
+{
+	return m_dmrLookupFile;
 }
 
 bool CConf::getFusionEnabled() const

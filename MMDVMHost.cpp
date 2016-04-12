@@ -168,6 +168,7 @@ int CMMDVMHost::run()
 		std::vector<unsigned int> prefixes = m_conf.getDMRPrefixes();
 		std::vector<unsigned int> blackList = m_conf.getDMRBlackList();
 		unsigned int timeout   = m_conf.getTimeout();
+		std::string lookupFile = m_conf.getDMRLookupFile();
 
 		LogInfo("DMR Parameters");
 		LogInfo("    Id: %u", id);
@@ -177,8 +178,9 @@ int CMMDVMHost::run()
 		if (blackList.size() > 0U)
 			LogInfo("    Black List: %u", blackList.size());
 		LogInfo("    Timeout: %us", timeout);
+		LogInfo("    Lookup File: %s", lookupFile.length() > 0U ? lookupFile.c_str() : "None");
 
-		dmr = new CDMRControl(id, colorCode, selfOnly, prefixes, blackList, timeout, m_modem, m_dmrNetwork, m_display, m_duplex);
+		dmr = new CDMRControl(id, colorCode, selfOnly, prefixes, blackList, timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookupFile);
 	}
 
 	CYSFControl* ysf = NULL;

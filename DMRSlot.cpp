@@ -36,6 +36,7 @@ CModem*        CDMRSlot::m_modem = NULL;
 CDMRIPSC*      CDMRSlot::m_network = NULL;
 IDisplay*      CDMRSlot::m_display = NULL;
 bool           CDMRSlot::m_duplex = true;
+CDMRLookup*    CDMRSlot::m_lookup = NULL;
 
 unsigned char* CDMRSlot::m_idle = NULL;
 
@@ -173,12 +174,14 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			m_rfState = RS_RF_AUDIO;
 
+			std::string src = m_lookup->find(id);
+
 			if (m_netState == RS_NET_IDLE) {
 				setShortLC(m_slotNo, m_rfLC->getDstId(), m_rfLC->getFLCO(), true);
-				m_display->writeDMR(m_slotNo, id, m_rfLC->getFLCO() == FLCO_GROUP, m_rfLC->getDstId(), "R");
+				m_display->writeDMR(m_slotNo, src.c_str(), m_rfLC->getFLCO() == FLCO_GROUP, m_rfLC->getDstId(), "R");
 			}
 
-			LogMessage("DMR Slot %u, received RF voice header from %u to %s%u", m_slotNo, id, m_rfLC->getFLCO() == FLCO_GROUP ? "TG " : "", m_rfLC->getDstId());
+			LogMessage("DMR Slot %u, received RF voice header from %s to %s%u", m_slotNo, src.c_str(), m_rfLC->getFLCO() == FLCO_GROUP ? "TG " : "", m_rfLC->getDstId());
 		} else if (dataType == DT_VOICE_PI_HEADER) {
 			if (m_rfState != RS_RF_AUDIO)
 				return;
@@ -280,12 +283,14 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			m_rfState = RS_RF_DATA;
 
+			std::string src = m_lookup->find(srcId);
+
 			if (m_netState == RS_NET_IDLE) {
 				setShortLC(m_slotNo, dstId, gi ? FLCO_GROUP : FLCO_USER_USER, false);
-				m_display->writeDMR(m_slotNo, srcId, gi, dstId, "R");
+				m_display->writeDMR(m_slotNo, src.c_str(), gi, dstId, "R");
 			}
 
-			LogMessage("DMR Slot %u, received RF data header from %u to %s%u, %u blocks", m_slotNo, srcId, gi ? "TG ": "", dstId, m_rfFrames);
+			LogMessage("DMR Slot %u, received RF data header from %s to %s%u, %u blocks", m_slotNo, src.c_str(), gi ? "TG ": "", dstId, m_rfFrames);
 		} else if (dataType == DT_CSBK) {
 			CDMRCSBK csbk;
 			bool valid = csbk.put(data + 2U);
@@ -553,12 +558,14 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 				m_rfState = RS_RF_AUDIO;
 
+				std::string src = m_lookup->find(m_rfLC->getSrcId());
+
 				if (m_netState == RS_NET_IDLE) {
 					setShortLC(m_slotNo, m_rfLC->getDstId(), m_rfLC->getFLCO(), true);
-					m_display->writeDMR(m_slotNo, m_rfLC->getSrcId(), m_rfLC->getFLCO() == FLCO_GROUP, m_rfLC->getDstId(), "R");
+					m_display->writeDMR(m_slotNo, src.c_str(), m_rfLC->getFLCO() == FLCO_GROUP, m_rfLC->getDstId(), "R");
 				}
 
-				LogMessage("DMR Slot %u, received RF late entry from %u to %s%u", m_slotNo, m_rfLC->getSrcId(), m_rfLC->getFLCO() == FLCO_GROUP ? "TG " : "", m_rfLC->getDstId());
+				LogMessage("DMR Slot %u, received RF late entry from %s to %s%u", m_slotNo, src.c_str(), m_rfLC->getFLCO() == FLCO_GROUP ? "TG " : "", m_rfLC->getDstId());
 			}
 		}
 	}
@@ -730,13 +737,15 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		setShortLC(m_slotNo, m_netLC->getDstId(), m_netLC->getFLCO(), true);
 
-		m_display->writeDMR(m_slotNo, m_netLC->getSrcId(), m_netLC->getFLCO() == FLCO_GROUP, m_netLC->getDstId(), "N");
+		std::string src = m_lookup->find(m_netLC->getSrcId());
+
+		m_display->writeDMR(m_slotNo, src.c_str(), m_netLC->getFLCO() == FLCO_GROUP, m_netLC->getDstId(), "N");
 
 #if defined(DUMP_DMR)
 		openFile();
 		writeFile(data);
 #endif
-		LogMessage("DMR Slot %u, received network voice header from %u to %s%u", m_slotNo, m_netLC->getSrcId(), m_netLC->getFLCO() == FLCO_GROUP ? "TG " : "", m_netLC->getDstId());
+		LogMessage("DMR Slot %u, received network voice header from %s to %s%u", m_slotNo, src.c_str(), m_netLC->getFLCO() == FLCO_GROUP ? "TG " : "", m_netLC->getDstId());
 	} else if (dataType == DT_VOICE_PI_HEADER) {
 		if (m_netState != RS_NET_AUDIO)
 			return;
@@ -845,9 +854,11 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		setShortLC(m_slotNo, dmrData.getDstId(), gi ? FLCO_GROUP : FLCO_USER_USER, false);
 
-		m_display->writeDMR(m_slotNo, dmrData.getSrcId(), gi, dmrData.getDstId(), "N");
+		std::string src = m_lookup->find(dmrData.getSrcId());
 
-		LogMessage("DMR Slot %u, received network data header from %u to %s%u, %u blocks", m_slotNo, dmrData.getSrcId(), gi ? "TG ": "", dmrData.getDstId(), m_netFrames);
+		m_display->writeDMR(m_slotNo, src.c_str(), gi, dmrData.getDstId(), "N");
+
+		LogMessage("DMR Slot %u, received network data header from %s to %s%u, %u blocks", m_slotNo, src.c_str(), gi ? "TG ": "", dmrData.getDstId(), m_netFrames);
 	} else if (dataType == DT_VOICE_SYNC) {
 		if (m_netState == RS_NET_IDLE) {
 			m_netLC = new CDMRLC(dmrData.getFLCO(), dmrData.getSrcId(), dmrData.getDstId());
@@ -870,9 +881,11 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 			setShortLC(m_slotNo, m_netLC->getDstId(), m_netLC->getFLCO(), true);
 
-			m_display->writeDMR(m_slotNo, m_netLC->getSrcId(), m_netLC->getFLCO() == FLCO_GROUP, m_netLC->getDstId(), "N");
+			std::string src = m_lookup->find(m_netLC->getSrcId());
 
-			LogMessage("DMR Slot %u, received network late entry from %u to %s%u", m_slotNo, m_netLC->getSrcId(), m_netLC->getFLCO() == FLCO_GROUP ? "TG " : "", m_netLC->getDstId());
+			m_display->writeDMR(m_slotNo, src.c_str(), m_netLC->getFLCO() == FLCO_GROUP, m_netLC->getDstId(), "N");
+
+			LogMessage("DMR Slot %u, received network late entry from %s to %s%u", m_slotNo, src.c_str(), m_netLC->getFLCO() == FLCO_GROUP ? "TG " : "", m_netLC->getDstId());
 		}
 
 		if (m_netState == RS_NET_AUDIO) {
@@ -1229,11 +1242,12 @@ void CDMRSlot::writeQueueNet(const unsigned char *data)
 		m_queue.addData(data, len);
 }
 
-void CDMRSlot::init(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex)
+void CDMRSlot::init(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex, CDMRLookup* lookup)
 {
 	assert(id != 0U);
 	assert(modem != NULL);
 	assert(display != NULL);
+	assert(lookup != NULL);
 
 	m_id        = id;
 	m_colorCode = colorCode;
@@ -1244,6 +1258,7 @@ void CDMRSlot::init(unsigned int id, unsigned int colorCode, bool selfOnly, cons
 	m_network   = network;
 	m_display   = display;
 	m_duplex    = duplex;
+	m_lookup    = lookup;
 
 	m_idle    = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
 

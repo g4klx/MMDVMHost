@@ -23,6 +23,7 @@
 #include "DMRDataHeader.h"
 #include "RingBuffer.h"
 #include "StopWatch.h"
+#include "DMRLookup.h"
 #include "AMBEFEC.h"
 #include "DMRSlot.h"
 #include "DMRData.h"
@@ -49,7 +50,7 @@ public:
 
 	void clock();
 
-	static void init(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex);
+	static void init(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex, CDMRLookup* lookup);
 
 private:
 	unsigned int               m_slotNo;
@@ -93,6 +94,7 @@ private:
 	static CDMRIPSC*           m_network;
 	static IDisplay*           m_display;
 	static bool                m_duplex;
+	static CDMRLookup*         m_lookup;
 
 	static unsigned char*      m_idle;
 

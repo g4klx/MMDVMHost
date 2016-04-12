@@ -20,7 +20,7 @@
 #include <cassert>
 #include <algorithm>
 
-CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, unsigned int timeout, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex) :
+CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, unsigned int timeout, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex, const std::string& lookupFile) :
 m_id(id),
 m_colorCode(colorCode),
 m_selfOnly(selfOnly),
@@ -29,12 +29,16 @@ m_blackList(blackList),
 m_modem(modem),
 m_network(network),
 m_slot1(1U, timeout),
-m_slot2(2U, timeout)
+m_slot2(2U, timeout),
+m_lookup(NULL)
 {
 	assert(modem != NULL);
 	assert(display != NULL);
 
-	CDMRSlot::init(id, colorCode, selfOnly, prefixes, blackList, modem, network, display, duplex);
+	m_lookup = new CDMRLookup(lookupFile);
+	m_lookup->read();
+
+	CDMRSlot::init(id, colorCode, selfOnly, prefixes, blackList, modem, network, display, duplex, m_lookup);
 }
 
 CDMRControl::~CDMRControl()
@@ -61,36 +65,38 @@ bool CDMRControl::processWakeup(const unsigned char* data)
 	unsigned int srcId = csbk.getSrcId();
 	unsigned int bsId  = csbk.getBSId();
 
+	std::string src = m_lookup->find(srcId);
+
 	if (m_selfOnly) {
 		if (srcId != m_id) {
-			LogMessage("Invalid CSBK BS_Dwn_Act received from %u", srcId);
+			LogMessage("Invalid CSBK BS_Dwn_Act received from %s", src.c_str());
 			return false;
 		}
 	} else {
 		if (std::find(m_blackList.begin(), m_blackList.end(), srcId) != m_blackList.end()) {
-			LogMessage("Invalid CSBK BS_Dwn_Act received from %u", srcId);
+			LogMessage("Invalid CSBK BS_Dwn_Act received from %s", src.c_str());
 			return false;
 		}
 
 		unsigned int prefix = srcId / 10000U;
 		if (prefix == 0U || prefix > 999U) {
-			LogMessage("Invalid CSBK BS_Dwn_Act received from %u", srcId);
+			LogMessage("Invalid CSBK BS_Dwn_Act received from %s", src.c_str());
 			return false;
 		}
 
 		if (m_prefixes.size() > 0U) {
 			if (std::find(m_prefixes.begin(), m_prefixes.end(), prefix) == m_prefixes.end()) {
-				LogMessage("Invalid CSBK BS_Dwn_Act received from %u", srcId);
+				LogMessage("Invalid CSBK BS_Dwn_Act received from %s", src.c_str());
 				return false;
 			}
 		}
 	}
 
 	if (bsId == 0xFFFFFFU) {
-		LogMessage("CSBK BS_Dwn_Act for ANY received from %u", srcId);
+		LogMessage("CSBK BS_Dwn_Act for ANY received from %s", src.c_str());
 		return true;
 	} else if (bsId == m_id) {
-		LogMessage("CSBK BS_Dwn_Act for %u received from %u", bsId, srcId);
+		LogMessage("CSBK BS_Dwn_Act for %u received from %s", bsId, src.c_str());
 		return true;
 	}
 
