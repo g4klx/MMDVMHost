@@ -112,6 +112,7 @@ void CHD44780::writeDStar(const char* my1, const char* my2, const char* your, co
 	assert(my1 != NULL);
 	assert(my2 != NULL);
 	assert(your != NULL);
+	assert(type != NULL);
 
 	::lcdClear(m_fd);
 
@@ -157,14 +158,14 @@ void CHD44780::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, uns
 {
 	assert(type != NULL);
 
-	::lcdClear(m_fd);
-
-	if (m_rows > 2U) {
-		::lcdPosition(m_fd, 0, 0);
-		::lcdPuts(m_fd, "DMR");
-	}
-
 	if (!m_dmr) {
+		::lcdClear(m_fd);
+
+		if (m_rows > 2U) {
+			::lcdPosition(m_fd, 0, 0);
+			::lcdPuts(m_fd, "DMR");
+		}
+
 		if (slotNo == 1U) {
 			::lcdPosition(m_fd, 0, m_rows > 2U ? 2 : 1);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);

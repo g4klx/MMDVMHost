@@ -147,6 +147,7 @@ void CTFTSerial::writeDStar(const char* my1, const char* my2, const char* your, 
 	assert(my1 != NULL);
 	assert(my2 != NULL);
 	assert(your != NULL);
+	assert(type != NULL);
 
 	if (m_mode != MODE_DSTAR) {
 		// Clear the screen

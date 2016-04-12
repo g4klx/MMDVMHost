@@ -98,6 +98,7 @@ void CNextion::writeDStar(const char* my1, const char* my2, const char* your, co
 	assert(my1 != NULL);
 	assert(my2 != NULL);
 	assert(your != NULL);
+	assert(type != NULL);
 
 	if (m_mode != MODE_DSTAR)
 		sendCommand("page DStar");
