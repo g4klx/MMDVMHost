@@ -142,7 +142,7 @@ void CTFTSerial::setLockout()
 	m_mode = MODE_LOCKOUT;
 }
 
-void CTFTSerial::writeDStar(const char* my1, const char* my2, const char* your)
+void CTFTSerial::writeDStar(const char* my1, const char* my2, const char* your, const char* type)
 {
 	assert(my1 != NULL);
 	assert(my2 != NULL);
@@ -159,7 +159,7 @@ void CTFTSerial::writeDStar(const char* my1, const char* my2, const char* your)
 	}
 
 	char text[30U];
-	::sprintf(text, "%.8s/%4.4s", my1, my2);
+	::sprintf(text, "%s %.8s/%4.4s", type, my1, my2);
 
 	gotoPosPixel(5U, 80U);
 	displayText(text);
