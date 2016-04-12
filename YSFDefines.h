@@ -32,7 +32,7 @@ const unsigned char YSF_DT_MASK = 0x30U;
 const unsigned char YSF_DT_HEADER_CHANNEL     = 0x00U;
 const unsigned char YSF_DT_TERMINATOR_CHANNEL = 0x80U;
 
-const unsigned char YSF_CKSUM_OK = 0x01U;
+const unsigned char YSF_SYNC_OK = 0x01U;
 
 const unsigned char YSF_FI_HEADER         = 0x00U;
 const unsigned char YSF_FI_COMMUNICATIONS = 0x40U;

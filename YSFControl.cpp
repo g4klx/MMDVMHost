@@ -79,9 +79,13 @@ bool CYSFControl::writeModem(unsigned char *data)
 	if (type == TAG_LOST)
 		return false;
 
-	bool valid = (data[1U] & YSF_CKSUM_OK) == YSF_CKSUM_OK;
+	bool valid = m_fich.decode(data + 2U);
 
-	if (type == TAG_DATA && valid && m_state == RS_RF_LISTENING) {
+	if (valid && m_state == RS_RF_LISTENING) {
+		unsigned char fi = m_fich.getFI();
+		if (fi == YSF_FI_TERMINATOR)
+			return false;
+
 		m_frames = 0U;
 		m_timeoutTimer.start();
 		m_payload.reset();
@@ -94,12 +98,10 @@ bool CYSFControl::writeModem(unsigned char *data)
 	if (m_state != RS_RF_AUDIO)
 		return false;
 
-	if (type == TAG_EOT) {
+	unsigned char fi = m_fich.getFI();
+	if (valid && fi == YSF_FI_TERMINATOR) {
 		CSync::addYSFSync(data + 2U);
 
-		m_fich.decode(data + 2U);
-
-		unsigned char fi = m_fich.getFI();
 		unsigned char fn = m_fich.getFN();
 		unsigned char dt = m_fich.getDT();
 
@@ -140,10 +142,6 @@ bool CYSFControl::writeModem(unsigned char *data)
 		CSync::addYSFSync(data + 2U);
 
 		if (valid) {
-			bool ret = m_fich.decode(data + 2U);
-			assert(ret);
-
-			unsigned char fi = m_fich.getFI();
 			unsigned char cm = m_fich.getCM();
 			unsigned char fn = m_fich.getFN();
 			unsigned char dt = m_fich.getDT();

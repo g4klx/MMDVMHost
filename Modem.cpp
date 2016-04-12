@@ -331,10 +331,7 @@ void CModem::clock(unsigned int ms)
 					unsigned char data = m_length - 2U;
 					m_rxYSFData.addData(&data, 1U);
 
-					if ((m_buffer[3U] & (YSF_CKSUM_OK | YSF_FI_MASK)) == (YSF_CKSUM_OK | YSF_DT_TERMINATOR_CHANNEL))
-						data = TAG_EOT;
-					else
-						data = TAG_DATA;
+					data = TAG_DATA;
 					m_rxYSFData.addData(&data, 1U);
 
 					m_rxYSFData.addData(m_buffer + 3U, m_length - 3U);
