@@ -168,6 +168,8 @@ bool CModem::open()
 		return false;
 	}
 
+	readStatus();
+
 	m_statusTimer.start();
 	m_inactivityTimer.start();
 
