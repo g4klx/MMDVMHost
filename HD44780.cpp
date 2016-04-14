@@ -192,7 +192,7 @@ void CHD44780::writeDMR(unsigned int slotNo, const char* src, bool group, unsign
 				::lcdPosition(m_fd, 0, 2);
 				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
 			}
-		} else if (m_rows == 2 && m_cols == 40U) {
+		} else if (m_rows == 2U && m_cols == 40U) {
 			if (slotNo == 1U) {
 				::lcdPosition(m_fd, 0, 0);
 				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
@@ -228,7 +228,7 @@ void CHD44780::writeDMR(unsigned int slotNo, const char* src, bool group, unsign
 			::lcdPosition(m_fd, 0, 2);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 		}
-	} else if (m_rows == 2 && m_cols == 40U) {
+	} else if (m_rows == 2U && m_cols == 40U) {
 		char buffer[40U];
 		if (slotNo == 1U) {
 			::sprintf(buffer, "%s %s > %s%u", type, src, group ? "TG" : "", dstId);
@@ -268,7 +268,7 @@ void CHD44780::clearDMR(unsigned int slotNo)
 			::lcdPosition(m_fd, 0, 2);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
 		}
-	} else if (m_rows == 2 && m_cols == 40U) {
+	} else if (m_rows == 2U && m_cols == 40U) {
 		if (slotNo == 1U) {
 			::lcdPosition(m_fd, 0, 0);
 			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
