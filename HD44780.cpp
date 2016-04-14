@@ -226,9 +226,13 @@ void CHD44780::writeFusion(const char* source, const char* dest)
 	::lcdPosition(m_fd, 0, 0);
 	::lcdPuts(m_fd, "System Fusion");
 
-	if (m_rows > 2U) {
-		char buffer[40U];
-
+	if (m_rows == 2U && m_cols == 16U) {
+		char buffer[16U];
+		::sprintf(buffer, "%.10s >", source);
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+	} else if (m_rows == 4U && m_cols == 20U) {
+		char buffer[20U];
 		::sprintf(buffer, "%.10s >", source);
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
@@ -236,7 +240,7 @@ void CHD44780::writeFusion(const char* source, const char* dest)
 		::sprintf(buffer, "%.10s", dest);
 		::lcdPosition(m_fd, 0, 2);
 		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
-	} else {
+	} else if (m_rows == 2 && m_cols == 40U) {
 		char buffer[40U];
 		::sprintf(buffer, "%.10s > %.10s", source, dest);
 
