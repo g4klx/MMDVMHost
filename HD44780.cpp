@@ -249,13 +249,16 @@ void CHD44780::writeFusion(const char* source, const char* dest)
 
 void CHD44780::clearFusion()
 {
-	if (m_rows > 2U) {
+	if (m_rows == 2U && m_cols == 16U) {
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+	} else if (m_rows == 4U && m_cols == 20U) {
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
 
 		::lcdPosition(m_fd, 0, 2);
-		::lcdPrintf(m_fd, "%.*s", m_cols, "");
-	} else {
+		::lcdPrintf(m_fd, "%.*s", m_cols, "                    ");
+	} else if (m_rows == 2 && m_cols == 40U) {
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
 	}
