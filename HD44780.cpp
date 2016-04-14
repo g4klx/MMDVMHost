@@ -25,7 +25,7 @@
 #include <cstdio>
 #include <cassert>
 
-const char* LISTENING = "Listening                                      ";
+const char* LISTENING = "Listening                               ";
 
 CHD44780::CHD44780(unsigned int rows, unsigned int cols, const char* callsign, unsigned int dmrid, const std::vector<unsigned int>& pins) :
 m_rows(rows),
@@ -145,13 +145,16 @@ void CHD44780::writeDStar(const char* my1, const char* my2, const char* your, co
 
 void CHD44780::clearDStar()
 {
-	if (m_rows > 2U) {
+	if (m_rows == 2U && m_cols == 16U) {
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+	} else if (m_rows == 4U && m_cols == 20U) {
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
 
 		::lcdPosition(m_fd, 0, 2);
-		::lcdPrintf(m_fd, "%.*s", m_cols, "        ");
-	} else {
+		::lcdPrintf(m_fd, "%.*s", m_cols, "                    ");
+	} else if (m_rows == 2 && m_cols == 40U) {
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
 	}
