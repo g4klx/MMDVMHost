@@ -168,10 +168,7 @@ bool CModem::open()
 		return false;
 	}
 
-	readStatus();
-
 	m_statusTimer.start();
-	m_inactivityTimer.start();
 
 	m_error  = false;
 	m_offset = 0U;
@@ -740,6 +737,8 @@ bool CModem::readStatus()
 	buffer[0U] = MMDVM_FRAME_START;
 	buffer[1U] = 3U;
 	buffer[2U] = MMDVM_GET_STATUS;
+
+	// CUtils::dump(1U, "Written", buffer, 3U);
 
 	return m_serial.write(buffer, 3U) == 3;
 }
