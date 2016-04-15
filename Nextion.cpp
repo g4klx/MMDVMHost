@@ -119,7 +119,7 @@ void CNextion::clearDStar()
 	sendCommand("t1.txt=\"\"");
 }
 
-void CNextion::writeDMR(unsigned int slotNo, const char* src, bool group, unsigned int dstId, const char* type)
+void CNextion::writeDMR(unsigned int slotNo, const char* src, bool group, const char* dst, const char* type)
 {
 	assert(src != NULL);
 	assert(type != NULL);
@@ -139,7 +139,7 @@ void CNextion::writeDMR(unsigned int slotNo, const char* src, bool group, unsign
 		::sprintf(text, "t0.txt=\"1 %s %s\"", type, src);
 		sendCommand(text);
 
-		::sprintf(text, "t1.txt=\"%s%u\"", group ? "TG" : "", dstId);
+		::sprintf(text, "t1.txt=\"%s%s\"", group ? "TG" : "", dst);
 		sendCommand(text);
 	} else {
 		char text[30U];
@@ -147,7 +147,7 @@ void CNextion::writeDMR(unsigned int slotNo, const char* src, bool group, unsign
 		::sprintf(text, "t2.txt=\"2 %s %s\"", type, src);
 		sendCommand(text);
 
-		::sprintf(text, "t3.txt=\"%s%u\"", group ? "TG" : "", dstId);
+		::sprintf(text, "t3.txt=\"%s%s\"", group ? "TG" : "", dst);
 		sendCommand(text);
 	}
 
