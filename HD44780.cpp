@@ -170,38 +170,30 @@ void CHD44780::writeDMR(unsigned int slotNo, const char* src, bool group, unsign
 
 		if (m_rows == 2U && m_cols == 16U) {
 			if (slotNo == 1U) {
-				::lcdPosition(m_fd, 0, 0);
-				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
+				::lcdPosition(m_fd, 0, 1);
+				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
 			} else {
 				::lcdPosition(m_fd, 0, 0);
 				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
 
-				::lcdPosition(m_fd, 0, 1);
-				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
 			}
 		} else if (m_rows == 4U && m_cols == 20U) {
 			::lcdPosition(m_fd, 0, 0);
 			::lcdPuts(m_fd, "DMR");
 			if (slotNo == 1U) {
-				::lcdPosition(m_fd, 0, 1);
-				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
+				::lcdPosition(m_fd, 0, 2);
+				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
 			} else {
 				::lcdPosition(m_fd, 0, 1);
 				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
-
-				::lcdPosition(m_fd, 0, 2);
-				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
 			}
 		} else if (m_rows == 2U && m_cols == 40U) {
 			if (slotNo == 1U) {
-				::lcdPosition(m_fd, 0, 0);
-				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
+				::lcdPosition(m_fd, 0, 1);
+				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
 			} else {
 				::lcdPosition(m_fd, 0, 0);
 				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
-
-				::lcdPosition(m_fd, 0, 1);
-				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
 			}
 		}
 	}
@@ -251,9 +243,6 @@ void CHD44780::clearDMR(unsigned int slotNo)
 			::lcdPosition(m_fd, 0, 0);
 			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
 		} else {
-			::lcdPosition(m_fd, 0, 0);
-			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
-
 			::lcdPosition(m_fd, 0, 1);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
 		}
@@ -262,9 +251,6 @@ void CHD44780::clearDMR(unsigned int slotNo)
 			::lcdPosition(m_fd, 0, 1);
 			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
 		} else {
-			::lcdPosition(m_fd, 0, 1);
-			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
-
 			::lcdPosition(m_fd, 0, 2);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
 		}
@@ -273,9 +259,6 @@ void CHD44780::clearDMR(unsigned int slotNo)
 			::lcdPosition(m_fd, 0, 0);
 			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
 		} else {
-			::lcdPosition(m_fd, 0, 0);
-			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
-
 			::lcdPosition(m_fd, 0, 1);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
 		}
