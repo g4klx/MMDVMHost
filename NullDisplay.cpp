@@ -51,7 +51,7 @@ void CNullDisplay::clearDStar()
 {
 }
 
-void CNullDisplay::writeDMR(unsigned int slotNo, const char* src, bool group, unsigned int dstId, const char* type)
+void CNullDisplay::writeDMR(unsigned int slotNo, const char* src, bool group, const char* dst, const char* type)
 {
 }
 
