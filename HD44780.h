@@ -37,7 +37,7 @@ public:
   virtual void setError(const char* text);
   virtual void setLockout();
 
-  virtual void writeDStar(const char* my1, const char* my2, const char* your, const char* type);
+  virtual void writeDStar(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
   virtual void clearDStar();
 
   virtual void writeDMR(unsigned int slotNo, const char* src, bool group, const char* dst, const char* type);
