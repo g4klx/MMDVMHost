@@ -498,7 +498,7 @@ void CDStarControl::writeNetwork()
 
 		m_display->writeDStar((char*)my1, (char*)my2, (char*)your, "N", (char*) reflector);
 
-		if (strcmp(reflector, "        ") == 0) {
+		if (strcmp((char*) reflector, "        ") == 0) {
 			LogMessage("D-Star, received network header from %8.8s/%4.4s to %8.8s", my1, my2, your);
 		} else {
 			LogMessage("D-Star, received network header from %8.8s/%4.4s to %8.8s via %8.8s", my1, my2, your, reflector);
