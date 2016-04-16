@@ -24,6 +24,7 @@
 
 #include <cstdio>
 #include <cassert>
+#include <cstring>
 
 const char* LISTENING = "Listening                               ";
 
