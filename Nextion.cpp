@@ -99,6 +99,7 @@ void CNextion::writeDStar(const char* my1, const char* my2, const char* your, co
 	assert(my2 != NULL);
 	assert(your != NULL);
 	assert(type != NULL);
+	assert(reflector != NULL);
 
 	if (m_mode != MODE_DSTAR)
 		sendCommand("page DStar");
@@ -107,7 +108,11 @@ void CNextion::writeDStar(const char* my1, const char* my2, const char* your, co
 	::sprintf(text, "t0.txt=\"%s %.8s/%4.4s\"", type, my1, my2);
 	sendCommand(text);
 
-	::sprintf(text, "t1.txt=\"%.8s\"", your);
+	if (strcmp(reflector, "        ") == 0) {
+		::sprintf(text, "t1.txt=\"%.8s\"", your);
+	} else {
+		::sprintf(text, "t1.txt=\"%.8s <- %-8s\"", your, reflector);
+	}
 	sendCommand(text);
 
 	m_mode = MODE_DSTAR;
