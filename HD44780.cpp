@@ -24,6 +24,7 @@
 
 #include <cstdio>
 #include <cassert>
+#include <cstring>
 
 const char* LISTENING = "Listening                               ";
 
@@ -107,12 +108,13 @@ void CHD44780::setLockout()
 	m_dmr = false;
 }
 
-void CHD44780::writeDStar(const char* my1, const char* my2, const char* your, const char* type)
+void CHD44780::writeDStar(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
 	assert(my1 != NULL);
 	assert(my2 != NULL);
 	assert(your != NULL);
 	assert(type != NULL);
+	assert(reflector != NULL);
 
 	::lcdClear(m_fd);
 
@@ -130,12 +132,20 @@ void CHD44780::writeDStar(const char* my1, const char* my2, const char* your, co
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
 
-		::sprintf(buffer, "%.8s", your);
+		if (strcmp(reflector, "        ") == 0) {
+			::sprintf(buffer, "%.8s", your);
+		} else {
+			::sprintf(buffer, "%.8s <- %.8s", your, reflector);
+		}
 		::lcdPosition(m_fd, 0, 2);
 		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
 	} else if (m_rows == 2 && m_cols == 40U) {
 		char buffer[40U];
-		::sprintf(buffer, "%s %.8s/%.4s > %.8s", type, my1, my2, your);
+		if (strcmp(reflector, "        ") == 0) {
+			::sprintf(buffer, "%s %.8s/%.4s > %.8s", type, my1, my2, your);
+		} else {
+			::sprintf(buffer, "%s %.8s/%.4s > %.8s via %.8s", type, my1, my2, your, reflector);
+		}
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
 	}

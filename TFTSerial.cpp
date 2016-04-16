@@ -142,12 +142,13 @@ void CTFTSerial::setLockout()
 	m_mode = MODE_LOCKOUT;
 }
 
-void CTFTSerial::writeDStar(const char* my1, const char* my2, const char* your, const char* type)
+void CTFTSerial::writeDStar(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
 	assert(my1 != NULL);
 	assert(my2 != NULL);
 	assert(your != NULL);
 	assert(type != NULL);
+	assert(reflector != NULL);
 
 	if (m_mode != MODE_DSTAR) {
 		// Clear the screen
@@ -165,7 +166,11 @@ void CTFTSerial::writeDStar(const char* my1, const char* my2, const char* your, 
 	gotoPosPixel(5U, 80U);
 	displayText(text);
 
-	::sprintf(text, "%.8s", your);
+	if (strcmp(reflector, "        ") == 0) {
+		::sprintf(text, "%.8s", your);
+	} else {
+		::sprintf(text, "%.8s <- %.8s", your, reflector);
+	}
 
 	gotoPosPixel(5U, 100U);
 	displayText(text);
