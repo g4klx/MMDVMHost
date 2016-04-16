@@ -160,7 +160,7 @@ void CHD44780::clearDStar()
 	}
 }
 
-void CHD44780::writeDMR(unsigned int slotNo, const char* src, bool group, unsigned int dstId, const char* type)
+void CHD44780::writeDMR(unsigned int slotNo, const char* src, bool group, const char* dst, const char* type)
 {
 	assert(src != NULL);
 	assert(type != NULL);
