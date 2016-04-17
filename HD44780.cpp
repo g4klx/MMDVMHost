@@ -54,6 +54,10 @@ bool CHD44780::open()
 {
 	::wiringPiSetup();
 
+#ifdef ADAFRUIT_DISPLAY
+        adafruitLCDSetup();
+#endif
+
 	m_fd = ::lcdInit(m_rows, m_cols, 4, m_rb, m_strb, m_d0, m_d1, m_d2, m_d3, 0, 0, 0, 0);
 	if (m_fd == -1) {
 		LogError("Unable to open the HD44780");
@@ -66,6 +70,22 @@ bool CHD44780::open()
 
 	return true;
 }
+
+#ifdef ADAFRUIT_DISPLAY
+void CHD44780::adafruitLCDSetup()
+{
+    // The other control pins are initialised with lcdInit ()
+    ::mcp23017Setup (AF_BASE, MCP23017);
+
+    // Backlight LEDs, Only one color (RED)
+    pinMode (AF_RED,   OUTPUT);
+    digitalWrite (AF_RED,   LOW); // The colour outputs are inverted.
+
+    // Control signals
+    pinMode (AF_RW, OUTPUT);
+    digitalWrite (AF_RW, LOW);
+}
+#endif
 
 void CHD44780::setIdle()
 {

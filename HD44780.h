@@ -24,6 +24,16 @@
 #include <string>
 #include <vector>
 
+#include <mcp23017.h>
+
+// Defines for the Adafruit Pi LCD interface board
+#ifdef ADAFRUIT_DISPLAY
+#define AF_BASE         100
+#define AF_RED          (AF_BASE + 6)
+#define AF_RW           (AF_BASE + 14)
+#define MCP23017        0x20
+#endif
+
 class CHD44780 : public IDisplay
 {
 public:
@@ -61,6 +71,11 @@ private:
 	unsigned int m_d3;
 	int          m_fd;
 	bool         m_dmr;
+
+#ifdef ADAFRUIT_DISPLAY
+    void adafruitLCDSetup();
+#endif
+
 };
 
 #endif
