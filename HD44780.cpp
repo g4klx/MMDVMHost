@@ -146,6 +146,19 @@ void CHD44780::writeDStar(const char* my1, const char* my2, const char* your, co
 		::sprintf(buffer, "%s %.8s/%.4s", type, my1, my2);
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+	} else if (m_rows == 4U && m_cols == 16U) {
+		char buffer[16U];
+		::sprintf(buffer, "%s %.8s/%.4s", type, my1, my2);
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+
+		if (strcmp(reflector, "        ") == 0) {
+			::sprintf(buffer, "%.8s", your);
+		} else {
+			::sprintf(buffer, "%.8s<%.8s", your, reflector);
+		}
+		::lcdPosition(m_fd, 0, 2);
+		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
 	} else if (m_rows == 4U && m_cols == 20U) {
 		char buffer[20U];
 		::sprintf(buffer, "%s %.8s/%.4s >", type, my1, my2);
@@ -178,6 +191,12 @@ void CHD44780::clearDStar()
 	if (m_rows == 2U && m_cols == 16U) {
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+	} else if (m_rows == 4U && m_cols == 16U) {
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+
+		::lcdPosition(m_fd, 0, 2);
+		::lcdPrintf(m_fd, "%.*s", m_cols, "                    ");
 	} else if (m_rows == 4U && m_cols == 20U) {
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
@@ -206,6 +225,16 @@ void CHD44780::writeDMR(unsigned int slotNo, const char* src, bool group, const 
 				::lcdPosition(m_fd, 0, 0);
 				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
 
+			}
+		} else if (m_rows == 4U && m_cols == 16U) {
+			::lcdPosition(m_fd, 0, 0);
+			::lcdPuts(m_fd, "DMR");
+			if (slotNo == 1U) {
+				::lcdPosition(m_fd, 0, 2);
+				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
+			} else {
+				::lcdPosition(m_fd, 0, 1);
+				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
 			}
 		} else if (m_rows == 4U && m_cols == 20U) {
 			::lcdPosition(m_fd, 0, 0);
@@ -237,6 +266,17 @@ void CHD44780::writeDMR(unsigned int slotNo, const char* src, bool group, const 
 		} else {
 			::sprintf(buffer, "%s > %s%s", src, group ? "TG" : "", dst);
 			::lcdPosition(m_fd, 0, 1);
+			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
+		}
+	} else if (m_rows == 4U && m_cols == 16U) {
+		char buffer[16U];
+		if (slotNo == 1U) {
+			::sprintf(buffer, "%s %s > %s%s", type, src, group ? "TG" : "", dst);
+			::lcdPosition(m_fd, 0, 1);
+			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
+		} else {
+			::sprintf(buffer, "%s %s > %s%s", type, src, group ? "TG" : "", dst);
+			::lcdPosition(m_fd, 0, 2);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 		}
 	} else if (m_rows == 4U && m_cols == 20U) {
@@ -276,6 +316,14 @@ void CHD44780::clearDMR(unsigned int slotNo)
 			::lcdPosition(m_fd, 0, 1);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
 		}
+	} else if (m_rows == 4U && m_cols == 16U) {
+		if (slotNo == 1U) {
+			::lcdPosition(m_fd, 0, 1);
+			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
+		} else {
+			::lcdPosition(m_fd, 0, 2);
+			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
+		}
 	} else if (m_rows == 4U && m_cols == 20U) {
 		if (slotNo == 1U) {
 			::lcdPosition(m_fd, 0, 1);
@@ -310,6 +358,15 @@ void CHD44780::writeFusion(const char* source, const char* dest)
 		::sprintf(buffer, "%.10s >", source);
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+	} else if (m_rows == 4U && m_cols == 16U) {
+		char buffer[16U];
+		::sprintf(buffer, "%.10s >", source);
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+
+		::sprintf(buffer, "%.10s", dest);
+		::lcdPosition(m_fd, 0, 2);
+		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
 	} else if (m_rows == 4U && m_cols == 20U) {
 		char buffer[20U];
 		::sprintf(buffer, "%.10s >", source);
@@ -335,6 +392,12 @@ void CHD44780::clearFusion()
 	if (m_rows == 2U && m_cols == 16U) {
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+	} else if (m_rows == 4U && m_cols == 16U) {
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+
+		::lcdPosition(m_fd, 0, 2);
+		::lcdPrintf(m_fd, "%.*s", m_cols, "                    ");
 	} else if (m_rows == 4U && m_cols == 20U) {
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
