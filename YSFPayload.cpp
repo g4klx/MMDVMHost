@@ -94,7 +94,7 @@ CYSFPayload::~CYSFPayload()
 	delete[] m_dest;
 }
 
-void CYSFPayload::decode(const unsigned char* bytes, unsigned char fi, unsigned char fn, unsigned char dt)
+void CYSFPayload::decode(const unsigned char* bytes, unsigned char fi, unsigned char fn, unsigned char ft, unsigned char dt)
 {
 	assert(bytes != NULL);
 

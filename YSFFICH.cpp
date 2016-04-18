@@ -174,6 +174,11 @@ unsigned char CYSFFICH::getFN() const
 	return (m_fich[1U] >> 3) & 0x07U;
 }
 
+unsigned char CYSFFICH::getFT() const
+{
+	return m_fich[1U] & 0x07U;
+}
+
 unsigned char CYSFFICH::getDT() const
 {
 	return m_fich[2U] & 0x03U;

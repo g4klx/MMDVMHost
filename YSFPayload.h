@@ -28,7 +28,7 @@ public:
 	CYSFPayload();
 	~CYSFPayload();
 
-	void decode(const unsigned char* bytes, unsigned char fi, unsigned char fn, unsigned char dt);
+	void decode(const unsigned char* bytes, unsigned char fi, unsigned char fn, unsigned char ft, unsigned char dt);
 
 	void encode(unsigned char* bytes);
 

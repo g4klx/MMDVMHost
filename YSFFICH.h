@@ -31,6 +31,7 @@ public:
 	unsigned char getFI() const;
 	unsigned char getCM() const;
 	unsigned char getFN() const;
+	unsigned char getFT() const;
 	unsigned char getDT() const;
 
 	void setFI(unsigned char fi);
