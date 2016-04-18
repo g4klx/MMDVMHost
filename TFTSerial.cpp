@@ -51,6 +51,7 @@ m_serial(port, SERIAL_9600),
 m_brightness(brightness),
 m_mode(MODE_IDLE)
 {
+	assert(callsign != NULL);
 	assert(brightness >= 0U && brightness <= 100U);
 }
 
@@ -190,6 +191,7 @@ void CTFTSerial::clearDStar()
 void CTFTSerial::writeDMR(unsigned int slotNo, const char* src, bool group, const char* dst, const char* type)
 {
 	assert(src != NULL);
+	assert(dst != NULL);
 	assert(type != NULL);
 
 	if (m_mode != MODE_DMR) {
