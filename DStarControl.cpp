@@ -127,10 +127,15 @@ bool CDStarControl::writeModem(unsigned char *data)
 		CDStarHeader header(data + 1U);
 
 		// Is this a transmission destined for a repeater?
-		if (!header.isRepeater()) {
-			LogMessage("D-Star, non repeater RF header received");
+		if (!header.isRepeater())
 			return false;
-		}
+
+		unsigned char callsign[DSTAR_LONG_CALLSIGN_LENGTH];
+		header.getRPTCall1(callsign);
+
+		// Is it for us?
+		if (::memcmp(callsign, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH) != 0)
+			return false;
 
 		unsigned char my1[DSTAR_LONG_CALLSIGN_LENGTH];
 		header.getMyCall1(my1);
@@ -142,15 +147,6 @@ bool CDStarControl::writeModem(unsigned char *data)
 
 		if (!m_selfOnly && std::find_if(m_blackList.begin(), m_blackList.end(), std::bind(CallsignCompare, std::placeholders::_1, my1)) != m_blackList.end()) {
 			LogMessage("D-Star, invalid access attempt from %8.8s", my1);
-			return false;
-		}
-
-		unsigned char callsign[DSTAR_LONG_CALLSIGN_LENGTH];
-		header.getRPTCall1(callsign);
-
-		// Is it for us?
-		if (::memcmp(callsign, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH) != 0) {
-			LogMessage("D-Star, received RF header for wrong repeater - %8.8s", callsign);
 			return false;
 		}
 
@@ -270,7 +266,15 @@ bool CDStarControl::writeModem(unsigned char *data)
 
 			// Is this a transmission destined for a repeater?
 			if (!header->isRepeater()) {
-				LogMessage("D-Star, non repeater RF header received");
+				delete header;
+				return false;
+			}
+
+			unsigned char callsign[DSTAR_LONG_CALLSIGN_LENGTH];
+			header->getRPTCall1(callsign);
+
+			// Is it for us?
+			if (::memcmp(callsign, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH) != 0) {
 				delete header;
 				return false;
 			}
@@ -286,16 +290,6 @@ bool CDStarControl::writeModem(unsigned char *data)
 
 			if (!m_selfOnly && std::find_if(m_blackList.begin(), m_blackList.end(), std::bind(CallsignCompare, std::placeholders::_1, my1)) != m_blackList.end()) {
 				LogMessage("D-Star, invalid access attempt from %8.8s", my1);
-				delete header;
-				return false;
-			}
-
-			unsigned char callsign[DSTAR_LONG_CALLSIGN_LENGTH];
-			header->getRPTCall1(callsign);
-
-			// Is it for us?
-			if (::memcmp(callsign, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH) != 0) {
-				LogMessage("D-Star, received RF header for wrong repeater - %8.8s", callsign);
 				delete header;
 				return false;
 			}
