@@ -155,7 +155,7 @@ void CHD44780::writeDStar(const char* my1, const char* my2, const char* your, co
 		if (strcmp(reflector, "        ") == 0) {
 			::sprintf(buffer, "%.8s", your);
 		} else {
-			::sprintf(buffer, "%.8s <- %.8s", your, reflector);
+			::sprintf(buffer, "%.8s<%.8s", your, reflector);
 		}
 		::lcdPosition(m_fd, 0, 2);
 		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
