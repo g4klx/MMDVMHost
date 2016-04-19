@@ -599,12 +599,13 @@ unsigned int CAMBEFEC::regenerateYSF3(unsigned char* bytes) const
 {
 	assert(bytes != NULL);
 
+	bool orig[144U];
 	bool temp[144U];
 
 	// De-interleave
 	for (unsigned int i = 0U; i < 144U; i++) {
 		unsigned int n = IMBE_INTERLEAVE[i];
-		temp[i] = READ_BIT(bytes, n);
+		orig[i] = temp[i] = READ_BIT(bytes, n);
 	}
 
 	// now ..
@@ -632,6 +633,23 @@ unsigned int CAMBEFEC::regenerateYSF3(unsigned char* bytes) const
 	//
 	//  7 voice bits     137
 
+	// Process the c0 section first to allow the de-whitening to be accurate
+
+	// Check/Fix FEC
+	bool* bit = temp;
+
+	// c0
+	unsigned int g1 = 0U;
+	for (unsigned int i = 0U; i < 23U; i++)
+		g1 = (g1 << 1) | (bit[i] ? 0x01U : 0x00U);
+	unsigned int c0data = CGolay24128::decode23127(g1);
+	unsigned int g2 = CGolay24128::encode23127(c0data);
+	for (int i = 23; i >= 0; i--) {
+		bit[i] = (g2 & 0x01U) == 0x01U;
+		g2 >>= 1;
+	}
+	bit += 23U;
+
 	// De-whiten some bits
 	unsigned int prn = 0x00U;
 	for (unsigned int i = 0U; i < 12U; i++)
@@ -642,29 +660,14 @@ unsigned int CAMBEFEC::regenerateYSF3(unsigned char* bytes) const
 		temp[i] ^= (prn & 0x80U) == 0x80U;
 	}
 
-	// Check/Fix FEC
-	bool* bit = temp;
-
-	// c0
-	unsigned int g1 = 0U;
-	for (unsigned int i = 0U; i < 23U; i++)
-		g1 = (g1 << 1) | (bit[i] & 1);
-	unsigned int g3 = CGolay24128::decode23127(g1);
-	unsigned int g2 = CGolay24128::encode23127(g3);
-	for (int i = 23; i >= 0; i--) {
-		bit[i] = g2 & 1;
-		g2 >>= 1;
-	}
-	bit += 23U;
-
 	// c1
 	g1 = 0U;
 	for (unsigned int i = 0U; i < 23U; i++)
-		g1 = (g1 << 1) | (bit[i] & 1);
-	g3 = CGolay24128::decode23127(g1);
-	g2 = CGolay24128::encode23127(g3);
+		g1 = (g1 << 1) | (bit[i] ? 0x01U : 0x00U);
+	unsigned int c1data = CGolay24128::decode23127(g1);
+	g2 = CGolay24128::encode23127(c1data);
 	for (int i = 23; i >= 0; i--) {
-		bit[i] = g2 & 1;
+		bit[i] = (g2 & 0x01U) == 0x01U;
 		g2 >>= 1;
 	}
 	bit += 23U;
@@ -672,11 +675,11 @@ unsigned int CAMBEFEC::regenerateYSF3(unsigned char* bytes) const
 	// c2
 	g1 = 0;
 	for (int i = 0; i < 23; i++)
-		g1 = (g1 << 1) | (bit[i] & 1);
-	g3 = CGolay24128::decode23127(g1);
-	g2 = CGolay24128::encode23127(g3);
+		g1 = (g1 << 1) | (bit[i] ? 0x01U : 0x00U);
+	unsigned int c2data = CGolay24128::decode23127(g1);
+	g2 = CGolay24128::encode23127(c2data);
 	for (int i = 23; i >= 0; i--) {
-		bit[i] = g2 & 1;
+		bit[i] = (g2 & 0x01U) == 0x01U;
 		g2 >>= 1;
 	}
 	bit += 23U;
@@ -684,11 +687,11 @@ unsigned int CAMBEFEC::regenerateYSF3(unsigned char* bytes) const
 	// c3
 	g1 = 0U;
 	for (int i = 0U; i < 23U; i++)
-		g1 = (g1 << 1) | (bit[i] & 1);
-	g3 = CGolay24128::decode23127(g1);
-	g2 = CGolay24128::encode23127(g3);
+		g1 = (g1 << 1) | (bit[i] ? 0x01U : 0x00U);
+	unsigned int c3data = CGolay24128::decode23127(g1);
+	g2 = CGolay24128::encode23127(c3data);
 	for (int i = 23; i >= 0; i--) {
-		bit[i] = g2 & 1;
+		bit[i] = (g2 & 0x01U) == 0x01U;
 		g2 >>= 1;
 	}
 	bit += 23U;
@@ -714,13 +717,19 @@ unsigned int CAMBEFEC::regenerateYSF3(unsigned char* bytes) const
 		temp[i] ^= (prn & 0x80U) == 0x80U;
 	}
 
+	unsigned int errors = 0U;
+	for (unsigned int i = 0U; i < 144U; i++) {
+		if (orig[i] != temp[i])
+			errors++;
+	}
+
 	// Interleave
 	for (unsigned int i = 0U; i < 144U; i++) {
 		unsigned int n = IMBE_INTERLEAVE[i];
 		WRITE_BIT(bytes, n, temp[i]);
 	}
 
-	return 0U;
+	return errors;
 }
 
 unsigned int CAMBEFEC::regenerate(unsigned int& a, unsigned int& b, unsigned int& c, bool b23) const

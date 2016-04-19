@@ -106,9 +106,9 @@ bool CYSFControl::writeModem(unsigned char *data)
 		unsigned char ft = m_fich.getFT();
 		unsigned char dt = m_fich.getDT();
 
-		LogMessage("YSF, EOT, FI=%X FN=%u FT=%u DT=%X", fi, fn, ft, dt);
+		LogDebug("YSF, FI=%X FN=%u FT=%u DT=%X", fi, fn, ft, dt);
 
-		m_payload.process(data + 2U, fi, fn, ft, dt);
+		// m_payload.process(data + 2U, fi, fn, ft, dt);
 
 		m_frames++;
 
@@ -147,9 +147,9 @@ bool CYSFControl::writeModem(unsigned char *data)
 			unsigned char ft = m_fich.getFT();
 			unsigned char dt = m_fich.getDT();
 
-			LogMessage("YSF, Valid FICH, FI=%X FN=%u FT=%u DT=%X", fi, fn, ft, dt);
+			LogDebug("YSF, FI=%X FN=%u FT=%u DT=%X", fi, fn, ft, dt);
 
-			m_payload.process(data + 2U, fi, fn, ft, dt);
+			// m_payload.process(data + 2U, fi, fn, ft, dt);
 
 			bool change = false;
 
