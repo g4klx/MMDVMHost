@@ -108,8 +108,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 
 		LogMessage("YSF, EOT, FI=%X FN=%u FT=%u DT=%X", fi, fn, ft, dt);
 
-		m_payload.decode(data + 2U, fi, fn, ft, dt);
-		// m_payload.encode(data + 2U);			XXX
+		m_payload.process(data + 2U, fi, fn, ft, dt);
 
 		m_frames++;
 
@@ -150,25 +149,24 @@ bool CYSFControl::writeModem(unsigned char *data)
 
 			LogMessage("YSF, Valid FICH, FI=%X FN=%u FT=%u DT=%X", fi, fn, ft, dt);
 
-			m_payload.decode(data + 2U, fi, fn, ft, dt);
-			// payload.encode(data + 2U);			XXX
+			m_payload.process(data + 2U, fi, fn, ft, dt);
 
 			bool change = false;
 
-			if (cm == 0x00U && m_dest == NULL) {
-				m_dest = (unsigned char*)"CQCQCQ    ";
-				change = true;
+			if (m_dest == NULL) {
+				if (cm == YSF_CM_GROUP) {
+					m_dest = (unsigned char*)"CQCQCQ    ";
+					change = true;
+				} else {
+					m_dest = m_payload.getDest();
+					if (m_dest != NULL)
+						change = true;
+				}
 			}
 
 			if (m_source == NULL) {
 				m_source = m_payload.getSource();
 				if (m_source != NULL)
-					change = true;
-			}
-
-			if (m_dest == NULL) {
-				m_dest = m_payload.getDest();
-				if (m_dest != NULL)
 					change = true;
 			}
 
@@ -188,7 +186,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 			}
 		} else {
 			// Reconstruct FICH based on the last valid frame
-			m_fich.setFI(0x01U);		// Communication channel
+			m_fich.setFI(YSF_FI_COMMUNICATIONS);		// Communication channel
 		}
 
 		m_frames++;

@@ -17,6 +17,7 @@
  */
 
 #include "Golay24128.h"
+#include "Hamming.h"
 #include "AMBEFEC.h"
 
 #include <cstdio>
@@ -453,6 +454,15 @@ const unsigned int DSTAR_B_TABLE[] = {2U,  8U, 14U, 20U, 26U, 32U, 38U, 44U, 50U
 const unsigned int DSTAR_C_TABLE[] = {4U, 10U, 16U, 22U, 28U, 34U, 40U, 46U, 52U, 58U, 64U, 70U,
 									  5U, 11U, 17U, 23U, 29U, 35U, 41U, 47U, 53U, 59U, 65U, 71U};
 
+const unsigned int IMBE_INTERLEAVE[] = {
+	0,  7, 12, 19, 24, 31, 36, 43, 48, 55, 60, 67, 72, 79, 84, 91,  96, 103, 108, 115, 120, 127, 132, 139,
+	1,  6, 13, 18, 25, 30, 37, 42, 49, 54, 61, 66, 73, 78, 85, 90,  97, 102, 109, 114, 121, 126, 133, 138,
+	2,  9, 14, 21, 26, 33, 38, 45, 50, 57, 62, 69, 74, 81, 86, 93,  98, 105, 110, 117, 122, 129, 134, 141,
+	3,  8, 15, 20, 27, 32, 39, 44, 51, 56, 63, 68, 75, 80, 87, 92,  99, 104, 111, 116, 123, 128, 135, 140,
+	4, 11, 16, 23, 28, 35, 40, 47, 52, 59, 64, 71, 76, 83, 88, 95, 100, 107, 112, 119, 124, 131, 136, 143,
+	5, 10, 17, 22, 29, 34, 41, 46, 53, 58, 65, 70, 77, 82, 89, 94, 101, 106, 113, 118, 125, 130, 137, 142
+};
+
 CAMBEFEC::CAMBEFEC()
 {
 }
@@ -583,50 +593,132 @@ unsigned int CAMBEFEC::regenerateDStar(unsigned char* bytes) const
 	return errors;
 }
 
-unsigned int CAMBEFEC::regenerateYSF1(unsigned char* bytes) const
+unsigned int CAMBEFEC::regenerateYSF3(unsigned char* bytes) const
 {
 	assert(bytes != NULL);
 
-	unsigned int errors = 0U;
-	unsigned int offset = 72U;
-	for (unsigned int j = 0U; j < 5U; j++, offset += 144U) {
-		unsigned int a = 0U;
-		unsigned int b = 0U;
-		unsigned int c = 0U;
+	bool temp[144U];
 
-		unsigned int MASK = 0x800000U;
-		for (unsigned int i = 0U; i < 24U; i++) {
-			unsigned int aPos = DMR_A_TABLE[i] + offset;
-			unsigned int bPos = DMR_B_TABLE[i] + offset;
-			unsigned int cPos = DMR_C_TABLE[i] + offset;
-
-			if (READ_BIT(bytes, aPos))
-				a |= MASK;
-			if (READ_BIT(bytes, bPos))
-				b |= MASK;
-			if (READ_BIT(bytes, cPos))
-				c |= MASK;
-
-			MASK >>= 1;
-		}
-
-		errors += regenerate(a, b, c, true);
-
-		MASK = 0x800000U;
-		for (unsigned int i = 0U; i < 24U; i++) {
-			unsigned int aPos = DMR_A_TABLE[i] + offset;
-			unsigned int bPos = DMR_B_TABLE[i] + offset;
-			unsigned int cPos = DMR_C_TABLE[i] + offset;
-
-			WRITE_BIT(bytes, aPos, a & MASK);
-			WRITE_BIT(bytes, bPos, b & MASK);
-			WRITE_BIT(bytes, cPos, c & MASK);
-
-			MASK >>= 1;
-		}
+	// De-interleave
+	for (unsigned int i = 0U; i < 144U; i++) {
+		unsigned int n = IMBE_INTERLEAVE[i];
+		temp[i] = READ_BIT(bytes, n);
 	}
 
-	return errors;
+	// now ..
+
+	// 12 voice bits     0
+	// 11 golay bits     12
+	//
+	// 12 voice bits     23
+	// 11 golay bits     35
+	//
+	// 12 voice bits     46
+	// 11 golay bits     58
+	//
+	// 12 voice bits     69
+	// 11 golay bits     81
+	//
+	// 11 voice bits     92
+	//  4 hamming bits   103
+	//
+	// 11 voice bits     107
+	//  4 hamming bits   118
+	//
+	// 11 voice bits     122
+	//  4 hamming bits   133
+	//
+	//  7 voice bits     137
+
+	// De-Whiten some bits
+	unsigned int prn = 0x00U;
+	for (int i = 0U; i < 12U; i++)
+		prn = (prn << 1) | (temp[i] & 1);
+	prn <<= 4;
+	for (unsigned int i = 23U; i < 137U; i++) {
+		prn = (unsigned short)((173 * prn) + 13849);
+		temp[i] ^= (prn >> 15) & 1;
+	}
+
+	// Check/Fix FEC
+	bool* bit = temp;
+
+	// c0
+	unsigned int g1 = 0U;
+	for (unsigned int i = 0U; i < 23U; i++)
+		g1 = (g1 << 1) | (bit[i] & 1);
+	unsigned int g3 = CGolay24128::decode23127(g1);
+	unsigned int g2 = CGolay24128::encode23127(g3);
+	for (int i = 23; i >= 0; i--) {
+		bit[i] = g2 & 1;
+		g2 >>= 1;
+	}
+	bit += 23U;
+
+	// c1
+	g1 = 0U;
+	for (unsigned int i = 0U; i < 23U; i++)
+		g1 = (g1 << 1) | (bit[i] & 1);
+	g3 = CGolay24128::decode23127(g1);
+	g2 = CGolay24128::encode23127(g3);
+	for (int i = 23; i >= 0; i--) {
+		bit[i] = g2 & 1;
+		g2 >>= 1;
+	}
+	bit += 23U;
+
+	// c2
+	g1 = 0;
+	for (int i = 0; i < 23; i++)
+		g1 = (g1 << 1) | (bit[i] & 1);
+	g3 = CGolay24128::decode23127(g1);
+	g2 = CGolay24128::encode23127(g3);
+	for (int i = 23; i >= 0; i--) {
+		bit[i] = g2 & 1;
+		g2 >>= 1;
+	}
+	bit += 23U;
+
+	// c3
+	g1 = 0U;
+	for (int i = 0U; i < 23U; i++)
+		g1 = (g1 << 1) | (bit[i] & 1);
+	g3 = CGolay24128::decode23127(g1);
+	g2 = CGolay24128::encode23127(g3);
+	for (int i = 23; i >= 0; i--) {
+		bit[i] = g2 & 1;
+		g2 >>= 1;
+	}
+	bit += 23U;
+
+	// c4
+	CHamming::decode15113_1(bit);
+	bit += 15U;
+
+	// c5
+	CHamming::decode15113_1(bit);
+	bit += 15U;
+
+	// c6
+	CHamming::decode15113_1(bit);
+
+	// Whiten some bits
+	prn = 0x00U;
+	for (unsigned int i = 0U; i < 12U; i++)
+		prn = (prn << 1) | (temp[i] & 1);
+	prn <<= 4;
+	for (unsigned int i = 23U; i < 137U; i++) {
+		prn = (unsigned short)((173 * prn) + 13849);
+		temp[i] ^= (prn >> 15) & 1;
+	}
+
+	// Interleave
+	for (unsigned int i = 0U; i < 144U; i++) {
+		unsigned int n = IMBE_INTERLEAVE[i];
+		WRITE_BIT(bytes, n, temp[i]);
+	}
+
+	return 0U;
 }
 
 unsigned int CAMBEFEC::regenerate(unsigned int& a, unsigned int& b, unsigned int& c, bool b23) const

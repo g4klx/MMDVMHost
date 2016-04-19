@@ -28,9 +28,7 @@ public:
 	CYSFPayload();
 	~CYSFPayload();
 
-	void decode(const unsigned char* bytes, unsigned char fi, unsigned char fn, unsigned char ft, unsigned char dt);
-
-	void encode(unsigned char* bytes);
+	void process(unsigned char* bytes, unsigned char fi, unsigned char fn, unsigned char ft, unsigned char dt);
 
 	unsigned char* getSource();
 	unsigned char* getDest();
@@ -41,17 +39,17 @@ public:
 	void reset();
 
 private:
-	unsigned char* m_data;
 	unsigned char* m_uplink;
 	unsigned char* m_downlink;
 	unsigned char* m_source;
 	unsigned char* m_dest;
 	CAMBEFEC       m_fec;
 
-	void decodeHeader();
-	void decodeVDMode1(unsigned char fn);
-	void decodeVDMode2(unsigned char fn);
-	void decodeDataFRMode(unsigned char fn);
+	void processHeader(unsigned char* bytes);
+	void processVDMode1(unsigned char* bytes, unsigned char fn);
+	void processVDMode2(unsigned char* bytes, unsigned char fn);
+	void processDataFRMode(unsigned char* bytes, unsigned char fn);
+	void processVoiceFRMode(unsigned char* bytes);
 };
 
 #endif

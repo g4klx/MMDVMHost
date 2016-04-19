@@ -75,70 +75,56 @@ const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U
 #define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
 CYSFPayload::CYSFPayload() :
-m_data(NULL),
 m_uplink(NULL),
 m_downlink(NULL),
 m_source(NULL),
 m_dest(NULL),
 m_fec()
 {
-	m_data = new unsigned char[90U];
 }
 
 CYSFPayload::~CYSFPayload()
 {
-	delete[] m_data;
 	delete[] m_uplink;
 	delete[] m_downlink;
 	delete[] m_source;
 	delete[] m_dest;
 }
 
-void CYSFPayload::decode(const unsigned char* bytes, unsigned char fi, unsigned char fn, unsigned char ft, unsigned char dt)
+void CYSFPayload::process(unsigned char* bytes, unsigned char fi, unsigned char fn, unsigned char ft, unsigned char dt)
 {
 	assert(bytes != NULL);
-
-	::memcpy(m_data, bytes + YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES, 90U);
 
 	// Header and trailer
 	if (fi == 0U || fi == 2U) {
-		decodeHeader();
+		processHeader(bytes + YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES);
 		return;
 	}
 
-	// V/D Mode 1
-	if (dt == 0U) {
-		decodeVDMode1(fn);
-		return;
-	}
+	switch (dt) {
+	case YSF_DT_VD_MODE1:
+		processVDMode1(bytes + YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES, fn);
+		break;
 
-	// V/D Mode 2
-	if (dt == 2U) {
-		decodeVDMode2(fn);
-		return;
-	}
+	case YSF_DT_VD_MODE2:
+		processVDMode2(bytes + YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES, fn);
+		break;
 
-	// Data FR Mode
-	if (dt == 1U) {
-		decodeDataFRMode(fn);
-		return;
-	}
+	case YSF_DT_DATA_FR_MODE:
+		processDataFRMode(bytes + YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES, fn);
+		break;
 
-	// Voice FR Mode
+	default:		// YSF_DT_VOICE_FR_MODE
+		processVoiceFRMode(bytes + YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES);
+		break;
+	}
 }
 
-void CYSFPayload::encode(unsigned char* bytes)
-{
-	assert(bytes != NULL);
-
-	::memcpy(bytes + YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES, m_data, 90U);
-}
-
-void CYSFPayload::decodeHeader()
+void CYSFPayload::processHeader(unsigned char* data)
 {
 	unsigned char dch[45U];
 
-	unsigned char* p1 = m_data;
+	unsigned char* p1 = data;
 	unsigned char* p2 = dch;
 	for (unsigned int i = 0U; i < 5U; i++) {
 		::memcpy(p2, p1, 9U);
@@ -205,7 +191,7 @@ void CYSFPayload::decodeHeader()
 			WRITE_BIT1(bytes, n, s1);
 		}
 
-		p1 = m_data;
+		p1 = data;
 		p2 = bytes;
 		for (unsigned int i = 0U; i < 5U; i++) {
 			::memcpy(p1, p2, 9U);
@@ -244,7 +230,7 @@ void CYSFPayload::decodeHeader()
 		WRITE_BIT1(bytes, n, s1);
 	}
 
-	p1 = m_data + 9U;
+	p1 = data + 9U;
 	p2 = bytes;
 	for (unsigned int i = 0U; i < 5U; i++) {
 		::memcpy(p1, p2, 9U);
@@ -252,16 +238,21 @@ void CYSFPayload::decodeHeader()
 	}
 }
 
-void CYSFPayload::decodeVDMode1(unsigned char fn)
+void CYSFPayload::processVDMode1(unsigned char* data, unsigned char fn)
 {
 	// Regenerate the AMBE FEC
-	unsigned int errors = m_fec.regenerateYSF1(m_data);
+	unsigned int errors = 0U;
+	errors += m_fec.regenerateDMR(data + 9U);
+	errors += m_fec.regenerateDMR(data + 27U);
+	errors += m_fec.regenerateDMR(data + 45U);
+	errors += m_fec.regenerateDMR(data + 63U);
+	errors += m_fec.regenerateDMR(data + 81U);
 
 	LogMessage("YSF, V/D Mode 1, AMBE FEC %u/235 (%.1f%%)", errors, float(errors) / 235.0F);
 
 	unsigned char dch[45U];
 
-	unsigned char* p1 = m_data;
+	unsigned char* p1 = data;
 	unsigned char* p2 = dch;
 	for (unsigned int i = 0U; i < 5U; i++) {
 		::memcpy(p2, p1, 9U);
@@ -356,7 +347,7 @@ void CYSFPayload::decodeVDMode1(unsigned char fn)
 			WRITE_BIT1(bytes, n, s1);
 		}
 
-		p1 = m_data;
+		p1 = data;
 		p2 = bytes;
 		for (unsigned int i = 0U; i < 5U; i++) {
 			::memcpy(p1, p2, 9U);
@@ -365,11 +356,11 @@ void CYSFPayload::decodeVDMode1(unsigned char fn)
 	}
 }
 
-void CYSFPayload::decodeVDMode2(unsigned char fn)
+void CYSFPayload::processVDMode2(unsigned char* data, unsigned char fn)
 {
 	unsigned char dch[25U];
 
-	unsigned char* p1 = m_data;
+	unsigned char* p1 = data;
 	unsigned char* p2 = dch;
 	for (unsigned int i = 0U; i < 5U; i++) {
 		::memcpy(p2, p1, 5U);
@@ -467,7 +458,7 @@ void CYSFPayload::decodeVDMode2(unsigned char fn)
 			WRITE_BIT1(bytes, n, s1);
 		}
 
-		p1 = m_data;
+		p1 = data;
 		p2 = bytes;
 		for (unsigned int i = 0U; i < 5U; i++) {
 			::memcpy(p1, p2, 5U);
@@ -476,11 +467,11 @@ void CYSFPayload::decodeVDMode2(unsigned char fn)
 	}
 }
 
-void CYSFPayload::decodeDataFRMode(unsigned char fn)
+void CYSFPayload::processDataFRMode(unsigned char* data, unsigned char fn)
 {
 	unsigned char dch[45U];
 
-	unsigned char* p1 = m_data;
+	unsigned char* p1 = data;
 	unsigned char* p2 = dch;
 	for (unsigned int i = 0U; i < 5U; i++) {
 		::memcpy(p2, p1, 9U);
@@ -559,7 +550,7 @@ void CYSFPayload::decodeDataFRMode(unsigned char fn)
 			WRITE_BIT1(bytes, n, s1);
 		}
 
-		p1 = m_data;
+		p1 = data;
 		p2 = bytes;
 		for (unsigned int i = 0U; i < 5U; i++) {
 			::memcpy(p1, p2, 9U);
@@ -567,7 +558,7 @@ void CYSFPayload::decodeDataFRMode(unsigned char fn)
 		}
 	}
 
-	p1 = m_data + 9U;
+	p1 = data + 9U;
 	p2 = dch;
 	for (unsigned int i = 0U; i < 5U; i++) {
 		::memcpy(p2, p1, 9U);
@@ -630,13 +621,26 @@ void CYSFPayload::decodeDataFRMode(unsigned char fn)
 			WRITE_BIT1(bytes, n, s1);
 		}
 
-		p1 = m_data + 9U;
+		p1 = data + 9U;
 		p2 = bytes;
 		for (unsigned int i = 0U; i < 5U; i++) {
 			::memcpy(p1, p2, 9U);
 			p1 += 18U; p2 += 9U;
 		}
 	}
+}
+
+void CYSFPayload::processVoiceFRMode(unsigned char* data)
+{
+	// Regenerate the AMBE FEC
+	unsigned int errors = 0U;
+	errors += m_fec.regenerateYSF3(data + 0U);
+	errors += m_fec.regenerateYSF3(data + 18U);
+	errors += m_fec.regenerateYSF3(data + 36U);
+	errors += m_fec.regenerateYSF3(data + 54U);
+	errors += m_fec.regenerateYSF3(data + 72U);
+
+	LogMessage("YSF, V Mode 3, AMBE FEC %u/720 (%.1f%%)", errors, float(errors) / 720.0F);
 }
 
 void CYSFPayload::setUplink(const std::string& callsign)

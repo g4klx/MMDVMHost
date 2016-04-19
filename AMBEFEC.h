@@ -28,7 +28,7 @@ public:
 
 	unsigned int regenerateDStar(unsigned char* bytes) const;
 
-	unsigned int regenerateYSF1(unsigned char* bytes) const;
+	unsigned int regenerateYSF3(unsigned char* bytes) const;
 
 private:
 	unsigned int regenerate(unsigned int& a, unsigned int& b, unsigned int& c, bool b23) const;
