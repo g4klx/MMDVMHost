@@ -238,9 +238,12 @@ bool CConf::read()
 	} else if (section == SECTION_DSTAR) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dstarEnabled = ::atoi(value) == 1;
-		else if (::strcmp(key, "Module") == 0)
+		else if (::strcmp(key, "Module") == 0) {
+			// Convert the module to upper case
+			for (unsigned int i = 0U; value[i] != 0; i++)
+				value[i] = ::toupper(value[i]);
 			m_dstarModule = value;
-		else if (::strcmp(key, "SelfOnly") == 0)
+		} else if (::strcmp(key, "SelfOnly") == 0)
 			m_dstarSelfOnly = ::atoi(value) == 1;
 		else if (::strcmp(key, "BlackList") == 0) {
 			char* p = ::strtok(value, ",\r\n");
