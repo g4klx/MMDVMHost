@@ -339,7 +339,7 @@ void CDMRIPSC::clock(unsigned int ms)
 					m_retryTimer.start();
 					break;
 				case WAITING_CONFIG:
-					LogMessage("Logged into the master succesfully");
+					LogMessage("Logged into the master successfully");
 					m_status = RUNNING;
 					m_timeoutTimer.start();
 					m_retryTimer.stop();
