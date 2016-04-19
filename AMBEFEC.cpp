@@ -20,6 +20,8 @@
 #include "Hamming.h"
 #include "AMBEFEC.h"
 
+#include "Log.h"
+
 #include <cstdio>
 #include <cassert>
 
@@ -630,14 +632,14 @@ unsigned int CAMBEFEC::regenerateYSF3(unsigned char* bytes) const
 	//
 	//  7 voice bits     137
 
-	// De-Whiten some bits
+	// De-whiten some bits
 	unsigned int prn = 0x00U;
-	for (int i = 0U; i < 12U; i++)
-		prn = (prn << 1) | (temp[i] & 1);
+	for (unsigned int i = 0U; i < 12U; i++)
+		prn = (prn << 1) | (temp[i] ? 0x01U : 0x00U);
 	prn <<= 4;
 	for (unsigned int i = 23U; i < 137U; i++) {
-		prn = (unsigned short)((173 * prn) + 13849);
-		temp[i] ^= (prn >> 15) & 1;
+		prn = (unsigned short)((173U * prn) + 13849U);
+		temp[i] ^= (prn & 0x80U) == 0x80U;
 	}
 
 	// Check/Fix FEC
@@ -705,11 +707,11 @@ unsigned int CAMBEFEC::regenerateYSF3(unsigned char* bytes) const
 	// Whiten some bits
 	prn = 0x00U;
 	for (unsigned int i = 0U; i < 12U; i++)
-		prn = (prn << 1) | (temp[i] & 1);
+		prn = (prn << 1) | (temp[i] ? 0x01U : 0x00U);
 	prn <<= 4;
 	for (unsigned int i = 23U; i < 137U; i++) {
-		prn = (unsigned short)((173 * prn) + 13849);
-		temp[i] ^= (prn >> 15) & 1;
+		prn = (unsigned short)((173U * prn) + 13849U);
+		temp[i] ^= (prn & 0x80U) == 0x80U;
 	}
 
 	// Interleave
