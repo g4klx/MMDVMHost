@@ -173,9 +173,12 @@ bool CConf::read()
 
     char* value = ::strtok(NULL, "\r\n");
 	if (section == SECTION_GENERAL) {
-		if (::strcmp(key, "Callsign") == 0)
+		if (::strcmp(key, "Callsign") == 0) {
+			// Convert the callsign to upper case
+			for (unsigned int i = 0U; value[i] != 0; i++)
+				value[i] = ::toupper(value[i]);
 			m_callsign = value;
-		else if (::strcmp(key, "Timeout") == 0)
+		} else if (::strcmp(key, "Timeout") == 0)
 			m_timeout = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Duplex") == 0)
 			m_duplex = ::atoi(value) == 1;
@@ -243,7 +246,7 @@ bool CConf::read()
 			char* p = ::strtok(value, ",\r\n");
 			while (p != NULL) {
 				if (::strlen(p) > 0U) {
-					for (unsigned int i = 0U; p[i] != 0U; i++)
+					for (unsigned int i = 0U; p[i] != 0; i++)
 						p[i] = ::toupper(p[i]);
 					std::string callsign = std::string(p);
 					callsign.resize(DSTAR_LONG_CALLSIGN_LENGTH, ' ');
