@@ -188,7 +188,6 @@
     <ClInclude Include="Sync.h" />
     <ClInclude Include="TFTSerial.h" />
     <ClInclude Include="Timer.h" />
-    <ClInclude Include="Trellis.h" />
     <ClInclude Include="UDPSocket.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Version.h" />
@@ -238,7 +237,6 @@
     <ClCompile Include="Sync.cpp" />
     <ClCompile Include="TFTSerial.cpp" />
     <ClCompile Include="Timer.cpp" />
-    <ClCompile Include="Trellis.cpp" />
     <ClCompile Include="UDPSocket.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="YSFPayload.cpp" />

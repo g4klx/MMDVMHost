@@ -158,9 +158,6 @@
     <ClInclude Include="YSFPayload.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Trellis.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Nextion.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -296,9 +293,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="YSFPayload.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Trellis.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Nextion.cpp">
