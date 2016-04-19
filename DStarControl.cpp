@@ -126,19 +126,23 @@ bool CDStarControl::writeModem(unsigned char *data)
 	if (type == TAG_HEADER) {
 		CDStarHeader header(data + 1U);
 
+		unsigned char my1[DSTAR_LONG_CALLSIGN_LENGTH];
+		header.getMyCall1(my1);
+
 		// Is this a transmission destined for a repeater?
-		if (!header.isRepeater())
+		if (!header.isRepeater()) {
+			LogMessage("D-Star, non repeater RF header received from %8.8s", my1);
 			return false;
+		}
 
 		unsigned char callsign[DSTAR_LONG_CALLSIGN_LENGTH];
 		header.getRPTCall1(callsign);
 
 		// Is it for us?
-		if (::memcmp(callsign, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH) != 0)
+		if (::memcmp(callsign, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH) != 0) {
+			LogMessage("D-Star, received RF header for wrong repeater (%8.8s) from %8.8s", callsign, my1);
 			return false;
-
-		unsigned char my1[DSTAR_LONG_CALLSIGN_LENGTH];
-		header.getMyCall1(my1);
+		}
 
 		if (m_selfOnly && ::memcmp(my1, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH - 1U) != 0) {
 			LogMessage("D-Star, invalid access attempt from %8.8s", my1);
@@ -283,13 +287,11 @@ bool CDStarControl::writeModem(unsigned char *data)
 			header->getMyCall1(my1);
 
 			if (m_selfOnly && ::memcmp(my1, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH - 1U) != 0) {
-				LogMessage("D-Star, invalid access attempt from %8.8s", my1);
 				delete header;
 				return false;
 			}
 
 			if (!m_selfOnly && std::find_if(m_blackList.begin(), m_blackList.end(), std::bind(CallsignCompare, std::placeholders::_1, my1)) != m_blackList.end()) {
-				LogMessage("D-Star, invalid access attempt from %8.8s", my1);
 				delete header;
 				return false;
 			}
