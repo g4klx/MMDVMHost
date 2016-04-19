@@ -162,7 +162,7 @@ void CBPTC19696::decodeErrorCheck()
 		// Run through each of the 9 rows containing data
 		for (unsigned int r = 0U; r < 9U; r++) {
 			unsigned int pos = (r * 15U) + 1U;
-			if (CHamming::decode15113(m_deInterData + pos))
+			if (CHamming::decode15113_2(m_deInterData + pos))
 				fixing = true;
 		}
 
@@ -272,7 +272,7 @@ void CBPTC19696::encodeErrorCheck()
 	// Run through each of the 9 rows containing data
 	for (unsigned int r = 0U; r < 9U; r++) {
 		unsigned int pos = (r * 15U) + 1U;
-		CHamming::encode15113(m_deInterData + pos);
+		CHamming::encode15113_2(m_deInterData + pos);
 	}
 	
 	// Run through each of the 15 columns
