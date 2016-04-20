@@ -36,6 +36,7 @@ public:
   bool         getDuplex() const;
   unsigned int getModeHang() const;
   std::string  getDisplay() const;
+  std::string	 getNagiosStatusFile() const;
 
   // The Info section
   unsigned int getRxFrequency() const;
@@ -129,6 +130,7 @@ private:
   bool         m_duplex;
   unsigned int m_modeHang;
   std::string  m_display;
+  std::string  m_NagiosStatusFile;
 
   unsigned int m_rxFrequency;
   unsigned int m_txFrequency;

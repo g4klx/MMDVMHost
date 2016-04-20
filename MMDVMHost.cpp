@@ -400,6 +400,15 @@ int CMMDVMHost::run()
 		}
 	}
 
+	// *** NOT WORKING YET on CTRL-C on Linux ***
+
+	// Write status to Nagios file that MMDVMHost is not running any more
+	std::ofstream nagiosfile;
+	nagiosfile.open (m_conf.getNagiosStatusFile());
+	nagiosfile << "Unknown: MMDVM not running" << std::endl;
+	nagiosfile.close();
+
+
 	LogMessage("MMDVMHost is exiting on receipt of SIGHUP1");
 
 	setMode(MODE_IDLE);

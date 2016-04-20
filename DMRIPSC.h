@@ -24,6 +24,9 @@
 #include "RingBuffer.h"
 #include "DMRData.h"
 
+#include <iostream>
+#include <fstream>
+
 #include <string>
 #include <cstdint>
 
@@ -33,7 +36,7 @@ public:
 	CDMRIPSC(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2);
 	~CDMRIPSC();
 
-	void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url);
+	void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url, const std::string& NagiosStatusFile);
 
 	bool open();
 
@@ -91,6 +94,7 @@ private:
 	std::string    m_location;
 	std::string    m_description;
 	std::string    m_url;
+	std::string    m_NagiosStatusFile;
 
 	bool           m_beacon;
 
@@ -98,6 +102,8 @@ private:
 	bool writeAuthorisation();
 	bool writeConfig();
 	bool writePing();
+
+	bool writeNagiosOutput();
 
 	bool write(const unsigned char* data, unsigned int length);
 };
