@@ -102,11 +102,15 @@ bool CYSFControl::writeModem(unsigned char *data)
 	if (valid && fi == YSF_FI_TERMINATOR) {
 		CSync::addYSFSync(data + 2U);
 
+		m_fich.encode(data + 2U);
+
 		unsigned char fn = m_fich.getFN();
 		unsigned char ft = m_fich.getFT();
 		unsigned char dt = m_fich.getDT();
 
-		LogDebug("YSF, FI=%X FN=%u FT=%u DT=%X", fi, fn, ft, dt);
+		unsigned int errs = m_fich.getErrors();
+
+		LogDebug("YSF, FI=%X FN=%u FT=%u DT=%X Errs=%u", fi, fn, ft, dt, errs);
 
 		// m_payload.process(data + 2U, fi, fn, ft, dt);
 
@@ -142,12 +146,16 @@ bool CYSFControl::writeModem(unsigned char *data)
 		CSync::addYSFSync(data + 2U);
 
 		if (valid) {
+			m_fich.encode(data + 2U);
+
 			unsigned char cm = m_fich.getCM();
 			unsigned char fn = m_fich.getFN();
 			unsigned char ft = m_fich.getFT();
 			unsigned char dt = m_fich.getDT();
 
-			LogDebug("YSF, FI=%X FN=%u FT=%u DT=%X", fi, fn, ft, dt);
+			unsigned int errs = m_fich.getErrors();
+
+			LogDebug("YSF, FI=%X FN=%u FT=%u DT=%X Errs=%u", fi, fn, ft, dt, errs);
 
 			// m_payload.process(data + 2U, fi, fn, ft, dt);
 
