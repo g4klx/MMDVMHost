@@ -96,7 +96,7 @@ void CYSFPayload::process(unsigned char* bytes, unsigned char fi, unsigned char 
 	assert(bytes != NULL);
 
 	// Header and trailer
-	if (fi == 0U || fi == 2U) {
+	if (fi == YSF_FI_HEADER || fi == YSF_FI_TERMINATOR) {
 		processHeader(bytes + YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES);
 		return;
 	}
@@ -248,7 +248,7 @@ void CYSFPayload::processVDMode1(unsigned char* data, unsigned char fn)
 	errors += m_fec.regenerateDMR(data + 63U);
 	errors += m_fec.regenerateDMR(data + 81U);
 
-	LogMessage("YSF, V/D Mode 1, AMBE FEC %u/235 (%.1f%%)", errors, float(errors) / 235.0F);
+	LogMessage("YSF, V/D Mode 1, AMBE FEC %u/235 (%.1f%%)", errors, float(errors) / 2.35F);
 
 	unsigned char dch[45U];
 
@@ -640,7 +640,7 @@ void CYSFPayload::processVoiceFRMode(unsigned char* data)
 	errors += m_fec.regenerateYSF3(data + 54U);
 	errors += m_fec.regenerateYSF3(data + 72U);
 
-	LogMessage("YSF, V Mode 3, AMBE FEC %u/720 (%.1f%%)", errors, float(errors) / 720.0F);
+	LogMessage("YSF, V Mode 3, AMBE FEC %u/720 (%.1f%%)", errors, float(errors) / 7.2F);
 }
 
 void CYSFPayload::setUplink(const std::string& callsign)

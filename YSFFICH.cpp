@@ -55,13 +55,17 @@ const unsigned int INTERLEAVE_TABLE[] = {
   38U, 78U, 118U, 158U, 198U};
 
 CYSFFICH::CYSFFICH() :
-m_fich(NULL)
+m_bytes(NULL),
+m_fich(NULL),
+m_errors(0U)
 {
-	m_fich = new unsigned char[6U];
+	m_bytes = new unsigned char[YSF_FICH_LENGTH_BYTES];
+	m_fich  = new unsigned char[6U];
 }
 
 CYSFFICH::~CYSFFICH()
 {
+	delete[] m_bytes;
 	delete[] m_fich;
 }
 
@@ -71,6 +75,9 @@ bool CYSFFICH::decode(const unsigned char* bytes)
 
 	// Skip the sync bytes
 	bytes += YSF_SYNC_LENGTH_BYTES;
+
+	// Save a copy of the FICH for later error rate calculations
+	::memcpy(m_bytes, bytes, YSF_FICH_LENGTH_BYTES);
 
 	CYSFConvolution viterbi;
 	viterbi.start();
@@ -157,6 +164,16 @@ void CYSFFICH::encode(unsigned char* bytes)
 		n++;
 		WRITE_BIT1(bytes, n, s1);
 	}
+
+	// Calculate the errors
+	m_errors = 0U;
+	for (unsigned int i = 0U; i < YSF_FICH_LENGTH_BYTES; i++) {
+		unsigned char v = bytes[i] ^ m_bytes[i];
+		while (v != 0U) {
+			v &= v - 1U;
+			m_errors++;
+		}
+	}
 }
 
 unsigned char CYSFFICH::getFI() const
@@ -202,4 +219,9 @@ void CYSFFICH::setVoIP(bool on)
 		m_fich[2U] |= 0x04U;
 	else
 		m_fich[2U] &= 0xFBU;
+}
+
+unsigned int CYSFFICH::getErrors() const
+{
+	return m_errors;
 }
