@@ -405,6 +405,22 @@ void CYSFPayload::decodeVDMode2(unsigned char fn)
 				errors++;
 			}
 		}
+
+		// Reconstruct only if we have bit errors. Technically we could even
+		// constrain it individually to the 5 VCH sections.
+		if(errors)
+		{
+			// Scramble
+			for (unsigned int i = 0U; i < 13U; i++)
+				vch[i] ^= WHITENING_DATA[i];
+
+			// Interleave
+			for(unsigned int i = 0U; i < 104U; i++) {
+				unsigned int n = INTERLEAVE_TABLE_26_4[i];
+				bool s = READ_BIT1(m_data, i);
+				//WRITE_BIT1(m_data, offset+n, s);
+			}
+		}
 	}
 
 	LogMessage("YSF, V/D Mode 2, Repetition FEC %u/270 (%.1f%%)", errors, float(errors) / 270.0F);
