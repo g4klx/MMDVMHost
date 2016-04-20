@@ -674,7 +674,7 @@ unsigned int CAMBEFEC::regenerateYSF3(unsigned char* bytes) const
 
 	// c2
 	g1 = 0;
-	for (int i = 0; i < 23; i++)
+	for (unsigned int i = 0U; i < 23U; i++)
 		g1 = (g1 << 1) | (bit[i] ? 0x01U : 0x00U);
 	unsigned int c2data = CGolay24128::decode23127(g1);
 	g2 = CGolay24128::encode23127(c2data);
@@ -686,7 +686,7 @@ unsigned int CAMBEFEC::regenerateYSF3(unsigned char* bytes) const
 
 	// c3
 	g1 = 0U;
-	for (int i = 0; i < 23; i++)
+	for (unsigned int i = 0U; i < 23U; i++)
 		g1 = (g1 << 1) | (bit[i] ? 0x01U : 0x00U);
 	unsigned int c3data = CGolay24128::decode23127(g1);
 	g2 = CGolay24128::encode23127(c3data);
