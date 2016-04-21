@@ -44,7 +44,6 @@ m_dmr(false)
 {
 	assert(rows > 1U);
 	assert(cols > 15U);
-	assert(callsign.c_str() != NULL);
 }
 
 CHD44780::~CHD44780()
@@ -212,8 +211,6 @@ void CHD44780::clearDStar()
 
 void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
-	assert(src.c_str() != NULL);
-	assert(dst.c_str() != NULL);
 	assert(type != NULL);
 
 	if (!m_dmr) {
