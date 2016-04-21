@@ -30,7 +30,6 @@ m_serial(port, SERIAL_9600),
 m_brightness(brightness),
 m_mode(MODE_IDLE)
 {
-	assert(callsign.c_str() != NULL);
 	assert(brightness >= 0U && brightness <= 100U);
 }
 
@@ -125,10 +124,8 @@ void CNextion::clearDStar()
 	sendCommand("t1.txt=\"\"");
 }
 
-void CNextion::writeDMR(unsigned int slotNo, const char* src, bool group, const char* dst, const char* type)
+void CNextion::writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
-	assert(src != NULL);
-	assert(dst != NULL);
 	assert(type != NULL);
 
 	if (m_mode != MODE_DMR) {
@@ -143,18 +140,18 @@ void CNextion::writeDMR(unsigned int slotNo, const char* src, bool group, const 
 	if (slotNo == 1U) {
 		char text[30U];
 
-		::sprintf(text, "t0.txt=\"1 %s %s\"", type, src);
+		::sprintf(text, "t0.txt=\"1 %s %s\"", type, src.c_str());
 		sendCommand(text);
 
-		::sprintf(text, "t1.txt=\"%s%s\"", group ? "TG" : "", dst);
+		::sprintf(text, "t1.txt=\"%s%s\"", group ? "TG" : "", dst.c_str());
 		sendCommand(text);
 	} else {
 		char text[30U];
 
-		::sprintf(text, "t2.txt=\"2 %s %s\"", type, src);
+		::sprintf(text, "t2.txt=\"2 %s %s\"", type, src.c_str());
 		sendCommand(text);
 
-		::sprintf(text, "t3.txt=\"%s%s\"", group ? "TG" : "", dst);
+		::sprintf(text, "t3.txt=\"%s%s\"", group ? "TG" : "", dst.c_str());
 		sendCommand(text);
 	}
 

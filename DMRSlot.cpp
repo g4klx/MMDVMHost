@@ -178,7 +178,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			if (m_netState == RS_NET_IDLE) {
 				setShortLC(m_slotNo, m_rfLC->getDstId(), m_rfLC->getFLCO(), true);
-				m_display->writeDMR(m_slotNo, src.c_str(), m_rfLC->getFLCO() == FLCO_GROUP, dst.c_str(), "R");
+				m_display->writeDMR(m_slotNo, src, m_rfLC->getFLCO() == FLCO_GROUP, dst, "R");
 			}
 
 			LogMessage("DMR Slot %u, received RF voice header from %s to %s%s", m_slotNo, src.c_str(), m_rfLC->getFLCO() == FLCO_GROUP ? "TG " : "", dst.c_str());
@@ -288,7 +288,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			if (m_netState == RS_NET_IDLE) {
 				setShortLC(m_slotNo, dstId, gi ? FLCO_GROUP : FLCO_USER_USER, false);
-				m_display->writeDMR(m_slotNo, src.c_str(), gi, dst.c_str(), "R");
+				m_display->writeDMR(m_slotNo, src, gi, dst, "R");
 			}
 
 			LogMessage("DMR Slot %u, received RF data header from %s to %s%s, %u blocks", m_slotNo, src.c_str(), gi ? "TG ": "", dst.c_str(), m_rfFrames);
@@ -550,7 +550,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 				if (m_netState == RS_NET_IDLE) {
 					setShortLC(m_slotNo, m_rfLC->getDstId(), m_rfLC->getFLCO(), true);
-					m_display->writeDMR(m_slotNo, src.c_str(), m_rfLC->getFLCO() == FLCO_GROUP, dst.c_str(), "R");
+					m_display->writeDMR(m_slotNo, src, m_rfLC->getFLCO() == FLCO_GROUP, dst, "R");
 				}
 
 				LogMessage("DMR Slot %u, received RF late entry from %s to %s%s", m_slotNo, src.c_str(), m_rfLC->getFLCO() == FLCO_GROUP ? "TG " : "", dst.c_str());
