@@ -116,6 +116,8 @@ void CYSFPayload::processData(unsigned char* bytes, unsigned char fn, unsigned c
 
 bool CYSFPayload::processHeader(unsigned char* data)
 {
+	data += YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES;
+
 	unsigned char dch[45U];
 
 	unsigned char* p1 = data;
@@ -236,6 +238,8 @@ bool CYSFPayload::processHeader(unsigned char* data)
 
 void CYSFPayload::processTrailer(unsigned char* data)
 {
+	data += YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES;
+
 	unsigned char dch[45U];
 
 	unsigned char* p1 = data;

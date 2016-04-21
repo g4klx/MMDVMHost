@@ -106,10 +106,10 @@ bool CYSFControl::writeModem(unsigned char *data)
 		::memcpy(orig, data + 2U, YSF_FRAME_LENGTH_BYTES);
 
 		fich.encode(data + 2U);
-		valid = m_payload.processHeader(data + 2U);
+		// valid = m_payload.processHeader(data + 2U);
 
 		unsigned int errs = calculateBER(orig, data + 2U);
-		LogDebug("YSF, FI=%u FN=%u FT=%u DT=%u BER=%.1f%%", fi, fn, ft, dt, float(errs) / 9.6F);
+		LogDebug("YSF, FI=%u FN=%u FT=%u DT=%u BER=%.1f%%", fi, fn, ft, dt, float(errs) / 2.4F);
 
 		if (m_duplex) {
 			fich.setMR(YSF_MR_BUSY);
@@ -162,10 +162,10 @@ bool CYSFControl::writeModem(unsigned char *data)
 		::memcpy(orig, data + 2U, YSF_FRAME_LENGTH_BYTES);
 
 		fich.encode(data + 2U);
-		m_payload.processTrailer(data + 2U);
+		// m_payload.processTrailer(data + 2U);
 
 		unsigned int errs = calculateBER(orig, data + 2U);
-		LogDebug("YSF, FI=%u FN=%u FT=%u DT=%u BER=%.1f%%", fi, fn, ft, dt, float(errs) / 9.6F);
+		LogDebug("YSF, FI=%u FN=%u FT=%u DT=%u BER=%.1f%%", fi, fn, ft, dt, float(errs) / 2.4F);
 
 		m_frames++;
 
@@ -207,10 +207,10 @@ bool CYSFControl::writeModem(unsigned char *data)
 		::memcpy(orig, data + 2U, YSF_FRAME_LENGTH_BYTES);
 
 		fich.encode(data + 2U);
-		m_payload.processData(data + 2U, fn, dt);
+		// m_payload.processData(data + 2U, fn, dt);
 
 		unsigned int errs = calculateBER(orig, data + 2U);
-		LogDebug("YSF, FI=%u FN=%u FT=%u DT=%u BER=%.1f%%", fi, fn, ft, dt, float(errs) / 9.6F);
+		LogDebug("YSF, FI=%u FN=%u FT=%u DT=%u BER=%.1f%%", fi, fn, ft, dt, float(errs) / 2.4F);
 
 		bool change = false;
 
@@ -426,7 +426,7 @@ unsigned int CYSFControl::calculateBER(const unsigned char* orig, const unsigned
 {
 	unsigned int errors = 0U;
 
-	for (unsigned int i = 0U; i < YSF_FRAME_LENGTH_BYTES; i++) {
+	for (unsigned int i = 0U; i < (YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES); i++) {
 		unsigned char v = orig[i] ^ curr[i];
 		while (v != 0U) {
 			v &= v - 1U;
