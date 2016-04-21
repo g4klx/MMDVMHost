@@ -590,7 +590,7 @@ void CMMDVMHost::createDisplay()
 		LogInfo("    Port: %s", port.c_str());
 		LogInfo("    Brightness: %u", brightness);
 
-		m_display = new CNextion(callsign.c_str(), dmrid, port, brightness);
+		m_display = new CNextion(callsign, dmrid, port, brightness);
 #if defined(HD44780)
 	} else if (type == "HD44780") {
 		unsigned int rows    = m_conf.getHD44780Rows();

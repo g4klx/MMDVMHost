@@ -489,15 +489,13 @@ void CDStarControl::writeNetwork()
 
 		LINK_STATUS status = LS_NONE;
 		unsigned char reflector[DSTAR_LONG_CALLSIGN_LENGTH];
-		if (m_network != NULL)
-			m_network->getStatus(status, reflector);
-
-		m_display->writeDStar((char*)my1, (char*)my2, (char*)your, "N", (char*) reflector);
-
-		if (strcmp((char*) reflector, "        ") == 0) {
-			LogMessage("D-Star, received network header from %8.8s/%4.4s to %8.8s", my1, my2, your);
-		} else {
+		m_network->getStatus(status, reflector);
+		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK) {
+			m_display->writeDStar((char*)my1, (char*)my2, (char*)your, "N", (char*) reflector);
 			LogMessage("D-Star, received network header from %8.8s/%4.4s to %8.8s via %8.8s", my1, my2, your, reflector);
+		} else {
+			m_display->writeDStar((char*)my1, (char*)my2, (char*)your, "N", (char*) "        ");
+			LogMessage("D-Star, received network header from %8.8s/%4.4s to %8.8s", my1, my2, your);
 		}
 	} else if (type == TAG_EOT) {
 		if (m_netState != RS_NET_AUDIO)
