@@ -37,7 +37,7 @@
 class CHD44780 : public IDisplay
 {
 public:
-  CHD44780(unsigned int rows, unsigned int cols, const char* callsign, unsigned int dmrid, const std::vector<unsigned int>& pins);
+  CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins);
   virtual ~CHD44780();
 
   virtual bool open();
@@ -61,7 +61,7 @@ public:
 private:
 	unsigned int m_rows;
 	unsigned int m_cols;
-	const char*  m_callsign;
+	std::string  m_callsign;
 	unsigned int m_dmrid;
 	unsigned int m_rb;
 	unsigned int m_strb;
