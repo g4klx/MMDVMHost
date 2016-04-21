@@ -91,15 +91,9 @@ CYSFPayload::~CYSFPayload()
 	delete[] m_dest;
 }
 
-void CYSFPayload::process(unsigned char* bytes, unsigned char fi, unsigned char fn, unsigned char ft, unsigned char dt)
+void CYSFPayload::processData(unsigned char* bytes, unsigned char fn, unsigned char dt)
 {
 	assert(bytes != NULL);
-
-	// Header and trailer
-	if (fi == YSF_FI_HEADER || fi == YSF_FI_TERMINATOR) {
-		processHeader(bytes + YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES);
-		return;
-	}
 
 	switch (dt) {
 	case YSF_DT_VD_MODE1:
@@ -120,7 +114,7 @@ void CYSFPayload::process(unsigned char* bytes, unsigned char fi, unsigned char 
 	}
 }
 
-void CYSFPayload::processHeader(unsigned char* data)
+bool CYSFPayload::processHeader(unsigned char* data)
 {
 	unsigned char dch[45U];
 
@@ -147,13 +141,13 @@ void CYSFPayload::processHeader(unsigned char* data)
 	unsigned char output[23U];
 	conv.chainback(output, 180U);
 
-	bool ret = CCRC::checkCCITT162(output, 22U);
-	if (ret) {
+	bool valid = CCRC::checkCCITT162(output, 22U);
+	if (valid) {
 		for (unsigned int i = 0U; i < 20U; i++)
 			output[i] ^= WHITENING_DATA[i];
 
-		CUtils::dump("Header/Trailer, Source", output + 0U, 10U);
-		CUtils::dump("Header/Trailer, Destination", output + 10U, 10U);
+		CUtils::dump("Header, Source", output + 0U, 10U);
+		CUtils::dump("Header, Destination", output + 10U, 10U);
 
 		if (m_source == NULL) {
 			m_source = new unsigned char[10U];
@@ -236,19 +230,129 @@ void CYSFPayload::processHeader(unsigned char* data)
 		::memcpy(p1, p2, 9U);
 		p1 += 18U; p2 += 9U;
 	}
+
+	return valid;
+}
+
+void CYSFPayload::processTrailer(unsigned char* data)
+{
+	unsigned char dch[45U];
+
+	unsigned char* p1 = data;
+	unsigned char* p2 = dch;
+	for (unsigned int i = 0U; i < 5U; i++) {
+		::memcpy(p2, p1, 9U);
+		p1 += 18U; p2 += 9U;
+	}
+
+	CYSFConvolution conv;
+	conv.start();
+
+	for (unsigned int i = 0U; i < 180U; i++) {
+		unsigned int n = INTERLEAVE_TABLE_9_20[i];
+		uint8_t s0 = READ_BIT1(dch, n) ? 1U : 0U;
+
+		n++;
+		uint8_t s1 = READ_BIT1(dch, n) ? 1U : 0U;
+
+		conv.decode(s0, s1);
+	}
+
+	unsigned char output[23U];
+	conv.chainback(output, 180U);
+
+	bool valid = CCRC::checkCCITT162(output, 22U);
+	if (valid) {
+		for (unsigned int i = 0U; i < 20U; i++)
+			output[i] ^= WHITENING_DATA[i];
+
+		CUtils::dump("Trailer, Source", output + 0U, 10U);
+		CUtils::dump("Trailer, Destination", output + 10U, 10U);
+
+		for (unsigned int i = 0U; i < 20U; i++)
+			output[i] ^= WHITENING_DATA[i];
+
+		CCRC::addCCITT162(output, 22U);
+		output[22U] = 0x00U;
+
+		unsigned char convolved[45U];
+		conv.encode(output, convolved, 180U);
+
+		unsigned char bytes[45U];
+		unsigned int j = 0U;
+		for (unsigned int i = 0U; i < 180U; i++) {
+			unsigned int n = INTERLEAVE_TABLE_9_20[i];
+
+			bool s0 = READ_BIT1(convolved, j) != 0U;
+			j++;
+
+			bool s1 = READ_BIT1(convolved, j) != 0U;
+			j++;
+
+			WRITE_BIT1(bytes, n, s0);
+
+			n++;
+			WRITE_BIT1(bytes, n, s1);
+		}
+
+		p1 = data;
+		p2 = bytes;
+		for (unsigned int i = 0U; i < 5U; i++) {
+			::memcpy(p1, p2, 9U);
+			p1 += 18U; p2 += 9U;
+		}
+	}
+
+	::memset(output, ' ', 20U);
+	if (m_downlink != NULL)
+		::memcpy(output + 0U, m_downlink, 10U);
+	if (m_uplink != NULL)
+		::memcpy(output + 10U, m_uplink, 10U);
+	for (unsigned int i = 0U; i < 20U; i++)
+		output[i] ^= WHITENING_DATA[i];
+
+	CCRC::addCCITT162(output, 22U);
+	output[22U] = 0x00U;
+
+	unsigned char convolved[45U];
+	conv.encode(output, convolved, 180U);
+
+	unsigned char bytes[45U];
+	unsigned int j = 0U;
+	for (unsigned int i = 0U; i < 180U; i++) {
+		unsigned int n = INTERLEAVE_TABLE_9_20[i];
+
+		bool s0 = READ_BIT1(convolved, j) != 0U;
+		j++;
+
+		bool s1 = READ_BIT1(convolved, j) != 0U;
+		j++;
+
+		WRITE_BIT1(bytes, n, s0);
+
+		n++;
+		WRITE_BIT1(bytes, n, s1);
+	}
+
+	p1 = data + 9U;
+	p2 = bytes;
+	for (unsigned int i = 0U; i < 5U; i++) {
+		::memcpy(p1, p2, 9U);
+		p1 += 18U; p2 += 9U;
+	}
 }
 
 void CYSFPayload::processVDMode1(unsigned char* data, unsigned char fn)
 {
 	// Regenerate the AMBE FEC
-	unsigned int errors = 0U;
-	errors += m_fec.regenerateDMR(data + 9U);
-	errors += m_fec.regenerateDMR(data + 27U);
-	errors += m_fec.regenerateDMR(data + 45U);
-	errors += m_fec.regenerateDMR(data + 63U);
-	errors += m_fec.regenerateDMR(data + 81U);
+	// unsigned int errors = 0U;
+	// errors += m_fec.regenerateDMR(data + 9U);
+	// errors += m_fec.regenerateDMR(data + 27U);
+	// errors += m_fec.regenerateDMR(data + 45U);
+	// errors += m_fec.regenerateDMR(data + 63U);
+	// errors += m_fec.regenerateDMR(data + 81U);
 
-	LogMessage("YSF, V/D Mode 1, AMBE FEC %u/235 (%.1f%%)", errors, float(errors) / 2.35F);
+	// LogMessage("YSF, V/D Mode 1, AMBE FEC %u/235 (%.1f%%)", errors, float(errors) / 2.35F);
 
 	unsigned char dch[45U];
 
@@ -295,11 +399,6 @@ void CYSFPayload::processVDMode1(unsigned char* data, unsigned char fn)
 				::memcpy(m_source, output + 10U, 10U);
 			}
 
-			break;
-
-		case 2U:
-			CUtils::dump("V/D Mode 1, Rem 1+2", output + 0U, 10U);
-			CUtils::dump("V/D Mode 1, Rem 3+4", output + 10U, 10U);
 			break;
 
 		default:
@@ -402,12 +501,6 @@ void CYSFPayload::processVDMode2(unsigned char* data, unsigned char fn)
 				m_source = new unsigned char[10U];
 				::memcpy(m_source, output, 10U);
 			}
-			break;
-		case 4U:
-			CUtils::dump("V/D Mode 2, Rem 1+2", output, 10U);
-			break;
-		case 5U:
-			CUtils::dump("V/D Mode 2, Rem 3+4", output, 10U);
 			break;
 		default:
 			break;
@@ -516,10 +609,6 @@ void CYSFPayload::processDataFRMode(unsigned char* data, unsigned char fn)
 
 			break;
 
-		case 1U:
-			CUtils::dump("Data FR Mode, Rem 1+2", output + 0U, 10U);
-			CUtils::dump("Data FR Mode, Rem 3+4", output + 10U, 10U);
-			break;
 		default:
 			break;
 		}
@@ -633,14 +722,14 @@ void CYSFPayload::processDataFRMode(unsigned char* data, unsigned char fn)
 void CYSFPayload::processVoiceFRMode(unsigned char* data)
 {
 	// Regenerate the AMBE FEC
-	unsigned int errors = 0U;
-	errors += m_fec.regenerateYSF3(data + 0U);
-	errors += m_fec.regenerateYSF3(data + 18U);
-	errors += m_fec.regenerateYSF3(data + 36U);
-	errors += m_fec.regenerateYSF3(data + 54U);
-	errors += m_fec.regenerateYSF3(data + 72U);
+	// unsigned int errors = 0U;
+	// errors += m_fec.regenerateYSF3(data + 0U);
+	// errors += m_fec.regenerateYSF3(data + 18U);
+	// errors += m_fec.regenerateYSF3(data + 36U);
+	// errors += m_fec.regenerateYSF3(data + 54U);
+	// errors += m_fec.regenerateYSF3(data + 72U);
 
-	LogMessage("YSF, V Mode 3, AMBE FEC %u/720 (%.1f%%)", errors, float(errors) / 7.2F);
+	// LogMessage("YSF, V Mode 3, AMBE FEC %u/720 (%.1f%%)", errors, float(errors) / 7.2F);
 }
 
 void CYSFPayload::setUplink(const std::string& callsign)

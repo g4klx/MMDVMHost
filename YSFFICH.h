@@ -28,8 +28,6 @@ public:
 
 	void encode(unsigned char* bytes);
 
-	unsigned int getErrors() const;
-
 	unsigned char getFI() const;
 	unsigned char getCM() const;
 	unsigned char getFN() const;
@@ -41,9 +39,7 @@ public:
 	void setVoIP(bool set);
 
 private:
-	unsigned char* m_bytes;
 	unsigned char* m_fich;
-	unsigned int   m_errors;
 };
 
 #endif

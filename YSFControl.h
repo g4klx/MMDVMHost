@@ -26,7 +26,6 @@
 #include "YSFParrot.h"
 #include "Display.h"
 #include "Defines.h"
-#include "YSFFICH.h"
 #include "Timer.h"
 #include "Modem.h"
 
@@ -51,7 +50,6 @@ private:
 	CTimer                     m_timeoutTimer;
 	CStopWatch                 m_interval;
 	unsigned int               m_frames;
-	CYSFFICH                   m_fich;
 	unsigned char*             m_source;
 	unsigned char*             m_dest;
 	CYSFPayload                m_payload;
@@ -66,6 +64,8 @@ private:
 	bool openFile();
 	bool writeFile(const unsigned char* data);
 	void closeFile();
+
+	unsigned int calculateBER(const unsigned char* orig, const unsigned char* curr) const;
 };
 
 #endif

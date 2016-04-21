@@ -12,22 +12,17 @@
  */
 
 #include "YSFControl.h"
+#include "YSFFICH.h"
 #include "Utils.h"
 #include "Sync.h"
 #include "Log.h"
 
 #include <cstdio>
 #include <cassert>
+#include <cstring>
 #include <ctime>
 
 // #define	DUMP_YSF
-
-/*
- * TODO:
- * AMBE FEC reconstruction.
- * Callsign extraction + late entry.
- * Uplink and downlink callsign addition.
- */
 
 CYSFControl::CYSFControl(const std::string& callsign, IDisplay* display, unsigned int timeout, bool duplex, bool parrot) :
 m_display(display),
@@ -37,7 +32,6 @@ m_state(RS_RF_LISTENING),
 m_timeoutTimer(1000U, timeout),
 m_interval(),
 m_frames(0U),
-m_fich(),
 m_source(NULL),
 m_dest(NULL),
 m_payload(),
@@ -79,10 +73,11 @@ bool CYSFControl::writeModem(unsigned char *data)
 	if (type == TAG_LOST)
 		return false;
 
-	bool valid = m_fich.decode(data + 2U);
+	CYSFFICH fich;
+	bool valid = fich.decode(data + 2U);
 
 	if (valid && m_state == RS_RF_LISTENING) {
-		unsigned char fi = m_fich.getFI();
+		unsigned char fi = fich.getFI();
 		if (fi == YSF_FI_TERMINATOR)
 			return false;
 
@@ -98,27 +93,85 @@ bool CYSFControl::writeModem(unsigned char *data)
 	if (m_state != RS_RF_AUDIO)
 		return false;
 
-	unsigned char fi = m_fich.getFI();
-	if (valid && fi == YSF_FI_TERMINATOR) {
+	unsigned char fi = fich.getFI();
+	if (valid && fi == YSF_FI_HEADER) {
 		CSync::addYSFSync(data + 2U);
 
-		m_fich.encode(data + 2U);
+		unsigned char fn = fich.getFN();
+		unsigned char ft = fich.getFT();
+		unsigned char dt = fich.getDT();
+		unsigned char cm = fich.getCM();
 
-		unsigned char fn = m_fich.getFN();
-		unsigned char ft = m_fich.getFT();
-		unsigned char dt = m_fich.getDT();
+		unsigned char orig[YSF_FRAME_LENGTH_BYTES];
+		::memcpy(orig, data + 2U, YSF_FRAME_LENGTH_BYTES);
 
-		unsigned int errs = m_fich.getErrors();
+		fich.encode(data + 2U);
+		valid = m_payload.processHeader(data + 2U);
 
-		LogDebug("YSF, FI=%X FN=%u FT=%u DT=%X Errs=%u", fi, fn, ft, dt, errs);
+		unsigned int errs = calculateBER(orig, data + 2U);
+		LogDebug("YSF, FI=%u FN=%u FT=%u DT=%u BER=%.1f%%", fi, fn, ft, dt, float(errs) / 9.6F);
 
-		// m_payload.process(data + 2U, fi, fn, ft, dt);
+		if (m_duplex) {
+			fich.setMR(YSF_MR_BUSY);
+			fich.encode(data + 2U);
+
+			data[0U] = TAG_DATA;
+			data[1U] = 0x00U;
+			writeQueue(data);
+		}
+
+		if (m_parrot != NULL) {
+			fich.setMR(YSF_MR_NOT_BUSY);
+			fich.encode(data + 2U);
+
+			data[0U] = TAG_DATA;
+			data[1U] = 0x00U;
+			writeParrot(data);
+		}
+
+		if (valid)
+			m_source = m_payload.getSource();
+
+		if (cm == YSF_CM_GROUP) {
+			m_dest = (unsigned char*)"CQCQCQ    ";
+		} else {
+			if (valid)
+				m_dest = m_payload.getDest();
+		}
+
+#if defined(DUMP_YSF)
+		writeFile(data + 2U);
+#endif
+
+		if (m_source != NULL && m_dest != NULL)
+			LogMessage("YSF, received header from %10.10s to %10.10s", m_source, m_dest);
+		else if (m_source == NULL && m_dest != NULL)
+			LogMessage("YSF, received header from ?????????? to %10.10s", m_dest);
+		else if (m_source != NULL && m_dest == NULL)
+			LogMessage("YSF, received header from %10.10s to ??????????", m_source);
+		else
+			LogMessage("YSF, received header from ?????????? to ??????????");
+	} else if (valid && fi == YSF_FI_TERMINATOR) {
+		CSync::addYSFSync(data + 2U);
+
+		unsigned char fn = fich.getFN();
+		unsigned char ft = fich.getFT();
+		unsigned char dt = fich.getDT();
+
+		unsigned char orig[YSF_FRAME_LENGTH_BYTES];
+		::memcpy(orig, data + 2U, YSF_FRAME_LENGTH_BYTES);
+
+		fich.encode(data + 2U);
+		m_payload.processTrailer(data + 2U);
+
+		unsigned int errs = calculateBER(orig, data + 2U);
+		LogDebug("YSF, FI=%u FN=%u FT=%u DT=%u BER=%.1f%%", fi, fn, ft, dt, float(errs) / 9.6F);
 
 		m_frames++;
 
 		if (m_duplex) {
-			m_fich.setMR(YSF_MR_BUSY);
-			m_fich.encode(data + 2U);
+			fich.setMR(YSF_MR_BUSY);
+			fich.encode(data + 2U);
 
 			data[0U] = TAG_EOT;
 			data[1U] = 0x00U;
@@ -126,8 +179,8 @@ bool CYSFControl::writeModem(unsigned char *data)
 		}
 
 		if (m_parrot != NULL) {
-			m_fich.setMR(YSF_MR_NOT_BUSY);
-			m_fich.encode(data + 2U);
+			fich.setMR(YSF_MR_NOT_BUSY);
+			fich.encode(data + 2U);
 
 			data[0U] = TAG_EOT;
 			data[1U] = 0x00U;
@@ -142,66 +195,62 @@ bool CYSFControl::writeModem(unsigned char *data)
 		writeEndOfTransmission();
 
 		return false;
-	} else {
+	} else if (valid) {
 		CSync::addYSFSync(data + 2U);
 
-		if (valid) {
-			m_fich.encode(data + 2U);
+		unsigned char cm = fich.getCM();
+		unsigned char fn = fich.getFN();
+		unsigned char ft = fich.getFT();
+		unsigned char dt = fich.getDT();
 
-			unsigned char cm = m_fich.getCM();
-			unsigned char fn = m_fich.getFN();
-			unsigned char ft = m_fich.getFT();
-			unsigned char dt = m_fich.getDT();
+		unsigned char orig[YSF_FRAME_LENGTH_BYTES];
+		::memcpy(orig, data + 2U, YSF_FRAME_LENGTH_BYTES);
 
-			unsigned int errs = m_fich.getErrors();
+		fich.encode(data + 2U);
+		m_payload.processData(data + 2U, fn, dt);
 
-			LogDebug("YSF, FI=%X FN=%u FT=%u DT=%X Errs=%u", fi, fn, ft, dt, errs);
+		unsigned int errs = calculateBER(orig, data + 2U);
+		LogDebug("YSF, FI=%u FN=%u FT=%u DT=%u BER=%.1f%%", fi, fn, ft, dt, float(errs) / 9.6F);
 
-			// m_payload.process(data + 2U, fi, fn, ft, dt);
+		bool change = false;
 
-			bool change = false;
-
-			if (m_dest == NULL) {
-				if (cm == YSF_CM_GROUP) {
-					m_dest = (unsigned char*)"CQCQCQ    ";
-					change = true;
-				} else {
-					m_dest = m_payload.getDest();
-					if (m_dest != NULL)
-						change = true;
-				}
-			}
-
-			if (m_source == NULL) {
-				m_source = m_payload.getSource();
-				if (m_source != NULL)
+		if (m_dest == NULL) {
+			if (cm == YSF_CM_GROUP) {
+				m_dest = (unsigned char*)"CQCQCQ    ";
+				change = true;
+			} else {
+				m_dest = m_payload.getDest();
+				if (m_dest != NULL)
 					change = true;
 			}
+		}
 
-			if (change) {
-				if (m_source != NULL && m_dest != NULL) {
-					m_display->writeFusion((char*)m_source, (char*)m_dest);
-					LogMessage("YSF, received transmission from %10.10s to %10.10s", m_source, m_dest);
-				}
-				if (m_source != NULL && m_dest == NULL) {
-					m_display->writeFusion((char*)m_source, "??????????");
-					LogMessage("YSF, received transmission from %10.10s to ??????????", m_source);
-				}
-				if (m_source == NULL && m_dest != NULL) {
-					m_display->writeFusion("??????????", (char*)m_dest);
-					LogMessage("YSF, received transmission from ?????????? to %10.10s", m_dest);
-				}
+		if (m_source == NULL) {
+			m_source = m_payload.getSource();
+			if (m_source != NULL)
+				change = true;
+		}
+
+		if (change) {
+			if (m_source != NULL && m_dest != NULL) {
+				m_display->writeFusion((char*)m_source, (char*)m_dest);
+				LogMessage("YSF, received transmission from %10.10s to %10.10s", m_source, m_dest);
 			}
-		} else {
-			// Reconstruct FICH based on the last valid frame
-			m_fich.setFI(YSF_FI_COMMUNICATIONS);		// Communication channel
+			if (m_source != NULL && m_dest == NULL) {
+				m_display->writeFusion((char*)m_source, "??????????");
+				LogMessage("YSF, received transmission from %10.10s to ??????????", m_source);
+			}
+			if (m_source == NULL && m_dest != NULL) {
+				m_display->writeFusion("??????????", (char*)m_dest);
+				LogMessage("YSF, received transmission from ?????????? to %10.10s", m_dest);
+			}
 		}
 
 		m_frames++;
 
 		if (m_duplex) {
-			m_fich.setMR(YSF_MR_BUSY);
-			m_fich.encode(data + 2U);
+			fich.setMR(YSF_MR_BUSY);
+			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
@@ -209,9 +258,29 @@ bool CYSFControl::writeModem(unsigned char *data)
 		}
 
 		if (m_parrot != NULL) {
-			m_fich.setMR(YSF_MR_NOT_BUSY);
-			m_fich.encode(data + 2U);
+			fich.setMR(YSF_MR_NOT_BUSY);
+			fich.encode(data + 2U);
 
+			data[0U] = TAG_DATA;
+			data[1U] = 0x00U;
+			writeParrot(data);
+		}
+
+#if defined(DUMP_YSF)
+		writeFile(data + 2U);
+#endif
+	} else {
+		CSync::addYSFSync(data + 2U);
+
+		m_frames++;
+
+		if (m_duplex) {
+			data[0U] = TAG_DATA;
+			data[1U] = 0x00U;
+			writeQueue(data);
+		}
+
+		if (m_parrot != NULL) {
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
 			writeParrot(data);
@@ -351,4 +420,19 @@ void CYSFControl::closeFile()
 		::fclose(m_fp);
 		m_fp = NULL;
 	}
+}
+
+unsigned int CYSFControl::calculateBER(const unsigned char* orig, const unsigned char *curr) const
+{
+	unsigned int errors = 0U;
+
+	for (unsigned int i = 0U; i < YSF_FRAME_LENGTH_BYTES; i++) {
+		unsigned char v = orig[i] ^ curr[i];
+		while (v != 0U) {
+			v &= v - 1U;
+			errors++;
+		}
+	}
+
+	return errors;
 }

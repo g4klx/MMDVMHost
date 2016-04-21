@@ -28,7 +28,9 @@ public:
 	CYSFPayload();
 	~CYSFPayload();
 
-	void process(unsigned char* bytes, unsigned char fi, unsigned char fn, unsigned char ft, unsigned char dt);
+	bool processHeader(unsigned char* bytes);
+	void processData(unsigned char* bytes, unsigned char fn, unsigned char dt);
+	void processTrailer(unsigned char* bytes);
 
 	unsigned char* getSource();
 	unsigned char* getDest();
@@ -45,7 +47,6 @@ private:
 	unsigned char* m_dest;
 	CAMBEFEC       m_fec;
 
-	void processHeader(unsigned char* bytes);
 	void processVDMode1(unsigned char* bytes, unsigned char fn);
 	void processVDMode2(unsigned char* bytes, unsigned char fn);
 	void processDataFRMode(unsigned char* bytes, unsigned char fn);
