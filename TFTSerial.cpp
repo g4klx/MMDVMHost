@@ -188,10 +188,10 @@ void CTFTSerial::clearDStar()
 	displayText("         ");
 }
 
-void CTFTSerial::writeDMR(unsigned int slotNo, const char* src, bool group, const char* dst, const char* type)
+void CTFTSerial::writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
-	assert(src != NULL);
-	assert(dst != NULL);
+	assert(src.c_str() != NULL);
+	assert(dst.c_str() != NULL);
 	assert(type != NULL);
 
 	if (m_mode != MODE_DMR) {
@@ -215,21 +215,21 @@ void CTFTSerial::writeDMR(unsigned int slotNo, const char* src, bool group, cons
 	if (slotNo == 1U) {
 		char text[30U];
 
-		::sprintf(text, "1 %s %s", type, src);
+		::sprintf(text, "1 %s %s", type, src.c_str());
 		gotoPosPixel(5U, 55U);
 		displayText(text);
 
-		::sprintf(text, "%s%s", group ? "TG" : "", dst);
+		::sprintf(text, "%s%s", group ? "TG" : "", dst.c_str());
 		gotoPosPixel(65U, 72U);
 		displayText(text);
 	} else {
 		char text[30U];
 
-		::sprintf(text, "2 %s %s", type, src);
+		::sprintf(text, "2 %s %s", type, src.c_str());
 		gotoPosPixel(5U, 90U);
 		displayText(text);
 
-		::sprintf(text, "%s%s", group ? "TG" : "", dst);
+		::sprintf(text, "%s%s", group ? "TG" : "", dst.c_str());
 		gotoPosPixel(65U, 107U);
 		displayText(text);
 	}

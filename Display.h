@@ -36,7 +36,7 @@ public:
   virtual void writeDStar(const char* my1, const char* my2, const char* your, const char* type, const char* reflector) = 0;
   virtual void clearDStar() = 0;
 
-  virtual void writeDMR(unsigned int slotNo, const char* src, bool group, const char* dst, const char* type) = 0;
+  virtual void writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type) = 0;
   virtual void clearDMR(unsigned int slotNo) = 0;
 
   virtual void writeFusion(const char* source, const char* dest) = 0;

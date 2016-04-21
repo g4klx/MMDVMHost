@@ -210,10 +210,10 @@ void CHD44780::clearDStar()
 	}
 }
 
-void CHD44780::writeDMR(unsigned int slotNo, const char* src, bool group, const char* dst, const char* type)
+void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
-	assert(src != NULL);
-	assert(dst != NULL);
+	assert(src.c_str() != NULL);
+	assert(dst.c_str() != NULL);
 	assert(type != NULL);
 
 	if (!m_dmr) {
@@ -262,44 +262,44 @@ void CHD44780::writeDMR(unsigned int slotNo, const char* src, bool group, const 
 	if (m_rows == 2U && m_cols == 16U) {
 		char buffer[16U];
 		if (slotNo == 1U) {
-			::sprintf(buffer, "%s > %s%s", src, group ? "TG" : "", dst);
+			::sprintf(buffer, "%s > %s%s", src.c_str(), group ? "TG" : "", dst.c_str());
 			::lcdPosition(m_fd, 0, 0);
 			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
 		} else {
-			::sprintf(buffer, "%s > %s%s", src, group ? "TG" : "", dst);
+			::sprintf(buffer, "%s > %s%s", src.c_str(), group ? "TG" : "", dst.c_str());
 			::lcdPosition(m_fd, 0, 1);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 		}
 	} else if (m_rows == 4U && m_cols == 16U) {
 		char buffer[16U];
 		if (slotNo == 1U) {
-			::sprintf(buffer, "%s %s > %s%s", type, src, group ? "TG" : "", dst);
+			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
 			::lcdPosition(m_fd, 0, 1);
 			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
 		} else {
-			::sprintf(buffer, "%s %s > %s%s", type, src, group ? "TG" : "", dst);
+			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
 			::lcdPosition(m_fd, 0, 2);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 		}
 	} else if (m_rows == 4U && m_cols == 20U) {
 		char buffer[20U];
 		if (slotNo == 1U) {
-			::sprintf(buffer, "%s %s > %s%s", type, src, group ? "TG" : "", dst);
+			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
 			::lcdPosition(m_fd, 0, 1);
 			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
 		} else {
-			::sprintf(buffer, "%s %s > %s%s", type, src, group ? "TG" : "", dst);
+			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
 			::lcdPosition(m_fd, 0, 2);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 		}
 	} else if (m_rows == 2U && m_cols == 40U) {
 		char buffer[40U];
 		if (slotNo == 1U) {
-			::sprintf(buffer, "%s %s > %s%s", type, src, group ? "TG" : "", dst);
+			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
 			::lcdPosition(m_fd, 0, 0);
 			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
 		} else {
-			::sprintf(buffer, "%s %s > %s%s", type, src, group ? "TG" : "", dst);
+			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
 			::lcdPosition(m_fd, 0, 1);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 		}
