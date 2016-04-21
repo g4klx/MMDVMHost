@@ -417,8 +417,8 @@ void CYSFPayload::decodeVDMode2(unsigned char fn)
 			// Interleave
 			for(unsigned int i = 0U; i < 104U; i++) {
 				unsigned int n = INTERLEAVE_TABLE_26_4[i];
-				bool s = READ_BIT1(m_data, i);
-				//WRITE_BIT1(m_data, offset+n, s);
+				bool s = READ_BIT1(vch, i);
+				WRITE_BIT1(m_data, offset+n, s);
 			}
 		}
 	}
