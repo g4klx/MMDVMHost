@@ -423,7 +423,12 @@ void CYSFPayload::decodeVDMode2(unsigned char fn)
 		}
 	}
 
-	LogMessage("YSF, V/D Mode 2, Repetition FEC %u/270 (%.1f%%)", errors, float(errors) / 270.0F);
+    // "errors" is the number of triplets that were recognized to be corrupted
+    // and that were corrected. There are 27 of those per VCH and 5 VCH per CC,
+    // yielding a total of 27*5 = 135. I believe the expected value of this
+    // error distribution to be Bin(1;3,BER)+Bin(2;3,BER) which entails 75% for
+    // BER = 0.5.
+	LogMessage("YSF, V/D Mode 2, Repetition FEC %u/135 (%.1f%%)", errors, float(errors) / 135.0F);
 
 	unsigned char dch[25U];
 
