@@ -395,7 +395,7 @@ void CYSFPayload::decodeVDMode2(unsigned char fn)
 //		errors += READ_BIT1(vch, 103); // Padding bit must be zero but apparently it is not...
 
 		for(unsigned int i = 0U; i < 81U; i += 3) {
-			uint8_t vote = READ_BIT1(vch, i) + READ_BIT1(vch, i+1) + READ_BIT1(vch, i+2);
+			uint8_t vote = bool(READ_BIT1(vch, i)) + bool(READ_BIT1(vch, i+1)) + bool(READ_BIT1(vch, i+2));
 			if(vote == 1 || vote == 2)
 			{
 				bool decision = vote / 2; // exploit integer division: 1/2 == 0, 2/2 == 1.
