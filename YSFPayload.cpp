@@ -66,6 +66,13 @@ const unsigned int INTERLEAVE_TABLE_5_20[] = {
 	36U, 76U, 116U, 156U, 196U,
 	38U, 78U, 118U, 158U, 198U};
 
+// This one differs from the others in that it interleaves bits and not dibits
+const unsigned int INTERLEAVE_TABLE_26_4[] = {
+	0U, 4U,  8U, 12U, 16U, 20U, 24U, 28U, 32U, 36U, 40U, 44U, 48U, 52U, 56U, 60U, 64U, 68U, 72U, 76U, 80U, 84U, 88U, 92U, 96U, 100U,
+	1U, 5U,  9U, 13U, 17U, 21U, 25U, 29U, 33U, 37U, 41U, 45U, 49U, 53U, 57U, 61U, 65U, 69U, 73U, 77U, 81U, 85U, 89U, 93U, 97U, 101U,
+	2U, 6U, 10U, 14U, 18U, 22U, 26U, 30U, 34U, 38U, 42U, 46U, 50U, 54U, 58U, 62U, 66U, 70U, 74U, 78U, 82U, 86U, 90U, 94U, 98U, 102U,
+	3U, 7U, 11U, 15U, 19U, 23U, 27U, 31U, 35U, 39U, 43U, 47U, 51U, 55U, 59U, 63U, 67U, 71U, 75U, 79U, 83U, 87U, 91U, 95U, 99U, 103U};
+
 const unsigned char WHITENING_DATA[] = {0x93U, 0xD7U, 0x51U, 0x21U, 0x9CU, 0x2FU, 0x6CU, 0xD0U, 0xEFU, 0x0FU,
 										0xF8U, 0x3DU, 0xF1U, 0x73U, 0x20U, 0x94U, 0xEDU, 0x1EU, 0x7CU, 0xD8U};
 
@@ -461,6 +468,62 @@ void CYSFPayload::processVDMode1(unsigned char* data, unsigned char fn)
 
 void CYSFPayload::processVDMode2(unsigned char* data, unsigned char fn)
 {
+	unsigned int errors = 0U;
+	unsigned int offset = 40U; // DCH(0)
+
+	// We have a total of 5 VCH sections, iterate through each
+	for (unsigned int j = 0U; j < 5U; j++, offset += 144U) {
+		unsigned char vch[13U];
+
+		// Deinterleave
+		for(unsigned int i = 0U; i < 104U; i++) {
+			unsigned int n = INTERLEAVE_TABLE_26_4[i];
+			bool s = READ_BIT1(m_data, offset+n);
+			WRITE_BIT1(vch, i, s);
+		}
+
+		// "Un-whiten" (descramble)
+		for (unsigned int i = 0U; i < 13U; i++)
+			vch[i] ^= WHITENING_DATA[i];
+
+//		errors += READ_BIT1(vch, 103); // Padding bit must be zero but apparently it is not...
+
+		for(unsigned int i = 0U; i < 81U; i += 3) {
+			uint8_t vote = bool(READ_BIT1(vch, i)) + bool(READ_BIT1(vch, i+1)) + bool(READ_BIT1(vch, i+2));
+			if(vote == 1 || vote == 2)
+			{
+				bool decision = vote / 2; // exploit integer division: 1/2 == 0, 2/2 == 1.
+				WRITE_BIT1(vch, i,   decision);
+				WRITE_BIT1(vch, i+1, decision);
+				WRITE_BIT1(vch, i+2, decision);
+				errors++;
+			}
+		}
+
+		// Reconstruct only if we have bit errors. Technically we could even
+		// constrain it individually to the 5 VCH sections.
+		if(errors)
+		{
+			// Scramble
+			for (unsigned int i = 0U; i < 13U; i++)
+				vch[i] ^= WHITENING_DATA[i];
+
+			// Interleave
+			for(unsigned int i = 0U; i < 104U; i++) {
+				unsigned int n = INTERLEAVE_TABLE_26_4[i];
+				bool s = READ_BIT1(vch, i);
+				WRITE_BIT1(m_data, offset+n, s);
+			}
+		}
+	}
+
+    // "errors" is the number of triplets that were recognized to be corrupted
+    // and that were corrected. There are 27 of those per VCH and 5 VCH per CC,
+    // yielding a total of 27*5 = 135. I believe the expected value of this
+    // error distribution to be Bin(1;3,BER)+Bin(2;3,BER) which entails 75% for
+    // BER = 0.5.
+	LogMessage("YSF, V/D Mode 2, Repetition FEC %u/135 (%.1f%%)", errors, float(errors) / 135.0F);
+
 	unsigned char dch[25U];
 
 	unsigned char* p1 = data;
