@@ -478,7 +478,7 @@ void CYSFPayload::processVDMode2(unsigned char* data, unsigned char fn)
 		// Deinterleave
 		for(unsigned int i = 0U; i < 104U; i++) {
 			unsigned int n = INTERLEAVE_TABLE_26_4[i];
-			bool s = READ_BIT1(m_data, offset+n);
+			bool s = READ_BIT1(data, offset+n);
 			WRITE_BIT1(vch, i, s);
 		}
 
@@ -512,7 +512,7 @@ void CYSFPayload::processVDMode2(unsigned char* data, unsigned char fn)
 			for(unsigned int i = 0U; i < 104U; i++) {
 				unsigned int n = INTERLEAVE_TABLE_26_4[i];
 				bool s = READ_BIT1(vch, i);
-				WRITE_BIT1(m_data, offset+n, s);
+				WRITE_BIT1(data, offset+n, s);
 			}
 		}
 	}
