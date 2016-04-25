@@ -34,7 +34,6 @@ m_interval(),
 m_frames(0U),
 m_errs(0U),
 m_bits(0U),
-m_headerSeen(false),
 m_source(NULL),
 m_dest(NULL),
 m_payload(),
@@ -87,7 +86,6 @@ bool CYSFControl::writeModem(unsigned char *data)
 		m_frames = 0U;
 		m_errs = 0U;
 		m_bits = 1U;
-		m_headerSeen = false;
 		m_timeoutTimer.start();
 		m_payload.reset();
 		m_state = RS_RF_AUDIO;
@@ -120,7 +118,6 @@ bool CYSFControl::writeModem(unsigned char *data)
 		m_bits += 240U;
 
 		m_frames++;
-		m_headerSeen = true;
 
 		// valid = m_payload.processHeaderData(data + 2U);
 
@@ -245,16 +242,14 @@ bool CYSFControl::writeModem(unsigned char *data)
 			break;
 
 		default:		// YSF_DT_VOICE_FR_MODE
-			if (!m_headerSeen) {
+			if (fn != 0U || ft != 1U) {
 				// The first packet after the header is odd, don't try and regenerate it
-				m_errs += m_payload.processVoiceFRModeAudio(data + 2U);
-				m_bits += 720U;
+				// m_errs += m_payload.processVoiceFRModeAudio(data + 2U);
+				// m_bits += 720U;
 				valid = false;
 			}
 			break;
 		}
-
-		m_headerSeen = false;
 
 		bool change = false;
 
@@ -262,14 +257,14 @@ bool CYSFControl::writeModem(unsigned char *data)
 			if (cm == YSF_CM_GROUP) {
 				m_dest = (unsigned char*)"CQCQCQ    ";
 				change = true;
-			} else {
+			} else if (valid) {
 				m_dest = m_payload.getDest();
 				if (m_dest != NULL)
 					change = true;
 			}
 		}
 
-		if (m_source == NULL) {
+		if (valid && m_source == NULL) {
 			m_source = m_payload.getSource();
 			if (m_source != NULL)
 				change = true;
@@ -322,7 +317,6 @@ bool CYSFControl::writeModem(unsigned char *data)
 		m_bits += 40U;
 
 		m_frames++;
-		m_headerSeen = false;
 
 		if (m_duplex) {
 			data[0U] = TAG_DATA;

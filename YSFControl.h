@@ -52,7 +52,6 @@ private:
 	unsigned int               m_frames;
 	unsigned int               m_errs;
 	unsigned int               m_bits;
-	bool                       m_headerSeen;
 	unsigned char*             m_source;
 	unsigned char*             m_dest;
 	CYSFPayload                m_payload;
