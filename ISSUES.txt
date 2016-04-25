@@ -1,0 +1,19 @@
+ISSUES
+======
+
+The following issues need to be addressed in either the MMDVM firmware or the
+host software.
+
+D-Star
+------
+None known.
+
+DMR
+---
+Bug when receiving a data reply via the network to sent data, blocks a following
+RF data trasmission.
+
+System Fusion
+-------------
+Finish the VW (Voice FR Mode) AMBE FEC.
+Finish the callsign extraction from the header and trailer.
