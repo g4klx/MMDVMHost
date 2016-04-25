@@ -50,6 +50,9 @@ private:
 	CTimer                     m_timeoutTimer;
 	CStopWatch                 m_interval;
 	unsigned int               m_frames;
+	unsigned int               m_errs;
+	unsigned int               m_bits;
+	bool                       m_headerSeen;
 	unsigned char*             m_source;
 	unsigned char*             m_dest;
 	CYSFPayload                m_payload;
@@ -65,7 +68,7 @@ private:
 	bool writeFile(const unsigned char* data);
 	void closeFile();
 
-	unsigned int calculateBER(const unsigned char* orig, const unsigned char* curr) const;
+	unsigned int calculateBER(const unsigned char* orig, const unsigned char* curr, unsigned int length) const;
 };
 
 #endif

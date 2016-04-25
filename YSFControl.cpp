@@ -32,6 +32,9 @@ m_state(RS_RF_LISTENING),
 m_timeoutTimer(1000U, timeout),
 m_interval(),
 m_frames(0U),
+m_errs(0U),
+m_bits(0U),
+m_headerSeen(false),
 m_source(NULL),
 m_dest(NULL),
 m_payload(),
@@ -61,7 +64,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 	unsigned char type = data[0U];
 
 	if (type == TAG_LOST && m_state == RS_RF_AUDIO) {
-		LogMessage("YSF, transmission lost, %.1f seconds", float(m_frames) / 10.0F);
+		LogMessage("YSF, transmission lost, %.1f seconds, BER: %.1f%%", float(m_frames) / 10.0F, float(m_errs * 100U) / float(m_bits));
 
 		if (m_parrot != NULL)
 			m_parrot->end();
@@ -82,6 +85,9 @@ bool CYSFControl::writeModem(unsigned char *data)
 			return false;
 
 		m_frames = 0U;
+		m_errs = 0U;
+		m_bits = 1U;
+		m_headerSeen = false;
 		m_timeoutTimer.start();
 		m_payload.reset();
 		m_state = RS_RF_AUDIO;
@@ -93,6 +99,9 @@ bool CYSFControl::writeModem(unsigned char *data)
 	if (m_state != RS_RF_AUDIO)
 		return false;
 
+	unsigned char orig[YSF_FRAME_LENGTH_BYTES];
+	::memcpy(orig, data + 2U, YSF_FRAME_LENGTH_BYTES);
+
 	unsigned char fi = fich.getFI();
 	if (valid && fi == YSF_FI_HEADER) {
 		CSync::addYSFSync(data + 2U);
@@ -102,14 +111,18 @@ bool CYSFControl::writeModem(unsigned char *data)
 		unsigned char dt = fich.getDT();
 		unsigned char cm = fich.getCM();
 
-		unsigned char orig[YSF_FRAME_LENGTH_BYTES];
-		::memcpy(orig, data + 2U, YSF_FRAME_LENGTH_BYTES);
-
 		fich.encode(data + 2U);
-		// valid = m_payload.processHeader(data + 2U);
 
-		unsigned int errs = calculateBER(orig, data + 2U);
+		unsigned int errs = calculateBER(orig, data + 2U, YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES);
 		LogDebug("YSF, FI=%u FN=%u FT=%u DT=%u BER=%.1f%%", fi, fn, ft, dt, float(errs) / 2.4F);
+
+		m_errs += errs;
+		m_bits += 240U;
+
+		m_frames++;
+		m_headerSeen = true;
+
+		// valid = m_payload.processHeaderData(data + 2U);
 
 		if (m_duplex) {
 			fich.setMR(YSF_MR_BUSY);
@@ -158,16 +171,17 @@ bool CYSFControl::writeModem(unsigned char *data)
 		unsigned char ft = fich.getFT();
 		unsigned char dt = fich.getDT();
 
-		unsigned char orig[YSF_FRAME_LENGTH_BYTES];
-		::memcpy(orig, data + 2U, YSF_FRAME_LENGTH_BYTES);
-
 		fich.encode(data + 2U);
-		// m_payload.processTrailer(data + 2U);
 
-		unsigned int errs = calculateBER(orig, data + 2U);
+		unsigned int errs = calculateBER(orig, data + 2U, YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES);
 		LogDebug("YSF, FI=%u FN=%u FT=%u DT=%u BER=%.1f%%", fi, fn, ft, dt, float(errs) / 2.4F);
 
+		m_errs += errs;
+		m_bits += 240U;
+
 		m_frames++;
+
+		// m_payload.processHeaderData(data + 2U);
 
 		if (m_duplex) {
 			fich.setMR(YSF_MR_BUSY);
@@ -191,7 +205,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 		writeFile(data + 2U);
 #endif
 
-		LogMessage("YSF, received RF end of transmission, %.1f seconds", float(m_frames) / 10.0F);
+		LogMessage("YSF, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_frames) / 10.0F, float(m_errs * 100U) / float(m_bits));
 		writeEndOfTransmission();
 
 		return false;
@@ -203,14 +217,44 @@ bool CYSFControl::writeModem(unsigned char *data)
 		unsigned char ft = fich.getFT();
 		unsigned char dt = fich.getDT();
 
-		unsigned char orig[YSF_FRAME_LENGTH_BYTES];
-		::memcpy(orig, data + 2U, YSF_FRAME_LENGTH_BYTES);
-
 		fich.encode(data + 2U);
-		// m_payload.processData(data + 2U, fn, dt);
 
-		unsigned int errs = calculateBER(orig, data + 2U);
+		unsigned int errs = calculateBER(orig, data + 2U, YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES);
 		LogDebug("YSF, FI=%u FN=%u FT=%u DT=%u BER=%.1f%%", fi, fn, ft, dt, float(errs) / 2.4F);
+
+		m_errs += errs;
+		m_bits += 240U;
+
+		m_frames++;
+
+		switch (dt) {
+		case YSF_DT_VD_MODE1:
+			valid = m_payload.processVDMode1Data(data + 2U, fn);
+			m_errs += m_payload.processVDMode1Audio(data + 2U);
+			m_bits += 235U;
+			break;
+
+		case YSF_DT_VD_MODE2:
+			valid = m_payload.processVDMode2Data(data + 2U, fn);
+			m_errs += m_payload.processVDMode2Audio(data + 2U);
+			m_bits += 135U;
+			break;
+
+		case YSF_DT_DATA_FR_MODE:
+			valid = m_payload.processDataFRModeData(data + 2U, fn);
+			break;
+
+		default:		// YSF_DT_VOICE_FR_MODE
+			if (!m_headerSeen) {
+				// The first packet after the header is odd, don't try and regenerate it
+				m_errs += m_payload.processVoiceFRModeAudio(data + 2U);
+				m_bits += 720U;
+				valid = false;
+			}
+			break;
+		}
+
+		m_headerSeen = false;
 
 		bool change = false;
 
@@ -246,8 +290,6 @@ bool CYSFControl::writeModem(unsigned char *data)
 			}
 		}
 
-		m_frames++;
-
 		if (m_duplex) {
 			fich.setMR(YSF_MR_BUSY);
 			fich.encode(data + 2U);
@@ -272,7 +314,15 @@ bool CYSFControl::writeModem(unsigned char *data)
 	} else {
 		CSync::addYSFSync(data + 2U);
 
+		// Only calculate the BER on the sync word
+		unsigned int errs = calculateBER(orig, data + 2U, YSF_SYNC_LENGTH_BYTES);
+		LogDebug("YSF, invalid FICH, BER=%.1f%%", float(errs) / 0.4F);
+
+		m_errs += errs;
+		m_bits += 40U;
+
 		m_frames++;
+		m_headerSeen = false;
 
 		if (m_duplex) {
 			data[0U] = TAG_DATA;
@@ -422,11 +472,11 @@ void CYSFControl::closeFile()
 	}
 }
 
-unsigned int CYSFControl::calculateBER(const unsigned char* orig, const unsigned char *curr) const
+unsigned int CYSFControl::calculateBER(const unsigned char* orig, const unsigned char *curr, unsigned int length) const
 {
 	unsigned int errors = 0U;
 
-	for (unsigned int i = 0U; i < (YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES); i++) {
+	for (unsigned int i = 0U; i < length; i++) {
 		unsigned char v = orig[i] ^ curr[i];
 		while (v != 0U) {
 			v &= v - 1U;
