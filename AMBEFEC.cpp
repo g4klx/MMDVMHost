@@ -657,7 +657,7 @@ unsigned int CAMBEFEC::regenerateYSF3(unsigned char* bytes) const
 		prn = (prn << 1) | (temp[i] ? 0x01U : 0x00U);
 	prn <<= 4;
 	for (unsigned int i = 23U; i < 137U; i++) {
-		prn = (unsigned short)((173U * prn) + 13849U);
+		prn = ((173U * prn) + 13849U) & 0xFFFFU;
 		temp[i] ^= (prn & 0x80U) == 0x80U;
 	}
 
@@ -714,7 +714,7 @@ unsigned int CAMBEFEC::regenerateYSF3(unsigned char* bytes) const
 		prn = (prn << 1) | (temp[i] ? 0x01U : 0x00U);
 	prn <<= 4;
 	for (unsigned int i = 23U; i < 137U; i++) {
-		prn = (unsigned short)((173U * prn) + 13849U);
+		prn = ((173U * prn) + 13849U) & 0xFFFFU;
 		temp[i] ^= (prn & 0x80U) == 0x80U;
 	}
 
