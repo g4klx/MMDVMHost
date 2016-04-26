@@ -120,6 +120,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 		m_frames++;
 
 		// valid = m_payload.processHeaderData(data + 2U);
+		valid = false;
 
 		if (m_duplex) {
 			fich.setMR(YSF_MR_BUSY);
