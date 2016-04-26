@@ -110,6 +110,9 @@ private:
 	void writeNetworkRF(const unsigned char* data, unsigned char dataType, unsigned char errors = 0U);
 	void writeNetworkRF(const unsigned char* data, unsigned char dataType, FLCO flco, unsigned int srcId, unsigned int dstId, unsigned char errors = 0U);
 
+	void endOfRFData();
+	void endOfNetData();
+
 	void writeEndRF(bool writeEnd = false);
 	void writeEndNet(bool writeEnd = false);
 
