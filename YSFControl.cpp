@@ -247,8 +247,8 @@ bool CYSFControl::writeModem(unsigned char *data)
 				// The first packet after the header is odd, don't try and regenerate it
 				// m_errs += m_payload.processVoiceFRModeAudio(data + 2U);
 				// m_bits += 720U;
-				valid = false;
 			}
+			valid = false;
 			break;
 		}
 
