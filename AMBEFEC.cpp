@@ -1,5 +1,6 @@
 /*
  *   Copyright (C) 2010,2014,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016 Mathias Weyland, HB9FRV
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
