@@ -400,6 +400,8 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			m_rfBits += 141U;
 
+			m_rfFrames++;
+
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
 
@@ -434,6 +436,8 @@ void CDMRSlot::writeModem(unsigned char *data)
 			}
 
 			m_rfBits += 141U;
+
+			m_rfFrames++;
 
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
@@ -514,6 +518,8 @@ void CDMRSlot::writeModem(unsigned char *data)
 				}
 
 				m_rfBits += 141U;
+
+				m_rfFrames++;
 
 				data[0U] = TAG_DATA;
 				data[1U] = 0x00U;
@@ -818,8 +824,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		for (unsigned int i = 0U; i < 8U; i++)
 			writeQueueNet(data);
 
-		writeEndNet();
-
 #if defined(DUMP_DMR)
 		writeFile(data);
 		closeFile();
@@ -828,6 +832,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		m_netFrames += 2U;
 		if (m_netBits == 0U) m_netBits = 1U;
 		LogMessage("DMR Slot %u, received network end of voice transmission, %.1f seconds, %u%% packet loss, BER: %.1f%%", m_slotNo, float(m_netFrames) / 16.667F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
+
+		writeEndNet();
 	} else if (dataType == DT_DATA_HEADER) {
 		if (m_netState == RS_NET_DATA)
 			return;
@@ -943,6 +949,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			writeQueueNet(data);
 
 			m_packetTimer.start();
+
 			m_netFrames++;
 
 			// Save details in case we need to infill data
@@ -992,6 +999,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		writeQueueNet(data);
 
 		m_packetTimer.start();
+
 		m_netFrames++;
 
 		// Save details in case we need to infill data
