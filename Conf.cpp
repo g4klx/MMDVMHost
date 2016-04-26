@@ -51,6 +51,7 @@ m_timeout(120U),
 m_duplex(true),
 m_modeHang(10U),
 m_display(),
+m_NagiosStatusFile(),
 m_rxFrequency(0U),
 m_txFrequency(0U),
 m_power(0U),
@@ -186,6 +187,8 @@ bool CConf::read()
 			m_modeHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Display") == 0)
 			m_display = value;
+		else if (::strcmp(key, "NagiosStatusFile") == 0)
+			m_NagiosStatusFile = value;
 	} else if (section == SECTION_INFO) {
 		if (::strcmp(key, "TXFrequency") == 0)
 			m_txFrequency = (unsigned int)::atoi(value);
@@ -384,6 +387,12 @@ std::string CConf::getDisplay() const
 {
   return m_display;
 }
+
+std::string CConf::getNagiosStatusFile() const
+{
+  return m_NagiosStatusFile;
+}
+
 
 unsigned int CConf::getRxFrequency() const
 {

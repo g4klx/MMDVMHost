@@ -62,6 +62,7 @@ m_height(0),
 m_location(),
 m_description(),
 m_url(),
+m_NagiosStatusFile(),
 m_beacon(false)
 {
 	assert(!address.empty());
@@ -96,7 +97,7 @@ CDMRIPSC::~CDMRIPSC()
 	delete[] m_id;
 }
 
-void CDMRIPSC::setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url)
+void CDMRIPSC::setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url, const std::string& NagiosStatusFile)
 {
 	m_callsign    = callsign;
 	m_rxFrequency = rxFrequency;
@@ -109,6 +110,7 @@ void CDMRIPSC::setConfig(const std::string& callsign, unsigned int rxFrequency, 
 	m_location    = location;
 	m_description = description;
 	m_url         = url;
+	m_NagiosStatusFile = NagiosStatusFile;
 }
 
 bool CDMRIPSC::open()
@@ -398,6 +400,7 @@ void CDMRIPSC::clock(unsigned int ms)
 		m_retryTimer.start();
 		m_pingTimer.stop();
 	}
+	writeNagiosOutput();
 }
 
 bool CDMRIPSC::writeLogin()
@@ -488,3 +491,41 @@ bool CDMRIPSC::write(const unsigned char* data, unsigned int length)
 
 	return m_socket.write(data, length, m_address, m_port);
 }
+
+
+bool CDMRIPSC::writeNagiosOutput()
+{
+	std::ofstream nagiosfile;
+	nagiosfile.open (m_NagiosStatusFile);
+	switch ( m_status ) {
+
+	case RUNNING :
+		nagiosfile << "OK: Logged into the master succesfully" << std::endl;
+		break;
+
+	case DISCONNECTED : 
+		nagiosfile << "Critical: No connection to Master" << std::endl;
+		break;
+	
+	case WAITING_LOGIN :
+		nagiosfile << "Warning: Waiting to login into Master" << std::endl;
+		break;
+	
+	case WAITING_AUTHORISATION :
+		nagiosfile << "Warning: Waiting authorisation with Master" << std::endl;
+		break;
+	
+
+	case WAITING_CONFIG :
+		nagiosfile << "Warning: Waiting something with config and Master" << std::endl;
+		break;
+	
+	default :
+		nagiosfile << "Unknown: No idea of login status" << std::endl;
+		break;
+	
+	}
+	nagiosfile.close();
+	return true;
+}
+
