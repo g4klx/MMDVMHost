@@ -6,7 +6,10 @@ host software.
 
 D-Star
 ------
-None known.
+MMDVMHost does not know the status of a current reflector link when it is
+(re-)started whle ircddbgateway is running. Therefore the information about
+incoming reflector is missing on displays. Current workaround: Unlinking and
+re-linking ircddbgateway while MMDVMHost is running.
 
 DMR
 ---
