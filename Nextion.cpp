@@ -117,6 +117,12 @@ void CNextion::writeDStar(const char* my1, const char* my2, const char* your, co
 			sendCommand(text);
 		}
 	} else if (strcmp(m_size.c_str(), "3.2") == 0) {
+		::sprintf(text, "t1.txt=\"%.8s\"", your);
+		sendCommand(text);
+		if (strcmp(reflector, "        ") != 0) {
+			::sprintf(text, "t2.txt=\"via %.8s\"", reflector);
+			sendCommand(text);
+		}
 	} else if (strcmp(m_size.c_str(), "3.5") == 0) {
 		if (strcmp(reflector, "        ") == 0) {
 			::sprintf(text, "t1.txt=\"%.8s\"", your);
@@ -134,6 +140,8 @@ void CNextion::clearDStar()
 	sendCommand("t0.txt=\"Listening\"");
 	sendCommand("t1.txt=\"\"");
 	if (strcmp(m_size.c_str(), "2.4") == 0) {
+		sendCommand("t2.txt=\"\"");
+	} else if (strcmp(m_size.c_str(), "3.2") == 0) {
 		sendCommand("t2.txt=\"\"");
 	}
 }
