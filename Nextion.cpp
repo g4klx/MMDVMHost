@@ -23,9 +23,10 @@
 #include <cassert>
 #include <cstring>
 
-CNextion::CNextion(const std::string& callsign, unsigned int dmrid, const std::string& port, unsigned int brightness) :
+CNextion::CNextion(const std::string& callsign, unsigned int dmrid, const std::string& size, const std::string& port, unsigned int brightness) :
 m_callsign(callsign),
 m_dmrid(dmrid),
+m_size(size),
 m_serial(port, SERIAL_9600),
 m_brightness(brightness),
 m_mode(MODE_IDLE)
