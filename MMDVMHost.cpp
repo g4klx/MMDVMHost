@@ -588,7 +588,7 @@ void CMMDVMHost::createDisplay()
 		std::string port        = m_conf.getNextionPort();
 		unsigned int brightness = m_conf.getNextionBrightness();
 
-		LogInfo("    Size: %s", size.c_str());
+		LogInfo("    Size: %s\"", size.c_str());
 		LogInfo("    Port: %s", port.c_str());
 		LogInfo("    Brightness: %u", brightness);
 
