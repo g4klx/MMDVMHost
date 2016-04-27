@@ -351,7 +351,7 @@ bool CConf::read()
 	} else if (section == SECTION_NEXTION) {
 		if (::strcmp(key, "Size") == 0)
 			m_nextionSize = value;
-      else if (::strcmp(key, "Port") == 0)
+		else if (::strcmp(key, "Port") == 0)
 			m_nextionPort = value;
 		else if (::strcmp(key, "Brightness") == 0)
 			m_nextionBrightness = (unsigned int)::atoi(value);
