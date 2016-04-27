@@ -112,7 +112,7 @@ void CNextion::writeDStar(const char* my1, const char* my2, const char* your, co
 	if (strcmp(m_size.c_str(), "2.4") == 0) {
 		::sprintf(text, "t1.txt=\"%.8s\"", your);
 		sendCommand(text);
-		if (strcmp(reflector, "        ") == 0) {
+		if (strcmp(reflector, "        ") != 0) {
 			::sprintf(text, "t2.txt=\"via %.8s\"", reflector);
 			sendCommand(text);
 		}
