@@ -109,12 +109,22 @@ void CNextion::writeDStar(const char* my1, const char* my2, const char* your, co
 	::sprintf(text, "t0.txt=\"%s %.8s/%4.4s\"", type, my1, my2);
 	sendCommand(text);
 
-	if (strcmp(reflector, "        ") == 0) {
+	if (strcmp(m_size.c_str(), "2.4") == 0) {
 		::sprintf(text, "t1.txt=\"%.8s\"", your);
-	} else {
-		::sprintf(text, "t1.txt=\"%.8s <- %-8s\"", your, reflector);
+		sendCommand(text);
+		if (strcmp(reflector, "        ") == 0) {
+			::sprintf(text, "t2.txt=\"via %.8s\"", reflector);
+			sendCommand(text);
+		}
+	} else if (strcmp(m_size.c_str(), "3.2") == 0) {
+	} else if (strcmp(m_size.c_str(), "3.5") == 0) {
+		if (strcmp(reflector, "        ") == 0) {
+			::sprintf(text, "t1.txt=\"%.8s\"", your);
+		} else {
+			::sprintf(text, "t1.txt=\"%.8s <- %-8s\"", your, reflector);
+		}
+		sendCommand(text);
 	}
-	sendCommand(text);
 
 	m_mode = MODE_DSTAR;
 }
@@ -123,6 +133,9 @@ void CNextion::clearDStar()
 {
 	sendCommand("t0.txt=\"Listening\"");
 	sendCommand("t1.txt=\"\"");
+	if (strcmp(m_size.c_str(), "2.4") == 0) {
+		sendCommand("t2.txt=\"\"");
+	}
 }
 
 void CNextion::writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
