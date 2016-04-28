@@ -170,9 +170,11 @@ void CTFTSerial::writeDStar(const char* my1, const char* my2, const char* your, 
 	gotoPosPixel(5U, 90U);
 	displayText(text);
 
-	::sprintf(text, "%.8s", reflector);
-	gotoPosPixel(5U, 110U);
-	displayText(text);
+	if (::strcmp(reflector, "        ") != 0) {
+		::sprintf(text, "via %.8s", reflector);
+		gotoPosPixel(5U, 110U);
+		displayText(text);
+	}
 
 	m_mode = MODE_DSTAR;
 }
@@ -186,7 +188,7 @@ void CTFTSerial::clearDStar()
 	displayText("         ");
 
 	gotoPosPixel(5U, 110U);
-	displayText("         ");
+	displayText("             ");
 }
 
 void CTFTSerial::writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
