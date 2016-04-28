@@ -328,18 +328,21 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			writeNetworkRF(data, DT_CSBK, gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
 
+			std::string src = m_lookup->find(srcId);
+			std::string dst = m_lookup->find(dstId);
+
 			switch (csbko) {
 			case CSBKO_UUVREQ:
-				LogMessage("DMR Slot %u, received RF Unit to Unit Voice Service Request CSBK from %u to %u", m_slotNo, srcId, dstId);
+				LogMessage("DMR Slot %u, received RF Unit to Unit Voice Service Request CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG ": "", dst.c_str());
 				break;
 			case CSBKO_UUANSRSP:
-				LogMessage("DMR Slot %u, received RF Unit to Unit Voice Service Answer Response CSBK from %u to %u", m_slotNo, srcId, dstId);
+				LogMessage("DMR Slot %u, received RF Unit to Unit Voice Service Answer Response CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG ": "", dst.c_str());
 				break;
 			case CSBKO_NACKRSP:
-				LogMessage("DMR Slot %u, received RF Negative Acknowledgment Response CSBK from %u to %u", m_slotNo, srcId, dstId);
+				LogMessage("DMR Slot %u, received RF Negative Acknowledgment Response CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG ": "", dst.c_str());
 				break;
 			case CSBKO_PRECCSBK:
-				LogMessage("DMR Slot %u, received RF Preamble CSBK from %u to %s%u", m_slotNo, srcId, gi ? "TG" : "", dstId);
+				LogMessage("DMR Slot %u, received RF Preamble CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG ": "", dst.c_str());
 				break;
 			default:
 				LogWarning("DMR Slot %u, unhandled RF CSBK type - 0x%02X", m_slotNo, csbko);
@@ -1039,18 +1042,21 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		closeFile();
 #endif
 
+		std::string src = m_lookup->find(srcId);
+		std::string dst = m_lookup->find(dstId);
+
 		switch (csbko) {
 		case CSBKO_UUVREQ:
-			LogMessage("DMR Slot %u, received network Unit to Unit Voice Service Request CSBK from %u to %u", m_slotNo, srcId, dstId);
+			LogMessage("DMR Slot %u, received network Unit to Unit Voice Service Request CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG ": "", dst.c_str());
 			break;
 		case CSBKO_UUANSRSP:
-			LogMessage("DMR Slot %u, received network Unit to Unit Voice Service Answer Response CSBK from %u to %u", m_slotNo, srcId, dstId);
+			LogMessage("DMR Slot %u, received network Unit to Unit Voice Service Answer Response CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG ": "", dst.c_str());
 			break;
 		case CSBKO_NACKRSP:
-			LogMessage("DMR Slot %u, received network Negative Acknowledgment Response CSBK from %u to %u", m_slotNo, srcId, dstId);
+			LogMessage("DMR Slot %u, received network Negative Acknowledgment Response CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG ": "", dst.c_str());
 			break;
 		case CSBKO_PRECCSBK:
-			LogMessage("DMR Slot %u, received network Preamble CSBK from %u to %s%u", m_slotNo, srcId, gi ? "TG" : "", dstId);
+			LogMessage("DMR Slot %u, received network Preamble CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG ": "", dst.c_str());
 			break;
 		default:
 			LogWarning("DMR Slot %u, unhandled network CSBK type - 0x%02X", m_slotNo, csbko);
