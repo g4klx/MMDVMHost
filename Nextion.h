@@ -28,7 +28,7 @@
 class CNextion : public IDisplay
 {
 public:
-  CNextion(const std::string& callsign, unsigned int dmrid, const std::string& port, unsigned int brightness);
+  CNextion(const std::string& callsign, unsigned int dmrid, const std::string& size, const std::string& port, unsigned int brightness);
   virtual ~CNextion();
 
   virtual bool open();
@@ -52,6 +52,7 @@ public:
 private:
   std::string       m_callsign;
   unsigned int      m_dmrid;
+  std::string       m_size;
   CSerialController m_serial;
   unsigned int      m_brightness;
   unsigned char     m_mode;

@@ -584,13 +584,15 @@ void CMMDVMHost::createDisplay()
 
 		m_display = new CTFTSerial(callsign, dmrid, port, brightness);
 	} else if (type == "Nextion") {
+		std::string size        = m_conf.getNextionSize();
 		std::string port        = m_conf.getNextionPort();
 		unsigned int brightness = m_conf.getNextionBrightness();
 
+		LogInfo("    Size: %s\"", size.c_str());
 		LogInfo("    Port: %s", port.c_str());
 		LogInfo("    Brightness: %u", brightness);
 
-		m_display = new CNextion(callsign, dmrid, port, brightness);
+		m_display = new CNextion(callsign, dmrid, size, port, brightness);
 #if defined(HD44780)
 	} else if (type == "HD44780") {
 		unsigned int rows    = m_conf.getHD44780Rows();

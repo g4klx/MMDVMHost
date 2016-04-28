@@ -110,6 +110,7 @@ m_tftSerialBrightness(50U),
 m_hd44780Rows(2U),
 m_hd44780Columns(16U),
 m_hd44780Pins(),
+m_nextionSize(),
 m_nextionPort(),
 m_nextionBrightness(50U)
 {
@@ -348,7 +349,9 @@ bool CConf::read()
 			}
 		}
 	} else if (section == SECTION_NEXTION) {
-		if (::strcmp(key, "Port") == 0)
+		if (::strcmp(key, "Size") == 0)
+			m_nextionSize = value;
+		else if (::strcmp(key, "Port") == 0)
 			m_nextionPort = value;
 		else if (::strcmp(key, "Brightness") == 0)
 			m_nextionBrightness = (unsigned int)::atoi(value);
@@ -678,6 +681,11 @@ unsigned int CConf::getHD44780Columns() const
 std::vector<unsigned int> CConf::getHD44780Pins() const
 {
 	return m_hd44780Pins;
+}
+
+std::string CConf::getNextionSize() const
+{
+	return m_nextionSize;
 }
 
 std::string CConf::getNextionPort() const
