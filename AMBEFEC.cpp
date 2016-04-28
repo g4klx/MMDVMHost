@@ -651,15 +651,18 @@ unsigned int CAMBEFEC::regenerateYSF3(unsigned char* bytes) const
 	}
 	bit += 23U;
 
-	// De-whiten some bits
-	unsigned int prn = 0x00U;
-	for (unsigned int i = 0U; i < 12U; i++)
-		prn = (prn << 1) | (temp[i] ? 0x01U : 0x00U);
-	prn <<= 4;
-	for (unsigned int i = 23U; i < 137U; i++) {
-		prn = ((173U * prn) + 13849U) & 0xFFFFU;
-		temp[i] ^= (prn & 0x80U) == 0x80U;
+	bool prn[114U];
+
+	// Create the whitening vector and save it for future use
+	unsigned int p = 16U * c0data;
+	for (unsigned int i = 0U; i < 114U; i++) {
+		p = (173U * p + 13849U) % 65536U;
+		prn[i] = p >= 32768U;
 	}
+
+	// De-whiten some bits
+	for (unsigned int i = 0U; i < 114U; i++)
+		temp[i + 23U] ^= prn[i];
 
 	// c1
 	g1 = 0U;
@@ -709,14 +712,8 @@ unsigned int CAMBEFEC::regenerateYSF3(unsigned char* bytes) const
 	CHamming::decode15113_1(bit);
 
 	// Whiten some bits
-	prn = 0x00U;
-	for (unsigned int i = 0U; i < 12U; i++)
-		prn = (prn << 1) | (temp[i] ? 0x01U : 0x00U);
-	prn <<= 4;
-	for (unsigned int i = 23U; i < 137U; i++) {
-		prn = ((173U * prn) + 13849U) & 0xFFFFU;
-		temp[i] ^= (prn & 0x80U) == 0x80U;
-	}
+	for (unsigned int i = 0U; i < 114U; i++)
+		temp[i + 23U] ^= prn[i];
 
 	unsigned int errors = 0U;
 	for (unsigned int i = 0U; i < 144U; i++) {

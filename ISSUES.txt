@@ -17,5 +17,4 @@ Split transmit and mode hang times.
 
 System Fusion
 -------------
-Finish the VW (Voice FR Mode) AMBE FEC.
 Finish the callsign extraction from the header and trailer.

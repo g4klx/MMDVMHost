@@ -245,8 +245,8 @@ bool CYSFControl::writeModem(unsigned char *data)
 		default:		// YSF_DT_VOICE_FR_MODE
 			if (fn != 0U || ft != 1U) {
 				// The first packet after the header is odd, don't try and regenerate it
-				// m_errs += m_payload.processVoiceFRModeAudio(data + 2U);
-				// m_bits += 720U;
+				m_errs += m_payload.processVoiceFRModeAudio(data + 2U);
+				m_bits += 720U;
 			}
 			valid = false;
 			break;
