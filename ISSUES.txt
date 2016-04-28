@@ -13,6 +13,7 @@ DMR
 Bug when receiving a data reply via the network to sent data, blocks a following
 RF data trasmission.
 Implement the Rate 3/4 Trellis coding for data regeneration.
+Split transmit and mode hang times.
 
 System Fusion
 -------------
