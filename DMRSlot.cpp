@@ -128,10 +128,8 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			CDMRFullLC fullLC;
 			CDMRLC* lc = fullLC.decode(data + 2U, DT_VOICE_LC_HEADER);
-			if (lc == NULL) {
-				LogMessage("DMR Slot %u, unable to decode the RF LC", m_slotNo);
+			if (lc == NULL)
 				return;
-			}
 
 			unsigned int id = lc->getSrcId();
 			if (!validateId(id)) {
@@ -241,10 +239,8 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			CDMRDataHeader dataHeader;
 			bool valid = dataHeader.put(data + 2U);
-			if (!valid) {
-				LogMessage("DMR Slot %u, unable to decode the RF data header", m_slotNo);
+			if (!valid)
 				return;
-			}
 
 			bool gi = dataHeader.getGI();
 			unsigned int srcId = dataHeader.getSrcId();
@@ -297,10 +293,8 @@ void CDMRSlot::writeModem(unsigned char *data)
 		} else if (dataType == DT_CSBK) {
 			CDMRCSBK csbk;
 			bool valid = csbk.put(data + 2U);
-			if (!valid) {
-				LogMessage("DMR Slot %u, unable to decode the RF CSBK", m_slotNo);
+			if (!valid)
 				return;
-			}
 
 			CSBKO csbko = csbk.getCSBKO();
 			if (csbko == CSBKO_BSDWNACT)
@@ -381,9 +375,6 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			if (m_rfFrames == 0U)
 				endOfRFData();
-		} else {
-			// Unhandled data type
-			LogWarning("DMR Slot %u, unhandled RF data type - 0x%02X", m_slotNo, dataType);
 		}
 	} else if (audioSync) {
 		if (m_rfState == RS_RF_AUDIO) {
