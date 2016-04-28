@@ -109,14 +109,7 @@ void CNextion::writeDStar(const char* my1, const char* my2, const char* your, co
 	::sprintf(text, "t0.txt=\"%s %.8s/%4.4s\"", type, my1, my2);
 	sendCommand(text);
 
-	if (m_size == "2.4") {
-		::sprintf(text, "t1.txt=\"%.8s\"", your);
-		sendCommand(text);
-		if (::strcmp(reflector, "        ") != 0) {
-			::sprintf(text, "t2.txt=\"via %.8s\"", reflector);
-			sendCommand(text);
-		}
-	} else if (m_size == "3.2") {
+	if (m_size == "2.4" || m_size == "3.2") {
 		::sprintf(text, "t1.txt=\"%.8s\"", your);
 		sendCommand(text);
 		if (::strcmp(reflector, "        ") != 0) {
