@@ -161,18 +161,17 @@ void CTFTSerial::writeDStar(const char* my1, const char* my2, const char* your, 
 	}
 
 	char text[30U];
-	::sprintf(text, "%s %.8s/%4.4s", type, my1, my2);
 
-	gotoPosPixel(5U, 80U);
+	::sprintf(text, "%s %.8s/%4.4s", type, my1, my2);
+	gotoPosPixel(5U, 70U);
 	displayText(text);
 
-	if (strcmp(reflector, "        ") == 0) {
-		::sprintf(text, "%.8s", your);
-	} else {
-		::sprintf(text, "%.8s <- %.8s", your, reflector);
-	}
+	::sprintf(text, "%.8s", your);
+	gotoPosPixel(5U, 90U);
+	displayText(text);
 
-	gotoPosPixel(5U, 100U);
+	::sprintf(text, "%.8s", reflector);
+	gotoPosPixel(5U, 110U);
 	displayText(text);
 
 	m_mode = MODE_DSTAR;
@@ -180,10 +179,13 @@ void CTFTSerial::writeDStar(const char* my1, const char* my2, const char* your, 
 
 void CTFTSerial::clearDStar()
 {
-	gotoPosPixel(5U, 80U);
+	gotoPosPixel(5U, 70U);
 	displayText("  Listening  ");
 
-	gotoPosPixel(5U, 100U);
+	gotoPosPixel(5U, 90U);
+	displayText("         ");
+
+	gotoPosPixel(5U, 110U);
 	displayText("         ");
 }
 
