@@ -152,7 +152,10 @@ LCDColor(7); //ICE
 void CHD44780::setIdle()
 {
 	::lcdClear(m_fd);
+	
+#ifdef ADAFRUIT_DISPLAY
 LCDColor(1); //WHITE
+#endif
 // WFV
 	if (m_PWM == 1U) {
 		if (m_PWMPin != 1U) {
@@ -174,7 +177,9 @@ LCDColor(1); //WHITE
 
 void CHD44780::setError(const char* text)
 {
-	LCDColor(2); //RED	
+#ifdef ADAFRUIT_DISPLAY
+LCDColor(2); //RED
+#endif
 	assert(text != NULL);
 
 	::lcdClear(m_fd);
@@ -200,7 +205,9 @@ void CHD44780::setError(const char* text)
 
 void CHD44780::setLockout()
 {
-	LCDColor(2); //RED
+#ifdef ADAFRUIT_DISPLAY
+LCDColor(2); //RED
+#endif
 	::lcdClear(m_fd);
 
 	// WFV
@@ -322,7 +329,9 @@ void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 	if (!m_dmr) {
 		::lcdClear(m_fd);
 
-     		LCDColor(3); //GREEN
+#ifdef ADAFRUIT_DISPLAY
+LCDColor(3); //GREEN
+#endif
 		// WFV
 		if (m_PWM == 1U) {
 			if (m_PWMPin != 1U) {
@@ -373,7 +382,11 @@ void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 		}
 	}
 
-	if (m_rows == 2U && m_cols == 16U) {LCDColor(2); //RED
+	if (m_rows == 2U && m_cols == 16U) {
+		
+#ifdef ADAFRUIT_DISPLAY
+LCDColor(2); //RED
+#endif
 
 		char buffer[16U];
 		if (slotNo == 1U) {
@@ -385,7 +398,11 @@ void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 			::lcdPosition(m_fd, 0, 1);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 		}
-	} else if (m_rows == 4U && m_cols == 16U) {LCDColor(2); //RED
+	} else if (m_rows == 4U && m_cols == 16U) {
+		
+#ifdef ADAFRUIT_DISPLAY
+LCDColor(2); //RED
+#endif
 
 		char buffer[16U];
 		if (slotNo == 1U) {
@@ -397,7 +414,11 @@ void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 			::lcdPosition(m_fd, 0, 2);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 		}
-	} else if (m_rows == 4U && m_cols == 20U) {LCDColor(2); //RED
+	} else if (m_rows == 4U && m_cols == 20U) {
+		
+#ifdef ADAFRUIT_DISPLAY
+LCDColor(2); //RED
+#endif
 
 		char buffer[20U];
 		if (slotNo == 1U) {
@@ -409,7 +430,11 @@ void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 			::lcdPosition(m_fd, 0, 2);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 		}
-	} else if (m_rows == 2U && m_cols == 40U) {LCDColor(2); //RED
+	} else if (m_rows == 2U && m_cols == 40U) {
+		
+#ifdef ADAFRUIT_DISPLAY
+LCDColor(2); //RED
+#endif
 
 		char buffer[40U];
 		if (slotNo == 1U) {
@@ -428,7 +453,10 @@ void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 
 void CHD44780::clearDMR(unsigned int slotNo)
 {
+
+#ifdef ADAFRUIT_DISPLAY
 LCDColor(7); //ICE
+#endif
 
 	if (m_rows == 2U && m_cols == 16U) {
 		if (slotNo == 1U) {
