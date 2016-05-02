@@ -70,7 +70,7 @@ bool CHD44780::open()
 		}
 		else {
 			::pinMode(m_PWMPin, PWM_OUTPUT);
-			::pwmWrite(m_PWMPin, m_PWMDim);
+			::pwmWrite(m_PWMPin, (m_PWMDim/100)*1024);
 		}
 	}
 
@@ -117,7 +117,7 @@ void CHD44780::setIdle()
 			::softPwmWrite(m_PWMPin, m_PWMDim);
 		}
 		else {
-			::pwmWrite(m_PWMPin, m_PWMDim);
+			::pwmWrite(m_PWMPin, (m_PWMDim/100)*1024);
 		}
 	}
 
@@ -142,7 +142,7 @@ void CHD44780::setError(const char* text)
 			::softPwmWrite(m_PWMPin, m_PWMBright);
 		}
 		else {
-			::pwmWrite(m_PWMPin, m_PWMBright);
+			::pwmWrite(m_PWMPin, (m_PWMBright/100)*1024);
 		}
 	}
 
@@ -165,7 +165,7 @@ void CHD44780::setLockout()
 			::softPwmWrite(m_PWMPin, m_PWMBright);
 		}
 		else {
-			::pwmWrite(m_PWMPin, m_PWMBright);
+			::pwmWrite(m_PWMPin, (m_PWMBright/100)*1024);
 		}
 	}
 
@@ -194,7 +194,7 @@ void CHD44780::writeDStar(const char* my1, const char* my2, const char* your, co
 			::softPwmWrite(m_PWMPin, m_PWMBright);
 		}
 		else {
-			::pwmWrite(m_PWMPin, m_PWMBright);
+			::pwmWrite(m_PWMPin, (m_PWMBright/100)*1024);
 		}
 	}
 
@@ -282,7 +282,7 @@ void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 				::softPwmWrite(m_PWMPin, m_PWMBright);
 			}
 			else {
-				::pwmWrite(m_PWMPin, m_PWMBright);
+				::pwmWrite(m_PWMPin, (m_PWMBright/100)*1024);
 			}
 		}
 
@@ -425,7 +425,7 @@ void CHD44780::writeFusion(const char* source, const char* dest)
 			::softPwmWrite(m_PWMPin, m_PWMBright);
 		}
 		else {
-			::pwmWrite(m_PWMPin, m_PWMBright);
+			::pwmWrite(m_PWMPin, (m_PWMBright/100)*1024);
 		}
 	}
 
