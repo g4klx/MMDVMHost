@@ -30,6 +30,9 @@
 #ifdef ADAFRUIT_DISPLAY
 #define AF_BASE         100
 #define AF_RED          (AF_BASE + 6)
+#define AF_GREEN        (AF_BASE + 7)
+#define AF_BLUE         (AF_BASE + 8)
+#define AF_RW           (AF_BASE + 14)
 #define AF_RW           (AF_BASE + 14)
 #define MCP23017        0x20
 #endif
