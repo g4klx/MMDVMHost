@@ -3,7 +3,7 @@
 CC      = gcc
 CXX     = g++
 CFLAGS  = -g -O3 -Wall -std=c++0x -DHD44780 -DADAFRUIT_DISPLAY -I/usr/local/include
-LIBS    = -lwiringPi -lwiringPiDev
+LIBS    = -lwiringPi -lwiringPiDev -lpthread
 LDFLAGS = -g -L/usr/local/lib
 
 OBJECTS = \

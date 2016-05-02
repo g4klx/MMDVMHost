@@ -20,6 +20,7 @@
 #include "Log.h"
 
 #include <wiringPi.h>
+#include <softPwm.h>
 #include <lcd.h>
 
 #include <cstdio>
@@ -28,7 +29,7 @@
 
 const char* LISTENING = "Listening                               ";
 
-CHD44780::CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins) :
+CHD44780::CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, unsigned int PWM, unsigned int PWMPin, unsigned int PWMBright, unsigned int PWMDim) :
 m_rows(rows),
 m_cols(cols),
 m_callsign(callsign),
@@ -39,6 +40,13 @@ m_d0(pins.at(2U)),
 m_d1(pins.at(3U)),
 m_d2(pins.at(4U)),
 m_d3(pins.at(5U)),
+
+// WFV
+m_PWM(PWM),
+m_PWMPin(PWMPin),
+m_PWMBright(PWMBright),
+m_PWMDim(PWMDim),
+
 m_fd(-1),
 m_dmr(false)
 {
@@ -53,6 +61,18 @@ CHD44780::~CHD44780()
 bool CHD44780::open()
 {
 	::wiringPiSetup();
+
+	// WFV
+	if (m_PWM == 1U) {
+		if (m_PWMPin != 1U) {
+			::softPwmCreate(m_PWMPin, 0, 100);
+			::softPwmWrite(m_PWMPin, m_PWMDim);
+		}
+		else {
+			::pinMode(m_PWMPin, PWM_OUTPUT);
+			::pwmWrite(m_PWMPin, (m_PWMDim/100)*1024);
+		}
+	}
 
 #ifdef ADAFRUIT_DISPLAY
         adafruitLCDSetup();
@@ -91,6 +111,16 @@ void CHD44780::setIdle()
 {
 	::lcdClear(m_fd);
 
+	// WFV
+	if (m_PWM == 1U) {
+		if (m_PWMPin != 1U) {
+			::softPwmWrite(m_PWMPin, m_PWMDim);
+		}
+		else {
+			::pwmWrite(m_PWMPin, (m_PWMDim/100)*1024);
+		}
+	}
+
 	::lcdPosition(m_fd, 0, 0);
 	::lcdPrintf(m_fd, "%-6s / %u", m_callsign.c_str(), m_dmrid);
 
@@ -106,6 +136,16 @@ void CHD44780::setError(const char* text)
 
 	::lcdClear(m_fd);
 
+	// WFV
+	if (m_PWM == 1U) {
+		if (m_PWMPin != 1U) {
+			::softPwmWrite(m_PWMPin, m_PWMBright);
+		}
+		else {
+			::pwmWrite(m_PWMPin, (m_PWMBright/100)*1024);
+		}
+	}
+
 	::lcdPosition(m_fd, 0, 0);
 	::lcdPuts(m_fd, "MMDVM");
 
@@ -118,6 +158,16 @@ void CHD44780::setError(const char* text)
 void CHD44780::setLockout()
 {
 	::lcdClear(m_fd);
+
+	// WFV
+	if (m_PWM == 1U) {
+		if (m_PWMPin != 1U) {
+			::softPwmWrite(m_PWMPin, m_PWMBright);
+		}
+		else {
+			::pwmWrite(m_PWMPin, (m_PWMBright/100)*1024);
+		}
+	}
 
 	::lcdPosition(m_fd, 0, 0);
 	::lcdPuts(m_fd, "MMDVM");
@@ -137,6 +187,16 @@ void CHD44780::writeDStar(const char* my1, const char* my2, const char* your, co
 	assert(reflector != NULL);
 
 	::lcdClear(m_fd);
+
+	// WFV
+	if (m_PWM == 1U) {
+		if (m_PWMPin != 1U) {
+			::softPwmWrite(m_PWMPin, m_PWMBright);
+		}
+		else {
+			::pwmWrite(m_PWMPin, (m_PWMBright/100)*1024);
+		}
+	}
 
 	::lcdPosition(m_fd, 0, 0);
 	::lcdPuts(m_fd, "D-Star");
@@ -215,6 +275,16 @@ void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 
 	if (!m_dmr) {
 		::lcdClear(m_fd);
+
+		// WFV
+		if (m_PWM == 1U) {
+			if (m_PWMPin != 1U) {
+				::softPwmWrite(m_PWMPin, m_PWMBright);
+			}
+			else {
+				::pwmWrite(m_PWMPin, (m_PWMBright/100)*1024);
+			}
+		}
 
 		if (m_rows == 2U && m_cols == 16U) {
 			if (slotNo == 1U) {
@@ -348,6 +418,16 @@ void CHD44780::writeFusion(const char* source, const char* dest)
 	assert(dest != NULL);
 
 	::lcdClear(m_fd);
+
+	// WFV
+	if (m_PWM == 1U) {
+		if (m_PWMPin != 1U) {
+			::softPwmWrite(m_PWMPin, m_PWMBright);
+		}
+		else {
+			::pwmWrite(m_PWMPin, (m_PWMBright/100)*1024);
+		}
+	}
 
 	::lcdPosition(m_fd, 0, 0);
 	::lcdPuts(m_fd, "System Fusion");

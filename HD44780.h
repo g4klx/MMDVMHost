@@ -37,7 +37,7 @@
 class CHD44780 : public IDisplay
 {
 public:
-  CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins);
+  CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, unsigned int PWM, unsigned int PWMPin, unsigned int PWMBright, unsigned int PWMDim);
   virtual ~CHD44780();
 
   virtual bool open();
@@ -69,6 +69,13 @@ private:
 	unsigned int m_d1;
 	unsigned int m_d2;
 	unsigned int m_d3;
+
+	// WFV
+	unsigned int m_PWM;
+	unsigned int m_PWMPin;
+	unsigned int m_PWMBright;
+	unsigned int m_PWMDim;
+
 	int          m_fd;
 	bool         m_dmr;
 
