@@ -97,21 +97,63 @@ void CHD44780::adafruitLCDSetup()
     // The other control pins are initialised with lcdInit ()
     ::mcp23017Setup (AF_BASE, MCP23017);
 
-    // Backlight LEDs, Only one color (RED)
-    pinMode (AF_RED,   OUTPUT);
-    digitalWrite (AF_RED,   LOW); // The colour outputs are inverted.
+    // Backlight LEDs    
+
+pinMode (AF_RED,   OUTPUT);
+pinMode (AF_GREEN, OUTPUT);
+pinMode (AF_BLUE, OUTPUT);
+
 
     // Control signals
     pinMode (AF_RW, OUTPUT);
     digitalWrite (AF_RW, LOW);
 }
+
+
+
+
+
+
+void LCDColor(int color)
+{
+//VERY SIMPLE COLOR FUNCTION
+// By Giorgio 
+//OFF
+if (color==0){digitalWrite (AF_RED,   HIGH);digitalWrite (AF_GREEN,   HIGH);digitalWrite (AF_BLUE,   HIGH);} //  OFF
+//BASIC
+if (color==1){digitalWrite (AF_RED,   LOW);digitalWrite (AF_GREEN,   LOW);digitalWrite (AF_BLUE,   LOW);} // WHITE
+if (color==2){digitalWrite (AF_RED,   LOW);digitalWrite (AF_GREEN,   HIGH);digitalWrite (AF_BLUE,   HIGH);} // RED
+if (color==3){digitalWrite (AF_RED,   HIGH);digitalWrite (AF_GREEN,   LOW);digitalWrite (AF_BLUE,   HIGH);} // GREEN
+if (color==4){digitalWrite (AF_RED,   HIGH);digitalWrite (AF_GREEN,   HIGH);digitalWrite (AF_BLUE,   LOW);} // BLUE
+//SPECIAL
+if (color==5){digitalWrite (AF_RED,   LOW);digitalWrite (AF_GREEN,   HIGH);digitalWrite (AF_BLUE,   LOW);} // PURPLE 
+if (color==6){digitalWrite (AF_RED,   LOW);digitalWrite (AF_GREEN,   LOW);digitalWrite (AF_BLUE,   HIGH);} // YELLOW
+if (color==7){digitalWrite (AF_RED,   HIGH);digitalWrite (AF_GREEN,   LOW);digitalWrite (AF_BLUE,   LOW);} // ICE
+
+// USE WITH:
+/*
+LCDColor(0); //OFF
+LCDColor(1); //WHITE
+LCDColor(2); //RED
+LCDColor(3); //GREEN
+LCDColor(4); //BLUE
+LCDColor(5); //PURPLE
+LCDColor(6); //YELLOW
+LCDColor(7); //ICE
+*/
+
+}
+
+
 #endif
+
+
 
 void CHD44780::setIdle()
 {
 	::lcdClear(m_fd);
-
-	// WFV
+LCDColor(1); //WHITE
+// WFV
 	if (m_PWM == 1U) {
 		if (m_PWMPin != 1U) {
 			::softPwmWrite(m_PWMPin, m_PWMDim);
@@ -132,6 +174,7 @@ void CHD44780::setIdle()
 
 void CHD44780::setError(const char* text)
 {
+	LCDColor(2); //RED	
 	assert(text != NULL);
 
 	::lcdClear(m_fd);
@@ -157,6 +200,7 @@ void CHD44780::setError(const char* text)
 
 void CHD44780::setLockout()
 {
+	LCDColor(2); //RED
 	::lcdClear(m_fd);
 
 	// WFV
@@ -248,6 +292,7 @@ void CHD44780::writeDStar(const char* my1, const char* my2, const char* your, co
 
 void CHD44780::clearDStar()
 {
+
 	if (m_rows == 2U && m_cols == 16U) {
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
@@ -271,11 +316,13 @@ void CHD44780::clearDStar()
 
 void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
+	
 	assert(type != NULL);
 
 	if (!m_dmr) {
 		::lcdClear(m_fd);
 
+     		LCDColor(3); //GREEN
 		// WFV
 		if (m_PWM == 1U) {
 			if (m_PWMPin != 1U) {
@@ -326,29 +373,32 @@ void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 		}
 	}
 
-	if (m_rows == 2U && m_cols == 16U) {
+	if (m_rows == 2U && m_cols == 16U) {LCDColor(2); //RED
+
 		char buffer[16U];
 		if (slotNo == 1U) {
-			::sprintf(buffer, "%s > %s%s", src.c_str(), group ? "TG" : "", dst.c_str());
+			::sprintf(buffer, "%s >%s%s", src.c_str(), group ? "TG" : "", dst.c_str());
 			::lcdPosition(m_fd, 0, 0);
 			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
 		} else {
-			::sprintf(buffer, "%s > %s%s", src.c_str(), group ? "TG" : "", dst.c_str());
+			::sprintf(buffer, "%s >%s%s", src.c_str(), group ? "TG" : "", dst.c_str());
 			::lcdPosition(m_fd, 0, 1);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 		}
-	} else if (m_rows == 4U && m_cols == 16U) {
+	} else if (m_rows == 4U && m_cols == 16U) {LCDColor(2); //RED
+
 		char buffer[16U];
 		if (slotNo == 1U) {
-			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
+			::sprintf(buffer, "%s %s >%s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
 			::lcdPosition(m_fd, 0, 1);
 			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
 		} else {
-			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
+			::sprintf(buffer, "%s %s >%s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
 			::lcdPosition(m_fd, 0, 2);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 		}
-	} else if (m_rows == 4U && m_cols == 20U) {
+	} else if (m_rows == 4U && m_cols == 20U) {LCDColor(2); //RED
+
 		char buffer[20U];
 		if (slotNo == 1U) {
 			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
@@ -359,7 +409,8 @@ void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 			::lcdPosition(m_fd, 0, 2);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 		}
-	} else if (m_rows == 2U && m_cols == 40U) {
+	} else if (m_rows == 2U && m_cols == 40U) {LCDColor(2); //RED
+
 		char buffer[40U];
 		if (slotNo == 1U) {
 			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
@@ -377,6 +428,8 @@ void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 
 void CHD44780::clearDMR(unsigned int slotNo)
 {
+LCDColor(7); //ICE
+
 	if (m_rows == 2U && m_cols == 16U) {
 		if (slotNo == 1U) {
 			::lcdPosition(m_fd, 0, 0);
