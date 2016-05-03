@@ -119,7 +119,7 @@ public:
   std::vector<unsigned int> getHD44780Pins() const;
 
   // WFV
-	unsigned int getHD44780PWM() const;
+  unsigned int getHD44780PWM() const;
   unsigned int getHD44780PWMPin() const;
   unsigned int getHD44780PWMBright() const;
   unsigned int getHD44780PWMDim() const;
