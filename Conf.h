@@ -117,9 +117,7 @@ public:
   unsigned int getHD44780Rows() const;
   unsigned int getHD44780Columns() const;
   std::vector<unsigned int> getHD44780Pins() const;
-
-  // WFV
-  unsigned int getHD44780PWM() const;
+  bool         getHD44780PWM() const;
   unsigned int getHD44780PWMPin() const;
   unsigned int getHD44780PWMBright() const;
   unsigned int getHD44780PWMDim() const;
@@ -206,9 +204,7 @@ private:
   unsigned int m_hd44780Rows;
   unsigned int m_hd44780Columns;
   std::vector<unsigned int> m_hd44780Pins;
-
-	//WFV
-  unsigned int m_hd44780PWM;
+  bool         m_hd44780PWM;
   unsigned int m_hd44780PWMPin;
   unsigned int m_hd44780PWMBright;
   unsigned int m_hd44780PWMDim;

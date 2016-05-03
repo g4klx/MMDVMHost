@@ -26,6 +26,17 @@
 
 #include <mcp23017.h>
 
+enum ADAFRUIT_COLOUR {
+	AC_OFF,
+	AC_WHITE,
+	AC_RED,
+	AC_GREEN,
+	AC_BLUE,
+	AC_PURPLE,
+	AC_YELLOW,
+	AC_ICE
+};
+
 // Defines for the Adafruit Pi LCD interface board
 #ifdef ADAFRUIT_DISPLAY
 #define AF_BASE         100
@@ -40,7 +51,7 @@
 class CHD44780 : public IDisplay
 {
 public:
-  CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, unsigned int PWM, unsigned int PWMPin, unsigned int PWMBright, unsigned int PWMDim);
+  CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim);
   virtual ~CHD44780();
 
   virtual bool open();
@@ -72,20 +83,17 @@ private:
 	unsigned int m_d1;
 	unsigned int m_d2;
 	unsigned int m_d3;
-
-	// WFV
-	unsigned int m_PWM;
-	unsigned int m_PWMPin;
-	unsigned int m_PWMBright;
-	unsigned int m_PWMDim;
-
+	bool         m_pwm;
+	unsigned int m_pwmPin;
+	unsigned int m_pwmBright;
+	unsigned int m_pwmDim;
 	int          m_fd;
 	bool         m_dmr;
 
 #ifdef ADAFRUIT_DISPLAY
-    void adafruitLCDSetup();
+  void adafruitLCDSetup();
+  void adafruitLCDColour(ADAFRUIT_COLOUR colour);
 #endif
-
 };
 
 #endif

@@ -29,7 +29,7 @@
 
 const char* LISTENING = "Listening                               ";
 
-CHD44780::CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, unsigned int PWM, unsigned int PWMPin, unsigned int PWMBright, unsigned int PWMDim) :
+CHD44780::CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim) :
 m_rows(rows),
 m_cols(cols),
 m_callsign(callsign),
@@ -40,13 +40,10 @@ m_d0(pins.at(2U)),
 m_d1(pins.at(3U)),
 m_d2(pins.at(4U)),
 m_d3(pins.at(5U)),
-
-// WFV
-m_PWM(PWM),
-m_PWMPin(PWMPin),
-m_PWMBright(PWMBright),
-m_PWMDim(PWMDim),
-
+m_pwm(pwm),
+m_pwmPin(pwmPin),
+m_pwmBright(pwmBright),
+m_pwmDim(pwmDim),
 m_fd(-1),
 m_dmr(false)
 {
@@ -62,20 +59,18 @@ bool CHD44780::open()
 {
 	::wiringPiSetup();
 
-	// WFV
-	if (m_PWM == 1U) {
-		if (m_PWMPin != 1U) {
-			::softPwmCreate(m_PWMPin, 0, 100);
-			::softPwmWrite(m_PWMPin, m_PWMDim);
-		}
-		else {
-			::pinMode(m_PWMPin, PWM_OUTPUT);
-			::pwmWrite(m_PWMPin, (m_PWMDim/100)*1024);
+	if (m_pwm) {
+		if (m_pwmPin != 1U) {
+			::softPwmCreate(m_pwmPin, 0, 100);
+			::softPwmWrite(m_pwmPin, m_pwmDim);
+		} else {
+			::pinMode(m_pwmPin, PWM_OUTPUT);
+			::pwmWrite(m_pwmPin, (m_pwmDim / 100) * 1024);
 		}
 	}
 
 #ifdef ADAFRUIT_DISPLAY
-        adafruitLCDSetup();
+  adafruitLCDSetup();
 #endif
 
 	m_fd = ::lcdInit(m_rows, m_cols, 4, m_rb, m_strb, m_d0, m_d1, m_d2, m_d3, 0, 0, 0, 0);
@@ -94,76 +89,81 @@ bool CHD44780::open()
 #ifdef ADAFRUIT_DISPLAY
 void CHD44780::adafruitLCDSetup()
 {
-    // The other control pins are initialised with lcdInit ()
-    ::mcp23017Setup (AF_BASE, MCP23017);
+    // The other control pins are initialised with lcdInit()
+    ::mcp23017Setup(AF_BASE, MCP23017);
 
     // Backlight LEDs    
-
-pinMode (AF_RED,   OUTPUT);
-pinMode (AF_GREEN, OUTPUT);
-pinMode (AF_BLUE, OUTPUT);
-
+    ::pinMode(AF_RED,   OUTPUT);
+    ::pinMode(AF_GREEN, OUTPUT);
+    ::pinMode(AF_BLUE,  OUTPUT);
 
     // Control signals
-    pinMode (AF_RW, OUTPUT);
-    digitalWrite (AF_RW, LOW);
+    ::pinMode(AF_RW, OUTPUT);
+    ::digitalWrite(AF_RW, LOW);
 }
 
-
-
-
-
-
-void LCDColor(int color)
+void CHD44780::adafruitLCDColour(ADAFRUIT_COLOUR colour)
 {
-//VERY SIMPLE COLOR FUNCTION
-// By Giorgio 
-//OFF
-if (color==0){digitalWrite (AF_RED,   HIGH);digitalWrite (AF_GREEN,   HIGH);digitalWrite (AF_BLUE,   HIGH);} //  OFF
-//BASIC
-if (color==1){digitalWrite (AF_RED,   LOW);digitalWrite (AF_GREEN,   LOW);digitalWrite (AF_BLUE,   LOW);} // WHITE
-if (color==2){digitalWrite (AF_RED,   LOW);digitalWrite (AF_GREEN,   HIGH);digitalWrite (AF_BLUE,   HIGH);} // RED
-if (color==3){digitalWrite (AF_RED,   HIGH);digitalWrite (AF_GREEN,   LOW);digitalWrite (AF_BLUE,   HIGH);} // GREEN
-if (color==4){digitalWrite (AF_RED,   HIGH);digitalWrite (AF_GREEN,   HIGH);digitalWrite (AF_BLUE,   LOW);} // BLUE
-//SPECIAL
-if (color==5){digitalWrite (AF_RED,   LOW);digitalWrite (AF_GREEN,   HIGH);digitalWrite (AF_BLUE,   LOW);} // PURPLE 
-if (color==6){digitalWrite (AF_RED,   LOW);digitalWrite (AF_GREEN,   LOW);digitalWrite (AF_BLUE,   HIGH);} // YELLOW
-if (color==7){digitalWrite (AF_RED,   HIGH);digitalWrite (AF_GREEN,   LOW);digitalWrite (AF_BLUE,   LOW);} // ICE
-
-// USE WITH:
-/*
-LCDColor(0); //OFF
-LCDColor(1); //WHITE
-LCDColor(2); //RED
-LCDColor(3); //GREEN
-LCDColor(4); //BLUE
-LCDColor(5); //PURPLE
-LCDColor(6); //YELLOW
-LCDColor(7); //ICE
-*/
-
+	switch (colour) {
+		 case AC_OFF:
+		 		::digitalWrite(AF_RED, HIGH);
+		 		::digitalWrite(AF_GREEN, HIGH);
+		 		::digitalWrite(AF_BLUE, HIGH);
+		 		break;
+		 case AC_WHITE:
+		 		::digitalWrite(AF_RED, LOW);
+		 		::digitalWrite(AF_GREEN, LOW);
+		 		::digitalWrite(AF_BLUE, LOW);
+		 		break;
+		 case AC_RED:
+		 		::digitalWrite(AF_RED, LOW);
+		 		::digitalWrite(AF_GREEN, HIGH);
+		 		::digitalWrite(AF_BLUE, HIGH);
+		 		break;
+		 case AC_GREEN:
+		 		::digitalWrite(AF_RED, HIGH);
+		 		::digitalWrite(AF_GREEN, LOW);
+		 		::digitalWrite(AF_BLUE, HIGH);
+		 		break;
+		 case AC_BLUE:
+		 		::digitalWrite(AF_RED, HIGH);
+		 		::digitalWrite(AF_GREEN, HIGH);
+		 		::digitalWrite(AF_BLUE, LOW);
+		 		break;
+		 case AC_PURPLE:
+		 		::digitalWrite(AF_RED, LOW);
+		 		::digitalWrite(AF_GREEN, HIGH);
+		 		::digitalWrite(AF_BLUE, LOW);
+		 		break;
+		 case AC_YELLOW:
+		 		::digitalWrite(AF_RED, LOW);
+		 		::digitalWrite(AF_GREEN, LOW);
+		 		::digitalWrite(AF_BLUE, HIGH);
+		 		break;
+		 case AC_ICE:
+		 		::digitalWrite(AF_RED, HIGH);
+		 		::digitalWrite(AF_GREEN, LOW);
+		 		::digitalWrite(AF_BLUE, LOW);
+		 		break;
+		 default:
+		 	break;
+	}
 }
-
-
 #endif
-
-
 
 void CHD44780::setIdle()
 {
 	::lcdClear(m_fd);
 	
 #ifdef ADAFRUIT_DISPLAY
-LCDColor(1); //WHITE
+  adafruittLCDColour(AC_WHITE);
 #endif
-// WFV
-	if (m_PWM == 1U) {
-		if (m_PWMPin != 1U) {
-			::softPwmWrite(m_PWMPin, m_PWMDim);
-		}
-		else {
-			::pwmWrite(m_PWMPin, (m_PWMDim/100)*1024);
-		}
+
+	if (m_pwm) {
+		if (m_pwmPin != 1U)
+			::softPwmWrite(m_pwmPin, m_pwmDim);
+		else
+			::pwmWrite(m_pwmPin, (m_pwmDim / 100) * 1024);
 	}
 
 	::lcdPosition(m_fd, 0, 0);
@@ -177,21 +177,19 @@ LCDColor(1); //WHITE
 
 void CHD44780::setError(const char* text)
 {
-#ifdef ADAFRUIT_DISPLAY
-LCDColor(2); //RED
-#endif
 	assert(text != NULL);
+
+#ifdef ADAFRUIT_DISPLAY
+  adafruitLCDColour(AC_RED);
+#endif
 
 	::lcdClear(m_fd);
 
-	// WFV
-	if (m_PWM == 1U) {
-		if (m_PWMPin != 1U) {
-			::softPwmWrite(m_PWMPin, m_PWMBright);
-		}
-		else {
-			::pwmWrite(m_PWMPin, (m_PWMBright/100)*1024);
-		}
+	if (m_pwm) {
+		if (m_pwmPin != 1U)
+			::softPwmWrite(m_pwmPin, m_pwmBright);
+		else
+			::pwmWrite(m_pwmPin, (m_pwmBright / 100) * 1024);
 	}
 
 	::lcdPosition(m_fd, 0, 0);
@@ -206,18 +204,16 @@ LCDColor(2); //RED
 void CHD44780::setLockout()
 {
 #ifdef ADAFRUIT_DISPLAY
-LCDColor(2); //RED
+	adafruitLCDColour(AC_RED);
 #endif
+
 	::lcdClear(m_fd);
 
-	// WFV
-	if (m_PWM == 1U) {
-		if (m_PWMPin != 1U) {
-			::softPwmWrite(m_PWMPin, m_PWMBright);
-		}
-		else {
-			::pwmWrite(m_PWMPin, (m_PWMBright/100)*1024);
-		}
+	if (m_pwm) {
+		if (m_pwmPin != 1U)
+			::softPwmWrite(m_pwmPin, m_pwmBright);
+		else
+			::pwmWrite(m_pwmPin, (m_pwmBright / 100) * 1024);
 	}
 
 	::lcdPosition(m_fd, 0, 0);
@@ -237,16 +233,17 @@ void CHD44780::writeDStar(const char* my1, const char* my2, const char* your, co
 	assert(type != NULL);
 	assert(reflector != NULL);
 
+#ifdef ADAFRUIT_DISPLAY
+		adafruitLCDColour(AC_RED);
+#endif
+
 	::lcdClear(m_fd);
 
-	// WFV
-	if (m_PWM == 1U) {
-		if (m_PWMPin != 1U) {
-			::softPwmWrite(m_PWMPin, m_PWMBright);
-		}
-		else {
-			::pwmWrite(m_PWMPin, (m_PWMBright/100)*1024);
-		}
+	if (m_pwm) {
+		if (m_pwmPin != 1U)
+			::softPwmWrite(m_pwmPin, m_pwmBright);
+		else
+			::pwmWrite(m_pwmPin, (m_pwmBright / 100) * 1024);
 	}
 
 	::lcdPosition(m_fd, 0, 0);
@@ -263,11 +260,11 @@ void CHD44780::writeDStar(const char* my1, const char* my2, const char* your, co
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
 
-		if (strcmp(reflector, "        ") == 0) {
+		if (strcmp(reflector, "        ") == 0)
 			::sprintf(buffer, "%.8s", your);
-		} else {
+		else
 			::sprintf(buffer, "%.8s<%.8s", your, reflector);
-		}
+
 		::lcdPosition(m_fd, 0, 2);
 		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
 	} else if (m_rows == 4U && m_cols == 20U) {
@@ -276,20 +273,20 @@ void CHD44780::writeDStar(const char* my1, const char* my2, const char* your, co
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
 
-		if (strcmp(reflector, "        ") == 0) {
+		if (strcmp(reflector, "        ") == 0)
 			::sprintf(buffer, "%.8s", your);
-		} else {
+		else
 			::sprintf(buffer, "%.8s <- %.8s", your, reflector);
-		}
+
 		::lcdPosition(m_fd, 0, 2);
 		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
 	} else if (m_rows == 2 && m_cols == 40U) {
 		char buffer[40U];
-		if (strcmp(reflector, "        ") == 0) {
+		if (strcmp(reflector, "        ") == 0)
 			::sprintf(buffer, "%s %.8s/%.4s > %.8s", type, my1, my2, your);
-		} else {
+		else
 			::sprintf(buffer, "%s %.8s/%.4s > %.8s via %.8s", type, my1, my2, your, reflector);
-		}
+
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
 	}
@@ -299,6 +296,9 @@ void CHD44780::writeDStar(const char* my1, const char* my2, const char* your, co
 
 void CHD44780::clearDStar()
 {
+#ifdef ADAFRUIT_DISPLAY
+	adafruitLCDColour(AC_ICE);
+#endif
 
 	if (m_rows == 2U && m_cols == 16U) {
 		::lcdPosition(m_fd, 0, 1);
@@ -323,23 +323,20 @@ void CHD44780::clearDStar()
 
 void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
-	
 	assert(type != NULL);
 
 	if (!m_dmr) {
 		::lcdClear(m_fd);
 
 #ifdef ADAFRUIT_DISPLAY
-LCDColor(3); //GREEN
+		adafruitLCDColour(AC_GREEN);
 #endif
-		// WFV
-		if (m_PWM == 1U) {
-			if (m_PWMPin != 1U) {
-				::softPwmWrite(m_PWMPin, m_PWMBright);
-			}
-			else {
-				::pwmWrite(m_PWMPin, (m_PWMBright/100)*1024);
-			}
+
+		if (m_pwm) {
+			if (m_pwmPin != 1U)
+				::softPwmWrite(m_pwmPin, m_pwmBright);
+			else
+				::pwmWrite(m_pwmPin, (m_pwmBright / 100) * 1024);
 		}
 
 		if (m_rows == 2U && m_cols == 16U) {
@@ -354,6 +351,7 @@ LCDColor(3); //GREEN
 		} else if (m_rows == 4U && m_cols == 16U) {
 			::lcdPosition(m_fd, 0, 0);
 			::lcdPuts(m_fd, "DMR");
+
 			if (slotNo == 1U) {
 				::lcdPosition(m_fd, 0, 2);
 				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
@@ -364,6 +362,7 @@ LCDColor(3); //GREEN
 		} else if (m_rows == 4U && m_cols == 20U) {
 			::lcdPosition(m_fd, 0, 0);
 			::lcdPuts(m_fd, "DMR");
+
 			if (slotNo == 1U) {
 				::lcdPosition(m_fd, 0, 2);
 				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
@@ -383,9 +382,8 @@ LCDColor(3); //GREEN
 	}
 
 	if (m_rows == 2U && m_cols == 16U) {
-		
 #ifdef ADAFRUIT_DISPLAY
-LCDColor(2); //RED
+		adafruitLCDColour(AC_RED);
 #endif
 
 		char buffer[16U];
@@ -399,9 +397,8 @@ LCDColor(2); //RED
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 		}
 	} else if (m_rows == 4U && m_cols == 16U) {
-		
 #ifdef ADAFRUIT_DISPLAY
-LCDColor(2); //RED
+		adafruitLCDColour(AC_RED);
 #endif
 
 		char buffer[16U];
@@ -415,9 +412,8 @@ LCDColor(2); //RED
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 		}
 	} else if (m_rows == 4U && m_cols == 20U) {
-		
 #ifdef ADAFRUIT_DISPLAY
-LCDColor(2); //RED
+		adafruitLCDColour(AC_RED);
 #endif
 
 		char buffer[20U];
@@ -431,9 +427,8 @@ LCDColor(2); //RED
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 		}
 	} else if (m_rows == 2U && m_cols == 40U) {
-		
 #ifdef ADAFRUIT_DISPLAY
-LCDColor(2); //RED
+		adafruitLCDColour(AC_RED);
 #endif
 
 		char buffer[40U];
@@ -453,9 +448,8 @@ LCDColor(2); //RED
 
 void CHD44780::clearDMR(unsigned int slotNo)
 {
-
 #ifdef ADAFRUIT_DISPLAY
-LCDColor(7); //ICE
+	adafruitLCDColour(AC_ICE);
 #endif
 
 	if (m_rows == 2U && m_cols == 16U) {
@@ -498,16 +492,17 @@ void CHD44780::writeFusion(const char* source, const char* dest)
 	assert(source != NULL);
 	assert(dest != NULL);
 
+#ifdef ADAFRUIT_DISPLAY
+		adafruitLCDColour(AC_RED);
+#endif
+
 	::lcdClear(m_fd);
 
-	// WFV
-	if (m_PWM == 1U) {
-		if (m_PWMPin != 1U) {
-			::softPwmWrite(m_PWMPin, m_PWMBright);
-		}
-		else {
-			::pwmWrite(m_PWMPin, (m_PWMBright/100)*1024);
-		}
+	if (m_pwm) {
+		if (m_pwmPin != 1U)
+			::softPwmWrite(m_pwmPin, m_pwmBright);
+		else
+			::pwmWrite(m_pwmPin, (m_pwmBright / 100) * 1024);
 	}
 
 	::lcdPosition(m_fd, 0, 0);
@@ -549,6 +544,10 @@ void CHD44780::writeFusion(const char* source, const char* dest)
 
 void CHD44780::clearFusion()
 {
+#ifdef ADAFRUIT_DISPLAY
+	adafruitLCDColour(AC_ICE);
+#endif
+
 	if (m_rows == 2U && m_cols == 16U) {
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);

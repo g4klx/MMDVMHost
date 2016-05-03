@@ -105,17 +105,17 @@ m_fusionNetworkEnabled(false),
 m_fusionNetworkAddress(),
 m_fusionNetworkPort(0U),
 m_fusionNetworkDebug(false),
-m_tftSerialPort(),
+m_tftSerialPort("/dev/ttyAMA0"),
 m_tftSerialBrightness(50U),
 m_hd44780Rows(2U),
 m_hd44780Columns(16U),
 m_hd44780Pins(),
-m_hd44780PWM(),
+m_hd44780PWM(false),
 m_hd44780PWMPin(),
 m_hd44780PWMBright(),
 m_hd44780PWMDim(),
-m_nextionSize(),
-m_nextionPort(),
+m_nextionSize("2.4"),
+m_nextionPort("/dev/ttyAMA0"),
 m_nextionBrightness(50U)
 {
 }
@@ -344,17 +344,14 @@ bool CConf::read()
 			m_hd44780Rows = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Columns") == 0)
 			m_hd44780Columns = (unsigned int)::atoi(value);
-
-		// WFV
 		else if (::strcmp(key, "PWM") == 0)
-			m_hd44780PWM = (unsigned int)::atoi(value);
+			m_hd44780PWM = ::atoi(value) == 1;
 		else if (::strcmp(key, "PWMPin") == 0)
 			m_hd44780PWMPin = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "PWMBright") == 0)
 			m_hd44780PWMBright = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "PWMDim") == 0)
 			m_hd44780PWMDim = (unsigned int)::atoi(value);
-
 		else if (::strcmp(key, "Pins") == 0) {
 			char* p = ::strtok(value, ",\r\n");
 			while (p != NULL) {
@@ -698,8 +695,7 @@ std::vector<unsigned int> CConf::getHD44780Pins() const
 	return m_hd44780Pins;
 }
 
-// WFV
-unsigned int CConf::getHD44780PWM() const
+bool CConf::getHD44780PWM() const
 {
 	return m_hd44780PWM;
 }

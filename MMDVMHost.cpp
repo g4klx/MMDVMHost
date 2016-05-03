@@ -572,12 +572,6 @@ void CMMDVMHost::createDisplay()
 	std::string callsign   = m_conf.getCallsign();
 	unsigned int dmrid     = m_conf.getDMRId();
 
-	// WFV
-	unsigned int PWM       = m_conf.getHD44780PWM();
-	unsigned int PWMPin    = m_conf.getHD44780PWMPin();
-	unsigned int PWMBright = m_conf.getHD44780PWMBright();
-	unsigned int PWMDim    = m_conf.getHD44780PWMDim();
-
 	LogInfo("Display Parameters");
 	LogInfo("    Type: %s", type.c_str());
 
@@ -604,21 +598,24 @@ void CMMDVMHost::createDisplay()
 		unsigned int rows    = m_conf.getHD44780Rows();
 		unsigned int columns = m_conf.getHD44780Columns();
 		std::vector<unsigned int> pins = m_conf.getHD44780Pins();
+		bool pwm = m_conf.getHD44780PWM();
+		unsigned int pwmPin = m_conf.getHD44780PWMPin();
+		unsigned int pwmBright = m_conf.getHD44780PWMBright();
+		unsigned int pwmDim = m_conf.getHD44780PWMDim();
 
 		if (pins.size() == 6U) {
 			LogInfo("    Rows: %u", rows);
 			LogInfo("    Columns: %u", columns);
 			LogInfo("    Pins: %u,%u,%u,%u,%u,%u", pins.at(0U), pins.at(1U), pins.at(2U), pins.at(3U), pins.at(4U), pins.at(5U));
 
-			// WFV
-			if (PWM == 1U) {
+			if (pwm) {
 				LogInfo("PWM Brightness Control Enabled");
-				LogInfo("    PWM Pin: %u", PWMPin);
-				LogInfo("    PWM Bright: %u", PWMBright);
-				LogInfo("    PWM Dim: %u", PWMDim);
+				LogInfo("    PWM Pin: %u", pwmPin);
+				LogInfo("    PWM Bright: %u", pwmBright);
+				LogInfo("    PWM Dim: %u", pwmDim);
 			}
 
-			m_display = new CHD44780(rows, columns, callsign, dmrid, pins, PWM, PWMPin, PWMBright, PWMDim);
+			m_display = new CHD44780(rows, columns, callsign, dmrid, pins, pwm, pwmPin, pwmBright, pwmDim);
 		}
 #endif
 	} else {
