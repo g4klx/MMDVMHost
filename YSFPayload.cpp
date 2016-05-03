@@ -129,7 +129,7 @@ bool CYSFPayload::processHeaderData(unsigned char* data)
 	}
 
 	unsigned char output[23U];
-	conv.chainback(output, 180U);
+	conv.chainback(output, 176U);
 
 	bool valid = CCRC::checkCCITT162(output, 22U);
 	if (valid) {
