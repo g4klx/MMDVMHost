@@ -25,15 +25,26 @@
 #include <cstdint>
 
 const unsigned int INTERLEAVE_TABLE_9_20[] = {
-	 0U, 18U, 36U, 54U, 72U,  90U, 108U, 126U, 144U, 162U, 180U, 198U, 216U, 234U, 252U, 270U, 288U, 306U, 324U, 342U,
-	 2U, 20U, 38U, 56U, 74U,  92U, 110U, 128U, 146U, 164U, 182U, 200U, 218U, 236U, 254U, 272U, 290U, 308U, 326U, 344U,
-	 4U, 22U, 40U, 58U, 76U,  94U, 112U, 130U, 148U, 166U, 184U, 202U, 220U, 238U, 256U, 274U, 292U, 310U, 328U, 346U,
-	 6U, 24U, 42U, 60U, 78U,  96U, 114U, 132U, 150U, 168U, 186U, 204U, 222U, 240U, 258U, 276U, 294U, 312U, 330U, 348U,
-	 8U, 26U, 44U, 62U, 80U,  98U, 116U, 134U, 152U, 170U, 188U, 206U, 224U, 242U, 260U, 278U, 296U, 314U, 332U, 350U,
-	10U, 28U, 46U, 64U, 82U, 100U, 118U, 136U, 154U, 172U, 190U, 208U, 226U, 244U, 262U, 280U, 298U, 316U, 334U, 352U,
-	12U, 30U, 48U, 66U, 84U, 102U, 120U, 138U, 156U, 174U, 192U, 210U, 228U, 246U, 264U, 282U, 300U, 318U, 336U, 354U,
-	14U, 32U, 50U, 68U, 86U, 104U, 122U, 140U, 158U, 176U, 194U, 212U, 230U, 248U, 266U, 284U, 302U, 320U, 338U, 356U,
-	16U, 34U, 52U, 70U, 88U, 106U, 124U, 142U, 160U, 178U, 196U, 214U, 232U, 250U, 268U, 286U, 304U, 322U, 340U, 358U};
+        0U, 40U,  80U, 120U, 160U, 200U, 240U, 280U, 320U, 
+        2U, 42U,  82U, 122U, 162U, 202U, 242U, 282U, 322U,
+        4U, 44U,  84U, 124U, 164U, 204U, 244U, 284U, 324U,
+        6U, 46U,  86U, 126U, 166U, 206U, 246U, 286U, 326U,
+        8U, 48U,  88U, 128U, 168U, 208U, 248U, 288U, 328U,
+       10U, 50U,  90U, 130U, 170U, 210U, 250U, 290U, 330U,
+       12U, 52U,  92U, 132U, 172U, 212U, 252U, 292U, 332U,
+       14U, 54U,  94U, 134U, 174U, 214U, 254U, 294U, 334U,
+       16U, 56U,  96U, 136U, 176U, 216U, 256U, 296U, 336U,
+       18U, 58U,  98U, 138U, 178U, 218U, 258U, 298U, 338U,
+       20U, 60U, 100U, 140U, 180U, 220U, 260U, 300U, 340U,
+       22U, 62U, 102U, 142U, 182U, 222U, 262U, 302U, 342U,
+       24U, 64U, 104U, 144U, 184U, 224U, 264U, 304U, 344U,
+       26U, 66U, 106U, 146U, 186U, 226U, 266U, 306U, 346U,
+       28U, 68U, 108U, 148U, 188U, 228U, 268U, 308U, 348U,
+       30U, 70U, 110U, 150U, 190U, 230U, 270U, 310U, 350U,
+       32U, 72U, 112U, 152U, 192U, 232U, 272U, 312U, 352U,
+       34U, 74U, 114U, 154U, 194U, 234U, 274U, 314U, 354U,
+       36U, 76U, 116U, 156U, 196U, 236U, 276U, 316U, 356U,
+       38U, 78U, 118U, 158U, 198U, 238U, 278U, 318U, 358U};
 
 const unsigned int INTERLEAVE_TABLE_5_20[] = {
 	0U, 40U,  80U, 120U, 160U,
@@ -118,24 +129,24 @@ bool CYSFPayload::processHeaderData(unsigned char* data)
 	}
 
 	unsigned char output[23U];
-	conv.chainback(output, 180U);
+	conv.chainback(output, 176U);
 
 	bool valid = CCRC::checkCCITT162(output, 22U);
 	if (valid) {
 		for (unsigned int i = 0U; i < 20U; i++)
 			output[i] ^= WHITENING_DATA[i];
 
-		CUtils::dump(1U, "Header, Source", output + 0U, 10U);
-		CUtils::dump(1U, "Header, Destination", output + 10U, 10U);
-
-		if (m_source == NULL) {
-			m_source = new unsigned char[10U];
-			::memcpy(m_source, output + 0U, 10U);
-		}
+		CUtils::dump(1U, "Header, Destination", output + 0U, 10U);
+		CUtils::dump(1U, "Header, Source", output + 10U, 10U);
 
 		if (m_dest == NULL) {
 			m_dest = new unsigned char[10U];
-			::memcpy(m_dest, output + 10U, 10U);
+			::memcpy(m_dest, output + 0U, 10U);
+		}
+
+		if (m_source == NULL) {
+			m_source = new unsigned char[10U];
+			::memcpy(m_source, output + 10U, 10U);
 		}
 
 		for (unsigned int i = 0U; i < 20U; i++)
