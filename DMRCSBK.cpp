@@ -66,32 +66,32 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 	case CSBKO_BSDWNACT:
 		m_bsId  = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
 		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U]; 
-		CUtils::dump(1U, "Downlink Activate CSBK", m_data, 12U);
+		// CUtils::dump(1U, "Downlink Activate CSBK", m_data, 12U);
 		break;
 
 	case CSBKO_UUVREQ:
 		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
 		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
-		CUtils::dump(1U, "Unit to Unit Service Request CSBK", m_data, 12U);
+		// CUtils::dump(1U, "Unit to Unit Service Request CSBK", m_data, 12U);
 		break;
 
 	case CSBKO_UUANSRSP:
 		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
 		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
-		CUtils::dump(1U, "Unit to Unit Service Answer Response CSBK", m_data, 12U);
+		// CUtils::dump(1U, "Unit to Unit Service Answer Response CSBK", m_data, 12U);
 		break;
 
 	case CSBKO_PRECCSBK:
 		m_GI    = (m_data[2U] & 0x40U) == 0x40U;
 		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
 		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
-		CUtils::dump(1U, "Preamble CSBK", m_data, 12U);
+		// CUtils::dump(1U, "Preamble CSBK", m_data, 12U);
 		break;
 
 	case CSBKO_NACKRSP:
 		m_srcId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
 		m_dstId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
-		CUtils::dump(1U, "Negative Acknowledge Response CSBK", m_data, 12U);
+		// CUtils::dump(1U, "Negative Acknowledge Response CSBK", m_data, 12U);
 		break;
 
 	default:
