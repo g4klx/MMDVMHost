@@ -165,6 +165,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			if (m_duplex) {
 				writeQueueRF(data);
 				writeQueueRF(data);
+				writeQueueRF(data);
 			}
 
 			writeNetworkRF(data, DT_VOICE_LC_HEADER);
@@ -223,10 +224,10 @@ void CDMRSlot::writeModem(unsigned char *data)
 			writeNetworkRF(data, DT_TERMINATOR_WITH_LC);
 			writeNetworkRF(data, DT_TERMINATOR_WITH_LC);
 
-			// 480ms of terminator to space things out
 			if (m_duplex) {
-				for (unsigned int i = 0U; i < 8U; i++)
-					writeQueueRF(data);
+				writeQueueRF(data);
+				writeQueueRF(data);
+				writeQueueRF(data);
 			}
 
 			if (m_rfBits == 0U) m_rfBits = 1U;
@@ -489,6 +490,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 				if (m_duplex) {
 					writeQueueRF(start);
 					writeQueueRF(start);
+					writeQueueRF(start);
 				}
 
 				writeNetworkRF(start, DT_VOICE_LC_HEADER);
@@ -570,11 +572,12 @@ void CDMRSlot::endOfRFData()
 
 		m_rfDataHeader.getTerminator(bytes + 2U);
 
-		bytes[0U] = TAG_DATA;
+		bytes[0U] = TAG_EOT;
 		bytes[1U] = 0x00U;
 
-		for (unsigned int i = 0U; i < 5U; i++)
-			writeQueueRF(bytes);
+		writeQueueRF(bytes);
+		writeQueueRF(bytes);
+		writeQueueRF(bytes);
 	}
 
 	writeEndRF();
@@ -610,12 +613,12 @@ void CDMRSlot::writeEndRF(bool writeEnd)
 			slotType.setDataType(DT_TERMINATOR_WITH_LC);
 			slotType.getData(data + 2U);
 
-			data[0U] = TAG_DATA;
+			data[0U] = TAG_EOT;
 			data[1U] = 0x00U;
 
-			// 480ms of terminator to space things out
-			for (unsigned int i = 0U; i < 8U; i++)
-				writeQueueRF(data);
+			writeQueueRF(data);
+			writeQueueRF(data);
+			writeQueueRF(data);
 		}
 	}
 
@@ -639,11 +642,12 @@ void CDMRSlot::endOfNetData()
 
 		m_netDataHeader.getTerminator(bytes + 2U);
 
-		bytes[0U] = TAG_DATA;
+		bytes[0U] = TAG_EOT;
 		bytes[1U] = 0x00U;
 
-		for (unsigned int i = 0U; i < 5U; i++)
-			writeQueueNet(bytes);
+		writeQueueNet(bytes);
+		writeQueueNet(bytes);
+		writeQueueNet(bytes);
 	}
 
 	writeEndNet();
@@ -681,12 +685,12 @@ void CDMRSlot::writeEndNet(bool writeEnd)
 		slotType.setDataType(DT_TERMINATOR_WITH_LC);
 		slotType.getData(data + 2U);
 
-		data[0U] = TAG_DATA;
+		data[0U] = TAG_EOT;
 		data[1U] = 0x00U;
 
-		// 480ms of terminator to space things out
-		for (unsigned int i = 0U; i < 8U; i++)
-			writeQueueNet(data);
+		writeQueueNet(data);
+		writeQueueNet(data);
+		writeQueueNet(data);
 	}
 
 	delete m_netLC;
@@ -746,10 +750,12 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		m_netBits = 1U;
 		m_netErrs = 0U;
 
-		// 300ms of idle to give breathing space for lost frames
-		for (unsigned int i = 0U; i < 5U; i++)
-			writeQueueNet(m_idle);
+		writeQueueNet(m_idle);
+		writeQueueNet(m_idle);
+		writeQueueNet(m_idle);
+		writeQueueNet(m_idle);
 
+		writeQueueNet(data);
 		writeQueueNet(data);
 		writeQueueNet(data);
 
@@ -814,9 +820,9 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		data[0U] = TAG_EOT;
 		data[1U] = 0x00U;
 
-		// 480ms of terminator to space things out
-		for (unsigned int i = 0U; i < 8U; i++)
-			writeQueueNet(data);
+		writeQueueNet(data);
+		writeQueueNet(data);
+		writeQueueNet(data);
 
 #if defined(DUMP_DMR)
 		writeFile(data);
@@ -889,9 +895,30 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 			m_netTimeoutTimer.start();
 
-			// 540ms of idle to give breathing space for lost frames
-			for (unsigned int i = 0U; i < 9U; i++)
-				writeQueueNet(m_idle);
+			writeQueueNet(m_idle);
+			writeQueueNet(m_idle);
+			writeQueueNet(m_idle);
+			writeQueueNet(m_idle);
+
+			// Create a dummy start frame
+			unsigned char start[DMR_FRAME_LENGTH_BYTES + 2U];
+
+			CSync::addDMRDataSync(start + 2U);
+
+			CDMRFullLC fullLC;
+			fullLC.encode(*m_netLC, start + 2U, DT_VOICE_LC_HEADER);
+
+			CDMRSlotType slotType;
+			slotType.setColorCode(m_colorCode);
+			slotType.setDataType(DT_VOICE_LC_HEADER);
+			slotType.getData(start + 2U);
+
+			start[0U] = TAG_DATA;
+			start[1U] = 0x00U;
+
+			writeQueueRF(start);
+			writeQueueRF(start);
+			writeQueueRF(start);
 
 #if defined(DUMP_DMR)
 			openFile();
