@@ -133,7 +133,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			unsigned int id = lc->getSrcId();
 			if (!validateId(id)) {
-				LogMessage("DMR Slot %u, invalid access atemmpt from %u", m_slotNo, id);
+				LogMessage("DMR Slot %u, invalid access atempt from %u", m_slotNo, id);
 				delete lc;
 				return;
 			}
@@ -247,7 +247,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			unsigned int dstId = dataHeader.getDstId();
 
 			if (!validateId(srcId)) {
-				LogMessage("DMR Slot %u, invalid access atemmpt from %u", m_slotNo, srcId);
+				LogMessage("DMR Slot %u, invalid access atempt from %u", m_slotNo, srcId);
 				return;
 			}
 
@@ -305,7 +305,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			unsigned int dstId = csbk.getDstId();
 
 			if (!validateId(srcId)) {
-				LogMessage("DMR Slot %u, invalid access atemmpt from %u", m_slotNo, srcId);
+				LogMessage("DMR Slot %u, invalid access atempt from %u", m_slotNo, srcId);
 				return;
 			}
 
@@ -453,7 +453,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			if (lc != NULL) {
 				unsigned int id = lc->getSrcId();
 				if (!validateId(id)) {
-					LogMessage("DMR Slot %u, invalid access atemmpt from %u", m_slotNo, id);
+					LogMessage("DMR Slot %u, invalid access atempt from %u", m_slotNo, id);
 					delete lc;
 					return;
 				}
