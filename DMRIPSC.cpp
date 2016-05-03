@@ -350,10 +350,8 @@ void CDMRIPSC::clock(unsigned int ms)
 			}
 		} else if (::memcmp(m_buffer, "MSTCL",   5U) == 0) {
 			LogError("Master is closing down");
-			m_status = DISCONNECTED;		// XXX
-			m_timeoutTimer.stop();
-			m_retryTimer.stop();
-			m_pingTimer.stop();
+			close();
+			open();
 		} else if (::memcmp(m_buffer, "MSTPONG", 7U) == 0) {
 			m_timeoutTimer.start();
 		} else if (::memcmp(m_buffer, "RPTSBKN", 7U) == 0) {
@@ -393,10 +391,8 @@ void CDMRIPSC::clock(unsigned int ms)
 	m_timeoutTimer.clock(ms);
 	if (m_timeoutTimer.isRunning() && m_timeoutTimer.hasExpired()) {
 		LogError("Connection to the master has timed out, retrying connection");
-		m_status = WAITING_LOGIN;
-		m_timeoutTimer.start();
-		m_retryTimer.start();
-		m_pingTimer.stop();
+		close();
+		open();
 	}
 }
 
