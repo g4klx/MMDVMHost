@@ -136,17 +136,17 @@ bool CYSFPayload::processHeaderData(unsigned char* data)
 		for (unsigned int i = 0U; i < 20U; i++)
 			output[i] ^= WHITENING_DATA[i];
 
-		CUtils::dump(1U, "Header, Source", output + 0U, 10U);
-		CUtils::dump(1U, "Header, Destination", output + 10U, 10U);
-
-		if (m_source == NULL) {
-			m_source = new unsigned char[10U];
-			::memcpy(m_source, output + 0U, 10U);
-		}
+		CUtils::dump(1U, "Header, Destination", output + 0U, 10U);
+		CUtils::dump(1U, "Header, Source", output + 10U, 10U);
 
 		if (m_dest == NULL) {
 			m_dest = new unsigned char[10U];
-			::memcpy(m_dest, output + 10U, 10U);
+			::memcpy(m_dest, output + 0U, 10U);
+		}
+
+		if (m_source == NULL) {
+			m_source = new unsigned char[10U];
+			::memcpy(m_source, output + 10U, 10U);
 		}
 
 		for (unsigned int i = 0U; i < 20U; i++)
