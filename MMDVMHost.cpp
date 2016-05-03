@@ -38,37 +38,52 @@
 #if !defined(_WIN32) && !defined(_WIN64)
 #include <unistd.h>
 #include <signal.h>
+#include <fcntl.h>
+#endif
+
+#if defined(_WIN32) || defined(_WIN64)
+const char* DEFAULT_INI_FILE = "mmdvm.ini";
+#else
+const char* DEFAULT_INI_FILE = "/etc/mmdvm.ini";
 #endif
 
 static bool m_killed = false;
+static int  m_signal = 0;
 
 #if !defined(_WIN32) && !defined(_WIN64)
-static void sigHandler(int)
+static void sigHandler(int signum)
 {
   m_killed = true;
+  m_signal = signum;
 }
 #endif
 
 const char* HEADER1 = "This software is for use on amateur radio networks only,";
 const char* HEADER2 = "it is to be used for educational purposes only. Its use on";
 const char* HEADER3 = "commercial networks is strictly prohibited.";
-const char* HEADER4 = "Copyright(C) 2015, 2016 by Jonathan Naylor, G4KLX";
+const char* HEADER4 = "Copyright(C) 2015, 2016 by Jonathan Naylor, G4KLX and others";
 
 int main(int argc, char** argv)
 {
-  if (argc == 1) {
-    ::fprintf(stderr, "Usage: MMDVMHost <conf file>\n");
-    return 1;
-  }
+  const char* iniFile = DEFAULT_INI_FILE;
+  if (argc > 1)
+	iniFile = argv[1];
 
 #if !defined(_WIN32) && !defined(_WIN64)
-  ::signal(SIGUSR1, sigHandler);
+  ::signal(SIGTERM, sigHandler);
+  ::signal(SIGHUP,  sigHandler);
 #endif
 
-  CMMDVMHost* host = new CMMDVMHost(std::string(argv[1]));
+  CMMDVMHost* host = new CMMDVMHost(std::string(iniFile));
   int ret2 = host->run();
 
   delete host;
+
+  if (m_signal == 15)
+	  ::LogInfo("Caught SIGTERM. Exiting");
+
+  if (m_signal == 1)
+	  ::LogInfo("Caught SIGHUP. Exiting");
 
   ::LogFinalise();
 
@@ -107,6 +122,30 @@ int CMMDVMHost::run()
 		::fprintf(stderr, "MMDVMHost: unable to open the log file\n");
 		return 1;
 	}
+
+#if !defined(_WIN32) && !defined(_WIN64)
+	bool m_daemon = m_conf.getDaemon();
+	if (m_daemon) {
+		// Create new process
+		pid_t pid = ::fork();
+		if (pid == -1)
+			return -1;
+		else if (pid != 0)
+			exit(EXIT_SUCCESS);
+
+		// Create new session and process group
+		if (::setsid() == -1)
+			return -1;
+
+		// Set the working directory to the root directory
+		if (::chdir("/") == -1)
+			return -1;
+
+		::close(STDIN_FILENO);
+		::close(STDOUT_FILENO);
+		::close(STDERR_FILENO);
+	}
+#endif
 
 	LogInfo(HEADER1);
 	LogInfo(HEADER2);

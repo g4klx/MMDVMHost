@@ -36,6 +36,7 @@ public:
   bool         getDuplex() const;
   unsigned int getModeHang() const;
   std::string  getDisplay() const;
+  bool         getDaemon() const;
 
   // The Info section
   unsigned int getRxFrequency() const;
@@ -134,6 +135,7 @@ private:
   bool         m_duplex;
   unsigned int m_modeHang;
   std::string  m_display;
+  bool         m_daemon;
 
   unsigned int m_rxFrequency;
   unsigned int m_txFrequency;

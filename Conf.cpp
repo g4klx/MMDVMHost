@@ -51,6 +51,7 @@ m_timeout(120U),
 m_duplex(true),
 m_modeHang(10U),
 m_display(),
+m_daemon(false),
 m_rxFrequency(0U),
 m_txFrequency(0U),
 m_power(0U),
@@ -191,6 +192,8 @@ bool CConf::read()
 			m_modeHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Display") == 0)
 			m_display = value;
+		else if (::strcmp(key, "Daemon") == 0)
+			m_daemon = ::atoi(value) == 1;
 	} else if (section == SECTION_INFO) {
 		if (::strcmp(key, "TXFrequency") == 0)
 			m_txFrequency = (unsigned int)::atoi(value);
@@ -398,6 +401,11 @@ unsigned int CConf::getModeHang() const
 std::string CConf::getDisplay() const
 {
   return m_display;
+}
+
+bool CConf::getDaemon() const
+{
+	return m_daemon;
 }
 
 unsigned int CConf::getRxFrequency() const
