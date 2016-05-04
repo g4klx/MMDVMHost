@@ -272,7 +272,7 @@ bool CYSFPayload::processVDMode1Data(unsigned char* data, unsigned char fn)
 	}
 
 	unsigned char output[23U];
-	conv.chainback(output, 180U);
+	conv.chainback(output, 176U);
 
 	bool ret = CCRC::checkCCITT162(output, 22U);
 	if (ret) {
@@ -554,7 +554,7 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn)
 	}
 
 	unsigned char output[23U];
-	conv.chainback(output, 180U);
+	conv.chainback(output, 176U);
 
 	bool ret1 = CCRC::checkCCITT162(output, 22U);
 	if (ret1) {
@@ -635,7 +635,7 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn)
 		conv.decode(s0, s1);
 	}
 
-	conv.chainback(output, 180U);
+	conv.chainback(output, 176U);
 
 	bool ret2 = CCRC::checkCCITT162(output, 22U);
 
