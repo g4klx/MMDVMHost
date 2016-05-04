@@ -295,6 +295,12 @@ void CDMRIPSC::clock(unsigned int ms)
 	in_addr address;
 	unsigned int port;
 	int length = m_socket.read(m_buffer, BUFFER_LENGTH, address, port);
+	if (length < 0) {
+		LogError("Socket has failed, retrying connection");
+		close();
+		open();
+		return;
+	}
 
 	// if (m_debug && length > 0)
 	//	CUtils::dump(1U, "IPSC Received", m_buffer, length);
