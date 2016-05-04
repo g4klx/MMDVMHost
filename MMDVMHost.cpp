@@ -74,20 +74,26 @@ int main(int argc, char** argv)
   ::signal(SIGHUP,  sigHandler);
 #endif
 
-  CMMDVMHost* host = new CMMDVMHost(std::string(iniFile));
-  int ret2 = host->run();
+  int ret = 0;
 
-  delete host;
+  do {
+	  m_signal = 0;
 
-  if (m_signal == 15)
-	  ::LogInfo("Caught SIGTERM. Exiting");
+	  CMMDVMHost* host = new CMMDVMHost(std::string(iniFile));
+	  ret = host->run();
 
-  if (m_signal == 1)
-	  ::LogInfo("Caught SIGHUP. Exiting");
+	  delete host;
+
+	  if (m_signal == 15)
+		  ::LogInfo("Caught SIGTERM, exiting");
+
+	  if (m_signal == 1)
+		  ::LogInfo("Caught SIGHUP, restarting");
+  } while (m_signal == 1);
 
   ::LogFinalise();
 
-  return ret2;
+  return ret;
 }
 
 CMMDVMHost::CMMDVMHost(const std::string& confFile) :
