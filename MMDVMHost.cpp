@@ -44,7 +44,7 @@
 #if defined(_WIN32) || defined(_WIN64)
 const char* DEFAULT_INI_FILE = "mmdvm.ini";
 #else
-const char* DEFAULT_INI_FILE = "/etc/mmdvm.ini";
+const char* DEFAULT_INI_FILE = "/etc/MMDVM.ini";
 #endif
 
 static bool m_killed = false;
