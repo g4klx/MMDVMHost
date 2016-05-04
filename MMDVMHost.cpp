@@ -39,6 +39,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <pwd.h>
 #endif
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -134,22 +135,61 @@ int CMMDVMHost::run()
 	if (m_daemon) {
 		// Create new process
 		pid_t pid = ::fork();
-		if (pid == -1)
-			return -1;
+		if (pid == -1) {
+			    ::LogMessage("Couldn't fork() , exiting");
+			    return -1;
+		    }
 		else if (pid != 0)
 			exit(EXIT_SUCCESS);
 
 		// Create new session and process group
-		if (::setsid() == -1)
-			return -1;
+		if (::setsid() == -1){
+			    ::LogMessage("Couldn't setsid(), exiting");
+			    return -1;
+		    }
 
 		// Set the working directory to the root directory
-		if (::chdir("/") == -1)
-			return -1;
+		if (::chdir("/") == -1){
+			    ::LogMessage("Couldn't cd /, exiting");
+			    return -1;
+		    }
 
 		::close(STDIN_FILENO);
 		::close(STDOUT_FILENO);
 		::close(STDERR_FILENO);
+		
+		//If we are currently root...
+		if (getuid() == 0) {
+		    //get UID for mmdvm user
+		    uid_t mmdvm_uid = getpwnam("mmdvm")->pw_uid;
+		    if (mmdvm_uid == NULL) {
+			    ::LogMessage("Could not get mmdvm UID, exiting");
+			    return -1;
+		    }
+		    //get GID for mmdvm user
+		    gid_t mmdvm_gid = getpwnam("mmdvm")->pw_gid;
+		    if (mmdvm_gid == NULL) {
+			    ::LogMessage("Could not get mmdvm GID, exiting");
+			    return -1;
+		    }
+		    
+		    //Set user and group ID's to mmdvm:mmdvm
+		    if (setgid(mmdvm_gid) != 0) {
+			    ::LogMessage("Could not set mmdvm GID, exiting");
+			    return -1;
+		    }
+		    if (setuid(mmdvm_uid) != 0) {
+			    ::LogMessage("Could not set mmdvm UID, exiting");
+			    return -1;
+		    }
+		    
+		    //Double check it worked (AKA Paranoia) 
+		    if (setuid(0) != -1){
+			    ::LogMessage("It's possible to regain root - something is wrong!, exiting");
+			    return -1;
+		    }
+		
+		}
 	}
 #endif
 
