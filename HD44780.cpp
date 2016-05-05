@@ -411,7 +411,7 @@ void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 //				::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
 				::lcdPrintf(m_fd, "%-16s", buffer);
 
-				::sprintf(buffer, "To  : %s", dst.c_str());
+				::sprintf(buffer, "To  : %s%s", group ? "TG" : "", dst.c_str());
 				::lcdPosition(m_fd, 0, 1);
 //				::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
 				::lcdPrintf(m_fd, "%-16s", buffer);
