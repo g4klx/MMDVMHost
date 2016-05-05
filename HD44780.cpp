@@ -29,7 +29,7 @@
 
 const char* LISTENING = "Listening                               ";
 
-CHD44780::CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim) :
+CHD44780::CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim, bool dvmegaDisplay) :
 m_rows(rows),
 m_cols(cols),
 m_callsign(callsign),
@@ -44,6 +44,7 @@ m_pwm(pwm),
 m_pwmPin(pwmPin),
 m_pwmBright(pwmBright),
 m_pwmDim(pwmDim),
+m_dvmegaDisplay(dvmegaDisplay),
 m_fd(-1),
 m_dmr(false)
 {
@@ -345,8 +346,11 @@ void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
 			} else {
 				::lcdPosition(m_fd, 0, 0);
-				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
-
+				if (m_dvmegaDisplay) {
+					::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
+				else
+					::lcdPuts(m_fd, "DMR");
+				}
 			}
 		} else if (m_rows == 4U && m_cols == 16U) {
 			::lcdPosition(m_fd, 0, 0);
@@ -387,14 +391,21 @@ void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 #endif
 
 		char buffer[16U];
-		if (slotNo == 1U) {
-			::sprintf(buffer, "%s >%s%s", src.c_str(), group ? "TG" : "", dst.c_str());
-			::lcdPosition(m_fd, 0, 0);
-			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
-		} else {
-			::sprintf(buffer, "%s >%s%s", src.c_str(), group ? "TG" : "", dst.c_str());
-			::lcdPosition(m_fd, 0, 1);
-			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
+		if (!m_dvmegaDisplay) {
+			if (slotNo == 1U) {
+				::sprintf(buffer, "%s >%s%s", src.c_str(), group ? "TG" : "", dst.c_str());
+				::lcdPosition(m_fd, 0, 0);
+				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
+			} else {
+				::sprintf(buffer, "%s >%s%s", src.c_str(), group ? "TG" : "", dst.c_str());
+				::lcdPosition(m_fd, 0, 1);
+				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
+			}
+		else {
+				::lcdPosition(m_fd, 0, 0);
+				::lcdPrintf(m_fd, "From: %s", src.c_str());
+				::lcdPosition(m_fd, 0, 0);
+				::lcdPrintf(m_fd, "To  : %s%s", group ? "TG" : "", dst.c_str());
 		}
 	} else if (m_rows == 4U && m_cols == 16U) {
 #ifdef ADAFRUIT_DISPLAY

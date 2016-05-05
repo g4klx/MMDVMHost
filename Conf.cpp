@@ -115,6 +115,7 @@ m_hd44780PWM(false),
 m_hd44780PWMPin(),
 m_hd44780PWMBright(),
 m_hd44780PWMDim(),
+m_hd44780DVMegaDisplay(false),
 m_nextionSize("2.4"),
 m_nextionPort("/dev/ttyAMA0"),
 m_nextionBrightness(50U)
@@ -355,6 +356,8 @@ bool CConf::read()
 			m_hd44780PWMBright = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "PWMDim") == 0)
 			m_hd44780PWMDim = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "DVMegaDisplay") == 0)
+			m_hd44780DVMegaDisplay = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Pins") == 0) {
 			char* p = ::strtok(value, ",\r\n");
 			while (p != NULL) {
@@ -721,6 +724,11 @@ unsigned int CConf::getHD44780PWMBright() const
 unsigned int CConf::getHD44780PWMDim() const
 {
 	return m_hd44780PWMDim;
+}
+
+bool CConf::getHD44780DVMegaDisplay() const
+{
+	return m_hd44780DVMegaDisplay;
 }
 
 std::string CConf::getNextionSize() const
