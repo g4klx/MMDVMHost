@@ -157,7 +157,7 @@ int CMMDVMHost::run()
 		::close(STDIN_FILENO);
 		::close(STDOUT_FILENO);
 		::close(STDERR_FILENO);
-		
+#if !defined(HD44780)
 		//If we are currently root...
 		if (getuid() == 0) {
 		    //get UID for mmdvm user
@@ -191,6 +191,10 @@ int CMMDVMHost::run()
 		
 		}
 	}
+#else
+	::LogMessage("Warning: dropping root permissions in daemon mode is disabled with HD44780 display");
+	}
+#endif
 #endif
 
 	LogInfo(HEADER1);
