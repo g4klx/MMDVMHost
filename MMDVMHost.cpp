@@ -192,7 +192,7 @@ int CMMDVMHost::run()
 		}
 	}
 #else
-	::LogMessage("Warning: dropping root permissions in daemon mode is disabled with HD44780 display");
+	::LogWarning("Dropping root permissions in daemon mode is disabled with HD44780 display");
 	}
 #endif
 #endif
