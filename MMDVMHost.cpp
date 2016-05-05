@@ -691,7 +691,6 @@ void CMMDVMHost::createDisplay()
 		unsigned int pwmPin = m_conf.getHD44780PWMPin();
 		unsigned int pwmBright = m_conf.getHD44780PWMBright();
 		unsigned int pwmDim = m_conf.getHD44780PWMDim();
-		bool dvmegaDisplay = m_conf.getHD44780DVMegaDisplay();
 
 		if (pins.size() == 6U) {
 			LogInfo("    Rows: %u", rows);
@@ -705,10 +704,7 @@ void CMMDVMHost::createDisplay()
 				LogInfo("    PWM Dim: %u", pwmDim);
 			}
 
-			if (dvmegaDisplay)
-				LogInfo("Using DVMega display output on HD44780");
-
-			m_display = new CHD44780(rows, columns, callsign, dmrid, pins, pwm, pwmPin, pwmBright, pwmDim, dvmegaDisplay);
+			m_display = new CHD44780(rows, columns, callsign, dmrid, pins, pwm, pwmPin, pwmBright, pwmDim, m_duplex);
 		}
 #endif
 	} else {
