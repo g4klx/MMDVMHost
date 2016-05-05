@@ -36,6 +36,7 @@
 #include <vector>
 
 #if !defined(_WIN32) && !defined(_WIN64)
+#include <sys/types.h>
 #include <unistd.h>
 #include <signal.h>
 #include <fcntl.h>
@@ -161,25 +162,22 @@ int CMMDVMHost::run()
 #if !defined(HD44780)
 		//If we are currently root...
 		if (getuid() == 0) {
-		    //get UID for mmdvm user
-		    uid_t mmdvm_uid = getpwnam("mmdvm")->pw_uid;
-		    if (mmdvm_uid == NULL) {
-			    ::LogWarning("Could not get mmdvm UID, exiting");
-			    return -1;
-		    }
-		    //get GID for mmdvm user
-		    gid_t mmdvm_gid = getpwnam("mmdvm")->pw_gid;
-		    if (mmdvm_gid == NULL) {
-			    ::LogWarning("Could not get mmdvm GID, exiting");
-			    return -1;
-		    }
-		    
+			struct passwd* user = ::getpwnam("mmdvm");
+			if (user == NULL) {
+				::LogError("Could not get the mmdvm user, exiting");
+				return -1;
+			}
+			
+			uid_t mmdvm_uid = user->pw_uid;
+		    gid_t mmdvm_gid = user->pw_gid;
+
 		    //Set user and group ID's to mmdvm:mmdvm
 		    if (setgid(mmdvm_gid) != 0) {
 			    ::LogWarning("Could not set mmdvm GID, exiting");
 			    return -1;
 		    }
-		    if (setuid(mmdvm_uid) != 0) {
+
+			if (setuid(mmdvm_uid) != 0) {
 			    ::LogWarning("Could not set mmdvm UID, exiting");
 			    return -1;
 		    }
