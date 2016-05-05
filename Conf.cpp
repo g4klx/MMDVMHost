@@ -357,7 +357,7 @@ bool CConf::read()
 		else if (::strcmp(key, "PWMDim") == 0)
 			m_hd44780PWMDim = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "DVMegaDisplay") == 0)
-			m_hd44780DVMegaDisplay = (unsigned int)::atoi(value);
+			m_hd44780DVMegaDisplay = ::atoi(value) == 1;
 		else if (::strcmp(key, "Pins") == 0) {
 			char* p = ::strtok(value, ",\r\n");
 			while (p != NULL) {

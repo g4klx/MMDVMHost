@@ -706,7 +706,7 @@ void CMMDVMHost::createDisplay()
 			}
 
 			if (dvmegaDisplay)
-				LogInfo("Using DVMega display output on 16x2 HD44780");
+				LogInfo("Using DVMega display output on HD44780");
 
 			m_display = new CHD44780(rows, columns, callsign, dmrid, pins, pwm, pwmPin, pwmBright, pwmDim, dvmegaDisplay);
 		}

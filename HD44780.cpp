@@ -341,16 +341,20 @@ void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 		}
 
 		if (m_rows == 2U && m_cols == 16U) {
-			if (slotNo == 1U) {
-				::lcdPosition(m_fd, 0, 1);
-				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
+			if (!m_dvmegaDisplay) {
+				if (slotNo == 1U) {
+					::lcdPosition(m_fd, 0, 1);
+					::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
+				} else {
+					::lcdPosition(m_fd, 0, 0);
+					::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
+				}
 			} else {
 				::lcdPosition(m_fd, 0, 0);
-				if (m_dvmegaDisplay) {
-					::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
-				else
-					::lcdPuts(m_fd, "DMR");
-				}
+				::lcdPuts(m_fd, "DMR             ");
+				::lcdPosition(m_fd, 0, 1);
+//				::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+				::lcdPrintf(m_fd, "%-16s", "Listening...");
 			}
 		} else if (m_rows == 4U && m_cols == 16U) {
 			::lcdPosition(m_fd, 0, 0);
@@ -401,11 +405,16 @@ void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 				::lcdPosition(m_fd, 0, 1);
 				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 			}
-		else {
+		} else {
+				::sprintf(buffer, "From: %s", src.c_str());
 				::lcdPosition(m_fd, 0, 0);
-				::lcdPrintf(m_fd, "From: %s", src.c_str());
-				::lcdPosition(m_fd, 0, 0);
-				::lcdPrintf(m_fd, "To  : %s%s", group ? "TG" : "", dst.c_str());
+//				::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+				::lcdPrintf(m_fd, "%-16s", buffer);
+
+				::sprintf(buffer, "To  : %s", dst.c_str());
+				::lcdPosition(m_fd, 0, 1);
+//				::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+				::lcdPrintf(m_fd, "%-16s", buffer);
 		}
 	} else if (m_rows == 4U && m_cols == 16U) {
 #ifdef ADAFRUIT_DISPLAY
@@ -464,12 +473,20 @@ void CHD44780::clearDMR(unsigned int slotNo)
 #endif
 
 	if (m_rows == 2U && m_cols == 16U) {
-		if (slotNo == 1U) {
-			::lcdPosition(m_fd, 0, 0);
-			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
+		if (!m_dvmegaDisplay) {
+			if (slotNo == 1U) {
+				::lcdPosition(m_fd, 0, 0);
+				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
+			} else {
+				::lcdPosition(m_fd, 0, 1);
+				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
+			}
 		} else {
+			::lcdPosition(m_fd, 0, 0);
+			::lcdPuts(m_fd, "DMR             ");
 			::lcdPosition(m_fd, 0, 1);
-			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
+//			::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+			::lcdPrintf(m_fd, "%-16s", "Listening...");
 		}
 	} else if (m_rows == 4U && m_cols == 16U) {
 		if (slotNo == 1U) {
