@@ -51,7 +51,7 @@ enum ADAFRUIT_COLOUR {
 class CHD44780 : public IDisplay
 {
 public:
-  CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim);
+  CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim, bool dvmegaDisplay);
   virtual ~CHD44780();
 
   virtual bool open();
@@ -87,6 +87,7 @@ private:
 	unsigned int m_pwmPin;
 	unsigned int m_pwmBright;
 	unsigned int m_pwmDim;
+	bool         m_dvmegaDisplay;
 	int          m_fd;
 	bool         m_dmr;
 

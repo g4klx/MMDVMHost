@@ -122,6 +122,7 @@ public:
   unsigned int getHD44780PWMPin() const;
   unsigned int getHD44780PWMBright() const;
   unsigned int getHD44780PWMDim() const;
+  bool         getHD44780DVMegaDisplay() const;
 
   // The Nextion section
   std::string  getNextionSize() const;
@@ -210,6 +211,7 @@ private:
   unsigned int m_hd44780PWMPin;
   unsigned int m_hd44780PWMBright;
   unsigned int m_hd44780PWMDim;
+  bool         m_hd44780DVMegaDisplay;
 
   std::string  m_nextionSize;
   std::string  m_nextionPort;
