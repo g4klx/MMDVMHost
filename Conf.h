@@ -82,6 +82,7 @@ public:
   std::vector<unsigned int> getDMRPrefixes() const;
   std::vector<unsigned int> getDMRBlackList() const;
   std::string  getDMRLookupFile() const;
+  unsigned int getDMRTXHang() const;
 
   // The System Fusion section
   bool         getFusionEnabled() const;
@@ -176,6 +177,7 @@ private:
   std::vector<unsigned int> m_dmrPrefixes;
   std::vector<unsigned int> m_dmrBlackList;
   std::string  m_dmrLookupFile;
+  unsigned int m_dmrTXHang;
 
   bool         m_fusionEnabled;
   bool         m_fusionParrotEnabled;

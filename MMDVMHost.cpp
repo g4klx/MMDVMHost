@@ -43,7 +43,7 @@
 #endif
 
 #if defined(_WIN32) || defined(_WIN64)
-const char* DEFAULT_INI_FILE = "mmdvm.ini";
+const char* DEFAULT_INI_FILE = "MMDVM.ini";
 #else
 const char* DEFAULT_INI_FILE = "/etc/MMDVM.ini";
 #endif
@@ -105,6 +105,7 @@ m_dmrNetwork(NULL),
 m_display(NULL),
 m_mode(MODE_IDLE),
 m_modeTimer(1000U),
+m_dmrTXTimer(1000U),
 m_duplex(false),
 m_dstarEnabled(false),
 m_dmrEnabled(false),
@@ -258,6 +259,7 @@ int CMMDVMHost::run()
 		std::vector<unsigned int> blackList = m_conf.getDMRBlackList();
 		unsigned int timeout   = m_conf.getTimeout();
 		std::string lookupFile = m_conf.getDMRLookupFile();
+		unsigned int txHang    = m_conf.getDMRTXHang();
 
 		LogInfo("DMR Parameters");
 		LogInfo("    Id: %u", id);
@@ -268,8 +270,11 @@ int CMMDVMHost::run()
 			LogInfo("    Black List: %u", blackList.size());
 		LogInfo("    Timeout: %us", timeout);
 		LogInfo("    Lookup File: %s", lookupFile.length() > 0U ? lookupFile.c_str() : "None");
+		LogInfo("    TX Hang: %us", txHang);
 
 		dmr = new CDMRControl(id, colorCode, selfOnly, prefixes, blackList, timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookupFile);
+
+		m_dmrTXTimer.setTimeout(txHang);
 	}
 
 	CYSFControl* ysf = NULL;
@@ -326,17 +331,29 @@ int CMMDVMHost::run()
 			if (m_mode == MODE_IDLE) {
 				if (m_duplex) {
 					bool ret = dmr->processWakeup(data);
-					if (ret)
+					if (ret) {
 						setMode(MODE_DMR);
+						dmrBeaconTimer.stop();
+					}
 				} else {
 					setMode(MODE_DMR);
 					dmr->writeModemSlot1(data);
 					dmrBeaconTimer.stop();
 				}
 			} else if (m_mode == MODE_DMR) {
-				dmr->writeModemSlot1(data);
-				dmrBeaconTimer.stop();
-				m_modeTimer.start();
+				if (m_duplex && !m_modem->hasTX()) {
+					bool ret = dmr->processWakeup(data);
+					if (ret) {
+						m_modem->writeDMRStart(true);
+						m_dmrTXTimer.start();
+					}
+				} else {
+					dmr->writeModemSlot1(data);
+					dmrBeaconTimer.stop();
+					m_modeTimer.start();
+					if (m_duplex)
+						m_dmrTXTimer.start();
+				}
 			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("DMR modem data received when in mode %u", m_mode);
 			}
@@ -347,17 +364,29 @@ int CMMDVMHost::run()
 			if (m_mode == MODE_IDLE) {
 				if (m_duplex) {
 					bool ret = dmr->processWakeup(data);
-					if (ret)
+					if (ret) {
 						setMode(MODE_DMR);
+						dmrBeaconTimer.stop();
+					}
 				} else {
 					setMode(MODE_DMR);
 					dmr->writeModemSlot2(data);
 					dmrBeaconTimer.stop();
 				}
 			} else if (m_mode == MODE_DMR) {
-				dmr->writeModemSlot2(data);
-				dmrBeaconTimer.stop();
-				m_modeTimer.start();
+				if (m_duplex && !m_modem->hasTX()) {
+					bool ret = dmr->processWakeup(data);
+					if (ret) {
+						m_modem->writeDMRStart(true);
+						m_dmrTXTimer.start();
+					}
+				} else {
+					dmr->writeModemSlot2(data);
+					dmrBeaconTimer.stop();
+					m_modeTimer.start();
+					if (m_duplex)
+						m_dmrTXTimer.start();
+				}
 			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("DMR modem data received when in mode %u", m_mode);
 			}
@@ -405,6 +434,10 @@ int CMMDVMHost::run()
 					if (m_mode == MODE_IDLE)
 						setMode(MODE_DMR);
 					if (m_mode == MODE_DMR) {
+						if (m_duplex) {
+							m_modem->writeDMRStart(true);
+							m_dmrTXTimer.start();
+						}
 						m_modem->writeDMRData1(data, len);
 						dmrBeaconTimer.stop();
 						m_modeTimer.start();
@@ -421,6 +454,10 @@ int CMMDVMHost::run()
 					if (m_mode == MODE_IDLE)
 						setMode(MODE_DMR);
 					if (m_mode == MODE_DMR) {
+						if (m_duplex) {
+							m_modem->writeDMRStart(true);
+							m_dmrTXTimer.start();
+						}
 						m_modem->writeDMRData2(data, len);
 						dmrBeaconTimer.stop();
 						m_modeTimer.start();
@@ -478,6 +515,12 @@ int CMMDVMHost::run()
 		if (dmrBeaconTimer.isRunning() && dmrBeaconTimer.hasExpired()) {
 			setMode(MODE_IDLE, false);
 			dmrBeaconTimer.stop();
+		}
+
+		m_dmrTXTimer.clock(ms);
+		if (m_dmrTXTimer.isRunning() && m_dmrTXTimer.hasExpired()) {
+			m_modem->writeDMRStart(false);
+			m_dmrTXTimer.stop();
 		}
 
 		if (ms < 5U) {
@@ -740,8 +783,10 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(false);
 		m_modem->setMode(MODE_DMR);
-		if (m_duplex)
+		if (m_duplex) {
 			m_modem->writeDMRStart(true);
+			m_dmrTXTimer.start();
+		}
 		m_mode = MODE_DMR;
 		m_modeTimer.start();
 		break;
@@ -765,8 +810,10 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 			m_dstarNetwork->enable(false);
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(false);
-		if (m_mode == MODE_DMR && m_duplex)
+		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
+			m_dmrTXTimer.stop();
+		}
 		m_modem->setMode(MODE_IDLE);
 		m_display->setLockout();
 		m_mode = MODE_LOCKOUT;
@@ -780,6 +827,10 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 			m_dstarNetwork->enable(false);
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(false);
+		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
+			m_modem->writeDMRStart(false);
+			m_dmrTXTimer.stop();
+		}
 		m_display->setError("MODEM");
 		m_mode = MODE_ERROR;
 		m_modeTimer.stop();
@@ -792,8 +843,10 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 			m_dstarNetwork->enable(true);
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(true);
-		if (m_mode == MODE_DMR && m_duplex)
+		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
+			m_dmrTXTimer.stop();
+		}
 		m_modem->setMode(MODE_IDLE);
 		m_display->setIdle();
 		m_mode = MODE_IDLE;

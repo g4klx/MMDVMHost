@@ -52,6 +52,8 @@ public:
 	bool hasDMRSpace2() const;
 	bool hasYSFSpace() const;
 
+	bool hasTX() const;
+
 	bool hasLockout() const;
 	bool hasError() const;
 

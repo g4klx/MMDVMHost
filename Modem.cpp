@@ -651,6 +651,11 @@ bool CModem::hasYSFSpace() const
 	return space > 1U;
 }
 
+bool CModem::hasTX() const
+{
+	return m_tx;
+}
+
 bool CModem::hasLockout() const
 {
 	return m_lockout;

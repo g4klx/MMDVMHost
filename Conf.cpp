@@ -87,6 +87,7 @@ m_dmrSelfOnly(false),
 m_dmrPrefixes(),
 m_dmrBlackList(),
 m_dmrLookupFile(),
+m_dmrTXHang(4U),
 m_fusionEnabled(true),
 m_fusionParrotEnabled(false),
 m_dstarNetworkEnabled(true),
@@ -295,6 +296,8 @@ bool CConf::read()
 			}
 		} else if (::strcmp(key, "LookupFile") == 0)
 			m_dmrLookupFile = value;
+		else if (::strcmp(key, "TXHang") == 0)
+			m_dmrTXHang = (unsigned int)::atoi(value);
 	} else if (section == SECTION_FUSION) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fusionEnabled = ::atoi(value) == 1;
@@ -581,6 +584,11 @@ std::vector<unsigned int> CConf::getDMRBlackList() const
 std::string CConf::getDMRLookupFile() const
 {
 	return m_dmrLookupFile;
+}
+
+unsigned int CConf::getDMRTXHang() const
+{
+	return m_dmrTXHang;
 }
 
 bool CConf::getFusionEnabled() const
