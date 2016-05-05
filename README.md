@@ -1,4 +1,4 @@
-These are the source files for builing the MMDVMHost, the program that interfaces to the MMDVM or DVMega on the one side, and a suitable network on the other. On the D-Star side the MMDVMHost interfaces with the ircDDB Gateway, on DMR, only the BrandMeister network currently.
+These are the source files for building the MMDVMHost, the program that interfaces to the MMDVM or DVMega on the one side, and a suitable network on the other. On the D-Star side the MMDVMHost interfaces with the ircDDB Gateway, on DMR, only the BrandMeister network currently.
 
 It supports D-Star, DMR, and System Fusion.
 
@@ -6,6 +6,7 @@ It builds on 32-bit and 64-bit Linux as well as on Windows using VS2015 on x86 a
 
 - HD44780 (sizes 2x16, 2x40, 4x16, 4x20)
 - Nextion TFTs (sizes 2,4" and 3,5")
+- Adafruit 16x2 LCD+Keypad Kits
 - TFT displays sold by Hobbytronics in UK
 
 The HD44780 displays are integrated with wiringPi for Raspberry Pi based platforms. The other displays can be directly connected to the UART on Raspberry Pis or with FT-232RL modules to any USB port.
