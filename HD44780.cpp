@@ -354,7 +354,7 @@ void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 				::lcdPuts(m_fd, "DMR             ");
 				::lcdPosition(m_fd, 0, 1);
 //				::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
-				::lcdPrintf(m_fd, "%-16s", "Listening...");
+				::lcdPrintf(m_fd, "%-16s", "Listening");
 			}
 		} else if (m_rows == 4U && m_cols == 16U) {
 			::lcdPosition(m_fd, 0, 0);
@@ -397,11 +397,11 @@ void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 		char buffer[16U];
 		if (!m_dvmegaDisplay) {
 			if (slotNo == 1U) {
-				::sprintf(buffer, "%s >%s%s", src.c_str(), group ? "TG" : "", dst.c_str());
+				::sprintf(buffer, "%s > %s%s", src.c_str(), group ? "TG" : "", dst.c_str());
 				::lcdPosition(m_fd, 0, 0);
 				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
 			} else {
-				::sprintf(buffer, "%s >%s%s", src.c_str(), group ? "TG" : "", dst.c_str());
+				::sprintf(buffer, "%s > %s%s", src.c_str(), group ? "TG" : "", dst.c_str());
 				::lcdPosition(m_fd, 0, 1);
 				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 			}
@@ -423,11 +423,11 @@ void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 
 		char buffer[16U];
 		if (slotNo == 1U) {
-			::sprintf(buffer, "%s %s >%s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
+			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
 			::lcdPosition(m_fd, 0, 1);
 			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
 		} else {
-			::sprintf(buffer, "%s %s >%s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
+			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
 			::lcdPosition(m_fd, 0, 2);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 		}
@@ -486,7 +486,7 @@ void CHD44780::clearDMR(unsigned int slotNo)
 			::lcdPuts(m_fd, "DMR             ");
 			::lcdPosition(m_fd, 0, 1);
 //			::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
-			::lcdPrintf(m_fd, "%-16s", "Listening...");
+			::lcdPrintf(m_fd, "%-16s", "Listening");
 		}
 	} else if (m_rows == 4U && m_cols == 16U) {
 		if (slotNo == 1U) {
