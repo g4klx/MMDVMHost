@@ -157,7 +157,7 @@ void CHD44780::setIdle()
 	::lcdClear(m_fd);
 	
 #ifdef ADAFRUIT_DISPLAY
-  adafruittLCDColour(AC_WHITE);
+  adafruitLCDColour(AC_WHITE);
 #endif
 
 	if (m_pwm) {
