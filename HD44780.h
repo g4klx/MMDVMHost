@@ -44,7 +44,8 @@ enum ADAFRUIT_COLOUR {
 #define AF_GREEN        (AF_BASE + 7)
 #define AF_BLUE         (AF_BASE + 8)
 #define AF_RW           (AF_BASE + 14)
-#define AF_RW           (AF_BASE + 14)
+#define AF_ON		LOW
+#define AF_OFF		HIGH
 #define MCP23017        0x20
 #endif
 

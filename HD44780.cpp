@@ -107,44 +107,44 @@ void CHD44780::adafruitLCDColour(ADAFRUIT_COLOUR colour)
 {
 	switch (colour) {
 		 case AC_OFF:
-		 		::digitalWrite(AF_RED, HIGH);
-		 		::digitalWrite(AF_GREEN, HIGH);
-		 		::digitalWrite(AF_BLUE, HIGH);
+		 		::digitalWrite(AF_RED, AF_OFF);
+		 		::digitalWrite(AF_GREEN, AF_OFF);
+		 		::digitalWrite(AF_BLUE, AF_OFF);
 		 		break;
 		 case AC_WHITE:
-		 		::digitalWrite(AF_RED, LOW);
-		 		::digitalWrite(AF_GREEN, LOW);
-		 		::digitalWrite(AF_BLUE, LOW);
+		 		::digitalWrite(AF_RED, AF_ON);
+		 		::digitalWrite(AF_GREEN, AF_ON);
+		 		::digitalWrite(AF_BLUE, AF_ON);
 		 		break;
 		 case AC_RED:
-		 		::digitalWrite(AF_RED, LOW);
-		 		::digitalWrite(AF_GREEN, HIGH);
-		 		::digitalWrite(AF_BLUE, HIGH);
+		 		::digitalWrite(AF_RED, AF_ON);
+		 		::digitalWrite(AF_GREEN, AF_OFF);
+		 		::digitalWrite(AF_BLUE, AF_OFF);
 		 		break;
 		 case AC_GREEN:
-		 		::digitalWrite(AF_RED, HIGH);
-		 		::digitalWrite(AF_GREEN, LOW);
-		 		::digitalWrite(AF_BLUE, HIGH);
+		 		::digitalWrite(AF_RED, AF_OFF);
+		 		::digitalWrite(AF_GREEN, AF_ON);
+		 		::digitalWrite(AF_BLUE, AF_OFF);
 		 		break;
 		 case AC_BLUE:
-		 		::digitalWrite(AF_RED, HIGH);
-		 		::digitalWrite(AF_GREEN, HIGH);
-		 		::digitalWrite(AF_BLUE, LOW);
+		 		::digitalWrite(AF_RED, AF_OFF);
+		 		::digitalWrite(AF_GREEN, AF_OFF);
+		 		::digitalWrite(AF_BLUE, AF_ON);
 		 		break;
 		 case AC_PURPLE:
-		 		::digitalWrite(AF_RED, LOW);
-		 		::digitalWrite(AF_GREEN, HIGH);
-		 		::digitalWrite(AF_BLUE, LOW);
+		 		::digitalWrite(AF_RED, AF_ON);
+		 		::digitalWrite(AF_GREEN, AF_OFF);
+		 		::digitalWrite(AF_BLUE, AF_ON);
 		 		break;
 		 case AC_YELLOW:
-		 		::digitalWrite(AF_RED, LOW);
-		 		::digitalWrite(AF_GREEN, LOW);
-		 		::digitalWrite(AF_BLUE, HIGH);
+		 		::digitalWrite(AF_RED, AF_ON);
+		 		::digitalWrite(AF_GREEN, AF_ON);
+		 		::digitalWrite(AF_BLUE, AF_OFF);
 		 		break;
 		 case AC_ICE:
-		 		::digitalWrite(AF_RED, HIGH);
-		 		::digitalWrite(AF_GREEN, LOW);
-		 		::digitalWrite(AF_BLUE, LOW);
+		 		::digitalWrite(AF_RED, AF_OFF);
+		 		::digitalWrite(AF_GREEN, AF_ON);
+		 		::digitalWrite(AF_BLUE, AF_ON);
 		 		break;
 		 default:
 		 	break;
