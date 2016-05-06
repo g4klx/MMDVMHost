@@ -1,6 +1,8 @@
 Debug
 Release
 x64
+MMDVMHost
+*.o
 *.opendb
 *.bak
 *.obj

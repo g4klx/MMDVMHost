@@ -41,7 +41,8 @@ enum SECTION {
   SECTION_FUSION_NETWORK,
   SECTION_TFTSERIAL,
   SECTION_HD44780,
-  SECTION_NEXTION
+  SECTION_NEXTION,
+  SECTION_OLED
 };
 
 CConf::CConf(const std::string& file) :
@@ -118,7 +119,10 @@ m_hd44780PWMBright(),
 m_hd44780PWMDim(),
 m_nextionSize("2.4"),
 m_nextionPort("/dev/ttyAMA0"),
-m_nextionBrightness(50U)
+m_nextionBrightness(50U),
+m_oledType(3),
+m_oledBrightness(0),
+m_oledInvert(0)
 {
 }
 
@@ -168,6 +172,8 @@ bool CConf::read()
 		  section = SECTION_HD44780;
 	  else if (::strncmp(buffer, "[Nextion]", 9U) == 0)
 		  section = SECTION_NEXTION;
+	  else if (::strncmp(buffer, "[OLED]", 6U) == 0)
+		  section = SECTION_OLED;
 	  else
         section = SECTION_NONE;
 
@@ -373,7 +379,15 @@ bool CConf::read()
 			m_nextionPort = value;
 		else if (::strcmp(key, "Brightness") == 0)
 			m_nextionBrightness = (unsigned int)::atoi(value);
+	} else if (section == SECTION_OLED) {
+		if (::strcmp(key, "Type") == 0)
+			m_oledType = (unsigned char)::atoi(value);
+		else if (::strcmp(key, "Port") == 0)
+			m_oledBrightness = (unsigned char)::atoi(value);
+		else if (::strcmp(key, "Brightness") == 0)
+			m_oledInvert = (unsigned char)::atoi(value);
 	}
+
   }
 
   ::fclose(fp);
@@ -744,4 +758,19 @@ std::string CConf::getNextionPort() const
 unsigned int CConf::getNextionBrightness() const
 {
 	return m_nextionBrightness;
+}
+
+unsigned char CConf::getOLEDType() const
+{
+	return m_oledType;
+}
+
+unsigned char CConf::getOLEDBrightness() const
+{
+	return m_oledBrightness;
+}
+
+unsigned char CConf::getOLEDInvert() const
+{
+	return m_oledInvert;
 }
