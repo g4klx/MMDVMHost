@@ -129,6 +129,11 @@ public:
   std::string  getNextionPort() const;
   unsigned int getNextionBrightness() const;
 
+  // The OLED section
+  unsigned char  getOLEDType() const;
+  unsigned char  getOLEDBrightness() const;
+  unsigned char  getOLEDInvert() const;
+
 private:
   std::string  m_file;
   std::string  m_callsign;
@@ -216,6 +221,10 @@ private:
   std::string  m_nextionSize;
   std::string  m_nextionPort;
   unsigned int m_nextionBrightness;
+
+  unsigned char m_oledType;
+  unsigned char m_oledBrightness;
+  unsigned char m_oledInvert;
 };
 
 #endif

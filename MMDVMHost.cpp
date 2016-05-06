@@ -32,6 +32,10 @@
 #include "HD44780.h"
 #endif
 
+#if defined(OLED)
+#include "OLED.h"
+#endif
+
 #include <cstdio>
 #include <vector>
 
@@ -747,6 +751,13 @@ void CMMDVMHost::createDisplay()
 
 			m_display = new CHD44780(rows, columns, callsign, dmrid, pins, pwm, pwmPin, pwmBright, pwmDim, m_duplex);
 		}
+#endif
+#if defined(OLED)
+	} else if (type == "OLED") {
+        unsigned char displayType       = m_conf.getOLEDType();
+        unsigned char displayBrightness = m_conf.getOLEDBrightness();
+        unsigned char displayInvert     = m_conf.getOLEDInvert();
+		m_display = new COLED(displayType, displayBrightness, displayInvert);
 #endif
 	} else {
 		m_display = new CNullDisplay;
