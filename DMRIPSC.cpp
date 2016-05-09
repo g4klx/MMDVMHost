@@ -272,8 +272,15 @@ bool CDMRIPSC::write(const CDMRData& data)
 	if (m_debug)
 		CUtils::dump(1U, "IPSC Transmitted", buffer, HOMEBREW_DATA_PACKET_LENGTH);
 
-	for (unsigned int i = 0U; i < count; i++)
-		write(buffer, HOMEBREW_DATA_PACKET_LENGTH);
+	for (unsigned int i = 0U; i < count; i++) {
+		bool ret = write(buffer, HOMEBREW_DATA_PACKET_LENGTH);
+		if (!ret) {
+			LogError("Socket has failed when writing data to the master, retrying connection");
+			close();
+			open();
+			return false;
+		}
+	}
 
 	return true;
 }
@@ -282,10 +289,12 @@ void CDMRIPSC::close()
 {
 	LogMessage("Closing DMR IPSC");
 
-	unsigned char buffer[9U];
-	::memcpy(buffer + 0U, "RPTCL", 5U);
-	::memcpy(buffer + 5U, m_id, 4U);
-	write(buffer, 9U);
+	if (m_status == RUNNING) {
+		unsigned char buffer[9U];
+		::memcpy(buffer + 0U, "RPTCL", 5U);
+		::memcpy(buffer + 5U, m_id, 4U);
+		write(buffer, 9U);
+	}
 
 	m_socket.close();
 }
@@ -296,7 +305,7 @@ void CDMRIPSC::clock(unsigned int ms)
 	unsigned int port;
 	int length = m_socket.read(m_buffer, BUFFER_LENGTH, address, port);
 	if (length < 0) {
-		LogError("Socket has failed, retrying connection");
+		LogError("Socket has failed, retrying connection to the master");
 		close();
 		open();
 		return;
