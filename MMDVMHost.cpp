@@ -494,6 +494,8 @@ int CMMDVMHost::run()
 		unsigned int ms = stopWatch.elapsed();
 		stopWatch.start();
 
+		m_display->clock(ms);
+
 		m_modem->clock(ms);
 		m_modeTimer.clock(ms);
 

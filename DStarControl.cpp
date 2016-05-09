@@ -36,7 +36,7 @@ bool CallsignCompare(const std::string& arg, const unsigned char* my)
 
 // #define	DUMP_DSTAR
 
-CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, const std::vector<std::string>& blackList, CDStarNetwork* network, IDisplay* display, unsigned int timeout, bool duplex) :
+CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, const std::vector<std::string>& blackList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex) :
 m_callsign(NULL),
 m_gateway(NULL),
 m_selfOnly(selfOnly),

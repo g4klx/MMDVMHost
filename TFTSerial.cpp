@@ -45,6 +45,7 @@ const unsigned char FONT_LARGE  = 3U;
 // x = 0 to 127, y = 0 to 159 - Portrait
 
 CTFTSerial::CTFTSerial(const std::string& callsign, unsigned int dmrid, const std::string& port, unsigned int brightness) :
+CDisplay(),
 m_callsign(callsign),
 m_dmrid(dmrid),
 m_serial(port, SERIAL_9600),
@@ -79,7 +80,7 @@ bool CTFTSerial::open()
 	return true;
 }
 
-void CTFTSerial::setIdle()
+void CTFTSerial::setIdleInt()
 {
 	// Clear the screen
 	clearScreen();
@@ -101,7 +102,7 @@ void CTFTSerial::setIdle()
 	m_mode = MODE_IDLE;
 }
 
-void CTFTSerial::setError(const char* text)
+void CTFTSerial::setErrorInt(const char* text)
 {
 	assert(text != NULL);
 
@@ -126,7 +127,7 @@ void CTFTSerial::setError(const char* text)
 	m_mode = MODE_ERROR;
 }
 
-void CTFTSerial::setLockout()
+void CTFTSerial::setLockoutInt()
 {
 	// Clear the screen
 	clearScreen();
@@ -142,7 +143,7 @@ void CTFTSerial::setLockout()
 	m_mode = MODE_LOCKOUT;
 }
 
-void CTFTSerial::writeDStar(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
+void CTFTSerial::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
 	assert(my1 != NULL);
 	assert(my2 != NULL);
@@ -182,7 +183,7 @@ void CTFTSerial::writeDStar(const char* my1, const char* my2, const char* your, 
 	m_mode = MODE_DSTAR;
 }
 
-void CTFTSerial::clearDStar()
+void CTFTSerial::clearDStarInt()
 {
 	gotoPosPixel(5U, 70U);
 	displayText("  Listening  ");
@@ -194,7 +195,7 @@ void CTFTSerial::clearDStar()
 	displayText("             ");
 }
 
-void CTFTSerial::writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
+void CTFTSerial::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
 	assert(type != NULL);
 
@@ -241,7 +242,7 @@ void CTFTSerial::writeDMR(unsigned int slotNo, const std::string& src, bool grou
 	m_mode = MODE_DMR;
 }
 
-void CTFTSerial::clearDMR(unsigned int slotNo)
+void CTFTSerial::clearDMRInt(unsigned int slotNo)
 {
 	if (slotNo == 1U) {
 		gotoPosPixel(5U, 55U);
@@ -258,7 +259,7 @@ void CTFTSerial::clearDMR(unsigned int slotNo)
 	}
 }
 
-void CTFTSerial::writeFusion(const char* source, const char* dest)
+void CTFTSerial::writeFusionInt(const char* source, const char* dest)
 {
 	assert(source != NULL);
 	assert(dest != NULL);
@@ -287,7 +288,7 @@ void CTFTSerial::writeFusion(const char* source, const char* dest)
 	m_mode = MODE_YSF;
 }
 
-void CTFTSerial::clearFusion()
+void CTFTSerial::clearFusionInt()
 {
 	gotoPosPixel(5U, 80U);
 	displayText("  Listening ");

@@ -24,6 +24,7 @@
 #include <cstring>
 
 CNextion::CNextion(const std::string& callsign, unsigned int dmrid, const std::string& size, const std::string& port, unsigned int brightness) :
+CDisplay(),
 m_callsign(callsign),
 m_dmrid(dmrid),
 m_size(size),
@@ -57,7 +58,7 @@ bool CNextion::open()
 	return true;
 }
 
-void CNextion::setIdle()
+void CNextion::setIdleInt()
 {
 	sendCommand("page MMDVM");
 
@@ -70,7 +71,7 @@ void CNextion::setIdle()
 	m_mode = MODE_IDLE;
 }
 
-void CNextion::setError(const char* text)
+void CNextion::setErrorInt(const char* text)
 {
 	assert(text != NULL);
 
@@ -85,7 +86,7 @@ void CNextion::setError(const char* text)
 	m_mode = MODE_ERROR;
 }
 
-void CNextion::setLockout()
+void CNextion::setLockoutInt()
 {
 	sendCommand("page MMDVM");
 
@@ -94,7 +95,7 @@ void CNextion::setLockout()
 	m_mode = MODE_LOCKOUT;
 }
 
-void CNextion::writeDStar(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
+void CNextion::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
 	assert(my1 != NULL);
 	assert(my2 != NULL);
@@ -127,7 +128,7 @@ void CNextion::writeDStar(const char* my1, const char* my2, const char* your, co
 	m_mode = MODE_DSTAR;
 }
 
-void CNextion::clearDStar()
+void CNextion::clearDStarInt()
 {
 	sendCommand("t0.txt=\"Listening\"");
 	sendCommand("t1.txt=\"\"");
@@ -135,7 +136,7 @@ void CNextion::clearDStar()
 		sendCommand("t2.txt=\"\"");
 }
 
-void CNextion::writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
+void CNextion::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
 	assert(type != NULL);
 
@@ -169,7 +170,7 @@ void CNextion::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 	m_mode = MODE_DMR;
 }
 
-void CNextion::clearDMR(unsigned int slotNo)
+void CNextion::clearDMRInt(unsigned int slotNo)
 {
 	if (slotNo == 1U) {
 		sendCommand("t0.txt=\"1 Listening\"");
@@ -180,7 +181,7 @@ void CNextion::clearDMR(unsigned int slotNo)
 	}
 }
 
-void CNextion::writeFusion(const char* source, const char* dest)
+void CNextion::writeFusionInt(const char* source, const char* dest)
 {
 	assert(source != NULL);
 	assert(dest != NULL);
@@ -198,7 +199,7 @@ void CNextion::writeFusion(const char* source, const char* dest)
 	m_mode = MODE_YSF;
 }
 
-void CNextion::clearFusion()
+void CNextion::clearFusionInt()
 {
 	sendCommand("t0.txt=\"Listening\"");
 	sendCommand("t1.txt=\"\"");

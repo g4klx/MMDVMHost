@@ -20,7 +20,7 @@
 #include <cassert>
 #include <algorithm>
 
-CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, unsigned int timeout, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex, const std::string& lookupFile) :
+CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, unsigned int timeout, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, const std::string& lookupFile) :
 m_id(id),
 m_colorCode(colorCode),
 m_selfOnly(selfOnly),

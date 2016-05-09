@@ -41,7 +41,7 @@ private:
   CModem*        m_modem;
   CDStarNetwork* m_dstarNetwork;
   CDMRIPSC*      m_dmrNetwork;
-  IDisplay*      m_display;
+  CDisplay*      m_display;
   unsigned char  m_mode;
   CTimer         m_modeTimer;
   CTimer         m_dmrTXTimer;
