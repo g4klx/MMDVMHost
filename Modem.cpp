@@ -43,6 +43,8 @@ const unsigned char MMDVM_SET_CONFIG  = 0x02U;
 const unsigned char MMDVM_SET_MODE    = 0x03U;
 const unsigned char MMDVM_SET_FREQ    = 0x04U;
 
+const unsigned char MMDVM_SEND_CWID   = 0x0AU;
+
 const unsigned char MMDVM_DSTAR_HEADER = 0x10U;
 const unsigned char MMDVM_DSTAR_DATA   = 0x11U;
 const unsigned char MMDVM_DSTAR_LOST   = 0x12U;
@@ -1011,6 +1013,26 @@ bool CModem::setMode(unsigned char mode)
 	// CUtils::dump(1U, "Written", buffer, 4U);
 
 	return m_serial.write(buffer, 4U) == 4;
+}
+
+bool CModem::sendCWId(const std::string& callsign)
+{
+	unsigned int length = callsign.length();
+	if (length > 200U)
+		length = 200U;
+
+	unsigned char buffer[205U];
+
+	buffer[0U] = MMDVM_FRAME_START;
+	buffer[1U] = length + 3U;
+	buffer[2U] = MMDVM_SEND_CWID;
+
+	for (unsigned int i = 0U; i < length; i++)
+		buffer[i + 3U] = callsign.at(i);
+
+	// CUtils::dump(1U, "Written", buffer, length + 3U);
+
+	return m_serial.write(buffer, length + 3U) == (length + 3U);
 }
 
 bool CModem::writeDMRStart(bool tx)

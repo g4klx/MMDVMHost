@@ -107,10 +107,12 @@ m_display(NULL),
 m_mode(MODE_IDLE),
 m_modeTimer(1000U),
 m_dmrTXTimer(1000U),
+m_cwIdTimer(1000U),
 m_duplex(false),
 m_dstarEnabled(false),
 m_dmrEnabled(false),
-m_ysfEnabled(false)
+m_ysfEnabled(false),
+m_callsign()
 {
 }
 
@@ -223,6 +225,15 @@ int CMMDVMHost::run()
 			return 1;
 	}
 
+	if (m_conf.getCWIdEnabled()) {
+		unsigned int time = m_conf.getCWIdTime();
+
+		LogInfo("CW Id Parameters");
+		LogInfo("    Time: %u mins", time);
+
+		m_cwIdTimer.setTimeout(time * 60U);
+	}
+
 	CTimer dmrBeaconTimer(1000U, 4U);
 	bool dmrBeaconsEnabled = m_dmrEnabled && m_conf.getDMRBeacons();
 
@@ -231,21 +242,20 @@ int CMMDVMHost::run()
 
 	CDStarControl* dstar = NULL;
 	if (m_dstarEnabled) {
-		std::string callsign = m_conf.getCallsign();
 		std::string module = m_conf.getDStarModule();
 		bool selfOnly = m_conf.getDStarSelfOnly();
 		unsigned int timeout = m_conf.getTimeout();
 		std::vector<std::string> blackList = m_conf.getDStarBlackList();
 
 		LogInfo("D-Star Parameters");
-		LogInfo("    Callsign: %s", callsign.c_str());
+		LogInfo("    Callsign: %s", m_callsign.c_str());
 		LogInfo("    Module: %s", module.c_str());
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
 		if (blackList.size() > 0U)
 			LogInfo("    Black List: %u", blackList.size());
 		LogInfo("    Timeout: %us", timeout);
 
-		dstar = new CDStarControl(callsign, module, selfOnly, blackList, m_dstarNetwork, m_display, timeout, m_duplex);
+		dstar = new CDStarControl(m_callsign, module, selfOnly, blackList, m_dstarNetwork, m_display, timeout, m_duplex);
 	}
 
 	CDMRControl* dmr = NULL;
@@ -277,16 +287,15 @@ int CMMDVMHost::run()
 
 	CYSFControl* ysf = NULL;
 	if (m_ysfEnabled) {
-		std::string callsign = m_conf.getCallsign();
 		unsigned int timeout = m_conf.getTimeout();
 		bool parrot          = m_conf.getFusionParrotEnabled();
 
 		LogInfo("System Fusion Parameters");
-		LogInfo("    Callsign: %s", callsign.c_str());
+		LogInfo("    Callsign: %s", m_callsign.c_str());
 		LogInfo("    Timeout: %us", timeout);
 		LogInfo("    Parrot: %s", parrot ? "enabled" : "disabled");
 
-		ysf = new CYSFControl(callsign, m_display, timeout, m_duplex, parrot);
+		ysf = new CYSFControl(m_callsign, m_display, timeout, m_duplex, parrot);
 	}
 
 	m_modeTimer.setTimeout(m_conf.getModeHang());
@@ -511,6 +520,12 @@ int CMMDVMHost::run()
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->clock(ms);
 
+		m_cwIdTimer.clock(ms);
+		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
+			m_modem->sendCWId(m_callsign);
+			m_cwIdTimer.start();
+		}
+
 		dmrBeaconTimer.clock(ms);
 		if (dmrBeaconTimer.isRunning() && dmrBeaconTimer.hasExpired()) {
 			setMode(MODE_IDLE, false);
@@ -652,7 +667,6 @@ bool CMMDVMHost::createDMRNetwork()
 
 	m_dmrNetwork = new CDMRIPSC(address, port, local, id, password, m_duplex, VERSION, debug, slot1, slot2);
 
-	std::string callsign     = m_conf.getCallsign();
 	unsigned int rxFrequency = m_conf.getRxFrequency();
 	unsigned int txFrequency = m_conf.getTxFrequency();
 	unsigned int power       = m_conf.getPower();
@@ -665,7 +679,7 @@ bool CMMDVMHost::createDMRNetwork()
 	std::string url          = m_conf.getURL();
 
 	LogInfo("Info Parameters");
-	LogInfo("    Callsign: %s", callsign.c_str());
+	LogInfo("    Callsign: %s", m_callsign.c_str());
 	LogInfo("    RX Frequency: %uHz", rxFrequency);
 	LogInfo("    TX Frequency: %uHz", txFrequency);
 	LogInfo("    Power: %uW", power);
@@ -676,7 +690,7 @@ bool CMMDVMHost::createDMRNetwork()
 	LogInfo("    Description: \"%s\"", description.c_str());
 	LogInfo("    URL: \"%s\"", url.c_str());
 
-	m_dmrNetwork->setConfig(callsign, rxFrequency, txFrequency, power, colorCode, latitude, longitude, height, location, description, url);
+	m_dmrNetwork->setConfig(m_callsign, rxFrequency, txFrequency, power, colorCode, latitude, longitude, height, location, description, url);
 
 	bool ret = m_dmrNetwork->open();
 	if (!ret) {
@@ -696,13 +710,13 @@ void CMMDVMHost::readParams()
 	m_dmrEnabled   = m_conf.getDMREnabled();
 	m_ysfEnabled   = m_conf.getFusionEnabled();
 	m_duplex       = m_conf.getDuplex();
+	m_callsign     = m_conf.getCallsign();
 }
 
 void CMMDVMHost::createDisplay()
 {
-	std::string type       = m_conf.getDisplay();
-	std::string callsign   = m_conf.getCallsign();
-	unsigned int dmrid     = m_conf.getDMRId();
+	std::string type = m_conf.getDisplay();
+	unsigned int dmrid = m_conf.getDMRId();
 
 	LogInfo("Display Parameters");
 	LogInfo("    Type: %s", type.c_str());
@@ -714,7 +728,7 @@ void CMMDVMHost::createDisplay()
 		LogInfo("    Port: %s", port.c_str());
 		LogInfo("    Brightness: %u", brightness);
 
-		m_display = new CTFTSerial(callsign, dmrid, port, brightness);
+		m_display = new CTFTSerial(m_callsign, dmrid, port, brightness);
 	} else if (type == "Nextion") {
 		std::string size        = m_conf.getNextionSize();
 		std::string port        = m_conf.getNextionPort();
@@ -724,7 +738,7 @@ void CMMDVMHost::createDisplay()
 		LogInfo("    Port: %s", port.c_str());
 		LogInfo("    Brightness: %u", brightness);
 
-		m_display = new CNextion(callsign, dmrid, size, port, brightness);
+		m_display = new CNextion(m_callsign, dmrid, size, port, brightness);
 #if defined(HD44780)
 	} else if (type == "HD44780") {
 		unsigned int rows    = m_conf.getHD44780Rows();
@@ -747,7 +761,7 @@ void CMMDVMHost::createDisplay()
 				LogInfo("    PWM Dim: %u", pwmDim);
 			}
 
-			m_display = new CHD44780(rows, columns, callsign, dmrid, pins, pwm, pwmPin, pwmBright, pwmDim, m_duplex);
+			m_display = new CHD44780(rows, columns, m_callsign, dmrid, pins, pwm, pwmPin, pwmBright, pwmDim, m_duplex);
 		}
 #endif
 	} else {
@@ -775,6 +789,7 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 		m_modem->setMode(MODE_DSTAR);
 		m_mode = MODE_DSTAR;
 		m_modeTimer.start();
+		m_cwIdTimer.stop();
 		break;
 
 	case MODE_DMR:
@@ -789,6 +804,7 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 		}
 		m_mode = MODE_DMR;
 		m_modeTimer.start();
+		m_cwIdTimer.stop();
 		break;
 
 	case MODE_YSF:
@@ -801,6 +817,7 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 		m_modem->setMode(MODE_YSF);
 		m_mode = MODE_YSF;
 		m_modeTimer.start();
+		m_cwIdTimer.stop();
 		break;
 
 	case MODE_LOCKOUT:
@@ -818,6 +835,7 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 		m_display->setLockout();
 		m_mode = MODE_LOCKOUT;
 		m_modeTimer.stop();
+		m_cwIdTimer.stop();
 		break;
 
 	case MODE_ERROR:
@@ -834,6 +852,7 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 		m_display->setError("MODEM");
 		m_mode = MODE_ERROR;
 		m_modeTimer.stop();
+		m_cwIdTimer.stop();
 		break;
 
 	default:
@@ -851,6 +870,7 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 		m_display->setIdle();
 		m_mode = MODE_IDLE;
 		m_modeTimer.stop();
+		m_cwIdTimer.start();
 		break;
 	}
 }

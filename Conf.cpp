@@ -32,6 +32,7 @@ enum SECTION {
   SECTION_GENERAL,
   SECTION_INFO,
   SECTION_LOG,
+  SECTION_CWID,
   SECTION_MODEM,
   SECTION_DSTAR,
   SECTION_DMR,
@@ -65,6 +66,8 @@ m_logDisplayLevel(0U),
 m_logFileLevel(0U),
 m_logFilePath(),
 m_logFileRoot(),
+m_cwIdEnabled(false),
+m_cwIdTime(10U),
 m_modemPort(),
 m_modemRXInvert(false),
 m_modemTXInvert(false),
@@ -148,6 +151,8 @@ bool CConf::read()
 		  section = SECTION_INFO;
 	  else if (::strncmp(buffer, "[Log]", 5U) == 0)
 		  section = SECTION_LOG;
+	  else if (::strncmp(buffer, "[CW Id]", 7U) == 0)
+		  section = SECTION_CWID;
 	  else if (::strncmp(buffer, "[Modem]", 7U) == 0)
         section = SECTION_MODEM;
 	  else if (::strncmp(buffer, "[D-Star]", 8U) == 0)
@@ -223,6 +228,11 @@ bool CConf::read()
 			m_logFileLevel = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "DisplayLevel") == 0)
 			m_logDisplayLevel = (unsigned int)::atoi(value);
+	} else if (section == SECTION_CWID) {
+		if (::strcmp(key, "Enable") == 0)
+			m_cwIdEnabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "Time") == 0)
+			m_cwIdTime = (unsigned int)::atoi(value);
 	} else if (section == SECTION_MODEM) {
 		if (::strcmp(key, "Port") == 0)
 			m_modemPort = value;
@@ -474,6 +484,16 @@ std::string CConf::getLogFilePath() const
 std::string CConf::getLogFileRoot() const
 {
   return m_logFileRoot;
+}
+
+bool CConf::getCWIdEnabled() const
+{
+	return m_cwIdEnabled;
+}
+
+unsigned int CConf::getCWIdTime() const
+{
+	return m_cwIdTime;
 }
 
 std::string CConf::getModemPort() const

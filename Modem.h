@@ -67,6 +67,8 @@ public:
 
 	bool setMode(unsigned char mode);
 
+	bool sendCWId(const std::string& callsign);
+
 	void clock(unsigned int ms);
 
 	void close();
