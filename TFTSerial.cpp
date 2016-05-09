@@ -174,6 +174,9 @@ void CTFTSerial::writeDStar(const char* my1, const char* my2, const char* your, 
 		::sprintf(text, "via %.8s", reflector);
 		gotoPosPixel(5U, 110U);
 		displayText(text);
+	} else {
+		gotoPosPixel(5U, 110U);
+		displayText("            ");
 	}
 
 	m_mode = MODE_DSTAR;
