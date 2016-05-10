@@ -1032,7 +1032,7 @@ bool CModem::sendCWId(const std::string& callsign)
 
 	// CUtils::dump(1U, "Written", buffer, length + 3U);
 
-	return m_serial.write(buffer, length + 3U) == (length + 3U);
+	return m_serial.write(buffer, length + 3U) == int(length + 3U);
 }
 
 bool CModem::writeDMRStart(bool tx)
