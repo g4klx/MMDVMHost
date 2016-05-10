@@ -119,11 +119,7 @@ bool CDMRIPSC::open()
 	if (!ret)
 		return false;
 
-	ret = writeLogin();
-	if (!ret) {
-		m_socket.close();
-		return false;
-	}
+	writeLogin();
 
 	m_status = WAITING_LOGIN;
 	m_timeoutTimer.start();
@@ -272,15 +268,8 @@ bool CDMRIPSC::write(const CDMRData& data)
 	if (m_debug)
 		CUtils::dump(1U, "IPSC Transmitted", buffer, HOMEBREW_DATA_PACKET_LENGTH);
 
-	for (unsigned int i = 0U; i < count; i++) {
-		bool ret = write(buffer, HOMEBREW_DATA_PACKET_LENGTH);
-		if (!ret) {
-			LogError("Socket has failed when writing data to the master, retrying connection");
-			close();
-			open();
-			return false;
-		}
-	}
+	for (unsigned int i = 0U; i < count; i++)
+		write(buffer, HOMEBREW_DATA_PACKET_LENGTH);
 
 	return true;
 }
@@ -332,7 +321,7 @@ void CDMRIPSC::clock(unsigned int ms)
 				m_retryTimer.start();
 				m_pingTimer.stop();
 			} else {
-				LogError("Login to the master has failed");
+				LogError("Login to the master has failed, stopping IPSC");
 				m_status = DISCONNECTED;
 				m_timeoutTimer.stop();
 				m_retryTimer.stop();
@@ -497,5 +486,13 @@ bool CDMRIPSC::write(const unsigned char* data, unsigned int length)
 	// if (m_debug)
 	//	CUtils::dump(1U, "IPSC Transmitted", data, length);
 
-	return m_socket.write(data, length, m_address, m_port);
+	bool ret = m_socket.write(data, length, m_address, m_port);
+	if (!ret) {
+		LogError("Socket has failed when writing data to the master, retrying connection");
+		close();
+		open();
+		return false;
+	}
+
+	return true;
 }
