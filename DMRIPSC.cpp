@@ -44,9 +44,8 @@ m_enabled(false),
 m_slot1(slot1),
 m_slot2(slot2),
 m_status(DISCONNECTED),
-m_retryTimer(1000U, 10U),
+m_retryTimer(1000U, 5U),
 m_timeoutTimer(1000U, 60U),
-m_pingTimer(1000U, 5U),
 m_buffer(NULL),
 m_salt(NULL),
 m_streamId(NULL),
@@ -118,8 +117,6 @@ bool CDMRIPSC::open()
 	bool ret = m_socket.open();
 	if (!ret)
 		return false;
-
-	writeLogin();
 
 	m_status = WAITING_LOGIN;
 	m_timeoutTimer.start();
@@ -319,13 +316,11 @@ void CDMRIPSC::clock(unsigned int ms)
 				m_status = WAITING_LOGIN;
 				m_timeoutTimer.start();
 				m_retryTimer.start();
-				m_pingTimer.stop();
 			} else {
 				LogError("Login to the master has failed, stopping IPSC");
 				m_status = DISCONNECTED;
 				m_timeoutTimer.stop();
 				m_retryTimer.stop();
-				m_pingTimer.stop();
 			}
 		} else if (::memcmp(m_buffer, "RPTACK",  6U) == 0) {
 			switch (m_status) {
@@ -346,8 +341,7 @@ void CDMRIPSC::clock(unsigned int ms)
 					LogMessage("Logged into the master successfully");
 					m_status = RUNNING;
 					m_timeoutTimer.start();
-					m_retryTimer.stop();
-					m_pingTimer.start();
+					m_retryTimer.start();
 					break;
 				default:
 					break;
@@ -365,31 +359,26 @@ void CDMRIPSC::clock(unsigned int ms)
 		}
 	}
 
-	if (m_status != RUNNING) {
-		m_retryTimer.clock(ms);
-		if (m_retryTimer.isRunning() && m_retryTimer.hasExpired()) {
-			switch (m_status) {
-				case WAITING_LOGIN:
-					writeLogin();
-					break;
-				case WAITING_AUTHORISATION:
-					writeAuthorisation();
-					break;
-				case WAITING_CONFIG:
-					writeConfig();
-					break;
-				default:
-					break;
-			}
+	m_retryTimer.clock(ms);
+	if (m_retryTimer.isRunning() && m_retryTimer.hasExpired()) {
+		switch (m_status) {
+			case WAITING_LOGIN:
+				writeLogin();
+				break;
+			case WAITING_AUTHORISATION:
+				writeAuthorisation();
+				break;
+			case WAITING_CONFIG:
+				writeConfig();
+				break;
+			case RUNNING:
+				writePing();
+				break;
+			default:
+				break;
+		}
 
-			m_retryTimer.start();
-		}
-	} else {
-		m_pingTimer.clock(ms);
-		if (m_pingTimer.isRunning() && m_pingTimer.hasExpired()) {
-			writePing();
-			m_pingTimer.start();
-		}
+		m_retryTimer.start();
 	}
 
 	m_timeoutTimer.clock(ms);
