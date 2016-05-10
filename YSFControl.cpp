@@ -104,16 +104,9 @@ bool CYSFControl::writeModem(unsigned char *data)
 	if (valid && fi == YSF_FI_HEADER) {
 		CSync::addYSFSync(data + 2U);
 
-		unsigned char fn = fich.getFN();
-		unsigned char ft = fich.getFT();
-		unsigned char dt = fich.getDT();
-		unsigned char cm = fich.getCM();
-
 		fich.encode(data + 2U);
 
 		unsigned int errs = calculateBER(orig, data + 2U, YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES);
-		// LogDebug("YSF, FI=%u FN=%u FT=%u DT=%u BER=%.1f%%", fi, fn, ft, dt, float(errs) / 2.4F);
-
 		m_errs += errs;
 		m_bits += 240U;
 
@@ -142,6 +135,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 		if (valid)
 			m_source = m_payload.getSource();
 
+		unsigned char cm = fich.getCM();
 		if (cm == YSF_CM_GROUP) {
 			m_dest = (unsigned char*)"ALL       ";
 		} else {
@@ -164,15 +158,9 @@ bool CYSFControl::writeModem(unsigned char *data)
 	} else if (valid && fi == YSF_FI_TERMINATOR) {
 		CSync::addYSFSync(data + 2U);
 
-		unsigned char fn = fich.getFN();
-		unsigned char ft = fich.getFT();
-		unsigned char dt = fich.getDT();
-
 		fich.encode(data + 2U);
 
 		unsigned int errs = calculateBER(orig, data + 2U, YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES);
-		// LogDebug("YSF, FI=%u FN=%u FT=%u DT=%u BER=%.1f%%", fi, fn, ft, dt, float(errs) / 2.4F);
-
 		m_errs += errs;
 		m_bits += 240U;
 
@@ -209,7 +197,6 @@ bool CYSFControl::writeModem(unsigned char *data)
 	} else if (valid) {
 		CSync::addYSFSync(data + 2U);
 
-		unsigned char cm = fich.getCM();
 		unsigned char fn = fich.getFN();
 		unsigned char ft = fich.getFT();
 		unsigned char dt = fich.getDT();
@@ -217,8 +204,6 @@ bool CYSFControl::writeModem(unsigned char *data)
 		fich.encode(data + 2U);
 
 		unsigned int errs = calculateBER(orig, data + 2U, YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES);
-		// LogDebug("YSF, FI=%u FN=%u FT=%u DT=%u BER=%.1f%%", fi, fn, ft, dt, float(errs) / 2.4F);
-
 		m_errs += errs;
 		m_bits += 240U;
 
@@ -257,6 +242,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 		bool change = false;
 
 		if (m_dest == NULL) {
+			unsigned char cm = fich.getCM();
 			if (cm == YSF_CM_GROUP) {
 				m_dest = (unsigned char*)"ALL       ";
 				change = true;
@@ -314,8 +300,6 @@ bool CYSFControl::writeModem(unsigned char *data)
 
 		// Only calculate the BER on the sync word
 		unsigned int errs = calculateBER(orig, data + 2U, YSF_SYNC_LENGTH_BYTES);
-		// LogDebug("YSF, invalid FICH, BER=%.1f%%", float(errs) / 0.4F);
-
 		m_errs += errs;
 		m_bits += 40U;
 
