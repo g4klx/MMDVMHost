@@ -499,7 +499,7 @@ int CMMDVMHost::run()
 		if (m_dmrNetwork != NULL) {
 			bool run = m_dmrNetwork->wantsBeacon();
 			if (dmrBeaconsEnabled && run && m_mode == MODE_IDLE) {
-				setMode(MODE_DMR, false);
+				setMode(MODE_DMR);
 				dmrBeaconTimer.start();
 			}
 		}
@@ -532,7 +532,7 @@ int CMMDVMHost::run()
 
 		dmrBeaconTimer.clock(ms);
 		if (dmrBeaconTimer.isRunning() && dmrBeaconTimer.hasExpired()) {
-			setMode(MODE_IDLE, false);
+			setMode(MODE_IDLE);
 			dmrBeaconTimer.stop();
 		}
 
@@ -786,15 +786,13 @@ void CMMDVMHost::createDisplay()
 	}
 }
 
-void CMMDVMHost::setMode(unsigned char mode, bool logging)
+void CMMDVMHost::setMode(unsigned char mode)
 {
 	assert(m_modem != NULL);
 	assert(m_display != NULL);
 
 	switch (mode) {
 	case MODE_DSTAR:
-		if (logging)
-			LogMessage("Mode set to D-Star");
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(false);
 		m_modem->setMode(MODE_DSTAR);
@@ -804,8 +802,6 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 		break;
 
 	case MODE_DMR:
-		if (logging)
-			LogMessage("Mode set to DMR");
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(false);
 		m_modem->setMode(MODE_DMR);
@@ -819,8 +815,6 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 		break;
 
 	case MODE_YSF:
-		if (logging)
-			LogMessage("Mode set to System Fusion");
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(false);
 		if (m_dmrNetwork != NULL)
@@ -832,8 +826,7 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 		break;
 
 	case MODE_LOCKOUT:
-		if (logging)
-			LogMessage("Mode set to Lockout");
+		LogMessage("Mode set to Lockout");
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(false);
 		if (m_dmrNetwork != NULL)
@@ -850,8 +843,7 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 		break;
 
 	case MODE_ERROR:
-		if (logging)
-			LogMessage("Mode set to Error");
+		LogMessage("Mode set to Error");
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(false);
 		if (m_dmrNetwork != NULL)
@@ -867,8 +859,6 @@ void CMMDVMHost::setMode(unsigned char mode, bool logging)
 		break;
 
 	default:
-		if (logging)
-			LogMessage("Mode set to Idle");
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(true);
 		if (m_dmrNetwork != NULL)
