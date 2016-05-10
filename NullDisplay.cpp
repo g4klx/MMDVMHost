@@ -18,7 +18,8 @@
 
 #include "NullDisplay.h"
 
-CNullDisplay::CNullDisplay()
+CNullDisplay::CNullDisplay() :
+CDisplay()
 {
 }
 
@@ -31,39 +32,39 @@ bool CNullDisplay::open()
 	return true;
 }
 
-void CNullDisplay::setIdle()
+void CNullDisplay::setIdleInt()
 {
 }
 
-void CNullDisplay::setError(const char* text)
+void CNullDisplay::setErrorInt(const char* text)
 {
 }
 
-void CNullDisplay::setLockout()
+void CNullDisplay::setLockoutInt()
 {
 }
 
-void CNullDisplay::writeDStar(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
+void CNullDisplay::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
 }
 
-void CNullDisplay::clearDStar()
+void CNullDisplay::clearDStarInt()
 {
 }
 
-void CNullDisplay::writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
+void CNullDisplay::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
 }
 
-void CNullDisplay::clearDMR(unsigned int slotNo)
+void CNullDisplay::clearDMRInt(unsigned int slotNo)
 {
 }
 
-void CNullDisplay::writeFusion(const char* source, const char* dest)
+void CNullDisplay::writeFusionInt(const char* source, const char* dest)
 {
 }
 
-void CNullDisplay::clearFusion()
+void CNullDisplay::clearFusionInt()
 {
 }
 

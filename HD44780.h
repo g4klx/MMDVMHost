@@ -44,11 +44,12 @@ enum ADAFRUIT_COLOUR {
 #define AF_GREEN        (AF_BASE + 7)
 #define AF_BLUE         (AF_BASE + 8)
 #define AF_RW           (AF_BASE + 14)
-#define AF_RW           (AF_BASE + 14)
+#define AF_ON		LOW
+#define AF_OFF		HIGH
 #define MCP23017        0x20
 #endif
 
-class CHD44780 : public IDisplay
+class CHD44780 : public CDisplay
 {
 public:
   CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim, bool duplex);
@@ -56,21 +57,21 @@ public:
 
   virtual bool open();
 
-  virtual void setIdle();
-
-  virtual void setError(const char* text);
-  virtual void setLockout();
-
-  virtual void writeDStar(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
-  virtual void clearDStar();
-
-  virtual void writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
-  virtual void clearDMR(unsigned int slotNo);
-
-  virtual void writeFusion(const char* source, const char* dest);
-  virtual void clearFusion();
-
   virtual void close();
+
+protected:
+  virtual void setIdleInt();
+  virtual void setErrorInt(const char* text);
+  virtual void setLockoutInt();
+
+  virtual void writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
+  virtual void clearDStarInt();
+
+  virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
+  virtual void clearDMRInt(unsigned int slotNo);
+
+  virtual void writeFusionInt(const char* source, const char* dest);
+  virtual void clearFusionInt();
 
 private:
 	unsigned int m_rows;

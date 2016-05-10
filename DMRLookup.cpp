@@ -72,6 +72,9 @@ std::string CDMRLookup::find(unsigned int id) const
 {
 	std::string callsign;
 
+	if (id == 0xFFFFFFU)
+		return std::string("ALL");
+
 	try {
 		callsign = m_table.at(id);
 	} catch (...) {

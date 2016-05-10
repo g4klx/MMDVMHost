@@ -24,7 +24,7 @@
 
 // #define	DUMP_YSF
 
-CYSFControl::CYSFControl(const std::string& callsign, IDisplay* display, unsigned int timeout, bool duplex, bool parrot) :
+CYSFControl::CYSFControl(const std::string& callsign, CDisplay* display, unsigned int timeout, bool duplex, bool parrot) :
 m_display(display),
 m_duplex(duplex),
 m_queue(2000U, "YSF Control"),

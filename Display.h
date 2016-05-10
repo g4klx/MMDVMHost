@@ -19,32 +19,54 @@
 #if !defined(DISPLAY_H)
 #define	DISPLAY_H
 
+#include "Timer.h"
+
 #include <string>
 
-class IDisplay
+class CDisplay
 {
 public:
-  virtual ~IDisplay() = 0;
+	CDisplay();
+	virtual ~CDisplay() = 0;
 
-  virtual bool open() = 0;
+	virtual bool open() = 0;
 
-  virtual void setIdle() = 0;
+	void setIdle();
+	void setLockout();
+	void setError(const char* text);
 
-  virtual void setLockout() = 0;
-  virtual void setError(const char* text) = 0;
+	void writeDStar(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
+	void clearDStar();
 
-  virtual void writeDStar(const char* my1, const char* my2, const char* your, const char* type, const char* reflector) = 0;
-  virtual void clearDStar() = 0;
+	void writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
+	void clearDMR(unsigned int slotNo);
 
-  virtual void writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type) = 0;
-  virtual void clearDMR(unsigned int slotNo) = 0;
+	void writeFusion(const char* source, const char* dest);
+	void clearFusion();
 
-  virtual void writeFusion(const char* source, const char* dest) = 0;
-  virtual void clearFusion() = 0;
+	virtual void close() = 0;
 
-  virtual void close() = 0;
+	void clock(unsigned int ms);
+
+protected:
+	virtual void setIdleInt() = 0;
+	virtual void setLockoutInt() = 0;
+	virtual void setErrorInt(const char* text) = 0;
+
+	virtual void writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector) = 0;
+	virtual void clearDStarInt() = 0;
+
+	virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type) = 0;
+	virtual void clearDMRInt(unsigned int slotNo) = 0;
+
+	virtual void writeFusionInt(const char* source, const char* dest) = 0;
+	virtual void clearFusionInt() = 0;
 
 private:
+	CTimer        m_timer1;
+	CTimer        m_timer2;
+	unsigned char m_mode1;
+	unsigned char m_mode2;
 };
 
 #endif

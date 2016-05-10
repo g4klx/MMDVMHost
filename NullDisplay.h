@@ -23,7 +23,7 @@
 
 #include <string>
 
-class CNullDisplay : public IDisplay
+class CNullDisplay : public CDisplay
 {
 public:
   CNullDisplay();
@@ -31,21 +31,21 @@ public:
 
   virtual bool open();
 
-  virtual void setIdle();
-
-  virtual void setError(const char* text);
-  virtual void setLockout();
-
-  virtual void writeDStar(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
-  virtual void clearDStar();
-
-  virtual void writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
-  virtual void clearDMR(unsigned int slotNo);
-
-  virtual void writeFusion(const char* source, const char* dest);
-  virtual void clearFusion();
-
   virtual void close();
+
+protected:
+	virtual void setIdleInt();
+	virtual void setErrorInt(const char* text);
+	virtual void setLockoutInt();
+
+	virtual void writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
+	virtual void clearDStarInt();
+
+	virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
+	virtual void clearDMRInt(unsigned int slotNo);
+
+	virtual void writeFusionInt(const char* source, const char* dest);
+	virtual void clearFusionInt();
 
 private:
 };

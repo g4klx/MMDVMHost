@@ -55,6 +55,10 @@ public:
   std::string  getLogFilePath() const;
   std::string  getLogFileRoot() const;
 
+  // The CW ID section
+  bool         getCWIdEnabled() const;
+  unsigned int getCWIdTime() const;
+
   // The Modem section
   std::string  getModemPort() const;
   bool         getModemRXInvert() const;
@@ -157,6 +161,9 @@ private:
   unsigned int m_logFileLevel;
   std::string  m_logFilePath;
   std::string  m_logFileRoot;
+
+  bool         m_cwIdEnabled;
+  unsigned int m_cwIdTime;
 
   std::string  m_modemPort;
   bool         m_modemRXInvert;

@@ -30,7 +30,7 @@
 
 class CDMRControl {
 public:
-	CDMRControl(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, unsigned int timeout, CModem* modem, CDMRIPSC* network, IDisplay* display, bool duplex, const std::string& lookupFile);
+	CDMRControl(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, unsigned int timeout, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, const std::string& lookupFile);
 	~CDMRControl();
 
 	bool processWakeup(const unsigned char* data);

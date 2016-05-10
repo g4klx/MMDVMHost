@@ -73,7 +73,6 @@ private:
 	STATUS         m_status;
 	CTimer         m_retryTimer;
 	CTimer         m_timeoutTimer;
-	CTimer         m_pingTimer;
 	unsigned char* m_buffer;
 	unsigned char* m_salt;
 	uint32_t*      m_streamId;

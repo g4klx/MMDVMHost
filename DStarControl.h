@@ -36,7 +36,7 @@
 
 class CDStarControl {
 public:
-	CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, const std::vector<std::string>& blackList, CDStarNetwork* network, IDisplay* display, unsigned int timeout, bool duplex);
+	CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, const std::vector<std::string>& blackList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex);
 	~CDStarControl();
 
 	bool writeModem(unsigned char* data);
@@ -51,7 +51,7 @@ private:
 	bool                       m_selfOnly;
 	std::vector<std::string>   m_blackList;
 	CDStarNetwork*             m_network;
-	IDisplay*                  m_display;
+	CDisplay*                  m_display;
 	bool                       m_duplex;
 	CRingBuffer<unsigned char> m_queue;
 	CDStarHeader               m_rfHeader;

@@ -30,6 +30,7 @@
 const char* LISTENING = "Listening                               ";
 
 CHD44780::CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim, bool duplex) :
+CDisplay(),
 m_rows(rows),
 m_cols(cols),
 m_callsign(callsign),
@@ -107,44 +108,44 @@ void CHD44780::adafruitLCDColour(ADAFRUIT_COLOUR colour)
 {
 	switch (colour) {
 		 case AC_OFF:
-		 		::digitalWrite(AF_RED, HIGH);
-		 		::digitalWrite(AF_GREEN, HIGH);
-		 		::digitalWrite(AF_BLUE, HIGH);
+		 		::digitalWrite(AF_RED, AF_OFF);
+		 		::digitalWrite(AF_GREEN, AF_OFF);
+		 		::digitalWrite(AF_BLUE, AF_OFF);
 		 		break;
 		 case AC_WHITE:
-		 		::digitalWrite(AF_RED, LOW);
-		 		::digitalWrite(AF_GREEN, LOW);
-		 		::digitalWrite(AF_BLUE, LOW);
+		 		::digitalWrite(AF_RED, AF_ON);
+		 		::digitalWrite(AF_GREEN, AF_ON);
+		 		::digitalWrite(AF_BLUE, AF_ON);
 		 		break;
 		 case AC_RED:
-		 		::digitalWrite(AF_RED, LOW);
-		 		::digitalWrite(AF_GREEN, HIGH);
-		 		::digitalWrite(AF_BLUE, HIGH);
+		 		::digitalWrite(AF_RED, AF_ON);
+		 		::digitalWrite(AF_GREEN, AF_OFF);
+		 		::digitalWrite(AF_BLUE, AF_OFF);
 		 		break;
 		 case AC_GREEN:
-		 		::digitalWrite(AF_RED, HIGH);
-		 		::digitalWrite(AF_GREEN, LOW);
-		 		::digitalWrite(AF_BLUE, HIGH);
+		 		::digitalWrite(AF_RED, AF_OFF);
+		 		::digitalWrite(AF_GREEN, AF_ON);
+		 		::digitalWrite(AF_BLUE, AF_OFF);
 		 		break;
 		 case AC_BLUE:
-		 		::digitalWrite(AF_RED, HIGH);
-		 		::digitalWrite(AF_GREEN, HIGH);
-		 		::digitalWrite(AF_BLUE, LOW);
+		 		::digitalWrite(AF_RED, AF_OFF);
+		 		::digitalWrite(AF_GREEN, AF_OFF);
+		 		::digitalWrite(AF_BLUE, AF_ON);
 		 		break;
 		 case AC_PURPLE:
-		 		::digitalWrite(AF_RED, LOW);
-		 		::digitalWrite(AF_GREEN, HIGH);
-		 		::digitalWrite(AF_BLUE, LOW);
+		 		::digitalWrite(AF_RED, AF_ON);
+		 		::digitalWrite(AF_GREEN, AF_OFF);
+		 		::digitalWrite(AF_BLUE, AF_ON);
 		 		break;
 		 case AC_YELLOW:
-		 		::digitalWrite(AF_RED, LOW);
-		 		::digitalWrite(AF_GREEN, LOW);
-		 		::digitalWrite(AF_BLUE, HIGH);
+		 		::digitalWrite(AF_RED, AF_ON);
+		 		::digitalWrite(AF_GREEN, AF_ON);
+		 		::digitalWrite(AF_BLUE, AF_OFF);
 		 		break;
 		 case AC_ICE:
-		 		::digitalWrite(AF_RED, HIGH);
-		 		::digitalWrite(AF_GREEN, LOW);
-		 		::digitalWrite(AF_BLUE, LOW);
+		 		::digitalWrite(AF_RED, AF_OFF);
+		 		::digitalWrite(AF_GREEN, AF_ON);
+		 		::digitalWrite(AF_BLUE, AF_ON);
 		 		break;
 		 default:
 		 	break;
@@ -152,7 +153,7 @@ void CHD44780::adafruitLCDColour(ADAFRUIT_COLOUR colour)
 }
 #endif
 
-void CHD44780::setIdle()
+void CHD44780::setIdleInt()
 {
 	::lcdClear(m_fd);
 	
@@ -176,7 +177,7 @@ void CHD44780::setIdle()
 	m_dmr = false;
 }
 
-void CHD44780::setError(const char* text)
+void CHD44780::setErrorInt(const char* text)
 {
 	assert(text != NULL);
 
@@ -202,7 +203,7 @@ void CHD44780::setError(const char* text)
 	m_dmr = false;
 }
 
-void CHD44780::setLockout()
+void CHD44780::setLockoutInt()
 {
 #ifdef ADAFRUIT_DISPLAY
 	adafruitLCDColour(AC_RED);
@@ -226,7 +227,7 @@ void CHD44780::setLockout()
 	m_dmr = false;
 }
 
-void CHD44780::writeDStar(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
+void CHD44780::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
 	assert(my1 != NULL);
 	assert(my2 != NULL);
@@ -295,7 +296,7 @@ void CHD44780::writeDStar(const char* my1, const char* my2, const char* your, co
 	m_dmr = false;
 }
 
-void CHD44780::clearDStar()
+void CHD44780::clearDStarInt()
 {
 #ifdef ADAFRUIT_DISPLAY
 	adafruitLCDColour(AC_ICE);
@@ -322,7 +323,7 @@ void CHD44780::clearDStar()
 	}
 }
 
-void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
+void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
 	assert(type != NULL);
 
@@ -466,7 +467,7 @@ void CHD44780::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 	m_dmr = true;
 }
 
-void CHD44780::clearDMR(unsigned int slotNo)
+void CHD44780::clearDMRInt(unsigned int slotNo)
 {
 #ifdef ADAFRUIT_DISPLAY
 	adafruitLCDColour(AC_ICE);
@@ -515,7 +516,7 @@ void CHD44780::clearDMR(unsigned int slotNo)
 	}
 }
 
-void CHD44780::writeFusion(const char* source, const char* dest)
+void CHD44780::writeFusionInt(const char* source, const char* dest)
 {
 	assert(source != NULL);
 	assert(dest != NULL);
@@ -570,7 +571,7 @@ void CHD44780::writeFusion(const char* source, const char* dest)
 	m_dmr = false;
 }
 
-void CHD44780::clearFusion()
+void CHD44780::clearFusionInt()
 {
 #ifdef ADAFRUIT_DISPLAY
 	adafruitLCDColour(AC_ICE);

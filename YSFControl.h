@@ -33,7 +33,7 @@
 
 class CYSFControl {
 public:
-	CYSFControl(const std::string& callsign, IDisplay* display, unsigned int timeout, bool duplex, bool parrot);
+	CYSFControl(const std::string& callsign, CDisplay* display, unsigned int timeout, bool duplex, bool parrot);
 	~CYSFControl();
 
 	bool writeModem(unsigned char* data);
@@ -43,7 +43,7 @@ public:
 	void clock();
 
 private:
-	IDisplay*                  m_display;
+	CDisplay*                  m_display;
 	bool                       m_duplex;
 	CRingBuffer<unsigned char> m_queue;
 	RPT_RF_STATE               m_state;

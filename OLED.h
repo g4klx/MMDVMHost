@@ -51,6 +51,7 @@ static unsigned char logo_glcd_bmp[] =
     0b00000001, 0b10000000,
     0b00000001, 0b10000000,
     0b00000000, 0b00000000 };
+
 //DMR 48x16 px
 static unsigned char logo_dmr_bmp[] =
   { 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111,
@@ -71,7 +72,7 @@ static unsigned char logo_dmr_bmp[] =
     0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111
   };
 
-class COLED : public IDisplay
+class COLED : public CDisplay 
 {
 public:
   COLED(unsigned char displayType, unsigned char displayBrighness, unsigned char displayInvert);

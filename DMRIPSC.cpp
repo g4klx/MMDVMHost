@@ -44,9 +44,8 @@ m_enabled(false),
 m_slot1(slot1),
 m_slot2(slot2),
 m_status(DISCONNECTED),
-m_retryTimer(1000U, 10U),
-m_timeoutTimer(1000U, 600U),
-m_pingTimer(1000U, 5U),
+m_retryTimer(1000U, 5U),
+m_timeoutTimer(1000U, 60U),
 m_buffer(NULL),
 m_salt(NULL),
 m_streamId(NULL),
@@ -118,12 +117,6 @@ bool CDMRIPSC::open()
 	bool ret = m_socket.open();
 	if (!ret)
 		return false;
-
-	ret = writeLogin();
-	if (!ret) {
-		m_socket.close();
-		return false;
-	}
 
 	m_status = WAITING_LOGIN;
 	m_timeoutTimer.start();
@@ -282,10 +275,12 @@ void CDMRIPSC::close()
 {
 	LogMessage("Closing DMR IPSC");
 
-	unsigned char buffer[9U];
-	::memcpy(buffer + 0U, "RPTCL", 5U);
-	::memcpy(buffer + 5U, m_id, 4U);
-	write(buffer, 9U);
+	if (m_status == RUNNING) {
+		unsigned char buffer[9U];
+		::memcpy(buffer + 0U, "RPTCL", 5U);
+		::memcpy(buffer + 5U, m_id, 4U);
+		write(buffer, 9U);
+	}
 
 	m_socket.close();
 }
@@ -296,7 +291,7 @@ void CDMRIPSC::clock(unsigned int ms)
 	unsigned int port;
 	int length = m_socket.read(m_buffer, BUFFER_LENGTH, address, port);
 	if (length < 0) {
-		LogError("Socket has failed, retrying connection");
+		LogError("Socket has failed, retrying connection to the master");
 		close();
 		open();
 		return;
@@ -321,13 +316,11 @@ void CDMRIPSC::clock(unsigned int ms)
 				m_status = WAITING_LOGIN;
 				m_timeoutTimer.start();
 				m_retryTimer.start();
-				m_pingTimer.stop();
 			} else {
-				LogError("Login to the master has failed");
+				LogError("Login to the master has failed, stopping IPSC");
 				m_status = DISCONNECTED;
 				m_timeoutTimer.stop();
 				m_retryTimer.stop();
-				m_pingTimer.stop();
 			}
 		} else if (::memcmp(m_buffer, "RPTACK",  6U) == 0) {
 			switch (m_status) {
@@ -348,8 +341,7 @@ void CDMRIPSC::clock(unsigned int ms)
 					LogMessage("Logged into the master successfully");
 					m_status = RUNNING;
 					m_timeoutTimer.start();
-					m_retryTimer.stop();
-					m_pingTimer.start();
+					m_retryTimer.start();
 					break;
 				default:
 					break;
@@ -367,31 +359,26 @@ void CDMRIPSC::clock(unsigned int ms)
 		}
 	}
 
-	if (m_status != RUNNING) {
-		m_retryTimer.clock(ms);
-		if (m_retryTimer.isRunning() && m_retryTimer.hasExpired()) {
-			switch (m_status) {
-				case WAITING_LOGIN:
-					writeLogin();
-					break;
-				case WAITING_AUTHORISATION:
-					writeAuthorisation();
-					break;
-				case WAITING_CONFIG:
-					writeConfig();
-					break;
-				default:
-					break;
-			}
+	m_retryTimer.clock(ms);
+	if (m_retryTimer.isRunning() && m_retryTimer.hasExpired()) {
+		switch (m_status) {
+			case WAITING_LOGIN:
+				writeLogin();
+				break;
+			case WAITING_AUTHORISATION:
+				writeAuthorisation();
+				break;
+			case WAITING_CONFIG:
+				writeConfig();
+				break;
+			case RUNNING:
+				writePing();
+				break;
+			default:
+				break;
+		}
 
-			m_retryTimer.start();
-		}
-	} else {
-		m_pingTimer.clock(ms);
-		if (m_pingTimer.isRunning() && m_pingTimer.hasExpired()) {
-			writePing();
-			m_pingTimer.start();
-		}
+		m_retryTimer.start();
 	}
 
 	m_timeoutTimer.clock(ms);
@@ -488,5 +475,13 @@ bool CDMRIPSC::write(const unsigned char* data, unsigned int length)
 	// if (m_debug)
 	//	CUtils::dump(1U, "IPSC Transmitted", data, length);
 
-	return m_socket.write(data, length, m_address, m_port);
+	bool ret = m_socket.write(data, length, m_address, m_port);
+	if (!ret) {
+		LogError("Socket has failed when writing data to the master, retrying connection");
+		close();
+		open();
+		return false;
+	}
+
+	return true;
 }
