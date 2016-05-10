@@ -112,7 +112,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 		fich.encode(data + 2U);
 
 		unsigned int errs = calculateBER(orig, data + 2U, YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES);
-		LogDebug("YSF, FI=%u FN=%u FT=%u DT=%u BER=%.1f%%", fi, fn, ft, dt, float(errs) / 2.4F);
+		// LogDebug("YSF, FI=%u FN=%u FT=%u DT=%u BER=%.1f%%", fi, fn, ft, dt, float(errs) / 2.4F);
 
 		m_errs += errs;
 		m_bits += 240U;
@@ -143,7 +143,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 			m_source = m_payload.getSource();
 
 		if (cm == YSF_CM_GROUP) {
-			m_dest = (unsigned char*)"CQCQCQ    ";
+			m_dest = (unsigned char*)"ALL       ";
 		} else {
 			if (valid)
 				m_dest = m_payload.getDest();
@@ -171,7 +171,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 		fich.encode(data + 2U);
 
 		unsigned int errs = calculateBER(orig, data + 2U, YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES);
-		LogDebug("YSF, FI=%u FN=%u FT=%u DT=%u BER=%.1f%%", fi, fn, ft, dt, float(errs) / 2.4F);
+		// LogDebug("YSF, FI=%u FN=%u FT=%u DT=%u BER=%.1f%%", fi, fn, ft, dt, float(errs) / 2.4F);
 
 		m_errs += errs;
 		m_bits += 240U;
@@ -217,7 +217,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 		fich.encode(data + 2U);
 
 		unsigned int errs = calculateBER(orig, data + 2U, YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES);
-		LogDebug("YSF, FI=%u FN=%u FT=%u DT=%u BER=%.1f%%", fi, fn, ft, dt, float(errs) / 2.4F);
+		// LogDebug("YSF, FI=%u FN=%u FT=%u DT=%u BER=%.1f%%", fi, fn, ft, dt, float(errs) / 2.4F);
 
 		m_errs += errs;
 		m_bits += 240U;
@@ -241,7 +241,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 			valid = m_payload.processDataFRModeData(data + 2U, fn);
 			break;
 
-		default:		// YSF_DT_VOICE_FR_MODE
+		case YSF_DT_VOICE_FR_MODE:
 			if (fn != 0U || ft != 1U) {
 				// The first packet after the header is odd, don't try and regenerate it
 				m_errs += m_payload.processVoiceFRModeAudio(data + 2U);
@@ -249,13 +249,16 @@ bool CYSFControl::writeModem(unsigned char *data)
 			}
 			valid = false;
 			break;
+
+		default:
+			break;
 		}
 
 		bool change = false;
 
 		if (m_dest == NULL) {
 			if (cm == YSF_CM_GROUP) {
-				m_dest = (unsigned char*)"CQCQCQ    ";
+				m_dest = (unsigned char*)"ALL       ";
 				change = true;
 			} else if (valid) {
 				m_dest = m_payload.getDest();
@@ -311,7 +314,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 
 		// Only calculate the BER on the sync word
 		unsigned int errs = calculateBER(orig, data + 2U, YSF_SYNC_LENGTH_BYTES);
-		LogDebug("YSF, invalid FICH, BER=%.1f%%", float(errs) / 0.4F);
+		// LogDebug("YSF, invalid FICH, BER=%.1f%%", float(errs) / 0.4F);
 
 		m_errs += errs;
 		m_bits += 40U;

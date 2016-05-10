@@ -136,9 +136,6 @@ bool CYSFPayload::processHeaderData(unsigned char* data)
 		for (unsigned int i = 0U; i < 20U; i++)
 			output[i] ^= WHITENING_DATA[i];
 
-		CUtils::dump(1U, "Header, Destination", output + 0U, 10U);
-		CUtils::dump(1U, "Header, Source", output + 10U, 10U);
-
 		if (m_dest == NULL) {
 			m_dest = new unsigned char[10U];
 			::memcpy(m_dest, output + 0U, 10U);
@@ -281,9 +278,6 @@ bool CYSFPayload::processVDMode1Data(unsigned char* data, unsigned char fn)
 
 		switch (fn) {
 		case 0U:
-			CUtils::dump(1U, "V/D Mode 1, Destination", output + 0U, 10U);
-			CUtils::dump(1U, "V/D Mode 1, Source", output + 10U, 10U);
-
 			if (m_dest == NULL) {
 				m_dest = new unsigned char[10U];
 				::memcpy(m_dest, output + 0U, 10U);
@@ -452,14 +446,12 @@ bool CYSFPayload::processVDMode2Data(unsigned char* data, unsigned char fn)
 
 		switch (fn) {
 		case 0U:
-			CUtils::dump(1U, "V/D Mode 2, Destination", output, 10U);
 			if (m_dest == NULL) {
 				m_dest = new unsigned char[10U];
 				::memcpy(m_dest, output, 10U);
 			}
 			break;
 		case 1U:
-			CUtils::dump(1U, "V/D Mode 2, Source", output, 10U);
 			if (m_source == NULL) {
 				m_source = new unsigned char[10U];
 				::memcpy(m_source, output, 10U);
@@ -563,9 +555,6 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn)
 
 		switch (fn) {
 		case 0U:
-			CUtils::dump(1U, "Data FR Mode, Destination", output + 0U, 10U);
-			CUtils::dump(1U, "Data FR Mode, Source", output + 10U, 10U);
-
 			if (m_dest == NULL) {
 				m_dest = new unsigned char[10U];
 				::memcpy(m_dest, output + 0U, 10U);
