@@ -63,7 +63,7 @@ bool COLED::open()
 	return true;
 }
 
-void COLED::setIdle()
+void COLED::setIdleInt()
 {
     m_mode = MODE_IDLE; 
 
@@ -77,7 +77,7 @@ void COLED::setIdle()
     display.startscrollright(0x02,0x0f);
 }
 
-void COLED::setError(const char* text)
+void COLED::setErrorInt(const char* text)
 {
     m_mode = MODE_ERROR;
 
@@ -88,7 +88,7 @@ void COLED::setError(const char* text)
     display.display();
 }
 
-void COLED::setLockout()
+void COLED::setLockoutInt()
 {
     m_mode = MODE_LOCKOUT;
 
@@ -99,12 +99,12 @@ void COLED::setLockout()
     display.display();
 }
 
-void COLED::writeDStar(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
+void COLED::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
     m_mode = MODE_DSTAR;
 }
 
-void COLED::clearDStar()
+void COLED::clearDStarInt()
 {
     display.fillRect(0, OLED_LINE1, display.width(), 10, BLACK);
     display.setCursor(0,OLED_LINE1);
@@ -113,7 +113,7 @@ void COLED::clearDStar()
     display.display();
 }
 
-void COLED::writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
+void COLED::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
 
     if (m_mode != MODE_DMR) {
@@ -154,7 +154,7 @@ void COLED::writeDMR(unsigned int slotNo, const std::string& src, bool group, co
     display.display();
 }
 
-void COLED::clearDMR(unsigned int slotNo)
+void COLED::clearDMRInt(unsigned int slotNo)
 {
     OLED_statusbar();
     if (slotNo == 1U)
@@ -174,12 +174,12 @@ void COLED::clearDMR(unsigned int slotNo)
     display.display();
 }
 
-void COLED::writeFusion(const char* source, const char* dest)
+void COLED::writeFusionInt(const char* source, const char* dest)
 {
     m_mode = MODE_YSF;
 }
 
-void COLED::clearFusion()
+void COLED::clearFusionInt()
 {
 }
 
