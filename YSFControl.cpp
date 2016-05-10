@@ -27,7 +27,7 @@
 CYSFControl::CYSFControl(const std::string& callsign, CDisplay* display, unsigned int timeout, bool duplex, bool parrot) :
 m_display(display),
 m_duplex(duplex),
-m_queue(2000U, "YSF Control"),
+m_queue(5000U, "YSF Control"),
 m_state(RS_RF_LISTENING),
 m_timeoutTimer(1000U, timeout),
 m_interval(),
