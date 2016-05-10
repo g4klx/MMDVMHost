@@ -79,6 +79,7 @@ void CDisplay::writeDStar(const char* my1, const char* my2, const char* your, co
 	assert(reflector != NULL);
 
 	m_timer1.start();
+	m_mode1 = MODE_IDLE;
 
 	writeDStarInt(my1, my2, your, type, reflector);
 }
@@ -88,6 +89,7 @@ void CDisplay::clearDStar()
 	if (m_timer1.hasExpired()) {
 		clearDStarInt();
 		m_timer1.stop();
+		m_mode1 = MODE_IDLE;
 	} else {
 		m_mode1 = MODE_DSTAR;
 	}
@@ -97,10 +99,13 @@ void CDisplay::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 {
 	assert(type != NULL);
 
-	if (slotNo == 1U)
+	if (slotNo == 1U) {
 		m_timer1.start();
-	else
+		m_mode1 = MODE_IDLE;
+	} else {
 		m_timer2.start();
+		m_mode2 = MODE_IDLE;
+	}
 
 	writeDMRInt(slotNo, src, group, dst, type);
 }
@@ -111,6 +116,7 @@ void CDisplay::clearDMR(unsigned int slotNo)
 		if (m_timer1.hasExpired()) {
 			clearDMRInt(slotNo);
 			m_timer1.stop();
+			m_mode1 = MODE_IDLE;
 		} else {
 			m_mode1 = MODE_DMR;
 		}
@@ -118,6 +124,7 @@ void CDisplay::clearDMR(unsigned int slotNo)
 		if (m_timer2.hasExpired()) {
 			clearDMRInt(slotNo);
 			m_timer2.stop();
+			m_mode2 = MODE_IDLE;
 		} else {
 			m_mode2 = MODE_DMR;
 		}
@@ -130,6 +137,7 @@ void CDisplay::writeFusion(const char* source, const char* dest)
 	assert(dest != NULL);
 
 	m_timer1.start();
+	m_mode1 = MODE_IDLE;
 
 	writeFusionInt(source, dest);
 }
@@ -139,6 +147,7 @@ void CDisplay::clearFusion()
 	if (m_timer1.hasExpired()) {
 		clearFusionInt();
 		m_timer1.stop();
+		m_mode1 = MODE_IDLE;
 	} else {
 		m_mode1 = MODE_YSF;
 	}
@@ -151,34 +160,31 @@ void CDisplay::clock(unsigned int ms)
 		switch (m_mode1) {
 		case MODE_DSTAR:
 			clearDStarInt();
+			m_mode1 = MODE_IDLE;
+			m_timer1.stop();
 			break;
 		case MODE_DMR:
 			clearDMRInt(1U);
+			m_mode1 = MODE_IDLE;
+			m_timer1.stop();
 			break;
 		case MODE_YSF:
 			clearFusionInt();
+			m_mode1 = MODE_IDLE;
+			m_timer1.stop();
+			break;
+		default:
 			break;
 		}
-
-		m_mode1 = MODE_IDLE;
-		m_timer1.stop();
 	}
 
+	// Timer/mode 2 are only used for DMR
 	m_timer2.clock(ms);
 	if (m_timer2.isRunning() && m_timer2.hasExpired()) {
-		switch (m_mode2) {
-		case MODE_DSTAR:
-			clearDStarInt();
-			break;
-		case MODE_DMR:
+		if (m_mode2 == MODE_DMR) {
 			clearDMRInt(2U);
-			break;
-		case MODE_YSF:
-			clearFusionInt();
-			break;
+			m_mode2 = MODE_IDLE;
+			m_timer2.stop();
 		}
-
-		m_mode2 = MODE_IDLE;
-		m_timer2.stop();
 	}
 }
