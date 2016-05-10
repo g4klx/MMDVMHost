@@ -102,6 +102,17 @@ void COLED::setLockoutInt()
 void COLED::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
     m_mode = MODE_DSTAR;
+    display.fillRect(0, OLED_LINE1, display.width(), 10, BLACK);
+    display.setCursor(0,OLED_LINE1);
+    display.printf("%s %.8s/%4.4s", type, my1, my2);
+    display.fillRect(0, OLED_LINE2, display.width(), 10, BLACK);
+    display.setCursor(0,OLED_LINE2);
+    display.printf("via %.8s", reflector);
+    display.fillRect(0, OLED_LINE3, display.width(), 10, BLACK);
+    display.setCursor(0,OLED_LINE3);
+    display.printf("%.8s <- %-8s", your, reflector);
+    OLED_statusbar();
+    display.display();
 }
 
 void COLED::clearDStarInt()
@@ -109,6 +120,8 @@ void COLED::clearDStarInt()
     display.fillRect(0, OLED_LINE1, display.width(), 10, BLACK);
     display.setCursor(0,OLED_LINE1);
     display.print("Listening");
+    display.fillRect(0, OLED_LINE2, display.width(), 10, BLACK);
+    display.fillRect(0, OLED_LINE3, display.width(), 10, BLACK);
     OLED_statusbar();
     display.display();
 }
@@ -177,10 +190,24 @@ void COLED::clearDMRInt(unsigned int slotNo)
 void COLED::writeFusionInt(const char* source, const char* dest)
 {
     m_mode = MODE_YSF;
+    display.fillRect(0, OLED_LINE1, display.width(), 10, BLACK);
+    display.setCursor(0,OLED_LINE1);
+    display.printf("%.10s", source);
+    display.fillRect(0, OLED_LINE2, display.width(), 10, BLACK);
+    display.setCursor(0,OLED_LINE2);
+    display.printf("%.10s", dest);
+    OLED_statusbar();
+    display.display();
 }
 
 void COLED::clearFusionInt()
 {
+    display.fillRect(0, OLED_LINE1, display.width(), 10, BLACK);
+    display.setCursor(0,OLED_LINE1);
+    display.print("Listening");
+    display.fillRect(0, OLED_LINE2, display.width(), 10, BLACK);
+    OLED_statusbar();
+    display.display();
 }
 
 void COLED::close()
@@ -196,6 +223,10 @@ void COLED::OLED_statusbar()
 	display.setCursor(0,0);
     if (m_mode == MODE_DMR)
       display.drawBitmap(0, 0, logo_dmr_bmp, 48, 16, WHITE);
+    else if (m_mode == MODE_DSTAR)
+      display.print("D-Star");
+    else if (m_mode == MODE_YSF)
+      display.print("Fusion");
     else
       display.drawBitmap(0, 0, logo_glcd_bmp, 16, 15, WHITE);
 }
