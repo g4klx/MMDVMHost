@@ -113,7 +113,8 @@ unsigned char vChar[8] =
 	0b11111
 };
 
-unsigned char rfChar[8] =
+// Text-based custom character for RF traffic
+/* unsigned char rfChar[8] =
 {
 	0b11100,
 	0b10100,
@@ -123,9 +124,23 @@ unsigned char rfChar[8] =
 	0b00100,
 	0b00110,
 	0b00100
+}; */
+
+// Icon-based custom character for RF traffic
+unsigned char rfChar[8] =
+{
+	0b11111,
+	0b10101,
+	0b01110,
+	0b00100,
+	0b00100,
+	0b00100,
+	0b00000,
+	0b00000
 };
 
-unsigned char ipChar[8] =
+// Text-based custom character for network traffic
+/* unsigned char ipChar[8] =
 {
 	0b01000,
 	0b01000,
@@ -135,6 +150,31 @@ unsigned char ipChar[8] =
 	0b00101,
 	0b00110,
 	0b00100
+}; */
+
+// Icon-based custom character for network traffic
+unsigned char ipChar[8] =
+{
+	0b01110,
+	0b10001,
+	0b00100,
+	0b01010,
+	0b00000,
+	0b00100,
+	0b00000,
+	0b00000
+};
+
+unsigned char tgChar[8] =
+{
+	0b11100,
+	0b01000,
+	0b01000,
+	0b01000,
+	0b00011,
+	0b00100,
+	0b00101,
+	0b00111
 };
 
 CHD44780::~CHD44780()
@@ -175,6 +215,7 @@ bool CHD44780::open()
 	::lcdCharDef(m_fd, 4, vChar);
 	::lcdCharDef(m_fd, 5, rfChar);
 	::lcdCharDef(m_fd, 6, ipChar);
+	::lcdCharDef(m_fd, 7, tgChar);
 
 	return true;
 }
@@ -498,6 +539,7 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 		adafruitLCDColour(AC_RED);
 #endif
 
+	// 2 x 16
 	if (m_rows == 2U && m_cols == 16U) {
 		char buffer[16U];
 		if (m_duplex) {
@@ -513,16 +555,21 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 		} else {
 				::lcdPosition(m_fd, 0, 0);
 				::lcdPutchar(m_fd, 0);
-				::sprintf(buffer, " %s", src.c_str());
-				::lcdPrintf(m_fd, "%-14s", buffer);
+				::lcdPrintf(m_fd, " %-13s", src.c_str());
 				::lcdPutchar(m_fd, strcmp(type, "R") == 0 ? 5 : 6);
 
 				::lcdPosition(m_fd, 0, 1);
 				::lcdPutchar(m_fd, 1);
-				::sprintf(buffer, " %s%s", group ? "TG" : "", dst.c_str());
-				::lcdPrintf(m_fd, "%-14s", buffer);
-				::lcdPutchar(m_fd, strcmp(type, "R") == 0 ? 5 : 6);
+				::lcdPuts(m_fd, " ");
+
+				if (group) {
+					::lcdPutchar(m_fd, 7);
+					::lcdPrintf(m_fd, "%-12s", dst.c_str());
+				} else {
+					::lcdPrintf(m_fd, "%-13s", dst.c_str());
+				}
 		}
+	// 4 x 16
 	} else if (m_rows == 4U && m_cols == 16U) {
 		char buffer[16U];
 		if (slotNo == 1U) {
@@ -534,6 +581,7 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 			::lcdPosition(m_fd, 0, 2);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 		}
+	// 4 x 20
 	} else if (m_rows == 4U && m_cols == 20U) {
 		char buffer[20U];
 		if (slotNo == 1U) {
@@ -545,6 +593,7 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 			::lcdPosition(m_fd, 0, 2);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 		}
+	// 2 x 40
 	} else if (m_rows == 2U && m_cols == 40U) {
 		char buffer[40U];
 		if (slotNo == 1U) {
