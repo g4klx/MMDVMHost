@@ -165,7 +165,8 @@ unsigned char ipChar[8] =
 	0b00000
 };
 
-unsigned char tgChar[8] =
+// Text-based custom character for talkgroup
+/* unsigned char tgChar[8] =
 {
 	0b11100,
 	0b01000,
@@ -175,6 +176,32 @@ unsigned char tgChar[8] =
 	0b00100,
 	0b00101,
 	0b00111
+}; */
+
+// Icon-based custom character for talkgroup
+unsigned char tgChar[8] =
+{
+	0b01110,
+	0b10001,
+	0b10001,
+	0b10001,
+	0b01101,
+	0b00110,
+	0b11000,
+	0b00000
+};
+
+// Icon-based custom character for personal contact
+unsigned char privChar[8] =
+{
+	0b00100,
+	0b00000,
+	0b11111,
+	0b01110,
+	0b01110,
+	0b01010,
+	0b01010,
+	0b00000
 };
 
 CHD44780::~CHD44780()
@@ -213,9 +240,13 @@ bool CHD44780::open()
 	::lcdCharDef(m_fd, 2, mChar);
 	::lcdCharDef(m_fd, 3, dChar);
 	::lcdCharDef(m_fd, 4, vChar);
-	::lcdCharDef(m_fd, 5, rfChar);
-	::lcdCharDef(m_fd, 6, ipChar);
-	::lcdCharDef(m_fd, 7, tgChar);
+
+	/* 
+		TG, private call, RF and network icons defined as needed - ran out of CGRAM locations
+		on the HD44780!  Theoretically, we now have infinite custom characters to play with,
+		just be mindful of the slow speed of CGRAM hence the lcdPosition call to delay just 
+		long enough so the CGRAM can be written before we try to read it.
+	*/
 
 	return true;
 }
@@ -534,7 +565,6 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 		}
 	}
 
-
 #ifdef ADAFRUIT_DISPLAY
 		adafruitLCDColour(AC_RED);
 #endif
@@ -555,19 +585,17 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 		} else {
 				::lcdPosition(m_fd, 0, 0);
 				::lcdPutchar(m_fd, 0);
-				::lcdPrintf(m_fd, " %-13s", src.c_str());
-				::lcdPutchar(m_fd, strcmp(type, "R") == 0 ? 5 : 6);
+				::lcdPrintf(m_fd, " %-12s", src.c_str());
+			 	::lcdCharDef(m_fd, 5, strcmp(type, "R") == 0 ? rfChar : ipChar);
+				::lcdPosition(m_fd, 15, 0);
+				::lcdPutchar(m_fd, 5);
 
 				::lcdPosition(m_fd, 0, 1);
 				::lcdPutchar(m_fd, 1);
-				::lcdPuts(m_fd, " ");
-
-				if (group) {
-					::lcdPutchar(m_fd, 7);
-					::lcdPrintf(m_fd, "%-12s", dst.c_str());
-				} else {
-					::lcdPrintf(m_fd, "%-13s", dst.c_str());
-				}
+				::lcdPrintf(m_fd, " %-12s", dst.c_str());
+			 	::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
+				::lcdPosition(m_fd, 15, 1);
+				::lcdPutchar(m_fd, 6);
 		}
 	// 4 x 16
 	} else if (m_rows == 4U && m_cols == 16U) {
