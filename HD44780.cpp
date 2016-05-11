@@ -517,8 +517,8 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 				::pwmWrite(m_pwmPin, (m_pwmBright / 100) * 1024);
 		}
 
-		if (m_rows == 2U && m_cols == 16U) {
-			if (m_duplex) {
+		if (m_duplex) {
+			if (m_rows == 2U && m_cols == 16U) {
 				if (slotNo == 1U) {
 					::lcdPosition(m_fd, 0, 1);
 					::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
@@ -526,47 +526,47 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 					::lcdPosition(m_fd, 0, 0);
 					::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
 				}
-			} else {
+			} else if (m_rows == 4U && m_cols == 16U) {
 				::lcdPosition(m_fd, 0, 0);
-				::lcdPuts(m_fd, "DMR             ");
-				::lcdPosition(m_fd, 0, 1);
-				::lcdPrintf(m_fd, "%-16s", "Listening");
-			}
-		} else if (m_rows == 4U && m_cols == 16U) {
-			::lcdPosition(m_fd, 0, 0);
-			::lcdPuts(m_fd, "DMR");
+				::lcdPuts(m_fd, "DMR");
 
-			if (slotNo == 1U) {
-				::lcdPosition(m_fd, 0, 2);
-				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
-			} else {
-				::lcdPosition(m_fd, 0, 1);
-				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
-			}
-		} else if (m_rows == 4U && m_cols == 20U) {
-			::lcdPosition(m_fd, 0, 0);
-			::lcdPuts(m_fd, "DMR");
-
-			if (slotNo == 1U) {
-				::lcdPosition(m_fd, 0, 2);
-				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
-			} else {
-				::lcdPosition(m_fd, 0, 1);
-				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
-			}
-		} else if (m_rows == 2U && m_cols == 40U) {
-			if (slotNo == 1U) {
-				::lcdPosition(m_fd, 0, 1);
-				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
-			} else {
+				if (slotNo == 1U) {
+					::lcdPosition(m_fd, 0, 2);
+					::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
+				} else {
+					::lcdPosition(m_fd, 0, 1);
+					::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
+				}
+			} else if (m_rows == 4U && m_cols == 20U) {
 				::lcdPosition(m_fd, 0, 0);
-				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
-			}
+				::lcdPuts(m_fd, "DMR");
+
+				if (slotNo == 1U) {
+					::lcdPosition(m_fd, 0, 2);
+					::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
+				} else {
+					::lcdPosition(m_fd, 0, 1);
+					::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
+				}
+			} else if (m_rows == 2U && m_cols == 40U) {
+				if (slotNo == 1U) {
+					::lcdPosition(m_fd, 0, 1);
+					::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
+				} else {
+					::lcdPosition(m_fd, 0, 0);
+					::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
+				}
+			} 
+		} else {
+			::lcdPosition(m_fd, 0, 0);
+			::lcdPuts(m_fd, "DMR             ");
+			::lcdPosition(m_fd, 0, 1);
+			::lcdPrintf(m_fd, "%-16s", "Listening");
 		}
 	}
 
 #ifdef ADAFRUIT_DISPLAY
-		adafruitLCDColour(AC_RED);
+	adafruitLCDColour(AC_RED);
 #endif
 
 	if (m_duplex) {
