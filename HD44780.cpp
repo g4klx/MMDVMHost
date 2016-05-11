@@ -137,6 +137,18 @@ unsigned char ipChar[8] =
 	0b00100
 };
 
+unsigned char tgChar[8] =
+{
+	0b11100,
+	0b01000,
+	0b01000,
+	0b01000,
+	0b00011,
+	0b00100,
+	0b00101,
+	0b00111
+};
+
 CHD44780::~CHD44780()
 {
 }
@@ -175,6 +187,7 @@ bool CHD44780::open()
 	::lcdCharDef(m_fd, 4, vChar);
 	::lcdCharDef(m_fd, 5, rfChar);
 	::lcdCharDef(m_fd, 6, ipChar);
+	::lcdCharDef(m_fd, 7, tgChar);
 
 	return true;
 }
@@ -519,9 +532,18 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 
 				::lcdPosition(m_fd, 0, 1);
 				::lcdPutchar(m_fd, 1);
-				::sprintf(buffer, " %s%s", group ? "TG" : "", dst.c_str());
-				::lcdPrintf(m_fd, "%-14s", buffer);
-				::lcdPutchar(m_fd, strcmp(type, "R") == 0 ? 5 : 6);
+				::lcdPuts(m_fd, " ");
+
+				if (group) {
+					::lcdPutchar(m_fd, 7);
+//					::sprintf(buffer, "%s", dst.c_str());
+					::lcdPrintf(m_fd, "%-12s", dst.c_str());
+					::lcdPutchar(m_fd, strcmp(type, "R") == 0 ? 5 : 6);
+				} else {
+//					::sprintf(buffer, "%s", dst.c_str());
+					::lcdPrintf(m_fd, "%-13s", dst.c_str());
+					::lcdPutchar(m_fd, strcmp(type, "R") == 0 ? 5 : 6);
+				}
 		}
 	} else if (m_rows == 4U && m_cols == 16U) {
 		char buffer[16U];
