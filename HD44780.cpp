@@ -53,6 +53,66 @@ m_dmr(false)
 	assert(cols > 15U);
 }
 
+unsigned char fmChar[8] = 
+{ 
+	0b11100,
+	0b10000,
+	0b11000,
+	0b10000,
+	0b00101,
+	0b00111,
+	0b00101,
+	0b00101
+};
+
+unsigned char toChar[8] = 
+{	
+	0b11100,
+	0b01000,
+	0b01000,
+	0b01000,
+	0b00010,
+	0b00101,
+	0b00101,
+	0b00010
+};
+
+unsigned char mChar[8] = 
+{	
+	0b10001,
+	0b11011,
+	0b10101,
+	0b10001,
+	0b10001,
+	0b00000,
+	0b11111,
+	0b11111
+};
+
+unsigned char dChar[8] = 
+{	
+	0b11110,
+	0b10001,
+	0b10001,
+	0b10001,
+	0b11110,
+	0b00000,
+	0b11111,
+	0b11111
+};
+
+unsigned char vChar[8] = 
+{	
+	0b10001,
+	0b10001,
+	0b10001,
+	0b01010,
+	0b00100,
+	0b00000,
+	0b11111,
+	0b11111
+};
+
 CHD44780::~CHD44780()
 {
 }
@@ -84,6 +144,11 @@ bool CHD44780::open()
 	::lcdDisplay(m_fd, 1);
 	::lcdCursor(m_fd, 0);
 	::lcdCursorBlink(m_fd, 0);
+	::lcdCharDef(m_fd, 0, fmChar);
+	::lcdCharDef(m_fd, 1, toChar);
+	::lcdCharDef(m_fd, 2, mChar);
+	::lcdCharDef(m_fd, 3, dChar);
+	::lcdCharDef(m_fd, 4, vChar);
 
 	return true;
 }
@@ -172,7 +237,13 @@ void CHD44780::setIdleInt()
 	::lcdPrintf(m_fd, "%-6s / %u", m_callsign.c_str(), m_dmrid);
 
 	::lcdPosition(m_fd, 0, 1);
-	::lcdPuts(m_fd, "MMDVM Idle");
+//	::lcdPuts(m_fd, "MMDVM Idle");
+	::lcdPutchar(m_fd, 2);
+	::lcdPutchar(m_fd, 2);
+	::lcdPutchar(m_fd, 3);
+	::lcdPutchar(m_fd, 4);
+	::lcdPutchar(m_fd, 2);
+	::lcdPuts(m_fd, " Idle");
 
 	m_dmr = false;
 }
@@ -195,7 +266,12 @@ void CHD44780::setErrorInt(const char* text)
 	}
 
 	::lcdPosition(m_fd, 0, 0);
-	::lcdPuts(m_fd, "MMDVM");
+//	::lcdPuts(m_fd, "MMDVM");
+	::lcdPutchar(m_fd, 2);
+	::lcdPutchar(m_fd, 2);
+	::lcdPutchar(m_fd, 3);
+	::lcdPutchar(m_fd, 4);
+	::lcdPutchar(m_fd, 2);
 
 	::lcdPosition(m_fd, 0, 1);
 	::lcdPrintf(m_fd, "%s ERROR", text);
@@ -219,7 +295,12 @@ void CHD44780::setLockoutInt()
 	}
 
 	::lcdPosition(m_fd, 0, 0);
-	::lcdPuts(m_fd, "MMDVM");
+//	::lcdPuts(m_fd, "MMDVM");
+	::lcdPutchar(m_fd, 2);
+	::lcdPutchar(m_fd, 2);
+	::lcdPutchar(m_fd, 3);
+	::lcdPutchar(m_fd, 4);
+	::lcdPutchar(m_fd, 2);
 
 	::lcdPosition(m_fd, 0, 1);
 	::lcdPuts(m_fd, "Lockout");
@@ -407,15 +488,15 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 			}
 		} else {
-				::sprintf(buffer, "From: %s", src.c_str());
 				::lcdPosition(m_fd, 0, 0);
-//				::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
-				::lcdPrintf(m_fd, "%-16s", buffer);
+				::lcdPutchar(m_fd, 0);
+				::sprintf(buffer, " %s", src.c_str());
+				::lcdPrintf(m_fd, "%-14s", buffer);
 
-				::sprintf(buffer, "To  : %s%s", group ? "TG" : "", dst.c_str());
 				::lcdPosition(m_fd, 0, 1);
-//				::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
-				::lcdPrintf(m_fd, "%-16s", buffer);
+				::lcdPutchar(m_fd, 1);
+				::sprintf(buffer, " %s%s", group ? "TG" : "", dst.c_str());
+				::lcdPrintf(m_fd, "%-14s", buffer);
 		}
 	} else if (m_rows == 4U && m_cols == 16U) {
 #ifdef ADAFRUIT_DISPLAY
