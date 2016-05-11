@@ -569,10 +569,10 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 		adafruitLCDColour(AC_RED);
 #endif
 
-	// 2 x 16
-	if (m_rows == 2U && m_cols == 16U) {
-		char buffer[16U];
-		if (m_duplex) {
+	if (m_duplex) {
+		// 2 x 16
+		if (m_rows == 2U && m_cols == 16U) {
+			char buffer[16U];
 			if (slotNo == 1U) {
 				::sprintf(buffer, "%s >%s%s", src.c_str(), group ? "TG" : "", dst.c_str());
 				::lcdPosition(m_fd, 0, 0);
@@ -582,59 +582,58 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 				::lcdPosition(m_fd, 0, 1);
 				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 			}
-		} else {
-				::lcdPosition(m_fd, 0, 0);
-				::lcdPutchar(m_fd, 0);
-				::lcdPrintf(m_fd, " %-12s", src.c_str());
-			 	::lcdCharDef(m_fd, 5, strcmp(type, "R") == 0 ? rfChar : ipChar);
-				::lcdPosition(m_fd, 15, 0);
-				::lcdPutchar(m_fd, 5);
-
+		// 4 x 16
+		} else if (m_rows == 4U && m_cols == 16U) {
+			char buffer[16U];
+			if (slotNo == 1U) {
+				::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
 				::lcdPosition(m_fd, 0, 1);
-				::lcdPutchar(m_fd, 1);
-				::lcdPrintf(m_fd, " %-12s", dst.c_str());
-			 	::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
-				::lcdPosition(m_fd, 15, 1);
-				::lcdPutchar(m_fd, 6);
+				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
+			} else {
+				::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
+				::lcdPosition(m_fd, 0, 2);
+				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
+			}
+		// 4 x 20
+		} else if (m_rows == 4U && m_cols == 20U) {
+			char buffer[20U];
+			if (slotNo == 1U) {
+				::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
+				::lcdPosition(m_fd, 0, 1);
+				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
+			} else {
+				::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
+				::lcdPosition(m_fd, 0, 2);
+				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
+			}
+		// 2 x 40
+		} else if (m_rows == 2U && m_cols == 40U) {
+			char buffer[40U];
+			if (slotNo == 1U) {
+				::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
+				::lcdPosition(m_fd, 0, 0);
+				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
+			} else {
+				::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
+				::lcdPosition(m_fd, 0, 1);
+				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
+			}
 		}
-	// 4 x 16
-	} else if (m_rows == 4U && m_cols == 16U) {
-		char buffer[16U];
-		if (slotNo == 1U) {
-			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
-			::lcdPosition(m_fd, 0, 1);
-			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
-		} else {
-			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
-			::lcdPosition(m_fd, 0, 2);
-			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
-		}
-	// 4 x 20
-	} else if (m_rows == 4U && m_cols == 20U) {
-		char buffer[20U];
-		if (slotNo == 1U) {
-			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
-			::lcdPosition(m_fd, 0, 1);
-			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
-		} else {
-			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
-			::lcdPosition(m_fd, 0, 2);
-			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
-		}
-	// 2 x 40
-	} else if (m_rows == 2U && m_cols == 40U) {
-		char buffer[40U];
-		if (slotNo == 1U) {
-			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
-			::lcdPosition(m_fd, 0, 0);
-			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
-		} else {
-			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
-			::lcdPosition(m_fd, 0, 1);
-			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
-		}
-	}
+	} else {
+		::lcdPosition(m_fd, 0, m_rows == 2 ? 0 : 1);
+		::lcdPutchar(m_fd, 0);
+		::lcdPrintf(m_fd, " %-12s", src.c_str());
+	 	::lcdCharDef(m_fd, 5, strcmp(type, "R") == 0 ? rfChar : ipChar);
+		::lcdPosition(m_fd, 15, 0);
+		::lcdPutchar(m_fd, 5);
 
+		::lcdPosition(m_fd, 0, m_rows == 2 ? 1 : 2);
+		::lcdPutchar(m_fd, 1);
+		::lcdPrintf(m_fd, " %-12s", dst.c_str());
+	 	::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
+		::lcdPosition(m_fd, 15, 1);
+		::lcdPutchar(m_fd, 6);
+	}
 	m_dmr = true;
 }
 
