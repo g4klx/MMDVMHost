@@ -475,7 +475,7 @@ void CHD44780::writeDStarInt(const char* my1, const char* my2, const char* your,
 void CHD44780::clearDStarInt()
 {
 #ifdef ADAFRUIT_DISPLAY
-	adafruitLCDColour(AC_ICE);
+	adafruitLCDColour(AC_PURPLE);
 #endif
 
 	if (m_rows == 2U && m_cols == 16U) {
@@ -574,11 +574,11 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 		char buffer[16U];
 		if (m_duplex) {
 			if (slotNo == 1U) {
-				::sprintf(buffer, "%s > %s%s", src.c_str(), group ? "TG" : "", dst.c_str());
+				::sprintf(buffer, "%s >%s%s", src.c_str(), group ? "TG" : "", dst.c_str());
 				::lcdPosition(m_fd, 0, 0);
 				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
 			} else {
-				::sprintf(buffer, "%s > %s%s", src.c_str(), group ? "TG" : "", dst.c_str());
+				::sprintf(buffer, "%s >%s%s", src.c_str(), group ? "TG" : "", dst.c_str());
 				::lcdPosition(m_fd, 0, 1);
 				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
 			}
@@ -641,7 +641,7 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 void CHD44780::clearDMRInt(unsigned int slotNo)
 {
 #ifdef ADAFRUIT_DISPLAY
-	adafruitLCDColour(AC_ICE);
+	adafruitLCDColour(AC_PURPLE);
 #endif
 
 	if (m_rows == 2U && m_cols == 16U) {
@@ -745,7 +745,7 @@ void CHD44780::writeFusionInt(const char* source, const char* dest)
 void CHD44780::clearFusionInt()
 {
 #ifdef ADAFRUIT_DISPLAY
-	adafruitLCDColour(AC_ICE);
+	adafruitLCDColour(AC_PURPLE);
 #endif
 
 	if (m_rows == 2U && m_cols == 16U) {
