@@ -66,8 +66,6 @@ private:
 	bool openFile();
 	bool writeFile(const unsigned char* data);
 	void closeFile();
-
-	unsigned int calculateBER(const unsigned char* orig, const unsigned char* curr, unsigned int length) const;
 };
 
 #endif

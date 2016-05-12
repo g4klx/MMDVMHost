@@ -34,7 +34,6 @@ public:
 	unsigned char getFT() const;
 	unsigned char getDT() const;
 
-	void setFI(unsigned char fi);
 	void setMR(unsigned char mr);
 	void setVoIP(bool set);
 

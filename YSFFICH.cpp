@@ -184,12 +184,6 @@ unsigned char CYSFFICH::getDT() const
 	return m_fich[2U] & 0x03U;
 }
 
-void CYSFFICH::setFI(unsigned char fi)
-{
-	m_fich[0U] &= 0x3FU;
-	m_fich[0U] |= (fi << 6) & 0xC0U;
-}
-
 void CYSFFICH::setMR(unsigned char mr)
 {
 	m_fich[2U] &= 0xC7U;

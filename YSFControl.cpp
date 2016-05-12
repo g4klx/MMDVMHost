@@ -97,18 +97,9 @@ bool CYSFControl::writeModem(unsigned char *data)
 	if (m_state != RS_RF_AUDIO)
 		return false;
 
-	unsigned char orig[YSF_FRAME_LENGTH_BYTES];
-	::memcpy(orig, data + 2U, YSF_FRAME_LENGTH_BYTES);
-
 	unsigned char fi = fich.getFI();
 	if (valid && fi == YSF_FI_HEADER) {
 		CSync::addYSFSync(data + 2U);
-
-		fich.encode(data + 2U);
-
-		unsigned int errs = calculateBER(orig, data + 2U, YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES);
-		m_errs += errs;
-		m_bits += 240U;
 
 		m_frames++;
 
@@ -158,12 +149,6 @@ bool CYSFControl::writeModem(unsigned char *data)
 	} else if (valid && fi == YSF_FI_TERMINATOR) {
 		CSync::addYSFSync(data + 2U);
 
-		fich.encode(data + 2U);
-
-		unsigned int errs = calculateBER(orig, data + 2U, YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES);
-		m_errs += errs;
-		m_bits += 240U;
-
 		m_frames++;
 
 		m_payload.processHeaderData(data + 2U);
@@ -200,12 +185,6 @@ bool CYSFControl::writeModem(unsigned char *data)
 		unsigned char fn = fich.getFN();
 		unsigned char ft = fich.getFT();
 		unsigned char dt = fich.getDT();
-
-		fich.encode(data + 2U);
-
-		unsigned int errs = calculateBER(orig, data + 2U, YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES);
-		m_errs += errs;
-		m_bits += 240U;
 
 		m_frames++;
 
@@ -297,11 +276,6 @@ bool CYSFControl::writeModem(unsigned char *data)
 #endif
 	} else {
 		CSync::addYSFSync(data + 2U);
-
-		// Only calculate the BER on the sync word
-		unsigned int errs = calculateBER(orig, data + 2U, YSF_SYNC_LENGTH_BYTES);
-		m_errs += errs;
-		m_bits += 40U;
 
 		m_frames++;
 
@@ -451,19 +425,4 @@ void CYSFControl::closeFile()
 		::fclose(m_fp);
 		m_fp = NULL;
 	}
-}
-
-unsigned int CYSFControl::calculateBER(const unsigned char* orig, const unsigned char *curr, unsigned int length) const
-{
-	unsigned int errors = 0U;
-
-	for (unsigned int i = 0U; i < length; i++) {
-		unsigned char v = orig[i] ^ curr[i];
-		while (v != 0U) {
-			v &= v - 1U;
-			errors++;
-		}
-	}
-
-	return errors;
 }
