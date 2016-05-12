@@ -645,7 +645,7 @@ unsigned int CAMBEFEC::regenerateYSF3(unsigned char* bytes) const
 		g1 = (g1 << 1) | (bit[i] ? 0x01U : 0x00U);
 	unsigned int c0data = CGolay24128::decode23127(g1);
 	unsigned int g2 = CGolay24128::encode23127(c0data);
-	for (int i = 22; i >= 0; i--) {
+	for (int i = 23; i >= 0; i--) {
 		bit[i] = (g2 & 0x01U) == 0x01U;
 		g2 >>= 1;
 	}
@@ -670,7 +670,7 @@ unsigned int CAMBEFEC::regenerateYSF3(unsigned char* bytes) const
 		g1 = (g1 << 1) | (bit[i] ? 0x01U : 0x00U);
 	unsigned int c1data = CGolay24128::decode23127(g1);
 	g2 = CGolay24128::encode23127(c1data);
-	for (int i = 22; i >= 0; i--) {
+	for (int i = 23; i >= 0; i--) {
 		bit[i] = (g2 & 0x01U) == 0x01U;
 		g2 >>= 1;
 	}
@@ -682,7 +682,7 @@ unsigned int CAMBEFEC::regenerateYSF3(unsigned char* bytes) const
 		g1 = (g1 << 1) | (bit[i] ? 0x01U : 0x00U);
 	unsigned int c2data = CGolay24128::decode23127(g1);
 	g2 = CGolay24128::encode23127(c2data);
-	for (int i = 22; i >= 0; i--) {
+	for (int i = 23; i >= 0; i--) {
 		bit[i] = (g2 & 0x01U) == 0x01U;
 		g2 >>= 1;
 	}
@@ -694,7 +694,7 @@ unsigned int CAMBEFEC::regenerateYSF3(unsigned char* bytes) const
 		g1 = (g1 << 1) | (bit[i] ? 0x01U : 0x00U);
 	unsigned int c3data = CGolay24128::decode23127(g1);
 	g2 = CGolay24128::encode23127(c3data);
-	for (int i = 22; i >= 0; i--) {
+	for (int i = 23; i >= 0; i--) {
 		bit[i] = (g2 & 0x01U) == 0x01U;
 		g2 >>= 1;
 	}
