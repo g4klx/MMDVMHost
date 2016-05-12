@@ -22,12 +22,14 @@
 #include <wiringPi.h>
 #include <softPwm.h>
 #include <lcd.h>
+#include <pthread.h>
 
 #include <cstdio>
 #include <cassert>
 #include <cstring>
 
 const char* LISTENING = "Listening                               ";
+const char* DEADSPACE = "                                        ";
 
 CHD44780::CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim, bool duplex) :
 CDisplay(),
@@ -46,6 +48,7 @@ m_pwmPin(pwmPin),
 m_pwmBright(pwmBright),
 m_pwmDim(pwmDim),
 m_duplex(duplex),
+//m_duplex(true), // uncomment to force duplex display for testing!
 m_fd(-1),
 m_dmr(false)
 {
@@ -53,6 +56,7 @@ m_dmr(false)
 	assert(cols > 15U);
 }
 
+// Text-based custom character for "from"
 unsigned char fmChar[8] = 
 { 
 	0b11100,
@@ -65,6 +69,7 @@ unsigned char fmChar[8] =
 	0b00101
 };
 
+// Text-based custom character for "to"
 unsigned char toChar[8] = 
 {	
 	0b11100,
@@ -77,6 +82,7 @@ unsigned char toChar[8] =
 	0b00010
 };
 
+// Custom "M" character used in MMDVM logo
 unsigned char mChar[8] = 
 {	
 	0b10001,
@@ -89,6 +95,7 @@ unsigned char mChar[8] =
 	0b11111
 };
 
+// Custom "D" character used in MMDVM logo
 unsigned char dChar[8] = 
 {	
 	0b11110,
@@ -101,6 +108,7 @@ unsigned char dChar[8] =
 	0b11111
 };
 
+// Custom "V" character used in MMDVM logo
 unsigned char vChar[8] = 
 {	
 	0b10001,
@@ -113,19 +121,6 @@ unsigned char vChar[8] =
 	0b11111
 };
 
-// Text-based custom character for RF traffic
-/* unsigned char rfChar[8] =
-{
-	0b11100,
-	0b10100,
-	0b11000,
-	0b10100,
-	0b00111,
-	0b00100,
-	0b00110,
-	0b00100
-}; */
-
 // Icon-based custom character for RF traffic
 unsigned char rfChar[8] =
 {
@@ -135,63 +130,37 @@ unsigned char rfChar[8] =
 	0b00100,
 	0b00100,
 	0b00100,
-	0b00000,
+	0b00100,
 	0b00000
 };
-
-// Text-based custom character for network traffic
-/* unsigned char ipChar[8] =
-{
-	0b01000,
-	0b01000,
-	0b01000,
-	0b01000,
-	0b00110,
-	0b00101,
-	0b00110,
-	0b00100
-}; */
 
 // Icon-based custom character for network traffic
 unsigned char ipChar[8] =
 {
+	0b00000,
 	0b01110,
 	0b10001,
 	0b00100,
 	0b01010,
 	0b00000,
 	0b00100,
-	0b00000,
 	0b00000
 };
 
-// Text-based custom character for talkgroup
-/* unsigned char tgChar[8] =
-{
-	0b11100,
-	0b01000,
-	0b01000,
-	0b01000,
-	0b00011,
-	0b00100,
-	0b00101,
-	0b00111
-}; */
-
-// Icon-based custom character for talkgroup
+// Icon-based custom character for call to talkgroup
 unsigned char tgChar[8] =
 {
 	0b01110,
 	0b10001,
 	0b10001,
 	0b10001,
-	0b01101,
-	0b00110,
-	0b11000,
+	0b01010,
+	0b01100,
+	0b10000,
 	0b00000
 };
 
-// Icon-based custom character for personal contact
+// Icon-based custom character for private call
 unsigned char privChar[8] =
 {
 	0b00100,
@@ -501,6 +470,7 @@ void CHD44780::clearDStarInt()
 
 void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
+	char buffer[128]; // force 128 char buffer - we're never getting that far but stops us overflowing it!
 	assert(type != NULL);
 
 	if (!m_dmr) {
@@ -517,166 +487,96 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 				::pwmWrite(m_pwmPin, (m_pwmBright / 100) * 1024);
 		}
 
-		if (m_rows == 2U && m_cols == 16U) {
-			if (m_duplex) {
-				if (slotNo == 1U) {
-					::lcdPosition(m_fd, 0, 1);
-					::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
-				} else {
-					::lcdPosition(m_fd, 0, 0);
-					::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
-				}
-			} else {
-				::lcdPosition(m_fd, 0, 0);
-				::lcdPuts(m_fd, "DMR             ");
-				::lcdPosition(m_fd, 0, 1);
-				::lcdPrintf(m_fd, "%-16s", "Listening");
+		if (m_duplex) {
+			if (m_rows > 2U) {
+				::lcdPosition(m_fd, 0, (m_rows / 2) - 2);
+				::sprintf(buffer, "%s%s", "DMR", DEADSPACE);
+				::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
 			}
-		} else if (m_rows == 4U && m_cols == 16U) {
-			::lcdPosition(m_fd, 0, 0);
-			::lcdPuts(m_fd, "DMR");
 
 			if (slotNo == 1U) {
-				::lcdPosition(m_fd, 0, 2);
+				::lcdPosition(m_fd, 0, (m_rows / 2));
 				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
 			} else {
-				::lcdPosition(m_fd, 0, 1);
+				::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
 				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
 			}
-		} else if (m_rows == 4U && m_cols == 20U) {
-			::lcdPosition(m_fd, 0, 0);
-			::lcdPuts(m_fd, "DMR");
-
-			if (slotNo == 1U) {
-				::lcdPosition(m_fd, 0, 2);
-				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
-			} else {
-				::lcdPosition(m_fd, 0, 1);
-				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
-			}
-		} else if (m_rows == 2U && m_cols == 40U) {
-			if (slotNo == 1U) {
-				::lcdPosition(m_fd, 0, 1);
-				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
-			} else {
-				::lcdPosition(m_fd, 0, 0);
-				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
-			}
+		} else {
+			::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
+			::sprintf(buffer, "%s%s", "DMR", DEADSPACE);
+			::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+			::lcdPosition(m_fd, 0, (m_rows / 2));
+			::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
 		}
 	}
 
 #ifdef ADAFRUIT_DISPLAY
-		adafruitLCDColour(AC_RED);
+	adafruitLCDColour(AC_RED);
 #endif
 
-	// 2 x 16
-	if (m_rows == 2U && m_cols == 16U) {
-		char buffer[16U];
-		if (m_duplex) {
-			if (slotNo == 1U) {
-				::sprintf(buffer, "%s >%s%s", src.c_str(), group ? "TG" : "", dst.c_str());
-				::lcdPosition(m_fd, 0, 0);
-				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
-			} else {
-				::sprintf(buffer, "%s >%s%s", src.c_str(), group ? "TG" : "", dst.c_str());
-				::lcdPosition(m_fd, 0, 1);
-				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
+	if (m_duplex) {
+		if (slotNo == 1U) {
+			::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
+			::lcdPuts(m_fd, "1 ");
+			::sprintf(buffer, "%s > %s%s", src.c_str(), dst.c_str(), DEADSPACE);
+
+			// Thread this out?
+			::lcdPrintf(m_fd, "%.*s", m_cols - 2U, buffer);
+
+			if (m_cols > 16) {
+				::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
+				::lcdCharDef(m_fd, 5, strcmp(type, "R") == 0 ? rfChar : ipChar);
+				::lcdPosition(m_fd, m_cols - 3U, (m_rows / 2) - 1);
+				::lcdPuts(m_fd, " ");
+				::lcdPutchar(m_fd, 6);
+				::lcdPutchar(m_fd, 5);
 			}
 		} else {
-				::lcdPosition(m_fd, 0, 0);
-				::lcdPutchar(m_fd, 0);
-				::lcdPrintf(m_fd, " %-12s", src.c_str());
-			 	::lcdCharDef(m_fd, 5, strcmp(type, "R") == 0 ? rfChar : ipChar);
-				::lcdPosition(m_fd, 15, 0);
-				::lcdPutchar(m_fd, 5);
+			::lcdPosition(m_fd, 0, (m_rows / 2));
+			::lcdPuts(m_fd, "2 ");
+			::sprintf(buffer, "%s > %s%s", src.c_str(), dst.c_str(), DEADSPACE);
 
-				::lcdPosition(m_fd, 0, 1);
-				::lcdPutchar(m_fd, 1);
-				::lcdPrintf(m_fd, " %-12s", dst.c_str());
-			 	::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
-				::lcdPosition(m_fd, 15, 1);
+			// Thread this out?
+			::lcdPrintf(m_fd, "%.*s", m_cols - 2U, buffer);
+
+			if (m_cols > 16) {
+				::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
+				::lcdCharDef(m_fd, 5, strcmp(type, "R") == 0 ? rfChar : ipChar);
+				::lcdPosition(m_fd, m_cols - 3U, (m_rows / 2));
+				::lcdPuts(m_fd, " ");
 				::lcdPutchar(m_fd, 6);
+				::lcdPutchar(m_fd, 5);
+			}
 		}
-	// 4 x 16
-	} else if (m_rows == 4U && m_cols == 16U) {
-		char buffer[16U];
-		if (slotNo == 1U) {
-			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
-			::lcdPosition(m_fd, 0, 1);
-			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
-		} else {
-			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
-			::lcdPosition(m_fd, 0, 2);
-			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
-		}
-	// 4 x 20
-	} else if (m_rows == 4U && m_cols == 20U) {
-		char buffer[20U];
-		if (slotNo == 1U) {
-			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
-			::lcdPosition(m_fd, 0, 1);
-			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
-		} else {
-			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
-			::lcdPosition(m_fd, 0, 2);
-			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
-		}
-	// 2 x 40
-	} else if (m_rows == 2U && m_cols == 40U) {
-		char buffer[40U];
-		if (slotNo == 1U) {
-			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
-			::lcdPosition(m_fd, 0, 0);
-			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, buffer);
-		} else {
-			::sprintf(buffer, "%s %s > %s%s", type, src.c_str(), group ? "TG" : "", dst.c_str());
-			::lcdPosition(m_fd, 0, 1);
-			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, buffer);
-		}
-	}
+	} else {
+		::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
+		::lcdPutchar(m_fd, 0);
+		::sprintf(buffer, " %s%s", src.c_str(), DEADSPACE);
+		::lcdPrintf(m_fd, "%.*s", m_cols - 4U, buffer);
+		::lcdCharDef(m_fd, 5, strcmp(type, "R") == 0 ? rfChar : ipChar);
+		::lcdPosition(m_fd, m_cols - 1U, (m_rows / 2) - 1);
+		::lcdPutchar(m_fd, 5);
 
+		::lcdPosition(m_fd, 0, (m_rows / 2));
+		::lcdPutchar(m_fd, 1);
+		::sprintf(buffer, " %s%s", dst.c_str(), DEADSPACE);
+		::lcdPrintf(m_fd, "%.*s", m_cols - 4U, buffer);
+		::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
+		::lcdPosition(m_fd, m_cols - 1U, (m_rows / 2));
+		::lcdPutchar(m_fd, 6);
+	}
 	m_dmr = true;
 }
 
 void CHD44780::clearDMRInt(unsigned int slotNo)
 {
+	char buffer[128]; // force 128 char buffer - we're never getting that far but stops us overflowing it!
+
 #ifdef ADAFRUIT_DISPLAY
 	adafruitLCDColour(AC_PURPLE);
 #endif
 
-	if (m_rows == 2U && m_cols == 16U) {
-		if (m_duplex) {
-			if (slotNo == 1U) {
-				::lcdPosition(m_fd, 0, 0);
-				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
-			} else {
-				::lcdPosition(m_fd, 0, 1);
-				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
-			}
-		} else {
-			::lcdPosition(m_fd, 0, 0);
-			::lcdPuts(m_fd, "DMR             ");
-			::lcdPosition(m_fd, 0, 1);
-//			::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
-			::lcdPrintf(m_fd, "%-16s", "Listening");
-		}
-	} else if (m_rows == 4U && m_cols == 16U) {
-		if (slotNo == 1U) {
-			::lcdPosition(m_fd, 0, 1);
-			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
-		} else {
-			::lcdPosition(m_fd, 0, 2);
-			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
-		}
-	} else if (m_rows == 4U && m_cols == 20U) {
-		if (slotNo == 1U) {
-			::lcdPosition(m_fd, 0, 1);
-			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
-		} else {
-			::lcdPosition(m_fd, 0, 2);
-			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
-		}
-	} else if (m_rows == 2U && m_cols == 40U) {
+	if (m_duplex) {
 		if (slotNo == 1U) {
 			::lcdPosition(m_fd, 0, 0);
 			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
@@ -684,6 +584,12 @@ void CHD44780::clearDMRInt(unsigned int slotNo)
 			::lcdPosition(m_fd, 0, 1);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
 		}
+	} else {
+			::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
+			::sprintf(buffer, "%s%s", "DMR", DEADSPACE);
+			::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+			::lcdPosition(m_fd, 0, (m_rows / 2));
+			::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
 	}
 }
 
