@@ -47,8 +47,8 @@ m_pwm(pwm),
 m_pwmPin(pwmPin),
 m_pwmBright(pwmBright),
 m_pwmDim(pwmDim),
-//m_duplex(duplex),
-m_duplex(true),
+m_duplex(duplex),
+//m_duplex(true), // uncomment to force duplex display for testing!
 m_fd(-1),
 m_dmr(false)
 {
