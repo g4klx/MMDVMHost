@@ -193,7 +193,7 @@ void CYSFFICH::setFI(unsigned char fi)
 void CYSFFICH::setMR(unsigned char mr)
 {
 	m_fich[2U] &= 0xC7U;
-	m_fich[2U] |= mr;
+	m_fich[2U] |= (mr << 3) & 0x38U;
 }
 
 void CYSFFICH::setVoIP(bool on)
