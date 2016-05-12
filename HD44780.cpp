@@ -517,37 +517,43 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 	if (m_duplex) {
 		if (slotNo == 1U) {
 			::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
-			::lcdPuts(m_fd, "1");
-			::sprintf(buffer, " %s > %s%s", src.c_str(), dst.c_str(), DEADSPACE);
+			::lcdPuts(m_fd, "1 ");
+			::sprintf(buffer, "%s > %s%s", src.c_str(), dst.c_str(), DEADSPACE);
 
-			// Thread this out
-			::lcdPrintf(m_fd, "%.*s", m_cols - 4U, buffer);
-			
-	 		::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
-	 		::lcdCharDef(m_fd, 5, strcmp(type, "R") == 0 ? rfChar : ipChar);
-			::lcdPosition(m_fd, m_cols - 2U, (m_rows / 2) - 1);
-			::lcdPutchar(m_fd, 6);
-			::lcdPutchar(m_fd, 5);
+			// Thread this out?
+			::lcdPrintf(m_fd, "%.*s", m_cols - 2U, buffer);
+
+			if (m_cols > 16) {
+				::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
+				::lcdCharDef(m_fd, 5, strcmp(type, "R") == 0 ? rfChar : ipChar);
+				::lcdPosition(m_fd, m_cols - 3U, (m_rows / 2) - 1);
+				::lcdPuts(m_fd, " ");
+				::lcdPutchar(m_fd, 6);
+				::lcdPutchar(m_fd, 5);
+			}
 		} else {
 			::lcdPosition(m_fd, 0, (m_rows / 2));
-			::lcdPuts(m_fd, "2");
-			::sprintf(buffer, " %s > %s%s", src.c_str(), dst.c_str(), DEADSPACE);
+			::lcdPuts(m_fd, "2 ");
+			::sprintf(buffer, "%s > %s%s", src.c_str(), dst.c_str(), DEADSPACE);
 
-			// Thread this out
-			::lcdPrintf(m_fd, "%.*s", m_cols - 4U, buffer);
+			// Thread this out?
+			::lcdPrintf(m_fd, "%.*s", m_cols - 2U, buffer);
 
-	 		::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
-	 		::lcdCharDef(m_fd, 5, strcmp(type, "R") == 0 ? rfChar : ipChar);
-			::lcdPosition(m_fd, m_cols - 2U, (m_rows / 2));
-			::lcdPutchar(m_fd, 6);
-			::lcdPutchar(m_fd, 5);
+			if (m_cols > 16) {
+				::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
+				::lcdCharDef(m_fd, 5, strcmp(type, "R") == 0 ? rfChar : ipChar);
+				::lcdPosition(m_fd, m_cols - 3U, (m_rows / 2));
+				::lcdPuts(m_fd, " ");
+				::lcdPutchar(m_fd, 6);
+				::lcdPutchar(m_fd, 5);
+			}
 		}
 	} else {
 		::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
 		::lcdPutchar(m_fd, 0);
 		::sprintf(buffer, " %s%s", src.c_str(), DEADSPACE);
 		::lcdPrintf(m_fd, "%.*s", m_cols - 4U, buffer);
-	 	::lcdCharDef(m_fd, 5, strcmp(type, "R") == 0 ? rfChar : ipChar);
+		::lcdCharDef(m_fd, 5, strcmp(type, "R") == 0 ? rfChar : ipChar);
 		::lcdPosition(m_fd, m_cols - 1U, (m_rows / 2) - 1);
 		::lcdPutchar(m_fd, 5);
 
@@ -555,7 +561,7 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 		::lcdPutchar(m_fd, 1);
 		::sprintf(buffer, " %s%s", dst.c_str(), DEADSPACE);
 		::lcdPrintf(m_fd, "%.*s", m_cols - 4U, buffer);
-	 	::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
+		::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
 		::lcdPosition(m_fd, m_cols - 1U, (m_rows / 2));
 		::lcdPutchar(m_fd, 6);
 	}
@@ -584,11 +590,6 @@ void CHD44780::clearDMRInt(unsigned int slotNo)
 			::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
 			::lcdPosition(m_fd, 0, (m_rows / 2));
 			::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
-
-/*		::lcdPosition(m_fd, 0, 0);
-		::lcdPuts(m_fd, "DMR             ");
-		::lcdPosition(m_fd, 0, 1);
-		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING); */
 	}
 }
 
