@@ -306,6 +306,8 @@ int CMMDVMHost::run()
 
 	setMode(MODE_IDLE);
 
+	LogMessage("MMDVMHost is running");
+
 	while (!m_killed) {
 		bool lockout = m_modem->hasLockout();
 		if (lockout && m_mode != MODE_LOCKOUT)
@@ -498,7 +500,7 @@ int CMMDVMHost::run()
 
 		if (m_dmrNetwork != NULL) {
 			bool run = m_dmrNetwork->wantsBeacon();
-			if (dmrBeaconsEnabled && run && m_mode == MODE_IDLE) {
+			if (dmrBeaconsEnabled && run && m_mode == MODE_IDLE && !m_modem->hasTX()) {
 				setMode(MODE_DMR);
 				dmrBeaconTimer.start();
 			}
@@ -526,7 +528,8 @@ int CMMDVMHost::run()
 
 		m_cwIdTimer.clock(ms);
 		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
-			m_modem->sendCWId(m_callsign);
+			if (m_mode == MODE_IDLE && !m_modem->hasTX())
+				m_modem->sendCWId(m_callsign);
 			m_cwIdTimer.start();
 		}
 
@@ -798,7 +801,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modem->setMode(MODE_DSTAR);
 		m_mode = MODE_DSTAR;
 		m_modeTimer.start();
-		m_cwIdTimer.stop();
 		break;
 
 	case MODE_DMR:
@@ -811,7 +813,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 		}
 		m_mode = MODE_DMR;
 		m_modeTimer.start();
-		m_cwIdTimer.stop();
 		break;
 
 	case MODE_YSF:
@@ -822,7 +823,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modem->setMode(MODE_YSF);
 		m_mode = MODE_YSF;
 		m_modeTimer.start();
-		m_cwIdTimer.stop();
 		break;
 
 	case MODE_LOCKOUT:
@@ -868,10 +868,13 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dmrTXTimer.stop();
 		}
 		m_modem->setMode(MODE_IDLE);
+		if (m_mode == MODE_ERROR || m_mode == MODE_LOCKOUT || m_mode == MODE_DMR) {
+			m_modem->sendCWId(m_callsign);
+			m_cwIdTimer.start();
+		}
 		m_display->setIdle();
 		m_mode = MODE_IDLE;
 		m_modeTimer.stop();
-		m_cwIdTimer.start();
 		break;
 	}
 }
