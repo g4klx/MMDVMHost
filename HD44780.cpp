@@ -490,7 +490,7 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 		if (m_duplex) {
 			if (m_rows > 2U) {
 				::lcdPosition(m_fd, 0, (m_rows / 2) - 2);
-				::sprintf(buffer, "%s%s", buffer, DEADSPACE);
+				::sprintf(buffer, "%s%s", "DMR", DEADSPACE);
 				::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
 			}
 
