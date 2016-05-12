@@ -519,7 +519,10 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 			::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
 			::lcdPuts(m_fd, "1");
 			::sprintf(buffer, " %s > %s%s", src.c_str(), dst.c_str(), DEADSPACE);
+
+			// Thread this out
 			::lcdPrintf(m_fd, "%.*s", m_cols - 4U, buffer);
+			
 	 		::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
 	 		::lcdCharDef(m_fd, 5, strcmp(type, "R") == 0 ? rfChar : ipChar);
 			::lcdPosition(m_fd, m_cols - 2U, (m_rows / 2) - 1);
@@ -529,7 +532,10 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 			::lcdPosition(m_fd, 0, (m_rows / 2));
 			::lcdPuts(m_fd, "2");
 			::sprintf(buffer, " %s > %s%s", src.c_str(), dst.c_str(), DEADSPACE);
+
+			// Thread this out
 			::lcdPrintf(m_fd, "%.*s", m_cols - 4U, buffer);
+
 	 		::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
 	 		::lcdCharDef(m_fd, 5, strcmp(type, "R") == 0 ? rfChar : ipChar);
 			::lcdPosition(m_fd, m_cols - 2U, (m_rows / 2));
