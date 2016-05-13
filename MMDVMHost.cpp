@@ -868,7 +868,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dmrTXTimer.stop();
 		}
 		m_modem->setMode(MODE_IDLE);
-		if (m_mode == MODE_ERROR || m_mode == MODE_LOCKOUT || m_mode == MODE_DMR) {
+		if (m_mode == MODE_ERROR || m_mode == MODE_LOCKOUT) {
 			m_modem->sendCWId(m_callsign);
 			m_cwIdTimer.start();
 		}
