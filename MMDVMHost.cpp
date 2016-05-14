@@ -71,8 +71,8 @@ const char* HEADER4 = "Copyright(C) 2015, 2016 by Jonathan Naylor, G4KLX and oth
 
 int main(int argc, char** argv)
 {
-  const char* iniFile = DEFAULT_INI_FILE;
-  if (argc > 1) {
+	const char* iniFile = DEFAULT_INI_FILE;
+	if (argc > 1) {
 		for (int currentArg = 1; currentArg < argc; ++currentArg) {
 			std::string arg = argv[currentArg];
 			if ((arg == "-v") || (arg == "--version")) {
