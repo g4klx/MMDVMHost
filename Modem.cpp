@@ -156,6 +156,10 @@ bool CModem::open()
 	if (!ret) {
 		m_serial.close();
 		return false;
+	} else {
+		/* Stopping the inactivity timer here when a firmware version has been
+		   successfuly read prevents the death spiral of "no reply from modem..." */
+		m_inactivityTimer.stop();
 	}
 
 	ret = setFrequency();
