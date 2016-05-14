@@ -72,8 +72,17 @@ const char* HEADER4 = "Copyright(C) 2015, 2016 by Jonathan Naylor, G4KLX and oth
 int main(int argc, char** argv)
 {
   const char* iniFile = DEFAULT_INI_FILE;
-  if (argc > 1)
-	iniFile = argv[1];
+  if (argc > 1) {
+		for (int currentArg = 1; currentArg < argc; ++currentArg) {
+			std::string arg = argv[currentArg];
+			if ((arg == "-v") || (arg == "--version")) {
+				::fprintf(stdout, "MMDVMHost %s\n", VERSION);
+				return 0;
+			} else {
+				iniFile = argv[currentArg];
+			}
+		}
+	}
 
 #if !defined(_WIN32) && !defined(_WIN64)
   ::signal(SIGTERM, sigHandler);
@@ -128,13 +137,13 @@ int CMMDVMHost::run()
 {
 	bool ret = m_conf.read();
 	if (!ret) {
-		::fprintf(stderr, "MMDVMHost-%s: cannot read the .ini file\n", VERSION);
+		::fprintf(stderr, "MMDVMHost: cannot read the .ini file\n");
 		return 1;
 	}
 
 	ret = ::LogInitialise(m_conf.getLogFilePath(), m_conf.getLogFileRoot(), m_conf.getLogFileLevel(), m_conf.getLogDisplayLevel());
 	if (!ret) {
-		::fprintf(stderr, "MMDVMHost-%s: unable to open the log file\n", VERSION);
+		::fprintf(stderr, "MMDVMHost: unable to open the log file\n");
 		return 1;
 	}
 
