@@ -1,3 +1,7 @@
+# 
+# The format of the file is the DMR Id followed by the callsign 
+# 
+#ID     Callsign
 1112001 KI4ZWE
 1112002 WA4ECT
 1112003 PU2TAW
