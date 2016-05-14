@@ -317,10 +317,21 @@ void CDMRIPSC::clock(unsigned int ms)
 				m_timeoutTimer.start();
 				m_retryTimer.start();
 			} else {
+				/*
 				LogError("Login to the master has failed, stopping IPSC");
 				m_status = DISCONNECTED;
 				m_timeoutTimer.stop();
 				m_retryTimer.stop();
+				*/
+
+				/* Once the modem death spiral has been prevented in Modem.cpp
+				   the IPSC sometimes times out and reaches here.
+				   We want it to reconnect so... */
+
+				LogError("Login to the master has failed, retrying ...");
+				close();
+				open();
+				return;
 			}
 		} else if (::memcmp(m_buffer, "RPTACK",  6U) == 0) {
 			switch (m_status) {
