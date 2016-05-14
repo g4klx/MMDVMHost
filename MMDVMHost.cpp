@@ -128,13 +128,13 @@ int CMMDVMHost::run()
 {
 	bool ret = m_conf.read();
 	if (!ret) {
-		::fprintf(stderr, "MMDVMHost: cannot read the .ini file\n");
+		::fprintf(stderr, "MMDVMHost-%s: cannot read the .ini file\n", VERSION);
 		return 1;
 	}
 
 	ret = ::LogInitialise(m_conf.getLogFilePath(), m_conf.getLogFileRoot(), m_conf.getLogFileLevel(), m_conf.getLogDisplayLevel());
 	if (!ret) {
-		::fprintf(stderr, "MMDVMHost: unable to open the log file\n");
+		::fprintf(stderr, "MMDVMHost-%s: unable to open the log file\n", VERSION);
 		return 1;
 	}
 
@@ -306,7 +306,7 @@ int CMMDVMHost::run()
 
 	setMode(MODE_IDLE);
 
-	LogMessage("MMDVMHost is running");
+	LogMessage("MMDVMHost-%s is running", VERSION);
 
 	while (!m_killed) {
 		bool lockout = m_modem->hasLockout();
@@ -554,7 +554,7 @@ int CMMDVMHost::run()
 		}
 	}
 
-	LogMessage("MMDVMHost is exiting on receipt of SIGHUP1");
+	LogMessage("MMDVMHost-%s is exiting on receipt of SIGHUP1", VERSION);
 
 	setMode(MODE_IDLE);
 
