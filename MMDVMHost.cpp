@@ -71,9 +71,21 @@ const char* HEADER4 = "Copyright(C) 2015, 2016 by Jonathan Naylor, G4KLX and oth
 
 int main(int argc, char** argv)
 {
-  const char* iniFile = DEFAULT_INI_FILE;
-  if (argc > 1)
-	iniFile = argv[1];
+	const char* iniFile = DEFAULT_INI_FILE;
+	if (argc > 1) {
+		for (int currentArg = 1; currentArg < argc; ++currentArg) {
+			std::string arg = argv[currentArg];
+			if ((arg == "-v") || (arg == "--version")) {
+				::fprintf(stdout, "MMDVMHost version %s\n", VERSION);
+				return 0;
+			} else if (arg.substr(0,1) == "-") {
+				::fprintf(stderr, "Usage: MMDVMHost [-v|--version] [filename]\n");
+				return 1;
+			} else {
+				iniFile = argv[currentArg];
+			}
+		}
+	}
 
 #if !defined(_WIN32) && !defined(_WIN64)
   ::signal(SIGTERM, sigHandler);
@@ -306,7 +318,7 @@ int CMMDVMHost::run()
 
 	setMode(MODE_IDLE);
 
-	LogMessage("MMDVMHost is running");
+	LogMessage("MMDVMHost-%s is running", VERSION);
 
 	while (!m_killed) {
 		bool lockout = m_modem->hasLockout();
@@ -554,7 +566,7 @@ int CMMDVMHost::run()
 		}
 	}
 
-	LogMessage("MMDVMHost is exiting on receipt of SIGHUP1");
+	LogMessage("MMDVMHost-%s is exiting on receipt of SIGHUP1", VERSION);
 
 	setMode(MODE_IDLE);
 
