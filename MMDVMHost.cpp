@@ -78,6 +78,9 @@ int main(int argc, char** argv)
 			if ((arg == "-v") || (arg == "--version")) {
 				::fprintf(stdout, "MMDVMHost %s\n", VERSION);
 				return 0;
+			} else if (arg.substr(0,1) == "-") {
+				::fprintf(stderr, "Usage: MMDVMHost [-v|--version] [filename]\n");
+				return 1;
 			} else {
 				iniFile = argv[currentArg];
 			}
