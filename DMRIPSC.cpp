@@ -155,6 +155,10 @@ bool CDMRIPSC::read(CDMRData& data)
 
 	unsigned int slotNo = (m_buffer[15U] & 0x80U) == 0x80U ? 2U : 1U;
 
+	// DMO mode slot disabling
+	if (slotNo == 1U && !m_duplex)
+		return false;
+
 	// Individual slot disabling
 	if (slotNo == 1U && !m_slot1)
 		return false;
