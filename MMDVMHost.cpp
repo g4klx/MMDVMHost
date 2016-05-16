@@ -304,14 +304,12 @@ int CMMDVMHost::run()
 	CYSFControl* ysf = NULL;
 	if (m_ysfEnabled) {
 		unsigned int timeout = m_conf.getTimeout();
-		bool parrot          = m_conf.getFusionParrotEnabled();
 
 		LogInfo("System Fusion Parameters");
 		LogInfo("    Callsign: %s", m_callsign.c_str());
 		LogInfo("    Timeout: %us", timeout);
-		LogInfo("    Parrot: %s", parrot ? "enabled" : "disabled");
 
-		ysf = new CYSFControl(m_callsign, m_display, timeout, m_duplex, parrot);
+		ysf = new CYSFControl(m_callsign, m_display, timeout, m_duplex);
 	}
 
 	m_modeTimer.setTimeout(m_conf.getModeHang());

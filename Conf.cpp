@@ -93,7 +93,6 @@ m_dmrBlackList(),
 m_dmrLookupFile(),
 m_dmrTXHang(4U),
 m_fusionEnabled(true),
-m_fusionParrotEnabled(false),
 m_dstarNetworkEnabled(true),
 m_dstarGatewayAddress(),
 m_dstarGatewayPort(0U),
@@ -317,8 +316,6 @@ bool CConf::read()
 	} else if (section == SECTION_FUSION) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fusionEnabled = ::atoi(value) == 1;
-		else if (::strcmp(key, "Parrot") == 0)
-			m_fusionParrotEnabled = ::atoi(value) == 1;
 	} else if (section == SECTION_DSTAR_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dstarNetworkEnabled = ::atoi(value) == 1;
@@ -628,11 +625,6 @@ unsigned int CConf::getDMRTXHang() const
 bool CConf::getFusionEnabled() const
 {
 	return m_fusionEnabled;
-}
-
-bool CConf::getFusionParrotEnabled() const
-{
-	return m_fusionParrotEnabled;
 }
 
 bool CConf::getDStarNetworkEnabled() const

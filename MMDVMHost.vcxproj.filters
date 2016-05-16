@@ -152,9 +152,6 @@
     <ClInclude Include="YSFControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="YSFParrot.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="YSFPayload.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -287,9 +284,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="YSFControl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="YSFParrot.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="YSFPayload.cpp">

@@ -195,7 +195,6 @@
     <ClInclude Include="YSFConvolution.h" />
     <ClInclude Include="YSFDefines.h" />
     <ClInclude Include="YSFFICH.h" />
-    <ClInclude Include="YSFParrot.h" />
     <ClInclude Include="YSFPayload.h" />
   </ItemGroup>
   <ItemGroup>
@@ -243,7 +242,6 @@
     <ClCompile Include="YSFControl.cpp" />
     <ClCompile Include="YSFConvolution.cpp" />
     <ClCompile Include="YSFFICH.cpp" />
-    <ClCompile Include="YSFParrot.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

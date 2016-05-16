@@ -24,7 +24,7 @@
 
 // #define	DUMP_YSF
 
-CYSFControl::CYSFControl(const std::string& callsign, CDisplay* display, unsigned int timeout, bool duplex, bool parrot) :
+CYSFControl::CYSFControl(const std::string& callsign, CDisplay* display, unsigned int timeout, bool duplex) :
 m_display(display),
 m_duplex(duplex),
 m_queue(5000U, "YSF Control"),
@@ -37,13 +37,9 @@ m_bits(0U),
 m_source(NULL),
 m_dest(NULL),
 m_payload(),
-m_parrot(NULL),
 m_fp(NULL)
 {
 	assert(display != NULL);
-
-	if (parrot)
-		m_parrot = new CYSFParrot(timeout);
 
 	m_payload.setUplink(callsign);
 	m_payload.setDownlink(callsign);
@@ -53,7 +49,6 @@ m_fp(NULL)
 
 CYSFControl::~CYSFControl()
 {
-	delete m_parrot;
 }
 
 bool CYSFControl::writeModem(unsigned char *data)
@@ -64,10 +59,8 @@ bool CYSFControl::writeModem(unsigned char *data)
 
 	if (type == TAG_LOST && m_state == RS_RF_AUDIO) {
 		LogMessage("YSF, transmission lost, %.1f seconds, BER: %.1f%%", float(m_frames) / 10.0F, float(m_errs * 100U) / float(m_bits));
-
-		if (m_parrot != NULL)
-			m_parrot->end();
-
+		// if (m_parrot != NULL)
+		//	m_parrot->end();
 		writeEndOfTransmission();
 		return false;
 	}
@@ -114,14 +107,14 @@ bool CYSFControl::writeModem(unsigned char *data)
 			writeQueue(data);
 		}
 
-		if (m_parrot != NULL) {
-			fich.setMR(YSF_MR_NOT_BUSY);
-			fich.encode(data + 2U);
-
-			data[0U] = TAG_DATA;
-			data[1U] = 0x00U;
-			writeParrot(data);
-		}
+		// if (m_parrot != NULL) {
+		//	fich.setMR(YSF_MR_NOT_BUSY);
+		//	fich.encode(data + 2U);
+		//
+		//	data[0U] = TAG_DATA;
+		//	data[1U] = 0x00U;
+		//	writeParrot(data);
+		// }
 
 		if (valid)
 			m_source = m_payload.getSource();
@@ -162,14 +155,14 @@ bool CYSFControl::writeModem(unsigned char *data)
 			writeQueue(data);
 		}
 
-		if (m_parrot != NULL) {
-			fich.setMR(YSF_MR_NOT_BUSY);
-			fich.encode(data + 2U);
-
-			data[0U] = TAG_EOT;
-			data[1U] = 0x00U;
-			writeParrot(data);
-		}
+		// if (m_parrot != NULL) {
+		//	fich.setMR(YSF_MR_NOT_BUSY);
+		//	fich.encode(data + 2U);
+		//
+		//	data[0U] = TAG_EOT;
+		//	data[1U] = 0x00U;
+		//	writeParrot(data);
+		// }
 
 #if defined(DUMP_YSF)
 		writeFile(data + 2U);
@@ -262,14 +255,14 @@ bool CYSFControl::writeModem(unsigned char *data)
 			writeQueue(data);
 		}
 
-		if (m_parrot != NULL) {
-			fich.setMR(YSF_MR_NOT_BUSY);
-			fich.encode(data + 2U);
-
-			data[0U] = TAG_DATA;
-			data[1U] = 0x00U;
-			writeParrot(data);
-		}
+		// if (m_parrot != NULL) {
+		//	fich.setMR(YSF_MR_NOT_BUSY);
+		//	fich.encode(data + 2U);
+		//
+		//	data[0U] = TAG_DATA;
+		//	data[1U] = 0x00U;
+		//	writeParrot(data);
+		// }
 
 #if defined(DUMP_YSF)
 		writeFile(data + 2U);
@@ -285,11 +278,11 @@ bool CYSFControl::writeModem(unsigned char *data)
 			writeQueue(data);
 		}
 
-		if (m_parrot != NULL) {
-			data[0U] = TAG_DATA;
-			data[1U] = 0x00U;
-			writeParrot(data);
-		}
+		// if (m_parrot != NULL) {
+		//	data[0U] = TAG_DATA;
+		//	data[1U] = 0x00U;
+		//	writeParrot(data);
+		// }
 
 #if defined(DUMP_YSF)
 		writeFile(data + 2U);
@@ -340,18 +333,18 @@ void CYSFControl::clock()
 
 	m_timeoutTimer.clock(ms);
 
-	if (m_parrot != NULL) {
-		m_parrot->clock(ms);
-
-		unsigned int space = m_queue.freeSpace();
-		bool hasData = m_parrot->hasData();
-
-		if (space > (YSF_FRAME_LENGTH_BYTES + 2U) && hasData) {
-			unsigned char data[YSF_FRAME_LENGTH_BYTES + 2U];
-			m_parrot->read(data);
-			writeQueue(data);
-		}
-	}
+	// if (m_parrot != NULL) {
+	//	m_parrot->clock(ms);
+	//
+	//	unsigned int space = m_queue.freeSpace();
+	//	bool hasData = m_parrot->hasData();
+	//
+	//	if (space > (YSF_FRAME_LENGTH_BYTES + 2U) && hasData) {
+	//		unsigned char data[YSF_FRAME_LENGTH_BYTES + 2U];
+	//		m_parrot->read(data);
+	//		writeQueue(data);
+	//	}
+	// }
 }
 
 void CYSFControl::writeQueue(const unsigned char *data)
@@ -374,18 +367,18 @@ void CYSFControl::writeQueue(const unsigned char *data)
 	m_queue.addData(data, len);
 }
 
-void CYSFControl::writeParrot(const unsigned char *data)
-{
-	assert(data != NULL);
-
-	if (m_timeoutTimer.isRunning() && m_timeoutTimer.hasExpired())
-		return;
-
-	m_parrot->write(data);
-
-	if (data[0U] == TAG_EOT)
-		m_parrot->end();
-}
+// void CYSFControl::writeParrot(const unsigned char *data)
+// {
+//	assert(data != NULL);
+//
+//	if (m_timeoutTimer.isRunning() && m_timeoutTimer.hasExpired())
+//		return;
+//
+//	m_parrot->write(data);
+//
+//	if (data[0U] == TAG_EOT)
+//		m_parrot->end();
+// }
 
 bool CYSFControl::openFile()
 {
