@@ -466,6 +466,7 @@ void CDStarControl::writeNetwork()
 
 		m_netHeader = header;
 
+		m_holdoffTimer.start();
 		m_netTimeoutTimer.start();
 		m_packetTimer.start();
 		m_elapsed.start();
