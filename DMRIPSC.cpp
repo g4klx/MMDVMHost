@@ -43,8 +43,8 @@ m_socket(local),
 m_enabled(false),
 m_slot1(slot1),
 m_slot2(slot2),
-m_status(DISCONNECTED),
-m_retryTimer(1000U, 5U),
+m_status(WAITING_CONNECT),
+m_retryTimer(1000U, 10U),
 m_timeoutTimer(1000U, 60U),
 m_buffer(NULL),
 m_salt(NULL),
@@ -287,17 +287,32 @@ void CDMRIPSC::close()
 	}
 
 	m_socket.close();
+
+	m_retryTimer.stop();
+	m_timeoutTimer.stop();
 }
 
 void CDMRIPSC::clock(unsigned int ms)
 {
+	if (m_status == WAITING_CONNECT) {
+		m_retryTimer.clock(ms);
+		if (m_retryTimer.isRunning() && m_retryTimer.hasExpired()) {
+			bool ret = open();
+			if (!ret)
+				m_retryTimer.start();
+		}
+
+		return;
+	}
+
 	in_addr address;
 	unsigned int port;
 	int length = m_socket.read(m_buffer, BUFFER_LENGTH, address, port);
 	if (length < 0) {
 		LogError("Socket has failed, retrying connection to the master");
 		close();
-		open();
+		m_status = WAITING_CONNECT;
+		m_retryTimer.start();
 		return;
 	}
 
@@ -321,20 +336,13 @@ void CDMRIPSC::clock(unsigned int ms)
 				m_timeoutTimer.start();
 				m_retryTimer.start();
 			} else {
-				/*
-				LogError("Login to the master has failed, stopping IPSC");
-				m_status = DISCONNECTED;
-				m_timeoutTimer.stop();
-				m_retryTimer.stop();
-				*/
-
 				/* Once the modem death spiral has been prevented in Modem.cpp
 				   the IPSC sometimes times out and reaches here.
 				   We want it to reconnect so... */
-
 				LogError("Login to the master has failed, retrying ...");
 				close();
-				open();
+				m_status = WAITING_CONNECT;
+				m_retryTimer.start();
 				return;
 			}
 		} else if (::memcmp(m_buffer, "RPTACK",  6U) == 0) {
@@ -364,7 +372,8 @@ void CDMRIPSC::clock(unsigned int ms)
 		} else if (::memcmp(m_buffer, "MSTCL",   5U) == 0) {
 			LogError("Master is closing down");
 			close();
-			open();
+			m_status = WAITING_CONNECT;
+			m_retryTimer.start();
 		} else if (::memcmp(m_buffer, "MSTPONG", 7U) == 0) {
 			m_timeoutTimer.start();
 		} else if (::memcmp(m_buffer, "RPTSBKN", 7U) == 0) {
@@ -400,7 +409,8 @@ void CDMRIPSC::clock(unsigned int ms)
 	if (m_timeoutTimer.isRunning() && m_timeoutTimer.hasExpired()) {
 		LogError("Connection to the master has timed out, retrying connection");
 		close();
-		open();
+		m_status = WAITING_CONNECT;
+		m_retryTimer.start();
 	}
 }
 
@@ -494,7 +504,8 @@ bool CDMRIPSC::write(const unsigned char* data, unsigned int length)
 	if (!ret) {
 		LogError("Socket has failed when writing data to the master, retrying connection");
 		close();
-		open();
+		m_status = WAITING_CONNECT;
+		m_retryTimer.start();
 		return false;
 	}
 

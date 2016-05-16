@@ -63,7 +63,7 @@ private:
 	bool         m_slot2;
 
 	enum STATUS {
-		DISCONNECTED,
+		WAITING_CONNECT,
 		WAITING_LOGIN,
 		WAITING_AUTHORISATION,
 		WAITING_CONFIG,
