@@ -44,7 +44,7 @@ protected:
 	virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
 	virtual void clearDMRInt(unsigned int slotNo);
 
-	virtual void writeFusionInt(const char* source, const char* dest);
+	virtual void writeFusionInt(const char* source, const char* dest, const char* type);
 	virtual void clearFusionInt();
 
 private:

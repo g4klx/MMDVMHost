@@ -181,19 +181,20 @@ void CNextion::clearDMRInt(unsigned int slotNo)
 	}
 }
 
-void CNextion::writeFusionInt(const char* source, const char* dest)
+void CNextion::writeFusionInt(const char* source, const char* dest, const char* type)
 {
 	assert(source != NULL);
 	assert(dest != NULL);
+	assert(type != NULL);
 
 	if (m_mode != MODE_YSF)
 		sendCommand("page YSF");
 
 	char text[30U];
-	::sprintf(text, "t0.txt=\"%.10s\"", source);
+	::sprintf(text, "t0.txt=\"%s %.10s\"", type, source);
 	sendCommand(text);
 
-	::sprintf(text, "t1.txt=\"%.10s\"", dest);
+	::sprintf(text, "t1.txt=\"  %.10s\"", dest);
 	sendCommand(text);
 
 	m_mode = MODE_YSF;

@@ -20,6 +20,7 @@
 #define	MMDVMHOST_H
 
 #include "DStarNetwork.h"
+#include "YSFNetwork.h"
 #include "DMRIPSC.h"
 #include "Display.h"
 #include "Timer.h"
@@ -41,6 +42,7 @@ private:
   CModem*        m_modem;
   CDStarNetwork* m_dstarNetwork;
   CDMRIPSC*      m_dmrNetwork;
+  CYSFNetwork*   m_ysfNetwork;
   CDisplay*      m_display;
   unsigned char  m_mode;
   CTimer         m_modeTimer;
@@ -56,6 +58,7 @@ private:
   bool createModem();
   bool createDStarNetwork();
   bool createDMRNetwork();
+  bool createYSFNetwork();
   void createDisplay();
 
   void setMode(unsigned char mode);

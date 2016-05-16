@@ -119,6 +119,7 @@ m_conf(confFile),
 m_modem(NULL),
 m_dstarNetwork(NULL),
 m_dmrNetwork(NULL),
+m_ysfNetwork(NULL),
 m_display(NULL),
 m_mode(MODE_IDLE),
 m_modeTimer(1000U),
@@ -241,6 +242,12 @@ int CMMDVMHost::run()
 			return 1;
 	}
 
+	if (m_ysfEnabled && m_conf.getFusionNetworkEnabled()) {
+		ret = createYSFNetwork();
+		if (!ret)
+			return 1;
+	}
+
 	if (m_conf.getCWIdEnabled()) {
 		unsigned int time = m_conf.getCWIdTime();
 
@@ -309,7 +316,7 @@ int CMMDVMHost::run()
 		LogInfo("    Callsign: %s", m_callsign.c_str());
 		LogInfo("    Timeout: %us", timeout);
 
-		ysf = new CYSFControl(m_callsign, m_display, timeout, m_duplex);
+		ysf = new CYSFControl(m_callsign, m_ysfNetwork, m_display, timeout, m_duplex);
 	}
 
 	m_modeTimer.setTimeout(m_conf.getModeHang());
@@ -529,12 +536,14 @@ int CMMDVMHost::run()
 		if (dmr != NULL)
 			dmr->clock();
 		if (ysf != NULL)
-			ysf->clock();
+			ysf->clock(ms);
 
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->clock(ms);
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->clock(ms);
+		if (m_ysfNetwork != NULL)
+			m_ysfNetwork->clock(ms);
 
 		m_cwIdTimer.clock(ms);
 		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
@@ -582,6 +591,11 @@ int CMMDVMHost::run()
 	if (m_dmrNetwork != NULL) {
 		m_dmrNetwork->close();
 		delete m_dmrNetwork;
+	}
+
+	if (m_ysfNetwork != NULL) {
+		m_ysfNetwork->close();
+		delete m_ysfNetwork;
 	}
 
 	delete dstar;
@@ -721,6 +735,30 @@ bool CMMDVMHost::createDMRNetwork()
 	return true;
 }
 
+bool CMMDVMHost::createYSFNetwork()
+{
+	std::string address = m_conf.getFusionNetworkAddress();
+	unsigned int port   = m_conf.getFusionNetworkPort();
+	bool debug          = m_conf.getFusionNetworkDebug();
+
+	LogInfo("System Fusion Network Parameters");
+	LogInfo("    Reflector Address: %s", address.c_str());
+	LogInfo("    Reflector Port: %u", port);
+
+	m_ysfNetwork = new CYSFNetwork(address, port, m_callsign, debug);
+
+	bool ret = m_ysfNetwork->open();
+	if (!ret) {
+		delete m_ysfNetwork;
+		m_ysfNetwork = NULL;
+		return false;
+	}
+
+	m_ysfNetwork->enable(true);
+
+	return true;
+}
+
 void CMMDVMHost::readParams()
 {
 	m_dstarEnabled = m_conf.getDStarEnabled();
@@ -808,6 +846,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 	case MODE_DSTAR:
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(false);
+		if (m_ysfNetwork != NULL)
+			m_ysfNetwork->enable(false);
 		m_modem->setMode(MODE_DSTAR);
 		m_mode = MODE_DSTAR;
 		m_modeTimer.start();
@@ -816,6 +856,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 	case MODE_DMR:
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(false);
+		if (m_ysfNetwork != NULL)
+			m_ysfNetwork->enable(false);
 		m_modem->setMode(MODE_DMR);
 		if (m_duplex) {
 			m_modem->writeDMRStart(true);
@@ -841,6 +883,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dstarNetwork->enable(false);
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(false);
+		if (m_ysfNetwork != NULL)
+			m_ysfNetwork->enable(false);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
@@ -858,6 +902,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dstarNetwork->enable(false);
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(false);
+		if (m_ysfNetwork != NULL)
+			m_ysfNetwork->enable(false);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
@@ -873,6 +919,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dstarNetwork->enable(true);
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(true);
+		if (m_ysfNetwork != NULL)
+			m_ysfNetwork->enable(true);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();

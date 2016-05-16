@@ -131,15 +131,16 @@ void CDisplay::clearDMR(unsigned int slotNo)
 	}
 }
 
-void CDisplay::writeFusion(const char* source, const char* dest)
+void CDisplay::writeFusion(const char* source, const char* dest, const char* type)
 {
 	assert(source != NULL);
 	assert(dest != NULL);
+	assert(type != NULL);
 
 	m_timer1.start();
 	m_mode1 = MODE_IDLE;
 
-	writeFusionInt(source, dest);
+	writeFusionInt(source, dest, type);
 }
 
 void CDisplay::clearFusion()

@@ -195,6 +195,7 @@
     <ClInclude Include="YSFConvolution.h" />
     <ClInclude Include="YSFDefines.h" />
     <ClInclude Include="YSFFICH.h" />
+    <ClInclude Include="YSFNetwork.h" />
     <ClInclude Include="YSFPayload.h" />
   </ItemGroup>
   <ItemGroup>
@@ -238,6 +239,7 @@
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="UDPSocket.cpp" />
     <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="YSFNetwork.cpp" />
     <ClCompile Include="YSFPayload.cpp" />
     <ClCompile Include="YSFControl.cpp" />
     <ClCompile Include="YSFConvolution.cpp" />

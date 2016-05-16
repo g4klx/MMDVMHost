@@ -41,7 +41,7 @@ public:
 	void writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
 	void clearDMR(unsigned int slotNo);
 
-	void writeFusion(const char* source, const char* dest);
+	void writeFusion(const char* source, const char* dest, const char* type);
 	void clearFusion();
 
 	virtual void close() = 0;
@@ -59,7 +59,7 @@ protected:
 	virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type) = 0;
 	virtual void clearDMRInt(unsigned int slotNo) = 0;
 
-	virtual void writeFusionInt(const char* source, const char* dest) = 0;
+	virtual void writeFusionInt(const char* source, const char* dest, const char* type) = 0;
 	virtual void clearFusionInt() = 0;
 
 private:

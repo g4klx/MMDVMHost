@@ -19,10 +19,10 @@
 #if !defined(YSFControl_H)
 #define	YSFControl_H
 
+#include "YSFNetwork.h"
 #include "YSFDefines.h"
 #include "YSFPayload.h"
 #include "RingBuffer.h"
-#include "StopWatch.h"
 #include "Display.h"
 #include "Defines.h"
 #include "Timer.h"
@@ -32,33 +32,42 @@
 
 class CYSFControl {
 public:
-	CYSFControl(const std::string& callsign, CDisplay* display, unsigned int timeout, bool duplex);
+	CYSFControl(const std::string& callsign, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex);
 	~CYSFControl();
 
 	bool writeModem(unsigned char* data);
 
 	unsigned int readModem(unsigned char* data);
 
-	void clock();
+	void clock(unsigned int ms);
 
 private:
+	CYSFNetwork*               m_network;
 	CDisplay*                  m_display;
 	bool                       m_duplex;
 	CRingBuffer<unsigned char> m_queue;
-	RPT_RF_STATE               m_state;
-	CTimer                     m_timeoutTimer;
-	CStopWatch                 m_interval;
-	unsigned int               m_frames;
-	unsigned int               m_errs;
-	unsigned int               m_bits;
+	RPT_RF_STATE               m_rfState;
+	RPT_NET_STATE              m_netState;
+	CTimer                     m_rfTimeoutTimer;
+	CTimer                     m_netTimeoutTimer;
+	CTimer                     m_networkWatchdog;
+	CTimer                     m_holdoffTimer;
+	unsigned int               m_rfFrames;
+	unsigned int               m_netFrames;
+	unsigned int               m_rfErrs;
+	unsigned int               m_rfBits;
 	unsigned char*             m_source;
 	unsigned char*             m_dest;
 	CYSFPayload                m_payload;
 	FILE*                      m_fp;
 
-	void writeQueue(const unsigned char* data);
+	void writeQueueRF(const unsigned char* data);
+	void writeQueueNet(const unsigned char* data);
+	void writeNetwork(const unsigned char* data);
+	void writeNetwork();
 
-	void writeEndOfTransmission();
+	void writeEndRF();
+	void writeEndNet();
 
 	bool openFile();
 	bool writeFile(const unsigned char* data);

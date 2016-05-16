@@ -28,6 +28,8 @@ const unsigned int YSF_FICH_LENGTH_BYTES = 25U;
 
 const unsigned char YSF_SYNC_OK = 0x01U;
 
+const unsigned int  YSF_CALLSIGN_LENGTH   = 10U;
+
 const unsigned char YSF_FI_HEADER         = 0x00U;
 const unsigned char YSF_FI_COMMUNICATIONS = 0x01U;
 const unsigned char YSF_FI_TERMINATOR     = 0x02U;

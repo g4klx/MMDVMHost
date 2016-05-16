@@ -259,10 +259,11 @@ void CTFTSerial::clearDMRInt(unsigned int slotNo)
 	}
 }
 
-void CTFTSerial::writeFusionInt(const char* source, const char* dest)
+void CTFTSerial::writeFusionInt(const char* source, const char* dest, const char* type)
 {
 	assert(source != NULL);
 	assert(dest != NULL);
+	assert(type != NULL);
 
 	if (m_mode != MODE_YSF) {
 		// Clear the screen
@@ -275,12 +276,12 @@ void CTFTSerial::writeFusionInt(const char* source, const char* dest)
 	}
 
 	char text[30U];
-	::sprintf(text, "%.10s", source);
+	::sprintf(text, "%s %.10s", type, source);
 
 	gotoPosPixel(5U, 80U);
 	displayText(text);
 
-	::sprintf(text, "%.10s", dest);
+	::sprintf(text, "  %.10s", dest);
 
 	gotoPosPixel(5U, 100U);
 	displayText(text);
