@@ -77,11 +77,13 @@ bool CYSFControl::writeModem(unsigned char *data)
 		if (fi == YSF_FI_TERMINATOR)
 			return false;
 
+		if (m_netState == RS_NET_IDLE)
+			m_holdoffTimer.stop();
+
 		m_rfFrames = 0U;
 		m_rfErrs = 0U;
 		m_rfBits = 1U;
 		m_rfTimeoutTimer.start();
-		m_holdoffTimer.stop();
 		m_payload.reset();
 		m_rfState = RS_RF_AUDIO;
 #if defined(DUMP_YSF)
@@ -351,6 +353,15 @@ void CYSFControl::writeNetwork()
 	}
 
 	m_netFrames++;
+
+	CYSFFICH fich;
+	bool valid = fich.decode(data + 2U);
+	if (valid) {
+		// XXX Should set the downlink callsign
+		fich.setVoIP(true);
+		fich.setMR(YSF_MR_NOT_BUSY);
+		fich.encode(data + 2U);
+	}
 
 	writeQueueNet(data);
 
