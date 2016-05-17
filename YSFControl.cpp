@@ -297,19 +297,18 @@ void CYSFControl::writeEndRF()
 {
 	m_rfState = RS_RF_LISTENING;
 
-	if (m_netState == RS_NET_IDLE) {
-		m_payload.reset();
+	m_rfTimeoutTimer.stop();
+	m_payload.reset();
 
+	// These variables are free'd by YSFPayload
+	m_source = NULL;
+	m_dest = NULL;
+
+	if (m_netState == RS_NET_IDLE) {
 		m_display->clearFusion();
 
 		if (m_network != NULL)
 			m_network->reset();
-
-		// These variables are free'd by YSFPayload
-		m_source = NULL;
-		m_dest = NULL;
-	} else {
-		m_rfTimeoutTimer.stop();
 	}
 
 #if defined(DUMP_YSF)
