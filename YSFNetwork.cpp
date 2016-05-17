@@ -35,7 +35,6 @@ m_port(port),
 m_callsign(),
 m_debug(debug),
 m_enabled(false),
-m_seq(0U),
 m_buffer(1000U, "YSF Network"),
 m_pollTimer(1000U, 60U),
 m_tag(NULL)

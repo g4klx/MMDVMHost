@@ -53,7 +53,6 @@ private:
 	std::string    m_callsign;
 	bool           m_debug;
 	bool           m_enabled;
-	uint16_t       m_seq;
 	CRingBuffer<unsigned char> m_buffer;
 	CTimer         m_pollTimer;
 	unsigned char* m_tag;
