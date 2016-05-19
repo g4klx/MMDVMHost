@@ -181,11 +181,12 @@ void CNextion::clearDMRInt(unsigned int slotNo)
 	}
 }
 
-void CNextion::writeFusionInt(const char* source, const char* dest, const char* type)
+void CNextion::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
 {
 	assert(source != NULL);
 	assert(dest != NULL);
 	assert(type != NULL);
+	assert(origin != NULL);
 
 	if (m_mode != MODE_YSF)
 		sendCommand("page YSF");
@@ -194,8 +195,20 @@ void CNextion::writeFusionInt(const char* source, const char* dest, const char* 
 	::sprintf(text, "t0.txt=\"%s %.10s\"", type, source);
 	sendCommand(text);
 
-	::sprintf(text, "t1.txt=\"  %.10s\"", dest);
-	sendCommand(text);
+	if (m_size == "2.4" || m_size == "3.2") {
+		::sprintf(text, "t1.txt=\"%.10s\"", dest);
+		sendCommand(text);
+		if (::strcmp(origin, "          ") != 0) {
+			::sprintf(text, "t2.txt=\"via %.10s\"", origin);
+			sendCommand(text);
+		}
+	} else if (m_size == "3.5") {
+		if (::strcmp(origin, "          ") == 0)
+			::sprintf(text, "t1.txt=\"%.10s\"", dest);
+		else
+			::sprintf(text, "t1.txt=\"%.10s <- %-10s\"", dest, origin);
+		sendCommand(text);
+	}
 
 	m_mode = MODE_YSF;
 }
@@ -204,6 +217,8 @@ void CNextion::clearFusionInt()
 {
 	sendCommand("t0.txt=\"Listening\"");
 	sendCommand("t1.txt=\"\"");
+	if (m_size == "2.4" || m_size == "3.2")
+		sendCommand("t2.txt=\"\"");
 }
 
 void CNextion::close()

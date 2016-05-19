@@ -593,11 +593,12 @@ void CHD44780::clearDMRInt(unsigned int slotNo)
 	}
 }
 
-void CHD44780::writeFusionInt(const char* source, const char* dest, const char* type)
+void CHD44780::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
 {
 	assert(source != NULL);
 	assert(dest != NULL);
 	assert(type != NULL);
+	assert(origin != NULL);
 
 #ifdef ADAFRUIT_DISPLAY
 		adafruitLCDColour(AC_RED);

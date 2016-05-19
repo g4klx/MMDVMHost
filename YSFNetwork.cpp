@@ -164,10 +164,7 @@ void CYSFNetwork::clock(unsigned int ms)
 	if (end)
 		::memset(m_tag, ' ', YSF_CALLSIGN_LENGTH);
 
-	buffer[33U] = end ? TAG_EOT : TAG_DATA;
-	buffer[34U] = 0x00U;
-
-	m_buffer.addData(buffer + 33U, YSF_FRAME_LENGTH_BYTES + 2U);
+	m_buffer.addData(buffer, 155U);
 }
 
 unsigned int CYSFNetwork::read(unsigned char* data)
@@ -177,9 +174,9 @@ unsigned int CYSFNetwork::read(unsigned char* data)
 	if (m_buffer.isEmpty())
 		return 0U;
 
-	m_buffer.getData(data, YSF_FRAME_LENGTH_BYTES + 2U);
+	m_buffer.getData(data, 155U);
 
-	return YSF_FRAME_LENGTH_BYTES + 2U;
+	return 155U;
 }
 
 void CYSFNetwork::reset()

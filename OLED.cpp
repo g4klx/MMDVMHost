@@ -187,7 +187,7 @@ void COLED::clearDMRInt(unsigned int slotNo)
     display.display();
 }
 
-void COLED::writeFusionInt(const char* source, const char* dest, const char* type)
+void COLED::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
 {
     m_mode = MODE_YSF;
     display.fillRect(0, OLED_LINE1, display.width(), 10, BLACK);

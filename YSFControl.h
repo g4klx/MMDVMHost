@@ -56,8 +56,10 @@ private:
 	unsigned int               m_netFrames;
 	unsigned int               m_rfErrs;
 	unsigned int               m_rfBits;
-	unsigned char*             m_source;
-	unsigned char*             m_dest;
+	unsigned char*             m_rfSource;
+	unsigned char*             m_rfDest;
+	unsigned char*             m_netSource;
+	unsigned char*             m_netDest;
 	CYSFPayload                m_payload;
 	FILE*                      m_fp;
 

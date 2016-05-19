@@ -259,11 +259,12 @@ void CTFTSerial::clearDMRInt(unsigned int slotNo)
 	}
 }
 
-void CTFTSerial::writeFusionInt(const char* source, const char* dest, const char* type)
+void CTFTSerial::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
 {
 	assert(source != NULL);
 	assert(dest != NULL);
 	assert(type != NULL);
+	assert(origin != NULL);
 
 	if (m_mode != MODE_YSF) {
 		// Clear the screen
@@ -278,24 +279,36 @@ void CTFTSerial::writeFusionInt(const char* source, const char* dest, const char
 	char text[30U];
 	::sprintf(text, "%s %.10s", type, source);
 
-	gotoPosPixel(5U, 80U);
+	gotoPosPixel(5U, 70U);
 	displayText(text);
 
 	::sprintf(text, "  %.10s", dest);
 
-	gotoPosPixel(5U, 100U);
+	gotoPosPixel(5U, 90U);
 	displayText(text);
+
+	if (::strcmp(origin, "          ") != 0) {
+		::sprintf(text, "via %.10s", origin);
+		gotoPosPixel(5U, 110U);
+		displayText(text);
+	} else {
+		gotoPosPixel(5U, 110U);
+		displayText("              ");
+	}
 
 	m_mode = MODE_YSF;
 }
 
 void CTFTSerial::clearFusionInt()
 {
-	gotoPosPixel(5U, 80U);
-	displayText("  Listening ");
+	gotoPosPixel(5U, 70U);
+	displayText("  Listening   ");
 
-	gotoPosPixel(5U, 100U);
-	displayText("           ");
+	gotoPosPixel(5U, 90U);
+	displayText("              ");
+
+	gotoPosPixel(5U, 110U);
+	displayText("              ");
 }
 
 void CTFTSerial::close()

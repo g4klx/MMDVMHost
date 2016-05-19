@@ -60,7 +60,7 @@ void CNullDisplay::clearDMRInt(unsigned int slotNo)
 {
 }
 
-void CNullDisplay::writeFusionInt(const char* source, const char* dest, const char* type)
+void CNullDisplay::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
 {
 }
 

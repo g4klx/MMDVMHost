@@ -39,8 +39,10 @@ m_rfFrames(0U),
 m_netFrames(0U),
 m_rfErrs(0U),
 m_rfBits(0U),
-m_source(NULL),
-m_dest(NULL),
+m_rfSource(NULL),
+m_rfDest(NULL),
+m_netSource(NULL),
+m_netDest(NULL),
 m_payload(),
 m_fp(NULL)
 {
@@ -48,10 +50,15 @@ m_fp(NULL)
 
 	m_payload.setUplink(callsign);
 	m_payload.setDownlink(callsign);
+
+	m_netSource = new unsigned char[YSF_CALLSIGN_LENGTH];
+	m_netDest   = new unsigned char[YSF_CALLSIGN_LENGTH];
 }
 
 CYSFControl::~CYSFControl()
 {
+	delete[] m_netSource;
+	delete[] m_netDest;
 }
 
 bool CYSFControl::writeModem(unsigned char *data)
@@ -102,44 +109,44 @@ bool CYSFControl::writeModem(unsigned char *data)
 
 		valid = m_payload.processHeaderData(data + 2U);
 
+		if (valid)
+			m_rfSource = m_payload.getSource();
+
+		unsigned char cm = fich.getCM();
+		if (cm == YSF_CM_GROUP) {
+			m_rfDest = (unsigned char*)"ALL       ";
+		} else {
+			if (valid)
+				m_rfDest = m_payload.getDest();
+		}
+
+		if (m_rfSource != NULL && m_rfDest != NULL) {
+			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, "          ", "R");
+			LogMessage("YSF, received RF header from %10.10s to %10.10s", m_rfSource, m_rfDest);
+		} else if (m_rfSource == NULL && m_rfDest != NULL) {
+			m_display->writeFusion("??????????", (char*)m_rfDest, "          ", "R");
+			LogMessage("YSF, received RF header from ?????????? to %10.10s", m_rfDest);
+		} else if (m_rfSource != NULL && m_rfDest == NULL) {
+			m_display->writeFusion((char*)m_rfSource, "??????????", "          ", "R");
+			LogMessage("YSF, received RF header from %10.10s to ??????????", m_rfSource);
+		} else {
+			m_display->writeFusion("??????????", "??????????", "          ", "R");
+			LogMessage("YSF, received RF header from ?????????? to ??????????");
+		}
+
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
 
 		writeNetwork(data);
 
-		if (m_duplex) {
-			fich.setMR(YSF_MR_BUSY);
-			fich.encode(data + 2U);
-			writeQueueRF(data);
-		}
-
-		if (valid)
-			m_source = m_payload.getSource();
-
-		unsigned char cm = fich.getCM();
-		if (cm == YSF_CM_GROUP) {
-			m_dest = (unsigned char*)"ALL       ";
-		} else {
-			if (valid)
-				m_dest = m_payload.getDest();
-		}
-
 #if defined(DUMP_YSF)
 		writeFile(data + 2U);
 #endif
 
-		if (m_source != NULL && m_dest != NULL) {
-			m_display->writeFusion((char*)m_source, (char*)m_dest, "R");
-			LogMessage("YSF, received RF header from %10.10s to %10.10s", m_source, m_dest);
-		} else if (m_source == NULL && m_dest != NULL) {
-			m_display->writeFusion("??????????", (char*)m_dest, "R");
-			LogMessage("YSF, received RF header from ?????????? to %10.10s", m_dest);
-		} else if (m_source != NULL && m_dest == NULL) {
-			m_display->writeFusion((char*)m_source, "??????????", "R");
-			LogMessage("YSF, received RF header from %10.10s to ??????????", m_source);
-		} else {
-			m_display->writeFusion("??????????", "??????????", "R");
-			LogMessage("YSF, received RF header from ?????????? to ??????????");
+		if (m_duplex) {
+			fich.setMR(YSF_MR_BUSY);
+			fich.encode(data + 2U);
+			writeQueueRF(data);
 		}
 	} else if (valid && fi == YSF_FI_TERMINATOR) {
 		CSync::addYSFSync(data + 2U);
@@ -153,15 +160,15 @@ bool CYSFControl::writeModem(unsigned char *data)
 
 		writeNetwork(data);
 
+#if defined(DUMP_YSF)
+		writeFile(data + 2U);
+#endif
+
 		if (m_duplex) {
 			fich.setMR(YSF_MR_BUSY);
 			fich.encode(data + 2U);
 			writeQueueRF(data);
 		}
-
-#if defined(DUMP_YSF)
-		writeFile(data + 2U);
-#endif
 
 		LogMessage("YSF, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 		writeEndRF();
@@ -208,36 +215,36 @@ bool CYSFControl::writeModem(unsigned char *data)
 
 		bool change = false;
 
-		if (m_dest == NULL) {
+		if (m_rfDest == NULL) {
 			unsigned char cm = fich.getCM();
 			if (cm == YSF_CM_GROUP) {
-				m_dest = (unsigned char*)"ALL       ";
+				m_rfDest = (unsigned char*)"ALL       ";
 				change = true;
 			} else if (valid) {
-				m_dest = m_payload.getDest();
-				if (m_dest != NULL)
+				m_rfDest = m_payload.getDest();
+				if (m_rfDest != NULL)
 					change = true;
 			}
 		}
 
-		if (valid && m_source == NULL) {
-			m_source = m_payload.getSource();
-			if (m_source != NULL)
+		if (valid && m_rfSource == NULL) {
+			m_rfSource = m_payload.getSource();
+			if (m_rfSource != NULL)
 				change = true;
 		}
 
 		if (change) {
-			if (m_source != NULL && m_dest != NULL) {
-				m_display->writeFusion((char*)m_source, (char*)m_dest, "R");
-				LogMessage("YSF, received RF data from %10.10s to %10.10s", m_source, m_dest);
+			if (m_rfSource != NULL && m_rfDest != NULL) {
+				m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, "          ", "R");
+				LogMessage("YSF, received RF data from %10.10s to %10.10s", m_rfSource, m_rfDest);
 			}
-			if (m_source != NULL && m_dest == NULL) {
-				m_display->writeFusion((char*)m_source, "??????????", "R");
-				LogMessage("YSF, received RF data from %10.10s to ??????????", m_source);
+			if (m_rfSource != NULL && m_rfDest == NULL) {
+				m_display->writeFusion((char*)m_rfSource, "??????????", "          ", "R");
+				LogMessage("YSF, received RF data from %10.10s to ??????????", m_rfSource);
 			}
-			if (m_source == NULL && m_dest != NULL) {
-				m_display->writeFusion("??????????", (char*)m_dest, "R");
-				LogMessage("YSF, received RF data from ?????????? to %10.10s", m_dest);
+			if (m_rfSource == NULL && m_rfDest != NULL) {
+				m_display->writeFusion("??????????", (char*)m_rfDest, "          ", "R");
+				LogMessage("YSF, received RF data from ?????????? to %10.10s", m_rfDest);
 			}
 		}
 
@@ -303,8 +310,8 @@ void CYSFControl::writeEndRF()
 	m_payload.reset();
 
 	// These variables are free'd by YSFPayload
-	m_source = NULL;
-	m_dest = NULL;
+	m_rfSource = NULL;
+	m_rfDest = NULL;
 
 	if (m_netState == RS_NET_IDLE) {
 		m_display->clearFusion();
@@ -344,18 +351,51 @@ void CYSFControl::writeNetwork()
 	m_networkWatchdog.start();
 
 	if (!m_netTimeoutTimer.isRunning()) {
-		m_display->writeFusion("??????????", "??????????", "N");
-		LogMessage("YSF, received network data from ?????????? to ??????????");
+		if (::memcmp(data + 14U, "          ", YSF_CALLSIGN_LENGTH) != 0)
+			::memcpy(m_netSource, data + 14U, YSF_CALLSIGN_LENGTH);
+		else
+			::memcpy(m_netSource, "??????????", YSF_CALLSIGN_LENGTH);
+
+		if (::memcmp(data + 24U, "          ", YSF_CALLSIGN_LENGTH) != 0)
+			::memcpy(m_netDest, data + 24U, YSF_CALLSIGN_LENGTH);
+		else
+			::memcpy(m_netDest, "??????????", YSF_CALLSIGN_LENGTH);
+
+		m_display->writeFusion((char*)m_netSource, (char*)m_netDest, (char*)(data + 4U), "N");
+		LogMessage("YSF, received network data from %10.10s to %10.10s at %10.10s", m_netSource, m_netDest, data + 4U);
+
 		m_netTimeoutTimer.start();
 		m_holdoffTimer.start();
 		m_netState = RS_NET_AUDIO;
 		m_netFrames = 0U;
+	} else {
+		bool changed = false;
+
+		if (::memcmp(data + 14U, "          ", YSF_CALLSIGN_LENGTH) != 0 && ::memcmp(m_netSource, "??????????", YSF_CALLSIGN_LENGTH) == 0) {
+			::memcpy(m_netSource, data + 14U, YSF_CALLSIGN_LENGTH);
+			changed = true;
+		}
+
+		if (::memcmp(data + 24U, "          ", YSF_CALLSIGN_LENGTH) != 0 && ::memcmp(m_netDest, "??????????", YSF_CALLSIGN_LENGTH) == 0) {
+			::memcpy(m_netDest, data + 24U, YSF_CALLSIGN_LENGTH);
+			changed = true;
+		}
+
+		if (changed) {
+			m_display->writeFusion((char*)m_netSource, (char*)m_netDest, (char*)(data + 4U), "N");
+			LogMessage("YSF, received network data from %10.10s to %10.10s from %10.10s", m_netSource, m_netDest, data + 4U);
+		}
 	}
 
 	m_netFrames++;
 
+	bool end = data[34U] == 0x01U;
+
+	data[33U] = end ? TAG_EOT : TAG_DATA;
+	data[34U] = 0x00U;
+
 	CYSFFICH fich;
-	bool valid = fich.decode(data + 2U);
+	bool valid = fich.decode(data + 35U);
 	if (valid) {
 		// XXX Should set the downlink callsign
 		fich.setVoIP(true);
@@ -363,9 +403,9 @@ void CYSFControl::writeNetwork()
 		fich.encode(data + 2U);
 	}
 
-	writeQueueNet(data);
+	writeQueueNet(data + 33U);
 
-	if (data[0U] == TAG_EOT) {
+	if (end) {
 		LogMessage("YSF, received network end of transmission, %.1f seconds", float(m_netFrames) / 10.0F);
 		writeEndNet();
 	}
@@ -446,7 +486,7 @@ void CYSFControl::writeNetwork(const unsigned char *data)
 	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired())
 		return;
 
-	m_network->write(m_source, m_dest, data + 2U, data[0U] == TAG_EOT);
+	m_network->write(m_rfSource, m_rfDest, data + 2U, data[0U] == TAG_EOT);
 }
 
 bool CYSFControl::openFile()
