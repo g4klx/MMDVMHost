@@ -121,16 +121,16 @@ bool CYSFControl::writeModem(unsigned char *data)
 		}
 
 		if (m_rfSource != NULL && m_rfDest != NULL) {
-			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, "          ", "R");
+			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, "R", "          ");
 			LogMessage("YSF, received RF header from %10.10s to %10.10s", m_rfSource, m_rfDest);
 		} else if (m_rfSource == NULL && m_rfDest != NULL) {
-			m_display->writeFusion("??????????", (char*)m_rfDest, "          ", "R");
+			m_display->writeFusion("??????????", (char*)m_rfDest, "R", "          ");
 			LogMessage("YSF, received RF header from ?????????? to %10.10s", m_rfDest);
 		} else if (m_rfSource != NULL && m_rfDest == NULL) {
-			m_display->writeFusion((char*)m_rfSource, "??????????", "          ", "R");
+			m_display->writeFusion((char*)m_rfSource, "??????????", "R", "          ");
 			LogMessage("YSF, received RF header from %10.10s to ??????????", m_rfSource);
 		} else {
-			m_display->writeFusion("??????????", "??????????", "          ", "R");
+			m_display->writeFusion("??????????", "??????????", "R", "          ");
 			LogMessage("YSF, received RF header from ?????????? to ??????????");
 		}
 
@@ -235,15 +235,15 @@ bool CYSFControl::writeModem(unsigned char *data)
 
 		if (change) {
 			if (m_rfSource != NULL && m_rfDest != NULL) {
-				m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, "          ", "R");
+				m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, "R", "          ");
 				LogMessage("YSF, received RF data from %10.10s to %10.10s", m_rfSource, m_rfDest);
 			}
 			if (m_rfSource != NULL && m_rfDest == NULL) {
-				m_display->writeFusion((char*)m_rfSource, "??????????", "          ", "R");
+				m_display->writeFusion((char*)m_rfSource, "??????????", "R", "          ");
 				LogMessage("YSF, received RF data from %10.10s to ??????????", m_rfSource);
 			}
 			if (m_rfSource == NULL && m_rfDest != NULL) {
-				m_display->writeFusion("??????????", (char*)m_rfDest, "          ", "R");
+				m_display->writeFusion("??????????", (char*)m_rfDest, "R", "          ");
 				LogMessage("YSF, received RF data from ?????????? to %10.10s", m_rfDest);
 			}
 		}
@@ -361,7 +361,7 @@ void CYSFControl::writeNetwork()
 		else
 			::memcpy(m_netDest, "??????????", YSF_CALLSIGN_LENGTH);
 
-		m_display->writeFusion((char*)m_netSource, (char*)m_netDest, (char*)(data + 4U), "N");
+		m_display->writeFusion((char*)m_netSource, (char*)m_netDest, "N", (char*)(data + 4U));
 		LogMessage("YSF, received network data from %10.10s to %10.10s at %10.10s", m_netSource, m_netDest, data + 4U);
 
 		m_netTimeoutTimer.start();
@@ -382,7 +382,7 @@ void CYSFControl::writeNetwork()
 		}
 
 		if (changed) {
-			m_display->writeFusion((char*)m_netSource, (char*)m_netDest, (char*)(data + 4U), "N");
+			m_display->writeFusion((char*)m_netSource, (char*)m_netDest, "N", (char*)(data + 4U));
 			LogMessage("YSF, received network data from %10.10s to %10.10s from %10.10s", m_netSource, m_netDest, data + 4U);
 		}
 	}
