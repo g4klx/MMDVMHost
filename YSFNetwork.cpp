@@ -36,7 +36,7 @@ m_callsign(),
 m_debug(debug),
 m_enabled(false),
 m_buffer(1000U, "YSF Network"),
-m_pollTimer(1000U, 60U),
+m_pollTimer(1000U, 5U),
 m_tag(NULL)
 {
 	m_callsign = callsign;
