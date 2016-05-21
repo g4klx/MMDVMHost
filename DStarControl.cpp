@@ -171,9 +171,7 @@ bool CDStarControl::writeModem(unsigned char *data)
 
 		m_rfHeader = header;
 
-		if (m_netState == RS_NET_IDLE)
-			m_holdoffTimer.stop();
-
+		m_holdoffTimer.stop();
 		m_ackTimer.stop();
 
 		m_rfBits = 1U;
@@ -468,7 +466,6 @@ void CDStarControl::writeNetwork()
 
 		m_netHeader = header;
 
-		m_holdoffTimer.start();
 		m_netTimeoutTimer.start();
 		m_packetTimer.start();
 		m_elapsed.start();

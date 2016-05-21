@@ -84,8 +84,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 		if (fi == YSF_FI_TERMINATOR)
 			return false;
 
-		if (m_netState == RS_NET_IDLE)
-			m_holdoffTimer.stop();
+		m_holdoffTimer.stop();
 
 		m_rfFrames = 0U;
 		m_rfErrs = 0U;
@@ -365,7 +364,6 @@ void CYSFControl::writeNetwork()
 		LogMessage("YSF, received network data from %10.10s to %10.10s at %10.10s", m_netSource, m_netDest, data + 4U);
 
 		m_netTimeoutTimer.start();
-		m_holdoffTimer.start();
 		m_netState = RS_NET_AUDIO;
 		m_netFrames = 0U;
 	} else {
