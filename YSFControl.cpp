@@ -381,7 +381,7 @@ void CYSFControl::writeNetwork()
 
 		if (changed) {
 			m_display->writeFusion((char*)m_netSource, (char*)m_netDest, "N", (char*)(data + 4U));
-			LogMessage("YSF, received network data from %10.10s to %10.10s from %10.10s", m_netSource, m_netDest, data + 4U);
+			LogMessage("YSF, received network data from %10.10s to %10.10s at %10.10s", m_netSource, m_netDest, data + 4U);
 		}
 	}
 
