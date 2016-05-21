@@ -62,6 +62,8 @@ protected:
 	virtual void writeFusionInt(const char* source, const char* dest, const char* type, const char* origin) = 0;
 	virtual void clearFusionInt() = 0;
 
+	virtual void clockInt(unsigned int ms);
+
 private:
 	CTimer        m_timer1;
 	CTimer        m_timer2;

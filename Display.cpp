@@ -189,4 +189,10 @@ void CDisplay::clock(unsigned int ms)
 			m_timer2.stop();
 		}
 	}
+
+	clockInt(ms);
+}
+
+void CDisplay::clockInt(unsigned int ms)
+{
 }

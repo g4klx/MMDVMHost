@@ -73,6 +73,8 @@ protected:
   virtual void writeFusionInt(const char* source, const char* dest, const char* type, const char* origin);
   virtual void clearFusionInt();
 
+  virtual void clockInt(unsigned int ms);
+
 private:
 	unsigned int m_rows;
 	unsigned int m_cols;

@@ -677,6 +677,10 @@ void CHD44780::clearFusionInt()
 	}
 }
 
+void CHD44780::clockInt(unsigned int ms)
+{
+}
+
 void CHD44780::close()
 {
 }
