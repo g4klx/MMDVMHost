@@ -195,18 +195,10 @@ void CNextion::writeFusionInt(const char* source, const char* dest, const char* 
 	::sprintf(text, "t0.txt=\"%s %.10s\"", type, source);
 	sendCommand(text);
 
-	if (m_size == "2.4" || m_size == "3.2") {
-		::sprintf(text, "t1.txt=\"%.10s\"", dest);
-		sendCommand(text);
-		if (::strcmp(origin, "          ") != 0) {
-			::sprintf(text, "t2.txt=\"via %.10s\"", origin);
-			sendCommand(text);
-		}
-	} else if (m_size == "3.5") {
-		if (::strcmp(origin, "          ") == 0)
-			::sprintf(text, "t1.txt=\"%.10s\"", dest);
-		else
-			::sprintf(text, "t1.txt=\"%.10s <- %-10s\"", dest, origin);
+	::sprintf(text, "t1.txt=\"%.10s\"", dest);
+	sendCommand(text);
+	if (::strcmp(origin, "          ") != 0) {
+		::sprintf(text, "t2.txt=\"via %.10s\"", origin);
 		sendCommand(text);
 	}
 
@@ -217,8 +209,7 @@ void CNextion::clearFusionInt()
 {
 	sendCommand("t0.txt=\"Listening\"");
 	sendCommand("t1.txt=\"\"");
-	if (m_size == "2.4" || m_size == "3.2")
-		sendCommand("t2.txt=\"\"");
+	sendCommand("t2.txt=\"\"");
 }
 
 void CNextion::close()
