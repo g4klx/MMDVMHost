@@ -327,6 +327,26 @@ bool CYSFPayload::processVDMode1Data(unsigned char* data, unsigned char fn)
 
 			break;
 
+		case 3U:
+			CUtils::dump(1U, "V/D Mode 1 Data, DT1", output, 20U);
+			break;
+
+		case 4U:
+			CUtils::dump(1U, "V/D Mode 1 Data, DT2", output, 20U);
+			break;
+
+		case 5U:
+			CUtils::dump(1U, "V/D Mode 1 Data, DT3", output, 20U);
+			break;
+
+		case 6U:
+			CUtils::dump(1U, "V/D Mode 1 Data, DT4", output, 20U);
+			break;
+
+		case 7U:
+			CUtils::dump(1U, "V/D Mode 1 Data, DT5", output, 20U);
+			break;
+
 		default:
 			break;
 		}
@@ -463,7 +483,7 @@ bool CYSFPayload::processVDMode2Data(unsigned char* data, unsigned char fn)
 
 	bool ret = CCRC::checkCCITT162(output, 12U);
 	if (ret) {
-		for (unsigned int i = 0U; i < 20U; i++)
+		for (unsigned int i = 0U; i < 10U; i++)
 			output[i] ^= WHITENING_DATA[i];
 
 		switch (fn) {
@@ -490,12 +510,20 @@ bool CYSFPayload::processVDMode2Data(unsigned char* data, unsigned char fn)
 			if (m_uplink != NULL)
 				::memcpy(output, m_uplink, YSF_CALLSIGN_LENGTH);
 			break;
-	
+
+		case 6U:
+			CUtils::dump(1U, "V/D Mode 2 Data, DT1", output, YSF_CALLSIGN_LENGTH);
+			break;
+
+		case 7U:
+			CUtils::dump(1U, "V/D Mode 2 Data, DT2", output, YSF_CALLSIGN_LENGTH);
+			break;
+
 		default:
 			break;
 		}
 
-		for (unsigned int i = 0U; i < 20U; i++)
+		for (unsigned int i = 0U; i < 10U; i++)
 			output[i] ^= WHITENING_DATA[i];
 
 		CCRC::addCCITT162(output, 12U);
@@ -582,6 +610,30 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn)
 
 			break;
 
+		case 2U:
+			CUtils::dump(1U, "FR Mode Data, DT2", output, 20U);
+			break;
+
+		case 3U:
+			CUtils::dump(1U, "FR Mode Data, DT4", output, 20U);
+			break;
+
+		case 4U:
+			CUtils::dump(1U, "FR Mode Data, DT6", output, 20U);
+			break;
+
+		case 5U:
+			CUtils::dump(1U, "FR Mode Data, DT8", output, 20U);
+			break;
+
+		case 6U:
+			CUtils::dump(1U, "FR Mode Data, DT10", output, 20U);
+			break;
+
+		case 7U:
+			CUtils::dump(1U, "FR Mode Data, DT12", output, 20U);
+			break;
+
 		default:
 			break;
 		}
@@ -657,11 +709,34 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn)
 			break;
 
 		case 1U:
-			CUtils::dump(1U, "FR Mode Data", output + 10U, 10U);
+			CUtils::dump(1U, "FR Mode Data, DT1", output, 20U);
+			break;
+
+		case 2U:
+			CUtils::dump(1U, "FR Mode Data, DT3", output, 20U);
+			break;
+
+		case 3U:
+			CUtils::dump(1U, "FR Mode Data, DT5", output, 20U);
+			break;
+
+		case 4U:
+			CUtils::dump(1U, "FR Mode Data, DT7", output, 20U);
+			break;
+
+		case 5U:
+			CUtils::dump(1U, "FR Mode Data, DT9", output, 20U);
+			break;
+
+		case 6U:
+			CUtils::dump(1U, "FR Mode Data, DT11", output, 20U);
+			break;
+
+		case 7U:
+			CUtils::dump(1U, "FR Mode Data, DT13", output, 20U);
 			break;
 
 		default:
-			CUtils::dump(1U, "FR Mode Data", output + 0U, 20U);
 			break;
 		}
 
