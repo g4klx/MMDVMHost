@@ -131,19 +131,19 @@ bool CYSFPayload::processHeaderData(unsigned char* data)
 	unsigned char output[23U];
 	conv.chainback(output, 176U);
 
-	bool valid = CCRC::checkCCITT162(output, 22U);
-	if (valid) {
+	bool valid1 = CCRC::checkCCITT162(output, 22U);
+	if (valid1) {
 		for (unsigned int i = 0U; i < 20U; i++)
 			output[i] ^= WHITENING_DATA[i];
 
 		if (m_dest == NULL) {
-			m_dest = new unsigned char[10U];
-			::memcpy(m_dest, output + 0U, 10U);
+			m_dest = new unsigned char[YSF_CALLSIGN_LENGTH];
+			::memcpy(m_dest, output + 0U, YSF_CALLSIGN_LENGTH);
 		}
 
 		if (m_source == NULL) {
-			m_source = new unsigned char[10U];
-			::memcpy(m_source, output + 10U, 10U);
+			m_source = new unsigned char[YSF_CALLSIGN_LENGTH];
+			::memcpy(m_source, output + YSF_CALLSIGN_LENGTH, YSF_CALLSIGN_LENGTH);
 		}
 
 		for (unsigned int i = 0U; i < 20U; i++)
@@ -180,45 +180,73 @@ bool CYSFPayload::processHeaderData(unsigned char* data)
 		}
 	}
 
-	::memset(output, ' ', 20U);
-	if (m_downlink != NULL)
-		::memcpy(output + 0U, m_downlink, 10U);
-	if (m_uplink != NULL)
-		::memcpy(output + 10U, m_uplink, 10U);
-	for (unsigned int i = 0U; i < 20U; i++)
-		output[i] ^= WHITENING_DATA[i];
-
-	CCRC::addCCITT162(output, 22U);
-	output[22U] = 0x00U;
-
-	unsigned char convolved[45U];
-	conv.encode(output, convolved, 180U);
-
-	unsigned char bytes[45U];
-	unsigned int j = 0U;
-	for (unsigned int i = 0U; i < 180U; i++) {
-		unsigned int n = INTERLEAVE_TABLE_9_20[i];
-
-		bool s0 = READ_BIT1(convolved, j) != 0U;
-		j++;
-
-		bool s1 = READ_BIT1(convolved, j) != 0U;
-		j++;
-
-		WRITE_BIT1(bytes, n, s0);
-
-		n++;
-		WRITE_BIT1(bytes, n, s1);
-	}
-
 	p1 = data + 9U;
-	p2 = bytes;
+	p2 = dch;
 	for (unsigned int i = 0U; i < 5U; i++) {
-		::memcpy(p1, p2, 9U);
+		::memcpy(p2, p1, 9U);
 		p1 += 18U; p2 += 9U;
 	}
 
-	return valid;
+	conv.start();
+
+	for (unsigned int i = 0U; i < 180U; i++) {
+		unsigned int n = INTERLEAVE_TABLE_9_20[i];
+		uint8_t s0 = READ_BIT1(dch, n) ? 1U : 0U;
+
+		n++;
+		uint8_t s1 = READ_BIT1(dch, n) ? 1U : 0U;
+
+		conv.decode(s0, s1);
+	}
+
+	conv.chainback(output, 176U);
+
+	bool valid2 = CCRC::checkCCITT162(output, 22U);
+	if (valid2) {
+		for (unsigned int i = 0U; i < 20U; i++)
+			output[i] ^= WHITENING_DATA[i];
+
+		if (m_downlink != NULL)
+			::memcpy(output + 0U, m_downlink, YSF_CALLSIGN_LENGTH);
+
+		if (m_uplink != NULL)
+			::memcpy(output + YSF_CALLSIGN_LENGTH, m_uplink, YSF_CALLSIGN_LENGTH);
+
+		for (unsigned int i = 0U; i < 20U; i++)
+			output[i] ^= WHITENING_DATA[i];
+
+		CCRC::addCCITT162(output, 22U);
+		output[22U] = 0x00U;
+
+		unsigned char convolved[45U];
+		conv.encode(output, convolved, 180U);
+
+		unsigned char bytes[45U];
+		unsigned int j = 0U;
+		for (unsigned int i = 0U; i < 180U; i++) {
+			unsigned int n = INTERLEAVE_TABLE_9_20[i];
+
+			bool s0 = READ_BIT1(convolved, j) != 0U;
+			j++;
+
+			bool s1 = READ_BIT1(convolved, j) != 0U;
+			j++;
+
+			WRITE_BIT1(bytes, n, s0);
+
+			n++;
+			WRITE_BIT1(bytes, n, s1);
+		}
+
+		p1 = data + 9U;
+		p2 = bytes;
+		for (unsigned int i = 0U; i < 5U; i++) {
+			::memcpy(p1, p2, 9U);
+			p1 += 18U; p2 += 9U;
+		}
+	}
+
+	return valid1;
 }
 
 unsigned int CYSFPayload::processVDMode1Audio(unsigned char* data)
@@ -279,36 +307,30 @@ bool CYSFPayload::processVDMode1Data(unsigned char* data, unsigned char fn)
 		switch (fn) {
 		case 0U:
 			if (m_dest == NULL) {
-				m_dest = new unsigned char[10U];
-				::memcpy(m_dest, output + 0U, 10U);
+				m_dest = new unsigned char[YSF_CALLSIGN_LENGTH];
+				::memcpy(m_dest, output + 0U, YSF_CALLSIGN_LENGTH);
 			}
 
 			if (m_source == NULL) {
-				m_source = new unsigned char[10U];
-				::memcpy(m_source, output + 10U, 10U);
+				m_source = new unsigned char[YSF_CALLSIGN_LENGTH];
+				::memcpy(m_source, output + YSF_CALLSIGN_LENGTH, YSF_CALLSIGN_LENGTH);
 			}
+
+			break;
+
+		case 1U:
+			if (m_downlink != NULL)
+				::memcpy(output + 0U, m_downlink, YSF_CALLSIGN_LENGTH);
+
+			if (m_uplink != NULL)
+				::memcpy(output + YSF_CALLSIGN_LENGTH, m_uplink, YSF_CALLSIGN_LENGTH);
 
 			break;
 
 		default:
 			break;
 		}
-	}
 
-	if (fn == 1U) {
-		::memset(output, ' ', 20U);
-
-		if (m_downlink != NULL)
-			::memcpy(output + 0U, m_downlink, 10U);
-
-		if (m_uplink != NULL)
-			::memcpy(output + 10U, m_uplink, 10U);
-
-		ret = true;
-	}
-
-	// Data isn't corrupt so regenerate it
-	if (!ret) {
 		for (unsigned int i = 0U; i < 20U; i++)
 			output[i] ^= WHITENING_DATA[i];
 
@@ -441,46 +463,39 @@ bool CYSFPayload::processVDMode2Data(unsigned char* data, unsigned char fn)
 
 	bool ret = CCRC::checkCCITT162(output, 12U);
 	if (ret) {
-		for (unsigned int i = 0U; i < 10U; i++)
+		for (unsigned int i = 0U; i < 20U; i++)
 			output[i] ^= WHITENING_DATA[i];
 
 		switch (fn) {
 		case 0U:
 			if (m_dest == NULL) {
-				m_dest = new unsigned char[10U];
-				::memcpy(m_dest, output, 10U);
+				m_dest = new unsigned char[YSF_CALLSIGN_LENGTH];
+				::memcpy(m_dest, output, YSF_CALLSIGN_LENGTH);
 			}
 			break;
+
 		case 1U:
 			if (m_source == NULL) {
-				m_source = new unsigned char[10U];
-				::memcpy(m_source, output, 10U);
+				m_source = new unsigned char[YSF_CALLSIGN_LENGTH];
+				::memcpy(m_source, output, YSF_CALLSIGN_LENGTH);
 			}
 			break;
+
+		case 2U:
+			if (m_downlink != NULL)
+				::memcpy(output, m_downlink, YSF_CALLSIGN_LENGTH);
+			break;
+
+		case 3U:
+			if (m_uplink != NULL)
+				::memcpy(output, m_uplink, YSF_CALLSIGN_LENGTH);
+			break;
+	
 		default:
 			break;
 		}
-	}
 
-	if (fn == 2U) {
-		if (m_downlink != NULL)
-			::memcpy(output, m_downlink, 10U);
-		else
-			::memset(output, ' ', 10U);
-		ret = true;
-	}
-
-	if (fn == 3U) {
-		if (m_uplink != NULL)
-			::memcpy(output, m_uplink, 10U);
-		else
-			::memset(output, ' ', 10U);
-		ret = true;
-	}
-
-	// Data isn't corrupt so regenerate it
-	if (ret) {
-		for (unsigned int i = 0U; i < 10U; i++)
+		for (unsigned int i = 0U; i < 20U; i++)
 			output[i] ^= WHITENING_DATA[i];
 
 		CCRC::addCCITT162(output, 12U);
@@ -556,13 +571,13 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn)
 		switch (fn) {
 		case 0U:
 			if (m_dest == NULL) {
-				m_dest = new unsigned char[10U];
-				::memcpy(m_dest, output + 0U, 10U);
+				m_dest = new unsigned char[YSF_CALLSIGN_LENGTH];
+				::memcpy(m_dest, output + 0U, YSF_CALLSIGN_LENGTH);
 			}
 
 			if (m_source == NULL) {
-				m_source = new unsigned char[10U];
-				::memcpy(m_source, output + 10U, 10U);
+				m_source = new unsigned char[YSF_CALLSIGN_LENGTH];
+				::memcpy(m_source, output + YSF_CALLSIGN_LENGTH, YSF_CALLSIGN_LENGTH);
 			}
 
 			break;
@@ -627,21 +642,29 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn)
 	conv.chainback(output, 176U);
 
 	bool ret2 = CCRC::checkCCITT162(output, 22U);
-
-	if (fn == 0U) {
-		::memset(output, ' ', 20U);
-
-		if (m_downlink != NULL)
-			::memcpy(output + 0U, m_downlink, 10U);
-
-		if (m_uplink != NULL)
-			::memcpy(output + 10U, m_uplink, 10U);
-
-		ret2 = true;
-	}
-
-	// Data isn't corrupt so regenerate it
 	if (ret2) {
+		for (unsigned int i = 0U; i < 20U; i++)
+			output[i] ^= WHITENING_DATA[i];
+
+		switch (fn) {
+		case 0U:
+			if (m_downlink != NULL)
+				::memcpy(output + 0U, m_downlink, YSF_CALLSIGN_LENGTH);
+
+			if (m_uplink != NULL)
+				::memcpy(output + YSF_CALLSIGN_LENGTH, m_uplink, YSF_CALLSIGN_LENGTH);
+
+			break;
+
+		case 1U:
+			CUtils::dump(1U, "FR Mode Data", output + 10U, 10U);
+			break;
+
+		default:
+			CUtils::dump(1U, "FR Mode Data", output + 0U, 20U);
+			break;
+		}
+
 		for (unsigned int i = 0U; i < 20U; i++)
 			output[i] ^= WHITENING_DATA[i];
 
@@ -700,23 +723,23 @@ unsigned int CYSFPayload::processVoiceFRModeAudio(unsigned char* data)
 
 void CYSFPayload::setUplink(const std::string& callsign)
 {
-	m_uplink = new unsigned char[10U];
+	m_uplink = new unsigned char[YSF_CALLSIGN_LENGTH];
 
 	std::string uplink = callsign;
-	uplink.resize(10U, ' ');
+	uplink.resize(YSF_CALLSIGN_LENGTH, ' ');
 
-	for (unsigned int i = 0U; i < 10U; i++)
+	for (unsigned int i = 0U; i < YSF_CALLSIGN_LENGTH; i++)
 		m_uplink[i] = uplink.at(i);
 }
 
 void CYSFPayload::setDownlink(const std::string& callsign)
 {
-	m_downlink = new unsigned char[10U];
+	m_downlink = new unsigned char[YSF_CALLSIGN_LENGTH];
 
 	std::string downlink = callsign;
-	downlink.resize(10U, ' ');
+	downlink.resize(YSF_CALLSIGN_LENGTH, ' ');
 
-	for (unsigned int i = 0U; i < 10U; i++)
+	for (unsigned int i = 0U; i < YSF_CALLSIGN_LENGTH; i++)
 		m_downlink[i] = downlink.at(i);
 }
 

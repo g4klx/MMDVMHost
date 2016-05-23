@@ -43,13 +43,16 @@ m_rfSource(NULL),
 m_rfDest(NULL),
 m_netSource(NULL),
 m_netDest(NULL),
-m_payload(),
+m_rfPayload(),
+m_netPayload(),
 m_fp(NULL)
 {
 	assert(display != NULL);
 
-	m_payload.setUplink(callsign);
-	m_payload.setDownlink(callsign);
+	m_rfPayload.setUplink(callsign);
+	m_rfPayload.setDownlink(callsign);
+
+	m_netPayload.setDownlink(callsign);
 
 	m_netSource = new unsigned char[YSF_CALLSIGN_LENGTH];
 	m_netDest   = new unsigned char[YSF_CALLSIGN_LENGTH];
@@ -90,7 +93,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 		m_rfErrs = 0U;
 		m_rfBits = 1U;
 		m_rfTimeoutTimer.start();
-		m_payload.reset();
+		m_rfPayload.reset();
 		m_rfState = RS_RF_AUDIO;
 #if defined(DUMP_YSF)
 		openFile();
@@ -104,19 +107,21 @@ bool CYSFControl::writeModem(unsigned char *data)
 	if (valid && fi == YSF_FI_HEADER) {
 		CSync::addYSFSync(data + 2U);
 
+		// LogDebug("YSF, FICH: FI: %u, DT: %u, FN: %u, FT: %u", fich.getFI(), fich.getDT(), fich.getFN(), fich.getFT());
+
 		m_rfFrames++;
 
-		valid = m_payload.processHeaderData(data + 2U);
+		valid = m_rfPayload.processHeaderData(data + 2U);
 
 		if (valid)
-			m_rfSource = m_payload.getSource();
+			m_rfSource = m_rfPayload.getSource();
 
 		unsigned char cm = fich.getCM();
 		if (cm == YSF_CM_GROUP) {
 			m_rfDest = (unsigned char*)"ALL       ";
 		} else {
 			if (valid)
-				m_rfDest = m_payload.getDest();
+				m_rfDest = m_rfPayload.getDest();
 		}
 
 		if (m_rfSource != NULL && m_rfDest != NULL) {
@@ -150,9 +155,11 @@ bool CYSFControl::writeModem(unsigned char *data)
 	} else if (valid && fi == YSF_FI_TERMINATOR) {
 		CSync::addYSFSync(data + 2U);
 
+		// LogDebug("YSF, FICH: FI: %u, DT: %u, FN: %u, FT: %u", fich.getFI(), fich.getDT(), fich.getFN(), fich.getFT());
+
 		m_rfFrames++;
 
-		m_payload.processHeaderData(data + 2U);
+		m_rfPayload.processHeaderData(data + 2U);
 
 		data[0U] = TAG_EOT;
 		data[1U] = 0x00U;
@@ -180,29 +187,31 @@ bool CYSFControl::writeModem(unsigned char *data)
 		unsigned char ft = fich.getFT();
 		unsigned char dt = fich.getDT();
 
+		// LogDebug("YSF, FICH: FI: %u, DT: %u, FN: %u, FT: %u", fich.getFI(), fich.getDT(), fich.getFN(), fich.getFT());
+
 		m_rfFrames++;
 
 		switch (dt) {
 		case YSF_DT_VD_MODE1:
-			valid = m_payload.processVDMode1Data(data + 2U, fn);
-			m_rfErrs += m_payload.processVDMode1Audio(data + 2U);
+			valid = m_rfPayload.processVDMode1Data(data + 2U, fn);
+			m_rfErrs += m_rfPayload.processVDMode1Audio(data + 2U);
 			m_rfBits += 235U;
 			break;
 
 		case YSF_DT_VD_MODE2:
-			valid = m_payload.processVDMode2Data(data + 2U, fn);
-			m_rfErrs += m_payload.processVDMode2Audio(data + 2U);
+			valid = m_rfPayload.processVDMode2Data(data + 2U, fn);
+			m_rfErrs += m_rfPayload.processVDMode2Audio(data + 2U);
 			m_rfBits += 135U;
 			break;
 
 		case YSF_DT_DATA_FR_MODE:
-			valid = m_payload.processDataFRModeData(data + 2U, fn);
+			valid = m_rfPayload.processDataFRModeData(data + 2U, fn);
 			break;
 
 		case YSF_DT_VOICE_FR_MODE:
 			if (fn != 0U || ft != 1U) {
 				// The first packet after the header is odd, don't try and regenerate it
-				m_rfErrs += m_payload.processVoiceFRModeAudio(data + 2U);
+				m_rfErrs += m_rfPayload.processVoiceFRModeAudio(data + 2U);
 				m_rfBits += 720U;
 			}
 			valid = false;
@@ -220,14 +229,14 @@ bool CYSFControl::writeModem(unsigned char *data)
 				m_rfDest = (unsigned char*)"ALL       ";
 				change = true;
 			} else if (valid) {
-				m_rfDest = m_payload.getDest();
+				m_rfDest = m_rfPayload.getDest();
 				if (m_rfDest != NULL)
 					change = true;
 			}
 		}
 
 		if (valid && m_rfSource == NULL) {
-			m_rfSource = m_payload.getSource();
+			m_rfSource = m_rfPayload.getSource();
 			if (m_rfSource != NULL)
 				change = true;
 		}
@@ -306,7 +315,7 @@ void CYSFControl::writeEndRF()
 	m_rfState = RS_RF_LISTENING;
 
 	m_rfTimeoutTimer.stop();
-	m_payload.reset();
+	m_rfPayload.reset();
 
 	// These variables are free'd by YSFPayload
 	m_rfSource = NULL;
@@ -330,6 +339,8 @@ void CYSFControl::writeEndNet()
 
 	m_netTimeoutTimer.stop();
 	m_networkWatchdog.stop();
+
+	m_netPayload.reset();
 
 	m_display->clearFusion();
 
@@ -364,6 +375,7 @@ void CYSFControl::writeNetwork()
 		LogMessage("YSF, received network data from %10.10s to %10.10s at %10.10s", m_netSource, m_netDest, data + 4U);
 
 		m_netTimeoutTimer.start();
+		m_netPayload.reset();
 		m_netState = RS_NET_AUDIO;
 		m_netFrames = 0U;
 	} else {
@@ -395,10 +407,47 @@ void CYSFControl::writeNetwork()
 	CYSFFICH fich;
 	bool valid = fich.decode(data + 35U);
 	if (valid) {
-		// XXX Should set the downlink callsign
+		unsigned char dt = fich.getDT();
+		unsigned char fn = fich.getFN();
+		unsigned char ft = fich.getFT();
+		unsigned char fi = fich.getFI();
+
+		// Set the downlink callsign
+		switch (fi) {
+		case YSF_FI_HEADER:
+		case YSF_FI_TERMINATOR:
+			m_netPayload.processHeaderData(data + 35U);
+			break;
+
+		case YSF_FI_COMMUNICATIONS:
+			switch (dt) {
+			case YSF_DT_VD_MODE1:
+				m_netPayload.processVDMode1Data(data + 35U, fn);
+				break;
+
+			case YSF_DT_VD_MODE2:
+				m_netPayload.processVDMode2Data(data + 35U, fn);
+				break;
+
+			case YSF_DT_DATA_FR_MODE:
+				m_netPayload.processDataFRModeData(data + 35U, fn);
+				break;
+
+			case YSF_DT_VOICE_FR_MODE:
+				break;
+
+			default:
+				break;
+			}
+			break;
+
+		default:
+			break;
+		}
+
 		fich.setVoIP(true);
 		fich.setMR(YSF_MR_NOT_BUSY);
-		fich.encode(data + 2U);
+		fich.encode(data + 35U);
 	}
 
 	writeQueueNet(data + 33U);

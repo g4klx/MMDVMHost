@@ -60,7 +60,8 @@ private:
 	unsigned char*             m_rfDest;
 	unsigned char*             m_netSource;
 	unsigned char*             m_netDest;
-	CYSFPayload                m_payload;
+	CYSFPayload                m_rfPayload;
+	CYSFPayload                m_netPayload;
 	FILE*                      m_fp;
 
 	void writeQueueRF(const unsigned char* data);
