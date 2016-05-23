@@ -50,7 +50,8 @@ m_pwmDim(pwmDim),
 m_duplex(duplex),
 //m_duplex(true), // uncomment to force duplex display for testing!
 m_fd(-1),
-m_dmr(false)
+m_dmr(false),
+m_timer(1000U, 0U, 250U)		// 250ms
 {
 	assert(rows > 1U);
 	assert(cols > 15U);
@@ -679,6 +680,14 @@ void CHD44780::clearFusionInt()
 
 void CHD44780::clockInt(unsigned int ms)
 {
+	m_timer.clock(ms);
+	if (m_timer.isRunning() && m_timer.hasExpired()) {
+		// Do work every 250ms here
+
+		// Start the timer with m_timer.start();
+		// and stop it with m_timer.stop();
+		m_timer.start();
+	}
 }
 
 void CHD44780::close()

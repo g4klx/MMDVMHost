@@ -20,6 +20,7 @@
 #define	HD44780_H
 
 #include "Display.h"
+#include "Timer.h"
 
 #include <string>
 #include <vector>
@@ -93,6 +94,7 @@ private:
 	bool         m_duplex;
 	int          m_fd;
 	bool         m_dmr;
+	CTimer       m_timer;
 
 #ifdef ADAFRUIT_DISPLAY
   void adafruitLCDSetup();
