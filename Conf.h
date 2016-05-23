@@ -128,7 +128,6 @@ public:
   unsigned int getHD44780PWMDim() const;
 
   // The Nextion section
-  std::string  getNextionSize() const;
   std::string  getNextionPort() const;
   unsigned int getNextionBrightness() const;
 
@@ -223,7 +222,6 @@ private:
   unsigned int m_hd44780PWMBright;
   unsigned int m_hd44780PWMDim;
 
-  std::string  m_nextionSize;
   std::string  m_nextionPort;
   unsigned int m_nextionBrightness;
 

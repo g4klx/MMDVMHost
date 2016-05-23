@@ -23,11 +23,10 @@
 #include <cassert>
 #include <cstring>
 
-CNextion::CNextion(const std::string& callsign, unsigned int dmrid, const std::string& size, const std::string& port, unsigned int brightness) :
+CNextion::CNextion(const std::string& callsign, unsigned int dmrid, const std::string& port, unsigned int brightness) :
 CDisplay(),
 m_callsign(callsign),
 m_dmrid(dmrid),
-m_size(size),
 m_serial(port, SERIAL_9600),
 m_brightness(brightness),
 m_mode(MODE_IDLE)
@@ -110,18 +109,11 @@ void CNextion::writeDStarInt(const char* my1, const char* my2, const char* your,
 	::sprintf(text, "t0.txt=\"%s %.8s/%4.4s\"", type, my1, my2);
 	sendCommand(text);
 
-	if (m_size == "2.4" || m_size == "3.2") {
-		::sprintf(text, "t1.txt=\"%.8s\"", your);
-		sendCommand(text);
-		if (::strcmp(reflector, "        ") != 0) {
-			::sprintf(text, "t2.txt=\"via %.8s\"", reflector);
-			sendCommand(text);
-		}
-	} else if (m_size == "3.5") {
-		if (::strcmp(reflector, "        ") == 0)
-			::sprintf(text, "t1.txt=\"%.8s\"", your);
-		else
-			::sprintf(text, "t1.txt=\"%.8s <- %-8s\"", your, reflector);
+	::sprintf(text, "t1.txt=\"%.8s\"", your);
+	sendCommand(text);
+
+	if (::strcmp(reflector, "        ") != 0) {
+		::sprintf(text, "t2.txt=\"via %.8s\"", reflector);
 		sendCommand(text);
 	}
 
@@ -132,8 +124,7 @@ void CNextion::clearDStarInt()
 {
 	sendCommand("t0.txt=\"Listening\"");
 	sendCommand("t1.txt=\"\"");
-	if (m_size == "2.4" || m_size == "3.2")
-		sendCommand("t2.txt=\"\"");
+	sendCommand("t2.txt=\"\"");
 }
 
 void CNextion::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)

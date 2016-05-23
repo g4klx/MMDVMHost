@@ -119,7 +119,6 @@ m_hd44780PWM(false),
 m_hd44780PWMPin(),
 m_hd44780PWMBright(),
 m_hd44780PWMDim(),
-m_nextionSize("2.4"),
 m_nextionPort("/dev/ttyAMA0"),
 m_nextionBrightness(50U),
 m_oledType(3),
@@ -380,9 +379,7 @@ bool CConf::read()
 			}
 		}
 	} else if (section == SECTION_NEXTION) {
-		if (::strcmp(key, "Size") == 0)
-			m_nextionSize = value;
-		else if (::strcmp(key, "Port") == 0)
+		if (::strcmp(key, "Port") == 0)
 			m_nextionPort = value;
 		else if (::strcmp(key, "Brightness") == 0)
 			m_nextionBrightness = (unsigned int)::atoi(value);
@@ -755,11 +752,6 @@ unsigned int CConf::getHD44780PWMBright() const
 unsigned int CConf::getHD44780PWMDim() const
 {
 	return m_hd44780PWMDim;
-}
-
-std::string CConf::getNextionSize() const
-{
-	return m_nextionSize;
 }
 
 std::string CConf::getNextionPort() const
