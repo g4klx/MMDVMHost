@@ -198,7 +198,7 @@ void CNextion::writeFusionInt(const char* source, const char* dest, const char* 
 	::sprintf(text, "t1.txt=\"%.10s\"", dest);
 	sendCommand(text);
 	if (::strcmp(origin, "          ") != 0) {
-		::sprintf(text, "t2.txt=\"via %.10s\"", origin);
+		::sprintf(text, "t2.txt=\"at %.10s\"", origin);
 		sendCommand(text);
 	}
 

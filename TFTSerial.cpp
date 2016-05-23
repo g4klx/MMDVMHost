@@ -288,7 +288,7 @@ void CTFTSerial::writeFusionInt(const char* source, const char* dest, const char
 	displayText(text);
 
 	if (::strcmp(origin, "          ") != 0) {
-		::sprintf(text, "via %.10s", origin);
+		::sprintf(text, "at %.10s", origin);
 		gotoPosPixel(5U, 110U);
 		displayText(text);
 	} else {
