@@ -409,7 +409,6 @@ void CYSFControl::writeNetwork()
 	if (valid) {
 		unsigned char dt = fich.getDT();
 		unsigned char fn = fich.getFN();
-		unsigned char ft = fich.getFT();
 		unsigned char fi = fich.getFI();
 
 		// Set the downlink callsign

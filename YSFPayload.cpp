@@ -598,6 +598,8 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn)
 
 		switch (fn) {
 		case 0U:
+			CUtils::dump(1U, "FR Mode Data, CSD1", output, 20U);
+
 			if (m_dest == NULL) {
 				m_dest = new unsigned char[YSF_CALLSIGN_LENGTH];
 				::memcpy(m_dest, output + 0U, YSF_CALLSIGN_LENGTH);
@@ -608,6 +610,10 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn)
 				::memcpy(m_source, output + YSF_CALLSIGN_LENGTH, YSF_CALLSIGN_LENGTH);
 			}
 
+			break;
+
+		case 1U:
+			CUtils::dump(1U, "FR Mode Data, CSD3", output, 20U);
 			break;
 
 		case 2U:
@@ -700,6 +706,8 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn)
 
 		switch (fn) {
 		case 0U:
+			CUtils::dump(1U, "FR Mode Data, CSD2", output, 20U);
+
 			if (m_downlink != NULL)
 				::memcpy(output + 0U, m_downlink, YSF_CALLSIGN_LENGTH);
 
