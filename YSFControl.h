@@ -56,6 +56,8 @@ private:
 	unsigned int               m_netFrames;
 	unsigned int               m_rfErrs;
 	unsigned int               m_rfBits;
+	unsigned int               m_netErrs;
+	unsigned int               m_netBits;
 	unsigned char*             m_rfSource;
 	unsigned char*             m_rfDest;
 	unsigned char*             m_netSource;

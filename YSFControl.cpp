@@ -38,7 +38,9 @@ m_holdoffTimer(1000U, 0U, 500U),
 m_rfFrames(0U),
 m_netFrames(0U),
 m_rfErrs(0U),
-m_rfBits(0U),
+m_rfBits(1U),
+m_netErrs(0U),
+m_netBits(1U),
 m_rfSource(NULL),
 m_rfDest(NULL),
 m_netSource(NULL),
@@ -379,6 +381,8 @@ void CYSFControl::writeNetwork()
 		m_netPayload.reset();
 		m_netState = RS_NET_AUDIO;
 		m_netFrames = 0U;
+		m_netErrs = 0U;
+		m_netBits = 1U;
 	} else {
 		bool changed = false;
 
@@ -411,6 +415,7 @@ void CYSFControl::writeNetwork()
 		unsigned char dt = fich.getDT();
 		unsigned char fn = fich.getFN();
 		unsigned char fi = fich.getFI();
+		unsigned char ft = fich.getFT();
 
 		// Set the downlink callsign
 		switch (fi) {
@@ -423,10 +428,15 @@ void CYSFControl::writeNetwork()
 			switch (dt) {
 			case YSF_DT_VD_MODE1:
 				m_netPayload.processVDMode1Data(data + 35U, fn);
+				m_netErrs += m_netPayload.processVDMode1Audio(data + 35U);
+				m_netBits += 235U;
 				break;
 
 			case YSF_DT_VD_MODE2:
 				m_netPayload.processVDMode2Data(data + 35U, fn);
+				// Temporarily disable the repition FEC code
+				// m_netErrs += m_netPayload.processVDMode2Audio(data + 35U);
+				// m_netBits += 135U;
 				break;
 
 			case YSF_DT_DATA_FR_MODE:
@@ -434,6 +444,11 @@ void CYSFControl::writeNetwork()
 				break;
 
 			case YSF_DT_VOICE_FR_MODE:
+				if (fn != 0U || ft != 1U) {
+					// The first packet after the header is odd, don't try and regenerate it
+					m_netErrs += m_netPayload.processVoiceFRModeAudio(data + 35U);
+					m_netBits += 720U;
+				}
 				break;
 
 			default:
@@ -453,7 +468,7 @@ void CYSFControl::writeNetwork()
 	writeQueueNet(data + 33U);
 
 	if (end) {
-		LogMessage("YSF, received network end of transmission, %.1f seconds", float(m_netFrames) / 10.0F);
+		LogMessage("YSF, received network end of transmission, %.1f seconds, BER: %.1f%%", float(m_netFrames) / 10.0F, float(m_netErrs * 100U) / float(m_netBits));
 		writeEndNet();
 	}
 }
@@ -474,7 +489,7 @@ void CYSFControl::clock(unsigned int ms)
 		m_networkWatchdog.clock(ms);
 
 		if (m_networkWatchdog.hasExpired()) {
-			LogMessage("YSF, network watchdog has expired, %.1f seconds", float(m_netFrames) / 10.0F);
+			LogMessage("YSF, network watchdog has expired, %.1f seconds, BER: %.1f%%", float(m_netFrames) / 10.0F, float(m_netErrs * 100U) / float(m_netBits));
 			writeEndNet();
 		}
 	}
