@@ -200,8 +200,9 @@ bool CYSFControl::writeModem(unsigned char *data)
 
 		case YSF_DT_VD_MODE2:
 			valid = m_rfPayload.processVDMode2Data(data + 2U, fn);
-			m_rfErrs += m_rfPayload.processVDMode2Audio(data + 2U);
-			m_rfBits += 135U;
+			// Temporarily disable the repition FEC code
+			// m_rfErrs += m_rfPayload.processVDMode2Audio(data + 2U);
+			// m_rfBits += 135U;
 			break;
 
 		case YSF_DT_DATA_FR_MODE:
