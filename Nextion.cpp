@@ -22,14 +22,18 @@
 #include <cstdio>
 #include <cassert>
 #include <cstring>
+#include <ctime>
 
-CNextion::CNextion(const std::string& callsign, unsigned int dmrid, const std::string& port, unsigned int brightness) :
+CNextion::CNextion(const std::string& callsign, unsigned int dmrid, const std::string& port, unsigned int brightness, bool displayClock, bool utc) :
 CDisplay(),
 m_callsign(callsign),
 m_dmrid(dmrid),
 m_serial(port, SERIAL_9600),
 m_brightness(brightness),
-m_mode(MODE_IDLE)
+m_mode(MODE_IDLE),
+m_displayClock(displayClock),
+m_utc(utc),
+m_clockDisplayTimer(1000U, 0U, 400U)
 {
 	assert(brightness >= 0U && brightness <= 100U);
 }
@@ -67,6 +71,8 @@ void CNextion::setIdleInt()
 	sendCommand(command);
 	sendCommand("t1.txt=\"MMDVM IDLE\"");
 
+	m_clockDisplayTimer.start();
+
 	m_mode = MODE_IDLE;
 }
 
@@ -82,6 +88,8 @@ void CNextion::setErrorInt(const char* text)
 	sendCommand(command);
 	sendCommand("t1.txt=\"ERROR\"");
 
+	m_clockDisplayTimer.stop();
+
 	m_mode = MODE_ERROR;
 }
 
@@ -90,6 +98,8 @@ void CNextion::setLockoutInt()
 	sendCommand("page MMDVM");
 
 	sendCommand("t0.txt=\"LOCKOUT\"");
+
+	m_clockDisplayTimer.stop();
 
 	m_mode = MODE_LOCKOUT;
 }
@@ -116,6 +126,8 @@ void CNextion::writeDStarInt(const char* my1, const char* my2, const char* your,
 		::sprintf(text, "t2.txt=\"via %.8s\"", reflector);
 		sendCommand(text);
 	}
+
+	m_clockDisplayTimer.stop();
 
 	m_mode = MODE_DSTAR;
 }
@@ -158,6 +170,8 @@ void CNextion::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 		sendCommand(text);
 	}
 
+	m_clockDisplayTimer.stop();
+
 	m_mode = MODE_DMR;
 }
 
@@ -193,6 +207,8 @@ void CNextion::writeFusionInt(const char* source, const char* dest, const char* 
 		sendCommand(text);
 	}
 
+	m_clockDisplayTimer.stop();
+
 	m_mode = MODE_YSF;
 }
 
@@ -201,6 +217,35 @@ void CNextion::clearFusionInt()
 	sendCommand("t0.txt=\"Listening\"");
 	sendCommand("t1.txt=\"\"");
 	sendCommand("t2.txt=\"\"");
+}
+
+void CNextion::clockInt(unsigned int ms)
+{
+	// Update the clock display in IDLE mode every 400ms
+	m_clockDisplayTimer.clock(ms);
+	if (m_displayClock && m_mode == MODE_IDLE && m_clockDisplayTimer.isRunning() && m_clockDisplayTimer.hasExpired()) {
+		time_t currentTime;
+		struct tm *Time;
+		::time(&currentTime);                   // Get the current time
+
+		if (m_utc)
+			Time = ::gmtime(&currentTime);
+		else
+			Time = ::localtime(&currentTime);
+
+		int Day = Time->tm_mday;
+		int Month = Time->tm_mon + 1;
+		int Year = Time->tm_year + 1900;
+		int Hour = Time->tm_hour;
+		int Min = Time->tm_min;
+		int Sec = Time->tm_sec;
+
+		char text[50U];
+		::sprintf(text, "t2.txt=\"%02d:%02d:%02d %02d/%02d/%2d\"", Hour, Min, Sec, Day, Month, Year % 100);
+		sendCommand(text);
+
+		m_clockDisplayTimer.start(); // restart the clock display timer
+	}
 }
 
 void CNextion::close()

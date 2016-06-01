@@ -123,6 +123,8 @@ m_hd44780DisplayClock(false),
 m_hd44780UTC(false),
 m_nextionPort("/dev/ttyAMA0"),
 m_nextionBrightness(50U),
+m_nextionDisplayClock(false),
+m_nextionUTC(false),
 m_oledType(3),
 m_oledBrightness(0),
 m_oledInvert(0)
@@ -389,6 +391,10 @@ bool CConf::read()
 			m_nextionPort = value;
 		else if (::strcmp(key, "Brightness") == 0)
 			m_nextionBrightness = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "DisplayClock") == 0)
+			m_nextionDisplayClock = ::atoi(value) == 1;
+		else if (::strcmp(key, "UTC") == 0)
+			m_nextionUTC = ::atoi(value) == 1;
 	} else if (section == SECTION_OLED) {
 		if (::strcmp(key, "Type") == 0)
 			m_oledType = (unsigned char)::atoi(value);
@@ -778,6 +784,16 @@ std::string CConf::getNextionPort() const
 unsigned int CConf::getNextionBrightness() const
 {
 	return m_nextionBrightness;
+}
+
+bool CConf::getNextionDisplayClock() const
+{
+	return m_nextionDisplayClock;
+}
+
+bool CConf::getNextionUTC() const
+{
+	return m_nextionUTC;
 }
 
 unsigned char CConf::getOLEDType() const
