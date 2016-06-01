@@ -801,20 +801,26 @@ void CMMDVMHost::createDisplay()
 		unsigned int pwmPin = m_conf.getHD44780PWMPin();
 		unsigned int pwmBright = m_conf.getHD44780PWMBright();
 		unsigned int pwmDim = m_conf.getHD44780PWMDim();
+		bool displayClock = m_conf.getHD44780DisplayClock();
+		bool utc = m_conf.getHD44780UTC();
 
 		if (pins.size() == 6U) {
 			LogInfo("    Rows: %u", rows);
 			LogInfo("    Columns: %u", columns);
 			LogInfo("    Pins: %u,%u,%u,%u,%u,%u", pins.at(0U), pins.at(1U), pins.at(2U), pins.at(3U), pins.at(4U), pins.at(5U));
 
+			LogInfo("    PWM Backlight: %s", pwm ? "yes" : "no");
 			if (pwm) {
-				LogInfo("PWM Brightness Control Enabled");
 				LogInfo("    PWM Pin: %u", pwmPin);
 				LogInfo("    PWM Bright: %u", pwmBright);
 				LogInfo("    PWM Dim: %u", pwmDim);
 			}
 
-			m_display = new CHD44780(rows, columns, m_callsign, dmrid, pins, pwm, pwmPin, pwmBright, pwmDim, m_duplex);
+			LogInfo("    Clock Display: %s", displayClock ? "yes" : "no");
+			if (displayClock)
+				LogInfo("    Display UTC: %s", utc ? "yes" : "no");
+
+			m_display = new CHD44780(rows, columns, m_callsign, dmrid, pins, pwm, pwmPin, pwmBright, pwmDim, displayClock, utc, m_duplex);
 		}
 #endif
 #if defined(OLED)

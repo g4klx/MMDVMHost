@@ -31,7 +31,10 @@
 const char* LISTENING = "Listening                               ";
 const char* DEADSPACE = "                                        ";
 
-CHD44780::CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim, bool duplex) :
+char        m_buffer1[128U];
+char        m_buffer2[128U];
+
+CHD44780::CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim, bool displayClock, bool utc, bool duplex) :
 CDisplay(),
 m_rows(rows),
 m_cols(cols),
@@ -47,11 +50,13 @@ m_pwm(pwm),
 m_pwmPin(pwmPin),
 m_pwmBright(pwmBright),
 m_pwmDim(pwmDim),
+m_displayClock(displayClock),
+m_utc(utc),
 m_duplex(duplex),
 //m_duplex(true), // uncomment to force duplex display for testing!
 m_fd(-1),
 m_dmr(false),
-m_timer(1000U, 0U, 250U)		// 250ms
+m_clockDisplayTimer(1000U, 0U, 75U)		// Update the clock display every 75ms
 {
 	assert(rows > 1U);
 	assert(cols > 15U);
@@ -288,6 +293,7 @@ void CHD44780::adafruitLCDColour(ADAFRUIT_COLOUR colour)
 
 void CHD44780::setIdleInt()
 {
+	m_clockDisplayTimer.start(); // Start the clock display in IDLE only
 	::lcdClear(m_fd);
 	
 #ifdef ADAFRUIT_DISPLAY
@@ -301,16 +307,21 @@ void CHD44780::setIdleInt()
 			::pwmWrite(m_pwmPin, (m_pwmDim / 100) * 1024);
 	}
 
+	// Print callsign and ID at on top row for all screen sizes
 	::lcdPosition(m_fd, 0, 0);
-	::lcdPrintf(m_fd, "%-6s / %u", m_callsign.c_str(), m_dmrid);
+	::lcdPrintf(m_fd, "%-6s", m_callsign.c_str());
+	::lcdPosition(m_fd, m_cols - 7, 0);
+	::lcdPrintf(m_fd, "%7u", m_dmrid);
 
-	::lcdPosition(m_fd, 0, 1);
+	// Print MMDVM and Idle on bottom row for all screen sizes
+	::lcdPosition(m_fd, 0, m_rows - 1);
 	::lcdPutchar(m_fd, 2);
 	::lcdPutchar(m_fd, 2);
 	::lcdPutchar(m_fd, 3);
 	::lcdPutchar(m_fd, 4);
 	::lcdPutchar(m_fd, 2);
-	::lcdPuts(m_fd, " Idle");
+	::lcdPosition(m_fd, m_cols - 4, m_rows - 1);
+	::lcdPuts(m_fd, "Idle"); // Gets overwritten by clock on 2 line screen
 
 	m_dmr = false;
 }
@@ -323,6 +334,7 @@ void CHD44780::setErrorInt(const char* text)
   adafruitLCDColour(AC_RED);
 #endif
 
+	m_clockDisplayTimer.stop(); // Stop the clock display
 	::lcdClear(m_fd);
 
 	if (m_pwm) {
@@ -351,6 +363,7 @@ void CHD44780::setLockoutInt()
 	adafruitLCDColour(AC_RED);
 #endif
 
+	m_clockDisplayTimer.stop(); // Stop the clock display
 	::lcdClear(m_fd);
 
 	if (m_pwm) {
@@ -385,6 +398,7 @@ void CHD44780::writeDStarInt(const char* my1, const char* my2, const char* your,
 		adafruitLCDColour(AC_RED);
 #endif
 
+	m_clockDisplayTimer.stop(); // Stop the clock display
 	::lcdClear(m_fd);
 
 	if (m_pwm) {
@@ -398,45 +412,45 @@ void CHD44780::writeDStarInt(const char* my1, const char* my2, const char* your,
 	::lcdPuts(m_fd, "D-Star");
 
 	if (m_rows == 2U && m_cols == 16U) {
-		char buffer[16U];
-		::sprintf(buffer, "%s %.8s/%.4s", type, my1, my2);
+//		char buffer[16U];
+		::sprintf(m_buffer1, "%s %.8s/%.4s", type, my1, my2);
 		::lcdPosition(m_fd, 0, 1);
-		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 	} else if (m_rows == 4U && m_cols == 16U) {
-		char buffer[16U];
-		::sprintf(buffer, "%s %.8s/%.4s", type, my1, my2);
+//		char buffer[16U];
+		::sprintf(m_buffer1, "%s %.8s/%.4s", type, my1, my2);
 		::lcdPosition(m_fd, 0, 1);
-		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 
 		if (strcmp(reflector, "        ") == 0)
-			::sprintf(buffer, "%.8s", your);
+			::sprintf(m_buffer1, "%.8s", your);
 		else
-			::sprintf(buffer, "%.8s<%.8s", your, reflector);
+			::sprintf(m_buffer1, "%.8s<%.8s", your, reflector);
 
 		::lcdPosition(m_fd, 0, 2);
-		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 	} else if (m_rows == 4U && m_cols == 20U) {
-		char buffer[20U];
-		::sprintf(buffer, "%s %.8s/%.4s >", type, my1, my2);
+		char m_buffer1[20U];
+		::sprintf(m_buffer1, "%s %.8s/%.4s >", type, my1, my2);
 		::lcdPosition(m_fd, 0, 1);
-		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 
 		if (strcmp(reflector, "        ") == 0)
-			::sprintf(buffer, "%.8s", your);
+			::sprintf(m_buffer1, "%.8s", your);
 		else
-			::sprintf(buffer, "%.8s <- %.8s", your, reflector);
+			::sprintf(m_buffer1, "%.8s <- %.8s", your, reflector);
 
 		::lcdPosition(m_fd, 0, 2);
-		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 	} else if (m_rows == 2 && m_cols == 40U) {
-		char buffer[40U];
+		char m_buffer1[40U];
 		if (strcmp(reflector, "        ") == 0)
-			::sprintf(buffer, "%s %.8s/%.4s > %.8s", type, my1, my2, your);
+			::sprintf(m_buffer1, "%s %.8s/%.4s > %.8s", type, my1, my2, your);
 		else
-			::sprintf(buffer, "%s %.8s/%.4s > %.8s via %.8s", type, my1, my2, your, reflector);
+			::sprintf(m_buffer1, "%s %.8s/%.4s > %.8s via %.8s", type, my1, my2, your, reflector);
 
 		::lcdPosition(m_fd, 0, 1);
-		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 	}
 
 	m_dmr = false;
@@ -447,6 +461,8 @@ void CHD44780::clearDStarInt()
 #ifdef ADAFRUIT_DISPLAY
 	adafruitLCDColour(AC_PURPLE);
 #endif
+
+	m_clockDisplayTimer.stop(); // Stop the clock display
 
 	if (m_rows == 2U && m_cols == 16U) {
 		::lcdPosition(m_fd, 0, 1);
@@ -471,10 +487,11 @@ void CHD44780::clearDStarInt()
 
 void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
-	char buffer[128]; // force 128 char buffer - we're never getting that far but stops us overflowing it!
+//	char buffer[128]; // force 128 char buffer - we're never getting that far but stops us overflowing it!
 	assert(type != NULL);
 
 	if (!m_dmr) {
+		m_clockDisplayTimer.stop(); // Stop the clock display
 		::lcdClear(m_fd);
 
 #ifdef ADAFRUIT_DISPLAY
@@ -491,8 +508,8 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 		if (m_duplex) {
 			if (m_rows > 2U) {
 				::lcdPosition(m_fd, 0, (m_rows / 2) - 2);
-				::sprintf(buffer, "%s%s", "DMR", DEADSPACE);
-				::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+				::sprintf(m_buffer1, "%s%s", "DMR", DEADSPACE);
+				::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 			}
 
 			if (slotNo == 1U) {
@@ -504,8 +521,8 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 			}
 		} else {
 			::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
-			::sprintf(buffer, "%s%s", "DMR", DEADSPACE);
-			::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+			::sprintf(m_buffer1, "%s%s", "DMR", DEADSPACE);
+			::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 			::lcdPosition(m_fd, 0, (m_rows / 2));
 			::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
 		}
@@ -519,10 +536,8 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 		if (slotNo == 1U) {
 			::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
 			::lcdPuts(m_fd, "1 ");
-			::sprintf(buffer, "%s > %s%s", src.c_str(), dst.c_str(), DEADSPACE);
-
-			// Thread this out?
-			::lcdPrintf(m_fd, "%.*s", m_cols - 2U, buffer);
+			::sprintf(m_buffer1, "%s > %s%s", src.c_str(), dst.c_str(), DEADSPACE);
+			::lcdPrintf(m_fd, "%.*s", m_cols - 2U, m_buffer1);
 
 			if (m_cols > 16) {
 				::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
@@ -535,10 +550,8 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 		} else {
 			::lcdPosition(m_fd, 0, (m_rows / 2));
 			::lcdPuts(m_fd, "2 ");
-			::sprintf(buffer, "%s > %s%s", src.c_str(), dst.c_str(), DEADSPACE);
-
-			// Thread this out?
-			::lcdPrintf(m_fd, "%.*s", m_cols - 2U, buffer);
+			::sprintf(m_buffer2, "%s > %s%s", src.c_str(), dst.c_str(), DEADSPACE);
+			::lcdPrintf(m_fd, "%.*s", m_cols - 2U, m_buffer2);
 
 			if (m_cols > 16) {
 				::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
@@ -552,16 +565,16 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 	} else {
 		::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
 		::lcdPutchar(m_fd, 0);
-		::sprintf(buffer, " %s%s", src.c_str(), DEADSPACE);
-		::lcdPrintf(m_fd, "%.*s", m_cols - 4U, buffer);
+		::sprintf(m_buffer2, " %s%s", src.c_str(), DEADSPACE);
+		::lcdPrintf(m_fd, "%.*s", m_cols - 4U, m_buffer2);
 		::lcdCharDef(m_fd, 5, strcmp(type, "R") == 0 ? rfChar : ipChar);
 		::lcdPosition(m_fd, m_cols - 1U, (m_rows / 2) - 1);
 		::lcdPutchar(m_fd, 5);
 
 		::lcdPosition(m_fd, 0, (m_rows / 2));
 		::lcdPutchar(m_fd, 1);
-		::sprintf(buffer, " %s%s", dst.c_str(), DEADSPACE);
-		::lcdPrintf(m_fd, "%.*s", m_cols - 4U, buffer);
+		::sprintf(m_buffer2, " %s%s", dst.c_str(), DEADSPACE);
+		::lcdPrintf(m_fd, "%.*s", m_cols - 4U, m_buffer2);
 		::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
 		::lcdPosition(m_fd, m_cols - 1U, (m_rows / 2));
 		::lcdPutchar(m_fd, 6);
@@ -571,12 +584,13 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 
 void CHD44780::clearDMRInt(unsigned int slotNo)
 {
-	char buffer[128]; // force 128 char buffer - we're never getting that far but stops us overflowing it!
+//	char buffer[128]; // force 128 char buffer - we're never getting that far but stops us overflowing it!
 
 #ifdef ADAFRUIT_DISPLAY
 	adafruitLCDColour(AC_PURPLE);
 #endif
 
+	m_clockDisplayTimer.stop(); // Stop the clock display
 	if (m_duplex) {
 		if (slotNo == 1U) {
 			::lcdPosition(m_fd, 0, 0);
@@ -587,8 +601,8 @@ void CHD44780::clearDMRInt(unsigned int slotNo)
 		}
 	} else {
 			::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
-			::sprintf(buffer, "%s%s", "DMR", DEADSPACE);
-			::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+			::sprintf(m_buffer2, "%s%s", "DMR", DEADSPACE);
+			::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer2);
 			::lcdPosition(m_fd, 0, (m_rows / 2));
 			::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
 	}
@@ -605,6 +619,7 @@ void CHD44780::writeFusionInt(const char* source, const char* dest, const char* 
 		adafruitLCDColour(AC_RED);
 #endif
 
+	m_clockDisplayTimer.stop(); // Stop the clock display
 	::lcdClear(m_fd);
 
 	if (m_pwm) {
@@ -618,34 +633,34 @@ void CHD44780::writeFusionInt(const char* source, const char* dest, const char* 
 	::lcdPuts(m_fd, "System Fusion");
 
 	if (m_rows == 2U && m_cols == 16U) {
-		char buffer[16U];
-		::sprintf(buffer, "%.10s >", source);
+		char m_buffer1[16U];
+		::sprintf(m_buffer1, "%.10s >", source);
 		::lcdPosition(m_fd, 0, 1);
-		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 	} else if (m_rows == 4U && m_cols == 16U) {
-		char buffer[16U];
-		::sprintf(buffer, "%.10s >", source);
+		char m_buffer1[16U];
+		::sprintf(m_buffer1, "%.10s >", source);
 		::lcdPosition(m_fd, 0, 1);
-		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 
-		::sprintf(buffer, "%.10s", dest);
+		::sprintf(m_buffer1, "%.10s", dest);
 		::lcdPosition(m_fd, 0, 2);
-		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 	} else if (m_rows == 4U && m_cols == 20U) {
-		char buffer[20U];
-		::sprintf(buffer, "%.10s >", source);
+		char m_buffer1[20U];
+		::sprintf(m_buffer1, "%.10s >", source);
 		::lcdPosition(m_fd, 0, 1);
-		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 
-		::sprintf(buffer, "%.10s", dest);
+		::sprintf(m_buffer1, "%.10s", dest);
 		::lcdPosition(m_fd, 0, 2);
-		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 	} else if (m_rows == 2 && m_cols == 40U) {
-		char buffer[40U];
-		::sprintf(buffer, "%.10s > %.10s", source, dest);
+		char m_buffer1[40U];
+		::sprintf(m_buffer1, "%.10s > %.10s", source, dest);
 
 		::lcdPosition(m_fd, 0, 1);
-		::lcdPrintf(m_fd, "%.*s", m_cols, buffer);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 	}
 
 	m_dmr = false;
@@ -656,6 +671,8 @@ void CHD44780::clearFusionInt()
 #ifdef ADAFRUIT_DISPLAY
 	adafruitLCDColour(AC_PURPLE);
 #endif
+
+	m_clockDisplayTimer.stop(); // Stop the clock display
 
 	if (m_rows == 2U && m_cols == 16U) {
 		::lcdPosition(m_fd, 0, 1);
@@ -680,13 +697,38 @@ void CHD44780::clearFusionInt()
 
 void CHD44780::clockInt(unsigned int ms)
 {
-	m_timer.clock(ms);
-	if (m_timer.isRunning() && m_timer.hasExpired()) {
-		// Do work every 250ms here
+	// Update the clock display in IDLE mode every 75ms
+	m_clockDisplayTimer.clock(ms);
+	if (m_displayClock && m_clockDisplayTimer.isRunning() && m_clockDisplayTimer.hasExpired()) {
+			time_t currentTime;
+			struct tm *Time;
+			time(&currentTime);                   // Get the current time
 
-		// Start the timer with m_timer.start();
-		// and stop it with m_timer.stop();
-		m_timer.start();
+			if (m_utc){
+				Time = gmtime(&currentTime);
+			} else {
+				Time = localtime(&currentTime);
+			}
+			
+			int Day    = Time->tm_mday;
+			int Month  = Time->tm_mon + 1;
+			int Year   = Time->tm_year + 1900;
+			int Hour   = Time->tm_hour;
+			int Min    = Time->tm_min;
+			int Sec    = Time->tm_sec;
+			
+			if (m_cols == 16U && m_rows == 2U) {
+				::lcdPosition(m_fd, m_cols - 8, 1);
+			} else {
+				::lcdPosition(m_fd, (m_cols - 8) / 2, m_rows == 2 ? 1 : 2);
+			}
+			::lcdPrintf(m_fd, "%02d:%02d:%02d", Hour, Min, Sec);
+
+			if (m_cols != 16U && m_rows != 2U) {
+				::lcdPosition(m_fd, (m_cols - 8) / 2, m_rows == 2 ? 0 : 1);
+				::lcdPrintf(m_fd, "%02d/%02d/%2d", Day, Month, Year%100);
+			}
+			m_clockDisplayTimer.start(); // restart the clock display timer
 	}
 }
 
