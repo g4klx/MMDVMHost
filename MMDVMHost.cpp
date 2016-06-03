@@ -255,6 +255,7 @@ int CMMDVMHost::run()
 		LogInfo("    Time: %u mins", time);
 
 		m_cwIdTimer.setTimeout(time * 60U);
+		m_cwIdTimer.start();
 	}
 
 	CTimer dmrBeaconTimer(1000U, 4U);
@@ -547,9 +548,12 @@ int CMMDVMHost::run()
 
 		m_cwIdTimer.clock(ms);
 		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
-			if (m_mode == MODE_IDLE && !m_modem->hasTX())
+			if (m_mode == MODE_IDLE && !m_modem->hasTX()){
+				LogDebug("sending CW ID");
 				m_modem->sendCWId(m_callsign);
-			m_cwIdTimer.start();
+
+				m_cwIdTimer.start();   //reset only after sending ID, timer-overflow after 49 days doesnt matter
+			}
 		}
 
 		dmrBeaconTimer.clock(ms);
