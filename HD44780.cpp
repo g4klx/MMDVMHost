@@ -544,7 +544,7 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 		if (slotNo == 1U) {
 			::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
 			::lcdPuts(m_fd, "1 ");
-			::sprintf(m_buffer2, "%s > %s%s     ", src.c_str(), group ? "TG" : "", dst.c_str());
+			::sprintf(m_buffer1, "%s > %s%s     ", src.c_str(), group ? "TG" : "", dst.c_str());
 			::lcdPrintf(m_fd, "%.*s", m_cols - 2U, m_buffer1);
 
 			// Start the scroll timer on slot 1 if text in m_buffer1 will not fit in the space available
