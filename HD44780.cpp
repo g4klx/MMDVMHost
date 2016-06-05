@@ -295,6 +295,8 @@ void CHD44780::adafruitLCDColour(ADAFRUIT_COLOUR colour)
 
 void CHD44780::setIdleInt()
 {
+	m_scrollTimer1.stop();                // Stop the scroll timer on slot 1
+	m_scrollTimer2.stop();                // Stop the scroll timer on slot 2
 	m_clockDisplayTimer.start();          // Start the clock display in IDLE only
 	::lcdClear(m_fd);
 	
@@ -516,13 +518,16 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 			}
 
 			if (slotNo == 1U) {
+				m_scrollTimer2.stop();
 				::lcdPosition(m_fd, 0, (m_rows / 2));
 				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
 			} else {
+				m_scrollTimer1.stop();
 				::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
 				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
 			}
 		} else {
+			m_scrollTimer2.stop();
 			::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
 			::sprintf(m_buffer1, "%s%s", "DMR", DEADSPACE);
 			::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
@@ -598,23 +603,24 @@ void CHD44780::clearDMRInt(unsigned int slotNo)
 #endif
 
 	m_clockDisplayTimer.stop();           // Stop the clock display
-	m_scrollTimer1.stop();                // Stop the scroll timer on slot 1
-	m_scrollTimer2.stop();                // Stop the scroll timer on slot 2
 
 	if (m_duplex) {
 		if (slotNo == 1U) {
+			m_scrollTimer1.stop();            // Stop the scroll timer on slot 1
 			::lcdPosition(m_fd, 0, 0);
 			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
 		} else {
+			m_scrollTimer2.stop();            // Stop the scroll timer on slot 2
 			::lcdPosition(m_fd, 0, 1);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
 		}
 	} else {
-			::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
-			::sprintf(m_buffer2, "%s%s", "DMR", DEADSPACE);
-			::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer2);
-			::lcdPosition(m_fd, 0, (m_rows / 2));
-			::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+		m_scrollTimer2.stop();              // Stop the scroll timer on slot 2
+		::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
+		::sprintf(m_buffer2, "%s%s", "DMR", DEADSPACE);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer2);
+		::lcdPosition(m_fd, 0, (m_rows / 2));
+		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
 	}
 }
 
