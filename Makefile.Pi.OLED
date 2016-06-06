@@ -2,8 +2,8 @@
 
 CC      = gcc
 CXX     = g++
-CFLAGS  = -g -O3 -Wall -std=c++0x -DOLED -I/usr/local/include
-LIBS    = -lArduiPi_OLED
+CFLAGS  = -g -O3 -Wall -std=c++0x -pthread -DOLED -I/usr/local/include
+LIBS    = -lArduiPi_OLED -lpthread
 LDFLAGS = -g -L/usr/local/lib
 
 OBJECTS = \

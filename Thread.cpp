@@ -61,6 +61,8 @@ void CThread::sleep(unsigned int ms)
 
 #else
 
+#include <unistd.h>
+
 CThread::CThread() :
 m_thread()
 {

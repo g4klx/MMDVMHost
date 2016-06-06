@@ -41,7 +41,7 @@ public:
 
 private:
 #if defined(_WIN32) || defined(_WIN64)
-	HANDLE    m_handle;
+  HANDLE    m_handle;
 #else
   pthread_t m_thread;
 #endif

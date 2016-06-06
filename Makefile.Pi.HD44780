@@ -2,7 +2,7 @@
 
 CC      = gcc
 CXX     = g++
-CFLAGS  = -g -O3 -Wall -std=c++0x -DHD44780 -I/usr/local/include
+CFLAGS  = -g -O3 -Wall -std=c++0x -pthread -DHD44780 -I/usr/local/include
 LIBS    = -lwiringPi -lwiringPiDev -lpthread
 LDFLAGS = -g -L/usr/local/lib
 
