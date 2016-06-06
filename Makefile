@@ -2,7 +2,7 @@
 
 CC      = gcc
 CXX     = g++
-CFLAGS  = -g -O3 -Wall -std=c++0x
+CFLAGS  = -g -O3 -Wall -std=c++0x -pthread
 LIBS    =
 LDFLAGS = -g
 
