@@ -20,6 +20,7 @@
 #include "DMRDefines.h"
 #include "YSFDefines.h"
 #include "Defines.h"
+#include "Thread.h"
 #include "Modem.h"
 #include "Utils.h"
 #include "Log.h"
@@ -717,11 +718,7 @@ bool CModem::readVersion()
 			return false;
 
 		for (unsigned int count = 0U; count < MAX_RESPONSES; count++) {
-#if defined(_WIN32) || defined(_WIN64)
-			::Sleep(10UL);
-#else
-			::usleep(10000UL);
-#endif
+			CThread::sleep(10U);
 			RESP_TYPE_MMDVM resp = getResponse();
 			if (resp == RTM_OK && m_buffer[2U] == MMDVM_GET_VERSION) {
 				LogInfo("MMDVM protocol version: %u, description: %.*s", m_buffer[3U], m_length - 4U, m_buffer + 4U);
@@ -729,11 +726,7 @@ bool CModem::readVersion()
 			}
 		}
 
-#if defined(_WIN32) || defined(_WIN64)
-		::Sleep(1000UL);		// 1s
-#else
-		::sleep(1UL);			// 1s
-#endif
+		CThread::sleep(1000U);
 	}
 
 	LogError("Unable to read the firmware version after six attempts");
@@ -802,13 +795,9 @@ bool CModem::setConfig()
 	unsigned int count = 0U;
 	RESP_TYPE_MMDVM resp;
 	do {
-#if defined(_WIN32) || defined(_WIN64)
-		::Sleep(10UL);
-#else
-		::usleep(10000UL);
-#endif
-		resp = getResponse();
+		CThread::sleep(10U);
 
+		resp = getResponse();
 		if (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK) {
 			count++;
 			if (count >= MAX_RESPONSES) {
@@ -861,13 +850,9 @@ bool CModem::setFrequency()
 	unsigned int count = 0U;
 	RESP_TYPE_MMDVM resp;
 	do {
-#if defined(_WIN32) || defined(_WIN64)
-		::Sleep(10UL);
-#else
-		::usleep(10000UL);
-#endif
-		resp = getResponse();
+		CThread::sleep(10U);
 
+		resp = getResponse();
 		if (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK) {
 			count++;
 			if (count >= MAX_RESPONSES) {

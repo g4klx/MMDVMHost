@@ -27,6 +27,7 @@
 #include "NullDisplay.h"
 #include "YSFControl.h"
 #include "Nextion.h"
+#include "Thread.h"
 
 #if defined(HD44780)
 #include "HD44780.h"
@@ -568,13 +569,8 @@ int CMMDVMHost::run()
 			m_dmrTXTimer.stop();
 		}
 
-		if (ms < 5U) {
-#if defined(_WIN32) || defined(_WIN64)
-			::Sleep(5UL);		// 5ms
-#else
-			::usleep(5000);		// 5ms
-#endif
-		}
+		if (ms < 5U)
+			CThread::sleep(5U);
 	}
 
 	LogMessage("MMDVMHost-%s is exiting on receipt of SIGHUP1", VERSION);
