@@ -18,18 +18,23 @@
 
 #include "Nextion.h"
 #include "Log.h"
+#include "Conf.h"
+#include "FlagLookup.h"
 
 #include <cstdio>
 #include <cassert>
 #include <cstring>
 #include <ctime>
 
-CNextion::CNextion(const std::string& callsign, unsigned int dmrid, const std::string& port, unsigned int brightness, bool displayClock, bool utc) :
+CFLAGLookup* CNextion::m_flaglookup = NULL;
+
+CNextion::CNextion(const std::string& callsign, unsigned int dmrid, const std::string& port, unsigned int brightness, unsigned int flagUsed, bool displayClock, bool utc) :
 CDisplay(),
 m_callsign(callsign),
 m_dmrid(dmrid),
 m_serial(port, SERIAL_9600),
 m_brightness(brightness),
+m_flagUsed(flagUsed),
 m_mode(MODE_IDLE),
 m_displayClock(displayClock),
 m_utc(utc),
@@ -49,13 +54,10 @@ bool CNextion::open()
 		LogError("Cannot open the port for the Nextion display");
 		return false;
 	}
-
 	sendCommand("bkcmd=0");
-
 	char command[20U];
 	::sprintf(command, "dim=%u", m_brightness);
 	sendCommand(command);
-
 	setIdle();
 
 	return true;
@@ -64,11 +66,17 @@ bool CNextion::open()
 void CNextion::setIdleInt()
 {
 	sendCommand("page MMDVM");
-
 	char command[30];
+	char callsign[8];
 	::sprintf(command, "t0.txt=\"%-6s / %u\"", m_callsign.c_str(), m_dmrid);
-
+	::sprintf(callsign, "%s", m_callsign.c_str());
 	sendCommand(command);
+        if (m_flagUsed==1) {
+            std::string flag = m_flaglookup->flagFind(callsign);
+            ::sprintf(command,"p1.pic=%s",flag.c_str());
+            sendCommand(command);
+           }
+
 	sendCommand("t1.txt=\"MMDVM IDLE\"");
 
 	m_clockDisplayTimer.start();
@@ -84,12 +92,11 @@ void CNextion::setErrorInt(const char* text)
 
 	char command[20];
 	::sprintf(command, "t0.txt=\"%s\"", text);
-
 	sendCommand(command);
 	sendCommand("t1.txt=\"ERROR\"");
-
+        sendCommand("p1.pic=254");
+        sendCommand("p2.pic=254");
 	m_clockDisplayTimer.stop();
-
 	m_mode = MODE_ERROR;
 }
 
@@ -98,6 +105,8 @@ void CNextion::setLockoutInt()
 	sendCommand("page MMDVM");
 
 	sendCommand("t0.txt=\"LOCKOUT\"");
+        sendCommand("p1.pic=254");
+        sendCommand("p2.pic=254");
 
 	m_clockDisplayTimer.stop();
 
@@ -111,9 +120,16 @@ void CNextion::writeDStarInt(const char* my1, const char* my2, const char* your,
 	assert(your != NULL);
 	assert(type != NULL);
 	assert(reflector != NULL);
+        char command[30];
 
 	if (m_mode != MODE_DSTAR)
 		sendCommand("page DStar");
+
+        if (m_flagUsed==1) {
+            std::string flag = m_flaglookup->flagFind(my1);
+            ::sprintf(command,"p1.pic=%s",flag.c_str());
+            sendCommand(command);
+           }
 
 	char text[30U];
 	::sprintf(text, "t0.txt=\"%s %.8s/%4.4s\"", type, my1, my2);
@@ -137,19 +153,28 @@ void CNextion::clearDStarInt()
 	sendCommand("t0.txt=\"Listening\"");
 	sendCommand("t1.txt=\"\"");
 	sendCommand("t2.txt=\"\"");
+	sendCommand("p1.pic=254");
+        sendCommand("p2.pic=254");
 }
 
 void CNextion::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
+	char callsign[8];
+        char command[30];
 	assert(type != NULL);
 
 	if (m_mode != MODE_DMR) {
 		sendCommand("page DMR");
 
-		if (slotNo == 1U)
+		if (slotNo == 1U){
 			sendCommand("t2.txt=\"2 Listening\"");
+			sendCommand("p2.pic=254");
+			}
 		else
+			{
 			sendCommand("t0.txt=\"1 Listening\"");
+			sendCommand("p1.pic=254");
+			}
 	}
 
 	if (slotNo == 1U) {
@@ -160,6 +185,15 @@ void CNextion::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 
 		::sprintf(text, "t1.txt=\"%s%s\"", group ? "TG" : "", dst.c_str());
 		sendCommand(text);
+
+        if (m_flagUsed==1) {
+            ::sprintf(callsign, "%-6s", src.c_str());
+	    std::string flag = m_flaglookup->flagFind(callsign);
+            ::sprintf(command,"p1.pic=%s",flag.c_str());
+            sendCommand(command);
+           }
+
+
 	} else {
 		char text[30U];
 
@@ -168,6 +202,14 @@ void CNextion::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 
 		::sprintf(text, "t3.txt=\"%s%s\"", group ? "TG" : "", dst.c_str());
 		sendCommand(text);
+        
+	if (m_flagUsed==1) {
+            ::sprintf(callsign, "%-6s", src.c_str());
+	    std::string flag = m_flaglookup->flagFind(callsign);
+            ::sprintf(command,"p2.pic=%s",flag.c_str());
+            sendCommand(command);
+           }
+
 	}
 
 	m_clockDisplayTimer.stop();
@@ -180,9 +222,11 @@ void CNextion::clearDMRInt(unsigned int slotNo)
 	if (slotNo == 1U) {
 		sendCommand("t0.txt=\"1 Listening\"");
 		sendCommand("t1.txt=\"\"");
+		sendCommand("p1.pic=254");
 	} else {
 		sendCommand("t2.txt=\"2 Listening\"");
 		sendCommand("t3.txt=\"\"");
+		sendCommand("p2.pic=254");
 	}
 }
 
@@ -192,6 +236,9 @@ void CNextion::writeFusionInt(const char* source, const char* dest, const char* 
 	assert(dest != NULL);
 	assert(type != NULL);
 	assert(origin != NULL);
+
+	char callsign[8];
+        char command[30];
 
 	if (m_mode != MODE_YSF)
 		sendCommand("page YSF");
@@ -207,6 +254,12 @@ void CNextion::writeFusionInt(const char* source, const char* dest, const char* 
 		sendCommand(text);
 	}
 
+	if (m_flagUsed==1) {
+            ::sprintf(callsign, "%-6s",source);
+	    std::string flag = m_flaglookup->flagFind(callsign);
+            ::sprintf(command,"p1.pic=%s",flag.c_str());
+            sendCommand(command);
+           }
 	m_clockDisplayTimer.stop();
 
 	m_mode = MODE_YSF;
@@ -217,7 +270,11 @@ void CNextion::clearFusionInt()
 	sendCommand("t0.txt=\"Listening\"");
 	sendCommand("t1.txt=\"\"");
 	sendCommand("t2.txt=\"\"");
-}
+
+	sendCommand("p1.pic=254"); // Clear both flags
+	sendCommand("p2.pic=254");
+
+	}
 
 void CNextion::clockInt(unsigned int ms)
 {

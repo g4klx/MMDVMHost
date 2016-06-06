@@ -27,6 +27,7 @@
 #include "NullDisplay.h"
 #include "YSFControl.h"
 #include "Nextion.h"
+#include "Thread.h"
 
 #if defined(HD44780)
 #include "HD44780.h"
@@ -129,7 +130,8 @@ m_duplex(false),
 m_dstarEnabled(false),
 m_dmrEnabled(false),
 m_ysfEnabled(false),
-m_callsign()
+m_callsign(),
+m_FlagUsed()
 {
 }
 
@@ -255,6 +257,7 @@ int CMMDVMHost::run()
 		LogInfo("    Time: %u mins", time);
 
 		m_cwIdTimer.setTimeout(time * 60U);
+		m_cwIdTimer.start();
 	}
 
 	CTimer dmrBeaconTimer(1000U, 4U);
@@ -547,9 +550,12 @@ int CMMDVMHost::run()
 
 		m_cwIdTimer.clock(ms);
 		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
-			if (m_mode == MODE_IDLE && !m_modem->hasTX())
+			if (m_mode == MODE_IDLE && !m_modem->hasTX()){
+				LogDebug("sending CW ID");
 				m_modem->sendCWId(m_callsign);
-			m_cwIdTimer.start();
+
+				m_cwIdTimer.start();   //reset only after sending ID, timer-overflow after 49 days doesnt matter
+			}
 		}
 
 		dmrBeaconTimer.clock(ms);
@@ -564,13 +570,8 @@ int CMMDVMHost::run()
 			m_dmrTXTimer.stop();
 		}
 
-		if (ms < 5U) {
-#if defined(_WIN32) || defined(_WIN64)
-			::Sleep(5UL);		// 5ms
-#else
-			::usleep(5000);		// 5ms
-#endif
-		}
+		if (ms < 5U)
+			CThread::sleep(5U);
 	}
 
 	LogMessage("MMDVMHost-%s is exiting on receipt of SIGHUP1", VERSION);
@@ -766,6 +767,7 @@ void CMMDVMHost::readParams()
 	m_ysfEnabled   = m_conf.getFusionEnabled();
 	m_duplex       = m_conf.getDuplex();
 	m_callsign     = m_conf.getCallsign();
+	m_FlagUsed     = m_conf.getFlagUsed();
 }
 
 void CMMDVMHost::createDisplay()
@@ -775,7 +777,6 @@ void CMMDVMHost::createDisplay()
 
 	LogInfo("Display Parameters");
 	LogInfo("    Type: %s", type.c_str());
-
 	if (type == "TFT Serial") {
 		std::string port        = m_conf.getTFTSerialPort();
 		unsigned int brightness = m_conf.getTFTSerialBrightness();
@@ -796,7 +797,8 @@ void CMMDVMHost::createDisplay()
 		if (displayClock)
 			LogInfo("    Display UTC: %s", utc ? "yes" : "no");
 
-		m_display = new CNextion(m_callsign, dmrid, port, brightness, displayClock, utc);
+		m_display = new CNextion(m_callsign, dmrid, port, brightness,m_FlagUsed, displayClock, utc);
+
 #if defined(HD44780)
 	} else if (type == "HD44780") {
 		unsigned int rows    = m_conf.getHD44780Rows();

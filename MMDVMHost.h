@@ -53,6 +53,7 @@ private:
   bool           m_dmrEnabled;
   bool           m_ysfEnabled;
   std::string    m_callsign;
+  unsigned int   m_FlagUsed;
 
   void readParams();
   bool createModem();

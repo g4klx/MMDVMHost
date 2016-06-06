@@ -139,6 +139,8 @@ public:
   unsigned char  getOLEDType() const;
   unsigned char  getOLEDBrightness() const;
   unsigned char  getOLEDInvert() const;
+  // Flags
+  unsigned int getFlagUsed() const;
 
 private:
   std::string  m_file;
@@ -236,6 +238,7 @@ private:
   unsigned char m_oledType;
   unsigned char m_oledBrightness;
   unsigned char m_oledInvert;
+  unsigned int  m_FlagUsed;
 };
 
 #endif

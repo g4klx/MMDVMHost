@@ -43,7 +43,8 @@ enum SECTION {
   SECTION_TFTSERIAL,
   SECTION_HD44780,
   SECTION_NEXTION,
-  SECTION_OLED
+  SECTION_OLED,
+  SECTION_FLAGS
 };
 
 CConf::CConf(const std::string& file) :
@@ -127,7 +128,8 @@ m_nextionDisplayClock(false),
 m_nextionUTC(false),
 m_oledType(3),
 m_oledBrightness(0),
-m_oledInvert(0)
+m_oledInvert(0),
+m_FlagUsed(1)
 {
 }
 
@@ -181,6 +183,8 @@ bool CConf::read()
 		  section = SECTION_NEXTION;
 	  else if (::strncmp(buffer, "[OLED]", 6U) == 0)
 		  section = SECTION_OLED;
+	  else if (::strncmp(buffer, "[FLAGS]", 7U) == 0)
+                  section = SECTION_FLAGS;
 	  else
         section = SECTION_NONE;
 
@@ -402,6 +406,9 @@ bool CConf::read()
 			m_oledBrightness = (unsigned char)::atoi(value);
 		else if (::strcmp(key, "Brightness") == 0)
 			m_oledInvert = (unsigned char)::atoi(value);
+  	} else if (section == SECTION_FLAGS) {
+                if (::strcmp(key, "Flags") == 0)
+                        m_FlagUsed = (unsigned int)::atoi(value);
 	}
 
   }
@@ -810,3 +817,9 @@ unsigned char CConf::getOLEDInvert() const
 {
 	return m_oledInvert;
 }
+
+unsigned int CConf::getFlagUsed() const
+{
+        return m_FlagUsed;
+}
+
