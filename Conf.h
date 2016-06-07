@@ -85,6 +85,10 @@ public:
   bool         getDMRSelfOnly() const;
   std::vector<unsigned int> getDMRPrefixes() const;
   std::vector<unsigned int> getDMRBlackList() const;
+  std::vector<unsigned int> getDMRDstIdBlacklistSlot1() const;
+  std::vector<unsigned int> getDMRDstIdBlacklistSlot2() const;
+  std::vector<unsigned int> getDMRDstIdWhitelistSlot1() const;
+  std::vector<unsigned int> getDMRDstIdWhitelistSlot2() const;
   std::string  getDMRLookupFile() const;
   unsigned int getDMRTXHang() const;
 
@@ -186,6 +190,10 @@ private:
   bool         m_dmrSelfOnly;
   std::vector<unsigned int> m_dmrPrefixes;
   std::vector<unsigned int> m_dmrBlackList;
+  std::vector<unsigned int> m_dmrDstIdBlacklistSlot1;
+  std::vector<unsigned int> m_dmrDstIdBlacklistSlot2;
+  std::vector<unsigned int> m_dmrDstIdWhitelistSlot1;
+  std::vector<unsigned int> m_dmrDstIdWhitelistSlot2;
   std::string  m_dmrLookupFile;
   unsigned int m_dmrTXHang;
 
