@@ -459,7 +459,7 @@ void CYSFControl::writeNetwork()
 		}
 
 		fich.setVoIP(true);
-		fich.setMR(YSF_MR_NOT_BUSY);
+		fich.setMR(YSF_MR_BUSY);
 		fich.encode(data + 35U);
 	}
 
