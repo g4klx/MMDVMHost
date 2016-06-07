@@ -288,6 +288,10 @@ int CMMDVMHost::run()
 		bool selfOnly          = m_conf.getDMRSelfOnly();
 		std::vector<unsigned int> prefixes = m_conf.getDMRPrefixes();
 		std::vector<unsigned int> blackList = m_conf.getDMRBlackList();
+		std::vector<unsigned int> dstIDBlackListSlot1 = m_conf.getDMRDstIdBlacklistSlot1();
+		std::vector<unsigned int> dstIDBlackListSlot2 = m_conf.getDMRDstIdBlacklistSlot2();
+		std::vector<unsigned int> dstIDWhiteListSlot1 = m_conf.getDMRDstIdWhitelistSlot1();
+		std::vector<unsigned int> dstIDWhiteListSlot2 = m_conf.getDMRDstIdWhitelistSlot2();
 		unsigned int timeout   = m_conf.getTimeout();
 		std::string lookupFile = m_conf.getDMRLookupFile();
 		unsigned int txHang    = m_conf.getDMRTXHang();
@@ -303,7 +307,7 @@ int CMMDVMHost::run()
 		LogInfo("    Lookup File: %s", lookupFile.length() > 0U ? lookupFile.c_str() : "None");
 		LogInfo("    TX Hang: %us", txHang);
 
-		dmr = new CDMRControl(id, colorCode, selfOnly, prefixes, blackList, timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookupFile);
+		dmr = new CDMRControl(id, colorCode, selfOnly, prefixes, blackList,dstIDBlackListSlot1,dstIDWhiteListSlot1, dstIDBlackListSlot2, dstIDWhiteListSlot2, timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookupFile);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}

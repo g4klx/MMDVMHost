@@ -20,7 +20,7 @@
 #include <cassert>
 #include <algorithm>
 
-CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, unsigned int timeout, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, const std::string& lookupFile) :
+CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, const std::vector<unsigned int>& DstIdBlacklistSlot1, const std::vector<unsigned int>& DstIdWhitelistSlot1, const std::vector<unsigned int>& DstIdBlacklistSlot2, const std::vector<unsigned int>& DstIdWhitelistSlot2, unsigned int timeout, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, const std::string& lookupFile) :
 m_id(id),
 m_colorCode(colorCode),
 m_selfOnly(selfOnly),
@@ -38,7 +38,7 @@ m_lookup(NULL)
 	m_lookup = new CDMRLookup(lookupFile);
 	m_lookup->read();
 
-	CDMRSlot::init(id, colorCode, selfOnly, prefixes, blackList, modem, network, display, duplex, m_lookup);
+	CDMRSlot::init(id, colorCode, selfOnly, prefixes, blackList, DstIdBlacklistSlot1, DstIdWhitelistSlot1, DstIdBlacklistSlot2, DstIdWhitelistSlot2, modem, network, display, duplex, m_lookup);
 }
 
 CDMRControl::~CDMRControl()

@@ -31,6 +31,11 @@ unsigned int   CDMRSlot::m_colorCode = 0U;
 bool           CDMRSlot::m_selfOnly = false;
 std::vector<unsigned int> CDMRSlot::m_prefixes;
 std::vector<unsigned int> CDMRSlot::m_blackList;
+std::vector<unsigned int> CDMRSlot::m_dstBlackListSlot1;
+std::vector<unsigned int> CDMRSlot::m_dstWhiteListSlot1;
+std::vector<unsigned int> CDMRSlot::m_dstBlackListSlot2;
+std::vector<unsigned int> CDMRSlot::m_dstWhiteListSlot2;
+
 CModem*        CDMRSlot::m_modem = NULL;
 CDMRIPSC*      CDMRSlot::m_network = NULL;
 CDisplay*      CDMRSlot::m_display = NULL;
@@ -131,12 +136,31 @@ void CDMRSlot::writeModem(unsigned char *data)
 			if (lc == NULL)
 				return;
 
-			unsigned int id = lc->getSrcId();
+			unsigned int id;
+			unsigned int did;
+			id = lc->getSrcId();
 			if (!validateId(id)) {
-				LogMessage("DMR Slot %u, invalid access attempt from %u", m_slotNo, id);
+				LogMessage("DMR Slot %u, invalid access attempt from %u (blacklisted)", m_slotNo, id);
 				delete lc;
 				return;
 			}
+			// add check for valid dst id (e.g. TG) 
+			//AKA - the BlockTheNet modification ;-)
+			// - G7RZU
+			did = lc->getDstId();
+			if (!DstIdBlacklist(did,m_slotNo)) {
+				LogMessage("DMR Slot %u, invalid access attempt to %u (blacklisted)", m_slotNo, did);
+				delete lc;
+				return;
+			}
+			did = lc->getDstId();
+			// true sets allow greater than 4k. Need to add boolean in conf for this later.
+			if (!DstIdWhitelist(did,m_slotNo,true)) {
+				LogMessage("DMR Slot %u, invalid access attempt to %u (not in whitelist)", m_slotNo, did);
+				delete lc;
+				return;
+			}
+			
 
 			m_rfLC = lc;
 
@@ -1263,7 +1287,7 @@ void CDMRSlot::writeQueueNet(const unsigned char *data)
 		m_queue.addData(data, len);
 }
 
-void CDMRSlot::init(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, CDMRLookup* lookup)
+void CDMRSlot::init(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, const std::vector<unsigned int>& DstIdBlacklistSlot1, const std::vector<unsigned int>& DstIdWhitelistSlot1, const std::vector<unsigned int>& DstIdBlacklistSlot2, const std::vector<unsigned int>& DstIdWhitelistSlot2, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, CDMRLookup* lookup)
 {
 	assert(id != 0U);
 	assert(modem != NULL);
@@ -1275,6 +1299,10 @@ void CDMRSlot::init(unsigned int id, unsigned int colorCode, bool selfOnly, cons
 	m_selfOnly  = selfOnly;
 	m_prefixes  = prefixes;
 	m_blackList = blackList;
+	m_dstBlackListSlot1 = DstIdBlacklistSlot1;
+	m_dstWhiteListSlot1 = DstIdWhitelistSlot1;
+	m_dstBlackListSlot2 = DstIdBlacklistSlot2;
+	m_dstWhiteListSlot2 = DstIdWhitelistSlot2;
 	m_modem     = modem;
 	m_network   = network;
 	m_display   = display;
@@ -1310,6 +1338,41 @@ bool CDMRSlot::validateId(unsigned int id)
 		return std::find(m_prefixes.begin(), m_prefixes.end(), prefix) != m_prefixes.end();
 	}
 }
+
+//is dst id blacklisted?
+bool CDMRSlot::DstIdBlacklist(unsigned int did, unsigned int slot)
+{
+	if (slot == 1) {
+	    if (std::find(m_dstBlackListSlot1.begin(), m_dstBlackListSlot1.end(), did) != m_dstBlackListSlot1.end())
+			  return false;
+	} else {
+	    if (std::find(m_dstBlackListSlot2.begin(), m_dstBlackListSlot2.end(), did) != m_dstBlackListSlot2.end())
+			  return false;
+	}
+}
+
+//is dst id whitelisted or, if ID is greater than or equal to 4000
+bool CDMRSlot::DstIdWhitelist(unsigned int did, unsigned int slot, bool gt4k)
+{
+	if (slot == 1) {
+	    if(gt4k) {
+		if (std::find(m_dstWhiteListSlot1.begin(), m_dstWhiteListSlot1.end(), did) != m_dstWhiteListSlot1.end() || did >= 4000)
+		    return true;
+	    } else { 
+		if (std::find(m_dstWhiteListSlot1.begin(), m_dstWhiteListSlot1.end(), did) != m_dstWhiteListSlot1.end())
+		    return true;
+	    }
+	} else {
+	    	    if(gt4k) {
+		if (std::find(m_dstWhiteListSlot2.begin(), m_dstWhiteListSlot2.end(), did) != m_dstWhiteListSlot2.end() || did >= 4000)
+		    return true;
+	    } else { 
+		if (std::find(m_dstWhiteListSlot2.begin(), m_dstWhiteListSlot2.end(), did) != m_dstWhiteListSlot2.end())
+		    return true;
+	    }
+	}
+}
+
 
 void CDMRSlot::setShortLC(unsigned int slotNo, unsigned int id, FLCO flco, bool voice)
 {
