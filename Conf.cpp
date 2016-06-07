@@ -107,8 +107,10 @@ m_dmrNetworkDebug(false),
 m_dmrNetworkSlot1(true),
 m_dmrNetworkSlot2(true),
 m_fusionNetworkEnabled(false),
-m_fusionNetworkAddress(),
-m_fusionNetworkPort(0U),
+m_fusionNetworkMyAddress(),
+m_fusionNetworkMyPort(0U),
+m_fusionNetworkGwyAddress(),
+m_fusionNetworkGwyPort(0U),
 m_fusionNetworkDebug(false),
 m_tftSerialPort("/dev/ttyAMA0"),
 m_tftSerialBrightness(50U),
@@ -350,10 +352,14 @@ bool CConf::read()
 	} else if (section == SECTION_FUSION_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fusionNetworkEnabled = ::atoi(value) == 1;
-		else if (::strcmp(key, "Address") == 0)
-			m_fusionNetworkAddress = value;
-		else if (::strcmp(key, "Port") == 0)
-			m_fusionNetworkPort = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "MyAddress") == 0)
+			m_fusionNetworkMyAddress = value;
+		else if (::strcmp(key, "MyPort") == 0)
+			m_fusionNetworkMyPort = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "GwyAddress") == 0)
+			m_fusionNetworkGwyAddress = value;
+		else if (::strcmp(key, "GwyPort") == 0)
+			m_fusionNetworkGwyPort = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Debug") == 0)
 			m_fusionNetworkDebug = ::atoi(value) == 1;
 	} else if (section == SECTION_TFTSERIAL) {
@@ -706,14 +712,24 @@ bool CConf::getFusionNetworkEnabled() const
 	return m_fusionNetworkEnabled;
 }
 
-std::string CConf::getFusionNetworkAddress() const
+std::string CConf::getFusionNetworkMyAddress() const
 {
-  return m_fusionNetworkAddress;
+	return m_fusionNetworkMyAddress;
 }
 
-unsigned int CConf::getFusionNetworkPort() const
+unsigned int CConf::getFusionNetworkMyPort() const
 {
-  return m_fusionNetworkPort;
+	return m_fusionNetworkMyPort;
+}
+
+std::string CConf::getFusionNetworkGwyAddress() const
+{
+  return m_fusionNetworkGwyAddress;
+}
+
+unsigned int CConf::getFusionNetworkGwyPort() const
+{
+  return m_fusionNetworkGwyPort;
 }
 
 bool CConf::getFusionNetworkDebug() const

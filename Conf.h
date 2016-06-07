@@ -110,8 +110,10 @@ public:
 
   // The System Fusion Network section
   bool         getFusionNetworkEnabled() const;
-  std::string  getFusionNetworkAddress() const;
-  unsigned int getFusionNetworkPort() const;
+  std::string  getFusionNetworkMyAddress() const;
+  unsigned int getFusionNetworkMyPort() const;
+  std::string  getFusionNetworkGwyAddress() const;
+  unsigned int getFusionNetworkGwyPort() const;
   bool         getFusionNetworkDebug() const;
 
   // The TFTSERIAL section
@@ -211,8 +213,10 @@ private:
   bool         m_dmrNetworkSlot2;
 
   bool         m_fusionNetworkEnabled;
-  std::string  m_fusionNetworkAddress;
-  unsigned int m_fusionNetworkPort;
+  std::string  m_fusionNetworkMyAddress;
+  unsigned int m_fusionNetworkMyPort;
+  std::string  m_fusionNetworkGwyAddress;
+  unsigned int m_fusionNetworkGwyPort;
   bool         m_fusionNetworkDebug;
 
   std::string  m_tftSerialPort;
