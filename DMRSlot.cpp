@@ -1341,6 +1341,7 @@ bool CDMRSlot::DstIdBlacklist(unsigned int did, unsigned int slot)
 	    if (std::find(m_dstBlackListSlot2.begin(), m_dstBlackListSlot2.end(), did) != m_dstBlackListSlot2.end())
 			  return false;
 	}
+	return true;
 }
 
 //is dst id whitelisted or, if ID is greater than or equal to 4000
@@ -1363,6 +1364,7 @@ bool CDMRSlot::DstIdWhitelist(unsigned int did, unsigned int slot, bool gt4k)
 		    return true;
 	    }
 	}
+	return false;
 }
 
 
