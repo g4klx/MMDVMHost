@@ -27,6 +27,7 @@
 #include "NullDisplay.h"
 #include "YSFControl.h"
 #include "Nextion.h"
+#include "Thread.h"
 
 #if defined(HD44780)
 #include "HD44780.h"
@@ -255,6 +256,7 @@ int CMMDVMHost::run()
 		LogInfo("    Time: %u mins", time);
 
 		m_cwIdTimer.setTimeout(time * 60U);
+		m_cwIdTimer.start();
 	}
 
 	CTimer dmrBeaconTimer(1000U, 4U);
@@ -551,9 +553,12 @@ int CMMDVMHost::run()
 
 		m_cwIdTimer.clock(ms);
 		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
-			if (m_mode == MODE_IDLE && !m_modem->hasTX())
+			if (m_mode == MODE_IDLE && !m_modem->hasTX()){
+				LogDebug("sending CW ID");
 				m_modem->sendCWId(m_callsign);
-			m_cwIdTimer.start();
+
+				m_cwIdTimer.start();   //reset only after sending ID, timer-overflow after 49 days doesnt matter
+			}
 		}
 
 		dmrBeaconTimer.clock(ms);
@@ -568,13 +573,8 @@ int CMMDVMHost::run()
 			m_dmrTXTimer.stop();
 		}
 
-		if (ms < 5U) {
-#if defined(_WIN32) || defined(_WIN64)
-			::Sleep(5UL);		// 5ms
-#else
-			::usleep(5000);		// 5ms
-#endif
-		}
+		if (ms < 5U)
+			CThread::sleep(5U);
 	}
 
 	LogMessage("MMDVMHost-%s is exiting on receipt of SIGHUP1", VERSION);
@@ -791,11 +791,16 @@ void CMMDVMHost::createDisplay()
 	} else if (type == "Nextion") {
 		std::string port        = m_conf.getNextionPort();
 		unsigned int brightness = m_conf.getNextionBrightness();
+		bool displayClock       = m_conf.getNextionDisplayClock();
+		bool utc                = m_conf.getNextionUTC();
 
 		LogInfo("    Port: %s", port.c_str());
 		LogInfo("    Brightness: %u", brightness);
+		LogInfo("    Clock Display: %s", displayClock ? "yes" : "no");
+		if (displayClock)
+			LogInfo("    Display UTC: %s", utc ? "yes" : "no");
 
-		m_display = new CNextion(m_callsign, dmrid, port, brightness);
+		m_display = new CNextion(m_callsign, dmrid, port, brightness, displayClock, utc);
 #if defined(HD44780)
 	} else if (type == "HD44780") {
 		unsigned int rows    = m_conf.getHD44780Rows();
@@ -805,20 +810,26 @@ void CMMDVMHost::createDisplay()
 		unsigned int pwmPin = m_conf.getHD44780PWMPin();
 		unsigned int pwmBright = m_conf.getHD44780PWMBright();
 		unsigned int pwmDim = m_conf.getHD44780PWMDim();
+		bool displayClock = m_conf.getHD44780DisplayClock();
+		bool utc = m_conf.getHD44780UTC();
 
 		if (pins.size() == 6U) {
 			LogInfo("    Rows: %u", rows);
 			LogInfo("    Columns: %u", columns);
 			LogInfo("    Pins: %u,%u,%u,%u,%u,%u", pins.at(0U), pins.at(1U), pins.at(2U), pins.at(3U), pins.at(4U), pins.at(5U));
 
+			LogInfo("    PWM Backlight: %s", pwm ? "yes" : "no");
 			if (pwm) {
-				LogInfo("PWM Brightness Control Enabled");
 				LogInfo("    PWM Pin: %u", pwmPin);
 				LogInfo("    PWM Bright: %u", pwmBright);
 				LogInfo("    PWM Dim: %u", pwmDim);
 			}
 
-			m_display = new CHD44780(rows, columns, m_callsign, dmrid, pins, pwm, pwmPin, pwmBright, pwmDim, m_duplex);
+			LogInfo("    Clock Display: %s", displayClock ? "yes" : "no");
+			if (displayClock)
+				LogInfo("    Display UTC: %s", utc ? "yes" : "no");
+
+			m_display = new CHD44780(rows, columns, m_callsign, dmrid, pins, pwm, pwmPin, pwmBright, pwmDim, displayClock, utc, m_duplex);
 		}
 #endif
 #if defined(OLED)

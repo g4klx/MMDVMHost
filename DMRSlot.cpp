@@ -413,7 +413,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			unsigned char fid = m_rfLC->getFID();
 			if (fid == FID_ETSI || fid == FID_DMRA) {
 				errors = m_fec.regenerateDMR(data + 2U);
-				// LogDebug("DMR Slot %u, audio sequence no. 0, errs: %u/141", m_slotNo, errors);
+				LogDebug("DMR Slot %u, audio sequence no. 0, errs: %u/141", m_slotNo, errors);
 				m_rfErrs += errors;
 			}
 
@@ -450,7 +450,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			unsigned char fid = m_rfLC->getFID();
 			if (fid == FID_ETSI || fid == FID_DMRA) {
 				errors = m_fec.regenerateDMR(data + 2U);
-				// LogDebug("DMR Slot %u, audio sequence no. %u, errs: %u/141", m_slotNo, m_rfN, errors);
+				LogDebug("DMR Slot %u, audio sequence no. %u, errs: %u/141", m_slotNo, m_rfN, errors);
 				m_rfErrs += errors;
 			}
 
@@ -533,7 +533,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 				unsigned char fid = m_rfLC->getFID();
 				if (fid == FID_ETSI || fid == FID_DMRA) {
 					errors = m_fec.regenerateDMR(data + 2U);
-					// LogDebug("DMR Slot %u, audio sequence no. %u, errs: %u/141", m_slotNo, m_rfN, errors);
+					LogDebug("DMR Slot %u, audio sequence no. %u, errs: %u/141", m_slotNo, m_rfN, errors);
 					m_rfErrs += errors;
 				}
 
@@ -966,12 +966,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		if (m_netState == RS_NET_AUDIO) {
 			unsigned char fid = m_netLC->getFID();
-			if (fid == FID_ETSI || fid == FID_DMRA) {
-				unsigned int errors = m_fec.regenerateDMR(data + 2U);
-				// LogDebug("DMR Slot %u, audio, errs: %u/141", m_slotNo, errors);
-				m_netErrs += errors;
-			}
-
+			if (fid == FID_ETSI || fid == FID_DMRA)
+				m_netErrs += m_fec.regenerateDMR(data + 2U);
 			m_netBits += 141U;
 
 			data[0U] = TAG_DATA;
@@ -1010,12 +1006,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			return;
 
 		unsigned char fid = m_netLC->getFID();
-		if (fid == FID_ETSI || fid == FID_DMRA) {
-			unsigned int errors = m_fec.regenerateDMR(data + 2U);
-			// LogDebug("DMR Slot %u, audio, errs: %u/141", m_slotNo, errors);
-			m_netErrs += errors;
-		}
-
+		if (fid == FID_ETSI || fid == FID_DMRA)
+			m_netErrs += m_fec.regenerateDMR(data + 2U);
 		m_netBits += 141U;
 
 		// Regenerate the embedded LC

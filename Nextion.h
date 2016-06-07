@@ -22,13 +22,14 @@
 #include "Display.h"
 #include "Defines.h"
 #include "SerialController.h"
+#include "Timer.h"
 
 #include <string>
 
 class CNextion : public CDisplay
 {
 public:
-  CNextion(const std::string& callsign, unsigned int dmrid, const std::string& port, unsigned int brightness);
+  CNextion(const std::string& callsign, unsigned int dmrid, const std::string& port, unsigned int brightness, bool displayClock, bool utc);
   virtual ~CNextion();
 
   virtual bool open();
@@ -49,12 +50,17 @@ protected:
   virtual void writeFusionInt(const char* source, const char* dest, const char* type, const char* origin);
   virtual void clearFusionInt();
 
+  virtual void clockInt(unsigned int ms);
+
 private:
   std::string       m_callsign;
   unsigned int      m_dmrid;
   CSerialController m_serial;
   unsigned int      m_brightness;
   unsigned char     m_mode;
+  bool              m_displayClock;
+  bool              m_utc;
+  CTimer            m_clockDisplayTimer;
 
   void sendCommand(const char* command);
 };
