@@ -148,7 +148,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			//AKA - the BlockTheNet modification ;-)
 			// - G7RZU
 			did = lc->getDstId();
-			if (!DstIdBlacklist(did,m_slotNo)) {
+			if (DstIdBlacklist(did,m_slotNo)) {
 				LogMessage("DMR Slot %u, invalid access attempt to %u (blacklisted)", m_slotNo, did);
 				delete lc;
 				return;
@@ -1336,12 +1336,12 @@ bool CDMRSlot::DstIdBlacklist(unsigned int did, unsigned int slot)
 {
 	if (slot == 1) {
 	    if (std::find(m_dstBlackListSlot1.begin(), m_dstBlackListSlot1.end(), did) != m_dstBlackListSlot1.end())
-			  return false;
+			  return true;
 	} else {
 	    if (std::find(m_dstBlackListSlot2.begin(), m_dstBlackListSlot2.end(), did) != m_dstBlackListSlot2.end())
-			  return false;
+			  return true;
 	}
-	return true;
+	return false;
 }
 
 //is dst id whitelisted or, if ID is greater than or equal to 4000
@@ -1356,7 +1356,7 @@ bool CDMRSlot::DstIdWhitelist(unsigned int did, unsigned int slot, bool gt4k)
 		    return true;
 	    }
 	} else {
-	    	    if(gt4k) {
+	    if(gt4k) {
 		if (std::find(m_dstWhiteListSlot2.begin(), m_dstWhiteListSlot2.end(), did) != m_dstWhiteListSlot2.end() || did >= 4000)
 		    return true;
 	    } else { 
