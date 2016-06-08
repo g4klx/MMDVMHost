@@ -352,9 +352,9 @@ bool CConf::read()
 	} else if (section == SECTION_FUSION_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fusionNetworkEnabled = ::atoi(value) == 1;
-		else if (::strcmp(key, "MyAddress") == 0)
+		else if (::strcmp(key, "LocalAddress") == 0)
 			m_fusionNetworkMyAddress = value;
-		else if (::strcmp(key, "MyPort") == 0)
+		else if (::strcmp(key, "LocalPort") == 0)
 			m_fusionNetworkMyPort = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "GwyAddress") == 0)
 			m_fusionNetworkGwyAddress = value;
