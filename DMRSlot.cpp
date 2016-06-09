@@ -795,12 +795,12 @@ void CDMRSlot::writeNetwork (const CDMRData& dmrData)
 		unsigned int did;
 		did = m_netLC->getDstId();
 		if (DstIdBlacklist(did,m_slotNo)) {
-			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG blacklisted)", m_slotNo, did);
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG blacklisted) dataType: %s", m_slotNo, did,dataType);
 			return;
 		}
 		// true sets allow greater than 4k. Need to add boolean in conf for this later.
 		if (!DstIdWhitelist(did,m_slotNo,true)) {
-			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG not in whitelist)", m_slotNo, did);
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG not in whitelist) dataType: %s", m_slotNo, did,dataType);
 			return;
 		}
 
@@ -883,12 +883,12 @@ void CDMRSlot::writeNetwork (const CDMRData& dmrData)
 		unsigned int did;
 		did = m_netLC->getDstId();
 		if (DstIdBlacklist(did,m_slotNo)) {
-			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG blacklisted)", m_slotNo, did);
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG blacklisted) dataType: %s", m_slotNo, did,dataType);
 			return;
 		}
 		// true sets allow greater than 4k. Need to add boolean in conf for this later.
 		if (!DstIdWhitelist(did,m_slotNo,true)) {
-			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG not in whitelist)", m_slotNo, did);
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG not in whitelist) dataType: %s", m_slotNo, did,dataType);
 			return;
 		}
 	
@@ -910,12 +910,12 @@ void CDMRSlot::writeNetwork (const CDMRData& dmrData)
 		unsigned int did;
 		did = m_netLC->getDstId();
 		if (DstIdBlacklist(did,m_slotNo)) {
-			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG blacklisted)", m_slotNo, did);
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG blacklisted) dataType: %s", m_slotNo, did,dataType);
 			return;
 		}
 		// true sets allow greater than 4k. Need to add boolean in conf for this later.
 		if (!DstIdWhitelist(did,m_slotNo,true)) {
-			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG not in whitelist)", m_slotNo, did);
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG not in whitelist) dataType: %s", m_slotNo, did,dataType);
 			return;
 		}
 		// Regenerate the Slot Type
@@ -970,12 +970,12 @@ void CDMRSlot::writeNetwork (const CDMRData& dmrData)
 		unsigned int did;
 		did = m_netLC->getDstId();
 		if (DstIdBlacklist(did,m_slotNo)) {
-			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG blacklisted)", m_slotNo, did);
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG blacklisted) dataType: %s", m_slotNo, did,dataType);
 			return;
 		}
 		// true sets allow greater than 4k. Need to add boolean in conf for this later.
 		if (!DstIdWhitelist(did,m_slotNo,true)) {
-			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG not in whitelist)", m_slotNo, did);
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG not in whitelist) dataType: %s", m_slotNo, did,dataType);
 			return;
 		}
 		// Regenerate the data header
@@ -1021,12 +1021,12 @@ void CDMRSlot::writeNetwork (const CDMRData& dmrData)
 			unsigned int did;
 			did = m_netLC->getDstId();
 			if (DstIdBlacklist(did,m_slotNo)) {
-				LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG blacklisted)", m_slotNo, did);
+				LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG blacklisted) dataType: %s", m_slotNo, did,dataType);
 				return;
 			}
 			// true sets allow greater than 4k. Need to add boolean in conf for this later.
 			if (!DstIdWhitelist(did,m_slotNo,true)) {
-				LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG not in whitelist)", m_slotNo, did);
+				LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG not in whitelist) dataType: %s", m_slotNo, did,dataType);
 				return;
 			}
 			
@@ -1123,12 +1123,12 @@ void CDMRSlot::writeNetwork (const CDMRData& dmrData)
 		unsigned int did;
 		did = m_netLC->getDstId();
 		if (DstIdBlacklist(did,m_slotNo)) {
-			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG blacklisted)", m_slotNo, did);
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG blacklisted) dataType: %s", m_slotNo, did,dataType);
 			return;
 		}
 		// true sets allow greater than 4k. Need to add boolean in conf for this later.
 		if (!DstIdWhitelist(did,m_slotNo,true)) {
-			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG not in whitelist)", m_slotNo, did);
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG not in whitelist) dataType: %s", m_slotNo, did,dataType);
 			return;
 		}
 		unsigned char fid = m_netLC->getFID();
@@ -1193,12 +1193,12 @@ void CDMRSlot::writeNetwork (const CDMRData& dmrData)
 		unsigned int did;
 		did = dstId;
 		if (DstIdBlacklist(did,m_slotNo)) {
-			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG blacklisted)", m_slotNo, did);
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG blacklisted) dataType: %s", m_slotNo, did,dataType);
 			return;
 		}
 		// true sets allow greater than 4k. Need to add boolean in conf for this later.
 		if (!DstIdWhitelist(did,m_slotNo,true)) {
-			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG not in whitelist)", m_slotNo, did);
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG not in whitelist) dataType: %s", m_slotNo, did,dataType);
 			return;
 		}
 		// Regenerate the CSBK data
