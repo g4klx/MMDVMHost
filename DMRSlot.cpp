@@ -765,7 +765,7 @@ void CDMRSlot::writeEndNet(bool writeEnd)
 	closeFile();
 #endif
 }
-
+//add 
 void CDMRSlot::writeNetwork (const CDMRData& dmrData)
 {
 	if (m_rfState != RS_RF_LISTENING && m_netState == RS_NET_IDLE)
