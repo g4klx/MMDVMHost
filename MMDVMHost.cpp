@@ -313,7 +313,7 @@ int CMMDVMHost::run()
 		if (dstIDWhiteListSlot1.size() > 0U)
 			LogInfo("    Slot 1 Destination ID White List: %u", dstIDWhiteListSlot1.size());
 		if (dstIDWhiteListSlot2.size() > 0U)
-			LogInfo("    Slot 1 Destination ID Black List: %u", dstIDWhiteListSlot2.size());
+			LogInfo("    Slot 1 Destination ID White List: %u", dstIDWhiteListSlot2.size());
 		
 		LogInfo("    Timeout: %us", timeout);
 		LogInfo("    Lookup File: %s", lookupFile.length() > 0U ? lookupFile.c_str() : "None");
