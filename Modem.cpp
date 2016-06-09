@@ -197,18 +197,10 @@ void CModem::clock(unsigned int ms)
 		LogError("No reply from the modem for some time, resetting it");
 		m_error = true;
 		close();
-#if defined(_WIN32) || defined(_WIN64)
-		::Sleep(2000UL);		// 2s
-#else
-		::sleep(2UL);			// 2s
-#endif
-		while (!open()) {
-#if defined(_WIN32) || defined(_WIN64)
-			::Sleep(5000UL);		// 5s
-#else
-			::sleep(5UL);			// 5s
-#endif
-		}
+
+		CThread::sleep(2000U);		// 2s
+		while (!open())
+			CThread::sleep(5000U);	// 5s
 	}
 
 	RESP_TYPE_MMDVM type = getResponse();
@@ -375,6 +367,10 @@ void CModem::clock(unsigned int ms)
 						LogError("MMDVM TX buffer has overflowed");
 
 					m_lockout = (m_buffer[5U] & 0x10U) == 0x10U;
+
+					bool dacOverflow = (m_buffer[5U] & 0x20U) == 0x20U;
+					if (dacOverflow)
+						LogError("MMDVM DAC levels have overflowed");
 
 					m_dstarSpace = m_buffer[6U];
 					m_dmrSpace1  = m_buffer[7U];
@@ -698,11 +694,7 @@ bool CModem::writeYSFData(const unsigned char* data, unsigned int length)
 
 bool CModem::readVersion()
 {
-#if defined(_WIN32) || defined(_WIN64)
-	::Sleep(2000UL);		// 2s
-#else
-	::sleep(2);			// 2s
-#endif
+	CThread::sleep(2000U);	// 2s
 
 	for (unsigned int i = 0U; i < 6U; i++) {
 		unsigned char buffer[3U];

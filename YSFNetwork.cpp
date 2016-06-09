@@ -160,7 +160,7 @@ void CYSFNetwork::clock(unsigned int ms)
 			return;
 	}
 
-	bool end = buffer[34U] == 0x01U;
+	bool end = (buffer[34U] & 0x01U) == 0x01U;
 	if (end)
 		::memset(m_tag, ' ', YSF_CALLSIGN_LENGTH);
 
