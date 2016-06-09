@@ -1,0 +1,7 @@
+To use DMR Access Control you can add the following fields to your MMDVM.ini:
+
+Blacklist= <comma separated list of source-id's to block on RF>
+DstIdBlackListSlot1= <comma separated list TGs to block on RF and Network Slot1>
+DstIdBlackListSlot2= <comma separated list TGs to block on RF and Network Slot1>
+DstIdWhiteListSlot1=9 
+DstIdWhiteListSlot2=9
