@@ -268,7 +268,7 @@ unsigned int CYSFPayload::processVDMode1Audio(unsigned char* data)
 	return errors;
 }
 
-bool CYSFPayload::processVDMode1Data(unsigned char* data, unsigned char fn)
+bool CYSFPayload::processVDMode1Data(unsigned char* data, unsigned char fn, bool gateway)
 {
 	assert(data != NULL);
 
@@ -319,10 +319,10 @@ bool CYSFPayload::processVDMode1Data(unsigned char* data, unsigned char fn)
 			break;
 
 		case 1U:
-			if (m_downlink != NULL)
+			if (m_downlink != NULL && !gateway)
 				::memcpy(output + 0U, m_downlink, YSF_CALLSIGN_LENGTH);
 
-			if (m_uplink != NULL)
+			if (m_uplink != NULL && !gateway)
 				::memcpy(output + YSF_CALLSIGN_LENGTH, m_uplink, YSF_CALLSIGN_LENGTH);
 
 			break;
@@ -450,7 +450,7 @@ unsigned int CYSFPayload::processVDMode2Audio(unsigned char* data)
 	return errors;
 }
 
-bool CYSFPayload::processVDMode2Data(unsigned char* data, unsigned char fn)
+bool CYSFPayload::processVDMode2Data(unsigned char* data, unsigned char fn, bool gateway)
 {
 	assert(data != NULL);
 
@@ -502,12 +502,12 @@ bool CYSFPayload::processVDMode2Data(unsigned char* data, unsigned char fn)
 			break;
 
 		case 2U:
-			if (m_downlink != NULL)
+			if (m_downlink != NULL && !gateway)
 				::memcpy(output, m_downlink, YSF_CALLSIGN_LENGTH);
 			break;
 
 		case 3U:
-			if (m_uplink != NULL)
+			if (m_uplink != NULL && !gateway)
 				::memcpy(output, m_uplink, YSF_CALLSIGN_LENGTH);
 			break;
 
@@ -560,7 +560,7 @@ bool CYSFPayload::processVDMode2Data(unsigned char* data, unsigned char fn)
 	return ret && (fn == 0U || fn == 1U);
 }
 
-bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn)
+bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn, bool gateway)
 {
 	assert(data != NULL);
 
@@ -708,10 +708,10 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn)
 		case 0U:
 			CUtils::dump(1U, "FR Mode Data, CSD2", output, 20U);
 
-			if (m_downlink != NULL)
+			if (m_downlink != NULL && !gateway)
 				::memcpy(output + 0U, m_downlink, YSF_CALLSIGN_LENGTH);
 
-			if (m_uplink != NULL)
+			if (m_uplink != NULL && !gateway)
 				::memcpy(output + YSF_CALLSIGN_LENGTH, m_uplink, YSF_CALLSIGN_LENGTH);
 
 			break;

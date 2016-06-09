@@ -428,19 +428,19 @@ void CYSFControl::writeNetwork()
 		case YSF_FI_COMMUNICATIONS:
 			switch (dt) {
 			case YSF_DT_VD_MODE1:
-				m_netPayload.processVDMode1Data(data + 35U, fn);
+				m_netPayload.processVDMode1Data(data + 35U, fn, gateway);
 				m_netErrs += m_netPayload.processVDMode1Audio(data + 35U);
 				m_netBits += 235U;
 				break;
 
 			case YSF_DT_VD_MODE2:
-				m_netPayload.processVDMode2Data(data + 35U, fn);
+				m_netPayload.processVDMode2Data(data + 35U, fn, gateway);
 				m_netErrs += m_netPayload.processVDMode2Audio(data + 35U);
 				m_netBits += 135U;
 				break;
 
 			case YSF_DT_DATA_FR_MODE:
-				m_netPayload.processDataFRModeData(data + 35U, fn);
+				m_netPayload.processDataFRModeData(data + 35U, fn, gateway);
 				break;
 
 			case YSF_DT_VOICE_FR_MODE:

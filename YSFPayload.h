@@ -30,13 +30,13 @@ public:
 
 	bool processHeaderData(unsigned char* bytes);
 
-	bool processVDMode1Data(unsigned char* bytes, unsigned char fn);
+	bool processVDMode1Data(unsigned char* bytes, unsigned char fn, bool gateway = false);
 	unsigned int processVDMode1Audio(unsigned char* bytes);
 
-	bool processVDMode2Data(unsigned char* bytes, unsigned char fn);
+	bool processVDMode2Data(unsigned char* bytes, unsigned char fn, bool gateway = false);
 	unsigned int processVDMode2Audio(unsigned char* bytes);
 
-	bool processDataFRModeData(unsigned char* bytes, unsigned char fn);
+	bool processDataFRModeData(unsigned char* bytes, unsigned char fn, bool gateway = false);
 
 	unsigned int processVoiceFRModeAudio(unsigned char* bytes);
 
