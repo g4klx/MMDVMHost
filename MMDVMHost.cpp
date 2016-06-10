@@ -307,13 +307,13 @@ int CMMDVMHost::run()
 		if (blackList.size() > 0U)
 			LogInfo("    Black List: %u", blackList.size());
 		if (dstIDBlackListSlot1.size() > 0U)
-			LogInfo("    Slot 1 Destination ID Black List: %u", dstIDBlackListSlot1.size());
+			LogInfo("    Slot 1 Destination ID Black List: %u entries", dstIDBlackListSlot1.size());
 		if (dstIDBlackListSlot2.size() > 0U)
-			LogInfo("    Slot 2 Destination ID Black List: %u", dstIDBlackListSlot2.size());
+			LogInfo("    Slot 2 Destination ID Black List: %u entries", dstIDBlackListSlot2.size());
 		if (dstIDWhiteListSlot1.size() > 0U)
-			LogInfo("    Slot 1 Destination ID White List: %u", dstIDWhiteListSlot1.size());
+			LogInfo("    Slot 1 Destination ID White List: %u entries", dstIDWhiteListSlot1.size());
 		if (dstIDWhiteListSlot2.size() > 0U)
-			LogInfo("    Slot 1 Destination ID White List: %u", dstIDWhiteListSlot2.size());
+			LogInfo("    Slot 1 Destination ID White List: %u entries", dstIDWhiteListSlot2.size());
 		
 		LogInfo("    Timeout: %us", timeout);
 		LogInfo("    Lookup File: %s", lookupFile.length() > 0U ? lookupFile.c_str() : "None");
