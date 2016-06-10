@@ -1487,6 +1487,8 @@ bool CDMRSlot::DstIdBlacklist(unsigned int did, unsigned int slot)
 bool CDMRSlot::DstIdWhitelist(unsigned int did, unsigned int slot, bool gt4k)
 {
 	if (slot == 1) {
+	    if(m_dstWhiteListSlot1.size == 0)
+	      return;
 	    if(gt4k) {
 		if (std::find(m_dstWhiteListSlot1.begin(), m_dstWhiteListSlot1.end(), did) != m_dstWhiteListSlot1.end() || did >= 4000)
 		    return true;
@@ -1495,6 +1497,8 @@ bool CDMRSlot::DstIdWhitelist(unsigned int did, unsigned int slot, bool gt4k)
 		    return true;
 	    }
 	} else {
+	    if(m_dstWhiteListSlot2.size == 0)
+	      return;
 	    if(gt4k) {
 		if (std::find(m_dstWhiteListSlot2.begin(), m_dstWhiteListSlot2.end(), did) != m_dstWhiteListSlot2.end() || did >= 4000)
 		    return true;
