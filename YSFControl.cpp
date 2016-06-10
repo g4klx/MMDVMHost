@@ -362,6 +362,8 @@ void CYSFControl::writeNetwork()
 
 	m_networkWatchdog.start();
 
+	bool gateway = ::memcmp(data + 4U, "GATEWAY   ", YSF_CALLSIGN_LENGTH) == 0;
+
 	if (!m_netTimeoutTimer.isRunning()) {
 		if (::memcmp(data + 14U, "          ", YSF_CALLSIGN_LENGTH) != 0)
 			::memcpy(m_netSource, data + 14U, YSF_CALLSIGN_LENGTH);
@@ -403,7 +405,7 @@ void CYSFControl::writeNetwork()
 
 	m_netFrames++;
 
-	bool end = data[34U] == 0x01U;
+	bool end = (data[34U] & 0x01U) == 0x01U;
 
 	data[33U] = end ? TAG_EOT : TAG_DATA;
 	data[34U] = 0x00U;
@@ -426,19 +428,19 @@ void CYSFControl::writeNetwork()
 		case YSF_FI_COMMUNICATIONS:
 			switch (dt) {
 			case YSF_DT_VD_MODE1:
-				m_netPayload.processVDMode1Data(data + 35U, fn);
+				m_netPayload.processVDMode1Data(data + 35U, fn, gateway);
 				m_netErrs += m_netPayload.processVDMode1Audio(data + 35U);
 				m_netBits += 235U;
 				break;
 
 			case YSF_DT_VD_MODE2:
-				m_netPayload.processVDMode2Data(data + 35U, fn);
+				m_netPayload.processVDMode2Data(data + 35U, fn, gateway);
 				m_netErrs += m_netPayload.processVDMode2Audio(data + 35U);
 				m_netBits += 135U;
 				break;
 
 			case YSF_DT_DATA_FR_MODE:
-				m_netPayload.processDataFRModeData(data + 35U, fn);
+				m_netPayload.processDataFRModeData(data + 35U, fn, gateway);
 				break;
 
 			case YSF_DT_VOICE_FR_MODE:

@@ -751,15 +751,19 @@ bool CMMDVMHost::createDMRNetwork()
 
 bool CMMDVMHost::createYSFNetwork()
 {
-	std::string address = m_conf.getFusionNetworkAddress();
-	unsigned int port   = m_conf.getFusionNetworkPort();
-	bool debug          = m_conf.getFusionNetworkDebug();
+	std::string myAddress  = m_conf.getFusionNetworkMyAddress();
+	unsigned int myPort    = m_conf.getFusionNetworkMyPort();
+	std::string gwyAddress = m_conf.getFusionNetworkGwyAddress();
+	unsigned int gwyPort   = m_conf.getFusionNetworkGwyPort();
+	bool debug             = m_conf.getFusionNetworkDebug();
 
 	LogInfo("System Fusion Network Parameters");
-	LogInfo("    Reflector Address: %s", address.c_str());
-	LogInfo("    Reflector Port: %u", port);
+	LogInfo("    Local Address: %s", myAddress.c_str());
+	LogInfo("    Local Port: %u", myPort);
+	LogInfo("    Gateway Address: %s", gwyAddress.c_str());
+	LogInfo("    Gateway Port: %u", gwyPort);
 
-	m_ysfNetwork = new CYSFNetwork(address, port, m_callsign, debug);
+	m_ysfNetwork = new CYSFNetwork(myAddress, myPort, gwyAddress, gwyPort, m_callsign, debug);
 
 	bool ret = m_ysfNetwork->open();
 	if (!ret) {

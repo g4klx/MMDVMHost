@@ -28,10 +28,10 @@
 
 const unsigned int BUFFER_LENGTH = 200U;
 
-CYSFNetwork::CYSFNetwork(const std::string& address, unsigned int port, const std::string& callsign, bool debug) :
-m_socket(),
+CYSFNetwork::CYSFNetwork(const std::string& myAddress, unsigned int myPort, const std::string& gwyAddress, unsigned int gwyPort, const std::string& callsign, bool debug) :
+m_socket(myAddress, myPort),
 m_address(),
-m_port(port),
+m_port(gwyPort),
 m_callsign(),
 m_debug(debug),
 m_enabled(false),
@@ -42,7 +42,7 @@ m_tag(NULL)
 	m_callsign = callsign;
 	m_callsign.resize(YSF_CALLSIGN_LENGTH, ' ');
 
-	m_address = CUDPSocket::lookup(address);
+	m_address = CUDPSocket::lookup(gwyAddress);
 
 	m_tag = new unsigned char[YSF_CALLSIGN_LENGTH];
 	::memset(m_tag, ' ', YSF_CALLSIGN_LENGTH);
@@ -160,7 +160,7 @@ void CYSFNetwork::clock(unsigned int ms)
 			return;
 	}
 
-	bool end = buffer[34U] == 0x01U;
+	bool end = (buffer[34U] & 0x01U) == 0x01U;
 	if (end)
 		::memset(m_tag, ' ', YSF_CALLSIGN_LENGTH);
 
