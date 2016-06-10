@@ -1483,15 +1483,18 @@ bool CDMRSlot::DstIdBlacklist(unsigned int did, unsigned int slot)
 	return false;
 }
 
-//is dst id whitelisted or, if ID is greater than or equal to 4000
 bool CDMRSlot::DstIdWhitelist(unsigned int did, unsigned int slot, bool gt4k)
 {
 	if (slot == 1) {
 	    if(m_dstWhiteListSlot1.size == 0)
 	      return;
+	    // No reflectors on slot1, so we only allow all IDs over 10000 unless specifically whitelisted
 	    if(gt4k) {
-		if (std::find(m_dstWhiteListSlot1.begin(), m_dstWhiteListSlot1.end(), did) != m_dstWhiteListSlot1.end() || did >= 4000)
+		if (std::find(m_dstWhiteListSlot1.begin(), m_dstWhiteListSlot1.end(), did) != m_dstWhiteListSlot1.end() || did >= 10000) {
+		    
 		    return true;
+		}
+		    
 	    } else { 
 		if (std::find(m_dstWhiteListSlot1.begin(), m_dstWhiteListSlot1.end(), did) != m_dstWhiteListSlot1.end())
 		    return true;
@@ -1499,9 +1502,17 @@ bool CDMRSlot::DstIdWhitelist(unsigned int did, unsigned int slot, bool gt4k)
 	} else {
 	    if(m_dstWhiteListSlot2.size == 0)
 	      return;
+	    //On slot2 we allow reflector control IDs, but not secondary TG IDs unless specifically listed
 	    if(gt4k) {
-		if (std::find(m_dstWhiteListSlot2.begin(), m_dstWhiteListSlot2.end(), did) != m_dstWhiteListSlot2.end() || did >= 4000)
-		    return true;
+		if (std::find(m_dstWhiteListSlot2.begin(), m_dstWhiteListSlot2.end(), did) != m_dstWhiteListSlot2.end() || did >= 4000) {
+		  
+		  //if dstId in secondary TG range  
+		  if(did > 5000 && did < 10000)
+		      return false; 
+		    
+		  return true;
+		}
+		
 	    } else { 
 		if (std::find(m_dstWhiteListSlot2.begin(), m_dstWhiteListSlot2.end(), did) != m_dstWhiteListSlot2.end())
 		    return true;
