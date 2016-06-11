@@ -1488,9 +1488,9 @@ bool CDMRSlot::DstIdWhitelist(unsigned int did, unsigned int slot, bool gt4k)
 	if (slot == 1) {
 	    if(m_dstWhiteListSlot1.size() == 0)
 	      return true;
-	    // No reflectors on slot1, so we only allow all IDs over 10000 unless specifically whitelisted.
+	    // No reflectors on slot1, so we only allow all IDs over 99999 unless specifically whitelisted.
 	    if(gt4k) {
-		if (std::find(m_dstWhiteListSlot1.begin(), m_dstWhiteListSlot1.end(), did) != m_dstWhiteListSlot1.end() || did >= 10000) {
+		if (std::find(m_dstWhiteListSlot1.begin(), m_dstWhiteListSlot1.end(), did) != m_dstWhiteListSlot1.end() || did >= 99999) {
 		    
 		    return true;
 		}
