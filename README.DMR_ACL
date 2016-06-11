@@ -16,9 +16,9 @@ If the whitelist is null and commented out, it is disabled.
 
 The whitelist behaves slightly differently on Slot1 than is does on Slot2.
 
-For Slot1, the whitelist will allow all IDs above 10000 and everything in the whitelist.
+For Slot1, the whitelist will allow all IDs above 99999 and everything in the whitelist.
 
-For Slot2, the whitelist will allow all IDs between 4000 and 5000, IDs above 10000 and everything in the whitelist. 
+For Slot2, the whitelist will allow all IDs between 4000 and 5000, IDs above 99999 and everything in the whitelist. 
 
 You can use the blacklist with the whitelist if you want to specifically block IDs within the allowed ranges above. 
 
