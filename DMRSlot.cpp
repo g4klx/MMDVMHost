@@ -145,7 +145,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 				return;
 			}
 			// add check for valid dst id (e.g. TG) 
-			//AKA - the BlockTheNet modification ;-)
+			
 			// - G7RZU
 			did = lc->getDstId();
 			if (DstIdBlacklist(did,m_slotNo)) {
@@ -276,7 +276,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 				return;
 			}
 			// add check for valid dst id (e.g. TG) 
-			//AKA - the BlockTheNet modification ;-)
+			
 			// - G7RZU
 			if (DstIdBlacklist(dstId,m_slotNo)) {
 				LogMessage("DMR Slot %u, invalid access attempt to TG %u (TG blacklisted)", m_slotNo, dstId);
@@ -346,7 +346,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 				return;
 			}
 			// add check for valid dst id (e.g. TG) 
-			//AKA - the BlockTheNet modification ;-)
+			
 			// - G7RZU
 			if (DstIdBlacklist(dstId,m_slotNo)) {
 				LogMessage("DMR Slot %u, invalid access attempt to TG %u (TG blacklisted)", m_slotNo, dstId);
@@ -507,7 +507,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 					return;
 				}
 				// add check for valid dst id (e.g. TG) 
-			//AKA - the BlockTheNet modification ;-)
+			
 			// - G7RZU
 			unsigned int did;
 			did = lc->getDstId();
@@ -790,7 +790,7 @@ void CDMRSlot::writeNetwork (const CDMRData& dmrData)
 		}
 
 		// add check for valid dst id (e.g. TG) 
-		//AKA - the BlockTheNet modification ;-)
+		
 		// - G7RZU
 		unsigned int did;
 		did = m_netLC->getDstId();
@@ -878,7 +878,7 @@ void CDMRSlot::writeNetwork (const CDMRData& dmrData)
 		data[1U] = 0x00U;
 	
 		// add check for valid dst id (e.g. TG) 
-		//AKA - the BlockTheNet modification ;-)
+		
 		// - G7RZU
 		unsigned int did;
 		did = m_netLC->getDstId();
@@ -905,7 +905,7 @@ void CDMRSlot::writeNetwork (const CDMRData& dmrData)
 		CDMRFullLC fullLC;
 		fullLC.encode(*m_netLC, data + 2U, DT_TERMINATOR_WITH_LC);
 		// add check for valid dst id (e.g. TG) 
-		//AKA - the BlockTheNet modification ;-)
+		
 		// - G7RZU
 		unsigned int did;
 		did = m_netLC->getDstId();
@@ -965,7 +965,7 @@ void CDMRSlot::writeNetwork (const CDMRData& dmrData)
 
 		m_netLC = new CDMRLC(gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
 		// add check for valid dst id (e.g. TG) 
-		//AKA - the BlockTheNet modification ;-)
+		
 		// - G7RZU
 		unsigned int did;
 		did = m_netLC->getDstId();
@@ -1016,7 +1016,7 @@ void CDMRSlot::writeNetwork (const CDMRData& dmrData)
 		if (m_netState == RS_NET_IDLE) {
 			m_netLC = new CDMRLC(dmrData.getFLCO(), dmrData.getSrcId(), dmrData.getDstId());
 			// add check for valid dst id (e.g. TG) 
-			//AKA - the BlockTheNet modification ;-)
+			
 			// - G7RZU
 			unsigned int did;
 			did = m_netLC->getDstId();
@@ -1118,7 +1118,7 @@ void CDMRSlot::writeNetwork (const CDMRData& dmrData)
 		if (m_netState != RS_NET_AUDIO)
 			return;
 		// add check for valid dst id (e.g. TG) 
-		//AKA - the BlockTheNet modification ;-)
+		
 		// - G7RZU
 		unsigned int did;
 		did = m_netLC->getDstId();
@@ -1188,7 +1188,7 @@ void CDMRSlot::writeNetwork (const CDMRData& dmrData)
 		unsigned int srcId = csbk.getSrcId();
 		unsigned int dstId = csbk.getDstId();
 		// add check for valid dst id (e.g. TG) 
-		//AKA - the BlockTheNet modification ;-)
+		
 		// - G7RZU
 		unsigned int did;
 		did = dstId;
