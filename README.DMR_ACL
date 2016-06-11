@@ -10,7 +10,7 @@ So, for example:
 
 DstIdBlackListSlot1=91 - block the TG91 net.
 
-DstIdWhiteSlot1=9.5057,9990 - allows TG9, APRS SMS Gateway and Echo. 
+DstIdWhiteListSlot1=9.5057,9990 - allows TG9, APRS SMS Gateway and Echo. 
 
 If the whitelist is null and commented out, it is disabled. 
 
