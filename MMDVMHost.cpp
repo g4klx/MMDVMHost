@@ -290,6 +290,10 @@ int CMMDVMHost::run()
 		bool selfOnly          = m_conf.getDMRSelfOnly();
 		std::vector<unsigned int> prefixes = m_conf.getDMRPrefixes();
 		std::vector<unsigned int> blackList = m_conf.getDMRBlackList();
+		std::vector<unsigned int> dstIDBlackListSlot1 = m_conf.getDMRDstIdBlacklistSlot1();
+		std::vector<unsigned int> dstIDBlackListSlot2 = m_conf.getDMRDstIdBlacklistSlot2();
+		std::vector<unsigned int> dstIDWhiteListSlot1 = m_conf.getDMRDstIdWhitelistSlot1();
+		std::vector<unsigned int> dstIDWhiteListSlot2 = m_conf.getDMRDstIdWhitelistSlot2();
 		unsigned int timeout   = m_conf.getTimeout();
 		std::string lookupFile = m_conf.getDMRLookupFile();
 		unsigned int txHang    = m_conf.getDMRTXHang();
@@ -299,13 +303,23 @@ int CMMDVMHost::run()
 		LogInfo("    Color Code: %u", colorCode);
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
 		LogInfo("    Prefixes: %u", prefixes.size());
+		
 		if (blackList.size() > 0U)
 			LogInfo("    Black List: %u", blackList.size());
+		if (dstIDBlackListSlot1.size() > 0U)
+			LogInfo("    Slot 1 Destination ID Black List: %u entries", dstIDBlackListSlot1.size());
+		if (dstIDBlackListSlot2.size() > 0U)
+			LogInfo("    Slot 2 Destination ID Black List: %u entries", dstIDBlackListSlot2.size());
+		if (dstIDWhiteListSlot1.size() > 0U)
+			LogInfo("    Slot 1 Destination ID White List: %u entries", dstIDWhiteListSlot1.size());
+		if (dstIDWhiteListSlot2.size() > 0U)
+			LogInfo("    Slot 2 Destination ID White List: %u entries", dstIDWhiteListSlot2.size());
+		
 		LogInfo("    Timeout: %us", timeout);
 		LogInfo("    Lookup File: %s", lookupFile.length() > 0U ? lookupFile.c_str() : "None");
 		LogInfo("    TX Hang: %us", txHang);
 
-		dmr = new CDMRControl(id, colorCode, selfOnly, prefixes, blackList, timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookupFile);
+		dmr = new CDMRControl(id, colorCode, selfOnly, prefixes, blackList,dstIDBlackListSlot1,dstIDWhiteListSlot1, dstIDBlackListSlot2, dstIDWhiteListSlot2, timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookupFile);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}

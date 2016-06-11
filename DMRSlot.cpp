@@ -31,6 +31,11 @@ unsigned int   CDMRSlot::m_colorCode = 0U;
 bool           CDMRSlot::m_selfOnly = false;
 std::vector<unsigned int> CDMRSlot::m_prefixes;
 std::vector<unsigned int> CDMRSlot::m_blackList;
+std::vector<unsigned int> CDMRSlot::m_dstBlackListSlot1;
+std::vector<unsigned int> CDMRSlot::m_dstWhiteListSlot1;
+std::vector<unsigned int> CDMRSlot::m_dstBlackListSlot2;
+std::vector<unsigned int> CDMRSlot::m_dstWhiteListSlot2;
+
 CModem*        CDMRSlot::m_modem = NULL;
 CDMRIPSC*      CDMRSlot::m_network = NULL;
 CDisplay*      CDMRSlot::m_display = NULL;
@@ -131,12 +136,31 @@ void CDMRSlot::writeModem(unsigned char *data)
 			if (lc == NULL)
 				return;
 
-			unsigned int id = lc->getSrcId();
+			unsigned int id;
+			unsigned int did;
+			id = lc->getSrcId();
 			if (!validateId(id)) {
-				LogMessage("DMR Slot %u, invalid access attempt from %u", m_slotNo, id);
+				LogMessage("DMR Slot %u, invalid access attempt from %u (blacklisted)", m_slotNo, id);
 				delete lc;
 				return;
 			}
+			// add check for valid dst id (e.g. TG) 
+			
+			// - G7RZU
+			did = lc->getDstId();
+			if (DstIdBlacklist(did,m_slotNo)) {
+				LogMessage("DMR Slot %u, invalid access attempt to TG %u (TG blacklisted)", m_slotNo, did);
+				delete lc;
+				return;
+			}
+			did = lc->getDstId();
+			// true sets allow greater than 4k. Need to add boolean in conf for this later.
+			if (!DstIdWhitelist(did,m_slotNo,true)) {
+				LogMessage("DMR Slot %u, invalid access attempt to TG %u (TG not in whitelist)", m_slotNo, did);
+				delete lc;
+				return;
+			}
+			
 
 			m_rfLC = lc;
 
@@ -251,6 +275,18 @@ void CDMRSlot::writeModem(unsigned char *data)
 				LogMessage("DMR Slot %u, invalid access attempt from %u", m_slotNo, srcId);
 				return;
 			}
+			// add check for valid dst id (e.g. TG) 
+			
+			// - G7RZU
+			if (DstIdBlacklist(dstId,m_slotNo)) {
+				LogMessage("DMR Slot %u, invalid access attempt to TG %u (TG blacklisted)", m_slotNo, dstId);
+				return;
+			}
+			// true sets allow greater than 4k. Need to add boolean in conf for this later.
+			if (!DstIdWhitelist(dstId,m_slotNo,true)) {
+				LogMessage("DMR Slot %u, invalid access attempt to TG %u (TG not in whitelist)", m_slotNo, dstId);
+				return;
+			}
 
 			m_rfFrames = dataHeader.getBlocks();
 
@@ -307,6 +343,18 @@ void CDMRSlot::writeModem(unsigned char *data)
 
 			if (!validateId(srcId)) {
 				LogMessage("DMR Slot %u, invalid access attempt from %u", m_slotNo, srcId);
+				return;
+			}
+			// add check for valid dst id (e.g. TG) 
+			
+			// - G7RZU
+			if (DstIdBlacklist(dstId,m_slotNo)) {
+				LogMessage("DMR Slot %u, invalid access attempt to TG %u (TG blacklisted)", m_slotNo, dstId);
+				return;
+			}
+			// true sets allow greater than 4k. Need to add boolean in conf for this later.
+			if (!DstIdWhitelist(dstId,m_slotNo,true)) {
+				LogMessage("DMR Slot %u, invalid access attempt to TG %u (TG not in whitelist)", m_slotNo, dstId);
 				return;
 			}
 
@@ -458,6 +506,23 @@ void CDMRSlot::writeModem(unsigned char *data)
 					delete lc;
 					return;
 				}
+				// add check for valid dst id (e.g. TG) 
+			
+			// - G7RZU
+			unsigned int did;
+			did = lc->getDstId();
+			if (DstIdBlacklist(did,m_slotNo)) {
+				LogMessage("DMR Slot %u, invalid access attempt to TG %u (TG blacklisted)", m_slotNo, did);
+				delete lc;
+				return;
+			}
+			did = lc->getDstId();
+			// true sets allow greater than 4k. Need to add boolean in conf for this later.
+			if (!DstIdWhitelist(did,m_slotNo,true)) {
+				LogMessage("DMR Slot %u, invalid access attempt to TG %u (TG not in whitelist)", m_slotNo, did);
+				delete lc;
+				return;
+			}
 
 				m_rfLC = lc;
 
@@ -700,8 +765,8 @@ void CDMRSlot::writeEndNet(bool writeEnd)
 	closeFile();
 #endif
 }
-
-void CDMRSlot::writeNetwork(const CDMRData& dmrData)
+//add 
+void CDMRSlot::writeNetwork (const CDMRData& dmrData)
 {
 	if (m_rfState != RS_RF_LISTENING && m_netState == RS_NET_IDLE)
 		return;
@@ -724,12 +789,28 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			return;
 		}
 
+		// add check for valid dst id (e.g. TG) 
+		
+		// - G7RZU
+		unsigned int did;
+		did = m_netLC->getDstId();
+		if (DstIdBlacklist(did,m_slotNo)) {
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG blacklisted) dataType: %s", m_slotNo, did,dataType);
+			return;
+		}
+		// true sets allow greater than 4k. Need to add boolean in conf for this later.
+		if (!DstIdWhitelist(did,m_slotNo,true)) {
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG not in whitelist) dataType: %s", m_slotNo, did,dataType);
+			return;
+		}
+
 		// Store the LC for the embedded LC
 		m_netEmbeddedLC.setData(*m_netLC);
 
 		// Regenerate the LC data
 		fullLC.encode(*m_netLC, data + 2U, DT_VOICE_LC_HEADER);
-
+		
+	
 		// Regenerate the Slot Type
 		CDMRSlotType slotType;
 		slotType.setColorCode(m_colorCode);
@@ -750,6 +831,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		m_netBits = 1U;
 		m_netErrs = 0U;
 
+		
 		writeQueueNet(m_idle);
 		writeQueueNet(m_idle);
 		writeQueueNet(m_idle);
@@ -794,7 +876,22 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
-
+	
+		// add check for valid dst id (e.g. TG) 
+		
+		// - G7RZU
+		unsigned int did;
+		did = m_netLC->getDstId();
+		if (DstIdBlacklist(did,m_slotNo)) {
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG blacklisted) dataType: %s", m_slotNo, did,dataType);
+			return;
+		}
+		// true sets allow greater than 4k. Need to add boolean in conf for this later.
+		if (!DstIdWhitelist(did,m_slotNo,true)) {
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG not in whitelist) dataType: %s", m_slotNo, did,dataType);
+			return;
+		}
+	
 		writeQueueNet(data);
 
 #if defined(DUMP_DMR)
@@ -807,7 +904,20 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		// Regenerate the LC data
 		CDMRFullLC fullLC;
 		fullLC.encode(*m_netLC, data + 2U, DT_TERMINATOR_WITH_LC);
-
+		// add check for valid dst id (e.g. TG) 
+		
+		// - G7RZU
+		unsigned int did;
+		did = m_netLC->getDstId();
+		if (DstIdBlacklist(did,m_slotNo)) {
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG blacklisted) dataType: %s", m_slotNo, did,dataType);
+			return;
+		}
+		// true sets allow greater than 4k. Need to add boolean in conf for this later.
+		if (!DstIdWhitelist(did,m_slotNo,true)) {
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG not in whitelist) dataType: %s", m_slotNo, did,dataType);
+			return;
+		}
 		// Regenerate the Slot Type
 		CDMRSlotType slotType;
 		slotType.setColorCode(m_colorCode);
@@ -819,7 +929,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		data[0U] = TAG_EOT;
 		data[1U] = 0x00U;
-
+	
 		writeQueueNet(data);
 		writeQueueNet(data);
 		writeQueueNet(data);
@@ -854,7 +964,20 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		unsigned int dstId = dataHeader.getDstId();
 
 		m_netLC = new CDMRLC(gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
-
+		// add check for valid dst id (e.g. TG) 
+		
+		// - G7RZU
+		unsigned int did;
+		did = m_netLC->getDstId();
+		if (DstIdBlacklist(did,m_slotNo)) {
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG blacklisted) dataType: %s", m_slotNo, did,dataType);
+			return;
+		}
+		// true sets allow greater than 4k. Need to add boolean in conf for this later.
+		if (!DstIdWhitelist(did,m_slotNo,true)) {
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG not in whitelist) dataType: %s", m_slotNo, did,dataType);
+			return;
+		}
 		// Regenerate the data header
 		dataHeader.get(data + 2U);
 
@@ -873,7 +996,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		// Put a small delay into starting transmission
 		writeQueueNet(m_idle);
 		writeQueueNet(m_idle);
-
+	
 		writeQueueNet(data);
 
 		m_netState = RS_NET_DATA;
@@ -892,7 +1015,21 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 	} else if (dataType == DT_VOICE_SYNC) {
 		if (m_netState == RS_NET_IDLE) {
 			m_netLC = new CDMRLC(dmrData.getFLCO(), dmrData.getSrcId(), dmrData.getDstId());
-
+			// add check for valid dst id (e.g. TG) 
+			
+			// - G7RZU
+			unsigned int did;
+			did = m_netLC->getDstId();
+			if (DstIdBlacklist(did,m_slotNo)) {
+				LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG blacklisted) dataType: %s", m_slotNo, did,dataType);
+				return;
+			}
+			// true sets allow greater than 4k. Need to add boolean in conf for this later.
+			if (!DstIdWhitelist(did,m_slotNo,true)) {
+				LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG not in whitelist) dataType: %s", m_slotNo, did,dataType);
+				return;
+			}
+			
 			m_netTimeoutTimer.start();
 
 			writeQueueNet(m_idle);
@@ -931,7 +1068,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			m_netState = RS_NET_AUDIO;
 
 			setShortLC(m_slotNo, m_netLC->getDstId(), m_netLC->getFLCO(), true);
-
+	
 			std::string src = m_lookup->find(m_netLC->getSrcId());
 			std::string dst = m_lookup->find(m_netLC->getDstId());
 
@@ -980,7 +1117,20 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 	} else if (dataType == DT_VOICE) {
 		if (m_netState != RS_NET_AUDIO)
 			return;
-
+		// add check for valid dst id (e.g. TG) 
+		
+		// - G7RZU
+		unsigned int did;
+		did = m_netLC->getDstId();
+		if (DstIdBlacklist(did,m_slotNo)) {
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG blacklisted) dataType: %s", m_slotNo, did,dataType);
+			return;
+		}
+		// true sets allow greater than 4k. Need to add boolean in conf for this later.
+		if (!DstIdWhitelist(did,m_slotNo,true)) {
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG not in whitelist) dataType: %s", m_slotNo, did,dataType);
+			return;
+		}
 		unsigned char fid = m_netLC->getFID();
 		if (fid == FID_ETSI || fid == FID_DMRA)
 			m_netErrs += m_fec.regenerateDMR(data + 2U);
@@ -1037,7 +1187,20 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		bool gi = csbk.getGI();
 		unsigned int srcId = csbk.getSrcId();
 		unsigned int dstId = csbk.getDstId();
-
+		// add check for valid dst id (e.g. TG) 
+		
+		// - G7RZU
+		unsigned int did;
+		did = dstId;
+		if (DstIdBlacklist(did,m_slotNo)) {
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG blacklisted) dataType: %s", m_slotNo, did,dataType);
+			return;
+		}
+		// true sets allow greater than 4k. Need to add boolean in conf for this later.
+		if (!DstIdWhitelist(did,m_slotNo,true)) {
+			LogMessage("DMR Network Slot %u, invalid traffic to TG %u (TG not in whitelist) dataType: %s", m_slotNo, did,dataType);
+			return;
+		}
 		// Regenerate the CSBK data
 		csbk.get(data + 2U);
 
@@ -1255,7 +1418,7 @@ void CDMRSlot::writeQueueNet(const unsigned char *data)
 		m_queue.addData(data, len);
 }
 
-void CDMRSlot::init(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, CDMRLookup* lookup)
+void CDMRSlot::init(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, const std::vector<unsigned int>& DstIdBlacklistSlot1, const std::vector<unsigned int>& DstIdWhitelistSlot1, const std::vector<unsigned int>& DstIdBlacklistSlot2, const std::vector<unsigned int>& DstIdWhitelistSlot2, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, CDMRLookup* lookup)
 {
 	assert(id != 0U);
 	assert(modem != NULL);
@@ -1267,6 +1430,10 @@ void CDMRSlot::init(unsigned int id, unsigned int colorCode, bool selfOnly, cons
 	m_selfOnly  = selfOnly;
 	m_prefixes  = prefixes;
 	m_blackList = blackList;
+	m_dstBlackListSlot1 = DstIdBlacklistSlot1;
+	m_dstWhiteListSlot1 = DstIdWhitelistSlot1;
+	m_dstBlackListSlot2 = DstIdBlacklistSlot2;
+	m_dstWhiteListSlot2 = DstIdWhitelistSlot2;
 	m_modem     = modem;
 	m_network   = network;
 	m_display   = display;
@@ -1302,6 +1469,58 @@ bool CDMRSlot::validateId(unsigned int id)
 		return std::find(m_prefixes.begin(), m_prefixes.end(), prefix) != m_prefixes.end();
 	}
 }
+
+//is dst id blacklisted?
+bool CDMRSlot::DstIdBlacklist(unsigned int did, unsigned int slot)
+{
+	if (slot == 1) {
+	    if (std::find(m_dstBlackListSlot1.begin(), m_dstBlackListSlot1.end(), did) != m_dstBlackListSlot1.end())
+			  return true;
+	} else {
+	    if (std::find(m_dstBlackListSlot2.begin(), m_dstBlackListSlot2.end(), did) != m_dstBlackListSlot2.end())
+			  return true;
+	}
+	return false;
+}
+
+bool CDMRSlot::DstIdWhitelist(unsigned int did, unsigned int slot, bool gt4k)
+{
+	if (slot == 1) {
+	    if(m_dstWhiteListSlot1.size() == 0)
+	      return true;
+	    // No reflectors on slot1, so we only allow all IDs over 10000 unless specifically whitelisted.
+	    if(gt4k) {
+		if (std::find(m_dstWhiteListSlot1.begin(), m_dstWhiteListSlot1.end(), did) != m_dstWhiteListSlot1.end() || did >= 10000) {
+		    
+		    return true;
+		}
+		    
+	    } else { 
+		if (std::find(m_dstWhiteListSlot1.begin(), m_dstWhiteListSlot1.end(), did) != m_dstWhiteListSlot1.end())
+		    return true;
+	    }
+	} else {
+	    if(m_dstWhiteListSlot2.size() == 0)
+	      return true;
+	    //On slot2 we allow reflector control IDs, but not secondary TG IDs unless specifically listed. Also allow echo.
+	    if(gt4k) {
+		if (std::find(m_dstWhiteListSlot2.begin(), m_dstWhiteListSlot2.end(), did) != m_dstWhiteListSlot2.end() || did >= 4000) {
+		  
+		  //if dstId in secondary TG range  
+		  if(did > 5000 && did < 10000)
+		      return false; 
+		    
+		  return true;
+		}
+		
+	    } else { 
+		if (std::find(m_dstWhiteListSlot2.begin(), m_dstWhiteListSlot2.end(), did) != m_dstWhiteListSlot2.end())
+		    return true;
+	    }
+	}
+	return false;
+}
+
 
 void CDMRSlot::setShortLC(unsigned int slotNo, unsigned int id, FLCO flco, bool voice)
 {

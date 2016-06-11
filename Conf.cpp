@@ -90,6 +90,10 @@ m_dmrColorCode(2U),
 m_dmrSelfOnly(false),
 m_dmrPrefixes(),
 m_dmrBlackList(),
+m_dmrDstIdBlacklistSlot1(),
+m_dmrDstIdBlacklistSlot2(),
+m_dmrDstIdWhitelistSlot1(),
+m_dmrDstIdWhitelistSlot2(),
 m_dmrLookupFile(),
 m_dmrTXHang(4U),
 m_fusionEnabled(true),
@@ -312,6 +316,38 @@ bool CConf::read()
 				unsigned int id = (unsigned int)::atoi(p);
 				if (id > 0U)
 					m_dmrBlackList.push_back(id);
+				p = ::strtok(NULL, ",\r\n");
+			}
+		}  else if (::strcmp(key, "DstIdBlackListSlot1") == 0) {
+			char* p = ::strtok(value, ",\r\n");
+			while (p != NULL) {
+				unsigned int id = (unsigned int)::atoi(p);
+				if (id > 0U)
+					m_dmrDstIdBlacklistSlot1.push_back(id);
+				p = ::strtok(NULL, ",\r\n");
+			}	
+		} else if (::strcmp(key, "DstIdBlackListSlot2") == 0) {
+			char* p = ::strtok(value, ",\r\n");
+			while (p != NULL) {
+				unsigned int id = (unsigned int)::atoi(p);
+				if (id > 0U)
+					m_dmrDstIdBlacklistSlot2.push_back(id);
+				p = ::strtok(NULL, ",\r\n");
+			}
+		} else if (::strcmp(key, "DstIdWhiteListSlot1") == 0) {
+			char* p = ::strtok(value, ",\r\n");
+			while (p != NULL) {
+				unsigned int id = (unsigned int)::atoi(p);
+				if (id > 0U)
+					m_dmrDstIdWhitelistSlot1.push_back(id);
+				p = ::strtok(NULL, ",\r\n");
+			}
+		} else if (::strcmp(key, "DstIdWhiteListSlot2") == 0) {
+			char* p = ::strtok(value, ",\r\n");
+			while (p != NULL) {
+				unsigned int id = (unsigned int)::atoi(p);
+				if (id > 0U)
+					m_dmrDstIdWhitelistSlot2.push_back(id);
 				p = ::strtok(NULL, ",\r\n");
 			}
 		} else if (::strcmp(key, "LookupFile") == 0)
@@ -626,7 +662,21 @@ std::vector<unsigned int> CConf::getDMRBlackList() const
 {
 	return m_dmrBlackList;
 }
-
+std::vector<unsigned int> CConf::getDMRDstIdBlacklistSlot1() const
+{
+	return m_dmrDstIdBlacklistSlot1;
+}
+std::vector<unsigned int> CConf::getDMRDstIdBlacklistSlot2() const
+{
+	return m_dmrDstIdBlacklistSlot2;
+}
+std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot1() const
+{
+	return m_dmrDstIdWhitelistSlot1;
+}std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot2() const
+{
+	return m_dmrDstIdWhitelistSlot2;
+}
 std::string CConf::getDMRLookupFile() const
 {
 	return m_dmrLookupFile;
