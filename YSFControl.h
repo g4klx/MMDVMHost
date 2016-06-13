@@ -68,7 +68,7 @@ private:
 
 	void writeQueueRF(const unsigned char* data);
 	void writeQueueNet(const unsigned char* data);
-	void writeNetwork(const unsigned char* data);
+	void writeNetwork(const unsigned char* data, unsigned int count);
 	void writeNetwork();
 
 	void writeEndRF();

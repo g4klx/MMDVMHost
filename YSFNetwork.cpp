@@ -65,7 +65,7 @@ bool CYSFNetwork::open()
 	return m_socket.open();
 }
 
-bool CYSFNetwork::write(const unsigned char* src, const unsigned char* dest, const unsigned char* data, bool end)
+bool CYSFNetwork::write(const unsigned char* src, const unsigned char* dest, const unsigned char* data, unsigned int count, bool end)
 {
 	assert(data != NULL);
 
@@ -90,6 +90,7 @@ bool CYSFNetwork::write(const unsigned char* src, const unsigned char* dest, con
 		::memset(buffer + 24U, ' ', YSF_CALLSIGN_LENGTH);
 
 	buffer[34U] = end ? 0x01U : 0x00U;
+	buffer[34U] |= (count & 0x7FU) << 1;
 
 	::memcpy(buffer + 35U, data, YSF_FRAME_LENGTH_BYTES);
 

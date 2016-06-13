@@ -36,7 +36,7 @@ public:
 
 	void enable(bool enabled);
 
-	bool write(const unsigned char* src, const unsigned char* dest, const unsigned char* data, bool end);
+	bool write(const unsigned char* src, const unsigned char* dest, const unsigned char* data, unsigned int count, bool end);
 
 	unsigned int read(unsigned char* data);
 

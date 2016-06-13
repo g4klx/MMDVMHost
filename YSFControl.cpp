@@ -111,8 +111,6 @@ bool CYSFControl::writeModem(unsigned char *data)
 
 		// LogDebug("YSF, FICH: FI: %u, DT: %u, FN: %u, FT: %u", fich.getFI(), fich.getDT(), fich.getFN(), fich.getFT());
 
-		m_rfFrames++;
-
 		valid = m_rfPayload.processHeaderData(data + 2U);
 
 		if (valid)
@@ -143,7 +141,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
 
-		writeNetwork(data);
+		writeNetwork(data, m_rfFrames % 128U);
 
 #if defined(DUMP_YSF)
 		writeFile(data + 2U);
@@ -154,19 +152,19 @@ bool CYSFControl::writeModem(unsigned char *data)
 			fich.encode(data + 2U);
 			writeQueueRF(data);
 		}
+
+		m_rfFrames++;
 	} else if (valid && fi == YSF_FI_TERMINATOR) {
 		CSync::addYSFSync(data + 2U);
 
 		// LogDebug("YSF, FICH: FI: %u, DT: %u, FN: %u, FT: %u", fich.getFI(), fich.getDT(), fich.getFN(), fich.getFT());
-
-		m_rfFrames++;
 
 		m_rfPayload.processHeaderData(data + 2U);
 
 		data[0U] = TAG_EOT;
 		data[1U] = 0x00U;
 
-		writeNetwork(data);
+		writeNetwork(data, m_rfFrames % 128U);
 
 #if defined(DUMP_YSF)
 		writeFile(data + 2U);
@@ -177,6 +175,8 @@ bool CYSFControl::writeModem(unsigned char *data)
 			fich.encode(data + 2U);
 			writeQueueRF(data);
 		}
+
+		m_rfFrames++;
 
 		LogMessage("YSF, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 		writeEndRF();
@@ -191,18 +191,16 @@ bool CYSFControl::writeModem(unsigned char *data)
 
 		// LogDebug("YSF, FICH: FI: %u, DT: %u, FN: %u, FT: %u", fich.getFI(), fich.getDT(), fich.getFN(), fich.getFT());
 
-		m_rfFrames++;
-
 		switch (dt) {
 		case YSF_DT_VD_MODE1:
 			valid = m_rfPayload.processVDMode1Data(data + 2U, fn);
-			m_rfErrs += m_rfPayload.processVDMode1Audio(data + 2U);
+			m_rfErrs += m_rfPayload.processVDMode1Audio(data + 2U, m_rfFrames % 128U);
 			m_rfBits += 235U;
 			break;
 
 		case YSF_DT_VD_MODE2:
 			valid = m_rfPayload.processVDMode2Data(data + 2U, fn);
-			m_rfErrs += m_rfPayload.processVDMode2Audio(data + 2U);
+			m_rfErrs += m_rfPayload.processVDMode2Audio(data + 2U, m_rfFrames % 128U);
 			m_rfBits += 135U;
 			break;
 
@@ -213,7 +211,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 		case YSF_DT_VOICE_FR_MODE:
 			if (fn != 0U || ft != 1U) {
 				// The first packet after the header is odd, don't try and regenerate it
-				m_rfErrs += m_rfPayload.processVoiceFRModeAudio(data + 2U);
+				m_rfErrs += m_rfPayload.processVoiceFRModeAudio(data + 2U, m_rfFrames % 128U);
 				m_rfBits += 720U;
 			}
 			valid = false;
@@ -261,7 +259,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
 
-		writeNetwork(data);
+		writeNetwork(data, m_rfFrames % 128U);
 
 		if (m_duplex) {
 			fich.setMR(YSF_MR_BUSY);
@@ -272,15 +270,15 @@ bool CYSFControl::writeModem(unsigned char *data)
 #if defined(DUMP_YSF)
 		writeFile(data + 2U);
 #endif
-	} else {
-		CSync::addYSFSync(data + 2U);
 
 		m_rfFrames++;
+	} else {
+		CSync::addYSFSync(data + 2U);
 
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
 
-		writeNetwork(data);
+		writeNetwork(data, m_rfFrames % 128U);
 
 		if (m_duplex)
 			writeQueueRF(data);
@@ -288,6 +286,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 #if defined(DUMP_YSF)
 		writeFile(data + 2U);
 #endif
+		m_rfFrames++;
 	}
 
 	return true;
@@ -405,6 +404,7 @@ void CYSFControl::writeNetwork()
 
 	m_netFrames++;
 
+	unsigned char n = (data[34U] & 0xFEU) >> 1;
 	bool end = (data[34U] & 0x01U) == 0x01U;
 
 	data[33U] = end ? TAG_EOT : TAG_DATA;
@@ -429,13 +429,13 @@ void CYSFControl::writeNetwork()
 			switch (dt) {
 			case YSF_DT_VD_MODE1:
 				m_netPayload.processVDMode1Data(data + 35U, fn, gateway);
-				m_netErrs += m_netPayload.processVDMode1Audio(data + 35U);
+				m_netErrs += m_netPayload.processVDMode1Audio(data + 35U, n);
 				m_netBits += 235U;
 				break;
 
 			case YSF_DT_VD_MODE2:
 				m_netPayload.processVDMode2Data(data + 35U, fn, gateway);
-				m_netErrs += m_netPayload.processVDMode2Audio(data + 35U);
+				m_netErrs += m_netPayload.processVDMode2Audio(data + 35U, n);
 				m_netBits += 135U;
 				break;
 
@@ -446,7 +446,7 @@ void CYSFControl::writeNetwork()
 			case YSF_DT_VOICE_FR_MODE:
 				if (fn != 0U || ft != 1U) {
 					// The first packet after the header is odd, don't try and regenerate it
-					m_netErrs += m_netPayload.processVoiceFRModeAudio(data + 35U);
+					m_netErrs += m_netPayload.processVoiceFRModeAudio(data + 35U, n);
 					m_netBits += 720U;
 				}
 				break;
@@ -538,7 +538,7 @@ void CYSFControl::writeQueueNet(const unsigned char *data)
 	m_queue.addData(data, len);
 }
 
-void CYSFControl::writeNetwork(const unsigned char *data)
+void CYSFControl::writeNetwork(const unsigned char *data, unsigned int count)
 {
 	assert(data != NULL);
 
@@ -548,7 +548,7 @@ void CYSFControl::writeNetwork(const unsigned char *data)
 	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired())
 		return;
 
-	m_network->write(m_rfSource, m_rfDest, data + 2U, data[0U] == TAG_EOT);
+	m_network->write(m_rfSource, m_rfDest, data + 2U, count, data[0U] == TAG_EOT);
 }
 
 bool CYSFControl::openFile()

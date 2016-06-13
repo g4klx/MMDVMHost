@@ -249,7 +249,7 @@ bool CYSFPayload::processHeaderData(unsigned char* data)
 	return valid1;
 }
 
-unsigned int CYSFPayload::processVDMode1Audio(unsigned char* data)
+unsigned int CYSFPayload::processVDMode1Audio(unsigned char* data, unsigned int count)
 {
 	assert(data != NULL);
 
@@ -263,7 +263,7 @@ unsigned int CYSFPayload::processVDMode1Audio(unsigned char* data)
 	errors += m_fec.regenerateDMR(data + 63U);
 	errors += m_fec.regenerateDMR(data + 81U);
 
-	LogDebug("YSF, V/D Mode 1, AMBE FEC %u/235 (%.1f%%)", errors, float(errors) / 2.35F);
+	LogDebug("YSF, V/D Mode 1, seq %u, AMBE FEC %u/235 (%.1f%%)", count, errors, float(errors) / 2.35F);
 
 	return errors;
 }
@@ -388,7 +388,7 @@ bool CYSFPayload::processVDMode1Data(unsigned char* data, unsigned char fn, bool
 	return ret && (fn == 0U);
 }
 
-unsigned int CYSFPayload::processVDMode2Audio(unsigned char* data)
+unsigned int CYSFPayload::processVDMode2Audio(unsigned char* data, unsigned int count)
 {
 	assert(data != NULL);
 
@@ -441,7 +441,7 @@ unsigned int CYSFPayload::processVDMode2Audio(unsigned char* data)
 		}
 	}
 
-	LogDebug("YSF, V/D Mode 2, Repetition FEC %u/135 (%.1f%%)", errors, float(errors) / 1.35F);
+	LogDebug("YSF, V/D Mode 2, seq %u, Repetition FEC %u/135 (%.1f%%)", count, errors, float(errors) / 1.35F);
 	// "errors" is the number of triplets that were recognized to be corrupted
 	// and that were corrected. There are 27 of those per VCH and 5 VCH per CC,
 	// yielding a total of 27*5 = 135. I believe the expected value of this
@@ -873,7 +873,7 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn, b
 	return ret1 && (fn == 0U);
 }
 
-unsigned int CYSFPayload::processVoiceFRModeAudio(unsigned char* data)
+unsigned int CYSFPayload::processVoiceFRModeAudio(unsigned char* data, unsigned int count)
 {
 	assert(data != NULL);
 
@@ -887,7 +887,7 @@ unsigned int CYSFPayload::processVoiceFRModeAudio(unsigned char* data)
 	errors += m_fec.regenerateYSF3(data + 54U);
 	errors += m_fec.regenerateYSF3(data + 72U);
 
-	LogDebug("YSF, V Mode 3, AMBE FEC %u/720 (%.1f%%)", errors, float(errors) / 7.2F);
+	LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%)", count, errors, float(errors) / 7.2F);
 
 	return errors;
 }
