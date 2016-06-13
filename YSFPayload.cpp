@@ -676,6 +676,50 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn, b
 			::memcpy(p1, p2, 9U);
 			p1 += 18U; p2 += 9U;
 		}
+	} else {
+		switch (fn) {
+		case 0U:
+			LogDebug("Data FR Mode, invalid CSD1");
+			break;
+
+		case 1U:
+			LogDebug("Data FR Mode, invalid CSD3");
+			break;
+
+		case 2U:
+			LogDebug("Data FR Mode, invalid DT2");
+			break;
+
+		case 3U:
+			LogDebug("Data FR Mode, invalid DT4");
+			break;
+
+		case 4U:
+			LogDebug("Data FR Mode, invalid DT6");
+			break;
+
+		case 5U:
+			LogDebug("Data FR Mode, invalid DT8");
+			break;
+
+		case 6U:
+			LogDebug("Data FR Mode, invalid DT10");
+			break;
+
+		case 7U:
+			LogDebug("Data FR Mode, invalid DT12");
+			break;
+
+		default:
+			LogDebug("Data FR Mode, invalid data");
+			break;
+		}
+
+		CUtils::dump(1U, "DCH", dch, 45U);
+		CUtils::dump(1U, "After FEC", output, 22U);
+		for (unsigned int i = 0U; i < 20U; i++)
+			output[i] ^= WHITENING_DATA[i];
+		CUtils::dump(1U, "After Whitening", output, 20U);
 	}
 
 	p1 = data + 9U;
@@ -780,6 +824,50 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn, b
 			::memcpy(p1, p2, 9U);
 			p1 += 18U; p2 += 9U;
 		}
+	} else {
+		switch (fn) {
+		case 0U:
+			LogDebug("Data FR Mode, invalid CSD2");
+			break;
+
+		case 1U:
+			LogDebug("Data FR Mode, invalid DT1");
+			break;
+
+		case 2U:
+			LogDebug("Data FR Mode, invalid DT3");
+			break;
+
+		case 3U:
+			LogDebug("Data FR Mode, invalid DT5");
+			break;
+
+		case 4U:
+			LogDebug("Data FR Mode, invalid DT7");
+			break;
+
+		case 5U:
+			LogDebug("Data FR Mode, invalid DT9");
+			break;
+
+		case 6U:
+			LogDebug("Data FR Mode, invalid DT11");
+			break;
+
+		case 7U:
+			LogDebug("Data FR Mode, invalid DT13");
+			break;
+
+		default:
+			LogDebug("Data FR Mode, invalid data");
+			break;
+		}
+
+		CUtils::dump(1U, "DCH", dch, 45U);
+		CUtils::dump(1U, "After FEC", output, 22U);
+		for (unsigned int i = 0U; i < 20U; i++)
+			output[i] ^= WHITENING_DATA[i];
+		CUtils::dump(1U, "After Whitening", output, 20U);
 	}
 
 	return ret1 && (fn == 0U);
