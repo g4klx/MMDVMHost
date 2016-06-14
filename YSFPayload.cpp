@@ -263,7 +263,16 @@ unsigned int CYSFPayload::processVDMode1Audio(unsigned char* data, unsigned int 
 	errors += m_fec.regenerateDMR(data + 63U);
 	errors += m_fec.regenerateDMR(data + 81U);
 
-	LogDebug("YSF, V/D Mode 1, seq %u, AMBE FEC %u/235 (%.1f%%)", count, errors, float(errors) / 2.35F);
+	unsigned int csum = 0U;
+	for (unsigned int i = 0U; i < 9U; i++) {
+		csum += data[i + 9U];
+		csum += data[i + 27U];
+		csum += data[i + 45U];
+		csum += data[i + 63U];
+		csum += data[i + 81U];
+	}
+
+	LogDebug("YSF, V/D Mode 1, seq %u, AMBE FEC %u/235 (%.1f%%), csum: %u", count, errors, float(errors) / 2.35F, csum);
 
 	return errors;
 }
@@ -404,7 +413,7 @@ unsigned int CYSFPayload::processVDMode2Audio(unsigned char* data, unsigned int 
 		// Deinterleave
 		for (unsigned int i = 0U; i < 104U; i++) {
 			unsigned int n = INTERLEAVE_TABLE_26_4[i];
-			bool s = READ_BIT1(data, offset + n);
+			bool s = READ_BIT1(data, offset + n) != 0x00U;
 			WRITE_BIT1(vch, i, s);
 		}
 
@@ -441,7 +450,16 @@ unsigned int CYSFPayload::processVDMode2Audio(unsigned char* data, unsigned int 
 		}
 	}
 
-	LogDebug("YSF, V/D Mode 2, seq %u, Repetition FEC %u/135 (%.1f%%)", count, errors, float(errors) / 1.35F);
+	unsigned int csum = 0U;
+	for (unsigned int i = 0U; i < 13U; i++) {
+		csum += data[i + 5U];
+		csum += data[i + 23U];
+		csum += data[i + 41U];
+		csum += data[i + 59U];
+		csum += data[i + 77U];
+	}
+
+	LogDebug("YSF, V/D Mode 2, seq %u, Repetition FEC %u/135 (%.1f%%), csum: %u", count, errors, float(errors) / 1.35F, csum);
 	// "errors" is the number of triplets that were recognized to be corrupted
 	// and that were corrected. There are 27 of those per VCH and 5 VCH per CC,
 	// yielding a total of 27*5 = 135. I believe the expected value of this
@@ -676,50 +694,6 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn, b
 			::memcpy(p1, p2, 9U);
 			p1 += 18U; p2 += 9U;
 		}
-	} else {
-		switch (fn) {
-		case 0U:
-			LogDebug("Data FR Mode, invalid CSD1");
-			break;
-
-		case 1U:
-			LogDebug("Data FR Mode, invalid CSD3");
-			break;
-
-		case 2U:
-			LogDebug("Data FR Mode, invalid DT2");
-			break;
-
-		case 3U:
-			LogDebug("Data FR Mode, invalid DT4");
-			break;
-
-		case 4U:
-			LogDebug("Data FR Mode, invalid DT6");
-			break;
-
-		case 5U:
-			LogDebug("Data FR Mode, invalid DT8");
-			break;
-
-		case 6U:
-			LogDebug("Data FR Mode, invalid DT10");
-			break;
-
-		case 7U:
-			LogDebug("Data FR Mode, invalid DT12");
-			break;
-
-		default:
-			LogDebug("Data FR Mode, invalid data");
-			break;
-		}
-
-		CUtils::dump(1U, "DCH", dch, 45U);
-		CUtils::dump(1U, "After FEC", output, 22U);
-		for (unsigned int i = 0U; i < 20U; i++)
-			output[i] ^= WHITENING_DATA[i];
-		CUtils::dump(1U, "After Whitening", output, 20U);
 	}
 
 	p1 = data + 9U;
@@ -824,50 +798,6 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn, b
 			::memcpy(p1, p2, 9U);
 			p1 += 18U; p2 += 9U;
 		}
-	} else {
-		switch (fn) {
-		case 0U:
-			LogDebug("Data FR Mode, invalid CSD2");
-			break;
-
-		case 1U:
-			LogDebug("Data FR Mode, invalid DT1");
-			break;
-
-		case 2U:
-			LogDebug("Data FR Mode, invalid DT3");
-			break;
-
-		case 3U:
-			LogDebug("Data FR Mode, invalid DT5");
-			break;
-
-		case 4U:
-			LogDebug("Data FR Mode, invalid DT7");
-			break;
-
-		case 5U:
-			LogDebug("Data FR Mode, invalid DT9");
-			break;
-
-		case 6U:
-			LogDebug("Data FR Mode, invalid DT11");
-			break;
-
-		case 7U:
-			LogDebug("Data FR Mode, invalid DT13");
-			break;
-
-		default:
-			LogDebug("Data FR Mode, invalid data");
-			break;
-		}
-
-		CUtils::dump(1U, "DCH", dch, 45U);
-		CUtils::dump(1U, "After FEC", output, 22U);
-		for (unsigned int i = 0U; i < 20U; i++)
-			output[i] ^= WHITENING_DATA[i];
-		CUtils::dump(1U, "After Whitening", output, 20U);
 	}
 
 	return ret1 && (fn == 0U);
@@ -887,7 +817,11 @@ unsigned int CYSFPayload::processVoiceFRModeAudio(unsigned char* data, unsigned 
 	errors += m_fec.regenerateYSF3(data + 54U);
 	errors += m_fec.regenerateYSF3(data + 72U);
 
-	LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%)", count, errors, float(errors) / 7.2F);
+	unsigned int csum = 0U;
+	for (unsigned int i = 0U; i < 90U; i++)
+		csum += data[i];
+
+	LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%), csum: %u", count, errors, float(errors) / 7.2F, csum);
 
 	return errors;
 }
