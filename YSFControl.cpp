@@ -389,8 +389,10 @@ void CYSFControl::writeNetwork()
 		m_netCsum   = 0U;
 	} else {
 		// Check for duplicate frames, if we can
-		if (m_netSeqNo == data[34U] && m_netSeqNo != 0U)
+		if (m_netSeqNo == data[34U] && m_netSeqNo != 0U) {
+			LogDebug("YSF, removing network duplicate by sequence number - %u", data[34U] >> 1);
 			return;
+		}
 
 		bool changed = false;
 
@@ -432,8 +434,10 @@ void CYSFControl::writeNetwork()
 		for (unsigned int i = 0U; i < YSF_FRAME_LENGTH_BYTES; i++)
 			csum += data[i + 35U];
 
-		if (csum == m_netCsum)
+		if (csum == m_netCsum) {
+			LogDebug("YSF, removing network duplicate by content checksum - %u", csum);
 			return;
+		}
 
 		m_netCsum = csum;
 		// XXX temporary duplicate removal, remove when everyone has upgraded their MMDVM Host
