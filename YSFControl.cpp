@@ -47,6 +47,8 @@ m_netSource(NULL),
 m_netDest(NULL),
 m_rfPayload(),
 m_netPayload(),
+m_netSeqNo(0U),
+m_netCsum(0U),
 m_fp(NULL)
 {
 	assert(display != NULL);
@@ -379,11 +381,17 @@ void CYSFControl::writeNetwork()
 
 		m_netTimeoutTimer.start();
 		m_netPayload.reset();
-		m_netState = RS_NET_AUDIO;
+		m_netState  = RS_NET_AUDIO;
 		m_netFrames = 0U;
-		m_netErrs = 0U;
-		m_netBits = 1U;
+		m_netErrs   = 0U;
+		m_netBits   = 1U;
+		m_netSeqNo  = 0U;
+		m_netCsum   = 0U;
 	} else {
+		// Check for duplicate frames, if we can
+		if (m_netSeqNo == data[34U] && m_netSeqNo != 0U)
+			return;
+
 		bool changed = false;
 
 		if (::memcmp(data + 14U, "          ", YSF_CALLSIGN_LENGTH) != 0 && ::memcmp(m_netSource, "??????????", YSF_CALLSIGN_LENGTH) == 0) {
@@ -403,6 +411,7 @@ void CYSFControl::writeNetwork()
 	}
 
 	m_netFrames++;
+	m_netSeqNo = data[34U];
 
 	unsigned char n = (data[34U] & 0xFEU) >> 1;
 	bool end = (data[34U] & 0x01U) == 0x01U;
@@ -417,6 +426,17 @@ void CYSFControl::writeNetwork()
 		unsigned char fn = fich.getFN();
 		unsigned char fi = fich.getFI();
 		unsigned char ft = fich.getFT();
+
+		// XXX temporary duplicate removal, remove when everyone has upgraded their MMDVM Host
+		unsigned int csum = 0U;
+		for (unsigned int i = 0U; i < YSF_FRAME_LENGTH_BYTES; i++)
+			csum += data[i + 35U];
+
+		if (csum == m_netCsum)
+			return;
+
+		m_netCsum = csum;
+		// XXX temporary duplicate removal, remove when everyone has upgraded their MMDVM Host
 
 		// Set the downlink callsign
 		switch (fi) {
