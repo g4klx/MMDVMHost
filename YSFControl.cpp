@@ -194,16 +194,22 @@ bool CYSFControl::writeModem(unsigned char *data)
 		// LogDebug("YSF, FICH: FI: %u, DT: %u, FN: %u, FT: %u", fich.getFI(), fich.getDT(), fich.getFN(), fich.getFT());
 
 		switch (dt) {
-		case YSF_DT_VD_MODE1:
-			valid = m_rfPayload.processVDMode1Data(data + 2U, fn);
-			m_rfErrs += m_rfPayload.processVDMode1Audio(data + 2U, m_rfFrames % 128U);
-			m_rfBits += 235U;
+		case YSF_DT_VD_MODE1: {
+				valid = m_rfPayload.processVDMode1Data(data + 2U, fn);
+				unsigned int errors = m_rfPayload.processVDMode1Audio(data + 2U);
+				m_rfErrs += errors;
+				m_rfBits += 235U;
+				LogDebug("YSF, V/D Mode 1, seq %u, AMBE FEC %u/235 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 2.35F);
+			}
 			break;
 
-		case YSF_DT_VD_MODE2:
-			valid = m_rfPayload.processVDMode2Data(data + 2U, fn);
-			m_rfErrs += m_rfPayload.processVDMode2Audio(data + 2U, m_rfFrames % 128U);
-			m_rfBits += 135U;
+		case YSF_DT_VD_MODE2: {
+				valid = m_rfPayload.processVDMode2Data(data + 2U, fn);
+				unsigned int errors = m_rfPayload.processVDMode2Audio(data + 2U);
+				m_rfErrs += errors;
+				m_rfBits += 135U;
+				LogDebug("YSF, V/D Mode 2, seq %u, Repetition FEC %u/135 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 1.35F);
+			}
 			break;
 
 		case YSF_DT_DATA_FR_MODE:
@@ -213,8 +219,10 @@ bool CYSFControl::writeModem(unsigned char *data)
 		case YSF_DT_VOICE_FR_MODE:
 			if (fn != 0U || ft != 1U) {
 				// The first packet after the header is odd, don't try and regenerate it
-				m_rfErrs += m_rfPayload.processVoiceFRModeAudio(data + 2U, m_rfFrames % 128U);
+				unsigned int errors = m_rfPayload.processVoiceFRModeAudio(data + 2U);
+				m_rfErrs += errors;
 				m_rfBits += 720U;
+				LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 7.2F);
 			}
 			valid = false;
 			break;
@@ -451,16 +459,22 @@ void CYSFControl::writeNetwork()
 
 		case YSF_FI_COMMUNICATIONS:
 			switch (dt) {
-			case YSF_DT_VD_MODE1:
-				m_netPayload.processVDMode1Data(data + 35U, fn, gateway);
-				m_netErrs += m_netPayload.processVDMode1Audio(data + 35U, n);
-				m_netBits += 235U;
+			case YSF_DT_VD_MODE1: {
+					m_netPayload.processVDMode1Data(data + 35U, fn, gateway);
+					unsigned int errors = m_netPayload.processVDMode1Audio(data + 35U);
+					m_netErrs += errors;
+					m_netBits += 235U;
+					LogDebug("YSF, V/D Mode 1, seq %u, AMBE FEC %u/235 (%.1f%%)", n, errors, float(errors) / 2.35F);
+				}
 				break;
 
-			case YSF_DT_VD_MODE2:
-				m_netPayload.processVDMode2Data(data + 35U, fn, gateway);
-				m_netErrs += m_netPayload.processVDMode2Audio(data + 35U, n);
-				m_netBits += 135U;
+			case YSF_DT_VD_MODE2: {
+					m_netPayload.processVDMode2Data(data + 35U, fn, gateway);
+					unsigned int errors = m_netPayload.processVDMode2Audio(data + 35U);
+					m_netErrs += errors;
+					m_netBits += 135U;
+					LogDebug("YSF, V/D Mode 2, seq %u, Repetition FEC %u/135 (%.1f%%)", n, errors, float(errors) / 1.35F);
+				}
 				break;
 
 			case YSF_DT_DATA_FR_MODE:
@@ -470,8 +484,10 @@ void CYSFControl::writeNetwork()
 			case YSF_DT_VOICE_FR_MODE:
 				if (fn != 0U || ft != 1U) {
 					// The first packet after the header is odd, don't try and regenerate it
-					m_netErrs += m_netPayload.processVoiceFRModeAudio(data + 35U, n);
+					unsigned int errors = m_netPayload.processVoiceFRModeAudio(data + 35U);
+					m_netErrs += errors;
 					m_netBits += 720U;
+					LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%)", n, errors, float(errors) / 7.2F);
 				}
 				break;
 

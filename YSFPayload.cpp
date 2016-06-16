@@ -249,7 +249,7 @@ bool CYSFPayload::processHeaderData(unsigned char* data)
 	return valid1;
 }
 
-unsigned int CYSFPayload::processVDMode1Audio(unsigned char* data, unsigned int count)
+unsigned int CYSFPayload::processVDMode1Audio(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -262,17 +262,6 @@ unsigned int CYSFPayload::processVDMode1Audio(unsigned char* data, unsigned int 
 	errors += m_fec.regenerateDMR(data + 45U);
 	errors += m_fec.regenerateDMR(data + 63U);
 	errors += m_fec.regenerateDMR(data + 81U);
-
-	unsigned int csum = 0U;
-	for (unsigned int i = 0U; i < 9U; i++) {
-		csum += data[i + 9U];
-		csum += data[i + 27U];
-		csum += data[i + 45U];
-		csum += data[i + 63U];
-		csum += data[i + 81U];
-	}
-
-	LogDebug("YSF, V/D Mode 1, seq %u, AMBE FEC %u/235 (%.1f%%), csum: %u", count, errors, float(errors) / 2.35F, csum);
 
 	return errors;
 }
@@ -397,7 +386,7 @@ bool CYSFPayload::processVDMode1Data(unsigned char* data, unsigned char fn, bool
 	return ret && (fn == 0U);
 }
 
-unsigned int CYSFPayload::processVDMode2Audio(unsigned char* data, unsigned int count)
+unsigned int CYSFPayload::processVDMode2Audio(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -450,16 +439,6 @@ unsigned int CYSFPayload::processVDMode2Audio(unsigned char* data, unsigned int 
 		}
 	}
 
-	unsigned int csum = 0U;
-	for (unsigned int i = 0U; i < 13U; i++) {
-		csum += data[i + 5U];
-		csum += data[i + 23U];
-		csum += data[i + 41U];
-		csum += data[i + 59U];
-		csum += data[i + 77U];
-	}
-
-	LogDebug("YSF, V/D Mode 2, seq %u, Repetition FEC %u/135 (%.1f%%), csum: %u", count, errors, float(errors) / 1.35F, csum);
 	// "errors" is the number of triplets that were recognized to be corrupted
 	// and that were corrected. There are 27 of those per VCH and 5 VCH per CC,
 	// yielding a total of 27*5 = 135. I believe the expected value of this
@@ -803,7 +782,7 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn, b
 	return ret1 && (fn == 0U);
 }
 
-unsigned int CYSFPayload::processVoiceFRModeAudio(unsigned char* data, unsigned int count)
+unsigned int CYSFPayload::processVoiceFRModeAudio(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -816,12 +795,6 @@ unsigned int CYSFPayload::processVoiceFRModeAudio(unsigned char* data, unsigned 
 	errors += m_fec.regenerateYSF3(data + 36U);
 	errors += m_fec.regenerateYSF3(data + 54U);
 	errors += m_fec.regenerateYSF3(data + 72U);
-
-	unsigned int csum = 0U;
-	for (unsigned int i = 0U; i < 90U; i++)
-		csum += data[i];
-
-	LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%), csum: %u", count, errors, float(errors) / 7.2F, csum);
 
 	return errors;
 }
