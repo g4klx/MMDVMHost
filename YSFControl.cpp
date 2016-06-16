@@ -48,7 +48,6 @@ m_netDest(NULL),
 m_rfPayload(),
 m_netPayload(),
 m_netSeqNo(0U),
-m_netCsum(0U),
 m_fp(NULL)
 {
 	assert(display != NULL);
@@ -394,11 +393,11 @@ void CYSFControl::writeNetwork()
 		m_netErrs   = 0U;
 		m_netBits   = 1U;
 		m_netSeqNo  = 0U;
-		m_netCsum   = 0U;
 	} else {
 		// Check for duplicate frames, if we can
+		// XXX this needs changing in the future
 		if (m_netSeqNo == data[34U] && m_netSeqNo != 0U) {
-			LogDebug("YSF, removing network duplicate by sequence number - %u", data[34U] >> 1);
+			LogDebug("YSF, removing network duplicate, seq %u", data[34U] >> 1);
 			return;
 		}
 
@@ -436,19 +435,6 @@ void CYSFControl::writeNetwork()
 		unsigned char fn = fich.getFN();
 		unsigned char fi = fich.getFI();
 		unsigned char ft = fich.getFT();
-
-		// XXX temporary duplicate removal, remove when everyone has upgraded their MMDVM Host
-		unsigned int csum = 0U;
-		for (unsigned int i = 0U; i < YSF_FRAME_LENGTH_BYTES; i++)
-			csum += data[i + 35U];
-
-		if (csum == m_netCsum) {
-			LogDebug("YSF, removing network duplicate by content checksum - %u", csum);
-			return;
-		}
-
-		m_netCsum = csum;
-		// XXX temporary duplicate removal, remove when everyone has upgraded their MMDVM Host
 
 		// Set the downlink callsign
 		switch (fi) {
