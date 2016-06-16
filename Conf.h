@@ -90,6 +90,7 @@ public:
   std::vector<unsigned int> getDMRDstIdWhitelistSlot1() const;
   std::vector<unsigned int> getDMRDstIdWhitelistSlot2() const;
   std::string  getDMRLookupFile() const;
+  unsigned int getDMRCallHang() const;
   unsigned int getDMRTXHang() const;
 
   // The System Fusion section
@@ -201,6 +202,7 @@ private:
   std::vector<unsigned int> m_dmrDstIdWhitelistSlot1;
   std::vector<unsigned int> m_dmrDstIdWhitelistSlot2;
   std::string  m_dmrLookupFile;
+  unsigned int m_dmrCallHang;
   unsigned int m_dmrTXHang;
 
   bool         m_fusionEnabled;

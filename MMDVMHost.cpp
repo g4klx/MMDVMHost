@@ -296,6 +296,7 @@ int CMMDVMHost::run()
 		std::vector<unsigned int> dstIDWhiteListSlot2 = m_conf.getDMRDstIdWhitelistSlot2();
 		unsigned int timeout   = m_conf.getTimeout();
 		std::string lookupFile = m_conf.getDMRLookupFile();
+		unsigned int callHang  = m_conf.getDMRCallHang();
 		unsigned int txHang    = m_conf.getDMRTXHang();
 
 		LogInfo("DMR Parameters");
@@ -317,9 +318,10 @@ int CMMDVMHost::run()
 		
 		LogInfo("    Timeout: %us", timeout);
 		LogInfo("    Lookup File: %s", lookupFile.length() > 0U ? lookupFile.c_str() : "None");
+		LogInfo("    Call Hang: %us", callHang);
 		LogInfo("    TX Hang: %us", txHang);
 
-		dmr = new CDMRControl(id, colorCode, selfOnly, prefixes, blackList,dstIDBlackListSlot1,dstIDWhiteListSlot1, dstIDBlackListSlot2, dstIDWhiteListSlot2, timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookupFile);
+		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList,dstIDBlackListSlot1,dstIDWhiteListSlot1, dstIDBlackListSlot2, dstIDWhiteListSlot2, timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookupFile);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}

@@ -50,7 +50,7 @@ public:
 
 	void clock();
 
-	static void init(unsigned int id, unsigned int colorCode, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, const std::vector<unsigned int>& DstIdBlacklistSlot1, const std::vector<unsigned int>& DstIdWhitelistSlot1, const std::vector<unsigned int>& DstIdBlacklistSlot2, const std::vector<unsigned int>& DstIdWhitelistSlot2, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, CDMRLookup* lookup);
+	static void init(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, const std::vector<unsigned int>& DstIdBlacklistSlot1, const std::vector<unsigned int>& DstIdWhitelistSlot1, const std::vector<unsigned int>& DstIdBlacklistSlot2, const std::vector<unsigned int>& DstIdWhitelistSlot2, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, CDMRLookup* lookup);
 
 private:
 	unsigned int               m_slotNo;
@@ -100,6 +100,7 @@ private:
 	static CDisplay*           m_display;
 	static bool                m_duplex;
 	static CDMRLookup*         m_lookup;
+	static unsigned int        m_hangCount;
 
 	static unsigned char*      m_idle;
 

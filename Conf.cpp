@@ -95,6 +95,7 @@ m_dmrDstIdBlacklistSlot2(),
 m_dmrDstIdWhitelistSlot1(),
 m_dmrDstIdWhitelistSlot2(),
 m_dmrLookupFile(),
+m_dmrCallHang(3U),
 m_dmrTXHang(4U),
 m_fusionEnabled(true),
 m_dstarNetworkEnabled(true),
@@ -354,6 +355,8 @@ bool CConf::read()
 			m_dmrLookupFile = value;
 		else if (::strcmp(key, "TXHang") == 0)
 			m_dmrTXHang = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "CallHang") == 0)
+			m_dmrCallHang = (unsigned int)::atoi(value);
 	} else if (section == SECTION_FUSION) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fusionEnabled = ::atoi(value) == 1;
@@ -680,6 +683,11 @@ std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot1() const
 std::string CConf::getDMRLookupFile() const
 {
 	return m_dmrLookupFile;
+}
+
+unsigned int CConf::getDMRCallHang() const
+{
+	return m_dmrCallHang;
 }
 
 unsigned int CConf::getDMRTXHang() const
