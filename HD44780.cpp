@@ -219,11 +219,11 @@ bool CHD44780::open()
 	::lcdCharDef(m_fd, 4, vChar);
 
 	/* 
-		TG, private call, RF and network icons defined as needed - ran out of CGRAM locations
-		on the HD44780!  Theoretically, we now have infinite custom characters to play with,
-		just be mindful of the slow speed of CGRAM hence the lcdPosition call to delay just 
-		long enough so the CGRAM can be written before we try to read it.
-	*/
+	 *   TG, private call, RF and network icons defined as needed - ran out of CGRAM locations
+	 *   on the HD44780!  Theoretically, we now have infinite custom characters to play with,
+	 *   just be mindful of the slow speed of CGRAM hence the lcdPosition call to delay just 
+	 *   long enough so the CGRAM can be written before we try to read it.
+	 */
 
 	return true;
 }
@@ -416,47 +416,25 @@ void CHD44780::writeDStarInt(const char* my1, const char* my2, const char* your,
 			::pwmWrite(m_pwmPin, (m_pwmBright / 100) * 1024);
 	}
 
-	::lcdPosition(m_fd, 0, 0);
-	::lcdPuts(m_fd, "D-Star");
-
-	if (m_rows == 2U && m_cols == 16U) {
-		::sprintf(m_buffer1, "%s %.8s/%.4s", type, my1, my2);
-		::lcdPosition(m_fd, 0, 1);
+	if (m_rows > 2U) {
+		::lcdPosition(m_fd, 0, (m_rows / 2) - 2);
+		::sprintf(m_buffer1, "%s%s", "D-Star", DEADSPACE);
 		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
-	} else if (m_rows == 4U && m_cols == 16U) {
-		::sprintf(m_buffer1, "%s %.8s/%.4s", type, my1, my2);
-		::lcdPosition(m_fd, 0, 1);
-		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
+	}
 
-		if (strcmp(reflector, "        ") == 0)
-			::sprintf(m_buffer1, "%.8s", your);
-		else
-			::sprintf(m_buffer1, "%.8s<%.8s", your, reflector);
+	::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
+	::lcdPrintf(m_fd, "%.8s/%.4s", my1, my2);
 
-		::lcdPosition(m_fd, 0, 2);
-		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
-	} else if (m_rows == 4U && m_cols == 20U) {
-		char m_buffer1[20U];
-		::sprintf(m_buffer1, "%s %.8s/%.4s >", type, my1, my2);
-		::lcdPosition(m_fd, 0, 1);
-		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
+	::lcdCharDef(m_fd, 5, strcmp(type, "R") == 0 ? rfChar : ipChar);
+	::lcdPosition(m_fd, m_cols - 1, (m_rows / 2) - 1);
+	::lcdPutchar(m_fd, 5);
 
-		if (strcmp(reflector, "        ") == 0)
-			::sprintf(m_buffer1, "%.8s", your);
-		else
-			::sprintf(m_buffer1, "%.8s <- %.8s", your, reflector);
+	::lcdPosition(m_fd, 0, (m_rows / 2));
+	::lcdPrintf(m_fd, "%.8s", your);
 
-		::lcdPosition(m_fd, 0, 2);
-		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
-	} else if (m_rows == 2 && m_cols == 40U) {
-		char m_buffer1[40U];
-		if (strcmp(reflector, "        ") == 0)
-			::sprintf(m_buffer1, "%s %.8s/%.4s > %.8s", type, my1, my2, your);
-		else
-			::sprintf(m_buffer1, "%s %.8s/%.4s > %.8s via %.8s", type, my1, my2, your, reflector);
-
-		::lcdPosition(m_fd, 0, 1);
-		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
+	if (strcmp(reflector, "        ") != 0) {
+		::lcdPosition(m_fd, m_cols - 8, (m_rows / 2));
+		::lcdPrintf(m_fd, "%.8s", reflector);
 	}
 
 	m_dmr = false;
@@ -469,26 +447,13 @@ void CHD44780::clearDStarInt()
 #endif
 
 	m_clockDisplayTimer.stop();           // Stop the clock display
+	::lcdClear(m_fd);
 
-	if (m_rows == 2U && m_cols == 16U) {
-		::lcdPosition(m_fd, 0, 1);
-		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
-	} else if (m_rows == 4U && m_cols == 16U) {
-		::lcdPosition(m_fd, 0, 1);
-		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
-
-		::lcdPosition(m_fd, 0, 2);
-		::lcdPrintf(m_fd, "%.*s", m_cols, "                    ");
-	} else if (m_rows == 4U && m_cols == 20U) {
-		::lcdPosition(m_fd, 0, 1);
-		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
-
-		::lcdPosition(m_fd, 0, 2);
-		::lcdPrintf(m_fd, "%.*s", m_cols, "                    ");
-	} else if (m_rows == 2 && m_cols == 40U) {
-		::lcdPosition(m_fd, 0, 1);
-		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
-	}
+	::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
+	::sprintf(m_buffer2, "%s%s", "D-Star", DEADSPACE);
+	::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer2);
+	::lcdPosition(m_fd, 0, (m_rows / 2));
+	::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
 }
 
 void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
@@ -603,6 +568,7 @@ void CHD44780::clearDMRInt(unsigned int slotNo)
 #endif
 
 	m_clockDisplayTimer.stop();           // Stop the clock display
+	::lcdClear(m_fd);
 
 	if (m_duplex) {
 		if (slotNo == 1U) {
