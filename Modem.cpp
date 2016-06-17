@@ -57,6 +57,7 @@ const unsigned char MMDVM_DMR_DATA2   = 0x1AU;
 const unsigned char MMDVM_DMR_LOST2   = 0x1BU;
 const unsigned char MMDVM_DMR_SHORTLC = 0x1CU;
 const unsigned char MMDVM_DMR_START   = 0x1DU;
+const unsigned char MMDVM_DMR_ABORT   = 0x1EU;
 
 const unsigned char MMDVM_YSF_DATA    = 0x20U;
 const unsigned char MMDVM_YSF_LOST    = 0x21U;
@@ -1029,6 +1030,25 @@ bool CModem::writeDMRStart(bool tx)
 	buffer[1U] = 4U;
 	buffer[2U] = MMDVM_DMR_START;
 	buffer[3U] = tx ? 0x01U : 0x00U;
+
+	// CUtils::dump(1U, "Written", buffer, 4U);
+
+	return m_serial.write(buffer, 4U) == 4;
+}
+
+bool CModem::writeDMRAbort(unsigned int slotNo)
+{
+	if (slotNo == 1U)
+		m_txDMRData1.clear();
+	else
+		m_txDMRData2.clear();
+
+	unsigned char buffer[4U];
+
+	buffer[0U] = MMDVM_FRAME_START;
+	buffer[1U] = 4U;
+	buffer[2U] = MMDVM_DMR_ABORT;
+	buffer[3U] = slotNo;
 
 	// CUtils::dump(1U, "Written", buffer, 4U);
 

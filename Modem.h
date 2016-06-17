@@ -64,6 +64,7 @@ public:
 
 	bool writeDMRStart(bool tx);
 	bool writeDMRShortLC(const unsigned char* lc);
+	bool writeDMRAbort(unsigned int slotNo);
 
 	bool setMode(unsigned char mode);
 

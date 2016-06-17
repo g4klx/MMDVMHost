@@ -153,7 +153,6 @@ void CDMRSlot::writeModem(unsigned char *data)
 				return;
 			}
 
-			did = lc->getDstId();
 			// true sets allow greater than 4k. Need to add boolean in conf for this later.
 			if (!DstIdWhitelist(did, m_slotNo, true)) {
 				LogMessage("DMR Slot %u, invalid access attempt to TG%u (TG not in whitelist)", m_slotNo, did);
@@ -162,6 +161,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			}
 
 			m_queue.clear();
+			m_modem->writeDMRAbort(m_slotNo);
 
 			m_rfLC = lc;
 
@@ -518,7 +518,6 @@ void CDMRSlot::writeModem(unsigned char *data)
 					return;
 				}
 
-				did = lc->getDstId();
 				// true sets allow greater than 4k. Need to add boolean in conf for this later.
 				if (!DstIdWhitelist(did, m_slotNo, true)) {
 					LogMessage("DMR Slot %u, invalid access attempt to TG%u (TG not in whitelist)", m_slotNo, did);
@@ -527,6 +526,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 				}
 
 				m_queue.clear();
+				m_modem->writeDMRAbort(m_slotNo);
 
 				m_rfLC = lc;
 
@@ -807,6 +807,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		}
 
 		m_queue.clear();
+		m_modem->writeDMRAbort(m_slotNo);
 
 		// Store the LC for the embedded LC
 		m_netEmbeddedLC.setData(*m_netLC);
@@ -1033,8 +1034,9 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				LogMessage("DMR Slot %u, invalid traffic to TG%u (TG not in whitelist) dataType: %s", m_slotNo, did, dataType);
 				return;
 			}
-			
+
 			m_queue.clear();
+			m_modem->writeDMRAbort(m_slotNo);
 
 			m_netTimeoutTimer.start();
 
