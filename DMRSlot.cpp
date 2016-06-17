@@ -757,7 +757,7 @@ void CDMRSlot::writeEndNet(bool writeEnd)
 		data[1U] = 0x00U;
 
 		for (unsigned int i = 0U; i < m_hangCount; i++)
-			writeQueueRF(data);
+			writeQueueNet(data);
 	}
 
 	delete m_netLC;
@@ -936,7 +936,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		data[1U] = 0x00U;
 	
 		for (unsigned int i = 0U; i < m_hangCount; i++)
-			writeQueueRF(data);
+			writeQueueNet(data);
 
 #if defined(DUMP_DMR)
 		writeFile(data);
