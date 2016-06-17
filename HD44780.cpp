@@ -57,8 +57,9 @@ m_duplex(duplex),
 m_fd(-1),
 m_dmr(false),
 m_clockDisplayTimer(1000U, 0U, 75U),   // Update the clock display every 75ms
-m_scrollTimer1(1000U, 0U, 250U),       // Scroll speed for slot 1 - every 250ms
-m_scrollTimer2(1000U, 0U, 250U)        // Scroll speed for slot 2 - every 250ms
+m_dmrScrollTimer1(1000U, 0U, 250U),    // Scroll speed for slot 1 - every 250ms
+m_dmrScrollTimer2(1000U, 0U, 250U),    // Scroll speed for slot 2 - every 250ms
+m_dstarScrollTimer(1000U, 0U, 250U)    // Scroll speed for D-Star - every 250ms
 {
 	assert(rows > 1U);
 	assert(cols > 15U);
@@ -295,8 +296,8 @@ void CHD44780::adafruitLCDColour(ADAFRUIT_COLOUR colour)
 
 void CHD44780::setIdleInt()
 {
-	m_scrollTimer1.stop();                // Stop the scroll timer on slot 1
-	m_scrollTimer2.stop();                // Stop the scroll timer on slot 2
+	m_dmrScrollTimer1.stop();                // Stop the scroll timer on slot 1
+	m_dmrScrollTimer2.stop();                // Stop the scroll timer on slot 2
 	m_clockDisplayTimer.start();          // Start the clock display in IDLE only
 	::lcdClear(m_fd);
 	
@@ -339,8 +340,8 @@ void CHD44780::setErrorInt(const char* text)
 #endif
 
 	m_clockDisplayTimer.stop();           // Stop the clock display
-	m_scrollTimer1.stop();                // Stop the scroll timer on slot 1
-	m_scrollTimer2.stop();                // Stop the scroll timer on slot 2
+	m_dmrScrollTimer1.stop();                // Stop the scroll timer on slot 1
+	m_dmrScrollTimer2.stop();                // Stop the scroll timer on slot 2
 	::lcdClear(m_fd);
 
 	if (m_pwm) {
@@ -370,8 +371,8 @@ void CHD44780::setLockoutInt()
 #endif
 
 	m_clockDisplayTimer.stop();           // Stop the clock display
-	m_scrollTimer1.stop();                // Stop the scroll timer on slot 1
-	m_scrollTimer2.stop();                // Stop the scroll timer on slot 2
+	m_dmrScrollTimer1.stop();             // Stop the scroll timer on slot 1
+	m_dmrScrollTimer2.stop();             // Stop the scroll timer on slot 2
 	::lcdClear(m_fd);
 
 	if (m_pwm) {
@@ -429,12 +430,25 @@ void CHD44780::writeDStarInt(const char* my1, const char* my2, const char* your,
 	::lcdPosition(m_fd, m_cols - 1, (m_rows / 2) - 1);
 	::lcdPutchar(m_fd, 5);
 
-	::lcdPosition(m_fd, 0, (m_rows / 2));
-	::lcdPrintf(m_fd, "%.8s", your);
+	::sprintf(m_buffer1, "%.8s", your);
+	
+	char *p = m_buffer1;
+	for (; *p; ++p) {
+		if (*p == " ")
+			*p = "_";
+	}
 
 	if (strcmp(reflector, "        ") != 0) {
-		::lcdPosition(m_fd, m_cols - 8, (m_rows / 2));
-		::lcdPrintf(m_fd, "%.8s", reflector);
+		::sprintf(m_buffer2, " via %.8s", reflector);
+		strcat(m_buffer1, m_buffer2);
+	}
+
+	::lcdPosition(m_fd, 0, (m_rows / 2));
+	::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
+
+	// Start the D-Star scroll timer if text in m_buffer1 will not fit in the space available
+	if (strlen(m_buffer1) > m_cols) {
+		m_dstarScrollTimer.start();
 	}
 
 	m_dmr = false;
@@ -483,16 +497,16 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 			}
 
 			if (slotNo == 1U) {
-				m_scrollTimer2.stop();
+				m_dmrScrollTimer2.stop();
 				::lcdPosition(m_fd, 0, (m_rows / 2));
 				::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
 			} else {
-				m_scrollTimer1.stop();
+				m_dmrScrollTimer1.stop();
 				::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
 				::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
 			}
 		} else {
-			m_scrollTimer2.stop();
+			m_dmrScrollTimer2.stop();
 			::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
 			::sprintf(m_buffer1, "%s%s", "DMR", DEADSPACE);
 			::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
@@ -512,9 +526,9 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 			::sprintf(m_buffer1, "%s > %s%s     ", src.c_str(), group ? "TG" : "", dst.c_str());
 			::lcdPrintf(m_fd, "%.*s", m_cols - 2U, m_buffer1);
 
-			// Start the scroll timer on slot 1 if text in m_buffer1 will not fit in the space available
+			// Start the DMR scroll timer on slot 1 if text in m_buffer1 will not fit in the space available
 			if (strlen(m_buffer1) - 5 > m_cols - 5 ) {
-				m_scrollTimer1.start();
+				m_dmrScrollTimer1.start();
 			}
 
 			::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
@@ -529,9 +543,9 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 			::sprintf(m_buffer2, "%s > %s%s     ", src.c_str(), group ? "TG" : "", dst.c_str());
 			::lcdPrintf(m_fd, "%.*s", m_cols - 2U, m_buffer2);
 
-			// Start the scroll timer on slot 2 if text in m_buffer2 will not fit in the space available
+			// Start the DMR scroll timer on slot 2 if text in m_buffer2 will not fit in the space available
 			if (strlen(m_buffer2) - 5 > m_cols - 5 ) {
-				m_scrollTimer2.start();
+				m_dmrScrollTimer2.start();
 			}
 
 			::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
@@ -572,16 +586,16 @@ void CHD44780::clearDMRInt(unsigned int slotNo)
 
 	if (m_duplex) {
 		if (slotNo == 1U) {
-			m_scrollTimer1.stop();            // Stop the scroll timer on slot 1
+			m_dmrScrollTimer1.stop();            // Stop the scroll timer on slot 1
 			::lcdPosition(m_fd, 0, 0);
 			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
 		} else {
-			m_scrollTimer2.stop();            // Stop the scroll timer on slot 2
+			m_dmrScrollTimer2.stop();            // Stop the scroll timer on slot 2
 			::lcdPosition(m_fd, 0, 1);
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
 		}
 	} else {
-		m_scrollTimer2.stop();              // Stop the scroll timer on slot 2
+		m_dmrScrollTimer2.stop();              // Stop the scroll timer on slot 2
 		::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
 		::sprintf(m_buffer2, "%s%s", "DMR", DEADSPACE);
 		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer2);
@@ -680,8 +694,9 @@ void CHD44780::clearFusionInt()
 void CHD44780::clockInt(unsigned int ms)
 {
 	m_clockDisplayTimer.clock(ms);
-	m_scrollTimer1.clock(ms);
-	m_scrollTimer2.clock(ms);
+	m_dmrScrollTimer1.clock(ms);
+	m_dmrScrollTimer2.clock(ms);
+	m_dstarScrollTimer.clock(ms);
 
 	// Idle clock display 
 	if (m_displayClock && m_clockDisplayTimer.isRunning() && m_clockDisplayTimer.hasExpired()) {
@@ -716,22 +731,31 @@ void CHD44780::clockInt(unsigned int ms)
 			m_clockDisplayTimer.start();
 	}
 
-	// Slot 1 scrolling
-	if (m_scrollTimer1.isRunning() && m_scrollTimer1.hasExpired()) {
+	// DMR Slot 1 scrolling
+	if (m_dmrScrollTimer1.isRunning() && m_dmrScrollTimer1.hasExpired()) {
 		strncat(m_buffer1, m_buffer1, 1);                      // Move the first character to the end of the buffer
 		memmove(m_buffer1, m_buffer1 + 1, strlen(m_buffer1));  // Strip the first character
 		::lcdPosition(m_fd, 2, (m_rows / 2) - 1);              // Position on the LCD
 		::lcdPrintf(m_fd, "%.*s", m_cols - 5U, m_buffer1);     // Print it out
-		m_scrollTimer1.start();                                // Restart the scroll timer
+		m_dmrScrollTimer1.start();                             // Restart the scroll timer
 	}
 
-	// Slot 2 scrolling
-	if (m_scrollTimer2.isRunning() && m_scrollTimer2.hasExpired()) {
+	// DMR Slot 2 scrolling
+	if (m_dmrScrollTimer2.isRunning() && m_dmrScrollTimer2.hasExpired()) {
 		strncat(m_buffer2, m_buffer2, 1);
 		memmove(m_buffer2, m_buffer2 + 1, strlen(m_buffer2));
 		::lcdPosition(m_fd, 2, (m_rows / 2));
 		::lcdPrintf(m_fd, "%.*s", m_cols - 5U, m_buffer2);
-		m_scrollTimer2.start();
+		m_dmrScrollTimer2.start();
+	}
+
+	// D-Star scrolling
+	if (m_dstarScrollTimer.isRunning() && m_dstarScrollTimer.hasExpired()) {
+		strncat(m_buffer1, m_buffer1, 1);
+		memmove(m_buffer1, m_buffer1 + 1, strlen(m_buffer1));
+		::lcdPosition(m_fd, 0, (m_rows / 2));
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
+		m_dstarScrollTimer.start();
 	}
 }
 
