@@ -434,8 +434,8 @@ void CHD44780::writeDStarInt(const char* my1, const char* my2, const char* your,
 	
 	char *p = m_buffer1;
 	for (; *p; ++p) {
-		if (*p == " ")
-			*p = "_";
+		if (*p == ' ')
+			*p = '_';
 	}
 
 	if (strcmp(reflector, "        ") != 0) {
