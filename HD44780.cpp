@@ -33,6 +33,8 @@ const char* DEADSPACE = "                                        ";
 
 char        m_buffer1[128U];
 char        m_buffer2[128U];
+char        m_buffer3[128U];
+char        m_buffer4[128U];
 
 CHD44780::CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim, bool displayClock, bool utc, bool duplex) :
 CDisplay(),
@@ -439,8 +441,8 @@ void CHD44780::writeDStarInt(const char* my1, const char* my2, const char* your,
 	}
 
 	if (strcmp(reflector, "        ") != 0) {
-		::sprintf(m_buffer2, " via %.8s", reflector);
-		strcat(m_buffer1, m_buffer2);
+		::sprintf(m_buffer3, " via %.8s", reflector);
+		strcat(m_buffer1, m_buffer3);
 	}
 
 	::lcdPosition(m_fd, 0, (m_rows / 2));
@@ -448,6 +450,8 @@ void CHD44780::writeDStarInt(const char* my1, const char* my2, const char* your,
 
 	// Start the D-Star scroll timer if text in m_buffer1 will not fit in the space available
 	if (strlen(m_buffer1) > m_cols) {
+		::sprintf(m_buffer3, "%.*s", m_cols, DEADSPACE);
+		strcat(m_buffer1, m_buffer3);
 		m_dstarScrollTimer.start();
 	}
 
@@ -461,6 +465,7 @@ void CHD44780::clearDStarInt()
 #endif
 
 	m_clockDisplayTimer.stop();           // Stop the clock display
+	m_dstarScrollTimer.stop();
 	::lcdClear(m_fd);
 
 	::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
@@ -476,7 +481,6 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 
 	if (!m_dmr) {
 		m_clockDisplayTimer.stop();          // Stop the clock display
-		::lcdClear(m_fd);
 
 #ifdef ADAFRUIT_DISPLAY
 		adafruitLCDColour(AC_GREEN);
@@ -523,11 +527,13 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 		if (slotNo == 1U) {
 			::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
 			::lcdPuts(m_fd, "1 ");
-			::sprintf(m_buffer1, "%s > %s%s     ", src.c_str(), group ? "TG" : "", dst.c_str());
+			::sprintf(m_buffer1, "%s > %s%s", src.c_str(), group ? "TG" : "", dst.c_str());
 			::lcdPrintf(m_fd, "%.*s", m_cols - 2U, m_buffer1);
 
 			// Start the DMR scroll timer on slot 1 if text in m_buffer1 will not fit in the space available
-			if (strlen(m_buffer1) - 5 > m_cols - 5 ) {
+			if (strlen(m_buffer1) > m_cols - 5 ) {
+				::sprintf(m_buffer3, "%.*s", m_cols, DEADSPACE);
+				strcat(m_buffer1, m_buffer3);
 				m_dmrScrollTimer1.start();
 			}
 
@@ -540,11 +546,13 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 		} else {
 			::lcdPosition(m_fd, 0, (m_rows / 2));
 			::lcdPuts(m_fd, "2 ");
-			::sprintf(m_buffer2, "%s > %s%s     ", src.c_str(), group ? "TG" : "", dst.c_str());
+			::sprintf(m_buffer2, "%s > %s%s", src.c_str(), group ? "TG" : "", dst.c_str());
 			::lcdPrintf(m_fd, "%.*s", m_cols - 2U, m_buffer2);
 
 			// Start the DMR scroll timer on slot 2 if text in m_buffer2 will not fit in the space available
-			if (strlen(m_buffer2) - 5 > m_cols - 5 ) {
+			if (strlen(m_buffer2) > m_cols - 5 ) {
+				::sprintf(m_buffer4, "%.*s", m_cols, DEADSPACE);
+				strcat(m_buffer2, m_buffer4);
 				m_dmrScrollTimer2.start();
 			}
 
@@ -566,7 +574,7 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 
 		::lcdPosition(m_fd, 0, (m_rows / 2));
 		::lcdPutchar(m_fd, 1);
-		::sprintf(m_buffer2, " %s%s", dst.c_str(), DEADSPACE);
+		::sprintf(m_buffer2, " %s%s%s", group ? "TG" : "", dst.c_str(), DEADSPACE);
 		::lcdPrintf(m_fd, "%.*s", m_cols - 4U, m_buffer2);
 		::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
 		::lcdPosition(m_fd, m_cols - 1U, (m_rows / 2));
@@ -582,7 +590,6 @@ void CHD44780::clearDMRInt(unsigned int slotNo)
 #endif
 
 	m_clockDisplayTimer.stop();           // Stop the clock display
-	::lcdClear(m_fd);
 
 	if (m_duplex) {
 		if (slotNo == 1U) {
