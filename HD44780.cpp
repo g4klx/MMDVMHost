@@ -481,6 +481,7 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 
 	if (!m_dmr) {
 		m_clockDisplayTimer.stop();          // Stop the clock display
+		::lcdClear(m_fd);
 
 #ifdef ADAFRUIT_DISPLAY
 		adafruitLCDColour(AC_GREEN);
