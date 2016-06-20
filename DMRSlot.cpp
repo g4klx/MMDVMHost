@@ -1579,6 +1579,10 @@ void CDMRSlot::setShortLC(unsigned int slotNo, unsigned int id, FLCO flco, bool 
 			return;
 	}
 
+	// If we have no activity to report, let the modem send the null Short LC when it's ready
+	if (m_id1 == 0U && m_id2 == 0U)
+		return;
+
 	unsigned char lc[5U];
 	lc[0U] = 0x01U;
 	lc[1U] = 0x00U;
