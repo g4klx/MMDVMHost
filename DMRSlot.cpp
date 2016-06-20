@@ -160,9 +160,6 @@ void CDMRSlot::writeModem(unsigned char *data)
 				return;
 			}
 
-			m_queue.clear();
-			m_modem->writeDMRAbort(m_slotNo);
-
 			m_rfLC = lc;
 
 			// Store the LC for the embedded LC
@@ -188,6 +185,9 @@ void CDMRSlot::writeModem(unsigned char *data)
 			m_rfErrs   = 0U;
 
 			if (m_duplex) {
+				m_queue.clear();
+				m_modem->writeDMRAbort(m_slotNo);
+
 				writeQueueRF(data);
 				writeQueueRF(data);
 				writeQueueRF(data);
@@ -525,9 +525,6 @@ void CDMRSlot::writeModem(unsigned char *data)
 					return;
 				}
 
-				m_queue.clear();
-				m_modem->writeDMRAbort(m_slotNo);
-
 				m_rfLC = lc;
 
 				// Store the LC for the embedded LC
@@ -557,6 +554,9 @@ void CDMRSlot::writeModem(unsigned char *data)
 				m_rfErrs   = 0U;
 
 				if (m_duplex) {
+					m_queue.clear();
+					m_modem->writeDMRAbort(m_slotNo);
+
 					writeQueueRF(start);
 					writeQueueRF(start);
 					writeQueueRF(start);
@@ -756,8 +756,13 @@ void CDMRSlot::writeEndNet(bool writeEnd)
 		data[0U] = TAG_EOT;
 		data[1U] = 0x00U;
 
-		for (unsigned int i = 0U; i < m_hangCount; i++)
-			writeQueueNet(data);
+		if (m_duplex) {
+			for (unsigned int i = 0U; i < m_hangCount; i++)
+				writeQueueNet(data);
+		} else {
+			for (unsigned int i = 0U; i < 3U; i++)
+				writeQueueNet(data);
+		}
 	}
 
 	delete m_netLC;
@@ -806,9 +811,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			return;
 		}
 
-		m_queue.clear();
-		m_modem->writeDMRAbort(m_slotNo);
-
 		// Store the LC for the embedded LC
 		m_netEmbeddedLC.setData(*m_netLC);
 
@@ -834,6 +836,11 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		m_netBits = 1U;
 		m_netErrs = 0U;
+
+		if (m_duplex) {
+			m_queue.clear();
+			m_modem->writeDMRAbort(m_slotNo);
+		}
 
 		writeQueueNet(m_idle);
 		writeQueueNet(m_idle);
@@ -934,9 +941,14 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		data[0U] = TAG_EOT;
 		data[1U] = 0x00U;
-	
-		for (unsigned int i = 0U; i < m_hangCount; i++)
-			writeQueueNet(data);
+
+		if (m_duplex) {
+			for (unsigned int i = 0U; i < m_hangCount; i++)
+				writeQueueNet(data);
+		} else {
+			for (unsigned int i = 0U; i < 3U; i++)
+				writeQueueNet(data);
+		}
 
 #if defined(DUMP_DMR)
 		writeFile(data);
@@ -1035,10 +1047,12 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				return;
 			}
 
-			m_queue.clear();
-			m_modem->writeDMRAbort(m_slotNo);
-
 			m_netTimeoutTimer.start();
+
+			if (m_duplex) {
+				m_queue.clear();
+				m_modem->writeDMRAbort(m_slotNo);
+			}
 
 			writeQueueNet(m_idle);
 			writeQueueNet(m_idle);
