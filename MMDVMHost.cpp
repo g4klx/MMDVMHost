@@ -635,6 +635,11 @@ bool CMMDVMHost::createModem()
 	unsigned int colorCode   = m_conf.getDMRColorCode();
 	unsigned int rxFrequency = m_conf.getRxFrequency();
 	unsigned int txFrequency = m_conf.getTxFrequency();
+	int dstarLevel           = m_conf.getModemDStarLevel();
+	int dmrLevel1            = m_conf.getModemDMRLevel1();
+	int dmrLevel3            = m_conf.getModemDMRLevel3();
+	int ysfLevel1            = m_conf.getModemYSFLevel1();
+	int ysfLevel3            = m_conf.getModemYSFLevel3();
 	int oscOffset            = m_conf.getModemOscOffset();
 
 	LogInfo("Modem Parameters");
@@ -648,10 +653,16 @@ bool CMMDVMHost::createModem()
 	LogInfo("    TX Level: %u%%", txLevel);
 	LogInfo("    RX Frequency: %uHz", rxFrequency);
 	LogInfo("    TX Frequency: %uHz", txFrequency);
+	LogInfo("    D-Star Level: %.1f%%", float(dstarLevel) / 10.0F);
+	LogInfo("    DMR Level 1: %.1f%%", float(dmrLevel1) / 10.0F);
+	LogInfo("    DMR Level 3: %.1f%%", float(dmrLevel3) / 10.0F);
+	LogInfo("    YSF Level 1: %.1f%%", float(ysfLevel1) / 10.0F);
+	LogInfo("    YSF Level 3: %.1f%%", float(ysfLevel3) / 10.0F);
 	LogInfo("    Osc. Offset: %dppm", oscOffset);
 
 	m_modem = new CModem(port, rxInvert, txInvert, pttInvert, txDelay, rxLevel, txLevel, dmrDelay, oscOffset, debug);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled);
+	m_modem->setModeLevels(dstarLevel, dmrLevel1, dmrLevel3, ysfLevel1, ysfLevel3);
 	m_modem->setRFParams(rxFrequency, txFrequency);
 	m_modem->setDMRParams(colorCode);
 

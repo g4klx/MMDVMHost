@@ -87,6 +87,11 @@ m_dmrDelay(dmrDelay),
 m_rxLevel(rxLevel),
 m_txLevel(txLevel),
 m_oscOffset(oscOffset),
+m_dstarLevel(0),
+m_dmrLevel1(0),
+m_dmrLevel3(0),
+m_ysfLevel1(0),
+m_ysfLevel3(0),
 m_debug(debug),
 m_rxFrequency(0U),
 m_txFrequency(0U),
@@ -130,6 +135,15 @@ void CModem::setRFParams(unsigned int rxFrequency, unsigned int txFrequency)
 {
 	m_rxFrequency = rxFrequency;
 	m_txFrequency = txFrequency;
+}
+
+void CModem::setModeLevels(int dstarLevel, int dmrLevel1, int dmrLevel3, int ysfLevel1, int ysfLevel3)
+{
+	m_dstarLevel = dstarLevel;
+	m_dmrLevel1  = dmrLevel1;
+	m_dmrLevel3  = dmrLevel3;
+	m_ysfLevel1  = ysfLevel1;
+	m_ysfLevel3  = ysfLevel3;
 }
 
 void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled)
@@ -742,11 +756,11 @@ bool CModem::readStatus()
 
 bool CModem::setConfig()
 {
-	unsigned char buffer[12U];
+	unsigned char buffer[20U];
 
 	buffer[0U] = MMDVM_FRAME_START;
 
-	buffer[1U] = 12U;
+	buffer[1U] = 17U;
 
 	buffer[2U] = MMDVM_SET_CONFIG;
 
@@ -779,10 +793,16 @@ bool CModem::setConfig()
 
 	buffer[11U] = (unsigned char)(m_oscOffset + 128);
 
-	// CUtils::dump(1U, "Written", buffer, 12U);
+	buffer[12U] = (unsigned char)(m_dstarLevel + 128);
+	buffer[13U] = (unsigned char)(m_dmrLevel1 + 128);
+	buffer[14U] = (unsigned char)(m_dmrLevel3 + 128);
+	buffer[15U] = (unsigned char)(m_ysfLevel1 + 128);
+	buffer[16U] = (unsigned char)(m_ysfLevel3 + 128);
 
-	int ret = m_serial.write(buffer, 12U);
-	if (ret != 12)
+	// CUtils::dump(1U, "Written", buffer, 17U);
+
+	int ret = m_serial.write(buffer, 17U);
+	if (ret != 17)
 		return false;
 
 	unsigned int count = 0U;

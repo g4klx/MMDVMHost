@@ -68,6 +68,11 @@ public:
   unsigned int getModemDMRDelay() const;
   unsigned int getModemRXLevel() const;
   unsigned int getModemTXLevel() const;
+  int          getModemDStarLevel() const;
+  int          getModemDMRLevel1() const;
+  int          getModemDMRLevel3() const;
+  int          getModemYSFLevel1() const;
+  int          getModemYSFLevel3() const;
   int          getModemOscOffset() const;
   bool         getModemDebug() const;
 
@@ -182,6 +187,11 @@ private:
   unsigned int m_modemDMRDelay;
   unsigned int m_modemRXLevel;
   unsigned int m_modemTXLevel;
+  int          m_modemDStarLevel;
+  int          m_modemDMRLevel1;
+  int          m_modemDMRLevel3;
+  int          m_modemYSFLevel1;
+  int          m_modemYSFLevel3;
   int          m_modemOscOffset;
   bool         m_modemDebug;
 
