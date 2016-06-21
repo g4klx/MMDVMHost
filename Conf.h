@@ -73,6 +73,8 @@ public:
   int          getModemDMRLevel3() const;
   int          getModemYSFLevel1() const;
   int          getModemYSFLevel3() const;
+  int          getModemDMRThreshold() const;
+  int          getModemYSFThreshold() const;
   int          getModemOscOffset() const;
   bool         getModemDebug() const;
 
@@ -192,6 +194,8 @@ private:
   int          m_modemDMRLevel3;
   int          m_modemYSFLevel1;
   int          m_modemYSFLevel3;
+  int          m_modemDMRThreshold;
+  int          m_modemYSFThreshold;
   int          m_modemOscOffset;
   bool         m_modemDebug;
 

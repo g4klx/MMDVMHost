@@ -640,6 +640,8 @@ bool CMMDVMHost::createModem()
 	int dmrLevel3            = m_conf.getModemDMRLevel3();
 	int ysfLevel1            = m_conf.getModemYSFLevel1();
 	int ysfLevel3            = m_conf.getModemYSFLevel3();
+	int dmrThreshold         = m_conf.getModemDMRThreshold();
+	int ysfThreshold         = m_conf.getModemYSFThreshold();
 	int oscOffset            = m_conf.getModemOscOffset();
 
 	LogInfo("Modem Parameters");
@@ -653,16 +655,27 @@ bool CMMDVMHost::createModem()
 	LogInfo("    TX Level: %u%%", txLevel);
 	LogInfo("    RX Frequency: %uHz", rxFrequency);
 	LogInfo("    TX Frequency: %uHz", txFrequency);
-	LogInfo("    D-Star Level: %.1f%%", float(dstarLevel) / 10.0F);
-	LogInfo("    DMR Level 1: %.1f%%", float(dmrLevel1) / 10.0F);
-	LogInfo("    DMR Level 3: %.1f%%", float(dmrLevel3) / 10.0F);
-	LogInfo("    YSF Level 1: %.1f%%", float(ysfLevel1) / 10.0F);
-	LogInfo("    YSF Level 3: %.1f%%", float(ysfLevel3) / 10.0F);
+
+	if (dstarLevel != 0)
+		LogInfo("    D-Star Level: %.1f%%", float(dstarLevel) / 10.0F);
+	if (dmrLevel1 != 0)
+		LogInfo("    DMR Level 1: %.1f%%", float(dmrLevel1) / 10.0F);
+	if (dmrLevel3 != 0)
+		LogInfo("    DMR Level 3: %.1f%%", float(dmrLevel3) / 10.0F);
+	if (ysfLevel1 != 0)
+		LogInfo("    YSF Level 1: %.1f%%", float(ysfLevel1) / 10.0F);
+	if (ysfLevel3 != 0)
+		LogInfo("    YSF Level 3: %.1f%%", float(ysfLevel3) / 10.0F);
+	if (dmrThreshold != 0)
+		LogInfo("    DMR Threshold: %.1f%%", float(dmrThreshold) / 10.0F);
+	if (ysfThreshold != 0)
+		LogInfo("    YSF Threshold: %.1f%%", float(ysfThreshold) / 10.0F);
+
 	LogInfo("    Osc. Offset: %dppm", oscOffset);
 
 	m_modem = new CModem(port, rxInvert, txInvert, pttInvert, txDelay, rxLevel, txLevel, dmrDelay, oscOffset, debug);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled);
-	m_modem->setModeLevels(dstarLevel, dmrLevel1, dmrLevel3, ysfLevel1, ysfLevel3);
+	m_modem->setModeLevels(dstarLevel, dmrLevel1, dmrLevel3, ysfLevel1, ysfLevel3, dmrThreshold, ysfThreshold);
 	m_modem->setRFParams(rxFrequency, txFrequency);
 	m_modem->setDMRParams(colorCode);
 

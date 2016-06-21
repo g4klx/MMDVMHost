@@ -86,12 +86,14 @@ m_txDelay(txDelay),
 m_dmrDelay(dmrDelay),
 m_rxLevel(rxLevel),
 m_txLevel(txLevel),
-m_oscOffset(oscOffset),
 m_dstarLevel(0),
 m_dmrLevel1(0),
 m_dmrLevel3(0),
 m_ysfLevel1(0),
 m_ysfLevel3(0),
+m_dmrThreshold(0),
+m_ysfThreshold(0),
+m_oscOffset(oscOffset),
 m_debug(debug),
 m_rxFrequency(0U),
 m_txFrequency(0U),
@@ -137,13 +139,15 @@ void CModem::setRFParams(unsigned int rxFrequency, unsigned int txFrequency)
 	m_txFrequency = txFrequency;
 }
 
-void CModem::setModeLevels(int dstarLevel, int dmrLevel1, int dmrLevel3, int ysfLevel1, int ysfLevel3)
+void CModem::setModeLevels(int dstarLevel, int dmrLevel1, int dmrLevel3, int ysfLevel1, int ysfLevel3, int dmrThreshold, int ysfThreshold)
 {
-	m_dstarLevel = dstarLevel;
-	m_dmrLevel1  = dmrLevel1;
-	m_dmrLevel3  = dmrLevel3;
-	m_ysfLevel1  = ysfLevel1;
-	m_ysfLevel3  = ysfLevel3;
+	m_dstarLevel   = dstarLevel;
+	m_dmrLevel1    = dmrLevel1;
+	m_dmrLevel3    = dmrLevel3;
+	m_ysfLevel1    = ysfLevel1;
+	m_ysfLevel3    = ysfLevel3;
+	m_dmrThreshold = dmrThreshold;
+	m_ysfThreshold = ysfThreshold;
 }
 
 void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled)
@@ -760,7 +764,7 @@ bool CModem::setConfig()
 
 	buffer[0U] = MMDVM_FRAME_START;
 
-	buffer[1U] = 17U;
+	buffer[1U] = 19U;
 
 	buffer[2U] = MMDVM_SET_CONFIG;
 
@@ -798,11 +802,13 @@ bool CModem::setConfig()
 	buffer[14U] = (unsigned char)(m_dmrLevel3 + 128);
 	buffer[15U] = (unsigned char)(m_ysfLevel1 + 128);
 	buffer[16U] = (unsigned char)(m_ysfLevel3 + 128);
+	buffer[17U] = (unsigned char)(m_dmrThreshold + 128);
+	buffer[18U] = (unsigned char)(m_ysfThreshold + 128);
 
-	// CUtils::dump(1U, "Written", buffer, 17U);
+	// CUtils::dump(1U, "Written", buffer, 19U);
 
-	int ret = m_serial.write(buffer, 17U);
-	if (ret != 17)
+	int ret = m_serial.write(buffer, 19U);
+	if (ret != 19)
 		return false;
 
 	unsigned int count = 0U;

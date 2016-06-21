@@ -82,6 +82,8 @@ m_modemDMRLevel1(0),
 m_modemDMRLevel3(0),
 m_modemYSFLevel1(0),
 m_modemYSFLevel3(0),
+m_modemDMRThreshold(0),
+m_modemYSFThreshold(0),
 m_modemOscOffset(0),
 m_modemDebug(false),
 m_dstarEnabled(true),
@@ -280,6 +282,10 @@ bool CConf::read()
 			m_modemYSFLevel1 = ::atoi(value);
 		else if (::strcmp(key, "YSFLevel3") == 0)
 			m_modemYSFLevel3 = ::atoi(value);
+		else if (::strcmp(key, "DMRThreshold") == 0)
+			m_modemDMRThreshold = ::atoi(value);
+		else if (::strcmp(key, "YSFThreshold") == 0)
+			m_modemYSFThreshold = ::atoi(value);
 		else if (::strcmp(key, "OscOffset") == 0)
 			m_modemOscOffset = ::atoi(value);
 		else if (::strcmp(key, "Debug") == 0)
@@ -639,6 +645,16 @@ int CConf::getModemYSFLevel1() const
 int CConf::getModemYSFLevel3() const
 {
 	return m_modemYSFLevel3;
+}
+
+int CConf::getModemDMRThreshold() const
+{
+	return m_modemDMRThreshold;
+}
+
+int CConf::getModemYSFThreshold() const
+{
+	return m_modemYSFThreshold;
 }
 
 int CConf::getModemOscOffset() const
