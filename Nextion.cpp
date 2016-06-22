@@ -24,7 +24,7 @@
 #include <cstring>
 #include <ctime>
 
-CNextion::CNextion(const std::string& callsign, unsigned int dmrid, const std::string& port, unsigned int brightness, bool displayClock, bool utc) :
+CNextion::CNextion(const std::string& callsign, unsigned int dmrid, const std::string& port, unsigned int brightness, bool displayClock, bool utc, const std::string& dateformat) :
 CDisplay(),
 m_callsign(callsign),
 m_dmrid(dmrid),
@@ -33,6 +33,7 @@ m_brightness(brightness),
 m_mode(MODE_IDLE),
 m_displayClock(displayClock),
 m_utc(utc),
+m_dateformat(dateformat),
 m_clockDisplayTimer(1000U, 0U, 400U)
 {
 	assert(brightness >= 0U && brightness <= 100U);
@@ -241,7 +242,13 @@ void CNextion::clockInt(unsigned int ms)
 		int Sec = Time->tm_sec;
 
 		char text[50U];
-		::sprintf(text, "t2.txt=\"%02d:%02d:%02d %02d/%02d/%2d\"", Hour, Min, Sec, Day, Month, Year % 100);
+		if (strcmp(m_dateformat.c_str(), "English") == 0) {
+			::sprintf(text, "t2.txt=\"%02d:%02d:%02d %02d/%02d/%2d\"", Hour, Min, Sec, Day, Month, Year % 100);
+			printf(text, "t2.txt=\"%02d:%02d:%02d %02d/%02d/%2d\"", Hour, Min, Sec, Day, Month, Year % 100);
+		} else if (strcmp(m_dateformat.c_str(), "German") == 0) {
+			::sprintf(text, "t2.txt=\"%02d:%02d:%02d %02d.%02d.%2d\"", Hour, Min, Sec, Day, Month, Year % 100);
+			printf(text, "t2.txt=\"%02d:%02d:%02d %02d.%02d.%2d\"", Hour, Min, Sec, Day, Month, Year % 100);
+		}
 		sendCommand(text);
 
 		m_clockDisplayTimer.start(); // restart the clock display timer

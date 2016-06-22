@@ -148,6 +148,7 @@ public:
   unsigned int getNextionBrightness() const;
   bool         getNextionDisplayClock() const;
   bool         getNextionUTC() const;
+  std::string  getNextionDateFormat() const;
 
   // The OLED section
   unsigned char  getOLEDType() const;
@@ -260,6 +261,7 @@ private:
   unsigned int m_nextionBrightness;
   bool         m_nextionDisplayClock;
   bool         m_nextionUTC;
+  std::string  m_nextionDateFormat;
 
   unsigned char m_oledType;
   unsigned char m_oledBrightness;

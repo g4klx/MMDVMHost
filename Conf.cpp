@@ -139,6 +139,7 @@ m_nextionPort("/dev/ttyAMA0"),
 m_nextionBrightness(50U),
 m_nextionDisplayClock(false),
 m_nextionUTC(false),
+m_nextionDateFormat("English"),
 m_oledType(3),
 m_oledBrightness(0),
 m_oledInvert(0)
@@ -461,6 +462,8 @@ bool CConf::read()
 			m_nextionDisplayClock = ::atoi(value) == 1;
 		else if (::strcmp(key, "UTC") == 0)
 			m_nextionUTC = ::atoi(value) == 1;
+		else if (::strcmp(key, "DateFormat") == 0)
+			m_nextionDateFormat = value;
 	} else if (section == SECTION_OLED) {
 		if (::strcmp(key, "Type") == 0)
 			m_oledType = (unsigned char)::atoi(value);
@@ -924,6 +927,11 @@ bool CConf::getNextionDisplayClock() const
 bool CConf::getNextionUTC() const
 {
 	return m_nextionUTC;
+}
+
+std::string CConf::getNextionDateFormat() const
+{
+	return m_nextionDateFormat;
 }
 
 unsigned char CConf::getOLEDType() const

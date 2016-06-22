@@ -833,6 +833,7 @@ void CMMDVMHost::createDisplay()
 		unsigned int brightness = m_conf.getNextionBrightness();
 		bool displayClock       = m_conf.getNextionDisplayClock();
 		bool utc                = m_conf.getNextionUTC();
+		std::string dateformat  = m_conf.getNextionDateFormat();
 
 		LogInfo("    Port: %s", port.c_str());
 		LogInfo("    Brightness: %u", brightness);
@@ -840,7 +841,7 @@ void CMMDVMHost::createDisplay()
 		if (displayClock)
 			LogInfo("    Display UTC: %s", utc ? "yes" : "no");
 
-		m_display = new CNextion(m_callsign, dmrid, port, brightness, displayClock, utc);
+		m_display = new CNextion(m_callsign, dmrid, port, brightness, displayClock, utc, dateformat);
 #if defined(HD44780)
 	} else if (type == "HD44780") {
 		unsigned int rows    = m_conf.getHD44780Rows();
