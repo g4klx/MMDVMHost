@@ -844,15 +844,16 @@ void CMMDVMHost::createDisplay()
 		m_display = new CNextion(m_callsign, dmrid, port, brightness, displayClock, utc, dateformat);
 #if defined(HD44780)
 	} else if (type == "HD44780") {
-		unsigned int rows    = m_conf.getHD44780Rows();
-		unsigned int columns = m_conf.getHD44780Columns();
+		unsigned int rows              = m_conf.getHD44780Rows();
+		unsigned int columns           = m_conf.getHD44780Columns();
 		std::vector<unsigned int> pins = m_conf.getHD44780Pins();
-		bool pwm = m_conf.getHD44780PWM();
-		unsigned int pwmPin = m_conf.getHD44780PWMPin();
-		unsigned int pwmBright = m_conf.getHD44780PWMBright();
-		unsigned int pwmDim = m_conf.getHD44780PWMDim();
-		bool displayClock = m_conf.getHD44780DisplayClock();
-		bool utc = m_conf.getHD44780UTC();
+		bool pwm                       = m_conf.getHD44780PWM();
+		unsigned int pwmPin            = m_conf.getHD44780PWMPin();
+		unsigned int pwmBright         = m_conf.getHD44780PWMBright();
+		unsigned int pwmDim            = m_conf.getHD44780PWMDim();
+		bool displayClock              = m_conf.getHD44780DisplayClock();
+		bool utc                       = m_conf.getHD44780UTC();
+		std::string dateformat         = m_conf.getHD44780DateFormat();
 
 		if (pins.size() == 6U) {
 			LogInfo("    Rows: %u", rows);
@@ -870,7 +871,7 @@ void CMMDVMHost::createDisplay()
 			if (displayClock)
 				LogInfo("    Display UTC: %s", utc ? "yes" : "no");
 
-			m_display = new CHD44780(rows, columns, m_callsign, dmrid, pins, pwm, pwmPin, pwmBright, pwmDim, displayClock, utc, m_duplex);
+			m_display = new CHD44780(rows, columns, m_callsign, dmrid, pins, pwm, pwmPin, pwmBright, pwmDim, displayClock, utc, m_duplex, dateformat);
 		}
 #endif
 #if defined(OLED)
