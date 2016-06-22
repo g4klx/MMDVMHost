@@ -686,7 +686,7 @@ bool CMMDVMHost::createModem()
 
 	LogInfo("    Osc. Offset: %dppm", oscOffset);
 
-	m_modem = new CModem(port, rxInvert, txInvert, pttInvert, txDelay, rxLevel, txLevel, dmrDelay, oscOffset, debug);
+	m_modem = new CModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, rxLevel, txLevel, dmrDelay, oscOffset, debug);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled);
 	m_modem->setModeLevels(dstarLevel, dmrLevel1, dmrLevel3, ysfLevel1, ysfLevel3, dmrThreshold, ysfThreshold);
 	m_modem->setRFParams(rxFrequency, txFrequency);

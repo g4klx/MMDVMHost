@@ -76,9 +76,10 @@ const unsigned int MAX_RESPONSES = 30U;
 const unsigned int BUFFER_LENGTH = 500U;
 
 
-CModem::CModem(const std::string& port, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int rxLevel, unsigned int txLevel, unsigned int dmrDelay, int oscOffset, bool debug) :
+CModem::CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int rxLevel, unsigned int txLevel, unsigned int dmrDelay, int oscOffset, bool debug) :
 m_port(port),
 m_colorCode(0U),
+m_duplex(duplex),
 m_rxInvert(rxInvert),
 m_txInvert(txInvert),
 m_pttInvert(pttInvert),
@@ -760,11 +761,13 @@ bool CModem::readStatus()
 
 bool CModem::setConfig()
 {
+	unsigned int length = m_duplex ? 19U : 12U;
+
 	unsigned char buffer[20U];
 
 	buffer[0U] = MMDVM_FRAME_START;
 
-	buffer[1U] = 19U;
+	buffer[1U] = length;
 
 	buffer[2U] = MMDVM_SET_CONFIG;
 
@@ -805,10 +808,10 @@ bool CModem::setConfig()
 	buffer[17U] = (unsigned char)(m_dmrThreshold + 128);
 	buffer[18U] = (unsigned char)(m_ysfThreshold + 128);
 
-	// CUtils::dump(1U, "Written", buffer, 19U);
+	// CUtils::dump(1U, "Written", buffer, length);
 
-	int ret = m_serial.write(buffer, 19U);
-	if (ret != 19)
+	int ret = m_serial.write(buffer, length);
+	if (ret != int(length))
 		return false;
 
 	unsigned int count = 0U;
