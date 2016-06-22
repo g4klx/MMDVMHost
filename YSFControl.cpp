@@ -395,8 +395,7 @@ void CYSFControl::writeNetwork()
 		m_netSeqNo  = 0U;
 	} else {
 		// Check for duplicate frames, if we can
-		// XXX this needs changing in the future
-		if (m_netSeqNo == data[34U] && m_netSeqNo != 0U) {
+		if (m_netSeqNo == data[34U]) {
 			LogDebug("YSF, removing network duplicate, seq %u", data[34U] >> 1);
 			return;
 		}
