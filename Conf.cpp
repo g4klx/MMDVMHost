@@ -135,6 +135,7 @@ m_hd44780PWMBright(),
 m_hd44780PWMDim(),
 m_hd44780DisplayClock(false),
 m_hd44780UTC(false),
+m_hd44780DateFormat("English"),
 m_nextionPort("/dev/ttyAMA0"),
 m_nextionBrightness(50U),
 m_nextionDisplayClock(false),
@@ -445,6 +446,8 @@ bool CConf::read()
 			m_hd44780DisplayClock = ::atoi(value) == 1;
 		else if (::strcmp(key, "UTC") == 0)
 			m_hd44780UTC = ::atoi(value) == 1;
+		else if (::strcmp(key, "DateFormat") == 0)
+			m_hd44780DateFormat = value;
 		else if (::strcmp(key, "Pins") == 0) {
 			char* p = ::strtok(value, ",\r\n");
 			while (p != NULL) {

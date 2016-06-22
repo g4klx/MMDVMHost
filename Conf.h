@@ -142,6 +142,7 @@ public:
   unsigned int getHD44780PWMDim() const;
   bool         getHD44780DisplayClock() const;
   bool         getHD44780UTC() const;
+  std::string  getHD44780DateFormat() const;
 
   // The Nextion section
   std::string  getNextionPort() const;
@@ -256,6 +257,7 @@ private:
   unsigned int m_hd44780PWMDim;
   bool         m_hd44780DisplayClock;
   bool         m_hd44780UTC;
+  std::string  m_hd44780DateFormat;
 
   std::string  m_nextionPort;
   unsigned int m_nextionBrightness;
