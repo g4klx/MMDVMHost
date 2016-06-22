@@ -123,10 +123,13 @@ m_dmrNetwork(NULL),
 m_ysfNetwork(NULL),
 m_display(NULL),
 m_mode(MODE_IDLE),
+m_rfModeHang(10U),
+m_netModeHang(3U),
 m_modeTimer(1000U),
 m_dmrTXTimer(1000U),
 m_cwIdTimer(1000U),
 m_duplex(false),
+m_timeout(180U),
 m_dstarEnabled(false),
 m_dmrEnabled(false),
 m_ysfEnabled(false),
@@ -268,19 +271,16 @@ int CMMDVMHost::run()
 	CDStarControl* dstar = NULL;
 	if (m_dstarEnabled) {
 		std::string module = m_conf.getDStarModule();
-		bool selfOnly = m_conf.getDStarSelfOnly();
-		unsigned int timeout = m_conf.getTimeout();
+		bool selfOnly      = m_conf.getDStarSelfOnly();
 		std::vector<std::string> blackList = m_conf.getDStarBlackList();
 
 		LogInfo("D-Star Parameters");
-		LogInfo("    Callsign: %s", m_callsign.c_str());
 		LogInfo("    Module: %s", module.c_str());
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
 		if (blackList.size() > 0U)
 			LogInfo("    Black List: %u", blackList.size());
-		LogInfo("    Timeout: %us", timeout);
 
-		dstar = new CDStarControl(m_callsign, module, selfOnly, blackList, m_dstarNetwork, m_display, timeout, m_duplex);
+		dstar = new CDStarControl(m_callsign, module, selfOnly, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex);
 	}
 
 	CDMRControl* dmr = NULL;
@@ -294,10 +294,17 @@ int CMMDVMHost::run()
 		std::vector<unsigned int> dstIDBlackListSlot2 = m_conf.getDMRDstIdBlacklistSlot2();
 		std::vector<unsigned int> dstIDWhiteListSlot1 = m_conf.getDMRDstIdWhitelistSlot1();
 		std::vector<unsigned int> dstIDWhiteListSlot2 = m_conf.getDMRDstIdWhitelistSlot2();
-		unsigned int timeout   = m_conf.getTimeout();
 		std::string lookupFile = m_conf.getDMRLookupFile();
 		unsigned int callHang  = m_conf.getDMRCallHang();
 		unsigned int txHang    = m_conf.getDMRTXHang();
+
+		if (txHang > m_rfModeHang)
+			txHang = m_rfModeHang;
+		if (txHang > m_netModeHang)
+			txHang = m_netModeHang;
+
+		if (callHang > txHang)
+			callHang = txHang;
 
 		LogInfo("DMR Parameters");
 		LogInfo("    Id: %u", id);
@@ -316,28 +323,18 @@ int CMMDVMHost::run()
 		if (dstIDWhiteListSlot2.size() > 0U)
 			LogInfo("    Slot 2 Destination ID White List: %u entries", dstIDWhiteListSlot2.size());
 		
-		LogInfo("    Timeout: %us", timeout);
 		LogInfo("    Lookup File: %s", lookupFile.length() > 0U ? lookupFile.c_str() : "None");
 		LogInfo("    Call Hang: %us", callHang);
 		LogInfo("    TX Hang: %us", txHang);
 
-		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList,dstIDBlackListSlot1,dstIDWhiteListSlot1, dstIDBlackListSlot2, dstIDWhiteListSlot2, timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookupFile);
+		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList,dstIDBlackListSlot1,dstIDWhiteListSlot1, dstIDBlackListSlot2, dstIDWhiteListSlot2, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookupFile);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}
 
 	CYSFControl* ysf = NULL;
-	if (m_ysfEnabled) {
-		unsigned int timeout = m_conf.getTimeout();
-
-		LogInfo("System Fusion Parameters");
-		LogInfo("    Callsign: %s", m_callsign.c_str());
-		LogInfo("    Timeout: %us", timeout);
-
-		ysf = new CYSFControl(m_callsign, m_ysfNetwork, m_display, timeout, m_duplex);
-	}
-
-	m_modeTimer.setTimeout(m_conf.getModeHang());
+	if (m_ysfEnabled)
+		ysf = new CYSFControl(m_callsign, m_ysfNetwork, m_display, m_timeout, m_duplex);
 
 	setMode(MODE_IDLE);
 
@@ -364,8 +361,10 @@ int CMMDVMHost::run()
 		if (dstar != NULL && len > 0U) {
 			if (m_mode == MODE_IDLE) {
 				bool ret = dstar->writeModem(data);
-				if (ret)
+				if (ret) {
+					m_modeTimer.setTimeout(m_rfModeHang);
 					setMode(MODE_DSTAR);
+				}
 			} else if (m_mode == MODE_DSTAR) {
 				dstar->writeModem(data);
 				m_modeTimer.start();
@@ -380,10 +379,12 @@ int CMMDVMHost::run()
 				if (m_duplex) {
 					bool ret = dmr->processWakeup(data);
 					if (ret) {
+						m_modeTimer.setTimeout(m_rfModeHang);
 						setMode(MODE_DMR);
 						dmrBeaconTimer.stop();
 					}
 				} else {
+					m_modeTimer.setTimeout(m_rfModeHang);
 					setMode(MODE_DMR);
 					dmr->writeModemSlot1(data);
 					dmrBeaconTimer.stop();
@@ -413,10 +414,12 @@ int CMMDVMHost::run()
 				if (m_duplex) {
 					bool ret = dmr->processWakeup(data);
 					if (ret) {
+						m_modeTimer.setTimeout(m_rfModeHang);
 						setMode(MODE_DMR);
 						dmrBeaconTimer.stop();
 					}
 				} else {
+					m_modeTimer.setTimeout(m_rfModeHang);
 					setMode(MODE_DMR);
 					dmr->writeModemSlot2(data);
 					dmrBeaconTimer.stop();
@@ -444,8 +447,10 @@ int CMMDVMHost::run()
 		if (ysf != NULL && len > 0U) {
 			if (m_mode == MODE_IDLE) {
 				bool ret = ysf->writeModem(data);
-				if (ret)
+				if (ret) {
+					m_modeTimer.setTimeout(m_rfModeHang);
 					setMode(MODE_YSF);
+				}
 			} else if (m_mode == MODE_YSF) {
 				ysf->writeModem(data);
 				m_modeTimer.start();
@@ -462,8 +467,10 @@ int CMMDVMHost::run()
 			if (ret) {
 				len = dstar->readModem(data);
 				if (len > 0U) {
-					if (m_mode == MODE_IDLE)
+					if (m_mode == MODE_IDLE) {
+						m_modeTimer.setTimeout(m_netModeHang);
 						setMode(MODE_DSTAR);
+					}
 					if (m_mode == MODE_DSTAR) {
 						m_modem->writeDStarData(data, len);
 						m_modeTimer.start();
@@ -479,8 +486,10 @@ int CMMDVMHost::run()
 			if (ret) {
 				len = dmr->readModemSlot1(data);
 				if (len > 0U) {
-					if (m_mode == MODE_IDLE)
+					if (m_mode == MODE_IDLE) {
+						m_modeTimer.setTimeout(m_netModeHang);
 						setMode(MODE_DMR);
+					}
 					if (m_mode == MODE_DMR) {
 						if (m_duplex) {
 							m_modem->writeDMRStart(true);
@@ -499,8 +508,10 @@ int CMMDVMHost::run()
 			if (ret) {
 				len = dmr->readModemSlot2(data);
 				if (len > 0U) {
-					if (m_mode == MODE_IDLE)
+					if (m_mode == MODE_IDLE) {
+						m_modeTimer.setTimeout(m_netModeHang);
 						setMode(MODE_DMR);
+					}
 					if (m_mode == MODE_DMR) {
 						if (m_duplex) {
 							m_modem->writeDMRStart(true);
@@ -521,8 +532,10 @@ int CMMDVMHost::run()
 			if (ret) {
 				len = ysf->readModem(data);
 				if (len > 0U) {
-					if (m_mode == MODE_IDLE)
+					if (m_mode == MODE_IDLE) {
+						m_modeTimer.setTimeout(m_netModeHang);
 						setMode(MODE_YSF);
+					}
 					if (m_mode == MODE_YSF) {
 						m_modem->writeYSFData(data, len);
 						m_modeTimer.start();
@@ -810,6 +823,20 @@ void CMMDVMHost::readParams()
 	m_ysfEnabled   = m_conf.getFusionEnabled();
 	m_duplex       = m_conf.getDuplex();
 	m_callsign     = m_conf.getCallsign();
+	m_timeout      = m_conf.getTimeout();
+
+	m_rfModeHang  = m_conf.getRFModeHang();
+	m_netModeHang = m_conf.getNetModeHang();
+
+	LogInfo("General Parameters");
+	LogInfo("    Callsign: %s", m_callsign.c_str());
+	LogInfo("    Duplex: %s", m_duplex ? "yes" : "no");
+	LogInfo("    Timeout: %us", m_timeout);
+	LogInfo("    RF Mode Hang: %us", m_rfModeHang);
+	LogInfo("    Net Mode Hang: %us", m_netModeHang);
+	LogInfo("    D-Star: %s", m_dstarEnabled ? "enabled" : "disabled");
+	LogInfo("    DMR: %s", m_dmrEnabled ? "enabled" : "disabled");
+	LogInfo("    YSF: %s", m_ysfEnabled ? "enabled" : "disabled");
 }
 
 void CMMDVMHost::createDisplay()

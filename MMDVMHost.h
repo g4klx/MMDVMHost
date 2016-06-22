@@ -45,10 +45,13 @@ private:
   CYSFNetwork*   m_ysfNetwork;
   CDisplay*      m_display;
   unsigned char  m_mode;
+  unsigned int   m_rfModeHang;
+  unsigned int   m_netModeHang;
   CTimer         m_modeTimer;
   CTimer         m_dmrTXTimer;
   CTimer         m_cwIdTimer;
   bool           m_duplex;
+  unsigned int   m_timeout;
   bool           m_dstarEnabled;
   bool           m_dmrEnabled;
   bool           m_ysfEnabled;

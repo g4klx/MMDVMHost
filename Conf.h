@@ -34,7 +34,8 @@ public:
   std::string  getCallsign() const;
   unsigned int getTimeout() const;
   bool         getDuplex() const;
-  unsigned int getModeHang() const;
+  unsigned int getRFModeHang() const;
+  unsigned int getNetModeHang() const;
   std::string  getDisplay() const;
   bool         getDaemon() const;
 
@@ -161,7 +162,8 @@ private:
   std::string  m_callsign;
   unsigned int m_timeout;
   bool         m_duplex;
-  unsigned int m_modeHang;
+  unsigned int m_rfModeHang;
+  unsigned int m_netModeHang;
   std::string  m_display;
   bool         m_daemon;
 
