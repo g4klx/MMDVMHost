@@ -36,7 +36,7 @@ char        m_buffer2[128U];
 char        m_buffer3[128U];
 char        m_buffer4[128U];
 
-CHD44780::CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim, bool displayClock, bool utc, bool duplex) :
+CHD44780::CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim, bool displayClock, bool utc, bool duplex, const std::string& dateformat) :
 CDisplay(),
 m_rows(rows),
 m_cols(cols),
@@ -56,6 +56,7 @@ m_displayClock(displayClock),
 m_utc(utc),
 m_duplex(duplex),
 //m_duplex(true),                      // uncomment to force duplex display for testing!
+m_dateformat(dateformat),
 m_fd(-1),
 m_dmr(false),
 m_clockDisplayTimer(1000U, 0U, 75U),   // Update the clock display every 75ms
@@ -734,7 +735,11 @@ void CHD44780::clockInt(unsigned int ms)
 
 			if (m_cols != 16U && m_rows != 2U) {
 				::lcdPosition(m_fd, (m_cols - 8) / 2, m_rows == 2 ? 0 : 1);
-				::lcdPrintf(m_fd, "%02d/%02d/%2d", Day, Month, Year%100);
+				if (strcmp(m_dateformat.c_str(), "English") == 0) {
+					::lcdPrintf(m_fd, "%02d/%02d/%2d", Day, Month, Year%100);
+				} else if (strcmp(m_dateformat.c_str(), "German") == 0) {
+					::lcdPrintf(m_fd, "%02d.%02d.%2d", Day, Month, Year%100);
+				}
 			}
 			m_clockDisplayTimer.start();
 	}
