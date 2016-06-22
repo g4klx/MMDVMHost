@@ -912,6 +912,11 @@ bool CConf::getHD44780UTC() const
 	return m_hd44780UTC;
 }
 
+std::string CConf::getHD44780DateFormat() const
+{
+	return m_hd44780DateFormat;
+}
+
 std::string CConf::getNextionPort() const
 {
 	return m_nextionPort;
