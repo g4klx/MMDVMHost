@@ -726,7 +726,7 @@ void CHD44780::clockInt(unsigned int ms)
 				::lcdPosition(m_fd, m_cols - 10, 1);
 				::lcdPrintf(m_fd, "%s%.*s", strlen(m_buffer1) > 8 ? "" : "  ", 10, m_buffer1);
 			} else {
-				::lcdPosition(m_fd, (m_cols - strlen(m_buffer1) == 8 ? 8 : 10) / 2, m_rows == 2 ? 1 : 2);
+				::lcdPosition(m_fd, (m_cols - (strlen(m_buffer1) == 8 ? 8 : 10)) / 2, m_rows == 2 ? 1 : 2);
 				::lcdPrintf(m_fd, "%.*s", strlen(m_buffer1) == 8 ? 8 : 10, m_buffer1);
 			}
 
