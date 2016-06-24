@@ -29,7 +29,7 @@
 class CNextion : public CDisplay
 {
 public:
-  CNextion(const std::string& callsign, unsigned int dmrid, const std::string& port, unsigned int brightness, bool displayClock, bool utc, const std::string& dateformat, unsigned int idleBrightness);
+  CNextion(const std::string& callsign, unsigned int dmrid, const std::string& port, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness);
   virtual ~CNextion();
 
   virtual bool open();
@@ -60,7 +60,6 @@ private:
   unsigned char     m_mode;
   bool              m_displayClock;
   bool              m_utc;
-  std::string       m_dateformat;
   unsigned int      m_idleBrightness;
   CTimer            m_clockDisplayTimer;
 

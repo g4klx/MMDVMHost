@@ -36,7 +36,7 @@ char        m_buffer2[128U];
 char        m_buffer3[128U];
 char        m_buffer4[128U];
 
-CHD44780::CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim, bool displayClock, bool utc, bool duplex, const std::string& dateformat) :
+CHD44780::CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim, bool displayClock, bool utc, bool duplex) :
 CDisplay(),
 m_rows(rows),
 m_cols(cols),
@@ -56,7 +56,6 @@ m_displayClock(displayClock),
 m_utc(utc),
 m_duplex(duplex),
 //m_duplex(true),                      // uncomment to force duplex display for testing!
-m_dateformat(dateformat),
 m_fd(-1),
 m_dmr(false),
 m_clockDisplayTimer(1000U, 0U, 75U),   // Update the clock display every 75ms
@@ -719,29 +718,21 @@ void CHD44780::clockInt(unsigned int ms)
 				Time = localtime(&currentTime);
 			}
 			
-			int Day    = Time->tm_mday;
-			int Month  = Time->tm_mon + 1;
-			int Year   = Time->tm_year + 1900;
-			int Hour   = Time->tm_hour;
-			int Min    = Time->tm_min;
-			int Sec    = Time->tm_sec;
-			
+			setlocale(LC_ALL,"");
+			strftime(m_buffer1, 128, "%X", Time);  // Time
+			strftime(m_buffer2, 128, "%x", Time);  // Date
+
 			if (m_cols == 16U && m_rows == 2U) {
-				::lcdPosition(m_fd, m_cols - 8, 1);
+				::lcdPosition(m_fd, m_cols - 10, 1);
+				::lcdPrintf(m_fd, "%s%.*s", strlen(m_buffer1) > 8 ? "" : "  ", 10, m_buffer1);
 			} else {
-				::lcdPosition(m_fd, (m_cols - 8) / 2, m_rows == 2 ? 1 : 2);
+				::lcdPosition(m_fd, (m_cols - strlen(m_buffer1) > 8 ? 10 : 8) / 2, m_rows == 2 ? 1 : 2);
+				::lcdPrintf(m_fd, "%.*s", strlen(m_buffer1) > 8 ? 10 : 8, m_buffer1);
 			}
-			::lcdPrintf(m_fd, "%02d:%02d:%02d", Hour, Min, Sec);
 
 			if (m_cols != 16U && m_rows != 2U) {
-				::lcdPosition(m_fd, (m_cols - 8) / 2, m_rows == 2 ? 0 : 1);
-				if (strcmp(m_dateformat.c_str(), "British") == 0) {
-					::lcdPrintf(m_fd, "%02d/%02d/%2d", Day, Month, Year%100);
-				} else if (strcmp(m_dateformat.c_str(), "German") == 0) {
-					::lcdPrintf(m_fd, "%02d.%02d.%2d", Day, Month, Year%100);
-				} else if (strcmp(m_dateformat.c_str(), "American") == 0) {
-					::lcdPrintf(m_fd, "%02d/%02d/%2d", Month, Day, Year%100);
-				}
+				::lcdPosition(m_fd, (m_cols - strlen(m_buffer2)) / 2, m_rows == 2 ? 0 : 1);
+				::lcdPrintf(m_fd, "%s", m_buffer2);
 			}
 			m_clockDisplayTimer.start();
 	}

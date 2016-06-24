@@ -53,7 +53,7 @@ enum ADAFRUIT_COLOUR {
 class CHD44780 : public CDisplay
 {
 public:
-  CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim, bool displayClock, bool utc, bool duplex, const std::string& dateformat);
+  CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim, bool displayClock, bool utc, bool duplex);
   virtual ~CHD44780();
 
   virtual bool open();
@@ -94,7 +94,6 @@ private:
 	bool         m_displayClock;
 	bool         m_utc;
 	bool         m_duplex;
-	std::string  m_dateformat;
 	int          m_fd;
 	bool         m_dmr;
 	CTimer       m_clockDisplayTimer;

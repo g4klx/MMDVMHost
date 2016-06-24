@@ -136,12 +136,10 @@ m_hd44780PWMBright(),
 m_hd44780PWMDim(),
 m_hd44780DisplayClock(false),
 m_hd44780UTC(false),
-m_hd44780DateFormat("British"),
 m_nextionPort("/dev/ttyAMA0"),
 m_nextionBrightness(50U),
 m_nextionDisplayClock(false),
 m_nextionUTC(false),
-m_nextionDateFormat("British"),
 m_nextionIdleBrightness(20U),
 m_oledType(3),
 m_oledBrightness(0),
@@ -452,8 +450,6 @@ bool CConf::read()
 			m_hd44780DisplayClock = ::atoi(value) == 1;
 		else if (::strcmp(key, "UTC") == 0)
 			m_hd44780UTC = ::atoi(value) == 1;
-		else if (::strcmp(key, "DateFormat") == 0)
-			m_hd44780DateFormat = value;
 		else if (::strcmp(key, "Pins") == 0) {
 			char* p = ::strtok(value, ",\r\n");
 			while (p != NULL) {
@@ -471,8 +467,6 @@ bool CConf::read()
 			m_nextionDisplayClock = ::atoi(value) == 1;
 		else if (::strcmp(key, "UTC") == 0)
 			m_nextionUTC = ::atoi(value) == 1;
-		else if (::strcmp(key, "DateFormat") == 0)
-			m_nextionDateFormat = value;
 		else if (::strcmp(key, "IdleBrightness") == 0)
 			m_nextionIdleBrightness = (unsigned int)::atoi(value);
 	} else if (section == SECTION_OLED) {
@@ -925,11 +919,6 @@ bool CConf::getHD44780UTC() const
 	return m_hd44780UTC;
 }
 
-std::string CConf::getHD44780DateFormat() const
-{
-	return m_hd44780DateFormat;
-}
-
 std::string CConf::getNextionPort() const
 {
 	return m_nextionPort;
@@ -948,11 +937,6 @@ bool CConf::getNextionDisplayClock() const
 bool CConf::getNextionUTC() const
 {
 	return m_nextionUTC;
-}
-
-std::string CConf::getNextionDateFormat() const
-{
-	return m_nextionDateFormat;
 }
 
 unsigned int CConf::getNextionIdleBrightness() const
