@@ -51,7 +51,8 @@ m_file(file),
 m_callsign(),
 m_timeout(120U),
 m_duplex(true),
-m_modeHang(10U),
+m_rfModeHang(10U),
+m_netModeHang(3U),
 m_display(),
 m_daemon(false),
 m_rxFrequency(0U),
@@ -135,13 +136,14 @@ m_hd44780PWMBright(),
 m_hd44780PWMDim(),
 m_hd44780DisplayClock(false),
 m_hd44780UTC(false),
-m_hd44780DateFormat("English"),
+m_hd44780DateFormat("British"),
 m_nextionPort("/dev/ttyAMA0"),
 m_nextionBrightness(50U),
 m_nextionDisplayClock(false),
 m_nextionUTC(false),
-m_nextionDateFormat("English"),
+m_nextionDateFormat("British"),
 m_nextionDimOnIdle(false),
+
 m_oledType(3),
 m_oledBrightness(0),
 m_oledInvert(0)
@@ -220,7 +222,11 @@ bool CConf::read()
 		else if (::strcmp(key, "Duplex") == 0)
 			m_duplex = ::atoi(value) == 1;
 		else if (::strcmp(key, "ModeHang") == 0)
-			m_modeHang = (unsigned int)::atoi(value);
+			m_rfModeHang  = m_netModeHang = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "RFModeHang") == 0)
+			m_rfModeHang = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "NetModeHang") == 0)
+			m_netModeHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Display") == 0)
 			m_display = value;
 		else if (::strcmp(key, "Daemon") == 0)
@@ -501,9 +507,14 @@ bool CConf::getDuplex() const
   return m_duplex;
 }
 
-unsigned int CConf::getModeHang() const
+unsigned int CConf::getRFModeHang() const
 {
-  return m_modeHang;
+  return m_rfModeHang;
+}
+
+unsigned int CConf::getNetModeHang() const
+{
+	return m_netModeHang;
 }
 
 std::string CConf::getDisplay() const

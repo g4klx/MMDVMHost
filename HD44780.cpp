@@ -735,10 +735,12 @@ void CHD44780::clockInt(unsigned int ms)
 
 			if (m_cols != 16U && m_rows != 2U) {
 				::lcdPosition(m_fd, (m_cols - 8) / 2, m_rows == 2 ? 0 : 1);
-				if (strcmp(m_dateformat.c_str(), "English") == 0) {
+				if (strcmp(m_dateformat.c_str(), "British") == 0) {
 					::lcdPrintf(m_fd, "%02d/%02d/%2d", Day, Month, Year%100);
 				} else if (strcmp(m_dateformat.c_str(), "German") == 0) {
 					::lcdPrintf(m_fd, "%02d.%02d.%2d", Day, Month, Year%100);
+				} else if (strcmp(m_dateformat.c_str(), "American") == 0) {
+					::lcdPrintf(m_fd, "%02d/%02d/%2d", Month, Day, Year%100);
 				}
 			}
 			m_clockDisplayTimer.start();

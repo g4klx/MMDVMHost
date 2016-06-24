@@ -260,10 +260,12 @@ void CNextion::clockInt(unsigned int ms)
 		int Sec = Time->tm_sec;
 
 		char text[50U];
-		if (strcmp(m_dateformat.c_str(), "English") == 0) {
+		if (strcmp(m_dateformat.c_str(), "British") == 0) {
 			::sprintf(text, "t2.txt=\"%02d:%02d:%02d %02d/%02d/%2d\"", Hour, Min, Sec, Day, Month, Year % 100);
 		} else if (strcmp(m_dateformat.c_str(), "German") == 0) {
 			::sprintf(text, "t2.txt=\"%02d:%02d:%02d %02d.%02d.%2d\"", Hour, Min, Sec, Day, Month, Year % 100);
+		} else if (strcmp(m_dateformat.c_str(), "American") == 0) {
+			::sprintf(text, "t2.txt=\"%02d:%02d:%02d %02d/%02d/%2d\"", Hour, Min, Sec, Month, Day, Year % 100);
 		}
 		sendCommand(text);
 
