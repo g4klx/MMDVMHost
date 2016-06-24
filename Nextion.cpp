@@ -24,7 +24,7 @@
 #include <cstring>
 #include <ctime>
 
-CNextion::CNextion(const std::string& callsign, unsigned int dmrid, const std::string& port, unsigned int brightness, bool displayClock, bool utc, const std::string& dateformat) :
+CNextion::CNextion(const std::string& callsign, unsigned int dmrid, const std::string& port, unsigned int brightness, bool displayClock, bool utc, const std::string& dateformat, bool dimOnIdle) :
 CDisplay(),
 m_callsign(callsign),
 m_dmrid(dmrid),
@@ -34,6 +34,7 @@ m_mode(MODE_IDLE),
 m_displayClock(displayClock),
 m_utc(utc),
 m_dateformat(dateformat),
+m_dimOnIdle(dimOnIdle),
 m_clockDisplayTimer(1000U, 0U, 400U)
 {
 	assert(brightness >= 0U && brightness <= 100U);
@@ -53,10 +54,6 @@ bool CNextion::open()
 
 	sendCommand("bkcmd=0");
 
-	char command[20U];
-	::sprintf(command, "dim=%u", m_brightness);
-	sendCommand(command);
-
 	setIdle();
 
 	return true;
@@ -67,6 +64,14 @@ void CNextion::setIdleInt()
 	sendCommand("page MMDVM");
 
 	char command[30];
+
+	if (m_dimOnIdle) {
+		::sprintf(command, "dim=%u", (m_brightness/4));
+	} else {
+		::sprintf(command, "dim=%u", m_brightness);
+	}
+	sendCommand(command);
+
 	::sprintf(command, "t0.txt=\"%-6s / %u\"", m_callsign.c_str(), m_dmrid);
 
 	sendCommand(command);
@@ -84,6 +89,9 @@ void CNextion::setErrorInt(const char* text)
 	sendCommand("page MMDVM");
 
 	char command[20];
+	::sprintf(command, "dim=%u", m_brightness);
+	sendCommand(command);
+
 	::sprintf(command, "t0.txt=\"%s\"", text);
 
 	sendCommand(command);
@@ -97,6 +105,10 @@ void CNextion::setErrorInt(const char* text)
 void CNextion::setLockoutInt()
 {
 	sendCommand("page MMDVM");
+
+	char command[20];
+	::sprintf(command, "dim=%u", m_brightness);
+	sendCommand(command);
 
 	sendCommand("t0.txt=\"LOCKOUT\"");
 
@@ -117,6 +129,9 @@ void CNextion::writeDStarInt(const char* my1, const char* my2, const char* your,
 		sendCommand("page DStar");
 
 	char text[30U];
+	::sprintf(text, "dim=%u", m_brightness);
+	sendCommand(text);
+
 	::sprintf(text, "t0.txt=\"%s %.8s/%4.4s\"", type, my1, my2);
 	sendCommand(text);
 
@@ -153,17 +168,17 @@ void CNextion::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 			sendCommand("t0.txt=\"1 Listening\"");
 	}
 
-	if (slotNo == 1U) {
-		char text[30U];
+	char text[30U];
+	::sprintf(text, "dim=%u", m_brightness);
+	sendCommand(text);
 
+	if (slotNo == 1U) {
 		::sprintf(text, "t0.txt=\"1 %s %s\"", type, src.c_str());
 		sendCommand(text);
 
 		::sprintf(text, "t1.txt=\"%s%s\"", group ? "TG" : "", dst.c_str());
 		sendCommand(text);
 	} else {
-		char text[30U];
-
 		::sprintf(text, "t2.txt=\"2 %s %s\"", type, src.c_str());
 		sendCommand(text);
 
@@ -198,6 +213,9 @@ void CNextion::writeFusionInt(const char* source, const char* dest, const char* 
 		sendCommand("page YSF");
 
 	char text[30U];
+	::sprintf(text, "dim=%u", m_brightness);
+	sendCommand(text);
+
 	::sprintf(text, "t0.txt=\"%s %.10s\"", type, source);
 	sendCommand(text);
 

@@ -141,6 +141,7 @@ m_nextionBrightness(50U),
 m_nextionDisplayClock(false),
 m_nextionUTC(false),
 m_nextionDateFormat("English"),
+m_nextionDimOnIdle(false),
 m_oledType(3),
 m_oledBrightness(0),
 m_oledInvert(0)
@@ -467,6 +468,8 @@ bool CConf::read()
 			m_nextionUTC = ::atoi(value) == 1;
 		else if (::strcmp(key, "DateFormat") == 0)
 			m_nextionDateFormat = value;
+		else if (::strcmp(key, "DimOnIdle") == 0)
+			m_nextionDimOnIdle = ::atoi(value) == 1;
 	} else if (section == SECTION_OLED) {
 		if (::strcmp(key, "Type") == 0)
 			m_oledType = (unsigned char)::atoi(value);
@@ -940,6 +943,11 @@ bool CConf::getNextionUTC() const
 std::string CConf::getNextionDateFormat() const
 {
 	return m_nextionDateFormat;
+}
+
+bool CConf::getNextionDimOnIdle() const
+{
+	return m_nextionDimOnIdle;
 }
 
 unsigned char CConf::getOLEDType() const
