@@ -860,7 +860,6 @@ void CMMDVMHost::createDisplay()
 		unsigned int brightness     = m_conf.getNextionBrightness();
 		bool displayClock           = m_conf.getNextionDisplayClock();
 		bool utc                    = m_conf.getNextionUTC();
-		std::string dateformat      = m_conf.getNextionDateFormat();
 		unsigned int idleBrightness = m_conf.getNextionIdleBrightness();
 
 		LogInfo("    Port: %s", port.c_str());
@@ -870,7 +869,7 @@ void CMMDVMHost::createDisplay()
 			LogInfo("    Display UTC: %s", utc ? "yes" : "no");
 		LogInfo("    Idle Brightness: %u", idleBrightness);
 
-		m_display = new CNextion(m_callsign, dmrid, port, brightness, displayClock, utc, dateformat, idleBrightness);
+		m_display = new CNextion(m_callsign, dmrid, port, brightness, displayClock, utc, idleBrightness);
 #if defined(HD44780)
 	} else if (type == "HD44780") {
 		unsigned int rows              = m_conf.getHD44780Rows();
@@ -882,7 +881,6 @@ void CMMDVMHost::createDisplay()
 		unsigned int pwmDim            = m_conf.getHD44780PWMDim();
 		bool displayClock              = m_conf.getHD44780DisplayClock();
 		bool utc                       = m_conf.getHD44780UTC();
-		std::string dateformat         = m_conf.getHD44780DateFormat();
 
 		if (pins.size() == 6U) {
 			LogInfo("    Rows: %u", rows);
@@ -900,7 +898,7 @@ void CMMDVMHost::createDisplay()
 			if (displayClock)
 				LogInfo("    Display UTC: %s", utc ? "yes" : "no");
 
-			m_display = new CHD44780(rows, columns, m_callsign, dmrid, pins, pwm, pwmPin, pwmBright, pwmDim, displayClock, utc, m_duplex, dateformat);
+			m_display = new CHD44780(rows, columns, m_callsign, dmrid, pins, pwm, pwmPin, pwmBright, pwmDim, displayClock, utc, m_duplex);
 		}
 #endif
 #if defined(OLED)
