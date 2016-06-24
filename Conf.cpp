@@ -142,8 +142,7 @@ m_nextionBrightness(50U),
 m_nextionDisplayClock(false),
 m_nextionUTC(false),
 m_nextionDateFormat("British"),
-m_nextionDimOnIdle(false),
-
+m_nextionIdleBrightness(20U),
 m_oledType(3),
 m_oledBrightness(0),
 m_oledInvert(0)
@@ -467,15 +466,15 @@ bool CConf::read()
 		if (::strcmp(key, "Port") == 0)
 			m_nextionPort = value;
 		else if (::strcmp(key, "Brightness") == 0)
-			m_nextionBrightness = (unsigned int)::atoi(value);
+			m_nextionIdleBrightness = m_nextionBrightness = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "DisplayClock") == 0)
 			m_nextionDisplayClock = ::atoi(value) == 1;
 		else if (::strcmp(key, "UTC") == 0)
 			m_nextionUTC = ::atoi(value) == 1;
 		else if (::strcmp(key, "DateFormat") == 0)
 			m_nextionDateFormat = value;
-		else if (::strcmp(key, "DimOnIdle") == 0)
-			m_nextionDimOnIdle = ::atoi(value) == 1;
+		else if (::strcmp(key, "IdleBrightness") == 0)
+			m_nextionIdleBrightness = (unsigned int)::atoi(value);
 	} else if (section == SECTION_OLED) {
 		if (::strcmp(key, "Type") == 0)
 			m_oledType = (unsigned char)::atoi(value);
@@ -956,9 +955,9 @@ std::string CConf::getNextionDateFormat() const
 	return m_nextionDateFormat;
 }
 
-bool CConf::getNextionDimOnIdle() const
+unsigned int CConf::getNextionIdleBrightness() const
 {
-	return m_nextionDimOnIdle;
+	return m_nextionIdleBrightness;
 }
 
 unsigned char CConf::getOLEDType() const

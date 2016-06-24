@@ -24,7 +24,7 @@
 #include <cstring>
 #include <ctime>
 
-CNextion::CNextion(const std::string& callsign, unsigned int dmrid, const std::string& port, unsigned int brightness, bool displayClock, bool utc, const std::string& dateformat, bool dimOnIdle) :
+CNextion::CNextion(const std::string& callsign, unsigned int dmrid, const std::string& port, unsigned int brightness, bool displayClock, bool utc, const std::string& dateformat, unsigned int idleBrightness) :
 CDisplay(),
 m_callsign(callsign),
 m_dmrid(dmrid),
@@ -34,7 +34,7 @@ m_mode(MODE_IDLE),
 m_displayClock(displayClock),
 m_utc(utc),
 m_dateformat(dateformat),
-m_dimOnIdle(dimOnIdle),
+m_idleBrightness(idleBrightness),
 m_clockDisplayTimer(1000U, 0U, 400U)
 {
 	assert(brightness >= 0U && brightness <= 100U);
@@ -64,12 +64,7 @@ void CNextion::setIdleInt()
 	sendCommand("page MMDVM");
 
 	char command[30];
-
-	if (m_dimOnIdle) {
-		::sprintf(command, "dim=%u", (m_brightness/4));
-	} else {
-		::sprintf(command, "dim=%u", m_brightness);
-	}
+	::sprintf(command, "dim=%u", m_idleBrightness);
 	sendCommand(command);
 
 	::sprintf(command, "t0.txt=\"%-6s / %u\"", m_callsign.c_str(), m_dmrid);

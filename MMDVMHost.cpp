@@ -856,20 +856,21 @@ void CMMDVMHost::createDisplay()
 
 		m_display = new CTFTSerial(m_callsign, dmrid, port, brightness);
 	} else if (type == "Nextion") {
-		std::string port        = m_conf.getNextionPort();
-		unsigned int brightness = m_conf.getNextionBrightness();
-		bool displayClock       = m_conf.getNextionDisplayClock();
-		bool utc                = m_conf.getNextionUTC();
-		std::string dateformat  = m_conf.getNextionDateFormat();
-		bool dimOnIdle          = m_conf.getNextionDimOnIdle();
+		std::string port            = m_conf.getNextionPort();
+		unsigned int brightness     = m_conf.getNextionBrightness();
+		bool displayClock           = m_conf.getNextionDisplayClock();
+		bool utc                    = m_conf.getNextionUTC();
+		std::string dateformat      = m_conf.getNextionDateFormat();
+		unsigned int idleBrightness = m_conf.getNextionIdleBrightness();
 
 		LogInfo("    Port: %s", port.c_str());
 		LogInfo("    Brightness: %u", brightness);
 		LogInfo("    Clock Display: %s", displayClock ? "yes" : "no");
 		if (displayClock)
 			LogInfo("    Display UTC: %s", utc ? "yes" : "no");
+		LogInfo("    Idle Brightness: %u", idleBrightness);
 
-		m_display = new CNextion(m_callsign, dmrid, port, brightness, displayClock, utc, dateformat, dimOnIdle);
+		m_display = new CNextion(m_callsign, dmrid, port, brightness, displayClock, utc, dateformat, idleBrightness);
 #if defined(HD44780)
 	} else if (type == "HD44780") {
 		unsigned int rows              = m_conf.getHD44780Rows();
