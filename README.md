@@ -5,8 +5,10 @@ It supports D-Star, DMR, and System Fusion.
 It builds on 32-bit and 64-bit Linux as well as on Windows using VS2015 on x86 and x64. It can optionally control various Displays. Currently these are:
 
 - HD44780 (sizes 2x16, 2x40, 4x16, 4x20)
+	- Support for HD44780 via 4 bit GPIO connection (user selectable pins)
+	- Adafruit 16x2 LCD+Keypad Kits (I2C)
+	- Connection via PCF8574 GPIO Extender (I2C)
 - Nextion TFTs (sizes 2.4", 3.2" and 3.5")
-- Adafruit 16x2 LCD+Keypad Kits
 - TFT displays sold by Hobbytronics in UK
 - OLED 128x64 (SSD1306)
 
