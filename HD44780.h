@@ -62,7 +62,7 @@ enum ADAFRUIT_COLOUR {
 #define AF_D2     (AF_BASE + 5)
 #define AF_D3     (AF_BASE + 6)
 #define AF_D4     (AF_BASE + 7)
-#define PCF8547		0x27
+#define PCF8574		0x27
 #endif
 
 class CHD44780 : public CDisplay

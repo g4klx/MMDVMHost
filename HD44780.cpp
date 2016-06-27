@@ -306,20 +306,6 @@ void CHD44780::pcf8574LCDSetup()
 	// Initalize PFC8574
 	::pcf8574Setup(AF_BASE, PCF8574);
 
-	// Initialise LCD
-	m_fd = ::lcdInit(m_rows, m_cols, 4, AF_RS, AF_E, AF_D1, AF_D2, AF_D3, AF_D4, 0, 0, 0, 0);
-	if (m_fd == -1) {
-		LogError("Unable to open the HD44780 via I2C");
-		return false;
-	}
-
-	m_rb   = AF_RS;
-	m_strb = AF_E;
-	m_d0   = AF_D1;
-	m_d1   = AF_D2;
-	m_d2   = AF_D3;
-	m_d3   = AF_D4;
-
 	// Turn on backlight
 	::pinMode (AF_BL, OUTPUT);
 	::digitalWrite (AF_BL, 1);
@@ -327,6 +313,13 @@ void CHD44780::pcf8574LCDSetup()
 	// Set LCD to write mode.
 	::pinMode (AF_RW, OUTPUT);
 	::digitalWrite (AF_RW, 0);
+
+	m_rb   = AF_RS;
+	m_strb = AF_E;
+	m_d0   = AF_D1;
+	m_d1   = AF_D2;
+	m_d2   = AF_D3;
+	m_d3   = AF_D4;
 }
 #endif
 
