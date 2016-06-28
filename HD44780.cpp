@@ -249,6 +249,13 @@ void CHD44780::adafruitLCDSetup()
     // Control signals
     ::pinMode(AF_RW, OUTPUT);
     ::digitalWrite(AF_RW, LOW);
+
+		m_rb   = AF_RS;
+		m_strb = AF_E;
+		m_d0   = AF_D0;
+		m_d1   = AF_D1;
+		m_d2   = AF_D2;
+		m_d3   = AF_D3;
 }
 
 void CHD44780::adafruitLCDColour(ADAFRUIT_COLOUR colour)
@@ -316,17 +323,17 @@ void CHD44780::pcf8574LCDSetup()
 
 	m_rb   = AF_RS;
 	m_strb = AF_E;
-	m_d0   = AF_D1;
-	m_d1   = AF_D2;
-	m_d2   = AF_D3;
-	m_d3   = AF_D4;
+	m_d0   = AF_D0;
+	m_d1   = AF_D1;
+	m_d2   = AF_D2;
+	m_d3   = AF_D3;
 }
 #endif
 
 void CHD44780::setIdleInt()
 {
-	m_dmrScrollTimer1.stop();                // Stop the scroll timer on slot 1
-	m_dmrScrollTimer2.stop();                // Stop the scroll timer on slot 2
+	m_dmrScrollTimer1.stop();             // Stop the scroll timer on slot 1
+	m_dmrScrollTimer2.stop();             // Stop the scroll timer on slot 2
 	m_clockDisplayTimer.start();          // Start the clock display in IDLE only
 	::lcdClear(m_fd);
 	
@@ -369,8 +376,8 @@ void CHD44780::setErrorInt(const char* text)
 #endif
 
 	m_clockDisplayTimer.stop();           // Stop the clock display
-	m_dmrScrollTimer1.stop();                // Stop the scroll timer on slot 1
-	m_dmrScrollTimer2.stop();                // Stop the scroll timer on slot 2
+	m_dmrScrollTimer1.stop();             // Stop the scroll timer on slot 1
+	m_dmrScrollTimer2.stop();             // Stop the scroll timer on slot 2
 	::lcdClear(m_fd);
 
 	if (m_pwm) {

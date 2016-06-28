@@ -42,26 +42,47 @@ enum ADAFRUIT_COLOUR {
 // Defines for the Adafruit Pi LCD interface board
 #ifdef ADAFRUIT_DISPLAY
 #define AF_BASE   100
-#define AF_RED    (AF_BASE + 6)
-#define AF_GREEN  (AF_BASE + 7)
-#define AF_BLUE   (AF_BASE + 8)
+
+/*   Not yet used defines (for possible future use)
+ *
+ *   #define AF_SELECT (AF_BASE +  0)
+ *   #define AF_RIGHT  (AF_BASE +  1)
+ *   #define AF_DOWN   (AF_BASE +  2)
+ *   #define AF_UP     (AF_BASE +  3)
+ *   #define AF_LEFT   (AF_BASE +  4)
+ */
+
+#define AF_RED    (AF_BASE +  6)
+#define AF_GREEN  (AF_BASE +  7)
+#define AF_BLUE   (AF_BASE +  8)
+
+#define AF_D3     (AF_BASE +  9)
+#define AF_D2     (AF_BASE + 10)
+#define AF_D1     (AF_BASE + 11)
+#define AF_D0     (AF_BASE + 12)
+#define AF_E      (AF_BASE + 13)
 #define AF_RW     (AF_BASE + 14)
-#define AF_ON		  LOW
-#define AF_OFF		HIGH
+#define AF_RS     (AF_BASE + 15)
+
+#define AF_ON     LOW
+#define AF_OFF    HIGH
+
 #define MCP23017  0x20
 #endif
 
 // Define for HD44780 connected via a PCF8574 GPIO extender
 #ifdef PCF8574_DISPLAY
 #define AF_BASE   100
-#define AF_RS     (AF_BASE + 0)
-#define AF_RW     (AF_BASE + 1)
-#define AF_E      (AF_BASE + 2)
-#define AF_BL     (AF_BASE + 3)
-#define AF_D1     (AF_BASE + 4)
-#define AF_D2     (AF_BASE + 5)
-#define AF_D3     (AF_BASE + 6)
-#define AF_D4     (AF_BASE + 7)
+
+#define AF_RS     (AF_BASE +  0)
+#define AF_RW     (AF_BASE +  1)
+#define AF_E      (AF_BASE +  2)
+#define AF_BL     (AF_BASE +  3)
+#define AF_D0     (AF_BASE +  4)
+#define AF_D1     (AF_BASE +  5)
+#define AF_D2     (AF_BASE +  6)
+#define AF_D3     (AF_BASE +  7)
+
 #define PCF8574		0x27
 #endif
 
