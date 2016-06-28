@@ -206,12 +206,16 @@ bool CHD44780::open()
   adafruitLCDSetup();
 #endif
 
+#ifdef PCF8574_DISPLAY
+	pcf8574LCDSetup();
+#endif
+
 	m_fd = ::lcdInit(m_rows, m_cols, 4, m_rb, m_strb, m_d0, m_d1, m_d2, m_d3, 0, 0, 0, 0);
 	if (m_fd == -1) {
 		LogError("Unable to open the HD44780");
 		return false;
 	}
-
+	
 	::lcdDisplay(m_fd, 1);
 	::lcdCursor(m_fd, 0);
 	::lcdCursorBlink(m_fd, 0);
@@ -245,6 +249,13 @@ void CHD44780::adafruitLCDSetup()
     // Control signals
     ::pinMode(AF_RW, OUTPUT);
     ::digitalWrite(AF_RW, LOW);
+
+		m_rb   = AF_RS;
+		m_strb = AF_E;
+		m_d0   = AF_D0;
+		m_d1   = AF_D1;
+		m_d2   = AF_D2;
+		m_d3   = AF_D3;
 }
 
 void CHD44780::adafruitLCDColour(ADAFRUIT_COLOUR colour)
@@ -296,10 +307,33 @@ void CHD44780::adafruitLCDColour(ADAFRUIT_COLOUR colour)
 }
 #endif
 
+#ifdef PCF8574_DISPLAY
+void CHD44780::pcf8574LCDSetup()
+{
+	// Initalize PFC8574
+	::pcf8574Setup(AF_BASE, PCF8574);
+
+	// Turn on backlight
+	::pinMode (AF_BL, OUTPUT);
+	::digitalWrite (AF_BL, 1);
+
+	// Set LCD to write mode.
+	::pinMode (AF_RW, OUTPUT);
+	::digitalWrite (AF_RW, 0);
+
+	m_rb   = AF_RS;
+	m_strb = AF_E;
+	m_d0   = AF_D0;
+	m_d1   = AF_D1;
+	m_d2   = AF_D2;
+	m_d3   = AF_D3;
+}
+#endif
+
 void CHD44780::setIdleInt()
 {
-	m_dmrScrollTimer1.stop();                // Stop the scroll timer on slot 1
-	m_dmrScrollTimer2.stop();                // Stop the scroll timer on slot 2
+	m_dmrScrollTimer1.stop();             // Stop the scroll timer on slot 1
+	m_dmrScrollTimer2.stop();             // Stop the scroll timer on slot 2
 	m_clockDisplayTimer.start();          // Start the clock display in IDLE only
 	::lcdClear(m_fd);
 	
@@ -342,8 +376,8 @@ void CHD44780::setErrorInt(const char* text)
 #endif
 
 	m_clockDisplayTimer.stop();           // Stop the clock display
-	m_dmrScrollTimer1.stop();                // Stop the scroll timer on slot 1
-	m_dmrScrollTimer2.stop();                // Stop the scroll timer on slot 2
+	m_dmrScrollTimer1.stop();             // Stop the scroll timer on slot 1
+	m_dmrScrollTimer2.stop();             // Stop the scroll timer on slot 2
 	::lcdClear(m_fd);
 
 	if (m_pwm) {
