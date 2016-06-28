@@ -5,7 +5,7 @@
 # DMRIDUpdate.sh
 #
 # Copyright (C) 2016 by Tony Corbett G0WFV
-# YSFHosts downloads added by Paul Nannery KC2VRJ 6/28/2016
+# YSFHost.txt download added by Paul Nannery KC2VRJ 6/28/2016
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -54,6 +54,10 @@ DMRIDFILE=/path/to/DMRIds.dat
 # Full path to YSFHosts
 YSFHOSTS=/path/to/YSFHosts.txt
 #
+#Enable YSFHosts.txt downlod 0=No 1-Yes
+#
+ENABLE=1
+#
 # How many DMR ID files do you want backed up (0 = do not keep backups)
 DMRFILEBACKUP=1
 # How many YSFHosts files do you want backed up (0 = do not keep backups) 
@@ -98,9 +102,19 @@ then
 	done
 fi
 
+# Generate new file
+curl 'http://www.dmr-marc.net/cgi-bin/trbo-database/datadump.cgi?table=users&format=csv&header=0' 2>/dev/null | awk -F"," '{printf "%s\t%s\t%s\n", $1, $2, $4 == "" ? $3 : $4}' | sed -e 's/\(.\) .*/\1/g' > ${DMRIDFILE}
+
+# Restart MMDVMHost
+eval ${RESTARTCOMMAND}
 
 #YSFHost.txt
 
+# Check if we want to update the YSFHosts.txt
+
+if [ ${ENABLE} -eq 1 ]
+
+then
 
 # Create backup of old file
 if [ ${YSFHOSTSFILEBACKUP} -ne 0 ]
@@ -120,15 +134,15 @@ then
 	done
 fi
 
-# Generate new file
-curl 'http://www.dmr-marc.net/cgi-bin/trbo-database/datadump.cgi?table=users&format=csv&header=0' 2>/dev/null | awk -F"," '{printf "%s\t%s\t%s\n", $1, $2, $4 == "" ? $3 : $4}' | sed -e 's/\(.\) .*/\1/g' > ${DMRIDFILE}
-sleep 5
 # Generate YSFHosts.txt file
 curl https://register.ysfreflector.de/export.php > ${YSFHOSTS}
 
-# Restart MMDVMHost
-eval ${RESTARTCOMMAND}
-
 # Restart YSFgateway
 eval ${YSFRESTARTCOMMAND}
+
+else
+
+exit 0
+
+fi
 
