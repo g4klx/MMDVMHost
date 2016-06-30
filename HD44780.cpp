@@ -36,7 +36,7 @@ char        m_buffer2[128U];
 char        m_buffer3[128U];
 char        m_buffer4[128U];
 
-CHD44780::CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, const std::string& i2cAddress, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim, bool displayClock, bool utc, bool duplex) :
+CHD44780::CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, unsigned int i2cAddress, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim, bool displayClock, bool utc, bool duplex) :
 CDisplay(),
 m_rows(rows),
 m_cols(cols),

@@ -137,7 +137,7 @@ public:
   unsigned int getHD44780Rows() const;
   unsigned int getHD44780Columns() const;
   std::vector<unsigned int> getHD44780Pins() const;
-	std::string  getHD44780i2cAddress() const;
+	unsigned int getHD44780i2cAddress() const;
   bool         getHD44780PWM() const;
   unsigned int getHD44780PWMPin() const;
   unsigned int getHD44780PWMBright() const;
@@ -253,7 +253,7 @@ private:
   unsigned int m_hd44780Rows;
   unsigned int m_hd44780Columns;
   std::vector<unsigned int> m_hd44780Pins;
-	std::string  m_hd44780i2cAddress;
+	unsigned int m_hd44780i2cAddress;
   bool         m_hd44780PWM;
   unsigned int m_hd44780PWMPin;
   unsigned int m_hd44780PWMBright;

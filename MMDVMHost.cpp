@@ -875,7 +875,7 @@ void CMMDVMHost::createDisplay()
 		unsigned int rows              = m_conf.getHD44780Rows();
 		unsigned int columns           = m_conf.getHD44780Columns();
 		std::vector<unsigned int> pins = m_conf.getHD44780Pins();
-		std::string i2cAddress         = m_conf.getHD44780i2cAddress();
+		unsigned int i2cAddress        = m_conf.getHD44780i2cAddress();
 		bool pwm                       = m_conf.getHD44780PWM();
 		unsigned int pwmPin            = m_conf.getHD44780PWMPin();
 		unsigned int pwmBright         = m_conf.getHD44780PWMBright();
