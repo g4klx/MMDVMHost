@@ -67,7 +67,7 @@ enum ADAFRUIT_COLOUR {
 #define AF_ON     LOW
 #define AF_OFF    HIGH
 
-#define MCP23017  0x20
+// #define MCP23017  0x20
 #endif
 
 // Define for HD44780 connected via a PCF8574 GPIO extender
@@ -83,13 +83,13 @@ enum ADAFRUIT_COLOUR {
 #define AF_D2     (AF_BASE +  6)
 #define AF_D3     (AF_BASE +  7)
 
-#define PCF8574		0x27
+// #define PCF8574		0x27
 #endif
 
 class CHD44780 : public CDisplay
 {
 public:
-  CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim, bool displayClock, bool utc, bool duplex);
+  CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, const std::string& i2cAddress, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim, bool displayClock, bool utc, bool duplex);
   virtual ~CHD44780();
 
   virtual bool open();
@@ -123,6 +123,7 @@ private:
 	unsigned int m_d1;
 	unsigned int m_d2;
 	unsigned int m_d3;
+	std::string  m_i2cAddress;
 	bool         m_pwm;
 	unsigned int m_pwmPin;
 	unsigned int m_pwmBright;
