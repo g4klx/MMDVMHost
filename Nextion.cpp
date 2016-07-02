@@ -246,7 +246,7 @@ void CNextion::clockInt(unsigned int ms)
 		else
 			Time = ::localtime(&currentTime);
 
-		setlocale(LC_ALL,"");
+		setlocale(LC_TIME,"");
 		char text[50U];
 		strftime(text, 50, "t2.txt=\"%x %X\"", Time);
 		sendCommand(text);
