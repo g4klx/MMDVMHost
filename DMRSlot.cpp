@@ -801,13 +801,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		// - G7RZU
 		unsigned int did = m_netLC->getDstId();
 		if (DstIdBlacklist(did, m_slotNo)) {
-			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG blacklisted) dataType: %s", m_slotNo, did, dataType);
+			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG blacklisted)", m_slotNo, did);
 			return;
 		}
 
 		// true sets allow greater than 4k. Need to add boolean in conf for this later.
 		if (!DstIdWhitelist(did, m_slotNo, true)) {
-			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG not in whitelist) dataType: %s", m_slotNo, did, dataType);
+			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG not in whitelist)", m_slotNo, did);
 			return;
 		}
 
@@ -873,13 +873,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		// - G7RZU
 		unsigned int did = m_netLC->getDstId();
 		if (DstIdBlacklist(did, m_slotNo)) {
-			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG blacklisted) dataType: %s", m_slotNo, did, dataType);
+			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG blacklisted)", m_slotNo, did);
 			return;
 		}
 
 		// true sets allow greater than 4k. Need to add boolean in conf for this later.
 		if (!DstIdWhitelist(did, m_slotNo, true)) {
-			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG not in whitelist) dataType: %s", m_slotNo, did, dataType);
+			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG not in whitelist)", m_slotNo, did);
 			return;
 		}
 	
@@ -914,14 +914,14 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		// - G7RZU
 		unsigned int did = m_netLC->getDstId();
 		if (DstIdBlacklist(did, m_slotNo)) {
-			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG blacklisted) dataType: %s", m_slotNo, did, dataType);
+			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG blacklisted)", m_slotNo, did);
 			writeEndNet();
 			return;
 		}
 
 		// true sets allow greater than 4k. Need to add boolean in conf for this later.
 		if (!DstIdWhitelist(did, m_slotNo, true)) {
-			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG not in whitelist) dataType: %s", m_slotNo, did, dataType);
+			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG not in whitelist)", m_slotNo, did);
 			writeEndNet();
 			return;
 		}
@@ -983,13 +983,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		// - G7RZU
 		unsigned int did = dataHeader.getDstId();
 		if (DstIdBlacklist(did, m_slotNo)) {
-			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG blacklisted) dataType: %s", m_slotNo, did, dataType);
+			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG blacklisted)", m_slotNo, did);
 			return;
 		}
 
 		// true sets allow greater than 4k. Need to add boolean in conf for this later.
 		if (!DstIdWhitelist(did, m_slotNo, true)) {
-			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG not in whitelist) dataType: %s", m_slotNo, did, dataType);
+			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG not in whitelist)", m_slotNo, did);
 			return;
 		}
 
@@ -1037,13 +1037,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			// - G7RZU
 			unsigned int did = dmrData.getDstId();
 			if (DstIdBlacklist(did, m_slotNo)) {
-				LogMessage("DMR Slot %u, invalid traffic to TG%u (TG blacklisted) dataType: %s", m_slotNo, did, dataType);
+				LogMessage("DMR Slot %u, invalid traffic to TG%u (TG blacklisted)", m_slotNo, did);
 				return;
 			}
 
 			// true sets allow greater than 4k. Need to add boolean in conf for this later.
 			if (!DstIdWhitelist(did, m_slotNo, true)) {
-				LogMessage("DMR Slot %u, invalid traffic to TG%u (TG not in whitelist) dataType: %s", m_slotNo, did, dataType);
+				LogMessage("DMR Slot %u, invalid traffic to TG%u (TG not in whitelist)", m_slotNo, did);
 				return;
 			}
 
@@ -1144,13 +1144,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		// - G7RZU
 		unsigned int did = m_netLC->getDstId();
 		if (DstIdBlacklist(did, m_slotNo)) {
-			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG blacklisted) dataType: %s", m_slotNo, did, dataType);
+			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG blacklisted)", m_slotNo, did);
 			return;
 		}
 
 		// true sets allow greater than 4k. Need to add boolean in conf for this later.
 		if (!DstIdWhitelist(did, m_slotNo, true)) {
-			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG not in whitelist) dataType: %s", m_slotNo, did, dataType);
+			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG not in whitelist)", m_slotNo, did);
 			return;
 		}
 
@@ -1215,13 +1215,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		// - G7RZU
 		unsigned int did = dstId;
 		if (DstIdBlacklist(did, m_slotNo)) {
-			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG blacklisted) dataType: %s", m_slotNo, did, dataType);
+			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG blacklisted)", m_slotNo, did);
 			return;
 		}
 
 		// true sets allow greater than 4k. Need to add boolean in conf for this later.
 		if (!DstIdWhitelist(did, m_slotNo, true)) {
-			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG not in whitelist) dataType: %s", m_slotNo, did, dataType);
+			LogMessage("DMR Slot %u, invalid traffic to TG%u (TG not in whitelist)", m_slotNo, did);
 			return;
 		}
 
@@ -1516,11 +1516,12 @@ bool CDMRSlot::DstIdWhitelist(unsigned int did, unsigned int slot, bool gt4k)
 			return true;
 
 		// No reflectors on slot1, so we only allow all IDs over 99999 unless specifically whitelisted.
+		//Allow traffic to TG0 as I think this is a special case - need to confirm
 		if (gt4k) {
-			if (std::find(m_dstWhiteListSlot1.begin(), m_dstWhiteListSlot1.end(), did) != m_dstWhiteListSlot1.end() || did >= 99999U)
+			if (std::find(m_dstWhiteListSlot1.begin(), m_dstWhiteListSlot1.end(), did) != m_dstWhiteListSlot1.end() || did >= 99999U || did == 0)
 				return true;
 		} else {
-			if (std::find(m_dstWhiteListSlot1.begin(), m_dstWhiteListSlot1.end(), did) != m_dstWhiteListSlot1.end())
+			if (std::find(m_dstWhiteListSlot1.begin(), m_dstWhiteListSlot1.end(), did) != m_dstWhiteListSlot1.end() || did == 0)
 				return true;
 		}
 	} else {
