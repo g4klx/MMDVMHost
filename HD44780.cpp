@@ -753,7 +753,7 @@ void CHD44780::clockInt(unsigned int ms)
 				Time = localtime(&currentTime);
 			}
 			
-			setlocale(LC_ALL,"");
+			setlocale(LC_TIME,"");
 			strftime(m_buffer1, 128, "%X", Time);  // Time
 			strftime(m_buffer2, 128, "%x", Time);  // Date
 
