@@ -1,0 +1,46 @@
+                             - HD44780 LCD SUPPORT -
+
+Support for the HD44780 LCD is via the wiringPi library available at
+http://wiringpi.com/download-and-install/ which must be installed in all cases.
+
+The HD44780 in 4-bit mode is probably the most common connection method and
+wiring details can be found at http://wiringpi.com/dev-lib/lcd-library/
+
+To compile MMDVMHost with support for the HD44780 use the following commands.
+
+# cp Makefile.Pi.HD44780 Makefile
+# make clean
+# make
+
+Other HD44780 variations exist that connect via I2C. Support is also via 
+wiringPi, but to compile for each I2C device requires a different Makefile 
+depending on the IC attached to the LCD.
+
+                           - ADAFRUIT RGB LCD SHIELD -
+
+The Adafruit RGB LCD Shield is available from https://www.adafruit.com/product/714
+I2C is  via the MCP23017 IC and is enabled with Makefile.Pi.Adafruit. The 
+I2C device address in MMDVM.ini should be set to 0x20.
+
+                                 - PCF8574 IC -
+
+HD44780 LCDs connected via a PCF8574 Remote 8-Bit I/O Expander are available on
+eBay for very little money! This IC uses Makefile.Pi.PCF8574 and the I2C
+device address should be set to 0x27.
+
+                                   - BEWARE -
+
+        The I2C device address can be manually configured on some devices! 
+
+                       - CHECK YOUR ACTUAL DEVICE ADDRESS -
+
+More information on configuring and using I2C on the RPi including how to probe
+the I2C bus for device addresses can be found at
+https://learn.sparkfun.com/tutorials/raspberry-pi-spi-and-i2c-tutorial#i2c-on-pi
+
+                             - PWM BACKLIGHT CONTROL - 
+
+Whilst connected in 4-bit mode or via the PCF8574 IC, the LED backlight can be
+wired for control via PWM.  Connect the backlight +ve pin to any spare GPIO pin 
+and configure MMDVM.ini as appropriate. By default, wiringPi pin 21 is 
+configured.

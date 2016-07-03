@@ -130,6 +130,7 @@ m_tftSerialBrightness(50U),
 m_hd44780Rows(2U),
 m_hd44780Columns(16U),
 m_hd44780Pins(),
+m_hd44780i2cAddress(),
 m_hd44780PWM(false),
 m_hd44780PWMPin(),
 m_hd44780PWMBright(),
@@ -438,6 +439,8 @@ bool CConf::read()
 			m_hd44780Rows = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Columns") == 0)
 			m_hd44780Columns = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "I2CAddress") == 0)
+			m_hd44780i2cAddress = (unsigned int)::strtoul(value, NULL, 16);
 		else if (::strcmp(key, "PWM") == 0)
 			m_hd44780PWM = ::atoi(value) == 1;
 		else if (::strcmp(key, "PWMPin") == 0)
@@ -887,6 +890,11 @@ unsigned int CConf::getHD44780Columns() const
 std::vector<unsigned int> CConf::getHD44780Pins() const
 {
 	return m_hd44780Pins;
+}
+
+unsigned int CConf::getHD44780i2cAddress() const
+{
+  return m_hd44780i2cAddress;
 }
 
 bool CConf::getHD44780PWM() const
