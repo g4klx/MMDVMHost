@@ -1530,9 +1530,9 @@ bool CDMRSlot::DstIdWhitelist(unsigned int did, unsigned int slot, bool gt4k)
 
 		//On slot2 we allow reflector control IDs, but not secondary TG IDs unless specifically listed. Also allow echo.
 		if (gt4k) {
-			if (std::find(m_dstWhiteListSlot2.begin(), m_dstWhiteListSlot2.end(), did) != m_dstWhiteListSlot2.end() || did >= 4000) {
+			if (std::find(m_dstWhiteListSlot2.begin(), m_dstWhiteListSlot2.end(), did) != m_dstWhiteListSlot2.end() || did >= 4000 || did == 0) {
 				//if dstId in secondary TG range  
-				if (did > 5000U && did < 10000U)
+				if (did > 5000U && did < 10000U || did == 0)
 					return false; 
 				else
 					return true;
