@@ -36,7 +36,7 @@ char        m_buffer2[128U];
 char        m_buffer3[128U];
 char        m_buffer4[128U];
 
-CHD44780::CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim, bool displayClock, bool utc, bool duplex) :
+CHD44780::CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, unsigned int i2cAddress, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim, bool displayClock, bool utc, bool duplex) :
 CDisplay(),
 m_rows(rows),
 m_cols(cols),
@@ -48,6 +48,7 @@ m_d0(pins.at(2U)),
 m_d1(pins.at(3U)),
 m_d2(pins.at(4U)),
 m_d3(pins.at(5U)),
+m_i2cAddress(i2cAddress),
 m_pwm(pwm),
 m_pwmPin(pwmPin),
 m_pwmBright(pwmBright),
@@ -239,7 +240,7 @@ bool CHD44780::open()
 void CHD44780::adafruitLCDSetup()
 {
     // The other control pins are initialised with lcdInit()
-    ::mcp23017Setup(AF_BASE, MCP23017);
+    ::mcp23017Setup(AF_BASE, m_i2caddress);
 
     // Backlight LEDs    
     ::pinMode(AF_RED,   OUTPUT);
@@ -311,7 +312,7 @@ void CHD44780::adafruitLCDColour(ADAFRUIT_COLOUR colour)
 void CHD44780::pcf8574LCDSetup()
 {
 	// Initalize PFC8574
-	::pcf8574Setup(AF_BASE, PCF8574);
+	::pcf8574Setup(AF_BASE, m_i2cAddress);
 
 	// Turn on backlight
 	::pinMode (AF_BL, OUTPUT);
