@@ -34,7 +34,6 @@ m_netState(RS_NET_IDLE),
 m_rfTimeoutTimer(1000U, timeout),
 m_netTimeoutTimer(1000U, timeout),
 m_networkWatchdog(1000U, 0U, 1500U),
-m_holdoffTimer(1000U, 0U, 500U),
 m_rfFrames(0U),
 m_netFrames(0U),
 m_rfErrs(0U),
@@ -89,8 +88,6 @@ bool CYSFControl::writeModem(unsigned char *data)
 		unsigned char fi = fich.getFI();
 		if (fi == YSF_FI_TERMINATOR)
 			return false;
-
-		m_holdoffTimer.stop();
 
 		m_rfFrames = 0U;
 		m_rfErrs = 0U;
@@ -311,10 +308,6 @@ unsigned int CYSFControl::readModem(unsigned char* data)
 	if (m_queue.isEmpty())
 		return 0U;
 
-	// Don't relay data until the timer has stopped.
-	if (m_holdoffTimer.isRunning())
-		return 0U;
-
 	unsigned char len = 0U;
 	m_queue.getData(&len, 1U);
 
@@ -508,10 +501,6 @@ void CYSFControl::clock(unsigned int ms)
 {
 	if (m_network != NULL)
 		writeNetwork();
-
-	m_holdoffTimer.clock(ms);
-	if (m_holdoffTimer.isRunning() && m_holdoffTimer.hasExpired())
-		m_holdoffTimer.stop();
 
 	m_rfTimeoutTimer.clock(ms);
 	m_netTimeoutTimer.clock(ms);

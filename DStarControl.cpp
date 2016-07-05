@@ -54,7 +54,6 @@ m_slowData(),
 m_rfN(0U),
 m_netN(0U),
 m_networkWatchdog(1000U, 0U, 1500U),
-m_holdoffTimer(1000U, 0U, 500U),
 m_rfTimeoutTimer(1000U, timeout),
 m_netTimeoutTimer(1000U, timeout),
 m_packetTimer(1000U, 0U, 200U),
@@ -171,7 +170,6 @@ bool CDStarControl::writeModem(unsigned char *data)
 
 		m_rfHeader = header;
 
-		m_holdoffTimer.stop();
 		m_ackTimer.stop();
 
 		m_rfBits = 1U;
@@ -388,10 +386,6 @@ unsigned int CDStarControl::readModem(unsigned char* data)
 	if (m_queue.isEmpty())
 		return 0U;
 
-	// Don't relay data until the timer has stopped.
-	if (m_holdoffTimer.isRunning())
-		return 0U;
-
 	unsigned char len = 0U;
 	m_queue.getData(&len, 1U);
 
@@ -563,10 +557,6 @@ void CDStarControl::clock()
 		sendAck();
 		m_ackTimer.stop();
 	}
-
-	m_holdoffTimer.clock(ms);
-	if (m_holdoffTimer.isRunning() && m_holdoffTimer.hasExpired())
-		m_holdoffTimer.stop();
 
 	m_rfTimeoutTimer.clock(ms);
 	m_netTimeoutTimer.clock(ms);

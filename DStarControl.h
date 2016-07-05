@@ -63,7 +63,6 @@ private:
 	unsigned char              m_rfN;
 	unsigned char              m_netN;
 	CTimer                     m_networkWatchdog;
-	CTimer                     m_holdoffTimer;
 	CTimer                     m_rfTimeoutTimer;
 	CTimer                     m_netTimeoutTimer;
 	CTimer                     m_packetTimer;
