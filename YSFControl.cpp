@@ -186,6 +186,8 @@ bool CYSFControl::writeModem(unsigned char *data)
 	} else if (valid) {
 		CSync::addYSFSync(data + 2U);
 
+		unsigned char bn = fich.getBN();
+		unsigned char bt = fich.getBT();
 		unsigned char fn = fich.getFN();
 		unsigned char ft = fich.getFT();
 		unsigned char dt = fich.getDT();
@@ -212,6 +214,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 			break;
 
 		case YSF_DT_DATA_FR_MODE:
+			LogDebug("YSF, RF data FICH B=%u/%u F=%u/%u", bn, bt, fn, ft);
 			valid = m_rfPayload.processDataFRModeData(data + 2U, fn);
 			break;
 
@@ -430,10 +433,12 @@ void CYSFControl::writeNetwork()
 	CYSFFICH fich;
 	bool valid = fich.decode(data + 35U);
 	if (valid) {
+		unsigned char bn = fich.getBN();
+		unsigned char bt = fich.getBT();
 		unsigned char dt = fich.getDT();
 		unsigned char fn = fich.getFN();
-		unsigned char fi = fich.getFI();
 		unsigned char ft = fich.getFT();
+		unsigned char fi = fich.getFI();
 
 		// Set the downlink callsign
 		switch (fi) {
@@ -463,6 +468,7 @@ void CYSFControl::writeNetwork()
 				break;
 
 			case YSF_DT_DATA_FR_MODE:
+				LogDebug("YSF, Network data FICH B=%u/%u F=%u/%u", bn, bt, fn, ft);
 				m_netPayload.processDataFRModeData(data + 35U, fn, gateway);
 				break;
 

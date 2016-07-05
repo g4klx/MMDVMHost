@@ -30,6 +30,8 @@ public:
 
 	unsigned char getFI() const;
 	unsigned char getCM() const;
+	unsigned char getBN() const;
+	unsigned char getBT() const;
 	unsigned char getFN() const;
 	unsigned char getFT() const;
 	unsigned char getDT() const;
