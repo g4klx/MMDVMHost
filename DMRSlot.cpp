@@ -13,6 +13,7 @@
 
 #include "DMRSlotType.h"
 #include "DMRShortLC.h"
+#include "DMRTrellis.h"
 #include "DMRFullLC.h"
 #include "BPTC19696.h"
 #include "DMRSlot.h"
@@ -411,7 +412,10 @@ void CDMRSlot::writeModem(unsigned char *data)
 				bptc.encode(payload, data + 2U);
 			} else if (dataType == DT_RATE_34_DATA) {
 				LogDebug("DMR Slot %u, received RF rate 3/4 data", m_slotNo);
-				CUtils::dump(1U, "Payload", data + 2U, DMR_FRAME_LENGTH_BYTES);
+				CDMRTrellis trellis;
+				unsigned char payload[18U];
+				trellis.decode(data + 2U, payload);
+				// trellis.encode(payload, data + 2U);
 			}
 
 			// Regenerate the Slot Type
@@ -1283,7 +1287,10 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			bptc.encode(payload, data + 2U);
 		} else if (dataType == DT_RATE_34_DATA) {
 			LogDebug("DMR Slot %u, received network rate 3/4 data", m_slotNo);
-			CUtils::dump(1U, "Payload", data + 2U, DMR_FRAME_LENGTH_BYTES);
+			CDMRTrellis trellis;
+			unsigned char payload[18U];
+			trellis.decode(data + 2U, payload);
+			// trellis.encode(payload, data + 2U);
 		}
 
 		// Regenerate the Slot Type
