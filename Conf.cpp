@@ -78,13 +78,6 @@ m_modemTXDelay(100U),
 m_modemDMRDelay(0U),
 m_modemRXLevel(100U),
 m_modemTXLevel(100U),
-m_modemDStarLevel(0),
-m_modemDMRLevel1(0),
-m_modemDMRLevel3(0),
-m_modemYSFLevel1(0),
-m_modemYSFLevel3(0),
-m_modemDMRThreshold(0),
-m_modemYSFThreshold(0),
 m_modemOscOffset(0),
 m_modemDebug(false),
 m_dstarEnabled(true),
@@ -279,20 +272,6 @@ bool CConf::read()
 			m_modemRXLevel = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "TXLevel") == 0)
 			m_modemTXLevel = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "DStarLevel") == 0)
-			m_modemDStarLevel = ::atoi(value);
-		else if (::strcmp(key, "DMRLevel1") == 0)
-			m_modemDMRLevel1 = ::atoi(value);
-		else if (::strcmp(key, "DMRLevel3") == 0)
-			m_modemDMRLevel3 = ::atoi(value);
-		else if (::strcmp(key, "YSFLevel1") == 0)
-			m_modemYSFLevel1 = ::atoi(value);
-		else if (::strcmp(key, "YSFLevel3") == 0)
-			m_modemYSFLevel3 = ::atoi(value);
-		else if (::strcmp(key, "DMRThreshold") == 0)
-			m_modemDMRThreshold = ::atoi(value);
-		else if (::strcmp(key, "YSFThreshold") == 0)
-			m_modemYSFThreshold = ::atoi(value);
 		else if (::strcmp(key, "OscOffset") == 0)
 			m_modemOscOffset = ::atoi(value);
 		else if (::strcmp(key, "Debug") == 0)
@@ -636,41 +615,6 @@ unsigned int CConf::getModemRXLevel() const
 unsigned int CConf::getModemTXLevel() const
 {
 	return m_modemTXLevel;
-}
-
-int CConf::getModemDStarLevel() const
-{
-	return m_modemDStarLevel;
-}
-
-int CConf::getModemDMRLevel1() const
-{
-	return m_modemDMRLevel1;
-}
-
-int CConf::getModemDMRLevel3() const
-{
-	return m_modemDMRLevel3;
-}
-
-int CConf::getModemYSFLevel1() const
-{
-	return m_modemYSFLevel1;
-}
-
-int CConf::getModemYSFLevel3() const
-{
-	return m_modemYSFLevel3;
-}
-
-int CConf::getModemDMRThreshold() const
-{
-	return m_modemDMRThreshold;
-}
-
-int CConf::getModemYSFThreshold() const
-{
-	return m_modemYSFThreshold;
 }
 
 int CConf::getModemOscOffset() const
