@@ -409,6 +409,9 @@ void CDMRSlot::writeModem(unsigned char *data)
 				unsigned char payload[12U];
 				bptc.decode(data + 2U, payload);
 				bptc.encode(payload, data + 2U);
+			} else if (dataType == DT_RATE_34_DATA) {
+				LogDebug("DMR Slot %u, received RF rate 3/4 data", m_slotNo);
+				CUtils::dump(1U, "Payload", data + 2U, DMR_FRAME_LENGTH_BYTES);
 			}
 
 			// Regenerate the Slot Type
@@ -1278,6 +1281,9 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			unsigned char payload[12U];
 			bptc.decode(data + 2U, payload);
 			bptc.encode(payload, data + 2U);
+		} else if (dataType == DT_RATE_34_DATA) {
+			LogDebug("DMR Slot %u, received network rate 3/4 data", m_slotNo);
+			CUtils::dump(1U, "Payload", data + 2U, DMR_FRAME_LENGTH_BYTES);
 		}
 
 		// Regenerate the Slot Type
