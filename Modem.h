@@ -37,7 +37,6 @@ public:
 	~CModem();
 
 	void setRFParams(unsigned int rxFrequency, unsigned int txFrequency);
-	void setModeLevels(int dstarLevel, int dmrLevel1, int dmrLevel3, int ysfLevel1, int ysfLevel3, int dmrThreshold, int ysfThreshold);
 	void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled);
 	void setDMRParams(unsigned int colorCode);
 
@@ -86,13 +85,6 @@ private:
 	unsigned int               m_dmrDelay;
 	unsigned int               m_rxLevel;
 	unsigned int               m_txLevel;
-	int                        m_dstarLevel;
-	int                        m_dmrLevel1;
-	int                        m_dmrLevel3;
-	int                        m_ysfLevel1;
-	int                        m_ysfLevel3;
-	int                        m_dmrThreshold;
-	int                        m_ysfThreshold;
 	int                        m_oscOffset;
 	bool                       m_debug;
 	unsigned int               m_rxFrequency;

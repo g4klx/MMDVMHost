@@ -169,6 +169,16 @@ unsigned char CYSFFICH::getCM() const
 	return (m_fich[0U] >> 2) & 0x03U;
 }
 
+unsigned char CYSFFICH::getBN() const
+{
+	return m_fich[0U] & 0x03U;
+}
+
+unsigned char CYSFFICH::getBT() const
+{
+	return (m_fich[1U] >> 6) & 0x03U;
+}
+
 unsigned char CYSFFICH::getFN() const
 {
 	return (m_fich[1U] >> 3) & 0x07U;

@@ -34,7 +34,6 @@ m_netState(RS_NET_IDLE),
 m_rfTimeoutTimer(1000U, timeout),
 m_netTimeoutTimer(1000U, timeout),
 m_networkWatchdog(1000U, 0U, 1500U),
-m_holdoffTimer(1000U, 0U, 500U),
 m_rfFrames(0U),
 m_netFrames(0U),
 m_rfErrs(0U),
@@ -89,8 +88,6 @@ bool CYSFControl::writeModem(unsigned char *data)
 		unsigned char fi = fich.getFI();
 		if (fi == YSF_FI_TERMINATOR)
 			return false;
-
-		m_holdoffTimer.stop();
 
 		m_rfFrames = 0U;
 		m_rfErrs = 0U;
@@ -186,6 +183,8 @@ bool CYSFControl::writeModem(unsigned char *data)
 	} else if (valid) {
 		CSync::addYSFSync(data + 2U);
 
+		unsigned char bn = fich.getBN();
+		unsigned char bt = fich.getBT();
 		unsigned char fn = fich.getFN();
 		unsigned char ft = fich.getFT();
 		unsigned char dt = fich.getDT();
@@ -212,6 +211,7 @@ bool CYSFControl::writeModem(unsigned char *data)
 			break;
 
 		case YSF_DT_DATA_FR_MODE:
+			LogDebug("YSF, RF data FICH B=%u/%u F=%u/%u", bn, bt, fn, ft);
 			valid = m_rfPayload.processDataFRModeData(data + 2U, fn);
 			break;
 
@@ -306,10 +306,6 @@ unsigned int CYSFControl::readModem(unsigned char* data)
 	assert(data != NULL);
 
 	if (m_queue.isEmpty())
-		return 0U;
-
-	// Don't relay data until the timer has stopped.
-	if (m_holdoffTimer.isRunning())
 		return 0U;
 
 	unsigned char len = 0U;
@@ -430,10 +426,12 @@ void CYSFControl::writeNetwork()
 	CYSFFICH fich;
 	bool valid = fich.decode(data + 35U);
 	if (valid) {
+		unsigned char bn = fich.getBN();
+		unsigned char bt = fich.getBT();
 		unsigned char dt = fich.getDT();
 		unsigned char fn = fich.getFN();
-		unsigned char fi = fich.getFI();
 		unsigned char ft = fich.getFT();
+		unsigned char fi = fich.getFI();
 
 		// Set the downlink callsign
 		switch (fi) {
@@ -463,6 +461,7 @@ void CYSFControl::writeNetwork()
 				break;
 
 			case YSF_DT_DATA_FR_MODE:
+				LogDebug("YSF, Network data FICH B=%u/%u F=%u/%u", bn, bt, fn, ft);
 				m_netPayload.processDataFRModeData(data + 35U, fn, gateway);
 				break;
 
@@ -502,10 +501,6 @@ void CYSFControl::clock(unsigned int ms)
 {
 	if (m_network != NULL)
 		writeNetwork();
-
-	m_holdoffTimer.clock(ms);
-	if (m_holdoffTimer.isRunning() && m_holdoffTimer.hasExpired())
-		m_holdoffTimer.stop();
 
 	m_rfTimeoutTimer.clock(ms);
 	m_netTimeoutTimer.clock(ms);

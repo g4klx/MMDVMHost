@@ -109,13 +109,17 @@ public:
 
 	unsigned int freeSpace() const
 	{
-		if (m_oPtr == m_iPtr)
-			return m_length;
+		unsigned int len = m_length;
 
 		if (m_oPtr > m_iPtr)
-			return m_oPtr - m_iPtr;
+			len = m_oPtr - m_iPtr;
+		else if (m_iPtr > m_oPtr)
+			len = m_length - (m_iPtr - m_oPtr);
 
-		return (m_length + m_oPtr) - m_iPtr;
+		if (len > m_length)
+			len = 0U;
+
+		return len;
 	}
 
 	unsigned int dataSize() const

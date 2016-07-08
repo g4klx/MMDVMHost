@@ -167,6 +167,9 @@
     <ClInclude Include="Thread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DMRTrellis.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -305,6 +308,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DMRTrellis.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
