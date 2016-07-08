@@ -26,6 +26,7 @@ private:
 	void deinterleave(const unsigned char* in, unsigned char* points) const;
 	void interleave(const unsigned char* points, unsigned char* out) const;
 	void totribits(const unsigned char* payload, unsigned char* tribits) const;
+	void fromtribits(const unsigned char* tribits, unsigned char* payload) const;
 };
 
 #endif
