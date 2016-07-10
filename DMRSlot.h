@@ -90,11 +90,12 @@ private:
 	static bool                m_selfOnly;
 	static std::vector<unsigned int> m_prefixes;
 	static std::vector<unsigned int> m_blackList;
+/*
 	static std::vector<unsigned int> m_dstBlackListSlot1;
 	static std::vector<unsigned int> m_dstBlackListSlot2;
 	static std::vector<unsigned int> m_dstWhiteListSlot1;
 	static std::vector<unsigned int> m_dstWhiteListSlot2;
-	
+*/	
 	static CModem*             m_modem;
 	static CDMRIPSC*           m_network;
 	static CDisplay*           m_display;
@@ -133,6 +134,7 @@ private:
 	static bool validateId(unsigned int id);
 	static bool DstIdBlacklist(unsigned int did,unsigned int slot);
 	static bool DstIdWhitelist(unsigned int did,unsigned int slot,bool gt4k);
+	static char DMRAC;
 };
 
 #endif
