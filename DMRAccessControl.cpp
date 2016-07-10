@@ -111,9 +111,10 @@ bool DMRAccessControl::validateSrcId(unsigned int id)
 	}
 }
 
-bool DMRAccessControl::validateAccess (unsigned int src_id, unsigned int dst_id, unsigned int slot) 
+bool DMRAccessControl::validateAccess (unsigned int src_id, unsigned int dst_id, unsigned int slot, bool network) 
 {
-    if (!DMRAccessControl::validateSrcId(src_id)) {
+    // source ID validation is only applied to RF traffic 
+    if (!network && !DMRAccessControl::validateSrcId(src_id)) {
 	 LogMessage("DMR Slot %u, invalid access attempt from %u (blacklisted)", slot, src_id);
 	 return false;
     
