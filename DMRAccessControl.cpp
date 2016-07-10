@@ -23,7 +23,13 @@ std::vector<unsigned int> DMRAccessControl::m_dstBlackListSlot2;
 std::vector<unsigned int> DMRAccessControl::m_dstWhiteListSlot1;
 std::vector<unsigned int> DMRAccessControl::m_dstWhiteListSlot2;
 
-void DMRAccessControl::init(const std::vector<unsigned int>& DstIdBlacklistSlot1, const std::vector<unsigned int>& DstIdWhitelistSlot1, const std::vector<unsigned int>& DstIdBlacklistSlot2, const std::vector<unsigned int>& DstIdWhitelistSlot2) 
+std::vector<unsigned int> DMRAccessControl::m_SrcIdBlacklist;
+
+std::vector<unsigned int> DMRAccessControl::m_prefixes;
+bool DMRAccessControl::m_selfOnly;
+unsigned int DMRAccessControl::m_id;
+
+void DMRAccessControl::init(const std::vector<unsigned int>& DstIdBlacklistSlot1, const std::vector<unsigned int>& DstIdWhitelistSlot1, const std::vector<unsigned int>& DstIdBlacklistSlot2, const std::vector<unsigned int>& DstIdWhitelistSlot2, const std::vector<unsigned int>& SrcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes,unsigned int id)
 {
 
 	m_dstBlackListSlot1 = DstIdBlacklistSlot1;
@@ -83,4 +89,23 @@ bool DMRAccessControl::DstIdWhitelist(unsigned int did, unsigned int slot, bool 
 	}
 
 	return false;
+}
+
+bool DMRAccessControl::validateSrcId(unsigned int id)
+{
+	if (m_selfOnly) {
+		return id == m_id;
+	} else {
+		if (std::find(m_SrcIdBlacklist.begin(), m_SrcIdBlacklist.end(), id) != m_SrcIdBlacklist.end())
+			return false;
+
+		unsigned int prefix = id / 10000U;
+		if (prefix == 0U || prefix > 999U)
+			return false;
+
+		if (m_prefixes.size() == 0U)
+			return true;
+
+		return std::find(m_prefixes.begin(), m_prefixes.end(), prefix) != m_prefixes.end();
+	}
 }

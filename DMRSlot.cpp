@@ -140,7 +140,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 				return;
 
 			unsigned int id = lc->getSrcId();
-			if (!validateId(id)) {
+			if (!DMRAccessControl::validateSrcId(id)) {
 				LogMessage("DMR Slot %u, invalid access attempt from %u (blacklisted)", m_slotNo, id);
 				delete lc;
 				return;
@@ -273,7 +273,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			unsigned int srcId = dataHeader.getSrcId();
 			unsigned int dstId = dataHeader.getDstId();
 
-			if (!validateId(srcId)) {
+			if (!DMRAccessControl::validateSrcId(srcId)) {
 				LogMessage("DMR Slot %u, invalid access attempt from %u", m_slotNo, srcId);
 				return;
 			}
@@ -344,7 +344,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			unsigned int srcId = csbk.getSrcId();
 			unsigned int dstId = csbk.getDstId();
 
-			if (!validateId(srcId)) {
+			if (!DMRAccessControl::validateSrcId(srcId)) {
 				LogMessage("DMR Slot %u, invalid access attempt from %u", m_slotNo, srcId);
 				return;
 			}
@@ -511,7 +511,7 @@ void CDMRSlot::writeModem(unsigned char *data)
 			CDMRLC* lc = m_rfEmbeddedLC.addData(data + 2U, emb.getLCSS());
 			if (lc != NULL) {
 				unsigned int id = lc->getSrcId();
-				if (!validateId(id)) {
+				if (!DMRAccessControl::validateSrcId(id)) {
 					LogMessage("DMR Slot %u, invalid access attempt from %u", m_slotNo, id);
 					delete lc;
 					return;
@@ -1456,7 +1456,7 @@ void CDMRSlot::writeQueueNet(const unsigned char *data)
 		m_queue.addData(data, len);
 }
 
-void CDMRSlot::init(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, const std::vector<unsigned int>& DstIdBlacklistSlot1, const std::vector<unsigned int>& DstIdWhitelistSlot1, const std::vector<unsigned int>& DstIdBlacklistSlot2, const std::vector<unsigned int>& DstIdWhitelistSlot2, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, CDMRLookup* lookup)
+void CDMRSlot::init(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& SrcIdBlacklist, const std::vector<unsigned int>& DstIdBlacklistSlot1, const std::vector<unsigned int>& DstIdWhitelistSlot1, const std::vector<unsigned int>& DstIdBlacklistSlot2, const std::vector<unsigned int>& DstIdWhitelistSlot2, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, CDMRLookup* lookup)
 {
 	assert(id != 0U);
 	assert(modem != NULL);
@@ -1467,7 +1467,7 @@ void CDMRSlot::init(unsigned int id, unsigned int colorCode, unsigned int callHa
 	m_colorCode = colorCode;
 	m_selfOnly  = selfOnly;
 	m_prefixes  = prefixes;
-	m_blackList = blackList;
+//	m_blackList = blackList;
 	m_modem     = modem;
 	m_network   = network;
 	m_display   = display;
@@ -1486,26 +1486,7 @@ void CDMRSlot::init(unsigned int id, unsigned int colorCode, unsigned int callHa
 	slotType.getData(m_idle + 2U);
 	
 	//Load black and white lists to DMRAccessControl
-	DMRAccessControl::init(DstIdBlacklistSlot1, DstIdWhitelistSlot1, DstIdBlacklistSlot2, DstIdWhitelistSlot2);
-}
-
-bool CDMRSlot::validateId(unsigned int id)
-{
-	if (m_selfOnly) {
-		return id == m_id;
-	} else {
-		if (std::find(m_blackList.begin(), m_blackList.end(), id) != m_blackList.end())
-			return false;
-
-		unsigned int prefix = id / 10000U;
-		if (prefix == 0U || prefix > 999U)
-			return false;
-
-		if (m_prefixes.size() == 0U)
-			return true;
-
-		return std::find(m_prefixes.begin(), m_prefixes.end(), prefix) != m_prefixes.end();
-	}
+	DMRAccessControl::init(DstIdBlacklistSlot1, DstIdWhitelistSlot1, DstIdBlacklistSlot2, DstIdWhitelistSlot2, SrcIdBlacklist, m_selfOnly, m_prefixes, m_id);
 }
 
 

@@ -22,7 +22,9 @@ public:
 	static bool DstIdBlacklist(unsigned int did,unsigned int slot);
 	static bool DstIdWhitelist(unsigned int did,unsigned int slot,bool gt4k);
 	
- 	static void init(const std::vector<unsigned int>& DstIdBlacklistSlot1, const std::vector<unsigned int>& DstIdWhitelistSlot1, const std::vector<unsigned int>& DstIdBlacklistSlot2, const std::vector<unsigned int>& DstIdWhitelistSlot2);
+	static bool validateSrcId(unsigned int id);
+	
+ 	static void init(const std::vector<unsigned int>& DstIdBlacklistSlot1, const std::vector<unsigned int>& DstIdWhitelistSlot1, const std::vector<unsigned int>& DstIdBlacklistSlot2, const std::vector<unsigned int>& DstIdWhitelistSlot2, const std::vector<unsigned int>& SrcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes,unsigned int id);
 
 
 	
@@ -31,6 +33,13 @@ private:
 	static std::vector<unsigned int> m_dstBlackListSlot2;
 	static std::vector<unsigned int> m_dstWhiteListSlot1;
 	static std::vector<unsigned int> m_dstWhiteListSlot2;
+	
+	static std::vector<unsigned int> m_SrcIdBlacklist;
+	
+	static std::vector<unsigned int> m_prefixes;
+	
+	static bool m_selfOnly;
+	static unsigned int m_id;
 
 
 	
