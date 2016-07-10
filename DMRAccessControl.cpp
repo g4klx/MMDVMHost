@@ -14,6 +14,7 @@
  */
 
 #include "DMRAccessControl.h"
+#include "Log.h"
 
 #include <algorithm>
 #include <vector>
@@ -108,4 +109,24 @@ bool DMRAccessControl::validateSrcId(unsigned int id)
 
 		return std::find(m_prefixes.begin(), m_prefixes.end(), prefix) != m_prefixes.end();
 	}
+}
+
+bool DMRAccessControl::validateAccess (unsigned int src_id, unsigned int dst_id, unsigned int slot) 
+{
+    if (!DMRAccessControl::validateSrcId(src_id)) {
+	 LogMessage("DMR Slot %u, invalid access attempt from %u (blacklisted)", slot, src_id);
+	 return false;
+    
+    } 
+    else if (DMRAccessControl::DstIdBlacklist(dst_id, slot)) {
+	LogMessage("DMR Slot %u, invalid access attempt to TG%u (TG blacklisted)", slot, dst_id);
+	return false;
+    }
+    else if (!DMRAccessControl::DstIdWhitelist(dst_id, slot, true)) {
+	LogMessage("DMR Slot %u, invalid access attempt to TG%u (TG not in whitelist)", slot, dst_id);
+	return false;
+    }
+    else
+      return true;
+     
 }

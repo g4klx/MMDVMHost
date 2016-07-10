@@ -24,6 +24,8 @@ public:
 	
 	static bool validateSrcId(unsigned int id);
 	
+	static bool validateAccess (unsigned int src_id, unsigned int dst_id, unsigned int slot);
+	
  	static void init(const std::vector<unsigned int>& DstIdBlacklistSlot1, const std::vector<unsigned int>& DstIdWhitelistSlot1, const std::vector<unsigned int>& DstIdBlacklistSlot2, const std::vector<unsigned int>& DstIdWhitelistSlot2, const std::vector<unsigned int>& SrcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes,unsigned int id);
 
 
