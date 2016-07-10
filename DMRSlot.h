@@ -50,7 +50,7 @@ public:
 
 	void clock();
 
-	static void init(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, const std::vector<unsigned int>& DstIdBlacklistSlot1, const std::vector<unsigned int>& DstIdWhitelistSlot1, const std::vector<unsigned int>& DstIdBlacklistSlot2, const std::vector<unsigned int>& DstIdWhitelistSlot2, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, CDMRLookup* lookup);
+	static void init(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& SrcIdBlackList, const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF,  const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, CDMRLookup* lookup);
 
 private:
 	unsigned int               m_slotNo;
@@ -132,9 +132,6 @@ private:
 
 	static void setShortLC(unsigned int slotNo, unsigned int id, FLCO flco = FLCO_GROUP, bool voice = true);
 	static bool validateId(unsigned int id);
-	static bool DstIdBlacklist(unsigned int did,unsigned int slot);
-	static bool DstIdWhitelist(unsigned int did,unsigned int slot,bool gt4k);
-	static char DMRAC;
 };
 
 #endif

@@ -33,11 +33,7 @@ unsigned int   CDMRSlot::m_colorCode = 0U;
 bool           CDMRSlot::m_selfOnly = false;
 std::vector<unsigned int> CDMRSlot::m_prefixes;
 std::vector<unsigned int> CDMRSlot::m_blackList;
-/*std::vector<unsigned int> CDMRSlot::m_dstBlackListSlot1;
-std::vector<unsigned int> CDMRSlot::m_dstWhiteListSlot1;
-std::vector<unsigned int> CDMRSlot::m_dstBlackListSlot2;
-std::vector<unsigned int> CDMRSlot::m_dstWhiteListSlot2;
-*/
+
 CModem*        CDMRSlot::m_modem = NULL;
 CDMRIPSC*      CDMRSlot::m_network = NULL;
 CDisplay*      CDMRSlot::m_display = NULL;
@@ -1343,7 +1339,7 @@ void CDMRSlot::writeQueueNet(const unsigned char *data)
 		m_queue.addData(data, len);
 }
 
-void CDMRSlot::init(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& SrcIdBlacklist, const std::vector<unsigned int>& DstIdBlacklistSlot1, const std::vector<unsigned int>& DstIdWhitelistSlot1, const std::vector<unsigned int>& DstIdBlacklistSlot2, const std::vector<unsigned int>& DstIdWhitelistSlot2, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, CDMRLookup* lookup)
+void CDMRSlot::init(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& SrcIdBlacklist, const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF,  const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, CDMRLookup* lookup)
 {
 	assert(id != 0U);
 	assert(modem != NULL);
@@ -1373,7 +1369,7 @@ void CDMRSlot::init(unsigned int id, unsigned int colorCode, unsigned int callHa
 	slotType.getData(m_idle + 2U);
 	
 	//Load black and white lists to DMRAccessControl
-	DMRAccessControl::init(DstIdBlacklistSlot1, DstIdWhitelistSlot1, DstIdBlacklistSlot2, DstIdWhitelistSlot2, SrcIdBlacklist, m_selfOnly, m_prefixes, m_id);
+	DMRAccessControl::init(DstIdBlacklistSlot1RF, DstIdWhitelistSlot1RF, DstIdBlacklistSlot2RF, DstIdWhitelistSlot2RF, DstIdBlacklistSlot1NET, DstIdWhitelistSlot1NET, DstIdBlacklistSlot2NET, DstIdWhitelistSlot2NET, SrcIdBlacklist, m_selfOnly, m_prefixes, m_id);
 }
 
 
