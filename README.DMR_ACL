@@ -1,10 +1,14 @@
 To use DMR Access Control you can add the following fields to your MMDVM.ini:
 
 Blacklist= <comma separated list of source-id's to block on RF>
-DstIdBlackListSlot1= <comma separated list TGs to block on RF and Network Slot1>
-DstIdBlackListSlot2= <comma separated list TGs to block on RF and Network Slot1>
-DstIdWhiteListSlot1= <comma separated list TGs to allow on RF and Network Slot1> 
-DstIdWhiteListSlot2= <comma separated list TGs to allow on RF and Network Slot1>
+DstIdBlackListSlot1RF= <comma separated list TGs to block on RF Slot1>
+DstIdBlackListSlot2RF= <comma separated list TGs to block on RF Slot2>
+DstIdWhiteListSlot1RF= <comma separated list TGs to allow on RF Slot1> 
+DstIdWhiteListSlot2RF= <comma separated list TGs to allow on RF Slot2>
+DstIdBlackListSlot1NET= <comma separated list TGs to block on NET Slot1>
+DstIdBlackListSlot2NET= <comma separated list TGs to block on NET Slot2>
+DstIdWhiteListSlot1NET= <comma separated list TGs to allow on NET Slot1> 
+DstIdWhiteListSlot2NET= <comma separated list TGs to allow on NET Slot2>
 
 So, for example:
 
@@ -24,5 +28,5 @@ You can use the blacklist with the whitelist if you want to specifically block I
 
 For example, to block users from disconnecting the reflectors, you could block ID 4000.
 
-To block users connecting to reflector 4400 you could add ID 4400 to the blacklist for that slot. 
+To block users connecting to reflector 4400 you could add ID 4400 to the network blacklist for that slot. 
 
