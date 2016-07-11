@@ -19,13 +19,10 @@
 
 class DMRAccessControl {
 public:
-	
 	static bool validateAccess (unsigned int src_id, unsigned int dst_id, unsigned int slot, bool network);
-	
- 	static void init(const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF, const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, const std::vector<unsigned int>& SrcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes,unsigned int id);
 
+	static void init(const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF, const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, const std::vector<unsigned int>& SrcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes,unsigned int id);
 
-	
 private:
 	static std::vector<unsigned int> m_dstBlackListSlot1RF;
 	static std::vector<unsigned int> m_dstBlackListSlot2RF;
@@ -36,21 +33,18 @@ private:
 	static std::vector<unsigned int> m_dstBlackListSlot2NET;
 	static std::vector<unsigned int> m_dstWhiteListSlot1NET;
 	static std::vector<unsigned int> m_dstWhiteListSlot2NET;
-	
+
 	static std::vector<unsigned int> m_SrcIdBlacklist;
-	
+
 	static std::vector<unsigned int> m_prefixes;
-	
+
 	static bool m_selfOnly;
 	static unsigned int m_id;
-	
+
 	static bool DstIdBlacklist(unsigned int did,unsigned int slot, bool network);
 	static bool DstIdWhitelist(unsigned int did,unsigned int slot,bool gt4k, bool network);
-	
+
 	static bool validateSrcId(unsigned int id);
-
-
-	
 };
 
 #endif
