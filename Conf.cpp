@@ -91,10 +91,14 @@ m_dmrColorCode(2U),
 m_dmrSelfOnly(false),
 m_dmrPrefixes(),
 m_dmrBlackList(),
-m_dmrDstIdBlacklistSlot1(),
-m_dmrDstIdBlacklistSlot2(),
-m_dmrDstIdWhitelistSlot1(),
-m_dmrDstIdWhitelistSlot2(),
+m_dmrDstIdBlacklistSlot1RF(),
+m_dmrDstIdBlacklistSlot2RF(),
+m_dmrDstIdWhitelistSlot1RF(),
+m_dmrDstIdWhitelistSlot2RF(),
+m_dmrDstIdBlacklistSlot1NET(),
+m_dmrDstIdBlacklistSlot2NET(),
+m_dmrDstIdWhitelistSlot1NET(),
+m_dmrDstIdWhitelistSlot2NET(),
 m_dmrLookupFile(),
 m_dmrCallHang(3U),
 m_dmrTXHang(4U),
@@ -326,36 +330,68 @@ bool CConf::read()
 					m_dmrBlackList.push_back(id);
 				p = ::strtok(NULL, ",\r\n");
 			}
-		}  else if (::strcmp(key, "DstIdBlackListSlot1") == 0) {
+		}  else if (::strcmp(key, "DstIdBlackListSlot1RF") == 0) {
 			char* p = ::strtok(value, ",\r\n");
 			while (p != NULL) {
 				unsigned int id = (unsigned int)::atoi(p);
 				if (id > 0U)
-					m_dmrDstIdBlacklistSlot1.push_back(id);
+					m_dmrDstIdBlacklistSlot1RF.push_back(id);
 				p = ::strtok(NULL, ",\r\n");
 			}	
-		} else if (::strcmp(key, "DstIdBlackListSlot2") == 0) {
+		} else if (::strcmp(key, "DstIdBlackListSlot2RF") == 0) {
 			char* p = ::strtok(value, ",\r\n");
 			while (p != NULL) {
 				unsigned int id = (unsigned int)::atoi(p);
 				if (id > 0U)
-					m_dmrDstIdBlacklistSlot2.push_back(id);
+					m_dmrDstIdBlacklistSlot2RF.push_back(id);
 				p = ::strtok(NULL, ",\r\n");
 			}
-		} else if (::strcmp(key, "DstIdWhiteListSlot1") == 0) {
+		} else if (::strcmp(key, "DstIdWhiteListSlot1RF") == 0) {
 			char* p = ::strtok(value, ",\r\n");
 			while (p != NULL) {
 				unsigned int id = (unsigned int)::atoi(p);
 				if (id > 0U)
-					m_dmrDstIdWhitelistSlot1.push_back(id);
+					m_dmrDstIdWhitelistSlot1RF.push_back(id);
 				p = ::strtok(NULL, ",\r\n");
 			}
-		} else if (::strcmp(key, "DstIdWhiteListSlot2") == 0) {
+		} else if (::strcmp(key, "DstIdWhiteListSlot2RF") == 0) {
 			char* p = ::strtok(value, ",\r\n");
 			while (p != NULL) {
 				unsigned int id = (unsigned int)::atoi(p);
 				if (id > 0U)
-					m_dmrDstIdWhitelistSlot2.push_back(id);
+					m_dmrDstIdWhitelistSlot2RF.push_back(id);
+				p = ::strtok(NULL, ",\r\n");
+			}
+		}  else if (::strcmp(key, "DstIdBlackListSlot1NET") == 0) {
+			char* p = ::strtok(value, ",\r\n");
+			while (p != NULL) {
+				unsigned int id = (unsigned int)::atoi(p);
+				if (id > 0U)
+					m_dmrDstIdBlacklistSlot1NET.push_back(id);
+				p = ::strtok(NULL, ",\r\n");
+			}	
+		} else if (::strcmp(key, "DstIdBlackListSlot2NET") == 0) {
+			char* p = ::strtok(value, ",\r\n");
+			while (p != NULL) {
+				unsigned int id = (unsigned int)::atoi(p);
+				if (id > 0U)
+					m_dmrDstIdBlacklistSlot2NET.push_back(id);
+				p = ::strtok(NULL, ",\r\n");
+			}
+		} else if (::strcmp(key, "DstIdWhiteListSlot1NET") == 0) {
+			char* p = ::strtok(value, ",\r\n");
+			while (p != NULL) {
+				unsigned int id = (unsigned int)::atoi(p);
+				if (id > 0U)
+					m_dmrDstIdWhitelistSlot1NET.push_back(id);
+				p = ::strtok(NULL, ",\r\n");
+			}
+		} else if (::strcmp(key, "DstIdWhiteListSlot2NET") == 0) {
+			char* p = ::strtok(value, ",\r\n");
+			while (p != NULL) {
+				unsigned int id = (unsigned int)::atoi(p);
+				if (id > 0U)
+					m_dmrDstIdWhitelistSlot2NET.push_back(id);
 				p = ::strtok(NULL, ",\r\n");
 			}
 		} else if (::strcmp(key, "LookupFile") == 0)
@@ -681,20 +717,35 @@ std::vector<unsigned int> CConf::getDMRBlackList() const
 {
 	return m_dmrBlackList;
 }
-std::vector<unsigned int> CConf::getDMRDstIdBlacklistSlot1() const
+std::vector<unsigned int> CConf::getDMRDstIdBlacklistSlot1RF() const
 {
-	return m_dmrDstIdBlacklistSlot1;
+	return m_dmrDstIdBlacklistSlot1RF;
 }
-std::vector<unsigned int> CConf::getDMRDstIdBlacklistSlot2() const
+std::vector<unsigned int> CConf::getDMRDstIdBlacklistSlot2RF() const
 {
-	return m_dmrDstIdBlacklistSlot2;
+	return m_dmrDstIdBlacklistSlot2RF;
 }
-std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot1() const
+std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot1RF() const
 {
-	return m_dmrDstIdWhitelistSlot1;
-}std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot2() const
+	return m_dmrDstIdWhitelistSlot1RF;
+}std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot2RF() const
 {
-	return m_dmrDstIdWhitelistSlot2;
+	return m_dmrDstIdWhitelistSlot2RF;
+}
+std::vector<unsigned int> CConf::getDMRDstIdBlacklistSlot1NET() const
+{
+	return m_dmrDstIdBlacklistSlot1NET;
+}
+std::vector<unsigned int> CConf::getDMRDstIdBlacklistSlot2NET() const
+{
+	return m_dmrDstIdBlacklistSlot2NET;
+}
+std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot1NET() const
+{
+	return m_dmrDstIdWhitelistSlot1NET;
+}std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot2NET() const
+{
+	return m_dmrDstIdWhitelistSlot2NET;
 }
 std::string CConf::getDMRLookupFile() const
 {
