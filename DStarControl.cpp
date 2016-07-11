@@ -515,7 +515,7 @@ void CDStarControl::writeNetwork()
 
 		unsigned char n = data[1U];
 
-		insertSilence(data + 2U, n);
+		insertSilence(data + 1U, n);
 
 		unsigned int errors = m_fec.regenerateDStar(data + 2U);
 
@@ -796,21 +796,20 @@ void CDStarControl::insertSilence(const unsigned char* data, unsigned char seqNo
 	assert(data != NULL);
 
 	// Check to see if we have any spaces to fill?
-	unsigned char seq = (m_netN + 1U) % 21U;
-	if (seq == seqNo) {
+	unsigned int oldSeqNo = (m_netN + 1U) % 21U;
+	if (oldSeqNo == seqNo) {
 		// Just copy the data, nothing else to do here
 		::memcpy(m_lastFrame, data, DSTAR_FRAME_LENGTH_BYTES + 1U);
 		return;
 	}
 
-	unsigned int oldSeqNo = (m_netN + 1U) % 21U;
-	unsigned int newSeqNo = seqNo;
+	LogDebug("D-Star, current=%u last=%u", seqNo, m_netN);
 
 	unsigned int count;
-	if (newSeqNo > oldSeqNo)
-		count = newSeqNo - oldSeqNo;
+	if (seqNo > oldSeqNo)
+		count = seqNo - oldSeqNo;
 	else
-		count = (21U + newSeqNo) - oldSeqNo;
+		count = (21U + seqNo) - oldSeqNo;
 
 	if (count < 10U)
 		insertSilence(count);
@@ -820,11 +819,19 @@ void CDStarControl::insertSilence(const unsigned char* data, unsigned char seqNo
 
 void CDStarControl::insertSilence(unsigned int count)
 {
+	LogDebug("D-Star, insert %u frames", count);
+
 	unsigned char n = (m_netN + 1U) % 21U;
 
 	for (unsigned int i = 0U; i < count; i++) {
 		if (i < 3U) {
-			writeQueueDataNet(m_lastFrame);
+			if (n == 0U) {
+				::memcpy(m_lastFrame + DSTAR_VOICE_FRAME_LENGTH_BYTES + 1U, DSTAR_NULL_SLOW_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES);
+				writeQueueDataNet(m_lastFrame);
+			} else {
+				::memcpy(m_lastFrame + DSTAR_VOICE_FRAME_LENGTH_BYTES + 1U, DSTAR_NULL_SLOW_DATA_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES);
+				writeQueueDataNet(m_lastFrame);
+			}
 		} else {
 			if (n == 0U)
 				writeQueueDataNet(DSTAR_NULL_FRAME_SYNC_BYTES);
@@ -839,6 +846,8 @@ void CDStarControl::insertSilence(unsigned int count)
 
 		n = (n + 1U) % 21U;
 	}
+
+	LogDebug("D-Star, last=%u", m_netN);
 }
 
 void CDStarControl::blankDTMF(unsigned char* data) const

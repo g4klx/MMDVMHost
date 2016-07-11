@@ -29,6 +29,7 @@ const unsigned int  DSTAR_END_PATTERN_LENGTH_BYTES = 6U;
 
 const unsigned char DSTAR_NULL_AMBE_DATA_BYTES[] = { 0x9E, 0x8D, 0x32, 0x88, 0x26, 0x1A, 0x3F, 0x61, 0xE8 };
 
+const unsigned char DSTAR_NULL_SLOW_SYNC_BYTES[] = { 0x55, 0x2D, 0x16 };
 // Note that these are already scrambled, 0x66 0x66 0x66 otherwise
 const unsigned char DSTAR_NULL_SLOW_DATA_BYTES[] = { 0x16, 0x29, 0xF5 };
 
