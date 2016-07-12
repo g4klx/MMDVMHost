@@ -33,9 +33,12 @@ m_rfState(RS_RF_LISTENING),
 m_netState(RS_NET_IDLE),
 m_rfTimeoutTimer(1000U, timeout),
 m_netTimeoutTimer(1000U, timeout),
+m_packetTimer(1000U, 0U, 200U),
 m_networkWatchdog(1000U, 0U, 1500U),
+m_elapsed(),
 m_rfFrames(0U),
 m_netFrames(0U),
+m_netLost(0U),
 m_rfErrs(0U),
 m_rfBits(1U),
 m_netErrs(0U),
@@ -44,6 +47,8 @@ m_rfSource(NULL),
 m_rfDest(NULL),
 m_netSource(NULL),
 m_netDest(NULL),
+m_lastFrame(NULL),
+m_netN(0U),
 m_rfPayload(),
 m_netPayload(),
 m_netSeqNo(0U),
@@ -58,12 +63,15 @@ m_fp(NULL)
 
 	m_netSource = new unsigned char[YSF_CALLSIGN_LENGTH];
 	m_netDest   = new unsigned char[YSF_CALLSIGN_LENGTH];
+
+	m_lastFrame = new unsigned char[YSF_FRAME_LENGTH_BYTES + 2U];
 }
 
 CYSFControl::~CYSFControl()
 {
 	delete[] m_netSource;
 	delete[] m_netDest;
+	delete[] m_lastFrame;
 }
 
 bool CYSFControl::writeModem(unsigned char *data)
@@ -384,11 +392,15 @@ void CYSFControl::writeNetwork()
 
 		m_netTimeoutTimer.start();
 		m_netPayload.reset();
+		m_packetTimer.start();
+		m_elapsed.start();
 		m_netState  = RS_NET_AUDIO;
 		m_netFrames = 0U;
+		m_netLost   = 0U;
 		m_netErrs   = 0U;
 		m_netBits   = 1U;
 		m_netSeqNo  = 0U;
+		m_netN      = 0U;
 	} else {
 		// Check for duplicate frames, if we can
 		if (m_netSeqNo == data[34U]) {
@@ -423,6 +435,8 @@ void CYSFControl::writeNetwork()
 	data[33U] = end ? TAG_EOT : TAG_DATA;
 	data[34U] = 0x00U;
 
+	bool send = true;
+
 	CYSFFICH fich;
 	bool valid = fich.decode(data + 35U);
 	if (valid) {
@@ -445,18 +459,24 @@ void CYSFControl::writeNetwork()
 			case YSF_DT_VD_MODE1: {
 					m_netPayload.processVDMode1Data(data + 35U, fn, gateway);
 					unsigned int errors = m_netPayload.processVDMode1Audio(data + 35U);
-					m_netErrs += errors;
-					m_netBits += 235U;
-					LogDebug("YSF, V/D Mode 1, seq %u, AMBE FEC %u/235 (%.1f%%)", n, errors, float(errors) / 2.35F);
+					send = insertSilence(data + 33U, n);
+					if (send) {
+						m_netErrs += errors;
+						m_netBits += 235U;
+						LogDebug("YSF, V/D Mode 1, seq %u, AMBE FEC %u/235 (%.1f%%)", n, errors, float(errors) / 2.35F);
+					}
 				}
 				break;
 
 			case YSF_DT_VD_MODE2: {
 					m_netPayload.processVDMode2Data(data + 35U, fn, gateway);
 					unsigned int errors = m_netPayload.processVDMode2Audio(data + 35U);
-					m_netErrs += errors;
-					m_netBits += 135U;
-					LogDebug("YSF, V/D Mode 2, seq %u, Repetition FEC %u/135 (%.1f%%)", n, errors, float(errors) / 1.35F);
+					send = insertSilence(data + 33U, n);
+					if (send) {
+						m_netErrs += errors;
+						m_netBits += 135U;
+						LogDebug("YSF, V/D Mode 2, seq %u, Repetition FEC %u/135 (%.1f%%)", n, errors, float(errors) / 1.35F);
+					}
 				}
 				break;
 
@@ -469,9 +489,12 @@ void CYSFControl::writeNetwork()
 				if (fn != 0U || ft != 1U) {
 					// The first packet after the header is odd, don't try and regenerate it
 					unsigned int errors = m_netPayload.processVoiceFRModeAudio(data + 35U);
-					m_netErrs += errors;
-					m_netBits += 720U;
-					LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%)", n, errors, float(errors) / 7.2F);
+					send = insertSilence(data + 33U, n);
+					if (send) {
+						m_netErrs += errors;
+						m_netBits += 720U;
+						LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%)", n, errors, float(errors) / 7.2F);
+					}
 				}
 				break;
 
@@ -487,12 +510,18 @@ void CYSFControl::writeNetwork()
 		fich.setVoIP(true);
 		fich.setMR(YSF_MR_BUSY);
 		fich.encode(data + 35U);
+	} else {
+		send = insertSilence(data + 33U, n);
 	}
 
-	writeQueueNet(data + 33U);
+	if (send) {
+		writeQueueNet(data + 33U);
+		m_packetTimer.start();
+		m_netN = n;
+	}
 
 	if (end) {
-		LogMessage("YSF, received network end of transmission, %.1f seconds, BER: %.1f%%", float(m_netFrames) / 10.0F, float(m_netErrs * 100U) / float(m_netBits));
+		LogMessage("YSF, received network end of transmission, %.1f seconds, %u%% packet loss, BER: %.1f%%", float(m_netFrames) / 10.0F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
 		writeEndNet();
 	}
 }
@@ -509,8 +538,27 @@ void CYSFControl::clock(unsigned int ms)
 		m_networkWatchdog.clock(ms);
 
 		if (m_networkWatchdog.hasExpired()) {
-			LogMessage("YSF, network watchdog has expired, %.1f seconds, BER: %.1f%%", float(m_netFrames) / 10.0F, float(m_netErrs * 100U) / float(m_netBits));
+			LogMessage("YSF, network watchdog has expired, %.1f seconds, %u%% packet loss, BER: %.1f%%", float(m_netFrames) / 10.0F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
 			writeEndNet();
+		}
+	}
+
+	if (m_netState == RS_NET_AUDIO) {
+		m_packetTimer.clock(ms);
+
+		if (m_packetTimer.isRunning() && m_packetTimer.hasExpired()) {
+			unsigned int elapsed = m_elapsed.elapsed();
+			unsigned int frames = elapsed / YSF_FRAME_TIME;
+
+			if (frames > m_netFrames) {
+				unsigned int count = frames - m_netFrames;
+				if (count > 2U) {
+					LogDebug("YSF, lost audio for 200ms filling in, elapsed: %ums, expected: %u, received: %u", elapsed, frames, m_netFrames);
+					insertSilence(count - 1U);
+				}
+			}
+
+			m_packetTimer.start();
 		}
 	}
 }
@@ -609,4 +657,56 @@ void CYSFControl::closeFile()
 		::fclose(m_fp);
 		m_fp = NULL;
 	}
+}
+
+bool CYSFControl::insertSilence(const unsigned char* data, unsigned char n)
+{
+	assert(data != NULL);
+
+	// Check to see if we have any spaces to fill?
+	unsigned char newN = (m_netN + 1U) % 128U;
+	if (newN == n) {
+		// Just copy the data, nothing else to do here
+		::memcpy(m_lastFrame, data, YSF_FRAME_LENGTH_BYTES + 2U);
+		return true;
+	}
+
+	LogDebug("YSF, current=%u last=%u", n, m_netN);
+
+	unsigned int count;
+	if (n > newN)
+		count = n - newN;
+	else
+		count = (128U + n) - newN;
+
+	if (count >= 4U) {
+		LogDebug("YSF, frame is out of range, count = %u", count);
+		return false;
+	}
+
+	insertSilence(count);
+
+	::memcpy(m_lastFrame, data, YSF_FRAME_LENGTH_BYTES + 2U);
+
+	return true;
+}
+
+void CYSFControl::insertSilence(unsigned int count)
+{
+	LogDebug("YSF, insert %u frames", count);
+
+	unsigned char n = (m_netN + 1U) % 128U;
+
+	for (unsigned int i = 0U; i < count; i++) {
+		writeQueueNet(m_lastFrame);
+
+		m_netN = n;
+
+		m_netFrames++;
+		m_netLost++;
+
+		n = (n + 1U) % 128U;
+	}
+
+	LogDebug("YSF, last=%u", m_netN);
 }

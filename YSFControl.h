@@ -23,6 +23,7 @@
 #include "YSFDefines.h"
 #include "YSFPayload.h"
 #include "RingBuffer.h"
+#include "StopWatch.h"
 #include "Display.h"
 #include "Defines.h"
 #include "Timer.h"
@@ -50,9 +51,12 @@ private:
 	RPT_NET_STATE              m_netState;
 	CTimer                     m_rfTimeoutTimer;
 	CTimer                     m_netTimeoutTimer;
+	CTimer                     m_packetTimer;
 	CTimer                     m_networkWatchdog;
+	CStopWatch                 m_elapsed;
 	unsigned int               m_rfFrames;
 	unsigned int               m_netFrames;
+	unsigned int               m_netLost;
 	unsigned int               m_rfErrs;
 	unsigned int               m_rfBits;
 	unsigned int               m_netErrs;
@@ -61,6 +65,8 @@ private:
 	unsigned char*             m_rfDest;
 	unsigned char*             m_netSource;
 	unsigned char*             m_netDest;
+	unsigned char*             m_lastFrame;
+	unsigned char              m_netN;
 	CYSFPayload                m_rfPayload;
 	CYSFPayload                m_netPayload;
 	unsigned char              m_netSeqNo;
@@ -77,6 +83,9 @@ private:
 	bool openFile();
 	bool writeFile(const unsigned char* data);
 	void closeFile();
+
+	bool insertSilence(const unsigned char* data, unsigned char n);
+	void insertSilence(unsigned int count);
 };
 
 #endif
