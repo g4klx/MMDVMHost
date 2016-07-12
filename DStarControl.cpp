@@ -526,6 +526,8 @@ void CDStarControl::writeNetwork()
 
 		blankDTMF(data + 2U);
 
+		data[1U] = TAG_DATA;
+
 		// Insert silence and reject if in the past
 		bool ret = insertSilence(data + 1U, n);
 		if (!ret)
@@ -542,8 +544,6 @@ void CDStarControl::writeNetwork()
 
 		m_packetTimer.start();
 		m_netFrames++;
-
-		data[1U] = TAG_DATA;
 
 #if defined(DUMP_DSTAR)
 		writeFile(data + 1U, length - 1U);
