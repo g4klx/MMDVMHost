@@ -70,7 +70,6 @@ private:
 	unsigned char              m_netN;
 	CYSFPayload                m_rfPayload;
 	CYSFPayload                m_netPayload;
-	unsigned char              m_netSeqNo;
 	FILE*                      m_fp;
 
 	void writeQueueRF(const unsigned char* data);

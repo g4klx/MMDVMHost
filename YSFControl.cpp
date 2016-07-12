@@ -52,7 +52,6 @@ m_lastMode(YSF_DT_VOICE_FR_MODE),
 m_netN(0U),
 m_rfPayload(),
 m_netPayload(),
-m_netSeqNo(0U),
 m_fp(NULL)
 {
 	assert(display != NULL);
@@ -354,6 +353,7 @@ void CYSFControl::writeEndNet()
 
 	m_netTimeoutTimer.stop();
 	m_networkWatchdog.stop();
+	m_packetTimer.stop();
 
 	m_netPayload.reset();
 
@@ -377,7 +377,13 @@ void CYSFControl::writeNetwork()
 
 	bool gateway = ::memcmp(data + 4U, "GATEWAY   ", YSF_CALLSIGN_LENGTH) == 0;
 
+	unsigned char n = (data[34U] & 0xFEU) >> 1;
+	bool end = (data[34U] & 0x01U) == 0x01U;
+
 	if (!m_netTimeoutTimer.isRunning()) {
+		if (end)
+			return;
+
 		if (::memcmp(data + 14U, "          ", YSF_CALLSIGN_LENGTH) != 0)
 			::memcpy(m_netSource, data + 14U, YSF_CALLSIGN_LENGTH);
 		else
@@ -400,14 +406,11 @@ void CYSFControl::writeNetwork()
 		m_netLost   = 0U;
 		m_netErrs   = 0U;
 		m_netBits   = 1U;
-		m_netSeqNo  = 0U;
 		m_netN      = 0U;
 	} else {
 		// Check for duplicate frames, if we can
-		if (m_netSeqNo == data[34U]) {
-			LogDebug("YSF, removing network duplicate, seq %u", data[34U] >> 1);
+		if (m_netN == n)
 			return;
-		}
 
 		bool changed = false;
 
@@ -427,12 +430,6 @@ void CYSFControl::writeNetwork()
 		}
 	}
 
-	m_netFrames++;
-	m_netSeqNo = data[34U];
-
-	unsigned char n = (data[34U] & 0xFEU) >> 1;
-	bool end = (data[34U] & 0x01U) == 0x01U;
-
 	data[33U] = end ? TAG_EOT : TAG_DATA;
 	data[34U] = 0x00U;
 
@@ -447,6 +444,10 @@ void CYSFControl::writeNetwork()
 		unsigned char fn = fich.getFN();
 		unsigned char ft = fich.getFT();
 		unsigned char fi = fich.getFI();
+
+		fich.setVoIP(true);
+		fich.setMR(YSF_MR_BUSY);
+		fich.encode(data + 35U);
 
 		m_lastMode = dt;
 
@@ -509,10 +510,6 @@ void CYSFControl::writeNetwork()
 		default:
 			break;
 		}
-
-		fich.setVoIP(true);
-		fich.setMR(YSF_MR_BUSY);
-		fich.encode(data + 35U);
 	} else {
 		send = insertSilence(data + 33U, n);
 	}
@@ -520,6 +517,7 @@ void CYSFControl::writeNetwork()
 	if (send) {
 		writeQueueNet(data + 33U);
 		m_packetTimer.start();
+		m_netFrames++;
 		m_netN = n;
 	}
 
