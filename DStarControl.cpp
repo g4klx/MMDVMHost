@@ -515,14 +515,17 @@ void CDStarControl::writeNetwork()
 
 		unsigned char n = data[1U];
 
-		insertSilence(data + 1U, n);
-
 		unsigned int errors = m_fec.regenerateDStar(data + 2U);
+
+		blankDTMF(data + 2U);
+
+		// Insert silence and reject if in the past
+		bool ret = insertSilence(data + 2U, n);
+		if (!ret)
+			return;
 
 		m_netErrs += errors;
 		m_netBits += 48U;
-
-		blankDTMF(data + 2U);
 
 		// Regenerate the sync
 		if (n == 0U)
@@ -791,7 +794,7 @@ void CDStarControl::closeFile()
 	}
 }
 
-void CDStarControl::insertSilence(const unsigned char* data, unsigned char seqNo)
+bool CDStarControl::insertSilence(const unsigned char* data, unsigned char seqNo)
 {
 	assert(data != NULL);
 
@@ -799,8 +802,8 @@ void CDStarControl::insertSilence(const unsigned char* data, unsigned char seqNo
 	unsigned int oldSeqNo = (m_netN + 1U) % 21U;
 	if (oldSeqNo == seqNo) {
 		// Just copy the data, nothing else to do here
-		::memcpy(m_lastFrame, data, DSTAR_FRAME_LENGTH_BYTES + 1U);
-		return;
+		::memcpy(m_lastFrame, data + 1U, DSTAR_FRAME_LENGTH_BYTES + 1U);
+		return true;
 	}
 
 	LogDebug("D-Star, current=%u last=%u", seqNo, m_netN);
@@ -811,10 +814,14 @@ void CDStarControl::insertSilence(const unsigned char* data, unsigned char seqNo
 	else
 		count = (21U + seqNo) - oldSeqNo;
 
-	if (count < 10U)
-		insertSilence(count);
+	if (count >= 10U)
+		return false;
 
-	::memcpy(m_lastFrame, data, DSTAR_FRAME_LENGTH_BYTES + 1U);
+	insertSilence(count);
+
+	::memcpy(m_lastFrame, data + 1U, DSTAR_FRAME_LENGTH_BYTES + 1U);
+
+	return true;
 }
 
 void CDStarControl::insertSilence(unsigned int count)

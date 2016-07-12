@@ -98,7 +98,7 @@ private:
 	bool writeFile(const unsigned char* data, unsigned int length);
 	void closeFile();
 
-	void insertSilence(const unsigned char* data, unsigned char seqNo);
+	bool insertSilence(const unsigned char* data, unsigned char seqNo);
 	void insertSilence(unsigned int count);
 
 	void blankDTMF(unsigned char* data) const;
