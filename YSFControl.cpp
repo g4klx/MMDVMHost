@@ -48,6 +48,7 @@ m_rfDest(NULL),
 m_netSource(NULL),
 m_netDest(NULL),
 m_lastFrame(NULL),
+m_lastMode(YSF_DT_VOICE_FR_MODE),
 m_netN(0U),
 m_rfPayload(),
 m_netPayload(),
@@ -447,6 +448,8 @@ void CYSFControl::writeNetwork()
 		unsigned char ft = fich.getFT();
 		unsigned char fi = fich.getFI();
 
+		m_lastMode = dt;
+
 		// Set the downlink callsign
 		switch (fi) {
 		case YSF_FI_HEADER:
@@ -693,6 +696,10 @@ bool CYSFControl::insertSilence(const unsigned char* data, unsigned char n)
 
 void CYSFControl::insertSilence(unsigned int count)
 {
+	// We can't meaningfully create "silent" data
+	if (m_lastMode == YSF_DT_DATA_FR_MODE)
+		return;
+
 	LogDebug("YSF, insert %u frames", count);
 
 	unsigned char n = (m_netN + 1U) % 128U;

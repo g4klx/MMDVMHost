@@ -66,6 +66,7 @@ private:
 	unsigned char*             m_netSource;
 	unsigned char*             m_netDest;
 	unsigned char*             m_lastFrame;
+	unsigned char              m_lastMode;
 	unsigned char              m_netN;
 	CYSFPayload                m_rfPayload;
 	CYSFPayload                m_netPayload;
