@@ -13,20 +13,16 @@
 
 #include "DMRTrellis.h"
 #include "DMRDefines.h"
-#include "Utils.h"
 #include "Log.h"
 
 #include <cstdio>
 #include <cassert>
 
 const unsigned int INTERLEAVE_TABLE[] = {
-	 0U, 16U, 32U, 48U, 64U, 80U,  96U, 112U, 128U, 144U, 160U, 176U, 192U,
-	 4U, 20U, 36U, 52U, 68U, 84U, 100U, 116U, 132U, 148U, 164U, 180U,
-	 8U, 24U, 40U, 56U, 72U, 88U, 104U, 120U, 136U, 152U, 168U, 184U,
-	12U, 28U, 44U, 60U, 76U, 92U, 108U, 124U, 140U, 156U, 172U, 188U};
-
-const unsigned char DIBITS_TO_POINT[] = { 11U,  12U,   0U,   7U,  14U,   9U,   5U,   2U,  10U,  13U,   1U,   6U,  15U,   8U,   4U,   3U};
-const unsigned char POINT_TO_DIBITS[] = {0x2U, 0xAU, 0x7U, 0xFU, 0xEU, 0x6U, 0xBU, 0x3U, 0xDU, 0x5U, 0x8U, 0x0U, 0x1U, 0x9U, 0x4U, 0xCU};
+	0U, 1U, 8U,   9U, 16U, 17U, 24U, 25U, 32U, 33U, 40U, 41U, 48U, 49U, 56U, 57U, 64U, 65U, 72U, 73U, 80U, 81U, 88U, 89U, 96U, 97U,
+	2U, 3U, 10U, 11U, 18U, 19U, 26U, 27U, 34U, 35U, 42U, 43U, 50U, 51U, 58U, 59U, 66U, 67U, 74U, 75U, 82U, 83U, 90U, 91U,
+	4U, 5U, 12U, 13U, 20U, 21U, 28U, 29U, 36U, 37U, 44U, 45U, 52U, 53U, 60U, 61U, 68U, 69U, 76U, 77U, 84U, 85U, 92U, 93U,
+	6U, 7U, 14U, 15U, 22U, 23U, 30U, 31U, 38U, 39U, 46U, 47U, 54U, 55U, 62U, 63U, 70U, 71U, 78U, 79U, 86U, 87U, 94U, 95U};
 
 const unsigned char ENCODE_TABLE[] = {
 	0U,  8U, 4U, 12U, 2U, 10U, 6U, 14U,
@@ -51,19 +47,41 @@ CDMRTrellis::~CDMRTrellis()
 {
 }
 
-void CDMRTrellis::decode(const unsigned char* data, unsigned char* payload)
+bool CDMRTrellis::decode(const unsigned char* data, unsigned char* payload)
 {
 	assert(data != NULL);
 	assert(payload != NULL);
 
-	CUtils::dump(1U, "Payload", data, DMR_FRAME_LENGTH_BYTES);
+	signed char dibits[98U];
+	deinterleave(data, dibits);
 
-	// unsigned char points[49U];
-	// deinterleave(data, points);
+	unsigned char points[49U];
+	dibitsToPoints(dibits, points);
 
-	// unsigned char tribits[49U];
+	unsigned char tribits[49U];
+	unsigned char state = 0U;
 
-	// fromtribits(tribits, payload);
+	for (unsigned int i = 0U; i < 49U; i++) {
+		tribits[i] = 9U;
+
+		for (unsigned int j = 0U; j < 8U; j++) {
+			if (points[i] == ENCODE_TABLE[state * 8U + j]) {
+				tribits[i] = j;
+				break;
+			}
+		}
+
+		if (tribits[i] == 9U) {
+			LogDebug("Decoding failure at position %u", i);
+			return false;
+		}
+
+		state = tribits[i];
+	}
+
+	tribitsToBits(tribits, payload);
+
+	return true;
 }
 
 void CDMRTrellis::encode(const unsigned char* payload, unsigned char* data)
@@ -72,7 +90,7 @@ void CDMRTrellis::encode(const unsigned char* payload, unsigned char* data)
 	assert(data != NULL);
 
 	unsigned char tribits[49U];
-	totribits(payload, tribits);
+	bitsToTribits(payload, tribits);
 
 	unsigned char points[49U];
 	unsigned char state = 0U;
@@ -85,68 +103,184 @@ void CDMRTrellis::encode(const unsigned char* payload, unsigned char* data)
 		state = tribit;
 	}
 
-	interleave(points, data);
+	signed char dibits[98U];
+	pointsToDibits(points, dibits);
+
+	interleave(dibits, data);
 }
 
-void CDMRTrellis::deinterleave(const unsigned char* data, unsigned char* points) const
+void CDMRTrellis::deinterleave(const unsigned char* data, signed char* dibits) const
 {
-	for (unsigned int i = 0U; i < 49U; i++) {
-		unsigned int n = INTERLEAVE_TABLE[i] + 0U;
+	for (unsigned int i = 0U; i < 98U; i++) {
+		unsigned int n = i * 2U + 0U;
 		if (n >= 98U) n += 68U;
 		bool b1 = READ_BIT(data, n) != 0x00U;
 
-		n = INTERLEAVE_TABLE[i] + 1U;
+		n = i * 2U + 1U;
 		if (n >= 98U) n += 68U;
 		bool b2 = READ_BIT(data, n) != 0x00U;
 
-		n = INTERLEAVE_TABLE[i] + 2U;
-		if (n >= 98U) n += 68U;
-		bool b3 = READ_BIT(data, n) != 0x00U;
+		signed char dibit;
+		if (!b1 && b2)
+			dibit = +3;
+		else if (!b1 && !b2)
+			dibit = +1;
+		else if (b1 && !b2)
+			dibit = -1;
+		else
+			dibit = -3;
 
-		n = INTERLEAVE_TABLE[i] + 3U;
-		if (n >= 98U) n += 68U;
-		bool b4 = READ_BIT(data, n) != 0x00U;
-
-		unsigned int dibits = 0U;
-		dibits |= b1 ? 8U : 0U;
-		dibits |= b2 ? 4U : 0U;
-		dibits |= b3 ? 2U : 0U;
-		dibits |= b4 ? 1U : 0U;
-
-		points[i] = DIBITS_TO_POINT[dibits];
+		n = INTERLEAVE_TABLE[i];
+		dibits[n] = dibit;
 	}
 }
 
-void CDMRTrellis::interleave(const unsigned char* points, unsigned char* data) const
+void CDMRTrellis::interleave(const signed char* dibits, unsigned char* data) const
 {
-	for (unsigned int i = 0U; i < 49U; i++) {
-		unsigned char point = points[i];
-		unsigned char dibits = POINT_TO_DIBITS[point];
+	for (unsigned int i = 0U; i < 98U; i++) {
+		unsigned int n = INTERLEAVE_TABLE[i];
 
-		bool b1 = (dibits & 0x08U) == 0x08U;
-		bool b2 = (dibits & 0x04U) == 0x04U;
-		bool b3 = (dibits & 0x02U) == 0x02U;
-		bool b4 = (dibits & 0x01U) == 0x01U;
+		bool b1, b2;
+		switch (dibits[n]) {
+		case +3:
+			b1 = false;
+			b2 = true;
+			break;
+		case +1:
+			b1 = false;
+			b2 = false;
+			break;
+		case -1:
+			b1 = true;
+			b2 = false;
+			break;
+		default:
+			b1 = true;
+			b2 = true;
+			break;
+		}
 
-		unsigned int n = INTERLEAVE_TABLE[i] + 0U;
+		n = i * 2U + 0U;
 		if (n >= 98U) n += 68U;
 		WRITE_BIT(data, n, b1);
 
-		n = INTERLEAVE_TABLE[i] + 1U;
+		n = i * 2U + 1U;
 		if (n >= 98U) n += 68U;
 		WRITE_BIT(data, n, b2);
-
-		n = INTERLEAVE_TABLE[i] + 2U;
-		if (n >= 98U) n += 68U;
-		WRITE_BIT(data, n, b3);
-
-		n = INTERLEAVE_TABLE[i] + 3U;
-		if (n >= 98U) n += 68U;
-		WRITE_BIT(data, n, b4);
 	}
 }
 
-void CDMRTrellis::totribits(const unsigned char* payload, unsigned char* tribits) const
+void CDMRTrellis::dibitsToPoints(const signed char* dibits, unsigned char* points) const
+{
+	for (unsigned int i = 0U; i < 49U; i++) {
+		if (dibits[i * 2U + 0U] == +1 && dibits[i * 2U + 1U] == -1)
+			points[i] = 0U;
+		else if (dibits[i * 2U + 0U] == -1 && dibits[i * 2U + 1U] == -1)
+			points[i] = 1U;
+		else if (dibits[i * 2U + 0U] == +3 && dibits[i * 2U + 1U] == -3)
+			points[i] = 2U;
+		else if (dibits[i * 2U + 0U] == -3 && dibits[i * 2U + 1U] == -3)
+			points[i] = 3U;
+		else if (dibits[i * 2U + 0U] == -3 && dibits[i * 2U + 1U] == -1)
+			points[i] = 4U;
+		else if (dibits[i * 2U + 0U] == +3 && dibits[i * 2U + 1U] == -1)
+			points[i] = 5U;
+		else if (dibits[i * 2U + 0U] == -1 && dibits[i * 2U + 1U] == -3)
+			points[i] = 6U;
+		else if (dibits[i * 2U + 0U] == +1 && dibits[i * 2U + 1U] == -3)
+			points[i] = 7U;
+		else if (dibits[i * 2U + 0U] == -3 && dibits[i * 2U + 1U] == +3)
+			points[i] = 8U;
+		else if (dibits[i * 2U + 0U] == +3 && dibits[i * 2U + 1U] == +3)
+			points[i] = 9U;
+		else if (dibits[i * 2U + 0U] == -1 && dibits[i * 2U + 1U] == +1)
+			points[i] = 10U;
+		else if (dibits[i * 2U + 0U] == +1 && dibits[i * 2U + 1U] == +1)
+			points[i] = 11U;
+		else if (dibits[i * 2U + 0U] == +1 && dibits[i * 2U + 1U] == +3)
+			points[i] = 12U;
+		else if (dibits[i * 2U + 0U] == -1 && dibits[i * 2U + 1U] == +3)
+			points[i] = 13U;
+		else if (dibits[i * 2U + 0U] == +3 && dibits[i * 2U + 1U] == +1)
+			points[i] = 14U;
+		else if (dibits[i * 2U + 0U] == -3 && dibits[i * 2U + 1U] == +1)
+			points[i] = 15U;
+	}
+}
+
+void CDMRTrellis::pointsToDibits(const unsigned char* points, signed char* dibits) const
+{
+	for (unsigned int i = 0U; i < 49U; i++) {
+		switch (points[i]) {
+		case 0U:
+			dibits[i * 2U + 0U] = +1;
+			dibits[i * 2U + 1U] = -1;
+			break;
+		case 1U:
+			dibits[i * 2U + 0U] = -1;
+			dibits[i * 2U + 1U] = -1;
+			break;
+		case 2U:
+			dibits[i * 2U + 0U] = +3;
+			dibits[i * 2U + 1U] = -3;
+			break;
+		case 3U:
+			dibits[i * 2U + 0U] = -3;
+			dibits[i * 2U + 1U] = -3;
+			break;
+		case 4U:
+			dibits[i * 2U + 0U] = -3;
+			dibits[i * 2U + 1U] = -1;
+			break;
+		case 5U:
+			dibits[i * 2U + 0U] = +3;
+			dibits[i * 2U + 1U] = -1;
+			break;
+		case 6U:
+			dibits[i * 2U + 0U] = -1;
+			dibits[i * 2U + 1U] = -3;
+			break;
+		case 7U:
+			dibits[i * 2U + 0U] = +1;
+			dibits[i * 2U + 1U] = -3;
+			break;
+		case 8U:
+			dibits[i * 2U + 0U] = -3;
+			dibits[i * 2U + 1U] = +3;
+			break;
+		case 9U:
+			dibits[i * 2U + 0U] = +3;
+			dibits[i * 2U + 1U] = +3;
+			break;
+		case 10U:
+			dibits[i * 2U + 0U] = -1;
+			dibits[i * 2U + 1U] = +1;
+			break;
+		case 11U:
+			dibits[i * 2U + 0U] = +1;
+			dibits[i * 2U + 1U] = +1;
+			break;
+		case 12U:
+			dibits[i * 2U + 0U] = +1;
+			dibits[i * 2U + 1U] = +3;
+			break;
+		case 13U:
+			dibits[i * 2U + 0U] = -1;
+			dibits[i * 2U + 1U] = +3;
+			break;
+		case 14U:
+			dibits[i * 2U + 0U] = +3;
+			dibits[i * 2U + 1U] = +1;
+			break;
+		default:
+			dibits[i * 2U + 0U] = -3;
+			dibits[i * 2U + 1U] = +1;
+			break;
+		}
+	}
+}
+
+void CDMRTrellis::bitsToTribits(const unsigned char* payload, unsigned char* tribits) const
 {
 	for (unsigned int i = 0U; i < 48U; i++) {
 		unsigned int n = 143U - i * 3U;
@@ -168,7 +302,7 @@ void CDMRTrellis::totribits(const unsigned char* payload, unsigned char* tribits
 	tribits[48U] = 0U;
 }
 
-void CDMRTrellis::fromtribits(const unsigned char* tribits, unsigned char* payload) const
+void CDMRTrellis::tribitsToBits(const unsigned char* tribits, unsigned char* payload) const
 {
 	for (unsigned int i = 0U; i < 48U; i++) {
 		unsigned char tribit = tribits[i];
