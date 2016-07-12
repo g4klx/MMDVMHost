@@ -520,7 +520,7 @@ void CDStarControl::writeNetwork()
 		blankDTMF(data + 2U);
 
 		// Insert silence and reject if in the past
-		bool ret = insertSilence(data + 2U, n);
+		bool ret = insertSilence(data + 1U, n);
 		if (!ret)
 			return;
 
@@ -802,7 +802,7 @@ bool CDStarControl::insertSilence(const unsigned char* data, unsigned char seqNo
 	unsigned int oldSeqNo = (m_netN + 1U) % 21U;
 	if (oldSeqNo == seqNo) {
 		// Just copy the data, nothing else to do here
-		::memcpy(m_lastFrame, data + 1U, DSTAR_FRAME_LENGTH_BYTES + 1U);
+		::memcpy(m_lastFrame, data, DSTAR_FRAME_LENGTH_BYTES + 1U);
 		return true;
 	}
 
@@ -819,7 +819,7 @@ bool CDStarControl::insertSilence(const unsigned char* data, unsigned char seqNo
 
 	insertSilence(count);
 
-	::memcpy(m_lastFrame, data + 1U, DSTAR_FRAME_LENGTH_BYTES + 1U);
+	::memcpy(m_lastFrame, data, DSTAR_FRAME_LENGTH_BYTES + 1U);
 
 	return true;
 }
