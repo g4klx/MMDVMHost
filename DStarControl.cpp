@@ -473,12 +473,12 @@ void CDStarControl::writeNetwork()
 		m_ackTimer.stop();
 
 		m_netFrames = 0U;
-		m_netLost = 0U;
+		m_netLost   = 0U;
 
-		m_netN = 0U;
+		m_netN      = 20U;
 
-		m_netBits = 1U;
-		m_netErrs = 0U;
+		m_netBits   = 1U;
+		m_netErrs   = 0U;
 
 		writeQueueHeaderNet(data);
 
@@ -536,11 +536,13 @@ void CDStarControl::writeNetwork()
 		m_netErrs += errors;
 		m_netBits += 48U;
 
+		m_netN = n;
+
+		LogDebug("D-Star, audio sequence no. %u, errs: %u/48", m_netN, errors);
+
 		// Regenerate the sync
 		if (n == 0U)
 			CSync::addDStarSync(data + 2U);
-
-		m_netN = n;
 
 		m_packetTimer.start();
 		m_netFrames++;

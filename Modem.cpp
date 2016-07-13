@@ -419,14 +419,17 @@ void CModem::clock(unsigned int ms)
 			if (m_debug) {
 				switch (buffer[3U]) {
 				case MMDVM_DSTAR_HEADER:
+					LogDebug("D-Star header space reported = %u", m_dstarSpace);
 					CUtils::dump(1U, "TX D-Star Header", m_buffer, len);
 					m_dstarSpace -= 4U;
 					break;
 				case MMDVM_DSTAR_DATA:
+					LogDebug("D-Star data space reported = %u", m_dstarSpace);
 					CUtils::dump(1U, "TX D-Star Data", m_buffer, len);
 					m_dstarSpace -= 1U;
 					break;
 				default:
+					LogDebug("D-Star EOT space reported = %u", m_dstarSpace);
 					CUtils::dump(1U, "TX D-Star EOT", m_buffer, len);
 					m_dstarSpace -= 1U;
 					break;
@@ -574,10 +577,18 @@ bool CModem::writeDStarData(const unsigned char* data, unsigned int length)
 	buffer[1U] = length + 2U;
 
 	switch (data[0U]) {
-		case TAG_HEADER: buffer[2U] = MMDVM_DSTAR_HEADER; break;
-		case TAG_DATA:   buffer[2U] = MMDVM_DSTAR_DATA;   break;
-		case TAG_EOT:    buffer[2U] = MMDVM_DSTAR_EOT;    break;
-		default: return false;
+		case TAG_HEADER:
+			buffer[2U] = MMDVM_DSTAR_HEADER;
+			break;
+		case TAG_DATA:
+			buffer[2U] = MMDVM_DSTAR_DATA;
+			break;
+		case TAG_EOT:
+			buffer[2U] = MMDVM_DSTAR_EOT;
+			break;
+		default:
+			CUtils::dump(2U, "Unknown D-Star packet type", data, length);
+			return false;
 	}
 
 	::memcpy(buffer + 3U, data + 1U, length - 1U);
