@@ -240,7 +240,7 @@ bool CHD44780::open()
 void CHD44780::adafruitLCDSetup()
 {
     // The other control pins are initialised with lcdInit()
-    ::mcp23017Setup(AF_BASE, m_i2caddress);
+    ::mcp23017Setup(AF_BASE, m_i2cAddress);
 
     // Backlight LEDs    
     ::pinMode(AF_RED,   OUTPUT);
