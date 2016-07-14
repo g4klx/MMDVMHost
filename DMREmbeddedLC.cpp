@@ -21,7 +21,6 @@
 #include "Hamming.h"
 #include "Utils.h"
 #include "CRC.h"
-#include "Log.h"
 
 #include <cstdio>
 #include <cassert>
@@ -210,19 +209,15 @@ CDMRLC* CDMREmbeddedLC::processMultiBlockEmbeddedLC()
 
 	// Hamming (16,11,4) check each row except the last one
 	for (unsigned int a = 0U; a < 112U; a += 16U) {
-		if (!CHamming::decode16114(data + a)) {
-			::LogDebug("Hamming decode of a row of the Embedded LC failed");
+		if (!CHamming::decode16114(data + a))
 			return NULL;
-		}
 	}
 
 	// Check the parity bits
 	for (unsigned int a = 0U; a < 16U; a++) {
 		bool parity = data[a + 0U] ^ data[a + 16U] ^ data[a + 32U] ^ data[a + 48U] ^ data[a + 64U] ^ data[a + 80U] ^ data[a + 96U] ^ data[a + 112U];
-		if (parity) {
-			::LogDebug("Parity check of a column of the Embedded LC failed");
+		if (parity)
 			return NULL;
-		}
 	}
 
 	// We have passed the Hamming check so extract the actual payload
@@ -252,10 +247,8 @@ CDMRLC* CDMREmbeddedLC::processMultiBlockEmbeddedLC()
 	if (data[106]) crc += 1U;
 
 	// Now CRC check this
-	if (!CCRC::checkFiveBit(lcData, crc)) {
-		::LogDebug("Checksum of the Embedded LC failed");
+	if (!CCRC::checkFiveBit(lcData, crc))
 		return NULL;
-	}
 
 	return new CDMRLC(lcData);
 }
