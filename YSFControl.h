@@ -51,7 +51,6 @@ private:
 	RPT_NET_STATE              m_netState;
 	CTimer                     m_rfTimeoutTimer;
 	CTimer                     m_netTimeoutTimer;
-	CTimer                     m_packetTimer;
 	CTimer                     m_networkWatchdog;
 	CStopWatch                 m_elapsed;
 	unsigned int               m_rfFrames;

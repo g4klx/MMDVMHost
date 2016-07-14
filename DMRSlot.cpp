@@ -70,7 +70,6 @@ m_netN(0U),
 m_networkWatchdog(1000U, 0U, 1500U),
 m_rfTimeoutTimer(1000U, timeout),
 m_netTimeoutTimer(1000U, timeout),
-m_packetTimer(1000U, 0U, 300U),
 m_interval(),
 m_elapsed(),
 m_rfFrames(0U),
@@ -679,7 +678,6 @@ void CDMRSlot::writeEndNet(bool writeEnd)
 
 	m_networkWatchdog.stop();
 	m_netTimeoutTimer.stop();
-	m_packetTimer.stop();
 
 	m_netFrames = 0U;
 	m_netLost = 0U;
@@ -1031,8 +1029,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 			writeQueueNet(data);
 
-			m_packetTimer.start();
-
 			m_netFrames++;
 
 			// Save details in case we need to infill data
@@ -1083,8 +1079,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		}
 
 		writeQueueNet(data);
-
-		m_packetTimer.start();
 
 		m_netFrames++;
 
@@ -1236,21 +1230,15 @@ void CDMRSlot::clock()
 	}
 
 	if (m_netState == RS_NET_AUDIO) {
-		m_packetTimer.clock(ms);
+		unsigned int elapsed = m_elapsed.elapsed();
+		unsigned int frames  = elapsed / DMR_SLOT_TIME;
 
-		if (m_packetTimer.isRunning() && m_packetTimer.hasExpired()) {
-			unsigned int elapsed = m_elapsed.elapsed();
-			unsigned int frames  = elapsed / DMR_SLOT_TIME;
-
-			if (frames > m_netFrames) {
-				unsigned int count = frames - m_netFrames;
-				if (count > 3U) {
-					LogDebug("DMR Slot %u, lost audio for 300ms filling in, elapsed: %ums, expected: %u, received: %u", m_slotNo, elapsed, frames, m_netFrames);
-					insertSilence(count - 1U);
-				}
+		if (frames > m_netFrames) {
+			unsigned int count = frames - m_netFrames;
+			if (count > 3U) {
+				LogDebug("DMR Slot %u, lost audio for over 200ms filling in, elapsed: %ums, expected: %u, received: %u", m_slotNo, elapsed, frames, m_netFrames);
+				insertSilence(count - 1U);
 			}
-
-			m_packetTimer.start();
 		}
 	}
 }
