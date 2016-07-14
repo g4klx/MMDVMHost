@@ -59,29 +59,38 @@ bool CDMRTrellis::decode(const unsigned char* data, unsigned char* payload)
 	dibitsToPoints(dibits, points);
 
 	unsigned char tribits[49U];
-	unsigned char state = 0U;
 
-	for (unsigned int i = 0U; i < 49U; i++) {
-		tribits[i] = 9U;
+	// Check the original code
+	unsigned int failPos = checkCode(points, tribits);
+	if (failPos == 999U) {
+		tribitsToBits(tribits, payload);
+		return true;
+	}
 
-		for (unsigned int j = 0U; j < 8U; j++) {
-			if (points[i] == ENCODE_TABLE[state * 8U + j]) {
-				tribits[i] = j;
-				break;
+	for (unsigned j = 0U; j < 20U; j++) {
+		unsigned int bestPos = 0U;
+		unsigned int bestVal = 0U;
+
+		for (unsigned int i = 0U; i < 16U; i++) {
+			points[failPos] = i;
+
+			unsigned int pos = checkCode(points, tribits);
+			if (pos == 999U) {
+				tribitsToBits(tribits, payload);
+				return true;
+			}
+
+			if (pos > bestPos) {
+				bestPos = pos;
+				bestVal = i;
 			}
 		}
 
-		if (tribits[i] == 9U) {
-			LogDebug("Decoding failure at position %u", i);
-			return false;
-		}
-
-		state = tribits[i];
+		points[failPos] = bestVal;
+		failPos = bestPos;
 	}
 
-	tribitsToBits(tribits, payload);
-
-	return true;
+	return false;
 }
 
 void CDMRTrellis::encode(const unsigned char* payload, unsigned char* data)
@@ -319,4 +328,30 @@ void CDMRTrellis::tribitsToBits(const unsigned char* tribits, unsigned char* pay
 		n--;
 		WRITE_BIT(payload, n, b3);
 	}
+}
+
+unsigned int CDMRTrellis::checkCode(const unsigned char* points, unsigned char* tribits) const
+{
+	unsigned char state = 0U;
+
+	for (unsigned int i = 0U; i < 49U; i++) {
+		tribits[i] = 9U;
+
+		for (unsigned int j = 0U; j < 8U; j++) {
+			if (points[i] == ENCODE_TABLE[state * 8U + j]) {
+				tribits[i] = j;
+				break;
+			}
+		}
+
+		if (tribits[i] == 9U)
+			return i;
+
+		state = tribits[i];
+	}
+
+	if (tribits[48U] != 0U)
+		return 48U;
+
+	return 999U;
 }

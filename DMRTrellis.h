@@ -29,6 +29,7 @@ private:
 	void pointsToDibits(const unsigned char* points, signed char* dibits) const;
 	void bitsToTribits(const unsigned char* payload, unsigned char* tribits) const;
 	void tribitsToBits(const unsigned char* tribits, unsigned char* payload) const;
+	unsigned int checkCode(const unsigned char* points, unsigned char* tribits) const;
 };
 
 #endif
