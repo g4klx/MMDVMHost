@@ -65,6 +65,7 @@ private:
 	CTimer                     m_networkWatchdog;
 	CTimer                     m_rfTimeoutTimer;
 	CTimer                     m_netTimeoutTimer;
+	CTimer                     m_packetTimer;
 	CTimer                     m_ackTimer;
 	CStopWatch                 m_interval;
 	CStopWatch                 m_elapsed;

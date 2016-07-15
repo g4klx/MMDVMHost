@@ -70,6 +70,7 @@ private:
 	CTimer                     m_networkWatchdog;
 	CTimer                     m_rfTimeoutTimer;
 	CTimer                     m_netTimeoutTimer;
+	CTimer                     m_packetTimer;
 	CStopWatch                 m_interval;
 	CStopWatch                 m_elapsed;
 	unsigned int               m_rfFrames;
