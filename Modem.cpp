@@ -390,7 +390,14 @@ void CModem::clock(unsigned int ms)
 				break;
 
 			case MMDVM_NAK:
-				LogWarning("Received a NAK from the MMDVM, command = 0x%02X, reason = %u", m_buffer[3U], m_buffer[4U]);
+				if (m_buffer[3U] == MMDVM_DSTAR_HEADER && m_buffer[4U] == 5U)
+					LogWarning("Received a NAK from the MMDVM, MMDVM_DSTAR_HEADER, data overflow, space = %u", m_dstarSpace);
+				else if (m_buffer[3U] == MMDVM_DSTAR_DATA && m_buffer[4U] == 5U)
+					LogWarning("Received a NAK from the MMDVM, MMDVM_DSTAR_DATA, data overflow, space = %u", m_dstarSpace);
+				else if (m_buffer[3U] == MMDVM_DSTAR_EOT && m_buffer[4U] == 5U)
+					LogWarning("Received a NAK from the MMDVM, MMDVM_DSTAR_EOT, data overflow, space = %u", m_dstarSpace);
+				else
+					LogWarning("Received a NAK from the MMDVM, command = 0x%02X, reason = %u", m_buffer[3U], m_buffer[4U]);
 				break;
 
 			default:
