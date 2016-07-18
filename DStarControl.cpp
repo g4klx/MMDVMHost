@@ -815,8 +815,6 @@ bool CDStarControl::insertSilence(const unsigned char* data, unsigned char seqNo
 		return true;
 	}
 
-	LogDebug("D-Star, current=%u last=%u", seqNo, m_netN);
-
 	unsigned int count;
 	if (seqNo > oldSeqNo)
 		count = seqNo - oldSeqNo;
@@ -835,8 +833,6 @@ bool CDStarControl::insertSilence(const unsigned char* data, unsigned char seqNo
 
 void CDStarControl::insertSilence(unsigned int count)
 {
-	LogDebug("D-Star, insert %u frames", count);
-
 	unsigned char n = (m_netN + 1U) % 21U;
 
 	for (unsigned int i = 0U; i < count; i++) {
@@ -862,8 +858,6 @@ void CDStarControl::insertSilence(unsigned int count)
 
 		n = (n + 1U) % 21U;
 	}
-
-	LogDebug("D-Star, last=%u", m_netN);
 }
 
 void CDStarControl::blankDTMF(unsigned char* data) const
