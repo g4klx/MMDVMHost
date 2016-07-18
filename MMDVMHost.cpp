@@ -875,7 +875,12 @@ void CMMDVMHost::createDisplay()
 		if (pins.size() == 6U) {
 			LogInfo("    Rows: %u", rows);
 			LogInfo("    Columns: %u", columns);
+
+#if defined(ADAFRUIT_DISPLAY) || defined(PCF8574_DISPLAY)
+			LogInfo("    Device Address: %#x", i2cAddress);
+#else
 			LogInfo("    Pins: %u,%u,%u,%u,%u,%u", pins.at(0U), pins.at(1U), pins.at(2U), pins.at(3U), pins.at(4U), pins.at(5U));
+#endif
 
 			LogInfo("    PWM Backlight: %s", pwm ? "yes" : "no");
 			if (pwm) {
@@ -891,6 +896,7 @@ void CMMDVMHost::createDisplay()
 			m_display = new CHD44780(rows, columns, m_callsign, dmrid, pins, i2cAddress, pwm, pwmPin, pwmBright, pwmDim, displayClock, utc, m_duplex);
 		}
 #endif
+
 #if defined(OLED)
 	} else if (type == "OLED") {
         unsigned char displayType       = m_conf.getOLEDType();
