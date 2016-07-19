@@ -433,7 +433,7 @@ void CYSFControl::writeNetwork()
 	data[33U] = end ? TAG_EOT : TAG_DATA;
 	data[34U] = 0x00U;
 
-	bool send = true;
+	// bool send = true;
 
 	CYSFFICH fich;
 	bool valid = fich.decode(data + 35U);
@@ -463,24 +463,24 @@ void CYSFControl::writeNetwork()
 			case YSF_DT_VD_MODE1: {
 					m_netPayload.processVDMode1Data(data + 35U, fn, gateway);
 					unsigned int errors = m_netPayload.processVDMode1Audio(data + 35U);
-					send = insertSilence(data + 33U, n);
-					if (send) {
+					// send = insertSilence(data + 33U, n);
+					// if (send) {
 						m_netErrs += errors;
 						m_netBits += 235U;
 						LogDebug("YSF, V/D Mode 1, seq %u, AMBE FEC %u/235 (%.1f%%)", n, errors, float(errors) / 2.35F);
-					}
+					// }
 				}
 				break;
 
 			case YSF_DT_VD_MODE2: {
 					m_netPayload.processVDMode2Data(data + 35U, fn, gateway);
 					unsigned int errors = m_netPayload.processVDMode2Audio(data + 35U);
-					send = insertSilence(data + 33U, n);
-					if (send) {
+					// send = insertSilence(data + 33U, n);
+					// if (send) {
 						m_netErrs += errors;
 						m_netBits += 135U;
 						LogDebug("YSF, V/D Mode 2, seq %u, Repetition FEC %u/135 (%.1f%%)", n, errors, float(errors) / 1.35F);
-					}
+					// }
 				}
 				break;
 
@@ -493,12 +493,12 @@ void CYSFControl::writeNetwork()
 				if (fn != 0U || ft != 1U) {
 					// The first packet after the header is odd, don't try and regenerate it
 					unsigned int errors = m_netPayload.processVoiceFRModeAudio(data + 35U);
-					send = insertSilence(data + 33U, n);
-					if (send) {
+					// send = insertSilence(data + 33U, n);
+					// if (send) {
 						m_netErrs += errors;
 						m_netBits += 720U;
 						LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%)", n, errors, float(errors) / 7.2F);
-					}
+					// }
 				}
 				break;
 
@@ -511,15 +511,15 @@ void CYSFControl::writeNetwork()
 			break;
 		}
 	} else {
-		send = insertSilence(data + 33U, n);
+		// send = insertSilence(data + 33U, n);
 	}
 
-	if (send) {
+	// if (send) {
 		writeQueueNet(data + 33U);
 		m_packetTimer.start();
 		m_netFrames++;
 		m_netN = n;
-	}
+	// }
 
 	if (end) {
 		LogMessage("YSF, received network end of transmission, %.1f seconds, %u%% packet loss, BER: %.1f%%", float(m_netFrames) / 10.0F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
@@ -544,6 +544,7 @@ void CYSFControl::clock(unsigned int ms)
 		}
 	}
 
+	/*
 	if (m_netState == RS_NET_AUDIO) {
 		m_packetTimer.clock(ms);
 
@@ -562,6 +563,7 @@ void CYSFControl::clock(unsigned int ms)
 			m_packetTimer.start();
 		}
 	}
+	*/
 }
 
 void CYSFControl::writeQueueRF(const unsigned char *data)
