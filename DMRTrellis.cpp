@@ -58,39 +58,27 @@ bool CDMRTrellis::decode(const unsigned char* data, unsigned char* payload)
 	unsigned char points[49U];
 	dibitsToPoints(dibits, points);
 
-	unsigned char tribits[49U];
-
 	// Check the original code
+	unsigned char tribits[49U];
 	unsigned int failPos = checkCode(points, tribits);
 	if (failPos == 999U) {
 		tribitsToBits(tribits, payload);
 		return true;
 	}
 
-	for (unsigned j = 0U; j < 20U; j++) {
-		unsigned int bestPos = 0U;
-		unsigned int bestVal = 0U;
+	unsigned char savePoints[49U];
+	for (unsigned int i = 0U; i < 49U; i++)
+		savePoints[i] = points[i];
 
-		for (unsigned int i = 0U; i < 16U; i++) {
-			points[failPos] = i;
+	bool ret = fixCode(points, failPos, payload);
+	if (ret)
+		return true;
 
-			unsigned int pos = checkCode(points, tribits);
-			if (pos == 999U) {
-				tribitsToBits(tribits, payload);
-				return true;
-			}
+	if (failPos == 0U)
+		return false;
 
-			if (pos > bestPos) {
-				bestPos = pos;
-				bestVal = i;
-			}
-		}
-
-		points[failPos] = bestVal;
-		failPos = bestPos;
-	}
-
-	return false;
+	// Backtrack one place for a last go
+	return fixCode(savePoints, failPos - 1U, payload);
 }
 
 void CDMRTrellis::encode(const unsigned char* payload, unsigned char* data)
@@ -328,6 +316,35 @@ void CDMRTrellis::tribitsToBits(const unsigned char* tribits, unsigned char* pay
 		n--;
 		WRITE_BIT(payload, n, b3);
 	}
+}
+
+bool CDMRTrellis::fixCode(unsigned char* points, unsigned int failPos, unsigned char* payload) const
+{
+	for (unsigned j = 0U; j < 20U; j++) {
+		unsigned int bestPos = 0U;
+		unsigned int bestVal = 0U;
+
+		for (unsigned int i = 0U; i < 16U; i++) {
+			points[failPos] = i;
+
+			unsigned char tribits[49U];
+			unsigned int pos = checkCode(points, tribits);
+			if (pos == 999U) {
+				tribitsToBits(tribits, payload);
+				return true;
+			}
+
+			if (pos > bestPos) {
+				bestPos = pos;
+				bestVal = i;
+			}
+		}
+
+		points[failPos] = bestVal;
+		failPos = bestPos;
+	}
+
+	return false;
 }
 
 unsigned int CDMRTrellis::checkCode(const unsigned char* points, unsigned char* tribits) const
