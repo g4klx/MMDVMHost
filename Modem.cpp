@@ -380,7 +380,7 @@ void CModem::clock(unsigned int ms)
 					m_ysfSpace   = m_buffer[9U];
 
 					m_inactivityTimer.start();
-					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u, lockout=%d", m_buffer[5U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, int(m_lockout));
+					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u lockout=%d", m_buffer[5U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, int(m_lockout));
 				}
 				break;
 
@@ -423,24 +423,22 @@ void CModem::clock(unsigned int ms)
 			m_txDStarData.getData(&len, 1U);
 			m_txDStarData.getData(m_buffer, len);
 
-			if (m_debug) {
-				switch (buffer[3U]) {
-				case MMDVM_DSTAR_HEADER:
-					LogDebug("D-Star header space reported = %u", m_dstarSpace);
+			switch (buffer[3U]) {
+			case MMDVM_DSTAR_HEADER:
+				if (m_debug)
 					CUtils::dump(1U, "TX D-Star Header", m_buffer, len);
-					m_dstarSpace -= 4U;
-					break;
-				case MMDVM_DSTAR_DATA:
-					LogDebug("D-Star data space reported = %u", m_dstarSpace);
+				m_dstarSpace -= 4U;
+				break;
+			case MMDVM_DSTAR_DATA:
+				if (m_debug)
 					CUtils::dump(1U, "TX D-Star Data", m_buffer, len);
-					m_dstarSpace -= 1U;
-					break;
-				default:
-					LogDebug("D-Star EOT space reported = %u", m_dstarSpace);
+				m_dstarSpace -= 1U;
+				break;
+			default:
+				if (m_debug)
 					CUtils::dump(1U, "TX D-Star EOT", m_buffer, len);
-					m_dstarSpace -= 1U;
-					break;
-				}
+				m_dstarSpace -= 1U;
+				break;
 			}
 
 			int ret = m_serial.write(m_buffer, len);
