@@ -596,6 +596,48 @@ unsigned int CAMBEFEC::regenerateDStar(unsigned char* bytes) const
 	return errors;
 }
 
+unsigned int CAMBEFEC::regenerateYSF1(unsigned char* bytes) const
+{
+	assert(bytes != NULL);
+
+	unsigned int a = 0U;
+	unsigned int b = 0U;
+	unsigned int c = 0U;
+
+	unsigned int MASK = 0x800000U;
+	for (unsigned int i = 0U; i < 24U; i++) {
+		unsigned int aPos = DMR_A_TABLE[i];
+		unsigned int bPos = DMR_B_TABLE[i];
+		unsigned int cPos = DMR_C_TABLE[i];
+
+		if (READ_BIT(bytes, aPos))
+			a |= MASK;
+		if (READ_BIT(bytes, bPos))
+			b |= MASK;
+		if (READ_BIT(bytes, cPos))
+			c |= MASK;
+
+		MASK >>= 1;
+	}
+
+	unsigned int errors = regenerate(a, b, c, true);
+
+	MASK = 0x800000U;
+	for (unsigned int i = 0U; i < 24U; i++) {
+		unsigned int aPos = DMR_A_TABLE[i];
+		unsigned int bPos = DMR_B_TABLE[i];
+		unsigned int cPos = DMR_C_TABLE[i];
+
+		WRITE_BIT(bytes, aPos, a & MASK);
+		WRITE_BIT(bytes, bPos, b & MASK);
+		WRITE_BIT(bytes, cPos, c & MASK);
+
+		MASK >>= 1;
+	}
+
+	return errors;
+}
+
 unsigned int CAMBEFEC::regenerateYSF3(unsigned char* bytes) const
 {
 	assert(bytes != NULL);

@@ -28,6 +28,8 @@ public:
 
 	unsigned int regenerateDStar(unsigned char* bytes) const;
 
+	unsigned int regenerateYSF1(unsigned char* bytes) const;
+
 	unsigned int regenerateYSF3(unsigned char* bytes) const;
 
 private:

@@ -257,11 +257,11 @@ unsigned int CYSFPayload::processVDMode1Audio(unsigned char* data)
 
 	// Regenerate the AMBE FEC
 	unsigned int errors = 0U;
-	errors += m_fec.regenerateDMR(data + 9U);
-	errors += m_fec.regenerateDMR(data + 27U);
-	errors += m_fec.regenerateDMR(data + 45U);
-	errors += m_fec.regenerateDMR(data + 63U);
-	errors += m_fec.regenerateDMR(data + 81U);
+	errors += m_fec.regenerateYSF1(data + 9U);
+	errors += m_fec.regenerateYSF1(data + 27U);
+	errors += m_fec.regenerateYSF1(data + 45U);
+	errors += m_fec.regenerateYSF1(data + 63U);
+	errors += m_fec.regenerateYSF1(data + 81U);
 
 	return errors;
 }
