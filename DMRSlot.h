@@ -127,7 +127,7 @@ private:
 	bool writeFile(const unsigned char* data);
 	void closeFile();
 
-	void insertSilence(const unsigned char* data, unsigned char seqNo);
+	bool insertSilence(const unsigned char* data, unsigned char seqNo);
 	void insertSilence(unsigned int count);
 
 	static void setShortLC(unsigned int slotNo, unsigned int id, FLCO flco = FLCO_GROUP, bool voice = true);
