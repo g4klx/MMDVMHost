@@ -69,6 +69,7 @@ m_netBits(1U),
 m_rfErrs(0U),
 m_netErrs(0U),
 m_lastFrame(NULL),
+m_lastFrameValid(false),
 m_fp(NULL)
 {
 	assert(display != NULL);
@@ -418,6 +419,8 @@ void CDStarControl::writeEndNet()
 {
 	m_netState = RS_NET_IDLE;
 
+	m_lastFrameValid = false;
+
 	m_display->clearDStar();
 
 	m_netTimeoutTimer.stop();
@@ -469,6 +472,8 @@ void CDStarControl::writeNetwork()
 		m_packetTimer.start();
 		m_elapsed.start();
 		m_ackTimer.stop();
+
+		m_lastFrameValid = false;
 
 		m_netFrames = 0U;
 		m_netLost   = 0U;
@@ -808,6 +813,7 @@ bool CDStarControl::insertSilence(const unsigned char* data, unsigned char seqNo
 	if (oldSeqNo == seqNo) {
 		// Just copy the data, nothing else to do here
 		::memcpy(m_lastFrame, data, DSTAR_FRAME_LENGTH_BYTES + 1U);
+		m_lastFrameValid = true;
 		return true;
 	}
 
@@ -823,6 +829,7 @@ bool CDStarControl::insertSilence(const unsigned char* data, unsigned char seqNo
 	insertSilence(count);
 
 	::memcpy(m_lastFrame, data, DSTAR_FRAME_LENGTH_BYTES + 1U);
+	m_lastFrameValid = true;
 
 	return true;
 }
@@ -832,7 +839,7 @@ void CDStarControl::insertSilence(unsigned int count)
 	unsigned char n = (m_netN + 1U) % 21U;
 
 	for (unsigned int i = 0U; i < count; i++) {
-		if (i < 3U) {
+		if (i < 3U && m_lastFrameValid) {
 			if (n == 0U) {
 				::memcpy(m_lastFrame + DSTAR_VOICE_FRAME_LENGTH_BYTES + 1U, DSTAR_NULL_SLOW_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES);
 				writeQueueDataNet(m_lastFrame);

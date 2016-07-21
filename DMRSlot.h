@@ -82,6 +82,7 @@ private:
 	unsigned int               m_rfErrs;
 	unsigned int               m_netErrs;
 	unsigned char*             m_lastFrame;
+	bool                       m_lastFrameValid;
 	CDMREMB                    m_lastEMB;
 	FILE*                      m_fp;
 
@@ -90,12 +91,7 @@ private:
 	static bool                m_selfOnly;
 	static std::vector<unsigned int> m_prefixes;
 	static std::vector<unsigned int> m_blackList;
-/*
-	static std::vector<unsigned int> m_dstBlackListSlot1;
-	static std::vector<unsigned int> m_dstBlackListSlot2;
-	static std::vector<unsigned int> m_dstWhiteListSlot1;
-	static std::vector<unsigned int> m_dstWhiteListSlot2;
-*/	
+
 	static CModem*             m_modem;
 	static CDMRIPSC*           m_network;
 	static CDisplay*           m_display;

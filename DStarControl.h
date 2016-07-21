@@ -78,6 +78,7 @@ private:
 	unsigned int               m_rfErrs;
 	unsigned int               m_netErrs;
 	unsigned char*             m_lastFrame;
+	bool                       m_lastFrameValid;
 	FILE*                      m_fp;
 
 	void writeNetwork();

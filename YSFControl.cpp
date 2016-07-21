@@ -48,6 +48,7 @@ m_rfDest(NULL),
 m_netSource(NULL),
 m_netDest(NULL),
 m_lastFrame(NULL),
+m_lastFrameValid(false),
 m_lastMode(YSF_DT_VOICE_FR_MODE),
 m_netN(0U),
 m_rfPayload(),
@@ -355,6 +356,8 @@ void CYSFControl::writeEndNet()
 	m_networkWatchdog.stop();
 	m_packetTimer.stop();
 
+	m_lastFrameValid = false;
+
 	m_netPayload.reset();
 
 	m_display->clearFusion();
@@ -401,6 +404,7 @@ void CYSFControl::writeNetwork()
 		m_netPayload.reset();
 		m_packetTimer.start();
 		m_elapsed.start();
+		m_lastFrameValid = false;
 		m_netState  = RS_NET_AUDIO;
 		m_netFrames = 0U;
 		m_netLost   = 0U;
@@ -671,6 +675,7 @@ bool CYSFControl::insertSilence(const unsigned char* data, unsigned char n)
 	if (newN == n) {
 		// Just copy the data, nothing else to do here
 		::memcpy(m_lastFrame, data, YSF_FRAME_LENGTH_BYTES + 2U);
+		m_lastFrameValid = true;
 		return true;
 	}
 
@@ -690,6 +695,7 @@ bool CYSFControl::insertSilence(const unsigned char* data, unsigned char n)
 	insertSilence(count);
 
 	::memcpy(m_lastFrame, data, YSF_FRAME_LENGTH_BYTES + 2U);
+	m_lastFrameValid = true;
 
 	return true;
 }

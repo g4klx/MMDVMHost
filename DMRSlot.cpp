@@ -82,6 +82,7 @@ m_netBits(1U),
 m_rfErrs(0U),
 m_netErrs(0U),
 m_lastFrame(NULL),
+m_lastFrameValid(false),
 m_lastEMB(),
 m_fp(NULL)
 {
@@ -667,6 +668,8 @@ void CDMRSlot::writeEndNet(bool writeEnd)
 
 	m_display->clearDMR(m_slotNo);
 
+	m_lastFrameValid = false;
+
 	m_networkWatchdog.stop();
 	m_netTimeoutTimer.stop();
 	m_packetTimer.stop();
@@ -756,6 +759,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
+
+		m_lastFrameValid = false;
 
 		m_netTimeoutTimer.start();
 
@@ -937,6 +942,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			if (!DMRAccessControl::validateAccess(id, did, m_slotNo, true))
 			    return;
 		  
+			m_lastFrameValid = false;
+
 			m_netTimeoutTimer.start();
 
 			m_packetTimer.start();
@@ -1472,6 +1479,7 @@ bool CDMRSlot::insertSilence(const unsigned char* data, unsigned char seqNo)
 	if (seq == seqNo) {
 		// Just copy the data, nothing else to do here
 		::memcpy(m_lastFrame, data, DMR_FRAME_LENGTH_BYTES + 2U);
+		m_lastFrameValid = true;
 		return true;
 	}
 
@@ -1490,6 +1498,7 @@ bool CDMRSlot::insertSilence(const unsigned char* data, unsigned char seqNo)
 	insertSilence(count);
 
 	::memcpy(m_lastFrame, data, DMR_FRAME_LENGTH_BYTES + 2U);
+	m_lastFrameValid = true;
 
 	return true;
 }
@@ -1498,11 +1507,16 @@ void CDMRSlot::insertSilence(unsigned int count)
 {
 	unsigned char data[DMR_FRAME_LENGTH_BYTES + 2U];
 
-	::memcpy(data, m_lastFrame, 2U);					// The control data
-	::memcpy(data + 2U, m_lastFrame + 24U + 2U, 9U);	// Copy the last audio block to the first
-	::memcpy(data + 24U + 2U, data + 2U, 9U);			// Copy the last audio block to the last
-	::memcpy(data + 9U + 2U, data + 2U, 5U);			// Copy the last audio block to the middle (1/2)
-	::memcpy(data + 19U + 2U, data + 4U + 2U, 5U);		// Copy the last audio block to the middle (2/2)
+	if (m_lastFrameValid) {
+		::memcpy(data, m_lastFrame, 2U);					// The control data
+		::memcpy(data + 2U, m_lastFrame + 24U + 2U, 9U);	// Copy the last audio block to the first
+		::memcpy(data + 24U + 2U, data + 2U, 9U);			// Copy the last audio block to the last
+		::memcpy(data + 9U + 2U, data + 2U, 5U);			// Copy the last audio block to the middle (1/2)
+		::memcpy(data + 19U + 2U, data + 4U + 2U, 5U);		// Copy the last audio block to the middle (2/2)
+	} else {
+		// Not sure what to do if this isn't AMBE audio
+		::memcpy(data, DMR_SILENCE_DATA, DMR_FRAME_LENGTH_BYTES + 2U);
+	}
 
 	unsigned char n = (m_netN + 1U) % 6U;
 	unsigned char seqNo = m_netSeqNo + 1U;
