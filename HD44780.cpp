@@ -94,6 +94,7 @@ unsigned char toChar[8] =
 	0b00010
 };
 
+/*
 // Custom "M" character used in MMDVM logo
 unsigned char mChar[8] = 
 {	
@@ -132,6 +133,8 @@ unsigned char vChar[8] =
 	0b11111,
 	0b11111
 };
+
+*/
 
 // Icon-based custom character for RF traffic
 unsigned char rfChar[8] =
@@ -222,16 +225,10 @@ bool CHD44780::open()
 	::lcdCursorBlink(m_fd, 0);
 	::lcdCharDef(m_fd, 0, fmChar);
 	::lcdCharDef(m_fd, 1, toChar);
-	::lcdCharDef(m_fd, 2, mChar);
-	::lcdCharDef(m_fd, 3, dChar);
-	::lcdCharDef(m_fd, 4, vChar);
-
-	/* 
-	 *   TG, private call, RF and network icons defined as needed - ran out of CGRAM locations
-	 *   on the HD44780!  Theoretically, we now have infinite custom characters to play with,
-	 *   just be mindful of the slow speed of CGRAM hence the lcdPosition call to delay just 
-	 *   long enough so the CGRAM can be written before we try to read it.
-	 */
+	::lcdCharDef(m_fd, 2, rfChar);
+	::lcdCharDef(m_fd, 3, ipChar);
+	::lcdCharDef(m_fd, 4, privChar);
+	::lcdCharDef(m_fd, 5, tgChar);
 
 	return true;
 }
@@ -357,11 +354,14 @@ void CHD44780::setIdleInt()
 
 	// Print MMDVM and Idle on bottom row for all screen sizes
 	::lcdPosition(m_fd, 0, m_rows - 1);
+	/*
 	::lcdPutchar(m_fd, 2);
 	::lcdPutchar(m_fd, 2);
 	::lcdPutchar(m_fd, 3);
 	::lcdPutchar(m_fd, 4);
 	::lcdPutchar(m_fd, 2);
+	*/
+	::lcdPuts(m_fd, "MMDVM");
 	::lcdPosition(m_fd, m_cols - 4, m_rows - 1);
 	::lcdPuts(m_fd, "Idle");              // Gets overwritten by clock on 2 line screen
 
@@ -389,11 +389,14 @@ void CHD44780::setErrorInt(const char* text)
 	}
 
 	::lcdPosition(m_fd, 0, 0);
+	/*
 	::lcdPutchar(m_fd, 2);
 	::lcdPutchar(m_fd, 2);
 	::lcdPutchar(m_fd, 3);
 	::lcdPutchar(m_fd, 4);
 	::lcdPutchar(m_fd, 2);
+	*/
+	::lcdPuts(m_fd, "MMDVM");
 
 	::lcdPosition(m_fd, 0, 1);
 	::lcdPrintf(m_fd, "%s ERROR", text);
@@ -420,11 +423,14 @@ void CHD44780::setLockoutInt()
 	}
 
 	::lcdPosition(m_fd, 0, 0);
+	/*
 	::lcdPutchar(m_fd, 2);
 	::lcdPutchar(m_fd, 2);
 	::lcdPutchar(m_fd, 3);
 	::lcdPutchar(m_fd, 4);
 	::lcdPutchar(m_fd, 2);
+	*/
+	::lcdPuts(m_fd, "MMDVM");
 
 	::lcdPosition(m_fd, 0, 1);
 	::lcdPuts(m_fd, "Lockout");
@@ -462,10 +468,13 @@ void CHD44780::writeDStarInt(const char* my1, const char* my2, const char* your,
 
 	::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
 	::lcdPrintf(m_fd, "%.8s/%.4s", my1, my2);
-
-	::lcdCharDef(m_fd, 5, strcmp(type, "R") == 0 ? rfChar : ipChar);
 	::lcdPosition(m_fd, m_cols - 1, (m_rows / 2) - 1);
-	::lcdPutchar(m_fd, 5);
+
+	if (strcmp(type, "R") == 0) {
+		::lcdPutchar(m_fd, 2);
+	} else {
+		::lcdPutchar(m_fd, 3);
+	}
 
 	::sprintf(m_buffer1, "%.8s", your);
 	
@@ -573,12 +582,20 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 				m_dmrScrollTimer1.start();
 			}
 
-			::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
-			::lcdCharDef(m_fd, 5, strcmp(type, "R") == 0 ? rfChar : ipChar);
 			::lcdPosition(m_fd, m_cols - 3U, (m_rows / 2) - 1);
 			::lcdPuts(m_fd, " ");
-			::lcdPutchar(m_fd, 6);
-			::lcdPutchar(m_fd, 5);
+
+			if (group) {
+				::lcdPutchar(m_fd, 5);
+			} else {
+				::lcdPutchar(m_fd, 4);
+			}
+
+			if (strcmp(type, "R") == 0) {
+				::lcdPutchar(m_fd, 2);
+			} else {
+				::lcdPutchar(m_fd, 3);
+			}
 		} else {
 			::lcdPosition(m_fd, 0, (m_rows / 2));
 			::lcdPuts(m_fd, "2 ");
@@ -592,29 +609,45 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 				m_dmrScrollTimer2.start();
 			}
 
-			::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
-			::lcdCharDef(m_fd, 5, strcmp(type, "R") == 0 ? rfChar : ipChar);
 			::lcdPosition(m_fd, m_cols - 3U, (m_rows / 2));
 			::lcdPuts(m_fd, " ");
-			::lcdPutchar(m_fd, 6);
-			::lcdPutchar(m_fd, 5);
+
+			if (group) {
+				::lcdPutchar(m_fd, 5);
+			} else {
+				::lcdPutchar(m_fd, 4);
+			}
+
+			if (strcmp(type, "R") == 0) {
+				::lcdPutchar(m_fd, 2);
+			} else {
+				::lcdPutchar(m_fd, 3);
+			}
 		}
 	} else {
 		::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
 		::lcdPutchar(m_fd, 0);
 		::sprintf(m_buffer2, " %s%s", src.c_str(), DEADSPACE);
 		::lcdPrintf(m_fd, "%.*s", m_cols - 4U, m_buffer2);
-		::lcdCharDef(m_fd, 5, strcmp(type, "R") == 0 ? rfChar : ipChar);
 		::lcdPosition(m_fd, m_cols - 1U, (m_rows / 2) - 1);
-		::lcdPutchar(m_fd, 5);
+
+		if (strcmp(type, "R") == 0) {
+			::lcdPutchar(m_fd, 2);
+		} else {
+			::lcdPutchar(m_fd, 3);
+		}
 
 		::lcdPosition(m_fd, 0, (m_rows / 2));
 		::lcdPutchar(m_fd, 1);
 		::sprintf(m_buffer2, " %s%s%s", group ? "TG" : "", dst.c_str(), DEADSPACE);
 		::lcdPrintf(m_fd, "%.*s", m_cols - 4U, m_buffer2);
-		::lcdCharDef(m_fd, 6, group ? tgChar : privChar);
 		::lcdPosition(m_fd, m_cols - 1U, (m_rows / 2));
-		::lcdPutchar(m_fd, 6);
+
+		if (group) {
+			::lcdPutchar(m_fd, 5);
+		} else {
+			::lcdPutchar(m_fd, 4);
+		}
 	}
 	m_dmr = true;
 }
