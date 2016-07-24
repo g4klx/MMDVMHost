@@ -94,48 +94,6 @@ unsigned char toChar[8] =
 	0b00010
 };
 
-/*
-// Custom "M" character used in MMDVM logo
-unsigned char mChar[8] = 
-{	
-	0b10001,
-	0b11011,
-	0b10101,
-	0b10001,
-	0b10001,
-	0b00000,
-	0b11111,
-	0b11111
-};
-
-// Custom "D" character used in MMDVM logo
-unsigned char dChar[8] = 
-{	
-	0b11110,
-	0b10001,
-	0b10001,
-	0b10001,
-	0b11110,
-	0b00000,
-	0b11111,
-	0b11111
-};
-
-// Custom "V" character used in MMDVM logo
-unsigned char vChar[8] = 
-{	
-	0b10001,
-	0b10001,
-	0b10001,
-	0b01010,
-	0b00100,
-	0b00000,
-	0b11111,
-	0b11111
-};
-
-*/
-
 // Icon-based custom character for RF traffic
 unsigned char rfChar[8] =
 {
@@ -354,13 +312,6 @@ void CHD44780::setIdleInt()
 
 	// Print MMDVM and Idle on bottom row for all screen sizes
 	::lcdPosition(m_fd, 0, m_rows - 1);
-	/*
-	::lcdPutchar(m_fd, 2);
-	::lcdPutchar(m_fd, 2);
-	::lcdPutchar(m_fd, 3);
-	::lcdPutchar(m_fd, 4);
-	::lcdPutchar(m_fd, 2);
-	*/
 	::lcdPuts(m_fd, "MMDVM");
 	::lcdPosition(m_fd, m_cols - 4, m_rows - 1);
 	::lcdPuts(m_fd, "Idle");              // Gets overwritten by clock on 2 line screen
@@ -389,13 +340,6 @@ void CHD44780::setErrorInt(const char* text)
 	}
 
 	::lcdPosition(m_fd, 0, 0);
-	/*
-	::lcdPutchar(m_fd, 2);
-	::lcdPutchar(m_fd, 2);
-	::lcdPutchar(m_fd, 3);
-	::lcdPutchar(m_fd, 4);
-	::lcdPutchar(m_fd, 2);
-	*/
 	::lcdPuts(m_fd, "MMDVM");
 
 	::lcdPosition(m_fd, 0, 1);
@@ -423,13 +367,6 @@ void CHD44780::setLockoutInt()
 	}
 
 	::lcdPosition(m_fd, 0, 0);
-	/*
-	::lcdPutchar(m_fd, 2);
-	::lcdPutchar(m_fd, 2);
-	::lcdPutchar(m_fd, 3);
-	::lcdPutchar(m_fd, 4);
-	::lcdPutchar(m_fd, 2);
-	*/
 	::lcdPuts(m_fd, "MMDVM");
 
 	::lcdPosition(m_fd, 0, 1);
@@ -663,11 +600,11 @@ void CHD44780::clearDMRInt(unsigned int slotNo)
 	if (m_duplex) {
 		if (slotNo == 1U) {
 			m_dmrScrollTimer1.stop();            // Stop the scroll timer on slot 1
-			::lcdPosition(m_fd, 0, 0);
+			::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
 			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
 		} else {
 			m_dmrScrollTimer2.stop();            // Stop the scroll timer on slot 2
-			::lcdPosition(m_fd, 0, 1);
+			::lcdPosition(m_fd, 0, (m_rows / 2));
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
 		}
 	} else {
