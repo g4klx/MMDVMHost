@@ -493,6 +493,13 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 			}
 		} else {
 			m_dmrScrollTimer2.stop();
+
+			if (m_rows > 2U) {
+				::lcdPosition(m_fd, 0, (m_rows / 2) - 2);
+				::sprintf(m_buffer1, "%s", DEADSPACE);
+				::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
+			}
+
 			::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
 			::sprintf(m_buffer1, "%s%s", "DMR", DEADSPACE);
 			::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
@@ -506,6 +513,12 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 #endif
 
 	if (m_duplex) {
+		if (m_rows > 2U) {
+			::lcdPosition(m_fd, 0, (m_rows / 2) - 2);
+			::sprintf(m_buffer1, "%s%s", "DMR", DEADSPACE);
+			::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
+		}
+
 		if (slotNo == 1U) {
 			::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
 			::lcdPuts(m_fd, "1 ");
@@ -562,6 +575,12 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 			}
 		}
 	} else {
+		if (m_rows > 2U) {
+			::lcdPosition(m_fd, 0, (m_rows / 2) - 2);
+			::sprintf(m_buffer1, "%s%s", "DMR", DEADSPACE);
+			::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
+		}
+
 		::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
 		::lcdPutchar(m_fd, 0);
 		::sprintf(m_buffer2, " %s%s", src.c_str(), DEADSPACE);
@@ -609,6 +628,13 @@ void CHD44780::clearDMRInt(unsigned int slotNo)
 		}
 	} else {
 		m_dmrScrollTimer2.stop();              // Stop the scroll timer on slot 2
+
+		if (m_rows > 2U) {
+			::lcdPosition(m_fd, 0, (m_rows / 2) - 2);
+			::sprintf(m_buffer1, "%s", DEADSPACE);
+			::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
+		}
+
 		::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
 		::sprintf(m_buffer2, "%s%s", "DMR", DEADSPACE);
 		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer2);
