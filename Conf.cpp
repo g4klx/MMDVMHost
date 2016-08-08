@@ -79,6 +79,8 @@ m_modemDMRDelay(0U),
 m_modemRXLevel(100U),
 m_modemTXLevel(100U),
 m_modemOscOffset(0),
+m_modemRSSIMultiplier(0),
+m_modemRSSIOffset(0),
 m_modemDebug(false),
 m_dstarEnabled(true),
 m_dstarModule("C"),
@@ -116,6 +118,7 @@ m_dmrNetworkPassword(),
 m_dmrNetworkDebug(false),
 m_dmrNetworkSlot1(true),
 m_dmrNetworkSlot2(true),
+m_dmrNetworkRSSI(false),
 m_fusionNetworkEnabled(false),
 m_fusionNetworkMyAddress(),
 m_fusionNetworkMyPort(0U),
@@ -278,6 +281,10 @@ bool CConf::read()
 			m_modemTXLevel = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "OscOffset") == 0)
 			m_modemOscOffset = ::atoi(value);
+		else if (::strcmp(key, "RSSIMultiplier") == 0)
+			m_modemRSSIMultiplier = ::atoi(value);
+		else if (::strcmp(key, "RSSIOffset") == 0)
+			m_modemRSSIOffset = ::atoi(value);
 		else if (::strcmp(key, "Debug") == 0)
 			m_modemDebug = ::atoi(value) == 1;
 	} else if (section == SECTION_DSTAR) {
@@ -431,6 +438,8 @@ bool CConf::read()
 			m_dmrNetworkSlot1 = ::atoi(value) == 1;
 		else if (::strcmp(key, "Slot2") == 0)
 			m_dmrNetworkSlot2 = ::atoi(value) == 1;
+		else if (::strcmp(key, "RSSI") == 0)
+			m_dmrNetworkRSSI = ::atoi(value) == 1;
 	} else if (section == SECTION_FUSION_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fusionNetworkEnabled = ::atoi(value) == 1;
@@ -658,6 +667,16 @@ int CConf::getModemOscOffset() const
 	return m_modemOscOffset;
 }
 
+int CConf::getModemRSSIMultiplier () const
+{
+	return m_modemRSSIMultiplier;
+}
+
+int CConf::getModemRSSIOffset() const
+{
+	return m_modemRSSIOffset;
+}
+
 bool CConf::getModemDebug() const
 {
 	return m_modemDebug;
@@ -830,6 +849,11 @@ bool CConf::getDMRNetworkSlot1() const
 bool CConf::getDMRNetworkSlot2() const
 {
 	return m_dmrNetworkSlot2;
+}
+
+bool CConf::getDMRNetworkRSSI() const
+{
+	return m_dmrNetworkRSSI;
 }
 
 bool CConf::getFusionNetworkEnabled() const

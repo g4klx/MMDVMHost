@@ -301,6 +301,8 @@ int CMMDVMHost::run()
 		std::string lookupFile = m_conf.getDMRLookupFile();
 		unsigned int callHang  = m_conf.getDMRCallHang();
 		unsigned int txHang    = m_conf.getDMRTXHang();
+		int rssiMultiplier     = m_conf.getModemRSSIMultiplier();
+		int rssiOffset         = m_conf.getModemRSSIOffset();
 
 		if (txHang > m_rfModeHang)
 			txHang = m_rfModeHang;
@@ -339,7 +341,12 @@ int CMMDVMHost::run()
 		LogInfo("    Call Hang: %us", callHang);
 		LogInfo("    TX Hang: %us", txHang);
 
-		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList,dstIDBlackListSlot1RF,dstIDWhiteListSlot1RF, dstIDBlackListSlot2RF, dstIDWhiteListSlot2RF, dstIDBlackListSlot1NET,dstIDWhiteListSlot1NET, dstIDBlackListSlot2NET, dstIDWhiteListSlot2NET, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookupFile);
+		if (rssiMultiplier != 0) {
+			LogInfo("    RSSI Multiplier: %d", rssiMultiplier);
+			LogInfo("    RSSI Offset: %d", rssiOffset);
+		}
+
+		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList,dstIDBlackListSlot1RF,dstIDWhiteListSlot1RF, dstIDBlackListSlot2RF, dstIDWhiteListSlot2RF, dstIDBlackListSlot1NET,dstIDWhiteListSlot1NET, dstIDBlackListSlot2NET, dstIDWhiteListSlot2NET, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookupFile, rssiMultiplier, rssiOffset);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}
@@ -372,13 +379,13 @@ int CMMDVMHost::run()
 		len = m_modem->readDStarData(data);
 		if (dstar != NULL && len > 0U) {
 			if (m_mode == MODE_IDLE) {
-				bool ret = dstar->writeModem(data);
+				bool ret = dstar->writeModem(data, len);
 				if (ret) {
 					m_modeTimer.setTimeout(m_rfModeHang);
 					setMode(MODE_DSTAR);
 				}
 			} else if (m_mode == MODE_DSTAR) {
-				dstar->writeModem(data);
+				dstar->writeModem(data, len);
 				m_modeTimer.start();
 			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("D-Star modem data received when in mode %u", m_mode);
@@ -398,7 +405,7 @@ int CMMDVMHost::run()
 				} else {
 					m_modeTimer.setTimeout(m_rfModeHang);
 					setMode(MODE_DMR);
-					dmr->writeModemSlot1(data);
+					dmr->writeModemSlot1(data, len);
 					dmrBeaconTimer.stop();
 				}
 			} else if (m_mode == MODE_DMR) {
@@ -409,7 +416,7 @@ int CMMDVMHost::run()
 						m_dmrTXTimer.start();
 					}
 				} else {
-					dmr->writeModemSlot1(data);
+					dmr->writeModemSlot1(data, len);
 					dmrBeaconTimer.stop();
 					m_modeTimer.start();
 					if (m_duplex)
@@ -433,7 +440,7 @@ int CMMDVMHost::run()
 				} else {
 					m_modeTimer.setTimeout(m_rfModeHang);
 					setMode(MODE_DMR);
-					dmr->writeModemSlot2(data);
+					dmr->writeModemSlot2(data, len);
 					dmrBeaconTimer.stop();
 				}
 			} else if (m_mode == MODE_DMR) {
@@ -444,7 +451,7 @@ int CMMDVMHost::run()
 						m_dmrTXTimer.start();
 					}
 				} else {
-					dmr->writeModemSlot2(data);
+					dmr->writeModemSlot2(data, len);
 					dmrBeaconTimer.stop();
 					m_modeTimer.start();
 					if (m_duplex)
@@ -458,13 +465,13 @@ int CMMDVMHost::run()
 		len = m_modem->readYSFData(data);
 		if (ysf != NULL && len > 0U) {
 			if (m_mode == MODE_IDLE) {
-				bool ret = ysf->writeModem(data);
+				bool ret = ysf->writeModem(data, len);
 				if (ret) {
 					m_modeTimer.setTimeout(m_rfModeHang);
 					setMode(MODE_YSF);
 				}
 			} else if (m_mode == MODE_YSF) {
-				ysf->writeModem(data);
+				ysf->writeModem(data, len);
 				m_modeTimer.start();
 			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("System Fusion modem data received when in mode %u", m_mode);
@@ -727,6 +734,7 @@ bool CMMDVMHost::createDMRNetwork()
 	bool debug           = m_conf.getDMRNetworkDebug();
 	bool slot1           = m_conf.getDMRNetworkSlot1();
 	bool slot2           = m_conf.getDMRNetworkSlot2();
+	bool rssi            = m_conf.getDMRNetworkRSSI();
 
 	LogInfo("DMR Network Parameters");
 	LogInfo("    Address: %s", address.c_str());
@@ -737,8 +745,9 @@ bool CMMDVMHost::createDMRNetwork()
 		LogInfo("    Local: random");
 	LogInfo("    Slot 1: %s", slot1 ? "enabled" : "disabled");
 	LogInfo("    Slot 2: %s", slot2 ? "enabled" : "disabled");
+	LogInfo("    RSSI: %s", rssi ? "enabled" : "disabled");
 
-	m_dmrNetwork = new CDMRIPSC(address, port, local, id, password, m_duplex, VERSION, debug, slot1, slot2);
+	m_dmrNetwork = new CDMRIPSC(address, port, local, id, password, m_duplex, VERSION, debug, slot1, slot2, rssi);
 
 	unsigned int rxFrequency = m_conf.getRxFrequency();
 	unsigned int txFrequency = m_conf.getTxFrequency();

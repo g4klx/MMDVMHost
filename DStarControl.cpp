@@ -104,7 +104,7 @@ CDStarControl::~CDStarControl()
 	delete[] m_lastFrame;
 }
 
-bool CDStarControl::writeModem(unsigned char *data)
+bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 {
 	assert(data != NULL);
 

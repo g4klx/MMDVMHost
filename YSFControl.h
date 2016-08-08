@@ -36,7 +36,7 @@ public:
 	CYSFControl(const std::string& callsign, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex);
 	~CYSFControl();
 
-	bool writeModem(unsigned char* data);
+	bool writeModem(unsigned char* data, unsigned int len);
 
 	unsigned int readModem(unsigned char* data);
 

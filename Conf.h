@@ -70,6 +70,8 @@ public:
   unsigned int getModemRXLevel() const;
   unsigned int getModemTXLevel() const;
   int          getModemOscOffset() const;
+  int          getModemRSSIMultiplier() const;
+  int          getModemRSSIOffset() const;
   bool         getModemDebug() const;
 
   // The D-Star section
@@ -117,6 +119,7 @@ public:
   bool         getDMRNetworkDebug() const;
   bool         getDMRNetworkSlot1() const;
   bool         getDMRNetworkSlot2() const;
+  bool         getDMRNetworkRSSI() const;
 
   // The System Fusion Network section
   bool         getFusionNetworkEnabled() const;
@@ -191,6 +194,8 @@ private:
   unsigned int m_modemRXLevel;
   unsigned int m_modemTXLevel;
   int          m_modemOscOffset;
+  int          m_modemRSSIMultiplier;
+  int          m_modemRSSIOffset;
   bool         m_modemDebug;
 
   bool         m_dstarEnabled;
@@ -233,6 +238,7 @@ private:
   bool         m_dmrNetworkDebug;
   bool         m_dmrNetworkSlot1;
   bool         m_dmrNetworkSlot2;
+  bool         m_dmrNetworkRSSI;
 
   bool         m_fusionNetworkEnabled;
   std::string  m_fusionNetworkMyAddress;

@@ -31,7 +31,7 @@ const unsigned int BUFFER_LENGTH = 500U;
 const unsigned int HOMEBREW_DATA_PACKET_LENGTH = 55U;
 
 
-CDMRIPSC::CDMRIPSC(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2) :
+CDMRIPSC::CDMRIPSC(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, bool rssi) :
 m_address(),
 m_port(port),
 m_id(NULL),
@@ -43,6 +43,7 @@ m_socket(local),
 m_enabled(false),
 m_slot1(slot1),
 m_slot2(slot2),
+m_rssi(rssi),
 m_status(WAITING_CONNECT),
 m_retryTimer(1000U, 10U),
 m_timeoutTimer(1000U, 60U),
@@ -264,7 +265,10 @@ bool CDMRIPSC::write(const CDMRData& data)
 
 	buffer[53U] = data.getBER();
 
-	buffer[54U] = data.getRSSI();
+	if (m_rssi)
+		buffer[54U] = data.getRSSI();
+	else
+		buffer[54U] = 0x00U;
 
 	if (m_debug)
 		CUtils::dump(1U, "IPSC Transmitted", buffer, HOMEBREW_DATA_PACKET_LENGTH);

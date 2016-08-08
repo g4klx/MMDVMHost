@@ -75,7 +75,7 @@ CYSFControl::~CYSFControl()
 	delete[] m_lastFrame;
 }
 
-bool CYSFControl::writeModem(unsigned char *data)
+bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 {
 	assert(data != NULL);
 

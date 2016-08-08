@@ -42,7 +42,7 @@ public:
 	CDMRSlot(unsigned int slotNo, unsigned int timeout);
 	~CDMRSlot();
 
-	void writeModem(unsigned char* data);
+	void writeModem(unsigned char* data, unsigned int len);
 
 	unsigned int readModem(unsigned char* data);
 
@@ -50,7 +50,7 @@ public:
 
 	void clock();
 
-	static void init(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& SrcIdBlackList, const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF,  const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, CDMRLookup* lookup);
+	static void init(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& SrcIdBlackList, const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF,  const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, CDMRLookup* lookup, int rssiMultiplier, int rssiOffset);
 
 private:
 	unsigned int               m_slotNo;
@@ -84,6 +84,7 @@ private:
 	unsigned char*             m_lastFrame;
 	bool                       m_lastFrameValid;
 	CDMREMB                    m_lastEMB;
+	signed char                m_rssi;
 	FILE*                      m_fp;
 
 	static unsigned int        m_id;
@@ -98,6 +99,9 @@ private:
 	static bool                m_duplex;
 	static CDMRLookup*         m_lookup;
 	static unsigned int        m_hangCount;
+
+	static int                 m_rssiMultiplier;
+	static int                 m_rssiOffset;
 
 	static unsigned char*      m_idle;
 

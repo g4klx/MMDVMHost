@@ -30,7 +30,7 @@
 class CDMRIPSC
 {
 public:
-	CDMRIPSC(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2);
+	CDMRIPSC(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, bool rssi);
 	~CDMRIPSC();
 
 	void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url);
@@ -61,6 +61,7 @@ private:
 	bool         m_enabled;
 	bool         m_slot1;
 	bool         m_slot2;
+	bool         m_rssi;
 
 	enum STATUS {
 		WAITING_CONNECT,

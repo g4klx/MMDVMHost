@@ -39,7 +39,7 @@ public:
 	CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, const std::vector<std::string>& blackList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex);
 	~CDStarControl();
 
-	bool writeModem(unsigned char* data);
+	bool writeModem(unsigned char* data, unsigned int len);
 
 	unsigned int readModem(unsigned char* data);
 

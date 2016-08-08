@@ -41,6 +41,9 @@ bool           CDMRSlot::m_duplex = true;
 CDMRLookup*    CDMRSlot::m_lookup = NULL;
 unsigned int   CDMRSlot::m_hangCount = 3U * 17U;
 
+int            CDMRSlot::m_rssiMultiplier = 0;
+int            CDMRSlot::m_rssiOffset = 0;
+
 unsigned char* CDMRSlot::m_idle = NULL;
 
 FLCO           CDMRSlot::m_flco1;
@@ -84,6 +87,7 @@ m_netErrs(0U),
 m_lastFrame(NULL),
 m_lastFrameValid(false),
 m_lastEMB(),
+m_rssi(0),
 m_fp(NULL)
 {
 	m_lastFrame = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
@@ -96,7 +100,7 @@ CDMRSlot::~CDMRSlot()
 	delete[] m_lastFrame;
 }
 
-void CDMRSlot::writeModem(unsigned char *data)
+void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 {
 	assert(data != NULL);
 
@@ -115,6 +119,15 @@ void CDMRSlot::writeModem(unsigned char *data)
 	if (data[0U] == TAG_LOST) {
 		m_rfState = RS_RF_LISTENING;
 		return;
+	}
+
+	// Have we got RSSI bytes on the end?
+	if (len > (DMR_FRAME_LENGTH_BYTES + 2U) && m_rssiMultiplier != 0) {
+		uint16_t rssi = 0U;
+		rssi |= (data[33U] << 8) & 0xFF00U;
+		rssi |= (data[34U] << 0) & 0x00FFU;
+		m_rssi = (rssi - m_rssiOffset) / m_rssiMultiplier;
+		LogDebug("DMR Slot %u, raw RSSI: %u, reported RSSI: %d", m_slotNo, rssi, m_rssi);
 	}
 
 	bool dataSync  = (data[1U] & DMR_SYNC_DATA)  == DMR_SYNC_DATA;
@@ -1287,6 +1300,7 @@ void CDMRSlot::writeNetworkRF(const unsigned char* data, unsigned char dataType,
 	dmrData.setN(m_rfN);
 	dmrData.setSeqNo(m_rfSeqNo);
 	dmrData.setBER(errors);
+	dmrData.setRSSI(m_rssi);
 
 	m_rfSeqNo++;
 
@@ -1324,7 +1338,7 @@ void CDMRSlot::writeQueueNet(const unsigned char *data)
 		m_queue.addData(data, len);
 }
 
-void CDMRSlot::init(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& SrcIdBlacklist, const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF,  const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, CDMRLookup* lookup)
+void CDMRSlot::init(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& SrcIdBlacklist, const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF,  const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, CDMRLookup* lookup, int rssiMultiplier, int rssiOffset)
 {
 	assert(id != 0U);
 	assert(modem != NULL);
@@ -1341,7 +1355,10 @@ void CDMRSlot::init(unsigned int id, unsigned int colorCode, unsigned int callHa
 	m_display   = display;
 	m_duplex    = duplex;
 	m_lookup    = lookup;
-	m_hangCount = callHang * 17U,
+	m_hangCount = callHang * 17U;
+
+	m_rssiMultiplier = rssiMultiplier;
+	m_rssiOffset     = rssiOffset;
 
 	m_idle    = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
 
