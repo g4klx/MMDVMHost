@@ -727,8 +727,12 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 	dmrData.getData(data + 2U);
 
 	if (dataType == DT_VOICE_LC_HEADER) {
-		if (m_netState == RS_NET_AUDIO)
+		if (m_netState == RS_NET_AUDIO) {
+			// Reset the missing audio timers
+			m_packetTimer.start();
+			m_elapsed.start();
 			return;
+		}
 
 		CDMRFullLC fullLC;
 		m_netLC = fullLC.decode(data + 2U, DT_VOICE_LC_HEADER);
@@ -827,6 +831,10 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		unsigned char payload[12U];
 		bptc.decode(data + 2U, payload);
 		bptc.encode(payload, data + 2U);
+
+		// Reset the missing audio timers
+		m_packetTimer.start();
+		m_elapsed.start();
 
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
