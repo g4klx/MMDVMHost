@@ -20,6 +20,7 @@
 #include "SerialController.h"
 #include "Log.h"
 
+#include <cstring>
 #include <cassert>
 
 #include <sys/types.h>
