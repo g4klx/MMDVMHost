@@ -744,12 +744,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 	dmrData.getData(data + 2U);
 
 	if (dataType == DT_VOICE_LC_HEADER) {
-		if (m_netState == RS_NET_AUDIO) {
-			// Reset the missing audio timers
-			m_packetTimer.start();
-			m_elapsed.start();
+		if (m_netState == RS_NET_AUDIO)
 			return;
-		}
 
 		CDMRFullLC fullLC;
 		m_netLC = fullLC.decode(data + 2U, DT_VOICE_LC_HEADER);
@@ -785,17 +781,11 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		m_netTimeoutTimer.start();
 
-		m_packetTimer.start();
-		m_elapsed.start();
-
 		m_netFrames = 0U;
 		m_netLost = 0U;
 
 		m_netBits = 1U;
 		m_netErrs = 0U;
-
-		m_netN     = dmrData.getN();
-		m_netSeqNo = dmrData.getSeqNo();
 
 		if (m_duplex) {
 			m_queue.clear();
@@ -848,10 +838,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		unsigned char payload[12U];
 		bptc.decode(data + 2U, payload);
 		bptc.encode(payload, data + 2U);
-
-		// Reset the missing audio timers
-		m_packetTimer.start();
-		m_elapsed.start();
 
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
@@ -971,9 +957,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 			m_netTimeoutTimer.start();
 
-			m_packetTimer.start();
-			m_elapsed.start();
-
 			if (m_duplex) {
 				m_queue.clear();
 				m_modem->writeDMRAbort(m_slotNo);
@@ -1036,9 +1019,20 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			// Convert the Audio Sync to be from the BS
 			CSync::addDMRAudioSync(data + 2U);
 
-			bool ret = insertSilence(data, dmrData.getSeqNo());
-			if (!ret)
-				return;
+			// Initialise the lost packet data
+			if (!m_lastFrameValid) {
+				::memcpy(m_lastFrame, data, DMR_FRAME_LENGTH_BYTES + 2U);
+				m_lastFrameValid = true;
+				m_netSeqNo = dmrData.getSeqNo();
+				m_netN = dmrData.getN();
+				m_packetTimer.start();
+				m_elapsed.start();
+				m_netLost = 0U;
+			} else {
+				bool ret = insertSilence(data, dmrData.getSeqNo());
+				if (!ret)
+					return;
+			}
 
 			writeQueueNet(data);
 
@@ -1080,9 +1074,20 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
 
-		bool ret = insertSilence(data, dmrData.getSeqNo());
-		if (!ret)
-			return;
+		// Initialise the lost packet data
+		if (!m_lastFrameValid) {
+			::memcpy(m_lastFrame, data, DMR_FRAME_LENGTH_BYTES + 2U);
+			m_lastFrameValid = true;
+			m_netSeqNo = dmrData.getSeqNo();
+			m_netN = dmrData.getN();
+			m_packetTimer.start();
+			m_elapsed.start();
+			m_netLost = 0U;
+		} else {
+			bool ret = insertSilence(data, dmrData.getSeqNo());
+			if (!ret)
+				return;
+		}
 
 		writeQueueNet(data);
 
