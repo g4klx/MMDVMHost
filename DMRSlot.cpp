@@ -122,10 +122,10 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 	}
 
 	// Have we got RSSI bytes on the end?
-	if (len > (DMR_FRAME_LENGTH_BYTES + 2U) && m_rssiMultiplier != 0) {
+	if (len == (DMR_FRAME_LENGTH_BYTES + 4U) && m_rssiMultiplier != 0) {
 		uint16_t rssi = 0U;
-		rssi |= (data[33U] << 8) & 0xFF00U;
-		rssi |= (data[34U] << 0) & 0x00FFU;
+		rssi |= (data[35U] << 8) & 0xFF00U;
+		rssi |= (data[36U] << 0) & 0x00FFU;
 		m_rssi = (rssi - m_rssiOffset) / m_rssiMultiplier;
 		LogDebug("DMR Slot %u, raw RSSI: %u, reported RSSI: %d", m_slotNo, rssi, m_rssi);
 	}
