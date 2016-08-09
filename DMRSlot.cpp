@@ -1022,7 +1022,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			CSync::addDMRAudioSync(data + 2U);
 
 			// Initialise the lost packet data
-			if (!m_lastFrameValid) {
+			if (m_netFrames == 0U) {
 				::memcpy(m_lastFrame, data, DMR_FRAME_LENGTH_BYTES + 2U);
 				m_lastFrameValid = true;
 				m_netSeqNo = dmrData.getSeqNo();
@@ -1078,7 +1078,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		data[1U] = 0x00U;
 
 		// Initialise the lost packet data
-		if (!m_lastFrameValid) {
+		if (m_netFrames == 0U) {
 			::memcpy(m_lastFrame, data, DMR_FRAME_LENGTH_BYTES + 2U);
 			m_lastFrameValid = true;
 			m_netSeqNo = dmrData.getSeqNo();
