@@ -17,5 +17,3 @@ The HD44780 displays are integrated with wiringPi for Raspberry Pi based platfor
 The OLED display needs a extra lib see OLED.md
 
 This software is licenced under the GPL v2 and is intended for amateur and educational use only. Use of this software for commercial purposes is strictly forbidden.
-
-It is only to be used on the main DMR+, the main BrandMeister, and Phoenix (UK) networks. If you wish to use it on any other network, you must get written permission from myself, G4KLX. Each such request will be dealt with on a case-by-case basis.
