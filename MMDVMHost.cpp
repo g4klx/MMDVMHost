@@ -273,14 +273,22 @@ int CMMDVMHost::run()
 		std::string module = m_conf.getDStarModule();
 		bool selfOnly      = m_conf.getDStarSelfOnly();
 		std::vector<std::string> blackList = m_conf.getDStarBlackList();
+		int rssiMultiplier = m_conf.getModemRSSIMultiplier();
+		int rssiOffset     = m_conf.getModemRSSIOffset();
 
 		LogInfo("D-Star Parameters");
 		LogInfo("    Module: %s", module.c_str());
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
+
 		if (blackList.size() > 0U)
 			LogInfo("    Black List: %u", blackList.size());
 
-		dstar = new CDStarControl(m_callsign, module, selfOnly, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex);
+		if (rssiMultiplier != 0) {
+			LogInfo("    RSSI Multiplier: %d", rssiMultiplier);
+			LogInfo("    RSSI Offset: %d", rssiOffset);
+		}
+
+		dstar = new CDStarControl(m_callsign, module, selfOnly, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex, rssiMultiplier, rssiOffset);
 	}
 
 	CDMRControl* dmr = NULL;
@@ -352,8 +360,19 @@ int CMMDVMHost::run()
 	}
 
 	CYSFControl* ysf = NULL;
-	if (m_ysfEnabled)
-		ysf = new CYSFControl(m_callsign, m_ysfNetwork, m_display, m_timeout, m_duplex);
+	if (m_ysfEnabled) {
+		int rssiMultiplier = m_conf.getModemRSSIMultiplier();
+		int rssiOffset     = m_conf.getModemRSSIOffset();
+
+		LogInfo("YSF Parameters");
+
+		if (rssiMultiplier != 0) {
+			LogInfo("    RSSI Multiplier: %d", rssiMultiplier);
+			LogInfo("    RSSI Offset: %d", rssiOffset);
+		}
+
+		ysf = new CYSFControl(m_callsign, m_ysfNetwork, m_display, m_timeout, m_duplex, rssiMultiplier, rssiOffset);
+	}
 
 	setMode(MODE_IDLE);
 
