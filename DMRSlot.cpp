@@ -1249,7 +1249,7 @@ void CDMRSlot::clock()
 
 			if (frames > m_netFrames) {
 				unsigned int count = frames - m_netFrames;
-				if (count > 5U) {
+				if (count > 3U) {
 					LogDebug("DMR Slot %u, lost audio for 300ms filling in, elapsed: %ums, expected: %u, received: %u", m_slotNo, elapsed, frames, m_netFrames);
 					insertSilence(count - 1U);
 				}
