@@ -1025,7 +1025,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				m_lastFrameValid = true;
 				m_netSeqNo = dmrData.getSeqNo();
 				m_netN = dmrData.getN();
-				m_packetTimer.start();
 				m_elapsed.start();
 				m_netLost = 0U;
 			} else {
@@ -1080,7 +1079,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			m_lastFrameValid = true;
 			m_netSeqNo = dmrData.getSeqNo();
 			m_netN = dmrData.getN();
-			m_packetTimer.start();
 			m_elapsed.start();
 			m_netLost = 0U;
 		} else {
