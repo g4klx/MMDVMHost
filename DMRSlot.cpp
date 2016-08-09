@@ -127,7 +127,7 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 		rssi |= (data[35U] << 8) & 0xFF00U;
 		rssi |= (data[36U] << 0) & 0x00FFU;
 		m_rssi = (rssi - m_rssiOffset) / m_rssiMultiplier;
-		LogDebug("DMR Slot %u, raw RSSI: %u, reported RSSI: %d", m_slotNo, rssi, m_rssi);
+		LogDebug("DMR Slot %u, raw RSSI: %u, reported RSSI: %d dBm", m_slotNo, rssi, m_rssi);
 	}
 
 	bool dataSync  = (data[1U] & DMR_SYNC_DATA)  == DMR_SYNC_DATA;
