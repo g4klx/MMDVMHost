@@ -848,6 +848,8 @@ void CDStarControl::insertSilence(unsigned int count)
 				writeQueueDataNet(m_lastFrame);
 			}
 		} else {
+			m_lastFrameValid = false;
+
 			if (n == 0U)
 				writeQueueDataNet(DSTAR_NULL_FRAME_SYNC_BYTES);
 			else

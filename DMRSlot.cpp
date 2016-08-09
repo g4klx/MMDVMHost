@@ -1562,8 +1562,10 @@ void CDMRSlot::insertSilence(unsigned int count)
 	for (unsigned int i = 0U; i < count; i++) {
 		// Only use our silence frame if its AMBE audio data
 		if (fid == FID_ETSI || fid == FID_DMRA) {
-			if (i > 0U)
+			if (i > 0U) {
 				::memcpy(data, DMR_SILENCE_DATA, DMR_FRAME_LENGTH_BYTES + 2U);
+				m_lastFrameValid = false;
+			}
 		}
 
 		if (n == 0U) {
