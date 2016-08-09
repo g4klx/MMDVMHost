@@ -76,7 +76,7 @@ const unsigned int MAX_RESPONSES = 30U;
 const unsigned int BUFFER_LENGTH = 500U;
 
 
-CModem::CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int rxLevel, unsigned int txLevel, unsigned int dmrDelay, int oscOffset, bool debug) :
+CModem::CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, int oscOffset, bool debug) :
 m_port(port),
 m_colorCode(0U),
 m_duplex(duplex),
@@ -85,8 +85,10 @@ m_txInvert(txInvert),
 m_pttInvert(pttInvert),
 m_txDelay(txDelay),
 m_dmrDelay(dmrDelay),
-m_rxLevel(rxLevel),
-m_txLevel(txLevel),
+m_rxLevel(0U),
+m_dstarTXLevel(0U),
+m_dmrTXLevel(0U),
+m_ysfTXLevel(0U),
 m_oscOffset(oscOffset),
 m_debug(debug),
 m_rxFrequency(0U),
@@ -138,6 +140,14 @@ void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled)
 	m_dstarEnabled = dstarEnabled;
 	m_dmrEnabled   = dmrEnabled;
 	m_ysfEnabled   = ysfEnabled;
+}
+
+void CModem::setLevels(unsigned int rxLevel, unsigned int dstarTXLevel, unsigned int dmrTXLevel, unsigned int ysfTXLevel)
+{
+	m_rxLevel      = rxLevel;
+	m_dstarTXLevel = dstarTXLevel;
+	m_dmrTXLevel   = dmrTXLevel;
+	m_ysfTXLevel   = ysfTXLevel;
 }
 
 void CModem::setDMRParams(unsigned int colorCode)
@@ -763,7 +773,7 @@ bool CModem::setConfig()
 
 	buffer[0U] = MMDVM_FRAME_START;
 
-	buffer[1U] = 12U;
+	buffer[1U] = 15U;
 
 	buffer[2U] = MMDVM_SET_CONFIG;
 
@@ -788,7 +798,7 @@ bool CModem::setConfig()
 	buffer[6U] = MODE_IDLE;
 
 	buffer[7U] = (m_rxLevel * 255U) / 100U;
-	buffer[8U] = (m_txLevel * 255U) / 100U;
+	buffer[8U] = (m_dstarTXLevel * 255U) / 100U;		// For backwards compatibility
 
 	buffer[9U] = m_colorCode;
 
@@ -796,10 +806,14 @@ bool CModem::setConfig()
 
 	buffer[11U] = (unsigned char)(m_oscOffset + 128);
 
-	// CUtils::dump(1U, "Written", buffer, 12U);
+	buffer[12U] = (m_dstarTXLevel * 255U) / 100U;
+	buffer[13U] = (m_dmrTXLevel * 255U) / 100U;
+	buffer[14U] = (m_ysfTXLevel * 255U) / 100U;
 
-	int ret = m_serial.write(buffer, 12U);
-	if (ret != 12)
+	// CUtils::dump(1U, "Written", buffer, 15U);
+
+	int ret = m_serial.write(buffer, 15U);
+	if (ret != 15)
 		return false;
 
 	unsigned int count = 0U;

@@ -76,8 +76,10 @@ m_modemTXInvert(false),
 m_modemPTTInvert(false),
 m_modemTXDelay(100U),
 m_modemDMRDelay(0U),
-m_modemRXLevel(100U),
-m_modemTXLevel(100U),
+m_modemRXLevel(50U),
+m_modemDStarTXLevel(50U),
+m_modemDMRTXLevel(50U),
+m_modemYSFTXLevel(50U),
 m_modemOscOffset(0),
 m_modemRSSIMultiplier(0),
 m_modemRSSIOffset(0),
@@ -278,7 +280,13 @@ bool CConf::read()
 		else if (::strcmp(key, "RXLevel") == 0)
 			m_modemRXLevel = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "TXLevel") == 0)
-			m_modemTXLevel = (unsigned int)::atoi(value);
+			m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "D-StarTXLevel") == 0)
+			m_modemDStarTXLevel = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "DMRTXLevel") == 0)
+			m_modemDMRTXLevel = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "YSFTXLevel") == 0)
+			m_modemYSFTXLevel = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "OscOffset") == 0)
 			m_modemOscOffset = ::atoi(value);
 		else if (::strcmp(key, "RSSIMultiplier") == 0)
@@ -657,9 +665,19 @@ unsigned int CConf::getModemRXLevel() const
 	return m_modemRXLevel;
 }
 
-unsigned int CConf::getModemTXLevel() const
+unsigned int CConf::getModemDStarTXLevel() const
 {
-	return m_modemTXLevel;
+	return m_modemDStarTXLevel;
+}
+
+unsigned int CConf::getModemDMRTXLevel() const
+{
+	return m_modemDMRTXLevel;
+}
+
+unsigned int CConf::getModemYSFTXLevel() const
+{
+	return m_modemYSFTXLevel;
 }
 
 int CConf::getModemOscOffset() const
