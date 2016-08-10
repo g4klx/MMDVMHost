@@ -73,7 +73,7 @@ m_netN(0U),
 m_networkWatchdog(1000U, 0U, 1500U),
 m_rfTimeoutTimer(1000U, timeout),
 m_netTimeoutTimer(1000U, timeout),
-m_packetTimer(1000U, 0U, 300U),
+m_packetTimer(1000U, 0U, 100U),
 m_interval(),
 m_elapsed(),
 m_rfFrames(0U),
@@ -1245,12 +1245,12 @@ void CDMRSlot::clock()
 
 		if (m_packetTimer.isRunning() && m_packetTimer.hasExpired()) {
 			unsigned int elapsed = m_elapsed.elapsed();
-			unsigned int frames = elapsed / DMR_SLOT_TIME;
+			unsigned int frames  = elapsed / DMR_SLOT_TIME;
 
 			if (frames > m_netFrames) {
 				unsigned int count = frames - m_netFrames;
-				if (count > 3U) {
-					LogDebug("DMR Slot %u, lost audio for 300ms filling in, elapsed: %ums, expected: %u, received: %u", m_slotNo, elapsed, frames, m_netFrames);
+				if (count >= 8U) {
+					LogDebug("DMR Slot %u, lost audio for 500ms filling in, elapsed: %ums, expected: %u, received: %u", m_slotNo, elapsed, frames, m_netFrames);
 					insertSilence(count - 1U);
 				}
 			}
