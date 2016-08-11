@@ -1008,8 +1008,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		}
 
 		if (m_netState == RS_NET_AUDIO) {
-			LogDebug("DMR Slot %u, seq no: %u", m_slotNo, dmrData.getSeqNo());
-
 			unsigned char fid = m_netLC->getFID();
 			if (fid == FID_ETSI || fid == FID_DMRA)
 				m_netErrs += m_fec.regenerateDMR(data + 2U);
@@ -1056,8 +1054,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		if (!DMRAccessControl::validateAccess(id, did, m_slotNo, true))
 		    return;
 			
-		LogDebug("DMR Slot %u, seq no: %u", m_slotNo, dmrData.getSeqNo());
-
 		unsigned char fid = m_netLC->getFID();
 		if (fid == FID_ETSI || fid == FID_DMRA)
 			m_netErrs += m_fec.regenerateDMR(data + 2U);
