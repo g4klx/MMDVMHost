@@ -48,8 +48,8 @@ public:
 	unsigned char getBER() const;
 	void setBER(unsigned char ber);
 
-	signed char getRSSI() const;
-	void setRSSI(signed char ber);
+	unsigned char getRSSI() const;
+	void setRSSI(unsigned char ber);
 
 	void setData(const unsigned char* buffer);
 	unsigned int getData(unsigned char* buffer) const;
@@ -64,7 +64,7 @@ private:
 	unsigned char  m_seqNo;
 	unsigned char  m_n;
 	unsigned char  m_ber;
-	signed char    m_rssi;
+	unsigned char  m_rssi;
 };
 
 #endif

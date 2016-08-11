@@ -125,11 +125,12 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 
 	// Have we got RSSI bytes on the end?
 	if (len == (DSTAR_FRAME_LENGTH_BYTES + 3U) && m_rssiMultiplier != 0) {
-		uint16_t rssi = 0U;
-		rssi |= (data[13U] << 8) & 0xFF00U;
-		rssi |= (data[14U] << 0) & 0x00FFU;
-		signed char m_rssi = (rssi - m_rssiOffset) / m_rssiMultiplier;
-		LogDebug("D-Star, raw RSSI: %u, reported RSSI: %d dBm", rssi, m_rssi);
+		uint16_t raw = 0U;
+		raw |= (data[35U] << 8) & 0xFF00U;
+		raw |= (data[36U] << 0) & 0x00FFU;
+		int rssi = (raw - m_rssiOffset) / m_rssiMultiplier;
+		unsigned char m_rssi = (rssi >= 0) ? rssi : -rssi;
+		LogDebug("D-Star, raw RSSI: %u, reported RSSI: -%u dBm", raw, m_rssi);
 	}
 
 	if (type == TAG_HEADER) {

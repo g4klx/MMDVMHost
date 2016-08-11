@@ -47,7 +47,7 @@ m_dataType(0U),
 m_seqNo(0U),
 m_n(0U),
 m_ber(0U),
-m_rssi(0)
+m_rssi(0U)
 {
 	m_data = new unsigned char[2U * DMR_FRAME_LENGTH_BYTES];
 }
@@ -158,12 +158,12 @@ void CDMRData::setBER(unsigned char ber)
 	m_ber = ber;
 }
 
-signed char CDMRData::getRSSI() const
+unsigned char CDMRData::getRSSI() const
 {
 	return m_rssi;
 }
 
-void CDMRData::setRSSI(signed char rssi)
+void CDMRData::setRSSI(unsigned char rssi)
 {
 	m_rssi = rssi;
 }

@@ -94,11 +94,12 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 
 	// Have we got RSSI bytes on the end?
 	if (len == (YSF_FRAME_LENGTH_BYTES + 4U) && m_rssiMultiplier != 0) {
-		uint16_t rssi = 0U;
-		rssi |= (data[122U] << 8) & 0xFF00U;
-		rssi |= (data[123U] << 0) & 0x00FFU;
-		signed char m_rssi = (rssi - m_rssiOffset) / m_rssiMultiplier;
-		LogDebug("YSF, raw RSSI: %u, reported RSSI: %d dBm", rssi, m_rssi);
+		uint16_t raw = 0U;
+		raw |= (data[35U] << 8) & 0xFF00U;
+		raw |= (data[36U] << 0) & 0x00FFU;
+		int rssi = (raw - m_rssiOffset) / m_rssiMultiplier;
+		unsigned char m_rssi = (rssi >= 0) ? rssi : -rssi;
+		LogDebug("YSF, raw RSSI: %u, reported RSSI: -%u dBm", raw, m_rssi);
 	}
 
 	CYSFFICH fich;

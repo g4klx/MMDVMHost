@@ -84,7 +84,7 @@ private:
 	unsigned char*             m_lastFrame;
 	bool                       m_lastFrameValid;
 	CDMREMB                    m_lastEMB;
-	signed char                m_rssi;
+	unsigned char              m_rssi;
 	FILE*                      m_fp;
 
 	static unsigned int        m_id;

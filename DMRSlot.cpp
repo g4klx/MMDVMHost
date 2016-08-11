@@ -87,7 +87,7 @@ m_netErrs(0U),
 m_lastFrame(NULL),
 m_lastFrameValid(false),
 m_lastEMB(),
-m_rssi(0),
+m_rssi(0U),
 m_fp(NULL)
 {
 	m_lastFrame = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
@@ -123,11 +123,12 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 	// Have we got RSSI bytes on the end?
 	if (len == (DMR_FRAME_LENGTH_BYTES + 4U) && m_rssiMultiplier != 0) {
-		uint16_t rssi = 0U;
-		rssi |= (data[35U] << 8) & 0xFF00U;
-		rssi |= (data[36U] << 0) & 0x00FFU;
-		m_rssi = (rssi - m_rssiOffset) / m_rssiMultiplier;
-		LogDebug("DMR Slot %u, raw RSSI: %u, reported RSSI: %d dBm", m_slotNo, rssi, m_rssi);
+		uint16_t raw = 0U;
+		raw |= (data[35U] << 8) & 0xFF00U;
+		raw |= (data[36U] << 0) & 0x00FFU;
+		int rssi = (raw - m_rssiOffset) / m_rssiMultiplier;
+		m_rssi = (rssi >= 0) ? rssi : -rssi;
+		LogDebug("DMR Slot %u, raw RSSI: %u, reported RSSI: -%u dBm", m_slotNo, raw, m_rssi);
 	}
 
 	bool dataSync  = (data[1U] & DMR_SYNC_DATA)  == DMR_SYNC_DATA;
