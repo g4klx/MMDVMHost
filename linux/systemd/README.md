@@ -1,6 +1,19 @@
 MMDVMHost Systemd setup
 =======================
 
+Preface
+-------
+
+Since moving to Systemd many admins are struggling with the differences, in an effort to take the work  
+out of installing MMDVMHost on your linux host, I have written a service handler and the related systemd  
+unit files.
+
+I hope these help you get going quickly.
+Written on  / tested on / confirmed working on Raspbian Jessie-lite but should work just fine on any  
+system using systemd.
+
+Enjoy, 73 de MW0MWZ
+
 
 Install Instructions
 --------------------
