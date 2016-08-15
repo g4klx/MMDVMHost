@@ -1,4 +1,4 @@
-These are the source files for building the MMDVMHost, the program that interfaces to the MMDVM or DVMega on the one side, and a suitable network on the other. On the D-Star side the MMDVMHost interfaces with the ircDDB Gateway, on DMR, only the BrandMeister network currently.
+These are the source files for building the MMDVMHost, the program that interfaces to the MMDVM or DVMega on the one side, and a suitable network on the other. On the D-Star side the MMDVMHost interfaces with the ircDDB Gateway, on DMR it connects to Brand Meister, DMR+, and HB Link, on System Fusion it connects to the YSF Gateway..
 
 It supports D-Star, DMR, and System Fusion.
 
