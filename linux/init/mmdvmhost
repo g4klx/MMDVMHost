@@ -43,7 +43,7 @@ case "$1" in
             done
 
             if ! pgrep "MMDVMHost" > /dev/null 2>&1; then
-                log_daemon_msg "Starting Repeater Services" "$NAME" || true
+                log_daemon_msg "Starting Repeater services" "$NAME" || true
                 if start-stop-daemon --start --quiet --background --oknodo --pidfile /var/run/$NAME.pid \
                         --exec $DAEMON $CONFIG -- $DAEMON_OPTS; then
                         log_end_msg 0 || true
