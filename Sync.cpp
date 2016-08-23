@@ -50,6 +50,34 @@ void CSync::addDMRAudioSync(unsigned char* data)
 		data[i + 13U] = (data[i + 13U] & ~SYNC_MASK[i]) | BS_SOURCED_AUDIO_SYNC[i];
 }
 
+void CSync::addDMRDataSync(unsigned int slotNo, unsigned char* data)
+{
+	assert(slotNo == 1U || slotNo == 2U);
+	assert(data != NULL);
+
+	if (slotNo == 1U) {
+		for (unsigned int i = 0U; i < 7U; i++)
+			data[i + 13U] = (data[i + 13U] & ~SYNC_MASK[i]) | DIRECT_SLOT1_DATA_SYNC[i];
+	} else {
+		for (unsigned int i = 0U; i < 7U; i++)
+			data[i + 13U] = (data[i + 13U] & ~SYNC_MASK[i]) | DIRECT_SLOT2_DATA_SYNC[i];
+	}
+}
+
+void CSync::addDMRAudioSync(unsigned int slotNo, unsigned char* data)
+{
+	assert(slotNo == 1U || slotNo == 2U);
+	assert(data != NULL);
+
+	if (slotNo == 1U) {
+		for (unsigned int i = 0U; i < 7U; i++)
+			data[i + 13U] = (data[i + 13U] & ~SYNC_MASK[i]) | DIRECT_SLOT1_AUDIO_SYNC[i];
+	} else {
+		for (unsigned int i = 0U; i < 7U; i++)
+			data[i + 13U] = (data[i + 13U] & ~SYNC_MASK[i]) | DIRECT_SLOT2_AUDIO_SYNC[i];
+	}
+}
+
 void CSync::addYSFSync(unsigned char* data)
 {
 	assert(data != NULL);
