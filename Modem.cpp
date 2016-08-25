@@ -784,7 +784,7 @@ bool CModem::setConfig()
 		buffer[3U] |= 0x02U;
 	if (m_pttInvert)
 		buffer[3U] |= 0x04U;
-	if (!m_duplex)
+	if (m_duplex)
 		buffer[3U] |= 0x80U;
 
 	buffer[4U] = 0x00U;

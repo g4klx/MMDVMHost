@@ -27,9 +27,6 @@ public:
 	static void addDMRDataSync(unsigned char* data);
 	static void addDMRAudioSync(unsigned char* data);
 
-	static void addDMRDataSync(unsigned int slotNo, unsigned char* data);
-	static void addDMRAudioSync(unsigned int slotNo, unsigned char* data);
-
 	static void addYSFSync(unsigned char* data);
 
 private:
