@@ -31,7 +31,7 @@ const unsigned int BUFFER_LENGTH = 500U;
 const unsigned int HOMEBREW_DATA_PACKET_LENGTH = 55U;
 
 
-CDMRIPSC::CDMRIPSC(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, bool rssi) :
+CDMRIPSC::CDMRIPSC(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, bool rssi, HW_TYPE hwType) :
 m_address(),
 m_port(port),
 m_id(NULL),
@@ -44,6 +44,7 @@ m_enabled(false),
 m_slot1(slot1),
 m_slot2(slot2),
 m_rssi(rssi),
+m_hwType(hwType),
 m_status(WAITING_CONNECT),
 m_retryTimer(1000U, 10U),
 m_timeoutTimer(1000U, 60U),
@@ -461,8 +462,19 @@ bool CDMRIPSC::writeConfig()
 		else if (!m_slot1 && m_slot2)
 			slots = '2';
 	} else {
-		software = "MMDVM_DVMega";
 		slots = '4';
+
+		switch (m_hwType) {
+		case HWT_MMDVM:
+			software = "MMDVM_DMO";
+			break;
+		case HWT_DVMEGA:
+			software = "MMDVM_DVMega";
+			break;
+		default:
+			software = "MMDVM_Unknown";
+			break;
+		}
 	}
 
 	char buffer[400U];

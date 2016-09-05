@@ -21,6 +21,7 @@
 
 #include "SerialController.h"
 #include "RingBuffer.h"
+#include "Defines.h"
 #include "Timer.h"
 
 #include <string>
@@ -71,6 +72,8 @@ public:
 
 	bool sendCWId(const std::string& callsign);
 
+	HW_TYPE getHWType() const;
+
 	void clock(unsigned int ms);
 
 	void close();
@@ -117,6 +120,7 @@ private:
 	bool                       m_tx;
 	bool                       m_lockout;
 	bool                       m_error;
+	HW_TYPE                    m_hwType;
 
 	bool readVersion();
 	bool readStatus();

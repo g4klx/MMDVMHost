@@ -31,6 +31,12 @@ const unsigned char TAG_DATA   = 0x01U;
 const unsigned char TAG_LOST   = 0x02U;
 const unsigned char TAG_EOT    = 0x03U;
 
+enum HW_TYPE {
+	HWT_MMDVM,
+	HWT_DVMEGA,
+	HWT_UNKNOWN
+};
+
 enum RPT_RF_STATE {
 	RS_RF_LISTENING,
 	RS_RF_LATE_ENTRY,

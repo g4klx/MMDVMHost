@@ -19,7 +19,6 @@
 #include "DStarDefines.h"
 #include "DMRDefines.h"
 #include "YSFDefines.h"
-#include "Defines.h"
 #include "Thread.h"
 #include "Modem.h"
 #include "Utils.h"
@@ -117,7 +116,8 @@ m_dmrSpace2(0U),
 m_ysfSpace(0U),
 m_tx(false),
 m_lockout(false),
-m_error(false)
+m_error(false),
+m_hwType(HWT_UNKNOWN)
 {
 	assert(!port.empty());
 
@@ -741,6 +741,11 @@ bool CModem::readVersion()
 			CThread::sleep(10U);
 			RESP_TYPE_MMDVM resp = getResponse();
 			if (resp == RTM_OK && m_buffer[2U] == MMDVM_GET_VERSION) {
+				if (::memcmp(m_buffer + 4U, "MMDVM", 5U) == 0)
+					m_hwType = HWT_MMDVM;
+				else if (::memcmp(m_buffer + 4U, "DVMEGA", 6U) == 0)
+					m_hwType = HWT_DVMEGA;
+
 				LogInfo("MMDVM protocol version: %u, description: %.*s", m_buffer[3U], m_length - 4U, m_buffer + 4U);
 				return true;
 			}
@@ -1014,6 +1019,11 @@ RESP_TYPE_MMDVM CModem::getResponse()
 		// CUtils::dump(1U, "Received", m_buffer, m_length);
 		return RTM_OK;
 	}
+}
+
+HW_TYPE CModem::getHWType() const
+{
+	return m_hwType;
 }
 
 bool CModem::setMode(unsigned char mode)
