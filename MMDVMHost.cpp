@@ -311,6 +311,7 @@ int CMMDVMHost::run()
 		unsigned int txHang    = m_conf.getDMRTXHang();
 		int rssiMultiplier     = m_conf.getModemRSSIMultiplier();
 		int rssiOffset         = m_conf.getModemRSSIOffset();
+		unsigned int jitter    = m_conf.getDMRNetworkJitter();
 
 		if (txHang > m_rfModeHang)
 			txHang = m_rfModeHang;
@@ -354,7 +355,7 @@ int CMMDVMHost::run()
 			LogInfo("    RSSI Offset: %d", rssiOffset);
 		}
 
-		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList,dstIDBlackListSlot1RF,dstIDWhiteListSlot1RF, dstIDBlackListSlot2RF, dstIDWhiteListSlot2RF, dstIDBlackListSlot1NET,dstIDWhiteListSlot1NET, dstIDBlackListSlot2NET, dstIDWhiteListSlot2NET, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookupFile, rssiMultiplier, rssiOffset);
+		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList,dstIDBlackListSlot1RF,dstIDWhiteListSlot1RF, dstIDBlackListSlot2RF, dstIDWhiteListSlot2RF, dstIDBlackListSlot1NET,dstIDWhiteListSlot1NET, dstIDBlackListSlot2NET, dstIDWhiteListSlot2NET, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookupFile, rssiMultiplier, rssiOffset, jitter);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}
@@ -756,6 +757,7 @@ bool CMMDVMHost::createDMRNetwork()
 	unsigned int id      = m_conf.getDMRId();
 	std::string password = m_conf.getDMRNetworkPassword();
 	bool debug           = m_conf.getDMRNetworkDebug();
+	unsigned int jitter  = m_conf.getDMRNetworkJitter();
 	bool slot1           = m_conf.getDMRNetworkSlot1();
 	bool slot2           = m_conf.getDMRNetworkSlot2();
 	bool rssi            = m_conf.getDMRNetworkRSSI();
@@ -768,6 +770,7 @@ bool CMMDVMHost::createDMRNetwork()
 		LogInfo("    Local: %u", local);
 	else
 		LogInfo("    Local: random");
+	LogInfo("    Jitter: %ums", jitter);
 	LogInfo("    Slot 1: %s", slot1 ? "enabled" : "disabled");
 	LogInfo("    Slot 2: %s", slot2 ? "enabled" : "disabled");
 	LogInfo("    RSSI: %s", rssi ? "enabled" : "disabled");

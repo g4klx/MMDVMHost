@@ -44,6 +44,9 @@ unsigned int   CDMRSlot::m_hangCount = 3U * 17U;
 int            CDMRSlot::m_rssiMultiplier = 0;
 int            CDMRSlot::m_rssiOffset = 0;
 
+unsigned int   CDMRSlot::m_jitterTime  = 300U;
+unsigned int   CDMRSlot::m_jitterSlots = 5U;
+
 unsigned char* CDMRSlot::m_idle = NULL;
 
 FLCO           CDMRSlot::m_flco1;
@@ -73,7 +76,7 @@ m_netN(0U),
 m_networkWatchdog(1000U, 0U, 1500U),
 m_rfTimeoutTimer(1000U, timeout),
 m_netTimeoutTimer(1000U, timeout),
-m_packetTimer(1000U, 0U, 300U),
+m_packetTimer(1000U, 0U, 50U),
 m_interval(),
 m_elapsed(),
 m_rfFrames(0U),
@@ -793,10 +796,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			m_modem->writeDMRAbort(m_slotNo);
 		}
 
-		writeQueueNet(m_idle);
-		writeQueueNet(m_idle);
-		writeQueueNet(m_idle);
-		writeQueueNet(m_idle);
+		for (unsigned int i = 0U; i < m_jitterSlots; i++)
+			writeQueueNet(m_idle);
 
 		writeQueueNet(data);
 		writeQueueNet(data);
@@ -963,10 +964,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				m_modem->writeDMRAbort(m_slotNo);
 			}
 
-			writeQueueNet(m_idle);
-			writeQueueNet(m_idle);
-			writeQueueNet(m_idle);
-			writeQueueNet(m_idle);
+			for (unsigned int i = 0U; i < m_jitterSlots; i++)
+				writeQueueNet(m_idle);
 
 			// Create a dummy start frame
 			unsigned char start[DMR_FRAME_LENGTH_BYTES + 2U];
@@ -1026,7 +1025,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				m_lastFrameValid = true;
 				m_netSeqNo = dmrData.getSeqNo();
 				m_netN = dmrData.getN();
-				m_elapsed.start();
 				m_netLost = 0U;
 			} else {
 				insertSilence(data, dmrData.getSeqNo());
@@ -1035,6 +1033,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			writeQueueNet(data);
 
 			m_packetTimer.start();
+			m_elapsed.start();
 
 			m_netFrames++;
 
@@ -1078,7 +1077,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			m_lastFrameValid = true;
 			m_netSeqNo = dmrData.getSeqNo();
 			m_netN = dmrData.getN();
-			m_elapsed.start();
 			m_netLost = 0U;
 		} else {
 			insertSilence(data, dmrData.getSeqNo());
@@ -1087,6 +1085,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		writeQueueNet(data);
 
 		m_packetTimer.start();
+		m_elapsed.start();
 
 		m_netFrames++;
 
@@ -1238,14 +1237,10 @@ void CDMRSlot::clock()
 
 		if (m_packetTimer.isRunning() && m_packetTimer.hasExpired()) {
 			unsigned int elapsed = m_elapsed.elapsed();
-			unsigned int frames  = elapsed / DMR_SLOT_TIME;
-
-			if (frames > m_netFrames) {
-				unsigned int count = frames - m_netFrames;
-				if (count > 3U) {
-					LogDebug("DMR Slot %u, lost audio for 300ms filling in, elapsed: %ums, expected: %u, received: %u", m_slotNo, elapsed, frames, m_netFrames);
-					insertSilence(count - 1U);
-				}
+			if (elapsed >= m_jitterTime) {
+				LogDebug("DMR Slot %u, lost audio for %ums filling in", m_slotNo, elapsed);
+				insertSilence(m_jitterSlots);
+				m_elapsed.start();
 			}
 
 			m_packetTimer.start();
@@ -1338,7 +1333,7 @@ void CDMRSlot::writeQueueNet(const unsigned char *data)
 		m_queue.addData(data, len);
 }
 
-void CDMRSlot::init(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& SrcIdBlacklist, const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF,  const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, CDMRLookup* lookup, int rssiMultiplier, int rssiOffset)
+void CDMRSlot::init(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& SrcIdBlacklist, const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF,  const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, CDMRLookup* lookup, int rssiMultiplier, int rssiOffset, unsigned int jitter)
 {
 	assert(id != 0U);
 	assert(modem != NULL);
@@ -1360,8 +1355,10 @@ void CDMRSlot::init(unsigned int id, unsigned int colorCode, unsigned int callHa
 	m_rssiMultiplier = rssiMultiplier;
 	m_rssiOffset     = rssiOffset;
 
-	m_idle    = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
+	m_jitterTime  = jitter;
+	m_jitterSlots = jitter / DMR_SLOT_TIME;
 
+	m_idle = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
 	::memcpy(m_idle, DMR_IDLE_DATA, DMR_FRAME_LENGTH_BYTES + 2U);
 
 	// Generate the Slot Type for the Idle frame
