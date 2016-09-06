@@ -34,36 +34,30 @@ void CSync::addDStarSync(unsigned char* data)
 	::memcpy(data + DSTAR_VOICE_FRAME_LENGTH_BYTES, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES);
 }
 
-void CSync::addDMRBSDataSync(unsigned char* data)
+void CSync::addDMRDataSync(unsigned char* data, bool duplex)
 {
 	assert(data != NULL);
 
-	for (unsigned int i = 0U; i < 7U; i++)
-		data[i + 13U] = (data[i + 13U] & ~SYNC_MASK[i]) | BS_SOURCED_DATA_SYNC[i];
+	if (duplex) {
+		for (unsigned int i = 0U; i < 7U; i++)
+			data[i + 13U] = (data[i + 13U] & ~SYNC_MASK[i]) | BS_SOURCED_DATA_SYNC[i];
+	} else {
+		for (unsigned int i = 0U; i < 7U; i++)
+			data[i + 13U] = (data[i + 13U] & ~SYNC_MASK[i]) | MS_SOURCED_DATA_SYNC[i];
+	}
 }
 
-void CSync::addDMRBSAudioSync(unsigned char* data)
+void CSync::addDMRAudioSync(unsigned char* data, bool duplex)
 {
 	assert(data != NULL);
 
-	for (unsigned int i = 0U; i < 7U; i++)
-		data[i + 13U] = (data[i + 13U] & ~SYNC_MASK[i]) | BS_SOURCED_AUDIO_SYNC[i];
-}
-
-void CSync::addDMRMSDataSync(unsigned char* data)
-{
-	assert(data != NULL);
-
-	for (unsigned int i = 0U; i < 7U; i++)
-		data[i + 13U] = (data[i + 13U] & ~SYNC_MASK[i]) | MS_SOURCED_DATA_SYNC[i];
-}
-
-void CSync::addDMRMSAudioSync(unsigned char* data)
-{
-	assert(data != NULL);
-
-	for (unsigned int i = 0U; i < 7U; i++)
-		data[i + 13U] = (data[i + 13U] & ~SYNC_MASK[i]) | MS_SOURCED_AUDIO_SYNC[i];
+	if (duplex) {
+		for (unsigned int i = 0U; i < 7U; i++)
+			data[i + 13U] = (data[i + 13U] & ~SYNC_MASK[i]) | BS_SOURCED_AUDIO_SYNC[i];
+	} else {
+		for (unsigned int i = 0U; i < 7U; i++)
+			data[i + 13U] = (data[i + 13U] & ~SYNC_MASK[i]) | MS_SOURCED_AUDIO_SYNC[i];
+	}
 }
 
 void CSync::addYSFSync(unsigned char* data)

@@ -24,11 +24,8 @@ class CSync
 public:
 	static void addDStarSync(unsigned char* data);
 
-	static void addDMRBSDataSync(unsigned char* data);
-	static void addDMRBSAudioSync(unsigned char* data);
-
-	static void addDMRMSDataSync(unsigned char* data);
-	static void addDMRMSAudioSync(unsigned char* data);
+	static void addDMRDataSync(unsigned char* data, bool duplex);
+	static void addDMRAudioSync(unsigned char* data, bool duplex);
 
 	static void addYSFSync(unsigned char* data);
 
