@@ -61,6 +61,10 @@ const unsigned char MMDVM_DMR_ABORT   = 0x1EU;
 const unsigned char MMDVM_YSF_DATA    = 0x20U;
 const unsigned char MMDVM_YSF_LOST    = 0x21U;
 
+const unsigned char MMDVM_P25_HDR     = 0x30U;
+const unsigned char MMDVM_P25_LDU     = 0x31U;
+const unsigned char MMDVM_P25_LOST    = 0x32U;
+
 const unsigned char MMDVM_ACK         = 0x70U;
 const unsigned char MMDVM_NAK         = 0x7FU;
 
@@ -358,6 +362,18 @@ void CModem::clock(unsigned int ms)
 					data = TAG_LOST;
 					m_rxYSFData.addData(&data, 1U);
 				}
+				break;
+
+			case MMDVM_P25_HDR:
+				CUtils::dump(2U, "RX P25 HDR", m_buffer, m_length);
+				break;
+
+			case MMDVM_P25_LDU:
+				CUtils::dump(2U, "RX P25 LDU", m_buffer, m_length);
+				break;
+
+			case MMDVM_P25_LOST:
+				CUtils::dump(2U, "RX P25 Lost", m_buffer, m_length);
 				break;
 
 			case MMDVM_GET_STATUS: {
@@ -799,6 +815,7 @@ bool CModem::setConfig()
 		buffer[4U] |= 0x02U;
 	if (m_ysfEnabled)
 		buffer[4U] |= 0x04U;
+	buffer[4U] |= 0x08U;				// XXX P25
 
 	buffer[5U] = m_txDelay / 10U;		// In 10ms units
 
@@ -967,6 +984,9 @@ RESP_TYPE_MMDVM CModem::getResponse()
 		case MMDVM_DMR_LOST2:
 		case MMDVM_YSF_DATA:
 		case MMDVM_YSF_LOST:
+		case MMDVM_P25_HDR:
+		case MMDVM_P25_LDU:
+		case MMDVM_P25_LOST:
 		case MMDVM_GET_STATUS:
 		case MMDVM_GET_VERSION:
 		case MMDVM_ACK:
