@@ -26,6 +26,7 @@
 #include "TFTSerial.h"
 #include "NullDisplay.h"
 #include "YSFControl.h"
+#include "P25Control.h"
 #include "Nextion.h"
 #include "Thread.h"
 
@@ -375,6 +376,23 @@ int CMMDVMHost::run()
 		ysf = new CYSFControl(m_callsign, m_ysfNetwork, m_display, m_timeout, m_duplex, rssiMultiplier, rssiOffset);
 	}
 
+	CP25Control* p25 = NULL;
+	if (m_p25Enabled) {
+		unsigned int id    = m_conf.getP25Id();
+		int rssiMultiplier = m_conf.getModemRSSIMultiplier();
+		int rssiOffset     = m_conf.getModemRSSIOffset();
+
+		LogInfo("P25 Parameters");
+		LogInfo("    Id: %u", id);
+
+		if (rssiMultiplier != 0) {
+			LogInfo("    RSSI Multiplier: %d", rssiMultiplier);
+			LogInfo("    RSSI Offset: %d", rssiOffset);
+		}
+
+		p25 = new CP25Control(id, m_display, m_timeout, m_duplex, rssiMultiplier, rssiOffset);
+	}
+
 	setMode(MODE_IDLE);
 
 	LogMessage("MMDVMHost-%s is running", VERSION);
@@ -498,6 +516,22 @@ int CMMDVMHost::run()
 			}
 		}
 
+		len = m_modem->readP25Data(data);
+		if (p25 != NULL && len > 0U) {
+			if (m_mode == MODE_IDLE) {
+				bool ret = p25->writeModem(data, len);
+				if (ret) {
+					m_modeTimer.setTimeout(m_rfModeHang);
+					setMode(MODE_P25);
+				}
+			} else if (m_mode == MODE_P25) {
+				p25->writeModem(data, len);
+				m_modeTimer.start();
+			} else if (m_mode != MODE_LOCKOUT) {
+				LogWarning("P25 modem data received when in mode %u", m_mode);
+			}
+		}
+
 		if (m_modeTimer.isRunning() && m_modeTimer.hasExpired())
 			setMode(MODE_IDLE);
 
@@ -585,6 +619,26 @@ int CMMDVMHost::run()
 			}
 		}
 
+		if (p25 != NULL) {
+			ret = m_modem->hasP25Space();
+			if (ret) {
+				len = p25->readModem(data);
+				if (len > 0U) {
+					if (m_mode == MODE_IDLE) {
+						m_modeTimer.setTimeout(m_netModeHang);
+						setMode(MODE_P25);
+					}
+					if (m_mode == MODE_P25) {
+						m_modem->writeP25Data(data, len);
+						m_modeTimer.start();
+					}
+					else if (m_mode != MODE_LOCKOUT) {
+						LogWarning("P25 data received when in mode %u", m_mode);
+					}
+				}
+			}
+		}
+
 		if (m_dmrNetwork != NULL) {
 			bool run = m_dmrNetwork->wantsBeacon();
 			if (dmrBeaconsEnabled && run && m_mode == MODE_IDLE && !m_modem->hasTX()) {
@@ -607,6 +661,8 @@ int CMMDVMHost::run()
 			dmr->clock();
 		if (ysf != NULL)
 			ysf->clock(ms);
+		if (p25 != NULL)
+			p25->clock(ms);
 
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->clock(ms);
@@ -669,6 +725,7 @@ int CMMDVMHost::run()
 	delete dstar;
 	delete dmr;
 	delete ysf;
+	delete p25;
 
 	return 0;
 }

@@ -20,14 +20,29 @@
 #define  P25DEFINES_H
 
 const unsigned int P25_HDR_FRAME_LENGTH_BYTES = 99U;
+const unsigned int P25_HDR_FRAME_LENGTH_BITS  = P25_HDR_FRAME_LENGTH_BYTES * 8U;
 
 const unsigned int P25_LDU_FRAME_LENGTH_BYTES = 216U;
+const unsigned int P25_LDU_FRAME_LENGTH_BITS  = P25_LDU_FRAME_LENGTH_BYTES * 8U;
+
+const unsigned int P25_TERM_FRAME_LENGTH_BYTES = 18U;
+const unsigned int P25_TERM_FRAME_LENGTH_BITS  = P25_TERM_FRAME_LENGTH_BYTES * 8U;
+
+const unsigned int P25_TERMLC_FRAME_LENGTH_BYTES = 54U;
+const unsigned int P25_TERMLC_FRAME_LENGTH_BITS  = P25_TERMLC_FRAME_LENGTH_BYTES * 8U;
 
 const unsigned int P25_SYNC_LENGTH_BYTES = 6U;
 const unsigned int P25_NID_LENGTH_BYTES  = 8U;
 
 const unsigned char P25_SYNC_BYTES[]      = {0x55U, 0x75U, 0xF5U, 0xFFU, 0x77U, 0xFFU};
 const unsigned char P25_SYNC_BYTES_LENGTH = 6U;
+
+const unsigned char P25_DUID_HEADER  = 0x00U;
+const unsigned char P25_DUID_TERM    = 0x03U;
+const unsigned char P25_DUID_LDU1    = 0x05U;
+const unsigned char P25_DUID_LDU2    = 0x09U;
+const unsigned char P25_DUID_PDU     = 0x0CU;
+const unsigned char P25_DUID_TERM_LC = 0x0FU;
 
 #endif
 

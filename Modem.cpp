@@ -889,7 +889,7 @@ bool CModem::setConfig()
 
 	buffer[0U] = MMDVM_FRAME_START;
 
-	buffer[1U] = 15U;
+	buffer[1U] = 16U;
 
 	buffer[2U] = MMDVM_SET_CONFIG;
 
