@@ -37,9 +37,11 @@ enum SECTION {
   SECTION_DSTAR,
   SECTION_DMR,
   SECTION_FUSION,
+  SECTION_P25,
   SECTION_DSTAR_NETWORK,
   SECTION_DMR_NETWORK,
   SECTION_FUSION_NETWORK,
+  SECTION_P25_NETWORK,
   SECTION_TFTSERIAL,
   SECTION_HD44780,
   SECTION_NEXTION,
@@ -80,6 +82,7 @@ m_modemRXLevel(50U),
 m_modemDStarTXLevel(50U),
 m_modemDMRTXLevel(50U),
 m_modemYSFTXLevel(50U),
+m_modemP25TXLevel(50U),
 m_modemOscOffset(0),
 m_modemRSSIMultiplier(0),
 m_modemRSSIOffset(0),
@@ -107,6 +110,8 @@ m_dmrLookupFile(),
 m_dmrCallHang(3U),
 m_dmrTXHang(4U),
 m_fusionEnabled(true),
+m_p25Enabled(true),
+m_p25Id(0U),
 m_dstarNetworkEnabled(true),
 m_dstarGatewayAddress(),
 m_dstarGatewayPort(0U),
@@ -127,6 +132,11 @@ m_fusionNetworkMyPort(0U),
 m_fusionNetworkGwyAddress(),
 m_fusionNetworkGwyPort(0U),
 m_fusionNetworkDebug(false),
+m_p25NetworkEnabled(true),
+m_p25GatewayAddress(),
+m_p25GatewayPort(0U),
+m_p25LocalPort(0U),
+m_p25NetworkDebug(false),
 m_tftSerialPort("/dev/ttyAMA0"),
 m_tftSerialBrightness(50U),
 m_hd44780Rows(2U),
@@ -186,13 +196,17 @@ bool CConf::read()
 		  section = SECTION_DMR;
 	  else if (::strncmp(buffer, "[System Fusion]", 15U) == 0)
 		  section = SECTION_FUSION;
+	  else if (::strncmp(buffer, "[P25]", 5U) == 0)
+		  section = SECTION_P25;
 	  else if (::strncmp(buffer, "[D-Star Network]", 16U) == 0)
         section = SECTION_DSTAR_NETWORK;
       else if (::strncmp(buffer, "[DMR Network]", 13U) == 0)
         section = SECTION_DMR_NETWORK;
       else if (::strncmp(buffer, "[System Fusion Network]", 23U) == 0)
         section = SECTION_FUSION_NETWORK;
-      else if (::strncmp(buffer, "[TFT Serial]", 12U) == 0)
+	  else if (::strncmp(buffer, "[P25 Network]", 13U) == 0)
+		  section = SECTION_P25_NETWORK;
+	  else if (::strncmp(buffer, "[TFT Serial]", 12U) == 0)
         section = SECTION_TFTSERIAL;
 	  else if (::strncmp(buffer, "[HD44780]", 9U) == 0)
 		  section = SECTION_HD44780;
@@ -280,13 +294,15 @@ bool CConf::read()
 		else if (::strcmp(key, "RXLevel") == 0)
 			m_modemRXLevel = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "TXLevel") == 0)
-			m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = (unsigned int)::atoi(value);
+			m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "D-StarTXLevel") == 0)
 			m_modemDStarTXLevel = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "DMRTXLevel") == 0)
 			m_modemDMRTXLevel = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "YSFTXLevel") == 0)
 			m_modemYSFTXLevel = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "P25TXLevel") == 0)
+			m_modemP25TXLevel = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "OscOffset") == 0)
 			m_modemOscOffset = ::atoi(value);
 		else if (::strcmp(key, "RSSIMultiplier") == 0)
@@ -418,6 +434,11 @@ bool CConf::read()
 	} else if (section == SECTION_FUSION) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fusionEnabled = ::atoi(value) == 1;
+	} else if (section == SECTION_P25) {
+		if (::strcmp(key, "Enable") == 0)
+			m_p25Enabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "Id") == 0)
+			m_p25Id = (unsigned int)::atoi(value);
 	} else if (section == SECTION_DSTAR_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dstarNetworkEnabled = ::atoi(value) == 1;
@@ -461,6 +482,17 @@ bool CConf::read()
 			m_fusionNetworkGwyPort = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Debug") == 0)
 			m_fusionNetworkDebug = ::atoi(value) == 1;
+	} else if (section == SECTION_P25_NETWORK) {
+		if (::strcmp(key, "Enable") == 0)
+			m_p25NetworkEnabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "GatewayAddress") == 0)
+			m_p25GatewayAddress = value;
+		else if (::strcmp(key, "GatewayPort") == 0)
+			m_p25GatewayPort = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "LocalPort") == 0)
+			m_p25LocalPort = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "Debug") == 0)
+			m_p25NetworkDebug = ::atoi(value) == 1;
 	} else if (section == SECTION_TFTSERIAL) {
 		if (::strcmp(key, "Port") == 0)
 			m_tftSerialPort = value;
@@ -680,6 +712,11 @@ unsigned int CConf::getModemYSFTXLevel() const
 	return m_modemYSFTXLevel;
 }
 
+unsigned int CConf::getModemP25TXLevel() const
+{
+	return m_modemP25TXLevel;
+}
+
 int CConf::getModemOscOffset() const
 {
 	return m_modemOscOffset;
@@ -804,6 +841,16 @@ bool CConf::getFusionEnabled() const
 	return m_fusionEnabled;
 }
 
+bool CConf::getP25Enabled() const
+{
+	return m_p25Enabled;
+}
+
+unsigned int CConf::getP25Id() const
+{
+	return m_p25Id;
+}
+
 bool CConf::getDStarNetworkEnabled() const
 {
 	return m_dstarNetworkEnabled;
@@ -902,6 +949,31 @@ unsigned int CConf::getFusionNetworkGwyPort() const
 bool CConf::getFusionNetworkDebug() const
 {
 	return m_fusionNetworkDebug;
+}
+
+bool CConf::getP25NetworkEnabled() const
+{
+	return m_p25NetworkEnabled;
+}
+
+std::string CConf::getP25GatewayAddress() const
+{
+	return m_p25GatewayAddress;
+}
+
+unsigned int CConf::getP25GatewayPort() const
+{
+	return m_p25GatewayPort;
+}
+
+unsigned int CConf::getP25LocalPort() const
+{
+	return m_p25LocalPort;
+}
+
+bool CConf::getP25NetworkDebug() const
+{
+	return m_p25NetworkDebug;
 }
 
 std::string CConf::getTFTSerialPort() const

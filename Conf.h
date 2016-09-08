@@ -71,6 +71,7 @@ public:
   unsigned int getModemDStarTXLevel() const;
   unsigned int getModemDMRTXLevel() const;
   unsigned int getModemYSFTXLevel() const;
+  unsigned int getModemP25TXLevel() const;
   int          getModemOscOffset() const;
   int          getModemRSSIMultiplier() const;
   int          getModemRSSIOffset() const;
@@ -105,6 +106,10 @@ public:
   // The System Fusion section
   bool         getFusionEnabled() const;
 
+  // The P25 section
+  bool         getP25Enabled() const;
+  unsigned int getP25Id() const;
+
   // The D-Star Network section
   bool         getDStarNetworkEnabled() const;
   std::string  getDStarGatewayAddress() const;
@@ -130,6 +135,13 @@ public:
   std::string  getFusionNetworkGwyAddress() const;
   unsigned int getFusionNetworkGwyPort() const;
   bool         getFusionNetworkDebug() const;
+
+  // The P25 Network section
+  bool         getP25NetworkEnabled() const;
+  std::string  getP25GatewayAddress() const;
+  unsigned int getP25GatewayPort() const;
+  unsigned int getP25LocalPort() const;
+  bool         getP25NetworkDebug() const;
 
   // The TFTSERIAL section
   std::string  getTFTSerialPort() const;
@@ -197,6 +209,7 @@ private:
   unsigned int m_modemDStarTXLevel;
   unsigned int m_modemDMRTXLevel;
   unsigned int m_modemYSFTXLevel;
+  unsigned int m_modemP25TXLevel;
   int          m_modemOscOffset;
   int          m_modemRSSIMultiplier;
   int          m_modemRSSIOffset;
@@ -228,6 +241,9 @@ private:
 
   bool         m_fusionEnabled;
 
+  bool         m_p25Enabled;
+  unsigned int m_p25Id;
+
   bool         m_dstarNetworkEnabled;
   std::string  m_dstarGatewayAddress;
   unsigned int m_dstarGatewayPort;
@@ -250,6 +266,12 @@ private:
   std::string  m_fusionNetworkGwyAddress;
   unsigned int m_fusionNetworkGwyPort;
   bool         m_fusionNetworkDebug;
+
+  bool         m_p25NetworkEnabled;
+  std::string  m_p25GatewayAddress;
+  unsigned int m_p25GatewayPort;
+  unsigned int m_p25LocalPort;
+  bool         m_p25NetworkDebug;
 
   std::string  m_tftSerialPort;
   unsigned int m_tftSerialBrightness;

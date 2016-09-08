@@ -19,6 +19,7 @@
 #include "DStarDefines.h"
 #include "DMRDefines.h"
 #include "YSFDefines.h"
+#include "P25Defines.h"
 #include "Thread.h"
 #include "Modem.h"
 #include "Utils.h"
@@ -92,6 +93,7 @@ m_rxLevel(0U),
 m_dstarTXLevel(0U),
 m_dmrTXLevel(0U),
 m_ysfTXLevel(0U),
+m_p25TXLevel(0U),
 m_oscOffset(oscOffset),
 m_debug(debug),
 m_rxFrequency(0U),
@@ -99,6 +101,7 @@ m_txFrequency(0U),
 m_dstarEnabled(false),
 m_dmrEnabled(false),
 m_ysfEnabled(false),
+m_p25Enabled(false),
 m_serial(port, SERIAL_115200, true),
 m_buffer(NULL),
 m_length(0U),
@@ -111,6 +114,8 @@ m_txDMRData1(1000U, "Modem TX DMR1"),
 m_txDMRData2(1000U, "Modem TX DMR2"),
 m_rxYSFData(1000U, "Modem RX YSF"),
 m_txYSFData(1000U, "Modem TX YSF"),
+m_rxP25Data(1000U, "Modem RX P25"),
+m_txP25Data(1000U, "Modem TX P25"),
 m_statusTimer(1000U, 0U, 250U),
 m_inactivityTimer(1000U, 2U),
 m_playoutTimer(1000U, 0U, 10U),
@@ -118,6 +123,7 @@ m_dstarSpace(0U),
 m_dmrSpace1(0U),
 m_dmrSpace2(0U),
 m_ysfSpace(0U),
+m_p25Space(0U),
 m_tx(false),
 m_lockout(false),
 m_error(false),
@@ -139,19 +145,21 @@ void CModem::setRFParams(unsigned int rxFrequency, unsigned int txFrequency)
 	m_txFrequency = txFrequency;
 }
 
-void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled)
+void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled)
 {
 	m_dstarEnabled = dstarEnabled;
 	m_dmrEnabled   = dmrEnabled;
 	m_ysfEnabled   = ysfEnabled;
+	m_p25Enabled   = p25Enabled;
 }
 
-void CModem::setLevels(unsigned int rxLevel, unsigned int dstarTXLevel, unsigned int dmrTXLevel, unsigned int ysfTXLevel)
+void CModem::setLevels(unsigned int rxLevel, unsigned int dstarTXLevel, unsigned int dmrTXLevel, unsigned int ysfTXLevel, unsigned int p25TXLevel)
 {
 	m_rxLevel      = rxLevel;
 	m_dstarTXLevel = dstarTXLevel;
 	m_dmrTXLevel   = dmrTXLevel;
 	m_ysfTXLevel   = ysfTXLevel;
+	m_p25TXLevel   = p25TXLevel;
 }
 
 void CModem::setDMRParams(unsigned int colorCode)
@@ -364,17 +372,45 @@ void CModem::clock(unsigned int ms)
 				}
 				break;
 
-			case MMDVM_P25_HDR:
-				CUtils::dump(2U, "RX P25 HDR", m_buffer, m_length);
-				break;
+			case MMDVM_P25_HDR: {
+				if (m_debug)
+					CUtils::dump(1U, "RX P25 Header", m_buffer, m_length);
 
-			case MMDVM_P25_LDU:
-				CUtils::dump(2U, "RX P25 LDU", m_buffer, m_length);
-				break;
+				unsigned char data = m_length - 2U;
+				m_rxP25Data.addData(&data, 1U);
 
-			case MMDVM_P25_LOST:
-				CUtils::dump(2U, "RX P25 Lost", m_buffer, m_length);
-				break;
+				data = TAG_HEADER;
+				m_rxP25Data.addData(&data, 1U);
+
+				m_rxP25Data.addData(m_buffer + 3U, m_length - 3U);
+			}
+			break;
+
+			case MMDVM_P25_LDU: {
+				if (m_debug)
+					CUtils::dump(1U, "RX P25 LDU", m_buffer, m_length);
+
+				unsigned char data = m_length - 2U;
+				m_rxP25Data.addData(&data, 1U);
+
+				data = TAG_DATA;
+				m_rxP25Data.addData(&data, 1U);
+
+				m_rxP25Data.addData(m_buffer + 3U, m_length - 3U);
+			}
+			break;
+
+			case MMDVM_P25_LOST: {
+				if (m_debug)
+					CUtils::dump(1U, "RX P25 Lost", m_buffer, m_length);
+
+				unsigned char data = 1U;
+				m_rxP25Data.addData(&data, 1U);
+
+				data = TAG_LOST;
+				m_rxP25Data.addData(&data, 1U);
+			}
+			break;
 
 			case MMDVM_GET_STATUS: {
 					// if (m_debug)
@@ -404,9 +440,10 @@ void CModem::clock(unsigned int ms)
 					m_dmrSpace1  = m_buffer[7U];
 					m_dmrSpace2  = m_buffer[8U];
 					m_ysfSpace   = m_buffer[9U];
+					m_p25Space   = m_buffer[10U];
 
 					m_inactivityTimer.start();
-					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u lockout=%d", m_buffer[5U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, int(m_lockout));
+					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u lockout=%d", m_buffer[5U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, int(m_lockout));
 				}
 				break;
 
@@ -416,14 +453,7 @@ void CModem::clock(unsigned int ms)
 				break;
 
 			case MMDVM_NAK:
-				if (m_buffer[3U] == MMDVM_DSTAR_HEADER && m_buffer[4U] == 5U)
-					LogWarning("Received a NAK from the MMDVM, MMDVM_DSTAR_HEADER, data overflow, space = %u", m_dstarSpace);
-				else if (m_buffer[3U] == MMDVM_DSTAR_DATA && m_buffer[4U] == 5U)
-					LogWarning("Received a NAK from the MMDVM, MMDVM_DSTAR_DATA, data overflow, space = %u", m_dstarSpace);
-				else if (m_buffer[3U] == MMDVM_DSTAR_EOT && m_buffer[4U] == 5U)
-					LogWarning("Received a NAK from the MMDVM, MMDVM_DSTAR_EOT, data overflow, space = %u", m_dstarSpace);
-				else
-					LogWarning("Received a NAK from the MMDVM, command = 0x%02X, reason = %u", m_buffer[3U], m_buffer[4U]);
+				LogWarning("Received a NAK from the MMDVM, command = 0x%02X, reason = %u", m_buffer[3U], m_buffer[4U]);
 				break;
 
 			default:
@@ -525,6 +555,27 @@ void CModem::clock(unsigned int ms)
 
 		m_ysfSpace--;
 	}
+
+	if (m_p25Space > 1U && !m_txP25Data.isEmpty()) {
+		unsigned char len = 0U;
+		m_txP25Data.getData(&len, 1U);
+		m_txP25Data.getData(m_buffer, len);
+
+		if (m_debug) {
+			if (m_buffer[3U] == MMDVM_P25_HDR)
+				CUtils::dump(1U, "TX P25 HDR", m_buffer, len);
+			else
+				CUtils::dump(1U, "TX P25 LDU", m_buffer, len);
+		}
+
+		int ret = m_serial.write(m_buffer, len);
+		if (ret != int(len))
+			LogWarning("Error when writing P25 data to the MMDVM");
+
+		m_playoutTimer.start();
+
+		m_p25Space--;
+	}
 }
 
 void CModem::close()
@@ -586,6 +637,20 @@ unsigned int CModem::readYSFData(unsigned char* data)
 	unsigned char len = 0U;
 	m_rxYSFData.getData(&len, 1U);
 	m_rxYSFData.getData(data, len);
+
+	return len;
+}
+
+unsigned int CModem::readP25Data(unsigned char* data)
+{
+	assert(data != NULL);
+
+	if (m_rxP25Data.isEmpty())
+		return 0U;
+
+	unsigned char len = 0U;
+	m_rxP25Data.getData(&len, 1U);
+	m_rxP25Data.getData(data, len);
 
 	return len;
 }
@@ -698,21 +763,6 @@ bool CModem::hasYSFSpace() const
 	return space > 1U;
 }
 
-bool CModem::hasTX() const
-{
-	return m_tx;
-}
-
-bool CModem::hasLockout() const
-{
-	return m_lockout;
-}
-
-bool CModem::hasError() const
-{
-	return m_error;
-}
-
 bool CModem::writeYSFData(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
@@ -734,6 +784,51 @@ bool CModem::writeYSFData(const unsigned char* data, unsigned int length)
 	m_txYSFData.addData(buffer, len);
 
 	return true;
+}
+
+bool CModem::hasP25Space() const
+{
+	unsigned int space = m_txP25Data.freeSpace() / (P25_LDU_FRAME_LENGTH_BYTES + 4U);
+
+	return space > 1U;
+}
+
+bool CModem::writeP25Data(const unsigned char* data, unsigned int length)
+{
+	assert(data != NULL);
+	assert(length > 0U);
+
+	if (data[0U] != TAG_HEADER && data[0U] != TAG_DATA && data[0U] != TAG_EOT)
+		return false;
+
+	unsigned char buffer[250U];
+
+	buffer[0U] = MMDVM_FRAME_START;
+	buffer[1U] = length + 2U;
+	buffer[2U] = (data[0U] == TAG_HEADER) ? MMDVM_P25_HDR : MMDVM_P25_LDU;
+
+	::memcpy(buffer + 3U, data + 1U, length - 1U);
+
+	unsigned char len = length + 2U;
+	m_txP25Data.addData(&len, 1U);
+	m_txP25Data.addData(buffer, len);
+
+	return true;
+}
+
+bool CModem::hasTX() const
+{
+	return m_tx;
+}
+
+bool CModem::hasLockout() const
+{
+	return m_lockout;
+}
+
+bool CModem::hasError() const
+{
+	return m_error;
 }
 
 bool CModem::readVersion()
@@ -815,7 +910,8 @@ bool CModem::setConfig()
 		buffer[4U] |= 0x02U;
 	if (m_ysfEnabled)
 		buffer[4U] |= 0x04U;
-	buffer[4U] |= 0x08U;				// XXX P25
+	if (m_p25Enabled)
+		buffer[4U] |= 0x08U;
 
 	buffer[5U] = m_txDelay / 10U;		// In 10ms units
 
@@ -833,11 +929,12 @@ bool CModem::setConfig()
 	buffer[12U] = (m_dstarTXLevel * 255U) / 100U;
 	buffer[13U] = (m_dmrTXLevel * 255U) / 100U;
 	buffer[14U] = (m_ysfTXLevel * 255U) / 100U;
+	buffer[15U] = (m_p25TXLevel * 255U) / 100U;
 
-	// CUtils::dump(1U, "Written", buffer, 15U);
+	// CUtils::dump(1U, "Written", buffer, 16U);
 
-	int ret = m_serial.write(buffer, 15U);
-	if (ret != 15)
+	int ret = m_serial.write(buffer, 16U);
+	if (ret != 16)
 		return false;
 
 	unsigned int count = 0U;

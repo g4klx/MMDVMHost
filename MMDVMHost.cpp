@@ -133,6 +133,7 @@ m_timeout(180U),
 m_dstarEnabled(false),
 m_dmrEnabled(false),
 m_ysfEnabled(false),
+m_p25Enabled(false),
 m_callsign()
 {
 }
@@ -684,6 +685,7 @@ bool CMMDVMHost::createModem()
 	unsigned int dstarTXLevel = m_conf.getModemDStarTXLevel();
 	unsigned int dmrTXLevel   = m_conf.getModemDMRTXLevel();
 	unsigned int ysfTXLevel   = m_conf.getModemYSFTXLevel();
+	unsigned int p25TXLevel   = m_conf.getModemP25TXLevel();
 	bool debug                = m_conf.getModemDebug();
 	unsigned int colorCode    = m_conf.getDMRColorCode();
 	unsigned int rxFrequency  = m_conf.getRxFrequency();
@@ -701,14 +703,15 @@ bool CMMDVMHost::createModem()
 	LogInfo("    D-Star TX Level: %u%%", dstarTXLevel);
 	LogInfo("    DMR TX Level: %u%%", dmrTXLevel);
 	LogInfo("    YSF TX Level: %u%%", ysfTXLevel);
+	LogInfo("    P25 TX Level: %u%%", p25TXLevel);
 	LogInfo("    RX Frequency: %uHz", rxFrequency);
 	LogInfo("    TX Frequency: %uHz", txFrequency);
 
 	LogInfo("    Osc. Offset: %dppm", oscOffset);
 
 	m_modem = new CModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, oscOffset, debug);
-	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled);
-	m_modem->setLevels(rxLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel);
+	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled);
+	m_modem->setLevels(rxLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel);
 	m_modem->setRFParams(rxFrequency, txFrequency);
 	m_modem->setDMRParams(colorCode);
 
@@ -844,6 +847,7 @@ void CMMDVMHost::readParams()
 	m_dstarEnabled = m_conf.getDStarEnabled();
 	m_dmrEnabled   = m_conf.getDMREnabled();
 	m_ysfEnabled   = m_conf.getFusionEnabled();
+	m_p25Enabled   = m_conf.getP25Enabled();
 	m_duplex       = m_conf.getDuplex();
 	m_callsign     = m_conf.getCallsign();
 	m_timeout      = m_conf.getTimeout();
@@ -860,6 +864,7 @@ void CMMDVMHost::readParams()
 	LogInfo("    D-Star: %s", m_dstarEnabled ? "enabled" : "disabled");
 	LogInfo("    DMR: %s", m_dmrEnabled ? "enabled" : "disabled");
 	LogInfo("    YSF: %s", m_ysfEnabled ? "enabled" : "disabled");
+	LogInfo("    P25: %s", m_p25Enabled ? "enabled" : "disabled");
 }
 
 void CMMDVMHost::createDisplay()
@@ -986,6 +991,18 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dmrNetwork->enable(false);
 		m_modem->setMode(MODE_YSF);
 		m_mode = MODE_YSF;
+		m_modeTimer.start();
+		break;
+
+	case MODE_P25:
+		if (m_dstarNetwork != NULL)
+			m_dstarNetwork->enable(false);
+		if (m_dmrNetwork != NULL)
+			m_dmrNetwork->enable(false);
+		if (m_ysfNetwork != NULL)
+			m_ysfNetwork->enable(false);
+		m_modem->setMode(MODE_P25);
+		m_mode = MODE_P25;
 		m_modeTimer.start();
 		break;
 

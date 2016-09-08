@@ -173,6 +173,9 @@
     <ClInclude Include="DMRAccessControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="P25Defines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">

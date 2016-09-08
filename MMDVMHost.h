@@ -55,6 +55,7 @@ private:
   bool           m_dstarEnabled;
   bool           m_dmrEnabled;
   bool           m_ysfEnabled;
+  bool           m_p25Enabled;
   std::string    m_callsign;
 
   void readParams();

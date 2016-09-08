@@ -181,6 +181,7 @@
     <ClInclude Include="Modem.h" />
     <ClInclude Include="Nextion.h" />
     <ClInclude Include="NullDisplay.h" />
+    <ClInclude Include="P25Defines.h" />
     <ClInclude Include="QR1676.h" />
     <ClInclude Include="RingBuffer.h" />
     <ClInclude Include="RS129.h" />

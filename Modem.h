@@ -38,8 +38,8 @@ public:
 	~CModem();
 
 	void setRFParams(unsigned int rxFrequency, unsigned int txFrequency);
-	void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled);
-	void setLevels(unsigned int rxLevel, unsigned int dstarTXLevel, unsigned int dmrTXLevel, unsigned int ysfTXLevel);
+	void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled);
+	void setLevels(unsigned int rxLevel, unsigned int dstarTXLevel, unsigned int dmrTXLevel, unsigned int ysfTXLevel, unsigned int p25Enabled);
 	void setDMRParams(unsigned int colorCode);
 
 	bool open();
@@ -48,11 +48,13 @@ public:
 	unsigned int readDMRData1(unsigned char* data);
 	unsigned int readDMRData2(unsigned char* data);
 	unsigned int readYSFData(unsigned char* data);
+	unsigned int readP25Data(unsigned char* data);
 
 	bool hasDStarSpace() const;
 	bool hasDMRSpace1() const;
 	bool hasDMRSpace2() const;
 	bool hasYSFSpace() const;
+	bool hasP25Space() const;
 
 	bool hasTX() const;
 
@@ -63,6 +65,7 @@ public:
 	bool writeDMRData1(const unsigned char* data, unsigned int length);
 	bool writeDMRData2(const unsigned char* data, unsigned int length);
 	bool writeYSFData(const unsigned char* data, unsigned int length);
+	bool writeP25Data(const unsigned char* data, unsigned int length);
 
 	bool writeDMRStart(bool tx);
 	bool writeDMRShortLC(const unsigned char* lc);
@@ -91,6 +94,7 @@ private:
 	unsigned int               m_dstarTXLevel;
 	unsigned int               m_dmrTXLevel;
 	unsigned int               m_ysfTXLevel;
+	unsigned int               m_p25TXLevel;
 	int                        m_oscOffset;
 	bool                       m_debug;
 	unsigned int               m_rxFrequency;
@@ -98,6 +102,7 @@ private:
 	bool                       m_dstarEnabled;
 	bool                       m_dmrEnabled;
 	bool                       m_ysfEnabled;
+	bool                       m_p25Enabled;
 	CSerialController          m_serial;
 	unsigned char*             m_buffer;
 	unsigned int               m_length;
@@ -110,6 +115,8 @@ private:
 	CRingBuffer<unsigned char> m_txDMRData2;
 	CRingBuffer<unsigned char> m_rxYSFData;
 	CRingBuffer<unsigned char> m_txYSFData;
+	CRingBuffer<unsigned char> m_rxP25Data;
+	CRingBuffer<unsigned char> m_txP25Data;
 	CTimer                     m_statusTimer;
 	CTimer                     m_inactivityTimer;
 	CTimer                     m_playoutTimer;
@@ -117,6 +124,7 @@ private:
 	unsigned int               m_dmrSpace1;
 	unsigned int               m_dmrSpace2;
 	unsigned int               m_ysfSpace;
+	unsigned int               m_p25Space;
 	bool                       m_tx;
 	bool                       m_lockout;
 	bool                       m_error;
