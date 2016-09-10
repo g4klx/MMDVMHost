@@ -23,6 +23,7 @@
 #include <cassert>
 #include <cstring>
 #include <ctime>
+#include <clocale>
 
 CNextion::CNextion(const std::string& callsign, unsigned int dmrid, const std::string& port, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness) :
 CDisplay(),

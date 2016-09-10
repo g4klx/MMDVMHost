@@ -123,6 +123,7 @@ m_dmrNetworkPort(0U),
 m_dmrNetworkLocal(0U),
 m_dmrNetworkPassword(),
 m_dmrNetworkDebug(false),
+m_dmrNetworkJitter(300U),
 m_dmrNetworkSlot1(true),
 m_dmrNetworkSlot2(true),
 m_dmrNetworkRSSI(false),
@@ -463,6 +464,8 @@ bool CConf::read()
 			m_dmrNetworkPassword = value;
 		else if (::strcmp(key, "Debug") == 0)
 			m_dmrNetworkDebug = ::atoi(value) == 1;
+		else if (::strcmp(key, "Jitter") == 0)
+			m_dmrNetworkJitter = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Slot1") == 0)
 			m_dmrNetworkSlot1 = ::atoi(value) == 1;
 		else if (::strcmp(key, "Slot2") == 0)
@@ -904,6 +907,11 @@ std::string CConf::getDMRNetworkPassword() const
 bool CConf::getDMRNetworkDebug() const
 {
 	return m_dmrNetworkDebug;
+}
+
+unsigned int CConf::getDMRNetworkJitter() const
+{
+	return m_dmrNetworkJitter;
 }
 
 bool CConf::getDMRNetworkSlot1() const
