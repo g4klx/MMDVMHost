@@ -157,7 +157,14 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			if (!DMRAccessControl::validateAccess(id, did, m_slotNo, false)) {
 			    delete lc;
 			    return;
-			}			
+			}
+			
+			// Test dst rewrite
+			unsigned int rw_id = DMRAccessControl::DstIdRewrite(id, false);
+			if (rw_id) {
+			LogMessage("Rewrite ID: %u", rw_id);
+			lc->setDstId(rw_id);
+			}
 			
 			m_rfLC = lc;
 
@@ -271,6 +278,7 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			if (!DMRAccessControl::validateAccess(srcId, dstId, m_slotNo, false))
 			    return;
 
+
 			m_rfFrames = dataHeader.getBlocks();
 
 			m_rfDataHeader = dataHeader;
@@ -325,7 +333,7 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			unsigned int dstId = csbk.getDstId();
 			if (!DMRAccessControl::validateAccess(srcId, dstId, m_slotNo, false))
 			    return;
-
+			
 			// Regenerate the CSBK data
 			csbk.get(data + 2U);
 
@@ -483,6 +491,12 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				if (!DMRAccessControl::validateAccess(id,did,m_slotNo,false)) {
 				    delete lc;
 				    return;
+				}
+				// Test dst rewrite
+				unsigned int rw_id = DMRAccessControl::DstIdRewrite(id, false);
+				if (rw_id) {
+				LogMessage("Rewrite ID: %u", rw_id);
+				lc->setDstId(rw_id);
 				}
 
 				m_rfLC = lc;
