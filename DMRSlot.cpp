@@ -160,7 +160,7 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			}
 			
 			// Test dst rewrite
-			unsigned int rw_id = DMRAccessControl::DstIdRewrite(id, false);
+			unsigned int rw_id = DMRAccessControl::DstIdRewrite(did, false);
 			if (rw_id) {
 			LogMessage("Rewrite ID: %u", rw_id);
 			lc->setDstId(rw_id);
@@ -493,7 +493,7 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				    return;
 				}
 				// Test dst rewrite
-				unsigned int rw_id = DMRAccessControl::DstIdRewrite(id, false);
+				unsigned int rw_id = DMRAccessControl::DstIdRewrite(did, false);
 				if (rw_id) {
 				LogMessage("Rewrite ID: %u", rw_id);
 				lc->setDstId(rw_id);
