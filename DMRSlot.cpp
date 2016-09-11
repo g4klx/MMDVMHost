@@ -157,7 +157,7 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			if (!DMRAccessControl::validateAccess(id, did, m_slotNo, false)) {
 			    delete lc;
 			    return;
-			}
+			}			
 			
 			m_rfLC = lc;
 
@@ -762,6 +762,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		unsigned int id = m_netLC->getSrcId();
 		if (!DMRAccessControl::validateAccess(id, did, m_slotNo, true))
 		    return;
+		
+		// Test dst rewrite
+		unsigned int rw_id = DMRAccessControl::DstIdRewrite(id, true);
+		if (rw_id) {
+		    LogMessage("Rewrite ID: %u", rw_id);
+		    m_netLC->setDstId(rw_id);
+		}
 
 		// Store the LC for the embedded LC
 		m_netEmbeddedLC.setData(*m_netLC);
@@ -825,6 +832,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		unsigned int id = m_netLC->getSrcId();
 		if (!DMRAccessControl::validateAccess(id, did, m_slotNo, true))
 		    return;
+		
+		// Test dst rewrite
+		unsigned int rw_id = DMRAccessControl::DstIdRewrite(id,true);
+		if (rw_id) {
+		    LogMessage("Rewrite ID: %u", rw_id);
+		    m_netLC->setDstId(rw_id);
+		}
 
 		// Regenerate the Slot Type
 		CDMRSlotType slotType;

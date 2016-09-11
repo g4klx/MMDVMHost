@@ -18,6 +18,7 @@
 
 #include <algorithm>
 #include <vector>
+#include <ctime>
 
 std::vector<unsigned int> DMRAccessControl::m_dstBlackListSlot1RF;
 std::vector<unsigned int> DMRAccessControl::m_dstBlackListSlot2RF;
@@ -36,6 +37,10 @@ std::vector<unsigned int> DMRAccessControl::m_prefixes;
 bool DMRAccessControl::m_selfOnly = false;
 
 unsigned int DMRAccessControl::m_id = 0U;
+
+unsigned int DMRAccessControl::m_dstRewriteID = 0U;
+
+std::time_t DMRAccessControl::m_time;
 
 void DMRAccessControl::init(const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF, const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, const std::vector<unsigned int>& SrcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes,unsigned int id)
 {
@@ -180,3 +185,33 @@ bool DMRAccessControl::validateAccess (unsigned int src_id, unsigned int dst_id,
 		return true;
 	}
 }
+
+unsigned int DMRAccessControl::DstIdRewrite (unsigned int id, bool network) 
+{
+  // record current time 
+  std::time_t currenttime = std::time(nullptr);
+  
+   // if the traffic is from the network
+  if (network) {
+	m_dstRewriteID = id;
+	// record current time
+	m_time = std::time(nullptr);
+	// if the ID is a talkgroup, log and rewrite to TG9 
+	if (id < 4000 && id != 0) {
+	  LogMessage("Rewrite DST ID (TG) of of inbound network traffic from %u to 9", id);
+	  return 9;
+	} else {
+	    return 0;
+	}
+  } else {
+	// if less than 30 seconds has passed since we last saw traffic 
+	if (m_dstRewriteID == id && (m_time + 30) > currenttime && m_time) {
+	      LogMessage("Inbound DST ID (TG) rewrite seen in last 30 seconds");
+	      LogMessage("Rewrite DST ID (TG) of outbound network traffic from 9 to %u", id);
+	      return(id);
+	} else {
+	    return(0);
+	}
+  }
+
+}	
