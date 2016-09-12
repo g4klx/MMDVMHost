@@ -730,6 +730,92 @@ void CHD44780::clearFusionInt()
 	}
 }
 
+void CHD44780::writeP25Int(const char* source, bool group, const char* dest, const char* type)
+{
+	assert(source != NULL);
+	assert(dest != NULL);
+	assert(type != NULL);
+
+#ifdef ADAFRUIT_DISPLAY
+		adafruitLCDColour(AC_RED);
+#endif
+
+	m_clockDisplayTimer.stop();           // Stop the clock display
+	::lcdClear(m_fd);
+
+	if (m_pwm) {
+		if (m_pwmPin != 1U)
+			::softPwmWrite(m_pwmPin, m_pwmBright);
+		else
+			::pwmWrite(m_pwmPin, (m_pwmBright / 100) * 1024);
+	}
+
+	::lcdPosition(m_fd, 0, 0);
+	::lcdPuts(m_fd, "P25");
+
+	if (m_rows == 2U && m_cols == 16U) {
+		char m_buffer1[16U];
+		::sprintf(m_buffer1, "%.10s >", source);
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
+	} else if (m_rows == 4U && m_cols == 16U) {
+		char m_buffer1[16U];
+		::sprintf(m_buffer1, "%.10s >", source);
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
+
+		::sprintf(m_buffer1, "%s%.10s", group ? "TG" : "", dest);
+		::lcdPosition(m_fd, 0, 2);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
+	} else if (m_rows == 4U && m_cols == 20U) {
+		char m_buffer1[20U];
+		::sprintf(m_buffer1, "%.10s >", source);
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
+
+		::sprintf(m_buffer1, "%s%.10s", group ? "TG" : "", dest);
+		::lcdPosition(m_fd, 0, 2);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
+	} else if (m_rows == 2 && m_cols == 40U) {
+		char m_buffer1[40U];
+		::sprintf(m_buffer1, "%.10s > %s%.10s", source, group ? "TG" : "", dest);
+
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
+	}
+
+	m_dmr = false;
+}
+
+void CHD44780::clearP25Int()
+{
+#ifdef ADAFRUIT_DISPLAY
+	adafruitLCDColour(AC_PURPLE);
+#endif
+
+	m_clockDisplayTimer.stop();           // Stop the clock display
+
+	if (m_rows == 2U && m_cols == 16U) {
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+	} else if (m_rows == 4U && m_cols == 16U) {
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+
+		::lcdPosition(m_fd, 0, 2);
+		::lcdPrintf(m_fd, "%.*s", m_cols, "                    ");
+	} else if (m_rows == 4U && m_cols == 20U) {
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+
+		::lcdPosition(m_fd, 0, 2);
+		::lcdPrintf(m_fd, "%.*s", m_cols, "                    ");
+	} else if (m_rows == 2 && m_cols == 40U) {
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+	}
+}
+
 void CHD44780::clockInt(unsigned int ms)
 {
 	m_clockDisplayTimer.clock(ms);
