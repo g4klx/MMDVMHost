@@ -44,7 +44,7 @@ public:
 	void writeFusion(const char* source, const char* dest, const char* type, const char* origin);
 	void clearFusion();
 
-	void writeP25(const char* source, bool group, const char* dest, const char* type);
+	void writeP25(const char* source, bool group, unsigned int dest, const char* type);
 	void clearP25();
 
 	virtual void close() = 0;
@@ -65,7 +65,7 @@ protected:
 	virtual void writeFusionInt(const char* source, const char* dest, const char* type, const char* origin) = 0;
 	virtual void clearFusionInt() = 0;
 
-	virtual void writeP25Int(const char* source, bool group, const char* dest, const char* type) = 0;
+	virtual void writeP25Int(const char* source, bool group, unsigned int dest, const char* type) = 0;
 	virtual void clearP25Int() = 0;
 
 	virtual void clockInt(unsigned int ms);

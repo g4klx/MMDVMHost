@@ -155,10 +155,9 @@ void CDisplay::clearFusion()
 	}
 }
 
-void CDisplay::writeP25(const char* source, bool group, const char* dest, const char* type)
+void CDisplay::writeP25(const char* source, bool group, unsigned int dest, const char* type)
 {
 	assert(source != NULL);
-	assert(dest != NULL);
 	assert(type != NULL);
 
 	m_timer1.start();

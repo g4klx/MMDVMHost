@@ -233,10 +233,9 @@ void CNextion::clearFusionInt()
 	sendCommand("t2.txt=\"\"");
 }
 
-void CNextion::writeP25Int(const char* source, bool group, const char* dest, const char* type)
+void CNextion::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
 {
 	assert(source != NULL);
-	assert(dest != NULL);
 	assert(type != NULL);
 
 	if (m_mode != MODE_P25)
@@ -249,7 +248,7 @@ void CNextion::writeP25Int(const char* source, bool group, const char* dest, con
 	::sprintf(text, "t0.txt=\"%s %.10s\"", type, source);
 	sendCommand(text);
 
-	::sprintf(text, "t1.txt=\"%s%.10s\"", group ? "TG" : "", dest);
+	::sprintf(text, "t1.txt=\"%s%u\"", group ? "TG" : "", dest);
 	sendCommand(text);
 
 	m_clockDisplayTimer.stop();

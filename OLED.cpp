@@ -210,7 +210,7 @@ void COLED::clearFusionInt()
     display.display();
 }
 
-void COLED::writeP25Int(const char* source, bool group, const char* dest, const char* type)
+void COLED::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
 {
     m_mode = MODE_P25;
     display.fillRect(0, OLED_LINE1, display.width(), 10, BLACK);
@@ -218,7 +218,7 @@ void COLED::writeP25Int(const char* source, bool group, const char* dest, const 
     display.printf("%s %.10s", type, source);
     display.fillRect(0, OLED_LINE2, display.width(), 10, BLACK);
     display.setCursor(0,OLED_LINE2);
-    display.printf("  %s%.10s", group ? "TG" : "", dest);
+    display.printf("  %s%u", group ? "TG" : "", dest);
     OLED_statusbar();
     display.display();
 }

@@ -311,10 +311,9 @@ void CTFTSerial::clearFusionInt()
 	displayText("              ");
 }
 
-void CTFTSerial::writeP25Int(const char* source, bool group, const char* dest, const char* type)
+void CTFTSerial::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
 {
 	assert(source != NULL);
-	assert(dest != NULL);
 	assert(type != NULL);
 
 	if (m_mode != MODE_P25) {
@@ -333,7 +332,7 @@ void CTFTSerial::writeP25Int(const char* source, bool group, const char* dest, c
 	gotoPosPixel(5U, 70U);
 	displayText(text);
 
-	::sprintf(text, "  %s%.10s", group ? "TG" : "", dest);
+	::sprintf(text, "  %s%u", group ? "TG" : "", dest);
 
 	gotoPosPixel(5U, 90U);
 	displayText(text);

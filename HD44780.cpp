@@ -730,10 +730,9 @@ void CHD44780::clearFusionInt()
 	}
 }
 
-void CHD44780::writeP25Int(const char* source, bool group, const char* dest, const char* type)
+void CHD44780::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
 {
 	assert(source != NULL);
-	assert(dest != NULL);
 	assert(type != NULL);
 
 #ifdef ADAFRUIT_DISPLAY
@@ -764,7 +763,7 @@ void CHD44780::writeP25Int(const char* source, bool group, const char* dest, con
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 
-		::sprintf(m_buffer1, "%s%.10s", group ? "TG" : "", dest);
+		::sprintf(m_buffer1, "%s%u", group ? "TG" : "", dest);
 		::lcdPosition(m_fd, 0, 2);
 		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 	} else if (m_rows == 4U && m_cols == 20U) {
@@ -773,12 +772,12 @@ void CHD44780::writeP25Int(const char* source, bool group, const char* dest, con
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 
-		::sprintf(m_buffer1, "%s%.10s", group ? "TG" : "", dest);
+		::sprintf(m_buffer1, "%s%u", group ? "TG" : "", dest);
 		::lcdPosition(m_fd, 0, 2);
 		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 	} else if (m_rows == 2 && m_cols == 40U) {
 		char m_buffer1[40U];
-		::sprintf(m_buffer1, "%.10s > %s%.10s", source, group ? "TG" : "", dest);
+		::sprintf(m_buffer1, "%.10s > %s%u", source, group ? "TG" : "", dest);
 
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
