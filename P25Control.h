@@ -20,14 +20,18 @@
 #define	P25Control_H
 
 #include "RingBuffer.h"
+#include "DMRLookup.h"
+#include "P25Audio.h"
 #include "Defines.h"
 #include "Display.h"
+#include "P25Data.h"
+#include "P25NID.h"
 #include "Modem.h"
 #include "Timer.h"
 
 class CP25Control {
 public:
-	CP25Control(unsigned int id, CDisplay* display, unsigned int timeout, bool duplex, int rssiMultiplier, int rssiOffset);
+	CP25Control(unsigned int nac, CDisplay* display, unsigned int timeout, bool duplex, CDMRLookup* lookup, int rssiMultiplier, int rssiOffset);
 	~CP25Control();
 
 	bool writeModem(unsigned char* data, unsigned int len);
@@ -37,9 +41,10 @@ public:
 	void clock(unsigned int ms);
 
 private:
-	unsigned int  m_id;
+	unsigned int  m_nac;
 	CDisplay*     m_display;
 	bool          m_duplex;
+	CDMRLookup*   m_lookup;
 	int           m_rssiMultiplier;
 	int           m_rssiOffset;
 	CRingBuffer<unsigned char> m_queue;
@@ -50,6 +55,10 @@ private:
 	unsigned int  m_rfFrames;
 	unsigned int  m_rfBits;
 	unsigned int  m_rfErrs;
+	CP25NID       m_nid;
+	CP25Audio     m_audio;
+	CP25Data      m_rfData;
+	CP25Data      m_netData;
 
 	void writeQueueRF(const unsigned char* data, unsigned int length);
 	void addBusyBits(unsigned char* data, unsigned int length, bool b1, bool b2);

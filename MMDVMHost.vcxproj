@@ -181,8 +181,11 @@
     <ClInclude Include="Modem.h" />
     <ClInclude Include="Nextion.h" />
     <ClInclude Include="NullDisplay.h" />
+    <ClInclude Include="P25Audio.h" />
     <ClInclude Include="P25Control.h" />
     <ClInclude Include="P25Defines.h" />
+    <ClInclude Include="P25Data.h" />
+    <ClInclude Include="P25NID.h" />
     <ClInclude Include="QR1676.h" />
     <ClInclude Include="RingBuffer.h" />
     <ClInclude Include="RS129.h" />
@@ -236,7 +239,10 @@
     <ClCompile Include="Modem.cpp" />
     <ClCompile Include="Nextion.cpp" />
     <ClCompile Include="NullDisplay.cpp" />
+    <ClCompile Include="P25Audio.cpp" />
     <ClCompile Include="P25Control.cpp" />
+    <ClCompile Include="P25Data.cpp" />
+    <ClCompile Include="P25NID.cpp" />
     <ClCompile Include="QR1676.cpp" />
     <ClCompile Include="RS129.cpp" />
     <ClCompile Include="SerialController.cpp" />

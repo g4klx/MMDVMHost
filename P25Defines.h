@@ -40,7 +40,7 @@ const unsigned char P25_SYNC_BYTES_LENGTH = 6U;
 const unsigned char P25_DUID_HEADER  = 0x00U;
 const unsigned char P25_DUID_TERM    = 0x03U;
 const unsigned char P25_DUID_LDU1    = 0x05U;
-const unsigned char P25_DUID_LDU2    = 0x09U;
+const unsigned char P25_DUID_LDU2    = 0x0AU;
 const unsigned char P25_DUID_PDU     = 0x0CU;
 const unsigned char P25_DUID_TERM_LC = 0x0FU;
 

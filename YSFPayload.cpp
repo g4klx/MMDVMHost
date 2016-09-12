@@ -257,11 +257,11 @@ unsigned int CYSFPayload::processVDMode1Audio(unsigned char* data)
 
 	// Regenerate the AMBE FEC
 	unsigned int errors = 0U;
-	errors += m_fec.regenerateYSF1(data + 9U);
-	errors += m_fec.regenerateYSF1(data + 27U);
-	errors += m_fec.regenerateYSF1(data + 45U);
-	errors += m_fec.regenerateYSF1(data + 63U);
-	errors += m_fec.regenerateYSF1(data + 81U);
+	errors += m_fec.regenerateYSFDN(data + 9U);
+	errors += m_fec.regenerateYSFDN(data + 27U);
+	errors += m_fec.regenerateYSFDN(data + 45U);
+	errors += m_fec.regenerateYSFDN(data + 63U);
+	errors += m_fec.regenerateYSFDN(data + 81U);
 
 	return errors;
 }
@@ -788,13 +788,13 @@ unsigned int CYSFPayload::processVoiceFRModeAudio(unsigned char* data)
 
 	data += YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES;
 
-	// Regenerate the AMBE FEC
+	// Regenerate the IMBE FEC
 	unsigned int errors = 0U;
-	errors += m_fec.regenerateYSF3(data + 0U);
-	errors += m_fec.regenerateYSF3(data + 18U);
-	errors += m_fec.regenerateYSF3(data + 36U);
-	errors += m_fec.regenerateYSF3(data + 54U);
-	errors += m_fec.regenerateYSF3(data + 72U);
+	errors += m_fec.regenerateIMBE(data + 0U);
+	errors += m_fec.regenerateIMBE(data + 18U);
+	errors += m_fec.regenerateIMBE(data + 36U);
+	errors += m_fec.regenerateIMBE(data + 54U);
+	errors += m_fec.regenerateIMBE(data + 72U);
 
 	return errors;
 }

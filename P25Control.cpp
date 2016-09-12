@@ -20,6 +20,7 @@
 #include "P25Defines.h"
 #include "Sync.h"
 #include "Log.h"
+#include "Utils.h"
 
 #include <cstdio>
 #include <cassert>
@@ -29,10 +30,11 @@ const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U
 #define WRITE_BIT(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
-CP25Control::CP25Control(unsigned int id, CDisplay* display, unsigned int timeout, bool duplex, int rssiMultiplier, int rssiOffset) :
-m_id(id),
+CP25Control::CP25Control(unsigned int nac, CDisplay* display, unsigned int timeout, bool duplex, CDMRLookup* lookup, int rssiMultiplier, int rssiOffset) :
+m_nac(nac),
 m_display(display),
 m_duplex(duplex),
+m_lookup(lookup),
 m_rssiMultiplier(rssiMultiplier),
 m_rssiOffset(rssiOffset),
 m_queue(1000U, "P25 Control"),
@@ -42,9 +44,14 @@ m_rfTimeout(1000U, timeout),
 m_netTimeout(1000U, timeout),
 m_rfFrames(0U),
 m_rfBits(0U),
-m_rfErrs(0U)
+m_rfErrs(0U),
+m_nid(),
+m_audio(),
+m_rfData(),
+m_netData()
 {
 	assert(display != NULL);
+	assert(lookup != NULL);
 }
 
 CP25Control::~CP25Control()
@@ -55,6 +62,8 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 {
 	assert(data != NULL);
 
+	CUtils::dump(1U, "P25 Data", data, len);
+
 	bool sync = data[1U] == 0x01U;
 
 	if (data[0U] == TAG_LOST && m_rfState == RS_RF_LISTENING)
@@ -62,24 +71,34 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 
 	if (data[0U] == TAG_LOST) {
 		LogMessage("P25, transmission lost, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
+		m_display->clearP25();
 		m_rfState = RS_RF_LISTENING;
 		m_rfTimeout.stop();
+		m_rfData.reset();
 		return false;
 	}
 
 	if (!sync && m_rfState == RS_RF_LISTENING)
 		return false;
 
-	// Put into the NID decoder
-	unsigned char duid = 0U;	// XXX
+	// Regenerate the NID
+	m_nid.process(data + 2U);
+	unsigned char duid = m_nid.getDUID();
+	unsigned int nac = m_nid.getNAC();
+
+	LogDebug("P25, DUID=$%X NAC=$%03X", duid, nac);
+
+	if (m_rfState == RS_RF_LISTENING && nac != m_nac)
+		return false;
 
 	if (data[0U] == TAG_HEADER) {
+		m_rfData.reset();
+
 		// Regenerate Sync
 		CSync::addP25Sync(data + 2U);
 
-		// Regenerate NID
-
 		// Regenerate Enc Data
+		m_rfData.processHeader(data + 2U);
 
 		// Add busy bits
 		addBusyBits(data + 2U, P25_HDR_FRAME_LENGTH_BITS, false, true);
@@ -102,18 +121,16 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			m_rfErrs   = 0U;
 			m_rfBits   = 1U;
 			m_rfTimeout.start();
-			// Decode LDU1
 		}
 
 		// Regenerate Sync
 		CSync::addP25Sync(data + 2U);
 
-		// Regenerate NID
-
 		// Regenerate LDU1 Data
+		m_rfData.processLDU1(data + 2U);
 
 		// Regenerate Audio
-		unsigned int errors = 0U;	// XXX
+		unsigned int errors = m_audio.process(data + 2U);
 		LogDebug("P25, LDU1 audio, errs: %u/1233", errors);
 
 		m_rfBits += 1233U;
@@ -130,7 +147,12 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		}
 
 		if (m_rfState == RS_RF_LISTENING) {
-			// LogMessage("P25, received RF LC from %8.8s/%4.4s to %8.8s", my1, my2, your);
+			unsigned int src = m_rfData.getSource();
+			bool         grp = m_rfData.getGroup();
+			unsigned int dst = m_rfData.getDest();
+			std::string source = m_lookup->find(src);
+			LogMessage("P25, received RF from %s to %s%u", source.c_str(), grp ? "TG" : "", dst);
+			m_display->writeP25(source.c_str(), grp, dst, "R");
 			m_rfState = RS_RF_AUDIO;
 		}
 	} else if (duid == P25_DUID_LDU2) {
@@ -138,16 +160,15 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			return false;
 
 		// Decode LDU2
+		m_rfData.processLDU2(data + 2U);
 
 		// Regenerate Sync
 		CSync::addP25Sync(data + 2U);
 
-		// Regenerate NID
-
 		// Regenerate LDU2 Data
 
 		// Regenerate Audio
-		unsigned int errors = 0U;	// XXX
+		unsigned int errors = m_audio.process(data + 2U);
 		LogDebug("P25, LDU2 audio, errs: %u/1233", errors);
 
 		m_rfBits += 1233U;
@@ -169,17 +190,18 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		// Regenerate Sync
 		CSync::addP25Sync(data + 2U);
 
-		// Regenerate NID
-
 		// Regenerate LDU1 Data
+		m_rfData.processTerminator(data + 2U);
 
 		// Add busy bits
 		addBusyBits(data + 2U, P25_TERMLC_FRAME_LENGTH_BITS, false, true);
 
 		m_rfState = RS_RF_LISTENING;
 		m_rfTimeout.stop();
+		m_rfData.reset();
 
 		LogMessage("P25, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
+		m_display->clearP25();
 
 		if (m_duplex) {
 			data[0U] = TAG_EOT;
@@ -193,15 +215,15 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		// Regenerate Sync
 		CSync::addP25Sync(data + 2U);
 
-		// Regenerate NID
-
 		// Add busy bits
 		addBusyBits(data + 2U, P25_TERM_FRAME_LENGTH_BITS, false, true);
 
 		m_rfState = RS_RF_LISTENING;
 		m_rfTimeout.stop();
+		m_rfData.reset();
 
 		LogMessage("P25, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
+		m_display->clearP25();
 
 		if (m_duplex) {
 			data[0U] = TAG_EOT;

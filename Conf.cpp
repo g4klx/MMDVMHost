@@ -111,7 +111,7 @@ m_dmrCallHang(3U),
 m_dmrTXHang(4U),
 m_fusionEnabled(true),
 m_p25Enabled(true),
-m_p25Id(0U),
+m_p25NAC(0x293U),
 m_dstarNetworkEnabled(true),
 m_dstarGatewayAddress(),
 m_dstarGatewayPort(0U),
@@ -438,8 +438,8 @@ bool CConf::read()
 	} else if (section == SECTION_P25) {
 		if (::strcmp(key, "Enable") == 0)
 			m_p25Enabled = ::atoi(value) == 1;
-		else if (::strcmp(key, "Id") == 0)
-			m_p25Id = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "NAC") == 0)
+			m_p25NAC = (unsigned int)::strtoul(value, NULL, 16);
 	} else if (section == SECTION_DSTAR_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dstarNetworkEnabled = ::atoi(value) == 1;
@@ -849,9 +849,9 @@ bool CConf::getP25Enabled() const
 	return m_p25Enabled;
 }
 
-unsigned int CConf::getP25Id() const
+unsigned int CConf::getP25NAC() const
 {
-	return m_p25Id;
+	return m_p25NAC;
 }
 
 bool CConf::getDStarNetworkEnabled() const

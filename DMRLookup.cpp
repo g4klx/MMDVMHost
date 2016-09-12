@@ -37,7 +37,7 @@ bool CDMRLookup::read()
 {
 	FILE* fp = ::fopen(m_filename.c_str(), "rt");
 	if (fp == NULL) {
-		LogWarning("Cannot open the DMR Id lookup file - %s", m_filename.c_str());
+		LogWarning("Cannot open the Id lookup file - %s", m_filename.c_str());
 		return false;
 	}
 
@@ -64,7 +64,7 @@ bool CDMRLookup::read()
 	if (size == 0U)
 		return false;
 
-	LogInfo("Loaded %u DMR Ids to the callsign lookup table", size);
+	LogInfo("Loaded %u Ids to the callsign lookup table", size);
 
 	return true;
 }

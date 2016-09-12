@@ -23,6 +23,7 @@
 #include "Defines.h"
 #include "DStarControl.h"
 #include "DMRControl.h"
+#include "DMRLookup.h"
 #include "TFTSerial.h"
 #include "NullDisplay.h"
 #include "YSFControl.h"
@@ -267,6 +268,16 @@ int CMMDVMHost::run()
 	CTimer dmrBeaconTimer(1000U, 4U);
 	bool dmrBeaconsEnabled = m_dmrEnabled && m_conf.getDMRBeacons();
 
+	// For DMR and P25 we try to map IDs to callsigns
+	CDMRLookup* lookup = NULL;
+	if (m_dmrEnabled || m_p25Enabled) {
+		std::string lookupFile = m_conf.getDMRLookupFile();
+		LogInfo("ID lookup File: %s", lookupFile.length() > 0U ? lookupFile.c_str() : "None");
+
+		lookup = new CDMRLookup(lookupFile);
+		lookup->read();
+	}
+
 	CStopWatch stopWatch;
 	stopWatch.start();
 
@@ -308,7 +319,6 @@ int CMMDVMHost::run()
 		std::vector<unsigned int> dstIDBlackListSlot2NET = m_conf.getDMRDstIdBlacklistSlot2NET();
 		std::vector<unsigned int> dstIDWhiteListSlot1NET = m_conf.getDMRDstIdWhitelistSlot1NET();
 		std::vector<unsigned int> dstIDWhiteListSlot2NET = m_conf.getDMRDstIdWhitelistSlot2NET();
-		std::string lookupFile = m_conf.getDMRLookupFile();
 		unsigned int callHang  = m_conf.getDMRCallHang();
 		unsigned int txHang    = m_conf.getDMRTXHang();
 		int rssiMultiplier     = m_conf.getModemRSSIMultiplier();
@@ -348,7 +358,6 @@ int CMMDVMHost::run()
 		if (dstIDWhiteListSlot2NET.size() > 0U)
 			LogInfo("    Slot 2 NET Destination ID White List: %u entries", dstIDWhiteListSlot2NET.size());
 		
-		LogInfo("    Lookup File: %s", lookupFile.length() > 0U ? lookupFile.c_str() : "None");
 		LogInfo("    Call Hang: %us", callHang);
 		LogInfo("    TX Hang: %us", txHang);
 
@@ -357,7 +366,7 @@ int CMMDVMHost::run()
 			LogInfo("    RSSI Offset: %d", rssiOffset);
 		}
 
-		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList,dstIDBlackListSlot1RF,dstIDWhiteListSlot1RF, dstIDBlackListSlot2RF, dstIDWhiteListSlot2RF, dstIDBlackListSlot1NET,dstIDWhiteListSlot1NET, dstIDBlackListSlot2NET, dstIDWhiteListSlot2NET, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookupFile, rssiMultiplier, rssiOffset, jitter);
+		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList,dstIDBlackListSlot1RF,dstIDWhiteListSlot1RF, dstIDBlackListSlot2RF, dstIDWhiteListSlot2RF, dstIDBlackListSlot1NET,dstIDWhiteListSlot1NET, dstIDBlackListSlot2NET, dstIDWhiteListSlot2NET, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookup, rssiMultiplier, rssiOffset, jitter);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}
@@ -379,19 +388,19 @@ int CMMDVMHost::run()
 
 	CP25Control* p25 = NULL;
 	if (m_p25Enabled) {
-		unsigned int id    = m_conf.getP25Id();
+		unsigned int nac   = m_conf.getP25NAC();
 		int rssiMultiplier = m_conf.getModemRSSIMultiplier();
 		int rssiOffset     = m_conf.getModemRSSIOffset();
 
 		LogInfo("P25 Parameters");
-		LogInfo("    Id: %u", id);
+		LogInfo("    NAC: $%03X", nac);
 
 		if (rssiMultiplier != 0) {
 			LogInfo("    RSSI Multiplier: %d", rssiMultiplier);
 			LogInfo("    RSSI Offset: %d", rssiOffset);
 		}
 
-		p25 = new CP25Control(id, m_display, m_timeout, m_duplex, rssiMultiplier, rssiOffset);
+		p25 = new CP25Control(nac, m_display, m_timeout, m_duplex, lookup, rssiMultiplier, rssiOffset);
 	}
 
 	setMode(MODE_IDLE);
