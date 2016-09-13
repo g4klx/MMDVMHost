@@ -16,47 +16,18 @@
 *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#include "P25NID.h"
-#include "P25Defines.h"
+#include "P25LowSpeedData.h"
 #include "P25Utils.h"
+#include "Utils.h"
+#include "Log.h"
 
 #include <cstdio>
 #include <cassert>
 
-CP25NID::CP25NID() :
-m_duid(0U),
-m_nac(0U)
+void CP25LowSpeedData::process(unsigned char* data)
 {
-}
+	unsigned char lsd[4U];
+	CP25Utils::decode(data, lsd, 1546U, 1578U);
 
-CP25NID::~CP25NID()
-{
-}
-
-void CP25NID::process(unsigned char* data)
-{
-	assert(data != NULL);
-
-	unsigned char nid[P25_NID_LENGTH_BYTES];
-
-	CP25Utils::decode(data, nid, 48U, 114U);
-
-	// XXX Process FEC here
-
-	m_duid = nid[1U] & 0x0FU;
-
-	m_nac  = (nid[0U] << 4) & 0xFF0U;
-	m_nac |= (nid[1U] >> 4) & 0x00FU;
-
-	CP25Utils::encode(nid, data, 48U, 114U);
-}
-
-unsigned char CP25NID::getDUID() const
-{
-	return m_duid;
-}
-
-unsigned int CP25NID::getNAC() const
-{
-	return m_nac;
+	CUtils::dump(1U, "P25, Low Speed Data", lsd, 4U);
 }

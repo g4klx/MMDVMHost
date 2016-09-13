@@ -188,6 +188,12 @@
     <ClInclude Include="P25Data.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="P25Utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="P25LowSpeedData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -344,6 +350,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="P25Data.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="P25Utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="P25LowSpeedData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

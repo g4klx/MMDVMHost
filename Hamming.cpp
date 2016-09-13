@@ -179,6 +179,54 @@ void CHamming::encode1393(bool* d)
 	d[12] = d[0] ^ d[2] ^ d[4] ^ d[5] ^ d[8];
 }
 
+// Hamming (10,6,3) check a boolean data array
+bool CHamming::decode1063(bool* d)
+{
+	assert(d != NULL);
+
+	// Calculate the checksum this column should have
+	bool c0 = d[0] ^ d[1] ^ d[2] ^ d[5];
+	bool c1 = d[0] ^ d[1] ^ d[3] ^ d[5];
+	bool c2 = d[0] ^ d[2] ^ d[3] ^ d[4];
+	bool c3 = d[1] ^ d[2] ^ d[3] ^ d[4];
+
+	unsigned char n = 0x00U;
+	n |= (c0 != d[6]) ? 0x01U : 0x00U;
+	n |= (c1 != d[7]) ? 0x02U : 0x00U;
+	n |= (c2 != d[8]) ? 0x04U : 0x00U;
+	n |= (c3 != d[9]) ? 0x08U : 0x00U;
+
+	switch (n) {
+		// Parity bit errors
+		case 0x01U: d[6] = !d[6]; return true;
+		case 0x02U: d[7] = !d[7]; return true;
+		case 0x04U: d[8] = !d[8]; return true;
+		case 0x08U: d[9] = !d[9]; return true;
+
+		// Data bit erros
+		case 0x07U: d[0] = !d[0]; return true;
+		case 0x0BU: d[1] = !d[1]; return true;
+		case 0x0DU: d[2] = !d[2]; return true;
+		case 0x0EU: d[3] = !d[3]; return true;
+		case 0x0CU: d[4] = !d[4]; return true;
+		case 0x03U: d[5] = !d[5]; return true;
+
+		// No bit errors
+		default: return false;
+	}
+}
+
+void CHamming::encode1063(bool* d)
+{
+	assert(d != NULL);
+
+	// Calculate the checksum this column should have
+	d[6] = d[0] ^ d[1] ^ d[2] ^ d[5];
+	d[7] = d[0] ^ d[1] ^ d[3] ^ d[5];
+	d[8] = d[0] ^ d[2] ^ d[3] ^ d[4];
+	d[9] = d[1] ^ d[2] ^ d[3] ^ d[4];
+}
+
 // A Hamming (16,11,4) Check
 bool CHamming::decode16114(bool* d)
 {

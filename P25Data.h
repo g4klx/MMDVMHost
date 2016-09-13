@@ -43,6 +43,9 @@ private:
 	unsigned int m_source;
 	bool         m_group;
 	unsigned int m_dest;
+
+	void decodeLDUHamming(const unsigned char* raw, unsigned char* data);
+	void encodeLDUHamming(unsigned char* data, const unsigned char* raw);
 };
 
 #endif

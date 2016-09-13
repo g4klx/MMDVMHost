@@ -17,14 +17,10 @@
 */
 
 #include "P25Audio.h"
+#include "P25Utils.h"
 
 #include <cstdio>
 #include <cassert>
-
-const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
-
-#define WRITE_BIT(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
-#define READ_BIT(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
 CP25Audio::CP25Audio() :
 m_fec()
@@ -43,65 +39,41 @@ unsigned int CP25Audio::process(unsigned char* data)
 
 	unsigned char imbe[18U];
 
-	read(data, imbe, 114U, 262U, 142U, 143U, 214U, 215U);
+	CP25Utils::decode(data, imbe, 114U, 262U);
 	errs += m_fec.regenerateIMBE(imbe);
-	write(data, imbe, 114U, 262U, 142U, 143U, 214U, 215U);
+	CP25Utils::encode(imbe, data, 114U, 262U);
 
-	read(data, imbe, 262U, 410U, 286U, 287U, 358U, 359U);
+	CP25Utils::decode(data, imbe, 262U, 410U);
 	errs += m_fec.regenerateIMBE(imbe);
-	write(data, imbe, 262U, 410U, 286U, 287U, 358U, 359U);
+	CP25Utils::encode(imbe, data, 262U, 410U);
 
-	read(data, imbe, 452U, 600U, 502U, 503U, 574U, 575U);
+	CP25Utils::decode(data, imbe, 452U, 600U);
 	errs += m_fec.regenerateIMBE(imbe);
-	write(data, imbe, 452U, 600U, 502U, 503U, 574U, 575U);
+	CP25Utils::encode(imbe, data, 452U, 600U);
 
-	read(data, imbe, 640U, 788U, 646U, 647U, 718U, 719U);
+	CP25Utils::decode(data, imbe, 640U, 788U);
 	errs += m_fec.regenerateIMBE(imbe);
-	write(data, imbe, 640U, 788U, 646U, 647U, 718U, 719U);
+	CP25Utils::encode(imbe, data, 640U, 788U);
 
-	read(data, imbe, 830U, 978U, 862U, 863U, 934U, 935U);
+	CP25Utils::decode(data, imbe, 830U, 978U);
 	errs += m_fec.regenerateIMBE(imbe);
-	write(data, imbe, 830U, 978U, 862U, 863U, 934U, 935U);
+	CP25Utils::encode(imbe, data, 830U, 978U);
 
-	read(data, imbe, 1020U, 1168U, 1078U, 1079U, 1150U, 1151U);
+	CP25Utils::decode(data, imbe, 1020U, 1168U);
 	errs += m_fec.regenerateIMBE(imbe);
-	write(data, imbe, 1020U, 1168U, 1078U, 1079U, 1150U, 1151U);
+	CP25Utils::encode(imbe, data, 1020U, 1168U);
 
-	read(data, imbe, 1208U, 1356U, 1222U, 1223U, 1294U, 1295U);
+	CP25Utils::decode(data, imbe, 1208U, 1356U);
 	errs += m_fec.regenerateIMBE(imbe);
-	write(data, imbe, 1208U, 1356U, 1222U, 1223U, 1294U, 1295U);
+	CP25Utils::encode(imbe, data, 1208U, 1356U);
 
-	read(data, imbe, 1398U, 1546U, 1438U, 1439U, 1510U, 1511U);
+	CP25Utils::decode(data, imbe, 1398U, 1546U);
 	errs += m_fec.regenerateIMBE(imbe);
-	write(data, imbe, 1398U, 1546U, 1438U, 1439U, 1510U, 1511U);
+	CP25Utils::encode(imbe, data, 1398U, 1546U);
 
-	read(data, imbe, 1578U, 1726U, 1582U, 1583U, 1654U, 1655U);
+	CP25Utils::decode(data, imbe, 1578U, 1726U);
 	errs += m_fec.regenerateIMBE(imbe);
-	write(data, imbe, 1578U, 1726U, 1582U, 1583U, 1654U, 1655U);
+	CP25Utils::encode(imbe, data, 1578U, 1726U);
 
 	return errs;
-}
-
-void CP25Audio::read(const unsigned char* data, unsigned char* out, unsigned int start, unsigned int stop, unsigned int avoid1, unsigned int avoid2, unsigned int avoid3, unsigned int avoid4)
-{
-	unsigned int n = 0U;
-	for (unsigned int offset = start; offset < stop; offset++) {
-		if (offset != avoid1 && offset != avoid2 && offset != avoid3 && offset != avoid4) {
-			bool b = READ_BIT(data, offset);
-			WRITE_BIT(out, n, b);
-			n++;
-		}
-	}
-}
-
-void CP25Audio::write(unsigned char* data, const unsigned char* in, unsigned int start, unsigned int stop, unsigned int avoid1, unsigned int avoid2, unsigned int avoid3, unsigned int avoid4)
-{
-	unsigned int n = 0U;
-	for (unsigned int offset = start; offset < stop; offset++) {
-		if (offset != avoid1 && offset != avoid2 && offset != avoid3 && offset != avoid4) {
-			bool b = READ_BIT(in, n);
-			WRITE_BIT(data, offset, b);
-			n++;
-		}
-	}
 }

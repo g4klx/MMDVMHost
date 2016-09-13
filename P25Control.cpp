@@ -17,6 +17,7 @@
 */
 
 #include "P25Control.h"
+#include "P25LowSpeedData.h"
 #include "P25Defines.h"
 #include "Sync.h"
 #include "Log.h"
@@ -62,7 +63,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 {
 	assert(data != NULL);
 
-	CUtils::dump(1U, "P25 Data", data, len);
+	// CUtils::dump(1U, "P25 Data", data, len);
 
 	bool sync = data[1U] == 0x01U;
 
@@ -129,6 +130,9 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		// Regenerate LDU1 Data
 		m_rfData.processLDU1(data + 2U);
 
+		// Regenerate the Low Speed Data
+		CP25LowSpeedData::process(data + 2U);
+
 		// Regenerate Audio
 		unsigned int errors = m_audio.process(data + 2U);
 		LogDebug("P25, LDU1 audio, errs: %u/1233", errors);
@@ -159,13 +163,14 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		if (m_rfState == RS_RF_LISTENING)
 			return false;
 
-		// Decode LDU2
-		m_rfData.processLDU2(data + 2U);
-
 		// Regenerate Sync
 		CSync::addP25Sync(data + 2U);
 
 		// Regenerate LDU2 Data
+		m_rfData.processLDU2(data + 2U);
+
+		// Regenerate the Low Speed Data
+		CP25LowSpeedData::process(data + 2U);
 
 		// Regenerate Audio
 		unsigned int errors = m_audio.process(data + 2U);

@@ -30,9 +30,6 @@ public:
 
 private:
 	CAMBEFEC m_fec;
-
-	void read(const unsigned char* data, unsigned char* out, unsigned int start, unsigned int stop, unsigned int avoid1, unsigned int avoid2, unsigned int avoid3, unsigned int avoid4);
-	void write(unsigned char* data, const unsigned char* in, unsigned int start, unsigned int stop, unsigned int avoid1, unsigned int avoid2, unsigned int avoid3, unsigned int avoid4);
 };
 
 #endif

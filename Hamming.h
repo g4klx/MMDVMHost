@@ -30,6 +30,9 @@ public:
 	static void encode1393(bool* d);
 	static bool decode1393(bool* d);
 
+	static void encode1063(bool* d);
+	static bool decode1063(bool* d);
+
 	static void encode16114(bool* d);
 	static bool decode16114(bool* d);
 
