@@ -308,7 +308,7 @@ void CModem::clock(unsigned int ms)
 		readStatus();
 		m_statusTimer.start();
 
-
+#ifdef notdef
 		const unsigned char* dat = P25_DATA[m_nn];
 		if (m_nn == 0U) {
 			unsigned char data = 101U;
@@ -329,6 +329,7 @@ void CModem::clock(unsigned int ms)
 		}
 
 		m_nn++;
+#endif
 	}
 
 	m_inactivityTimer.clock(ms);

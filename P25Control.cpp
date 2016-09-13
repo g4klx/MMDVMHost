@@ -281,10 +281,9 @@ void CP25Control::addBusyBits(unsigned char* data, unsigned int length, bool b1,
 {
 	assert(data != NULL);
 
-	for (unsigned int i = 0U; i < length; i++) {
-		if (i > 0U && (i % 70U) == 0U)
-			WRITE_BIT(data, i, b1);
-		if (i > 0U && (i % 71U) == 0U)
-			WRITE_BIT(data, i, b2);
+	for (unsigned int ss0Pos = P25_SS0_START; ss0Pos < length; ss0Pos += P25_SS_INCREMENT) {
+		unsigned int ss1Pos = ss0Pos + 1U;
+		WRITE_BIT(data, ss0Pos, b1);
+		WRITE_BIT(data, ss1Pos, b2);
 	}
 }

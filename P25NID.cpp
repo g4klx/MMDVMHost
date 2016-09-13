@@ -45,7 +45,7 @@ void CP25NID::process(unsigned char* data)
 
 	unsigned int n = 0U;
 	for (unsigned int offset = 48U; offset < 114U; offset++) {
-		if (offset != 70U && offset != 71U) {
+		if (offset != P25_SS0_START && offset != P25_SS1_START) {
 			bool b = READ_BIT(data, offset);
 			WRITE_BIT(nid, n, b);
 			n++;
@@ -61,7 +61,7 @@ void CP25NID::process(unsigned char* data)
 
 	n = 0U;
 	for (unsigned int offset = 48U; offset < 114U; offset++) {
-		if (offset != 70U && offset != 71U) {
+		if (offset != P25_SS0_START && offset != P25_SS1_START) {
 			bool b = READ_BIT(nid, n);
 			WRITE_BIT(data, offset, b);
 			n++;
