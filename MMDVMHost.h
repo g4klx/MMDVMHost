@@ -21,7 +21,8 @@
 
 #include "DStarNetwork.h"
 #include "YSFNetwork.h"
-#include "DMRIPSC.h"
+#include "P25Network.h"
+#include "DMRNetwork.h"
 #include "Display.h"
 #include "Timer.h"
 #include "Modem.h"
@@ -41,8 +42,9 @@ private:
   CConf          m_conf;
   CModem*        m_modem;
   CDStarNetwork* m_dstarNetwork;
-  CDMRIPSC*      m_dmrNetwork;
+  CDMRNetwork*   m_dmrNetwork;
   CYSFNetwork*   m_ysfNetwork;
+  CP25Network*   m_p25Network;
   CDisplay*      m_display;
   unsigned char  m_mode;
   unsigned int   m_rfModeHang;
@@ -63,6 +65,7 @@ private:
   bool createDStarNetwork();
   bool createDMRNetwork();
   bool createYSFNetwork();
+  bool createP25Network();
   void createDisplay();
 
   void setMode(unsigned char mode);

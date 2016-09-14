@@ -16,7 +16,7 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "DMRIPSC.h"
+#include "DMRNetwork.h"
 
 #include "StopWatch.h"
 #include "SHA256.h"
@@ -31,7 +31,7 @@ const unsigned int BUFFER_LENGTH = 500U;
 const unsigned int HOMEBREW_DATA_PACKET_LENGTH = 55U;
 
 
-CDMRIPSC::CDMRIPSC(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, bool rssi, HW_TYPE hwType) :
+CDMRNetwork::CDMRNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, bool rssi, HW_TYPE hwType) :
 m_address(),
 m_port(port),
 m_id(NULL),
@@ -51,7 +51,7 @@ m_timeoutTimer(1000U, 60U),
 m_buffer(NULL),
 m_salt(NULL),
 m_streamId(NULL),
-m_rxData(1000U, "DMR IPSC"),
+m_rxData(1000U, "DMR Network"),
 m_callsign(),
 m_rxFrequency(0U),
 m_txFrequency(0U),
@@ -89,7 +89,7 @@ m_beacon(false)
 	::srand(stopWatch.start());
 }
 
-CDMRIPSC::~CDMRIPSC()
+CDMRNetwork::~CDMRNetwork()
 {
 	delete[] m_buffer;
 	delete[] m_salt;
@@ -97,7 +97,7 @@ CDMRIPSC::~CDMRIPSC()
 	delete[] m_id;
 }
 
-void CDMRIPSC::setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url)
+void CDMRNetwork::setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url)
 {
 	m_callsign    = callsign;
 	m_rxFrequency = rxFrequency;
@@ -112,9 +112,9 @@ void CDMRIPSC::setConfig(const std::string& callsign, unsigned int rxFrequency, 
 	m_url         = url;
 }
 
-bool CDMRIPSC::open()
+bool CDMRNetwork::open()
 {
-	LogMessage("Opening DMR IPSC");
+	LogMessage("Opening DMR Network");
 
 	bool ret = m_socket.open();
 	if (!ret)
@@ -127,12 +127,12 @@ bool CDMRIPSC::open()
 	return true;
 }
 
-void CDMRIPSC::enable(bool enabled)
+void CDMRNetwork::enable(bool enabled)
 {
 	m_enabled = enabled;
 }
 
-bool CDMRIPSC::read(CDMRData& data)
+bool CDMRNetwork::read(CDMRData& data)
 {
 	if (m_status != RUNNING)
 		return false;
@@ -197,7 +197,7 @@ bool CDMRIPSC::read(CDMRData& data)
 	return true;
 }
 
-bool CDMRIPSC::write(const CDMRData& data)
+bool CDMRNetwork::write(const CDMRData& data)
 {
 	if (m_status != RUNNING)
 		return false;
@@ -272,7 +272,7 @@ bool CDMRIPSC::write(const CDMRData& data)
 		buffer[54U] = 0x00U;
 
 	if (m_debug)
-		CUtils::dump(1U, "IPSC Transmitted", buffer, HOMEBREW_DATA_PACKET_LENGTH);
+		CUtils::dump(1U, "Network Transmitted", buffer, HOMEBREW_DATA_PACKET_LENGTH);
 
 	for (unsigned int i = 0U; i < count; i++)
 		write(buffer, HOMEBREW_DATA_PACKET_LENGTH);
@@ -280,9 +280,9 @@ bool CDMRIPSC::write(const CDMRData& data)
 	return true;
 }
 
-void CDMRIPSC::close()
+void CDMRNetwork::close()
 {
-	LogMessage("Closing DMR IPSC");
+	LogMessage("Closing DMR Network");
 
 	if (m_status == RUNNING) {
 		unsigned char buffer[9U];
@@ -297,7 +297,7 @@ void CDMRIPSC::close()
 	m_timeoutTimer.stop();
 }
 
-void CDMRIPSC::clock(unsigned int ms)
+void CDMRNetwork::clock(unsigned int ms)
 {
 	if (m_status == WAITING_CONNECT) {
 		m_retryTimer.clock(ms);
@@ -322,13 +322,13 @@ void CDMRIPSC::clock(unsigned int ms)
 	}
 
 	// if (m_debug && length > 0)
-	//	CUtils::dump(1U, "IPSC Received", m_buffer, length);
+	//	CUtils::dump(1U, "Network Received", m_buffer, length);
 
 	if (length > 0 && m_address.s_addr == address.s_addr && m_port == port) {
 		if (::memcmp(m_buffer, "DMRD", 4U) == 0) {
 			if (m_enabled) {
 				if (m_debug)
-					CUtils::dump(1U, "IPSC Received", m_buffer, length);
+					CUtils::dump(1U, "Network Received", m_buffer, length);
 
 				unsigned char len = length;
 				m_rxData.addData(&len, 1U);
@@ -342,7 +342,7 @@ void CDMRIPSC::clock(unsigned int ms)
 				m_retryTimer.start();
 			} else {
 				/* Once the modem death spiral has been prevented in Modem.cpp
-				   the IPSC sometimes times out and reaches here.
+				   the Network sometimes times out and reaches here.
 				   We want it to reconnect so... */
 				LogError("Login to the master has failed, retrying ...");
 				close();
@@ -419,7 +419,7 @@ void CDMRIPSC::clock(unsigned int ms)
 	}
 }
 
-bool CDMRIPSC::writeLogin()
+bool CDMRNetwork::writeLogin()
 {
 	unsigned char buffer[8U];
 
@@ -429,7 +429,7 @@ bool CDMRIPSC::writeLogin()
 	return write(buffer, 8U);
 }
 
-bool CDMRIPSC::writeAuthorisation()
+bool CDMRNetwork::writeAuthorisation()
 {
 	unsigned int size = m_password.size();
 
@@ -450,7 +450,7 @@ bool CDMRIPSC::writeAuthorisation()
 	return write(out, 40U);
 }
 
-bool CDMRIPSC::writeConfig()
+bool CDMRNetwork::writeConfig()
 {
 	const char* software = "MMDVM";
 	char slots = '0';
@@ -489,7 +489,7 @@ bool CDMRIPSC::writeConfig()
 	return write((unsigned char*)buffer, 302U);
 }
 
-bool CDMRIPSC::writePing()
+bool CDMRNetwork::writePing()
 {
 	unsigned char buffer[11U];
 
@@ -499,7 +499,7 @@ bool CDMRIPSC::writePing()
 	return write(buffer, 11U);
 }
 
-bool CDMRIPSC::wantsBeacon()
+bool CDMRNetwork::wantsBeacon()
 {
 	bool beacon = m_beacon;
 
@@ -508,13 +508,13 @@ bool CDMRIPSC::wantsBeacon()
 	return beacon;
 }
 
-bool CDMRIPSC::write(const unsigned char* data, unsigned int length)
+bool CDMRNetwork::write(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
 	assert(length > 0U);
 
 	// if (m_debug)
-	//	CUtils::dump(1U, "IPSC Transmitted", data, length);
+	//	CUtils::dump(1U, "Network Transmitted", data, length);
 
 	bool ret = m_socket.write(data, length, m_address, m_port);
 	if (!ret) {

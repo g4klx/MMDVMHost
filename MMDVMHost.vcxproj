@@ -161,8 +161,8 @@
     <ClInclude Include="DMREMB.h" />
     <ClInclude Include="DMREmbeddedLC.h" />
     <ClInclude Include="DMRFullLC.h" />
-    <ClInclude Include="DMRIPSC.h" />
     <ClInclude Include="DMRLC.h" />
+    <ClInclude Include="DMRNetwork.h" />
     <ClInclude Include="DMRShortLC.h" />
     <ClInclude Include="DMRSlot.h" />
     <ClInclude Include="DMRSlotType.h" />
@@ -186,6 +186,7 @@
     <ClInclude Include="P25Defines.h" />
     <ClInclude Include="P25Data.h" />
     <ClInclude Include="P25LowSpeedData.h" />
+    <ClInclude Include="P25Network.h" />
     <ClInclude Include="P25NID.h" />
     <ClInclude Include="P25Utils.h" />
     <ClInclude Include="QR1676.h" />
@@ -222,9 +223,9 @@
     <ClCompile Include="DMREMB.cpp" />
     <ClCompile Include="DMREmbeddedLC.cpp" />
     <ClCompile Include="DMRFullLC.cpp" />
-    <ClCompile Include="DMRIPSC.cpp" />
     <ClCompile Include="DMRLC.cpp" />
     <ClCompile Include="DMRLookup.cpp" />
+    <ClCompile Include="DMRNetwork.cpp" />
     <ClCompile Include="DMRShortLC.cpp" />
     <ClCompile Include="DMRSlot.cpp" />
     <ClCompile Include="DMRSlotType.cpp" />
@@ -245,6 +246,7 @@
     <ClCompile Include="P25Control.cpp" />
     <ClCompile Include="P25Data.cpp" />
     <ClCompile Include="P25LowSpeedData.cpp" />
+    <ClCompile Include="P25Network.cpp" />
     <ClCompile Include="P25NID.cpp" />
     <ClCompile Include="P25Utils.cpp" />
     <ClCompile Include="QR1676.cpp" />

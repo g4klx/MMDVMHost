@@ -16,8 +16,8 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(DMRIPSC_H)
-#define	DMRIPSC_H
+#if !defined(DMRNetwork_H)
+#define	DMRNetwork_H
 
 #include "UDPSocket.h"
 #include "Timer.h"
@@ -28,11 +28,11 @@
 #include <string>
 #include <cstdint>
 
-class CDMRIPSC
+class CDMRNetwork
 {
 public:
-	CDMRIPSC(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, bool rssi, HW_TYPE hwType);
-	~CDMRIPSC();
+	CDMRNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, bool rssi, HW_TYPE hwType);
+	~CDMRNetwork();
 
 	void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url);
 

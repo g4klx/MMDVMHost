@@ -20,6 +20,7 @@
 #define	P25Control_H
 
 #include "RingBuffer.h"
+#include "P25Network.h"
 #include "DMRLookup.h"
 #include "P25Audio.h"
 #include "Defines.h"
@@ -31,7 +32,7 @@
 
 class CP25Control {
 public:
-	CP25Control(unsigned int nac, CDisplay* display, unsigned int timeout, bool duplex, CDMRLookup* lookup, int rssiMultiplier, int rssiOffset);
+	CP25Control(unsigned int nac, CP25Network* network, CDisplay* display, unsigned int timeout, bool duplex, CDMRLookup* lookup, int rssiMultiplier, int rssiOffset);
 	~CP25Control();
 
 	bool writeModem(unsigned char* data, unsigned int len);
@@ -42,6 +43,7 @@ public:
 
 private:
 	unsigned int  m_nac;
+	CP25Network*  m_network;
 	CDisplay*     m_display;
 	bool          m_duplex;
 	CDMRLookup*   m_lookup;

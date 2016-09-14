@@ -137,9 +137,6 @@
     <ClInclude Include="DMRFullLC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DMRIPSC.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DMRLC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -192,6 +189,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="P25LowSpeedData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="P25Network.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DMRNetwork.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -304,9 +307,6 @@
     <ClCompile Include="DMRFullLC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DMRIPSC.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DMRLC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -356,6 +356,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="P25LowSpeedData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="P25Network.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DMRNetwork.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -21,6 +21,7 @@
 
 #include "DMREmbeddedLC.h"
 #include "DMRDataHeader.h"
+#include "DMRNetwork.h"
 #include "RingBuffer.h"
 #include "StopWatch.h"
 #include "DMRLookup.h"
@@ -29,7 +30,6 @@
 #include "DMRData.h"
 #include "Display.h"
 #include "Defines.h"
-#include "DMRIPSC.h"
 #include "DMREMB.h"
 #include "Timer.h"
 #include "Modem.h"
@@ -50,7 +50,7 @@ public:
 
 	void clock();
 
-	static void init(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& SrcIdBlackList, const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF,  const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, CDMRLookup* lookup, int rssiMultiplier, int rssiOffset, unsigned int jitter);
+	static void init(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& SrcIdBlackList, const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF,  const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, int rssiMultiplier, int rssiOffset, unsigned int jitter);
 
 private:
 	unsigned int               m_slotNo;
@@ -94,7 +94,7 @@ private:
 	static std::vector<unsigned int> m_blackList;
 
 	static CModem*             m_modem;
-	static CDMRIPSC*           m_network;
+	static CDMRNetwork*        m_network;
 	static CDisplay*           m_display;
 	static bool                m_duplex;
 	static CDMRLookup*         m_lookup;
@@ -134,7 +134,6 @@ private:
 	void insertSilence(unsigned int count);
 
 	static void setShortLC(unsigned int slotNo, unsigned int id, FLCO flco = FLCO_GROUP, bool voice = true);
-	static bool validateId(unsigned int id);
 };
 
 #endif
