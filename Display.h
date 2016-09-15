@@ -45,6 +45,7 @@ public:
 	void clearFusion();
 
 	void writeCW();
+	void clearCW();
 
 	virtual void close() = 0;
 
@@ -65,6 +66,7 @@ protected:
 	virtual void clearFusionInt() = 0;
 
 	virtual void writeCWInt() = 0;
+	virtual void clearCWInt() = 0;
 
 	virtual void clockInt(unsigned int ms);
 

@@ -50,6 +50,7 @@ protected:
 	virtual void clearFusionInt();
 
 	virtual void writeCWInt();
+	virtual void clearCWInt();
 
 private:
    std::string       m_callsign;

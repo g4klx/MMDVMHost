@@ -48,6 +48,7 @@ protected:
 	virtual void clearFusionInt();
 
 	virtual void writeCWInt();
+	virtual void clearCWInt();
 
 private:
 };

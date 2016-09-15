@@ -315,6 +315,10 @@ void CTFTSerial::writeCWInt()
 {
 }
 
+void CTFTSerial::clearCWInt()
+{
+}
+
 void CTFTSerial::close()
 {
 	m_serial.close();

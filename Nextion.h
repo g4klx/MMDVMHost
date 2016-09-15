@@ -51,6 +51,7 @@ protected:
   virtual void clearFusionInt();
 
   virtual void writeCWInt();
+  virtual void clearCWInt();
 
   virtual void clockInt(unsigned int ms);
 

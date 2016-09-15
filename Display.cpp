@@ -157,6 +157,9 @@ void CDisplay::clearFusion()
 
 void CDisplay::writeCW()
 {
+	m_timer1.start();
+	m_mode1 = MODE_CW;
+
 	writeCWInt();
 }
 
@@ -177,6 +180,11 @@ void CDisplay::clock(unsigned int ms)
 			break;
 		case MODE_YSF:
 			clearFusionInt();
+			m_mode1 = MODE_IDLE;
+			m_timer1.stop();
+			break;
+		case MODE_CW:
+			clearCWInt();
 			m_mode1 = MODE_IDLE;
 			m_timer1.stop();
 			break;

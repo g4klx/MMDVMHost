@@ -245,6 +245,15 @@ void CNextion::writeCWInt()
 
        sendCommand(command);
        sendCommand("t1.txt=\"Sending CW Ident\"");
+
+	m_clockDisplayTimer.stop();
+
+	m_mode = MODE_CW;
+}
+
+void CNextion::clearCWInt()
+{
+	setIdleInt();
 }
 
 void CNextion::clockInt(unsigned int ms)
