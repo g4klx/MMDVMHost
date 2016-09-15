@@ -18,12 +18,19 @@ talkgroup briefly, as before.
 It is useful to set the CallHang parameter to a generous amount. I am currently 
 using seven seconds. 
 
+If you don't like having to switch back to TG9. You can programme a channel for 
+your target TG but add an RX list which also includes TG 9 to your channel 
+definition. Just switch to that chanel and QSO as normal. You'll still hear the 
+return traffic, but so will everyone else monitoring TG 9, they can even join 
+in, even if they don't have the target TG programmed in their codeplug.
+
 Two boolean configuration options control the TG Rewrite feature:
 
 TGRewriteSlot1=[0|1]
 TGRewriteSlot2=[0|1]
 
-ACL's are applied before the rewrite, so still apply to rewritten traffic on source talk-group. 
+ACL's are applied before the rewrite, so still apply to rewritten traffic on 
+original (non-rewritten) talk-group. 
 
 73
 
