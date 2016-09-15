@@ -262,6 +262,7 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			LogMessage("DMR Slot %u, received RF end of voice transmission, %.1f seconds, BER: %.1f%%", m_slotNo, float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
 
 			writeEndRF();
+			DMRAccessControl::setOverEndTime();
 		} else if (dataType == DT_DATA_HEADER) {
 			if (m_rfState == RS_RF_DATA)
 				return;
