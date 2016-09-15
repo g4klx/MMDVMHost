@@ -235,9 +235,7 @@ void CNextion::clearFusionInt()
 
 void CNextion::writeCWInt()
 {
-       char command[30];
-
-       sendCommand("t1.txt=\"Sending CW Ident\"");
+	sendCommand("t1.txt=\"Sending CW Ident\"");
 
 	m_clockDisplayTimer.stop();
 
