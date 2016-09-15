@@ -235,8 +235,6 @@ void CNextion::clearFusionInt()
 
 void CNextion::writeCWInt()
 {
-       sendCommand("page MMDVM");
-
        char command[30];
 
        ::sprintf(command, "t0.txt=\"%-6s / %u\"", m_callsign.c_str(), m_dmrid);
