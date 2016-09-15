@@ -1,0 +1,31 @@
+Talk-Group Rewrite was conceived as a way of making talk-groups behave more 
+like the reflector system and of attempting to solve the problem of "slot 
+contention",where the user may be locked out of a slot by traffic on a 
+talk-group they know nothing about, without knowing why. This is frustrating to 
+users, both those new to DMR and seasoned DMR users. 
+
+TG Rewrite, when enabled for a slot, rewrites the DST ID of incoming talkgroup 
+traffic to TG9, alowing audio to be heard by any user monitoring TG9 on that 
+slot. If the user then replies on TG9, as long as they key-up during the 
+CallHang period, the DST ID (TG) is again rewritten on the outbound traffic, 
+which transparently maps back to the originating talkgroup. 
+
+To use a User Activated talk-group, briefly key-up on that talk-group to 
+activate it, then switch back to TG9 and talk as normal. If the CallHang period 
+expires, you may need to activate the talk-group again by keying up on that 
+talkgroup briefly, as before. 
+
+It is useful to set the CallHang parameter to a generous amount. I am currently 
+using seven seconds. 
+
+Two configuration options control the TG Rewrite feature:
+
+TGRewriteSlot1=
+TGRewriteSlot2=
+
+ACL's are applied before the rewrite, so still apply to rewritten traffic on source talk-group. 
+
+73
+
+Simon (G7RZU)
+
