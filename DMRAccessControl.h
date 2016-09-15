@@ -22,7 +22,7 @@ class DMRAccessControl {
 public:
 	static bool validateAccess (unsigned int src_id, unsigned int dst_id, unsigned int slot, bool network);
 
-	static void init(const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF, const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, const std::vector<unsigned int>& SrcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes,unsigned int id,unsigned int callHang);
+	static void init(const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF, const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, const std::vector<unsigned int>& SrcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes,unsigned int id,unsigned int callHang, bool TGRewrteSlot1, bool TGRewrteSlot2);
 	
 	static unsigned int DstIdRewrite(unsigned int id, unsigned int sid,unsigned int slot, bool network);
 	static void setOverEndTime();
@@ -56,6 +56,10 @@ private:
 	
 	static unsigned int m_dstRewriteID;
 	static unsigned int m_SrcID;
+	
+	static bool m_TGRewriteSlot1;
+	static bool m_TGRewriteSlot2;
+	
 	
 
 };

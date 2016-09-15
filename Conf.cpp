@@ -93,6 +93,8 @@ m_dmrBeacons(false),
 m_dmrId(0U),
 m_dmrColorCode(2U),
 m_dmrSelfOnly(false),
+m_TGRewriteSlot1(false),
+m_TGRewriteSlot2(false),
 m_dmrPrefixes(),
 m_dmrBlackList(),
 m_dmrDstIdBlacklistSlot1RF(),
@@ -330,6 +332,10 @@ bool CConf::read()
 			m_dmrColorCode = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "SelfOnly") == 0)
 			m_dmrSelfOnly = ::atoi(value) == 1;
+		else if (::strcmp(key, "TGRewriteSlot1") == 0)
+			m_TGRewriteSlot1 = ::atoi(value) == 1;
+		else if (::strcmp(key, "TGRewriteSlot2") == 0)
+			m_TGRewriteSlot2 = ::atoi(value) == 1;
 		else if (::strcmp(key, "Prefixes") == 0) {
 			char* p = ::strtok(value, ",\r\n");
 			while (p != NULL) {
@@ -746,6 +752,16 @@ unsigned int CConf::getDMRColorCode() const
 bool CConf::getDMRSelfOnly() const
 {
 	return m_dmrSelfOnly;
+}
+
+bool CConf::getDMRTGRewriteSlot1() const
+{
+	return m_TGRewriteSlot1;
+}
+
+bool CConf::getDMRTGRewriteSlot2() const
+{
+	return m_TGRewriteSlot2;
 }
 
 std::vector<unsigned int> CConf::getDMRPrefixes() const

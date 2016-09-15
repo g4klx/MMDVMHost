@@ -45,7 +45,11 @@ std::time_t DMRAccessControl::m_time;
 
 unsigned int DMRAccessControl::m_callHang;
 
-void DMRAccessControl::init(const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF, const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, const std::vector<unsigned int>& SrcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes,unsigned int id,unsigned int callHang)
+bool DMRAccessControl::m_TGRewriteSlot1;
+bool DMRAccessControl::m_TGRewriteSlot2;
+
+
+void DMRAccessControl::init(const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF, const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, const std::vector<unsigned int>& SrcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes,unsigned int id,unsigned int callHang,bool TGRewriteSlot1, bool TGRewriteSlot2)
 {
 	m_dstBlackListSlot1RF  = DstIdBlacklistSlot1RF;
 	m_dstWhiteListSlot1RF  = DstIdWhitelistSlot1RF;
@@ -56,6 +60,8 @@ void DMRAccessControl::init(const std::vector<unsigned int>& DstIdBlacklistSlot1
 	m_dstBlackListSlot2NET = DstIdBlacklistSlot2NET;
 	m_dstWhiteListSlot2NET = DstIdWhitelistSlot2NET;
 	m_callHang = callHang;
+	m_TGRewriteSlot1 = TGRewriteSlot1;
+	m_TGRewriteSlot2 = TGRewriteSlot2;
 }
  
 bool DMRAccessControl::DstIdBlacklist(unsigned int did, unsigned int slot, bool network)
@@ -192,6 +198,13 @@ bool DMRAccessControl::validateAccess (unsigned int src_id, unsigned int dst_id,
 
 unsigned int DMRAccessControl::DstIdRewrite (unsigned int did, unsigned int sid, unsigned int slot, bool network) 
 {
+  
+  if (slot == 1 && m_TGRewriteSlot1 == false)
+    return 0;
+  
+  if (slot == 2 && m_TGRewriteSlot2 == false)
+    return 0;
+   
   std::time_t currenttime = std::time(nullptr);
   
   if (network) {
@@ -204,8 +217,8 @@ unsigned int DMRAccessControl::DstIdRewrite (unsigned int did, unsigned int sid,
 	    return 0;
 	}
   } else {
-	if (m_SrcID == sid && (m_time + m_callHang) > currenttime) {
-	      LogMessage("DMR Slot %u, Rewrite DST ID (TG) of outbound network traffic from 9 to %u (return traffic during CallHang)",slot,m_dstRewriteID);
+	if (did == 9 && (m_time + m_callHang) > currenttime) {
+	      LogMessage("DMR Slot %u, Rewrite DST ID (TG) of outbound network traffic from %u to %u (return traffic during CallHang)",slot,sid,m_dstRewriteID);
 	      return(m_dstRewriteID);
 	} else {
 	    return(0);
