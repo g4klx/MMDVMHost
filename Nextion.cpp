@@ -233,7 +233,7 @@ void CNextion::clearFusionInt()
 	sendCommand("t2.txt=\"\"");
 }
 
-void CNextion::sendCWInt()
+void CNextion::writeCWInt()
 {
        sendCommand("page MMDVM");
 
