@@ -237,9 +237,6 @@ void CNextion::writeCWInt()
 {
        char command[30];
 
-       ::sprintf(command, "t0.txt=\"%-6s / %u\"", m_callsign.c_str(), m_dmrid);
-
-       sendCommand(command);
        sendCommand("t1.txt=\"Sending CW Ident\"");
 
 	m_clockDisplayTimer.stop();
@@ -249,7 +246,7 @@ void CNextion::writeCWInt()
 
 void CNextion::clearCWInt()
 {
-	setIdleInt();
+	sendCommand("t1.txt=\"MMDVM IDLE\"");
 }
 
 void CNextion::clockInt(unsigned int ms)
