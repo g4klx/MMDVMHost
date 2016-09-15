@@ -39,10 +39,13 @@ bool DMRAccessControl::m_selfOnly = false;
 unsigned int DMRAccessControl::m_id = 0U;
 
 unsigned int DMRAccessControl::m_dstRewriteID = 0U;
+unsigned int DMRAccessControl::m_SrcID = 0U;
 
 std::time_t DMRAccessControl::m_time;
 
-void DMRAccessControl::init(const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF, const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, const std::vector<unsigned int>& SrcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes,unsigned int id)
+unsigned int DMRAccessControl::m_callHang;
+
+void DMRAccessControl::init(const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF, const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, const std::vector<unsigned int>& SrcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes,unsigned int id,unsigned int callHang)
 {
 	m_dstBlackListSlot1RF  = DstIdBlacklistSlot1RF;
 	m_dstWhiteListSlot1RF  = DstIdWhitelistSlot1RF;
@@ -52,6 +55,7 @@ void DMRAccessControl::init(const std::vector<unsigned int>& DstIdBlacklistSlot1
 	m_dstWhiteListSlot1NET = DstIdWhitelistSlot1NET;
 	m_dstBlackListSlot2NET = DstIdBlacklistSlot2NET;
 	m_dstWhiteListSlot2NET = DstIdWhitelistSlot2NET;
+	m_callHang = callHang;
 }
  
 bool DMRAccessControl::DstIdBlacklist(unsigned int did, unsigned int slot, bool network)
@@ -186,33 +190,31 @@ bool DMRAccessControl::validateAccess (unsigned int src_id, unsigned int dst_id,
 	}
 }
 
-unsigned int DMRAccessControl::DstIdRewrite (unsigned int id, bool network) 
+unsigned int DMRAccessControl::DstIdRewrite (unsigned int did, unsigned int sid, unsigned int slot, bool network) 
 {
-  // record current time 
   std::time_t currenttime = std::time(nullptr);
   
-   // if the traffic is from the network
   if (network) {
-	m_dstRewriteID = id;
-	// record current time
-	m_time = std::time(nullptr);
-	// if the ID is a talkgroup, log and rewrite to TG9 
-	if (id < 4000 && id > 0) {
-	  LogMessage("Rewrite DST ID (TG) of of inbound network traffic from %u to 9", id);
+	m_dstRewriteID = did;
+	m_SrcID = sid;
+	if (did < 4000 && did > 0 && did != 9) {
+	  LogMessage("DMR Slot %u, Rewrite DST ID (TG) of of inbound network traffic from %u to 9",slot,did);
 	  return 9;
 	} else {
 	    return 0;
 	}
   } else {
-	// if less than 30 seconds has passed since we last saw traffic from network 
-	if (m_dstRewriteID == id && (m_time + 30) > currenttime) {
-	      LogMessage("Inbound DST ID (TG) rewrite seen in last 30 seconds");
-	      LogMessage("Rewrite DST ID (TG) of outbound network traffic from 9 to %u", id);
-	      m_time = std::time(nullptr);
-	      return(id);
+	if (m_SrcID == sid && (m_time + m_callHang) > currenttime) {
+	      LogMessage("DMR Slot %u, Rewrite DST ID (TG) of outbound network traffic from 9 to %u (return traffic during CallHang)",slot,m_dstRewriteID);
+	      return(m_dstRewriteID);
 	} else {
 	    return(0);
 	}
   }
 
-}	
+}
+
+void DMRAccessControl::setOverEndTime() 
+{
+  m_time = std::time(nullptr);
+} 

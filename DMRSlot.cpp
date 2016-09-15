@@ -152,17 +152,16 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			if (lc == NULL)
 				return;
 
-			unsigned int id = lc->getSrcId();
+			unsigned int sid = lc->getSrcId();
 			unsigned int did = lc->getDstId();
-			if (!DMRAccessControl::validateAccess(id, did, m_slotNo, false)) {
+			if (!DMRAccessControl::validateAccess(sid, did, m_slotNo, false)) {
 			    delete lc;
 			    return;
 			}
 			
-			// Test dst rewrite
-			unsigned int rw_id = DMRAccessControl::DstIdRewrite(did, false);
+			unsigned int rw_id = DMRAccessControl::DstIdRewrite(did,sid,m_slotNo,false);
 			if (rw_id) {
-			LogMessage("Rewrite ID: %u", rw_id);
+			
 			lc->setDstId(rw_id);
 			}
 			
@@ -203,7 +202,7 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			m_rfState = RS_RF_AUDIO;
 
-			std::string src = m_lookup->find(id);
+			std::string src = m_lookup->find(sid);
 			std::string dst = m_lookup->find(m_rfLC->getDstId());
 
 			if (m_netState == RS_NET_IDLE) {
@@ -486,16 +485,16 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			CDMRLC* lc = m_rfEmbeddedLC.addData(data + 2U, emb.getLCSS());
 			if (lc != NULL) {
-				unsigned int id = lc->getSrcId();
+				unsigned int sid = lc->getSrcId();
 				unsigned int did = lc->getDstId();
-				if (!DMRAccessControl::validateAccess(id,did,m_slotNo,false)) {
+				if (!DMRAccessControl::validateAccess(sid,did,m_slotNo,false)) {
 				    delete lc;
 				    return;
 				}
 				// Test dst rewrite
-				unsigned int rw_id = DMRAccessControl::DstIdRewrite(did, false);
+				unsigned int rw_id = DMRAccessControl::DstIdRewrite(did,sid,m_slotNo,false);
 				if (rw_id) {
-				LogMessage("Rewrite ID: %u", rw_id);
+				
 				lc->setDstId(rw_id);
 				}
 
@@ -773,14 +772,14 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		}
 
 		unsigned int did = m_netLC->getDstId();
-		unsigned int id = m_netLC->getSrcId();
-		if (!DMRAccessControl::validateAccess(did, did, m_slotNo, true))
+		unsigned int sid = m_netLC->getSrcId();
+		if (!DMRAccessControl::validateAccess(sid, did, m_slotNo, true))
 		    return;
 		
 		// Test dst rewrite
-		unsigned int rw_id = DMRAccessControl::DstIdRewrite(did, true);
+		unsigned int rw_id = DMRAccessControl::DstIdRewrite(did, sid,m_slotNo, true);
 		if (rw_id) {
-		    LogMessage("Rewrite ID: %u", rw_id);
+		    
 		    m_netLC->setDstId(rw_id);
 		}
 
@@ -843,14 +842,14 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			return;
 
 		unsigned int did = m_netLC->getDstId();
-		unsigned int id = m_netLC->getSrcId();
-		if (!DMRAccessControl::validateAccess(id, did, m_slotNo, true))
+		unsigned int sid = m_netLC->getSrcId();
+		if (!DMRAccessControl::validateAccess(sid, did, m_slotNo, true))
 		    return;
 		
 		// Test dst rewrite
-		unsigned int rw_id = DMRAccessControl::DstIdRewrite(id,true);
+		unsigned int rw_id = DMRAccessControl::DstIdRewrite(did,sid,m_slotNo,true);
 		if (rw_id) {
-		    LogMessage("Rewrite ID: %u", rw_id);
+		    
 		    m_netLC->setDstId(rw_id);
 		}
 
@@ -919,6 +918,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		LogMessage("DMR Slot %u, received network end of voice transmission, %.1f seconds, %u%% packet loss, BER: %.1f%%", m_slotNo, float(m_netFrames) / 16.667F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
 
 		writeEndNet();
+		DMRAccessControl::setOverEndTime();
 	} else if (dataType == DT_DATA_HEADER) {
 		if (m_netState == RS_NET_DATA)
 			return;
@@ -1396,7 +1396,7 @@ void CDMRSlot::init(unsigned int id, unsigned int colorCode, unsigned int callHa
 	slotType.getData(m_idle + 2U);
 	
 	//Load black and white lists to DMRAccessControl
-	DMRAccessControl::init(DstIdBlacklistSlot1RF, DstIdWhitelistSlot1RF, DstIdBlacklistSlot2RF, DstIdWhitelistSlot2RF, DstIdBlacklistSlot1NET, DstIdWhitelistSlot1NET, DstIdBlacklistSlot2NET, DstIdWhitelistSlot2NET, SrcIdBlacklist, m_selfOnly, m_prefixes, m_id);
+	DMRAccessControl::init(DstIdBlacklistSlot1RF, DstIdWhitelistSlot1RF, DstIdBlacklistSlot2RF, DstIdWhitelistSlot2RF, DstIdBlacklistSlot1NET, DstIdWhitelistSlot1NET, DstIdBlacklistSlot2NET, DstIdWhitelistSlot2NET, SrcIdBlacklist, m_selfOnly, m_prefixes, m_id,callHang);
 }
 
 
