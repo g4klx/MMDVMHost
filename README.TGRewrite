@@ -18,10 +18,10 @@ talkgroup briefly, as before.
 It is useful to set the CallHang parameter to a generous amount. I am currently 
 using seven seconds. 
 
-Two configuration options control the TG Rewrite feature:
+Two boolean configuration options control the TG Rewrite feature:
 
-TGRewriteSlot1=
-TGRewriteSlot2=
+TGRewriteSlot1=[0|1]
+TGRewriteSlot2=[0|1]
 
 ACL's are applied before the rewrite, so still apply to rewritten traffic on source talk-group. 
 
