@@ -237,7 +237,7 @@ void CNextion::writeCWInt()
 {
 	sendCommand("t1.txt=\"Sending CW Ident\"");
 
-	m_clockDisplayTimer.stop();
+	m_clockDisplayTimer.start();
 
 	m_mode = MODE_CW;
 }
@@ -251,7 +251,7 @@ void CNextion::clockInt(unsigned int ms)
 {
 	// Update the clock display in IDLE mode every 400ms
 	m_clockDisplayTimer.clock(ms);
-	if (m_displayClock && m_mode == MODE_IDLE && m_clockDisplayTimer.isRunning() && m_clockDisplayTimer.hasExpired()) {
+	if (m_displayClock && (m_mode == MODE_IDLE || m_mode == MODE_CW) && m_clockDisplayTimer.isRunning() && m_clockDisplayTimer.hasExpired()) {
 		time_t currentTime;
 		struct tm *Time;
 		::time(&currentTime);                   // Get the current time
