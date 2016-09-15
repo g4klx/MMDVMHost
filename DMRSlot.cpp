@@ -774,11 +774,11 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		unsigned int did = m_netLC->getDstId();
 		unsigned int id = m_netLC->getSrcId();
-		if (!DMRAccessControl::validateAccess(id, did, m_slotNo, true))
+		if (!DMRAccessControl::validateAccess(did, did, m_slotNo, true))
 		    return;
 		
 		// Test dst rewrite
-		unsigned int rw_id = DMRAccessControl::DstIdRewrite(id, true);
+		unsigned int rw_id = DMRAccessControl::DstIdRewrite(did, true);
 		if (rw_id) {
 		    LogMessage("Rewrite ID: %u", rw_id);
 		    m_netLC->setDstId(rw_id);

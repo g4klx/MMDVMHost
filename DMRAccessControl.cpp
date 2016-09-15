@@ -197,17 +197,18 @@ unsigned int DMRAccessControl::DstIdRewrite (unsigned int id, bool network)
 	// record current time
 	m_time = std::time(nullptr);
 	// if the ID is a talkgroup, log and rewrite to TG9 
-	if (id < 4000 && id != 0) {
+	if (id < 4000 && id > 0) {
 	  LogMessage("Rewrite DST ID (TG) of of inbound network traffic from %u to 9", id);
 	  return 9;
 	} else {
 	    return 0;
 	}
   } else {
-	// if less than 30 seconds has passed since we last saw traffic 
-	if (m_dstRewriteID == id && (m_time + 30) > currenttime && m_time) {
+	// if less than 30 seconds has passed since we last saw traffic from network 
+	if (m_dstRewriteID == id && (m_time + 30) > currenttime) {
 	      LogMessage("Inbound DST ID (TG) rewrite seen in last 30 seconds");
 	      LogMessage("Rewrite DST ID (TG) of outbound network traffic from 9 to %u", id);
+	      m_time = std::time(nullptr);
 	      return(id);
 	} else {
 	    return(0);
