@@ -155,6 +155,11 @@ void CDisplay::clearFusion()
 	}
 }
 
+void CDisplay::writeCW()
+{
+	writeCWInt();
+}
+
 void CDisplay::clock(unsigned int ms)
 {
 	m_timer1.clock(ms);
