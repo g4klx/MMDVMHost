@@ -233,6 +233,20 @@ void CNextion::clearFusionInt()
 	sendCommand("t2.txt=\"\"");
 }
 
+void CNextion::sendCWInt()
+{
+       sendCommand("page MMDVM");
+
+       char command[30];
+       ::sprintf(command, "dim=%u", m_brightness);
+       sendCommand(command);
+
+       ::sprintf(command, "t0.txt=\"%-6s / %u\"", m_callsign.c_str(), m_dmrid);
+
+       sendCommand(command);
+       sendCommand("t1.txt=\"Sending CW Ident\"");
+}
+
 void CNextion::clockInt(unsigned int ms)
 {
 	// Update the clock display in IDLE mode every 400ms
