@@ -620,6 +620,7 @@ int CMMDVMHost::run()
 			if (m_mode == MODE_IDLE && !m_modem->hasTX()){
 				LogDebug("sending CW ID");
 				m_modem->sendCWId(m_callsign);
+				m_display->setIdle();
 
 				m_cwIdTimer.start();   //reset only after sending ID, timer-overflow after 49 days doesnt matter
 			}
