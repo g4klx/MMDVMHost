@@ -68,6 +68,10 @@ void CNullDisplay::clearFusionInt()
 {
 }
 
+void CNullDisplay::writeCWInt()
+{
+}
+
 void CNullDisplay::close()
 {
 }

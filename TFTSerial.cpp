@@ -311,6 +311,10 @@ void CTFTSerial::clearFusionInt()
 	displayText("              ");
 }
 
+void CTFTSerial::writeCWInt()
+{
+}
+
 void CTFTSerial::close()
 {
 	m_serial.close();
