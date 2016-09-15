@@ -19,6 +19,8 @@
 #if !defined(P25Data_H)
 #define  P25Data_H
 
+#include "RS.h"
+
 class CP25Data {
 public:
 	CP25Data();
@@ -43,6 +45,8 @@ private:
 	unsigned int m_source;
 	bool         m_group;
 	unsigned int m_dest;
+	CRS241213    m_rs241213;
+	CRS24169     m_rs24169;
 
 	void decodeLDUHamming(const unsigned char* raw, unsigned char* data);
 	void encodeLDUHamming(unsigned char* data, const unsigned char* raw);

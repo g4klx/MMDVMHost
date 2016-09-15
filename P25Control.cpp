@@ -23,8 +23,10 @@
 #include "Log.h"
 #include "Utils.h"
 
-#include <cstdio>
 #include <cassert>
+#include <ctime>
+
+// #define	DUMP_P25
 
 const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U};
 
@@ -44,9 +46,14 @@ m_rfState(RS_RF_LISTENING),
 m_netState(RS_NET_IDLE),
 m_rfTimeout(1000U, timeout),
 m_netTimeout(1000U, timeout),
+m_networkWatchdog(1000U, 0U, 1500U),
 m_rfFrames(0U),
 m_rfBits(0U),
 m_rfErrs(0U),
+m_netFrames(0U),
+m_netBits(0U),
+m_netErrs(0U),
+m_netLost(0U),
 m_nid(),
 m_audio(),
 m_rfData(),
@@ -73,10 +80,14 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 
 	if (data[0U] == TAG_LOST) {
 		LogMessage("P25, transmission lost, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
-		m_display->clearP25();
+		if (m_netState == RS_NET_IDLE)
+			m_display->clearP25();
 		m_rfState = RS_RF_LISTENING;
 		m_rfTimeout.stop();
 		m_rfData.reset();
+#if defined(DUMP_P25)
+		closeFile();
+#endif
 		return false;
 	}
 
@@ -110,6 +121,13 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		m_rfBits   = 1U;
 		m_rfTimeout.start();
 
+#if defined(DUMP_P25)
+		openFile();
+		writeFile(data + 2U, len - 2U);
+#endif
+
+		writeNetwork(data + 2U, P25_DUID_HEADER);
+
 		if (m_duplex) {
 			data[0U] = TAG_HEADER;
 			data[1U] = 0x00U;
@@ -123,6 +141,9 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			m_rfErrs   = 0U;
 			m_rfBits   = 1U;
 			m_rfTimeout.start();
+#if defined(DUMP_P25)
+			openFile();
+#endif
 		}
 
 		// Regenerate Sync
@@ -144,6 +165,12 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 
 		// Add busy bits
 		addBusyBits(data + 2U, P25_LDU_FRAME_LENGTH_BITS, false, true);
+
+#if defined(DUMP_P25)
+		writeFile(data + 2U, len - 2U);
+#endif
+
+		writeNetwork(data + 2U, P25_DUID_LDU1);
 
 		if (m_duplex) {
 			data[0U] = TAG_DATA;
@@ -184,6 +211,12 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		// Add busy bits
 		addBusyBits(data + 2U, P25_LDU_FRAME_LENGTH_BITS, false, true);
 
+#if defined(DUMP_P25)
+		writeFile(data + 2U, len - 2U);
+#endif
+
+		writeNetwork(data + 2U, P25_DUID_LDU2);
+
 		if (m_duplex) {
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
@@ -209,6 +242,12 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		LogMessage("P25, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
 		m_display->clearP25();
 
+#if defined(DUMP_P25)
+		closeFile();
+#endif
+
+		writeNetwork(data + 2U, P25_DUID_TERM_LC);
+
 		if (m_duplex) {
 			data[0U] = TAG_EOT;
 			data[1U] = 0x00U;
@@ -230,6 +269,12 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 
 		LogMessage("P25, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
 		m_display->clearP25();
+
+#if defined(DUMP_P25)
+		closeFile();
+#endif
+
+		writeNetwork(data + 2U, P25_DUID_TERM);
 
 		if (m_duplex) {
 			data[0U] = TAG_EOT;
@@ -258,10 +303,40 @@ unsigned int CP25Control::readModem(unsigned char* data)
 	return len;
 }
 
+void CP25Control::writeNetwork()
+{
+	unsigned char data[200U];
+	unsigned int length = m_network->read(data, 200U);
+	if (length == 0U)
+		return;
+
+	if (m_rfState != RS_RF_LISTENING && m_netState == RS_NET_IDLE)
+		return;
+
+	m_networkWatchdog.start();
+
+
+}
+
 void CP25Control::clock(unsigned int ms)
 {
+	if (m_network != NULL)
+		writeNetwork();
+
 	m_rfTimeout.clock(ms);
 	m_netTimeout.clock(ms);
+
+	if (m_netState == RS_NET_AUDIO) {
+		m_networkWatchdog.clock(ms);
+
+		if (m_networkWatchdog.hasExpired()) {
+			LogMessage("P25, network watchdog has expired, %.1f seconds, %u%% packet loss, BER: %.1f%%", float(m_netFrames) / 5.56F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
+			m_display->clearP25();
+			m_networkWatchdog.stop();
+			m_netState = RS_NET_IDLE;
+			m_netTimeout.stop();
+		}
+	}
 }
 
 void CP25Control::writeQueueRF(const unsigned char* data, unsigned int length)
@@ -283,6 +358,56 @@ void CP25Control::writeQueueRF(const unsigned char* data, unsigned int length)
 	m_queue.addData(data, len);
 }
 
+void CP25Control::writeQueueNet(const unsigned char* data, unsigned int length)
+{
+	assert(data != NULL);
+
+	if (m_netTimeout.isRunning() && m_netTimeout.hasExpired())
+		return;
+
+	unsigned int space = m_queue.freeSpace();
+	if (space < (length + 1U)) {
+		LogError("P25, overflow in the P25 RF queue");
+		return;
+	}
+
+	unsigned char len = length;
+	m_queue.addData(&len, 1U);
+
+	m_queue.addData(data, len);
+}
+
+void CP25Control::writeNetwork(const unsigned char *data, unsigned char type)
+{
+	assert(data != NULL);
+
+	if (m_network == NULL)
+		return;
+
+	if (m_rfTimeout.isRunning() && m_rfTimeout.hasExpired())
+		return;
+
+	switch (type)
+	{
+	case P25_DUID_HEADER:
+		m_network->writeHeader(data);
+		break;
+	case P25_DUID_LDU1:
+		m_network->writeLDU1(data);
+		break;
+	case P25_DUID_LDU2:
+		m_network->writeLDU2(data);
+		break;
+	case P25_DUID_TERM:
+	case P25_DUID_TERM_LC:
+		m_network->writeTerminator(data);
+		break;
+	default:
+		m_network->writeEnd();
+		break;
+	}
+}
+
 void CP25Control::addBusyBits(unsigned char* data, unsigned int length, bool b1, bool b2)
 {
 	assert(data != NULL);
@@ -291,5 +416,47 @@ void CP25Control::addBusyBits(unsigned char* data, unsigned int length, bool b1,
 		unsigned int ss1Pos = ss0Pos + 1U;
 		WRITE_BIT(data, ss0Pos, b1);
 		WRITE_BIT(data, ss1Pos, b2);
+	}
+}
+
+bool CP25Control::openFile()
+{
+	if (m_fp != NULL)
+		return true;
+
+	time_t t;
+	::time(&t);
+
+	struct tm* tm = ::localtime(&t);
+
+	char name[100U];
+	::sprintf(name, "P25_%04d%02d%02d_%02d%02d%02d.ambe", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+
+	m_fp = ::fopen(name, "wb");
+	if (m_fp == NULL)
+		return false;
+
+	::fwrite("P25", 1U, 3U, m_fp);
+
+	return true;
+}
+
+bool CP25Control::writeFile(const unsigned char* data, unsigned char length)
+{
+	if (m_fp == NULL)
+		return false;
+
+	::fwrite(&length, 1U, 1U, m_fp);
+
+	::fwrite(data, 1U, length, m_fp);
+
+	return true;
+}
+
+void CP25Control::closeFile()
+{
+	if (m_fp != NULL) {
+		::fclose(m_fp);
+		m_fp = NULL;
 	}
 }

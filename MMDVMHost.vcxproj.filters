@@ -197,6 +197,9 @@
     <ClInclude Include="DMRNetwork.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RS.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -362,6 +365,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DMRNetwork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

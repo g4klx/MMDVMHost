@@ -59,7 +59,12 @@ bool CP25Network::open()
 	return m_socket.open();
 }
 
-bool CP25Network::writeHeader(const unsigned char* header, unsigned int length)
+bool CP25Network::writeStart()
+{
+	return true;
+}
+
+bool CP25Network::writeHeader(const unsigned char* header)
 {
 	assert(header != NULL);
 #ifdef notdef
@@ -75,9 +80,9 @@ bool CP25Network::writeHeader(const unsigned char* header, unsigned int length)
 	return true;
 }
 
-bool CP25Network::writeData(const unsigned char* data, unsigned int length)
+bool CP25Network::writeLDU1(const unsigned char* ldu1)
 {
-	assert(data != NULL);
+	assert(ldu1 != NULL);
 #ifdef notdef
 	unsigned char buffer[30U];
 
@@ -86,6 +91,39 @@ bool CP25Network::writeData(const unsigned char* data, unsigned int length)
 
 	return m_socket.write(buffer, length + 9U, m_address, m_port);
 #endif
+	return true;
+}
+
+bool CP25Network::writeLDU2(const unsigned char* ldu2)
+{
+	assert(ldu2 != NULL);
+#ifdef notdef
+	unsigned char buffer[30U];
+
+	if (m_debug)
+		CUtils::dump(1U, "P25 Network Data Sent", buffer, length + 9U);
+
+	return m_socket.write(buffer, length + 9U, m_address, m_port);
+#endif
+	return true;
+}
+
+bool CP25Network::writeTerminator(const unsigned char* term)
+{
+	assert(term != NULL);
+#ifdef notdef
+	unsigned char buffer[30U];
+
+	if (m_debug)
+		CUtils::dump(1U, "P25 Network Data Sent", buffer, length + 9U);
+
+	return m_socket.write(buffer, length + 9U, m_address, m_port);
+#endif
+	return true;
+}
+
+bool CP25Network::writeEnd()
+{
 	return true;
 }
 

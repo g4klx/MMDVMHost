@@ -35,8 +35,12 @@ public:
 
 	void enable(bool enabled);
 
-	bool writeHeader(const unsigned char* header, unsigned int length);
-	bool writeData(const unsigned char* data, unsigned int length);
+	bool writeStart();
+	bool writeHeader(const unsigned char* header);
+	bool writeLDU1(const unsigned char* ldu1);
+	bool writeLDU2(const unsigned char* ldu2);
+	bool writeTerminator(const unsigned char* term);
+	bool writeEnd();
 
 	unsigned int read(unsigned char* data, unsigned int length);
 

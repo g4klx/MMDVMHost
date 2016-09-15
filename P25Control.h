@@ -30,6 +30,8 @@
 #include "Modem.h"
 #include "Timer.h"
 
+#include <cstdio>
+
 class CP25Control {
 public:
 	CP25Control(unsigned int nac, CP25Network* network, CDisplay* display, unsigned int timeout, bool duplex, CDMRLookup* lookup, int rssiMultiplier, int rssiOffset);
@@ -54,16 +56,30 @@ private:
 	RPT_NET_STATE m_netState;
 	CTimer        m_rfTimeout;
 	CTimer        m_netTimeout;
+	CTimer        m_networkWatchdog;
 	unsigned int  m_rfFrames;
 	unsigned int  m_rfBits;
 	unsigned int  m_rfErrs;
+	unsigned int  m_netFrames;
+	unsigned int  m_netBits;
+	unsigned int  m_netErrs;
+	unsigned int  m_netLost;
 	CP25NID       m_nid;
 	CP25Audio     m_audio;
 	CP25Data      m_rfData;
 	CP25Data      m_netData;
+	FILE*         m_fp;
 
 	void writeQueueRF(const unsigned char* data, unsigned int length);
+	void writeQueueNet(const unsigned char* data, unsigned int length);
+	void writeNetwork(const unsigned char *data, unsigned char type);
+	void writeNetwork();
+
 	void addBusyBits(unsigned char* data, unsigned int length, bool b1, bool b2);
+
+	bool openFile();
+	bool writeFile(const unsigned char* data, unsigned char length);
+	void closeFile();
 };
 
 #endif

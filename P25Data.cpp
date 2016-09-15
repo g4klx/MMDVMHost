@@ -31,7 +31,9 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 CP25Data::CP25Data() :
 m_source(0U),
 m_group(true),
-m_dest(0U)
+m_dest(0U),
+m_rs241213(),
+m_rs24169()
 {
 }
 
@@ -72,7 +74,9 @@ void CP25Data::processLDU1(unsigned char* data)
 	CP25Utils::decode(data, raw, 1356U, 1398U);
 	decodeLDUHamming(raw, rs + 15U);
 
-	CUtils::dump(1U, "P25, LDU1 Data after Hamming", rs, 18U);
+	m_rs241213.decode(rs);
+
+	CUtils::dump(1U, "P25, LDU1 Data", rs, 9U);
 
 	switch (rs[0U]) {
 	case P25_LCF_GROUP:
@@ -89,8 +93,6 @@ void CP25Data::processLDU1(unsigned char* data)
 		LogMessage("P25, unknown LCF value in LDU1 - $%02X", rs[0U]);
 		break;
 	}
-
-	// XXX Need to add FEC code
 
 	encodeLDUHamming(raw, rs + 0U);
 	CP25Utils::encode(raw, data, 410U, 452U);
@@ -134,9 +136,9 @@ void CP25Data::processLDU2(unsigned char* data)
 	CP25Utils::decode(data, raw, 1356U, 1398U);
 	decodeLDUHamming(raw, rs + 15U);
 
-	CUtils::dump(1U, "P25, LDU2 Data after Hamming", rs, 18U);
+	m_rs24169.decode(rs);
 
-	// XXX Need to add FEC code
+	CUtils::dump(1U, "P25, LDU2 Data", rs, 12U);
 
 	encodeLDUHamming(raw, rs + 0U);
 	CP25Utils::encode(raw, data, 410U, 452U);
