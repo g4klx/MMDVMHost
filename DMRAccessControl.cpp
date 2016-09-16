@@ -217,8 +217,8 @@ unsigned int DMRAccessControl::DstIdRewrite (unsigned int did, unsigned int sid,
 	    return 0;
 	}
   } else {
-	if (did == 9 && (m_time + m_callHang) > currenttime) {
-	      LogMessage("DMR Slot %u, Rewrite DST ID (TG) of outbound network traffic from %u to %u (return traffic during CallHang)",slot,sid,m_dstRewriteID);
+	if (did == 9 && m_dstRewriteID != 9 && (m_time + m_callHang) > currenttime) {
+	      LogMessage("DMR Slot %u, Rewrite DST ID (TG) of outbound network traffic from %u to %u (return traffic during CallHang)",slot,did,m_dstRewriteID);
 	      return(m_dstRewriteID);
 	} else {
 	    return(0);
