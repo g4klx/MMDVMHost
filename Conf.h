@@ -88,6 +88,8 @@ public:
   unsigned int getDMRId() const;
   unsigned int getDMRColorCode() const;
   bool         getDMRSelfOnly() const;
+  bool	       getDMRTGRewriteSlot1() const;
+  bool	       getDMRTGRewriteSlot2() const;
   std::vector<unsigned int> getDMRPrefixes() const;
   std::vector<unsigned int> getDMRBlackList() const;
   std::vector<unsigned int> getDMRDstIdBlacklistSlot1RF() const;
@@ -213,6 +215,8 @@ private:
   unsigned int m_dmrId;
   unsigned int m_dmrColorCode;
   bool         m_dmrSelfOnly;
+  bool	       m_TGRewriteSlot1;
+  bool	       m_TGRewriteSlot2;
   std::vector<unsigned int> m_dmrPrefixes;
   std::vector<unsigned int> m_dmrBlackList;
   std::vector<unsigned int> m_dmrDstIdBlacklistSlot1RF;
