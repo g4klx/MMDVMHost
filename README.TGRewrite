@@ -24,6 +24,9 @@ before activiating this feature. It is best to ensure the slot is keyed from
 neccesary, it may be advantageous to also disconnect the repeater from the 
 reflector system first, if using slot 2.
 
+Talk-group rewrite was originally intended to work with User-Activated talk 
+groups, although it will function with permanent talk-groups too. 
+
 It is useful to set the CallHang parameter to a generous amount. I am currently 
 using seven seconds. 
 
