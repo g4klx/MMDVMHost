@@ -17,6 +17,7 @@
 
 #include <vector>
 #include <ctime>
+#include "DMRLC.h"
 
 class DMRAccessControl {
 public:
@@ -24,7 +25,7 @@ public:
 
 	static void init(const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF, const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, const std::vector<unsigned int>& SrcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes,unsigned int id,unsigned int callHang, bool TGRewrteSlot1, bool TGRewrteSlot2);
 	
-	static unsigned int DstIdRewrite(unsigned int id, unsigned int sid,unsigned int slot, bool network);
+	static unsigned int DstIdRewrite(unsigned int id, unsigned int sid,unsigned int slot, bool network, CDMRLC* dmrLC);
 	static void setOverEndTime();
 
 private:

@@ -20,6 +20,7 @@
 #include <vector>
 #include <ctime>
 
+
 std::vector<unsigned int> DMRAccessControl::m_dstBlackListSlot1RF;
 std::vector<unsigned int> DMRAccessControl::m_dstBlackListSlot2RF;
 std::vector<unsigned int> DMRAccessControl::m_dstWhiteListSlot1RF;
@@ -196,13 +197,16 @@ bool DMRAccessControl::validateAccess (unsigned int src_id, unsigned int dst_id,
 	}
 }
 
-unsigned int DMRAccessControl::DstIdRewrite (unsigned int did, unsigned int sid, unsigned int slot, bool network) 
+unsigned int DMRAccessControl::DstIdRewrite (unsigned int did, unsigned int sid, unsigned int slot, bool network, CDMRLC* dmrLC) 
 {
   
   if (slot == 1 && m_TGRewriteSlot1 == false)
     return 0;
   
   if (slot == 2 && m_TGRewriteSlot2 == false)
+    return 0;
+  
+  if (dmrLC->getFLCO() != FLCO_GROUP)
     return 0;
    
   std::time_t currenttime = std::time(nullptr);
