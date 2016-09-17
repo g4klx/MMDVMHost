@@ -311,6 +311,20 @@ void CTFTSerial::clearFusionInt()
 	displayText("              ");
 }
 
+void CTFTSerial::writeCWInt()
+{
+	gotoPosPixel(45U, 90U);
+	displayText("CW TX");
+
+	m_mode = MODE_CW;
+}
+
+void CTFTSerial::clearCWInt()
+{
+	gotoPosPixel(45U, 90U);
+	displayText("IDLE");
+}
+
 void CTFTSerial::close()
 {
 	m_serial.close();
