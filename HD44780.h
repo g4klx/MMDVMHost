@@ -110,6 +110,9 @@ protected:
   virtual void writeFusionInt(const char* source, const char* dest, const char* type, const char* origin);
   virtual void clearFusionInt();
 
+  virtual void writeCWInt();
+  virtual void clearCWInt();
+
   virtual void clockInt(unsigned int ms);
 
 private:

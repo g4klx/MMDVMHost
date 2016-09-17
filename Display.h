@@ -44,6 +44,9 @@ public:
 	void writeFusion(const char* source, const char* dest, const char* type, const char* origin);
 	void clearFusion();
 
+	void writeCW();
+	void clearCW();
+
 	virtual void close() = 0;
 
 	void clock(unsigned int ms);
@@ -61,6 +64,9 @@ protected:
 
 	virtual void writeFusionInt(const char* source, const char* dest, const char* type, const char* origin) = 0;
 	virtual void clearFusionInt() = 0;
+
+	virtual void writeCWInt() = 0;
+	virtual void clearCWInt() = 0;
 
 	virtual void clockInt(unsigned int ms);
 
