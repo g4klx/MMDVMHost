@@ -205,18 +205,20 @@ unsigned int DMRAccessControl::DstIdRewrite (unsigned int did, unsigned int sid,
   
   if (slot == 2 && m_TGRewriteSlot2 == false)
     return 0;
-  
-  if (dmrLC->getFLCO() != FLCO_GROUP)
-    return 0;
    
   std::time_t currenttime = std::time(nullptr);
   
   if (network) {
 	m_dstRewriteID = did;
 	m_SrcID = sid;
-	if ( (did < 4000 || did > 5000) && did > 0 && did != 9) {
+	if ( (did < 4000 || did > 5000) && did > 0 && did != 9 && dmrLC->getFLCO() == FLCO_GROUP ) {
 	  LogMessage("DMR Slot %u, Rewrite DST ID (TG) of of inbound network traffic from %u to 9",slot,did);
 	  return 9;
+	// rewrite incoming BM voice prompts to TG 9
+	} else if ((sid >= 4000 && sid <= 5000) && dmrLC->getFLCO() == FLCO_USER_USER)  {
+	    dmrLC->setFLCO(FLCO_GROUP);
+	    LogMessage("DMR Slot %u, Rewrite inbound private call to %u to Group Call on TG9",slot,did);
+	    return 9;	    
 	} else {
 	    return 0;
 	}
