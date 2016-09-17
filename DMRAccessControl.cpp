@@ -214,7 +214,7 @@ unsigned int DMRAccessControl::DstIdRewrite (unsigned int did, unsigned int sid,
   if (network) {
 	m_dstRewriteID = did;
 	m_SrcID = sid;
-	if (did < 4000 && did > 0 && did != 9) {
+	if ( (did < 4000 || did > 5000) && did > 0 && did != 9) {
 	  LogMessage("DMR Slot %u, Rewrite DST ID (TG) of of inbound network traffic from %u to 9",slot,did);
 	  return 9;
 	} else {
@@ -223,7 +223,7 @@ unsigned int DMRAccessControl::DstIdRewrite (unsigned int did, unsigned int sid,
   } else if (did == 9 && m_dstRewriteID != 9 && m_dstRewriteID != 0 && (m_time + m_callHang) > currenttime) {
 	      LogMessage("DMR Slot %u, Rewrite DST ID (TG) of outbound network traffic from %u to %u (return traffic during CallHang)",slot,did,m_dstRewriteID);
 	      return(m_dstRewriteID);
-  }  else if (did < 4000 && did > 0 && did !=9) {
+  }  else if ((did < 4000 || did > 5000) && did > 0 && did !=9) {
       m_dstRewriteID = did;
   } 
   return 0;
