@@ -61,6 +61,8 @@ private:
 	static bool m_TGRewriteSlot1;
 	static bool m_TGRewriteSlot2;
 	
+	static CDMRLC* m_lastdmrLC;
+	
 	
 
 };
