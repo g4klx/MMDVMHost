@@ -203,6 +203,8 @@ bool CConf::read()
 		  section = SECTION_NEXTION;
 	  else if (::strncmp(buffer, "[OLED]", 6U) == 0)
 		  section = SECTION_OLED;
+	  else if (::strncmp(buffer, "[DMR TG Rewirte]", 16U) == 0)
+		  section = SECTION_TGREWRITE
 	  else
         section = SECTION_NONE;
 
@@ -332,10 +334,6 @@ bool CConf::read()
 			m_dmrColorCode = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "SelfOnly") == 0)
 			m_dmrSelfOnly = ::atoi(value) == 1;
-		else if (::strcmp(key, "TGRewriteSlot1") == 0)
-			m_TGRewriteSlot1 = ::atoi(value) == 1;
-		else if (::strcmp(key, "TGRewriteSlot2") == 0)
-			m_TGRewriteSlot2 = ::atoi(value) == 1;
 		else if (::strcmp(key, "Prefixes") == 0) {
 			char* p = ::strtok(value, ",\r\n");
 			while (p != NULL) {
@@ -520,6 +518,11 @@ bool CConf::read()
 			m_oledBrightness = (unsigned char)::atoi(value);
 		else if (::strcmp(key, "Brightness") == 0)
 			m_oledInvert = (unsigned char)::atoi(value);
+	} else if (section == SECTION_TGREWRITE) {
+		if (::strcmp(key, "TGRewriteSlot1") == 0)
+			m_TGRewriteSlot1 = ::atoi(value) == 1;
+		else if (::strcmp(key, "TGRewriteSlot2") == 0)
+			m_TGRewriteSlot2 = ::atoi(value) == 1;
 	}
 
   }
