@@ -152,6 +152,9 @@ unsigned int CDMRDataHeader::getDstId() const
 
 unsigned int CDMRDataHeader::getBlocks() const
 {
+	if (m_blocks == 0U)
+		return 1U;
+
 	return m_blocks;
 }
 
