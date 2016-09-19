@@ -43,7 +43,8 @@ enum SECTION {
   SECTION_TFTSERIAL,
   SECTION_HD44780,
   SECTION_NEXTION,
-  SECTION_OLED
+  SECTION_OLED,
+  SECTION_TGREWRITE
 };
 
 CConf::CConf(const std::string& file) :
@@ -95,6 +96,8 @@ m_dmrColorCode(2U),
 m_dmrSelfOnly(false),
 m_TGRewriteSlot1(false),
 m_TGRewriteSlot2(false),
+m_BMAutoRewrite(false),
+m_DirectDial(false),
 m_dmrPrefixes(),
 m_dmrBlackList(),
 m_dmrDstIdBlacklistSlot1RF(),
@@ -204,7 +207,7 @@ bool CConf::read()
 	  else if (::strncmp(buffer, "[OLED]", 6U) == 0)
 		  section = SECTION_OLED;
 	  else if (::strncmp(buffer, "[DMR TG Rewirte]", 16U) == 0)
-		  section = SECTION_TGREWRITE
+		  section = SECTION_TGREWRITE;
 	  else
         section = SECTION_NONE;
 
@@ -770,6 +773,16 @@ bool CConf::getDMRTGRewriteSlot1() const
 bool CConf::getDMRTGRewriteSlot2() const
 {
 	return m_TGRewriteSlot2;
+}
+
+bool CConf::getDMRBMAutoRewrite() const
+{
+	return m_BMAutoRewrite;
+}
+
+bool CConf::getDMRDirectDial() const
+{
+	return m_DirectDial;
 }
 
 std::vector<unsigned int> CConf::getDMRPrefixes() const

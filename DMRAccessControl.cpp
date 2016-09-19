@@ -224,22 +224,22 @@ unsigned int DMRAccessControl::DstIdRewrite (unsigned int did, unsigned int sid,
 	    LogMessage("DMR Slot %u, Rewrite inbound private call to %u to Group Call on TG 9 (BM reflector voice prompt)",slot,did);
 	    return 9;	    
 	// rewrite direct dial inbound
-	} else if (did == 235135 && dmrLC->getFLCO() == FLCO_USER_USER) {
-	    dmrLC->setFLCO(FLCO_GROUP);
-	    LogMessage("DMR Slot %u, Rewrite inbound private call to repeater ID to Group Call on TG9 (direct dial)",slot,did);
-	    return(9);
-	} else {
-	    return 0;
-	}
+//	} else if (did == 235135 && dmrLC->getFLCO() == FLCO_USER_USER) {
+//	    dmrLC->setFLCO(FLCO_GROUP);
+//	    LogMessage("DMR Slot %u, Rewrite inbound private call to repeater ID to Group Call on TG9 (direct dial)",slot,did);
+//	    return(9);
+//	} else {
+//	    return 0;
+//	}
   } else if (did == 9 && m_dstRewriteID != 9 && m_dstRewriteID != 0 && (m_time + m_callHang) > currenttime && dmrLC->getFLCO() == FLCO_GROUP ) {
 	      LogMessage("DMR Slot %u, Rewrite DST ID (TG) of outbound network traffic from %u to %u (return traffic during CallHang)",slot,did,m_dstRewriteID);
 	      return(m_dstRewriteID);
   }  else if ((did < 4000 || did > 5000) && did > 0 && did !=9) {
       m_dstRewriteID = did;
-  }  else if (m_dstRewriteID == 235135 && m_lastdmrLC->getFLCO() == FLCO_USER_USER) {
-      LogMessage("DMR Slot %u, Rewrite DST ID of outbound network group call on TG %u to private call %u (direct dial response)",slot,did,m_SrcID);
-      return(m_SrcID);
-  }
+  }  //else if (m_dstRewriteID == 235135 && m_lastdmrLC->getFLCO() == FLCO_USER_USER) {
+//      LogMessage("DMR Slot %u, Rewrite DST ID of outbound network group call on TG %u to private call %u (direct dial response)",slot,did,m_SrcID);
+//      return(m_SrcID);
+  } 
   return 0;
 }
 
