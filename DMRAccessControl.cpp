@@ -19,7 +19,6 @@
 #include <algorithm>
 #include <vector>
 #include <ctime>
-#include <string.h>
 
 
 std::vector<unsigned int> DMRAccessControl::m_dstBlackListSlot1RF;
@@ -42,8 +41,6 @@ unsigned int DMRAccessControl::m_id = 0U;
 
 unsigned int DMRAccessControl::m_dstRewriteID = 0U;
 unsigned int DMRAccessControl::m_SrcID = 0U;
-
-CDMRLC* DMRAccessControl::m_lastdmrLC;
 
 std::time_t DMRAccessControl::m_time;
 
@@ -214,14 +211,13 @@ unsigned int DMRAccessControl::DstIdRewrite (unsigned int did, unsigned int sid,
   if (network) {
 	m_dstRewriteID = did;
 	m_SrcID = sid;
-	//memcpy(&dmrLC, &m_lastdmrLC, sizeof(dmrLC));
 	if ( (did < 4000 || did > 5000) && did > 0 && did != 9 && dmrLC->getFLCO() == FLCO_GROUP ) {
 	  LogMessage("DMR Slot %u, Rewrite DST ID (TG) of of inbound network traffic from %u to 9",slot,did);
 	  return 9;
 	// rewrite incoming BM voice prompts to TG 9
 	} else if ((sid >= 4000 && sid <= 5000) && dmrLC->getFLCO() == FLCO_USER_USER)  {
 	    dmrLC->setFLCO(FLCO_GROUP);
-	    LogMessage("DMR Slot %u, Rewrite inbound private call to %u to Group Call on TG 9 (BM reflector voice prompt)",slot,did);
+	    LogMessage("DMR Slot %u, Rewrite inbound private call to %u to Group Call on TG9",slot,did);
 	    return 9;	    
 	} else {
 	    return 0;
