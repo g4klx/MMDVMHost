@@ -523,6 +523,11 @@ bool CConf::read()
 			m_TGRewriteSlot1 = ::atoi(value) == 1;
 		else if (::strcmp(key, "TGRewriteSlot2") == 0)
 			m_TGRewriteSlot2 = ::atoi(value) == 1;
+		else if (::strcmp(key, "BMAutoRewrite") == 0)
+			m_BMAutoRewrite = ::atoi(value) == 1;
+		else if (::strcmp(key, "DirectDial") == 0)
+			m_BMAutoRewrite = ::atoi(value) == 1;
+		
 	}
 
   }
