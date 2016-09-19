@@ -24,19 +24,21 @@ public:
 	CP25NID(unsigned int nac);
 	~CP25NID();
 
-	bool process(unsigned char* data);
+	bool decode(const unsigned char* data);
 
 	unsigned char getDUID() const;
-	unsigned int  getNAC() const;
+
+	void encode(unsigned char* data, unsigned char duid) const;
 
 private:
 	unsigned char  m_duid;
-	unsigned int   m_nac;
 	unsigned char* m_hdr;
 	unsigned char* m_ldu1;
 	unsigned char* m_ldu2;
 	unsigned char* m_termlc;
 	unsigned char* m_term;
+
+	unsigned int compare(const unsigned char* nid1, const unsigned char* nid2) const;
 };
 
 #endif

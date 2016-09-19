@@ -55,6 +55,7 @@ m_netBits(0U),
 m_netErrs(0U),
 m_netLost(0U),
 m_nid(nac),
+m_lastDUID(P25_DUID_TERM),
 m_audio(),
 m_rfData(),
 m_netData()
@@ -95,21 +96,35 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 	if (!sync && m_rfState == RS_RF_LISTENING)
 		return false;
 
-	// Regenerate the NID
-	m_nid.process(data + 2U);
-	unsigned char duid = m_nid.getDUID();
-	unsigned int nac = m_nid.getNAC();
+	// Decode the NID
+	bool valid = m_nid.decode(data + 2U);
 
-	LogDebug("P25, DUID=$%X NAC=$%03X", duid, nac);
-
-	if (m_rfState == RS_RF_LISTENING && nac != m_nac)
+	if (m_rfState == RS_RF_LISTENING && !valid)
 		return false;
 
-	if (data[0U] == TAG_HEADER) {
+	unsigned char duid = m_nid.getDUID();
+	if (!valid) {
+		switch (m_lastDUID) {
+		case P25_DUID_HEADER:
+		case P25_DUID_LDU2:
+			duid = P25_DUID_LDU1;
+			break;
+		case P25_DUID_LDU1:
+			duid = P25_DUID_LDU2;
+			break;
+		default:
+			break;
+		}
+	}
+
+	if (duid == P25_DUID_HEADER) {
 		m_rfData.reset();
 
 		// Regenerate Sync
 		CSync::addP25Sync(data + 2U);
+
+		// Regenerate NID
+		m_nid.encode(data + 2U, P25_DUID_HEADER);
 
 		// Regenerate Enc Data
 		m_rfData.processHeader(data + 2U);
@@ -121,6 +136,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		m_rfErrs   = 0U;
 		m_rfBits   = 1U;
 		m_rfTimeout.start();
+		m_lastDUID = duid;
 
 #if defined(DUMP_P25)
 		openFile();
@@ -150,6 +166,9 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		// Regenerate Sync
 		CSync::addP25Sync(data + 2U);
 
+		// Regenerate NID
+		m_nid.encode(data + 2U, P25_DUID_LDU1);
+
 		// Regenerate LDU1 Data
 		m_rfData.processLDU1(data + 2U);
 
@@ -163,6 +182,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		m_rfBits += 1233U;
 		m_rfErrs += errors;
 		m_rfFrames++;
+		m_lastDUID = duid;
 
 		// Add busy bits
 		addBusyBits(data + 2U, P25_LDU_FRAME_LENGTH_BITS, false, true);
@@ -195,6 +215,9 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		// Regenerate Sync
 		CSync::addP25Sync(data + 2U);
 
+		// Regenerate NID
+		m_nid.encode(data + 2U, P25_DUID_LDU2);
+
 		// Regenerate LDU2 Data
 		m_rfData.processLDU2(data + 2U);
 
@@ -208,6 +231,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		m_rfBits += 1233U;
 		m_rfErrs += errors;
 		m_rfFrames++;
+		m_lastDUID = duid;
 
 		// Add busy bits
 		addBusyBits(data + 2U, P25_LDU_FRAME_LENGTH_BITS, false, true);
@@ -230,6 +254,9 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		// Regenerate Sync
 		CSync::addP25Sync(data + 2U);
 
+		// Regenerate NID
+		m_nid.encode(data + 2U, P25_DUID_TERM_LC);
+
 		// Regenerate LDU1 Data
 		m_rfData.processTerminator(data + 2U);
 
@@ -239,6 +266,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		m_rfState = RS_RF_LISTENING;
 		m_rfTimeout.stop();
 		m_rfData.reset();
+		m_lastDUID = duid;
 
 		LogMessage("P25, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
 		m_display->clearP25();
@@ -261,12 +289,16 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		// Regenerate Sync
 		CSync::addP25Sync(data + 2U);
 
+		// Regenerate NID
+		m_nid.encode(data + 2U, P25_DUID_TERM);
+
 		// Add busy bits
 		addBusyBits(data + 2U, P25_TERM_FRAME_LENGTH_BITS, false, true);
 
 		m_rfState = RS_RF_LISTENING;
 		m_rfTimeout.stop();
 		m_rfData.reset();
+		m_lastDUID = duid;
 
 		LogMessage("P25, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
 		m_display->clearP25();

@@ -70,8 +70,6 @@
 */
 
 #include "BCH.h"
-#include "Utils.h"
-#include "Log.h"
 
 #include <cmath>
 #include <cstdio>
@@ -127,8 +125,6 @@ void CBCH::encode(unsigned char* nid)
 {
 	assert(nid != NULL);
 
-	CUtils::dump(1U, "data", nid, 2U);
-
 	int data[16];
 	for (int i = 0; i < 16; i++)
 		data[i] = READ_BIT(nid, i) ? 1 : 0;
@@ -140,6 +136,4 @@ void CBCH::encode(unsigned char* nid)
 		bool b = bb[i] == 1;
 		WRITE_BIT(nid, i + 16U, b);
 	}
-
-	CUtils::dump(1U, "out", nid, 8U);
 }

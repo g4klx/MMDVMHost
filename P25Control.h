@@ -65,6 +65,7 @@ private:
 	unsigned int  m_netErrs;
 	unsigned int  m_netLost;
 	CP25NID       m_nid;
+	unsigned char m_lastDUID;
 	CP25Audio     m_audio;
 	CP25Data      m_rfData;
 	CP25Data      m_netData;

@@ -24,9 +24,10 @@
 #include <cstdio>
 #include <cassert>
 
+const unsigned int MAX_NID_ERRS = 5U;
+
 CP25NID::CP25NID(unsigned int nac) :
 m_duid(0U),
-m_nac(0U),
 m_hdr(NULL),
 m_ldu1(NULL),
 m_ldu2(NULL),
@@ -80,22 +81,69 @@ CP25NID::~CP25NID()
 	delete[] m_term;
 }
 
-bool CP25NID::process(unsigned char* data)
+bool CP25NID::decode(const unsigned char* data)
 {
 	assert(data != NULL);
 
 	unsigned char nid[P25_NID_LENGTH_BYTES];
-
 	CP25Utils::decode(data, nid, 48U, 114U);
 
-	m_duid = nid[1U] & 0x0FU;
+	unsigned int errs = compare(nid, m_ldu1);
+	if (errs < MAX_NID_ERRS) {
+		m_duid = P25_DUID_LDU1;
+		return true;
+	}
 
-	m_nac  = (nid[0U] << 4) & 0xFF0U;
-	m_nac |= (nid[1U] >> 4) & 0x00FU;
+	errs = compare(nid, m_ldu2);
+	if (errs < MAX_NID_ERRS) {
+		m_duid = P25_DUID_LDU2;
+		return true;
+	}
 
-	CP25Utils::encode(nid, data, 48U, 114U);
+	errs = compare(nid, m_term);
+	if (errs < MAX_NID_ERRS) {
+		m_duid = P25_DUID_TERM;
+		return true;
+	}
 
-	return true;
+	errs = compare(nid, m_termlc);
+	if (errs < MAX_NID_ERRS) {
+		m_duid = P25_DUID_TERM_LC;
+		return true;
+	}
+
+	errs = compare(nid, m_hdr);
+	if (errs < MAX_NID_ERRS) {
+		m_duid = P25_DUID_HEADER;
+		return true;
+	}
+
+	return false;
+}
+
+void CP25NID::encode(unsigned char* data, unsigned char duid) const
+{
+	assert(data != NULL);
+
+	switch (duid) {
+	case P25_DUID_HEADER:
+		CP25Utils::encode(m_hdr, data, 48U, 114U);
+		break;
+	case P25_DUID_LDU1:
+		CP25Utils::encode(m_ldu1, data, 48U, 114U);
+		break;
+	case P25_DUID_LDU2:
+		CP25Utils::encode(m_ldu2, data, 48U, 114U);
+		break;
+	case P25_DUID_TERM:
+		CP25Utils::encode(m_term, data, 48U, 114U);
+		break;
+	case P25_DUID_TERM_LC:
+		CP25Utils::encode(m_termlc, data, 48U, 114U);
+		break;
+	default:
+		break;
+	}
 }
 
 unsigned char CP25NID::getDUID() const
@@ -103,7 +151,19 @@ unsigned char CP25NID::getDUID() const
 	return m_duid;
 }
 
-unsigned int CP25NID::getNAC() const
+unsigned int CP25NID::compare(const unsigned char* nid1, const unsigned char* nid2) const
 {
-	return m_nac;
+	assert(nid1 != NULL);
+	assert(nid2 != NULL);
+
+	unsigned int errs = 0U;
+	for (unsigned int i = 0U; i < P25_NID_LENGTH_BYTES; i++) {
+		unsigned char v = nid1[i] ^ nid2[i];
+		while (v != 0U) {
+			v &= v - 1U;
+			errs++;
+		}
+	}
+
+	return errs;
 }
