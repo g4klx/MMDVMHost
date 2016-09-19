@@ -19,21 +19,68 @@
 #include "P25NID.h"
 #include "P25Defines.h"
 #include "P25Utils.h"
+#include "BCH.h"
 
 #include <cstdio>
 #include <cassert>
 
-CP25NID::CP25NID() :
+CP25NID::CP25NID(unsigned int nac) :
 m_duid(0U),
-m_nac(0U)
+m_nac(0U),
+m_hdr(NULL),
+m_ldu1(NULL),
+m_ldu2(NULL),
+m_termlc(NULL),
+m_term(NULL)
 {
+	CBCH bch;
+
+	m_hdr = new unsigned char[P25_NID_LENGTH_BYTES];
+	m_hdr[0U]  = (nac >> 4) & 0xFFU;
+	m_hdr[1U]  = (nac << 4) & 0xF0U;
+	m_hdr[1U] |= P25_DUID_HEADER;
+	bch.encode(m_hdr);
+	m_hdr[7U] &= 0xFEU;		// Clear the parity bit
+
+	m_ldu1 = new unsigned char[P25_NID_LENGTH_BYTES];
+	m_ldu1[0U]  = (nac >> 4) & 0xFFU;
+	m_ldu1[1U]  = (nac << 4) & 0xF0U;
+	m_ldu1[1U] |= P25_DUID_LDU1;
+	bch.encode(m_ldu1);
+	m_ldu1[7U] |= 0x01U;	// Set the parity bit
+
+	m_ldu2 = new unsigned char[P25_NID_LENGTH_BYTES];
+	m_ldu2[0U]  = (nac >> 4) & 0xFFU;
+	m_ldu2[1U]  = (nac << 4) & 0xF0U;
+	m_ldu2[1U] |= P25_DUID_LDU2;
+	bch.encode(m_ldu2);
+	m_ldu2[7U] |= 0x01U;	// Set the parity bit
+
+	m_termlc = new unsigned char[P25_NID_LENGTH_BYTES];
+	m_termlc[0U]  = (nac >> 4) & 0xFFU;
+	m_termlc[1U]  = (nac << 4) & 0xF0U;
+	m_termlc[1U] |= P25_DUID_TERM_LC;
+	bch.encode(m_termlc);
+	m_termlc[7U] &= 0xFEU;		// Clear the parity bit
+
+	m_term = new unsigned char[P25_NID_LENGTH_BYTES];
+	m_term[0U]  = (nac >> 4) & 0xFFU;
+	m_term[1U]  = (nac << 4) & 0xF0U;
+	m_term[1U] |= P25_DUID_TERM;
+	bch.encode(m_term);
+	m_term[7U] &= 0xFEU;		// Clear the parity bit
 }
 
 CP25NID::~CP25NID()
 {
+	delete[] m_hdr;
+	delete[] m_ldu1;
+	delete[] m_ldu2;
+	delete[] m_termlc;
+	delete[] m_term;
 }
 
-void CP25NID::process(unsigned char* data)
+bool CP25NID::process(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -41,14 +88,14 @@ void CP25NID::process(unsigned char* data)
 
 	CP25Utils::decode(data, nid, 48U, 114U);
 
-	// XXX Process FEC here
-
 	m_duid = nid[1U] & 0x0FU;
 
 	m_nac  = (nid[0U] << 4) & 0xFF0U;
 	m_nac |= (nid[1U] >> 4) & 0x00FU;
 
 	CP25Utils::encode(nid, data, 48U, 114U);
+
+	return true;
 }
 
 unsigned char CP25NID::getDUID() const

@@ -200,6 +200,9 @@
     <ClInclude Include="RS.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BCH.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -368,6 +371,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BCH.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

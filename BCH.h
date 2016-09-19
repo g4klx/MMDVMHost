@@ -16,27 +16,18 @@
 *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#if !defined(P25NID_H)
-#define  P25NID_H
+#if !defined(BCH_H)
+#define	BCH_H
 
-class CP25NID {
+class CBCH {
 public:
-	CP25NID(unsigned int nac);
-	~CP25NID();
+	CBCH();
+	~CBCH();
 
-	bool process(unsigned char* data);
-
-	unsigned char getDUID() const;
-	unsigned int  getNAC() const;
+	void encode(unsigned char* data);
 
 private:
-	unsigned char  m_duid;
-	unsigned int   m_nac;
-	unsigned char* m_hdr;
-	unsigned char* m_ldu1;
-	unsigned char* m_ldu2;
-	unsigned char* m_termlc;
-	unsigned char* m_term;
+	void encode(const int* data, int* bb);
 };
 
 #endif

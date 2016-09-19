@@ -54,7 +54,7 @@ m_netFrames(0U),
 m_netBits(0U),
 m_netErrs(0U),
 m_netLost(0U),
-m_nid(),
+m_nid(nac),
 m_audio(),
 m_rfData(),
 m_netData()
@@ -82,6 +82,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		LogMessage("P25, transmission lost, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
 		if (m_netState == RS_NET_IDLE)
 			m_display->clearP25();
+		writeNetwork(data + 2U, P25_DUID_TERM);
 		m_rfState = RS_RF_LISTENING;
 		m_rfTimeout.stop();
 		m_rfData.reset();
