@@ -203,18 +203,18 @@ bool DMRAccessControl::validateAccess (unsigned int src_id, unsigned int dst_id,
 unsigned int DMRAccessControl::DstIdRewrite (unsigned int did, unsigned int sid, unsigned int slot, bool network, CDMRLC* dmrLC) 
 {
   
-  if (slot == 1 && m_TGRewriteSlot1 == false)
-    return 0;
+ // if (slot == 1 && m_TGRewriteSlot1 == false)
+ //   return 0;
   
-  if (slot == 2 && m_TGRewriteSlot2 == false)
-    return 0;
+ // if (slot == 2 && m_TGRewriteSlot2 == false)
+ //   return 0;
    
   std::time_t currenttime = std::time(nullptr);
   
   if (network) {
 	m_dstRewriteID = did;
 	m_SrcID = sid;
-	memcpy(&dmrLC, &m_lastdmrLC, sizeof(dmrLC));
+	//memcpy(&dmrLC, &m_lastdmrLC, sizeof(dmrLC));
 	if ( (did < 4000 || did > 5000) && did > 0 && did != 9 && dmrLC->getFLCO() == FLCO_GROUP ) {
 	  LogMessage("DMR Slot %u, Rewrite DST ID (TG) of of inbound network traffic from %u to 9",slot,did);
 	  return 9;
