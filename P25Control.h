@@ -62,8 +62,6 @@ private:
 	unsigned int   m_rfBits;
 	unsigned int   m_rfErrs;
 	unsigned int   m_netFrames;
-	unsigned int   m_netBits;
-	unsigned int   m_netErrs;
 	unsigned int   m_netLost;
 	CP25NID        m_nid;
 	unsigned char  m_lastDUID;

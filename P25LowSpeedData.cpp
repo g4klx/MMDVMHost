@@ -82,6 +82,21 @@ void CP25LowSpeedData::process(unsigned char* data) const
 			break;
 		}
 	}
+
+	CP25Utils::encode(lsd, data, 1546U, 1578U);
+}
+
+void CP25LowSpeedData::encode(unsigned char* data, unsigned char lsd1, unsigned char lsd2) const
+{
+	assert(data != NULL);
+
+	unsigned char lsd[4U];
+	lsd[0U] = lsd1;
+	lsd[1U] = encode(lsd1);
+	lsd[2U] = lsd2;
+	lsd[3U] = encode(lsd2);
+
+	CP25Utils::encode(lsd, data, 1546U, 1578U);
 }
 
 unsigned char CP25LowSpeedData::encode(unsigned char in) const

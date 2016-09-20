@@ -27,16 +27,21 @@ public:
 	~CP25Data();
 
 	void processHeader(unsigned char* data);
+	void createHeader(unsigned char* data);
 
 	void processLDU1(unsigned char* data);
+	void createLDU1(unsigned char* data);
 
 	void processLDU2(unsigned char* data);
+	void createLDU2(unsigned char* data);
 
-	void processTerminator(unsigned char* data);
-
+	void setSource(unsigned int source);
 	unsigned int getSource() const;
 
+	void setGroup(bool yes);
 	bool getGroup() const;
+
+	void setDest(unsigned int dest);
 	unsigned int getDest() const;
 
 	void reset();

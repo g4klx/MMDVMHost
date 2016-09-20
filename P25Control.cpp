@@ -18,9 +18,10 @@
 
 #include "P25Control.h"
 #include "P25Defines.h"
+#include "P25Utils.h"
+#include "Utils.h"
 #include "Sync.h"
 #include "Log.h"
-#include "Utils.h"
 
 #include <cassert>
 #include <ctime>
@@ -50,8 +51,6 @@ m_rfFrames(0U),
 m_rfBits(0U),
 m_rfErrs(0U),
 m_netFrames(0U),
-m_netBits(0U),
-m_netErrs(0U),
 m_netLost(0U),
 m_nid(nac),
 m_lastDUID(P25_DUID_TERM),
@@ -158,8 +157,6 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			data[1U] = 0x00U;
 			writeQueueRF(data, P25_HDR_FRAME_LENGTH_BYTES + 2U);
 		}
-
-		LogMessage("P25, received RF header");
 	} else if (duid == P25_DUID_LDU1) {
 		if (m_rfState == RS_RF_LISTENING) {
 			m_rfFrames = 0U;
@@ -212,7 +209,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			bool         grp = m_rfData.getGroup();
 			unsigned int dst = m_rfData.getDest();
 			std::string source = m_lookup->find(src);
-			LogMessage("P25, received RF from %s to %s%u", source.c_str(), grp ? "TG " : "", dst);
+			LogMessage("P25, received RF transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dst);
 			m_display->writeP25(source.c_str(), grp, dst, "R");
 			m_rfState = RS_RF_AUDIO;
 		}
@@ -265,8 +262,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		// Regenerate NID
 		m_nid.encode(data + 2U, P25_DUID_TERM_LC);
 
-		// Regenerate LDU1 Data
-		m_rfData.processTerminator(data + 2U);
+		// Leave the termination LC untouched
 
 		// Add busy bits
 		addBusyBits(data + 2U, P25_TERMLC_FRAME_LENGTH_BITS, false, true);
@@ -413,12 +409,6 @@ void CP25Control::writeNetwork()
 	case 0x73U:
 		::memcpy(m_netLDU2 + 200U, data, 16U);
 		if (m_netState != RS_NET_IDLE) {
-			m_netState = RS_NET_AUDIO;
-			m_netTimeout.start();
-			m_netBits = 1U;
-			m_netErrs = 0U;
-			m_netFrames = 0U;
-			m_netLost = 0U;
 			createHeader();
 			createLDU1();
 		}
@@ -444,7 +434,7 @@ void CP25Control::clock(unsigned int ms)
 		m_networkWatchdog.clock(ms);
 
 		if (m_networkWatchdog.hasExpired()) {
-			LogMessage("P25, network watchdog has expired, %.1f seconds, %u%% packet loss, BER: %.1f%%", float(m_netFrames) / 5.56F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
+			LogMessage("P25, network watchdog has expired, %.1f seconds, %u%% packet loss", float(m_netFrames) / 5.56F, (m_netLost * 100U) / m_netFrames);
 			m_display->clearP25();
 			m_networkWatchdog.stop();
 			m_netState = RS_NET_IDLE;
@@ -531,14 +521,103 @@ void CP25Control::addBusyBits(unsigned char* data, unsigned int length, bool b1,
 
 void CP25Control::createHeader()
 {
+	unsigned char buffer[P25_HDR_FRAME_LENGTH_BYTES + 2U];
+	::memset(buffer, 0x00U, P25_HDR_FRAME_LENGTH_BYTES + 2U);
+
+	buffer[0U] = TAG_HEADER;
+	buffer[1U] = 0x00U;
+
+	// Add the sync
+	CSync::addP25Sync(buffer + 2U);
+
+	// Add the NID
+	m_nid.encode(buffer + 2U, P25_DUID_HEADER);
+
+	// Add the dummy header
+	m_netData.createHeader(buffer + 2U);
+
+	// Add busy bits
+	addBusyBits(buffer + 2U, P25_HDR_FRAME_LENGTH_BITS, false, true);
+
+	writeQueueNet(buffer, P25_HDR_FRAME_LENGTH_BYTES + 2U);
+
+	bool grp = m_netLDU1[51U] == 0x00U;
+	unsigned int dst = (m_netLDU1[76U] << 16) + (m_netLDU1[77U] << 8) + m_netLDU1[78U];
+	unsigned int src = (m_netLDU1[101U] << 16) + (m_netLDU1[102U] << 8) + m_netLDU1[103U];
+	std::string source = m_lookup->find(src);
+
+	LogMessage("P25, received network transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dst);
+
+	m_display->writeP25(source.c_str(), grp, dst, "N");
+
+	m_netData.setSource(src);
+	m_netData.setGroup(grp);
+	m_netData.setDest(dst);
+
+	m_netState = RS_NET_AUDIO;
+	m_netTimeout.start();
+	m_netFrames = 0U;
+	m_netLost = 0U;
 }
 
 void CP25Control::createLDU1()
 {
+	unsigned char buffer[P25_LDU_FRAME_LENGTH_BYTES + 2U];
+	::memset(buffer, 0x00U, P25_LDU_FRAME_LENGTH_BYTES + 2U);
+
+	buffer[0U] = TAG_DATA;
+	buffer[1U] = 0x00U;
+
+	// Add the sync
+	CSync::addP25Sync(buffer + 2U);
+
+	// Add the NID
+	m_nid.encode(buffer + 2U, P25_DUID_LDU1);
+
+	// Add the LDU1 data
+	m_netData.createLDU1(buffer + 2U);
+
+	// Add the Audio
+
+	// Add the Low Speed Data
+	m_lsd.encode(buffer + 2U, m_netLDU1[201U], m_netLDU1[202U]);
+
+	// Add busy bits
+	addBusyBits(buffer + 2U, P25_LDU_FRAME_LENGTH_BITS, false, true);
+
+	writeQueueNet(buffer, P25_LDU_FRAME_LENGTH_BYTES + 2U);
+
+	m_netFrames++;
 }
 
 void CP25Control::createLDU2()
 {
+	unsigned char buffer[P25_LDU_FRAME_LENGTH_BYTES + 2U];
+	::memset(buffer, 0x00U, P25_LDU_FRAME_LENGTH_BYTES + 2U);
+
+	buffer[0U] = TAG_DATA;
+	buffer[1U] = 0x00U;
+
+	// Add the sync
+	CSync::addP25Sync(buffer + 2U);
+
+	// Add the NID
+	m_nid.encode(buffer + 2U, P25_DUID_LDU2);
+
+	// Add the dummy LDU2 data
+	m_netData.createLDU2(buffer + 2U);
+
+	// Add the Audio
+
+	// Add the Low Speed Data
+	m_lsd.encode(buffer + 2U, m_netLDU2[201U], m_netLDU2[202U]);
+
+	// Add busy bits
+	addBusyBits(buffer + 2U, P25_LDU_FRAME_LENGTH_BITS, false, true);
+
+	writeQueueNet(buffer, P25_LDU_FRAME_LENGTH_BYTES + 2U);
+
+	m_netFrames++;
 }
 
 void CP25Control::createTerminator(const unsigned char* data)
@@ -565,7 +644,7 @@ void CP25Control::createTerminator(const unsigned char* data)
 
 	writeQueueNet(buffer, P25_TERM_FRAME_LENGTH_BYTES + 2U);
 
-	LogMessage("P25, network end of transmission, %.1f seconds, %u%% packet loss, BER: %.1f%%", float(m_netFrames) / 5.56F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
+	LogMessage("P25, network end of transmission, %.1f seconds, %u%% packet loss", float(m_netFrames) / 5.56F, (m_netLost * 100U) / m_netFrames);
 
 	m_display->clearP25();
 	m_netTimeout.stop();

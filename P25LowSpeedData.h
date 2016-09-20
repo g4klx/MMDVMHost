@@ -26,9 +26,10 @@ public:
 
 	void process(unsigned char* data) const;
 
-	unsigned char encode(const unsigned char in) const;
+	void encode(unsigned char* data, unsigned char lsd1, unsigned char lsd2) const;
 
 private:
+	unsigned char encode(const unsigned char in) const;
 };
 
 #endif
