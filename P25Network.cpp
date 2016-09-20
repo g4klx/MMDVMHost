@@ -34,8 +34,7 @@ m_address(),
 m_port(gatewayPort),
 m_debug(debug),
 m_enabled(false),
-m_buffer(1000U, "P25 Network"),
-m_pollTimer(1000U, 60U)
+m_buffer(1000U, "P25 Network")
 {
 	m_address = CUDPSocket::lookup(gatewayAddress);
 
@@ -54,98 +53,169 @@ bool CP25Network::open()
 	if (m_address.s_addr == INADDR_NONE)
 		return false;
 
-	m_pollTimer.start();
-
 	return m_socket.open();
 }
 
-bool CP25Network::writeStart()
+bool CP25Network::writeHeader(unsigned int tgid)
 {
-	return true;
-}
+	unsigned char buffer[30U];
 
-bool CP25Network::writeHeader(const unsigned char* header)
-{
-	assert(header != NULL);
-#ifdef notdef
+	// The '00' record
+	::memset(buffer, 0x00U, 10U);
+	buffer[0U] = 0x00U;
+	buffer[1U] = 0x02U;
+	buffer[2U] = 0x02U;			// RT mode enabled
+	buffer[3U] = 0x0CU;			// Start
+	buffer[4U] = 0x0BU;			// Voice
+
 	if (m_debug)
-		CUtils::dump(1U, "P25 Network Header Sent", buffer, 49U);
+		CUtils::dump(1U, "P25 Network ICW Sent", buffer, 10U);
 
-	for (unsigned int i = 0U; i < 2U; i++) {
-		bool ret = m_socket.write(buffer, 49U, m_address, m_port);
-		if (!ret)
-			return false;
-	}
+#ifdef notdef
+	bool ret = m_socket.write(buffer, 10U, m_address, m_port);
+	if (!ret)
+		return false;
 #endif
+
+	// The '60' record
+	::memset(buffer, 0x00U, 30U);
+	buffer[0U] = 0x60U;
+	buffer[1U] = 0x02U;
+	buffer[2U] = 0x02U;			// RT mode enabled
+	buffer[3U] = 0x0CU;			// Start
+	buffer[4U] = 0x0BU;			// Voice
+	buffer[5U] = 0x1BU;			// Quantar
+	buffer[6U] = 0x00U;			// LDU1 RSSI
+	buffer[7U] = 0x00U;			// 1A Flag, no RSSI or MM
+	buffer[8U] = 0x00U;			// LDU1 RSSI
+	buffer[23U] = 0x08U;
+	buffer[28U] = 0x02U;
+	buffer[29U] = 0x36U;
+
+	if (m_debug)
+		CUtils::dump(1U, "P25 Network VHDR1 Sent", buffer, 30U);
+
+#ifdef notdef
+	bool ret = m_socket.write(buffer, 30U, m_address, m_port);
+	if (!ret)
+		return false;
+#endif
+
+	// The '61' record
+	::memset(buffer, 0x00U, 22U);
+	buffer[0U] = 0x61U;
+	buffer[1U] = (tgid << 8) & 0xFFU;
+	buffer[2U] = (tgid << 0) & 0xFFU;
+	buffer[21U] = 0x02U;
+
+	if (m_debug)
+		CUtils::dump(1U, "P25 Network VHDR2 Sent", buffer, 22U);
+
+#ifdef notdef
+	bool ret = m_socket.write(buffer, 22U, m_address, m_port);
+	if (!ret)
+		return false;
+#endif
+
 	return true;
 }
 
 bool CP25Network::writeLDU1(const unsigned char* ldu1)
 {
 	assert(ldu1 != NULL);
-#ifdef notdef
-	unsigned char buffer[30U];
+
+	unsigned char buffer[22U];
+
+	// The '62' record
+	::memset(buffer, 0x00U, 10U);
+	buffer[0U] = 0x62U;
+	buffer[1U] = 0x02U;
+	buffer[2U] = 0x02U;			// RT mode enabled
+	buffer[3U] = 0x0CU;			// Start
+	buffer[4U] = 0x0BU;			// Voice
+	buffer[5U] = 0x1BU;			// Quantar
+	buffer[6U] = 0x00U;			// LDU1 RSSI
+	buffer[7U] = 0x00U;			// 1A Flag, no RSSI or MM
+	buffer[8U] = 0x00U;			// LDU1 RSSI
+	buffer[9U] = 0x00U;			// Adj MM
+	buffer[21U] = 0x02U;
 
 	if (m_debug)
-		CUtils::dump(1U, "P25 Network Data Sent", buffer, length + 9U);
+		CUtils::dump(1U, "P25 Network LDU1 Sent", buffer, 22U);
 
-	return m_socket.write(buffer, length + 9U, m_address, m_port);
+#ifdef notdef
+	bool ret = m_socket.write(buffer, 22U, m_address, m_port);
+	if (!ret)
+		return false;
 #endif
+
 	return true;
 }
 
 bool CP25Network::writeLDU2(const unsigned char* ldu2)
 {
 	assert(ldu2 != NULL);
-#ifdef notdef
-	unsigned char buffer[30U];
+
+	unsigned char buffer[22U];
+
+	// The '6B' record
+	::memset(buffer, 0x00U, 10U);
+	buffer[0U] = 0x6BU;
+	buffer[1U] = 0x02U;
+	buffer[2U] = 0x02U;			// RT mode enabled
+	buffer[3U] = 0x0CU;			// Start
+	buffer[4U] = 0x0BU;			// Voice
+	buffer[5U] = 0x1BU;			// Quantar
+	buffer[6U] = 0x00U;			// LDU1 RSSI
+	buffer[7U] = 0x00U;			// 1A Flag, no RSSI or MM
+	buffer[8U] = 0x00U;			// LDU1 RSSI
+	buffer[9U] = 0x00U;			// Adj MM
+	buffer[21U] = 0x02U;
 
 	if (m_debug)
-		CUtils::dump(1U, "P25 Network Data Sent", buffer, length + 9U);
+		CUtils::dump(1U, "P25 Network LDU2 Sent", buffer, 22U);
 
-	return m_socket.write(buffer, length + 9U, m_address, m_port);
+#ifdef notdef
+	bool ret = m_socket.write(buffer, 22U, m_address, m_port);
+	if (!ret)
+		return false;
 #endif
+
 	return true;
 }
 
 bool CP25Network::writeTerminator(const unsigned char* term)
 {
 	assert(term != NULL);
-#ifdef notdef
+
 	unsigned char buffer[30U];
 
+	// The '00' record
+	::memset(buffer, 0x00U, 10U);
+	buffer[0U] = 0x00U;
+	buffer[1U] = 0x02U;
+	buffer[2U] = 0x02U;			// RT mode enabled
+	buffer[3U] = 0x25U;			// End
+	buffer[4U] = 0x0BU;			// Voice
+
 	if (m_debug)
-		CUtils::dump(1U, "P25 Network Data Sent", buffer, length + 9U);
+		CUtils::dump(1U, "P25 Network ICW Sent", buffer, 10U);
 
-	return m_socket.write(buffer, length + 9U, m_address, m_port);
-#endif
-	return true;
-}
-
-bool CP25Network::writeEnd()
-{
-	return true;
-}
-
-bool CP25Network::writePoll()
-{
 #ifdef notdef
-	// if (m_debug)
-	//	CUtils::dump(1U, "P25 Network Poll Sent", buffer, 6U + length);
+	bool ret = m_socket.write(buffer, 10U, m_address, m_port);
+	if (!ret)
+		return false;
 
-	return m_socket.write(buffer, 6U + length, m_address, m_port);
+	ret = m_socket.write(buffer, 10U, m_address, m_port);
+	if (!ret)
+		return false;
 #endif
+
 	return true;
 }
 
 void CP25Network::clock(unsigned int ms)
 {
-	m_pollTimer.clock(ms);
-	if (m_pollTimer.hasExpired()) {
-		writePoll();
-		m_pollTimer.start();
-	}
-
 	unsigned char buffer[BUFFER_LENGTH];
 
 	in_addr address;
@@ -163,9 +233,10 @@ void CP25Network::clock(unsigned int ms)
 	if (!m_enabled)
 		return;
 
-	// Invalid packet type?
-	if (::memcmp(buffer, "DSRP", 4U) != 0)
-		return;
+	unsigned char c = length;
+	m_buffer.addData(&c, 1U);
+
+	m_buffer.addData(buffer, length);
 }
 
 unsigned int CP25Network::read(unsigned char* data, unsigned int length)
@@ -178,22 +249,11 @@ unsigned int CP25Network::read(unsigned char* data, unsigned int length)
 	unsigned char c = 0U;
 	m_buffer.getData(&c, 1U);
 
-	assert(c <= 100U);
 	assert(c <= length);
 
-	unsigned char buffer[100U];
-	m_buffer.getData(buffer, c);
+	m_buffer.getData(data, c);
 
-	switch (buffer[0U]) {
-	case TAG_HEADER:
-	case TAG_DATA:
-	case TAG_EOT:
-		::memcpy(data, buffer, c);
-		return c;
-
-	default:
-		return 0U;
-	}
+	return c;
 }
 
 void CP25Network::reset()

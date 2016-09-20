@@ -21,7 +21,6 @@
 
 #include "RingBuffer.h"
 #include "UDPSocket.h"
-#include "Timer.h"
 
 #include <cstdint>
 #include <string>
@@ -35,12 +34,9 @@ public:
 
 	void enable(bool enabled);
 
-	bool writeStart();
-	bool writeHeader(const unsigned char* header);
 	bool writeLDU1(const unsigned char* ldu1);
 	bool writeLDU2(const unsigned char* ldu2);
 	bool writeTerminator(const unsigned char* term);
-	bool writeEnd();
 
 	unsigned int read(unsigned char* data, unsigned int length);
 
@@ -57,9 +53,8 @@ private:
 	bool           m_debug;
 	bool           m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
-	CTimer         m_pollTimer;
 
-	bool writePoll();
+	bool writeHeader(unsigned int tgid);
 };
 
 #endif
