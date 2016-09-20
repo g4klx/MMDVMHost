@@ -183,7 +183,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			bool         grp = m_rfData.getGroup();
 			unsigned int dst = m_rfData.getDest();
 			std::string source = m_lookup->find(src);
-			LogMessage("P25, received RF from %s to %s%u", source.c_str(), grp ? "TG" : "", dst);
+			LogMessage("P25, received RF from %s to %s%u", source.c_str(), grp ? "TG " : "", dst);
 			m_display->writeP25(source.c_str(), grp, dst, "R");
 			m_rfState = RS_RF_AUDIO;
 		}
