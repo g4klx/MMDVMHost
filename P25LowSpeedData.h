@@ -24,9 +24,9 @@ public:
 	CP25LowSpeedData();
 	~CP25LowSpeedData();
 
-	void process(unsigned char* data);
+	void process(unsigned char* data) const;
 
-	unsigned char encode(const unsigned char in);
+	unsigned char encode(const unsigned char in) const;
 
 private:
 };

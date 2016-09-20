@@ -59,14 +59,21 @@ m_audio(),
 m_rfData(),
 m_netData(),
 m_lsd(),
+m_netLDU1(NULL),
+m_netLDU2(NULL),
 m_fp(NULL)
 {
 	assert(display != NULL);
 	assert(lookup != NULL);
+
+	m_netLDU1 = new unsigned char[9U * 25U];
+	m_netLDU2 = new unsigned char[9U * 25U];
 }
 
 CP25Control::~CP25Control()
 {
+	delete[] m_netLDU1;
+	delete[] m_netLDU2;
 }
 
 bool CP25Control::writeModem(unsigned char* data, unsigned int len)
@@ -205,7 +212,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			bool         grp = m_rfData.getGroup();
 			unsigned int dst = m_rfData.getDest();
 			std::string source = m_lookup->find(src);
-			LogMessage("P25, received RF from %s to %s%u", source.c_str(), grp ? "TG" : "", dst);
+			LogMessage("P25, received RF from %s to %s%u", source.c_str(), grp ? "TG " : "", dst);
 			m_display->writeP25(source.c_str(), grp, dst, "R");
 			m_rfState = RS_RF_AUDIO;
 		}
@@ -339,8 +346,8 @@ unsigned int CP25Control::readModem(unsigned char* data)
 
 void CP25Control::writeNetwork()
 {
-	unsigned char data[200U];
-	unsigned int length = m_network->read(data, 200U);
+	unsigned char data[100U];
+	unsigned int length = m_network->read(data, 100U);
 	if (length == 0U)
 		return;
 
@@ -349,7 +356,80 @@ void CP25Control::writeNetwork()
 
 	m_networkWatchdog.start();
 
-
+	switch (data[0U]) {
+	case 0x62U:
+		::memcpy(m_netLDU1 + 0U, data, 22U);
+		return;
+	case 0x63U:
+		::memcpy(m_netLDU1 + 25U, data, 13U);
+		return;
+	case 0x64U:
+		::memcpy(m_netLDU1 + 50U, data, 17U);
+		return;
+	case 0x65U:
+		::memcpy(m_netLDU1 + 75U, data, 17U);
+		return;
+	case 0x66U:
+		::memcpy(m_netLDU1 + 100U, data, 17U);
+		return;
+	case 0x67U:
+		::memcpy(m_netLDU1 + 125U, data, 17U);
+		return;
+	case 0x68U:
+		::memcpy(m_netLDU1 + 150U, data, 17U);
+		return;
+	case 0x69U:
+		::memcpy(m_netLDU1 + 175U, data, 17U);
+		return;
+	case 0x6AU:
+		::memcpy(m_netLDU1 + 200U, data, 16U);
+		if (m_netState != RS_NET_IDLE)
+			createLDU1();
+		return;
+	case 0x6BU:
+		::memcpy(m_netLDU2 + 0U, data, 22U);
+		return;
+	case 0x6CU:
+		::memcpy(m_netLDU2 + 25U, data, 13U);
+		return;
+	case 0x6DU:
+		::memcpy(m_netLDU2 + 50U, data, 17U);
+		return;
+	case 0x6EU:
+		::memcpy(m_netLDU2 + 75U, data, 17U);
+		return;
+	case 0x6FU:
+		::memcpy(m_netLDU2 + 100U, data, 17U);
+		return;
+	case 0x70U:
+		::memcpy(m_netLDU2 + 125U, data, 17U);
+		return;
+	case 0x71U:
+		::memcpy(m_netLDU2 + 150U, data, 17U);
+		return;
+	case 0x72U:
+		::memcpy(m_netLDU2 + 175U, data, 17U);
+		return;
+	case 0x73U:
+		::memcpy(m_netLDU2 + 200U, data, 16U);
+		if (m_netState != RS_NET_IDLE) {
+			m_netState = RS_NET_AUDIO;
+			m_netTimeout.start();
+			m_netBits = 1U;
+			m_netErrs = 0U;
+			m_netFrames = 0U;
+			m_netLost = 0U;
+			createHeader();
+			createLDU1();
+		}
+		createLDU2();
+		return;
+	case 0x00U:
+		createTerminator(data);
+		return;
+	default:
+		return;
+	}
 }
 
 void CP25Control::clock(unsigned int ms)
@@ -447,6 +527,50 @@ void CP25Control::addBusyBits(unsigned char* data, unsigned int length, bool b1,
 		WRITE_BIT(data, ss0Pos, b1);
 		WRITE_BIT(data, ss1Pos, b2);
 	}
+}
+
+void CP25Control::createHeader()
+{
+}
+
+void CP25Control::createLDU1()
+{
+}
+
+void CP25Control::createLDU2()
+{
+}
+
+void CP25Control::createTerminator(const unsigned char* data)
+{
+	assert(data != NULL);
+
+	if (data[3U] != 0x25U)
+		return;
+
+	unsigned char buffer[P25_TERM_FRAME_LENGTH_BYTES + 2U];
+	::memset(buffer, 0x00U, P25_TERMLC_FRAME_LENGTH_BYTES + 2U);
+
+	buffer[0U] = TAG_EOT;
+	buffer[1U] = 0x00U;
+
+	// Add the sync
+	CSync::addP25Sync(buffer + 2U);
+
+	// Add the NID
+	m_nid.encode(buffer + 2U, P25_DUID_TERM);
+
+	// Add busy bits
+	addBusyBits(buffer + 2U, P25_TERM_FRAME_LENGTH_BITS, false, true);
+
+	writeQueueNet(buffer, P25_TERM_FRAME_LENGTH_BYTES + 2U);
+
+	LogMessage("P25, network end of transmission, %.1f seconds, %u%% packet loss, BER: %.1f%%", float(m_netFrames) / 5.56F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
+
+	m_display->clearP25();
+	m_netTimeout.stop();
+	m_networkWatchdog.stop();
+	m_netState = RS_NET_IDLE;
 }
 
 bool CP25Control::openFile()

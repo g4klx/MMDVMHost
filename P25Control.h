@@ -45,33 +45,35 @@ public:
 	void clock(unsigned int ms);
 
 private:
-	unsigned int  m_nac;
-	CP25Network*  m_network;
-	CDisplay*     m_display;
-	bool          m_duplex;
-	CDMRLookup*   m_lookup;
-	int           m_rssiMultiplier;
-	int           m_rssiOffset;
+	unsigned int   m_nac;
+	CP25Network*   m_network;
+	CDisplay*      m_display;
+	bool           m_duplex;
+	CDMRLookup*    m_lookup;
+	int            m_rssiMultiplier;
+	int            m_rssiOffset;
 	CRingBuffer<unsigned char> m_queue;
-	RPT_RF_STATE  m_rfState;
-	RPT_NET_STATE m_netState;
-	CTimer        m_rfTimeout;
-	CTimer        m_netTimeout;
-	CTimer        m_networkWatchdog;
-	unsigned int  m_rfFrames;
-	unsigned int  m_rfBits;
-	unsigned int  m_rfErrs;
-	unsigned int  m_netFrames;
-	unsigned int  m_netBits;
-	unsigned int  m_netErrs;
-	unsigned int  m_netLost;
-	CP25NID       m_nid;
-	unsigned char m_lastDUID;
-	CP25Audio     m_audio;
-	CP25Data      m_rfData;
-	CP25Data      m_netData;
+	RPT_RF_STATE   m_rfState;
+	RPT_NET_STATE  m_netState;
+	CTimer         m_rfTimeout;
+	CTimer         m_netTimeout;
+	CTimer         m_networkWatchdog;
+	unsigned int   m_rfFrames;
+	unsigned int   m_rfBits;
+	unsigned int   m_rfErrs;
+	unsigned int   m_netFrames;
+	unsigned int   m_netBits;
+	unsigned int   m_netErrs;
+	unsigned int   m_netLost;
+	CP25NID        m_nid;
+	unsigned char  m_lastDUID;
+	CP25Audio      m_audio;
+	CP25Data       m_rfData;
+	CP25Data       m_netData;
 	CP25LowSpeedData m_lsd;
-	FILE*         m_fp;
+	unsigned char* m_netLDU1;
+	unsigned char* m_netLDU2;
+	FILE*          m_fp;
 
 	void writeQueueRF(const unsigned char* data, unsigned int length);
 	void writeQueueNet(const unsigned char* data, unsigned int length);
@@ -79,6 +81,11 @@ private:
 	void writeNetwork();
 
 	void addBusyBits(unsigned char* data, unsigned int length, bool b1, bool b2);
+
+	void createHeader();
+	void createLDU1();
+	void createLDU2();
+	void createTerminator(const unsigned char* data);
 
 	bool openFile();
 	bool writeFile(const unsigned char* data, unsigned char length);
