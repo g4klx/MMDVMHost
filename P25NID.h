@@ -37,8 +37,6 @@ private:
 	unsigned char* m_ldu2;
 	unsigned char* m_termlc;
 	unsigned char* m_term;
-
-	unsigned int compare(const unsigned char* nid1, const unsigned char* nid2) const;
 };
 
 #endif

@@ -21,7 +21,12 @@
 
 class CP25LowSpeedData {
 public:
-	static void process(unsigned char* data);
+	CP25LowSpeedData();
+	~CP25LowSpeedData();
+
+	void process(unsigned char* data);
+
+	unsigned char encode(const unsigned char in);
 
 private:
 };

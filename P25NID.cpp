@@ -88,31 +88,31 @@ bool CP25NID::decode(const unsigned char* data)
 	unsigned char nid[P25_NID_LENGTH_BYTES];
 	CP25Utils::decode(data, nid, 48U, 114U);
 
-	unsigned int errs = compare(nid, m_ldu1);
+	unsigned int errs = CP25Utils::compare(nid, m_ldu1, P25_NID_LENGTH_BYTES);
 	if (errs < MAX_NID_ERRS) {
 		m_duid = P25_DUID_LDU1;
 		return true;
 	}
 
-	errs = compare(nid, m_ldu2);
+	errs = CP25Utils::compare(nid, m_ldu2, P25_NID_LENGTH_BYTES);
 	if (errs < MAX_NID_ERRS) {
 		m_duid = P25_DUID_LDU2;
 		return true;
 	}
 
-	errs = compare(nid, m_term);
+	errs = CP25Utils::compare(nid, m_term, P25_NID_LENGTH_BYTES);
 	if (errs < MAX_NID_ERRS) {
 		m_duid = P25_DUID_TERM;
 		return true;
 	}
 
-	errs = compare(nid, m_termlc);
+	errs = CP25Utils::compare(nid, m_termlc, P25_NID_LENGTH_BYTES);
 	if (errs < MAX_NID_ERRS) {
 		m_duid = P25_DUID_TERM_LC;
 		return true;
 	}
 
-	errs = compare(nid, m_hdr);
+	errs = CP25Utils::compare(nid, m_hdr, P25_NID_LENGTH_BYTES);
 	if (errs < MAX_NID_ERRS) {
 		m_duid = P25_DUID_HEADER;
 		return true;
@@ -149,21 +149,4 @@ void CP25NID::encode(unsigned char* data, unsigned char duid) const
 unsigned char CP25NID::getDUID() const
 {
 	return m_duid;
-}
-
-unsigned int CP25NID::compare(const unsigned char* nid1, const unsigned char* nid2) const
-{
-	assert(nid1 != NULL);
-	assert(nid2 != NULL);
-
-	unsigned int errs = 0U;
-	for (unsigned int i = 0U; i < P25_NID_LENGTH_BYTES; i++) {
-		unsigned char v = nid1[i] ^ nid2[i];
-		while (v != 0U) {
-			v &= v - 1U;
-			errs++;
-		}
-	}
-
-	return errs;
 }

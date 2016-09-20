@@ -19,6 +19,7 @@
 #if !defined(P25Control_H)
 #define	P25Control_H
 
+#include "P25LowSpeedData.h"
 #include "RingBuffer.h"
 #include "P25Network.h"
 #include "DMRLookup.h"
@@ -69,6 +70,7 @@ private:
 	CP25Audio     m_audio;
 	CP25Data      m_rfData;
 	CP25Data      m_netData;
+	CP25LowSpeedData m_lsd;
 	FILE*         m_fp;
 
 	void writeQueueRF(const unsigned char* data, unsigned int length);

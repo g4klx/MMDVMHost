@@ -17,7 +17,6 @@
 */
 
 #include "P25Control.h"
-#include "P25LowSpeedData.h"
 #include "P25Defines.h"
 #include "Sync.h"
 #include "Log.h"
@@ -58,7 +57,9 @@ m_nid(nac),
 m_lastDUID(P25_DUID_TERM),
 m_audio(),
 m_rfData(),
-m_netData()
+m_netData(),
+m_lsd(),
+m_fp(NULL)
 {
 	assert(display != NULL);
 	assert(lookup != NULL);
@@ -173,7 +174,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		m_rfData.processLDU1(data + 2U);
 
 		// Regenerate the Low Speed Data
-		CP25LowSpeedData::process(data + 2U);
+		m_lsd.process(data + 2U);
 
 		// Regenerate Audio
 		unsigned int errors = m_audio.process(data + 2U);
@@ -222,7 +223,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		m_rfData.processLDU2(data + 2U);
 
 		// Regenerate the Low Speed Data
-		CP25LowSpeedData::process(data + 2U);
+		m_lsd.process(data + 2U);
 
 		// Regenerate Audio
 		unsigned int errors = m_audio.process(data + 2U);

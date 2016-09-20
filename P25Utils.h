@@ -25,6 +25,8 @@ public:
 
 	static void decode(const unsigned char* in, unsigned char* out, unsigned int start, unsigned int stop);
 
+	static unsigned int compare(const unsigned char* data1, const unsigned char* data2, unsigned int length);
+
 private:
 };
 

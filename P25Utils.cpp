@@ -82,3 +82,20 @@ void CP25Utils::encode(const unsigned char* in, unsigned char* out, unsigned int
 		}
 	}
 }
+
+unsigned int CP25Utils::compare(const unsigned char* data1, const unsigned char* data2, unsigned int length)
+{
+	assert(data1 != NULL);
+	assert(data2 != NULL);
+
+	unsigned int errs = 0U;
+	for (unsigned int i = 0U; i < length; i++) {
+		unsigned char v = data1[i] ^ data2[i];
+		while (v != 0U) {
+			v &= v - 1U;
+			errs++;
+		}
+	}
+
+	return errs;
+}
