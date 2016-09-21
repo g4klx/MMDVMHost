@@ -438,6 +438,7 @@ void CP25Control::clock(unsigned int ms)
 			m_display->clearP25();
 			m_networkWatchdog.stop();
 			m_netState = RS_NET_IDLE;
+			m_netData.reset();
 			m_netTimeout.stop();
 		}
 	}
@@ -501,7 +502,7 @@ void CP25Control::writeNetwork(const unsigned char *data, unsigned char type)
 		break;
 	case P25_DUID_TERM:
 	case P25_DUID_TERM_LC:
-		m_network->writeTerminator(data);
+		m_network->writeTerminator();
 		break;
 	default:
 		break;
@@ -667,6 +668,7 @@ void CP25Control::createTerminator(const unsigned char* data)
 	m_display->clearP25();
 	m_netTimeout.stop();
 	m_networkWatchdog.stop();
+	m_netData.reset();
 	m_netState = RS_NET_IDLE;
 }
 

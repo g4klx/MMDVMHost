@@ -21,6 +21,7 @@
 
 #include "RingBuffer.h"
 #include "UDPSocket.h"
+#include "P25Audio.h"
 
 #include <cstdint>
 #include <string>
@@ -36,11 +37,9 @@ public:
 
 	bool writeLDU1(const unsigned char* ldu1);
 	bool writeLDU2(const unsigned char* ldu2);
-	bool writeTerminator(const unsigned char* term);
+	bool writeTerminator();
 
 	unsigned int read(unsigned char* data, unsigned int length);
-
-	void reset();
 
 	void close();
 
@@ -53,6 +52,7 @@ private:
 	bool           m_debug;
 	bool           m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
+	CP25Audio      m_audio;
 
 	bool writeHeader(unsigned int tgid);
 };
