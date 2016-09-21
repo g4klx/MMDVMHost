@@ -28,6 +28,10 @@ public:
 
 	unsigned int process(unsigned char* data);
 
+	void encode(unsigned char* data, const unsigned char* imbe, unsigned int n);
+
+	void decode(const unsigned char* data, unsigned char* imbe, unsigned int n);
+
 private:
 	CAMBEFEC m_fec;
 };

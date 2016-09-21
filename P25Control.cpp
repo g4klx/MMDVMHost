@@ -133,8 +133,8 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		// Regenerate NID
 		m_nid.encode(data + 2U, P25_DUID_HEADER);
 
-		// Regenerate Enc Data
-		m_rfData.processHeader(data + 2U);
+		// Add the dummy header
+		m_netData.createHeader(data + 2U);
 
 		// Add busy bits
 		addBusyBits(data + 2U, P25_HDR_FRAME_LENGTH_BITS, false, true);
@@ -223,8 +223,8 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		// Regenerate NID
 		m_nid.encode(data + 2U, P25_DUID_LDU2);
 
-		// Regenerate LDU2 Data
-		m_rfData.processLDU2(data + 2U);
+		// Add the dummy LDU2 data
+		m_netData.createLDU2(data + 2U);
 
 		// Regenerate the Low Speed Data
 		m_lsd.process(data + 2U);
@@ -578,6 +578,15 @@ void CP25Control::createLDU1()
 	m_netData.createLDU1(buffer + 2U);
 
 	// Add the Audio
+	m_audio.encode(buffer + 2U, m_netLDU1 + 10U, 0U);
+	m_audio.encode(buffer + 2U, m_netLDU1 + 26U, 1U);
+	m_audio.encode(buffer + 2U, m_netLDU1 + 55U, 2U);
+	m_audio.encode(buffer + 2U, m_netLDU1 + 80U, 3U);
+	m_audio.encode(buffer + 2U, m_netLDU1 + 105U, 4U);
+	m_audio.encode(buffer + 2U, m_netLDU1 + 130U, 5U);
+	m_audio.encode(buffer + 2U, m_netLDU1 + 155U, 6U);
+	m_audio.encode(buffer + 2U, m_netLDU1 + 180U, 7U);
+	m_audio.encode(buffer + 2U, m_netLDU1 + 204U, 8U);
 
 	// Add the Low Speed Data
 	m_lsd.encode(buffer + 2U, m_netLDU1[201U], m_netLDU1[202U]);
@@ -608,6 +617,15 @@ void CP25Control::createLDU2()
 	m_netData.createLDU2(buffer + 2U);
 
 	// Add the Audio
+	m_audio.encode(buffer + 2U, m_netLDU2 + 10U, 0U);
+	m_audio.encode(buffer + 2U, m_netLDU2 + 26U, 1U);
+	m_audio.encode(buffer + 2U, m_netLDU2 + 55U, 2U);
+	m_audio.encode(buffer + 2U, m_netLDU2 + 80U, 3U);
+	m_audio.encode(buffer + 2U, m_netLDU2 + 105U, 4U);
+	m_audio.encode(buffer + 2U, m_netLDU2 + 130U, 5U);
+	m_audio.encode(buffer + 2U, m_netLDU2 + 155U, 6U);
+	m_audio.encode(buffer + 2U, m_netLDU2 + 180U, 7U);
+	m_audio.encode(buffer + 2U, m_netLDU2 + 204U, 8U);
 
 	// Add the Low Speed Data
 	m_lsd.encode(buffer + 2U, m_netLDU2[201U], m_netLDU2[202U]);
