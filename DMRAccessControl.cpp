@@ -51,9 +51,10 @@ unsigned int DMRAccessControl::m_callHang;
 
 bool DMRAccessControl::m_TGRewriteSlot1;
 bool DMRAccessControl::m_TGRewriteSlot2;
+bool DMRAccessControl::m_BMAutoRewrite;
+bool DMRAccessControl::m_BMRewriteReflectorVoicePrompts;
 
-
-void DMRAccessControl::init(const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF, const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, const std::vector<unsigned int>& SrcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes,unsigned int id,unsigned int callHang,bool TGRewriteSlot1, bool TGRewriteSlot2)
+void DMRAccessControl::init(const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF, const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, const std::vector<unsigned int>& SrcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes,unsigned int id,unsigned int callHang,bool TGRewriteSlot1, bool TGRewriteSlot2, bool BMAutoRewrite, bool BMRewriteReflectorVoicePrompts)
 {
 	m_dstBlackListSlot1RF  = DstIdBlacklistSlot1RF;
 	m_dstWhiteListSlot1RF  = DstIdWhitelistSlot1RF;
@@ -66,6 +67,8 @@ void DMRAccessControl::init(const std::vector<unsigned int>& DstIdBlacklistSlot1
 	m_callHang = callHang;
 	m_TGRewriteSlot1 = TGRewriteSlot1;
 	m_TGRewriteSlot2 = TGRewriteSlot2;
+	m_BMAutoRewrite	 = BMAutoRewrite;
+	m_BMRewriteReflectorVoicePrompts = BMRewriteReflectorVoicePrompts;
 }
  
 bool DMRAccessControl::DstIdBlacklist(unsigned int did, unsigned int slot, bool network)
@@ -203,43 +206,45 @@ bool DMRAccessControl::validateAccess (unsigned int src_id, unsigned int dst_id,
 unsigned int DMRAccessControl::DstIdRewrite (unsigned int did, unsigned int sid, unsigned int slot, bool network, CDMRLC* dmrLC) 
 {
   
- // if (slot == 1 && m_TGRewriteSlot1 == false)
- //   return 0;
+  if (slot == 1 && m_TGRewriteSlot1 == false)
+    return 0;
   
- // if (slot == 2 && m_TGRewriteSlot2 == false)
- //   return 0;
+  if (slot == 2 && m_TGRewriteSlot2 == false)
+    return 0;
    
   std::time_t currenttime = std::time(nullptr);
   
   if (network) {
 	m_dstRewriteID = did;
 	m_SrcID = sid;
-	//memcpy(&dmrLC, &m_lastdmrLC, sizeof(dmrLC));
-	if ( (did < 4000 || did > 5000) && did > 0 && did != 9 && dmrLC->getFLCO() == FLCO_GROUP ) {
+	memcpy(&m_lastdmrLC, &dmrLC, sizeof(dmrLC));
+	if (m_BMAutoRewrite && (did < 4000 || did > 5000) && did > 0 && did != 9 && dmrLC->getFLCO() == FLCO_GROUP ) {
 	  LogMessage("DMR Slot %u, Rewrite DST ID (TG) of of inbound network traffic from %u to 9",slot,did);
 	  return 9;
 	// rewrite incoming BM voice prompts to TG 9
-	} else if ((sid >= 4000 && sid <= 5000) && dmrLC->getFLCO() == FLCO_USER_USER)  {
+	} else if (m_BMRewriteReflectorVoicePrompts && (sid >= 4000 && sid <= 5000) && dmrLC->getFLCO() == FLCO_USER_USER)  {
 	    dmrLC->setFLCO(FLCO_GROUP);
 	    LogMessage("DMR Slot %u, Rewrite inbound private call to %u to Group Call on TG 9 (BM reflector voice prompt)",slot,did);
-	    return 9;	    
+	    return 9;	 
+// commented because BM does not seem to pass Private Call to repeater ID. Will need to ask master devs. 
 	// rewrite direct dial inbound
 //	} else if (did == 235135 && dmrLC->getFLCO() == FLCO_USER_USER) {
-//	    dmrLC->setFLCO(FLCO_GROUP);
-//	    LogMessage("DMR Slot %u, Rewrite inbound private call to repeater ID to Group Call on TG9 (direct dial)",slot,did);
-//	    return(9);
+// 	    dmrLC->setFLCO(FLCO_GROUP);
+// 	    LogMessage("DMR Slot %u, Rewrite inbound private call to repeater ID to Group Call on TG9 (direct dial)",slot,did);
+// 	    return(9);
 	} else {
 	    return 0;
 	}
-  } else if (did == 9 && m_dstRewriteID != 9 && m_dstRewriteID != 0 && (m_time + m_callHang) > currenttime && dmrLC->getFLCO() == FLCO_GROUP ) {
+  } else if (m_BMAutoRewrite && did == 9 && m_dstRewriteID != 9 && m_dstRewriteID != 0 && (m_time + m_callHang) > currenttime && dmrLC->getFLCO() == FLCO_GROUP ) {
 	      LogMessage("DMR Slot %u, Rewrite DST ID (TG) of outbound network traffic from %u to %u (return traffic during CallHang)",slot,did,m_dstRewriteID);
 	      return(m_dstRewriteID);
-  }  else if ((did < 4000 || did > 5000) && did > 0 && did !=9) {
+  }  else if (m_BMAutoRewrite && (did < 4000 || did > 5000) && did > 0 && did !=9) {
       m_dstRewriteID = did;
-  } //else if (m_dstRewriteID == 235135 && m_lastdmrLC->getFLCO() == FLCO_USER_USER) {
-      //LogMessage("DMR Slot %u, Rewrite DST ID of outbound network group call on TG %u to private call %u (direct dial response)",slot,did,m_SrcID);
-      //return(m_SrcID);
-//} 
+      // commented because BM does not seem to pass Private Call to repeater ID. Will need to ask master devs. 
+  /*} else if (m_dstRewriteID == 235135 && m_lastdmrLC->getFLCO() == FLCO_USER_USER) {
+      LogMessage("DMR Slot %u, Rewrite DST ID of outbound network group call on TG %u to private call %u (direct dial response)",slot,did,m_SrcID);
+      return(m_SrcID);*/
+  } 
   return 0;
 }
 

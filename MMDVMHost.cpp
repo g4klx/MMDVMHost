@@ -298,6 +298,8 @@ int CMMDVMHost::run()
 		bool selfOnly          = m_conf.getDMRSelfOnly();
 		bool TGRewriteSlot1    = m_conf.getDMRTGRewriteSlot1();
 		bool TGRewriteSlot2    = m_conf.getDMRTGRewriteSlot2();
+		bool BMAutoRewrite     = m_conf.getDMRBMAutoRewrite();
+		bool BMRewriteReflectorVoicePrompts = m_conf.getDMRBMRewriteReflectorVoicePrompts();
 		std::vector<unsigned int> prefixes = m_conf.getDMRPrefixes();
 		std::vector<unsigned int> blackList = m_conf.getDMRBlackList();
 		std::vector<unsigned int> dstIDBlackListSlot1RF = m_conf.getDMRDstIdBlacklistSlot1RF();
@@ -364,7 +366,7 @@ int CMMDVMHost::run()
 		  LogInfo("    TG Rewrite Slot 2 enabled");
 		
 
-		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList,dstIDBlackListSlot1RF,dstIDWhiteListSlot1RF, dstIDBlackListSlot2RF, dstIDWhiteListSlot2RF, dstIDBlackListSlot1NET,dstIDWhiteListSlot1NET, dstIDBlackListSlot2NET, dstIDWhiteListSlot2NET, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookupFile, rssiMultiplier, rssiOffset, jitter, TGRewriteSlot1, TGRewriteSlot2);
+		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList,dstIDBlackListSlot1RF,dstIDWhiteListSlot1RF, dstIDBlackListSlot2RF, dstIDWhiteListSlot2RF, dstIDBlackListSlot1NET,dstIDWhiteListSlot1NET, dstIDBlackListSlot2NET, dstIDWhiteListSlot2NET, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookupFile, rssiMultiplier, rssiOffset, jitter, TGRewriteSlot1, TGRewriteSlot2, BMAutoRewrite, BMRewriteReflectorVoicePrompts);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}

@@ -91,7 +91,7 @@ public:
   bool	       getDMRTGRewriteSlot1() const;
   bool	       getDMRTGRewriteSlot2() const;
   bool	       getDMRBMAutoRewrite() const;
-  bool         getDMRDirectDial() const;
+  bool         getDMRBMRewriteReflectorVoicePrompts() const;
   std::vector<unsigned int> getDMRPrefixes() const;
   std::vector<unsigned int> getDMRBlackList() const;
   std::vector<unsigned int> getDMRDstIdBlacklistSlot1RF() const;
@@ -220,7 +220,7 @@ private:
   bool	       m_TGRewriteSlot1;
   bool	       m_TGRewriteSlot2;
   bool	       m_BMAutoRewrite;
-  bool	       m_DirectDial;
+  bool	       m_BMRewriteReflectorVoicePrompts;
   
   std::vector<unsigned int> m_dmrPrefixes;
   std::vector<unsigned int> m_dmrBlackList;
