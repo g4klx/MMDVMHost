@@ -255,8 +255,10 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			writeNetworkRF(data, DT_TERMINATOR_WITH_LC);
 
 			if (m_duplex) {
+				
 				for (unsigned int i = 0U; i < m_hangCount; i++)
 					writeQueueRF(data);
+				
 			}
 
 			LogMessage("DMR Slot %u, received RF end of voice transmission, %.1f seconds, BER: %.1f%%", m_slotNo, float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
@@ -657,9 +659,11 @@ void CDMRSlot::writeEndRF(bool writeEnd)
 
 			data[0U] = TAG_EOT;
 			data[1U] = 0x00U;
-
+			
+			
 			for (unsigned int i = 0U; i < m_hangCount; i++)
 				writeQueueRF(data);
+			
 		}
 	}
 
@@ -732,8 +736,10 @@ void CDMRSlot::writeEndNet(bool writeEnd)
 		data[1U] = 0x00U;
 
 		if (m_duplex) {
+			
 			for (unsigned int i = 0U; i < m_hangCount; i++)
 				writeQueueNet(data);
+			
 		} else {
 			for (unsigned int i = 0U; i < 3U; i++)
 				writeQueueNet(data);
@@ -902,8 +908,10 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		data[1U] = 0x00U;
 
 		if (m_duplex) {
+			
 			for (unsigned int i = 0U; i < m_hangCount; i++)
 				writeQueueNet(data);
+			
 		} else {
 			for (unsigned int i = 0U; i < 3U; i++)
 				writeQueueNet(data);

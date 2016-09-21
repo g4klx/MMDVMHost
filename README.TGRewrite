@@ -30,11 +30,19 @@ groups, although it will function with permanent talk-groups too.
 It is useful to set the CallHang parameter to a generous amount. I am currently 
 using seven seconds. 
 
+In addition to the above, there is also the capability ro rewrite voice prompts 
+on link/unlink so all users can hear them on TG9. 
 
-Two boolean configuration options control the TG Rewrite feature:
+Configuration options are as follows:
 
 TGRewriteSlot1=[0|1]
 TGRewriteSlot2=[0|1]
+BMAutoRewrite=[0|1]
+BMRewriteReflectorVoicePrompts=[0|1]
+
+Note at present, Auto rewrite is the only type of rewrite that is implemented so 
+to do something useful, this option must be set.
+
 
 ACL's are applied before the rewrite, so still apply to rewritten traffic on 
 original (non-rewritten) talk-group. 

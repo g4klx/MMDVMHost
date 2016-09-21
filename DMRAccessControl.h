@@ -64,6 +64,7 @@ private:
 	static bool m_BMRewriteReflectorVoicePrompts;
 	
 	static CDMRLC* m_lastdmrLC;
+
 	
 	
 

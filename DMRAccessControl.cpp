@@ -67,7 +67,7 @@ void DMRAccessControl::init(const std::vector<unsigned int>& DstIdBlacklistSlot1
 	m_callHang = callHang;
 	m_TGRewriteSlot1 = TGRewriteSlot1;
 	m_TGRewriteSlot2 = TGRewriteSlot2;
-	m_BMAutoRewrite	 = BMAutoRewrite;
+	m_BMAutoRewrite	= BMAutoRewrite;
 	m_BMRewriteReflectorVoicePrompts = BMRewriteReflectorVoicePrompts;
 }
  
@@ -211,6 +211,7 @@ unsigned int DMRAccessControl::DstIdRewrite (unsigned int did, unsigned int sid,
   
   if (slot == 2 && m_TGRewriteSlot2 == false)
     return 0;
+    
    
   std::time_t currenttime = std::time(nullptr);
   
@@ -226,12 +227,6 @@ unsigned int DMRAccessControl::DstIdRewrite (unsigned int did, unsigned int sid,
 	    dmrLC->setFLCO(FLCO_GROUP);
 	    LogMessage("DMR Slot %u, Rewrite inbound private call to %u to Group Call on TG 9 (BM reflector voice prompt)",slot,did);
 	    return 9;	 
-// commented because BM does not seem to pass Private Call to repeater ID. Will need to ask master devs. 
-	// rewrite direct dial inbound
-//	} else if (did == 235135 && dmrLC->getFLCO() == FLCO_USER_USER) {
-// 	    dmrLC->setFLCO(FLCO_GROUP);
-// 	    LogMessage("DMR Slot %u, Rewrite inbound private call to repeater ID to Group Call on TG9 (direct dial)",slot,did);
-// 	    return(9);
 	} else {
 	    return 0;
 	}
@@ -240,10 +235,6 @@ unsigned int DMRAccessControl::DstIdRewrite (unsigned int did, unsigned int sid,
 	      return(m_dstRewriteID);
   }  else if (m_BMAutoRewrite && (did < 4000 || did > 5000) && did > 0 && did !=9) {
       m_dstRewriteID = did;
-      // commented because BM does not seem to pass Private Call to repeater ID. Will need to ask master devs. 
-  /*} else if (m_dstRewriteID == 235135 && m_lastdmrLC->getFLCO() == FLCO_USER_USER) {
-      LogMessage("DMR Slot %u, Rewrite DST ID of outbound network group call on TG %u to private call %u (direct dial response)",slot,did,m_SrcID);
-      return(m_SrcID);*/
   } 
   return 0;
 }

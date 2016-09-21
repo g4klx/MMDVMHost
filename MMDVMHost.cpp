@@ -364,6 +364,10 @@ int CMMDVMHost::run()
 		
 		if (TGRewriteSlot2)
 		  LogInfo("    TG Rewrite Slot 2 enabled");
+		if (BMAutoRewrite)
+		  LogInfo("    BrandMeister Auto Rewrite enabled");
+		if(BMRewriteReflectorVoicePrompts)
+		  LogInfo("    BrandMeister Rewrite Reflector Voice Prompts enabled");
 		
 
 		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList,dstIDBlackListSlot1RF,dstIDWhiteListSlot1RF, dstIDBlackListSlot2RF, dstIDWhiteListSlot2RF, dstIDBlackListSlot1NET,dstIDWhiteListSlot1NET, dstIDBlackListSlot2NET, dstIDWhiteListSlot2NET, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookupFile, rssiMultiplier, rssiOffset, jitter, TGRewriteSlot1, TGRewriteSlot2, BMAutoRewrite, BMRewriteReflectorVoicePrompts);

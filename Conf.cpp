@@ -206,8 +206,7 @@ bool CConf::read()
 		  section = SECTION_NEXTION;
 	  else if (::strncmp(buffer, "[OLED]", 6U) == 0)
 		  section = SECTION_OLED;
-	  else if (::strncmp(buffer, "[DMR TG Rewrite]", 16U) == 0)
-		  section = SECTION_TGREWRITE;
+
 	  else
         section = SECTION_NONE;
 
@@ -423,6 +422,14 @@ bool CConf::read()
 			m_dmrTXHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "CallHang") == 0)
 			m_dmrCallHang = (unsigned int)::atoi(value);
+		if (::strcmp(key, "TGRewriteSlot1") == 0)
+			m_TGRewriteSlot1 = ::atoi(value) == 1;
+		else if (::strcmp(key, "TGRewriteSlot2") == 0)
+			m_TGRewriteSlot2 = ::atoi(value) == 1;
+		else if (::strcmp(key, "BMAutoRewrite") == 0)
+			m_BMAutoRewrite = ::atoi(value) == 1;
+		else if (::strcmp(key, "BMRewriteReflectorVoicePrompts") == 0)
+			m_BMRewriteReflectorVoicePrompts = ::atoi(value) == 1;
 	} else if (section == SECTION_FUSION) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fusionEnabled = ::atoi(value) == 1;
@@ -521,15 +528,6 @@ bool CConf::read()
 			m_oledBrightness = (unsigned char)::atoi(value);
 		else if (::strcmp(key, "Brightness") == 0)
 			m_oledInvert = (unsigned char)::atoi(value);
-	} else if (section == SECTION_TGREWRITE) {
-		if (::strcmp(key, "TGRewriteSlot1") == 0)
-			m_TGRewriteSlot1 = ::atoi(value) == 1;
-		else if (::strcmp(key, "TGRewriteSlot2") == 0)
-			m_TGRewriteSlot2 = ::atoi(value) == 1;
-		else if (::strcmp(key, "BMAutoRewrite") == 0)
-			m_BMAutoRewrite = ::atoi(value) == 1;
-		else if (::strcmp(key, "BMRewriteReflectorVoicePrompts") == 0)
-			m_BMAutoRewrite = ::atoi(value) == 1;
 		
 	}
 
