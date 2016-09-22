@@ -129,7 +129,6 @@ private:
 	bool                       m_lockout;
 	bool                       m_error;
 	HW_TYPE                    m_hwType;
-	unsigned int               m_nn;
 
 	bool readVersion();
 	bool readStatus();
