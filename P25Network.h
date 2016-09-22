@@ -37,8 +37,12 @@ public:
 
 	void enable(bool enabled);
 
+	bool writeHeader(const CP25Data& control);
+
 	bool writeLDU1(const unsigned char* ldu1, const CP25Data& control, const CP25LowSpeedData& lsd);
+
 	bool writeLDU2(const unsigned char* ldu2, const CP25Data& control, const CP25LowSpeedData& lsd);
+
 	bool writeTerminator();
 
 	unsigned int read(unsigned char* data, unsigned int length);
@@ -55,8 +59,6 @@ private:
 	bool           m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
 	CP25Audio      m_audio;
-
-	bool writeHeader(unsigned int tgid);
 };
 
 #endif

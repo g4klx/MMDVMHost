@@ -27,8 +27,6 @@ public:
 	~CP25Data();
 
 	void processHeader(unsigned char* data);
-	void createHeader(unsigned char* data);
-	void decodeHeader(const unsigned char* data);
 	void encodeHeader(unsigned char* data);
 
 	void processLDU1(unsigned char* data);

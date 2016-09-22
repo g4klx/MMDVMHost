@@ -64,7 +64,7 @@ bool CP25Network::open()
 	return m_socket.open();
 }
 
-bool CP25Network::writeHeader(unsigned int tgid)
+bool CP25Network::writeHeader(const CP25Data& control)
 {
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network ICW Sent", STARTICW, 10U);
@@ -83,6 +83,11 @@ bool CP25Network::writeHeader(unsigned int tgid)
 	if (!ret)
 		return false;
 #endif
+
+	unsigned int tgid = 0x0000U;
+
+	if (control.getLCF() == P25_LCF_GROUP)
+		tgid = control.getDstId();
 
 	// The VHDR2 record
 	unsigned char buffer[22U];

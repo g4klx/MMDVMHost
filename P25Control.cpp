@@ -135,7 +135,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		m_nid.encode(data + 2U, P25_DUID_HEADER);
 
 		// Add the dummy header
-		m_netData.createHeader(data + 2U);
+		m_netData.processHeader(data + 2U);
 
 		// Add busy bits
 		addBusyBits(data + 2U, P25_HDR_FRAME_LENGTH_BITS, false, true);
@@ -151,8 +151,6 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		writeFile(data + 2U, len - 2U);
 #endif
 
-		writeNetwork(data + 2U, P25_DUID_HEADER);
-
 		if (m_duplex) {
 			data[0U] = TAG_HEADER;
 			data[1U] = 0x00U;
@@ -160,6 +158,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		}
 	} else if (duid == P25_DUID_LDU1) {
 		if (m_rfState == RS_RF_LISTENING) {
+			m_rfData.reset();
 			m_rfFrames = 0U;
 			m_rfErrs   = 0U;
 			m_rfBits   = 1U;
@@ -196,6 +195,9 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 #if defined(DUMP_P25)
 		writeFile(data + 2U, len - 2U);
 #endif
+
+		if (m_rfFrames == 1U)
+			writeNetwork(data + 2U, P25_DUID_HEADER);
 
 		writeNetwork(data + 2U, P25_DUID_LDU1);
 
@@ -253,43 +255,11 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			data[1U] = 0x00U;
 			writeQueueRF(data, P25_LDU_FRAME_LENGTH_BYTES + 2U);
 		}
-	} else if (duid == P25_DUID_TERM_LC) {
+	} else if (duid == P25_DUID_TERM || duid == P25_DUID_TERM_LC) {
 		if (m_rfState == RS_RF_LISTENING)
 			return false;
 
-		// Regenerate Sync
-		CSync::addP25Sync(data + 2U);
-
-		// Regenerate NID
-		m_nid.encode(data + 2U, P25_DUID_TERM_LC);
-
-		// Leave the termination LC untouched
-
-		// Add busy bits
-		addBusyBits(data + 2U, P25_TERMLC_FRAME_LENGTH_BITS, false, true);
-
-		m_rfState = RS_RF_LISTENING;
-		m_rfTimeout.stop();
-		m_rfData.reset();
-		m_lastDUID = duid;
-
-		LogMessage("P25, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
-		m_display->clearP25();
-
-#if defined(DUMP_P25)
-		closeFile();
-#endif
-
-		writeNetwork(data + 2U, P25_DUID_TERM_LC);
-
-		if (m_duplex) {
-			data[0U] = TAG_EOT;
-			data[1U] = 0x00U;
-			writeQueueRF(data, P25_TERMLC_FRAME_LENGTH_BYTES + 2U);
-		}
-	} else if (duid == P25_DUID_TERM) {
-		if (m_rfState == RS_RF_LISTENING)
-			return false;
+		::memset(data + 2U, 0x00U, P25_TERM_FRAME_LENGTH_BYTES);
 
 		// Regenerate Sync
 		CSync::addP25Sync(data + 2U);
@@ -495,6 +465,9 @@ void CP25Control::writeNetwork(const unsigned char *data, unsigned char type)
 
 	switch (type)
 	{
+	case P25_DUID_HEADER:
+		m_network->writeHeader(m_rfData);
+		break;
 	case P25_DUID_LDU1:
 		m_network->writeLDU1(data, m_rfData, m_rfLSD);
 		break;
@@ -523,26 +496,6 @@ void CP25Control::addBusyBits(unsigned char* data, unsigned int length, bool b1,
 
 void CP25Control::createHeader()
 {
-	unsigned char buffer[P25_HDR_FRAME_LENGTH_BYTES + 2U];
-	::memset(buffer, 0x00U, P25_HDR_FRAME_LENGTH_BYTES + 2U);
-
-	buffer[0U] = TAG_HEADER;
-	buffer[1U] = 0x00U;
-
-	// Add the sync
-	CSync::addP25Sync(buffer + 2U);
-
-	// Add the NID
-	m_nid.encode(buffer + 2U, P25_DUID_HEADER);
-
-	// Add the dummy header
-	m_netData.createHeader(buffer + 2U);
-
-	// Add busy bits
-	addBusyBits(buffer + 2U, P25_HDR_FRAME_LENGTH_BITS, false, true);
-
-	writeQueueNet(buffer, P25_HDR_FRAME_LENGTH_BYTES + 2U);
-
 	unsigned char  lcf = m_netLDU1[51U];
 	unsigned char mfId = m_netLDU1[52U];
 	unsigned int dstId = (m_netLDU1[76U] << 16) + (m_netLDU1[77U] << 8) + m_netLDU1[78U];
@@ -556,6 +509,7 @@ void CP25Control::createHeader()
 	::memcpy(mi + 3U, m_netLDU2 + 76U, 3U);
 	::memcpy(mi + 6U, m_netLDU2 + 101U, 3U);
 
+	m_netData.reset();
 	m_netData.setMI(mi);
 	m_netData.setAlgId(algId);
 	m_netData.setKId(kId);
@@ -574,6 +528,26 @@ void CP25Control::createHeader()
 	m_netTimeout.start();
 	m_netFrames = 0U;
 	m_netLost = 0U;
+
+	unsigned char buffer[P25_HDR_FRAME_LENGTH_BYTES + 2U];
+	::memset(buffer, 0x00U, P25_HDR_FRAME_LENGTH_BYTES + 2U);
+
+	buffer[0U] = TAG_HEADER;
+	buffer[1U] = 0x00U;
+
+	// Add the sync
+	CSync::addP25Sync(buffer + 2U);
+
+	// Add the NID
+	m_nid.encode(buffer + 2U, P25_DUID_HEADER);
+
+	// Add the dummy header
+	m_netData.encodeHeader(buffer + 2U);
+
+	// Add busy bits
+	addBusyBits(buffer + 2U, P25_HDR_FRAME_LENGTH_BITS, false, true);
+
+	writeQueueNet(buffer, P25_HDR_FRAME_LENGTH_BYTES + 2U);
 }
 
 void CP25Control::createLDU1()
@@ -666,7 +640,7 @@ void CP25Control::createTerminator(const unsigned char* data)
 		return;
 
 	unsigned char buffer[P25_TERM_FRAME_LENGTH_BYTES + 2U];
-	::memset(buffer, 0x00U, P25_TERMLC_FRAME_LENGTH_BYTES + 2U);
+	::memset(buffer, 0x00U, P25_TERM_FRAME_LENGTH_BYTES + 2U);
 
 	buffer[0U] = TAG_EOT;
 	buffer[1U] = 0x00U;

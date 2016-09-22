@@ -69,9 +69,11 @@ void CP25Data::processHeader(unsigned char* data)
 	// CUtils::dump(1U, "P25, raw header", raw, 81U);
 
 	// XXX Need to add FEC code
+
+	CP25Utils::encode(DUMMY_HEADER, data, 114U, 780U);
 }
 
-void CP25Data::createHeader(unsigned char* data)
+void CP25Data::encodeHeader(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -385,8 +387,15 @@ unsigned int CP25Data::getDstId() const
 
 void CP25Data::reset()
 {
+	::memset(m_mi, 0x00U, P25_MI_LENGTH_BYTES);
+
+	m_algId = 0x80U;
+	m_kId   = 0x0000U;
+	m_lcf   = P25_LCF_GROUP;
+	m_mfId  = 0x00U;
 	m_srcId = 0U;
 	m_dstId = 0U;
+	m_emergency = false;
 }
 
 void CP25Data::decodeLDUHamming(const unsigned char* data, unsigned char* raw)
