@@ -37,7 +37,7 @@ m_lookup(NULL)
 	assert(display != NULL);
 
 	m_lookup = new CDMRLookup(lookupFile);
-	//m_lookup->read();
+	m_lookup->read();
 
 	CDMRSlot::init(id, colorCode, callHang, selfOnly, prefixes, blackList, DstIdBlacklistSlot1RF, DstIdWhitelistSlot1RF, DstIdBlacklistSlot2RF, DstIdWhitelistSlot2RF, DstIdBlacklistSlot1NET, DstIdWhitelistSlot1NET, DstIdBlacklistSlot2NET, DstIdWhitelistSlot2NET, modem, network, display, duplex, m_lookup, rssiMultiplier, rssiOffset, jitter, TGRewriteSlot1, TGRewriteSlot2, BMAutoRewrite, BMRewriteReflectorVoicePrompts);
 }
