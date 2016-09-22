@@ -34,26 +34,29 @@ const unsigned char DUMMY_HEADER[] = {
 	0xE3U, 0x28U, 0xB0U, 0xB7U, 0x73U, 0x76U, 0x1EU, 0x26U, 0x0CU, 0x75U, 0x5BU, 0xF7U, 0x4DU, 0x5FU, 0x5AU, 0x37U,
 	0x18U};
 
-const unsigned char DUMMY_LDU2[] = {
-	0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x80U, 0x00U, 0x00U, 0xACU, 0xB8U, 0xA4U, 0x9BU,
-	0xDCU, 0x75U};
-
 const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
 
 #define WRITE_BIT(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
 CP25Data::CP25Data() :
-m_source(0U),
-m_group(true),
-m_dest(0U),
+m_mi(NULL),
+m_mfId(0U),
+m_algId(0U),
+m_kId(0U),
+m_lcf(0x00U),
+m_emergency(false),
+m_srcId(0U),
+m_dstId(0U),
 m_rs241213(),
 m_rs24169()
 {
+	m_mi = new unsigned char[P25_MI_LENGTH_BYTES];
 }
 
 CP25Data::~CP25Data()
 {
+	delete[] m_mi;
 }
 
 void CP25Data::processHeader(unsigned char* data)
@@ -100,25 +103,32 @@ void CP25Data::processLDU1(unsigned char* data)
 	CP25Utils::decode(data, raw, 1356U, 1398U);
 	decodeLDUHamming(raw, rs + 15U);
 
+	// CUtils::dump(1U, "P25, LDU1 Data before", rs, 18U);
+
 	m_rs241213.decode(rs);
 
-	// CUtils::dump(1U, "P25, LDU1 Data", rs, 9U);
+	m_lcf  = rs[0U];
+	m_mfId = rs[1U];
 
-	switch (rs[0U]) {
+	switch (m_lcf) {
 	case P25_LCF_GROUP:
-		m_dest   = (rs[4U] << 8) + rs[5U];
-		m_source = (rs[6U] << 16) + (rs[7U] << 8) + rs[8U];
-		m_group  = true;
+		m_emergency = (rs[2U] & 0x80U) == 0x80U;
+		m_dstId = (rs[4U] << 8) + rs[5U];
+		m_srcId = (rs[6U] << 16) + (rs[7U] << 8) + rs[8U];
 		break;
 	case P25_LCF_PRIVATE:
-		m_dest   = (rs[3U] << 16) + (rs[4U] << 8) + rs[5U];
-		m_source = (rs[6U] << 16) + (rs[7U] << 8) + rs[8U];
-		m_group  = false;
+		m_emergency = false;
+		m_dstId = (rs[3U] << 16) + (rs[4U] << 8) + rs[5U];
+		m_srcId = (rs[6U] << 16) + (rs[7U] << 8) + rs[8U];
 		break;
 	default:
-		LogMessage("P25, unknown LCF value in LDU1 - $%02X", rs[0U]);
+		LogMessage("P25, unknown LCF value in LDU1 - $%02X", m_lcf);
 		break;
 	}
+
+	// m_rs241213.encode(rs);
+
+	// CUtils::dump(1U, "P25, LDU1 Data after", rs, 18U);
 
 	encodeLDUHamming(raw, rs + 0U);
 	CP25Utils::encode(raw, data, 410U, 452U);
@@ -139,9 +149,60 @@ void CP25Data::processLDU1(unsigned char* data)
 	CP25Utils::encode(raw, data, 1356U, 1398U);
 }
 
-void CP25Data::createLDU1(unsigned char* data)
+void CP25Data::encodeLDU1(unsigned char* data)
 {
 	assert(data != NULL);
+
+	unsigned char rs[18U];
+	::memset(rs, 0x00U, 18U);
+
+	rs[0U] = m_lcf;
+	rs[1U] = m_mfId;
+
+	switch (m_lcf) {
+	case P25_LCF_GROUP:
+		rs[2U] = m_emergency ? 0x80U : 0x00U;
+		rs[4U] = (m_dstId >> 8) & 0xFFU;
+		rs[5U] = (m_dstId >> 0) & 0xFFU;
+		rs[6U] = (m_srcId >> 16) & 0xFFU;
+		rs[7U] = (m_srcId >> 8) & 0xFFU;
+		rs[8U] = (m_srcId >> 0) & 0xFFU;
+		break;
+	case P25_LCF_PRIVATE:
+		rs[3U] = (m_dstId >> 16) & 0xFFU;
+		rs[4U] = (m_dstId >> 8) & 0xFFU;
+		rs[5U] = (m_dstId >> 0) & 0xFFU;
+		rs[6U] = (m_srcId >> 16) & 0xFFU;
+		rs[7U] = (m_srcId >> 8) & 0xFFU;
+		rs[8U] = (m_srcId >> 0) & 0xFFU;
+		break;
+	default:
+		LogMessage("P25, unknown LCF value in LDU1 - $%02X", m_lcf);
+		break;
+	}
+
+	// m_rs241213.encode(rs);
+
+	// CUtils::dump(1U, "P25, LDU1 Data", rs, 18U);
+
+	unsigned char raw[5U];
+	encodeLDUHamming(raw, rs + 0U);
+	CP25Utils::encode(raw, data, 410U, 452U);
+
+	encodeLDUHamming(raw, rs + 3U);
+	CP25Utils::encode(raw, data, 600U, 640U);
+
+	encodeLDUHamming(raw, rs + 6U);
+	CP25Utils::encode(raw, data, 788U, 830U);
+
+	encodeLDUHamming(raw, rs + 9U);
+	CP25Utils::encode(raw, data, 978U, 1020U);
+
+	encodeLDUHamming(raw, rs + 12U);
+	CP25Utils::encode(raw, data, 1168U, 1208U);
+
+	encodeLDUHamming(raw, rs + 15U);
+	CP25Utils::encode(raw, data, 1356U, 1398U);
 }
 
 void CP25Data::processLDU2(unsigned char* data)
@@ -169,9 +230,17 @@ void CP25Data::processLDU2(unsigned char* data)
 	CP25Utils::decode(data, raw, 1356U, 1398U);
 	decodeLDUHamming(raw, rs + 15U);
 
+	// CUtils::dump(1U, "P25, LDU2 Data before", rs, 18U);
+
 	m_rs24169.decode(rs);
 
-	// CUtils::dump(1U, "P25, LDU2 Data", rs, 18U);
+	::memcpy(m_mi, rs + 0U, P25_MI_LENGTH_BYTES);
+	m_algId = rs[9U];
+	m_kId   = (rs[10U] << 8) + rs[11U];
+
+	// m_rs24169.encode(rs);
+
+	// CUtils::dump(1U, "P25, LDU2 Data after", rs, 18U);
 
 	encodeLDUHamming(raw, rs + 0U);
 	CP25Utils::encode(raw, data, 410U, 452U);
@@ -192,64 +261,132 @@ void CP25Data::processLDU2(unsigned char* data)
 	CP25Utils::encode(raw, data, 1356U, 1398U);
 }
 
-void CP25Data::createLDU2(unsigned char* data)
+void CP25Data::encodeLDU2(unsigned char* data)
 {
 	assert(data != NULL);
 
+	unsigned char rs[18U];
+	::memset(rs, 0x00U, 18U);
+
+	::memcpy(rs + 0U, m_mi, P25_MI_LENGTH_BYTES);
+
+	rs[9U] = m_algId;
+
+	rs[10U] = (m_kId >> 8) & 0xFFU;
+	rs[11U] = (m_kId >> 0) & 0xFFU;
+
+	// m_rs24169.encode(rs);
+
+	// CUtils::dump(1U, "P25, LDU2 Data", rs, 18U);
+
 	unsigned char raw[5U];
-	encodeLDUHamming(raw, DUMMY_LDU2 + 0U);
+	encodeLDUHamming(raw, rs + 0U);
 	CP25Utils::encode(raw, data, 410U, 452U);
 
-	encodeLDUHamming(raw, DUMMY_LDU2 + 3U);
+	encodeLDUHamming(raw, rs + 3U);
 	CP25Utils::encode(raw, data, 600U, 640U);
 
-	encodeLDUHamming(raw, DUMMY_LDU2 + 6U);
+	encodeLDUHamming(raw, rs + 6U);
 	CP25Utils::encode(raw, data, 788U, 830U);
 
-	encodeLDUHamming(raw, DUMMY_LDU2 + 9U);
+	encodeLDUHamming(raw, rs + 9U);
 	CP25Utils::encode(raw, data, 978U, 1020U);
 
-	encodeLDUHamming(raw, DUMMY_LDU2 + 12U);
+	encodeLDUHamming(raw, rs + 12U);
 	CP25Utils::encode(raw, data, 1168U, 1208U);
 
-	encodeLDUHamming(raw, DUMMY_LDU2 + 15U);
+	encodeLDUHamming(raw, rs + 15U);
 	CP25Utils::encode(raw, data, 1356U, 1398U);
 }
 
-void CP25Data::setSource(unsigned int source)
+void CP25Data::setMI(const unsigned char* mi)
 {
-	m_source = source;
+	assert(mi != NULL);
+
+	::memcpy(m_mi, mi, P25_MI_LENGTH_BYTES);
 }
 
-unsigned int CP25Data::getSource() const
+void CP25Data::getMI(unsigned char* mi) const
 {
-	return m_source;
+	assert(mi != NULL);
+
+	::memcpy(mi, m_mi, P25_MI_LENGTH_BYTES);
 }
 
-void CP25Data::setGroup(bool yes)
+void CP25Data::setMFId(unsigned char id)
 {
-	m_group = yes;
+	m_mfId = id;
 }
 
-bool CP25Data::getGroup() const
+unsigned char CP25Data::getMFId() const
 {
-	return m_group;
+	return m_mfId;
 }
 
-void CP25Data::setDest(unsigned int dest)
+void CP25Data::setAlgId(unsigned char id)
 {
-	m_dest = dest;
+	m_algId = id;
 }
 
-unsigned int CP25Data::getDest() const
+unsigned char CP25Data::getAlgId() const
 {
-	return m_dest;
+	return m_algId;
+}
+
+void CP25Data::setKId(unsigned int id)
+{
+	m_kId = id;
+}
+
+unsigned int CP25Data::getKId() const
+{
+	return m_kId;
+}
+
+void CP25Data::setSrcId(unsigned int id)
+{
+	m_srcId = id;
+}
+
+unsigned int CP25Data::getSrcId() const
+{
+	return m_srcId;
+}
+
+void CP25Data::setEmergency(bool on)
+{
+	m_emergency = on;
+}
+
+bool CP25Data::getEmergency() const
+{
+	return m_emergency;
+}
+
+void CP25Data::setLCF(unsigned char lcf)
+{
+	m_lcf = lcf;
+}
+
+unsigned char CP25Data::getLCF() const
+{
+	return m_lcf;
+}
+
+void CP25Data::setDstId(unsigned int id)
+{
+	m_dstId = id;
+}
+
+unsigned int CP25Data::getDstId() const
+{
+	return m_dstId;
 }
 
 void CP25Data::reset()
 {
-	m_source = 0U;
-	m_dest = 0U;
+	m_srcId = 0U;
+	m_dstId = 0U;
 }
 
 void CP25Data::decodeLDUHamming(const unsigned char* data, unsigned char* raw)

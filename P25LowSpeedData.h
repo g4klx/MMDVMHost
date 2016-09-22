@@ -24,11 +24,20 @@ public:
 	CP25LowSpeedData();
 	~CP25LowSpeedData();
 
-	void process(unsigned char* data) const;
+	void process(unsigned char* data);
 
-	void encode(unsigned char* data, unsigned char lsd1, unsigned char lsd2) const;
+	void encode(unsigned char* data) const;
+
+	unsigned char getLSD1() const;
+	void setLSD1(unsigned char lsd1);
+
+	unsigned char getLSD2() const;
+	void setLSD2(unsigned char lsd2);
 
 private:
+	unsigned char m_lsd1;
+	unsigned char m_lsd2;
+
 	unsigned char encode(const unsigned char in) const;
 };
 

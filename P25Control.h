@@ -68,7 +68,8 @@ private:
 	CP25Audio      m_audio;
 	CP25Data       m_rfData;
 	CP25Data       m_netData;
-	CP25LowSpeedData m_lsd;
+	CP25LowSpeedData m_rfLSD;
+	CP25LowSpeedData m_netLSD;
 	unsigned char* m_netLDU1;
 	unsigned char* m_netLDU2;
 	FILE*          m_fp;

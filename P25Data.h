@@ -28,30 +28,52 @@ public:
 
 	void processHeader(unsigned char* data);
 	void createHeader(unsigned char* data);
+	void decodeHeader(const unsigned char* data);
+	void encodeHeader(unsigned char* data);
 
 	void processLDU1(unsigned char* data);
-	void createLDU1(unsigned char* data);
+	void encodeLDU1(unsigned char* data);
 
 	void processLDU2(unsigned char* data);
-	void createLDU2(unsigned char* data);
+	void encodeLDU2(unsigned char* data);
 
-	void setSource(unsigned int source);
-	unsigned int getSource() const;
+	void setMI(const unsigned char* mi);
+	void getMI(unsigned char* mi) const;
 
-	void setGroup(bool yes);
-	bool getGroup() const;
+	void setMFId(unsigned char id);
+	unsigned char getMFId() const;
 
-	void setDest(unsigned int dest);
-	unsigned int getDest() const;
+	void setAlgId(unsigned char id);
+	unsigned char getAlgId() const;
+
+	void setKId(unsigned int id);
+	unsigned int getKId() const;
+
+	void setEmergency(bool on);
+	bool getEmergency() const;
+
+	void setSrcId(unsigned int Id);
+	unsigned int getSrcId() const;
+
+	void setLCF(unsigned char lcf);
+	unsigned char getLCF() const;
+
+	void setDstId(unsigned int id);
+	unsigned int getDstId() const;
 
 	void reset();
 
 private:
-	unsigned int m_source;
-	bool         m_group;
-	unsigned int m_dest;
-	CRS241213    m_rs241213;
-	CRS24169     m_rs24169;
+	unsigned char* m_mi;
+	unsigned char  m_mfId;
+	unsigned char  m_algId;
+	unsigned int   m_kId;
+	unsigned char  m_lcf;
+	bool           m_emergency;
+	unsigned int   m_srcId;
+	unsigned int   m_dstId;
+	CRS241213      m_rs241213;
+	CRS24169       m_rs24169;
 
 	void decodeLDUHamming(const unsigned char* raw, unsigned char* data);
 	void encodeLDUHamming(unsigned char* data, const unsigned char* raw);

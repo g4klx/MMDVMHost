@@ -57,7 +57,8 @@ m_lastDUID(P25_DUID_TERM),
 m_audio(),
 m_rfData(),
 m_netData(),
-m_lsd(),
+m_rfLSD(),
+m_netLSD(),
 m_netLDU1(NULL),
 m_netLDU2(NULL),
 m_fp(NULL)
@@ -178,7 +179,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		m_rfData.processLDU1(data + 2U);
 
 		// Regenerate the Low Speed Data
-		m_lsd.process(data + 2U);
+		m_rfLSD.process(data + 2U);
 
 		// Regenerate Audio
 		unsigned int errors = m_audio.process(data + 2U);
@@ -205,12 +206,12 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		}
 
 		if (m_rfState == RS_RF_LISTENING) {
-			unsigned int src = m_rfData.getSource();
-			bool         grp = m_rfData.getGroup();
-			unsigned int dst = m_rfData.getDest();
-			std::string source = m_lookup->find(src);
-			LogMessage("P25, received RF transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dst);
-			m_display->writeP25(source.c_str(), grp, dst, "R");
+			unsigned int srcId = m_rfData.getSrcId();
+			bool           grp = m_rfData.getLCF() == P25_LCF_GROUP;
+			unsigned int dstId = m_rfData.getDstId();
+			std::string source = m_lookup->find(srcId);
+			LogMessage("P25, received RF transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
+			m_display->writeP25(source.c_str(), grp, dstId, "R");
 			m_rfState = RS_RF_AUDIO;
 		}
 	} else if (duid == P25_DUID_LDU2) {
@@ -223,11 +224,11 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		// Regenerate NID
 		m_nid.encode(data + 2U, P25_DUID_LDU2);
 
-		// Add the dummy LDU2 data
-		m_netData.createLDU2(data + 2U);
+		// Regenerate the LDU2 data
+		m_rfData.processLDU2(data + 2U);
 
 		// Regenerate the Low Speed Data
-		m_lsd.process(data + 2U);
+		m_rfLSD.process(data + 2U);
 
 		// Regenerate Audio
 		unsigned int errors = m_audio.process(data + 2U);
@@ -495,10 +496,10 @@ void CP25Control::writeNetwork(const unsigned char *data, unsigned char type)
 	switch (type)
 	{
 	case P25_DUID_LDU1:
-		m_network->writeLDU1(data);
+		m_network->writeLDU1(data, m_rfData, m_rfLSD);
 		break;
 	case P25_DUID_LDU2:
-		m_network->writeLDU2(data);
+		m_network->writeLDU2(data, m_rfData, m_rfLSD);
 		break;
 	case P25_DUID_TERM:
 	case P25_DUID_TERM_LC:
@@ -542,18 +543,32 @@ void CP25Control::createHeader()
 
 	writeQueueNet(buffer, P25_HDR_FRAME_LENGTH_BYTES + 2U);
 
-	bool grp = m_netLDU1[51U] == 0x00U;
-	unsigned int dst = (m_netLDU1[76U] << 16) + (m_netLDU1[77U] << 8) + m_netLDU1[78U];
-	unsigned int src = (m_netLDU1[101U] << 16) + (m_netLDU1[102U] << 8) + m_netLDU1[103U];
-	std::string source = m_lookup->find(src);
+	unsigned char  lcf = m_netLDU1[51U];
+	unsigned char mfId = m_netLDU1[52U];
+	unsigned int dstId = (m_netLDU1[76U] << 16) + (m_netLDU1[77U] << 8) + m_netLDU1[78U];
+	unsigned int srcId = (m_netLDU1[101U] << 16) + (m_netLDU1[102U] << 8) + m_netLDU1[103U];
 
-	LogMessage("P25, received network transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dst);
+	unsigned char algId = m_netLDU2[126U];
+	unsigned int    kId = (m_netLDU2[127U] << 8) + m_netLDU2[128U];
 
-	m_display->writeP25(source.c_str(), grp, dst, "N");
+	unsigned char mi[P25_MI_LENGTH_BYTES];
+	::memcpy(mi + 0U, m_netLDU2 + 51U, 3U);
+	::memcpy(mi + 3U, m_netLDU2 + 76U, 3U);
+	::memcpy(mi + 6U, m_netLDU2 + 101U, 3U);
 
-	m_netData.setSource(src);
-	m_netData.setGroup(grp);
-	m_netData.setDest(dst);
+	m_netData.setMI(mi);
+	m_netData.setAlgId(algId);
+	m_netData.setKId(kId);
+	m_netData.setLCF(lcf);
+	m_netData.setMFId(mfId);
+	m_netData.setSrcId(srcId);
+	m_netData.setDstId(dstId);
+
+	std::string source = m_lookup->find(srcId);
+
+	LogMessage("P25, received network transmission from %s to %s%u", source.c_str(), lcf == P25_LCF_GROUP ? "TG " : "", dstId);
+
+	m_display->writeP25(source.c_str(), lcf == P25_LCF_GROUP, dstId, "N");
 
 	m_netState = RS_NET_AUDIO;
 	m_netTimeout.start();
@@ -576,7 +591,7 @@ void CP25Control::createLDU1()
 	m_nid.encode(buffer + 2U, P25_DUID_LDU1);
 
 	// Add the LDU1 data
-	m_netData.createLDU1(buffer + 2U);
+	m_netData.encodeLDU1(buffer + 2U);
 
 	// Add the Audio
 	m_audio.encode(buffer + 2U, m_netLDU1 + 10U, 0U);
@@ -590,7 +605,9 @@ void CP25Control::createLDU1()
 	m_audio.encode(buffer + 2U, m_netLDU1 + 204U, 8U);
 
 	// Add the Low Speed Data
-	m_lsd.encode(buffer + 2U, m_netLDU1[201U], m_netLDU1[202U]);
+	m_netLSD.setLSD1(m_netLDU1[201U]);
+	m_netLSD.setLSD2(m_netLDU1[202U]);
+	m_netLSD.encode(buffer + 2U);
 
 	// Add busy bits
 	addBusyBits(buffer + 2U, P25_LDU_FRAME_LENGTH_BITS, false, true);
@@ -614,8 +631,8 @@ void CP25Control::createLDU2()
 	// Add the NID
 	m_nid.encode(buffer + 2U, P25_DUID_LDU2);
 
-	// Add the dummy LDU2 data
-	m_netData.createLDU2(buffer + 2U);
+	// Add the LDU2 data
+	m_netData.encodeLDU2(buffer + 2U);
 
 	// Add the Audio
 	m_audio.encode(buffer + 2U, m_netLDU2 + 10U, 0U);
@@ -629,7 +646,9 @@ void CP25Control::createLDU2()
 	m_audio.encode(buffer + 2U, m_netLDU2 + 204U, 8U);
 
 	// Add the Low Speed Data
-	m_lsd.encode(buffer + 2U, m_netLDU2[201U], m_netLDU2[202U]);
+	m_netLSD.setLSD1(m_netLDU2[201U]);
+	m_netLSD.setLSD2(m_netLDU2[202U]);
+	m_netLSD.encode(buffer + 2U);
 
 	// Add busy bits
 	addBusyBits(buffer + 2U, P25_LDU_FRAME_LENGTH_BITS, false, true);

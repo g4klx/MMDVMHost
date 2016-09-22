@@ -39,6 +39,8 @@ const unsigned int P25_NID_LENGTH_BITS   = P25_NID_LENGTH_BYTES * 8U;
 const unsigned char P25_SYNC_BYTES[]      = {0x55U, 0x75U, 0xF5U, 0xFFU, 0x77U, 0xFFU};
 const unsigned char P25_SYNC_BYTES_LENGTH = 6U;
 
+const unsigned int  P25_MI_LENGTH_BYTES = 9U;
+
 const unsigned char P25_LCF_GROUP   = 0x00U;
 const unsigned char P25_LCF_PRIVATE = 0x03U;
 

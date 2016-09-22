@@ -19,9 +19,11 @@
 #ifndef	P25Network_H
 #define	P25Network_H
 
+#include "P25LowSpeedData.h"
 #include "RingBuffer.h"
 #include "UDPSocket.h"
 #include "P25Audio.h"
+#include "P25Data.h"
 
 #include <cstdint>
 #include <string>
@@ -35,8 +37,8 @@ public:
 
 	void enable(bool enabled);
 
-	bool writeLDU1(const unsigned char* ldu1);
-	bool writeLDU2(const unsigned char* ldu2);
+	bool writeLDU1(const unsigned char* ldu1, const CP25Data& control, const CP25LowSpeedData& lsd);
+	bool writeLDU2(const unsigned char* ldu2, const CP25Data& control, const CP25LowSpeedData& lsd);
 	bool writeTerminator();
 
 	unsigned int read(unsigned char* data, unsigned int length);

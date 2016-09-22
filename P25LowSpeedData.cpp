@@ -42,7 +42,9 @@ const unsigned char CCS_PARITY[] = {
 	
 const unsigned int MAX_CCS_ERRS = 4U;
 
-CP25LowSpeedData::CP25LowSpeedData()
+CP25LowSpeedData::CP25LowSpeedData() :
+m_lsd1(0x00U),
+m_lsd2(0x00U)
 {
 }
 
@@ -50,7 +52,7 @@ CP25LowSpeedData::~CP25LowSpeedData()
 {
 }
 
-void CP25LowSpeedData::process(unsigned char* data) const
+void CP25LowSpeedData::process(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -83,20 +85,43 @@ void CP25LowSpeedData::process(unsigned char* data) const
 		}
 	}
 
+	m_lsd1 = lsd[0U];
+	m_lsd2 = lsd[2U];
+
 	CP25Utils::encode(lsd, data, 1546U, 1578U);
 }
 
-void CP25LowSpeedData::encode(unsigned char* data, unsigned char lsd1, unsigned char lsd2) const
+void CP25LowSpeedData::encode(unsigned char* data) const
 {
 	assert(data != NULL);
 
 	unsigned char lsd[4U];
-	lsd[0U] = lsd1;
-	lsd[1U] = encode(lsd1);
-	lsd[2U] = lsd2;
-	lsd[3U] = encode(lsd2);
+	lsd[0U] = m_lsd1;
+	lsd[1U] = encode(m_lsd1);
+	lsd[2U] = m_lsd2;
+	lsd[3U] = encode(m_lsd2);
 
 	CP25Utils::encode(lsd, data, 1546U, 1578U);
+}
+
+unsigned char CP25LowSpeedData::getLSD1() const
+{
+	return m_lsd1;
+}
+
+void CP25LowSpeedData::setLSD1(unsigned char lsd1)
+{
+	m_lsd1 = lsd1;
+}
+
+unsigned char CP25LowSpeedData::getLSD2() const
+{
+	return m_lsd2;
+}
+
+void CP25LowSpeedData::setLSD2(unsigned char lsd2)
+{
+	m_lsd2 = lsd2;
 }
 
 unsigned char CP25LowSpeedData::encode(unsigned char in) const
