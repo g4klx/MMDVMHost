@@ -154,14 +154,16 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			unsigned int sid = lc->getSrcId();
 			unsigned int did = lc->getDstId();
-			if (!CDMRAccessControl::validateAccess(sid, did, m_slotNo, false)) {
+			if (!DMRAccessControl::validateAccess(sid, did, m_slotNo, false)) {
 			    delete lc;
 			    return;
 			}
 			
-			unsigned int rwId = CDMRAccessControl::dstIdRewrite(did, sid, m_slotNo, false);
-			if (rwId != 0U)
-				lc->setDstId(rwId);
+			unsigned int rw_id = DMRAccessControl::DstIdRewrite(did,sid,m_slotNo,false,lc);
+			if (rw_id) {
+			
+			lc->setDstId(rw_id);
+			}
 			
 			m_rfLC = lc;
 
@@ -253,14 +255,16 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			writeNetworkRF(data, DT_TERMINATOR_WITH_LC);
 
 			if (m_duplex) {
+				
 				for (unsigned int i = 0U; i < m_hangCount; i++)
 					writeQueueRF(data);
+				
 			}
 
 			LogMessage("DMR Slot %u, received RF end of voice transmission, %.1f seconds, BER: %.1f%%", m_slotNo, float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
 
 			writeEndRF();
-			CDMRAccessControl::setOverEndTime();
+			DMRAccessControl::setOverEndTime();
 		} else if (dataType == DT_DATA_HEADER) {
 			if (m_rfState == RS_RF_DATA)
 				return;
@@ -273,8 +277,9 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			bool gi = dataHeader.getGI();
 			unsigned int srcId = dataHeader.getSrcId();
 			unsigned int dstId = dataHeader.getDstId();
-			if (!CDMRAccessControl::validateAccess(srcId, dstId, m_slotNo, false))
+			if (!DMRAccessControl::validateAccess(srcId, dstId, m_slotNo, false))
 			    return;
+
 
 			m_rfFrames = dataHeader.getBlocks();
 
@@ -328,7 +333,7 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			bool gi = csbk.getGI();
 			unsigned int srcId = csbk.getSrcId();
 			unsigned int dstId = csbk.getDstId();
-			if (!CDMRAccessControl::validateAccess(srcId, dstId, m_slotNo, false))
+			if (!DMRAccessControl::validateAccess(srcId, dstId, m_slotNo, false))
 			    return;
 			
 			// Regenerate the CSBK data
@@ -485,15 +490,14 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			if (lc != NULL) {
 				unsigned int sid = lc->getSrcId();
 				unsigned int did = lc->getDstId();
-				if (!CDMRAccessControl::validateAccess(sid, did, m_slotNo, false)) {
+				if (!DMRAccessControl::validateAccess(sid,did,m_slotNo,false)) {
 				    delete lc;
 				    return;
 				}
-
-				// Test dst rewrite
-				unsigned int rwId = CDMRAccessControl::dstIdRewrite(did, sid, m_slotNo, false);
-				if (rwId != 0U)
-					lc->setDstId(rwId);
+				unsigned int rw_id = DMRAccessControl::DstIdRewrite(did,sid,m_slotNo,false,lc);
+				if (rw_id) {
+				  lc->setDstId(rw_id);
+				}
 
 				m_rfLC = lc;
 
@@ -654,9 +658,11 @@ void CDMRSlot::writeEndRF(bool writeEnd)
 
 			data[0U] = TAG_EOT;
 			data[1U] = 0x00U;
-
+			
+			
 			for (unsigned int i = 0U; i < m_hangCount; i++)
 				writeQueueRF(data);
+			
 		}
 	}
 
@@ -729,8 +735,10 @@ void CDMRSlot::writeEndNet(bool writeEnd)
 		data[1U] = 0x00U;
 
 		if (m_duplex) {
+			
 			for (unsigned int i = 0U; i < m_hangCount; i++)
 				writeQueueNet(data);
+			
 		} else {
 			for (unsigned int i = 0U; i < 3U; i++)
 				writeQueueNet(data);
@@ -770,13 +778,15 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		unsigned int did = m_netLC->getDstId();
 		unsigned int sid = m_netLC->getSrcId();
-		if (!CDMRAccessControl::validateAccess(sid, did, m_slotNo, true))
+		if (!DMRAccessControl::validateAccess(sid, did, m_slotNo, true))
 		    return;
 		
 		// Test dst rewrite
-		unsigned int rwId = CDMRAccessControl::dstIdRewrite(did, sid, m_slotNo, true);
-		if (rwId != 0U)
-		    m_netLC->setDstId(rwId);
+		unsigned int rw_id = DMRAccessControl::DstIdRewrite(did, sid,m_slotNo, true,m_netLC);
+		if (rw_id) {
+		    
+		    m_netLC->setDstId(rw_id);
+		}
 
 		// Store the LC for the embedded LC
 		m_netEmbeddedLC.setData(*m_netLC);
@@ -838,13 +848,15 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		unsigned int did = m_netLC->getDstId();
 		unsigned int sid = m_netLC->getSrcId();
-		if (!CDMRAccessControl::validateAccess(sid, did, m_slotNo, true))
+		if (!DMRAccessControl::validateAccess(sid, did, m_slotNo, true))
 		    return;
 		
 		// Test dst rewrite
-		unsigned int rwId = CDMRAccessControl::dstIdRewrite(did, sid, m_slotNo, true);
-		if (rwId != 0U)
-			m_netLC->setDstId(rwId);
+		unsigned int rw_id = DMRAccessControl::DstIdRewrite(did,sid,m_slotNo,true, m_netLC);
+		if (rw_id) {
+		    
+		    m_netLC->setDstId(rw_id);
+		}
 
 		// Regenerate the Slot Type
 		CDMRSlotType slotType;
@@ -875,7 +887,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		unsigned int did = m_netLC->getDstId();
 		unsigned int id = m_netLC->getSrcId();
-		if (!CDMRAccessControl::validateAccess(id, did, m_slotNo, true))
+		if (!DMRAccessControl::validateAccess(id, did, m_slotNo, true))
 		    return;
 		
 		// Regenerate the LC data
@@ -895,8 +907,10 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		data[1U] = 0x00U;
 
 		if (m_duplex) {
+			
 			for (unsigned int i = 0U; i < m_hangCount; i++)
 				writeQueueNet(data);
+			
 		} else {
 			for (unsigned int i = 0U; i < 3U; i++)
 				writeQueueNet(data);
@@ -911,7 +925,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		LogMessage("DMR Slot %u, received network end of voice transmission, %.1f seconds, %u%% packet loss, BER: %.1f%%", m_slotNo, float(m_netFrames) / 16.667F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
 
 		writeEndNet();
-		CDMRAccessControl::setOverEndTime();
+		DMRAccessControl::setOverEndTime();
 	} else if (dataType == DT_DATA_HEADER) {
 		if (m_netState == RS_NET_DATA)
 			return;
@@ -928,7 +942,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		bool gi = dataHeader.getGI();
 		unsigned int srcId = dataHeader.getSrcId();
 		unsigned int dstId = dataHeader.getDstId();
-		if (!CDMRAccessControl::validateAccess(srcId, dstId, m_slotNo, true))
+		if (!DMRAccessControl::validateAccess(srcId, dstId, m_slotNo, true))
 		    return;
 		
 		m_netFrames = dataHeader.getBlocks();
@@ -973,7 +987,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 			unsigned int did = dmrData.getDstId();
 			unsigned int id = dmrData.getSrcId();
-			if (!CDMRAccessControl::validateAccess(id, did, m_slotNo, true))
+			if (!DMRAccessControl::validateAccess(id, did, m_slotNo, true))
 			    return;
 		  
 			m_lastFrameValid = false;
@@ -1072,7 +1086,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		unsigned int did = m_netLC->getDstId();
 		unsigned int id = m_netLC->getSrcId();
-		if (!CDMRAccessControl::validateAccess(id, did, m_slotNo, true))
+		if (!DMRAccessControl::validateAccess(id, did, m_slotNo, true))
 		    return;
 			
 		unsigned char fid = m_netLC->getFID();
@@ -1132,7 +1146,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		bool gi = csbk.getGI();
 		unsigned int srcId = csbk.getSrcId();
 		unsigned int dstId = csbk.getDstId();
-		if (!CDMRAccessControl::validateAccess(srcId, dstId, m_slotNo, true))
+		if (!DMRAccessControl::validateAccess(srcId,dstId,m_slotNo,true))
 		    return;
 		
 		// Regenerate the CSBK data
@@ -1354,7 +1368,7 @@ void CDMRSlot::writeQueueNet(const unsigned char *data)
 		m_queue.addData(data, len);
 }
 
-void CDMRSlot::init(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& srcIdBlacklist, const std::vector<unsigned int>& dstIdBlacklistSlot1RF, const std::vector<unsigned int>& dstIdWhitelistSlot1RF, const std::vector<unsigned int>& dstIdBlacklistSlot2RF, const std::vector<unsigned int>& dstIdWhitelistSlot2RF,  const std::vector<unsigned int>& dstIdBlacklistSlot1NET, const std::vector<unsigned int>& dstIdWhitelistSlot1NET, const std::vector<unsigned int>& dstIdBlacklistSlot2NET, const std::vector<unsigned int>& dstIdWhitelistSlot2NET, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, CDMRLookup* lookup, int rssiMultiplier, int rssiOffset, unsigned int jitter, bool tgRewriteSlot1, bool tgRewriteSlot2)
+void CDMRSlot::init(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& SrcIdBlacklist, const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF,  const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, CModem* modem, CDMRIPSC* network, CDisplay* display, bool duplex, CDMRLookup* lookup, int rssiMultiplier, int rssiOffset, unsigned int jitter, bool TGRewriteSlot1, bool TGRewriteSlot2, bool BMAutoRewrite, bool BMRewriteReflectorVoicePrompts)
 {
 	assert(id != 0U);
 	assert(modem != NULL);
@@ -1389,7 +1403,7 @@ void CDMRSlot::init(unsigned int id, unsigned int colorCode, unsigned int callHa
 	slotType.getData(m_idle + 2U);
 	
 	//Load black and white lists to DMRAccessControl
-	CDMRAccessControl::init(dstIdBlacklistSlot1RF, dstIdWhitelistSlot1RF, dstIdBlacklistSlot2RF, dstIdWhitelistSlot2RF, dstIdBlacklistSlot1NET, dstIdWhitelistSlot1NET, dstIdBlacklistSlot2NET, dstIdWhitelistSlot2NET, srcIdBlacklist, m_selfOnly, m_prefixes, m_id, callHang, tgRewriteSlot1, tgRewriteSlot2);
+	DMRAccessControl::init(DstIdBlacklistSlot1RF, DstIdWhitelistSlot1RF, DstIdBlacklistSlot2RF, DstIdWhitelistSlot2RF, DstIdBlacklistSlot1NET, DstIdWhitelistSlot1NET, DstIdBlacklistSlot2NET, DstIdWhitelistSlot2NET, SrcIdBlacklist, m_selfOnly, m_prefixes, m_id,callHang, TGRewriteSlot1, TGRewriteSlot2, BMAutoRewrite, BMRewriteReflectorVoicePrompts);
 }
 
 

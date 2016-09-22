@@ -90,6 +90,8 @@ public:
   bool         getDMRSelfOnly() const;
   bool	       getDMRTGRewriteSlot1() const;
   bool	       getDMRTGRewriteSlot2() const;
+  bool	       getDMRBMAutoRewrite() const;
+  bool         getDMRBMRewriteReflectorVoicePrompts() const;
   std::vector<unsigned int> getDMRPrefixes() const;
   std::vector<unsigned int> getDMRBlackList() const;
   std::vector<unsigned int> getDMRDstIdBlacklistSlot1RF() const;
@@ -217,6 +219,9 @@ private:
   bool         m_dmrSelfOnly;
   bool	       m_dmrTGRewriteSlot1;
   bool	       m_dmrTGRewriteSlot2;
+  bool	       m_dmrBMAutoRewrite;
+  bool	       m_dmrBMRewriteReflectorVoicePrompts;
+  
   std::vector<unsigned int> m_dmrPrefixes;
   std::vector<unsigned int> m_dmrBlackList;
   std::vector<unsigned int> m_dmrDstIdBlacklistSlot1RF;
