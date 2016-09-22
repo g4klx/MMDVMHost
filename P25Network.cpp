@@ -27,14 +27,14 @@
 #include <cstring>
 
 const unsigned char STARTICW[] = {
-	0x00U, 0x02U, 0x04U, 0x0CU, 0x0BU, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U};
+	0x00U, 0x02U, 0x02U, 0x0CU, 0x0BU, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U};
 
 const unsigned char VHDR1[] = {
-	0x60U, 0x02U, 0x04U, 0x0CU, 0x0BU, 0x1BU, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U,
+	0x60U, 0x02U, 0x02U, 0x0CU, 0x0BU, 0x1BU, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U,
 	0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x08U, 0x00U, 0x00U, 0x00U, 0x00U, 0x02U, 0x36U};
 
 const unsigned char ENDICW[] = {
-	0x00U, 0x02U, 0x04U, 0x25U, 0x0BU, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U};
+	0x00U, 0x02U, 0x02U, 0x25U, 0x0BU, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U};
 
 const unsigned int BUFFER_LENGTH = 100U;
 
@@ -132,16 +132,16 @@ bool CP25Network::writeLDU1(const unsigned char* ldu1, const CP25Data& control, 
 #endif
 
 	// The '63' record
-	::memset(buffer, 0x00U, 13U);
+	::memset(buffer, 0x00U, 14U);
 	buffer[0U] = 0x63U;
 	m_audio.decode(ldu1, buffer + 1U, 1U);
-	buffer[12U] = 0x02U;
+	buffer[13U] = 0x02U;
 
 	if (m_debug)
-		CUtils::dump(1U, "P25 Network LDU1 Sent", buffer, 13U);
+		CUtils::dump(1U, "P25 Network LDU1 Sent", buffer, 14U);
 
 #ifdef notdef
-	bool ret = m_socket.write(buffer, 13U, m_address, m_port);
+	bool ret = m_socket.write(buffer, 14U, m_address, m_port);
 	if (!ret)
 		return false;
 #endif
@@ -218,7 +218,7 @@ bool CP25Network::writeLDU1(const unsigned char* ldu1, const CP25Data& control, 
 
 	// The '68' record
 	::memset(buffer, 0x00U, 17U);
-	buffer[0U] = 0x64U;
+	buffer[0U] = 0x68U;
 	m_audio.decode(ldu1, buffer + 5U, 6U);
 	buffer[16U] = 0x02U;
 
@@ -289,16 +289,16 @@ bool CP25Network::writeLDU2(const unsigned char* ldu2, const CP25Data& control, 
 #endif
 
 	// The '6C' record
-	::memset(buffer, 0x00U, 13U);
+	::memset(buffer, 0x00U, 14U);
 	buffer[0U] = 0x6CU;
 	m_audio.decode(ldu2, buffer + 1U, 1U);
-	buffer[12U] = 0x02U;
+	buffer[13U] = 0x02U;
 
 	if (m_debug)
-		CUtils::dump(1U, "P25 Network LDU2 Sent", buffer, 13U);
+		CUtils::dump(1U, "P25 Network LDU2 Sent", buffer, 14U);
 
 #ifdef notdef
-	bool ret = m_socket.write(buffer, 13U, m_address, m_port);
+	bool ret = m_socket.write(buffer, 14U, m_address, m_port);
 	if (!ret)
 		return false;
 #endif
