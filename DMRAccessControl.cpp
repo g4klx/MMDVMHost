@@ -206,11 +206,11 @@ bool DMRAccessControl::validateAccess (unsigned int src_id, unsigned int dst_id,
 unsigned int DMRAccessControl::DstIdRewrite (unsigned int did, unsigned int sid, unsigned int slot, bool network, CDMRLC* dmrLC) 
 {
   
-  if (slot == 1 && m_TGRewriteSlot1 == false)
-    return 0;
+  if (slot == 1U && m_TGRewriteSlot1 == false)
+    return 0U;
   
-  if (slot == 2 && m_TGRewriteSlot2 == false)
-    return 0;
+  if (slot == 2U && m_TGRewriteSlot2 == false)
+    return 0U;
     
    
   std::time_t currenttime = std::time(nullptr);
@@ -218,25 +218,26 @@ unsigned int DMRAccessControl::DstIdRewrite (unsigned int did, unsigned int sid,
   if (network) {
 	m_dstRewriteID = did;
 	m_SrcID = sid;
-	memcpy(&m_lastdmrLC, &dmrLC, sizeof(dmrLC));
-	if (m_BMAutoRewrite && (did < 4000 || did > 5000) && did > 0 && did != 9 && dmrLC->getFLCO() == FLCO_GROUP ) {
+	//not needed at present - for direct dial, which requires change at master end.
+	//memcpy(&m_lastdmrLC, &dmrLC, sizeof(dmrLC));
+	if (m_BMAutoRewrite && (did < 4000U || did > 5000U) && did > 0U && did != 9U && dmrLC->getFLCO() == FLCO_GROUP ) {
 	  LogMessage("DMR Slot %u, Rewrite DST ID (TG) of of inbound network traffic from %u to 9",slot,did);
-	  return 9;
+	  return 9U;
 	// rewrite incoming BM voice prompts to TG 9
-	} else if (m_BMRewriteReflectorVoicePrompts && (sid >= 4000 && sid <= 5000) && dmrLC->getFLCO() == FLCO_USER_USER)  {
+	} else if (m_BMRewriteReflectorVoicePrompts && (sid >= 4000U && sid <= 5000U) && dmrLC->getFLCO() == FLCO_USER_USER)  {
 	    dmrLC->setFLCO(FLCO_GROUP);
 	    LogMessage("DMR Slot %u, Rewrite inbound private call to %u to Group Call on TG 9 (BM reflector voice prompt)",slot,did);
-	    return 9;	 
+	    return 9U;	 
 	} else {
-	    return 0;
+	    return 0U;
 	}
-  } else if (m_BMAutoRewrite && did == 9 && m_dstRewriteID != 9 && m_dstRewriteID != 0 && (m_time + m_callHang) > currenttime && dmrLC->getFLCO() == FLCO_GROUP ) {
+  } else if (m_BMAutoRewrite && did == 9U && m_dstRewriteID != 9U && m_dstRewriteID != 0U && (m_time + m_callHang) > currenttime && dmrLC->getFLCO() == FLCO_GROUP ) {
 	      LogMessage("DMR Slot %u, Rewrite DST ID (TG) of outbound network traffic from %u to %u (return traffic during CallHang)",slot,did,m_dstRewriteID);
 	      return(m_dstRewriteID);
-  }  else if (m_BMAutoRewrite && (did < 4000 || did > 5000) && did > 0 && did !=9) {
+  }  else if (m_BMAutoRewrite && (did < 4000U || did > 5000U) && did > 0U && did !=9U) {
       m_dstRewriteID = did;
   } 
-  return 0;
+  return 0U;
 }
 
 

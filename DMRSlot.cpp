@@ -496,8 +496,7 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				}
 				unsigned int rw_id = DMRAccessControl::DstIdRewrite(did,sid,m_slotNo,false,lc);
 				if (rw_id) {
-				
-				lc->setDstId(rw_id);
+				  lc->setDstId(rw_id);
 				}
 
 				m_rfLC = lc;
