@@ -47,7 +47,7 @@ CDMRLC* DMRAccessControl::m_lastdmrLC;
 
 std::time_t DMRAccessControl::m_time;
 
-unsigned int DMRAccessControl::m_callHang;
+int DMRAccessControl::m_callHang;
 
 bool DMRAccessControl::m_TGRewriteSlot1;
 bool DMRAccessControl::m_TGRewriteSlot2;
