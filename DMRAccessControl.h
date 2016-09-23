@@ -43,7 +43,7 @@ private:
 
 	static std::vector<unsigned int> m_prefixes;
 	
-	static unsigned int m_callHang;
+	static int m_callHang;
 
 	static bool m_selfOnly;
 	static unsigned int m_id;
