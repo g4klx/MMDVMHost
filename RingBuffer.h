@@ -50,7 +50,8 @@ public:
 	bool addData(const T* buffer, unsigned int nSamples)
 	{
 		if (nSamples >= freeSpace()) {
-			LogError("**** Overflow in %s ring buffer, %u >= %u", m_name, nSamples, freeSpace());
+			LogError("%s buffer overflow, clearing the buffer. (%u >= %u)", m_name, nSamples, freeSpace());
+			clear();
 			return false;
 		}
 
