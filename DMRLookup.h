@@ -30,10 +30,18 @@ public:
 	bool read();
 
 	std::string find(unsigned int id) const;
-
-private:
+	
+	bool threaded();
+	
 	std::string                                   m_filename;
 	std::unordered_map<unsigned int, std::string> m_table;
+
+private:
+//	std::string                                   m_filename;
+//	std::unordered_map<unsigned int, std::string> m_table;
+	
+	void readfile_lookup();
+	
 };
 
 #endif

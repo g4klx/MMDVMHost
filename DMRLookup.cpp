@@ -19,10 +19,20 @@
 #include "DMRLookup.h"
 #include "Log.h"
 
+#if !defined(_WIN32) || !defined(_WIN64)
+
+#include <pthread.h>
+#include <unistd.h>
+#include <sys/stat.h>
+
+#endif
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <cctype>
+
+unsigned int ptr;
 
 CDMRLookup::CDMRLookup(const std::string& filename) :
 m_filename(filename)
@@ -86,3 +96,75 @@ std::string CDMRLookup::find(unsigned int id) const
 
 	return callsign;
 }
+
+#if !defined(_WIN32) || !defined(_WIN64)
+void *readfile_thread(void* objpass)
+{
+	CDMRLookup* obj = (CDMRLookup*)objpass;
+	
+	struct stat stat_buffer;
+	
+	int mtime = 0;
+	
+	LogInfo("Calling DMR Ids read from file in thread - check for changes every 10 minutes.");
+	while (1) {
+	    int result = stat(obj->m_filename.c_str(), &stat_buffer);
+	    if (result != 0)
+	    {
+		LogWarning("Can't stat DMR IDs file - %s : %s",obj->m_filename.c_str(),strerror(errno));
+	    } else if (mtime < stat_buffer.st_mtime || mtime == 0) {
+	      
+		mtime = stat_buffer.st_mtime;
+		
+		FILE* fp = ::fopen(obj->m_filename.c_str(), "rt");
+		if (fp == NULL) {
+			LogWarning("Cannot open the DMR Id lookup file - %s", obj->m_filename.c_str());
+		} else {
+
+		    char buffer[100U];
+		    while (::fgets(buffer, 100U, fp) != NULL) {
+			    if (buffer[0U] == '#')
+				    continue;
+
+			    char* p1 = ::strtok(buffer, " \t\r\n");
+			    char* p2 = ::strtok(NULL, " \t\r\n");
+
+			    if (p1 != NULL && p2 != NULL) {
+				    unsigned int id = (unsigned int)::atoi(p1);
+				    for (char* p = p2; *p != 0x00U; p++)
+					    *p = ::toupper(*p);
+
+				    obj->m_table[id] = std::string(p2);
+			    }
+	    
+		    }
+		    ::fclose(fp);
+
+		    size_t size = obj->m_table.size();
+		    if (size == 0U)
+			    LogWarning("DMR IDs - No data loaded");
+		    else
+			    LogInfo("Loaded %u DMR Ids to the callsign lookup table", size);
+
+	      
+		}
+	    }
+	  ::usleep(600000000);
+	
+	}
+	return 0;
+}
+
+bool CDMRLookup::threaded()
+{
+    pthread_t t1;
+    if (!::pthread_create(&t1, NULL, &readfile_thread, this)) {
+      ::pthread_detach(t1);
+      return true;
+    } else {
+	LogWarning("Could not spawn thread to load DMR IDs");
+	return false;
+    }
+    
+}
+#endif
