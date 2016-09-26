@@ -610,8 +610,8 @@ void CDStarControl::clock()
 
 			if (frames > m_netFrames) {
 				unsigned int count = frames - m_netFrames;
-				if (count > 5U) {
-					LogDebug("D-Star, lost audio for 200ms filling in, elapsed: %ums, expected: %u, received: %u", elapsed, frames, m_netFrames);
+				if (count > 15U) {
+					LogDebug("D-Star, lost audio for 300ms filling in, elapsed: %ums, expected: %u, received: %u", elapsed, frames, m_netFrames);
 					insertSilence(count - 2U);
 				}
 			}
