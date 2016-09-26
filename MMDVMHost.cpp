@@ -380,17 +380,19 @@ int CMMDVMHost::run()
 
 	CYSFControl* ysf = NULL;
 	if (m_ysfEnabled) {
+		bool remoteGateway = m_conf.getFusionRemoteGateway();
 		int rssiMultiplier = m_conf.getModemRSSIMultiplier();
 		int rssiOffset     = m_conf.getModemRSSIOffset();
 
 		LogInfo("YSF Parameters");
+		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
 
 		if (rssiMultiplier != 0) {
 			LogInfo("    RSSI Multiplier: %d", rssiMultiplier);
 			LogInfo("    RSSI Offset: %d", rssiOffset);
 		}
 
-		ysf = new CYSFControl(m_callsign, m_ysfNetwork, m_display, m_timeout, m_duplex, rssiMultiplier, rssiOffset);
+		ysf = new CYSFControl(m_callsign, m_ysfNetwork, m_display, m_timeout, m_duplex, remoteGateway, rssiMultiplier, rssiOffset);
 	}
 
 	CP25Control* p25 = NULL;

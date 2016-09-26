@@ -110,6 +110,7 @@ m_dmrLookupFile(),
 m_dmrCallHang(3U),
 m_dmrTXHang(4U),
 m_fusionEnabled(true),
+m_fusionRemoteGateway(false),
 m_p25Enabled(true),
 m_p25NAC(0x293U),
 m_dstarNetworkEnabled(true),
@@ -435,6 +436,8 @@ bool CConf::read()
 	} else if (section == SECTION_FUSION) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fusionEnabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "RemoteGateway") == 0)
+			m_fusionRemoteGateway = ::atoi(value) == 1;
 	} else if (section == SECTION_P25) {
 		if (::strcmp(key, "Enable") == 0)
 			m_p25Enabled = ::atoi(value) == 1;
@@ -842,6 +845,11 @@ unsigned int CConf::getDMRTXHang() const
 bool CConf::getFusionEnabled() const
 {
 	return m_fusionEnabled;
+}
+
+bool CConf::getFusionRemoteGateway() const
+{
+	return m_fusionRemoteGateway;
 }
 
 bool CConf::getP25Enabled() const

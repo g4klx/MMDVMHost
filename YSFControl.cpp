@@ -24,10 +24,11 @@
 
 // #define	DUMP_YSF
 
-CYSFControl::CYSFControl(const std::string& callsign, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, int rssiMultiplier, int rssiOffset) :
+CYSFControl::CYSFControl(const std::string& callsign, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, int rssiMultiplier, int rssiOffset) :
 m_network(network),
 m_display(display),
 m_duplex(duplex),
+m_remoteGateway(remoteGateway),
 m_queue(5000U, "YSF Control"),
 m_rfState(RS_RF_LISTENING),
 m_netState(RS_NET_IDLE),
@@ -50,6 +51,7 @@ m_netDest(NULL),
 m_lastFrame(NULL),
 m_lastFrameValid(false),
 m_lastMode(YSF_DT_VOICE_FR_MODE),
+m_lastMR(YSF_MR_NOT_BUSY),
 m_netN(0U),
 m_rfPayload(),
 m_netPayload(),
@@ -124,6 +126,18 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 	if (m_rfState != RS_RF_AUDIO)
 		return false;
 
+	if (valid)
+		m_lastMR = fich.getMR();
+
+	// Stop repeater packets coming through, unless we're acting as a remote gateway
+	if (m_remoteGateway) {
+		if (m_lastMR != YSF_MR_BUSY)
+			return false;
+	} else {
+		if (m_lastMR == YSF_MR_BUSY)
+			return false;
+	}
+
 	unsigned char fi = fich.getFI();
 	if (valid && fi == YSF_FI_HEADER) {
 		CSync::addYSFSync(data + 2U);
@@ -167,7 +181,7 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 #endif
 
 		if (m_duplex) {
-			fich.setMR(YSF_MR_BUSY);
+			fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 			fich.encode(data + 2U);
 			writeQueueRF(data);
 		}
@@ -190,7 +204,7 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 #endif
 
 		if (m_duplex) {
-			fich.setMR(YSF_MR_BUSY);
+			fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 			fich.encode(data + 2U);
 			writeQueueRF(data);
 		}
@@ -292,7 +306,7 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 		writeNetwork(data, m_rfFrames % 128U);
 
 		if (m_duplex) {
-			fich.setMR(YSF_MR_BUSY);
+			fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 			fich.encode(data + 2U);
 			writeQueueRF(data);
 		}
@@ -462,7 +476,7 @@ void CYSFControl::writeNetwork()
 		unsigned char fi = fich.getFI();
 
 		fich.setVoIP(true);
-		fich.setMR(YSF_MR_BUSY);
+		fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 		fich.encode(data + 35U);
 
 		m_lastMode = dt;
