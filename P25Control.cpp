@@ -24,6 +24,8 @@
 #include "Log.h"
 
 #include <cassert>
+#include <cstdio>
+#include <cstring>
 #include <ctime>
 
 // #define	DUMP_P25
@@ -61,6 +63,7 @@ m_rfLSD(),
 m_netLSD(),
 m_netLDU1(NULL),
 m_netLDU2(NULL),
+m_lastIMBE(NULL),
 m_fp(NULL)
 {
 	assert(display != NULL);
@@ -68,12 +71,19 @@ m_fp(NULL)
 
 	m_netLDU1 = new unsigned char[9U * 25U];
 	m_netLDU2 = new unsigned char[9U * 25U];
+
+	::memset(m_netLDU1, 0x00U, 9U * 25U);
+	::memset(m_netLDU2, 0x00U, 9U * 25U);
+
+	m_lastIMBE = new unsigned char[11U];
+	::memcpy(m_lastIMBE, P25_NULL_IMBE, 11U);
 }
 
 CP25Control::~CP25Control()
 {
 	delete[] m_netLDU1;
 	delete[] m_netLDU2;
+	delete[] m_lastIMBE;
 }
 
 bool CP25Control::writeModem(unsigned char* data, unsigned int len)
@@ -374,7 +384,7 @@ void CP25Control::clock(unsigned int ms)
 		m_networkWatchdog.clock(ms);
 
 		if (m_networkWatchdog.hasExpired()) {
-			LogMessage("P25, network watchdog has expired, %.1f seconds, %u%% packet loss", float(m_netFrames) / 5.56F, (m_netLost * 100U) / m_netFrames);
+			LogMessage("P25, network watchdog has expired, %.1f seconds, %u%% packet loss", float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames);
 			m_display->clearP25();
 			m_networkWatchdog.stop();
 			m_netState = RS_NET_IDLE;
@@ -460,6 +470,72 @@ void CP25Control::addBusyBits(unsigned char* data, unsigned int length, bool b1,
 		unsigned int ss1Pos = ss0Pos + 1U;
 		WRITE_BIT(data, ss0Pos, b1);
 		WRITE_BIT(data, ss1Pos, b2);
+	}
+}
+
+void CP25Control::insertMissingAudio(unsigned char* data)
+{
+	if (data[0U] == 0x00U) {
+		::memcpy(data + 10U, m_lastIMBE, 11U);
+		m_netLost++;
+	} else {
+		::memcpy(m_lastIMBE, data + 10U, 11U);
+	}
+
+	if (data[25U] == 0x00U) {
+		::memcpy(data + 26U, m_lastIMBE, 11U);
+		m_netLost++;
+	} else {
+		::memcpy(m_lastIMBE, data + 26U, 11U);
+	}
+
+	if (data[50U] == 0x00U) {
+		::memcpy(data + 55U, m_lastIMBE, 11U);
+		m_netLost++;
+	} else {
+		::memcpy(m_lastIMBE, data + 55U, 11U);
+	}
+
+	if (data[75U] == 0x00U) {
+		::memcpy(data + 80U, m_lastIMBE, 11U);
+		m_netLost++;
+	} else {
+		::memcpy(m_lastIMBE, data + 80U, 11U);
+	}
+
+	if (data[100U] == 0x00U) {
+		::memcpy(data + 105U, m_lastIMBE, 11U);
+		m_netLost++;
+	} else {
+		::memcpy(m_lastIMBE, data + 105U, 11U);
+	}
+
+	if (data[125U] == 0x00U) {
+		::memcpy(data + 130U, m_lastIMBE, 11U);
+		m_netLost++;
+	} else {
+		::memcpy(m_lastIMBE, data + 130U, 11U);
+	}
+
+	if (data[150U] == 0x00U) {
+		::memcpy(data + 155U, m_lastIMBE, 11U);
+		m_netLost++;
+	} else {
+		::memcpy(m_lastIMBE, data + 155U, 11U);
+	}
+
+	if (data[175U] == 0x00U) {
+		::memcpy(data + 180U, m_lastIMBE, 11U);
+		m_netLost++;
+	} else {
+		::memcpy(m_lastIMBE, data + 180U, 11U);
+	}
+
+	if (data[200U] == 0x00U) {
+		::memcpy(data + 204U, m_lastIMBE, 11U);
+		m_netLost++;
+	} else {
+		::memcpy(m_lastIMBE, data + 204U, 11U);
 	}
 }
 
@@ -559,6 +635,8 @@ void CP25Control::createNetHeader()
 
 void CP25Control::createNetLDU1()
 {
+	insertMissingAudio(m_netLDU1);
+
 	unsigned char buffer[P25_LDU_FRAME_LENGTH_BYTES + 2U];
 	::memset(buffer, 0x00U, P25_LDU_FRAME_LENGTH_BYTES + 2U);
 
@@ -595,11 +673,15 @@ void CP25Control::createNetLDU1()
 
 	writeQueueNet(buffer, P25_LDU_FRAME_LENGTH_BYTES + 2U);
 
-	m_netFrames++;
+	::memset(m_netLDU1, 0x00U, 9U * 25U);
+
+	m_netFrames += 9U;
 }
 
 void CP25Control::createNetLDU2()
 {
+	insertMissingAudio(m_netLDU2);
+
 	unsigned char buffer[P25_LDU_FRAME_LENGTH_BYTES + 2U];
 	::memset(buffer, 0x00U, P25_LDU_FRAME_LENGTH_BYTES + 2U);
 
@@ -636,7 +718,9 @@ void CP25Control::createNetLDU2()
 
 	writeQueueNet(buffer, P25_LDU_FRAME_LENGTH_BYTES + 2U);
 
-	m_netFrames++;
+	::memset(m_netLDU2, 0x00U, 9U * 25U);
+
+	m_netFrames += 9U;
 }
 
 void CP25Control::createNetTerminator(const unsigned char* data)
@@ -663,7 +747,7 @@ void CP25Control::createNetTerminator(const unsigned char* data)
 
 	writeQueueNet(buffer, P25_TERM_FRAME_LENGTH_BYTES + 2U);
 
-	LogMessage("P25, network end of transmission, %.1f seconds, %u%% packet loss", float(m_netFrames) / 5.56F, (m_netLost * 100U) / m_netFrames);
+	LogMessage("P25, network end of transmission, %.1f seconds, %u%% packet loss", float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames);
 
 	m_display->clearP25();
 	m_netTimeout.stop();

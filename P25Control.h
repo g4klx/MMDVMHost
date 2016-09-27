@@ -72,6 +72,7 @@ private:
 	CP25LowSpeedData m_netLSD;
 	unsigned char* m_netLDU1;
 	unsigned char* m_netLDU2;
+	unsigned char* m_lastIMBE;
 	FILE*          m_fp;
 
 	void writeQueueRF(const unsigned char* data, unsigned int length);
@@ -80,6 +81,8 @@ private:
 	void writeNetwork();
 
 	void addBusyBits(unsigned char* data, unsigned int length, bool b1, bool b2);
+
+	void insertMissingAudio(unsigned char* data);
 
 	void createRFHeader();
 
