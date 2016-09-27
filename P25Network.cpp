@@ -69,20 +69,16 @@ bool CP25Network::writeHeader(const CP25Data& control)
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network ICW Sent", STARTICW, 10U);
 
-#ifdef notdef
 	bool ret = m_socket.write(STARTICW, 10U, m_address, m_port);
 	if (!ret)
 		return false;
-#endif
 
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network VHDR1 Sent", VHDR1, 30U);
 
-#ifdef notdef
-	bool ret = m_socket.write(VHDR1, 30U, m_address, m_port);
+	ret = m_socket.write(VHDR1, 30U, m_address, m_port);
 	if (!ret)
 		return false;
-#endif
 
 	unsigned int tgid = 0x0000U;
 
@@ -100,11 +96,9 @@ bool CP25Network::writeHeader(const CP25Data& control)
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network VHDR2 Sent", buffer, 22U);
 
-#ifdef notdef
-	bool ret = m_socket.write(buffer, 22U, m_address, m_port);
+	ret = m_socket.write(buffer, 22U, m_address, m_port);
 	if (!ret)
 		return false;
-#endif
 
 	return true;
 }
@@ -125,11 +119,9 @@ bool CP25Network::writeLDU1(const unsigned char* ldu1, const CP25Data& control, 
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network LDU1 Sent", buffer, 22U);
 
-#ifdef notdef
 	bool ret = m_socket.write(buffer, 22U, m_address, m_port);
 	if (!ret)
 		return false;
-#endif
 
 	// The '63' record
 	::memset(buffer, 0x00U, 14U);
@@ -140,11 +132,9 @@ bool CP25Network::writeLDU1(const unsigned char* ldu1, const CP25Data& control, 
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network LDU1 Sent", buffer, 14U);
 
-#ifdef notdef
-	bool ret = m_socket.write(buffer, 14U, m_address, m_port);
+	ret = m_socket.write(buffer, 14U, m_address, m_port);
 	if (!ret)
 		return false;
-#endif
 
 	// The '64' record
 	::memset(buffer, 0x00U, 17U);
@@ -157,11 +147,9 @@ bool CP25Network::writeLDU1(const unsigned char* ldu1, const CP25Data& control, 
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network LDU1 Sent", buffer, 17U);
 
-#ifdef notdef
-	bool ret = m_socket.write(buffer, 17U, m_address, m_port);
+	ret = m_socket.write(buffer, 17U, m_address, m_port);
 	if (!ret)
 		return false;
-#endif
 
 	// The '65' record
 	::memset(buffer, 0x00U, 17U);
@@ -176,11 +164,9 @@ bool CP25Network::writeLDU1(const unsigned char* ldu1, const CP25Data& control, 
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network LDU1 Sent", buffer, 17U);
 
-#ifdef notdef
-	bool ret = m_socket.write(buffer, 17U, m_address, m_port);
+	ret = m_socket.write(buffer, 17U, m_address, m_port);
 	if (!ret)
 		return false;
-#endif
 
 	// The '66' record
 	::memset(buffer, 0x00U, 17U);
@@ -195,11 +181,9 @@ bool CP25Network::writeLDU1(const unsigned char* ldu1, const CP25Data& control, 
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network LDU1 Sent", buffer, 17U);
 
-#ifdef notdef
-	bool ret = m_socket.write(buffer, 17U, m_address, m_port);
+	ret = m_socket.write(buffer, 17U, m_address, m_port);
 	if (!ret)
 		return false;
-#endif
 
 	// The '67' record
 	::memset(buffer, 0x00U, 17U);
@@ -210,11 +194,9 @@ bool CP25Network::writeLDU1(const unsigned char* ldu1, const CP25Data& control, 
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network LDU1 Sent", buffer, 17U);
 
-#ifdef notdef
-	bool ret = m_socket.write(buffer, 17U, m_address, m_port);
+	ret = m_socket.write(buffer, 17U, m_address, m_port);
 	if (!ret)
 		return false;
-#endif
 
 	// The '68' record
 	::memset(buffer, 0x00U, 17U);
@@ -225,11 +207,9 @@ bool CP25Network::writeLDU1(const unsigned char* ldu1, const CP25Data& control, 
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network LDU1 Sent", buffer, 17U);
 
-#ifdef notdef
-	bool ret = m_socket.write(buffer, 17U, m_address, m_port);
+	ret = m_socket.write(buffer, 17U, m_address, m_port);
 	if (!ret)
 		return false;
-#endif
 
 	// The '69' record
 	::memset(buffer, 0x00U, 17U);
@@ -240,11 +220,9 @@ bool CP25Network::writeLDU1(const unsigned char* ldu1, const CP25Data& control, 
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network LDU1 Sent", buffer, 17U);
 
-#ifdef notdef
-	bool ret = m_socket.write(buffer, 17U, m_address, m_port);
+	ret = m_socket.write(buffer, 17U, m_address, m_port);
 	if (!ret)
 		return false;
-#endif
 
 	// The '6A' record
 	::memset(buffer, 0x00U, 16U);
@@ -257,11 +235,9 @@ bool CP25Network::writeLDU1(const unsigned char* ldu1, const CP25Data& control, 
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network LDU1 Sent", buffer, 16U);
 
-#ifdef notdef
-	bool ret = m_socket.write(buffer, 16U, m_address, m_port);
+	ret = m_socket.write(buffer, 16U, m_address, m_port);
 	if (!ret)
 		return false;
-#endif
 
 	return true;
 }
@@ -282,11 +258,9 @@ bool CP25Network::writeLDU2(const unsigned char* ldu2, const CP25Data& control, 
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network LDU2 Sent", buffer, 22U);
 
-#ifdef notdef
 	bool ret = m_socket.write(buffer, 22U, m_address, m_port);
 	if (!ret)
 		return false;
-#endif
 
 	// The '6C' record
 	::memset(buffer, 0x00U, 14U);
@@ -297,11 +271,9 @@ bool CP25Network::writeLDU2(const unsigned char* ldu2, const CP25Data& control, 
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network LDU2 Sent", buffer, 14U);
 
-#ifdef notdef
-	bool ret = m_socket.write(buffer, 14U, m_address, m_port);
+	ret = m_socket.write(buffer, 14U, m_address, m_port);
 	if (!ret)
 		return false;
-#endif
 
 	unsigned char mi[P25_MI_LENGTH_BYTES];
 	control.getMI(mi);
@@ -318,11 +290,9 @@ bool CP25Network::writeLDU2(const unsigned char* ldu2, const CP25Data& control, 
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network LDU2 Sent", buffer, 17U);
 
-#ifdef notdef
-	bool ret = m_socket.write(buffer, 17U, m_address, m_port);
+	ret = m_socket.write(buffer, 17U, m_address, m_port);
 	if (!ret)
 		return false;
-#endif
 
 	// The '6E' record
 	::memset(buffer, 0x00U, 17U);
@@ -336,11 +306,9 @@ bool CP25Network::writeLDU2(const unsigned char* ldu2, const CP25Data& control, 
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network LDU2 Sent", buffer, 17U);
 
-#ifdef notdef
-	bool ret = m_socket.write(buffer, 17U, m_address, m_port);
+	ret = m_socket.write(buffer, 17U, m_address, m_port);
 	if (!ret)
 		return false;
-#endif
 
 	// The '6F' record
 	::memset(buffer, 0x00U, 17U);
@@ -354,11 +322,9 @@ bool CP25Network::writeLDU2(const unsigned char* ldu2, const CP25Data& control, 
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network LDU2 Sent", buffer, 17U);
 
-#ifdef notdef
-	bool ret = m_socket.write(buffer, 17U, m_address, m_port);
+	ret = m_socket.write(buffer, 17U, m_address, m_port);
 	if (!ret)
 		return false;
-#endif
 
 	// The '70' record
 	::memset(buffer, 0x00U, 17U);
@@ -373,11 +339,9 @@ bool CP25Network::writeLDU2(const unsigned char* ldu2, const CP25Data& control, 
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network LDU2 Sent", buffer, 17U);
 
-#ifdef notdef
-	bool ret = m_socket.write(buffer, 17U, m_address, m_port);
+	ret = m_socket.write(buffer, 17U, m_address, m_port);
 	if (!ret)
 		return false;
-#endif
 
 	// The '71' record
 	::memset(buffer, 0x00U, 17U);
@@ -388,11 +352,9 @@ bool CP25Network::writeLDU2(const unsigned char* ldu2, const CP25Data& control, 
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network LDU2 Sent", buffer, 17U);
 
-#ifdef notdef
-	bool ret = m_socket.write(buffer, 17U, m_address, m_port);
+	ret = m_socket.write(buffer, 17U, m_address, m_port);
 	if (!ret)
 		return false;
-#endif
 
 	// The '72' record
 	::memset(buffer, 0x00U, 17U);
@@ -403,11 +365,9 @@ bool CP25Network::writeLDU2(const unsigned char* ldu2, const CP25Data& control, 
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network LDU2 Sent", buffer, 17U);
 
-#ifdef notdef
-	bool ret = m_socket.write(buffer, 17U, m_address, m_port);
+	ret = m_socket.write(buffer, 17U, m_address, m_port);
 	if (!ret)
 		return false;
-#endif
 
 	// The '73' record
 	::memset(buffer, 0x00U, 16U);
@@ -420,11 +380,9 @@ bool CP25Network::writeLDU2(const unsigned char* ldu2, const CP25Data& control, 
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network LDU2 Sent", buffer, 16U);
 
-#ifdef notdef
-	bool ret = m_socket.write(buffer, 16U, m_address, m_port);
+	ret = m_socket.write(buffer, 16U, m_address, m_port);
 	if (!ret)
 		return false;
-#endif
 
 	return true;
 }
@@ -434,7 +392,6 @@ bool CP25Network::writeTerminator()
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network ICW Sent", ENDICW, 10U);
 
-#ifdef notdef
 	bool ret = m_socket.write(ENDICW, 10U, m_address, m_port);
 	if (!ret)
 		return false;
@@ -442,7 +399,6 @@ bool CP25Network::writeTerminator()
 	ret = m_socket.write(ENDICW, 10U, m_address, m_port);
 	if (!ret)
 		return false;
-#endif
 
 	return true;
 }
