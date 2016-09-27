@@ -316,6 +316,10 @@ int CMMDVMHost::run()
 		unsigned int id        = m_conf.getDMRId();
 		unsigned int colorCode = m_conf.getDMRColorCode();
 		bool selfOnly          = m_conf.getDMRSelfOnly();
+		bool TGRewriteSlot1    = m_conf.getDMRTGRewriteSlot1();
+		bool TGRewriteSlot2    = m_conf.getDMRTGRewriteSlot2();
+		bool BMAutoRewrite     = m_conf.getDMRBMAutoRewrite();
+		bool BMRewriteReflectorVoicePrompts = m_conf.getDMRBMRewriteReflectorVoicePrompts();
 		std::vector<unsigned int> prefixes = m_conf.getDMRPrefixes();
 		std::vector<unsigned int> blackList = m_conf.getDMRBlackList();
 		std::vector<unsigned int> dstIDBlackListSlot1RF = m_conf.getDMRDstIdBlacklistSlot1RF();
@@ -372,8 +376,18 @@ int CMMDVMHost::run()
 			LogInfo("    RSSI Multiplier: %d", rssiMultiplier);
 			LogInfo("    RSSI Offset: %d", rssiOffset);
 		}
-
-		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList, dstIDBlackListSlot1RF, dstIDWhiteListSlot1RF, dstIDBlackListSlot2RF, dstIDWhiteListSlot2RF, dstIDBlackListSlot1NET,dstIDWhiteListSlot1NET, dstIDBlackListSlot2NET, dstIDWhiteListSlot2NET, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookup, rssiMultiplier, rssiOffset, jitter);
+		
+		if (TGRewriteSlot1)
+		  LogInfo("    TG Rewrite Slot 1 enabled");
+		
+		if (TGRewriteSlot2)
+		  LogInfo("    TG Rewrite Slot 2 enabled");
+		if (BMAutoRewrite)
+		  LogInfo("    BrandMeister Auto Rewrite enabled");
+		if (BMRewriteReflectorVoicePrompts)
+		  LogInfo("    BrandMeister Rewrite Reflector Voice Prompts enabled");
+		
+		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList,dstIDBlackListSlot1RF,dstIDWhiteListSlot1RF, dstIDBlackListSlot2RF, dstIDWhiteListSlot2RF, dstIDBlackListSlot1NET,dstIDWhiteListSlot1NET, dstIDBlackListSlot2NET, dstIDWhiteListSlot2NET, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookup, rssiMultiplier, rssiOffset, jitter, TGRewriteSlot1, TGRewriteSlot2, BMAutoRewrite, BMRewriteReflectorVoicePrompts);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}
@@ -696,6 +710,7 @@ int CMMDVMHost::run()
 		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
 			if (m_mode == MODE_IDLE && !m_modem->hasTX()){
 				LogDebug("sending CW ID");
+				m_display->writeCW();
 				m_modem->sendCWId(m_callsign);
 
 				m_cwIdTimer.start();   //reset only after sending ID, timer-overflow after 49 days doesnt matter

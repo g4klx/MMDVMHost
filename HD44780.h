@@ -113,6 +113,9 @@ protected:
 	virtual void writeP25Int(const char* source, bool group, unsigned int dest, const char* type);
 	virtual void clearP25Int();
 
+  virtual void writeCWInt();
+  virtual void clearCWInt();
+
   virtual void clockInt(unsigned int ms);
 
 private:

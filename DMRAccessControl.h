@@ -16,12 +16,17 @@
 #define	DMRAccessControl_H
 
 #include <vector>
+#include <ctime>
+#include "DMRLC.h"
 
 class DMRAccessControl {
 public:
 	static bool validateAccess (unsigned int src_id, unsigned int dst_id, unsigned int slot, bool network);
 
-	static void init(const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF, const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, const std::vector<unsigned int>& SrcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes,unsigned int id);
+	static void init(const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF, const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, const std::vector<unsigned int>& SrcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes,unsigned int id,unsigned int callHang, bool TGRewrteSlot1, bool TGRewrteSlot2, bool m_BMAutoRewrite, bool m_BMRewriteReflectorVoicePrompts);
+	
+	static unsigned int DstIdRewrite(unsigned int id, unsigned int sid,unsigned int slot, bool network, CDMRLC* dmrLC);
+	static void setOverEndTime();
 
 private:
 	static std::vector<unsigned int> m_dstBlackListSlot1RF;
@@ -37,6 +42,8 @@ private:
 	static std::vector<unsigned int> m_SrcIdBlacklist;
 
 	static std::vector<unsigned int> m_prefixes;
+	
+	static int m_callHang;
 
 	static bool m_selfOnly;
 	static unsigned int m_id;
@@ -45,6 +52,22 @@ private:
 	static bool DstIdWhitelist(unsigned int did,unsigned int slot,bool gt4k, bool network);
 
 	static bool validateSrcId(unsigned int id);
+	
+	static std::time_t m_time;
+	
+	static unsigned int m_dstRewriteID;
+	static unsigned int m_SrcID;
+	
+	static bool m_TGRewriteSlot1;
+	static bool m_TGRewriteSlot2;
+	static bool m_BMAutoRewrite;
+	static bool m_BMRewriteReflectorVoicePrompts;
+	
+	static CDMRLC* m_lastdmrLC;
+
+	
+	
+
 };
 
 #endif

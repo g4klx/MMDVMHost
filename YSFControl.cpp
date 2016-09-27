@@ -25,6 +25,7 @@
 // #define	DUMP_YSF
 
 CYSFControl::CYSFControl(const std::string& callsign, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, int rssiMultiplier, int rssiOffset) :
+m_callsign(NULL),
 m_network(network),
 m_display(display),
 m_duplex(duplex),
@@ -70,6 +71,14 @@ m_fp(NULL)
 	m_netDest   = new unsigned char[YSF_CALLSIGN_LENGTH];
 
 	m_lastFrame = new unsigned char[YSF_FRAME_LENGTH_BYTES + 2U];
+
+	m_callsign = new unsigned char[YSF_CALLSIGN_LENGTH];
+
+	std::string node = callsign;
+	node.resize(YSF_CALLSIGN_LENGTH, ' ');
+
+	for (unsigned int i = 0U; i < YSF_CALLSIGN_LENGTH; i++)
+		m_callsign[i] = node.at(i);
 }
 
 CYSFControl::~CYSFControl()
@@ -77,6 +86,7 @@ CYSFControl::~CYSFControl()
 	delete[] m_netSource;
 	delete[] m_netDest;
 	delete[] m_lastFrame;
+	delete[] m_callsign;
 }
 
 bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
@@ -404,7 +414,7 @@ void CYSFControl::writeNetwork()
 
 	m_networkWatchdog.start();
 
-	bool gateway = ::memcmp(data + 4U, "GATEWAY   ", YSF_CALLSIGN_LENGTH) == 0;
+	bool gateway = ::memcmp(data + 4U, m_callsign, YSF_CALLSIGN_LENGTH) == 0;
 
 	unsigned char n = (data[34U] & 0xFEU) >> 1;
 	bool end = (data[34U] & 0x01U) == 0x01U;

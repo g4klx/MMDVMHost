@@ -815,6 +815,18 @@ void CHD44780::clearP25Int()
 	}
 }
 
+void CHD44780::writeCWInt()
+{
+	::lcdPosition(m_fd, m_cols - 5, m_rows - 1);
+	::lcdPuts(m_fd, "CW TX");
+}
+
+void CHD44780::clearCWInt()
+{
+	::lcdPosition(m_fd, m_cols - 5, m_rows - 1);
+	::lcdPuts(m_fd, " Idle");
+}
+
 void CHD44780::clockInt(unsigned int ms)
 {
 	m_clockDisplayTimer.clock(ms);

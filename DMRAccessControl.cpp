@@ -18,6 +18,9 @@
 
 #include <algorithm>
 #include <vector>
+#include <ctime>
+#include <string.h>
+
 
 std::vector<unsigned int> DMRAccessControl::m_dstBlackListSlot1RF;
 std::vector<unsigned int> DMRAccessControl::m_dstBlackListSlot2RF;
@@ -37,7 +40,21 @@ bool DMRAccessControl::m_selfOnly = false;
 
 unsigned int DMRAccessControl::m_id = 0U;
 
-void DMRAccessControl::init(const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF, const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, const std::vector<unsigned int>& SrcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes,unsigned int id)
+unsigned int DMRAccessControl::m_dstRewriteID = 0U;
+unsigned int DMRAccessControl::m_SrcID = 0U;
+
+CDMRLC* DMRAccessControl::m_lastdmrLC;
+
+std::time_t DMRAccessControl::m_time;
+
+int DMRAccessControl::m_callHang;
+
+bool DMRAccessControl::m_TGRewriteSlot1;
+bool DMRAccessControl::m_TGRewriteSlot2;
+bool DMRAccessControl::m_BMAutoRewrite;
+bool DMRAccessControl::m_BMRewriteReflectorVoicePrompts;
+
+void DMRAccessControl::init(const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF, const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, const std::vector<unsigned int>& SrcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes,unsigned int id,unsigned int callHang,bool TGRewriteSlot1, bool TGRewriteSlot2, bool BMAutoRewrite, bool BMRewriteReflectorVoicePrompts)
 {
 	m_dstBlackListSlot1RF  = DstIdBlacklistSlot1RF;
 	m_dstWhiteListSlot1RF  = DstIdWhitelistSlot1RF;
@@ -47,6 +64,11 @@ void DMRAccessControl::init(const std::vector<unsigned int>& DstIdBlacklistSlot1
 	m_dstWhiteListSlot1NET = DstIdWhitelistSlot1NET;
 	m_dstBlackListSlot2NET = DstIdBlacklistSlot2NET;
 	m_dstWhiteListSlot2NET = DstIdWhitelistSlot2NET;
+	m_callHang = callHang;
+	m_TGRewriteSlot1 = TGRewriteSlot1;
+	m_TGRewriteSlot2 = TGRewriteSlot2;
+	m_BMAutoRewrite	= BMAutoRewrite;
+	m_BMRewriteReflectorVoicePrompts = BMRewriteReflectorVoicePrompts;
 }
  
 bool DMRAccessControl::DstIdBlacklist(unsigned int did, unsigned int slot, bool network)
@@ -180,3 +202,46 @@ bool DMRAccessControl::validateAccess (unsigned int src_id, unsigned int dst_id,
 		return true;
 	}
 }
+
+unsigned int DMRAccessControl::DstIdRewrite (unsigned int did, unsigned int sid, unsigned int slot, bool network, CDMRLC* dmrLC) 
+{
+  
+  if (slot == 1U && m_TGRewriteSlot1 == false)
+    return 0U;
+  
+  if (slot == 2U && m_TGRewriteSlot2 == false)
+    return 0U;
+    
+   
+  std::time_t currenttime = std::time(nullptr);
+  
+  if (network) {
+	m_dstRewriteID = did;
+	m_SrcID = sid;
+	//not needed at present - for direct dial, which requires change at master end.
+	//memcpy(&m_lastdmrLC, &dmrLC, sizeof(dmrLC));
+	if (m_BMAutoRewrite && (did < 4000U || did > 5000U) && did > 0U && did != 9U && dmrLC->getFLCO() == FLCO_GROUP ) {
+	  LogMessage("DMR Slot %u, Rewrite DST ID (TG) of of inbound network traffic from %u to 9",slot,did);
+	  return 9U;
+	// rewrite incoming BM voice prompts to TG 9
+	} else if (m_BMRewriteReflectorVoicePrompts && (sid >= 4000U && sid <= 5000U) && dmrLC->getFLCO() == FLCO_USER_USER)  {
+	    dmrLC->setFLCO(FLCO_GROUP);
+	    LogMessage("DMR Slot %u, Rewrite inbound private call to %u to Group Call on TG 9 (BM reflector voice prompt)",slot,did);
+	    return 9U;	 
+	} else {
+	    return 0U;
+	}
+  } else if (m_BMAutoRewrite && did == 9U && m_dstRewriteID != 9U && m_dstRewriteID != 0U && (m_time + m_callHang) > currenttime && dmrLC->getFLCO() == FLCO_GROUP ) {
+	      LogMessage("DMR Slot %u, Rewrite DST ID (TG) of outbound network traffic from %u to %u (return traffic during CallHang)",slot,did,m_dstRewriteID);
+	      return(m_dstRewriteID);
+  }  else if (m_BMAutoRewrite && (did < 4000U || did > 5000U) && did > 0U && did !=9U) {
+      m_dstRewriteID = did;
+  } 
+  return 0U;
+}
+
+
+void DMRAccessControl::setOverEndTime() 
+{
+  m_time = std::time(nullptr);
+} 

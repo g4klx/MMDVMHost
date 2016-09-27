@@ -47,6 +47,9 @@ public:
 	void writeP25(const char* source, bool group, unsigned int dest, const char* type);
 	void clearP25();
 
+	void writeCW();
+	void clearCW();
+
 	virtual void close() = 0;
 
 	void clock(unsigned int ms);
@@ -67,6 +70,9 @@ protected:
 
 	virtual void writeP25Int(const char* source, bool group, unsigned int dest, const char* type) = 0;
 	virtual void clearP25Int() = 0;
+
+	virtual void writeCWInt() = 0;
+	virtual void clearCWInt() = 0;
 
 	virtual void clockInt(unsigned int ms);
 

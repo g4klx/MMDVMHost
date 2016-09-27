@@ -43,6 +43,7 @@ public:
 	void clock(unsigned int ms);
 
 private:
+	unsigned char*             m_callsign;
 	CYSFNetwork*               m_network;
 	CDisplay*                  m_display;
 	bool                       m_duplex;

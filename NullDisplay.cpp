@@ -76,6 +76,14 @@ void CNullDisplay::clearP25Int()
 {
 }
 
+void CNullDisplay::writeCWInt()
+{
+}
+
+void CNullDisplay::clearCWInt()
+{
+}
+
 void CNullDisplay::close()
 {
 }
