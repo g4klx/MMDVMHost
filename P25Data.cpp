@@ -35,6 +35,11 @@ const unsigned char DUMMY_HEADER[] = {
 	0xE3U, 0x28U, 0xB0U, 0xB7U, 0x73U, 0x76U, 0x1EU, 0x26U, 0x0CU, 0x75U, 0x5BU, 0xF7U, 0x4DU, 0x5FU, 0x5AU, 0x37U,
 	0x18U};
 
+const unsigned char DUMMY_LDU2[] = {
+	0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x80U, 0x00U, 0x00U, 0xACU, 0xB8U, 0xA4U, 0x9BU,
+	0xDCU, 0x75U
+};
+	
 const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
 
 #define WRITE_BIT(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
@@ -43,14 +48,13 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 CP25Data::CP25Data() :
 m_mi(NULL),
 m_mfId(0U),
-m_algId(0U),
+m_algId(0x80U),
 m_kId(0U),
 m_lcf(0x00U),
 m_emergency(false),
 m_srcId(0U),
 m_dstId(0U),
-m_rs241213(),
-m_rs24169()
+m_rs241213()
 {
 	m_mi = new unsigned char[P25_MI_LENGTH_BYTES];
 }
@@ -58,20 +62,6 @@ m_rs24169()
 CP25Data::~CP25Data()
 {
 	delete[] m_mi;
-}
-
-void CP25Data::processHeader(unsigned char* data)
-{
-	assert(data != NULL);
-
-	unsigned char raw[81U];
-	CP25Utils::decode(data, raw, 114U, 780U);
-
-	// CUtils::dump(1U, "P25, raw header", raw, 81U);
-
-	// XXX Need to add FEC code
-
-	CP25Utils::encode(DUMMY_HEADER, data, 114U, 780U);
 }
 
 void CP25Data::encodeHeader(unsigned char* data)
@@ -129,7 +119,7 @@ void CP25Data::processLDU1(unsigned char* data)
 		break;
 	}
 
-	// m_rs241213.encode(rs);
+	m_rs241213.encode(rs);
 
 	// CUtils::dump(1U, "P25, LDU1 Data after", rs, 18U);
 
@@ -208,97 +198,27 @@ void CP25Data::encodeLDU1(unsigned char* data)
 	CP25Utils::encode(raw, data, 1356U, 1398U);
 }
 
-void CP25Data::processLDU2(unsigned char* data)
-{
-	assert(data != NULL);
-
-	unsigned char rs[18U];
-
-	unsigned char raw[5U];
-	CP25Utils::decode(data, raw, 410U, 452U);
-	decodeLDUHamming(raw, rs + 0U);
-
-	CP25Utils::decode(data, raw, 600U, 640U);
-	decodeLDUHamming(raw, rs + 3U);
-
-	CP25Utils::decode(data, raw, 788U, 830U);
-	decodeLDUHamming(raw, rs + 6U);
-
-	CP25Utils::decode(data, raw, 978U, 1020U);
-	decodeLDUHamming(raw, rs + 9U);
-
-	CP25Utils::decode(data, raw, 1168U, 1208U);
-	decodeLDUHamming(raw, rs + 12U);
-
-	CP25Utils::decode(data, raw, 1356U, 1398U);
-	decodeLDUHamming(raw, rs + 15U);
-
-	// CUtils::dump(1U, "P25, LDU2 Data before", rs, 18U);
-
-	m_rs24169.decode(rs);
-
-	::memcpy(m_mi, rs + 0U, P25_MI_LENGTH_BYTES);
-	m_algId = rs[9U];
-	m_kId   = (rs[10U] << 8) + rs[11U];
-
-	// m_rs24169.encode(rs);
-
-	// CUtils::dump(1U, "P25, LDU2 Data after", rs, 18U);
-
-	encodeLDUHamming(raw, rs + 0U);
-	CP25Utils::encode(raw, data, 410U, 452U);
-
-	encodeLDUHamming(raw, rs + 3U);
-	CP25Utils::encode(raw, data, 600U, 640U);
-
-	encodeLDUHamming(raw, rs + 6U);
-	CP25Utils::encode(raw, data, 788U, 830U);
-
-	encodeLDUHamming(raw, rs + 9U);
-	CP25Utils::encode(raw, data, 978U, 1020U);
-
-	encodeLDUHamming(raw, rs + 12U);
-	CP25Utils::encode(raw, data, 1168U, 1208U);
-
-	encodeLDUHamming(raw, rs + 15U);
-	CP25Utils::encode(raw, data, 1356U, 1398U);
-}
-
 void CP25Data::encodeLDU2(unsigned char* data)
 {
 	assert(data != NULL);
 
-	unsigned char rs[18U];
-	::memset(rs, 0x00U, 18U);
-
-	::memcpy(rs + 0U, m_mi, P25_MI_LENGTH_BYTES);
-
-	rs[9U] = m_algId;
-
-	rs[10U] = (m_kId >> 8) & 0xFFU;
-	rs[11U] = (m_kId >> 0) & 0xFFU;
-
-	// m_rs24169.encode(rs);
-
-	// CUtils::dump(1U, "P25, LDU2 Data", rs, 18U);
-
 	unsigned char raw[5U];
-	encodeLDUHamming(raw, rs + 0U);
+	encodeLDUHamming(raw, DUMMY_LDU2 + 0U);
 	CP25Utils::encode(raw, data, 410U, 452U);
 
-	encodeLDUHamming(raw, rs + 3U);
+	encodeLDUHamming(raw, DUMMY_LDU2 + 3U);
 	CP25Utils::encode(raw, data, 600U, 640U);
 
-	encodeLDUHamming(raw, rs + 6U);
+	encodeLDUHamming(raw, DUMMY_LDU2 + 6U);
 	CP25Utils::encode(raw, data, 788U, 830U);
 
-	encodeLDUHamming(raw, rs + 9U);
+	encodeLDUHamming(raw, DUMMY_LDU2 + 9U);
 	CP25Utils::encode(raw, data, 978U, 1020U);
 
-	encodeLDUHamming(raw, rs + 12U);
+	encodeLDUHamming(raw, DUMMY_LDU2 + 12U);
 	CP25Utils::encode(raw, data, 1168U, 1208U);
 
-	encodeLDUHamming(raw, rs + 15U);
+	encodeLDUHamming(raw, DUMMY_LDU2 + 15U);
 	CP25Utils::encode(raw, data, 1356U, 1398U);
 }
 

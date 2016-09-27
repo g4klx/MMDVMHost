@@ -26,13 +26,11 @@ public:
 	CP25Data();
 	~CP25Data();
 
-	void processHeader(unsigned char* data);
 	void encodeHeader(unsigned char* data);
 
 	void processLDU1(unsigned char* data);
 	void encodeLDU1(unsigned char* data);
 
-	void processLDU2(unsigned char* data);
 	void encodeLDU2(unsigned char* data);
 
 	void setMI(const unsigned char* mi);
@@ -71,7 +69,6 @@ private:
 	unsigned int   m_srcId;
 	unsigned int   m_dstId;
 	CRS241213      m_rs241213;
-	CRS24169       m_rs24169;
 
 	void decodeLDUHamming(const unsigned char* raw, unsigned char* data);
 	void encodeLDUHamming(unsigned char* data, const unsigned char* raw);

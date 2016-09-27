@@ -135,7 +135,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		m_nid.encode(data + 2U, P25_DUID_HEADER);
 
 		// Add the dummy header
-		m_netData.processHeader(data + 2U);
+		m_netData.encodeHeader(data + 2U);
 
 		// Add busy bits
 		addBusyBits(data + 2U, P25_HDR_FRAME_LENGTH_BITS, false, true);
@@ -226,8 +226,8 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		// Regenerate NID
 		m_nid.encode(data + 2U, P25_DUID_LDU2);
 
-		// Regenerate the LDU2 data
-		m_rfData.processLDU2(data + 2U);
+		// Add the dummy LDU2 data
+		m_rfData.encodeLDU2(data + 2U);
 
 		// Regenerate the Low Speed Data
 		m_rfLSD.process(data + 2U);
@@ -328,7 +328,7 @@ void CP25Control::writeNetwork()
 		::memcpy(m_netLDU1 + 0U, data, 22U);
 		return;
 	case 0x63U:
-		::memcpy(m_netLDU1 + 25U, data, 13U);
+		::memcpy(m_netLDU1 + 25U, data, 14U);
 		return;
 	case 0x64U:
 		::memcpy(m_netLDU1 + 50U, data, 17U);
@@ -357,7 +357,7 @@ void CP25Control::writeNetwork()
 		::memcpy(m_netLDU2 + 0U, data, 22U);
 		return;
 	case 0x6CU:
-		::memcpy(m_netLDU2 + 25U, data, 13U);
+		::memcpy(m_netLDU2 + 25U, data, 14U);
 		return;
 	case 0x6DU:
 		::memcpy(m_netLDU2 + 50U, data, 17U);
@@ -605,7 +605,7 @@ void CP25Control::createLDU2()
 	// Add the NID
 	m_nid.encode(buffer + 2U, P25_DUID_LDU2);
 
-	// Add the LDU2 data
+	// Add the dummy LDU2 data
 	m_netData.encodeLDU2(buffer + 2U);
 
 	// Add the Audio
