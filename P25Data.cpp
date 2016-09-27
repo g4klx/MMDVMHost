@@ -71,7 +71,7 @@ void CP25Data::encodeHeader(unsigned char* data)
 	CP25Utils::encode(DUMMY_HEADER, data, 114U, 780U);
 }
 
-void CP25Data::processLDU1(unsigned char* data)
+bool CP25Data::processLDU1(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -96,9 +96,11 @@ void CP25Data::processLDU1(unsigned char* data)
 	CP25Utils::decode(data, raw, 1356U, 1398U);
 	decodeLDUHamming(raw, rs + 15U);
 
-	// CUtils::dump(1U, "P25, LDU1 Data before", rs, 18U);
-
-	m_rs241213.decode(rs);
+	bool ret = m_rs241213.decode(rs);
+	if (!ret) {
+		LogDebug("P25, uncorrectable errors in the RS(24,12,13) code");
+		return false;
+	}
 
 	m_lcf  = rs[0U];
 	m_mfId = rs[1U];
@@ -119,9 +121,7 @@ void CP25Data::processLDU1(unsigned char* data)
 		break;
 	}
 
-	// m_rs241213.encode(rs);
-
-	// CUtils::dump(1U, "P25, LDU1 Data after", rs, 18U);
+	m_rs241213.encode(rs);
 
 	encodeLDUHamming(raw, rs + 0U);
 	CP25Utils::encode(raw, data, 410U, 452U);
@@ -140,6 +140,8 @@ void CP25Data::processLDU1(unsigned char* data)
 
 	encodeLDUHamming(raw, rs + 15U);
 	CP25Utils::encode(raw, data, 1356U, 1398U);
+
+	return true;
 }
 
 void CP25Data::encodeLDU1(unsigned char* data)
@@ -174,9 +176,7 @@ void CP25Data::encodeLDU1(unsigned char* data)
 		break;
 	}
 
-	// m_rs241213.encode(rs);
-
-	// CUtils::dump(1U, "P25, LDU1 Data", rs, 18U);
+	m_rs241213.encode(rs);
 
 	unsigned char raw[5U];
 	encodeLDUHamming(raw, rs + 0U);

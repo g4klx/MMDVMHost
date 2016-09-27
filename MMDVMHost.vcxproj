@@ -192,8 +192,8 @@
     <ClInclude Include="P25Utils.h" />
     <ClInclude Include="QR1676.h" />
     <ClInclude Include="RingBuffer.h" />
-    <ClInclude Include="RS.h" />
     <ClInclude Include="RS129.h" />
+    <ClInclude Include="RS241213.h" />
     <ClInclude Include="SerialController.h" />
     <ClInclude Include="SHA256.h" />
     <ClInclude Include="StopWatch.h" />
@@ -253,8 +253,8 @@
     <ClCompile Include="P25NID.cpp" />
     <ClCompile Include="P25Utils.cpp" />
     <ClCompile Include="QR1676.cpp" />
-    <ClCompile Include="RS.cpp" />
     <ClCompile Include="RS129.cpp" />
+    <ClCompile Include="RS241213.cpp" />
     <ClCompile Include="SerialController.cpp" />
     <ClCompile Include="SHA256.cpp" />
     <ClCompile Include="StopWatch.cpp" />

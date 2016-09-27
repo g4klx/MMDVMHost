@@ -19,7 +19,7 @@
 #if !defined(P25Data_H)
 #define  P25Data_H
 
-#include "RS.h"
+#include "RS241213.h"
 
 class CP25Data {
 public:
@@ -28,7 +28,7 @@ public:
 
 	void encodeHeader(unsigned char* data);
 
-	void processLDU1(unsigned char* data);
+	bool processLDU1(unsigned char* data);
 	void encodeLDU1(unsigned char* data);
 
 	void encodeLDU2(unsigned char* data);
