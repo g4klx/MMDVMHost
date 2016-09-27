@@ -28,7 +28,7 @@ public:
 
 	void encodeHeader(unsigned char* data);
 
-	bool processLDU1(unsigned char* data);
+	bool decodeLDU1(const unsigned char* data);
 	void encodeLDU1(unsigned char* data);
 
 	void encodeLDU2(unsigned char* data);

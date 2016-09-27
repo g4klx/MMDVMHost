@@ -81,10 +81,12 @@ private:
 
 	void addBusyBits(unsigned char* data, unsigned int length, bool b1, bool b2);
 
-	void createHeader();
-	void createLDU1();
-	void createLDU2();
-	void createTerminator(const unsigned char* data);
+	void createRFHeader();
+
+	void createNetHeader();
+	void createNetLDU1();
+	void createNetLDU2();
+	void createNetTerminator(const unsigned char* data);
 
 	bool openFile();
 	bool writeFile(const unsigned char* data, unsigned char length);

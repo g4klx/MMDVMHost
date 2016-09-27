@@ -71,7 +71,7 @@ void CP25Data::encodeHeader(unsigned char* data)
 	CP25Utils::encode(DUMMY_HEADER, data, 114U, 780U);
 }
 
-bool CP25Data::processLDU1(unsigned char* data)
+bool CP25Data::decodeLDU1(const unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -102,9 +102,6 @@ bool CP25Data::processLDU1(unsigned char* data)
 		return false;
 	}
 
-	m_lcf  = rs[0U];
-	m_mfId = rs[1U];
-
 	switch (m_lcf) {
 	case P25_LCF_GROUP:
 		m_emergency = (rs[2U] & 0x80U) == 0x80U;
@@ -118,28 +115,11 @@ bool CP25Data::processLDU1(unsigned char* data)
 		break;
 	default:
 		LogMessage("P25, unknown LCF value in LDU1 - $%02X", m_lcf);
-		break;
+		return false;
 	}
 
-	m_rs241213.encode(rs);
-
-	encodeLDUHamming(raw, rs + 0U);
-	CP25Utils::encode(raw, data, 410U, 452U);
-
-	encodeLDUHamming(raw, rs + 3U);
-	CP25Utils::encode(raw, data, 600U, 640U);
-
-	encodeLDUHamming(raw, rs + 6U);
-	CP25Utils::encode(raw, data, 788U, 830U);
-
-	encodeLDUHamming(raw, rs + 9U);
-	CP25Utils::encode(raw, data, 978U, 1020U);
-
-	encodeLDUHamming(raw, rs + 12U);
-	CP25Utils::encode(raw, data, 1168U, 1208U);
-
-	encodeLDUHamming(raw, rs + 15U);
-	CP25Utils::encode(raw, data, 1356U, 1398U);
+	m_lcf  = rs[0U];
+	m_mfId = rs[1U];
 
 	return true;
 }
