@@ -36,7 +36,7 @@ bool CallsignCompare(const std::string& arg, const unsigned char* my)
 
 // #define	DUMP_DSTAR
 
-CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, const std::vector<std::string>& blackList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, int rssiMultiplier, int rssiOffset) :
+CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, const std::vector<std::string>& blackList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex) :
 m_callsign(NULL),
 m_gateway(NULL),
 m_selfOnly(selfOnly),
@@ -70,8 +70,6 @@ m_rfErrs(0U),
 m_netErrs(0U),
 m_lastFrame(NULL),
 m_lastFrameValid(false),
-m_rssiMultiplier(rssiMultiplier),
-m_rssiOffset(rssiOffset),
 m_fp(NULL)
 {
 	assert(display != NULL);
@@ -121,16 +119,6 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 	if (type == TAG_LOST) {
 		m_rfState = RS_RF_LISTENING;
 		return false;
-	}
-
-	// Have we got RSSI bytes on the end?
-	if (len == (DSTAR_FRAME_LENGTH_BYTES + 3U) && m_rssiMultiplier != 0) {
-		uint16_t raw = 0U;
-		raw |= (data[35U] << 8) & 0xFF00U;
-		raw |= (data[36U] << 0) & 0x00FFU;
-		int rssi = (raw - m_rssiOffset) / m_rssiMultiplier;
-		unsigned char m_rssi = (rssi >= 0) ? rssi : -rssi;
-		LogDebug("D-Star, raw RSSI: %u, reported RSSI: -%u dBm", raw, m_rssi);
 	}
 
 	if (type == TAG_HEADER) {

@@ -293,8 +293,6 @@ int CMMDVMHost::run()
 		std::string module = m_conf.getDStarModule();
 		bool selfOnly      = m_conf.getDStarSelfOnly();
 		std::vector<std::string> blackList = m_conf.getDStarBlackList();
-		int rssiMultiplier = m_conf.getModemRSSIMultiplier();
-		int rssiOffset     = m_conf.getModemRSSIOffset();
 
 		LogInfo("D-Star Parameters");
 		LogInfo("    Module: %s", module.c_str());
@@ -303,12 +301,7 @@ int CMMDVMHost::run()
 		if (blackList.size() > 0U)
 			LogInfo("    Black List: %u", blackList.size());
 
-		if (rssiMultiplier != 0) {
-			LogInfo("    RSSI Multiplier: %d", rssiMultiplier);
-			LogInfo("    RSSI Offset: %d", rssiOffset);
-		}
-
-		dstar = new CDStarControl(m_callsign, module, selfOnly, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex, rssiMultiplier, rssiOffset);
+		dstar = new CDStarControl(m_callsign, module, selfOnly, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex);
 	}
 
 	CDMRControl* dmr = NULL;
@@ -395,35 +388,21 @@ int CMMDVMHost::run()
 	CYSFControl* ysf = NULL;
 	if (m_ysfEnabled) {
 		bool remoteGateway = m_conf.getFusionRemoteGateway();
-		int rssiMultiplier = m_conf.getModemRSSIMultiplier();
-		int rssiOffset     = m_conf.getModemRSSIOffset();
 
 		LogInfo("YSF Parameters");
 		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
 
-		if (rssiMultiplier != 0) {
-			LogInfo("    RSSI Multiplier: %d", rssiMultiplier);
-			LogInfo("    RSSI Offset: %d", rssiOffset);
-		}
-
-		ysf = new CYSFControl(m_callsign, m_ysfNetwork, m_display, m_timeout, m_duplex, remoteGateway, rssiMultiplier, rssiOffset);
+		ysf = new CYSFControl(m_callsign, m_ysfNetwork, m_display, m_timeout, m_duplex, remoteGateway);
 	}
 
 	CP25Control* p25 = NULL;
 	if (m_p25Enabled) {
 		unsigned int nac   = m_conf.getP25NAC();
-		int rssiMultiplier = m_conf.getModemRSSIMultiplier();
-		int rssiOffset     = m_conf.getModemRSSIOffset();
 
 		LogInfo("P25 Parameters");
 		LogInfo("    NAC: $%03X", nac);
 
-		if (rssiMultiplier != 0) {
-			LogInfo("    RSSI Multiplier: %d", rssiMultiplier);
-			LogInfo("    RSSI Offset: %d", rssiOffset);
-		}
-
-		p25 = new CP25Control(nac, m_p25Network, m_display, m_timeout, m_duplex, lookup, rssiMultiplier, rssiOffset);
+		p25 = new CP25Control(nac, m_p25Network, m_display, m_timeout, m_duplex, lookup);
 	}
 
 	setMode(MODE_IDLE);

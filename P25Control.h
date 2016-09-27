@@ -35,7 +35,7 @@
 
 class CP25Control {
 public:
-	CP25Control(unsigned int nac, CP25Network* network, CDisplay* display, unsigned int timeout, bool duplex, CDMRLookup* lookup, int rssiMultiplier, int rssiOffset);
+	CP25Control(unsigned int nac, CP25Network* network, CDisplay* display, unsigned int timeout, bool duplex, CDMRLookup* lookup);
 	~CP25Control();
 
 	bool writeModem(unsigned char* data, unsigned int len);
@@ -50,8 +50,6 @@ private:
 	CDisplay*      m_display;
 	bool           m_duplex;
 	CDMRLookup*    m_lookup;
-	int            m_rssiMultiplier;
-	int            m_rssiOffset;
 	CRingBuffer<unsigned char> m_queue;
 	RPT_RF_STATE   m_rfState;
 	RPT_NET_STATE  m_netState;

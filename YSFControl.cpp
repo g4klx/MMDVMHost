@@ -24,7 +24,7 @@
 
 // #define	DUMP_YSF
 
-CYSFControl::CYSFControl(const std::string& callsign, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, int rssiMultiplier, int rssiOffset) :
+CYSFControl::CYSFControl(const std::string& callsign, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway) :
 m_callsign(NULL),
 m_network(network),
 m_display(display),
@@ -56,8 +56,6 @@ m_lastMR(YSF_MR_NOT_BUSY),
 m_netN(0U),
 m_rfPayload(),
 m_netPayload(),
-m_rssiMultiplier(rssiMultiplier),
-m_rssiOffset(rssiOffset),
 m_fp(NULL)
 {
 	assert(display != NULL);
@@ -103,16 +101,6 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 
 	if (type == TAG_LOST)
 		return false;
-
-	// Have we got RSSI bytes on the end?
-	if (len == (YSF_FRAME_LENGTH_BYTES + 4U) && m_rssiMultiplier != 0) {
-		uint16_t raw = 0U;
-		raw |= (data[35U] << 8) & 0xFF00U;
-		raw |= (data[36U] << 0) & 0x00FFU;
-		int rssi = (raw - m_rssiOffset) / m_rssiMultiplier;
-		unsigned char m_rssi = (rssi >= 0) ? rssi : -rssi;
-		LogDebug("YSF, raw RSSI: %u, reported RSSI: -%u dBm", raw, m_rssi);
-	}
 
 	CYSFFICH fich;
 	bool valid = fich.decode(data + 2U);

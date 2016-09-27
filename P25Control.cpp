@@ -35,14 +35,12 @@ const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U
 #define WRITE_BIT(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
-CP25Control::CP25Control(unsigned int nac, CP25Network* network, CDisplay* display, unsigned int timeout, bool duplex, CDMRLookup* lookup, int rssiMultiplier, int rssiOffset) :
+CP25Control::CP25Control(unsigned int nac, CP25Network* network, CDisplay* display, unsigned int timeout, bool duplex, CDMRLookup* lookup) :
 m_nac(nac),
 m_network(network),
 m_display(display),
 m_duplex(duplex),
 m_lookup(lookup),
-m_rssiMultiplier(rssiMultiplier),
-m_rssiOffset(rssiOffset),
 m_queue(1000U, "P25 Control"),
 m_rfState(RS_RF_LISTENING),
 m_netState(RS_NET_IDLE),

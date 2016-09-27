@@ -33,7 +33,7 @@
 
 class CYSFControl {
 public:
-	CYSFControl(const std::string& callsign, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, int rssiMultiplier, int rssiOffset);
+	CYSFControl(const std::string& callsign, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway);
 	~CYSFControl();
 
 	bool writeModem(unsigned char* data, unsigned int len);
@@ -74,8 +74,6 @@ private:
 	unsigned char              m_netN;
 	CYSFPayload                m_rfPayload;
 	CYSFPayload                m_netPayload;
-	int                        m_rssiMultiplier;
-	int                        m_rssiOffset;
 	FILE*                      m_fp;
 
 	void writeQueueRF(const unsigned char* data);
