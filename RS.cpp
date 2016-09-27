@@ -17,6 +17,7 @@
 */
 
 #include "RS.h"
+#include "Log.h"
 
 #include <cstdio>
 #include <cassert>
@@ -91,8 +92,10 @@ bool CRS362017::decode(unsigned char* data)
 
 	// Now we can call decode on the base class
 	int irrecoverable_errors = CReedSolomon63<8>::decode(input, output);
-	if (irrecoverable_errors != 0)
+	if (irrecoverable_errors != 0) {
+		LogWarning("Unrecoverable errors in the RS(36,20,17) code");
 		return false;
+	}
 
 	// Convert it back to binary and put it into hex_data.
 	offset = 0U;
@@ -168,8 +171,10 @@ bool CRS241213::decode(unsigned char* data)
 
 	// Now we can call decode on the base class
 	int irrecoverable_errors = CReedSolomon63<6>::decode(input, output);
-	if (irrecoverable_errors != 0)
+	if (irrecoverable_errors != 0) {
+		LogWarning("Unrecoverable errors in the RS(24,12,13) code");
 		return false;
+	}
 
 	// Convert it back to binary and put it into hex_data.
 	offset = 0U;
@@ -245,8 +250,10 @@ bool CRS24169::decode(unsigned char* data)
 
 	// Now we can call decode on the base class
 	int irrecoverable_errors = CReedSolomon63<4>::decode(input, output);
-	if (irrecoverable_errors != 0)
+	if (irrecoverable_errors != 0) {
+		LogWarning("Unrecoverable errors in the RS(24,16,9) code");
 		return false;
+	}
 
 	// Convert it back to binary and put it into hex_data.
 	offset = 0U;

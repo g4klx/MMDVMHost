@@ -562,7 +562,7 @@ void CModem::clock(unsigned int ms)
 		m_txP25Data.getData(m_buffer, len);
 
 		if (m_debug) {
-			if (m_buffer[3U] == MMDVM_P25_HDR)
+			if (m_buffer[2U] == MMDVM_P25_HDR)
 				CUtils::dump(1U, "TX P25 HDR", m_buffer, len);
 			else
 				CUtils::dump(1U, "TX P25 LDU", m_buffer, len);
