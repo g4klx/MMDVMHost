@@ -119,7 +119,7 @@ void CP25Data::processLDU1(unsigned char* data)
 		break;
 	}
 
-	m_rs241213.encode(rs);
+	// m_rs241213.encode(rs);
 
 	// CUtils::dump(1U, "P25, LDU1 Data after", rs, 18U);
 
