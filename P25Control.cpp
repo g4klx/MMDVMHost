@@ -104,6 +104,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		LogMessage("P25, transmission lost, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
 		if (m_netState == RS_NET_IDLE)
 			m_display->clearP25();
+		writeNetwork(m_rfLDU, m_lastDUID, true);
 		writeNetwork(data + 2U, P25_DUID_TERM, true);
 		m_rfState = RS_RF_LISTENING;
 		m_rfTimeout.stop();
@@ -149,11 +150,8 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 
 			createRFHeader();
 			writeNetwork(data + 2U, P25_DUID_HEADER, false);
-		}
-
-		if (m_rfLDU[0U] != 0x00U) {
+		} else {
 			writeNetwork(m_rfLDU, m_lastDUID, false);
-			::memset(m_rfLDU, 0x00U, P25_LDU_FRAME_LENGTH_BYTES);
 		}
 
 		// Regenerate Sync
@@ -205,10 +203,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		if (m_rfState == RS_RF_LISTENING)
 			return false;
 
-		if (m_rfLDU[0U] != 0x00U) {
-			writeNetwork(m_rfLDU, m_lastDUID, false);
-			::memset(m_rfLDU, 0x00U, P25_LDU_FRAME_LENGTH_BYTES);
-		}
+		writeNetwork(m_rfLDU, m_lastDUID, false);
 
 		// Regenerate Sync
 		CSync::addP25Sync(data + 2U);
@@ -249,10 +244,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		if (m_rfState == RS_RF_LISTENING)
 			return false;
 
-		if (m_rfLDU[0U] != 0x00U) {
-			writeNetwork(m_rfLDU, m_lastDUID, true);
-			::memset(m_rfLDU, 0x00U, P25_LDU_FRAME_LENGTH_BYTES);
-		}
+		writeNetwork(m_rfLDU, m_lastDUID, true);
 
 		::memset(data + 2U, 0x00U, P25_TERM_FRAME_LENGTH_BYTES);
 
