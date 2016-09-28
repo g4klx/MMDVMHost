@@ -89,8 +89,8 @@ bool CP25Network::writeHeader(const CP25Data& control)
 	unsigned char buffer[22U];
 	::memset(buffer, 0x00U, 22U);
 	buffer[0U] = 0x61U;
-	buffer[1U] = (tgid << 8) & 0xFFU;
-	buffer[2U] = (tgid << 0) & 0xFFU;
+	buffer[1U] = (tgid >> 8) & 0xFFU;
+	buffer[2U] = (tgid >> 0) & 0xFFU;
 	buffer[21U] = 0x02U;
 
 	if (m_debug)
@@ -113,6 +113,7 @@ bool CP25Network::writeLDU1(const unsigned char* ldu1, const CP25Data& control, 
 	::memset(buffer, 0x00U, 22U);
 	::memcpy(buffer, STARTICW, 10U);
 	buffer[0U] = 0x62U;
+	buffer[9U] = 0x80U;
 	m_audio.decode(ldu1, buffer + 10U, 0U);
 	buffer[21U] = 0x02U;
 
@@ -252,6 +253,7 @@ bool CP25Network::writeLDU2(const unsigned char* ldu2, const CP25Data& control, 
 	::memset(buffer, 0x00U, 22U);
 	::memcpy(buffer, STARTICW, 10U);
 	buffer[0U] = 0x6BU;
+	buffer[9U] = 0x80U;
 	m_audio.decode(ldu2, buffer + 10U, 0U);
 	buffer[21U] = 0x02U;
 
