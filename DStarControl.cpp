@@ -470,7 +470,7 @@ void CDStarControl::writeNetwork()
 
 		m_netTimeoutTimer.start();
 		m_packetTimer.start();
-		m_elapsed.start();
+		//m_elapsed.start();                 // commented out and placed lower down due to delay introduced somewhere below here.
 		m_ackTimer.stop();
 
 		m_lastFrameValid = false;
@@ -500,7 +500,12 @@ void CDStarControl::writeNetwork()
 		} else {
 			m_display->writeDStar((char*)my1, (char*)my2, (char*)your, "N", (char*) "        ");
 			LogMessage("D-Star, received network header from %8.8s/%4.4s to %8.8s", my1, my2, your);
-		}
+		}	
+
+		// Something just above here introduces a large delay forcing erroneous(?) insertion of silence packets.
+		// Starting the elapsed timer here instead of the commented out position above solves that.
+		m_elapsed.start();
+
 	} else if (type == TAG_EOT) {
 		if (m_netState != RS_NET_AUDIO)
 			return;
