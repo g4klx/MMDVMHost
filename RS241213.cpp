@@ -114,7 +114,7 @@ bool CRS241213::decode(unsigned char* data)
 		S[i] = HB[0];
 	}
 
-	for (j = 1; j <= 62; j++) {
+	for (j = 1; j <= 23; j++) {		// XXX was 62
 		for (i = 0; i <= nroots - 1; i++) {
 			if (S[i] == 0) {
 				S[i] = HB[j];
