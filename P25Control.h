@@ -71,11 +71,12 @@ private:
 	unsigned char* m_netLDU1;
 	unsigned char* m_netLDU2;
 	unsigned char* m_lastIMBE;
+	unsigned char* m_rfLDU;
 	FILE*          m_fp;
 
 	void writeQueueRF(const unsigned char* data, unsigned int length);
 	void writeQueueNet(const unsigned char* data, unsigned int length);
-	void writeNetwork(const unsigned char *data, unsigned char type);
+	void writeNetwork(const unsigned char *data, unsigned char type, bool end);
 	void writeNetwork();
 
 	void addBusyBits(unsigned char* data, unsigned int length, bool b1, bool b2);
@@ -87,7 +88,7 @@ private:
 	void createNetHeader();
 	void createNetLDU1();
 	void createNetLDU2();
-	void createNetTerminator(const unsigned char* data);
+	void createNetTerminator();
 
 	bool openFile();
 	bool writeFile(const unsigned char* data, unsigned char length);

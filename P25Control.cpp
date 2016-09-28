@@ -62,6 +62,7 @@ m_netLSD(),
 m_netLDU1(NULL),
 m_netLDU2(NULL),
 m_lastIMBE(NULL),
+m_rfLDU(NULL),
 m_fp(NULL)
 {
 	assert(display != NULL);
@@ -75,6 +76,9 @@ m_fp(NULL)
 
 	m_lastIMBE = new unsigned char[11U];
 	::memcpy(m_lastIMBE, P25_NULL_IMBE, 11U);
+
+	m_rfLDU = new unsigned char[P25_LDU_FRAME_LENGTH_BYTES];
+	::memset(m_rfLDU, 0x00U, P25_LDU_FRAME_LENGTH_BYTES);
 }
 
 CP25Control::~CP25Control()
@@ -82,6 +86,7 @@ CP25Control::~CP25Control()
 	delete[] m_netLDU1;
 	delete[] m_netLDU2;
 	delete[] m_lastIMBE;
+	delete[] m_rfLDU;
 }
 
 bool CP25Control::writeModem(unsigned char* data, unsigned int len)
@@ -99,7 +104,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		LogMessage("P25, transmission lost, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
 		if (m_netState == RS_NET_IDLE)
 			m_display->clearP25();
-		writeNetwork(data + 2U, P25_DUID_TERM);
+		writeNetwork(data + 2U, P25_DUID_TERM, true);
 		m_rfState = RS_RF_LISTENING;
 		m_rfTimeout.stop();
 		m_rfData.reset();
@@ -143,6 +148,12 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			}
 
 			createRFHeader();
+			writeNetwork(data + 2U, P25_DUID_HEADER, false);
+		}
+
+		if (m_rfLDU[0U] != 0x00U) {
+			writeNetwork(m_rfLDU, m_lastDUID, false);
+			::memset(m_rfLDU, 0x00U, P25_LDU_FRAME_LENGTH_BYTES);
 		}
 
 		// Regenerate Sync
@@ -173,10 +184,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		writeFile(data + 2U, len - 2U);
 #endif
 
-		if (m_rfFrames == 1U)
-			writeNetwork(data + 2U, P25_DUID_HEADER);
-
-		writeNetwork(data + 2U, P25_DUID_LDU1);
+		::memcpy(m_rfLDU, data + 2U, P25_LDU_FRAME_LENGTH_BYTES);
 
 		if (m_duplex) {
 			data[0U] = TAG_DATA;
@@ -196,6 +204,11 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 	} else if (duid == P25_DUID_LDU2) {
 		if (m_rfState == RS_RF_LISTENING)
 			return false;
+
+		if (m_rfLDU[0U] != 0x00U) {
+			writeNetwork(m_rfLDU, m_lastDUID, false);
+			::memset(m_rfLDU, 0x00U, P25_LDU_FRAME_LENGTH_BYTES);
+		}
 
 		// Regenerate Sync
 		CSync::addP25Sync(data + 2U);
@@ -225,7 +238,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		writeFile(data + 2U, len - 2U);
 #endif
 
-		writeNetwork(data + 2U, P25_DUID_LDU2);
+		::memcpy(m_rfLDU, data + 2U, P25_LDU_FRAME_LENGTH_BYTES);
 
 		if (m_duplex) {
 			data[0U] = TAG_DATA;
@@ -235,6 +248,11 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 	} else if (duid == P25_DUID_TERM || duid == P25_DUID_TERM_LC) {
 		if (m_rfState == RS_RF_LISTENING)
 			return false;
+
+		if (m_rfLDU[0U] != 0x00U) {
+			writeNetwork(m_rfLDU, m_lastDUID, true);
+			::memset(m_rfLDU, 0x00U, P25_LDU_FRAME_LENGTH_BYTES);
+		}
 
 		::memset(data + 2U, 0x00U, P25_TERM_FRAME_LENGTH_BYTES);
 
@@ -259,7 +277,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		closeFile();
 #endif
 
-		writeNetwork(data + 2U, P25_DUID_TERM);
+		writeNetwork(data + 2U, P25_DUID_TERM, true);
 
 		if (m_duplex) {
 			data[0U] = TAG_EOT;
@@ -303,57 +321,57 @@ void CP25Control::writeNetwork()
 	switch (data[0U]) {
 	case 0x62U:
 		::memcpy(m_netLDU1 + 0U, data, 22U);
-		return;
+		break;
 	case 0x63U:
 		::memcpy(m_netLDU1 + 25U, data, 14U);
-		return;
+		break;
 	case 0x64U:
 		::memcpy(m_netLDU1 + 50U, data, 17U);
-		return;
+		break;
 	case 0x65U:
 		::memcpy(m_netLDU1 + 75U, data, 17U);
-		return;
+		break;
 	case 0x66U:
 		::memcpy(m_netLDU1 + 100U, data, 17U);
-		return;
+		break;
 	case 0x67U:
 		::memcpy(m_netLDU1 + 125U, data, 17U);
-		return;
+		break;
 	case 0x68U:
 		::memcpy(m_netLDU1 + 150U, data, 17U);
-		return;
+		break;
 	case 0x69U:
 		::memcpy(m_netLDU1 + 175U, data, 17U);
-		return;
+		break;
 	case 0x6AU:
 		::memcpy(m_netLDU1 + 200U, data, 16U);
 		if (m_netState != RS_NET_IDLE)
 			createNetLDU1();
-		return;
+		break;
 	case 0x6BU:
 		::memcpy(m_netLDU2 + 0U, data, 22U);
-		return;
+		break;
 	case 0x6CU:
 		::memcpy(m_netLDU2 + 25U, data, 14U);
-		return;
+		break;
 	case 0x6DU:
 		::memcpy(m_netLDU2 + 50U, data, 17U);
-		return;
+		break;
 	case 0x6EU:
 		::memcpy(m_netLDU2 + 75U, data, 17U);
-		return;
+		break;
 	case 0x6FU:
 		::memcpy(m_netLDU2 + 100U, data, 17U);
-		return;
+		break;
 	case 0x70U:
 		::memcpy(m_netLDU2 + 125U, data, 17U);
-		return;
+		break;
 	case 0x71U:
 		::memcpy(m_netLDU2 + 150U, data, 17U);
-		return;
+		break;
 	case 0x72U:
 		::memcpy(m_netLDU2 + 175U, data, 17U);
-		return;
+		break;
 	case 0x73U:
 		::memcpy(m_netLDU2 + 200U, data, 16U);
 		if (m_netState != RS_NET_IDLE) {
@@ -361,12 +379,9 @@ void CP25Control::writeNetwork()
 			createNetLDU1();
 		}
 		createNetLDU2();
-		return;
-	case 0x00U:
-		createNetTerminator(data);
-		return;
+		break;
 	default:
-		return;
+		break;
 	}
 }
 
@@ -430,7 +445,7 @@ void CP25Control::writeQueueNet(const unsigned char* data, unsigned int length)
 	m_queue.addData(data, len);
 }
 
-void CP25Control::writeNetwork(const unsigned char *data, unsigned char type)
+void CP25Control::writeNetwork(const unsigned char *data, unsigned char type, bool end)
 {
 	assert(data != NULL);
 
@@ -446,10 +461,10 @@ void CP25Control::writeNetwork(const unsigned char *data, unsigned char type)
 		m_network->writeHeader(m_rfData);
 		break;
 	case P25_DUID_LDU1:
-		m_network->writeLDU1(data, m_rfData, m_rfLSD);
+		m_network->writeLDU1(data, m_rfData, m_rfLSD, end);
 		break;
 	case P25_DUID_LDU2:
-		m_network->writeLDU2(data, m_rfData, m_rfLSD);
+		m_network->writeLDU2(data, m_rfData, m_rfLSD, end);
 		break;
 	case P25_DUID_TERM:
 	case P25_DUID_TERM_LC:
@@ -562,6 +577,7 @@ void CP25Control::createRFHeader()
 	m_rfBits = 1U;
 	m_rfTimeout.start();
 	m_lastDUID = P25_DUID_HEADER;
+	::memset(m_rfLDU, 0x00U, P25_LDU_FRAME_LENGTH_BYTES);
 
 #if defined(DUMP_P25)
 	openFile();
@@ -633,6 +649,11 @@ void CP25Control::createNetHeader()
 
 void CP25Control::createNetLDU1()
 {
+	// Check for an unflushed LDU2
+	void* p = ::memchr(m_netLDU2, 0x02U, 9U * 25U);
+	if (p != NULL)
+		createNetLDU2();
+
 	insertMissingAudio(m_netLDU1);
 
 	unsigned char buffer[P25_LDU_FRAME_LENGTH_BYTES + 2U];
@@ -674,10 +695,19 @@ void CP25Control::createNetLDU1()
 	::memset(m_netLDU1, 0x00U, 9U * 25U);
 
 	m_netFrames += 9U;
+
+	// Check for an end of stream marker
+	if (m_netLDU1[200U] == 0x6AU && m_netLDU1[215U] == 0x00U)
+		createNetTerminator();
 }
 
 void CP25Control::createNetLDU2()
 {
+	// Check for an unflushed LDU1
+	void* p = ::memchr(m_netLDU1, 0x02U, 9U * 25U);
+	if (p != NULL)
+		createNetLDU1();
+
 	insertMissingAudio(m_netLDU2);
 
 	unsigned char buffer[P25_LDU_FRAME_LENGTH_BYTES + 2U];
@@ -719,15 +749,14 @@ void CP25Control::createNetLDU2()
 	::memset(m_netLDU2, 0x00U, 9U * 25U);
 
 	m_netFrames += 9U;
+
+	// Check for an end of stream marker
+	if (m_netLDU2[200U] == 0x73U && m_netLDU2[215U] == 0x00U)
+		createNetTerminator();
 }
 
-void CP25Control::createNetTerminator(const unsigned char* data)
+void CP25Control::createNetTerminator()
 {
-	assert(data != NULL);
-
-	if (data[3U] != 0x25U)
-		return;
-
 	unsigned char buffer[P25_TERM_FRAME_LENGTH_BYTES + 2U];
 	::memset(buffer, 0x00U, P25_TERM_FRAME_LENGTH_BYTES + 2U);
 

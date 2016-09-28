@@ -103,7 +103,7 @@ bool CP25Network::writeHeader(const CP25Data& control)
 	return true;
 }
 
-bool CP25Network::writeLDU1(const unsigned char* ldu1, const CP25Data& control, const CP25LowSpeedData& lsd)
+bool CP25Network::writeLDU1(const unsigned char* ldu1, const CP25Data& control, const CP25LowSpeedData& lsd, bool end)
 {
 	assert(ldu1 != NULL);
 
@@ -231,7 +231,7 @@ bool CP25Network::writeLDU1(const unsigned char* ldu1, const CP25Data& control, 
 	buffer[1U] = lsd.getLSD1();
 	buffer[2U] = lsd.getLSD2();
 	m_audio.decode(ldu1, buffer + 4U, 8U);
-	buffer[15U] = 0x02U;
+	buffer[15U] = end ? 0x00U : 0x02U;
 
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network LDU1 Sent", buffer, 16U);
@@ -243,7 +243,7 @@ bool CP25Network::writeLDU1(const unsigned char* ldu1, const CP25Data& control, 
 	return true;
 }
 
-bool CP25Network::writeLDU2(const unsigned char* ldu2, const CP25Data& control, const CP25LowSpeedData& lsd)
+bool CP25Network::writeLDU2(const unsigned char* ldu2, const CP25Data& control, const CP25LowSpeedData& lsd, bool end)
 {
 	assert(ldu2 != NULL);
 
@@ -377,7 +377,7 @@ bool CP25Network::writeLDU2(const unsigned char* ldu2, const CP25Data& control, 
 	buffer[1U] = lsd.getLSD1();
 	buffer[2U] = lsd.getLSD2();
 	m_audio.decode(ldu2, buffer + 4U, 8U);
-	buffer[15U] = 0x02U;
+	buffer[15U] = end ? 0x00U : 0x02U;
 
 	if (m_debug)
 		CUtils::dump(1U, "P25 Network LDU2 Sent", buffer, 16U);
