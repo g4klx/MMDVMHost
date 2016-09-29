@@ -337,8 +337,13 @@ void CP25Control::writeNetwork()
 		break;
 	case 0x6AU:
 		::memcpy(m_netLDU1 + 200U, data, 16U);
-		if (m_netState != RS_NET_IDLE)
+		if (m_netState != RS_NET_IDLE) {
+			// Check for an unflushed LDU2
+			void* p = ::memchr(m_netLDU2, 0x02U, 9U * 25U);
+			if (p != NULL)
+				createNetLDU2();
 			createNetLDU1();
+		}
 		break;
 	case 0x6BU:
 		::memcpy(m_netLDU2 + 0U, data, 22U);
@@ -366,9 +371,14 @@ void CP25Control::writeNetwork()
 		break;
 	case 0x73U:
 		::memcpy(m_netLDU2 + 200U, data, 16U);
-		if (m_netState != RS_NET_IDLE) {
+		if (m_netState == RS_NET_IDLE) {
 			createNetHeader();
 			createNetLDU1();
+		} else {
+			// Check for an unflushed LDU1
+			void* p = ::memchr(m_netLDU1, 0x02U, 9U * 25U);
+			if (p != NULL)
+				createNetLDU1();
 		}
 		createNetLDU2();
 		break;
@@ -641,11 +651,6 @@ void CP25Control::createNetHeader()
 
 void CP25Control::createNetLDU1()
 {
-	// Check for an unflushed LDU2
-	void* p = ::memchr(m_netLDU2, 0x02U, 9U * 25U);
-	if (p != NULL)
-		createNetLDU2();
-
 	insertMissingAudio(m_netLDU1);
 
 	unsigned char buffer[P25_LDU_FRAME_LENGTH_BYTES + 2U];
@@ -695,11 +700,6 @@ void CP25Control::createNetLDU1()
 
 void CP25Control::createNetLDU2()
 {
-	// Check for an unflushed LDU1
-	void* p = ::memchr(m_netLDU1, 0x02U, 9U * 25U);
-	if (p != NULL)
-		createNetLDU1();
-
 	insertMissingAudio(m_netLDU2);
 
 	unsigned char buffer[P25_LDU_FRAME_LENGTH_BYTES + 2U];
