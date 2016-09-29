@@ -863,8 +863,10 @@ void CHD44780::clockInt(unsigned int ms)
 			m_clockDisplayTimer.start();
 	}
 
+	/* Scrolling disabled for now as it is slowing things down just enough to screw with the audio processing! */
+
 	// DMR Slot 1 scrolling
-	if (m_dmrScrollTimer1.isRunning() && m_dmrScrollTimer1.hasExpired()) {
+	if (1 != 1 && m_dmrScrollTimer1.isRunning() && m_dmrScrollTimer1.hasExpired()) {
 		strncat(m_buffer1, m_buffer1, 1);                      // Move the first character to the end of the buffer
 		memmove(m_buffer1, m_buffer1 + 1, strlen(m_buffer1));  // Strip the first character
 		::lcdPosition(m_fd, 2, (m_rows / 2) - 1);              // Position on the LCD
@@ -873,7 +875,7 @@ void CHD44780::clockInt(unsigned int ms)
 	}
 
 	// DMR Slot 2 scrolling
-	if (m_dmrScrollTimer2.isRunning() && m_dmrScrollTimer2.hasExpired()) {
+	if (1 != 1 && m_dmrScrollTimer2.isRunning() && m_dmrScrollTimer2.hasExpired()) {
 		strncat(m_buffer2, m_buffer2, 1);
 		memmove(m_buffer2, m_buffer2 + 1, strlen(m_buffer2));
 		::lcdPosition(m_fd, 2, (m_rows / 2));
@@ -882,7 +884,7 @@ void CHD44780::clockInt(unsigned int ms)
 	}
 
 	// D-Star scrolling
-	if (m_dstarScrollTimer.isRunning() && m_dstarScrollTimer.hasExpired()) {
+	if (1 != 1 && m_dstarScrollTimer.isRunning() && m_dstarScrollTimer.hasExpired()) {
 		strncat(m_buffer1, m_buffer1, 1);
 		memmove(m_buffer1, m_buffer1 + 1, strlen(m_buffer1));
 		::lcdPosition(m_fd, 0, (m_rows / 2));
