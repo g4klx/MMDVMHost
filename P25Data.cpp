@@ -97,10 +97,8 @@ bool CP25Data::decodeLDU1(const unsigned char* data)
 	decodeLDUHamming(raw, rs + 15U);
 
 	bool ret = m_rs241213.decode(rs);
-	if (!ret) {
-		LogDebug("P25, uncorrectable errors in the RS(24,12,13) code");
+	if (!ret)
 		return false;
-	}
 
 	switch (m_lcf) {
 	case P25_LCF_GROUP:
