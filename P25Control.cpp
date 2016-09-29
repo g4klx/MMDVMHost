@@ -460,17 +460,13 @@ void CP25Control::writeNetwork(const unsigned char *data, unsigned char type, bo
 	switch (type)
 	{
 	case P25_DUID_HEADER:
-		m_network->writeHeader(m_rfData);
+		m_network->writeHeader();
 		break;
 	case P25_DUID_LDU1:
 		m_network->writeLDU1(data, m_rfData, m_rfLSD, end);
 		break;
 	case P25_DUID_LDU2:
 		m_network->writeLDU2(data, m_rfData, m_rfLSD, end);
-		break;
-	case P25_DUID_TERM:
-	case P25_DUID_TERM_LC:
-		m_network->writeTerminator();
 		break;
 	default:
 		break;
