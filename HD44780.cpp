@@ -404,7 +404,8 @@ void CHD44780::writeDStarInt(const char* my1, const char* my2, const char* your,
 	}
 
 	::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
-	::lcdPrintf(m_fd, "%.8s/%.4s", my1, my2);
+	::lcdPutchar(m_fd, 0);
+	::lcdPrintf(m_fd, " %.8s/%.4s", my1, my2);
 	::lcdPosition(m_fd, m_cols - 1, (m_rows / 2) - 1);
 
 	if (strcmp(type, "R") == 0) {
@@ -422,12 +423,19 @@ void CHD44780::writeDStarInt(const char* my1, const char* my2, const char* your,
 	}
 
 	if (strcmp(reflector, "        ") != 0) {
-		::sprintf(m_buffer3, " via %.8s", reflector);
-		strcat(m_buffer1, m_buffer3);
+		if (m_rows == 2 && m_cols == 40) {
+			::sprintf(m_buffer3, " via %.8s", reflector);
+			strcat(m_buffer1, m_buffer3);
+		} else if (m_rows > 2) {
+			::sprintf(m_buffer3, "via %.8s", reflector);
+			::lcdPosition(m_fd, 0, (m_rows / 2) + 1);
+			::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer3);
+		}
 	}
 
 	::lcdPosition(m_fd, 0, (m_rows / 2));
-	::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
+	::lcdPutchar(m_fd, 1);
+	::lcdPrintf(m_fd, " %.*s", m_cols, m_buffer1);
 
 	// Start the D-Star scroll timer if text in m_buffer1 will not fit in the space available
 	if (strlen(m_buffer1) > m_cols) {
