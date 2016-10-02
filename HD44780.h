@@ -140,9 +140,11 @@ private:
 	int          m_fd;
 	bool         m_dmr;
 	CTimer       m_clockDisplayTimer;
+/*
 	CTimer       m_dmrScrollTimer1;
 	CTimer       m_dmrScrollTimer2;
 	CTimer       m_dstarScrollTimer;
+*/
 
 #ifdef ADAFRUIT_DISPLAY
   void adafruitLCDSetup();
