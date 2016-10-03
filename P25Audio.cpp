@@ -331,7 +331,7 @@ void CP25Audio::encode(unsigned char* data, const unsigned char* imbe, unsigned 
 		CP25Utils::encode(temp, data, 1398U, 1546U);
 		break;
 	case 8U:
-		CP25Utils::encode(data, temp, 1578U, 1726U);
+		CP25Utils::encode(temp, data, 1578U, 1726U);
 		break;
 	default:
 		return;
