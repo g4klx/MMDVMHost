@@ -81,6 +81,9 @@ private:
 
 	void addBusyBits(unsigned char* data, unsigned int length, bool b1, bool b2);
 
+	void checkNetLDU1();
+	void checkNetLDU2();
+
 	void insertMissingAudio(unsigned char* data);
 
 	void createRFHeader();
