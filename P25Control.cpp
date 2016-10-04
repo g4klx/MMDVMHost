@@ -313,61 +313,73 @@ void CP25Control::writeNetwork()
 	switch (data[0U]) {
 	case 0x62U:
 		::memcpy(m_netLDU1 + 0U, data, 22U);
+		checkNetLDU2();
 		break;
 	case 0x63U:
 		::memcpy(m_netLDU1 + 25U, data, 14U);
+		checkNetLDU2();
 		break;
 	case 0x64U:
 		::memcpy(m_netLDU1 + 50U, data, 17U);
+		checkNetLDU2();
 		break;
 	case 0x65U:
 		::memcpy(m_netLDU1 + 75U, data, 17U);
+		checkNetLDU2();
 		break;
 	case 0x66U:
 		::memcpy(m_netLDU1 + 100U, data, 17U);
+		checkNetLDU2();
 		break;
 	case 0x67U:
 		::memcpy(m_netLDU1 + 125U, data, 17U);
+		checkNetLDU2();
 		break;
 	case 0x68U:
 		::memcpy(m_netLDU1 + 150U, data, 17U);
+		checkNetLDU2();
 		break;
 	case 0x69U:
 		::memcpy(m_netLDU1 + 175U, data, 17U);
+		checkNetLDU2();
 		break;
 	case 0x6AU:
 		::memcpy(m_netLDU1 + 200U, data, 16U);
-		if (m_netState != RS_NET_IDLE) {
-			// Check for an unflushed LDU2
-			void* p = ::memchr(m_netLDU2, 0x02U, 9U * 25U);
-			if (p != NULL)
-				createNetLDU2();
+		checkNetLDU2();
+		if (m_netState != RS_NET_IDLE)
 			createNetLDU1();
-		}
 		break;
 	case 0x6BU:
 		::memcpy(m_netLDU2 + 0U, data, 22U);
+		checkNetLDU1();
 		break;
 	case 0x6CU:
 		::memcpy(m_netLDU2 + 25U, data, 14U);
+		checkNetLDU1();
 		break;
 	case 0x6DU:
 		::memcpy(m_netLDU2 + 50U, data, 17U);
+		checkNetLDU1();
 		break;
 	case 0x6EU:
 		::memcpy(m_netLDU2 + 75U, data, 17U);
+		checkNetLDU1();
 		break;
 	case 0x6FU:
 		::memcpy(m_netLDU2 + 100U, data, 17U);
+		checkNetLDU1();
 		break;
 	case 0x70U:
 		::memcpy(m_netLDU2 + 125U, data, 17U);
+		checkNetLDU1();
 		break;
 	case 0x71U:
 		::memcpy(m_netLDU2 + 150U, data, 17U);
+		checkNetLDU1();
 		break;
 	case 0x72U:
 		::memcpy(m_netLDU2 + 175U, data, 17U);
+		checkNetLDU1();
 		break;
 	case 0x73U:
 		::memcpy(m_netLDU2 + 200U, data, 16U);
@@ -375,10 +387,7 @@ void CP25Control::writeNetwork()
 			createNetHeader();
 			createNetLDU1();
 		} else {
-			// Check for an unflushed LDU1
-			void* p = ::memchr(m_netLDU1, 0x02U, 9U * 25U);
-			if (p != NULL)
-				createNetLDU1();
+			checkNetLDU1();
 		}
 		createNetLDU2();
 		break;
@@ -482,6 +491,30 @@ void CP25Control::addBusyBits(unsigned char* data, unsigned int length, bool b1,
 		WRITE_BIT(data, ss0Pos, b1);
 		WRITE_BIT(data, ss1Pos, b2);
 	}
+}
+
+void CP25Control::checkNetLDU1()
+{
+	if (m_netState == RS_NET_IDLE)
+		return;
+
+	// Check for an unflushed LDU1
+	if (m_netLDU1[0U]   != 0x00U || m_netLDU1[25U]  != 0x00U || m_netLDU1[50U]  != 0x00U ||
+		m_netLDU1[75U]  != 0x00U || m_netLDU1[100U] != 0x00U || m_netLDU1[125U] != 0x00U ||
+		m_netLDU1[150U] != 0x00U || m_netLDU1[175U] != 0x00U || m_netLDU1[200U] != 0x00U)
+		createNetLDU1();
+}
+
+void CP25Control::checkNetLDU2()
+{
+	if (m_netState == RS_NET_IDLE)
+		return;
+
+	// Check for an unflushed LDU1
+	if (m_netLDU2[0U]   != 0x00U || m_netLDU2[25U]  != 0x00U || m_netLDU2[50U]  != 0x00U ||
+		m_netLDU2[75U]  != 0x00U || m_netLDU2[100U] != 0x00U || m_netLDU2[125U] != 0x00U ||
+		m_netLDU2[150U] != 0x00U || m_netLDU2[175U] != 0x00U || m_netLDU2[200U] != 0x00U)
+		createNetLDU2();
 }
 
 void CP25Control::insertMissingAudio(unsigned char* data)
