@@ -35,6 +35,7 @@ public:
 	unsigned char getFN() const;
 	unsigned char getFT() const;
 	unsigned char getDT() const;
+	unsigned char getMR() const;
 
 	void setMR(unsigned char mr);
 	void setVoIP(bool set);

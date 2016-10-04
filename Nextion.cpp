@@ -233,6 +233,36 @@ void CNextion::clearFusionInt()
 	sendCommand("t2.txt=\"\"");
 }
 
+void CNextion::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
+{
+	assert(source != NULL);
+	assert(type != NULL);
+
+	if (m_mode != MODE_P25)
+		sendCommand("page P25");
+
+	char text[30U];
+	::sprintf(text, "dim=%u", m_brightness);
+	sendCommand(text);
+
+	::sprintf(text, "t0.txt=\"%s %.10s\"", type, source);
+	sendCommand(text);
+
+	::sprintf(text, "t1.txt=\"%s%u\"", group ? "TG" : "", dest);
+	sendCommand(text);
+
+	m_clockDisplayTimer.stop();
+
+	m_mode = MODE_P25;
+}
+
+void CNextion::clearP25Int()
+{
+	sendCommand("t0.txt=\"Listening\"");
+	sendCommand("t1.txt=\"\"");
+	sendCommand("t2.txt=\"\"");
+}
+
 void CNextion::writeCWInt()
 {
 	sendCommand("t1.txt=\"Sending CW Ident\"");

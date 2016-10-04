@@ -596,7 +596,7 @@ unsigned int CAMBEFEC::regenerateDStar(unsigned char* bytes) const
 	return errors;
 }
 
-unsigned int CAMBEFEC::regenerateYSF1(unsigned char* bytes) const
+unsigned int CAMBEFEC::regenerateYSFDN(unsigned char* bytes) const
 {
 	assert(bytes != NULL);
 
@@ -638,7 +638,7 @@ unsigned int CAMBEFEC::regenerateYSF1(unsigned char* bytes) const
 	return errors;
 }
 
-unsigned int CAMBEFEC::regenerateYSF3(unsigned char* bytes) const
+unsigned int CAMBEFEC::regenerateIMBE(unsigned char* bytes) const
 {
 	assert(bytes != NULL);
 

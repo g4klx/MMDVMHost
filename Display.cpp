@@ -155,6 +155,28 @@ void CDisplay::clearFusion()
 	}
 }
 
+void CDisplay::writeP25(const char* source, bool group, unsigned int dest, const char* type)
+{
+	assert(source != NULL);
+	assert(type != NULL);
+
+	m_timer1.start();
+	m_mode1 = MODE_IDLE;
+
+	writeP25Int(source, group, dest, type);
+}
+
+void CDisplay::clearP25()
+{
+	if (m_timer1.hasExpired()) {
+		clearP25Int();
+		m_timer1.stop();
+		m_mode1 = MODE_IDLE;
+	} else {
+		m_mode1 = MODE_P25;
+	}
+}
+
 void CDisplay::writeCW()
 {
 	m_timer1.start();
@@ -180,6 +202,11 @@ void CDisplay::clock(unsigned int ms)
 			break;
 		case MODE_YSF:
 			clearFusionInt();
+			m_mode1 = MODE_IDLE;
+			m_timer1.stop();
+			break;
+		case MODE_P25:
+			clearP25Int();
 			m_mode1 = MODE_IDLE;
 			m_timer1.stop();
 			break;

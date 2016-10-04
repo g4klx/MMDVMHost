@@ -311,6 +311,47 @@ void CTFTSerial::clearFusionInt()
 	displayText("              ");
 }
 
+void CTFTSerial::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
+{
+	assert(source != NULL);
+	assert(type != NULL);
+
+	if (m_mode != MODE_P25) {
+		// Clear the screen
+		clearScreen();
+
+		setFontSize(FONT_MEDIUM);
+
+		// Draw the P25 insignia
+		displayBitmap(0U, 0U, "P25_sm.bmp");
+	}
+
+	char text[30U];
+	::sprintf(text, "%s %.10s", type, source);
+
+	gotoPosPixel(5U, 70U);
+	displayText(text);
+
+	::sprintf(text, "  %s%u", group ? "TG" : "", dest);
+
+	gotoPosPixel(5U, 90U);
+	displayText(text);
+
+	m_mode = MODE_P25;
+}
+
+void CTFTSerial::clearP25Int()
+{
+	gotoPosPixel(5U, 70U);
+	displayText("  Listening   ");
+
+	gotoPosPixel(5U, 90U);
+	displayText("              ");
+
+	gotoPosPixel(5U, 110U);
+	displayText("              ");
+}
+
 void CTFTSerial::writeCWInt()
 {
 	gotoPosPixel(45U, 90U);

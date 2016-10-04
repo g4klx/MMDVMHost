@@ -29,6 +29,8 @@ public:
 
 	static void addYSFSync(unsigned char* data);
 
+	static void addP25Sync(unsigned char* data);
+
 private:
 };
 

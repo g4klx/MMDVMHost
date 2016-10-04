@@ -36,7 +36,7 @@ bool CallsignCompare(const std::string& arg, const unsigned char* my)
 
 // #define	DUMP_DSTAR
 
-CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, const std::vector<std::string>& blackList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, int rssiMultiplier, int rssiOffset) :
+CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, const std::vector<std::string>& blackList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex) :
 m_callsign(NULL),
 m_gateway(NULL),
 m_selfOnly(selfOnly),
@@ -56,7 +56,7 @@ m_netN(0U),
 m_networkWatchdog(1000U, 0U, 1500U),
 m_rfTimeoutTimer(1000U, timeout),
 m_netTimeoutTimer(1000U, timeout),
-m_packetTimer(1000U, 0U, 200U),
+m_packetTimer(1000U, 0U, 300U),
 m_ackTimer(1000U, 0U, 750U),
 m_interval(),
 m_elapsed(),
@@ -70,8 +70,6 @@ m_rfErrs(0U),
 m_netErrs(0U),
 m_lastFrame(NULL),
 m_lastFrameValid(false),
-m_rssiMultiplier(rssiMultiplier),
-m_rssiOffset(rssiOffset),
 m_fp(NULL)
 {
 	assert(display != NULL);
@@ -121,16 +119,6 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 	if (type == TAG_LOST) {
 		m_rfState = RS_RF_LISTENING;
 		return false;
-	}
-
-	// Have we got RSSI bytes on the end?
-	if (len == (DSTAR_FRAME_LENGTH_BYTES + 3U) && m_rssiMultiplier != 0) {
-		uint16_t raw = 0U;
-		raw |= (data[35U] << 8) & 0xFF00U;
-		raw |= (data[36U] << 0) & 0x00FFU;
-		int rssi = (raw - m_rssiOffset) / m_rssiMultiplier;
-		unsigned char m_rssi = (rssi >= 0) ? rssi : -rssi;
-		LogDebug("D-Star, raw RSSI: %u, reported RSSI: -%u dBm", raw, m_rssi);
 	}
 
 	if (type == TAG_HEADER) {
@@ -482,7 +470,7 @@ void CDStarControl::writeNetwork()
 
 		m_netTimeoutTimer.start();
 		m_packetTimer.start();
-		m_elapsed.start();
+		//m_elapsed.start();                 // commented out and placed lower down due to delay introduced somewhere below here.
 		m_ackTimer.stop();
 
 		m_lastFrameValid = false;
@@ -512,7 +500,12 @@ void CDStarControl::writeNetwork()
 		} else {
 			m_display->writeDStar((char*)my1, (char*)my2, (char*)your, "N", (char*) "        ");
 			LogMessage("D-Star, received network header from %8.8s/%4.4s to %8.8s", my1, my2, your);
-		}
+		}	
+
+		// Something just above here introduces a large delay forcing erroneous(?) insertion of silence packets.
+		// Starting the elapsed timer here instead of the commented out position above solves that.
+		m_elapsed.start();
+
 	} else if (type == TAG_EOT) {
 		if (m_netState != RS_NET_AUDIO)
 			return;
@@ -610,8 +603,8 @@ void CDStarControl::clock()
 
 			if (frames > m_netFrames) {
 				unsigned int count = frames - m_netFrames;
-				if (count > 5U) {
-					LogDebug("D-Star, lost audio for 200ms filling in, elapsed: %ums, expected: %u, received: %u", elapsed, frames, m_netFrames);
+				if (count > 15U) {
+					LogDebug("D-Star, lost audio for 300ms filling in, elapsed: %ums, expected: %u, received: %u", elapsed, frames, m_netFrames);
 					insertSilence(count - 2U);
 				}
 			}

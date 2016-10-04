@@ -137,9 +137,6 @@
     <ClInclude Include="DMRFullLC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DMRIPSC.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DMRLC.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -171,6 +168,39 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DMRAccessControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="P25Defines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="P25Control.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="P25NID.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="P25Audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="P25Data.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="P25Utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="P25LowSpeedData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="P25Network.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DMRNetwork.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="BCH.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RS241213.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -283,9 +313,6 @@
     <ClCompile Include="DMRFullLC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DMRIPSC.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DMRLC.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -317,6 +344,36 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DMRAccessControl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="P25Control.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="P25NID.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="P25Audio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="P25Data.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="P25Utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="P25LowSpeedData.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="P25Network.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DMRNetwork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="BCH.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RS241213.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

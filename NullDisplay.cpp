@@ -68,6 +68,14 @@ void CNullDisplay::clearFusionInt()
 {
 }
 
+void CNullDisplay::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
+{
+}
+
+void CNullDisplay::clearP25Int()
+{
+}
+
 void CNullDisplay::writeCWInt()
 {
 }

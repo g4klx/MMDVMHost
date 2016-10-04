@@ -110,6 +110,9 @@ protected:
   virtual void writeFusionInt(const char* source, const char* dest, const char* type, const char* origin);
   virtual void clearFusionInt();
 
+	virtual void writeP25Int(const char* source, bool group, unsigned int dest, const char* type);
+	virtual void clearP25Int();
+
   virtual void writeCWInt();
   virtual void clearCWInt();
 
@@ -137,9 +140,11 @@ private:
 	int          m_fd;
 	bool         m_dmr;
 	CTimer       m_clockDisplayTimer;
+/*
 	CTimer       m_dmrScrollTimer1;
 	CTimer       m_dmrScrollTimer2;
 	CTimer       m_dstarScrollTimer;
+*/
 
 #ifdef ADAFRUIT_DISPLAY
   void adafruitLCDSetup();

@@ -21,6 +21,7 @@
 #include "DStarDefines.h"
 #include "DMRDefines.h"
 #include "YSFDefines.h"
+#include "P25Defines.h"
 
 #include <cstdio>
 #include <cassert>
@@ -65,4 +66,11 @@ void CSync::addYSFSync(unsigned char* data)
 	assert(data != NULL);
 
 	::memcpy(data, YSF_SYNC_BYTES, YSF_SYNC_LENGTH_BYTES);
+}
+
+void CSync::addP25Sync(unsigned char* data)
+{
+	assert(data != NULL);
+
+	::memcpy(data, P25_SYNC_BYTES, P25_SYNC_LENGTH_BYTES);
 }

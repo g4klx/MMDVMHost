@@ -34,6 +34,7 @@ public:
 	std::string get_filename() const;
 	unsigned int get_sleep_time() const;
 	unsigned int set_m_table(std::unordered_map<unsigned int, std::string> table);
+	bool periodicRead_thread(unsigned int sleep_time);
 	
 
 private:
@@ -42,7 +43,7 @@ private:
 	unsigned int 				      m_sleep_time;
 	void readfile_lookup();
 		
-	bool periodicRead_thread(unsigned int sleep_time);
+
 	
 };
 

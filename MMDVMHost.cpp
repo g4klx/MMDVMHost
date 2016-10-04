@@ -23,9 +23,11 @@
 #include "Defines.h"
 #include "DStarControl.h"
 #include "DMRControl.h"
+#include "DMRLookup.h"
 #include "TFTSerial.h"
 #include "NullDisplay.h"
 #include "YSFControl.h"
+#include "P25Control.h"
 #include "Nextion.h"
 #include "Thread.h"
 
@@ -121,6 +123,7 @@ m_modem(NULL),
 m_dstarNetwork(NULL),
 m_dmrNetwork(NULL),
 m_ysfNetwork(NULL),
+m_p25Network(NULL),
 m_display(NULL),
 m_mode(MODE_IDLE),
 m_rfModeHang(10U),
@@ -133,6 +136,7 @@ m_timeout(180U),
 m_dstarEnabled(false),
 m_dmrEnabled(false),
 m_ysfEnabled(false),
+m_p25Enabled(false),
 m_callsign()
 {
 }
@@ -252,6 +256,12 @@ int CMMDVMHost::run()
 			return 1;
 	}
 
+	if (m_p25Enabled && m_conf.getP25NetworkEnabled()) {
+		ret = createP25Network();
+		if (!ret)
+			return 1;
+	}
+
 	if (m_conf.getCWIdEnabled()) {
 		unsigned int time = m_conf.getCWIdTime();
 
@@ -265,6 +275,21 @@ int CMMDVMHost::run()
 	CTimer dmrBeaconTimer(1000U, 4U);
 	bool dmrBeaconsEnabled = m_dmrEnabled && m_conf.getDMRBeacons();
 
+	// For DMR and P25 we try to map IDs to callsigns
+	CDMRLookup* lookup = NULL;
+	if (m_dmrEnabled || m_p25Enabled) {
+		std::string lookupFile = m_conf.getDMRLookupFile();
+		LogInfo("ID lookup File: %s", lookupFile.length() > 0U ? lookupFile.c_str() : "None");
+
+		lookup = new CDMRLookup(lookupFile);
+#if defined(_WIN32) || defined(_WIN64)
+		lookup->read();
+#else
+		unsigned int LinuxLookupFilePollFreq = m_conf.getDMRLinuxLookupFilePollFreq();
+		lookup->periodicRead_thread(LinuxLookupFilePollFreq);
+#endif
+	}
+
 	CStopWatch stopWatch;
 	stopWatch.start();
 
@@ -273,8 +298,6 @@ int CMMDVMHost::run()
 		std::string module = m_conf.getDStarModule();
 		bool selfOnly      = m_conf.getDStarSelfOnly();
 		std::vector<std::string> blackList = m_conf.getDStarBlackList();
-		int rssiMultiplier = m_conf.getModemRSSIMultiplier();
-		int rssiOffset     = m_conf.getModemRSSIOffset();
 
 		LogInfo("D-Star Parameters");
 		LogInfo("    Module: %s", module.c_str());
@@ -283,12 +306,7 @@ int CMMDVMHost::run()
 		if (blackList.size() > 0U)
 			LogInfo("    Black List: %u", blackList.size());
 
-		if (rssiMultiplier != 0) {
-			LogInfo("    RSSI Multiplier: %d", rssiMultiplier);
-			LogInfo("    RSSI Offset: %d", rssiOffset);
-		}
-
-		dstar = new CDStarControl(m_callsign, module, selfOnly, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex, rssiMultiplier, rssiOffset);
+		dstar = new CDStarControl(m_callsign, module, selfOnly, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex);
 	}
 
 	CDMRControl* dmr = NULL;
@@ -351,7 +369,6 @@ int CMMDVMHost::run()
 		if (dstIDWhiteListSlot2NET.size() > 0U)
 			LogInfo("    Slot 2 NET Destination ID White List: %u entries", dstIDWhiteListSlot2NET.size());
 		
-		LogInfo("    Lookup File: %s", lookupFile.length() > 0U ? lookupFile.c_str() : "None");
 		LogInfo("    Call Hang: %us", callHang);
 		LogInfo("    TX Hang: %us", txHang);
 
@@ -367,31 +384,37 @@ int CMMDVMHost::run()
 		  LogInfo("    TG Rewrite Slot 2 enabled");
 		if (BMAutoRewrite)
 		  LogInfo("    BrandMeister Auto Rewrite enabled");
-		if(BMRewriteReflectorVoicePrompts)
+		if (BMRewriteReflectorVoicePrompts)
 		  LogInfo("    BrandMeister Rewrite Reflector Voice Prompts enabled");
-		
+
 		if (LinuxLookupFilePollFreq)
 		  LogInfo("    Linux Lookup File Poll Frequency: %u minutes",LinuxLookupFilePollFreq);
 		
 
-		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList,dstIDBlackListSlot1RF,dstIDWhiteListSlot1RF, dstIDBlackListSlot2RF, dstIDWhiteListSlot2RF, dstIDBlackListSlot1NET,dstIDWhiteListSlot1NET, dstIDBlackListSlot2NET, dstIDWhiteListSlot2NET, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookupFile, rssiMultiplier, rssiOffset, jitter, TGRewriteSlot1, TGRewriteSlot2, BMAutoRewrite, BMRewriteReflectorVoicePrompts, LinuxLookupFilePollFreq);
+		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList,dstIDBlackListSlot1RF,dstIDWhiteListSlot1RF, dstIDBlackListSlot2RF, dstIDWhiteListSlot2RF, dstIDBlackListSlot1NET,dstIDWhiteListSlot1NET, dstIDBlackListSlot2NET, dstIDWhiteListSlot2NET, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookup, rssiMultiplier, rssiOffset, jitter, TGRewriteSlot1, TGRewriteSlot2, BMAutoRewrite, BMRewriteReflectorVoicePrompts, LinuxLookupFilePollFreq);
+
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}
 
 	CYSFControl* ysf = NULL;
 	if (m_ysfEnabled) {
-		int rssiMultiplier = m_conf.getModemRSSIMultiplier();
-		int rssiOffset     = m_conf.getModemRSSIOffset();
+		bool remoteGateway = m_conf.getFusionRemoteGateway();
 
 		LogInfo("YSF Parameters");
+		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
 
-		if (rssiMultiplier != 0) {
-			LogInfo("    RSSI Multiplier: %d", rssiMultiplier);
-			LogInfo("    RSSI Offset: %d", rssiOffset);
-		}
+		ysf = new CYSFControl(m_callsign, m_ysfNetwork, m_display, m_timeout, m_duplex, remoteGateway);
+	}
 
-		ysf = new CYSFControl(m_callsign, m_ysfNetwork, m_display, m_timeout, m_duplex, rssiMultiplier, rssiOffset);
+	CP25Control* p25 = NULL;
+	if (m_p25Enabled) {
+		unsigned int nac   = m_conf.getP25NAC();
+
+		LogInfo("P25 Parameters");
+		LogInfo("    NAC: $%03X", nac);
+
+		p25 = new CP25Control(nac, m_p25Network, m_display, m_timeout, m_duplex, lookup);
 	}
 
 	setMode(MODE_IDLE);
@@ -517,6 +540,22 @@ int CMMDVMHost::run()
 			}
 		}
 
+		len = m_modem->readP25Data(data);
+		if (p25 != NULL && len > 0U) {
+			if (m_mode == MODE_IDLE) {
+				bool ret = p25->writeModem(data, len);
+				if (ret) {
+					m_modeTimer.setTimeout(m_rfModeHang);
+					setMode(MODE_P25);
+				}
+			} else if (m_mode == MODE_P25) {
+				p25->writeModem(data, len);
+				m_modeTimer.start();
+			} else if (m_mode != MODE_LOCKOUT) {
+				LogWarning("P25 modem data received when in mode %u", m_mode);
+			}
+		}
+
 		if (m_modeTimer.isRunning() && m_modeTimer.hasExpired())
 			setMode(MODE_IDLE);
 
@@ -604,6 +643,26 @@ int CMMDVMHost::run()
 			}
 		}
 
+		if (p25 != NULL) {
+			ret = m_modem->hasP25Space();
+			if (ret) {
+				len = p25->readModem(data);
+				if (len > 0U) {
+					if (m_mode == MODE_IDLE) {
+						m_modeTimer.setTimeout(m_netModeHang);
+						setMode(MODE_P25);
+					}
+					if (m_mode == MODE_P25) {
+						m_modem->writeP25Data(data, len);
+						m_modeTimer.start();
+					}
+					else if (m_mode != MODE_LOCKOUT) {
+						LogWarning("P25 data received when in mode %u", m_mode);
+					}
+				}
+			}
+		}
+
 		if (m_dmrNetwork != NULL) {
 			bool run = m_dmrNetwork->wantsBeacon();
 			if (dmrBeaconsEnabled && run && m_mode == MODE_IDLE && !m_modem->hasTX()) {
@@ -626,6 +685,8 @@ int CMMDVMHost::run()
 			dmr->clock();
 		if (ysf != NULL)
 			ysf->clock(ms);
+		if (p25 != NULL)
+			p25->clock(ms);
 
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->clock(ms);
@@ -633,6 +694,8 @@ int CMMDVMHost::run()
 			m_dmrNetwork->clock(ms);
 		if (m_ysfNetwork != NULL)
 			m_ysfNetwork->clock(ms);
+		if (m_p25Network != NULL)
+			m_p25Network->clock(ms);
 
 		m_cwIdTimer.clock(ms);
 		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
@@ -686,9 +749,15 @@ int CMMDVMHost::run()
 		delete m_ysfNetwork;
 	}
 
+	if (m_p25Network != NULL) {
+		m_p25Network->close();
+		delete m_p25Network;
+	}
+
 	delete dstar;
 	delete dmr;
 	delete ysf;
+	delete p25;
 
 	return 0;
 }
@@ -705,6 +774,7 @@ bool CMMDVMHost::createModem()
 	unsigned int dstarTXLevel = m_conf.getModemDStarTXLevel();
 	unsigned int dmrTXLevel   = m_conf.getModemDMRTXLevel();
 	unsigned int ysfTXLevel   = m_conf.getModemYSFTXLevel();
+	unsigned int p25TXLevel   = m_conf.getModemP25TXLevel();
 	bool debug                = m_conf.getModemDebug();
 	unsigned int colorCode    = m_conf.getDMRColorCode();
 	unsigned int rxFrequency  = m_conf.getRxFrequency();
@@ -722,14 +792,15 @@ bool CMMDVMHost::createModem()
 	LogInfo("    D-Star TX Level: %u%%", dstarTXLevel);
 	LogInfo("    DMR TX Level: %u%%", dmrTXLevel);
 	LogInfo("    YSF TX Level: %u%%", ysfTXLevel);
+	LogInfo("    P25 TX Level: %u%%", p25TXLevel);
 	LogInfo("    RX Frequency: %uHz", rxFrequency);
 	LogInfo("    TX Frequency: %uHz", txFrequency);
 
 	LogInfo("    Osc. Offset: %dppm", oscOffset);
 
 	m_modem = new CModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, oscOffset, debug);
-	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled);
-	m_modem->setLevels(rxLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel);
+	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled);
+	m_modem->setLevels(rxLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel);
 	m_modem->setRFParams(rxFrequency, txFrequency);
 	m_modem->setDMRParams(colorCode);
 
@@ -795,7 +866,7 @@ bool CMMDVMHost::createDMRNetwork()
 	LogInfo("    Slot 2: %s", slot2 ? "enabled" : "disabled");
 	LogInfo("    RSSI: %s", rssi ? "enabled" : "disabled");
 
-	m_dmrNetwork = new CDMRIPSC(address, port, local, id, password, m_duplex, VERSION, debug, slot1, slot2, rssi, hwType);
+	m_dmrNetwork = new CDMRNetwork(address, port, local, id, password, m_duplex, VERSION, debug, slot1, slot2, rssi, hwType);
 
 	unsigned int rxFrequency = m_conf.getRxFrequency();
 	unsigned int txFrequency = m_conf.getTxFrequency();
@@ -862,11 +933,38 @@ bool CMMDVMHost::createYSFNetwork()
 	return true;
 }
 
+bool CMMDVMHost::createP25Network()
+{
+	std::string gatewayAddress = m_conf.getP25GatewayAddress();
+	unsigned int gatewayPort   = m_conf.getP25GatewayPort();
+	unsigned int localPort     = m_conf.getP25LocalPort();
+	bool debug                 = m_conf.getP25NetworkDebug();
+
+	LogInfo("P25 Network Parameters");
+	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
+	LogInfo("    Gateway Port: %u", gatewayPort);
+	LogInfo("    Local Port: %u", localPort);
+
+	m_p25Network = new CP25Network(gatewayAddress, gatewayPort, localPort, debug);
+
+	bool ret = m_p25Network->open();
+	if (!ret) {
+		delete m_p25Network;
+		m_p25Network = NULL;
+		return false;
+	}
+
+	m_p25Network->enable(true);
+
+	return true;
+}
+
 void CMMDVMHost::readParams()
 {
 	m_dstarEnabled = m_conf.getDStarEnabled();
 	m_dmrEnabled   = m_conf.getDMREnabled();
 	m_ysfEnabled   = m_conf.getFusionEnabled();
+	m_p25Enabled   = m_conf.getP25Enabled();
 	m_duplex       = m_conf.getDuplex();
 	m_callsign     = m_conf.getCallsign();
 	m_timeout      = m_conf.getTimeout();
@@ -883,6 +981,7 @@ void CMMDVMHost::readParams()
 	LogInfo("    D-Star: %s", m_dstarEnabled ? "enabled" : "disabled");
 	LogInfo("    DMR: %s", m_dmrEnabled ? "enabled" : "disabled");
 	LogInfo("    YSF: %s", m_ysfEnabled ? "enabled" : "disabled");
+	LogInfo("    P25: %s", m_p25Enabled ? "enabled" : "disabled");
 }
 
 void CMMDVMHost::createDisplay()
@@ -983,6 +1082,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dmrNetwork->enable(false);
 		if (m_ysfNetwork != NULL)
 			m_ysfNetwork->enable(false);
+		if (m_p25Network != NULL)
+			m_p25Network->enable(false);
 		m_modem->setMode(MODE_DSTAR);
 		m_mode = MODE_DSTAR;
 		m_modeTimer.start();
@@ -993,6 +1094,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dstarNetwork->enable(false);
 		if (m_ysfNetwork != NULL)
 			m_ysfNetwork->enable(false);
+		if (m_p25Network != NULL)
+			m_p25Network->enable(false);
 		m_modem->setMode(MODE_DMR);
 		if (m_duplex) {
 			m_modem->writeDMRStart(true);
@@ -1007,8 +1110,22 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dstarNetwork->enable(false);
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(false);
+		if (m_p25Network != NULL)
+			m_p25Network->enable(false);
 		m_modem->setMode(MODE_YSF);
 		m_mode = MODE_YSF;
+		m_modeTimer.start();
+		break;
+
+	case MODE_P25:
+		if (m_dstarNetwork != NULL)
+			m_dstarNetwork->enable(false);
+		if (m_dmrNetwork != NULL)
+			m_dmrNetwork->enable(false);
+		if (m_ysfNetwork != NULL)
+			m_ysfNetwork->enable(false);
+		m_modem->setMode(MODE_P25);
+		m_mode = MODE_P25;
 		m_modeTimer.start();
 		break;
 
@@ -1020,6 +1137,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dmrNetwork->enable(false);
 		if (m_ysfNetwork != NULL)
 			m_ysfNetwork->enable(false);
+		if (m_p25Network != NULL)
+			m_p25Network->enable(false);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
@@ -1039,6 +1158,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dmrNetwork->enable(false);
 		if (m_ysfNetwork != NULL)
 			m_ysfNetwork->enable(false);
+		if (m_p25Network != NULL)
+			m_p25Network->enable(false);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
@@ -1056,6 +1177,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dmrNetwork->enable(true);
 		if (m_ysfNetwork != NULL)
 			m_ysfNetwork->enable(true);
+		if (m_p25Network != NULL)
+			m_p25Network->enable(true);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
