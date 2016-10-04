@@ -311,6 +311,7 @@ int CMMDVMHost::run()
 		std::vector<unsigned int> dstIDWhiteListSlot1NET = m_conf.getDMRDstIdWhitelistSlot1NET();
 		std::vector<unsigned int> dstIDWhiteListSlot2NET = m_conf.getDMRDstIdWhitelistSlot2NET();
 		std::string lookupFile = m_conf.getDMRLookupFile();
+		unsigned int LinuxLookupFilePollFreq = m_conf.getDMRLinuxLookupFilePollFreq();
 		unsigned int callHang  = m_conf.getDMRCallHang();
 		unsigned int txHang    = m_conf.getDMRTXHang();
 		int rssiMultiplier     = m_conf.getModemRSSIMultiplier();
@@ -369,8 +370,11 @@ int CMMDVMHost::run()
 		if(BMRewriteReflectorVoicePrompts)
 		  LogInfo("    BrandMeister Rewrite Reflector Voice Prompts enabled");
 		
+		if (LinuxLookupFilePollFreq)
+		  LogInfo("    Linux Lookup File Poll Frequency: %u minutes",LinuxLookupFilePollFreq);
+		
 
-		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList,dstIDBlackListSlot1RF,dstIDWhiteListSlot1RF, dstIDBlackListSlot2RF, dstIDWhiteListSlot2RF, dstIDBlackListSlot1NET,dstIDWhiteListSlot1NET, dstIDBlackListSlot2NET, dstIDWhiteListSlot2NET, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookupFile, rssiMultiplier, rssiOffset, jitter, TGRewriteSlot1, TGRewriteSlot2, BMAutoRewrite, BMRewriteReflectorVoicePrompts);
+		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList,dstIDBlackListSlot1RF,dstIDWhiteListSlot1RF, dstIDBlackListSlot2RF, dstIDWhiteListSlot2RF, dstIDBlackListSlot1NET,dstIDWhiteListSlot1NET, dstIDBlackListSlot2NET, dstIDWhiteListSlot2NET, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookupFile, rssiMultiplier, rssiOffset, jitter, TGRewriteSlot1, TGRewriteSlot2, BMAutoRewrite, BMRewriteReflectorVoicePrompts, LinuxLookupFilePollFreq);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}

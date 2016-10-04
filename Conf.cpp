@@ -109,6 +109,7 @@ m_dmrDstIdBlacklistSlot2NET(),
 m_dmrDstIdWhitelistSlot1NET(),
 m_dmrDstIdWhitelistSlot2NET(),
 m_dmrLookupFile(),
+m_dmrLinuxLookupFilePollFreq(10),
 m_dmrCallHang(3U),
 m_dmrTXHang(4U),
 m_fusionEnabled(true),
@@ -418,6 +419,8 @@ bool CConf::read()
 			}
 		} else if (::strcmp(key, "LookupFile") == 0)
 			m_dmrLookupFile = value;
+		else if (::strcmp(key, "LinuxLookupFilePollFreq") == 0)
+			m_dmrLinuxLookupFilePollFreq = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "TXHang") == 0)
 			m_dmrTXHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "CallHang") == 0)
@@ -825,6 +828,10 @@ std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot1NET() const
 std::string CConf::getDMRLookupFile() const
 {
 	return m_dmrLookupFile;
+}
+unsigned int CConf::getDMRLinuxLookupFilePollFreq() const
+{
+	return m_dmrLinuxLookupFilePollFreq;
 }
 
 unsigned int CConf::getDMRCallHang() const

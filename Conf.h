@@ -103,6 +103,7 @@ public:
   std::vector<unsigned int> getDMRDstIdWhitelistSlot1NET() const;
   std::vector<unsigned int> getDMRDstIdWhitelistSlot2NET() const;
   std::string  getDMRLookupFile() const;
+  unsigned int getDMRLinuxLookupFilePollFreq() const;
   unsigned int getDMRCallHang() const;
   unsigned int getDMRTXHang() const;
 
@@ -233,6 +234,7 @@ private:
   std::vector<unsigned int> m_dmrDstIdWhitelistSlot1NET;
   std::vector<unsigned int> m_dmrDstIdWhitelistSlot2NET;
   std::string  m_dmrLookupFile;
+  unsigned int m_dmrLinuxLookupFilePollFreq;
   unsigned int m_dmrCallHang;
   unsigned int m_dmrTXHang;
 
