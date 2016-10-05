@@ -28,6 +28,8 @@ public:
 	bool isRepeater() const;
 	void setRepeater(bool on);
 
+	bool isDataPacket() const;
+
 	void setUnavailable(bool on);
 
 	void getMyCall1(unsigned char* call1) const;

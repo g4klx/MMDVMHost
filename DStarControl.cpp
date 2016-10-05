@@ -235,7 +235,9 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 
 			return false;
 		} else if (m_rfState == RS_RF_AUDIO) {
-			unsigned int errors = m_fec.regenerateDStar(data + 1U);
+			unsigned int errors = 0U;
+			if (!m_rfHeader.isDataPacket())
+				errors = m_fec.regenerateDStar(data + 1U);
 
 			m_rfErrs += errors;
 			m_rfBits += 48U;
@@ -354,7 +356,9 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 
 			delete header;
 
-			unsigned int errors = m_fec.regenerateDStar(data + 1U);
+			unsigned int errors = 0U;
+			if (!m_rfHeader.isDataPacket())
+				errors = m_fec.regenerateDStar(data + 1U);
 
 			m_rfErrs += errors;
 			m_rfBits += 48U;
@@ -529,7 +533,9 @@ void CDStarControl::writeNetwork()
 
 		unsigned char n = data[1U];
 
-		unsigned int errors = m_fec.regenerateDStar(data + 2U);
+		unsigned int errors = 0U;
+		if (!m_netHeader.isDataPacket())
+			errors = m_fec.regenerateDStar(data + 2U);
 
 		blankDTMF(data + 2U);
 

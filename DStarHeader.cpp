@@ -72,6 +72,11 @@ void CDStarHeader::setRepeater(bool on)
 		m_header[0U] &= ~DSTAR_REPEATER_MASK;
 }
 
+bool CDStarHeader::isDataPacket() const
+{
+	return (m_header[0U] & DSTAR_DATA_MASK) == DSTAR_DATA_MASK;
+}
+
 void CDStarHeader::setUnavailable(bool on)
 {
 	if (on)
