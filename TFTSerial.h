@@ -21,14 +21,14 @@
 
 #include "Display.h"
 #include "Defines.h"
-#include "SerialController.h"
+#include "SerialPort.h"
 
 #include <string>
 
 class CTFTSerial : public CDisplay
 {
 public:
-  CTFTSerial(const std::string& callsign, unsigned int dmrid, const std::string& port, unsigned int brightness);
+  CTFTSerial(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness);
   virtual ~CTFTSerial();
 
   virtual bool open();
@@ -56,11 +56,11 @@ protected:
 	virtual void clearCWInt();
 
 private:
-   std::string       m_callsign;
-   unsigned int      m_dmrid;
-   CSerialController m_serial;
-   unsigned int      m_brightness;
-   unsigned char     m_mode;
+   std::string   m_callsign;
+   unsigned int  m_dmrid;
+   ISerialPort*  m_serial;
+   unsigned int  m_brightness;
+   unsigned char m_mode;
 
   void clearScreen();
   void setBackground(unsigned char colour);

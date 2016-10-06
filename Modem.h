@@ -50,6 +50,8 @@ public:
 	unsigned int readYSFData(unsigned char* data);
 	unsigned int readP25Data(unsigned char* data);
 
+	unsigned int readSerial(unsigned char* data, unsigned int length);
+
 	bool hasDStarSpace() const;
 	bool hasDMRSpace1() const;
 	bool hasDMRSpace2() const;
@@ -70,6 +72,8 @@ public:
 	bool writeDMRStart(bool tx);
 	bool writeDMRShortLC(const unsigned char* lc);
 	bool writeDMRAbort(unsigned int slotNo);
+
+	bool writeSerial(const unsigned char* data, unsigned int length);
 
 	bool setMode(unsigned char mode);
 

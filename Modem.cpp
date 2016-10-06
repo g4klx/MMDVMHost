@@ -69,6 +69,8 @@ const unsigned char MMDVM_P25_LOST    = 0x32U;
 const unsigned char MMDVM_ACK         = 0x70U;
 const unsigned char MMDVM_NAK         = 0x7FU;
 
+const unsigned char MMDVM_SERIAL      = 0x80U;
+
 const unsigned char MMDVM_DEBUG1      = 0xF1U;
 const unsigned char MMDVM_DEBUG2      = 0xF2U;
 const unsigned char MMDVM_DEBUG3      = 0xF3U;
@@ -655,6 +657,15 @@ unsigned int CModem::readP25Data(unsigned char* data)
 	return len;
 }
 
+// To be implemented later if needed
+unsigned int CModem::readSerial(unsigned char* data, unsigned int length)
+{
+	assert(data != NULL);
+	assert(length > 0U);
+
+	return 0U;
+}
+
 bool CModem::hasDStarSpace() const
 {
 	unsigned int space = m_txDStarData.freeSpace() / (DSTAR_FRAME_LENGTH_BYTES + 4U);
@@ -814,6 +825,24 @@ bool CModem::writeP25Data(const unsigned char* data, unsigned int length)
 	m_txP25Data.addData(buffer, len);
 
 	return true;
+}
+
+bool CModem::writeSerial(const unsigned char* data, unsigned int length)
+{
+	assert(data != NULL);
+	assert(length > 0U);
+
+	unsigned char buffer[250U];
+
+	buffer[0U] = MMDVM_FRAME_START;
+	buffer[1U] = length + 3U;
+	buffer[2U] = MMDVM_SERIAL;
+
+	::memcpy(buffer + 3U, data, length);
+
+	int ret = m_serial.write(buffer, length + 3U);
+
+	return ret != int(length + 3U);
 }
 
 bool CModem::hasTX() const
@@ -1088,6 +1117,7 @@ RESP_TYPE_MMDVM CModem::getResponse()
 		case MMDVM_GET_VERSION:
 		case MMDVM_ACK:
 		case MMDVM_NAK:
+		case MMDVM_SERIAL:
 		case MMDVM_DEBUG1:
 		case MMDVM_DEBUG2:
 		case MMDVM_DEBUG3:
