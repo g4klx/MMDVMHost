@@ -180,6 +180,7 @@
     <ClInclude Include="Log.h" />
     <ClInclude Include="MMDVMHost.h" />
     <ClInclude Include="Modem.h" />
+    <ClInclude Include="ModemSerialPort.h" />
     <ClInclude Include="Nextion.h" />
     <ClInclude Include="NullDisplay.h" />
     <ClInclude Include="P25Audio.h" />
@@ -195,6 +196,7 @@
     <ClInclude Include="RS129.h" />
     <ClInclude Include="RS241213.h" />
     <ClInclude Include="SerialController.h" />
+    <ClInclude Include="SerialPort.h" />
     <ClInclude Include="SHA256.h" />
     <ClInclude Include="StopWatch.h" />
     <ClInclude Include="Sync.h" />
@@ -243,6 +245,7 @@
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MMDVMHost.cpp" />
     <ClCompile Include="Modem.cpp" />
+    <ClCompile Include="ModemSerialPort.cpp" />
     <ClCompile Include="Nextion.cpp" />
     <ClCompile Include="NullDisplay.cpp" />
     <ClCompile Include="P25Audio.cpp" />
@@ -256,6 +259,7 @@
     <ClCompile Include="RS129.cpp" />
     <ClCompile Include="RS241213.cpp" />
     <ClCompile Include="SerialController.cpp" />
+    <ClCompile Include="SerialPort.cpp" />
     <ClCompile Include="SHA256.cpp" />
     <ClCompile Include="StopWatch.cpp" />
     <ClCompile Include="Sync.cpp" />

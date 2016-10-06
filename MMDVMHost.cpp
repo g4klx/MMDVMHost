@@ -17,7 +17,8 @@
  */
 
 #include "MMDVMHost.h"
-#include "Log.h"
+#include "SerialController.h"
+#include "ModemSerialPort.h"
 #include "Version.h"
 #include "StopWatch.h"
 #include "Defines.h"
@@ -30,6 +31,7 @@
 #include "P25Control.h"
 #include "Nextion.h"
 #include "Thread.h"
+#include "Log.h"
 
 #if defined(HD44780)
 #include "HD44780.h"
@@ -986,7 +988,7 @@ void CMMDVMHost::readParams()
 
 void CMMDVMHost::createDisplay()
 {
-	std::string type = m_conf.getDisplay();
+	std::string type   = m_conf.getDisplay();
 	unsigned int dmrid = m_conf.getDMRId();
 
 	LogInfo("Display Parameters");
@@ -999,7 +1001,13 @@ void CMMDVMHost::createDisplay()
 		LogInfo("    Port: %s", port.c_str());
 		LogInfo("    Brightness: %u", brightness);
 
-		m_display = new CTFTSerial(m_callsign, dmrid, port, brightness);
+		ISerialPort* serial = NULL;
+		if (port == "modem")
+			serial = new CModemSerialPort(m_modem);
+		else
+			serial = new CSerialController(port, SERIAL_9600);
+
+		m_display = new CTFTSerial(m_callsign, dmrid, serial, brightness);
 	} else if (type == "Nextion") {
 		std::string port            = m_conf.getNextionPort();
 		unsigned int brightness     = m_conf.getNextionBrightness();
@@ -1014,7 +1022,13 @@ void CMMDVMHost::createDisplay()
 			LogInfo("    Display UTC: %s", utc ? "yes" : "no");
 		LogInfo("    Idle Brightness: %u", idleBrightness);
 
-		m_display = new CNextion(m_callsign, dmrid, port, brightness, displayClock, utc, idleBrightness);
+		ISerialPort* serial = NULL;
+		if (port == "modem")
+			serial = new CModemSerialPort(m_modem);
+		else
+			serial = new CSerialController(port, SERIAL_9600);
+
+		m_display = new CNextion(m_callsign, dmrid, serial, brightness, displayClock, utc, idleBrightness);
 #if defined(HD44780)
 	} else if (type == "HD44780") {
 		unsigned int rows              = m_conf.getHD44780Rows();

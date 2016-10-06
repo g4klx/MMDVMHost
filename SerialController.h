@@ -20,6 +20,8 @@
 #ifndef SerialController_H
 #define SerialController_H
 
+#include "SerialPort.h"
+
 #include <string>
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -38,17 +40,18 @@ enum SERIAL_SPEED {
 	SERIAL_230400 = 230400
 };
 
-class CSerialController {
+class CSerialController : public ISerialPort {
 public:
 	CSerialController(const std::string& device, SERIAL_SPEED speed, bool assertRTS = false);
-	~CSerialController();
+	virtual ~CSerialController();
 
-	bool open();
+	virtual bool open();
 
-	int  read(unsigned char* buffer, unsigned int length);
-	int  write(const unsigned char* buffer, unsigned int length);
+	virtual int read(unsigned char* buffer, unsigned int length);
 
-	void close();
+	virtual int write(const unsigned char* buffer, unsigned int length);
+
+	virtual void close();
 
 private:
 	std::string    m_device;

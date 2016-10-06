@@ -25,11 +25,11 @@
 #include <ctime>
 #include <clocale>
 
-CNextion::CNextion(const std::string& callsign, unsigned int dmrid, const std::string& port, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness) :
+CNextion::CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness) :
 CDisplay(),
 m_callsign(callsign),
 m_dmrid(dmrid),
-m_serial(port, SERIAL_9600),
+m_serial(serial),
 m_brightness(brightness),
 m_mode(MODE_IDLE),
 m_displayClock(displayClock),
@@ -37,6 +37,7 @@ m_utc(utc),
 m_idleBrightness(idleBrightness),
 m_clockDisplayTimer(1000U, 0U, 400U)
 {
+	assert(serial != NULL);
 	assert(brightness >= 0U && brightness <= 100U);
 }
 
@@ -46,9 +47,10 @@ CNextion::~CNextion()
 
 bool CNextion::open()
 {
-	bool ret = m_serial.open();
+	bool ret = m_serial->open();
 	if (!ret) {
 		LogError("Cannot open the port for the Nextion display");
+		delete m_serial;
 		return false;
 	}
 
@@ -302,13 +304,14 @@ void CNextion::clockInt(unsigned int ms)
 
 void CNextion::close()
 {
-	m_serial.close();
+	m_serial->close();
+	delete m_serial;
 }
 
 void CNextion::sendCommand(const char* command)
 {
 	assert(command != NULL);
 
-	m_serial.write((unsigned char*)command, ::strlen(command));
-	m_serial.write((unsigned char*)"\xFF\xFF\xFF", 3U);
+	m_serial->write((unsigned char*)command, ::strlen(command));
+	m_serial->write((unsigned char*)"\xFF\xFF\xFF", 3U);
 }

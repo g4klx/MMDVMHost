@@ -44,14 +44,15 @@ const unsigned char FONT_LARGE  = 3U;
 // x = 0 to 159, y = 0 to 127 - Landscape
 // x = 0 to 127, y = 0 to 159 - Portrait
 
-CTFTSerial::CTFTSerial(const std::string& callsign, unsigned int dmrid, const std::string& port, unsigned int brightness) :
+CTFTSerial::CTFTSerial(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness) :
 CDisplay(),
 m_callsign(callsign),
 m_dmrid(dmrid),
-m_serial(port, SERIAL_9600),
+m_serial(serial),
 m_brightness(brightness),
 m_mode(MODE_IDLE)
 {
+	assert(serial != NULL);
 	assert(brightness >= 0U && brightness <= 100U);
 }
 
@@ -61,9 +62,10 @@ CTFTSerial::~CTFTSerial()
 
 bool CTFTSerial::open()
 {
-	bool ret = m_serial.open();
+	bool ret = m_serial->open();
 	if (!ret) {
 		LogError("Cannot open the port for the TFT Serial");
+		delete m_serial;
 		return false;
 	}
 
@@ -368,131 +370,132 @@ void CTFTSerial::clearCWInt()
 
 void CTFTSerial::close()
 {
-	m_serial.close();
+	m_serial->close();
+	delete m_serial;
 }
 
 void CTFTSerial::clearScreen()
 {
-	m_serial.write((unsigned char*)"\x1B\x00\xFF", 3U);
+	m_serial->write((unsigned char*)"\x1B\x00\xFF", 3U);
 }
 
 void CTFTSerial::setForeground(unsigned char colour)
 {
 	assert(colour >= 0U && colour <= 7U);
 
-	m_serial.write((unsigned char*)"\x1B\x01", 2U);
-	m_serial.write(&colour, 1U);
-	m_serial.write((unsigned char*)"\xFF", 1U);
+	m_serial->write((unsigned char*)"\x1B\x01", 2U);
+	m_serial->write(&colour, 1U);
+	m_serial->write((unsigned char*)"\xFF", 1U);
 }
 
 void CTFTSerial::setBackground(unsigned char colour)
 {
 	assert(colour >= 0U && colour <= 7U);
 
-	m_serial.write((unsigned char*)"\x1B\x02", 2U);
-	m_serial.write(&colour, 1U);
-	m_serial.write((unsigned char*)"\xFF", 1U);
+	m_serial->write((unsigned char*)"\x1B\x02", 2U);
+	m_serial->write(&colour, 1U);
+	m_serial->write((unsigned char*)"\xFF", 1U);
 }
 
 void CTFTSerial::setRotation(unsigned char rotation)
 {
 	assert(rotation >= 0U && rotation <= 3U);
 
-	m_serial.write((unsigned char*)"\x1B\x03", 2U);
-	m_serial.write(&rotation, 1U);
-	m_serial.write((unsigned char*)"\xFF", 1U);
+	m_serial->write((unsigned char*)"\x1B\x03", 2U);
+	m_serial->write(&rotation, 1U);
+	m_serial->write((unsigned char*)"\xFF", 1U);
 }
 
 void CTFTSerial::setFontSize(unsigned char size)
 {
 	assert(size >= 1U && size <= 3U);
 
-	m_serial.write((unsigned char*)"\x1B\x04", 2U);
-	m_serial.write(&size, 1U);
-	m_serial.write((unsigned char*)"\xFF", 1U);
+	m_serial->write((unsigned char*)"\x1B\x04", 2U);
+	m_serial->write(&size, 1U);
+	m_serial->write((unsigned char*)"\xFF", 1U);
 }
 
 void CTFTSerial::gotoBegOfLine()
 {
-	m_serial.write((unsigned char*)"\x1B\x05\xFF", 3U);
+	m_serial->write((unsigned char*)"\x1B\x05\xFF", 3U);
 }
 
 void CTFTSerial::gotoPosText(unsigned char x, unsigned char y)
 {
-	m_serial.write((unsigned char*)"\x1B\x06", 2U);
-	m_serial.write(&x, 1U);
-	m_serial.write(&y, 1U);
-	m_serial.write((unsigned char*)"\xFF", 1U);
+	m_serial->write((unsigned char*)"\x1B\x06", 2U);
+	m_serial->write(&x, 1U);
+	m_serial->write(&y, 1U);
+	m_serial->write((unsigned char*)"\xFF", 1U);
 }
 
 void CTFTSerial::gotoPosPixel(unsigned char x, unsigned char y)
 {
-	m_serial.write((unsigned char*)"\x1B\x07", 2U);
-	m_serial.write(&x, 1U);
-	m_serial.write(&y, 1U);
-	m_serial.write((unsigned char*)"\xFF", 1U);
+	m_serial->write((unsigned char*)"\x1B\x07", 2U);
+	m_serial->write(&x, 1U);
+	m_serial->write(&y, 1U);
+	m_serial->write((unsigned char*)"\xFF", 1U);
 }
 
 void CTFTSerial::drawLine(unsigned char x1, unsigned char y1, unsigned char x2, unsigned char y2)
 {
-	m_serial.write((unsigned char*)"\x1B\x08", 2U);
-	m_serial.write(&x1, 1U);
-	m_serial.write(&y1, 1U);
-	m_serial.write(&x2, 1U);
-	m_serial.write(&y2, 1U);
-	m_serial.write((unsigned char*)"\xFF", 1U);
+	m_serial->write((unsigned char*)"\x1B\x08", 2U);
+	m_serial->write(&x1, 1U);
+	m_serial->write(&y1, 1U);
+	m_serial->write(&x2, 1U);
+	m_serial->write(&y2, 1U);
+	m_serial->write((unsigned char*)"\xFF", 1U);
 }
 
 void CTFTSerial::drawBox(unsigned char x1, unsigned char y1, unsigned char x2, unsigned char y2, bool filled)
 {
 	if (filled)
-		m_serial.write((unsigned char*)"\x1B\x0A", 2U);
+		m_serial->write((unsigned char*)"\x1B\x0A", 2U);
 	else
-		m_serial.write((unsigned char*)"\x1B\x09", 2U);
+		m_serial->write((unsigned char*)"\x1B\x09", 2U);
 
-	m_serial.write(&x1, 1U);
-	m_serial.write(&y1, 1U);
-	m_serial.write(&x2, 1U);
-	m_serial.write(&y2, 1U);
-	m_serial.write((unsigned char*)"\xFF", 1U);
+	m_serial->write(&x1, 1U);
+	m_serial->write(&y1, 1U);
+	m_serial->write(&x2, 1U);
+	m_serial->write(&y2, 1U);
+	m_serial->write((unsigned char*)"\xFF", 1U);
 }
 
 void CTFTSerial::drawCircle(unsigned char x, unsigned char y, unsigned char radius, bool filled)
 {
 	if (filled)
-		m_serial.write((unsigned char*)"\x1B\x0C", 2U);
+		m_serial->write((unsigned char*)"\x1B\x0C", 2U);
 	else
-		m_serial.write((unsigned char*)"\x1B\x0B", 2U);
+		m_serial->write((unsigned char*)"\x1B\x0B", 2U);
 
-	m_serial.write(&x, 1U);
-	m_serial.write(&y, 1U);
-	m_serial.write(&radius, 1U);
-	m_serial.write((unsigned char*)"\xFF", 1U);
+	m_serial->write(&x, 1U);
+	m_serial->write(&y, 1U);
+	m_serial->write(&radius, 1U);
+	m_serial->write((unsigned char*)"\xFF", 1U);
 }
 
 void CTFTSerial::displayBitmap(unsigned char x, unsigned char y, const char* filename)
 {
 	assert(filename != NULL);
 
-	m_serial.write((unsigned char*)"\x1B\x0D", 2U);
-	m_serial.write(&x, 1U);
-	m_serial.write(&y, 1U);
-	m_serial.write((unsigned char*)filename, ::strlen(filename));
-	m_serial.write((unsigned char*)"\xFF", 1U);
+	m_serial->write((unsigned char*)"\x1B\x0D", 2U);
+	m_serial->write(&x, 1U);
+	m_serial->write(&y, 1U);
+	m_serial->write((unsigned char*)filename, ::strlen(filename));
+	m_serial->write((unsigned char*)"\xFF", 1U);
 }
 
 void CTFTSerial::setBrightness(unsigned char brightness)
 {
 	assert(brightness >= 0U && brightness <= 100U);
 
-	m_serial.write((unsigned char*)"\x1B\x0E", 2U);
-	m_serial.write(&brightness, 1U);
-	m_serial.write((unsigned char*)"\xFF", 1U);
+	m_serial->write((unsigned char*)"\x1B\x0E", 2U);
+	m_serial->write(&brightness, 1U);
+	m_serial->write((unsigned char*)"\xFF", 1U);
 }
 
 void CTFTSerial::displayText(const char* text)
 {
 	assert(text != NULL);
 
-	m_serial.write((unsigned char*)text, ::strlen(text));
+	m_serial->write((unsigned char*)text, ::strlen(text));
 }
