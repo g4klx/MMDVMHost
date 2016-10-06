@@ -12,8 +12,11 @@ which transparently maps back to the originating talkgroup. Rewrite is also
 enabled if an outbound call is made to a talkgroup and then TG9 is activated 
 during the CallHang period. 
 
-To use a User Activated talk-group, briefly key-up on that talk-group to 
-activate it, then switch back to TG9 and talk as normal. If the CallHang period 
+To use a User Activated talk-group, either briefly key-up on that talk-group to 
+activate it, then switch back to TG9 and talk as normal. Alternatively, and 
+perhaps more usefully, you can make a private call to the talk-group ID. This 
+enables you to manual-dial a talkgroup that is not in your codeplug, in the same 
+way that you can manual dial a reflector. If the CallHang period 
 expires, you may need to activate the talk-group again by keying up on that 
 talkgroup briefly, as before. Alternatively, you can wait for inbound audio to 
 re-activate the rewrite, then respond during the CallHang period. 
@@ -40,7 +43,8 @@ TGRewriteSlot2=[0|1]
 BMAutoRewrite=[0|1]
 BMRewriteReflectorVoicePrompts=[0|1]
 
-Note at present, Auto rewrite is the only type of rewrite that is implemented so 
+Note at present, Auto rewrite is the only type of rewrite that is implemented 
+so 
 to do something useful, this option must be set.
 
 

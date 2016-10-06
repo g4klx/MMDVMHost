@@ -284,7 +284,12 @@ int CMMDVMHost::run()
 		LogInfo("ID lookup File: %s", lookupFile.length() > 0U ? lookupFile.c_str() : "None");
 
 		lookup = new CDMRLookup(lookupFile);
+#if defined(_WIN32) || defined(_WIN64)
 		lookup->read();
+#else
+		unsigned int LinuxLookupFilePollFreq = m_conf.getDMRLinuxLookupFilePollFreq();
+		lookup->periodicRead_thread(LinuxLookupFilePollFreq);
+#endif
 	}
 
 	CStopWatch stopWatch;
@@ -325,6 +330,8 @@ int CMMDVMHost::run()
 		std::vector<unsigned int> dstIDBlackListSlot2NET = m_conf.getDMRDstIdBlacklistSlot2NET();
 		std::vector<unsigned int> dstIDWhiteListSlot1NET = m_conf.getDMRDstIdWhitelistSlot1NET();
 		std::vector<unsigned int> dstIDWhiteListSlot2NET = m_conf.getDMRDstIdWhitelistSlot2NET();
+		std::string lookupFile = m_conf.getDMRLookupFile();
+		unsigned int LinuxLookupFilePollFreq = m_conf.getDMRLinuxLookupFilePollFreq();
 		unsigned int callHang  = m_conf.getDMRCallHang();
 		unsigned int txHang    = m_conf.getDMRTXHang();
 		int rssiMultiplier     = m_conf.getModemRSSIMultiplier();
@@ -381,8 +388,13 @@ int CMMDVMHost::run()
 		  LogInfo("    BrandMeister Auto Rewrite enabled");
 		if (BMRewriteReflectorVoicePrompts)
 		  LogInfo("    BrandMeister Rewrite Reflector Voice Prompts enabled");
+
+		if (LinuxLookupFilePollFreq)
+		  LogInfo("    Linux Lookup File Poll Frequency: %u minutes",LinuxLookupFilePollFreq);
 		
-		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList,dstIDBlackListSlot1RF,dstIDWhiteListSlot1RF, dstIDBlackListSlot2RF, dstIDWhiteListSlot2RF, dstIDBlackListSlot1NET,dstIDWhiteListSlot1NET, dstIDBlackListSlot2NET, dstIDWhiteListSlot2NET, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookup, rssiMultiplier, rssiOffset, jitter, TGRewriteSlot1, TGRewriteSlot2, BMAutoRewrite, BMRewriteReflectorVoicePrompts);
+
+		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList,dstIDBlackListSlot1RF,dstIDWhiteListSlot1RF, dstIDBlackListSlot2RF, dstIDWhiteListSlot2RF, dstIDBlackListSlot1NET,dstIDWhiteListSlot1NET, dstIDBlackListSlot2NET, dstIDWhiteListSlot2NET, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookup, rssiMultiplier, rssiOffset, jitter, TGRewriteSlot1, TGRewriteSlot2, BMAutoRewrite, BMRewriteReflectorVoicePrompts, LinuxLookupFilePollFreq);
+
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}

@@ -31,9 +31,20 @@ public:
 
 	std::string find(unsigned int id) const;
 
+	std::string get_filename() const;
+	unsigned int get_sleep_time() const;
+	unsigned int set_m_table(std::unordered_map<unsigned int, std::string> table);
+	bool periodicRead_thread(unsigned int sleep_time);
+	
+
 private:
 	std::string                                   m_filename;
 	std::unordered_map<unsigned int, std::string> m_table;
+	unsigned int 				      m_sleep_time;
+	void readfile_lookup();
+		
+
+	
 };
 
 #endif
