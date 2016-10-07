@@ -235,12 +235,12 @@ unsigned int DMRAccessControl::DstIdRewrite (unsigned int did, unsigned int sid,
 	      LogMessage("DMR Slot %u, Rewrite DST ID (TG) of outbound network traffic from %u to %u (return traffic during CallHang)",slot,did,m_dstRewriteID);
 	      return(m_dstRewriteID);
 
-  } else if (m_BMAutoRewrite && (did < 4000 || did > 5000) && did > 0 && did !=9 && did < 99999 && dmrLC->getFLCO() == FLCO_USER_USER) {
+  } else if (m_BMAutoRewrite && (did < 4000U || did > 5000U) && did > 0U && did !=9U && did < 99999U && dmrLC->getFLCO() == FLCO_USER_USER) {
 	      m_dstRewriteID = did;
 	      dmrLC->setFLCO(FLCO_GROUP);
 	      LogMessage("DMR Slot %u, Rewrite outbound private call to %u Group Call (Connect talkgroup by private call)",slot,did);
 	      return did;
-  } else if (m_BMAutoRewrite && (did < 4000 || did > 5000) && did > 0 && did !=9 && did > 99999) {
+  } else if (m_BMAutoRewrite && (did < 4000U || did > 5000U) && did > 0U && did !=9U && did > 99999U) {
 	      m_dstRewriteID = did;
   } 
   return 0U;
