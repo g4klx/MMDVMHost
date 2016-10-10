@@ -154,17 +154,16 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			unsigned int sid = lc->getSrcId();
 			unsigned int did = lc->getDstId();
+
 			if (!DMRAccessControl::validateAccess(sid, did, m_slotNo, false)) {
 			    delete lc;
 			    return;
 			}
-			
-			unsigned int rw_id = DMRAccessControl::DstIdRewrite(did,sid,m_slotNo,false,lc);
-			if (rw_id) {
-			
-			lc->setDstId(rw_id);
-			}
-			
+
+			unsigned int rewriteId = DMRAccessControl::DstIdRewrite(did, sid, m_slotNo, false, lc);
+			if (rewriteId != 0U)
+				lc->setDstId(rewriteId);
+
 			m_rfLC = lc;
 
 			// Store the LC for the embedded LC
@@ -255,10 +254,8 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			writeNetworkRF(data, DT_TERMINATOR_WITH_LC);
 
 			if (m_duplex) {
-				
 				for (unsigned int i = 0U; i < m_hangCount; i++)
 					writeQueueRF(data);
-				
 			}
 
 			LogMessage("DMR Slot %u, received RF end of voice transmission, %.1f seconds, BER: %.1f%%", m_slotNo, float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
@@ -490,14 +487,15 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			if (lc != NULL) {
 				unsigned int sid = lc->getSrcId();
 				unsigned int did = lc->getDstId();
-				if (!DMRAccessControl::validateAccess(sid,did,m_slotNo,false)) {
+
+				if (!DMRAccessControl::validateAccess(sid, did, m_slotNo, false)) {
 				    delete lc;
 				    return;
 				}
-				unsigned int rw_id = DMRAccessControl::DstIdRewrite(did,sid,m_slotNo,false,lc);
-				if (rw_id) {
-				  lc->setDstId(rw_id);
-				}
+
+				unsigned int rewriteId = DMRAccessControl::DstIdRewrite(did, sid, m_slotNo, false, lc);
+				if (rewriteId != 0U)
+					lc->setDstId(rewriteId);
 
 				m_rfLC = lc;
 
@@ -658,11 +656,9 @@ void CDMRSlot::writeEndRF(bool writeEnd)
 
 			data[0U] = TAG_EOT;
 			data[1U] = 0x00U;
-			
-			
+
 			for (unsigned int i = 0U; i < m_hangCount; i++)
 				writeQueueRF(data);
-			
 		}
 	}
 
@@ -735,10 +731,8 @@ void CDMRSlot::writeEndNet(bool writeEnd)
 		data[1U] = 0x00U;
 
 		if (m_duplex) {
-			
 			for (unsigned int i = 0U; i < m_hangCount; i++)
 				writeQueueNet(data);
-			
 		} else {
 			for (unsigned int i = 0U; i < 3U; i++)
 				writeQueueNet(data);
@@ -778,15 +772,14 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		unsigned int did = m_netLC->getDstId();
 		unsigned int sid = m_netLC->getSrcId();
+
 		if (!DMRAccessControl::validateAccess(sid, did, m_slotNo, true))
 		    return;
-		
+
 		// Test dst rewrite
-		unsigned int rw_id = DMRAccessControl::DstIdRewrite(did, sid,m_slotNo, true,m_netLC);
-		if (rw_id) {
-		    
-		    m_netLC->setDstId(rw_id);
-		}
+		unsigned int rewriteId = DMRAccessControl::DstIdRewrite(did, sid, m_slotNo, true, m_netLC);
+		if (rewriteId != 0U)
+			m_netLC->setDstId(rewriteId);
 
 		// Store the LC for the embedded LC
 		m_netEmbeddedLC.setData(*m_netLC);
@@ -848,15 +841,14 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		unsigned int did = m_netLC->getDstId();
 		unsigned int sid = m_netLC->getSrcId();
+
 		if (!DMRAccessControl::validateAccess(sid, did, m_slotNo, true))
 		    return;
-		
+
 		// Test dst rewrite
-		unsigned int rw_id = DMRAccessControl::DstIdRewrite(did,sid,m_slotNo,true, m_netLC);
-		if (rw_id) {
-		    
-		    m_netLC->setDstId(rw_id);
-		}
+		unsigned int rewriteId = DMRAccessControl::DstIdRewrite(did, sid, m_slotNo, true, m_netLC);
+		if (rewriteId != 0U)
+			m_netLC->setDstId(rewriteId);
 
 		// Regenerate the Slot Type
 		CDMRSlotType slotType;
@@ -907,10 +899,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		data[1U] = 0x00U;
 
 		if (m_duplex) {
-			
 			for (unsigned int i = 0U; i < m_hangCount; i++)
 				writeQueueNet(data);
-			
 		} else {
 			for (unsigned int i = 0U; i < 3U; i++)
 				writeQueueNet(data);
