@@ -19,21 +19,33 @@
 #ifndef	DMRLookup_H
 #define	DMRLookup_H
 
+#include "Thread.h"
+#include "Mutex.h"
+
 #include <string>
 #include <unordered_map>
 
-class CDMRLookup {
+class CDMRLookup : public CThread {
 public:
-	CDMRLookup(const std::string& filename);
-	~CDMRLookup();
+	CDMRLookup(const std::string& filename, unsigned int reloadTime);
+	virtual ~CDMRLookup();
 
 	bool read();
 
-	std::string find(unsigned int id) const;
+	virtual void entry();
+
+	std::string find(unsigned int id);
+
+	void stop();
 
 private:
 	std::string                                   m_filename;
+	unsigned int                                  m_reloadTime;
 	std::unordered_map<unsigned int, std::string> m_table;
+	CMutex                                        m_mutex;
+	bool                                          m_stop;
+
+	bool load();
 };
 
 #endif

@@ -33,6 +33,7 @@ enum SECTION {
   SECTION_INFO,
   SECTION_LOG,
   SECTION_CWID,
+  SECTION_DMRID_LOOKUP,
   SECTION_MODEM,
   SECTION_DSTAR,
   SECTION_DMR,
@@ -73,6 +74,8 @@ m_logFilePath(),
 m_logFileRoot(),
 m_cwIdEnabled(false),
 m_cwIdTime(10U),
+m_dmrIdLookupFile(),
+m_dmrIdLookupTime(0U),
 m_modemPort(),
 m_modemRXInvert(false),
 m_modemTXInvert(false),
@@ -112,7 +115,6 @@ m_dmrDstIdBlacklistSlot1NET(),
 m_dmrDstIdBlacklistSlot2NET(),
 m_dmrDstIdWhitelistSlot1NET(),
 m_dmrDstIdWhitelistSlot2NET(),
-m_dmrLookupFile(),
 m_dmrCallHang(3U),
 m_dmrTXHang(4U),
 m_fusionEnabled(false),
@@ -196,6 +198,8 @@ bool CConf::read()
 		  section = SECTION_LOG;
 	  else if (::strncmp(buffer, "[CW Id]", 7U) == 0)
 		  section = SECTION_CWID;
+	  else if (::strncmp(buffer, "[DMR Id Lookup]", 15U) == 0)
+		  section = SECTION_DMRID_LOOKUP;
 	  else if (::strncmp(buffer, "[Modem]", 7U) == 0)
         section = SECTION_MODEM;
 	  else if (::strncmp(buffer, "[D-Star]", 8U) == 0)
@@ -287,6 +291,11 @@ bool CConf::read()
 			m_cwIdEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "Time") == 0)
 			m_cwIdTime = (unsigned int)::atoi(value);
+	} else if (section == SECTION_DMRID_LOOKUP) {
+		if (::strcmp(key, "File") == 0)
+			m_dmrIdLookupFile = value;
+		else if (::strcmp(key, "Time") == 0)
+			m_dmrIdLookupTime = (unsigned int)::atoi(value);
 	} else if (section == SECTION_MODEM) {
 		if (::strcmp(key, "Port") == 0)
 			m_modemPort = value;
@@ -436,9 +445,7 @@ bool CConf::read()
 					m_dmrDstIdWhitelistSlot2NET.push_back(id);
 				p = ::strtok(NULL, ",\r\n");
 			}
-		} else if (::strcmp(key, "LookupFile") == 0)
-			m_dmrLookupFile = value;
-		else if (::strcmp(key, "TXHang") == 0)
+		} else if (::strcmp(key, "TXHang") == 0)
 			m_dmrTXHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "CallHang") == 0)
 			m_dmrCallHang = (unsigned int)::atoi(value);
@@ -686,6 +693,16 @@ unsigned int CConf::getCWIdTime() const
 	return m_cwIdTime;
 }
 
+std::string CConf::getDMRIdLookupFile() const
+{
+	return m_dmrIdLookupFile;
+}
+
+unsigned int CConf::getDMRIdLookupTime() const
+{
+	return m_dmrIdLookupTime;
+}
+
 std::string CConf::getModemPort() const
 {
 	return m_modemPort;
@@ -840,39 +857,45 @@ std::vector<unsigned int> CConf::getDMRBlackList() const
 {
 	return m_dmrBlackList;
 }
+
 std::vector<unsigned int> CConf::getDMRDstIdBlacklistSlot1RF() const
 {
 	return m_dmrDstIdBlacklistSlot1RF;
 }
+
 std::vector<unsigned int> CConf::getDMRDstIdBlacklistSlot2RF() const
 {
 	return m_dmrDstIdBlacklistSlot2RF;
 }
+
 std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot1RF() const
 {
 	return m_dmrDstIdWhitelistSlot1RF;
-}std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot2RF() const
+}
+
+std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot2RF() const
 {
 	return m_dmrDstIdWhitelistSlot2RF;
 }
+
 std::vector<unsigned int> CConf::getDMRDstIdBlacklistSlot1NET() const
 {
 	return m_dmrDstIdBlacklistSlot1NET;
 }
+
 std::vector<unsigned int> CConf::getDMRDstIdBlacklistSlot2NET() const
 {
 	return m_dmrDstIdBlacklistSlot2NET;
 }
+
 std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot1NET() const
 {
 	return m_dmrDstIdWhitelistSlot1NET;
-}std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot2NET() const
+}
+
+std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot2NET() const
 {
 	return m_dmrDstIdWhitelistSlot2NET;
-}
-std::string CConf::getDMRLookupFile() const
-{
-	return m_dmrLookupFile;
 }
 
 unsigned int CConf::getDMRCallHang() const

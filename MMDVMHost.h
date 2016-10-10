@@ -23,6 +23,7 @@
 #include "YSFNetwork.h"
 #include "P25Network.h"
 #include "DMRNetwork.h"
+#include "DMRLookup.h"
 #include "Display.h"
 #include "Timer.h"
 #include "Modem.h"
@@ -58,6 +59,7 @@ private:
   bool           m_dmrEnabled;
   bool           m_ysfEnabled;
   bool           m_p25Enabled;
+  CDMRLookup*    m_lookup;
   std::string    m_callsign;
 
   void readParams();

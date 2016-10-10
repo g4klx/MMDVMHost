@@ -60,6 +60,10 @@ public:
   bool         getCWIdEnabled() const;
   unsigned int getCWIdTime() const;
 
+  // The DMR Id section
+  std::string  getDMRIdLookupFile() const;
+  unsigned int getDMRIdLookupTime() const;
+
   // The Modem section
   std::string  getModemPort() const;
   bool         getModemRXInvert() const;
@@ -104,7 +108,6 @@ public:
   std::vector<unsigned int> getDMRDstIdBlacklistSlot2NET() const;
   std::vector<unsigned int> getDMRDstIdWhitelistSlot1NET() const;
   std::vector<unsigned int> getDMRDstIdWhitelistSlot2NET() const;
-  std::string  getDMRLookupFile() const;
   unsigned int getDMRCallHang() const;
   unsigned int getDMRTXHang() const;
 
@@ -206,6 +209,9 @@ private:
   bool         m_cwIdEnabled;
   unsigned int m_cwIdTime;
 
+  std::string  m_dmrIdLookupFile;
+  unsigned int m_dmrIdLookupTime;
+
   std::string  m_modemPort;
   bool         m_modemRXInvert;
   bool         m_modemTXInvert;
@@ -237,7 +243,6 @@ private:
   bool	       m_dmrTGRewriteSlot2;
   bool	       m_dmrBMAutoRewrite;
   bool	       m_dmrBMRewriteReflectorVoicePrompts;
-  
   std::vector<unsigned int> m_dmrPrefixes;
   std::vector<unsigned int> m_dmrBlackList;
   std::vector<unsigned int> m_dmrDstIdBlacklistSlot1RF;
@@ -248,7 +253,6 @@ private:
   std::vector<unsigned int> m_dmrDstIdBlacklistSlot2NET;
   std::vector<unsigned int> m_dmrDstIdWhitelistSlot1NET;
   std::vector<unsigned int> m_dmrDstIdWhitelistSlot2NET;
-  std::string  m_dmrLookupFile;
   unsigned int m_dmrCallHang;
   unsigned int m_dmrTXHang;
 

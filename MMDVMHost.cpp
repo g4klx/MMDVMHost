@@ -24,7 +24,6 @@
 #include "Defines.h"
 #include "DStarControl.h"
 #include "DMRControl.h"
-#include "DMRLookup.h"
 #include "TFTSerial.h"
 #include "NullDisplay.h"
 #include "YSFControl.h"
@@ -139,6 +138,7 @@ m_dstarEnabled(false),
 m_dmrEnabled(false),
 m_ysfEnabled(false),
 m_p25Enabled(false),
+m_lookup(NULL),
 m_callsign()
 {
 }
@@ -278,13 +278,17 @@ int CMMDVMHost::run()
 	bool dmrBeaconsEnabled = m_dmrEnabled && m_conf.getDMRBeacons();
 
 	// For DMR and P25 we try to map IDs to callsigns
-	CDMRLookup* lookup = NULL;
 	if (m_dmrEnabled || m_p25Enabled) {
-		std::string lookupFile = m_conf.getDMRLookupFile();
-		LogInfo("ID lookup File: %s", lookupFile.length() > 0U ? lookupFile.c_str() : "None");
+		std::string lookupFile  = m_conf.getDMRIdLookupFile();
+		unsigned int reloadTime = m_conf.getDMRIdLookupTime();
 
-		lookup = new CDMRLookup(lookupFile);
-		lookup->read();
+		LogInfo("DMR Id Lookups");
+		LogInfo("    File: %s", lookupFile.length() > 0U ? lookupFile.c_str() : "None");
+		if (reloadTime > 0U)
+			LogInfo("    Reload: %u hours", reloadTime);
+
+		m_lookup = new CDMRLookup(lookupFile, reloadTime);
+		m_lookup->read();
 	}
 
 	CStopWatch stopWatch;
@@ -382,7 +386,7 @@ int CMMDVMHost::run()
 		if (BMRewriteReflectorVoicePrompts)
 		  LogInfo("    BrandMeister Rewrite Reflector Voice Prompts enabled");
 		
-		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList,dstIDBlackListSlot1RF,dstIDWhiteListSlot1RF, dstIDBlackListSlot2RF, dstIDWhiteListSlot2RF, dstIDBlackListSlot1NET,dstIDWhiteListSlot1NET, dstIDBlackListSlot2NET, dstIDWhiteListSlot2NET, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, lookup, rssiMultiplier, rssiOffset, jitter, TGRewriteSlot1, TGRewriteSlot2, BMAutoRewrite, BMRewriteReflectorVoicePrompts);
+		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList,dstIDBlackListSlot1RF,dstIDWhiteListSlot1RF, dstIDBlackListSlot2RF, dstIDWhiteListSlot2RF, dstIDBlackListSlot1NET,dstIDWhiteListSlot1NET, dstIDBlackListSlot2NET, dstIDWhiteListSlot2NET, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_lookup, rssiMultiplier, rssiOffset, jitter, TGRewriteSlot1, TGRewriteSlot2, BMAutoRewrite, BMRewriteReflectorVoicePrompts);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}
@@ -404,7 +408,7 @@ int CMMDVMHost::run()
 		LogInfo("P25 Parameters");
 		LogInfo("    NAC: $%03X", nac);
 
-		p25 = new CP25Control(nac, m_p25Network, m_display, m_timeout, m_duplex, lookup);
+		p25 = new CP25Control(nac, m_p25Network, m_display, m_timeout, m_duplex, m_lookup);
 	}
 
 	setMode(MODE_IDLE);
@@ -723,6 +727,9 @@ int CMMDVMHost::run()
 
 	m_display->close();
 	delete m_display;
+
+	if (m_lookup != NULL)
+		m_lookup->stop();
 
 	if (m_dstarNetwork != NULL) {
 		m_dstarNetwork->close();
