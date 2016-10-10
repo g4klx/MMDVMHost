@@ -39,7 +39,7 @@ public:
 
 	void setRFParams(unsigned int rxFrequency, unsigned int txFrequency);
 	void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled);
-	void setLevels(unsigned int rxLevel, unsigned int dstarTXLevel, unsigned int dmrTXLevel, unsigned int ysfTXLevel, unsigned int p25Enabled);
+	void setLevels(unsigned int rxLevel, unsigned int cwIdTXLevel, unsigned int dstarTXLevel, unsigned int dmrTXLevel, unsigned int ysfTXLevel, unsigned int p25Enabled);
 	void setDMRParams(unsigned int colorCode);
 
 	bool open();
@@ -95,6 +95,7 @@ private:
 	unsigned int               m_txDelay;
 	unsigned int               m_dmrDelay;
 	unsigned int               m_rxLevel;
+	unsigned int               m_cwIdTXLevel;
 	unsigned int               m_dstarTXLevel;
 	unsigned int               m_dmrTXLevel;
 	unsigned int               m_ysfTXLevel;

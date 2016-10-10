@@ -761,6 +761,7 @@ bool CMMDVMHost::createModem()
 	unsigned int txDelay      = m_conf.getModemTXDelay();
 	unsigned int dmrDelay     = m_conf.getModemDMRDelay();
 	unsigned int rxLevel      = m_conf.getModemRXLevel();
+	unsigned int cwIdTXLevel  = m_conf.getModemCWIdTXLevel();
 	unsigned int dstarTXLevel = m_conf.getModemDStarTXLevel();
 	unsigned int dmrTXLevel   = m_conf.getModemDMRTXLevel();
 	unsigned int ysfTXLevel   = m_conf.getModemYSFTXLevel();
@@ -779,6 +780,7 @@ bool CMMDVMHost::createModem()
 	LogInfo("    TX Delay: %ums", txDelay);
 	LogInfo("    DMR Delay: %u (%.1fms)", dmrDelay, float(dmrDelay) * 0.0416666F);
 	LogInfo("    RX Level: %u%%", rxLevel);
+	LogInfo("    CW Id TX Level: %u%%", cwIdTXLevel);
 	LogInfo("    D-Star TX Level: %u%%", dstarTXLevel);
 	LogInfo("    DMR TX Level: %u%%", dmrTXLevel);
 	LogInfo("    YSF TX Level: %u%%", ysfTXLevel);
@@ -790,7 +792,7 @@ bool CMMDVMHost::createModem()
 
 	m_modem = new CModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, oscOffset, debug);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled);
-	m_modem->setLevels(rxLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel);
+	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel);
 	m_modem->setRFParams(rxFrequency, txFrequency);
 	m_modem->setDMRParams(colorCode);
 

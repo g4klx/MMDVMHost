@@ -92,6 +92,7 @@ m_pttInvert(pttInvert),
 m_txDelay(txDelay),
 m_dmrDelay(dmrDelay),
 m_rxLevel(0U),
+m_cwIdTXLevel(0U),
 m_dstarTXLevel(0U),
 m_dmrTXLevel(0U),
 m_ysfTXLevel(0U),
@@ -155,9 +156,10 @@ void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, 
 	m_p25Enabled   = p25Enabled;
 }
 
-void CModem::setLevels(unsigned int rxLevel, unsigned int dstarTXLevel, unsigned int dmrTXLevel, unsigned int ysfTXLevel, unsigned int p25TXLevel)
+void CModem::setLevels(unsigned int rxLevel, unsigned int cwIdTXLevel, unsigned int dstarTXLevel, unsigned int dmrTXLevel, unsigned int ysfTXLevel, unsigned int p25TXLevel)
 {
 	m_rxLevel      = rxLevel;
+	m_cwIdTXLevel  = cwIdTXLevel;
 	m_dstarTXLevel = dstarTXLevel;
 	m_dmrTXLevel   = dmrTXLevel;
 	m_ysfTXLevel   = ysfTXLevel;
@@ -947,7 +949,8 @@ bool CModem::setConfig()
 	buffer[6U] = MODE_IDLE;
 
 	buffer[7U] = (m_rxLevel * 255U) / 100U;
-	buffer[8U] = (m_dstarTXLevel * 255U) / 100U;		// For backwards compatibility
+
+	buffer[8U] = (m_cwIdTXLevel * 255U) / 100U;
 
 	buffer[9U] = m_colorCode;
 

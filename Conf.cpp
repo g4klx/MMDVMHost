@@ -80,6 +80,7 @@ m_modemPTTInvert(false),
 m_modemTXDelay(100U),
 m_modemDMRDelay(0U),
 m_modemRXLevel(50U),
+m_modemCWIdTXLevel(50U),
 m_modemDStarTXLevel(50U),
 m_modemDMRTXLevel(50U),
 m_modemYSFTXLevel(50U),
@@ -302,7 +303,9 @@ bool CConf::read()
 		else if (::strcmp(key, "RXLevel") == 0)
 			m_modemRXLevel = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "TXLevel") == 0)
-			m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = (unsigned int)::atoi(value);
+			m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "CWIdTXLevel") == 0)
+			m_modemCWIdTXLevel = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "D-StarTXLevel") == 0)
 			m_modemDStarTXLevel = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "DMRTXLevel") == 0)
@@ -716,6 +719,11 @@ unsigned int CConf::getModemDMRDelay() const
 unsigned int CConf::getModemRXLevel() const
 {
 	return m_modemRXLevel;
+}
+
+unsigned int CConf::getModemCWIdTXLevel() const
+{
+	return m_modemCWIdTXLevel;
 }
 
 unsigned int CConf::getModemDStarTXLevel() const
