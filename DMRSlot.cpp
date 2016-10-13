@@ -160,7 +160,7 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			    return;
 			}
 
-			unsigned int rewriteId = DMRAccessControl::DstIdRewrite(did, sid, m_slotNo, false, lc);
+			unsigned int rewriteId = DMRAccessControl::dstIdRewrite(did, sid, m_slotNo, false, lc);
 			if (rewriteId != 0U)
 				lc->setDstId(rewriteId);
 
@@ -493,7 +493,7 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				    return;
 				}
 
-				unsigned int rewriteId = DMRAccessControl::DstIdRewrite(did, sid, m_slotNo, false, lc);
+				unsigned int rewriteId = DMRAccessControl::dstIdRewrite(did, sid, m_slotNo, false, lc);
 				if (rewriteId != 0U)
 					lc->setDstId(rewriteId);
 
@@ -777,7 +777,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		    return;
 
 		// Test dst rewrite
-		unsigned int rewriteId = DMRAccessControl::DstIdRewrite(did, sid, m_slotNo, true, m_netLC);
+		unsigned int rewriteId = DMRAccessControl::dstIdRewrite(did, sid, m_slotNo, true, m_netLC);
 		if (rewriteId != 0U)
 			m_netLC->setDstId(rewriteId);
 
@@ -846,7 +846,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		    return;
 
 		// Test dst rewrite
-		unsigned int rewriteId = DMRAccessControl::DstIdRewrite(did, sid, m_slotNo, true, m_netLC);
+		unsigned int rewriteId = DMRAccessControl::dstIdRewrite(did, sid, m_slotNo, true, m_netLC);
 		if (rewriteId != 0U)
 			m_netLC->setDstId(rewriteId);
 
