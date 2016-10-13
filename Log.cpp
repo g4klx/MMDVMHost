@@ -61,7 +61,7 @@ static bool LogOpen()
 			::fclose(m_fpLog);
 	}
 
-	char filename[50U];
+	char filename[100U];
 #if defined(_WIN32) || defined(_WIN64)
 	::sprintf(filename, "%s\\%s-%04d-%02d-%02d.log", m_filePath.c_str(), m_fileRoot.c_str(), tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
 #else
