@@ -415,7 +415,7 @@ void CP25Network::clock(unsigned int ms)
 		return;
 
 	if (m_debug)
-		CUtils::dump(1U, "P25 Network Received", buffer, length);
+		CUtils::dump(1U, "P25 Network Data Received", buffer, length);
 
 	unsigned char c = length;
 	m_buffer.addData(&c, 1U);
