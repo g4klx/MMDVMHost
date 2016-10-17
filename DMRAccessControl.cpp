@@ -39,12 +39,12 @@ bool DMRAccessControl::m_selfOnly = false;
 
 unsigned int DMRAccessControl::m_id = 0U;
 
-unsigned int DMRAccessControl::m_dstRewriteID = 0U;
-unsigned int DMRAccessControl::m_srcID = 0U;
+unsigned int DMRAccessControl::m_dstRewriteID[2];
+unsigned int DMRAccessControl::m_srcID[2]; 
 
 CDMRLC* DMRAccessControl::m_lastdmrLC;
 
-time_t DMRAccessControl::m_time;
+time_t DMRAccessControl::m_time[2];
 
 int DMRAccessControl::m_callHang;
 
@@ -213,8 +213,9 @@ unsigned int DMRAccessControl::dstIdRewrite(unsigned int did, unsigned int sid, 
 	time_t currenttime = ::time(NULL);
   
 	if (network) {
-		m_dstRewriteID = did;
-		m_srcID = sid;
+
+		m_dstRewriteID[slot] = did;
+		m_srcID[slot] = sid;
 
 		//not needed at present - for direct dial, which requires change at master end.
 		//memcpy(&m_lastdmrLC, &dmrLC, sizeof(dmrLC));
@@ -229,22 +230,22 @@ unsigned int DMRAccessControl::dstIdRewrite(unsigned int did, unsigned int sid, 
 		} else {
 			return 0U;
 		}
-	} else if (m_bmAutoRewrite && did == 9U && m_dstRewriteID != 9U && m_dstRewriteID != 0U && (m_time + m_callHang) > currenttime && dmrLC->getFLCO() == FLCO_GROUP ) {
+	} else if (m_bmAutoRewrite && did == 9U && m_dstRewriteID[slot] != 9U && m_dstRewriteID[slot] != 0U && (m_time[slot] + m_callHang) > currenttime && dmrLC->getFLCO() == FLCO_GROUP ) {
 		LogMessage("DMR Slot %u, Rewrite DST ID (TG) of outbound network traffic from %u to %u (return traffic during CallHang)",slot,did,m_dstRewriteID);
-		return m_dstRewriteID;
+		return m_dstRewriteID[slot];
 	} else if (m_bmAutoRewrite && (did < 4000U || did > 5000U) && did > 0U && did !=9U && did < 99999U && dmrLC->getFLCO() == FLCO_USER_USER) {
-		m_dstRewriteID = did;
+		m_dstRewriteID[slot] = did;
 		dmrLC->setFLCO(FLCO_GROUP);
 		LogMessage("DMR Slot %u, Rewrite outbound private call to %u Group Call (Connect talkgroup by private call)",slot,did);
 		return did;
 	} else if (m_bmAutoRewrite && (did < 4000U || did > 5000U) && did > 0U && did !=9U && did > 99999U) {
-		m_dstRewriteID = did;
+		m_dstRewriteID[slot] = did;
 	}
 
 	return 0U;
 }
 
-void DMRAccessControl::setOverEndTime() 
+void DMRAccessControl::setOverEndTime(unsigned int slot) 
 {
-	m_time = ::time(NULL);
+	m_time[slot] = ::time(NULL);
 }
