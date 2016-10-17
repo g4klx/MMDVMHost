@@ -59,6 +59,7 @@ private:
   bool           m_dmrEnabled;
   bool           m_ysfEnabled;
   bool           m_p25Enabled;
+  unsigned int   m_cwIdTime;
   CDMRLookup*    m_lookup;
   std::string    m_callsign;
 

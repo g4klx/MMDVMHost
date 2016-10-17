@@ -138,6 +138,7 @@ m_dstarEnabled(false),
 m_dmrEnabled(false),
 m_ysfEnabled(false),
 m_p25Enabled(false),
+m_cwIdTime(0U),
 m_lookup(NULL),
 m_callsign()
 {
@@ -270,7 +271,9 @@ int CMMDVMHost::run()
 		LogInfo("CW Id Parameters");
 		LogInfo("    Time: %u mins", time);
 
-		m_cwIdTimer.setTimeout(time * 60U);
+		m_cwIdTime = time * 60U;
+
+		m_cwIdTimer.setTimeout(m_cwIdTime / 4U);
 		m_cwIdTimer.start();
 	}
 
@@ -698,7 +701,8 @@ int CMMDVMHost::run()
 				m_display->writeCW();
 				m_modem->sendCWId(m_callsign);
 
-				m_cwIdTimer.start();   //reset only after sending ID, timer-overflow after 49 days doesnt matter
+				m_cwIdTimer.setTimeout(m_cwIdTime);
+				m_cwIdTimer.start();
 			}
 		}
 
@@ -1098,6 +1102,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modem->setMode(MODE_DSTAR);
 		m_mode = MODE_DSTAR;
 		m_modeTimer.start();
+		m_cwIdTimer.stop();
 		break;
 
 	case MODE_DMR:
@@ -1114,6 +1119,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		}
 		m_mode = MODE_DMR;
 		m_modeTimer.start();
+		m_cwIdTimer.stop();
 		break;
 
 	case MODE_YSF:
@@ -1126,6 +1132,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modem->setMode(MODE_YSF);
 		m_mode = MODE_YSF;
 		m_modeTimer.start();
+		m_cwIdTimer.stop();
 		break;
 
 	case MODE_P25:
@@ -1138,6 +1145,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modem->setMode(MODE_P25);
 		m_mode = MODE_P25;
 		m_modeTimer.start();
+		m_cwIdTimer.stop();
 		break;
 
 	case MODE_LOCKOUT:
@@ -1197,6 +1205,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modem->setMode(MODE_IDLE);
 		if (m_mode == MODE_ERROR || m_mode == MODE_LOCKOUT) {
 			m_modem->sendCWId(m_callsign);
+			m_cwIdTimer.setTimeout(m_cwIdTime);
+			m_cwIdTimer.start();
+		} else {
+			m_cwIdTimer.setTimeout(m_cwIdTime / 4U);
 			m_cwIdTimer.start();
 		}
 		m_display->setIdle();
