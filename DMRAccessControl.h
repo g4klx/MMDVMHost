@@ -57,8 +57,7 @@ private:
 
 	static time_t m_time[2];
 
-	static unsigned int m_dstRewriteIDslot1;
-	static unsigned int m_srcIDslot1;
+	       
 	static unsigned int m_dstRewriteID[2];
 	static unsigned int m_srcID[2];
 

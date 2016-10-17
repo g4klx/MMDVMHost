@@ -214,8 +214,8 @@ unsigned int DMRAccessControl::dstIdRewrite(unsigned int did, unsigned int sid, 
   
 	if (network) {
 
-		m_dstRewriteID[slot] = did;
-		m_srcID[slot] = sid;
+		m_dstRewriteID[slot - 1U] = did;
+		m_srcID[slot - 1U] = sid;
 
 		//not needed at present - for direct dial, which requires change at master end.
 		//memcpy(&m_lastdmrLC, &dmrLC, sizeof(dmrLC));
@@ -230,16 +230,16 @@ unsigned int DMRAccessControl::dstIdRewrite(unsigned int did, unsigned int sid, 
 		} else {
 			return 0U;
 		}
-	} else if (m_bmAutoRewrite && did == 9U && m_dstRewriteID[slot] != 9U && m_dstRewriteID[slot] != 0U && (m_time[slot] + m_callHang) > currenttime && dmrLC->getFLCO() == FLCO_GROUP ) {
-		LogMessage("DMR Slot %u, Rewrite DST ID (TG) of outbound network traffic from %u to %u (return traffic during CallHang)",slot,did,m_dstRewriteID);
-		return m_dstRewriteID[slot];
+	} else if (m_bmAutoRewrite && did == 9U && m_dstRewriteID[slot - 1U] != 9U && m_dstRewriteID[slot - 1U] != 0U && (m_time[slot - 1U] + m_callHang) > currenttime && dmrLC->getFLCO() == FLCO_GROUP ) {
+		LogMessage("DMR Slot %u, Rewrite DST ID (TG) of outbound network traffic from %u to %u (return traffic during CallHang)",slot,did,m_dstRewriteID[slot - 1]);
+		return m_dstRewriteID[slot - 1U];
 	} else if (m_bmAutoRewrite && (did < 4000U || did > 5000U) && did > 0U && did !=9U && did < 99999U && dmrLC->getFLCO() == FLCO_USER_USER) {
-		m_dstRewriteID[slot] = did;
+		m_dstRewriteID[slot - 1U] = did;
 		dmrLC->setFLCO(FLCO_GROUP);
 		LogMessage("DMR Slot %u, Rewrite outbound private call to %u Group Call (Connect talkgroup by private call)",slot,did);
 		return did;
 	} else if (m_bmAutoRewrite && (did < 4000U || did > 5000U) && did > 0U && did !=9U && did > 99999U) {
-		m_dstRewriteID[slot] = did;
+		m_dstRewriteID[slot - 1U] = did;
 	}
 
 	return 0U;
@@ -247,5 +247,5 @@ unsigned int DMRAccessControl::dstIdRewrite(unsigned int did, unsigned int sid, 
 
 void DMRAccessControl::setOverEndTime(unsigned int slot) 
 {
-	m_time[slot] = ::time(NULL);
+	m_time[slot - 1U] = ::time(NULL);
 }
