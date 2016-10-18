@@ -28,7 +28,7 @@ public:
 	
 	static unsigned int dstIdRewrite(unsigned int id, unsigned int sid, unsigned int slot, bool network, CDMRLC* dmrLC);
 
-	static void setOverEndTime();
+	static void setOverEndTime(unsigned int slot);
 
 private:
 	static std::vector<unsigned int> m_dstBlackListSlot1RF;
@@ -55,10 +55,12 @@ private:
 
 	static bool validateSrcId(unsigned int id);
 
-	static time_t m_time;
+	static time_t m_time[2];
 
-	static unsigned int m_dstRewriteID;
-	static unsigned int m_srcID;
+	       
+	static unsigned int m_dstRewriteID[2];
+	static unsigned int m_srcID[2];
+
 
 	static bool m_tgRewriteSlot1;
 	static bool m_tgRewriteSlot2;
