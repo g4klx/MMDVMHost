@@ -100,19 +100,23 @@ bool CP25Data::decodeLDU1(const unsigned char* data)
 	if (!ret)
 		return false;
 
-	switch (m_lcf) {
+	// Simple validation of the source id
+	unsigned int srcId = (rs[6U] << 16) + (rs[7U] << 8) + rs[8U];
+	if (srcId < 1000000U)
+		return false;
+
+	switch (rs[0U]) {
 	case P25_LCF_GROUP:
 		m_emergency = (rs[2U] & 0x80U) == 0x80U;
 		m_dstId = (rs[4U] << 8) + rs[5U];
-		m_srcId = (rs[6U] << 16) + (rs[7U] << 8) + rs[8U];
+		m_srcId = srcId;
 		break;
 	case P25_LCF_PRIVATE:
 		m_emergency = false;
 		m_dstId = (rs[3U] << 16) + (rs[4U] << 8) + rs[5U];
-		m_srcId = (rs[6U] << 16) + (rs[7U] << 8) + rs[8U];
+		m_srcId = srcId;
 		break;
 	default:
-		LogMessage("P25, unknown LCF value in LDU1 - $%02X", m_lcf);
 		return false;
 	}
 
