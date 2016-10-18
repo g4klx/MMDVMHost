@@ -18,6 +18,12 @@
 
 #include "NullDisplay.h"
 
+#if defined(RASPBERRY_PI)
+#include <wiringPi.h>
+#endif
+
+#define	LED_STATUS	28
+
 CNullDisplay::CNullDisplay() :
 CDisplay()
 {
@@ -29,6 +35,12 @@ CNullDisplay::~CNullDisplay()
 
 bool CNullDisplay::open()
 {
+#if defined(RASPBERRY_PI)
+	::wiringPiSetup();
+
+	::pinMode(LED_STATUS, OUTPUT);
+	::digitalWrite(LED_STATUS, 0);
+#endif
 	return true;
 }
 
@@ -46,34 +58,58 @@ void CNullDisplay::setLockoutInt()
 
 void CNullDisplay::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 1);
+#endif
 }
 
 void CNullDisplay::clearDStarInt()
 {
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 0);
+#endif
 }
 
 void CNullDisplay::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 1);
+#endif
 }
 
 void CNullDisplay::clearDMRInt(unsigned int slotNo)
 {
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 0);
+#endif
 }
 
 void CNullDisplay::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
 {
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 1);
+#endif
 }
 
 void CNullDisplay::clearFusionInt()
 {
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 0);
+#endif
 }
 
 void CNullDisplay::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
 {
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 1);
+#endif
 }
 
 void CNullDisplay::clearP25Int()
 {
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 0);
+#endif
 }
 
 void CNullDisplay::writeCWInt()
