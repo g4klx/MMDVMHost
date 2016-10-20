@@ -245,6 +245,12 @@ void COLED::writeCWInt()
 
 void COLED::clearCWInt()
 {
+    display.setCursor(0,display.height()/2);
+    display.setTextSize(3);
+    display.print("Idle");
+    display.setTextSize(1);
+    display.display();
+    display.startscrollright(0x02,0x0f);
 }
 
 void COLED::close()
