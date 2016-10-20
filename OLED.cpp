@@ -233,6 +233,14 @@ void COLED::clearP25Int()
     display.display();
 }
 
+void COLED::writeCWInt()
+{
+}
+
+void COLED::clearCWInt()
+{
+}
+
 void COLED::close()
 {
     display.close();
