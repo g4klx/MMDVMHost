@@ -235,6 +235,7 @@ void COLED::clearP25Int()
 
 void COLED::writeCWInt()
 {
+    display.clearDisplay();
     display.setCursor(0,display.height()/2);
     display.setTextSize(3);
     display.print("CW TX");
@@ -245,6 +246,7 @@ void COLED::writeCWInt()
 
 void COLED::clearCWInt()
 {
+    display.clearDisplay();
     display.setCursor(0,display.height()/2);
     display.setTextSize(3);
     display.print("Idle");
