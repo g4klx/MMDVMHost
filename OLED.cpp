@@ -235,6 +235,12 @@ void COLED::clearP25Int()
 
 void COLED::writeCWInt()
 {
+    display.setCursor(0,display.height()/2);
+    display.setTextSize(3);
+    display.print("CW TX");
+    display.setTextSize(1);
+    display.display();
+    display.startscrollright(0x02,0x0f);
 }
 
 void COLED::clearCWInt()
