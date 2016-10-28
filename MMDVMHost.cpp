@@ -29,6 +29,7 @@
 #include "YSFControl.h"
 #include "P25Control.h"
 #include "Nextion.h"
+#include "LCDproc.h"
 #include "Thread.h"
 #include "Log.h"
 
@@ -1030,6 +1031,26 @@ void CMMDVMHost::createDisplay()
 			serial = new CSerialController(port, SERIAL_9600);
 
 		m_display = new CNextion(m_callsign, dmrid, serial, brightness, displayClock, utc, idleBrightness);
+	} else if (type == "LCDproc") {
+		std::string address       = m_conf.getLCDprocAddress();
+		unsigned int port         = m_conf.getLCDprocPort();
+		unsigned int localPort    = m_conf.getLCDprocLocalPort();
+		bool displayClock         = m_conf.getLCDprocDisplayClock();
+		bool utc                  = m_conf.getLCDprocUTC();
+
+		LogInfo("    Address: %s", address.c_str());
+		LogInfo("    Port: %u", port);
+
+		if (localPort == 0 )
+			LogInfo("    Local Port: random");
+		else
+			LogInfo("    Local Port: %u", localPort);
+
+		LogInfo("    Clock Display: %s", displayClock ? "yes" : "no");
+		if (displayClock)
+			LogInfo("    Display UTC: %s", utc ? "yes" : "no");
+
+		m_display = new CLCDproc(address.c_str(), port, localPort, m_callsign, dmrid, displayClock, utc, m_duplex);
 #if defined(HD44780)
 	} else if (type == "HD44780") {
 		unsigned int rows              = m_conf.getHD44780Rows();

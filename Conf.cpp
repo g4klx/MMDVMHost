@@ -47,6 +47,7 @@ enum SECTION {
   SECTION_HD44780,
   SECTION_NEXTION,
   SECTION_OLED,
+  SECTION_LCDPROC,
   SECTION_TGREWRITE
 };
 
@@ -166,7 +167,12 @@ m_nextionUTC(false),
 m_nextionIdleBrightness(20U),
 m_oledType(3),
 m_oledBrightness(0),
-m_oledInvert(0)
+m_oledInvert(0),
+m_lcdprocAddress(),
+m_lcdprocPort(0U),
+m_lcdprocLocalPort(0U),
+m_lcdprocDisplayClock(false),
+m_lcdprocUTC(false)
 {
 }
 
@@ -226,7 +232,8 @@ bool CConf::read()
 		  section = SECTION_NEXTION;
 	  else if (::strncmp(buffer, "[OLED]", 6U) == 0)
 		  section = SECTION_OLED;
-
+	  else if (::strncmp(buffer, "[LCDproc]", 6U) == 0)
+		  section = SECTION_LCDPROC;
 	  else
         section = SECTION_NONE;
 
@@ -573,9 +580,19 @@ bool CConf::read()
 			m_oledBrightness = (unsigned char)::atoi(value);
 		else if (::strcmp(key, "Brightness") == 0)
 			m_oledInvert = (unsigned char)::atoi(value);
-		
-	}
 
+	} else if (section == SECTION_LCDPROC) {
+		if (::strcmp(key, "Address") == 0)
+			m_lcdprocAddress = value;
+		else if (::strcmp(key, "Port") == 0)
+			m_lcdprocPort = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "LocalPort") == 0)
+			m_lcdprocLocalPort = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "DisplayClock") == 0)
+			m_lcdprocDisplayClock = ::atoi(value) == 1;
+		else if (::strcmp(key, "UTC") == 0)
+			m_lcdprocUTC = ::atoi(value) == 1;
+	}
   }
 
   ::fclose(fp);
@@ -1156,4 +1173,29 @@ unsigned char CConf::getOLEDBrightness() const
 unsigned char CConf::getOLEDInvert() const
 {
 	return m_oledInvert;
+}
+
+std::string CConf::getLCDprocAddress() const
+{
+	return m_lcdprocAddress;
+}
+
+unsigned int CConf::getLCDprocPort() const
+{
+	return m_lcdprocPort;
+}
+
+unsigned int CConf::getLCDprocLocalPort() const
+{
+	return m_lcdprocLocalPort;
+}
+
+bool CConf::getLCDprocDisplayClock() const
+{
+	return m_lcdprocDisplayClock;
+}
+
+bool CConf::getLCDprocUTC() const
+{
+	return m_lcdprocUTC;
 }
