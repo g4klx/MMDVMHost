@@ -37,14 +37,10 @@
 #include <stdarg.h>
 
 #define BUFFER_MAX_LEN 128
-#define SOCKET_TIMEOUT 2500            //2500us (2.5ms) works, but 10ms was enough not to disprupt audio processing
-
-const char* LISTENING = "Listening                               ";
-const char* DEADSPACE = "                                        ";
 
 int            m_socketfd;
 char           m_buffer[BUFFER_MAX_LEN];
-fd_set         m_readmask;
+fd_set         m_readfds, m_writefds;
 struct timeval m_timeout;
 int            m_recvsize;
 unsigned int   m_rows(0);
@@ -384,29 +380,30 @@ void CLCDproc::clockInt(unsigned int ms)
 	}
 
 	// We must set all this information on each select we do
-  FD_ZERO(&m_readmask);   // empty readmask 
+  FD_ZERO(&m_readfds);   // empty readfds 
 
-  // Then we put all the descriptors we want to wait for in a mask = m_readmask
-  FD_SET(m_socketfd, &m_readmask);
-  FD_SET(STDIN_FILENO, &m_readmask); // STDIN_FILENO = 0 (standard input);
+  // Then we put all the descriptors we want to wait for in a mask = m_readfds
+  FD_SET(m_socketfd, &m_readfds);
+  FD_SET(STDIN_FILENO, &m_readfds); // STDIN_FILENO = 0 (standard input);
 
   // Timeout, we will stop waiting for information
   m_timeout.tv_sec = 0;
-  m_timeout.tv_usec = SOCKET_TIMEOUT;
+  m_timeout.tv_usec = 0;
+  //m_timeout.tv_usec = SOCKET_TIMEOUT;
 
   /* The first parameter is the biggest descriptor + 1. The first one was 0, so 
    * every other descriptor will be bigger
    *
-   * readfds = &m_readmask
+   * readfds = &m_readfds
    * writefds = we are not waiting for writefds
    * exceptfds = we are not waiting for exception fds 
 	 */
 
-  if (select(m_socketfd + 1, &m_readmask, NULL, NULL, &m_timeout) == -1)
+  if (select(m_socketfd + 1, &m_readfds, NULL, NULL, &m_timeout) == -1)
 	  LogError("LCDproc, error on select");
 
   // If something was received from the server...
-  if (FD_ISSET(m_socketfd, &m_readmask)) {
+  if (FD_ISSET(m_socketfd, &m_readfds)) {
 	  m_recvsize = recv(m_socketfd, m_buffer, BUFFER_MAX_LEN, 0);
 
   	if (m_recvsize == -1)
@@ -496,7 +493,7 @@ void CLCDproc::clockInt(unsigned int ms)
 	// only for debugging purposes!
 
 	/*
-	if (FD_ISSET(STDIN_FILENO, &m_readmask)) {
+	if (FD_ISSET(STDIN_FILENO, &m_readfds)) {
 		fgets(m_buffer, BUFFER_MAX_LEN, stdin);
 
 		if (send(m_socketfd, m_buffer, strlen(m_buffer) + 1, 0) == -1)
@@ -527,10 +524,22 @@ int CLCDproc::socketPrintf(int fd, const char *format, ...)
   if (size > sizeof(buf))
     LogWarning("LCDproc, socketPrintf: vsnprintf truncated message");
 
-	if (send(fd, buf, strlen(buf) + 1, 0) == 1) {
-		LogError("LCDproc, socketSend: cannot send data");
-		return -1;
+  FD_ZERO(&m_writefds);   // empty writefds 
+  FD_SET(m_socketfd, &m_writefds);
+
+  m_timeout.tv_sec = 0;
+  m_timeout.tv_usec = 0;
+
+  if (select(m_socketfd + 1, NULL, &m_writefds, NULL, &m_timeout) == -1)
+	  LogError("LCDproc, error on select");
+
+	if (FD_ISSET(m_socketfd, &m_writefds)) {
+		if (send(m_socketfd, buf, strlen(buf) + 1, 0) == -1) {
+			LogError("LCDproc, cannot send data");
+			return -1;
+		}
 	}
+
 	return 1;
 }
 
