@@ -106,12 +106,12 @@ bool CLCDproc::open()
 	h = gethostbyname(server);
 
 	/* Sets server address */
-  serverAddress.sin_family = h->h_addrtype;
-  memcpy((char*) &serverAddress.sin_addr.s_addr, h->h_addr_list[0], h->h_length);
-  serverAddress.sin_port = htons(port);
+	serverAddress.sin_family = h->h_addrtype;
+	memcpy((char*) &serverAddress.sin_addr.s_addr, h->h_addr_list[0], h->h_length);
+	serverAddress.sin_port = htons(port);
 
   if (connect(m_socketfd, (struct sockaddr * )&serverAddress, sizeof(serverAddress))==-1) {
-    LogError("LCDproc, cannot connect to server");
+		LogError("LCDproc, cannot connect to server");
 		return false;
 	}
 
@@ -380,36 +380,35 @@ void CLCDproc::clockInt(unsigned int ms)
 	}
 
 	// We must set all this information on each select we do
-  FD_ZERO(&m_readfds);   // empty readfds 
+	FD_ZERO(&m_readfds);   // empty readfds 
 
-  // Then we put all the descriptors we want to wait for in a mask = m_readfds
-  FD_SET(m_socketfd, &m_readfds);
-  FD_SET(STDIN_FILENO, &m_readfds); // STDIN_FILENO = 0 (standard input);
+	// Then we put all the descriptors we want to wait for in a mask = m_readfds
+	FD_SET(m_socketfd, &m_readfds);
+	FD_SET(STDIN_FILENO, &m_readfds); // STDIN_FILENO = 0 (standard input);
 
-  // Timeout, we will stop waiting for information
-  m_timeout.tv_sec = 0;
-  m_timeout.tv_usec = 0;
-  //m_timeout.tv_usec = SOCKET_TIMEOUT;
+	// Timeout, we will stop waiting for information
+	m_timeout.tv_sec = 0;
+	m_timeout.tv_usec = 0;
 
-  /* The first parameter is the biggest descriptor + 1. The first one was 0, so 
-   * every other descriptor will be bigger
-   *
-   * readfds = &m_readfds
-   * writefds = we are not waiting for writefds
-   * exceptfds = we are not waiting for exception fds 
+	/* The first parameter is the biggest descriptor + 1. The first one was 0, so 
+	 * every other descriptor will be bigger
+	 *
+	 * readfds = &m_readfds
+	 * writefds = we are not waiting for writefds
+	 * exceptfds = we are not waiting for exception fds 
 	 */
 
-  if (select(m_socketfd + 1, &m_readfds, NULL, NULL, &m_timeout) == -1)
-	  LogError("LCDproc, error on select");
+	if (select(m_socketfd + 1, &m_readfds, NULL, NULL, &m_timeout) == -1)
+		LogError("LCDproc, error on select");
 
-  // If something was received from the server...
-  if (FD_ISSET(m_socketfd, &m_readfds)) {
-	  m_recvsize = recv(m_socketfd, m_buffer, BUFFER_MAX_LEN, 0);
+	// If something was received from the server...
+	if (FD_ISSET(m_socketfd, &m_readfds)) {
+		m_recvsize = recv(m_socketfd, m_buffer, BUFFER_MAX_LEN, 0);
 
-  	if (m_recvsize == -1)
-  		LogError("LCDproc, cannot receive information");
+		if (m_recvsize == -1)
+			LogError("LCDproc, cannot receive information");
 
-  	m_buffer[m_recvsize] = '\0';
+		m_buffer[m_recvsize] = '\0';
 
 		int i = 0;
 		char *argv[256];
@@ -476,7 +475,7 @@ void CLCDproc::clockInt(unsigned int ms)
 							LogDebug("%s", m_buffer1);
 						}
 					}
-	
+
 					/* Restart tokenizing */
 					argc = 0;
 					newtoken = 1;
@@ -513,25 +512,25 @@ int CLCDproc::socketPrintf(int fd, const char *format, ...)
 	unsigned int size = 0;
 
 	va_start(ap, format);
-  size = vsnprintf(buf, sizeof(buf), format, ap);
-  va_end(ap);
+	size = vsnprintf(buf, sizeof(buf), format, ap);
+	va_end(ap);
 
-  if (size < 0) {
-    LogError("LCDproc, socketPrintf: vsnprintf failed");
-    return -1;
-  }
+	if (size < 0) {
+		LogError("LCDproc, socketPrintf: vsnprintf failed");
+		return -1;
+	}
 
-  if (size > sizeof(buf))
-    LogWarning("LCDproc, socketPrintf: vsnprintf truncated message");
+	if (size > sizeof(buf))
+		LogWarning("LCDproc, socketPrintf: vsnprintf truncated message");
 
-  FD_ZERO(&m_writefds);   // empty writefds 
-  FD_SET(m_socketfd, &m_writefds);
+	FD_ZERO(&m_writefds);   // empty writefds 
+	FD_SET(m_socketfd, &m_writefds);
 
-  m_timeout.tv_sec = 0;
-  m_timeout.tv_usec = 0;
+	m_timeout.tv_sec = 0;
+	m_timeout.tv_usec = 0;
 
-  if (select(m_socketfd + 1, NULL, &m_writefds, NULL, &m_timeout) == -1)
-	  LogError("LCDproc, error on select");
+	if (select(m_socketfd + 1, NULL, &m_writefds, NULL, &m_timeout) == -1)
+		LogError("LCDproc, error on select");
 
 	if (FD_ISSET(m_socketfd, &m_writefds)) {
 		if (send(m_socketfd, buf, strlen(buf) + 1, 0) == -1) {
