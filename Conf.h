@@ -187,6 +187,7 @@ public:
   unsigned int getLCDprocLocalPort() const;
   bool         getLCDprocDisplayClock() const;
   bool         getLCDprocUTC() const;
+  bool         getLCDprocDimOnIdle() const;
 
 private:
   std::string  m_file;
@@ -328,6 +329,7 @@ private:
   unsigned int m_lcdprocLocalPort;
   bool         m_lcdprocDisplayClock;
   bool         m_lcdprocUTC;
+  bool         m_lcdprocDimOnIdle;
 };
 
 #endif

@@ -1037,6 +1037,7 @@ void CMMDVMHost::createDisplay()
 		unsigned int localPort    = m_conf.getLCDprocLocalPort();
 		bool displayClock         = m_conf.getLCDprocDisplayClock();
 		bool utc                  = m_conf.getLCDprocUTC();
+		bool dimOnIdle            = m_conf.getLCDprocDimOnIdle();
 
 		LogInfo("    Address: %s", address.c_str());
 		LogInfo("    Port: %u", port);
@@ -1046,11 +1047,13 @@ void CMMDVMHost::createDisplay()
 		else
 			LogInfo("    Local Port: %u", localPort);
 
+		LogInfo("    Dim Display on Idle: %s", dimOnIdle ? "yes" : "no");
 		LogInfo("    Clock Display: %s", displayClock ? "yes" : "no");
+
 		if (displayClock)
 			LogInfo("    Display UTC: %s", utc ? "yes" : "no");
 
-		m_display = new CLCDproc(address.c_str(), port, localPort, m_callsign, dmrid, displayClock, utc, m_duplex);
+		m_display = new CLCDproc(address.c_str(), port, localPort, m_callsign, dmrid, displayClock, utc, m_duplex, dimOnIdle);
 #if defined(HD44780)
 	} else if (type == "HD44780") {
 		unsigned int rows              = m_conf.getHD44780Rows();

@@ -592,6 +592,8 @@ bool CConf::read()
 			m_lcdprocDisplayClock = ::atoi(value) == 1;
 		else if (::strcmp(key, "UTC") == 0)
 			m_lcdprocUTC = ::atoi(value) == 1;
+		else if (::strcmp(key, "DimOnIdle") == 0)
+			m_lcdprocDimOnIdle = ::atoi(value) == 1;
 	}
   }
 
@@ -1198,4 +1200,9 @@ bool CConf::getLCDprocDisplayClock() const
 bool CConf::getLCDprocUTC() const
 {
 	return m_lcdprocUTC;
+}
+
+bool CConf::getLCDprocDimOnIdle() const
+{
+	return m_lcdprocDimOnIdle;
 }

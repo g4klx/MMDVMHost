@@ -51,7 +51,7 @@ bool           m_connected(false);
 char           m_buffer1[BUFFER_MAX_LEN];
 char           m_buffer2[BUFFER_MAX_LEN];
 
-CLCDproc::CLCDproc(std::string address, unsigned int port, unsigned int localPort, const std::string& callsign, unsigned int dmrid, bool displayClock, bool utc, bool duplex) :
+CLCDproc::CLCDproc(std::string address, unsigned int port, unsigned int localPort, const std::string& callsign, unsigned int dmrid, bool displayClock, bool utc, bool duplex, bool dimOnIdle) :
 CDisplay(),
 m_address(address),
 m_port(port),
@@ -62,6 +62,7 @@ m_displayClock(displayClock),
 m_utc(utc),
 m_duplex(duplex),
 //m_duplex(true),                      // uncomment to force duplex display for testing!
+m_dimOnIdle(dimOnIdle),
 m_dmr(false),
 m_clockDisplayTimer(1000U, 0U, 250U)   // Update the clock display every 250ms
 {
@@ -539,7 +540,7 @@ int CLCDproc::socketPrintf(int fd, const char *format, ...)
 		}
 	}
 
-	return 1;
+	return 0;
 }
 
 void CLCDproc::defineScreens()
@@ -547,7 +548,7 @@ void CLCDproc::defineScreens()
 	// The Status Screen
 
 	socketPrintf(m_socketfd, "screen_add Status");
-	socketPrintf(m_socketfd, "screen_set Status -name Status -heartbeat on -priority info -backlight off");
+	socketPrintf(m_socketfd, "screen_set Status -name Status -heartbeat on -priority info -backlight %s", m_dimOnIdle ? "off" : "on");
 
 	socketPrintf(m_socketfd, "widget_add Status Callsign string");
 	socketPrintf(m_socketfd, "widget_add Status DMRNumber string");

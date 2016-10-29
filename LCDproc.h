@@ -28,7 +28,7 @@
 class CLCDproc : public CDisplay
 {
 public:
-  CLCDproc(std::string address, unsigned int port, unsigned int localPort, const std::string& callsign, unsigned int dmrid, bool displayClock, bool utc, bool duplex);
+  CLCDproc(std::string address, unsigned int port, unsigned int localPort, const std::string& callsign, unsigned int dmrid, bool displayClock, bool utc, bool duplex, bool dimOnIdle);
   virtual ~CLCDproc();
 
   virtual bool open();
@@ -70,6 +70,7 @@ private:
 	bool         m_displayClock;
 	bool         m_utc;
 	bool         m_duplex;
+	bool         m_dimOnIdle;
 	bool         m_dmr;
 	CTimer       m_clockDisplayTimer;
 };
