@@ -232,7 +232,7 @@ bool CConf::read()
 		  section = SECTION_NEXTION;
 	  else if (::strncmp(buffer, "[OLED]", 6U) == 0)
 		  section = SECTION_OLED;
-	  else if (::strncmp(buffer, "[LCDproc]", 6U) == 0)
+	  else if (::strncmp(buffer, "[LCDproc]", 9U) == 0)
 		  section = SECTION_LCDPROC;
 	  else
         section = SECTION_NONE;
