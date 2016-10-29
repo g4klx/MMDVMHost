@@ -373,8 +373,8 @@ void CLCDproc::clockInt(unsigned int ms)
 		if (m_cols < 26U && m_rows == 2U) {
 			socketPrintf(m_socketfd, "widget_set Status Time %u 2 \"%s%s\"", m_cols - 9, strlen(m_buffer1) > 8 ? "" : "  ", m_buffer1);
 		} else {
-			socketPrintf(m_socketfd, "widget_set Status Time %u %u %s", (m_cols - (strlen(m_buffer1) == 8 ? 6 : 8)) / 2, m_rows / 2, m_buffer1);
-			socketPrintf(m_socketfd, "widget_set Status Date %u %u %s", (m_cols - (strlen(m_buffer1) == 8 ? 6 : 8)) / 2, m_rows / 2 + 1, m_buffer2);
+			socketPrintf(m_socketfd, "widget_set Status Time %u %u \"%s\"", (m_cols - (strlen(m_buffer1) == 8 ? 6 : 8)) / 2, m_rows / 2, m_buffer1);
+			socketPrintf(m_socketfd, "widget_set Status Date %u %u \"%s\"", (m_cols - (strlen(m_buffer1) == 8 ? 6 : 8)) / 2, m_rows / 2 + 1, m_buffer2);
 		}
 
 		m_clockDisplayTimer.start();
