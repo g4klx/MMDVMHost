@@ -766,8 +766,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		CDMRFullLC fullLC;
 		m_netLC = fullLC.decode(data + 2U, DT_VOICE_LC_HEADER);
 		if (m_netLC == NULL) {
-			LogMessage("DMR Slot %u, bad LC received from the network", m_slotNo);
-			return;
+			LogMessage("DMR Slot %u, bad LC received from the network, replacing", m_slotNo);
+			m_netLC = new CDMRLC(dmrData.getFLCO(), dmrData.getSrcId(), dmrData.getDstId());
 		}
 
 		unsigned int did = m_netLC->getDstId();
