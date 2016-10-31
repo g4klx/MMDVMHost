@@ -116,12 +116,8 @@ bool CDMRNetwork::open()
 {
 	LogMessage("DMR, Opening DMR Network");
 
-	bool ret = m_socket.open();
-	if (!ret)
-		return false;
-
-	m_status = WAITING_LOGIN;
-	m_timeoutTimer.start();
+	m_status = WAITING_CONNECT;
+	m_timeoutTimer.stop();
 	m_retryTimer.start();
 
 	return true;
@@ -302,9 +298,17 @@ void CDMRNetwork::clock(unsigned int ms)
 	if (m_status == WAITING_CONNECT) {
 		m_retryTimer.clock(ms);
 		if (m_retryTimer.isRunning() && m_retryTimer.hasExpired()) {
-			bool ret = open();
-			if (!ret)
-				m_retryTimer.start();
+			bool ret = m_socket.open();
+			if (ret) {
+				ret = writeLogin();
+				if (!ret)
+					return;
+
+				m_status = WAITING_LOGIN;
+				m_timeoutTimer.start();
+			}
+
+			m_retryTimer.start();
 		}
 
 		return;
@@ -316,8 +320,7 @@ void CDMRNetwork::clock(unsigned int ms)
 	if (length < 0) {
 		LogError("DMR, Socket has failed, retrying connection to the master");
 		close();
-		m_status = WAITING_CONNECT;
-		m_retryTimer.start();
+		open();
 		return;
 	}
 
@@ -346,8 +349,7 @@ void CDMRNetwork::clock(unsigned int ms)
 				   We want it to reconnect so... */
 				LogError("DMR, Login to the master has failed, retrying ...");
 				close();
-				m_status = WAITING_CONNECT;
-				m_retryTimer.start();
+				open();
 				return;
 			}
 		} else if (::memcmp(m_buffer, "RPTACK",  6U) == 0) {
@@ -377,8 +379,7 @@ void CDMRNetwork::clock(unsigned int ms)
 		} else if (::memcmp(m_buffer, "MSTCL",   5U) == 0) {
 			LogError("DMR, Master is closing down");
 			close();
-			m_status = WAITING_CONNECT;
-			m_retryTimer.start();
+			open();
 		} else if (::memcmp(m_buffer, "MSTPONG", 7U) == 0) {
 			m_timeoutTimer.start();
 		} else if (::memcmp(m_buffer, "RPTSBKN", 7U) == 0) {
@@ -414,8 +415,7 @@ void CDMRNetwork::clock(unsigned int ms)
 	if (m_timeoutTimer.isRunning() && m_timeoutTimer.hasExpired()) {
 		LogError("DMR, Connection to the master has timed out, retrying connection");
 		close();
-		m_status = WAITING_CONNECT;
-		m_retryTimer.start();
+		open();
 	}
 }
 
@@ -431,11 +431,11 @@ bool CDMRNetwork::writeLogin()
 
 bool CDMRNetwork::writeAuthorisation()
 {
-	unsigned int size = m_password.size();
+	size_t size = m_password.size();
 
 	unsigned char* in = new unsigned char[size + sizeof(uint32_t)];
 	::memcpy(in, m_salt, sizeof(uint32_t));
-	for (unsigned int i = 0U; i < size; i++)
+	for (size_t i = 0U; i < size; i++)
 		in[i + sizeof(uint32_t)] = m_password.at(i);
 
 	unsigned char out[40U];
@@ -443,7 +443,7 @@ bool CDMRNetwork::writeAuthorisation()
 	::memcpy(out + 4U, m_id, 4U);
 
 	CSHA256 sha256;
-	sha256.buffer(in, size + sizeof(uint32_t), out + 8U);
+	sha256.buffer(in, (unsigned int)(size + sizeof(uint32_t)), out + 8U);
 
 	delete[] in;
 
@@ -526,8 +526,7 @@ bool CDMRNetwork::write(const unsigned char* data, unsigned int length)
 	if (!ret) {
 		LogError("DMR, Socket has failed when writing data to the master, retrying connection");
 		close();
-		m_status = WAITING_CONNECT;
-		m_retryTimer.start();
+		open();
 		return false;
 	}
 
