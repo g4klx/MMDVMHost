@@ -177,6 +177,7 @@
     <ClInclude Include="Golay24128.h" />
     <ClInclude Include="Hamming.h" />
     <ClInclude Include="DMRLookup.h" />
+    <ClInclude Include="LCDproc.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MMDVMHost.h" />
     <ClInclude Include="Modem.h" />
@@ -243,6 +244,7 @@
     <ClCompile Include="Golay2087.cpp" />
     <ClCompile Include="Golay24128.cpp" />
     <ClCompile Include="Hamming.cpp" />
+    <ClCompile Include="LCDproc.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MMDVMHost.cpp" />
     <ClCompile Include="Modem.cpp" />

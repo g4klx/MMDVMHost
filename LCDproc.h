@@ -23,7 +23,6 @@
 #include "Timer.h"
 
 #include <string>
-#include <vector>
 
 class CLCDproc : public CDisplay
 {
@@ -57,10 +56,6 @@ protected:
 
   virtual void clockInt(unsigned int ms);
 
-  virtual int socketPrintf(int fd, const char *format, ...);
-
-	virtual void defineScreens();
-
 private:
 	std::string  m_address;
 	unsigned int m_port;
@@ -73,6 +68,9 @@ private:
 	bool         m_dimOnIdle;
 	bool         m_dmr;
 	CTimer       m_clockDisplayTimer;
+
+	int  socketPrintf(int fd, const char *format, ...);
+	void defineScreens();
 };
 
 #endif

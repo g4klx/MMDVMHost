@@ -212,6 +212,9 @@
     <ClInclude Include="Mutex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="LCDproc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -392,6 +395,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Mutex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LCDproc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

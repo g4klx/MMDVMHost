@@ -22,10 +22,10 @@
 #include <cstdio>
 #include <cassert>
 #include <cstring>
+#include <cstdlib>
+#include <ctime>
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#if !defined(_WIN32) && !defined(_WIN64)
 #include <sys/types.h>
 #include <sys/select.h>
 #include <sys/socket.h>
@@ -35,6 +35,9 @@
 #include <errno.h>
 #include <unistd.h>
 #include <stdarg.h>
+#else
+#include <winsock.h>
+#endif
 
 #define BUFFER_MAX_LEN 128
 
@@ -108,15 +111,16 @@ bool CLCDproc::open()
 
 	/* Sets server address */
 	serverAddress.sin_family = h->h_addrtype;
-	memcpy((char*) &serverAddress.sin_addr.s_addr, h->h_addr_list[0], h->h_length);
+	memcpy((char*)&serverAddress.sin_addr.s_addr, h->h_addr_list[0], h->h_length);
 	serverAddress.sin_port = htons(port);
 
-  if (connect(m_socketfd, (struct sockaddr * )&serverAddress, sizeof(serverAddress))==-1) {
+	if (connect(m_socketfd, (struct sockaddr * )&serverAddress, sizeof(serverAddress))==-1) {
 		LogError("LCDproc, cannot connect to server");
 		return false;
 	}
 
 	socketPrintf(m_socketfd, "hello");   // Login to the LCD server
+
 	return true;
 }
 
@@ -188,14 +192,12 @@ void CLCDproc::writeDStarInt(const char* my1, const char* my2, const char* your,
 			*p = '_';
 	}
 
-	if (strcmp(reflector, "        ") != 0) {
+	if (strcmp(reflector, "        ") != 0)
 		sprintf(m_displayBuffer2, " via %.8s", reflector);
-	} else {
-		//bzero(m_displayBuffer2, BUFFER_MAX_LEN);
+	else
 		memset(m_displayBuffer2, 0, BUFFER_MAX_LEN);
-	}
 
-	if (m_rows == 2) {
+	if (m_rows == 2U) {
 		socketPrintf(m_socketfd, "widget_set DStar Line2 1 2 %u 2 h 3 \"%.8s/%.4s to %s%s\"", m_cols - 1, my1, my2, m_displayBuffer1, m_displayBuffer2);
 	} else {
 		socketPrintf(m_socketfd, "widget_set DStar Line2 1 2 %u 2 h 3 \"%.8s/%.4s\"", m_cols - 1, my1, my2);
@@ -224,15 +226,13 @@ void CLCDproc::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 		socketPrintf(m_socketfd, "screen_set DMR -priority foreground");
 
 		if (m_duplex) {
-			if (m_rows > 2U) {
+			if (m_rows > 2U)
 				socketPrintf(m_socketfd, "widget_set DMR Mode 1 1 DMR");
-			}
 
-			if (slotNo == 1U) {
+			if (slotNo == 1U)
 				socketPrintf(m_socketfd, "widget_set DMR Slot2 3 %u %u %u h 3 \"Listening\"", m_rows / 2 + 1, m_cols - 1, m_rows / 2 + 1);
-			} else {
+			else
 				socketPrintf(m_socketfd, "widget_set DMR Slot1 3 %u %u %u h 3 \"Listening\"", m_rows / 2, m_cols - 1, m_rows / 2);
-			}
 		} else {
 			socketPrintf(m_socketfd, "widget_set DMR Slot1_ 1 %u \"\"", m_rows / 2);
 			socketPrintf(m_socketfd, "widget_set DMR Slot2_ 1 %u \"\"", m_rows / 2 + 1);
@@ -243,15 +243,13 @@ void CLCDproc::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 	}
 
 	if (m_duplex) {
-		if (m_rows > 2U) {
+		if (m_rows > 2U) 
 			socketPrintf(m_socketfd, "widget_set DMR Mode 1 1 DMR");
-		}
 
-		if (slotNo == 1U) {
+		if (slotNo == 1U)
 			socketPrintf(m_socketfd, "widget_set DMR Slot1 3 %u %u %u h 3 \"%s > %s%s\"", m_rows / 2, m_cols - 1, m_rows / 2, src.c_str(), group ? "TG" : "", dst.c_str());
-		} else {
+		else
 			socketPrintf(m_socketfd, "widget_set DMR Slot2 3 %u %u %u h 3 \"%s > %s%s\"", m_rows / 2 + 1, m_cols - 1, m_rows / 2 + 1, src.c_str(), group ? "TG" : "", dst.c_str());
-		}
 	} else {
 		socketPrintf(m_socketfd, "widget_set DMR Mode 1 1 DMR");
 
@@ -271,11 +269,10 @@ void CLCDproc::clearDMRInt(unsigned int slotNo)
 	m_clockDisplayTimer.stop();           // Stop the clock display
 
 	if (m_duplex) {
-		if (slotNo == 1U) {
+		if (slotNo == 1U)
 			socketPrintf(m_socketfd, "widget_set DMR Slot1 3 %u %u %u h 3 \"Listening\"", m_rows / 2, m_cols - 1, m_rows / 2);
-		} else {
+		else
 			socketPrintf(m_socketfd, "widget_set DMR Slot2 3 %u %u %u h 3 \"Listening\"", m_rows / 2 + 1, m_cols - 1, m_rows / 2 + 1);
-		}
 	} else {
 		socketPrintf(m_socketfd, "widget_set DMR Slot1 1 2 15 2 h 3 Listening");
 		socketPrintf(m_socketfd, "widget_set DMR Slot2 1 3 15 3 h 3 \"\"");
@@ -360,13 +357,12 @@ void CLCDproc::clockInt(unsigned int ms)
 		struct tm *Time;
 		time(&currentTime);
 
-		if (m_utc) {
+		if (m_utc)
 			Time = gmtime(&currentTime);
-		} else {
+		else
 			Time = localtime(&currentTime);
-		}
 			
-		setlocale(LC_TIME,"");
+		setlocale(LC_TIME, "");
 		strftime(m_displayBuffer1, 128, "%X", Time);  // Time
 		strftime(m_displayBuffer2, 128, "%x", Time);  // Date
 
@@ -385,7 +381,6 @@ void CLCDproc::clockInt(unsigned int ms)
 
 	// Then we put all the descriptors we want to wait for in a mask = m_readfds
 	FD_SET(m_socketfd, &m_readfds);
-	FD_SET(STDIN_FILENO, &m_readfds); // STDIN_FILENO = 0 (standard input);
 
 	// Timeout, we will stop waiting for information
 	m_timeout.tv_sec = 0;
@@ -411,16 +406,14 @@ void CLCDproc::clockInt(unsigned int ms)
 
 		m_buffer[m_recvsize] = '\0';
 
-		int i = 0;
 		char *argv[256];
-		int argc, newtoken;
-		int len = strlen(m_buffer);
+		size_t len = strlen(m_buffer);
 
 		// Now split the string into tokens...
-		argc = 0;
-		newtoken = 1;
+		int argc = 0;
+		int newtoken = 1;
 
-		for (i = 0; i < len; i++) {
+		for (size_t i = 0U; i < len; i++) {
 			switch (m_buffer[i]) {
 				case ' ':
 					newtoken = 1;
@@ -485,21 +478,8 @@ void CLCDproc::clockInt(unsigned int ms)
 		}
 	}
 
-	if (!m_screensDefined && m_connected) {
+	if (!m_screensDefined && m_connected)
 		defineScreens();
-	}
-
-	// Uncomment the next section of code to test server commands from STDIN
-	// only for debugging purposes!
-
-	/*
-	if (FD_ISSET(STDIN_FILENO, &m_readfds)) {
-		fgets(m_buffer, BUFFER_MAX_LEN, stdin);
-
-		if (send(m_socketfd, m_buffer, strlen(m_buffer) + 1, 0) == -1)
-			LogError("LCDproc, cannot send data");
-	}
-	*/
 }
 
 void CLCDproc::close()
@@ -510,10 +490,9 @@ int CLCDproc::socketPrintf(int fd, const char *format, ...)
 {
 	char buf[BUFFER_MAX_LEN];
 	va_list ap;
-	unsigned int size = 0;
 
 	va_start(ap, format);
-	size = vsnprintf(buf, sizeof(buf), format, ap);
+	int size = vsnprintf(buf, BUFFER_MAX_LEN, format, ap);
 	va_end(ap);
 
 	if (size < 0) {
@@ -521,7 +500,7 @@ int CLCDproc::socketPrintf(int fd, const char *format, ...)
 		return -1;
 	}
 
-	if (size > sizeof(buf))
+	if (size > BUFFER_MAX_LEN)
 		LogWarning("LCDproc, socketPrintf: vsnprintf truncated message");
 
 	FD_ZERO(&m_writefds);   // empty writefds 
@@ -534,7 +513,7 @@ int CLCDproc::socketPrintf(int fd, const char *format, ...)
 		LogError("LCDproc, error on select");
 
 	if (FD_ISSET(m_socketfd, &m_writefds)) {
-		if (send(m_socketfd, buf, strlen(buf) + 1, 0) == -1) {
+		if (send(m_socketfd, buf, int(strlen(buf) + 1U), 0) == -1) {
 			LogError("LCDproc, cannot send data");
 			return -1;
 		}
