@@ -48,8 +48,8 @@ unsigned int   m_cols(0);
 bool           m_screensDefined(false);
 bool           m_connected(false);
 
-char           m_buffer1[BUFFER_MAX_LEN];
-char           m_buffer2[BUFFER_MAX_LEN];
+char           m_displayBuffer1[BUFFER_MAX_LEN];
+char           m_displayBuffer2[BUFFER_MAX_LEN];
 
 CLCDproc::CLCDproc(std::string address, unsigned int port, unsigned int localPort, const std::string& callsign, unsigned int dmrid, bool displayClock, bool utc, bool duplex, bool dimOnIdle) :
 CDisplay(),
@@ -180,26 +180,26 @@ void CLCDproc::writeDStarInt(const char* my1, const char* my2, const char* your,
 	socketPrintf(m_socketfd, "screen_set DStar -priority foreground");
 	socketPrintf(m_socketfd, "widget_set DStar Mode 1 1 \"D-Star\"");
 
-	::sprintf(m_buffer1, "%.8s", your);
+	::sprintf(m_displayBuffer1, "%.8s", your);
 	
-	char *p = m_buffer1;
+	char *p = m_displayBuffer1;
 	for (; *p; ++p) {
 		if (*p == ' ')
 			*p = '_';
 	}
 
 	if (strcmp(reflector, "        ") != 0) {
-		sprintf(m_buffer2, " via %.8s", reflector);
+		sprintf(m_displayBuffer2, " via %.8s", reflector);
 	} else {
-		//bzero(m_buffer2, BUFFER_MAX_LEN);
-		memset(m_buffer2, 0, BUFFER_MAX_LEN);
+		//bzero(m_displayBuffer2, BUFFER_MAX_LEN);
+		memset(m_displayBuffer2, 0, BUFFER_MAX_LEN);
 	}
 
 	if (m_rows == 2) {
-		socketPrintf(m_socketfd, "widget_set DStar Line2 1 2 %u 2 h 3 \"%.8s/%.4s to %s%s\"", m_cols - 1, my1, my2, m_buffer1, m_buffer2);
+		socketPrintf(m_socketfd, "widget_set DStar Line2 1 2 %u 2 h 3 \"%.8s/%.4s to %s%s\"", m_cols - 1, my1, my2, m_displayBuffer1, m_displayBuffer2);
 	} else {
 		socketPrintf(m_socketfd, "widget_set DStar Line2 1 2 %u 2 h 3 \"%.8s/%.4s\"", m_cols - 1, my1, my2);
-		socketPrintf(m_socketfd, "widget_set DStar Line3 1 3 %u 3 h 3 \"%s%s\"", m_cols - 1, m_buffer1, m_buffer2);
+		socketPrintf(m_socketfd, "widget_set DStar Line3 1 3 %u 3 h 3 \"%s%s\"", m_cols - 1, m_displayBuffer1, m_displayBuffer2);
 	}
 
 	m_dmr = false;
@@ -367,14 +367,14 @@ void CLCDproc::clockInt(unsigned int ms)
 		}
 			
 		setlocale(LC_TIME,"");
-		strftime(m_buffer1, 128, "%X", Time);  // Time
-		strftime(m_buffer2, 128, "%x", Time);  // Date
+		strftime(m_displayBuffer1, 128, "%X", Time);  // Time
+		strftime(m_displayBuffer2, 128, "%x", Time);  // Date
 
 		if (m_cols < 26U && m_rows == 2U) {
-			socketPrintf(m_socketfd, "widget_set Status Time %u 2 \"%s%s\"", m_cols - 9, strlen(m_buffer1) > 8 ? "" : "  ", m_buffer1);
+			socketPrintf(m_socketfd, "widget_set Status Time %u 2 \"%s%s\"", m_cols - 9, strlen(m_displayBuffer1) > 8 ? "" : "  ", m_displayBuffer1);
 		} else {
-			socketPrintf(m_socketfd, "widget_set Status Time %u %u \"%s\"", (m_cols - (strlen(m_buffer1) == 8 ? 6 : 8)) / 2, m_rows / 2, m_buffer1);
-			socketPrintf(m_socketfd, "widget_set Status Date %u %u \"%s\"", (m_cols - (strlen(m_buffer1) == 8 ? 6 : 8)) / 2, m_rows / 2 + 1, m_buffer2);
+			socketPrintf(m_socketfd, "widget_set Status Time %u %u \"%s\"", (m_cols - (strlen(m_displayBuffer1) == 8 ? 6 : 8)) / 2, m_rows / 2, m_displayBuffer1);
+			socketPrintf(m_socketfd, "widget_set Status Date %u %u \"%s\"", (m_cols - (strlen(m_displayBuffer1) == 8 ? 6 : 8)) / 2, m_rows / 2 + 1, m_displayBuffer2);
 		}
 
 		m_clockDisplayTimer.start();
@@ -465,15 +465,15 @@ void CLCDproc::clockInt(unsigned int ms)
 						} else if (0 == strcmp(argv[0], "success")) {
 							//LogDebug("LCDproc, command successful");
 						} else if (0 == strcmp(argv[0], "huh?")) {
-							sprintf(m_buffer1, "LCDproc, command failed:");
-							sprintf(m_buffer2, " ");
+							sprintf(m_displayBuffer1, "LCDproc, command failed:");
+							sprintf(m_displayBuffer2, " ");
 
 							int j;
 							for (j = 1; j < argc; j++) {
-								strcat(m_buffer1, m_buffer2);
-								strcat(m_buffer1, argv[j]);
+								strcat(m_displayBuffer1, m_displayBuffer2);
+								strcat(m_displayBuffer1, argv[j]);
 							}
-							LogDebug("%s", m_buffer1);
+							LogDebug("%s", m_displayBuffer1);
 						}
 					}
 
