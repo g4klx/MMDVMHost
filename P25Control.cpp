@@ -391,6 +391,9 @@ void CP25Control::writeNetwork()
 		}
 		createNetLDU2();
 		break;
+	case 0x80U:
+		createNetTerminator();
+		break;
 	default:
 		break;
 	}
@@ -715,10 +718,6 @@ void CP25Control::createNetLDU1()
 
 	writeQueueNet(buffer, P25_LDU_FRAME_LENGTH_BYTES + 2U);
 
-	// Check for an end of stream marker
-	if (m_netLDU1[200U] == 0x6AU && m_netLDU1[215U] == 0x00U)
-		createNetTerminator();
-
 	::memset(m_netLDU1, 0x00U, 9U * 25U);
 
 	m_netFrames += 9U;
@@ -763,10 +762,6 @@ void CP25Control::createNetLDU2()
 	addBusyBits(buffer + 2U, P25_LDU_FRAME_LENGTH_BITS, false, true);
 
 	writeQueueNet(buffer, P25_LDU_FRAME_LENGTH_BYTES + 2U);
-
-	// Check for an end of stream marker
-	if (m_netLDU2[200U] == 0x73U && m_netLDU2[215U] == 0x00U)
-		createNetTerminator();
 
 	::memset(m_netLDU2, 0x00U, 9U * 25U);
 
