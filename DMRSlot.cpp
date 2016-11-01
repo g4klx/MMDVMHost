@@ -152,17 +152,19 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			if (lc == NULL)
 				return;
 
-			unsigned int sid = lc->getSrcId();
-			unsigned int did = lc->getDstId();
+			unsigned int srcId = lc->getSrcId();
+			unsigned int dstId = lc->getDstId();
 
-			if (!DMRAccessControl::validateAccess(sid, did, m_slotNo, false)) {
+			if (!DMRAccessControl::validateAccess(srcId, dstId, m_slotNo, false)) {
 			    delete lc;
 			    return;
 			}
 
-			unsigned int rewriteId = DMRAccessControl::dstIdRewrite(did, sid, m_slotNo, false, lc);
-			if (rewriteId != 0U)
+			unsigned int rewriteId = DMRAccessControl::dstIdRewrite(dstId, srcId, m_slotNo, false, lc);
+			if (rewriteId != 0U) {
 				lc->setDstId(rewriteId);
+				dstId = rewriteId;
+			}
 
 			m_rfLC = lc;
 
@@ -201,11 +203,11 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			m_rfState = RS_RF_AUDIO;
 
-			std::string src = m_lookup->find(sid);
-			std::string dst = m_lookup->find(m_rfLC->getDstId());
+			std::string src = m_lookup->find(srcId);
+			std::string dst = m_lookup->find(dstId);
 
 			if (m_netState == RS_NET_IDLE) {
-				setShortLC(m_slotNo, m_rfLC->getDstId(), m_rfLC->getFLCO(), true);
+				setShortLC(m_slotNo, dstId, m_rfLC->getFLCO(), true);
 				m_display->writeDMR(m_slotNo, src, m_rfLC->getFLCO() == FLCO_GROUP, dst, "R");
 			}
 
@@ -274,9 +276,9 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			bool gi = dataHeader.getGI();
 			unsigned int srcId = dataHeader.getSrcId();
 			unsigned int dstId = dataHeader.getDstId();
+
 			if (!DMRAccessControl::validateAccess(srcId, dstId, m_slotNo, false))
 			    return;
-
 
 			m_rfFrames = dataHeader.getBlocks();
 
@@ -330,6 +332,7 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			bool gi = csbk.getGI();
 			unsigned int srcId = csbk.getSrcId();
 			unsigned int dstId = csbk.getDstId();
+
 			if (!DMRAccessControl::validateAccess(srcId, dstId, m_slotNo, false))
 			    return;
 			
@@ -485,17 +488,19 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			CDMRLC* lc = m_rfEmbeddedLC.addData(data + 2U, emb.getLCSS());
 			if (lc != NULL) {
-				unsigned int sid = lc->getSrcId();
-				unsigned int did = lc->getDstId();
+				unsigned int srcId = lc->getSrcId();
+				unsigned int dstId = lc->getDstId();
 
-				if (!DMRAccessControl::validateAccess(sid, did, m_slotNo, false)) {
+				if (!DMRAccessControl::validateAccess(srcId, dstId, m_slotNo, false)) {
 				    delete lc;
 				    return;
 				}
 
-				unsigned int rewriteId = DMRAccessControl::dstIdRewrite(did, sid, m_slotNo, false, lc);
-				if (rewriteId != 0U)
+				unsigned int rewriteId = DMRAccessControl::dstIdRewrite(dstId, srcId, m_slotNo, false, lc);
+				if (rewriteId != 0U) {
 					lc->setDstId(rewriteId);
+					dstId = rewriteId;
+				}
 
 				m_rfLC = lc;
 
@@ -568,11 +573,11 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 				m_rfState = RS_RF_AUDIO;
 
-				std::string src = m_lookup->find(m_rfLC->getSrcId());
-				std::string dst = m_lookup->find(m_rfLC->getDstId());
+				std::string src = m_lookup->find(srcId);
+				std::string dst = m_lookup->find(dstId);
 
 				if (m_netState == RS_NET_IDLE) {
-					setShortLC(m_slotNo, m_rfLC->getDstId(), m_rfLC->getFLCO(), true);
+					setShortLC(m_slotNo, dstId, m_rfLC->getFLCO(), true);
 					m_display->writeDMR(m_slotNo, src, m_rfLC->getFLCO() == FLCO_GROUP, dst, "R");
 				}
 
@@ -764,22 +769,28 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			return;
 
 		CDMRFullLC fullLC;
-		m_netLC = fullLC.decode(data + 2U, DT_VOICE_LC_HEADER);
-		if (m_netLC == NULL) {
+		CDMRLC* lc = fullLC.decode(data + 2U, DT_VOICE_LC_HEADER);
+		if (lc == NULL) {
 			LogMessage("DMR Slot %u, bad LC received from the network, replacing", m_slotNo);
-			m_netLC = new CDMRLC(dmrData.getFLCO(), dmrData.getSrcId(), dmrData.getDstId());
+			lc = new CDMRLC(dmrData.getFLCO(), dmrData.getSrcId(), dmrData.getDstId());
 		}
 
-		unsigned int did = m_netLC->getDstId();
-		unsigned int sid = m_netLC->getSrcId();
+		unsigned int dstId = lc->getDstId();
+		unsigned int srcId = lc->getSrcId();
 
-		if (!DMRAccessControl::validateAccess(sid, did, m_slotNo, true))
-		    return;
+		if (!DMRAccessControl::validateAccess(srcId, dstId, m_slotNo, true)) {
+			delete lc;
+			return;
+		}
+
+		m_netLC = lc;
 
 		// Test dst rewrite
-		unsigned int rewriteId = DMRAccessControl::dstIdRewrite(did, sid, m_slotNo, true, m_netLC);
-		if (rewriteId != 0U)
+		unsigned int rewriteId = DMRAccessControl::dstIdRewrite(dstId, srcId, m_slotNo, true, m_netLC);
+		if (rewriteId != 0U) {
 			m_netLC->setDstId(rewriteId);
+			dstId = rewriteId;
+		}
 
 		// Store the LC for the embedded LC
 		m_netEmbeddedLC.setData(*m_netLC);
@@ -823,10 +834,10 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		m_netState = RS_NET_AUDIO;
 
-		setShortLC(m_slotNo, m_netLC->getDstId(), m_netLC->getFLCO(), true);
+		setShortLC(m_slotNo, dstId, m_netLC->getFLCO(), true);
 
-		std::string src = m_lookup->find(m_netLC->getSrcId());
-		std::string dst = m_lookup->find(m_netLC->getDstId());
+		std::string src = m_lookup->find(srcId);
+		std::string dst = m_lookup->find(dstId);
 
 		m_display->writeDMR(m_slotNo, src, m_netLC->getFLCO() == FLCO_GROUP, dst, "N");
 
@@ -838,17 +849,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 	} else if (dataType == DT_VOICE_PI_HEADER) {
 		if (m_netState != RS_NET_AUDIO)
 			return;
-
-		unsigned int did = m_netLC->getDstId();
-		unsigned int sid = m_netLC->getSrcId();
-
-		if (!DMRAccessControl::validateAccess(sid, did, m_slotNo, true))
-		    return;
-
-		// Test dst rewrite
-		unsigned int rewriteId = DMRAccessControl::dstIdRewrite(did, sid, m_slotNo, true, m_netLC);
-		if (rewriteId != 0U)
-			m_netLC->setDstId(rewriteId);
 
 		// Regenerate the Slot Type
 		CDMRSlotType slotType;
@@ -877,11 +877,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		if (m_netState != RS_NET_AUDIO)
 			return;
 
-		unsigned int did = m_netLC->getDstId();
-		unsigned int id = m_netLC->getSrcId();
-		if (!DMRAccessControl::validateAccess(id, did, m_slotNo, true))
-		    return;
-		
 		// Regenerate the LC data
 		CDMRFullLC fullLC;
 		fullLC.encode(*m_netLC, data + 2U, DT_TERMINATOR_WITH_LC);
@@ -932,6 +927,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		bool gi = dataHeader.getGI();
 		unsigned int srcId = dataHeader.getSrcId();
 		unsigned int dstId = dataHeader.getDstId();
+
 		if (!DMRAccessControl::validateAccess(srcId, dstId, m_slotNo, true))
 		    return;
 		
@@ -973,13 +969,25 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			endOfNetData();
 	} else if (dataType == DT_VOICE_SYNC) {
 		if (m_netState == RS_NET_IDLE) {
-			m_netLC = new CDMRLC(dmrData.getFLCO(), dmrData.getSrcId(), dmrData.getDstId());
+			CDMRLC* lc = new CDMRLC(dmrData.getFLCO(), dmrData.getSrcId(), dmrData.getDstId());
 
-			unsigned int did = dmrData.getDstId();
-			unsigned int id = dmrData.getSrcId();
-			if (!DMRAccessControl::validateAccess(id, did, m_slotNo, true))
-			    return;
-		  
+			unsigned int dstId = lc->getDstId();
+			unsigned int srcId = lc->getSrcId();
+
+			if (!DMRAccessControl::validateAccess(srcId, dstId, m_slotNo, true)) {
+				delete lc;
+				return;
+			}
+
+			m_netLC = lc;
+
+			// Test dst rewrite
+			unsigned int rewriteId = DMRAccessControl::dstIdRewrite(dstId, srcId, m_slotNo, true, m_netLC);
+			if (rewriteId != 0U) {
+				m_netLC->setDstId(rewriteId);
+				dstId = rewriteId;
+			}
+
 			m_lastFrameValid = false;
 
 			m_netTimeoutTimer.start();
@@ -1022,10 +1030,10 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 			m_netState = RS_NET_AUDIO;
 
-			setShortLC(m_slotNo, m_netLC->getDstId(), m_netLC->getFLCO(), true);
+			setShortLC(m_slotNo, dstId, m_netLC->getFLCO(), true);
 	
-			std::string src = m_lookup->find(m_netLC->getSrcId());
-			std::string dst = m_lookup->find(m_netLC->getDstId());
+			std::string src = m_lookup->find(srcId);
+			std::string dst = m_lookup->find(dstId);
 
 			m_display->writeDMR(m_slotNo, src, m_netLC->getFLCO() == FLCO_GROUP, dst, "N");
 
@@ -1074,11 +1082,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		if (m_netState != RS_NET_AUDIO)
 			return;
 
-		unsigned int did = m_netLC->getDstId();
-		unsigned int id = m_netLC->getSrcId();
-		if (!DMRAccessControl::validateAccess(id, did, m_slotNo, true))
-		    return;
-			
 		unsigned char fid = m_netLC->getFID();
 		if (fid == FID_ETSI || fid == FID_DMRA)
 			m_netErrs += m_fec.regenerateDMR(data + 2U);
@@ -1136,7 +1139,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		bool gi = csbk.getGI();
 		unsigned int srcId = csbk.getSrcId();
 		unsigned int dstId = csbk.getDstId();
-		if (!DMRAccessControl::validateAccess(srcId,dstId,m_slotNo,true))
+
+		if (!DMRAccessControl::validateAccess(srcId, dstId, m_slotNo, true))
 		    return;
 		
 		// Regenerate the CSBK data
