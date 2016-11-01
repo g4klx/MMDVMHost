@@ -847,8 +847,77 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 #endif
 		LogMessage("DMR Slot %u, received network voice header from %s to %s%s", m_slotNo, src.c_str(), m_netLC->getFLCO() == FLCO_GROUP ? "TG " : "", dst.c_str());
 	} else if (dataType == DT_VOICE_PI_HEADER) {
-		if (m_netState != RS_NET_AUDIO)
-			return;
+		if (m_netState != RS_NET_AUDIO) {
+			CDMRLC* lc = new CDMRLC(dmrData.getFLCO(), dmrData.getSrcId(), dmrData.getDstId());
+
+			unsigned int dstId = lc->getDstId();
+			unsigned int srcId = lc->getSrcId();
+
+			if (!DMRAccessControl::validateAccess(srcId, dstId, m_slotNo, true)) {
+				delete lc;
+				return;
+			}
+
+			m_netLC = lc;
+
+			// Test dst rewrite
+			unsigned int rewriteId = DMRAccessControl::dstIdRewrite(dstId, srcId, m_slotNo, true, m_netLC);
+			if (rewriteId != 0U) {
+				m_netLC->setDstId(rewriteId);
+				dstId = rewriteId;
+			}
+
+			m_lastFrameValid = false;
+
+			m_netTimeoutTimer.start();
+
+			if (m_duplex) {
+				m_queue.clear();
+				m_modem->writeDMRAbort(m_slotNo);
+			}
+
+			for (unsigned int i = 0U; i < m_jitterSlots; i++)
+				writeQueueNet(m_idle);
+
+			// Create a dummy start frame
+			unsigned char start[DMR_FRAME_LENGTH_BYTES + 2U];
+
+			CSync::addDMRDataSync(start + 2U, m_duplex);
+
+			CDMRFullLC fullLC;
+			fullLC.encode(*m_netLC, start + 2U, DT_VOICE_LC_HEADER);
+
+			CDMRSlotType slotType;
+			slotType.setColorCode(m_colorCode);
+			slotType.setDataType(DT_VOICE_LC_HEADER);
+			slotType.getData(start + 2U);
+
+			start[0U] = TAG_DATA;
+			start[1U] = 0x00U;
+
+			writeQueueRF(start);
+			writeQueueRF(start);
+			writeQueueRF(start);
+
+#if defined(DUMP_DMR)
+			openFile();
+#endif
+			m_netFrames = 0U;
+			m_netLost = 0U;
+			m_netBits = 1U;
+			m_netErrs = 0U;
+
+			m_netState = RS_NET_AUDIO;
+
+			setShortLC(m_slotNo, dstId, m_netLC->getFLCO(), true);
+
+			std::string src = m_lookup->find(srcId);
+			std::string dst = m_lookup->find(dstId);
+
+			m_display->writeDMR(m_slotNo, src, m_netLC->getFLCO() == FLCO_GROUP, dst, "N");
+
+			LogMessage("DMR Slot %u, received network late entry from %s to %s%s", m_slotNo, src.c_str(), m_netLC->getFLCO() == FLCO_GROUP ? "TG " : "", dst.c_str());
+		}
 
 		// Regenerate the Slot Type
 		CDMRSlotType slotType;
