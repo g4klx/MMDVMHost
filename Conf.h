@@ -82,6 +82,10 @@ public:
   int          getModemRSSIOffset() const;
   bool         getModemDebug() const;
 
+  // The UMP section
+  bool         getUMPEnabled() const;
+  std::string  getUMPPort() const;
+
   // The D-Star section
   bool         getDStarEnabled() const;
   std::string  getDStarModule() const;
@@ -236,6 +240,9 @@ private:
   int          m_modemRSSIMultiplier;
   int          m_modemRSSIOffset;
   bool         m_modemDebug;
+
+  bool         m_umpEnabled;
+  std::string  m_umpPort;
 
   bool         m_dstarEnabled;
   std::string  m_dstarModule;

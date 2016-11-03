@@ -127,6 +127,7 @@ m_dmrNetwork(NULL),
 m_ysfNetwork(NULL),
 m_p25Network(NULL),
 m_display(NULL),
+m_ump(NULL),
 m_mode(MODE_IDLE),
 m_rfModeHang(10U),
 m_netModeHang(3U),
@@ -239,6 +240,20 @@ int CMMDVMHost::run()
 	ret = createModem();
 	if (!ret)
 		return 1;
+
+	if (m_conf.getUMPEnabled()) {
+		std::string port = m_conf.getUMPPort();
+
+		LogInfo("Universal MMDVM Peripheral");
+		LogInfo("    Port: %s", port.c_str());
+
+		m_ump = new CUMP(port);
+		bool ret = m_ump->open();
+		if (!ret) {
+			delete m_ump;
+			m_ump = NULL;
+		}
+	}
 
 	createDisplay();
 
@@ -420,10 +435,13 @@ int CMMDVMHost::run()
 	LogMessage("MMDVMHost-%s is running", VERSION);
 
 	while (!m_killed) {
-		bool lockout = m_modem->hasLockout();
-		if (lockout && m_mode != MODE_LOCKOUT)
+		bool lockout1 = m_modem->hasLockout();
+		bool lockout2 = false;
+		if (m_ump != NULL)
+			lockout2 = m_ump->getLockout();
+		if ((lockout1 || lockout2) && m_mode != MODE_LOCKOUT)
 			setMode(MODE_LOCKOUT);
-		else if (!lockout && m_mode == MODE_LOCKOUT)
+		else if ((!lockout1 && !lockout2) && m_mode == MODE_LOCKOUT)
 			setMode(MODE_IDLE);
 
 		bool error = m_modem->hasError();
@@ -431,6 +449,11 @@ int CMMDVMHost::run()
 			setMode(MODE_ERROR);
 		else if (!error && m_mode == MODE_ERROR)
 			setMode(MODE_IDLE);
+
+		if (m_ump != NULL) {
+			bool tx = m_modem->hasTX();
+			m_ump->setTX(tx);
+		}
 
 		unsigned char data[200U];
 		unsigned int len;
@@ -719,6 +742,9 @@ int CMMDVMHost::run()
 			m_dmrTXTimer.stop();
 		}
 
+		if (m_ump != NULL)
+			m_ump->clock(ms);
+
 		if (ms < 5U)
 			CThread::sleep(5U);
 	}
@@ -732,6 +758,11 @@ int CMMDVMHost::run()
 
 	m_display->close();
 	delete m_display;
+
+	if (m_ump != NULL) {
+		m_ump->close();
+		delete m_ump;
+	}
 
 	if (m_lookup != NULL)
 		m_lookup->stop();
@@ -1024,13 +1055,16 @@ void CMMDVMHost::createDisplay()
 			LogInfo("    Display UTC: %s", utc ? "yes" : "no");
 		LogInfo("    Idle Brightness: %u", idleBrightness);
 
-		ISerialPort* serial = NULL;
-		if (port == "modem")
-			serial = new CModemSerialPort(m_modem);
-		else
-			serial = new CSerialController(port, SERIAL_9600);
-
-		m_display = new CNextion(m_callsign, dmrid, serial, brightness, displayClock, utc, idleBrightness);
+		if (port == "modem") {
+			ISerialPort* serial = new CModemSerialPort(m_modem);
+			m_display = new CNextion(m_callsign, dmrid, serial, brightness, displayClock, utc, idleBrightness);
+		} else if (port == "ump") {
+			if (m_ump != NULL)
+				m_display = new CNextion(m_callsign, dmrid, m_ump, brightness, displayClock, utc, idleBrightness);
+		} else {
+			ISerialPort* serial = new CSerialController(port, SERIAL_9600);
+			m_display = new CNextion(m_callsign, dmrid, serial, brightness, displayClock, utc, idleBrightness);
+		}
 	} else if (type == "LCDproc") {
 		std::string address       = m_conf.getLCDprocAddress();
 		unsigned int port         = m_conf.getLCDprocPort();
@@ -1124,6 +1158,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_p25Network != NULL)
 			m_p25Network->enable(false);
 		m_modem->setMode(MODE_DSTAR);
+		if (m_ump != NULL)
+			m_ump->setMode(MODE_DSTAR);
 		m_mode = MODE_DSTAR;
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
@@ -1137,6 +1173,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_p25Network != NULL)
 			m_p25Network->enable(false);
 		m_modem->setMode(MODE_DMR);
+		if (m_ump != NULL)
+			m_ump->setMode(MODE_DMR);
 		if (m_duplex) {
 			m_modem->writeDMRStart(true);
 			m_dmrTXTimer.start();
@@ -1154,6 +1192,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_p25Network != NULL)
 			m_p25Network->enable(false);
 		m_modem->setMode(MODE_YSF);
+		if (m_ump != NULL)
+			m_ump->setMode(MODE_YSF);
 		m_mode = MODE_YSF;
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
@@ -1167,6 +1207,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_ysfNetwork != NULL)
 			m_ysfNetwork->enable(false);
 		m_modem->setMode(MODE_P25);
+		if (m_ump != NULL)
+			m_ump->setMode(MODE_P25);
 		m_mode = MODE_P25;
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
@@ -1187,6 +1229,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dmrTXTimer.stop();
 		}
 		m_modem->setMode(MODE_IDLE);
+		if (m_ump != NULL)
+			m_ump->setMode(MODE_IDLE);
 		m_display->setLockout();
 		m_mode = MODE_LOCKOUT;
 		m_modeTimer.stop();
@@ -1207,6 +1251,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
 		}
+		if (m_ump != NULL)
+			m_ump->setMode(MODE_IDLE);
 		m_display->setError("MODEM");
 		m_mode = MODE_ERROR;
 		m_modeTimer.stop();
@@ -1227,6 +1273,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dmrTXTimer.stop();
 		}
 		m_modem->setMode(MODE_IDLE);
+		if (m_ump != NULL)
+			m_ump->setMode(MODE_IDLE);
 		if (m_mode == MODE_ERROR || m_mode == MODE_LOCKOUT) {
 			m_modem->sendCWId(m_callsign);
 			m_cwIdTimer.setTimeout(m_cwIdTime);

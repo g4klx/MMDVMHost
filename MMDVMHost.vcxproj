@@ -206,6 +206,7 @@
     <ClInclude Include="Thread.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="UDPSocket.h" />
+    <ClInclude Include="UMP.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Version.h" />
     <ClInclude Include="YSFControl.h" />
@@ -271,6 +272,7 @@
     <ClCompile Include="Thread.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="UDPSocket.cpp" />
+    <ClCompile Include="UMP.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="YSFNetwork.cpp" />
     <ClCompile Include="YSFPayload.cpp" />

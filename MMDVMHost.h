@@ -28,6 +28,7 @@
 #include "Timer.h"
 #include "Modem.h"
 #include "Conf.h"
+#include "UMP.h"
 
 #include <string>
 
@@ -47,6 +48,7 @@ private:
   CYSFNetwork*   m_ysfNetwork;
   CP25Network*   m_p25Network;
   CDisplay*      m_display;
+  CUMP*          m_ump;
   unsigned char  m_mode;
   unsigned int   m_rfModeHang;
   unsigned int   m_netModeHang;

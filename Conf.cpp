@@ -35,6 +35,7 @@ enum SECTION {
   SECTION_CWID,
   SECTION_DMRID_LOOKUP,
   SECTION_MODEM,
+  SECTION_UMP,
   SECTION_DSTAR,
   SECTION_DMR,
   SECTION_FUSION,
@@ -93,6 +94,8 @@ m_modemOscOffset(0),
 m_modemRSSIMultiplier(0),
 m_modemRSSIOffset(0),
 m_modemDebug(false),
+m_umpEnabled(false),
+m_umpPort(),
 m_dstarEnabled(false),
 m_dstarModule("C"),
 m_dstarSelfOnly(false),
@@ -207,7 +210,9 @@ bool CConf::read()
 	  else if (::strncmp(buffer, "[DMR Id Lookup]", 15U) == 0)
 		  section = SECTION_DMRID_LOOKUP;
 	  else if (::strncmp(buffer, "[Modem]", 7U) == 0)
-        section = SECTION_MODEM;
+		  section = SECTION_MODEM;
+	  else if (::strncmp(buffer, "[UMP]", 5U) == 0)
+		  section = SECTION_UMP;
 	  else if (::strncmp(buffer, "[D-Star]", 8U) == 0)
 		  section = SECTION_DSTAR;
 	  else if (::strncmp(buffer, "[DMR]", 5U) == 0)
@@ -217,15 +222,15 @@ bool CConf::read()
 	  else if (::strncmp(buffer, "[P25]", 5U) == 0)
 		  section = SECTION_P25;
 	  else if (::strncmp(buffer, "[D-Star Network]", 16U) == 0)
-        section = SECTION_DSTAR_NETWORK;
+		  section = SECTION_DSTAR_NETWORK;
       else if (::strncmp(buffer, "[DMR Network]", 13U) == 0)
-        section = SECTION_DMR_NETWORK;
+		  section = SECTION_DMR_NETWORK;
       else if (::strncmp(buffer, "[System Fusion Network]", 23U) == 0)
-        section = SECTION_FUSION_NETWORK;
+		  section = SECTION_FUSION_NETWORK;
 	  else if (::strncmp(buffer, "[P25 Network]", 13U) == 0)
 		  section = SECTION_P25_NETWORK;
 	  else if (::strncmp(buffer, "[TFT Serial]", 12U) == 0)
-        section = SECTION_TFTSERIAL;
+		  section = SECTION_TFTSERIAL;
 	  else if (::strncmp(buffer, "[HD44780]", 9U) == 0)
 		  section = SECTION_HD44780;
 	  else if (::strncmp(buffer, "[Nextion]", 9U) == 0)
@@ -235,7 +240,7 @@ bool CConf::read()
 	  else if (::strncmp(buffer, "[LCDproc]", 9U) == 0)
 		  section = SECTION_LCDPROC;
 	  else
-        section = SECTION_NONE;
+		  section = SECTION_NONE;
 
       continue;
     }
@@ -338,6 +343,11 @@ bool CConf::read()
 			m_modemRSSIOffset = ::atoi(value);
 		else if (::strcmp(key, "Debug") == 0)
 			m_modemDebug = ::atoi(value) == 1;
+	} else if (section == SECTION_UMP) {
+		if (::strcmp(key, "Enable") == 0)
+			m_umpEnabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "Port") == 0)
+			m_umpPort = value;
 	} else if (section == SECTION_DSTAR) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dstarEnabled = ::atoi(value) == 1;
@@ -800,6 +810,16 @@ int CConf::getModemRSSIOffset() const
 bool CConf::getModemDebug() const
 {
 	return m_modemDebug;
+}
+
+bool CConf::getUMPEnabled() const
+{
+	return m_umpEnabled;
+}
+
+std::string CConf::getUMPPort() const
+{
+	return m_umpPort;
 }
 
 bool CConf::getDStarEnabled() const
