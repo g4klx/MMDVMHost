@@ -23,6 +23,7 @@
 
 #include <cstdio>
 #include <cassert>
+#include <cstring>
 
 const unsigned char UMP_FRAME_START  = 0xF0U;
 
