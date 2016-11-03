@@ -903,6 +903,12 @@ bool CMMDVMHost::createDMRNetwork()
 
 	m_dmrNetwork = new CDMRNetwork(address, port, local, id, password, m_duplex, VERSION, debug, slot1, slot2, rssi, hwType);
 
+	std::string options = m_conf.getDMRNetworkOptions();
+	if (!options.empty()) {
+		LogInfo("    Options: %s", options.c_str());
+		m_dmrNetwork->setOptions(options);
+	}
+
 	unsigned int rxFrequency = m_conf.getRxFrequency();
 	unsigned int txFrequency = m_conf.getTxFrequency();
 	unsigned int power       = m_conf.getPower();

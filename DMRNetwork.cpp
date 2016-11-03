@@ -52,6 +52,7 @@ m_buffer(NULL),
 m_salt(NULL),
 m_streamId(NULL),
 m_rxData(1000U, "DMR Network"),
+m_options(),
 m_callsign(),
 m_rxFrequency(0U),
 m_txFrequency(0U),
@@ -95,6 +96,11 @@ CDMRNetwork::~CDMRNetwork()
 	delete[] m_salt;
 	delete[] m_streamId;
 	delete[] m_id;
+}
+
+void CDMRNetwork::setOptions(const std::string& options)
+{
+	m_options = options;
 }
 
 void CDMRNetwork::setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url)
@@ -362,6 +368,17 @@ void CDMRNetwork::clock(unsigned int ms)
 					m_retryTimer.start();
 					break;
 				case WAITING_AUTHORISATION:
+					if (m_options.empty()) {
+						writeConfig();
+						m_status = WAITING_CONFIG;
+					} else {
+						writeOptions();
+						m_status = WAITING_OPTIONS;
+					}
+					m_timeoutTimer.start();
+					m_retryTimer.start();
+					break;
+				case WAITING_OPTIONS:
 					writeConfig();
 					m_status = WAITING_CONFIG;
 					m_timeoutTimer.start();
@@ -397,6 +414,9 @@ void CDMRNetwork::clock(unsigned int ms)
 				break;
 			case WAITING_AUTHORISATION:
 				writeAuthorisation();
+				break;
+			case WAITING_OPTIONS:
+				writeOptions();
 				break;
 			case WAITING_CONFIG:
 				writeConfig();
@@ -448,6 +468,14 @@ bool CDMRNetwork::writeAuthorisation()
 	delete[] in;
 
 	return write(out, 40U);
+}
+
+bool CDMRNetwork::writeOptions()
+{
+	char buffer[300U];
+	::sprintf(buffer, "RPTO%s", m_options.c_str());
+
+	return write((unsigned char*)buffer, (unsigned int)::strlen(buffer));
 }
 
 bool CDMRNetwork::writeConfig()

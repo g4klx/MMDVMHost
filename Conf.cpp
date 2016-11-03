@@ -135,6 +135,7 @@ m_dmrNetworkAddress(),
 m_dmrNetworkPort(0U),
 m_dmrNetworkLocal(0U),
 m_dmrNetworkPassword(),
+m_dmrNetworkOptions(),
 m_dmrNetworkDebug(false),
 m_dmrNetworkJitter(300U),
 m_dmrNetworkSlot1(true),
@@ -506,6 +507,8 @@ bool CConf::read()
 			m_dmrNetworkLocal = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Password") == 0)
 			m_dmrNetworkPassword = value;
+		else if (::strcmp(key, "Options") == 0)
+			m_dmrNetworkOptions = value;
 		else if (::strcmp(key, "Debug") == 0)
 			m_dmrNetworkDebug = ::atoi(value) == 1;
 		else if (::strcmp(key, "Jitter") == 0)
@@ -590,7 +593,6 @@ bool CConf::read()
 			m_oledBrightness = (unsigned char)::atoi(value);
 		else if (::strcmp(key, "Brightness") == 0)
 			m_oledInvert = (unsigned char)::atoi(value);
-
 	} else if (section == SECTION_LCDPROC) {
 		if (::strcmp(key, "Address") == 0)
 			m_lcdprocAddress = value;
@@ -1015,6 +1017,11 @@ unsigned int CConf::getDMRNetworkLocal() const
 std::string CConf::getDMRNetworkPassword() const
 {
   return m_dmrNetworkPassword;
+}
+
+std::string CConf::getDMRNetworkOptions() const
+{
+	return m_dmrNetworkOptions;
 }
 
 bool CConf::getDMRNetworkDebug() const

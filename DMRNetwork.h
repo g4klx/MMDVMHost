@@ -34,6 +34,8 @@ public:
 	CDMRNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, bool rssi, HW_TYPE hwType);
 	~CDMRNetwork();
 
+	void setOptions(const std::string& options);
+
 	void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url);
 
 	bool open();
@@ -69,6 +71,7 @@ private:
 		WAITING_CONNECT,
 		WAITING_LOGIN,
 		WAITING_AUTHORISATION,
+		WAITING_OPTIONS,
 		WAITING_CONFIG,
 		RUNNING
 	};
@@ -81,6 +84,8 @@ private:
 	uint32_t*      m_streamId;
 
 	CRingBuffer<unsigned char> m_rxData;
+
+	std::string    m_options;
 
 	std::string    m_callsign;
 	unsigned int   m_rxFrequency;
@@ -98,6 +103,7 @@ private:
 
 	bool writeLogin();
 	bool writeAuthorisation();
+	bool writeOptions();
 	bool writeConfig();
 	bool writePing();
 
