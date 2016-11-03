@@ -65,13 +65,12 @@ public:
   virtual void close();
 
 private:
-  const char* m_slot1_state;
-  const char* m_slot2_state;
-  unsigned char     m_mode;
-  unsigned char     m_displayType;
-  unsigned char     m_displayBrightness;
-  unsigned char     m_displayInvert;
-
+  const char*   m_slot1_state;
+  const char*   m_slot2_state;
+  unsigned char m_mode;
+  unsigned char m_displayType;
+  unsigned char m_displayBrightness;
+  bool          m_displayInvert;
 
   ArduiPi_OLED display;
   void OLED_statusbar();

@@ -184,7 +184,7 @@ public:
   // The OLED section
   unsigned char  getOLEDType() const;
   unsigned char  getOLEDBrightness() const;
-  unsigned char  getOLEDInvert() const;
+  bool           getOLEDInvert() const;
 
   // The LCDproc section
   std::string  getLCDprocAddress() const;
@@ -331,7 +331,7 @@ private:
 
   unsigned char m_oledType;
   unsigned char m_oledBrightness;
-  unsigned char m_oledInvert;
+  bool          m_oledInvert;
 
   std::string  m_lcdprocAddress;
   unsigned int m_lcdprocPort;

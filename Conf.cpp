@@ -169,9 +169,9 @@ m_nextionBrightness(50U),
 m_nextionDisplayClock(false),
 m_nextionUTC(false),
 m_nextionIdleBrightness(20U),
-m_oledType(3),
-m_oledBrightness(0),
-m_oledInvert(0),
+m_oledType(3U),
+m_oledBrightness(0U),
+m_oledInvert(false),
 m_lcdprocAddress(),
 m_lcdprocPort(0U),
 m_lcdprocLocalPort(0U),
@@ -589,10 +589,10 @@ bool CConf::read()
 	} else if (section == SECTION_OLED) {
 		if (::strcmp(key, "Type") == 0)
 			m_oledType = (unsigned char)::atoi(value);
-		else if (::strcmp(key, "Port") == 0)
-			m_oledBrightness = (unsigned char)::atoi(value);
 		else if (::strcmp(key, "Brightness") == 0)
-			m_oledInvert = (unsigned char)::atoi(value);
+			m_oledBrightness = (unsigned char)::atoi(value);
+		else if (::strcmp(key, "Invert") == 0)
+			m_oledInvert = ::atoi(value) == 1;
 	} else if (section == SECTION_LCDPROC) {
 		if (::strcmp(key, "Address") == 0)
 			m_lcdprocAddress = value;
@@ -1199,7 +1199,7 @@ unsigned char CConf::getOLEDBrightness() const
 	return m_oledBrightness;
 }
 
-unsigned char CConf::getOLEDInvert() const
+bool CConf::getOLEDInvert() const
 {
 	return m_oledInvert;
 }

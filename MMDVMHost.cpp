@@ -1134,10 +1134,10 @@ void CMMDVMHost::createDisplay()
 
 #if defined(OLED)
 	} else if (type == "OLED") {
-        unsigned char displayType       = m_conf.getOLEDType();
-        unsigned char displayBrightness = m_conf.getOLEDBrightness();
-        unsigned char displayInvert     = m_conf.getOLEDInvert();
-		m_display = new COLED(displayType, displayBrightness, displayInvert);
+        unsigned char type       = m_conf.getOLEDType();
+        unsigned char brightness = m_conf.getOLEDBrightness();
+        bool          invert     = m_conf.getOLEDInvert();
+		m_display = new COLED(type, brightness, invert);
 #endif
 	} else {
 		m_display = new CNullDisplay;

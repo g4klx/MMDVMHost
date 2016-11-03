@@ -56,7 +56,7 @@ static unsigned char logo_dmr_bmp[] =
     0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111
   };
 
-COLED::COLED(unsigned char displayType, unsigned char displayBrightness, unsigned char displayInvert) :
+COLED::COLED(unsigned char displayType, unsigned char displayBrightness, bool displayInvert) :
 m_displayType(displayType),
 m_displayBrightness(displayBrightness),
 m_displayInvert(displayInvert)
@@ -85,8 +85,8 @@ bool COLED::open()
 
     display.begin();
 
-    display.invertDisplay(m_displayInvert);
-    if (m_displayBrightness > 0)
+    display.invertDisplay(m_displayInvert ? 1 : 0);
+    if (m_displayBrightness > 0U)
         display.setBrightness(m_displayBrightness);
 
     // init done
@@ -303,7 +303,7 @@ void COLED::OLED_statusbar()
     display.stopscroll();
     display.fillRect(0, 0, display.width(), 16, BLACK);
     display.setTextColor(WHITE);
-	display.setCursor(0,0);
+    display.setCursor(0,0);
     if (m_mode == MODE_DMR)
       display.drawBitmap(0, 0, logo_dmr_bmp, 48, 16, WHITE);
     else if (m_mode == MODE_DSTAR)
