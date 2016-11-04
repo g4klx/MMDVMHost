@@ -96,7 +96,9 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 
 	default:
 		CUtils::dump("Unhandled CSBK type", m_data, 12U);
-		return false;
+		m_srcId = 0U;
+		m_dstId = 0U;
+		return true;
 	}
 
 	return true;
