@@ -48,6 +48,7 @@ public:
 
 private:
 	CSerialController m_serial;
+	bool              m_open;
 	unsigned char*    m_buffer;
 	unsigned int      m_length;
 	unsigned int      m_offset;
