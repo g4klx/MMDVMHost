@@ -22,7 +22,7 @@ import sys
 import os
 
 e = "\xff\xff\xff"
-deviceName = '/dev/tty.usbserial-AK05BVRH' #MAKE SURE THIS IS THE CORRECT DEVICE
+deviceName = '/dev/ttyUSB0' #MAKE SURE THIS IS THE CORRECT DEVICE
 CHECK_MODEL = 'NX3224T024'
 
 def getBaudrate(ser, fSize=None):
