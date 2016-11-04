@@ -68,6 +68,8 @@ bool CUMP::open()
 	buffer[1U] = 3U;
 	buffer[2U] = UMP_HELLO;
 
+	// CUtils::dump(1U, "Transmitted", buffer, 3U);
+
 	int n = m_serial.write(buffer, 3U);
 	if (n != 3) {
 		m_serial.close();
@@ -91,6 +93,8 @@ bool CUMP::setMode(unsigned char mode)
 	buffer[2U] = UMP_SET_MODE;
 	buffer[3U] = mode;
 
+	// CUtils::dump(1U, "Transmitted", buffer, 4U);
+
 	return m_serial.write(buffer, 4U) == 4;
 }
 
@@ -107,6 +111,8 @@ bool CUMP::setTX(bool on)
 	buffer[1U] = 4U;
 	buffer[2U] = UMP_SET_TX;
 	buffer[3U] = on ? 0x01U : 0x00U;
+
+	// CUtils::dump(1U, "Transmitted", buffer, 4U);
 
 	return m_serial.write(buffer, 4U) == 4;
 }
@@ -128,6 +134,8 @@ int CUMP::write(const unsigned char* data, unsigned int length)
 	buffer[2U] = UMP_WRITE_SERIAL;
 
 	::memcpy(buffer + 3U, data, length);
+
+	// CUtils::dump(1U, "Transmitted", buffer, length + 3U);
 
 	return m_serial.write(buffer, length + 3U);
 }
