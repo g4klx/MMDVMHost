@@ -73,7 +73,7 @@ bool     m_started = false;
 uint32_t m_count   = 0U;
 bool     m_led     = false;
 
-uint8_t m_buffer[255U];
+uint8_t m_buffer[256U];
 uint8_t m_offset = 0U;
 uint8_t m_length = 0U;
 
@@ -95,33 +95,33 @@ void loop()
     } else {
       m_buffer[m_offset] = c;
       m_offset++;
-    }
 
-    if (m_length == m_offset) {
-      switch (m_buffer[2U]) {
-      case UMP_HELLO:
-        m_started = true;
-        break;
-      case UMP_SET_MODE:
-        digitalWrite(PIN_DSTAR, m_buffer[3U] == MODE_DSTAR ? HIGH : LOW);
-        digitalWrite(PIN_DMR,   m_buffer[3U] == MODE_DMR   ? HIGH : LOW);
-        digitalWrite(PIN_YSF,   m_buffer[3U] == MODE_YSF   ? HIGH : LOW);
-        digitalWrite(PIN_P25,   m_buffer[3U] == MODE_P25   ? HIGH : LOW);
-        break;
-      case UMP_SET_TX:
-        digitalWrite(PIN_TX, m_buffer[3U] == 0x01U ? HIGH : LOW);
-        break;
+      if (m_length == m_offset) {
+        switch (m_buffer[2U]) {
+        case UMP_HELLO:
+          m_started = true;
+          break;
+        case UMP_SET_MODE:
+          digitalWrite(PIN_DSTAR, m_buffer[3U] == MODE_DSTAR ? HIGH : LOW);
+          digitalWrite(PIN_DMR,   m_buffer[3U] == MODE_DMR   ? HIGH : LOW);
+          digitalWrite(PIN_YSF,   m_buffer[3U] == MODE_YSF   ? HIGH : LOW);
+          digitalWrite(PIN_P25,   m_buffer[3U] == MODE_P25   ? HIGH : LOW);
+          break;
+        case UMP_SET_TX:
+          digitalWrite(PIN_TX, m_buffer[3U] == 0x01U ? HIGH : LOW);
+          break;
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__)
-      case UMP_WRITE_SERIAL:
-        Serial1.write(m_buffer + 3U, m_length - 3U);
-        break;
+        case UMP_WRITE_SERIAL:
+          Serial1.write(m_buffer + 3U, m_length - 3U);
+          break;
 #endif
-      default:
-        break;
-      }
+        default:
+          break;
+        }
 
-      m_length = 0U;
-      m_offset = 0U;
+        m_length = 0U;
+        m_offset = 0U;
+      }
     }
   }
 
