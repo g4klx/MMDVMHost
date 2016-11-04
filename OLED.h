@@ -37,7 +37,7 @@
 class COLED : public CDisplay 
 {
 public:
-  COLED(unsigned char displayType, unsigned char displayBrighness, unsigned char displayInvert);
+  COLED(unsigned char displayType, unsigned char displayBrighness, bool displayInvert);
   virtual ~COLED();
 
   virtual bool open();
