@@ -22,10 +22,8 @@ import sys
 import os
 
 e = "\xff\xff\xff"
-deviceName = '/dev/ttyUSB0' #MAKE SURE THIS IS THE CORRECT DEVICE
-CHECK_MODEL = 'NX3224T024'
 
-def getBaudrate(ser, fSize=None):
+def getBaudrate(ser, fSize=None, checkModel=None):
     for baudrate in (2400, 4800, 9600, 19200, 38400, 57600, 115200):
         ser.baudrate = baudrate
         ser.timeout = 3000 / baudrate + .2
@@ -46,7 +44,7 @@ def getBaudrate(ser, fSize=None):
             if fSize and fSize > flashSize:
                 print 'File too big!'
                 return False
-            if not CHECK_MODEL in model:
+            if checkModel and not checkModel in model:
                 print 'Wrong Display!'
                 return False
             return True
@@ -85,8 +83,8 @@ def transferFile(ser, filename, fSize):
         print
     return True
 
-def upload(ser, filename):
-    if not getBaudrate(ser, os.path.getsize(filename)):
+def upload(ser, filename, checkModel=None):
+    if not getBaudrate(ser, os.path.getsize(filename), checkModel):
         print 'could not find baudrate'
         exit(1)
 
@@ -101,15 +99,20 @@ def upload(ser, filename):
     exit(0)
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print 'usage:\npython nextion.py file_to_upload.tft'
+    if len(sys.argv) != 4 and len(sys.argv) != 3:
+        print 'usage:\npython nextion.py file_to_upload.tft /path/to/dev/ttyDevice [nextion_model_name]\
+        \nexample: nextion.py newUI.tft /dev/ttyUSB0 NX3224T024\
+        \nnote: model name is optional'
         exit(1)
 
-    ser = serial.Serial(deviceName, 9600, timeout=5)
+    ser = serial.Serial(sys.argv[2], 9600, timeout=5)
     if not ser:
         print 'could not open device'
         exit(1)
     if not ser.is_open:
         ser.open()
 
-    upload(ser, sys.argv[1])
+    checkModel = None
+    if len(sys.argv) == 4:
+        checkModel = sys.argv[3]
+    upload(ser, sys.argv[1], checkModel)
