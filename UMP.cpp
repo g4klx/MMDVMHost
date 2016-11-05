@@ -62,6 +62,8 @@ bool CUMP::open()
 	if (m_open)
 		return true;
 
+	LogMessage("Opening the UMP");
+
 	bool ret = m_serial.open();
 	if (!ret)
 		return false;
@@ -251,6 +253,8 @@ void CUMP::close()
 {
 	if (!m_open)
 		return;
+
+	LogMessage("Closing the UMP");
 
 	m_serial.close();
 	
