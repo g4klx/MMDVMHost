@@ -41,6 +41,7 @@ const unsigned int BUFFER_LENGTH = 255U;
 
 CUMP::CUMP(const std::string& port) :
 m_serial(port, SERIAL_115200),
+m_open(false),
 m_buffer(NULL),
 m_length(0U),
 m_offset(0U),
@@ -58,6 +59,9 @@ CUMP::~CUMP()
 
 bool CUMP::open()
 {
+	if (m_open)
+		return true;
+
 	bool ret = m_serial.open();
 	if (!ret)
 		return false;
@@ -75,6 +79,8 @@ bool CUMP::open()
 		m_serial.close();
 		return false;
 	}
+
+	m_open = true;
 
 	return true;
 }
@@ -243,5 +249,10 @@ void CUMP::clock(unsigned int ms)
 
 void CUMP::close()
 {
+	if (!m_open)
+		return;
+
 	m_serial.close();
+	
+	m_open = false;
 }

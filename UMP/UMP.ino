@@ -144,13 +144,13 @@ void loop()
 
   m_count++;
   if (m_started) {
-    if (m_count > 32000U) {
+    if (m_count > 3200U) {
       digitalWrite(PIN_LED, m_led ? LOW : HIGH);
       m_led = !m_led;
       m_count = 0U;
     }
   } else {
-    if (m_count > 320000U) {
+    if (m_count > 32000U) {
       digitalWrite(PIN_LED, m_led ? LOW : HIGH);
       m_led = !m_led;
       m_count = 0U;
