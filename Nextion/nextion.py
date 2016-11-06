@@ -105,9 +105,10 @@ if __name__ == "__main__":
         \nnote: model name is optional'
         exit(1)
 
-    ser = serial.Serial(sys.argv[2], 9600, timeout=5)
-    if not ser:
-        print 'could not open device'
+    try:
+        ser = serial.Serial(sys.argv[2], 9600, timeout=5)
+    except serial.serialutil.SerialException:
+        print 'could not open serial device ' + sys.argv[2]
         exit(1)
     if not ser.is_open:
         ser.open()
