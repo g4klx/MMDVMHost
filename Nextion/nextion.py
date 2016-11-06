@@ -20,6 +20,7 @@ import serial
 import time
 import sys
 import os
+import re
 
 e = "\xff\xff\xff"
 
@@ -116,4 +117,8 @@ if __name__ == "__main__":
     checkModel = None
     if len(sys.argv) == 4:
         checkModel = sys.argv[3]
+        pattern = re.compile("^NX\d{4}[TK]\d{3}$")
+        if not pattern.match(checkModel):
+            print 'Invalid model name. Please give a correct one (e.g. NX3224T024)'
+            exit(1)
     upload(ser, sys.argv[1], checkModel)
