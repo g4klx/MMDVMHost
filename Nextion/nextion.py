@@ -111,8 +111,12 @@ if __name__ == "__main__":
     except serial.serialutil.SerialException:
         print 'could not open serial device ' + sys.argv[2]
         exit(1)
-    if not ser.is_open:
-        ser.open()
+    if (serial.VERSION <= "3.0"):
+        if not ser.isOpen():
+            ser.open()
+    else:
+        if not ser.is_open:
+            ser.open()
 
     checkModel = None
     if len(sys.argv) == 4:
