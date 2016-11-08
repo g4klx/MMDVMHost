@@ -38,7 +38,7 @@ def getBaudrate(ser, fSize=None, checkModel=None):
             noConnect = False
             status, unknown1, model, fwversion, mcuversion, serial, flashSize = r.strip("\xff\x00").split(',')
             print 'Status: ' + status.split(' ')[0]
-            if (status.split(' ')[1] == "1"):
+            if status.split(' ')[1] == "1":
                 print 'Touchscreen: yes'
             else:
                 print 'Touchscreen: no'
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     except serial.serialutil.SerialException:
         print 'could not open serial device ' + sys.argv[2]
         exit(1)
-    if (serial.VERSION <= "3.0"):
+    if serial.VERSION <= "3.0":
         if not ser.isOpen():
             ser.open()
     else:
