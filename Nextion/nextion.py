@@ -36,14 +36,14 @@ def getBaudrate(ser, fSize=None, checkModel=None):
         if 'comok' in r:
             print 'Connected with baudrate: ' + str(baudrate) + '...'
             noConnect = False
-            status, unknown1, model, unknown2, version, serial, flashSize = r.strip("\xff\x00").split(',')
+            status, unknown1, model, fwversion, version, serial, flashSize = r.strip("\xff\x00").split(',')
             print 'Status: ' + status.split(' ')[0]
             if (status.split(' ')[1] == "1"):
                 print 'Touchscreen: yes'
             else:
                 print 'Touchscreen: no'
             print 'Model: ' + model
-            print 'Version: ' + version
+            print 'Firmware version: ' + fwversion
             print 'Serial: ' + serial
             print 'Flash size: ' + flashSize
             if fSize and fSize > flashSize:
