@@ -29,6 +29,9 @@
 
 #define PIN_LOCKOUT 7
 
+// Use the LOCKOUT function on the UMP
+// #define USE_LOCKOUT
+
 void setup()
 {
   Serial.begin(115200);
@@ -125,7 +128,9 @@ void loop()
     }
   }
 
+#if defined(USE_LOCKOUT)
   bool lockout = digitalRead(PIN_LOCKOUT) == HIGH;
+#endif
   if (lockout != m_lockout) {
     uint8_t data[4U];
     data[0U] = UMP_FRAME_START;
