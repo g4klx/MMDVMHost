@@ -128,8 +128,9 @@ void loop()
     }
   }
 
+  bool lockout = false;
 #if defined(USE_LOCKOUT)
-  bool lockout = digitalRead(PIN_LOCKOUT) == HIGH;
+  lockout = digitalRead(PIN_LOCKOUT) == HIGH;
 #endif
   if (lockout != m_lockout) {
     uint8_t data[4U];
