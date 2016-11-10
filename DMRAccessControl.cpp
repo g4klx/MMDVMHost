@@ -21,39 +21,39 @@
 #include <cstring>
 
 
-std::vector<unsigned int> DMRAccessControl::m_dstBlackListSlot1RF;
-std::vector<unsigned int> DMRAccessControl::m_dstBlackListSlot2RF;
-std::vector<unsigned int> DMRAccessControl::m_dstWhiteListSlot1RF;
-std::vector<unsigned int> DMRAccessControl::m_dstWhiteListSlot2RF;
+std::vector<unsigned int> CDMRAccessControl::m_dstBlackListSlot1RF;
+std::vector<unsigned int> CDMRAccessControl::m_dstBlackListSlot2RF;
+std::vector<unsigned int> CDMRAccessControl::m_dstWhiteListSlot1RF;
+std::vector<unsigned int> CDMRAccessControl::m_dstWhiteListSlot2RF;
 
-std::vector<unsigned int> DMRAccessControl::m_dstBlackListSlot1NET;
-std::vector<unsigned int> DMRAccessControl::m_dstBlackListSlot2NET;
-std::vector<unsigned int> DMRAccessControl::m_dstWhiteListSlot1NET;
-std::vector<unsigned int> DMRAccessControl::m_dstWhiteListSlot2NET;
+std::vector<unsigned int> CDMRAccessControl::m_dstBlackListSlot1NET;
+std::vector<unsigned int> CDMRAccessControl::m_dstBlackListSlot2NET;
+std::vector<unsigned int> CDMRAccessControl::m_dstWhiteListSlot1NET;
+std::vector<unsigned int> CDMRAccessControl::m_dstWhiteListSlot2NET;
 
-std::vector<unsigned int> DMRAccessControl::m_srcIdBlacklist;
+std::vector<unsigned int> CDMRAccessControl::m_srcIdBlacklist;
 
-std::vector<unsigned int> DMRAccessControl::m_prefixes;
+std::vector<unsigned int> CDMRAccessControl::m_prefixes;
 
-bool DMRAccessControl::m_selfOnly = false;
+bool CDMRAccessControl::m_selfOnly = false;
 
-unsigned int DMRAccessControl::m_id = 0U;
+unsigned int CDMRAccessControl::m_id = 0U;
 
-unsigned int DMRAccessControl::m_dstRewriteID[2];
-unsigned int DMRAccessControl::m_srcID[2]; 
+unsigned int CDMRAccessControl::m_dstRewriteID[2];
+unsigned int CDMRAccessControl::m_srcID[2];
 
-CDMRLC* DMRAccessControl::m_lastdmrLC;
+CDMRLC* CDMRAccessControl::m_lastdmrLC;
 
-time_t DMRAccessControl::m_time[2];
+time_t CDMRAccessControl::m_time[2];
 
-int DMRAccessControl::m_callHang;
+int CDMRAccessControl::m_callHang;
 
-bool DMRAccessControl::m_tgRewriteSlot1;
-bool DMRAccessControl::m_tgRewriteSlot2;
-bool DMRAccessControl::m_bmAutoRewrite;
-bool DMRAccessControl::m_bmRewriteReflectorVoicePrompts;
+bool CDMRAccessControl::m_tgRewriteSlot1;
+bool CDMRAccessControl::m_tgRewriteSlot2;
+bool CDMRAccessControl::m_bmAutoRewrite;
+bool CDMRAccessControl::m_bmRewriteReflectorVoicePrompts;
 
-void DMRAccessControl::init(const std::vector<unsigned int>& dstIdBlacklistSlot1RF, const std::vector<unsigned int>& dstIdWhitelistSlot1RF, const std::vector<unsigned int>& dstIdBlacklistSlot2RF, const std::vector<unsigned int>& dstIdWhitelistSlot2RF, const std::vector<unsigned int>& dstIdBlacklistSlot1NET, const std::vector<unsigned int>& dstIdWhitelistSlot1NET, const std::vector<unsigned int>& dstIdBlacklistSlot2NET, const std::vector<unsigned int>& dstIdWhitelistSlot2NET, const std::vector<unsigned int>& srcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes, unsigned int id, unsigned int callHang, bool tgRewriteSlot1, bool tgRewriteSlot2, bool bmAutoRewrite, bool bmRewriteReflectorVoicePrompts)
+void CDMRAccessControl::init(const std::vector<unsigned int>& dstIdBlacklistSlot1RF, const std::vector<unsigned int>& dstIdWhitelistSlot1RF, const std::vector<unsigned int>& dstIdBlacklistSlot2RF, const std::vector<unsigned int>& dstIdWhitelistSlot2RF, const std::vector<unsigned int>& dstIdBlacklistSlot1NET, const std::vector<unsigned int>& dstIdWhitelistSlot1NET, const std::vector<unsigned int>& dstIdBlacklistSlot2NET, const std::vector<unsigned int>& dstIdWhitelistSlot2NET, const std::vector<unsigned int>& srcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes, unsigned int id, unsigned int callHang, bool tgRewriteSlot1, bool tgRewriteSlot2, bool bmAutoRewrite, bool bmRewriteReflectorVoicePrompts)
 {
 	m_dstBlackListSlot1RF  = dstIdBlacklistSlot1RF;
 	m_dstWhiteListSlot1RF  = dstIdWhitelistSlot1RF;
@@ -70,7 +70,7 @@ void DMRAccessControl::init(const std::vector<unsigned int>& dstIdBlacklistSlot1
 	m_bmRewriteReflectorVoicePrompts = bmRewriteReflectorVoicePrompts;
 }
  
-bool DMRAccessControl::dstIdBlacklist(unsigned int did, unsigned int slot, bool network)
+bool CDMRAccessControl::dstIdBlacklist(unsigned int did, unsigned int slot, bool network)
 {
 	static std::vector<unsigned int> blacklist;
 	  
@@ -89,7 +89,7 @@ bool DMRAccessControl::dstIdBlacklist(unsigned int did, unsigned int slot, bool 
 	return std::find(blacklist.begin(), blacklist.end(), did) != blacklist.end();
 }
 
-bool DMRAccessControl::dstIdWhitelist(unsigned int did, unsigned int slot, bool gt4k, bool network)
+bool CDMRAccessControl::dstIdWhitelist(unsigned int did, unsigned int slot, bool gt4k, bool network)
 {
 	if (network) {
 	    if (slot == 1U) {
@@ -166,7 +166,7 @@ bool DMRAccessControl::dstIdWhitelist(unsigned int did, unsigned int slot, bool 
 	}
 }
 
-bool DMRAccessControl::validateSrcId(unsigned int id)
+bool CDMRAccessControl::validateSrcId(unsigned int id)
 {
 	if (m_selfOnly) {
 		return id == m_id;
@@ -185,16 +185,16 @@ bool DMRAccessControl::validateSrcId(unsigned int id)
 	}
 }
 
-bool DMRAccessControl::validateAccess(unsigned int src_id, unsigned int dst_id, unsigned int slot, bool network) 
+bool CDMRAccessControl::validateAccess(unsigned int src_id, unsigned int dst_id, unsigned int slot, bool network) 
 {
     // source ID validation is only applied to RF traffic 
-    if (!network && !DMRAccessControl::validateSrcId(src_id)) {
+    if (!network && !CDMRAccessControl::validateSrcId(src_id)) {
 		LogMessage("DMR Slot %u, invalid access attempt from %u (blacklisted)", slot, src_id);
 		return false;
-    } else if (DMRAccessControl::dstIdBlacklist(dst_id, slot, network)) {
+    } else if (CDMRAccessControl::dstIdBlacklist(dst_id, slot, network)) {
 		LogMessage("DMR Slot %u, invalid access attempt to TG%u (TG blacklisted)", slot, dst_id);
 		return false;
-    } else if (!DMRAccessControl::dstIdWhitelist(dst_id, slot, true, network)) {
+    } else if (!CDMRAccessControl::dstIdWhitelist(dst_id, slot, true, network)) {
 		LogMessage("DMR Slot %u, invalid access attempt to TG%u (TG not in whitelist)", slot, dst_id);
 		return false;
 	} else {
@@ -202,7 +202,7 @@ bool DMRAccessControl::validateAccess(unsigned int src_id, unsigned int dst_id, 
 	}
 }
 
-unsigned int DMRAccessControl::dstIdRewrite(unsigned int did, unsigned int sid, unsigned int slot, bool network, CDMRLC* dmrLC) 
+unsigned int CDMRAccessControl::dstIdRewrite(unsigned int did, unsigned int sid, unsigned int slot, bool network, CDMRLC* dmrLC) 
 {
 	if (slot == 1U && !m_tgRewriteSlot1)
 		return 0U;
@@ -245,7 +245,7 @@ unsigned int DMRAccessControl::dstIdRewrite(unsigned int did, unsigned int sid, 
 	return 0U;
 }
 
-void DMRAccessControl::setOverEndTime(unsigned int slot) 
+void CDMRAccessControl::setOverEndTime(unsigned int slot) 
 {
 	m_time[slot - 1U] = ::time(NULL);
 }

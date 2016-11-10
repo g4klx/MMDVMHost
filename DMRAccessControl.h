@@ -20,9 +20,11 @@
 
 #include "DMRLC.h"
 
-class DMRAccessControl {
+class CDMRAccessControl {
 public:
 	static bool validateAccess(unsigned int srcId, unsigned int dstId, unsigned int slot, bool network);
+
+	static bool validateSrcId(unsigned int id);
 
 	static void init(const std::vector<unsigned int>& dstIdBlacklistSlot1RF, const std::vector<unsigned int>& dstIdWhitelistSlot1RF, const std::vector<unsigned int>& dstIdBlacklistSlot2RF, const std::vector<unsigned int>& dstIdWhitelistSlot2RF, const std::vector<unsigned int>& dstIdBlacklistSlot1NET, const std::vector<unsigned int>& dstIdWhitelistSlot1NET, const std::vector<unsigned int>& dstIdBlacklistSlot2NET, const std::vector<unsigned int>& dstIdWhitelistSlot2NET, const std::vector<unsigned int>& srcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes,unsigned int id,unsigned int callHang, bool tgRewrteSlot1, bool tgRewrteSlot2, bool m_bmAutoRewrite, bool m_bmRewriteReflectorVoicePrompts);
 	
@@ -53,14 +55,10 @@ private:
 	static bool dstIdBlacklist(unsigned int did, unsigned int slot, bool network);
 	static bool dstIdWhitelist(unsigned int did, unsigned int slot, bool gt4k, bool network);
 
-	static bool validateSrcId(unsigned int id);
-
 	static time_t m_time[2];
-
 	       
 	static unsigned int m_dstRewriteID[2];
 	static unsigned int m_srcID[2];
-
 
 	static bool m_tgRewriteSlot1;
 	static bool m_tgRewriteSlot2;
