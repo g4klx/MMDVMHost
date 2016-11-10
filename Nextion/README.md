@@ -14,12 +14,29 @@ is connected to. It could be /dev/ttyUSBx for USB<->Serial adapters or
 You need to have python installed as well as the python-serial package. That can
 normally be found in your distro's package manager.
 
-# Updating the display
+# File Naming Convention
+
+There are compiled .tft files in the repo for basic and enhanced Nextion
+displays of sizes 2.4", 2.8", 3.2" and 3.5". Please choose depending on the
+model number printed on the back of the display. 
+
+The basic displays are denoted by a "T" as 7th character in the filename and
+model number whereas enhanced displays have a "K" in that position. The actual
+display size can be derived from the last two digits. The four digits in between
+the characters refert to the diplay's resolution.
+
+For example: A model number NX4832T035 represents a display with:
+
+ - a resolution of 320x480 pixels
+ - basic command set
+ - a screen size of 3.5"
+
+# Updating the Display
 
 Now comes the easy part. Just execute:
 
 ```
-$ python nextion.py MMDVM_3.5.tft /dev/ttyUSB0
+$ python nextion.py NX4832T035.tft /dev/ttyUSB0
 ```
 
 And the output should be as follows:
