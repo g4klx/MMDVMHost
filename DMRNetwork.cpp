@@ -522,7 +522,7 @@ bool CDMRNetwork::writeConfig()
 	char longitude[20U];
 	::sprintf(longitude, "%09f", m_longitude);
 
-	::sprintf(buffer + 8U, "%-8.8s%09u%09u%02u%02u%.8s%.9s%03d%-20.20s%-19.19s%c%-124.124s%-40.40s%-40.40s", m_callsign.c_str(),
+	::sprintf(buffer + 8U, "%-8.8s%09u%09u%02u%02u%8.8s%9.9s%03d%-20.20s%-19.19s%c%-124.124s%-40.40s%-40.40s", m_callsign.c_str(),
 		m_rxFrequency, m_txFrequency, m_power, m_colorCode, latitude, longitude, m_height, m_location.c_str(),
 		m_description.c_str(), slots, m_url.c_str(), m_version, software);
 
