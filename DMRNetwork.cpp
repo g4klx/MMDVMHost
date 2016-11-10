@@ -361,17 +361,26 @@ void CDMRNetwork::clock(unsigned int ms)
 		} else if (::memcmp(m_buffer, "RPTACK",  6U) == 0) {
 			switch (m_status) {
 				case WAITING_LOGIN:
-					::memcpy(m_salt, m_buffer + 6U, sizeof(uint32_t));  
+					LogDebug("DMR, Sending authorisation");
+					::memcpy(m_salt, m_buffer + 6U, sizeof(uint32_t));
 					writeAuthorisation();
 					m_status = WAITING_AUTHORISATION;
 					m_timeoutTimer.start();
 					m_retryTimer.start();
 					break;
 				case WAITING_AUTHORISATION:
+					LogDebug("DMR, Sending configuration");
+					writeConfig();
+					m_status = WAITING_CONFIG;
+					m_timeoutTimer.start();
+					m_retryTimer.start();
+					break;
+				case WAITING_CONFIG:
 					if (m_options.empty()) {
-						writeConfig();
-						m_status = WAITING_CONFIG;
+						LogMessage("DMR, Logged into the master successfully");
+						m_status = RUNNING;
 					} else {
+						LogDebug("DMR, Sending options");
 						writeOptions();
 						m_status = WAITING_OPTIONS;
 					}
@@ -379,12 +388,6 @@ void CDMRNetwork::clock(unsigned int ms)
 					m_retryTimer.start();
 					break;
 				case WAITING_OPTIONS:
-					writeConfig();
-					m_status = WAITING_CONFIG;
-					m_timeoutTimer.start();
-					m_retryTimer.start();
-					break;
-				case WAITING_CONFIG:
 					LogMessage("DMR, Logged into the master successfully");
 					m_status = RUNNING;
 					m_timeoutTimer.start();
@@ -473,7 +476,10 @@ bool CDMRNetwork::writeAuthorisation()
 bool CDMRNetwork::writeOptions()
 {
 	char buffer[300U];
-	::sprintf(buffer, "RPTO%s", m_options.c_str());
+
+	::memcpy(buffer + 0U, "RPTO", 4U);
+	::memcpy(buffer + 4U, m_id, 4U);
+	::strcpy(buffer + 8U, m_options.c_str());
 
 	return write((unsigned char*)buffer, (unsigned int)::strlen(buffer));
 }
