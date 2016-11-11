@@ -329,8 +329,10 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			unsigned int srcId = csbk.getSrcId();
 			unsigned int dstId = csbk.getDstId();
 
-			if (!CDMRAccessControl::validateAccess(srcId, dstId, m_slotNo, false))
-			    return;
+			if (srcId != 0U || dstId != 0U) {
+				if (!CDMRAccessControl::validateAccess(srcId, dstId, m_slotNo, false))
+					return;
+			}
 			
 			// Regenerate the CSBK data
 			csbk.get(data + 2U);
@@ -1205,9 +1207,11 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		unsigned int srcId = csbk.getSrcId();
 		unsigned int dstId = csbk.getDstId();
 
-		if (!CDMRAccessControl::validateAccess(srcId, dstId, m_slotNo, true))
-		    return;
-		
+		if (srcId != 0U || dstId != 0U) {
+			if (!CDMRAccessControl::validateAccess(srcId, dstId, m_slotNo, true))
+				return;
+		}
+
 		// Regenerate the CSBK data
 		csbk.get(data + 2U);
 
