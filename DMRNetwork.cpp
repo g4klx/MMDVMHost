@@ -481,7 +481,7 @@ bool CDMRNetwork::writeOptions()
 	::memcpy(buffer + 4U, m_id, 4U);
 	::strcpy(buffer + 8U, m_options.c_str());
 
-	return write((unsigned char*)buffer, (unsigned int)::strlen(buffer));
+	return write((unsigned char*)buffer, (unsigned int)m_options.length() + 8U);
 }
 
 bool CDMRNetwork::writeConfig()
