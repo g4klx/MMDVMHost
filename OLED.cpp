@@ -56,6 +56,26 @@ static unsigned char logo_dmr_bmp[] =
     0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111
   };
 
+//D-Star 64x16 px
+static unsigned char logo_dstar_bmp[] =
+  { 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111,
+    0b10000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000001,
+    0b10000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000001,
+    0b10000001, 0b11111100, 0b00000000, 0b00111100, 0b00000000, 0b00000000, 0b00000000, 0b01000001,
+    0b10000001, 0b00000010, 0b00000000, 0b01000010, 0b01000000, 0b00000000, 0b00000000, 0b01000001,
+    0b10000001, 0b00000010, 0b00000000, 0b01000000, 0b01000000, 0b00000000, 0b00000000, 0b01000001,
+    0b10000001, 0b00000010, 0b00000000, 0b01000000, 0b01000000, 0b00000000, 0b00000000, 0b01000001,
+    0b10000001, 0b00000010, 0b01111111, 0b00111100, 0b01111000, 0b00111100, 0b00111100, 0b01000001,
+    0b10000001, 0b00000010, 0b00000000, 0b00000010, 0b01000000, 0b00000010, 0b01000010, 0b01000001,
+    0b10000001, 0b00000010, 0b00000000, 0b00000010, 0b01000000, 0b00111110, 0b01000000, 0b01000001,
+    0b10000001, 0b00000010, 0b00000000, 0b00000010, 0b01000000, 0b01000010, 0b01000000, 0b00000001,
+    0b10000001, 0b00000010, 0b00000000, 0b01000010, 0b01000010, 0b01000010, 0b01000000, 0b01000001,
+    0b10000001, 0b11111100, 0b00000000, 0b00111100, 0b00111100, 0b00111100, 0b01000000, 0b01000001,
+    0b10000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000001,
+    0b10000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000001,
+    0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111
+  };
+
 COLED::COLED(unsigned char displayType, unsigned char displayBrightness, bool displayInvert) :
 m_displayType(displayType),
 m_displayBrightness(displayBrightness),
@@ -108,7 +128,7 @@ void COLED::setIdleInt()
     display.clearDisplay();
     OLED_statusbar();
     display.setCursor(0,display.height()/2);
-    display.setTextSize(3);
+    display.setTextSize(2);
     display.print("Idle");
     display.setTextSize(1);
     display.display();
@@ -286,7 +306,7 @@ void COLED::clearCWInt()
 {
     display.clearDisplay();
     display.setCursor(0,display.height()/2);
-    display.setTextSize(3);
+    display.setTextSize(2);
     display.print("Idle");
     display.setTextSize(1);
     display.display();
@@ -307,7 +327,7 @@ void COLED::OLED_statusbar()
     if (m_mode == MODE_DMR)
       display.drawBitmap(0, 0, logo_dmr_bmp, 48, 16, WHITE);
     else if (m_mode == MODE_DSTAR)
-      display.print("D-Star");
+      display.drawBitmap(0, 0, logo_dstar_bmp, 64, 16, WHITE);
     else if (m_mode == MODE_YSF)
       display.print("Fusion");
     else if (m_mode == MODE_P25)
