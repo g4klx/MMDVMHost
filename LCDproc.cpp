@@ -16,6 +16,34 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+/*
+* Some LCD displays include additional LEDs for status.
+* If they exist, the LDCproc server will use the output command.
+* If the LEDs do not exist, the command is ignored.
+* to control these LEDs Below are the values for the Crystalfontz CFA-635
+
+*    LED 1 (DMR)
+*    Green 1		0000 0001
+*    Red 16		0001 0000
+*    Yellow 17		0001 0001
+
+*    LED 2 (P25)
+*    Green 2		0000 0010
+*    Red 32		0010 0000
+*    Yellow 34		0010 0010
+
+*    LED 3 (Fusion)
+*    Green 4		0000 0100
+*    Red 64		0100 0000
+*    Yellow 68		1000 0100
+
+*    LED 4 (D-Star)
+*    Green 8		0000 1000
+*    Red 128		1000 0000
+*    Yellow 136		1000 1000
+
+*/
+
 #include "LCDproc.h"
 #include "Log.h"
 
@@ -85,7 +113,7 @@ bool CLCDproc::open()
 	server    = m_address.c_str();
 	port      = m_port;
 	localPort = m_localPort;
-	
+
 
 	/* Create TCP socket */
 	m_socketfd = socket(AF_INET, SOCK_STREAM, 0);
@@ -120,6 +148,7 @@ bool CLCDproc::open()
 	}
 
 	socketPrintf(m_socketfd, "hello");   // Login to the LCD server
+	socketPrintf(m_socketfd, "output 0");   // Clear all LEDs
 
 	return true;
 }
@@ -134,6 +163,7 @@ void CLCDproc::setIdleInt()
 		socketPrintf(m_socketfd, "screen_set YSF -priority hidden");
 		socketPrintf(m_socketfd, "screen_set P25 -priority hidden");
 		socketPrintf(m_socketfd, "widget_set Status Status %u %u Idle", m_cols - 3, m_rows);
+		socketPrintf(m_socketfd, "output 0");   // Clear all LEDs
 	}
 
 	m_dmr = false;
@@ -151,6 +181,7 @@ void CLCDproc::setErrorInt(const char* text)
 		socketPrintf(m_socketfd, "screen_set YSF -priority hidden");
 		socketPrintf(m_socketfd, "screen_set P25 -priority hidden");
 		socketPrintf(m_socketfd, "widget_set Status Status %u %u Error", m_cols - 4, m_rows);
+		socketPrintf(m_socketfd, "output 0");   // Clear all LEDs
 	}
 
 	m_dmr = false;
@@ -166,10 +197,13 @@ void CLCDproc::setLockoutInt()
 		socketPrintf(m_socketfd, "screen_set YSF -priority hidden");
 		socketPrintf(m_socketfd, "screen_set P25 -priority hidden");
 		socketPrintf(m_socketfd, "widget_set Status Status %u %u Lockout", m_cols - 6, m_rows);
+		socketPrintf(m_socketfd, "output 0");   // Clear all LEDs
 	}
 
 	m_dmr = false;
 }
+
+// Green 8 Red 128 Yellow 136
 
 void CLCDproc::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
@@ -185,7 +219,7 @@ void CLCDproc::writeDStarInt(const char* my1, const char* my2, const char* your,
 	socketPrintf(m_socketfd, "widget_set DStar Mode 1 1 \"D-Star\"");
 
 	::sprintf(m_displayBuffer1, "%.8s", your);
-	
+
 	char *p = m_displayBuffer1;
 	for (; *p; ++p) {
 		if (*p == ' ')
@@ -202,6 +236,7 @@ void CLCDproc::writeDStarInt(const char* my1, const char* my2, const char* your,
 	} else {
 		socketPrintf(m_socketfd, "widget_set DStar Line2 1 2 %u 2 h 3 \"%.8s/%.4s\"", m_cols - 1, my1, my2);
 		socketPrintf(m_socketfd, "widget_set DStar Line3 1 3 %u 3 h 3 \"%s%s\"", m_cols - 1, m_displayBuffer1, m_displayBuffer2);
+		socketPrintf(m_socketfd, "output 32"); // Set LED2 color red
 	}
 
 	m_dmr = false;
@@ -214,7 +249,10 @@ void CLCDproc::clearDStarInt()
 	socketPrintf(m_socketfd, "widget_set DStar Line2 1 2 15 2 h 3 Listening");
 	socketPrintf(m_socketfd, "widget_set DStar Line3 1 3 15 3 h 3 \"\"");
 	socketPrintf(m_socketfd, "widget_set DStar Line4 1 4 15 4 h 3 \"\"");
+	socketPrintf(m_socketfd, "output 2"); // Set LED2 color green
 }
+
+// Green 1 Red 16 Yellow 17
 
 void CLCDproc::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
@@ -228,7 +266,6 @@ void CLCDproc::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 		if (m_duplex) {
 			if (m_rows > 2U)
 				socketPrintf(m_socketfd, "widget_set DMR Mode 1 1 DMR");
-
 			if (slotNo == 1U)
 				socketPrintf(m_socketfd, "widget_set DMR Slot2 3 %u %u %u h 3 \"Listening\"", m_rows / 2 + 1, m_cols - 1, m_rows / 2 + 1);
 			else
@@ -236,14 +273,15 @@ void CLCDproc::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 		} else {
 			socketPrintf(m_socketfd, "widget_set DMR Slot1_ 1 %u \"\"", m_rows / 2);
 			socketPrintf(m_socketfd, "widget_set DMR Slot2_ 1 %u \"\"", m_rows / 2 + 1);
-	
+
 			socketPrintf(m_socketfd, "widget_set DMR Slot1 1 %u %u %u h 3 \"Listening\"", m_rows / 2, m_cols - 1, m_rows / 2);
 			socketPrintf(m_socketfd, "widget_set DMR Slot2 1 %u %u %u h 3 \"\"", m_rows / 2 + 1, m_cols - 1, m_rows / 2 + 1);
+			socketPrintf(m_socketfd, "output 16"); // Set LED1 color red
 		}
 	}
 
 	if (m_duplex) {
-		if (m_rows > 2U) 
+		if (m_rows > 2U)
 			socketPrintf(m_socketfd, "widget_set DMR Mode 1 1 DMR");
 
 		if (slotNo == 1U)
@@ -258,6 +296,7 @@ void CLCDproc::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 		} else {
 			socketPrintf(m_socketfd, "widget_set DMR Slot1 1 2 %u 2 h 3 \"%s >\"", m_cols - 1, src.c_str());
 			socketPrintf(m_socketfd, "widget_set DMR Slot2 1 3 %u 3 h 3 \"%s%s\"", m_cols - 1, group ? "TG" : "", dst.c_str());
+			socketPrintf(m_socketfd, "output 16"); // Set LED1 color red
 		}
 	}
 
@@ -276,8 +315,11 @@ void CLCDproc::clearDMRInt(unsigned int slotNo)
 	} else {
 		socketPrintf(m_socketfd, "widget_set DMR Slot1 1 2 15 2 h 3 Listening");
 		socketPrintf(m_socketfd, "widget_set DMR Slot2 1 3 15 3 h 3 \"\"");
+		socketPrintf(m_socketfd, "output 1"); // Set LED1 color green
 	}
 }
+
+// Green 4 Red 64 Yellow 68
 
 void CLCDproc::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
 {
@@ -296,6 +338,7 @@ void CLCDproc::writeFusionInt(const char* source, const char* dest, const char* 
 	} else {
 		socketPrintf(m_socketfd, "widget_set YSF Line2 1 2 15 2 h 3 \"%.10s >\"", source);
 		socketPrintf(m_socketfd, "widget_set YSF Line3 1 3 15 3 h 3 \"%s%u\"", dest);
+		socketPrintf(m_socketfd, "output 64"); // Set LED3 color red
 	}
 
 	m_dmr = false;
@@ -308,7 +351,10 @@ void CLCDproc::clearFusionInt()
 	socketPrintf(m_socketfd, "widget_set YSF Line2 1 2 15 2 h 3 Listening");
 	socketPrintf(m_socketfd, "widget_set YSF Line3 1 3 15 3 h 3 \"\"");
 	socketPrintf(m_socketfd, "widget_set YSF Line4 1 4 15 4 h 3 \"\"");
+	socketPrintf(m_socketfd, "output 16"); // Set LED4 color green
 }
+
+// Green 8 Red 128 Yellow 136
 
 void CLCDproc::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
 {
@@ -325,6 +371,7 @@ void CLCDproc::writeP25Int(const char* source, bool group, unsigned int dest, co
 	} else {
 		socketPrintf(m_socketfd, "widget_set P25 Line2 1 2 15 2 h 3 \"%.10s >\"", source);
 		socketPrintf(m_socketfd, "widget_set P25 Line3 1 3 15 3 h 3 \"%s%u\"", group ? "TG" : "", dest);
+		socketPrintf(m_socketfd, "output 128"); // Set LED4 color red
 	}
 
 	m_dmr = false;
@@ -337,6 +384,7 @@ void CLCDproc::clearP25Int()
 	socketPrintf(m_socketfd, "widget_set P25 Line3 1 2 15 2 h 3 Listening");
 	socketPrintf(m_socketfd, "widget_set P25 Line3 1 3 15 3 h 3 \"\"");
 	socketPrintf(m_socketfd, "widget_set P25 Line4 1 4 15 4 h 3 \"\"");
+	socketPrintf(m_socketfd, "output 8"); // Set LED4 color green
 }
 
 void CLCDproc::writeCWInt()
@@ -351,7 +399,7 @@ void CLCDproc::clockInt(unsigned int ms)
 {
 	m_clockDisplayTimer.clock(ms);
 
-	// Idle clock display 
+	// Idle clock display
 	if (m_displayClock && m_clockDisplayTimer.isRunning() && m_clockDisplayTimer.hasExpired()) {
 		time_t currentTime;
 		struct tm *Time;
@@ -361,7 +409,7 @@ void CLCDproc::clockInt(unsigned int ms)
 			Time = gmtime(&currentTime);
 		else
 			Time = localtime(&currentTime);
-			
+
 		setlocale(LC_TIME, "");
 		strftime(m_displayBuffer1, 128, "%X", Time);  // Time
 		strftime(m_displayBuffer2, 128, "%x", Time);  // Date
@@ -377,7 +425,7 @@ void CLCDproc::clockInt(unsigned int ms)
 	}
 
 	// We must set all this information on each select we do
-	FD_ZERO(&m_readfds);   // empty readfds 
+	FD_ZERO(&m_readfds);   // empty readfds
 
 	// Then we put all the descriptors we want to wait for in a mask = m_readfds
 	FD_SET(m_socketfd, &m_readfds);
@@ -386,12 +434,12 @@ void CLCDproc::clockInt(unsigned int ms)
 	m_timeout.tv_sec = 0;
 	m_timeout.tv_usec = 0;
 
-	/* The first parameter is the biggest descriptor + 1. The first one was 0, so 
+	/* The first parameter is the biggest descriptor + 1. The first one was 0, so
 	 * every other descriptor will be bigger
 	 *
 	 * readfds = &m_readfds
 	 * writefds = we are not waiting for writefds
-	 * exceptfds = we are not waiting for exception fds 
+	 * exceptfds = we are not waiting for exception fds
 	 */
 
 	if (select(m_socketfd + 1, &m_readfds, NULL, NULL, &m_timeout) == -1)
