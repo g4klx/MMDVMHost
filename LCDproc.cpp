@@ -351,7 +351,7 @@ void CLCDproc::clearFusionInt()
 	socketPrintf(m_socketfd, "widget_set YSF Line2 1 2 15 2 h 3 Listening");
 	socketPrintf(m_socketfd, "widget_set YSF Line3 1 3 15 3 h 3 \"\"");
 	socketPrintf(m_socketfd, "widget_set YSF Line4 1 4 15 4 h 3 \"\"");
-	socketPrintf(m_socketfd, "output 16"); // Set LED4 color green
+	socketPrintf(m_socketfd, "output 4"); // Set LED4 color green
 }
 
 // Green 8 Red 128 Yellow 136
