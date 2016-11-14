@@ -51,6 +51,7 @@
 #include <cassert>
 #include <cstring>
 #include <cstdlib>
+#include <clocale>
 #include <ctime>
 
 #if !defined(_WIN32) && !defined(_WIN64)
