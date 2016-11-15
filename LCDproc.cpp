@@ -20,7 +20,8 @@
 * Some LCD displays include additional LEDs for status.
 * If they exist, the LDCproc server will use the output command.
 * If the LEDs do not exist, the command is ignored.
-* to control these LEDs Below are the values for the Crystalfontz CFA-635
+* to control these LEDs Below are the values for the Crystalfontz CFA-635.
+* N4IRS
 
 *    LED 1 (DMR)
 *    Green 1		0000 0001
@@ -204,7 +205,7 @@ void CLCDproc::setLockoutInt()
 	m_dmr = false;
 }
 
-// Green 8 Red 128 Yellow 136
+// LED 4 Green 8 Red 128 Yellow 136
 
 void CLCDproc::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
@@ -237,7 +238,7 @@ void CLCDproc::writeDStarInt(const char* my1, const char* my2, const char* your,
 	} else {
 		socketPrintf(m_socketfd, "widget_set DStar Line2 1 2 %u 2 h 3 \"%.8s/%.4s\"", m_cols - 1, my1, my2);
 		socketPrintf(m_socketfd, "widget_set DStar Line3 1 3 %u 3 h 3 \"%s%s\"", m_cols - 1, m_displayBuffer1, m_displayBuffer2);
-		socketPrintf(m_socketfd, "output 32"); // Set LED2 color red
+		socketPrintf(m_socketfd, "output 128"); // Set LED4 color red
 	}
 
 	m_dmr = false;
@@ -250,10 +251,10 @@ void CLCDproc::clearDStarInt()
 	socketPrintf(m_socketfd, "widget_set DStar Line2 1 2 15 2 h 3 Listening");
 	socketPrintf(m_socketfd, "widget_set DStar Line3 1 3 15 3 h 3 \"\"");
 	socketPrintf(m_socketfd, "widget_set DStar Line4 1 4 15 4 h 3 \"\"");
-	socketPrintf(m_socketfd, "output 2"); // Set LED2 color green
+	socketPrintf(m_socketfd, "output 8"); // Set LED4 color green
 }
 
-// Green 1 Red 16 Yellow 17
+// LED 1 Green 1 Red 16 Yellow 17
 
 void CLCDproc::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
@@ -277,7 +278,6 @@ void CLCDproc::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 
 			socketPrintf(m_socketfd, "widget_set DMR Slot1 1 %u %u %u h 3 \"Listening\"", m_rows / 2, m_cols - 1, m_rows / 2);
 			socketPrintf(m_socketfd, "widget_set DMR Slot2 1 %u %u %u h 3 \"\"", m_rows / 2 + 1, m_cols - 1, m_rows / 2 + 1);
-			socketPrintf(m_socketfd, "output 16"); // Set LED1 color red
 		}
 	}
 
@@ -297,10 +297,9 @@ void CLCDproc::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 		} else {
 			socketPrintf(m_socketfd, "widget_set DMR Slot1 1 2 %u 2 h 3 \"%s >\"", m_cols - 1, src.c_str());
 			socketPrintf(m_socketfd, "widget_set DMR Slot2 1 3 %u 3 h 3 \"%s%s\"", m_cols - 1, group ? "TG" : "", dst.c_str());
-			socketPrintf(m_socketfd, "output 16"); // Set LED1 color red
 		}
 	}
-
+	socketPrintf(m_socketfd, "output 16"); // Set LED1 color red
 	m_dmr = true;
 }
 
@@ -316,11 +315,11 @@ void CLCDproc::clearDMRInt(unsigned int slotNo)
 	} else {
 		socketPrintf(m_socketfd, "widget_set DMR Slot1 1 2 15 2 h 3 Listening");
 		socketPrintf(m_socketfd, "widget_set DMR Slot2 1 3 15 3 h 3 \"\"");
-		socketPrintf(m_socketfd, "output 1"); // Set LED1 color green
 	}
+	socketPrintf(m_socketfd, "output 1"); // Set LED1 color green
 }
 
-// Green 4 Red 64 Yellow 68
+// LED 3 Green 4 Red 64 Yellow 68
 
 void CLCDproc::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
 {
@@ -352,10 +351,10 @@ void CLCDproc::clearFusionInt()
 	socketPrintf(m_socketfd, "widget_set YSF Line2 1 2 15 2 h 3 Listening");
 	socketPrintf(m_socketfd, "widget_set YSF Line3 1 3 15 3 h 3 \"\"");
 	socketPrintf(m_socketfd, "widget_set YSF Line4 1 4 15 4 h 3 \"\"");
-	socketPrintf(m_socketfd, "output 16"); // Set LED4 color green
+	socketPrintf(m_socketfd, "output 4"); // Set LED3 color green
 }
 
-// Green 8 Red 128 Yellow 136
+// LED 2 Green 2 Red 32 Yellow 34
 
 void CLCDproc::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
 {
@@ -372,7 +371,7 @@ void CLCDproc::writeP25Int(const char* source, bool group, unsigned int dest, co
 	} else {
 		socketPrintf(m_socketfd, "widget_set P25 Line2 1 2 15 2 h 3 \"%.10s >\"", source);
 		socketPrintf(m_socketfd, "widget_set P25 Line3 1 3 15 3 h 3 \"%s%u\"", group ? "TG" : "", dest);
-		socketPrintf(m_socketfd, "output 128"); // Set LED4 color red
+		socketPrintf(m_socketfd, "output 32"); // Set LED2 color red
 	}
 
 	m_dmr = false;
@@ -385,7 +384,7 @@ void CLCDproc::clearP25Int()
 	socketPrintf(m_socketfd, "widget_set P25 Line3 1 2 15 2 h 3 Listening");
 	socketPrintf(m_socketfd, "widget_set P25 Line3 1 3 15 3 h 3 \"\"");
 	socketPrintf(m_socketfd, "widget_set P25 Line4 1 4 15 4 h 3 \"\"");
-	socketPrintf(m_socketfd, "output 8"); // Set LED4 color green
+	socketPrintf(m_socketfd, "output 2"); // Set LED2 color green
 }
 
 void CLCDproc::writeCWInt()
