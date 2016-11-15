@@ -298,7 +298,7 @@ void CLCDproc::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 			socketPrintf(m_socketfd, "widget_set DMR Slot2 1 3 %u 3 h 3 \"%s%s\"", m_cols - 1, group ? "TG" : "", dst.c_str());
 		}
 	}
-	socketPrintf(m_socketfd, "output 16"); // Set LED1 color red Modem
+	socketPrintf(m_socketfd, "output 16"); // Set LED1 color red
 	m_dmr = true;
 }
 
@@ -315,7 +315,7 @@ void CLCDproc::clearDMRInt(unsigned int slotNo)
 		socketPrintf(m_socketfd, "widget_set DMR Slot1 1 2 15 2 h 3 Listening");
 		socketPrintf(m_socketfd, "widget_set DMR Slot2 1 3 15 3 h 3 \"\"");
 	}
-	socketPrintf(m_socketfd, "output 1"); // Set LED1 color green Modem
+	socketPrintf(m_socketfd, "output 1"); // Set LED1 color green
 }
 
 // LED 3 Green 4 Red 64 Yellow 68
