@@ -20,7 +20,8 @@
 * Some LCD displays include additional LEDs for status.
 * If they exist, the LDCproc server will use the output command.
 * If the LEDs do not exist, the command is ignored.
-* to control these LEDs Below are the values for the Crystalfontz CFA-635
+* to control these LEDs Below are the values for the Crystalfontz CFA-635.
+* N4IRS
 
 *    LED 1 (DMR)
 *    Green 1		0000 0001
@@ -276,7 +277,6 @@ void CLCDproc::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 
 			socketPrintf(m_socketfd, "widget_set DMR Slot1 1 %u %u %u h 3 \"Listening\"", m_rows / 2, m_cols - 1, m_rows / 2);
 			socketPrintf(m_socketfd, "widget_set DMR Slot2 1 %u %u %u h 3 \"\"", m_rows / 2 + 1, m_cols - 1, m_rows / 2 + 1);
-//			socketPrintf(m_socketfd, "output 16"); // Set LED1 color red
 		}
 	}
 
@@ -296,7 +296,6 @@ void CLCDproc::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 		} else {
 			socketPrintf(m_socketfd, "widget_set DMR Slot1 1 2 %u 2 h 3 \"%s >\"", m_cols - 1, src.c_str());
 			socketPrintf(m_socketfd, "widget_set DMR Slot2 1 3 %u 3 h 3 \"%s%s\"", m_cols - 1, group ? "TG" : "", dst.c_str());
-//			socketPrintf(m_socketfd, "output 16"); // Set LED1 color red
 		}
 	}
 	socketPrintf(m_socketfd, "output 16"); // Set LED1 color red Modem
@@ -315,7 +314,6 @@ void CLCDproc::clearDMRInt(unsigned int slotNo)
 	} else {
 		socketPrintf(m_socketfd, "widget_set DMR Slot1 1 2 15 2 h 3 Listening");
 		socketPrintf(m_socketfd, "widget_set DMR Slot2 1 3 15 3 h 3 \"\"");
-//		socketPrintf(m_socketfd, "output 1"); // Set LED1 color green
 	}
 	socketPrintf(m_socketfd, "output 1"); // Set LED1 color green Modem
 }
