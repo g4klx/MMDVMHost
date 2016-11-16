@@ -47,9 +47,8 @@ Pins=11,10,0,1,2,3
 
 To compile MMDVMHost with support for the HD44780 use the following commands.
 
-# cp Makefile.Pi.HD44780 Makefile
 # make clean
-# make
+# make -f Makefile.Pi.HD44780
 
 Other HD44780 variations exist that connect via I2C. Support is also via 
 wiringPi, but to compile for each I2C device requires a different Makefile 
