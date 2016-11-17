@@ -27,6 +27,8 @@
 
 #define PIN_TX      6
 
+#define PIN_CD      8
+
 #define PIN_LOCKOUT 7
 
 // Use the LOCKOUT function on the UMP
@@ -46,6 +48,7 @@ void setup()
   pinMode(PIN_YSF,     OUTPUT);
   pinMode(PIN_P25,     OUTPUT);
   pinMode(PIN_TX,      OUTPUT);
+  pinMode(PIN_CD,      OUTPUT);
   pinMode(PIN_LOCKOUT, INPUT);
 
   digitalWrite(PIN_DSTAR, LOW);
@@ -53,6 +56,7 @@ void setup()
   digitalWrite(PIN_YSF,   LOW);
   digitalWrite(PIN_P25,   LOW);
   digitalWrite(PIN_TX,    LOW);
+  digitalWrite(PIN_CD,    LOW);
 }
 
 #define UMP_FRAME_START   0xF0U
@@ -61,6 +65,7 @@ void setup()
 
 #define UMP_SET_MODE      0x01U
 #define UMP_SET_TX        0x02U
+#define UMP_SET_CD        0x03U
 
 #define UMP_WRITE_SERIAL  0x10U
 
@@ -112,6 +117,9 @@ void loop()
           break;
         case UMP_SET_TX:
           digitalWrite(PIN_TX, m_buffer[3U] == 0x01U ? HIGH : LOW);
+          break;
+        case UMP_SET_CD:
+          digitalWrite(PIN_CD, m_buffer[3U] == 0x01U ? HIGH : LOW);
           break;
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__)
         case UMP_WRITE_SERIAL:
