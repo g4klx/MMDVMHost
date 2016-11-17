@@ -452,6 +452,8 @@ int CMMDVMHost::run()
 		if (m_ump != NULL) {
 			bool tx = m_modem->hasTX();
 			m_ump->setTX(tx);
+			bool cd = m_modem->hasCD();
+			m_ump->setCD(cd);
 		}
 
 		unsigned char data[200U];
