@@ -37,6 +37,8 @@
 #if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__) && !defined(__AVR_ATmega32U4__) && !defined(__SAM3X8E__)
 #define SOFT_SERIAL_TX  9
 #define SOFT_SERIAL_RX 10
+
+SoftwareSerial mySerial(SOFT_SERIAL_RX, SOFT_SERIAL_TX); // RX, TX
 #endif
 
 // Use the LOCKOUT function on the UMP
@@ -49,7 +51,6 @@ void setup()
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__)
   Serial1.begin(9600);
 #else
-	SoftwareSerial mySerial(SOFT_SERIAL_RX, SOFT_SERIAL_TX); // RX, TX
 	mySerial.begin(9600);
 #endif
 
