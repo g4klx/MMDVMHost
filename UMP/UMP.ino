@@ -27,9 +27,9 @@
 
 #define PIN_TX      6
 
-#define PIN_CD      8
+#define PIN_CD      7
 
-#define PIN_LOCKOUT 7
+#define PIN_LOCKOUT 8
 
 // Use the LOCKOUT function on the UMP
 // #define USE_LOCKOUT
