@@ -20,16 +20,27 @@
 #define PIN_LED     13
 #endif
 
+#if defined(__MK20DX256__)
 #define PIN_DSTAR   2
-#define PIN_DMR     3 
+#define PIN_DMR     3
+#define PIN_YSF     4
+#define PIN_P25     5
+
+#define PIN_TX      10
+#define PIN_CD      11
+
+#define PIN_LOCKOUT 12
+#else
+#define PIN_DSTAR   2
+#define PIN_DMR     3
 #define PIN_YSF     4
 #define PIN_P25     5
 
 #define PIN_TX      6
-
 #define PIN_CD      7
 
 #define PIN_LOCKOUT 8
+#endif
 
 // Use the LOCKOUT function on the UMP
 // #define USE_LOCKOUT
