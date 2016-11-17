@@ -16,20 +16,28 @@
 *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
+#if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__) && !defined(__AVR_ATmega32U4__) && !defined(__SAM3X8E__)
+#include <SoftwareSerial.h>
+#endif
+
 #if !defined(PIN_LED)
 #define PIN_LED     13
 #endif
 
-#define PIN_DSTAR   2
-#define PIN_DMR     3 
-#define PIN_YSF     4
-#define PIN_P25     5
+#define PIN_DSTAR       2
+#define PIN_DMR         3
+#define PIN_YSF         4
+#define PIN_P25         5
 
-#define PIN_TX      6
+#define PIN_TX          6
+#define PIN_CD          7
 
-#define PIN_CD      7
+#define PIN_LOCKOUT     8
 
-#define PIN_LOCKOUT 8
+#if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__) && !defined(__AVR_ATmega32U4__) && !defined(__SAM3X8E__)
+#define SOFT_SERIAL_TX  9
+#define SOFT_SERIAL_RX 10
+#endif
 
 // Use the LOCKOUT function on the UMP
 // #define USE_LOCKOUT
@@ -40,6 +48,9 @@ void setup()
 
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__)
   Serial1.begin(9600);
+#else
+	SoftwareSerial mySerial(SOFT_SERIAL_RX, SOFT_SERIAL_TX); // RX, TX
+	mySerial.begin(9600);
 #endif
 
   pinMode(PIN_LED,     OUTPUT);
@@ -121,11 +132,13 @@ void loop()
         case UMP_SET_CD:
           digitalWrite(PIN_CD, m_buffer[3U] == 0x01U ? HIGH : LOW);
           break;
-#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__)
         case UMP_WRITE_SERIAL:
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__)
           Serial1.write(m_buffer + 3U, m_length - 3U);
-          break;
+#else
+					mySerial.write(m_buffer + 3U, m_length - 3U);
 #endif
+          break;
         default:
           break;
         }
@@ -154,6 +167,9 @@ void loop()
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__)
   while (Serial1.available())
     Serial1.read();
+#else
+	while (mySerial.available())
+		mySerial.read();
 #endif
 
   m_count++;
