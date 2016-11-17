@@ -36,6 +36,8 @@ public:
 
 	bool setTX(bool on);
 
+	bool setCD(bool on);
+
 	bool getLockout() const;
 
 	virtual int read(unsigned char* buffer, unsigned int length);
@@ -55,6 +57,7 @@ private:
 	bool              m_lockout;
 	unsigned char     m_mode;
 	bool              m_tx;
+	bool              m_cd;
 };
 
 #endif

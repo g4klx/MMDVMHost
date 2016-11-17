@@ -31,6 +31,7 @@ const unsigned char UMP_HELLO        = 0x00U;
 
 const unsigned char UMP_SET_MODE     = 0x01U;
 const unsigned char UMP_SET_TX       = 0x02U;
+const unsigned char UMP_SET_CD       = 0x03U;
 
 const unsigned char UMP_WRITE_SERIAL = 0x10U;
 const unsigned char UMP_READ_SERIAL  = 0x11U;
@@ -47,7 +48,8 @@ m_length(0U),
 m_offset(0U),
 m_lockout(false),
 m_mode(MODE_IDLE),
-m_tx(false)
+m_tx(false),
+m_cd(false)
 {
 	m_buffer = new unsigned char[BUFFER_LENGTH];
 }
@@ -118,6 +120,25 @@ bool CUMP::setTX(bool on)
 	buffer[0U] = UMP_FRAME_START;
 	buffer[1U] = 4U;
 	buffer[2U] = UMP_SET_TX;
+	buffer[3U] = on ? 0x01U : 0x00U;
+
+	// CUtils::dump(1U, "Transmitted", buffer, 4U);
+
+	return m_serial.write(buffer, 4U) == 4;
+}
+
+bool CUMP::setCD(bool on)
+{
+	if (on == m_cd)
+		return true;
+
+	m_cd = on;
+
+	unsigned char buffer[4U];
+
+	buffer[0U] = UMP_FRAME_START;
+	buffer[1U] = 4U;
+	buffer[2U] = UMP_SET_CD;
 	buffer[3U] = on ? 0x01U : 0x00U;
 
 	// CUtils::dump(1U, "Transmitted", buffer, 4U);
