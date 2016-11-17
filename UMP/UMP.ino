@@ -38,7 +38,7 @@ void setup()
 {
   Serial.begin(115200);
 
-#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__)
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__) || defined(__MK20DX256__)
   Serial1.begin(9600);
 #endif
 
@@ -121,7 +121,7 @@ void loop()
         case UMP_SET_CD:
           digitalWrite(PIN_CD, m_buffer[3U] == 0x01U ? HIGH : LOW);
           break;
-#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__)
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__) || defined(__MK20DX256__)
         case UMP_WRITE_SERIAL:
           Serial1.write(m_buffer + 3U, m_length - 3U);
           break;
@@ -151,7 +151,7 @@ void loop()
     m_lockout = lockout;
   }
 
-#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__)
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__) || defined(__MK20DX256__)
   while (Serial1.available())
     Serial1.read();
 #endif
@@ -171,4 +171,3 @@ void loop()
     }
   }
 }
-
