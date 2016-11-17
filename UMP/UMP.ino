@@ -51,7 +51,7 @@ void setup()
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__)
   Serial1.begin(9600);
 #else
-	mySerial.begin(9600);
+  mySerial.begin(9600);
 #endif
 
   pinMode(PIN_LED,     OUTPUT);
@@ -137,7 +137,7 @@ void loop()
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__)
           Serial1.write(m_buffer + 3U, m_length - 3U);
 #else
-					mySerial.write(m_buffer + 3U, m_length - 3U);
+          mySerial.write(m_buffer + 3U, m_length - 3U);
 #endif
           break;
         default:
@@ -169,8 +169,8 @@ void loop()
   while (Serial1.available())
     Serial1.read();
 #else
-	while (mySerial.available())
-		mySerial.read();
+  while (mySerial.available())
+    mySerial.read();
 #endif
 
   m_count++;
@@ -188,4 +188,3 @@ void loop()
     }
   }
 }
-
