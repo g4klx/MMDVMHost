@@ -59,6 +59,7 @@ public:
 	bool hasP25Space() const;
 
 	bool hasTX() const;
+	bool hasCD() const;
 
 	bool hasLockout() const;
 	bool hasError() const;
@@ -131,6 +132,7 @@ private:
 	unsigned int               m_ysfSpace;
 	unsigned int               m_p25Space;
 	bool                       m_tx;
+	bool                       m_cd;
 	bool                       m_lockout;
 	bool                       m_error;
 	HW_TYPE                    m_hwType;

@@ -128,6 +128,7 @@ m_dmrSpace2(0U),
 m_ysfSpace(0U),
 m_p25Space(0U),
 m_tx(false),
+m_cd(false),
 m_lockout(false),
 m_error(false),
 m_hwType(HWT_UNKNOWN)
@@ -421,6 +422,7 @@ void CModem::clock(unsigned int ms)
 					//	CUtils::dump(1U, "GET_STATUS", m_buffer, m_length);
 
 					m_tx = (m_buffer[5U] & 0x01U) == 0x01U;
+					m_cd = (m_buffer[5U] & 0x02U) == 0x02U;
 
 					bool adcOverflow = (m_buffer[5U] & 0x02U) == 0x02U;
 					if (adcOverflow)
@@ -447,7 +449,7 @@ void CModem::clock(unsigned int ms)
 					m_p25Space   = m_buffer[10U];
 
 					m_inactivityTimer.start();
-					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u lockout=%d", m_buffer[5U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, int(m_lockout));
+					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u lockout=%d, cd=%d", m_buffer[5U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, int(m_lockout), int(m_cd));
 				}
 				break;
 
@@ -850,6 +852,11 @@ bool CModem::writeSerial(const unsigned char* data, unsigned int length)
 bool CModem::hasTX() const
 {
 	return m_tx;
+}
+
+bool CModem::hasCD() const
+{
+	return m_cd;
 }
 
 bool CModem::hasLockout() const

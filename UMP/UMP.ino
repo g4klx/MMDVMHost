@@ -20,20 +20,36 @@
 #define PIN_LED     13
 #endif
 
+#if defined(__MK20DX256__)
 #define PIN_DSTAR   2
-#define PIN_DMR     3 
+#define PIN_DMR     3
+#define PIN_YSF     4
+#define PIN_P25     5
+
+#define PIN_TX      10
+#define PIN_CD      11
+
+#define PIN_LOCKOUT 12
+#else
+#define PIN_DSTAR   2
+#define PIN_DMR     3
 #define PIN_YSF     4
 #define PIN_P25     5
 
 #define PIN_TX      6
+#define PIN_CD      7
 
-#define PIN_LOCKOUT 7
+#define PIN_LOCKOUT 8
+#endif
+
+// Use the LOCKOUT function on the UMP
+// #define USE_LOCKOUT
 
 void setup()
 {
   Serial.begin(115200);
 
-#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__)
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__) || defined(__MK20DX256__)
   Serial1.begin(9600);
 #endif
 
@@ -43,6 +59,7 @@ void setup()
   pinMode(PIN_YSF,     OUTPUT);
   pinMode(PIN_P25,     OUTPUT);
   pinMode(PIN_TX,      OUTPUT);
+  pinMode(PIN_CD,      OUTPUT);
   pinMode(PIN_LOCKOUT, INPUT);
 
   digitalWrite(PIN_DSTAR, LOW);
@@ -50,6 +67,7 @@ void setup()
   digitalWrite(PIN_YSF,   LOW);
   digitalWrite(PIN_P25,   LOW);
   digitalWrite(PIN_TX,    LOW);
+  digitalWrite(PIN_CD,    LOW);
 }
 
 #define UMP_FRAME_START   0xF0U
@@ -58,6 +76,7 @@ void setup()
 
 #define UMP_SET_MODE      0x01U
 #define UMP_SET_TX        0x02U
+#define UMP_SET_CD        0x03U
 
 #define UMP_WRITE_SERIAL  0x10U
 
@@ -110,7 +129,10 @@ void loop()
         case UMP_SET_TX:
           digitalWrite(PIN_TX, m_buffer[3U] == 0x01U ? HIGH : LOW);
           break;
-#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__)
+        case UMP_SET_CD:
+          digitalWrite(PIN_CD, m_buffer[3U] == 0x01U ? HIGH : LOW);
+          break;
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__) || defined(__MK20DX256__)
         case UMP_WRITE_SERIAL:
           Serial1.write(m_buffer + 3U, m_length - 3U);
           break;
@@ -125,7 +147,10 @@ void loop()
     }
   }
 
-  bool lockout = digitalRead(PIN_LOCKOUT) == HIGH;
+  bool lockout = false;
+#if defined(USE_LOCKOUT)
+  lockout = digitalRead(PIN_LOCKOUT) == HIGH;
+#endif
   if (lockout != m_lockout) {
     uint8_t data[4U];
     data[0U] = UMP_FRAME_START;
@@ -137,7 +162,7 @@ void loop()
     m_lockout = lockout;
   }
 
-#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__)
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__) || defined(__MK20DX256__)
   while (Serial1.available())
     Serial1.read();
 #endif
@@ -157,4 +182,3 @@ void loop()
     }
   }
 }
-

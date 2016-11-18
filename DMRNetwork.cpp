@@ -361,17 +361,26 @@ void CDMRNetwork::clock(unsigned int ms)
 		} else if (::memcmp(m_buffer, "RPTACK",  6U) == 0) {
 			switch (m_status) {
 				case WAITING_LOGIN:
-					::memcpy(m_salt, m_buffer + 6U, sizeof(uint32_t));  
+					LogDebug("DMR, Sending authorisation");
+					::memcpy(m_salt, m_buffer + 6U, sizeof(uint32_t));
 					writeAuthorisation();
 					m_status = WAITING_AUTHORISATION;
 					m_timeoutTimer.start();
 					m_retryTimer.start();
 					break;
 				case WAITING_AUTHORISATION:
+					LogDebug("DMR, Sending configuration");
+					writeConfig();
+					m_status = WAITING_CONFIG;
+					m_timeoutTimer.start();
+					m_retryTimer.start();
+					break;
+				case WAITING_CONFIG:
 					if (m_options.empty()) {
-						writeConfig();
-						m_status = WAITING_CONFIG;
+						LogMessage("DMR, Logged into the master successfully");
+						m_status = RUNNING;
 					} else {
+						LogDebug("DMR, Sending options");
 						writeOptions();
 						m_status = WAITING_OPTIONS;
 					}
@@ -379,12 +388,6 @@ void CDMRNetwork::clock(unsigned int ms)
 					m_retryTimer.start();
 					break;
 				case WAITING_OPTIONS:
-					writeConfig();
-					m_status = WAITING_CONFIG;
-					m_timeoutTimer.start();
-					m_retryTimer.start();
-					break;
-				case WAITING_CONFIG:
 					LogMessage("DMR, Logged into the master successfully");
 					m_status = RUNNING;
 					m_timeoutTimer.start();
@@ -473,9 +476,12 @@ bool CDMRNetwork::writeAuthorisation()
 bool CDMRNetwork::writeOptions()
 {
 	char buffer[300U];
-	::sprintf(buffer, "RPTO%s", m_options.c_str());
 
-	return write((unsigned char*)buffer, (unsigned int)::strlen(buffer));
+	::memcpy(buffer + 0U, "RPTO", 4U);
+	::memcpy(buffer + 4U, m_id, 4U);
+	::strcpy(buffer + 8U, m_options.c_str());
+
+	return write((unsigned char*)buffer, (unsigned int)m_options.length() + 8U);
 }
 
 bool CDMRNetwork::writeConfig()
@@ -516,7 +522,7 @@ bool CDMRNetwork::writeConfig()
 	char longitude[20U];
 	::sprintf(longitude, "%09f", m_longitude);
 
-	::sprintf(buffer + 8U, "%-8.8s%09u%09u%02u%02u%.8s%.9s%03d%-20.20s%-19.19s%c%-124.124s%-40.40s%-40.40s", m_callsign.c_str(),
+	::sprintf(buffer + 8U, "%-8.8s%09u%09u%02u%02u%8.8s%9.9s%03d%-20.20s%-19.19s%c%-124.124s%-40.40s%-40.40s", m_callsign.c_str(),
 		m_rxFrequency, m_txFrequency, m_power, m_colorCode, latitude, longitude, m_height, m_location.c_str(),
 		m_description.c_str(), slots, m_url.c_str(), m_version, software);
 
@@ -553,7 +559,7 @@ bool CDMRNetwork::write(const unsigned char* data, unsigned int length)
 	bool ret = m_socket.write(data, length, m_address, m_port);
 	if (!ret) {
 		LogError("DMR, Socket has failed when writing data to the master, retrying connection");
-		close();
+		m_socket.close();
 		open();
 		return false;
 	}

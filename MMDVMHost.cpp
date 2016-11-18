@@ -191,7 +191,7 @@ int CMMDVMHost::run()
 		::close(STDIN_FILENO);
 		::close(STDOUT_FILENO);
 		::close(STDERR_FILENO);
-#if !defined(HD44780)
+#if !defined(HD44780) && !defined(OLED)
 		//If we are currently root...
 		if (getuid() == 0) {
 			struct passwd* user = ::getpwnam("mmdvm");
@@ -334,11 +334,11 @@ int CMMDVMHost::run()
 		unsigned int id        = m_conf.getDMRId();
 		unsigned int colorCode = m_conf.getDMRColorCode();
 		bool selfOnly          = m_conf.getDMRSelfOnly();
-		bool TGRewriteSlot1    = m_conf.getDMRTGRewriteSlot1();
-		bool TGRewriteSlot2    = m_conf.getDMRTGRewriteSlot2();
-		bool BMAutoRewrite     = m_conf.getDMRBMAutoRewrite();
-		bool BMRewriteReflectorVoicePrompts = m_conf.getDMRBMRewriteReflectorVoicePrompts();
-		std::vector<unsigned int> prefixes = m_conf.getDMRPrefixes();
+		bool tgRewriteSlot1    = m_conf.getDMRTGRewriteSlot1();
+		bool tgRewriteSlot2    = m_conf.getDMRTGRewriteSlot2();
+		bool bmAutoRewrite     = m_conf.getDMRBMAutoRewrite();
+		bool bmRewriteReflectorVoicePrompts = m_conf.getDMRBMRewriteReflectorVoicePrompts();
+		std::vector<unsigned int> prefixes  = m_conf.getDMRPrefixes();
 		std::vector<unsigned int> blackList = m_conf.getDMRBlackList();
 		std::vector<unsigned int> dstIDBlackListSlot1RF = m_conf.getDMRDstIdBlacklistSlot1RF();
 		std::vector<unsigned int> dstIDBlackListSlot2RF = m_conf.getDMRDstIdBlacklistSlot2RF();
@@ -395,17 +395,16 @@ int CMMDVMHost::run()
 			LogInfo("    RSSI Offset: %d", rssiOffset);
 		}
 		
-		if (TGRewriteSlot1)
+		if (tgRewriteSlot1)
 		  LogInfo("    TG Rewrite Slot 1 enabled");
-		
-		if (TGRewriteSlot2)
+		if (tgRewriteSlot2)
 		  LogInfo("    TG Rewrite Slot 2 enabled");
-		if (BMAutoRewrite)
+		if (bmAutoRewrite)
 		  LogInfo("    BrandMeister Auto Rewrite enabled");
-		if (BMRewriteReflectorVoicePrompts)
+		if (bmRewriteReflectorVoicePrompts)
 		  LogInfo("    BrandMeister Rewrite Reflector Voice Prompts enabled");
 		
-		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList,dstIDBlackListSlot1RF,dstIDWhiteListSlot1RF, dstIDBlackListSlot2RF, dstIDWhiteListSlot2RF, dstIDBlackListSlot1NET,dstIDWhiteListSlot1NET, dstIDBlackListSlot2NET, dstIDWhiteListSlot2NET, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_lookup, rssiMultiplier, rssiOffset, jitter, TGRewriteSlot1, TGRewriteSlot2, BMAutoRewrite, BMRewriteReflectorVoicePrompts);
+		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList, dstIDBlackListSlot1RF, dstIDWhiteListSlot1RF, dstIDBlackListSlot2RF, dstIDWhiteListSlot2RF, dstIDBlackListSlot1NET,dstIDWhiteListSlot1NET, dstIDBlackListSlot2NET, dstIDWhiteListSlot2NET, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_lookup, rssiMultiplier, rssiOffset, jitter, tgRewriteSlot1, tgRewriteSlot2, bmAutoRewrite, bmRewriteReflectorVoicePrompts);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}
@@ -453,6 +452,8 @@ int CMMDVMHost::run()
 		if (m_ump != NULL) {
 			bool tx = m_modem->hasTX();
 			m_ump->setTX(tx);
+			bool cd = m_modem->hasCD();
+			m_ump->setCD(cd);
 		}
 
 		unsigned char data[200U];

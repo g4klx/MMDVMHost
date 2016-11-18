@@ -36,10 +36,15 @@ def getBaudrate(ser, fSize=None, checkModel=None):
         if 'comok' in r:
             print 'Connected with baudrate: ' + str(baudrate) + '...'
             noConnect = False
-            status, unknown1, model, unknown2, version, serial, flashSize = r.strip("\xff\x00").split(',')
-            print 'Status: ' + status
+            status, unknown1, model, fwversion, mcucode, serial, flashSize = r.strip("\xff\x00").split(',')
+            print 'Status: ' + status.split(' ')[0]
+            if status.split(' ')[1] == "1":
+                print 'Touchscreen: yes'
+            else:
+                print 'Touchscreen: no'
             print 'Model: ' + model
-            print 'Version: ' + version
+            print 'Firmware version: ' + fwversion
+            print 'MCU code: ' + mcucode
             print 'Serial: ' + serial
             print 'Flash size: ' + flashSize
             if fSize and fSize > flashSize:
@@ -80,23 +85,26 @@ def transferFile(ser, filename, fSize):
             if "\x05" in r:
                 continue
             else:
+                print
+                return False
                 break
         print
     return True
 
 def upload(ser, filename, checkModel=None):
     if not getBaudrate(ser, os.path.getsize(filename), checkModel):
-        print 'could not find baudrate'
+        print 'Could not find baudrate'
         exit(1)
 
     if not setDownloadBaudrate(ser, os.path.getsize(filename), 115200):
-        print 'could not set download baudrate'
+        print 'Could not set download baudrate'
         exit(1)
 
     if not transferFile(ser, filename, os.path.getsize(filename)):
-        print 'could not transfer file'
+        print 'Could not transfer file'
         exit(1)
 
+    print 'File transferred successfully'
     exit(0)
 
 if __name__ == "__main__":
@@ -111,7 +119,7 @@ if __name__ == "__main__":
     except serial.serialutil.SerialException:
         print 'could not open serial device ' + sys.argv[2]
         exit(1)
-    if (serial.VERSION <= "3.0"):
+    if serial.VERSION <= "3.0":
         if not ser.isOpen():
             ser.open()
     else:
