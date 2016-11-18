@@ -559,7 +559,6 @@ bool CDMRNetwork::write(const unsigned char* data, unsigned int length)
 	bool ret = m_socket.write(data, length, m_address, m_port);
 	if (!ret) {
 		LogError("DMR, Socket has failed when writing data to the master, retrying connection");
-		close();
 		open();
 		return false;
 	}
