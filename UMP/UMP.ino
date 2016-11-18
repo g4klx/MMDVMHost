@@ -24,16 +24,27 @@
 #define PIN_LED     13
 #endif
 
-#define PIN_DSTAR       2
-#define PIN_DMR         3
-#define PIN_YSF         4
-#define PIN_P25         5
+#if defined(__MK20DX256__)
+#define PIN_DSTAR   2
+#define PIN_DMR     3
+#define PIN_YSF     4
+#define PIN_P25     5
 
-#define PIN_TX          6
-#define PIN_CD          7
+#define PIN_TX      10
+#define PIN_CD      11
 
-#define PIN_LOCKOUT     8
+#define PIN_LOCKOUT 12
+#else
+#define PIN_DSTAR   2
+#define PIN_DMR     3
+#define PIN_YSF     4
+#define PIN_P25     5
 
+#define PIN_TX      6
+#define PIN_CD      7
+
+#define PIN_LOCKOUT 8
+#endif
 #if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__) && !defined(__AVR_ATmega32U4__) && !defined(__SAM3X8E__)
 #define SOFT_SERIAL_TX  9
 #define SOFT_SERIAL_RX 10
@@ -48,7 +59,7 @@ void setup()
 {
   Serial.begin(115200);
 
-#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__)
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__) || defined(__MK20DX256__)
   Serial1.begin(9600);
 #else
   mySerial.begin(9600);
@@ -134,7 +145,7 @@ void loop()
           digitalWrite(PIN_CD, m_buffer[3U] == 0x01U ? HIGH : LOW);
           break;
         case UMP_WRITE_SERIAL:
-#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__)
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__) || defined(__MK20DX256__)
           Serial1.write(m_buffer + 3U, m_length - 3U);
 #else
           mySerial.write(m_buffer + 3U, m_length - 3U);
@@ -165,7 +176,7 @@ void loop()
     m_lockout = lockout;
   }
 
-#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__)
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__) || defined(__MK20DX256__)
   while (Serial1.available())
     Serial1.read();
 #else
