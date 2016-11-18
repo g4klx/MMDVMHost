@@ -16,7 +16,7 @@
 *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__) && !defined(__AVR_ATmega32U4__) && !defined(__SAM3X8E__)
+#if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__) && !defined(__AVR_ATmega32U4__) && !defined(__SAM3X8E__) && !defined(__MK20DX256__)
 #include <SoftwareSerial.h>
 #endif
 
@@ -45,7 +45,8 @@
 
 #define PIN_LOCKOUT 8
 #endif
-#if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__) && !defined(__AVR_ATmega32U4__) && !defined(__SAM3X8E__)
+
+#if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__) && !defined(__AVR_ATmega32U4__) && !defined(__SAM3X8E__) && !defined(__MK20DX256__)
 #define SOFT_SERIAL_TX  9
 #define SOFT_SERIAL_RX 10
 
