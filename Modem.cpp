@@ -422,7 +422,7 @@ void CModem::clock(unsigned int ms)
 					//	CUtils::dump(1U, "GET_STATUS", m_buffer, m_length);
 
 					m_tx = (m_buffer[5U] & 0x01U) == 0x01U;
-					m_cd = (m_buffer[5U] & 0x02U) == 0x02U;
+					m_cd = (m_buffer[5U] & 0x40U) == 0x40U;
 
 					bool adcOverflow = (m_buffer[5U] & 0x02U) == 0x02U;
 					if (adcOverflow)
