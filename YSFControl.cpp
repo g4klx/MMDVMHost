@@ -254,7 +254,7 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 				unsigned int errors = m_rfPayload.processVoiceFRModeAudio(data + 2U);
 				m_rfErrs += errors;
 				m_rfBits += 720U;
-				LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 7.2F);
+				LogDebug("YSF, V Mode 3, seq %u, IMBE FEC %u/720 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 7.2F);
 			}
 			valid = false;
 			break;
@@ -525,7 +525,7 @@ void CYSFControl::writeNetwork()
 					// if (send) {
 						m_netErrs += errors;
 						m_netBits += 720U;
-						LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%)", n, errors, float(errors) / 7.2F);
+						LogDebug("YSF, V Mode 3, seq %u, IMBE FEC %u/720 (%.1f%%)", n, errors, float(errors) / 7.2F);
 					// }
 				}
 				break;

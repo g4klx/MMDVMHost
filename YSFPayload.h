@@ -54,6 +54,8 @@ private:
 	unsigned char* m_source;
 	unsigned char* m_dest;
 	CAMBEFEC       m_fec;
+
+	unsigned int processVDMode2AudioBlock(unsigned char* data);
 };
 
 #endif
