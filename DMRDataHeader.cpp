@@ -130,7 +130,7 @@ bool CDMRDataHeader::put(const unsigned char* bytes)
 		unsigned char format = m_data[1U] & 0x0FU;
 		if (format == UDTF_NMEA) {
 			LogDebug("DMR, fixing broken Tytera MD-390 GPS data block count");
-			m_blocks = 2U;
+			m_blocks = 3U;
 		}
 	}
 
