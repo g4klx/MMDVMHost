@@ -417,7 +417,7 @@ unsigned int CYSFPayload::processVDMode2AudioBlock(unsigned char* data)
 	// Deinterleave
 	for (unsigned int i = 0U; i < 104U; i++) {
 		unsigned int n = INTERLEAVE_TABLE_26_4[i];
-		bool s = READ_BIT1(data, n);
+		bool s = READ_BIT1(data, n) != 0x00U;
 		WRITE_BIT1(vch, i, s);
 	}
 
@@ -426,29 +426,35 @@ unsigned int CYSFPayload::processVDMode2AudioBlock(unsigned char* data)
 		vch[i] ^= WHITENING_DATA[i];
 
 	for (unsigned int i = 0U; i < 81U; i += 3U) {
-		unsigned int n = i;
-		bool bit1 = READ_BIT1(vch, n);
-		n++;
-		bool bit2 = READ_BIT1(vch, n);
-		n++;
-		bool bit3 = READ_BIT1(vch, n);
+		unsigned int n1 = i + 0U;
+		unsigned int n2 = i + 1U;
+		unsigned int n3 = i + 2U;
 
-		if ((bit1 && bit2 && !bit3) || (bit1 && !bit2 && bit3) || (!bit1 && bit2 && bit3)) {
-			unsigned int n = i;
-			WRITE_BIT1(vch, n, true);
-			n++;
-			WRITE_BIT1(vch, n, true);
-			n++;
-			WRITE_BIT1(vch, n, true);
+		unsigned char code = READ_BIT1(vch, n1) ? 1U : 0U +
+							 READ_BIT1(vch, n2) ? 2U : 0U +
+							 READ_BIT1(vch, n3) ? 4U : 0U;
+
+		switch (code) {
+		case 3U:
+		case 5U:
+		case 6U:
+			WRITE_BIT1(vch, n1, true);
+			WRITE_BIT1(vch, n2, true);
+			WRITE_BIT1(vch, n3, true);
 			errors++;
-		} else if ((!bit1 && !bit2 && bit3) || (!bit1 && bit2 && !bit3) || (bit1 && !bit2 && !bit3)) {
-			unsigned int n = i;
-			WRITE_BIT1(vch, n, false);
-			n++;
-			WRITE_BIT1(vch, n, false);
-			n++;
-			WRITE_BIT1(vch, n, false);
+			break;
+		case 1U:
+		case 2U:
+		case 4U:
+			WRITE_BIT1(vch, n1, false);
+			WRITE_BIT1(vch, n2, false);
+			WRITE_BIT1(vch, n3, false);
 			errors++;
+			break;
+		// case 0U:
+		// case 7U:
+		default:
+			break;
 		}
 	}
 
@@ -459,7 +465,7 @@ unsigned int CYSFPayload::processVDMode2AudioBlock(unsigned char* data)
 	// Interleave
 	for (unsigned int i = 0U; i < 104U; i++) {
 		unsigned int n = INTERLEAVE_TABLE_26_4[i];
-		bool s = READ_BIT1(vch, i);
+		bool s = READ_BIT1(vch, i) != 0x00U;
 		WRITE_BIT1(data, n, s);
 	}
 
