@@ -45,7 +45,7 @@
 #define PIN_TX      6
 #define PIN_CD      7
 
-#define PIN_LOCKOUT 10
+#define PIN_LOCKOUT 12
 
 #define FLASH_DELAY 3200U
 #endif
