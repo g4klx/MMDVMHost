@@ -17,7 +17,7 @@
 */
 
 #if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__) && !defined(__AVR_ATmega32U4__) && !defined(__SAM3X8E__) && !defined(__MK20DX256__)
-#include <SoftwareSerial.h>
+#include <AltSoftSerial.h>
 #endif
 
 #if !defined(PIN_LED)
@@ -45,16 +45,13 @@
 #define PIN_TX      6
 #define PIN_CD      7
 
-#define PIN_LOCKOUT 8
+#define PIN_LOCKOUT 10
 
 #define FLASH_DELAY 3200U
 #endif
 
 #if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__) && !defined(__AVR_ATmega32U4__) && !defined(__SAM3X8E__) && !defined(__MK20DX256__)
-#define SOFT_SERIAL_TX  9
-#define SOFT_SERIAL_RX 10
-
-SoftwareSerial mySerial(SOFT_SERIAL_RX, SOFT_SERIAL_TX); // RX, TX
+AltSoftSerial mySerial;
 #endif
 
 // Use the LOCKOUT function on the UMP
