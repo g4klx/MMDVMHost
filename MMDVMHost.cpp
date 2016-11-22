@@ -1144,6 +1144,12 @@ void CMMDVMHost::createDisplay()
 		m_display = new CNullDisplay;
 	}
 
+	if (m_display == NULL) {
+		LogWarning("No valid display found, disabling");
+		m_display = new CNullDisplay;
+		return;
+	}
+
 	bool ret = m_display->open();
 	if (!ret) {
 		delete m_display;
