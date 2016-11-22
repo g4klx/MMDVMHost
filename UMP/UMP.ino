@@ -16,6 +16,10 @@
 *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
+#if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__) && !defined(__AVR_ATmega32U4__) && !defined(__SAM3X8E__) && !defined(__MK20DX256__)
+#include <AltSoftSerial.h>
+#endif
+
 #if !defined(PIN_LED)
 #define PIN_LED     13
 #endif
@@ -41,9 +45,13 @@
 #define PIN_TX      6
 #define PIN_CD      7
 
-#define PIN_LOCKOUT 8
+#define PIN_LOCKOUT 12
 
 #define FLASH_DELAY 3200U
+#endif
+
+#if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__) && !defined(__AVR_ATmega32U4__) && !defined(__SAM3X8E__) && !defined(__MK20DX256__)
+AltSoftSerial mySerial;
 #endif
 
 // Use the LOCKOUT function on the UMP
@@ -55,6 +63,8 @@ void setup()
 
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__) || defined(__MK20DX256__)
   Serial1.begin(9600);
+#else
+  mySerial.begin(9600);
 #endif
 
   pinMode(PIN_LED,     OUTPUT);
@@ -136,11 +146,13 @@ void loop()
         case UMP_SET_CD:
           digitalWrite(PIN_CD, m_buffer[3U] == 0x01U ? HIGH : LOW);
           break;
-#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__) || defined(__MK20DX256__)
         case UMP_WRITE_SERIAL:
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__) || defined(__MK20DX256__)
           Serial1.write(m_buffer + 3U, m_length - 3U);
-          break;
+#else
+          mySerial.write(m_buffer + 3U, m_length - 3U);
 #endif
+          break;
         default:
           break;
         }
@@ -169,6 +181,9 @@ void loop()
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__) || defined(__MK20DX256__)
   while (Serial1.available())
     Serial1.read();
+#else
+  while (mySerial.available())
+    mySerial.read();
 #endif
 
   m_count++;
