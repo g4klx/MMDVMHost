@@ -25,15 +25,17 @@
 #endif
 
 #if defined(__MK20DX256__)
-#define PIN_DSTAR   2
-#define PIN_DMR     3
-#define PIN_YSF     4
-#define PIN_P25     5
+#define PIN_DSTAR   3
+#define PIN_DMR     4
+#define PIN_YSF     5
+#define PIN_P25     6
 
 #define PIN_TX      10
 #define PIN_CD      11
 
 #define PIN_LOCKOUT 12
+
+#define FLASH_DELAY 200000U
 #else
 #define PIN_DSTAR   2
 #define PIN_DMR     3
@@ -44,6 +46,8 @@
 #define PIN_CD      7
 
 #define PIN_LOCKOUT 8
+
+#define FLASH_DELAY 3200U
 #endif
 
 #if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__) && !defined(__AVR_ATmega32U4__) && !defined(__SAM3X8E__) && !defined(__MK20DX256__)
@@ -187,13 +191,13 @@ void loop()
 
   m_count++;
   if (m_started) {
-    if (m_count > 3200U) {
+    if (m_count > FLASH_DELAY) {
       digitalWrite(PIN_LED, m_led ? LOW : HIGH);
       m_led = !m_led;
       m_count = 0U;
     }
   } else {
-    if (m_count > 32000U) {
+    if (m_count > (FLASH_DELAY * 3U)) {
       digitalWrite(PIN_LED, m_led ? LOW : HIGH);
       m_led = !m_led;
       m_count = 0U;
