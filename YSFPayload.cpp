@@ -393,76 +393,57 @@ unsigned int CYSFPayload::processVDMode2Audio(unsigned char* data)
 	data += YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES;
 
 	unsigned int errors = 0U;
-	errors += processVDMode2AudioBlock(data + 5U);
-	errors += processVDMode2AudioBlock(data + 23U);
-	errors += processVDMode2AudioBlock(data + 41U);
-	errors += processVDMode2AudioBlock(data + 59U);
-	errors += processVDMode2AudioBlock(data + 77U);
+	unsigned int offset = 40U; // DCH(0)
+
+	// We have a total of 5 VCH sections, iterate through each
+	for (unsigned int j = 0U; j < 5U; j++, offset += 144U) {
+		unsigned char vch[13U];
+
+		// Deinterleave
+		for (unsigned int i = 0U; i < 104U; i++) {
+			unsigned int n = INTERLEAVE_TABLE_26_4[i];
+			bool s = READ_BIT1(data, offset + n) != 0x00U;
+			WRITE_BIT1(vch, i, s);
+		}
+
+		// "Un-whiten" (descramble)
+		for (unsigned int i = 0U; i < 13U; i++)
+			vch[i] ^= WHITENING_DATA[i];
+
+		//		errors += READ_BIT1(vch, 103); // Padding bit must be zero but apparently it is not...
+
+		for (unsigned int i = 0U; i < 81U; i += 3) {
+			uint8_t vote = bool(READ_BIT1(vch, i)) + bool(READ_BIT1(vch, i + 1)) + bool(READ_BIT1(vch, i + 2));
+			if (vote == 1 || vote == 2) {
+				bool decision = vote / 2; // exploit integer division: 1/2 == 0, 2/2 == 1.
+				WRITE_BIT1(vch, i, decision);
+				WRITE_BIT1(vch, i + 1, decision);
+				WRITE_BIT1(vch, i + 2, decision);
+				errors++;
+			}
+		}
+
+		// Reconstruct only if we have bit errors. Technically we could even
+		// constrain it individually to the 5 VCH sections.
+		if (errors > 0U) {
+			// Scramble
+			for (unsigned int i = 0U; i < 13U; i++)
+				vch[i] ^= WHITENING_DATA[i];
+
+			// Interleave
+			for (unsigned int i = 0U; i < 104U; i++) {
+				unsigned int n = INTERLEAVE_TABLE_26_4[i];
+				bool s = READ_BIT1(vch, i);
+				WRITE_BIT1(data, offset + n, s);
+			}
+		}
+	}
 
 	// "errors" is the number of triplets that were recognized to be corrupted
 	// and that were corrected. There are 27 of those per VCH and 5 VCH per CC,
 	// yielding a total of 27*5 = 135. I believe the expected value of this
 	// error distribution to be Bin(1;3,BER)+Bin(2;3,BER) which entails 75% for
 	// BER = 0.5.
-	return errors;
-}
-
-unsigned int CYSFPayload::processVDMode2AudioBlock(unsigned char* data)
-{
-	assert(data != NULL);
-
-	unsigned int errors = 0U;
-	unsigned char vch[13U];
-
-	// Deinterleave
-	for (unsigned int i = 0U; i < 104U; i++) {
-		unsigned int n = INTERLEAVE_TABLE_26_4[i];
-		bool s = READ_BIT1(data, n);
-		WRITE_BIT1(vch, i, s);
-	}
-
-	// "Un-whiten" (descramble)
-	for (unsigned int i = 0U; i < 13U; i++)
-		vch[i] ^= WHITENING_DATA[i];
-
-	for (unsigned int i = 0U; i < 81U; i += 3U) {
-		unsigned int n = i;
-		bool bit1 = READ_BIT1(vch, n);
-		n++;
-		bool bit2 = READ_BIT1(vch, n);
-		n++;
-		bool bit3 = READ_BIT1(vch, n);
-
-		if ((bit1 && bit2 && !bit3) || (bit1 && !bit2 && bit3) || (!bit1 && bit2 && bit3)) {
-			unsigned int n = i;
-			WRITE_BIT1(vch, n, true);
-			n++;
-			WRITE_BIT1(vch, n, true);
-			n++;
-			WRITE_BIT1(vch, n, true);
-			errors++;
-		} else if ((!bit1 && !bit2 && bit3) || (!bit1 && bit2 && !bit3) || (bit1 && !bit2 && !bit3)) {
-			unsigned int n = i;
-			WRITE_BIT1(vch, n, false);
-			n++;
-			WRITE_BIT1(vch, n, false);
-			n++;
-			WRITE_BIT1(vch, n, false);
-			errors++;
-		}
-	}
-
-	// Scramble
-	for (unsigned int i = 0U; i < 13U; i++)
-		vch[i] ^= WHITENING_DATA[i];
-
-	// Interleave
-	for (unsigned int i = 0U; i < 104U; i++) {
-		unsigned int n = INTERLEAVE_TABLE_26_4[i];
-		bool s = READ_BIT1(vch, i);
-		WRITE_BIT1(data, n, s);
-	}
-
 	return errors;
 }
 
