@@ -527,8 +527,8 @@ bool CDMRNetwork::writeConfig()
 		power = 99U;
 
 	int height = m_height;
-	if (height > 999U)
-		height = 99U;
+	if (height > 999)
+		height = 999;
 
 	::sprintf(buffer + 8U, "%-8.8s%09u%09u%02u%02u%8.8s%9.9s%03d%-20.20s%-19.19s%c%-124.124s%-40.40s%-40.40s", m_callsign.c_str(),
 		m_rxFrequency, m_txFrequency, power, m_colorCode, latitude, longitude, height, m_location.c_str(),
