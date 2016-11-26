@@ -16,20 +16,26 @@
 *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
+#if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__) && !defined(__AVR_ATmega32U4__) && !defined(__SAM3X8E__) && !defined(__MK20DX256__)
+#include <AltSoftSerial.h>
+#endif
+
 #if !defined(PIN_LED)
 #define PIN_LED     13
 #endif
 
 #if defined(__MK20DX256__)
-#define PIN_DSTAR   2
-#define PIN_DMR     3
-#define PIN_YSF     4
-#define PIN_P25     5
+#define PIN_DSTAR   3
+#define PIN_DMR     4
+#define PIN_YSF     5
+#define PIN_P25     6
 
 #define PIN_TX      10
 #define PIN_CD      11
 
 #define PIN_LOCKOUT 12
+
+#define FLASH_DELAY 200000U
 #else
 #define PIN_DSTAR   2
 #define PIN_DMR     3
@@ -39,7 +45,13 @@
 #define PIN_TX      6
 #define PIN_CD      7
 
-#define PIN_LOCKOUT 8
+#define PIN_LOCKOUT 12
+
+#define FLASH_DELAY 3200U
+#endif
+
+#if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__) && !defined(__AVR_ATmega32U4__) && !defined(__SAM3X8E__) && !defined(__MK20DX256__)
+AltSoftSerial mySerial;
 #endif
 
 // Use the LOCKOUT function on the UMP
@@ -51,6 +63,8 @@ void setup()
 
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__) || defined(__MK20DX256__)
   Serial1.begin(9600);
+#else
+  mySerial.begin(9600);
 #endif
 
   pinMode(PIN_LED,     OUTPUT);
@@ -132,11 +146,13 @@ void loop()
         case UMP_SET_CD:
           digitalWrite(PIN_CD, m_buffer[3U] == 0x01U ? HIGH : LOW);
           break;
-#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__) || defined(__MK20DX256__)
         case UMP_WRITE_SERIAL:
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__) || defined(__MK20DX256__)
           Serial1.write(m_buffer + 3U, m_length - 3U);
-          break;
+#else
+          mySerial.write(m_buffer + 3U, m_length - 3U);
 #endif
+          break;
         default:
           break;
         }
@@ -165,17 +181,20 @@ void loop()
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega32U4__) || defined(__SAM3X8E__) || defined(__MK20DX256__)
   while (Serial1.available())
     Serial1.read();
+#else
+  while (mySerial.available())
+    mySerial.read();
 #endif
 
   m_count++;
   if (m_started) {
-    if (m_count > 3200U) {
+    if (m_count > FLASH_DELAY) {
       digitalWrite(PIN_LED, m_led ? LOW : HIGH);
       m_led = !m_led;
       m_count = 0U;
     }
   } else {
-    if (m_count > 32000U) {
+    if (m_count > (FLASH_DELAY * 3U)) {
       digitalWrite(PIN_LED, m_led ? LOW : HIGH);
       m_led = !m_led;
       m_count = 0U;
