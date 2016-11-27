@@ -422,7 +422,6 @@ void CModem::clock(unsigned int ms)
 					//	CUtils::dump(1U, "GET_STATUS", m_buffer, m_length);
 
 					m_tx = (m_buffer[5U] & 0x01U) == 0x01U;
-					m_cd = (m_buffer[5U] & 0x02U) == 0x02U;
 
 					bool adcOverflow = (m_buffer[5U] & 0x02U) == 0x02U;
 					if (adcOverflow)
@@ -441,6 +440,8 @@ void CModem::clock(unsigned int ms)
 					bool dacOverflow = (m_buffer[5U] & 0x20U) == 0x20U;
 					if (dacOverflow)
 						LogError("MMDVM DAC levels have overflowed");
+						
+					m_cd = (m_buffer[5U] & 0x40U) == 0x40U;
 
 					m_dstarSpace = m_buffer[6U];
 					m_dmrSpace1  = m_buffer[7U];
