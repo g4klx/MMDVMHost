@@ -42,8 +42,6 @@ unsigned int CDMRAccessControl::m_id = 0U;
 unsigned int CDMRAccessControl::m_dstRewriteID[2];
 unsigned int CDMRAccessControl::m_srcID[2];
 
-CDMRLC* CDMRAccessControl::m_lastdmrLC;
-
 time_t CDMRAccessControl::m_time[2];
 
 int CDMRAccessControl::m_callHang;
@@ -215,10 +213,14 @@ unsigned int CDMRAccessControl::dstIdRewrite(unsigned int did, unsigned int sid,
 	if (network) {
 		m_dstRewriteID[slot - 1U] = did;
 		m_srcID[slot - 1U] = sid;
-
-		// Not needed at present - for direct dial, which requires change at master end.
-		//memcpy(&m_lastdmrLC, &dmrLC, sizeof(dmrLC));
-		if (m_bmAutoRewrite && (did < 4000U || did > 5000U) && did > 0U && did != 9U && dmrLC->getFLCO() == FLCO_GROUP) {
+		
+		//deal with values of did we should never rewrite for		
+		if(did == 0U || did == 9U) {
+		    return 0U;
+		};
+		
+		
+		if (m_bmAutoRewrite && (did < 4000U || did > 5000U) && dmrLC->getFLCO() == FLCO_GROUP) {
 			LogMessage("DMR Slot %u, Rewrite DST ID (TG) of of inbound network traffic from %u to 9", slot, did);
 			return 9U;
 		// Rewrite incoming BM voice prompts to TG 9
@@ -229,19 +231,33 @@ unsigned int CDMRAccessControl::dstIdRewrite(unsigned int did, unsigned int sid,
 		} else {
 			return 0U;
 		}
-	} else if (m_bmAutoRewrite && did == 9U && m_dstRewriteID[slot - 1U] != 9U && m_dstRewriteID[slot - 1U] != 0U && (m_time[slot - 1U] + m_callHang) > currenttime && dmrLC->getFLCO() == FLCO_GROUP) {
-		LogMessage("DMR Slot %u, Rewrite DST ID (TG) of outbound network traffic from %u to %u (return traffic during CallHang)", slot, did, m_dstRewriteID[slot - 1U]);
-		return m_dstRewriteID[slot - 1U];
-	} else if (m_bmAutoRewrite && (did < 4000U || did > 5000U) && did > 0U && did != 9U && did != 9990U && did < 999999U && dmrLC->getFLCO() == FLCO_USER_USER) {
-		m_dstRewriteID[slot - 1U] = did;
-		dmrLC->setFLCO(FLCO_GROUP);
-		LogMessage("DMR Slot %u, Rewrite outbound private call to %u Group Call (Connect talkgroup by private call)", slot, did);
-		return did;
-	} else if (m_bmAutoRewrite && (did < 4000U || did > 5000U) && did > 0U && did != 9U && did != 9990U && did > 999999U) {
-		m_dstRewriteID[slot - 1U] = did;
-	}
+	} else {
+	  
+	    //deal with values of did we should never rewrite for
+	    switch(did) {
+	      case 0U :
+		return 0U;
+		break;
+	      case 9990U :
+		LogMessage("DMR Slot %u, Outbound call to Echo on 9990 by %u", slot, sid);
+		return 0U;
+		break;
+	    }
+		
+	    if (m_bmAutoRewrite && did == 9U && m_dstRewriteID[slot - 1U] != 9U && m_dstRewriteID[slot - 1U] != 0U && (m_time[slot - 1U] + m_callHang) > currenttime && dmrLC->getFLCO() == FLCO_GROUP) {
+		    LogMessage("DMR Slot %u, Rewrite DST ID (TG) of outbound network traffic from %u to %u (return traffic during CallHang)", slot, did, m_dstRewriteID[slot - 1U]);
+		    return m_dstRewriteID[slot - 1U];
+	    } else if (m_bmAutoRewrite && (did < 4000U || did > 5000U) && did != 9U && did < 999999U && dmrLC->getFLCO() == FLCO_USER_USER) {
+		    m_dstRewriteID[slot - 1U] = did;
+		    dmrLC->setFLCO(FLCO_GROUP);
+		    LogMessage("DMR Slot %u, Rewrite outbound private call to %u Group Call (Connect talkgroup by private call)", slot, did);
+		    return did;
+	    } else if (m_bmAutoRewrite && (did < 4000U || did > 5000U) && did != 9U && did > 999999U) {
+		    m_dstRewriteID[slot - 1U] = did;
+	    }
 
-	return 0U;
+	    return 0U;
+	}
 }
 
 void CDMRAccessControl::setOverEndTime(unsigned int slot) 
