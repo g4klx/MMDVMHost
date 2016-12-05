@@ -250,7 +250,17 @@ CDMRLC* CDMREmbeddedLC::processMultiBlockEmbeddedLC()
 	if (!CCRC::checkFiveBit(lcData, crc))
 		return NULL;
 
-	return new CDMRLC(lcData);
+	CDMRLC* lc = new CDMRLC(lcData);
+
+	// Only generate the LC when it's the correct FLCO
+	switch (lc->getFLCO()) {
+	case FLCO_GROUP:
+	case FLCO_USER_USER:
+		return lc;
+	default:
+		delete lc;
+		return NULL;
+	}
 }
 
 // Deal with a single block embedded LC
