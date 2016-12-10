@@ -60,7 +60,6 @@ m_queue(5000U, "DMR Slot"),
 m_rfState(RS_RF_LISTENING),
 m_netState(RS_NET_IDLE),
 m_rfEmbeddedLC(),
-m_netEmbeddedLC(),
 m_rfLC(NULL),
 m_netLC(NULL),
 m_rfDataHeader(),
@@ -774,9 +773,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			m_netLC->setDstId(rewriteId);
 			dstId = rewriteId;
 		}
-
-		// Store the LC for the embedded LC
-		m_netEmbeddedLC.setData(*m_netLC);
 
 		// Regenerate the LC data
 		fullLC.encode(*m_netLC, data + 2U, DT_VOICE_LC_HEADER);
@@ -1632,10 +1628,10 @@ void CDMRSlot::insertSilence(unsigned int count)
 		if (n == 0U) {
 			CSync::addDMRAudioSync(data + 2U, m_duplex);
 		} else {
-			unsigned char lcss = m_netEmbeddedLC.getData(data + 2U, n);
+			::memset(data + 2U + 13U, 0x00U, 7U);
 
 			m_lastEMB.setColorCode(m_colorCode);
-			m_lastEMB.setLCSS(lcss);
+			m_lastEMB.setLCSS(0U);
 			m_lastEMB.getData(data + 2U);
 		}
 
