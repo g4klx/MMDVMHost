@@ -85,7 +85,7 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 		m_GI    = (m_data[2U] & 0x40U) == 0x40U;
 		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
 		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
-		// CUtils::dump(1U, "Preamble CSBK", m_data, 12U);
+		CUtils::dump(1U, "Preamble CSBK", m_data, 12U);
 		break;
 
 	case CSBKO_NACKRSP:
