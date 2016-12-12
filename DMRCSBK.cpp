@@ -64,26 +64,32 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 	m_CSBKO = CSBKO(m_data[0U] & 0x3FU);
 	m_FID   = m_data[1U];
 
-	m_dataContent = false;
-	m_CBF = 0U;
-
 	switch (m_CSBKO) {
 	case CSBKO_BSDWNACT:
+		m_GI    = false;
 		m_bsId  = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
 		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U]; 
-		// CUtils::dump(1U, "Downlink Activate CSBK", m_data, 12U);
+		m_dataContent = false;
+		m_CBF   = 0U;
+		CUtils::dump(1U, "Downlink Activate CSBK", m_data, 12U);
 		break;
 
 	case CSBKO_UUVREQ:
+		m_GI    = false;
 		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
 		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
-		// CUtils::dump(1U, "Unit to Unit Service Request CSBK", m_data, 12U);
+		m_dataContent = false;
+		m_CBF   = 0U;
+		CUtils::dump(1U, "Unit to Unit Service Request CSBK", m_data, 12U);
 		break;
 
 	case CSBKO_UUANSRSP:
+		m_GI    = false;
 		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
 		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
-		// CUtils::dump(1U, "Unit to Unit Service Answer Response CSBK", m_data, 12U);
+		m_dataContent = false;
+		m_CBF   = 0U;
+		CUtils::dump(1U, "Unit to Unit Service Answer Response CSBK", m_data, 12U);
 		break;
 
 	case CSBKO_PRECCSBK:
@@ -91,20 +97,26 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
 		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
 		m_dataContent = (m_data[2U] & 0x80U) == 0x80U;
-		m_CBF = m_data[3U];
-		// CUtils::dump(1U, "Preamble CSBK", m_data, 12U);
+		m_CBF   = m_data[3U];
+		CUtils::dump(1U, "Preamble CSBK", m_data, 12U);
 		break;
 
 	case CSBKO_NACKRSP:
+		m_GI    = false;
 		m_srcId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
 		m_dstId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
-		// CUtils::dump(1U, "Negative Acknowledge Response CSBK", m_data, 12U);
+		m_dataContent = false;
+		m_CBF   = 0U;
+		CUtils::dump(1U, "Negative Acknowledge Response CSBK", m_data, 12U);
 		break;
 
 	default:
-		CUtils::dump("Unhandled CSBK type", m_data, 12U);
+		m_GI    = false;
 		m_srcId = 0U;
 		m_dstId = 0U;
+		m_dataContent = false;
+		m_CBF = 0U;
+		CUtils::dump("Unhandled CSBK type", m_data, 12U);
 		return true;
 	}
 
