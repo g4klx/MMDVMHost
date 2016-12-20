@@ -58,7 +58,6 @@ private:
 	RPT_RF_STATE               m_rfState;
 	RPT_NET_STATE              m_netState;
 	CDMREmbeddedLC             m_rfEmbeddedLC;
-	CDMREmbeddedLC             m_netEmbeddedLC;
 	CDMRLC*                    m_rfLC;
 	CDMRLC*                    m_netLC;
 	CDMRDataHeader             m_rfDataHeader;
