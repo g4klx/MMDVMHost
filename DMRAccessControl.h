@@ -21,32 +21,18 @@
 
 class CDMRAccessControl {
 public:
-	static bool validateAccess(unsigned int srcId, unsigned int dstId, unsigned int slot, bool network);
+	static bool validateId(unsigned int id);
 
-	static bool validateSrcId(unsigned int id);
-
-	static void init(const std::vector<unsigned int>& dstIdBlacklistSlot1RF, const std::vector<unsigned int>& dstIdWhitelistSlot1RF, const std::vector<unsigned int>& dstIdBlacklistSlot2RF, const std::vector<unsigned int>& dstIdWhitelistSlot2RF, const std::vector<unsigned int>& dstIdBlacklistSlot1NET, const std::vector<unsigned int>& dstIdWhitelistSlot1NET, const std::vector<unsigned int>& dstIdBlacklistSlot2NET, const std::vector<unsigned int>& dstIdWhitelistSlot2NET, const std::vector<unsigned int>& srcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes, unsigned int id);
+	static void init(const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& whitelist, bool selfOnly, const std::vector<unsigned int>& prefixes, unsigned int id);
 	
 private:
-	static std::vector<unsigned int> m_dstBlackListSlot1RF;
-	static std::vector<unsigned int> m_dstBlackListSlot2RF;
-	static std::vector<unsigned int> m_dstWhiteListSlot1RF;
-	static std::vector<unsigned int> m_dstWhiteListSlot2RF;
-
-	static std::vector<unsigned int> m_dstBlackListSlot1NET;
-	static std::vector<unsigned int> m_dstBlackListSlot2NET;
-	static std::vector<unsigned int> m_dstWhiteListSlot1NET;
-	static std::vector<unsigned int> m_dstWhiteListSlot2NET;
-
-	static std::vector<unsigned int> m_srcIdBlacklist;
+	static std::vector<unsigned int> m_blackList;
+	static std::vector<unsigned int> m_whiteList;
 
 	static std::vector<unsigned int> m_prefixes;
 	
 	static bool m_selfOnly;
 	static unsigned int m_id;
-
-	static bool dstIdBlacklist(unsigned int did, unsigned int slot, bool network);
-	static bool dstIdWhitelist(unsigned int did, unsigned int slot, bool gt4k, bool network);
 };
 
 #endif

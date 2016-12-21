@@ -100,14 +100,7 @@ public:
   bool         getDMRSelfOnly() const;
   std::vector<unsigned int> getDMRPrefixes() const;
   std::vector<unsigned int> getDMRBlackList() const;
-  std::vector<unsigned int> getDMRDstIdBlacklistSlot1RF() const;
-  std::vector<unsigned int> getDMRDstIdBlacklistSlot2RF() const;
-  std::vector<unsigned int> getDMRDstIdWhitelistSlot1RF() const;
-  std::vector<unsigned int> getDMRDstIdWhitelistSlot2RF() const;
-  std::vector<unsigned int> getDMRDstIdBlacklistSlot1NET() const;
-  std::vector<unsigned int> getDMRDstIdBlacklistSlot2NET() const;
-  std::vector<unsigned int> getDMRDstIdWhitelistSlot1NET() const;
-  std::vector<unsigned int> getDMRDstIdWhitelistSlot2NET() const;
+  std::vector<unsigned int> getDMRWhiteList() const;
   unsigned int getDMRCallHang() const;
   unsigned int getDMRTXHang() const;
 
@@ -253,14 +246,7 @@ private:
   bool         m_dmrSelfOnly;
   std::vector<unsigned int> m_dmrPrefixes;
   std::vector<unsigned int> m_dmrBlackList;
-  std::vector<unsigned int> m_dmrDstIdBlacklistSlot1RF;
-  std::vector<unsigned int> m_dmrDstIdBlacklistSlot2RF;
-  std::vector<unsigned int> m_dmrDstIdWhitelistSlot1RF;
-  std::vector<unsigned int> m_dmrDstIdWhitelistSlot2RF;
-  std::vector<unsigned int> m_dmrDstIdBlacklistSlot1NET;
-  std::vector<unsigned int> m_dmrDstIdBlacklistSlot2NET;
-  std::vector<unsigned int> m_dmrDstIdWhitelistSlot1NET;
-  std::vector<unsigned int> m_dmrDstIdWhitelistSlot2NET;
+  std::vector<unsigned int> m_dmrWhiteList;
   unsigned int m_dmrCallHang;
   unsigned int m_dmrTXHang;
 

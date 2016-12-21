@@ -152,7 +152,8 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			unsigned int srcId = lc->getSrcId();
 			unsigned int dstId = lc->getDstId();
 
-			if (!CDMRAccessControl::validateAccess(srcId, dstId, m_slotNo, false)) {
+			if (!CDMRAccessControl::validateId(srcId)) {
+				LogMessage("DMR Slot %u, RF user %u rejected", m_slotNo, srcId);
 			    delete lc;
 			    return;
 			}
@@ -264,8 +265,10 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			unsigned int srcId = dataHeader.getSrcId();
 			unsigned int dstId = dataHeader.getDstId();
 
-			if (!CDMRAccessControl::validateAccess(srcId, dstId, m_slotNo, false))
-			    return;
+			if (!CDMRAccessControl::validateId(srcId)) {
+				LogMessage("DMR Slot %u, RF user %u rejected", m_slotNo, srcId);
+				return;
+			}
 
 			m_rfFrames = dataHeader.getBlocks();
 
@@ -321,8 +324,10 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			unsigned int dstId = csbk.getDstId();
 
 			if (srcId != 0U || dstId != 0U) {
-				if (!CDMRAccessControl::validateAccess(srcId, dstId, m_slotNo, false))
+				if (!CDMRAccessControl::validateId(srcId)) {
+					LogMessage("DMR Slot %u, RF user %u rejected", m_slotNo, srcId);
 					return;
+				}
 			}
 			
 			// Regenerate the CSBK data
@@ -475,8 +480,9 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				unsigned int srcId = lc->getSrcId();
 				unsigned int dstId = lc->getDstId();
 
-				if (!CDMRAccessControl::validateAccess(srcId, dstId, m_slotNo, false)) {
-				    delete lc;
+				if (!CDMRAccessControl::validateId(srcId)) {
+					LogMessage("DMR Slot %u, RF user %u rejected", m_slotNo, srcId);
+					delete lc;
 				    return;
 				}
 
@@ -749,7 +755,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		unsigned int dstId = lc->getDstId();
 		unsigned int srcId = lc->getSrcId();
 
-		if (!CDMRAccessControl::validateAccess(srcId, dstId, m_slotNo, true)) {
+		if (!CDMRAccessControl::validateId(srcId)) {
+			LogMessage("DMR Slot %u, network user %u rejected", m_slotNo, srcId);
 			delete lc;
 			return;
 		}
@@ -814,7 +821,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			unsigned int dstId = lc->getDstId();
 			unsigned int srcId = lc->getSrcId();
 
-			if (!CDMRAccessControl::validateAccess(srcId, dstId, m_slotNo, true)) {
+			if (!CDMRAccessControl::validateId(srcId)) {
+				LogMessage("DMR Slot %u, network user %u rejected", m_slotNo, srcId);
 				delete lc;
 				return;
 			}
@@ -950,8 +958,10 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		unsigned int srcId = dataHeader.getSrcId();
 		unsigned int dstId = dataHeader.getDstId();
 
-		if (!CDMRAccessControl::validateAccess(srcId, dstId, m_slotNo, true))
-		    return;
+		if (!CDMRAccessControl::validateId(srcId)) {
+			LogMessage("DMR Slot %u, network user %u rejected", m_slotNo, srcId);
+			return;
+		}
 		
 		m_netFrames = dataHeader.getBlocks();
 
@@ -996,7 +1006,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			unsigned int dstId = lc->getDstId();
 			unsigned int srcId = lc->getSrcId();
 
-			if (!CDMRAccessControl::validateAccess(srcId, dstId, m_slotNo, true)) {
+			if (!CDMRAccessControl::validateId(srcId)) {
+				LogMessage("DMR Slot %u, network user %u rejected", m_slotNo, srcId);
 				delete lc;
 				return;
 			}
@@ -1152,8 +1163,10 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		unsigned int dstId = csbk.getDstId();
 
 		if (srcId != 0U || dstId != 0U) {
-			if (!CDMRAccessControl::validateAccess(srcId, dstId, m_slotNo, true))
+			if (!CDMRAccessControl::validateId(srcId)) {
+				LogMessage("DMR Slot %u, network user %u rejected", m_slotNo, srcId);
 				return;
+			}
 		}
 
 		// Regenerate the CSBK data
