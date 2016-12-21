@@ -133,10 +133,12 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 	bool audioSync = (data[1U] & DMR_SYNC_AUDIO) == DMR_SYNC_AUDIO;
 
 	if (dataSync) {
-		CDMRSlotType slotType;
-		slotType.putData(data + 2U);
+		// Get the type from the packet metadata
+		unsigned char dataType = data[1U] & 0x0FU;
 
-		unsigned char dataType = slotType.getDataType();
+		CDMRSlotType slotType;
+		slotType.setColorCode(m_colorCode);
+		slotType.setDataType(dataType);
 
 		if (dataType == DT_VOICE_LC_HEADER) {
 			if (m_rfState == RS_RF_AUDIO)
