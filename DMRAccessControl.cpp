@@ -49,7 +49,7 @@ bool CDMRAccessControl::validateId(unsigned int id)
 
 		if (!m_prefixes.empty()) {
 			bool ret = std::find(m_prefixes.begin(), m_prefixes.end(), prefix) == m_prefixes.end();
-			if (!ret)
+			if (ret)
 				return false;
 		}
 
