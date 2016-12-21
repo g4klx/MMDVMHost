@@ -105,10 +105,6 @@ m_dmrBeacons(false),
 m_dmrId(0U),
 m_dmrColorCode(2U),
 m_dmrSelfOnly(false),
-m_dmrTGRewriteSlot1(false),
-m_dmrTGRewriteSlot2(false),
-m_dmrBMAutoRewrite(false),
-m_dmrBMRewriteReflectorVoicePrompts(false),
 m_dmrPrefixes(),
 m_dmrBlackList(),
 m_dmrDstIdBlacklistSlot1RF(),
@@ -467,14 +463,6 @@ bool CConf::read()
 			m_dmrTXHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "CallHang") == 0)
 			m_dmrCallHang = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "TGRewriteSlot1") == 0)
-			m_dmrTGRewriteSlot1 = ::atoi(value) == 1;
-		else if (::strcmp(key, "TGRewriteSlot2") == 0)
-			m_dmrTGRewriteSlot2 = ::atoi(value) == 1;
-		else if (::strcmp(key, "BMAutoRewrite") == 0)
-			m_dmrBMAutoRewrite = ::atoi(value) == 1;
-		else if (::strcmp(key, "BMRewriteReflectorVoicePrompts") == 0)
-			m_dmrBMRewriteReflectorVoicePrompts = ::atoi(value) == 1;
 	} else if (section == SECTION_FUSION) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fusionEnabled = ::atoi(value) == 1;
@@ -867,26 +855,6 @@ unsigned int CConf::getDMRColorCode() const
 bool CConf::getDMRSelfOnly() const
 {
 	return m_dmrSelfOnly;
-}
-
-bool CConf::getDMRTGRewriteSlot1() const
-{
-	return m_dmrTGRewriteSlot1;
-}
-
-bool CConf::getDMRTGRewriteSlot2() const
-{
-	return m_dmrTGRewriteSlot2;
-}
-
-bool CConf::getDMRBMAutoRewrite() const
-{
-	return m_dmrBMAutoRewrite;
-}
-
-bool CConf::getDMRBMRewriteReflectorVoicePrompts() const
-{
-	return m_dmrBMRewriteReflectorVoicePrompts;
 }
 
 std::vector<unsigned int> CConf::getDMRPrefixes() const

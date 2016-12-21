@@ -39,19 +39,7 @@ bool CDMRAccessControl::m_selfOnly = false;
 
 unsigned int CDMRAccessControl::m_id = 0U;
 
-unsigned int CDMRAccessControl::m_dstRewriteID[2];
-unsigned int CDMRAccessControl::m_srcID[2];
-
-time_t CDMRAccessControl::m_time[2];
-
-int CDMRAccessControl::m_callHang;
-
-bool CDMRAccessControl::m_tgRewriteSlot1;
-bool CDMRAccessControl::m_tgRewriteSlot2;
-bool CDMRAccessControl::m_bmAutoRewrite;
-bool CDMRAccessControl::m_bmRewriteReflectorVoicePrompts;
-
-void CDMRAccessControl::init(const std::vector<unsigned int>& dstIdBlacklistSlot1RF, const std::vector<unsigned int>& dstIdWhitelistSlot1RF, const std::vector<unsigned int>& dstIdBlacklistSlot2RF, const std::vector<unsigned int>& dstIdWhitelistSlot2RF, const std::vector<unsigned int>& dstIdBlacklistSlot1NET, const std::vector<unsigned int>& dstIdWhitelistSlot1NET, const std::vector<unsigned int>& dstIdBlacklistSlot2NET, const std::vector<unsigned int>& dstIdWhitelistSlot2NET, const std::vector<unsigned int>& srcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes, unsigned int id, unsigned int callHang, bool tgRewriteSlot1, bool tgRewriteSlot2, bool bmAutoRewrite, bool bmRewriteReflectorVoicePrompts)
+void CDMRAccessControl::init(const std::vector<unsigned int>& dstIdBlacklistSlot1RF, const std::vector<unsigned int>& dstIdWhitelistSlot1RF, const std::vector<unsigned int>& dstIdBlacklistSlot2RF, const std::vector<unsigned int>& dstIdWhitelistSlot2RF, const std::vector<unsigned int>& dstIdBlacklistSlot1NET, const std::vector<unsigned int>& dstIdWhitelistSlot1NET, const std::vector<unsigned int>& dstIdBlacklistSlot2NET, const std::vector<unsigned int>& dstIdWhitelistSlot2NET, const std::vector<unsigned int>& srcIdBlacklist, bool selfOnly, const std::vector<unsigned int>& prefixes, unsigned int id)
 {
 	m_dstBlackListSlot1RF  = dstIdBlacklistSlot1RF;
 	m_dstWhiteListSlot1RF  = dstIdWhitelistSlot1RF;
@@ -61,11 +49,6 @@ void CDMRAccessControl::init(const std::vector<unsigned int>& dstIdBlacklistSlot
 	m_dstWhiteListSlot1NET = dstIdWhitelistSlot1NET;
 	m_dstBlackListSlot2NET = dstIdBlacklistSlot2NET;
 	m_dstWhiteListSlot2NET = dstIdWhitelistSlot2NET;
-	m_callHang             = callHang;
-	m_tgRewriteSlot1       = tgRewriteSlot1;
-	m_tgRewriteSlot2       = tgRewriteSlot2;
-	m_bmAutoRewrite	       = bmAutoRewrite;
-	m_bmRewriteReflectorVoicePrompts = bmRewriteReflectorVoicePrompts;
 }
  
 bool CDMRAccessControl::dstIdBlacklist(unsigned int did, unsigned int slot, bool network)
@@ -198,69 +181,4 @@ bool CDMRAccessControl::validateAccess(unsigned int src_id, unsigned int dst_id,
 	} else {
 		return true;
 	}
-}
-
-unsigned int CDMRAccessControl::dstIdRewrite(unsigned int did, unsigned int sid, unsigned int slot, bool network, CDMRLC* dmrLC) 
-{
-	if (slot == 1U && !m_tgRewriteSlot1)
-		return 0U;
-  
-	if (slot == 2U && !m_tgRewriteSlot2)
-		return 0U;
-
-	time_t currenttime = ::time(NULL);
-  
-	if (network) {
-		m_dstRewriteID[slot - 1U] = did;
-		m_srcID[slot - 1U] = sid;
-		
-		//deal with values of did we should never rewrite for		
-		if(did == 0U || did == 9U) {
-		    return 0U;
-		};
-		
-		
-		if (m_bmAutoRewrite && (did < 4000U || did > 5000U) && dmrLC->getFLCO() == FLCO_GROUP) {
-			LogMessage("DMR Slot %u, Rewrite DST ID (TG) of of inbound network traffic from %u to 9", slot, did);
-			return 9U;
-		// Rewrite incoming BM voice prompts to TG 9
-		} else if (m_bmRewriteReflectorVoicePrompts && (sid >= 4000U && sid <= 5000U) && dmrLC->getFLCO() == FLCO_USER_USER)  {
-			dmrLC->setFLCO(FLCO_GROUP);
-			LogMessage("DMR Slot %u, Rewrite inbound private call to %u to Group Call on TG 9 (BM reflector voice prompt)", slot, did);
-			return 9U;	 
-		} else {
-			return 0U;
-		}
-	} else {
-	  
-	    //deal with values of did we should never rewrite for
-	    switch(did) {
-	      case 0U :
-		return 0U;
-		break;
-	      case 9990U :
-		LogMessage("DMR Slot %u, Outbound call to Echo on 9990 by %u", slot, sid);
-		return 0U;
-		break;
-	    }
-		
-	    if (m_bmAutoRewrite && did == 9U && m_dstRewriteID[slot - 1U] != 9U && m_dstRewriteID[slot - 1U] != 0U && (m_time[slot - 1U] + m_callHang) > currenttime && dmrLC->getFLCO() == FLCO_GROUP) {
-		    LogMessage("DMR Slot %u, Rewrite DST ID (TG) of outbound network traffic from %u to %u (return traffic during CallHang)", slot, did, m_dstRewriteID[slot - 1U]);
-		    return m_dstRewriteID[slot - 1U];
-	    } else if (m_bmAutoRewrite && (did < 4000U || did > 5000U) && did != 9U && did < 999999U && dmrLC->getFLCO() == FLCO_USER_USER) {
-		    m_dstRewriteID[slot - 1U] = did;
-		    dmrLC->setFLCO(FLCO_GROUP);
-		    LogMessage("DMR Slot %u, Rewrite outbound private call to %u Group Call (Connect talkgroup by private call)", slot, did);
-		    return did;
-	    } else if (m_bmAutoRewrite && (did < 4000U || did > 5000U) && did != 9U && did > 999999U) {
-		    m_dstRewriteID[slot - 1U] = did;
-	    }
-
-	    return 0U;
-	}
-}
-
-void CDMRAccessControl::setOverEndTime(unsigned int slot) 
-{
-	m_time[slot - 1U] = ::time(NULL);
 }

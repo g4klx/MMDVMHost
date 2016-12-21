@@ -155,12 +155,6 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			    return;
 			}
 
-			unsigned int rewriteId = CDMRAccessControl::dstIdRewrite(dstId, srcId, m_slotNo, false, lc);
-			if (rewriteId != 0U) {
-				lc->setDstId(rewriteId);
-				dstId = rewriteId;
-			}
-
 			m_rfLC = lc;
 
 			// Regenerate the LC data
@@ -255,7 +249,6 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			LogMessage("DMR Slot %u, received RF end of voice transmission, %.1f seconds, BER: %.1f%%", m_slotNo, float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
 
 			writeEndRF();
-			CDMRAccessControl::setOverEndTime(m_slotNo);
 		} else if (dataType == DT_DATA_HEADER) {
 			if (m_rfState == RS_RF_DATA)
 				return;
@@ -483,12 +476,6 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				if (!CDMRAccessControl::validateAccess(srcId, dstId, m_slotNo, false)) {
 				    delete lc;
 				    return;
-				}
-
-				unsigned int rewriteId = CDMRAccessControl::dstIdRewrite(dstId, srcId, m_slotNo, false, lc);
-				if (rewriteId != 0U) {
-					lc->setDstId(rewriteId);
-					dstId = rewriteId;
 				}
 
 				m_rfLC = lc;
@@ -767,13 +754,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		m_netLC = lc;
 
-		// Test dst rewrite
-		unsigned int rewriteId = CDMRAccessControl::dstIdRewrite(dstId, srcId, m_slotNo, true, m_netLC);
-		if (rewriteId != 0U) {
-			m_netLC->setDstId(rewriteId);
-			dstId = rewriteId;
-		}
-
 		// Regenerate the LC data
 		fullLC.encode(*m_netLC, data + 2U, DT_VOICE_LC_HEADER);
 
@@ -838,13 +818,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			}
 
 			m_netLC = lc;
-
-			// Test dst rewrite
-			unsigned int rewriteId = CDMRAccessControl::dstIdRewrite(dstId, srcId, m_slotNo, true, m_netLC);
-			if (rewriteId != 0U) {
-				m_netLC->setDstId(rewriteId);
-				dstId = rewriteId;
-			}
 
 			m_lastFrameValid = false;
 
@@ -958,7 +931,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		LogMessage("DMR Slot %u, received network end of voice transmission, %.1f seconds, %u%% packet loss, BER: %.1f%%", m_slotNo, float(m_netFrames) / 16.667F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
 
 		writeEndNet();
-		CDMRAccessControl::setOverEndTime(m_slotNo);
 	} else if (dataType == DT_DATA_HEADER) {
 		if (m_netState == RS_NET_DATA)
 			return;
@@ -1028,13 +1000,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			}
 
 			m_netLC = lc;
-
-			// Test dst rewrite
-			unsigned int rewriteId = CDMRAccessControl::dstIdRewrite(dstId, srcId, m_slotNo, true, m_netLC);
-			if (rewriteId != 0U) {
-				m_netLC->setDstId(rewriteId);
-				dstId = rewriteId;
-			}
 
 			m_lastFrameValid = false;
 
