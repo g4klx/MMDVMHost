@@ -17,6 +17,7 @@
  */
 
 #include "MMDVMHost.h"
+#include "RSSIInterpolator.h"
 #include "SerialController.h"
 #include "ModemSerialPort.h"
 #include "Version.h"
@@ -331,17 +332,16 @@ int CMMDVMHost::run()
 
 	CDMRControl* dmr = NULL;
 	if (m_dmrEnabled) {
-		unsigned int id        = m_conf.getDMRId();
-		unsigned int colorCode = m_conf.getDMRColorCode();
-		bool selfOnly          = m_conf.getDMRSelfOnly();
+		unsigned int id             = m_conf.getDMRId();
+		unsigned int colorCode      = m_conf.getDMRColorCode();
+		bool selfOnly               = m_conf.getDMRSelfOnly();
 		std::vector<unsigned int> prefixes  = m_conf.getDMRPrefixes();
 		std::vector<unsigned int> blackList = m_conf.getDMRBlackList();
 		std::vector<unsigned int> whiteList = m_conf.getDMRWhiteList();
-		unsigned int callHang  = m_conf.getDMRCallHang();
-		unsigned int txHang    = m_conf.getDMRTXHang();
-		int rssiMultiplier     = m_conf.getModemRSSIMultiplier();
-		int rssiOffset         = m_conf.getModemRSSIOffset();
-		unsigned int jitter    = m_conf.getDMRNetworkJitter();
+		unsigned int callHang       = m_conf.getDMRCallHang();
+		unsigned int txHang         = m_conf.getDMRTXHang();
+		std::string rssiMappingFile = m_conf.getModemRSSIMappingFile();
+		unsigned int jitter         = m_conf.getDMRNetworkJitter();
 
 		if (txHang > m_rfModeHang)
 			txHang = m_rfModeHang;
@@ -365,12 +365,13 @@ int CMMDVMHost::run()
 		LogInfo("    Call Hang: %us", callHang);
 		LogInfo("    TX Hang: %us", txHang);
 
-		if (rssiMultiplier != 0) {
-			LogInfo("    RSSI Multiplier: %d", rssiMultiplier);
-			LogInfo("    RSSI Offset: %d", rssiOffset);
+		CRSSIInterpolator* rssi = new CRSSIInterpolator;
+		if (!rssiMappingFile.empty()) {
+			LogInfo("    RSSI Mapping File: %s", rssiMappingFile.c_str());
+			rssi->load(rssiMappingFile);
 		}
 
-		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList, whiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_lookup, rssiMultiplier, rssiOffset, jitter);
+		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList, whiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_lookup, rssi, jitter);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}

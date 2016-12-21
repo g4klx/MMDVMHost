@@ -91,8 +91,7 @@ m_modemDMRTXLevel(50U),
 m_modemYSFTXLevel(50U),
 m_modemP25TXLevel(50U),
 m_modemOscOffset(0),
-m_modemRSSIMultiplier(0),
-m_modemRSSIOffset(0),
+m_modemRSSIMappingFile(),
 m_modemDebug(false),
 m_umpEnabled(false),
 m_umpPort(),
@@ -327,10 +326,8 @@ bool CConf::read()
 			m_modemP25TXLevel = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "OscOffset") == 0)
 			m_modemOscOffset = ::atoi(value);
-		else if (::strcmp(key, "RSSIMultiplier") == 0)
-			m_modemRSSIMultiplier = ::atoi(value);
-		else if (::strcmp(key, "RSSIOffset") == 0)
-			m_modemRSSIOffset = ::atoi(value);
+		else if (::strcmp(key, "RSSIMappingFile") == 0)
+			m_modemRSSIMappingFile = value;
 		else if (::strcmp(key, "Debug") == 0)
 			m_modemDebug = ::atoi(value) == 1;
 	} else if (section == SECTION_UMP) {
@@ -724,14 +721,9 @@ int CConf::getModemOscOffset() const
 	return m_modemOscOffset;
 }
 
-int CConf::getModemRSSIMultiplier () const
+std::string CConf::getModemRSSIMappingFile () const
 {
-	return m_modemRSSIMultiplier;
-}
-
-int CConf::getModemRSSIOffset() const
-{
-	return m_modemRSSIOffset;
+	return m_modemRSSIMappingFile;
 }
 
 bool CConf::getModemDebug() const

@@ -21,7 +21,7 @@
 #include <cassert>
 #include <algorithm>
 
-CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& whitelist, unsigned int timeout, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, int rssiMultiplier, int rssiOffset, unsigned int jitter) :
+CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& whitelist, unsigned int timeout, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssi, unsigned int jitter) :
 m_id(id),
 m_colorCode(colorCode),
 m_modem(modem),
@@ -34,11 +34,12 @@ m_lookup(lookup)
 	assert(modem != NULL);
 	assert(display != NULL);
 	assert(lookup != NULL);
+	assert(rssi != NULL);
 
 	// Load black and white lists to DMRAccessControl
 	CDMRAccessControl::init(blacklist, whitelist, selfOnly, prefixes, id);
 
-	CDMRSlot::init(colorCode, callHang, modem, network, display, duplex, m_lookup, rssiMultiplier, rssiOffset, jitter);
+	CDMRSlot::init(colorCode, callHang, modem, network, display, duplex, m_lookup, rssi, jitter);
 }
 
 CDMRControl::~CDMRControl()

@@ -218,6 +218,9 @@
     <ClInclude Include="UMP.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="RSSIInterpolator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -404,6 +407,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="UMP.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RSSIInterpolator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

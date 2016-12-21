@@ -78,8 +78,7 @@ public:
   unsigned int getModemYSFTXLevel() const;
   unsigned int getModemP25TXLevel() const;
   int          getModemOscOffset() const;
-  int          getModemRSSIMultiplier() const;
-  int          getModemRSSIOffset() const;
+  std::string  getModemRSSIMappingFile() const;
   bool         getModemDebug() const;
 
   // The UMP section
@@ -227,8 +226,7 @@ private:
   unsigned int m_modemYSFTXLevel;
   unsigned int m_modemP25TXLevel;
   int          m_modemOscOffset;
-  int          m_modemRSSIMultiplier;
-  int          m_modemRSSIOffset;
+  std::string  m_modemRSSIMappingFile;
   bool         m_modemDebug;
 
   bool         m_umpEnabled;

@@ -37,8 +37,7 @@ bool           CDMRSlot::m_duplex = true;
 CDMRLookup*    CDMRSlot::m_lookup = NULL;
 unsigned int   CDMRSlot::m_hangCount = 3U * 17U;
 
-int            CDMRSlot::m_rssiMultiplier = 0;
-int            CDMRSlot::m_rssiOffset = 0;
+CRSSIInterpolator* CDMRSlot::m_rssiMapper = NULL;
 
 unsigned int   CDMRSlot::m_jitterTime  = 300U;
 unsigned int   CDMRSlot::m_jitterSlots = 5U;
@@ -120,11 +119,11 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 	}
 
 	// Have we got RSSI bytes on the end?
-	if (len == (DMR_FRAME_LENGTH_BYTES + 4U) && m_rssiMultiplier != 0) {
+	if (len == (DMR_FRAME_LENGTH_BYTES + 4U)) {
 		uint16_t raw = 0U;
 		raw |= (data[35U] << 8) & 0xFF00U;
 		raw |= (data[36U] << 0) & 0x00FFU;
-		int rssi = (raw - m_rssiOffset) / m_rssiMultiplier;
+		int rssi = m_rssiMapper->interpolate(raw);
 		m_rssi = (rssi >= 0) ? rssi : -rssi;
 		LogDebug("DMR Slot %u, raw RSSI: %u, reported RSSI: -%u dBm", m_slotNo, raw, m_rssi);
 	}
@@ -1388,11 +1387,12 @@ void CDMRSlot::writeQueueNet(const unsigned char *data)
 		m_queue.addData(data, len);
 }
 
-void CDMRSlot::init(unsigned int colorCode, unsigned int callHang, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, int rssiMultiplier, int rssiOffset, unsigned int jitter)
+void CDMRSlot::init(unsigned int colorCode, unsigned int callHang, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter)
 {
 	assert(modem != NULL);
 	assert(display != NULL);
 	assert(lookup != NULL);
+	assert(rssiMapper != NULL);
 
 	m_colorCode = colorCode;
 	m_modem     = modem;
@@ -1402,8 +1402,7 @@ void CDMRSlot::init(unsigned int colorCode, unsigned int callHang, CModem* modem
 	m_lookup    = lookup;
 	m_hangCount = callHang * 17U;
 
-	m_rssiMultiplier = rssiMultiplier;
-	m_rssiOffset     = rssiOffset;
+	m_rssiMapper = rssiMapper;
 
 	m_jitterTime  = jitter;
 	m_jitterSlots = jitter / DMR_SLOT_TIME;
