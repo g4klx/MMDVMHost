@@ -78,12 +78,12 @@ int CRSSIInterpolator::interpolate(uint16_t val) const
 	if (it == m_map.begin())
 		return it->second;
 
-	unsigned int x2 = it->first;
-	int          y2 = it->second;
+	uint16_t x2 = it->first;
+	int      y2 = it->second;
 
 	--it;
-	unsigned int x1 = it->first;
-	int          y1 = it->second;
+	uint16_t x1 = it->first;
+	int      y1 = it->second;
 
 	float p = float(val - x1) / float(x2 - x1);
 
