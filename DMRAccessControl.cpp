@@ -33,29 +33,31 @@ void CDMRAccessControl::init(const std::vector<unsigned int>& blacklist, const s
 {
 	m_blackList = blacklist;
 	m_whiteList = whitelist;
+	m_selfOnly  = selfOnly;
+	m_prefixes  = prefixes;
+	m_id        = id;
 }
  
 bool CDMRAccessControl::validateId(unsigned int id)
 {
-	if (m_selfOnly) {
+	if (m_selfOnly)
 		return id == m_id;
-	} else {
-		if (std::find(m_blackList.begin(), m_blackList.end(), id) != m_blackList.end())
+
+	if (std::find(m_blackList.begin(), m_blackList.end(), id) != m_blackList.end())
+		return false;
+
+	unsigned int prefix = id / 10000U;
+	if (prefix == 0U || prefix > 999U)
+		return false;
+
+	if (!m_prefixes.empty()) {
+		bool ret = std::find(m_prefixes.begin(), m_prefixes.end(), prefix) == m_prefixes.end();
+		if (ret)
 			return false;
-
-		unsigned int prefix = id / 10000U;
-		if (prefix == 0U || prefix > 999U)
-			return false;
-
-		if (!m_prefixes.empty()) {
-			bool ret = std::find(m_prefixes.begin(), m_prefixes.end(), prefix) == m_prefixes.end();
-			if (ret)
-				return false;
-		}
-
-		if (!m_whiteList.empty())
-			return std::find(m_whiteList.begin(), m_whiteList.end(), id) != m_whiteList.end();
-
-		return true;
 	}
+
+	if (!m_whiteList.empty())
+		return std::find(m_whiteList.begin(), m_whiteList.end(), id) != m_whiteList.end();
+
+	return true;
 }
