@@ -123,9 +123,13 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 		uint16_t raw = 0U;
 		raw |= (data[35U] << 8) & 0xFF00U;
 		raw |= (data[36U] << 0) & 0x00FFU;
+		
+		// Convert the raw RSSI to dBm
 		int rssi = m_rssiMapper->interpolate(raw);
+		LogDebug("DMR Slot %u, raw RSSI: %u, reported RSSI: %d dBm", m_slotNo, raw, rssi);
+
+		// RSSI is always reported as positive
 		m_rssi = (rssi >= 0) ? rssi : -rssi;
-		LogDebug("DMR Slot %u, raw RSSI: %u, reported RSSI: -%u dBm", m_slotNo, raw, m_rssi);
 	}
 
 	bool dataSync  = (data[1U] & DMR_SYNC_DATA)  == DMR_SYNC_DATA;
