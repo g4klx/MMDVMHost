@@ -21,7 +21,7 @@
 #include <cassert>
 #include <algorithm>
 
-CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& dstIdBlacklistSlot1RF, const std::vector<unsigned int>& dstIdWhitelistSlot1RF, const std::vector<unsigned int>& dstIdBlacklistSlot2RF, const std::vector<unsigned int>& dstIdWhitelistSlot2RF, const std::vector<unsigned int>& dstIdBlacklistSlot1NET, const std::vector<unsigned int>& dstIdWhitelistSlot1NET, const std::vector<unsigned int>& dstIdBlacklistSlot2NET, const std::vector<unsigned int>& dstIdWhitelistSlot2NET, unsigned int timeout, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, int rssiMultiplier, int rssiOffset, unsigned int jitter, bool tgRewriteSlot1, bool tgRewriteSlot2, bool bmAutoRewrite, bool bmRewriteReflectorVoicePrompts) :
+CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& whitelist, unsigned int timeout, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssi, unsigned int jitter) :
 m_id(id),
 m_colorCode(colorCode),
 m_modem(modem),
@@ -34,11 +34,12 @@ m_lookup(lookup)
 	assert(modem != NULL);
 	assert(display != NULL);
 	assert(lookup != NULL);
+	assert(rssi != NULL);
 
 	// Load black and white lists to DMRAccessControl
-	CDMRAccessControl::init(dstIdBlacklistSlot1RF, dstIdWhitelistSlot1RF, dstIdBlacklistSlot2RF, dstIdWhitelistSlot2RF, dstIdBlacklistSlot1NET, dstIdWhitelistSlot1NET, dstIdBlacklistSlot2NET, dstIdWhitelistSlot2NET, blacklist, selfOnly, prefixes, id, callHang, tgRewriteSlot1, tgRewriteSlot2, bmAutoRewrite, bmRewriteReflectorVoicePrompts);
+	CDMRAccessControl::init(blacklist, whitelist, selfOnly, prefixes, id);
 
-	CDMRSlot::init(colorCode, callHang, modem, network, display, duplex, m_lookup, rssiMultiplier, rssiOffset, jitter);
+	CDMRSlot::init(colorCode, callHang, modem, network, display, duplex, m_lookup, rssi, jitter);
 }
 
 CDMRControl::~CDMRControl()
@@ -67,7 +68,7 @@ bool CDMRControl::processWakeup(const unsigned char* data)
 
 	std::string src = m_lookup->find(srcId);
 
-	bool ret = CDMRAccessControl::validateSrcId(srcId);
+	bool ret = CDMRAccessControl::validateId(srcId);
 	if (!ret) {
 		LogMessage("Invalid CSBK BS_Dwn_Act received from %s", src.c_str());
 		return false;

@@ -78,8 +78,7 @@ public:
   unsigned int getModemYSFTXLevel() const;
   unsigned int getModemP25TXLevel() const;
   int          getModemOscOffset() const;
-  int          getModemRSSIMultiplier() const;
-  int          getModemRSSIOffset() const;
+  std::string  getModemRSSIMappingFile() const;
   bool         getModemDebug() const;
 
   // The UMP section
@@ -98,20 +97,9 @@ public:
   unsigned int getDMRId() const;
   unsigned int getDMRColorCode() const;
   bool         getDMRSelfOnly() const;
-  bool	       getDMRTGRewriteSlot1() const;
-  bool	       getDMRTGRewriteSlot2() const;
-  bool	       getDMRBMAutoRewrite() const;
-  bool         getDMRBMRewriteReflectorVoicePrompts() const;
   std::vector<unsigned int> getDMRPrefixes() const;
   std::vector<unsigned int> getDMRBlackList() const;
-  std::vector<unsigned int> getDMRDstIdBlacklistSlot1RF() const;
-  std::vector<unsigned int> getDMRDstIdBlacklistSlot2RF() const;
-  std::vector<unsigned int> getDMRDstIdWhitelistSlot1RF() const;
-  std::vector<unsigned int> getDMRDstIdWhitelistSlot2RF() const;
-  std::vector<unsigned int> getDMRDstIdBlacklistSlot1NET() const;
-  std::vector<unsigned int> getDMRDstIdBlacklistSlot2NET() const;
-  std::vector<unsigned int> getDMRDstIdWhitelistSlot1NET() const;
-  std::vector<unsigned int> getDMRDstIdWhitelistSlot2NET() const;
+  std::vector<unsigned int> getDMRWhiteList() const;
   unsigned int getDMRCallHang() const;
   unsigned int getDMRTXHang() const;
 
@@ -238,8 +226,7 @@ private:
   unsigned int m_modemYSFTXLevel;
   unsigned int m_modemP25TXLevel;
   int          m_modemOscOffset;
-  int          m_modemRSSIMultiplier;
-  int          m_modemRSSIOffset;
+  std::string  m_modemRSSIMappingFile;
   bool         m_modemDebug;
 
   bool         m_umpEnabled;
@@ -255,20 +242,9 @@ private:
   unsigned int m_dmrId;
   unsigned int m_dmrColorCode;
   bool         m_dmrSelfOnly;
-  bool	       m_dmrTGRewriteSlot1;
-  bool	       m_dmrTGRewriteSlot2;
-  bool	       m_dmrBMAutoRewrite;
-  bool	       m_dmrBMRewriteReflectorVoicePrompts;
   std::vector<unsigned int> m_dmrPrefixes;
   std::vector<unsigned int> m_dmrBlackList;
-  std::vector<unsigned int> m_dmrDstIdBlacklistSlot1RF;
-  std::vector<unsigned int> m_dmrDstIdBlacklistSlot2RF;
-  std::vector<unsigned int> m_dmrDstIdWhitelistSlot1RF;
-  std::vector<unsigned int> m_dmrDstIdWhitelistSlot2RF;
-  std::vector<unsigned int> m_dmrDstIdBlacklistSlot1NET;
-  std::vector<unsigned int> m_dmrDstIdBlacklistSlot2NET;
-  std::vector<unsigned int> m_dmrDstIdWhitelistSlot1NET;
-  std::vector<unsigned int> m_dmrDstIdWhitelistSlot2NET;
+  std::vector<unsigned int> m_dmrWhiteList;
   unsigned int m_dmrCallHang;
   unsigned int m_dmrTXHang;
 

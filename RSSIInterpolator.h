@@ -1,5 +1,4 @@
 /*
- *   Copyright (C) 2016 by Simon Rune G7RZU
  *   Copyright (C) 2016 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -14,28 +13,27 @@
  *
  *   You should have received a copy of the GNU General Public License
  *   along with this program; if not, write to the Free Software
+ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-#if !defined(DMRAccessControl_H)
-#define	DMRAccessControl_H
 
-#include <vector>
+#if !defined(RSSIINTERPOLATOR_H)
+#define	RSSIINTERPOLATOR_H
 
-#include "DMRLC.h"
+#include <cstdint>
+#include <string>
+#include <map>
 
-class CDMRAccessControl {
+class CRSSIInterpolator {
 public:
-	static bool validateId(unsigned int id);
+	CRSSIInterpolator();
+	~CRSSIInterpolator();
 
-	static void init(const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& whitelist, bool selfOnly, const std::vector<unsigned int>& prefixes, unsigned int id);
+	bool load(const std::string& filename);
 	
-private:
-	static std::vector<unsigned int> m_blackList;
-	static std::vector<unsigned int> m_whiteList;
-
-	static std::vector<unsigned int> m_prefixes;
+	int interpolate(uint16_t raw) const;
 	
-	static bool m_selfOnly;
-	static unsigned int m_id;
+private:	
+	std::map<uint16_t, int> m_map;
 };
 
 #endif

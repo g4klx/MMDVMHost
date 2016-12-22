@@ -91,8 +91,7 @@ m_modemDMRTXLevel(50U),
 m_modemYSFTXLevel(50U),
 m_modemP25TXLevel(50U),
 m_modemOscOffset(0),
-m_modemRSSIMultiplier(0),
-m_modemRSSIOffset(0),
+m_modemRSSIMappingFile(),
 m_modemDebug(false),
 m_umpEnabled(false),
 m_umpPort(),
@@ -105,20 +104,9 @@ m_dmrBeacons(false),
 m_dmrId(0U),
 m_dmrColorCode(2U),
 m_dmrSelfOnly(false),
-m_dmrTGRewriteSlot1(false),
-m_dmrTGRewriteSlot2(false),
-m_dmrBMAutoRewrite(false),
-m_dmrBMRewriteReflectorVoicePrompts(false),
 m_dmrPrefixes(),
 m_dmrBlackList(),
-m_dmrDstIdBlacklistSlot1RF(),
-m_dmrDstIdBlacklistSlot2RF(),
-m_dmrDstIdWhitelistSlot1RF(),
-m_dmrDstIdWhitelistSlot2RF(),
-m_dmrDstIdBlacklistSlot1NET(),
-m_dmrDstIdBlacklistSlot2NET(),
-m_dmrDstIdWhitelistSlot1NET(),
-m_dmrDstIdWhitelistSlot2NET(),
+m_dmrWhiteList(),
 m_dmrCallHang(3U),
 m_dmrTXHang(4U),
 m_fusionEnabled(false),
@@ -338,10 +326,8 @@ bool CConf::read()
 			m_modemP25TXLevel = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "OscOffset") == 0)
 			m_modemOscOffset = ::atoi(value);
-		else if (::strcmp(key, "RSSIMultiplier") == 0)
-			m_modemRSSIMultiplier = ::atoi(value);
-		else if (::strcmp(key, "RSSIOffset") == 0)
-			m_modemRSSIOffset = ::atoi(value);
+		else if (::strcmp(key, "RSSIMappingFile") == 0)
+			m_modemRSSIMappingFile = value;
 		else if (::strcmp(key, "Debug") == 0)
 			m_modemDebug = ::atoi(value) == 1;
 	} else if (section == SECTION_UMP) {
@@ -399,82 +385,18 @@ bool CConf::read()
 					m_dmrBlackList.push_back(id);
 				p = ::strtok(NULL, ",\r\n");
 			}
-		}  else if (::strcmp(key, "DstIdBlackListSlot1RF") == 0) {
+		} else if (::strcmp(key, "WhiteList") == 0) {
 			char* p = ::strtok(value, ",\r\n");
 			while (p != NULL) {
 				unsigned int id = (unsigned int)::atoi(p);
 				if (id > 0U)
-					m_dmrDstIdBlacklistSlot1RF.push_back(id);
-				p = ::strtok(NULL, ",\r\n");
-			}	
-		} else if (::strcmp(key, "DstIdBlackListSlot2RF") == 0) {
-			char* p = ::strtok(value, ",\r\n");
-			while (p != NULL) {
-				unsigned int id = (unsigned int)::atoi(p);
-				if (id > 0U)
-					m_dmrDstIdBlacklistSlot2RF.push_back(id);
-				p = ::strtok(NULL, ",\r\n");
-			}
-		} else if (::strcmp(key, "DstIdWhiteListSlot1RF") == 0) {
-			char* p = ::strtok(value, ",\r\n");
-			while (p != NULL) {
-				unsigned int id = (unsigned int)::atoi(p);
-				if (id > 0U)
-					m_dmrDstIdWhitelistSlot1RF.push_back(id);
-				p = ::strtok(NULL, ",\r\n");
-			}
-		} else if (::strcmp(key, "DstIdWhiteListSlot2RF") == 0) {
-			char* p = ::strtok(value, ",\r\n");
-			while (p != NULL) {
-				unsigned int id = (unsigned int)::atoi(p);
-				if (id > 0U)
-					m_dmrDstIdWhitelistSlot2RF.push_back(id);
-				p = ::strtok(NULL, ",\r\n");
-			}
-		}  else if (::strcmp(key, "DstIdBlackListSlot1NET") == 0) {
-			char* p = ::strtok(value, ",\r\n");
-			while (p != NULL) {
-				unsigned int id = (unsigned int)::atoi(p);
-				if (id > 0U)
-					m_dmrDstIdBlacklistSlot1NET.push_back(id);
-				p = ::strtok(NULL, ",\r\n");
-			}	
-		} else if (::strcmp(key, "DstIdBlackListSlot2NET") == 0) {
-			char* p = ::strtok(value, ",\r\n");
-			while (p != NULL) {
-				unsigned int id = (unsigned int)::atoi(p);
-				if (id > 0U)
-					m_dmrDstIdBlacklistSlot2NET.push_back(id);
-				p = ::strtok(NULL, ",\r\n");
-			}
-		} else if (::strcmp(key, "DstIdWhiteListSlot1NET") == 0) {
-			char* p = ::strtok(value, ",\r\n");
-			while (p != NULL) {
-				unsigned int id = (unsigned int)::atoi(p);
-				if (id > 0U)
-					m_dmrDstIdWhitelistSlot1NET.push_back(id);
-				p = ::strtok(NULL, ",\r\n");
-			}
-		} else if (::strcmp(key, "DstIdWhiteListSlot2NET") == 0) {
-			char* p = ::strtok(value, ",\r\n");
-			while (p != NULL) {
-				unsigned int id = (unsigned int)::atoi(p);
-				if (id > 0U)
-					m_dmrDstIdWhitelistSlot2NET.push_back(id);
+					m_dmrWhiteList.push_back(id);
 				p = ::strtok(NULL, ",\r\n");
 			}
 		} else if (::strcmp(key, "TXHang") == 0)
 			m_dmrTXHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "CallHang") == 0)
 			m_dmrCallHang = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "TGRewriteSlot1") == 0)
-			m_dmrTGRewriteSlot1 = ::atoi(value) == 1;
-		else if (::strcmp(key, "TGRewriteSlot2") == 0)
-			m_dmrTGRewriteSlot2 = ::atoi(value) == 1;
-		else if (::strcmp(key, "BMAutoRewrite") == 0)
-			m_dmrBMAutoRewrite = ::atoi(value) == 1;
-		else if (::strcmp(key, "BMRewriteReflectorVoicePrompts") == 0)
-			m_dmrBMRewriteReflectorVoicePrompts = ::atoi(value) == 1;
 	} else if (section == SECTION_FUSION) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fusionEnabled = ::atoi(value) == 1;
@@ -799,14 +721,9 @@ int CConf::getModemOscOffset() const
 	return m_modemOscOffset;
 }
 
-int CConf::getModemRSSIMultiplier () const
+std::string CConf::getModemRSSIMappingFile () const
 {
-	return m_modemRSSIMultiplier;
-}
-
-int CConf::getModemRSSIOffset() const
-{
-	return m_modemRSSIOffset;
+	return m_modemRSSIMappingFile;
 }
 
 bool CConf::getModemDebug() const
@@ -869,26 +786,6 @@ bool CConf::getDMRSelfOnly() const
 	return m_dmrSelfOnly;
 }
 
-bool CConf::getDMRTGRewriteSlot1() const
-{
-	return m_dmrTGRewriteSlot1;
-}
-
-bool CConf::getDMRTGRewriteSlot2() const
-{
-	return m_dmrTGRewriteSlot2;
-}
-
-bool CConf::getDMRBMAutoRewrite() const
-{
-	return m_dmrBMAutoRewrite;
-}
-
-bool CConf::getDMRBMRewriteReflectorVoicePrompts() const
-{
-	return m_dmrBMRewriteReflectorVoicePrompts;
-}
-
 std::vector<unsigned int> CConf::getDMRPrefixes() const
 {
 	return m_dmrPrefixes;
@@ -899,44 +796,9 @@ std::vector<unsigned int> CConf::getDMRBlackList() const
 	return m_dmrBlackList;
 }
 
-std::vector<unsigned int> CConf::getDMRDstIdBlacklistSlot1RF() const
+std::vector<unsigned int> CConf::getDMRWhiteList() const
 {
-	return m_dmrDstIdBlacklistSlot1RF;
-}
-
-std::vector<unsigned int> CConf::getDMRDstIdBlacklistSlot2RF() const
-{
-	return m_dmrDstIdBlacklistSlot2RF;
-}
-
-std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot1RF() const
-{
-	return m_dmrDstIdWhitelistSlot1RF;
-}
-
-std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot2RF() const
-{
-	return m_dmrDstIdWhitelistSlot2RF;
-}
-
-std::vector<unsigned int> CConf::getDMRDstIdBlacklistSlot1NET() const
-{
-	return m_dmrDstIdBlacklistSlot1NET;
-}
-
-std::vector<unsigned int> CConf::getDMRDstIdBlacklistSlot2NET() const
-{
-	return m_dmrDstIdBlacklistSlot2NET;
-}
-
-std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot1NET() const
-{
-	return m_dmrDstIdWhitelistSlot1NET;
-}
-
-std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot2NET() const
-{
-	return m_dmrDstIdWhitelistSlot2NET;
+	return m_dmrWhiteList;
 }
 
 unsigned int CConf::getDMRCallHang() const

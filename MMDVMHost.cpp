@@ -17,6 +17,7 @@
  */
 
 #include "MMDVMHost.h"
+#include "RSSIInterpolator.h"
 #include "SerialController.h"
 #include "ModemSerialPort.h"
 #include "Version.h"
@@ -331,28 +332,16 @@ int CMMDVMHost::run()
 
 	CDMRControl* dmr = NULL;
 	if (m_dmrEnabled) {
-		unsigned int id        = m_conf.getDMRId();
-		unsigned int colorCode = m_conf.getDMRColorCode();
-		bool selfOnly          = m_conf.getDMRSelfOnly();
-		bool tgRewriteSlot1    = m_conf.getDMRTGRewriteSlot1();
-		bool tgRewriteSlot2    = m_conf.getDMRTGRewriteSlot2();
-		bool bmAutoRewrite     = m_conf.getDMRBMAutoRewrite();
-		bool bmRewriteReflectorVoicePrompts = m_conf.getDMRBMRewriteReflectorVoicePrompts();
+		unsigned int id             = m_conf.getDMRId();
+		unsigned int colorCode      = m_conf.getDMRColorCode();
+		bool selfOnly               = m_conf.getDMRSelfOnly();
 		std::vector<unsigned int> prefixes  = m_conf.getDMRPrefixes();
 		std::vector<unsigned int> blackList = m_conf.getDMRBlackList();
-		std::vector<unsigned int> dstIDBlackListSlot1RF = m_conf.getDMRDstIdBlacklistSlot1RF();
-		std::vector<unsigned int> dstIDBlackListSlot2RF = m_conf.getDMRDstIdBlacklistSlot2RF();
-		std::vector<unsigned int> dstIDWhiteListSlot1RF = m_conf.getDMRDstIdWhitelistSlot1RF();
-		std::vector<unsigned int> dstIDWhiteListSlot2RF = m_conf.getDMRDstIdWhitelistSlot2RF();
-		std::vector<unsigned int> dstIDBlackListSlot1NET = m_conf.getDMRDstIdBlacklistSlot1NET();
-		std::vector<unsigned int> dstIDBlackListSlot2NET = m_conf.getDMRDstIdBlacklistSlot2NET();
-		std::vector<unsigned int> dstIDWhiteListSlot1NET = m_conf.getDMRDstIdWhitelistSlot1NET();
-		std::vector<unsigned int> dstIDWhiteListSlot2NET = m_conf.getDMRDstIdWhitelistSlot2NET();
-		unsigned int callHang  = m_conf.getDMRCallHang();
-		unsigned int txHang    = m_conf.getDMRTXHang();
-		int rssiMultiplier     = m_conf.getModemRSSIMultiplier();
-		int rssiOffset         = m_conf.getModemRSSIOffset();
-		unsigned int jitter    = m_conf.getDMRNetworkJitter();
+		std::vector<unsigned int> whiteList = m_conf.getDMRWhiteList();
+		unsigned int callHang       = m_conf.getDMRCallHang();
+		unsigned int txHang         = m_conf.getDMRTXHang();
+		std::string rssiMappingFile = m_conf.getModemRSSIMappingFile();
+		unsigned int jitter         = m_conf.getDMRNetworkJitter();
 
 		if (txHang > m_rfModeHang)
 			txHang = m_rfModeHang;
@@ -370,41 +359,19 @@ int CMMDVMHost::run()
 		
 		if (blackList.size() > 0U)
 			LogInfo("    Source ID Black List: %u", blackList.size());
-		if (dstIDBlackListSlot1RF.size() > 0U)
-			LogInfo("    Slot 1 RF Destination ID Black List: %u entries", dstIDBlackListSlot1RF.size());
-		if (dstIDBlackListSlot2RF.size() > 0U)
-			LogInfo("    Slot 2 RF Destination ID Black List: %u entries", dstIDBlackListSlot2RF.size());
-		if (dstIDWhiteListSlot1RF.size() > 0U)
-			LogInfo("    Slot 1 RF Destination ID White List: %u entries", dstIDWhiteListSlot1RF.size());
-		if (dstIDWhiteListSlot2RF.size() > 0U)
-			LogInfo("    Slot 2 RF Destination ID White List: %u entries", dstIDWhiteListSlot2RF.size());
-		if (dstIDBlackListSlot1NET.size() > 0U)
-			LogInfo("    Slot 1 NET Destination ID Black List: %u entries", dstIDBlackListSlot1NET.size());
-		if (dstIDBlackListSlot2NET.size() > 0U)
-			LogInfo("    Slot 2 NET Destination ID Black List: %u entries", dstIDBlackListSlot2NET.size());
-		if (dstIDWhiteListSlot1NET.size() > 0U)
-			LogInfo("    Slot 1 NET Destination ID White List: %u entries", dstIDWhiteListSlot1NET.size());
-		if (dstIDWhiteListSlot2NET.size() > 0U)
-			LogInfo("    Slot 2 NET Destination ID White List: %u entries", dstIDWhiteListSlot2NET.size());
-		
+		if (whiteList.size() > 0U)
+			LogInfo("    Source ID White List: %u", whiteList.size());
+
 		LogInfo("    Call Hang: %us", callHang);
 		LogInfo("    TX Hang: %us", txHang);
 
-		if (rssiMultiplier != 0) {
-			LogInfo("    RSSI Multiplier: %d", rssiMultiplier);
-			LogInfo("    RSSI Offset: %d", rssiOffset);
+		CRSSIInterpolator* rssi = new CRSSIInterpolator;
+		if (!rssiMappingFile.empty()) {
+			LogInfo("    RSSI Mapping File: %s", rssiMappingFile.c_str());
+			rssi->load(rssiMappingFile);
 		}
-		
-		if (tgRewriteSlot1)
-		  LogInfo("    TG Rewrite Slot 1 enabled");
-		if (tgRewriteSlot2)
-		  LogInfo("    TG Rewrite Slot 2 enabled");
-		if (bmAutoRewrite)
-		  LogInfo("    BrandMeister Auto Rewrite enabled");
-		if (bmRewriteReflectorVoicePrompts)
-		  LogInfo("    BrandMeister Rewrite Reflector Voice Prompts enabled");
-		
-		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList, dstIDBlackListSlot1RF, dstIDWhiteListSlot1RF, dstIDBlackListSlot2RF, dstIDWhiteListSlot2RF, dstIDBlackListSlot1NET,dstIDWhiteListSlot1NET, dstIDBlackListSlot2NET, dstIDWhiteListSlot2NET, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_lookup, rssiMultiplier, rssiOffset, jitter, tgRewriteSlot1, tgRewriteSlot2, bmAutoRewrite, bmRewriteReflectorVoicePrompts);
+
+		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList, whiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_lookup, rssi, jitter);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}

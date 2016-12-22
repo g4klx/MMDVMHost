@@ -19,6 +19,7 @@
 #if !defined(DMRSlot_H)
 #define	DMRSlot_H
 
+#include "RSSIInterpolator.h"
 #include "DMREmbeddedLC.h"
 #include "DMRDataHeader.h"
 #include "DMRNetwork.h"
@@ -50,7 +51,7 @@ public:
 
 	void clock();
 
-	static void init(unsigned int colorCode, unsigned int callHang, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, int rssiMultiplier, int rssiOffset, unsigned int jitter);
+	static void init(unsigned int colorCode, unsigned int callHang, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter);
 
 private:
 	unsigned int               m_slotNo;
@@ -95,8 +96,7 @@ private:
 	static CDMRLookup*         m_lookup;
 	static unsigned int        m_hangCount;
 
-	static int                 m_rssiMultiplier;
-	static int                 m_rssiOffset;
+	static CRSSIInterpolator*  m_rssiMapper;
 
 	static unsigned int        m_jitterTime;
 	static unsigned int        m_jitterSlots;
