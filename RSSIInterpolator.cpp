@@ -52,8 +52,8 @@ bool CRSSIInterpolator::load(const std::string& filename)
 		char* p2 = ::strtok(NULL,   " \t\r\n");
 
 		if (p1 != NULL && p2 != NULL) {
-			uint16_t raw = (unsigned int)::atoi(p1);
-			int rssi = ::atoi(p2);
+			uint16_t raw = uint16_t(::atoi(p1));
+			int     rssi = ::atoi(p2);
 			m_map.insert(std::pair<uint16_t, int>(raw, rssi));
 		}
 	}
