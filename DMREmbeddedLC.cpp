@@ -30,7 +30,8 @@ CDMREmbeddedLC::CDMREmbeddedLC() :
 m_rawLC(NULL),
 m_state(LCS_NONE)
 {
-	m_rawLC = new bool[128U];
+	// Allow for multi-block non embedded LC data
+	m_rawLC = new bool[300U];
 }
 
 CDMREmbeddedLC::~CDMREmbeddedLC()

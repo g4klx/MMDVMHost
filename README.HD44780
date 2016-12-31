@@ -32,8 +32,8 @@ The wiring ist as follows:
   D5  12  --------  12 GPIO1 (1)
   D6  13  --------  13 GPIO2 (2)
   D7  14  --------  15 GPIO3 (3)
-  GND 15  --------   6 GND
-  VCC 16  --------   2 +5V
+  VCC 15  --------   2 +5V
+  GND 16  --------   6 GND
 
 The relevant part in the MMDVM.ini is like outlined below.
 
