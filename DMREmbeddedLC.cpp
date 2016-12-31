@@ -258,7 +258,28 @@ CDMRLC* CDMREmbeddedLC::processMultiBlockEmbeddedLC()
 	case FLCO_GROUP:
 	case FLCO_USER_USER:
 		return lc;
+	case FLCO_GPS_INFO:
+		CUtils::dump(1U, "DMR, Embedded GPS Info", lcData, 72U);
+		delete lc;
+		return NULL;
+	case FLCO_TALKER_ALIAS_HEADER:
+		CUtils::dump(1U, "DMR, Embedded Talker Alias Header", lcData, 72U);
+		delete lc;
+		return NULL;
+	case FLCO_TALKER_ALIAS_BLOCK1:
+		CUtils::dump(1U, "DMR, Embedded Talker Alias Block 1", lcData, 72U);
+		delete lc;
+		return NULL;
+	case FLCO_TALKER_ALIAS_BLOCK2:
+		CUtils::dump(1U, "DMR, Embedded Talker Alias Block 2", lcData, 72U);
+		delete lc;
+		return NULL;
+	case FLCO_TALKER_ALIAS_BLOCK3:
+		CUtils::dump(1U, "DMR, Embedded Talker Alias Block 3", lcData, 72U);
+		delete lc;
+		return NULL;
 	default:
+		CUtils::dump(1U, "DMR, Unknown Embedded Data", lcData, 72U);
 		delete lc;
 		return NULL;
 	}
