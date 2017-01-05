@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -297,6 +297,16 @@ int CMMDVMHost::run()
 	CTimer dmrBeaconTimer(1000U, 4U);
 	bool dmrBeaconsEnabled = m_dmrEnabled && m_conf.getDMRBeacons();
 
+	// For all modes we handle RSSI
+	std::string rssiMappingFile = m_conf.getModemRSSIMappingFile();
+
+	CRSSIInterpolator* rssi = new CRSSIInterpolator;
+	if (!rssiMappingFile.empty()) {
+		LogInfo("RSSI");
+		LogInfo("    Mapping File: %s", rssiMappingFile.c_str());
+		rssi->load(rssiMappingFile);
+	}
+
 	// For DMR and P25 we try to map IDs to callsigns
 	if (m_dmrEnabled || m_p25Enabled) {
 		std::string lookupFile  = m_conf.getDMRIdLookupFile();
@@ -327,7 +337,7 @@ int CMMDVMHost::run()
 		if (blackList.size() > 0U)
 			LogInfo("    Black List: %u", blackList.size());
 
-		dstar = new CDStarControl(m_callsign, module, selfOnly, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex);
+		dstar = new CDStarControl(m_callsign, module, selfOnly, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex, rssi);
 	}
 
 	CDMRControl* dmr = NULL;
@@ -338,9 +348,10 @@ int CMMDVMHost::run()
 		std::vector<unsigned int> prefixes  = m_conf.getDMRPrefixes();
 		std::vector<unsigned int> blackList = m_conf.getDMRBlackList();
 		std::vector<unsigned int> whiteList = m_conf.getDMRWhiteList();
-		unsigned int callHang       = m_conf.getDMRCallHang();
+		std::vector<unsigned int> slot1TGWhiteList = m_conf.getDMRSlot1TGWhiteList();
+		std::vector<unsigned int> slot2TGWhiteList = m_conf.getDMRSlot2TGWhiteList();
+		unsigned int callHang = m_conf.getDMRCallHang();
 		unsigned int txHang         = m_conf.getDMRTXHang();
-		std::string rssiMappingFile = m_conf.getModemRSSIMappingFile();
 		unsigned int jitter         = m_conf.getDMRNetworkJitter();
 
 		if (txHang > m_rfModeHang)
@@ -361,17 +372,15 @@ int CMMDVMHost::run()
 			LogInfo("    Source ID Black List: %u", blackList.size());
 		if (whiteList.size() > 0U)
 			LogInfo("    Source ID White List: %u", whiteList.size());
+		if (slot1TGWhiteList.size() > 0U)
+			LogInfo("    Slot 1 TG White List: %u", slot1TGWhiteList.size());
+		if (slot2TGWhiteList.size() > 0U)
+			LogInfo("    Slot 2 TG White List: %u", slot2TGWhiteList.size());
 
 		LogInfo("    Call Hang: %us", callHang);
 		LogInfo("    TX Hang: %us", txHang);
 
-		CRSSIInterpolator* rssi = new CRSSIInterpolator;
-		if (!rssiMappingFile.empty()) {
-			LogInfo("    RSSI Mapping File: %s", rssiMappingFile.c_str());
-			rssi->load(rssiMappingFile);
-		}
-
-		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList, whiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_lookup, rssi, jitter);
+		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_lookup, rssi, jitter);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}
@@ -383,7 +392,7 @@ int CMMDVMHost::run()
 		LogInfo("YSF Parameters");
 		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
 
-		ysf = new CYSFControl(m_callsign, m_ysfNetwork, m_display, m_timeout, m_duplex, remoteGateway);
+		ysf = new CYSFControl(m_callsign, m_ysfNetwork, m_display, m_timeout, m_duplex, remoteGateway, rssi);
 	}
 
 	CP25Control* p25 = NULL;
@@ -393,7 +402,7 @@ int CMMDVMHost::run()
 		LogInfo("P25 Parameters");
 		LogInfo("    NAC: $%03X", nac);
 
-		p25 = new CP25Control(nac, m_p25Network, m_display, m_timeout, m_duplex, m_lookup);
+		p25 = new CP25Control(nac, m_p25Network, m_display, m_timeout, m_duplex, m_lookup, rssi);
 	}
 
 	setMode(MODE_IDLE);
@@ -854,7 +863,6 @@ bool CMMDVMHost::createDMRNetwork()
 	unsigned int jitter  = m_conf.getDMRNetworkJitter();
 	bool slot1           = m_conf.getDMRNetworkSlot1();
 	bool slot2           = m_conf.getDMRNetworkSlot2();
-	bool rssi            = m_conf.getDMRNetworkRSSI();
 	HW_TYPE hwType       = m_modem->getHWType();
 
 	LogInfo("DMR Network Parameters");
@@ -867,9 +875,8 @@ bool CMMDVMHost::createDMRNetwork()
 	LogInfo("    Jitter: %ums", jitter);
 	LogInfo("    Slot 1: %s", slot1 ? "enabled" : "disabled");
 	LogInfo("    Slot 2: %s", slot2 ? "enabled" : "disabled");
-	LogInfo("    RSSI: %s", rssi ? "enabled" : "disabled");
 
-	m_dmrNetwork = new CDMRNetwork(address, port, local, id, password, m_duplex, VERSION, debug, slot1, slot2, rssi, hwType);
+	m_dmrNetwork = new CDMRNetwork(address, port, local, id, password, m_duplex, VERSION, debug, slot1, slot2, hwType);
 
 	std::string options = m_conf.getDMRNetworkOptions();
 	if (!options.empty()) {

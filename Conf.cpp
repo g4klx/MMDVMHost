@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -107,6 +107,8 @@ m_dmrSelfOnly(false),
 m_dmrPrefixes(),
 m_dmrBlackList(),
 m_dmrWhiteList(),
+m_dmrSlot1TGWhiteList(),
+m_dmrSlot2TGWhiteList(),
 m_dmrCallHang(3U),
 m_dmrTXHang(4U),
 m_fusionEnabled(false),
@@ -128,7 +130,6 @@ m_dmrNetworkDebug(false),
 m_dmrNetworkJitter(300U),
 m_dmrNetworkSlot1(true),
 m_dmrNetworkSlot2(true),
-m_dmrNetworkRSSI(false),
 m_fusionNetworkEnabled(false),
 m_fusionNetworkMyAddress(),
 m_fusionNetworkMyPort(0U),
@@ -393,6 +394,22 @@ bool CConf::read()
 					m_dmrWhiteList.push_back(id);
 				p = ::strtok(NULL, ",\r\n");
 			}
+		} else if (::strcmp(key, "Slot1TGWhiteList") == 0) {
+			char* p = ::strtok(value, ",\r\n");
+			while (p != NULL) {
+				unsigned int id = (unsigned int)::atoi(p);
+				if (id > 0U)
+					m_dmrSlot1TGWhiteList.push_back(id);
+				p = ::strtok(NULL, ",\r\n");
+			}
+		} else if (::strcmp(key, "Slot2TGWhiteList") == 0) {
+			char* p = ::strtok(value, ",\r\n");
+			while (p != NULL) {
+				unsigned int id = (unsigned int)::atoi(p);
+				if (id > 0U)
+					m_dmrSlot2TGWhiteList.push_back(id);
+				p = ::strtok(NULL, ",\r\n");
+			}
 		} else if (::strcmp(key, "TXHang") == 0)
 			m_dmrTXHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "CallHang") == 0)
@@ -439,8 +456,6 @@ bool CConf::read()
 			m_dmrNetworkSlot1 = ::atoi(value) == 1;
 		else if (::strcmp(key, "Slot2") == 0)
 			m_dmrNetworkSlot2 = ::atoi(value) == 1;
-		else if (::strcmp(key, "RSSI") == 0)
-			m_dmrNetworkRSSI = ::atoi(value) == 1;
 	} else if (section == SECTION_FUSION_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fusionNetworkEnabled = ::atoi(value) == 1;
@@ -801,6 +816,16 @@ std::vector<unsigned int> CConf::getDMRWhiteList() const
 	return m_dmrWhiteList;
 }
 
+std::vector<unsigned int> CConf::getDMRSlot1TGWhiteList() const
+{
+	return m_dmrSlot1TGWhiteList;
+}
+
+std::vector<unsigned int> CConf::getDMRSlot2TGWhiteList() const
+{
+	return m_dmrSlot2TGWhiteList;
+}
+
 unsigned int CConf::getDMRCallHang() const
 {
 	return m_dmrCallHang;
@@ -904,11 +929,6 @@ bool CConf::getDMRNetworkSlot1() const
 bool CConf::getDMRNetworkSlot2() const
 {
 	return m_dmrNetworkSlot2;
-}
-
-bool CConf::getDMRNetworkRSSI() const
-{
-	return m_dmrNetworkRSSI;
 }
 
 bool CConf::getFusionNetworkEnabled() const

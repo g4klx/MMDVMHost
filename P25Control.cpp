@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U
 #define WRITE_BIT(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
-CP25Control::CP25Control(unsigned int nac, CP25Network* network, CDisplay* display, unsigned int timeout, bool duplex, CDMRLookup* lookup) :
+CP25Control::CP25Control(unsigned int nac, CP25Network* network, CDisplay* display, unsigned int timeout, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper) :
 m_nac(nac),
 m_network(network),
 m_display(display),
@@ -63,10 +63,17 @@ m_netLDU1(NULL),
 m_netLDU2(NULL),
 m_lastIMBE(NULL),
 m_rfLDU(NULL),
+m_rssiMapper(rssiMapper),
+m_rssi(0U),
+m_maxRSSI(0U),
+m_minRSSI(0U),
+m_aveRSSI(0U),
+m_rssiCount(0U),
 m_fp(NULL)
 {
 	assert(display != NULL);
 	assert(lookup != NULL);
+	assert(rssiMapper != NULL);
 
 	m_netLDU1 = new unsigned char[9U * 25U];
 	m_netLDU2 = new unsigned char[9U * 25U];
@@ -101,7 +108,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		return false;
 
 	if (data[0U] == TAG_LOST) {
-		LogMessage("P25, transmission lost, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
+		LogMessage("P25, transmission lost, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 		if (m_netState == RS_NET_IDLE)
 			m_display->clearP25();
 		writeNetwork(m_rfLDU, m_lastDUID, true);
@@ -139,6 +146,28 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		}
 	}
 
+	// Have we got RSSI bytes on the end of a P25 LDU?
+	if (len == (P25_LDU_FRAME_LENGTH_BYTES + 4U)) {
+		uint16_t raw = 0U;
+		raw |= (data[218U] << 8) & 0xFF00U;
+		raw |= (data[219U] << 0) & 0x00FFU;
+
+		// Convert the raw RSSI to dBm
+		int rssi = m_rssiMapper->interpolate(raw);
+		LogDebug("P25, raw RSSI: %u, reported RSSI: %d dBm", raw, rssi);
+
+		// RSSI is always reported as positive
+		m_rssi = (rssi >= 0) ? rssi : -rssi;
+
+		if (m_rssi > m_minRSSI)
+			m_minRSSI = m_rssi;
+		if (m_rssi < m_maxRSSI)
+			m_maxRSSI = m_rssi;
+
+		m_aveRSSI += m_rssi;
+		m_rssiCount++;
+	}
+
 	if (duid == P25_DUID_LDU1) {
 		if (m_rfState == RS_RF_LISTENING) {
 			m_rfData.reset();
@@ -147,6 +176,11 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 				m_lastDUID = duid;
 				return false;
 			}
+
+			m_minRSSI = m_rssi;
+			m_maxRSSI = m_rssi;
+			m_aveRSSI = m_rssi;
+			m_rssiCount = 1U;
 
 			createRFHeader();
 			writeNetwork(data + 2U, P25_DUID_HEADER, false);
@@ -262,7 +296,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		m_rfData.reset();
 		m_lastDUID = duid;
 
-		LogMessage("P25, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
+		LogMessage("P25, received RF end of transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 		m_display->clearP25();
 
 #if defined(DUMP_P25)

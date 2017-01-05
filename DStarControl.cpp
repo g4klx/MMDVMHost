@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015,2016 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015,2016,2017 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ bool CallsignCompare(const std::string& arg, const unsigned char* my)
 
 // #define	DUMP_DSTAR
 
-CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, const std::vector<std::string>& blackList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex) :
+CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, const std::vector<std::string>& blackList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, CRSSIInterpolator* rssiMapper) :
 m_callsign(NULL),
 m_gateway(NULL),
 m_selfOnly(selfOnly),
@@ -70,9 +70,16 @@ m_rfErrs(0U),
 m_netErrs(0U),
 m_lastFrame(NULL),
 m_lastFrameValid(false),
+m_rssiMapper(rssiMapper),
+m_rssi(0U),
+m_maxRSSI(0U),
+m_minRSSI(0U),
+m_aveRSSI(0U),
+m_rssiCount(0U),
 m_fp(NULL)
 {
 	assert(display != NULL);
+	assert(rssiMapper != NULL);
 
 	m_callsign = new unsigned char[DSTAR_LONG_CALLSIGN_LENGTH];
 	m_gateway  = new unsigned char[DSTAR_LONG_CALLSIGN_LENGTH];
@@ -111,7 +118,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 	unsigned char type = data[0U];
 
 	if (type == TAG_LOST && m_rfState == RS_RF_AUDIO) {
-		LogMessage("D-Star, transmission lost, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+		LogMessage("D-Star, transmission lost, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 		writeEndRF();
 		return false;
 	}
@@ -119,6 +126,50 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 	if (type == TAG_LOST) {
 		m_rfState = RS_RF_LISTENING;
 		return false;
+	}
+
+	// Have we got RSSI bytes on the end of a D-Star header?
+	if (len == (DSTAR_HEADER_LENGTH_BYTES + 3U)) {
+		uint16_t raw = 0U;
+		raw |= (data[42U] << 8) & 0xFF00U;
+		raw |= (data[43U] << 0) & 0x00FFU;
+
+		// Convert the raw RSSI to dBm
+		int rssi = m_rssiMapper->interpolate(raw);
+		LogDebug("D-Star, raw RSSI: %u, reported RSSI: %d dBm", raw, rssi);
+
+		// RSSI is always reported as positive
+		m_rssi = (rssi >= 0) ? rssi : -rssi;
+
+		if (m_rssi > m_minRSSI)
+			m_minRSSI = m_rssi;
+		if (m_rssi < m_maxRSSI)
+			m_maxRSSI = m_rssi;
+
+		m_aveRSSI += m_rssi;
+		m_rssiCount++;
+	}
+
+	// Have we got RSSI bytes on the end of D-Star data?
+	if (len == (DSTAR_FRAME_LENGTH_BYTES + 3U)) {
+		uint16_t raw = 0U;
+		raw |= (data[13U] << 8) & 0xFF00U;
+		raw |= (data[14U] << 0) & 0x00FFU;
+
+		// Convert the raw RSSI to dBm
+		int rssi = m_rssiMapper->interpolate(raw);
+		LogDebug("D-Star, raw RSSI: %u, reported RSSI: %d dBm", raw, rssi);
+
+		// RSSI is always reported as positive
+		m_rssi = (rssi >= 0) ? rssi : -rssi;
+
+		if (m_rssi > m_minRSSI)
+			m_minRSSI = m_rssi;
+		if (m_rssi < m_maxRSSI)
+			m_maxRSSI = m_rssi;
+
+		m_aveRSSI += m_rssi;
+		m_rssiCount++;
 	}
 
 	if (type == TAG_HEADER) {
@@ -181,6 +232,11 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		m_rfFrames = 1U;
 		m_rfN = 0U;
 
+		m_minRSSI = m_rssi;
+		m_maxRSSI = m_rssi;
+		m_aveRSSI = m_rssi;
+		m_rssiCount = 1U;
+
 		if (m_duplex) {
 			// Modify the header
 			header.setRepeater(false);
@@ -217,7 +273,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			if (m_duplex)
 				writeQueueEOTRF();
 
-			LogMessage("D-Star, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+			LogMessage("D-Star, received RF end of transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 
 			writeEndRF();
 		}
@@ -327,6 +383,11 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 
 			m_rfN = 0U;
 			m_rfFrames = 1U;
+
+			m_minRSSI = m_rssi;
+			m_maxRSSI = m_rssi;
+			m_aveRSSI = m_rssi;
+			m_rssiCount = 1U;
 
 			if (m_duplex) {
 				unsigned char start[DSTAR_HEADER_LENGTH_BYTES + 1U];

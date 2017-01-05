@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #if !defined(P25Control_H)
 #define	P25Control_H
 
+#include "RSSIInterpolator.h"
 #include "P25LowSpeedData.h"
 #include "RingBuffer.h"
 #include "P25Network.h"
@@ -35,7 +36,7 @@
 
 class CP25Control {
 public:
-	CP25Control(unsigned int nac, CP25Network* network, CDisplay* display, unsigned int timeout, bool duplex, CDMRLookup* lookup);
+	CP25Control(unsigned int nac, CP25Network* network, CDisplay* display, unsigned int timeout, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper);
 	~CP25Control();
 
 	bool writeModem(unsigned char* data, unsigned int len);
@@ -45,34 +46,40 @@ public:
 	void clock(unsigned int ms);
 
 private:
-	unsigned int   m_nac;
-	CP25Network*   m_network;
-	CDisplay*      m_display;
-	bool           m_duplex;
-	CDMRLookup*    m_lookup;
+	unsigned int               m_nac;
+	CP25Network*               m_network;
+	CDisplay*                  m_display;
+	bool                       m_duplex;
+	CDMRLookup*                m_lookup;
 	CRingBuffer<unsigned char> m_queue;
-	RPT_RF_STATE   m_rfState;
-	RPT_NET_STATE  m_netState;
-	CTimer         m_rfTimeout;
-	CTimer         m_netTimeout;
-	CTimer         m_networkWatchdog;
-	unsigned int   m_rfFrames;
-	unsigned int   m_rfBits;
-	unsigned int   m_rfErrs;
-	unsigned int   m_netFrames;
-	unsigned int   m_netLost;
-	CP25NID        m_nid;
-	unsigned char  m_lastDUID;
-	CP25Audio      m_audio;
-	CP25Data       m_rfData;
-	CP25Data       m_netData;
-	CP25LowSpeedData m_rfLSD;
-	CP25LowSpeedData m_netLSD;
-	unsigned char* m_netLDU1;
-	unsigned char* m_netLDU2;
-	unsigned char* m_lastIMBE;
-	unsigned char* m_rfLDU;
-	FILE*          m_fp;
+	RPT_RF_STATE               m_rfState;
+	RPT_NET_STATE              m_netState;
+	CTimer                     m_rfTimeout;
+	CTimer                     m_netTimeout;
+	CTimer                     m_networkWatchdog;
+	unsigned int               m_rfFrames;
+	unsigned int               m_rfBits;
+	unsigned int               m_rfErrs;
+	unsigned int               m_netFrames;
+	unsigned int               m_netLost;
+	CP25NID                    m_nid;
+	unsigned char              m_lastDUID;
+	CP25Audio                  m_audio;
+	CP25Data                   m_rfData;
+	CP25Data                   m_netData;
+	CP25LowSpeedData           m_rfLSD;
+	CP25LowSpeedData           m_netLSD;
+	unsigned char*             m_netLDU1;
+	unsigned char*             m_netLDU2;
+	unsigned char*             m_lastIMBE;
+	unsigned char*             m_rfLDU;
+	CRSSIInterpolator*         m_rssiMapper;
+	unsigned char              m_rssi;
+	unsigned char              m_maxRSSI;
+	unsigned char              m_minRSSI;
+	unsigned int               m_aveRSSI;
+	unsigned int               m_rssiCount;
+	FILE*                      m_fp;
 
 	void writeQueueRF(const unsigned char* data, unsigned int length);
 	void writeQueueNet(const unsigned char* data, unsigned int length);
