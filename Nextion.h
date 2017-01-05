@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -42,15 +42,19 @@ protected:
   virtual void setLockoutInt();
 
   virtual void writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
+  virtual void writeDStarRSSIInt(unsigned char rssi);
   virtual void clearDStarInt();
 
   virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
+  virtual void writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi);
   virtual void clearDMRInt(unsigned int slotNo);
 
   virtual void writeFusionInt(const char* source, const char* dest, const char* type, const char* origin);
+  virtual void writeFusionRSSIInt(unsigned char rssi);
   virtual void clearFusionInt();
 
   virtual void writeP25Int(const char* source, bool group, unsigned int dest, const char* type);
+  virtual void writeP25RSSIInt(unsigned char rssi);
   virtual void clearP25Int();
 
   virtual void writeCWInt();
@@ -68,6 +72,8 @@ private:
   bool          m_utc;
   unsigned int  m_idleBrightness;
   CTimer        m_clockDisplayTimer;
+  unsigned int  m_rssiCount1;
+  unsigned int  m_rssiCount2;
 
   void sendCommand(const char* command);
 };

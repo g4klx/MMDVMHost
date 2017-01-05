@@ -233,6 +233,8 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			m_display->writeP25(source.c_str(), grp, dstId, "R");
 			m_rfState = RS_RF_AUDIO;
 		}
+
+		m_display->writeP25RSSI(m_rssi);
 	} else if (duid == P25_DUID_LDU2) {
 		if (m_rfState == RS_RF_LISTENING)
 			return false;
@@ -274,6 +276,8 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			data[1U] = 0x00U;
 			writeQueueRF(data, P25_LDU_FRAME_LENGTH_BYTES + 2U);
 		}
+
+		m_display->writeP25RSSI(m_rssi);
 	} else if (duid == P25_DUID_TERM || duid == P25_DUID_TERM_LC) {
 		if (m_rfState == RS_RF_LISTENING)
 			return false;

@@ -227,6 +227,7 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			if (m_netState == RS_NET_IDLE) {
 				setShortLC(m_slotNo, dstId, flco, true);
 				m_display->writeDMR(m_slotNo, src, flco == FLCO_GROUP, dst, "R");
+				m_display->writeDMRRSSI(m_slotNo, m_rssi);
 			}
 
 			LogMessage("DMR Slot %u, received RF voice header from %s to %s%s", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str());
@@ -337,6 +338,7 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			if (m_netState == RS_NET_IDLE) {
 				setShortLC(m_slotNo, dstId, gi ? FLCO_GROUP : FLCO_USER_USER, false);
 				m_display->writeDMR(m_slotNo, src, gi, dst, "R");
+				m_display->writeDMRRSSI(m_slotNo, m_rssi);
 			}
 
 			LogMessage("DMR Slot %u, received RF data header from %s to %s%s, %u blocks", m_slotNo, src.c_str(), gi ? "TG ": "", dst.c_str(), m_rfFrames);
@@ -475,6 +477,8 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				writeQueueRF(data);
 
 			writeNetworkRF(data, DT_VOICE_SYNC, errors);
+
+			m_display->writeDMRRSSI(m_slotNo, m_rssi);
 		} else if (m_rfState == RS_RF_LISTENING) {
 			m_rfEmbeddedLC.reset();
 			m_rfState = RS_RF_LATE_ENTRY;
@@ -614,6 +618,7 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				if (m_netState == RS_NET_IDLE) {
 					setShortLC(m_slotNo, dstId, flco, true);
 					m_display->writeDMR(m_slotNo, src, flco == FLCO_GROUP, dst, "R");
+					m_display->writeDMRRSSI(m_slotNo, m_rssi);
 				}
 
 				LogMessage("DMR Slot %u, received RF late entry from %s to %s%s", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str());

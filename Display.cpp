@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -84,6 +84,12 @@ void CDisplay::writeDStar(const char* my1, const char* my2, const char* your, co
 	writeDStarInt(my1, my2, your, type, reflector);
 }
 
+void CDisplay::writeDStarRSSI(unsigned char rssi)
+{
+	if (rssi != 0U)
+		writeDStarRSSIInt(rssi);
+}
+
 void CDisplay::clearDStar()
 {
 	if (m_timer1.hasExpired()) {
@@ -108,6 +114,12 @@ void CDisplay::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 	}
 
 	writeDMRInt(slotNo, src, group, dst, type);
+}
+
+void CDisplay::writeDMRRSSI(unsigned int slotNo, unsigned char rssi)
+{
+	if (rssi != 0U)
+		writeDMRRSSIInt(slotNo, rssi);
 }
 
 void CDisplay::clearDMR(unsigned int slotNo)
@@ -144,6 +156,12 @@ void CDisplay::writeFusion(const char* source, const char* dest, const char* typ
 	writeFusionInt(source, dest, type, origin);
 }
 
+void CDisplay::writeFusionRSSI(unsigned char rssi)
+{
+	if (rssi != 0U)
+		writeFusionRSSIInt(rssi);
+}
+
 void CDisplay::clearFusion()
 {
 	if (m_timer1.hasExpired()) {
@@ -164,6 +182,12 @@ void CDisplay::writeP25(const char* source, bool group, unsigned int dest, const
 	m_mode1 = MODE_IDLE;
 
 	writeP25Int(source, group, dest, type);
+}
+
+void CDisplay::writeP25RSSI(unsigned char rssi)
+{
+	if (rssi != 0U)
+		writeP25RSSIInt(rssi);
 }
 
 void CDisplay::clearP25()
@@ -234,5 +258,21 @@ void CDisplay::clock(unsigned int ms)
 }
 
 void CDisplay::clockInt(unsigned int ms)
+{
+}
+
+void CDisplay::writeDStarRSSIInt(unsigned char rssi)
+{
+}
+
+void CDisplay::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
+{
+}
+
+void CDisplay::writeFusionRSSIInt(unsigned char rssi)
+{
+}
+
+void CDisplay::writeP25RSSIInt(unsigned char rssi)
 {
 }

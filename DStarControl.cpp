@@ -259,8 +259,10 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 
 		m_rfState = RS_RF_AUDIO;
 
-		if (m_netState == RS_NET_IDLE)
+		if (m_netState == RS_NET_IDLE) {
 			m_display->writeDStar((char*)my1, (char*)my2, (char*)your, "R", "        ");
+			m_display->writeDStarRSSI(m_rssi);
+		}
 
 		LogMessage("D-Star, received RF header from %8.8s/%4.4s to %8.8s", my1, my2, your);
 	} else if (type == TAG_EOT) {
@@ -304,9 +306,11 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			if (::memcmp(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES) == 0)
 				m_rfN = 0U;
 
-			// Regenerate the sync
-			if (m_rfN == 0U)
+			// Regenerate the sync and send the RSSI data to the display
+			if (m_rfN == 0U) {
 				CSync::addDStarSync(data + 1U);
+				m_display->writeDStarRSSI(m_rssi);
+			}
 
 			LogDebug("D-Star, audio sequence no. %u, errs: %u/48", m_rfN, errors);
 
@@ -438,8 +442,10 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 
 			m_rfN = (m_rfN + 1U) % 21U;
 
-			if (m_netState == RS_NET_IDLE)
+			if (m_netState == RS_NET_IDLE) {
 				m_display->writeDStar((char*)my1, (char*)my2, (char*)your, "R", "        ");
+				m_display->writeDStarRSSI(m_rssi);
+			}
 
 			LogMessage("D-Star, received RF late entry from %8.8s/%4.4s to %8.8s", my1, my2, your);
 		}

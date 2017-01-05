@@ -219,6 +219,8 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 		}
 
 		m_rfFrames++;
+
+		m_display->writeFusionRSSI(m_rssi);
 	} else if (valid && fi == YSF_FI_TERMINATOR) {
 		CSync::addYSFSync(data + 2U);
 
@@ -348,6 +350,8 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 #endif
 
 		m_rfFrames++;
+
+		m_display->writeFusionRSSI(m_rssi);
 	} else {
 		CSync::addYSFSync(data + 2U);
 
@@ -363,6 +367,8 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 		writeFile(data + 2U);
 #endif
 		m_rfFrames++;
+
+		m_display->writeFusionRSSI(m_rssi);
 	}
 
 	return true;
