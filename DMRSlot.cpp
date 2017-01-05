@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015,2016 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015,2016,2017 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -58,7 +58,8 @@ m_slotNo(slotNo),
 m_queue(5000U, "DMR Slot"),
 m_rfState(RS_RF_LISTENING),
 m_netState(RS_NET_IDLE),
-m_rfEmbeddedLC(),
+m_rfEmbeddedLC(slotNo),
+m_netEmbeddedLC(slotNo),
 m_rfLC(NULL),
 m_netLC(NULL),
 m_rfDataHeader(),
@@ -176,6 +177,7 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			data[1U] = 0x00U;
 
 			m_rfTimeoutTimer.start();
+			m_rfEmbeddedLC.reset();
 
 			m_rfFrames = 0U;
 			m_rfSeqNo  = 0U;
@@ -433,11 +435,14 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
 
+			m_rfEmbeddedLC.reset();
+
 			if (m_duplex)
 				writeQueueRF(data);
 
 			writeNetworkRF(data, DT_VOICE_SYNC, errors);
 		} else if (m_rfState == RS_RF_LISTENING) {
+			m_rfEmbeddedLC.reset();
 			m_rfState = RS_RF_LATE_ENTRY;
 		}
 	} else {
@@ -457,6 +462,8 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				LogDebug("DMR Slot %u, audio sequence no. %u, errs: %u/141", m_slotNo, m_rfN, errors);
 				m_rfErrs += errors;
 			}
+
+			m_rfEmbeddedLC.addData(data + 2U, emb.getLCSS());
 
 			m_rfBits += 141U;
 
@@ -478,7 +485,8 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			if (colorCode != m_colorCode)
 				return;
 
-			CDMRLC* lc = m_rfEmbeddedLC.addData(data + 2U, emb.getLCSS());
+			m_rfEmbeddedLC.addData(data + 2U, emb.getLCSS());
+			CDMRLC* lc = m_rfEmbeddedLC.getLC();
 			if (lc != NULL) {
 				unsigned int srcId = lc->getSrcId();
 				unsigned int dstId = lc->getDstId();
@@ -778,6 +786,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		m_lastFrameValid = false;
 
 		m_netTimeoutTimer.start();
+		m_netEmbeddedLC.reset();
 
 		m_netFrames = 0U;
 		m_netLost = 0U;
@@ -823,6 +832,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			m_lastFrameValid = false;
 
 			m_netTimeoutTimer.start();
+			m_netEmbeddedLC.reset();
 
 			if (m_duplex) {
 				m_queue.clear();
@@ -1071,6 +1081,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 			writeQueueNet(data);
 
+			m_netEmbeddedLC.reset();
 			m_packetTimer.start();
 			m_elapsed.start();
 
@@ -1097,6 +1108,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		m_lastEMB.putData(data + 2U);
 		m_lastEMB.setColorCode(m_colorCode);
 		m_lastEMB.getData(data + 2U);
+
+		m_netEmbeddedLC.addData(data + 2U, m_lastEMB.getLCSS());
 
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #ifndef DMREmbeddedLC_H
 #define DMREmbeddedLC_H
 
+#include "DMRDefines.h"
 #include "DMRLC.h"
 
 enum LC_STATE {
@@ -31,20 +32,27 @@ enum LC_STATE {
 class CDMREmbeddedLC
 {
 public:
-	CDMREmbeddedLC();
+	CDMREmbeddedLC(unsigned int slotNo);
 	~CDMREmbeddedLC();
 
-	CDMRLC* addData(const unsigned char* data, unsigned char lcss);
+	bool addData(const unsigned char* data, unsigned char lcss);
+	CDMRLC* getLC() const;
 
 	void setData(const CDMRLC& lc);
+
 	unsigned char getData(unsigned char* data, unsigned char n) const;
 
-private:
-	bool*    m_rawLC;
-	LC_STATE m_state;
+	void reset();
 
-	CDMRLC* processMultiBlockEmbeddedLC();
-	void    processSingleBlockEmbeddedLC(const bool* data);
+private:
+	unsigned int m_slotNo;
+	bool*        m_raw;
+	LC_STATE     m_state;
+	bool*        m_data;
+	FLCO         m_FLCO;
+	bool         m_valid;
+
+	bool processEmbeddedData();
 };
 
 #endif

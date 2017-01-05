@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -59,6 +59,7 @@ private:
 	RPT_RF_STATE               m_rfState;
 	RPT_NET_STATE              m_netState;
 	CDMREmbeddedLC             m_rfEmbeddedLC;
+	CDMREmbeddedLC             m_netEmbeddedLC;
 	CDMRLC*                    m_rfLC;
 	CDMRLC*                    m_netLC;
 	CDMRDataHeader             m_rfDataHeader;
