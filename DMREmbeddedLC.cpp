@@ -265,8 +265,8 @@ bool CDMREmbeddedLC::processEmbeddedData()
 	switch (m_FLCO) {
 	case FLCO_GROUP:
 	case FLCO_USER_USER:
-		::sprintf(text, "DMR Slot %u, Embedded LC Data", m_slotNo);
-		CUtils::dump(1U, text, m_data, 72U);
+		// ::sprintf(text, "DMR Slot %u, Embedded LC Data", m_slotNo);
+		// CUtils::dump(1U, text, m_data, 72U);
 		return true;
 	case FLCO_GPS_INFO:
 		::sprintf(text, "DMR Slot %u, Embedded GPS Info", m_slotNo);
