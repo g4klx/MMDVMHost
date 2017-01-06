@@ -1651,7 +1651,7 @@ void CDMRSlot::insertSilence(unsigned int count)
 		if (n == 0U) {
 			CSync::addDMRAudioSync(data + 2U, m_duplex);
 		} else {
-			::memset(data + 2U + 13U, 0x00U, 7U);
+			m_netEmbeddedLC.getData(data + 2U, 0U);
 			emb.getData(data + 2U);
 		}
 
