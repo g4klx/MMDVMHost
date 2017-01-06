@@ -157,7 +157,7 @@ void CNextion::writeDStarRSSIInt(unsigned char rssi)
 {
 	if (m_rssiCount1 == 0U) {
 		char text[20U];
-		::sprintf(text, "t3.txt=\"-%u dBm\"", rssi);
+		::sprintf(text, "t3.txt=\"-%udBm\"", rssi);
 		sendCommand(text);
 	}
 
@@ -217,7 +217,7 @@ void CNextion::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
 	if (slotNo == 1U) {
 		if (m_rssiCount1 == 0U) {
 			char text[20U];
-			::sprintf(text, "t4.txt=\"-%u dBm\"", rssi);
+			::sprintf(text, "t4.txt=\"-%udBm\"", rssi);
 			sendCommand(text);
 		}
 
@@ -227,7 +227,7 @@ void CNextion::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
 	} else {
 		if (m_rssiCount2 == 0U) {
 			char text[20U];
-			::sprintf(text, "t5.txt=\"-%u dBm\"", rssi);
+			::sprintf(text, "t5.txt=\"-%udBm\"", rssi);
 			sendCommand(text);
 		}
 
@@ -284,7 +284,7 @@ void CNextion::writeFusionRSSIInt(unsigned char rssi)
 {
 	if (m_rssiCount1 == 0U) {
 		char text[20U];
-		::sprintf(text, "t3.txt=\"-%u dBm\"", rssi);
+		::sprintf(text, "t3.txt=\"-%udBm\"", rssi);
 		sendCommand(text);
 	}
 
@@ -329,7 +329,7 @@ void CNextion::writeP25RSSIInt(unsigned char rssi)
 {
 	if (m_rssiCount1 == 0U) {
 		char text[20U];
-		::sprintf(text, "t2.txt=\"-%u dBm\"", rssi);
+		::sprintf(text, "t2.txt=\"-%udBm\"", rssi);
 		sendCommand(text);
 	}
 
