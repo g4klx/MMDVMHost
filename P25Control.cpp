@@ -108,9 +108,14 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		return false;
 
 	if (data[0U] == TAG_LOST) {
-		LogMessage("P25, transmission lost, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+		if (m_rssi != 0U)
+			LogMessage("P25, transmission lost, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+		else
+			LogMessage("P25, transmission lost, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
+
 		if (m_netState == RS_NET_IDLE)
 			m_display->clearP25();
+
 		writeNetwork(m_rfLDU, m_lastDUID, true);
 		writeNetwork(data + 2U, P25_DUID_TERM, true);
 		m_rfState = RS_RF_LISTENING;
@@ -300,7 +305,11 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		m_rfData.reset();
 		m_lastDUID = duid;
 
-		LogMessage("P25, received RF end of transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+		if (m_rssi != 0U)
+			LogMessage("P25, received RF end of transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+		else
+			LogMessage("P25, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
+
 		m_display->clearP25();
 
 #if defined(DUMP_P25)
