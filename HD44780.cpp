@@ -650,13 +650,19 @@ void CHD44780::clearDMRInt(unsigned int slotNo)
 		if (slotNo == 1U) {
 			::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
 			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
-			::lcdPosition(m_fd, 0, 3);
-			::lcdPrintf(m_fd, "%.*s", m_cols / 2, " ");
+
+			if (m_rows > 2) { // clear slot 1 RSSI
+				::lcdPosition(m_fd, 0, 3);
+				::lcdPrintf(m_fd, "%.*s", m_cols / 2, " ");
+			}
 		} else {
 			::lcdPosition(m_fd, 0, (m_rows / 2));
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
-			::lcdPosition(m_fd, m_cols / 2, 3);
-			::lcdPrintf(m_fd, "%.*s", m_cols / 2, " ");
+
+			if (m_rows > 2) { // cleat slot 2 RSSI
+				::lcdPosition(m_fd, m_cols / 2, 3);
+				::lcdPrintf(m_fd, "%.*s", m_cols / 2, " ");
+			}
 		}
 	} else {
 
