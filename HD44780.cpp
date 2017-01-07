@@ -619,7 +619,7 @@ void CHD44780::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
 		if (slotNo == 1U) { 
 			if (m_rssiCount1 == 0U) { 
 				::lcdPosition(m_fd, 0, 3);
-				::lcdPrintf(m_fd, "S1:-%u""dBm", rssi);
+				::lcdPrintf(m_fd, "%3u dBm", rssi);
 			} 
 
 			m_rssiCount1++; 
@@ -628,7 +628,7 @@ void CHD44780::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
 		} else { 
 			if (m_rssiCount2 == 0U) { 
 				::lcdPosition(m_fd, (m_cols / 2), 3);
-				::lcdPrintf(m_fd, "S2:-%u""dBm", rssi);
+				::lcdPrintf(m_fd, "%3u dBm", rssi);
 			} 
 
 		m_rssiCount2++; 
@@ -650,9 +650,13 @@ void CHD44780::clearDMRInt(unsigned int slotNo)
 		if (slotNo == 1U) {
 			::lcdPosition(m_fd, 0, (m_rows / 2) - 1);
 			::lcdPrintf(m_fd, "1 %.*s", m_cols - 2U, LISTENING);
+			::lcdPosition(m_fd, 0, 3);
+			::lcdPrintf(m_fd, "%.*s", m_cols / 2, " ");
 		} else {
 			::lcdPosition(m_fd, 0, (m_rows / 2));
 			::lcdPrintf(m_fd, "2 %.*s", m_cols - 2U, LISTENING);
+			::lcdPosition(m_fd, m_cols / 2, 3);
+			::lcdPrintf(m_fd, "%.*s", m_cols / 2, " ");
 		}
 	} else {
 
