@@ -442,8 +442,8 @@ void CHD44780::writeDStarInt(const char* my1, const char* my2, const char* your,
 void CHD44780::writeDStarRSSIInt(unsigned char rssi) 
 { 
   if (m_rssiCount1 == 0U && m_rows > 2) { 
-		::lcdPosition(m_fd, 0, 2);
-		::lcdPrintf(m_fd, "%u", rssi);
+		::lcdPosition(m_fd, 0, 3);
+		::lcdPrintf(m_fd, "%u dBm", rssi);
   } 
  
   m_rssiCount1++; 
@@ -619,7 +619,7 @@ void CHD44780::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
 		if (slotNo == 1U) { 
 			if (m_rssiCount1 == 0U) { 
 				::lcdPosition(m_fd, 0, 3);
-				::lcdPrintf(m_fd, "1 %u", rssi);
+				::lcdPrintf(m_fd, "T1: %u dBm", rssi);
 			} 
 
 			m_rssiCount1++; 
@@ -628,7 +628,7 @@ void CHD44780::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
 		} else { 
 			if (m_rssiCount2 == 0U) { 
 				::lcdPosition(m_fd, (m_cols / 2), 3);
-				::lcdPrintf(m_fd, "2 %u", rssi);
+				::lcdPrintf(m_fd, "T2: %u dBm", rssi);
 			} 
 
 		m_rssiCount2++; 
@@ -733,7 +733,7 @@ void CHD44780::writeFusionRSSIInt(unsigned char rssi)
 { 
   if (m_rssiCount1 == 0U && m_rows > 2) { 
 		::lcdPosition(m_fd, 0, 3);
-		::lcdPrintf(m_fd, "%u", rssi);
+		::lcdPrintf(m_fd, "%u dBm", rssi);
   } 
  
   m_rssiCount1++; 
