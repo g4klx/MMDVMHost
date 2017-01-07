@@ -615,7 +615,7 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
  
 void CHD44780::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi) 
 { 
-	if (m_cols > 2) {
+	if (m_rows > 2) {
 		if (slotNo == 1U) { 
 			if (m_rssiCount1 == 0U) { 
 				::lcdPosition(m_fd, 0, 3);
