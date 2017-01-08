@@ -254,6 +254,8 @@ bool CDMREmbeddedLC::processEmbeddedData()
 	if (!CCRC::checkFiveBit(m_data, crc))
 		return false;
 
+	m_valid = true;
+
 	// Extract the FLCO
 	unsigned char flco;
 	CUtils::bitsToByteBE(m_data + 0U, flco);
