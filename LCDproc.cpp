@@ -352,15 +352,17 @@ void CLCDproc::clearDMRInt(unsigned int slotNo)
 	m_clockDisplayTimer.stop();           // Stop the clock display
 
 	if (m_duplex) {
-		if (slotNo == 1U)
+		if (slotNo == 1U) {
 			socketPrintf(m_socketfd, "widget_set DMR Slot1 3 %u %u %u h 3 \"Listening\"", m_rows / 2, m_cols - 1, m_rows / 2);
 			socketPrintf(m_socketfd, "widget_set DMR Slot1RSSI %u %u %*.s", 1, 4, m_cols / 2, "          ");
-		else
+		} else {
 			socketPrintf(m_socketfd, "widget_set DMR Slot2 3 %u %u %u h 3 \"Listening\"", m_rows / 2 + 1, m_cols - 1, m_rows / 2 + 1);
 			socketPrintf(m_socketfd, "widget_set DMR Slot2RSSI %u %u %*.s", (m_cols / 2) + 1, 4, m_cols / 2, "          ");
+		}
 	} else {
 		socketPrintf(m_socketfd, "widget_set DMR Slot1 1 2 15 2 h 3 Listening");
 		socketPrintf(m_socketfd, "widget_set DMR Slot2 1 3 15 3 h 3 \"\"");
+		socketPrintf(m_socketfd, "widget_set DMR Slot2RSSI %u %u %*.s", (m_cols / 2) + 1, 4, m_cols / 2, "          ");
 	}
 	socketPrintf(m_socketfd, "output 1"); // Set LED1 color green
 }
