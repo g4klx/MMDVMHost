@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -31,7 +31,6 @@
 #include "DMRData.h"
 #include "Display.h"
 #include "Defines.h"
-#include "DMREMB.h"
 #include "Timer.h"
 #include "Modem.h"
 #include "DMRLC.h"
@@ -59,6 +58,7 @@ private:
 	RPT_RF_STATE               m_rfState;
 	RPT_NET_STATE              m_netState;
 	CDMREmbeddedLC             m_rfEmbeddedLC;
+	CDMREmbeddedLC             m_netEmbeddedLC;
 	CDMRLC*                    m_rfLC;
 	CDMRLC*                    m_netLC;
 	CDMRDataHeader             m_rfDataHeader;
@@ -83,8 +83,11 @@ private:
 	unsigned int               m_netErrs;
 	unsigned char*             m_lastFrame;
 	bool                       m_lastFrameValid;
-	CDMREMB                    m_lastEMB;
 	unsigned char              m_rssi;
+	unsigned char              m_maxRSSI;
+	unsigned char              m_minRSSI;
+	unsigned int               m_aveRSSI;
+	unsigned int               m_rssiCount;
 	FILE*                      m_fp;
 
 	static unsigned int        m_colorCode;

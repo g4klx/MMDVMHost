@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2016 by Simon Rune G7RZU
- *   Copyright (C) 2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -28,20 +28,25 @@ std::vector<unsigned int> CDMRAccessControl::m_whiteList;
 
 std::vector<unsigned int> CDMRAccessControl::m_prefixes;
 
+std::vector<unsigned int> CDMRAccessControl::m_slot1TGWhiteList;
+std::vector<unsigned int> CDMRAccessControl::m_slot2TGWhiteList;
+
 bool CDMRAccessControl::m_selfOnly = false;
 
 unsigned int CDMRAccessControl::m_id = 0U;
 
-void CDMRAccessControl::init(const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& whitelist, bool selfOnly, const std::vector<unsigned int>& prefixes, unsigned int id)
+void CDMRAccessControl::init(const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& whitelist, const std::vector<unsigned int>& slot1TGWhitelist, const std::vector<unsigned int>& slot2TGWhitelist, bool selfOnly, const std::vector<unsigned int>& prefixes, unsigned int id)
 {
-	m_blackList = blacklist;
-	m_whiteList = whitelist;
-	m_selfOnly  = selfOnly;
-	m_prefixes  = prefixes;
-	m_id        = id;
+	m_slot1TGWhiteList = slot1TGWhitelist;
+	m_slot2TGWhiteList = slot2TGWhitelist;
+	m_blackList        = blacklist;
+	m_whiteList        = whitelist;
+	m_selfOnly         = selfOnly;
+	m_prefixes         = prefixes;
+	m_id               = id;
 }
  
-bool CDMRAccessControl::validateId(unsigned int id)
+bool CDMRAccessControl::validateSrcId(unsigned int id)
 {
 	if (m_selfOnly)
 		return id == m_id;
@@ -63,4 +68,22 @@ bool CDMRAccessControl::validateId(unsigned int id)
 		return std::find(m_whiteList.begin(), m_whiteList.end(), id) != m_whiteList.end();
 
 	return true;
+}
+
+bool CDMRAccessControl::validateTGId(unsigned int slotNo, bool group, unsigned int id)
+{
+	if (!group)
+		return true;
+
+	if (slotNo == 1U) {
+		if (m_slot1TGWhiteList.empty())
+			return true;
+
+		return std::find(m_slot1TGWhiteList.begin(), m_slot1TGWhiteList.end(), id) != m_slot1TGWhiteList.end();
+	} else {
+		if (m_slot2TGWhiteList.empty())
+			return true;
+
+		return std::find(m_slot2TGWhiteList.begin(), m_slot2TGWhiteList.end(), id) != m_slot2TGWhiteList.end();
+	}
 }

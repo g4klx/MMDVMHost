@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015,2016 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015,2016,2017 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #include <cassert>
 #include <algorithm>
 
-CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& whitelist, unsigned int timeout, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssi, unsigned int jitter) :
+CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& whitelist, const std::vector<unsigned int>& slot1TGWhitelist, const std::vector<unsigned int>& slot2TGWhitelist, unsigned int timeout, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssi, unsigned int jitter) :
 m_id(id),
 m_colorCode(colorCode),
 m_modem(modem),
@@ -37,7 +37,7 @@ m_lookup(lookup)
 	assert(rssi != NULL);
 
 	// Load black and white lists to DMRAccessControl
-	CDMRAccessControl::init(blacklist, whitelist, selfOnly, prefixes, id);
+	CDMRAccessControl::init(blacklist, whitelist, slot1TGWhitelist, slot2TGWhitelist, selfOnly, prefixes, id);
 
 	CDMRSlot::init(colorCode, callHang, modem, network, display, duplex, m_lookup, rssi, jitter);
 }
@@ -68,7 +68,7 @@ bool CDMRControl::processWakeup(const unsigned char* data)
 
 	std::string src = m_lookup->find(srcId);
 
-	bool ret = CDMRAccessControl::validateId(srcId);
+	bool ret = CDMRAccessControl::validateSrcId(srcId);
 	if (!ret) {
 		LogMessage("Invalid CSBK BS_Dwn_Act received from %s", src.c_str());
 		return false;

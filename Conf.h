@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -100,6 +100,8 @@ public:
   std::vector<unsigned int> getDMRPrefixes() const;
   std::vector<unsigned int> getDMRBlackList() const;
   std::vector<unsigned int> getDMRWhiteList() const;
+  std::vector<unsigned int> getDMRSlot1TGWhiteList() const;
+  std::vector<unsigned int> getDMRSlot2TGWhiteList() const;
   unsigned int getDMRCallHang() const;
   unsigned int getDMRTXHang() const;
 
@@ -129,7 +131,6 @@ public:
   unsigned int getDMRNetworkJitter() const;
   bool         getDMRNetworkSlot1() const;
   bool         getDMRNetworkSlot2() const;
-  bool         getDMRNetworkRSSI() const;
 
   // The System Fusion Network section
   bool         getFusionNetworkEnabled() const;
@@ -245,6 +246,8 @@ private:
   std::vector<unsigned int> m_dmrPrefixes;
   std::vector<unsigned int> m_dmrBlackList;
   std::vector<unsigned int> m_dmrWhiteList;
+  std::vector<unsigned int> m_dmrSlot1TGWhiteList;
+  std::vector<unsigned int> m_dmrSlot2TGWhiteList;
   unsigned int m_dmrCallHang;
   unsigned int m_dmrTXHang;
 
@@ -270,7 +273,6 @@ private:
   unsigned int m_dmrNetworkJitter;
   bool         m_dmrNetworkSlot1;
   bool         m_dmrNetworkSlot2;
-  bool         m_dmrNetworkRSSI;
 
   bool         m_fusionNetworkEnabled;
   std::string  m_fusionNetworkMyAddress;

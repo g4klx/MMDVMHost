@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015,2016 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015,2016,2017 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -11,6 +11,7 @@
  *	GNU General Public License for more details.
  */
 
+#include "DMRAccessControl.h"
 #include "DMRSlotType.h"
 #include "DMRShortLC.h"
 #include "DMRTrellis.h"
@@ -18,11 +19,11 @@
 #include "BPTC19696.h"
 #include "DMRSlot.h"
 #include "DMRCSBK.h"
+#include "DMREMB.h"
 #include "Utils.h"
 #include "Sync.h"
 #include "CRC.h"
 #include "Log.h"
-#include "DMRAccessControl.h"
 
 #include <cassert>
 #include <ctime>
@@ -58,7 +59,8 @@ m_slotNo(slotNo),
 m_queue(5000U, "DMR Slot"),
 m_rfState(RS_RF_LISTENING),
 m_netState(RS_NET_IDLE),
-m_rfEmbeddedLC(),
+m_rfEmbeddedLC(slotNo),
+m_netEmbeddedLC(slotNo),
 m_rfLC(NULL),
 m_netLC(NULL),
 m_rfDataHeader(),
@@ -83,8 +85,11 @@ m_rfErrs(0U),
 m_netErrs(0U),
 m_lastFrame(NULL),
 m_lastFrameValid(false),
-m_lastEMB(),
 m_rssi(0U),
+m_maxRSSI(0U),
+m_minRSSI(0U),
+m_aveRSSI(0U),
+m_rssiCount(0U),
 m_fp(NULL)
 {
 	m_lastFrame = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
@@ -102,13 +107,16 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 	assert(data != NULL);
 
 	if (data[0U] == TAG_LOST && m_rfState == RS_RF_AUDIO) {
-		LogMessage("DMR Slot %u, RF transmission lost, %.1f seconds, BER: %.1f%%", m_slotNo, float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
+		if (m_rssi != 0U)
+			LogMessage("DMR Slot %u, RF voice transmission lost, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_slotNo, float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+		else
+			LogMessage("DMR Slot %u, RF voice transmission lost, %.1f seconds, BER: %.1f%%", m_slotNo, float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
 		writeEndRF(true);
 		return;
 	}
 
 	if (data[0U] == TAG_LOST && m_rfState == RS_RF_DATA) {
-		LogMessage("DMR Slot %u, RF transmission lost", m_slotNo);
+		LogMessage("DMR Slot %u, RF data transmission lost", m_slotNo);
 		writeEndRF();
 		return;
 	}
@@ -130,6 +138,14 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 		// RSSI is always reported as positive
 		m_rssi = (rssi >= 0) ? rssi : -rssi;
+
+		if (m_rssi > m_minRSSI)
+			m_minRSSI = m_rssi;
+		if (m_rssi < m_maxRSSI)
+			m_maxRSSI = m_rssi;
+
+		m_aveRSSI += m_rssi;
+		m_rssiCount++;
 	}
 
 	bool dataSync  = (data[1U] & DMR_SYNC_DATA)  == DMR_SYNC_DATA;
@@ -154,11 +170,18 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			unsigned int srcId = lc->getSrcId();
 			unsigned int dstId = lc->getDstId();
+			FLCO flco = lc->getFLCO();
 
-			if (!CDMRAccessControl::validateId(srcId)) {
+			if (!CDMRAccessControl::validateSrcId(srcId)) {
 				LogMessage("DMR Slot %u, RF user %u rejected", m_slotNo, srcId);
 			    delete lc;
 			    return;
+			}
+
+			if (!CDMRAccessControl::validateTGId(m_slotNo, flco == FLCO_GROUP, dstId)) {
+				LogMessage("DMR Slot %u, RF user %u rejected for using TG %u", m_slotNo, srcId, dstId);
+				delete lc;
+				return;
 			}
 
 			m_rfLC = lc;
@@ -176,11 +199,17 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			data[1U] = 0x00U;
 
 			m_rfTimeoutTimer.start();
+			m_rfEmbeddedLC.reset();
 
 			m_rfFrames = 0U;
 			m_rfSeqNo  = 0U;
 			m_rfBits   = 1U;
 			m_rfErrs   = 0U;
+
+			m_minRSSI = m_rssi;
+			m_maxRSSI = m_rssi;
+			m_aveRSSI = m_rssi;
+			m_rssiCount = 1U;
 
 			if (m_duplex) {
 				m_queue.clear();
@@ -199,11 +228,12 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			std::string dst = m_lookup->find(dstId);
 
 			if (m_netState == RS_NET_IDLE) {
-				setShortLC(m_slotNo, dstId, m_rfLC->getFLCO(), true);
-				m_display->writeDMR(m_slotNo, src, m_rfLC->getFLCO() == FLCO_GROUP, dst, "R");
+				setShortLC(m_slotNo, dstId, flco, true);
+				m_display->writeDMR(m_slotNo, src, flco == FLCO_GROUP, dst, "R");
+				m_display->writeDMRRSSI(m_slotNo, m_rssi);
 			}
 
-			LogMessage("DMR Slot %u, received RF voice header from %s to %s%s", m_slotNo, src.c_str(), m_rfLC->getFLCO() == FLCO_GROUP ? "TG " : "", dst.c_str());
+			LogMessage("DMR Slot %u, received RF voice header from %s to %s%s", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str());
 		} else if (dataType == DT_VOICE_PI_HEADER) {
 			if (m_rfState != RS_RF_AUDIO)
 				return;
@@ -252,7 +282,10 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					writeQueueRF(data);
 			}
 
-			LogMessage("DMR Slot %u, received RF end of voice transmission, %.1f seconds, BER: %.1f%%", m_slotNo, float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
+			if (m_rssi != 0U)
+				LogMessage("DMR Slot %u, received RF end of voice transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_slotNo, float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			else
+				LogMessage("DMR Slot %u, received RF end of voice transmission, %.1f seconds, BER: %.1f%%", m_slotNo, float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
 
 			writeEndRF();
 		} else if (dataType == DT_DATA_HEADER) {
@@ -268,8 +301,13 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			unsigned int srcId = dataHeader.getSrcId();
 			unsigned int dstId = dataHeader.getDstId();
 
-			if (!CDMRAccessControl::validateId(srcId)) {
+			if (!CDMRAccessControl::validateSrcId(srcId)) {
 				LogMessage("DMR Slot %u, RF user %u rejected", m_slotNo, srcId);
+				return;
+			}
+
+			if (!CDMRAccessControl::validateTGId(m_slotNo, gi, dstId)) {
+				LogMessage("DMR Slot %u, RF user %u rejected for using TG %u", m_slotNo, srcId, dstId);
 				return;
 			}
 
@@ -306,6 +344,7 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			if (m_netState == RS_NET_IDLE) {
 				setShortLC(m_slotNo, dstId, gi ? FLCO_GROUP : FLCO_USER_USER, false);
 				m_display->writeDMR(m_slotNo, src, gi, dst, "R");
+				m_display->writeDMRRSSI(m_slotNo, m_rssi);
 			}
 
 			LogMessage("DMR Slot %u, received RF data header from %s to %s%s, %u blocks", m_slotNo, src.c_str(), gi ? "TG ": "", dst.c_str(), m_rfFrames);
@@ -327,8 +366,13 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			unsigned int dstId = csbk.getDstId();
 
 			if (srcId != 0U || dstId != 0U) {
-				if (!CDMRAccessControl::validateId(srcId)) {
+				if (!CDMRAccessControl::validateSrcId(srcId)) {
 					LogMessage("DMR Slot %u, RF user %u rejected", m_slotNo, srcId);
+					return;
+				}
+
+				if (!CDMRAccessControl::validateTGId(m_slotNo, gi, dstId)) {
+					LogMessage("DMR Slot %u, RF user %u rejected for using TG %u", m_slotNo, srcId, dstId);
 					return;
 				}
 			}
@@ -433,11 +477,16 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
 
+			m_rfEmbeddedLC.reset();
+
 			if (m_duplex)
 				writeQueueRF(data);
 
 			writeNetworkRF(data, DT_VOICE_SYNC, errors);
+
+			m_display->writeDMRRSSI(m_slotNo, m_rssi);
 		} else if (m_rfState == RS_RF_LISTENING) {
+			m_rfEmbeddedLC.reset();
 			m_rfState = RS_RF_LATE_ENTRY;
 		}
 	} else {
@@ -457,6 +506,8 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				LogDebug("DMR Slot %u, audio sequence no. %u, errs: %u/141", m_slotNo, m_rfN, errors);
 				m_rfErrs += errors;
 			}
+
+			m_rfEmbeddedLC.addData(data + 2U, emb.getLCSS());
 
 			m_rfBits += 141U;
 
@@ -478,15 +529,23 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			if (colorCode != m_colorCode)
 				return;
 
-			CDMRLC* lc = m_rfEmbeddedLC.addData(data + 2U, emb.getLCSS());
+			m_rfEmbeddedLC.addData(data + 2U, emb.getLCSS());
+			CDMRLC* lc = m_rfEmbeddedLC.getLC();
 			if (lc != NULL) {
 				unsigned int srcId = lc->getSrcId();
 				unsigned int dstId = lc->getDstId();
+				FLCO flco = lc->getFLCO();
 
-				if (!CDMRAccessControl::validateId(srcId)) {
+				if (!CDMRAccessControl::validateSrcId(srcId)) {
 					LogMessage("DMR Slot %u, RF user %u rejected", m_slotNo, srcId);
 					delete lc;
 				    return;
+				}
+
+				if (!CDMRAccessControl::validateTGId(m_slotNo, flco == FLCO_GROUP, dstId)) {
+					LogMessage("DMR Slot %u, RF user %u rejected for using TG %u", m_slotNo, srcId, dstId);
+					delete lc;
+					return;
 				}
 
 				m_rfLC = lc;
@@ -508,11 +567,17 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				start[1U] = 0x00U;
 
 				m_rfTimeoutTimer.start();
+				m_rfEmbeddedLC.reset();
 
 				m_rfFrames = 0U;
 				m_rfSeqNo  = 0U;
 				m_rfBits   = 1U;
 				m_rfErrs   = 0U;
+
+				m_minRSSI = m_rssi;
+				m_maxRSSI = m_rssi;
+				m_aveRSSI = m_rssi;
+				m_rssiCount = 1U;
 
 				if (m_duplex) {
 					m_queue.clear();
@@ -557,11 +622,12 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				std::string dst = m_lookup->find(dstId);
 
 				if (m_netState == RS_NET_IDLE) {
-					setShortLC(m_slotNo, dstId, m_rfLC->getFLCO(), true);
-					m_display->writeDMR(m_slotNo, src, m_rfLC->getFLCO() == FLCO_GROUP, dst, "R");
+					setShortLC(m_slotNo, dstId, flco, true);
+					m_display->writeDMR(m_slotNo, src, flco == FLCO_GROUP, dst, "R");
+					m_display->writeDMRRSSI(m_slotNo, m_rssi);
 				}
 
-				LogMessage("DMR Slot %u, received RF late entry from %s to %s%s", m_slotNo, src.c_str(), m_rfLC->getFLCO() == FLCO_GROUP ? "TG " : "", dst.c_str());
+				LogMessage("DMR Slot %u, received RF late entry from %s to %s%s", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str());
 			}
 		}
 	}
@@ -778,6 +844,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		m_lastFrameValid = false;
 
 		m_netTimeoutTimer.start();
+		m_netEmbeddedLC.reset();
 
 		m_netFrames = 0U;
 		m_netLost = 0U;
@@ -823,6 +890,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			m_lastFrameValid = false;
 
 			m_netTimeoutTimer.start();
+			m_netEmbeddedLC.reset();
 
 			if (m_duplex) {
 				m_queue.clear();
@@ -1071,6 +1139,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 			writeQueueNet(data);
 
+			m_netEmbeddedLC.reset();
 			m_packetTimer.start();
 			m_elapsed.start();
 
@@ -1094,9 +1163,12 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		m_netBits += 141U;
 
 		// Change the color code in the EMB
-		m_lastEMB.putData(data + 2U);
-		m_lastEMB.setColorCode(m_colorCode);
-		m_lastEMB.getData(data + 2U);
+		CDMREMB emb;
+		emb.putData(data + 2U);
+		emb.setColorCode(m_colorCode);
+		emb.getData(data + 2U);
+
+		m_netEmbeddedLC.addData(data + 2U, emb.getLCSS());
 
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
@@ -1569,6 +1641,10 @@ void CDMRSlot::insertSilence(unsigned int count)
 
 	unsigned char fid = m_netLC->getFID();
 
+	CDMREMB emb;
+	emb.setColorCode(m_colorCode);
+	emb.setLCSS(0U);
+
 	for (unsigned int i = 0U; i < count; i++) {
 		// Only use our silence frame if its AMBE audio data
 		if (fid == FID_ETSI || fid == FID_DMRA) {
@@ -1581,11 +1657,8 @@ void CDMRSlot::insertSilence(unsigned int count)
 		if (n == 0U) {
 			CSync::addDMRAudioSync(data + 2U, m_duplex);
 		} else {
-			::memset(data + 2U + 13U, 0x00U, 7U);
-
-			m_lastEMB.setColorCode(m_colorCode);
-			m_lastEMB.setLCSS(0U);
-			m_lastEMB.getData(data + 2U);
+			m_netEmbeddedLC.getData(data + 2U, 0U);
+			emb.getData(data + 2U);
 		}
 
 		writeQueueNet(data);

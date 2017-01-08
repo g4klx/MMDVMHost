@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2016 by Simon Rune G7RZU
- *   Copyright (C) 2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -20,20 +20,23 @@
 
 #include <vector>
 
-#include "DMRLC.h"
-
 class CDMRAccessControl {
 public:
-	static bool validateId(unsigned int id);
+	static bool validateSrcId(unsigned int id);
 
-	static void init(const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& whitelist, bool selfOnly, const std::vector<unsigned int>& prefixes, unsigned int id);
+	static bool validateTGId(unsigned int slotNo, bool group, unsigned int id);
+
+	static void init(const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& whitelist, const std::vector<unsigned int>& slot1TGWhitelist, const std::vector<unsigned int>& slot2TGWhitelist, bool selfOnly, const std::vector<unsigned int>& prefixes, unsigned int id);
 	
 private:
 	static std::vector<unsigned int> m_blackList;
 	static std::vector<unsigned int> m_whiteList;
 
 	static std::vector<unsigned int> m_prefixes;
-	
+
+	static std::vector<unsigned int> m_slot1TGWhiteList;
+	static std::vector<unsigned int> m_slot2TGWhiteList;
+
 	static bool m_selfOnly;
 	static unsigned int m_id;
 };

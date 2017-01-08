@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -25,6 +25,11 @@
 #include <ctime>
 #include <clocale>
 
+const unsigned int DSTAR_RSSI_COUNT = 3U;		// 3 * 420ms = 1260ms
+const unsigned int DMR_RSSI_COUNT   = 4U;		// 4 * 360ms = 1440ms
+const unsigned int YSF_RSSI_COUNT   = 13U;		// 13 * 100ms = 1300ms
+const unsigned int P25_RSSI_COUNT   = 7U;		// 7 * 180ms = 1260ms
+
 CNextion::CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness) :
 CDisplay(),
 m_callsign(callsign),
@@ -35,7 +40,9 @@ m_mode(MODE_IDLE),
 m_displayClock(displayClock),
 m_utc(utc),
 m_idleBrightness(idleBrightness),
-m_clockDisplayTimer(1000U, 0U, 400U)
+m_clockDisplayTimer(1000U, 0U, 400U),
+m_rssiCount1(0U),
+m_rssiCount2(0U)
 {
 	assert(serial != NULL);
 	assert(brightness >= 0U && brightness <= 100U);
@@ -143,6 +150,20 @@ void CNextion::writeDStarInt(const char* my1, const char* my2, const char* your,
 	m_clockDisplayTimer.stop();
 
 	m_mode = MODE_DSTAR;
+	m_rssiCount1 = 0U;
+}
+
+void CNextion::writeDStarRSSIInt(unsigned char rssi)
+{
+	if (m_rssiCount1 == 0U) {
+		char text[20U];
+		::sprintf(text, "t3.txt=\"-%udBm\"", rssi);
+		sendCommand(text);
+	}
+
+	m_rssiCount1++;
+	if (m_rssiCount1 >= DSTAR_RSSI_COUNT)
+		m_rssiCount1 = 0U;
 }
 
 void CNextion::clearDStarInt()
@@ -150,6 +171,7 @@ void CNextion::clearDStarInt()
 	sendCommand("t0.txt=\"Listening\"");
 	sendCommand("t1.txt=\"\"");
 	sendCommand("t2.txt=\"\"");
+	sendCommand("t3.txt=\"\"");
 }
 
 void CNextion::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
@@ -186,6 +208,33 @@ void CNextion::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 	m_clockDisplayTimer.stop();
 
 	m_mode = MODE_DMR;
+	m_rssiCount1 = 0U;
+	m_rssiCount2 = 0U;
+}
+
+void CNextion::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
+{
+	if (slotNo == 1U) {
+		if (m_rssiCount1 == 0U) {
+			char text[20U];
+			::sprintf(text, "t4.txt=\"-%udBm\"", rssi);
+			sendCommand(text);
+		}
+
+		m_rssiCount1++;
+		if (m_rssiCount1 >= DMR_RSSI_COUNT)
+			m_rssiCount1 = 0U;
+	} else {
+		if (m_rssiCount2 == 0U) {
+			char text[20U];
+			::sprintf(text, "t5.txt=\"-%udBm\"", rssi);
+			sendCommand(text);
+		}
+
+		m_rssiCount2++;
+		if (m_rssiCount2 >= DMR_RSSI_COUNT)
+			m_rssiCount2 = 0U;
+	}
 }
 
 void CNextion::clearDMRInt(unsigned int slotNo)
@@ -193,9 +242,11 @@ void CNextion::clearDMRInt(unsigned int slotNo)
 	if (slotNo == 1U) {
 		sendCommand("t0.txt=\"1 Listening\"");
 		sendCommand("t1.txt=\"\"");
+		sendCommand("t4.txt=\"\"");
 	} else {
 		sendCommand("t2.txt=\"2 Listening\"");
 		sendCommand("t3.txt=\"\"");
+		sendCommand("t5.txt=\"\"");
 	}
 }
 
@@ -226,6 +277,20 @@ void CNextion::writeFusionInt(const char* source, const char* dest, const char* 
 	m_clockDisplayTimer.stop();
 
 	m_mode = MODE_YSF;
+	m_rssiCount1 = 0U;
+}
+
+void CNextion::writeFusionRSSIInt(unsigned char rssi)
+{
+	if (m_rssiCount1 == 0U) {
+		char text[20U];
+		::sprintf(text, "t3.txt=\"-%udBm\"", rssi);
+		sendCommand(text);
+	}
+
+	m_rssiCount1++;
+	if (m_rssiCount1 >= YSF_RSSI_COUNT)
+		m_rssiCount1 = 0U;
 }
 
 void CNextion::clearFusionInt()
@@ -233,6 +298,7 @@ void CNextion::clearFusionInt()
 	sendCommand("t0.txt=\"Listening\"");
 	sendCommand("t1.txt=\"\"");
 	sendCommand("t2.txt=\"\"");
+	sendCommand("t3.txt=\"\"");
 }
 
 void CNextion::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
@@ -256,6 +322,20 @@ void CNextion::writeP25Int(const char* source, bool group, unsigned int dest, co
 	m_clockDisplayTimer.stop();
 
 	m_mode = MODE_P25;
+	m_rssiCount1 = 0U;
+}
+
+void CNextion::writeP25RSSIInt(unsigned char rssi)
+{
+	if (m_rssiCount1 == 0U) {
+		char text[20U];
+		::sprintf(text, "t2.txt=\"-%udBm\"", rssi);
+		sendCommand(text);
+	}
+
+	m_rssiCount1++;
+	if (m_rssiCount1 >= P25_RSSI_COUNT)
+		m_rssiCount1 = 0U;
 }
 
 void CNextion::clearP25Int()
