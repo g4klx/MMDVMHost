@@ -255,7 +255,7 @@ void CLCDproc::writeDStarInt(const char* my1, const char* my2, const char* your,
 void CLCDproc::writeDStarRSSIInt(unsigned char rssi)
 {
 	if (m_rssiCount1 == 0U) {
-		socketPrintf(m_socketfd, "widget_set DStar Line4 1 4 %u 4 h 3 \"-%udBm\"", m_cols - 1, rssi);
+		socketPrintf(m_socketfd, "widget_set DStar Line4 1 4 %u 4 h 3 \"-%3udBm\"", m_cols - 1, rssi);
 	}
  
 	m_rssiCount1++;
@@ -326,23 +326,25 @@ void CLCDproc::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
  
 void CLCDproc::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi) 
 { 
-  if (slotNo == 1U) {
-	  if (m_rssiCount1 == 0U)
-			socketPrintf(m_socketfd, "widget_set DMR Slot1RSSI %u %u %-u", m_rows / 2, m_cols - 3, rssi); 
+	if (m_rows > 2) {	
+	  if (slotNo == 1U) {
+		  if (m_rssiCount1 == 0U)
+				socketPrintf(m_socketfd, "widget_set DMR Slot1RSSI %u %u -%3udBm", 1, 4, rssi); 
 
-		m_rssiCount1++; 
+			m_rssiCount1++; 
 
-		if (m_rssiCount1 >= DMR_RSSI_COUNT)
-			m_rssiCount1 = 0U; 
-	} else { 
-		if (m_rssiCount2 == 0U)
-			socketPrintf(m_socketfd, "widget_set DMR Slot2RSSI %u %u %-u", m_rows / 2 + 1, m_cols - 3, rssi); 
+			if (m_rssiCount1 >= DMR_RSSI_COUNT)
+				m_rssiCount1 = 0U; 
+		} else { 
+			if (m_rssiCount2 == 0U)
+				socketPrintf(m_socketfd, "widget_set DMR Slot2RSSI %u %u -%3udBm", (m_cols / 2) + 1, 4, rssi); 
 
-		m_rssiCount2++; 
+			m_rssiCount2++; 
 
-		if (m_rssiCount2 >= DMR_RSSI_COUNT)
-			m_rssiCount2 = 0U; 
-	} 
+			if (m_rssiCount2 >= DMR_RSSI_COUNT)
+				m_rssiCount2 = 0U; 
+		} 
+	}
 }
 
 void CLCDproc::clearDMRInt(unsigned int slotNo)
@@ -390,7 +392,7 @@ void CLCDproc::writeFusionInt(const char* source, const char* dest, const char* 
 void CLCDproc::writeFusionRSSIInt(unsigned char rssi)
 {
 	if (m_rssiCount1 == 0U) {
-		socketPrintf(m_socketfd, "widget_set YSF Line4 1 4 %u 4 h 3 \"-%udBm\"", m_cols - 1, rssi);
+		socketPrintf(m_socketfd, "widget_set YSF Line4 1 4 %u 4 h 3 \"-%3udBm\"", m_cols - 1, rssi);
 	}
  
 	m_rssiCount1++;
@@ -435,7 +437,7 @@ void CLCDproc::writeP25Int(const char* source, bool group, unsigned int dest, co
 void CLCDproc::writeP25RSSIInt(unsigned char rssi)
 {
 	if (m_rssiCount1 == 0U) {
-		socketPrintf(m_socketfd, "widget_set P25 Line4 1 4 %u 4 h 3 \"-%udBm\"", m_cols - 1, rssi);
+		socketPrintf(m_socketfd, "widget_set P25 Line4 1 4 %u 4 h 3 \"-%3udBm\"", m_cols - 1, rssi);
 	}
  
 	m_rssiCount1++;

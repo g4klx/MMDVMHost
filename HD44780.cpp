@@ -443,7 +443,7 @@ void CHD44780::writeDStarRSSIInt(unsigned char rssi)
 { 
   if (m_rssiCount1 == 0U && m_rows > 2) { 
 		::lcdPosition(m_fd, 0, 3);
-		::lcdPrintf(m_fd, "-%u dBm", rssi);
+		::lcdPrintf(m_fd, "-%3udBm", rssi);
   } 
  
   m_rssiCount1++; 
@@ -743,7 +743,7 @@ void CHD44780::writeFusionRSSIInt(unsigned char rssi)
 { 
   if (m_rssiCount1 == 0U && m_rows > 2) { 
 		::lcdPosition(m_fd, 0, 3);
-		::lcdPrintf(m_fd, "-%u dBm", rssi);
+		::lcdPrintf(m_fd, "-%3udBm", rssi);
   } 
  
   m_rssiCount1++; 
@@ -847,7 +847,7 @@ void CHD44780::writeP25RSSIInt(unsigned char rssi)
 { 
   if (m_rssiCount1 == 0U && m_rows > 2) { 
 		::lcdPosition(m_fd, 0, 3);
-		::lcdPrintf(m_fd, "%u", rssi);
+		::lcdPrintf(m_fd, "-%3udBm", rssi);
   } 
  
   m_rssiCount1++; 
