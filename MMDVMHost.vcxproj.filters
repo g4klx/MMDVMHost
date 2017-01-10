@@ -131,7 +131,7 @@
     <ClInclude Include="DMREMB.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DMREmbeddedLC.h">
+    <ClInclude Include="DMREmbeddedData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DMRFullLC.h">
@@ -325,7 +325,7 @@
     <ClCompile Include="DMREMB.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DMREmbeddedLC.cpp">
+    <ClCompile Include="DMREmbeddedData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DMRFullLC.cpp">

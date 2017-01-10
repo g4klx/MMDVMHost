@@ -16,7 +16,7 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "DMREmbeddedLC.h"
+#include "DMREmbeddedData.h"
 
 #include "Hamming.h"
 #include "Utils.h"
@@ -26,8 +26,7 @@
 #include <cassert>
 #include <cstring>
 
-CDMREmbeddedLC::CDMREmbeddedLC(unsigned int slotNo) :
-m_slotNo(slotNo),
+CDMREmbeddedData::CDMREmbeddedData() :
 m_raw(NULL),
 m_state(LCS_NONE),
 m_data(NULL),
@@ -38,14 +37,14 @@ m_valid(false)
 	m_data = new bool[72U];
 }
 
-CDMREmbeddedLC::~CDMREmbeddedLC()
+CDMREmbeddedData::~CDMREmbeddedData()
 {
 	delete[] m_raw;
 	delete[] m_data;
 }
 
 // Add LC data (which may consist of 4 blocks) to the data store
-bool CDMREmbeddedLC::addData(const unsigned char* data, unsigned char lcss)
+bool CDMREmbeddedData::addData(const unsigned char* data, unsigned char lcss)
 {
 	assert(data != NULL);
 
@@ -64,6 +63,7 @@ bool CDMREmbeddedLC::addData(const unsigned char* data, unsigned char lcss)
 		// Show we are ready for the next LC block
 		m_state = LCS_FIRST;
 		m_valid = false;
+
 		return false;
 	}
 
@@ -74,6 +74,7 @@ bool CDMREmbeddedLC::addData(const unsigned char* data, unsigned char lcss)
 
 		// Show we are ready for the next LC block
 		m_state = LCS_SECOND;
+
 		return false;
 	}
 
@@ -84,6 +85,7 @@ bool CDMREmbeddedLC::addData(const unsigned char* data, unsigned char lcss)
 
 		// Show we are ready for the final LC block
 		m_state = LCS_THIRD;
+
 		return false;
 	}
 
@@ -92,24 +94,34 @@ bool CDMREmbeddedLC::addData(const unsigned char* data, unsigned char lcss)
 		for (unsigned int a = 0U; a < 32U; a++)
 			m_raw[a + 96U] = rawData[a + 4U];
 
-		// Process the complete data block
-		return processEmbeddedData();
-	}
+		// Show that we're not ready for any more data
+		m_state = LCS_NONE;
 
-	// Is this a single block embedded LC
-	if (lcss == 0U)
-		return false;
+		// Process the complete data block
+		decodeEmbeddedData();
+		if (m_valid)
+			encodeEmbeddedData();
+
+		return m_valid;
+	}
 
 	return false;
 }
 
-void CDMREmbeddedLC::setData(const CDMRLC& lc)
+void CDMREmbeddedData::setLC(const CDMRLC& lc)
 {
-	bool lcData[72U];
-	lc.getData(lcData);
-	
+	lc.getData(m_data);
+
+	m_FLCO  = lc.getFLCO();
+	m_valid = true;
+
+	encodeEmbeddedData();
+}
+
+void CDMREmbeddedData::encodeEmbeddedData()
+{
 	unsigned int crc;
-	CCRC::encodeFiveBit(lcData, crc);
+	CCRC::encodeFiveBit(m_data, crc);
 
 	bool data[128U];
 	::memset(data, 0x00U, 128U * sizeof(bool));
@@ -122,19 +134,19 @@ void CDMREmbeddedLC::setData(const CDMRLC& lc)
 
 	unsigned int b = 0U;
 	for (unsigned int a = 0U; a < 11U; a++, b++)
-		data[a] = lcData[b];
+		data[a] = m_data[b];
 	for (unsigned int a = 16U; a < 27U; a++, b++)
-		data[a] = lcData[b];
+		data[a] = m_data[b];
 	for (unsigned int a = 32U; a < 42U; a++, b++)
-		data[a] = lcData[b];
+		data[a] = m_data[b];
 	for (unsigned int a = 48U; a < 58U; a++, b++)
-		data[a] = lcData[b];
+		data[a] = m_data[b];
 	for (unsigned int a = 64U; a < 74U; a++, b++)
-		data[a] = lcData[b];
+		data[a] = m_data[b];
 	for (unsigned int a = 80U; a < 90U; a++, b++)
-		data[a] = lcData[b];
+		data[a] = m_data[b];
 	for (unsigned int a = 96U; a < 106U; a++, b++)
-		data[a] = lcData[b];
+		data[a] = m_data[b];
 
 	// Hamming (16,11,4) check each row except the last one
 	for (unsigned int a = 0U; a < 112U; a += 16U)
@@ -154,7 +166,7 @@ void CDMREmbeddedLC::setData(const CDMRLC& lc)
 	}
 }
 
-unsigned char CDMREmbeddedLC::getData(unsigned char* data, unsigned char n) const
+unsigned char CDMREmbeddedData::getData(unsigned char* data, unsigned char n) const
 {
 	assert(data != NULL);
 
@@ -198,7 +210,7 @@ unsigned char CDMREmbeddedLC::getData(unsigned char* data, unsigned char n) cons
 }
 
 // Unpack and error check an embedded LC
-bool CDMREmbeddedLC::processEmbeddedData()
+void CDMREmbeddedData::decodeEmbeddedData()
 {
 	// The data is unpacked downwards in columns
 	bool data[128U];
@@ -215,14 +227,14 @@ bool CDMREmbeddedLC::processEmbeddedData()
 	// Hamming (16,11,4) check each row except the last one
 	for (unsigned int a = 0U; a < 112U; a += 16U) {
 		if (!CHamming::decode16114(data + a))
-			return false;
+			return;
 	}
 
 	// Check the parity bits
 	for (unsigned int a = 0U; a < 16U; a++) {
 		bool parity = data[a + 0U] ^ data[a + 16U] ^ data[a + 32U] ^ data[a + 48U] ^ data[a + 64U] ^ data[a + 80U] ^ data[a + 96U] ^ data[a + 112U];
 		if (parity)
-			return false;
+			return;
 	}
 
 	// We have passed the Hamming check so extract the actual payload
@@ -252,7 +264,7 @@ bool CDMREmbeddedLC::processEmbeddedData()
 
 	// Now CRC check this
 	if (!CCRC::checkFiveBit(m_data, crc))
-		return false;
+		return;
 
 	m_valid = true;
 
@@ -260,44 +272,9 @@ bool CDMREmbeddedLC::processEmbeddedData()
 	unsigned char flco;
 	CUtils::bitsToByteBE(m_data + 0U, flco);
 	m_FLCO = FLCO(flco & 0x3FU);
-
-	char text[80U];
-
-	// Only generate the LC when it's the correct FLCO
-	switch (m_FLCO) {
-	case FLCO_GROUP:
-	case FLCO_USER_USER:
-		// ::sprintf(text, "DMR Slot %u, Embedded LC Data", m_slotNo);
-		// CUtils::dump(1U, text, m_data, 72U);
-		return true;
-	case FLCO_GPS_INFO:
-		::sprintf(text, "DMR Slot %u, Embedded GPS Info", m_slotNo);
-		CUtils::dump(1U, text, m_data, 72U);
-		return true;
-	case FLCO_TALKER_ALIAS_HEADER:
-		::sprintf(text, "DMR Slot %u, Embedded Talker Alias Header", m_slotNo);
-		CUtils::dump(1U, text, m_data, 72U);
-		return true;
-	case FLCO_TALKER_ALIAS_BLOCK1:
-		::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 1", m_slotNo);
-		CUtils::dump(1U, text, m_data, 72U);
-		return true;
-	case FLCO_TALKER_ALIAS_BLOCK2:
-		::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 2", m_slotNo);
-		CUtils::dump(1U, text, m_data, 72U);
-		return true;
-	case FLCO_TALKER_ALIAS_BLOCK3:
-		::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 3", m_slotNo);
-		CUtils::dump(1U, text, m_data, 72U);
-		return true;
-	default:
-		::sprintf(text, "DMR Slot %u, Unknown Embedded Data", m_slotNo);
-		CUtils::dump(1U, text, m_data, 72U);
-		return false;
-	}
 }
 
-CDMRLC* CDMREmbeddedLC::getLC() const
+CDMRLC* CDMREmbeddedData::getLC() const
 {
 	if (!m_valid)
 		return NULL;
@@ -308,8 +285,38 @@ CDMRLC* CDMREmbeddedLC::getLC() const
 	return new CDMRLC(m_data);
 }
 
-void CDMREmbeddedLC::reset()
+bool CDMREmbeddedData::isValid() const
+{
+	return m_valid;
+}
+
+FLCO CDMREmbeddedData::getFLCO() const
+{
+	return m_FLCO;
+}
+
+void CDMREmbeddedData::reset()
 {
 	m_state = LCS_NONE;
 	m_valid = false;
+}
+
+bool CDMREmbeddedData::getRawData(unsigned char* data) const
+{
+	assert(data != NULL);
+
+	if (!m_valid)
+		return false;
+
+	CUtils::bitsToByteBE(m_data + 0U,  data[0U]);
+	CUtils::bitsToByteBE(m_data + 8U,  data[1U]);
+	CUtils::bitsToByteBE(m_data + 16U, data[2U]);
+	CUtils::bitsToByteBE(m_data + 24U, data[3U]);
+	CUtils::bitsToByteBE(m_data + 32U, data[4U]);
+	CUtils::bitsToByteBE(m_data + 40U, data[5U]);
+	CUtils::bitsToByteBE(m_data + 48U, data[6U]);
+	CUtils::bitsToByteBE(m_data + 56U, data[7U]);
+	CUtils::bitsToByteBE(m_data + 65U, data[8U]);
+
+	return true;
 }

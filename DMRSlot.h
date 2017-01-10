@@ -20,7 +20,7 @@
 #define	DMRSlot_H
 
 #include "RSSIInterpolator.h"
-#include "DMREmbeddedLC.h"
+#include "DMREmbeddedData.h"
 #include "DMRDataHeader.h"
 #include "DMRNetwork.h"
 #include "RingBuffer.h"
@@ -57,8 +57,14 @@ private:
 	CRingBuffer<unsigned char> m_queue;
 	RPT_RF_STATE               m_rfState;
 	RPT_NET_STATE              m_netState;
-	CDMREmbeddedLC             m_rfEmbeddedLC;
-	CDMREmbeddedLC             m_netEmbeddedLC;
+	CDMREmbeddedData           m_rfEmbeddedLC;
+	CDMREmbeddedData*          m_rfEmbeddedData;
+	unsigned int               m_rfEmbeddedReadN;
+	unsigned int               m_rfEmbeddedWriteN;
+	CDMREmbeddedData           m_netEmbeddedLC;
+	CDMREmbeddedData*          m_netEmbeddedData;
+	unsigned int               m_netEmbeddedReadN;
+	unsigned int               m_netEmbeddedWriteN;
 	CDMRLC*                    m_rfLC;
 	CDMRLC*                    m_netLC;
 	CDMRDataHeader             m_rfDataHeader;

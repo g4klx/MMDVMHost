@@ -59,8 +59,14 @@ m_slotNo(slotNo),
 m_queue(5000U, "DMR Slot"),
 m_rfState(RS_RF_LISTENING),
 m_netState(RS_NET_IDLE),
-m_rfEmbeddedLC(slotNo),
-m_netEmbeddedLC(slotNo),
+m_rfEmbeddedLC(),
+m_rfEmbeddedData(NULL),
+m_rfEmbeddedReadN(0U),
+m_rfEmbeddedWriteN(1U),
+m_netEmbeddedLC(),
+m_netEmbeddedData(NULL),
+m_netEmbeddedReadN(0U),
+m_netEmbeddedWriteN(1U),
 m_rfLC(NULL),
 m_netLC(NULL),
 m_rfDataHeader(),
@@ -94,11 +100,16 @@ m_fp(NULL)
 {
 	m_lastFrame = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
 
+	m_rfEmbeddedData  = new CDMREmbeddedData[2U];
+	m_netEmbeddedData = new CDMREmbeddedData[2U];
+
 	m_interval.start();
 }
 
 CDMRSlot::~CDMRSlot()
 {
+	delete[] m_rfEmbeddedData;
+	delete[] m_netEmbeddedData;
 	delete[] m_lastFrame;
 }
 
@@ -186,6 +197,11 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			m_rfLC = lc;
 
+			// The standby LC data
+			m_rfEmbeddedLC.setLC(*m_rfLC);
+			m_rfEmbeddedData[0U].setLC(*m_rfLC);
+			m_rfEmbeddedData[1U].setLC(*m_rfLC);
+
 			// Regenerate the LC data
 			fullLC.encode(*m_rfLC, data + 2U, DT_VOICE_LC_HEADER);
 
@@ -199,12 +215,13 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			data[1U] = 0x00U;
 
 			m_rfTimeoutTimer.start();
-			m_rfEmbeddedLC.reset();
 
 			m_rfFrames = 0U;
 			m_rfSeqNo  = 0U;
 			m_rfBits   = 1U;
 			m_rfErrs   = 0U;
+			m_rfEmbeddedReadN  = 0U;
+			m_rfEmbeddedWriteN = 1U;
 
 			m_minRSSI = m_rssi;
 			m_maxRSSI = m_rssi;
@@ -471,13 +488,15 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			}
 
 			m_rfBits += 141U;
-
 			m_rfFrames++;
 
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
 
-			m_rfEmbeddedLC.reset();
+			m_rfEmbeddedReadN  = (m_rfEmbeddedReadN  + 1U) % 2U;
+			m_rfEmbeddedWriteN = (m_rfEmbeddedWriteN + 1U) % 2U;
+
+			m_rfEmbeddedData[m_rfEmbeddedWriteN].reset();
 
 			if (m_duplex)
 				writeQueueRF(data);
@@ -493,12 +512,6 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 		if (m_rfState == RS_RF_AUDIO) {
 			m_rfN = data[1U] & 0x0FU;
 
-			// Regenerate the EMB
-			CDMREMB emb;
-			emb.putData(data + 2U);
-			emb.setColorCode(m_colorCode);
-			emb.getData(data + 2U);
-
 			unsigned int errors = 0U;
 			unsigned char fid = m_rfLC->getFID();
 			if (fid == FID_ETSI || fid == FID_DMRA) {
@@ -507,11 +520,66 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				m_rfErrs += errors;
 			}
 
-			m_rfEmbeddedLC.addData(data + 2U, emb.getLCSS());
-
 			m_rfBits += 141U;
-
 			m_rfFrames++;
+
+			// Get the LCSS from the EMB
+			CDMREMB emb;
+			emb.putData(data + 2U);
+			unsigned char lcss = emb.getLCSS();
+
+			// Dump any interesting Embedded Data
+			bool ret = m_rfEmbeddedData[m_rfEmbeddedWriteN].addData(data + 2U, lcss);
+			if (ret) {
+				FLCO flco = m_rfEmbeddedData[m_rfEmbeddedWriteN].getFLCO();
+
+				unsigned char data[9U];
+				m_rfEmbeddedData[m_rfEmbeddedWriteN].getRawData(data);
+
+				char text[80U];
+				switch (flco) {
+				case FLCO_GROUP:
+				case FLCO_USER_USER:
+					// ::sprintf(text, "DMR Slot %u, Embedded LC", m_slotNo);
+					// CUtils::dump(1U, text, data, 9U);
+					break;
+				case FLCO_GPS_INFO:
+					::sprintf(text, "DMR Slot %u, Embedded GPS Info", m_slotNo);
+					CUtils::dump(1U, text, data, 9U);
+					break;
+				case FLCO_TALKER_ALIAS_HEADER:
+					::sprintf(text, "DMR Slot %u, Embedded Talker Alias Header", m_slotNo);
+					CUtils::dump(1U, text, data, 9U);
+					break;
+				case FLCO_TALKER_ALIAS_BLOCK1:
+					::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 1", m_slotNo);
+					CUtils::dump(1U, text, data, 9U);
+					break;
+				case FLCO_TALKER_ALIAS_BLOCK2:
+					::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 2", m_slotNo);
+					CUtils::dump(1U, text, data, 9U);
+					break;
+				case FLCO_TALKER_ALIAS_BLOCK3:
+					::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 3", m_slotNo);
+					CUtils::dump(1U, text, data, 9U);
+					break;
+				default:
+					::sprintf(text, "DMR Slot %u, Unknown Embedded Data", m_slotNo);
+					CUtils::dump(1U, text, data, 9U);
+					break;
+				}
+			}
+
+			// Regenerate the previous super blocks Embedded Data or substitude the LC for it
+			if (m_rfEmbeddedData[m_rfEmbeddedReadN].isValid())
+				lcss = m_rfEmbeddedData[m_rfEmbeddedReadN].getData(data + 2U, m_rfN);
+			else
+				lcss = m_rfEmbeddedLC.getData(data + 2U, m_rfN);
+
+			// Regenerate the EMB
+			emb.setColorCode(m_colorCode);
+			emb.setLCSS(lcss);
+			emb.getData(data + 2U);
 
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
@@ -550,6 +618,11 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 				m_rfLC = lc;
 
+				// The standby LC data
+				m_rfEmbeddedLC.setLC(*m_rfLC);
+				m_rfEmbeddedData[0U].setLC(*m_rfLC);
+				m_rfEmbeddedData[1U].setLC(*m_rfLC);
+
 				// Create a dummy start frame to replace the received frame
 				unsigned char start[DMR_FRAME_LENGTH_BYTES + 2U];
 
@@ -567,12 +640,13 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				start[1U] = 0x00U;
 
 				m_rfTimeoutTimer.start();
-				m_rfEmbeddedLC.reset();
 
 				m_rfFrames = 0U;
 				m_rfSeqNo  = 0U;
 				m_rfBits   = 1U;
 				m_rfErrs   = 0U;
+				m_rfEmbeddedReadN  = 0U;
+				m_rfEmbeddedWriteN = 1U;
 
 				m_minRSSI = m_rssi;
 				m_maxRSSI = m_rssi;
@@ -605,7 +679,6 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				}
 
 				m_rfBits += 141U;
-
 				m_rfFrames++;
 
 				data[0U] = TAG_DATA;
@@ -826,6 +899,11 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		m_netLC = lc;
 
+		// The standby LC data
+		m_netEmbeddedLC.setLC(*m_netLC);
+		m_netEmbeddedData[0U].setLC(*m_netLC);
+		m_netEmbeddedData[1U].setLC(*m_netLC);
+
 		// Regenerate the LC data
 		fullLC.encode(*m_netLC, data + 2U, DT_VOICE_LC_HEADER);
 
@@ -844,13 +922,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		m_lastFrameValid = false;
 
 		m_netTimeoutTimer.start();
-		m_netEmbeddedLC.reset();
 
 		m_netFrames = 0U;
 		m_netLost = 0U;
-
 		m_netBits = 1U;
 		m_netErrs = 0U;
+		m_netEmbeddedReadN  = 0U;
+		m_netEmbeddedWriteN = 1U;
 
 		if (m_duplex) {
 			m_queue.clear();
@@ -890,7 +968,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			m_lastFrameValid = false;
 
 			m_netTimeoutTimer.start();
-			m_netEmbeddedLC.reset();
 
 			if (m_duplex) {
 				m_queue.clear();
@@ -1062,6 +1139,11 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 			m_netLC = lc;
 
+			// The standby LC data
+			m_netEmbeddedLC.setLC(*m_netLC);
+			m_netEmbeddedData[0U].setLC(*m_netLC);
+			m_netEmbeddedData[1U].setLC(*m_netLC);
+
 			m_lastFrameValid = false;
 
 			m_netTimeoutTimer.start();
@@ -1101,6 +1183,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			m_netLost = 0U;
 			m_netBits = 1U;
 			m_netErrs = 0U;
+			m_netEmbeddedReadN  = 0U;
+			m_netEmbeddedWriteN = 1U;
 
 			m_netState = RS_NET_AUDIO;
 
@@ -1139,7 +1223,11 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 			writeQueueNet(data);
 
-			m_netEmbeddedLC.reset();
+			m_netEmbeddedReadN  = (m_netEmbeddedReadN  + 1U) % 2U;
+			m_netEmbeddedWriteN = (m_netEmbeddedWriteN + 1U) % 2U;
+
+			m_netEmbeddedData[m_netEmbeddedWriteN].reset();
+
 			m_packetTimer.start();
 			m_elapsed.start();
 
@@ -1162,13 +1250,63 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			m_netErrs += m_fec.regenerateDMR(data + 2U);
 		m_netBits += 141U;
 
-		// Change the color code in the EMB
+		// Get the LCSS from the EMB
 		CDMREMB emb;
 		emb.putData(data + 2U);
-		emb.setColorCode(m_colorCode);
-		emb.getData(data + 2U);
+		unsigned char lcss = emb.getLCSS();
 
-		m_netEmbeddedLC.addData(data + 2U, emb.getLCSS());
+		// Dump any interesting Embedded Data
+		bool ret = m_netEmbeddedData[m_netEmbeddedWriteN].addData(data + 2U, lcss);
+		if (ret) {
+			FLCO flco = m_netEmbeddedData[m_netEmbeddedWriteN].getFLCO();
+
+			unsigned char data[9U];
+			m_netEmbeddedData[m_netEmbeddedWriteN].getRawData(data);
+
+			char text[80U];
+			switch (flco) {
+			case FLCO_GROUP:
+			case FLCO_USER_USER:
+				// ::sprintf(text, "DMR Slot %u, Embedded LC", m_slotNo);
+				// CUtils::dump(1U, text, data, 9U);
+				break;
+			case FLCO_GPS_INFO:
+				::sprintf(text, "DMR Slot %u, Embedded GPS Info", m_slotNo);
+				CUtils::dump(1U, text, data, 9U);
+				break;
+			case FLCO_TALKER_ALIAS_HEADER:
+				::sprintf(text, "DMR Slot %u, Embedded Talker Alias Header", m_slotNo);
+				CUtils::dump(1U, text, data, 9U);
+				break;
+			case FLCO_TALKER_ALIAS_BLOCK1:
+				::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 1", m_slotNo);
+				CUtils::dump(1U, text, data, 9U);
+				break;
+			case FLCO_TALKER_ALIAS_BLOCK2:
+				::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 2", m_slotNo);
+				CUtils::dump(1U, text, data, 9U);
+				break;
+			case FLCO_TALKER_ALIAS_BLOCK3:
+				::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 3", m_slotNo);
+				CUtils::dump(1U, text, data, 9U);
+				break;
+			default:
+				::sprintf(text, "DMR Slot %u, Unknown Embedded Data", m_slotNo);
+				CUtils::dump(1U, text, data, 9U);
+				break;
+			}
+		}
+
+		// Regenerate the previous super blocks Embedded Data or substitude the LC for it
+		if (m_netEmbeddedData[m_netEmbeddedReadN].isValid())
+			lcss = m_netEmbeddedData[m_netEmbeddedReadN].getData(data + 2U, dmrData.getN());
+		else
+			lcss = m_netEmbeddedLC.getData(data + 2U, dmrData.getN());
+
+		// Regenerate the EMB
+		emb.setColorCode(m_colorCode);
+		emb.setLCSS(lcss);
+		emb.getData(data + 2U);
 
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
