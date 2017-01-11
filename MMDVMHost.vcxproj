@@ -160,7 +160,7 @@
     <ClInclude Include="DMRDataHeader.h" />
     <ClInclude Include="DMRDefines.h" />
     <ClInclude Include="DMREMB.h" />
-    <ClInclude Include="DMREmbeddedLC.h" />
+    <ClInclude Include="DMREmbeddedData.h" />
     <ClInclude Include="DMRFullLC.h" />
     <ClInclude Include="DMRLC.h" />
     <ClInclude Include="DMRNetwork.h" />
@@ -230,7 +230,7 @@
     <ClCompile Include="DMRData.cpp" />
     <ClCompile Include="DMRDataHeader.cpp" />
     <ClCompile Include="DMREMB.cpp" />
-    <ClCompile Include="DMREmbeddedLC.cpp" />
+    <ClCompile Include="DMREmbeddedData.cpp" />
     <ClCompile Include="DMRFullLC.cpp" />
     <ClCompile Include="DMRLC.cpp" />
     <ClCompile Include="DMRLookup.cpp" />

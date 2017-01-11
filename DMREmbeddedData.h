@@ -16,8 +16,8 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef DMREmbeddedLC_H
-#define DMREmbeddedLC_H
+#ifndef DMREmbeddedData_H
+#define DMREmbeddedData_H
 
 #include "DMRDefines.h"
 #include "DMRLC.h"
@@ -29,30 +29,35 @@ enum LC_STATE {
 	LCS_THIRD
 };
 
-class CDMREmbeddedLC
+class CDMREmbeddedData
 {
 public:
-	CDMREmbeddedLC(unsigned int slotNo);
-	~CDMREmbeddedLC();
+	CDMREmbeddedData();
+	~CDMREmbeddedData();
 
 	bool addData(const unsigned char* data, unsigned char lcss);
-	CDMRLC* getLC() const;
 
-	void setData(const CDMRLC& lc);
+	CDMRLC* getLC() const;
+	void setLC(const CDMRLC& lc);
 
 	unsigned char getData(unsigned char* data, unsigned char n) const;
+
+	bool getRawData(unsigned char* data) const;
+
+	bool isValid() const;
+	FLCO getFLCO() const;
 
 	void reset();
 
 private:
-	unsigned int m_slotNo;
 	bool*        m_raw;
 	LC_STATE     m_state;
 	bool*        m_data;
 	FLCO         m_FLCO;
 	bool         m_valid;
 
-	bool processEmbeddedData();
+	void decodeEmbeddedData();
+	void encodeEmbeddedData();
 };
 
 #endif
