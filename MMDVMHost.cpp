@@ -345,6 +345,7 @@ int CMMDVMHost::run()
 		unsigned int id             = m_conf.getDMRId();
 		unsigned int colorCode      = m_conf.getDMRColorCode();
 		bool selfOnly               = m_conf.getDMRSelfOnly();
+		bool embeddedLCOnly = m_conf.getDMREmbeddedLCOnly();
 		std::vector<unsigned int> prefixes  = m_conf.getDMRPrefixes();
 		std::vector<unsigned int> blackList = m_conf.getDMRBlackList();
 		std::vector<unsigned int> whiteList = m_conf.getDMRWhiteList();
@@ -366,6 +367,7 @@ int CMMDVMHost::run()
 		LogInfo("    Id: %u", id);
 		LogInfo("    Color Code: %u", colorCode);
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
+		LogInfo("    Embedded LC Only: %s", embeddedLCOnly ? "yes" : "no");
 		LogInfo("    Prefixes: %u", prefixes.size());
 		
 		if (blackList.size() > 0U)
@@ -380,7 +382,7 @@ int CMMDVMHost::run()
 		LogInfo("    Call Hang: %us", callHang);
 		LogInfo("    TX Hang: %us", txHang);
 
-		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_lookup, rssi, jitter);
+		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_lookup, rssi, jitter);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}

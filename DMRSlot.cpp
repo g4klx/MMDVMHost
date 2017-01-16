@@ -31,6 +31,8 @@
 
 unsigned int   CDMRSlot::m_colorCode = 0U;
 
+bool           CDMRSlot::m_embeddedLCOnly = false;
+
 CModem*        CDMRSlot::m_modem = NULL;
 CDMRNetwork*   CDMRSlot::m_network = NULL;
 CDisplay*      CDMRSlot::m_display = NULL;
@@ -584,10 +586,20 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
 
+			writeNetworkRF(data, DT_VOICE, errors);
+
+			if (m_embeddedLCOnly) {
+				// Only send the previously received LC
+				lcss = m_rfEmbeddedLC.getData(data + 2U, m_rfN);
+
+				// Regenerate the EMB
+				emb.setColorCode(m_colorCode);
+				emb.setLCSS(lcss);
+				emb.getData(data + 2U);
+			}
+
 			if (m_duplex)
 				writeQueueRF(data);
-
-			writeNetworkRF(data, DT_VOICE, errors);
 		} else if (m_rfState == RS_RF_LATE_ENTRY) {
 			CDMREMB emb;
 			emb.putData(data + 2U);
@@ -1297,11 +1309,16 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			}
 		}
 
-		// Regenerate the previous super blocks Embedded Data or substitude the LC for it
-		if (m_netEmbeddedData[m_netEmbeddedReadN].isValid())
-			lcss = m_netEmbeddedData[m_netEmbeddedReadN].getData(data + 2U, dmrData.getN());
-		else
+		if (m_embeddedLCOnly) {
+			// Only send the previously received LC
 			lcss = m_netEmbeddedLC.getData(data + 2U, dmrData.getN());
+		} else {
+			// Regenerate the previous super blocks Embedded Data or substitude the LC for it
+			if (m_netEmbeddedData[m_netEmbeddedReadN].isValid())
+				lcss = m_netEmbeddedData[m_netEmbeddedReadN].getData(data + 2U, dmrData.getN());
+			else
+				lcss = m_netEmbeddedLC.getData(data + 2U, dmrData.getN());
+		}
 
 		// Regenerate the EMB
 		emb.setColorCode(m_colorCode);
@@ -1571,25 +1588,26 @@ void CDMRSlot::writeQueueNet(const unsigned char *data)
 		m_queue.addData(data, len);
 }
 
-void CDMRSlot::init(unsigned int colorCode, unsigned int callHang, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter)
+void CDMRSlot::init(unsigned int colorCode, bool embeddedLCOnly, unsigned int callHang, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter)
 {
 	assert(modem != NULL);
 	assert(display != NULL);
 	assert(lookup != NULL);
 	assert(rssiMapper != NULL);
 
-	m_colorCode = colorCode;
-	m_modem     = modem;
-	m_network   = network;
-	m_display   = display;
-	m_duplex    = duplex;
-	m_lookup    = lookup;
-	m_hangCount = callHang * 17U;
+	m_colorCode      = colorCode;
+	m_embeddedLCOnly = embeddedLCOnly;
+	m_modem          = modem;
+	m_network        = network;
+	m_display        = display;
+	m_duplex         = duplex;
+	m_lookup         = lookup;
+	m_hangCount      = callHang * 17U;
 
-	m_rssiMapper = rssiMapper;
+	m_rssiMapper     = rssiMapper;
 
-	m_jitterTime  = jitter;
-	m_jitterSlots = jitter / DMR_SLOT_TIME;
+	m_jitterTime     = jitter;
+	m_jitterSlots    = jitter / DMR_SLOT_TIME;
 
 	m_idle = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
 	::memcpy(m_idle, DMR_IDLE_DATA, DMR_FRAME_LENGTH_BYTES + 2U);

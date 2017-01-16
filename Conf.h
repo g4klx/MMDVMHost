@@ -96,6 +96,7 @@ public:
   bool         getDMRBeacons() const;
   unsigned int getDMRId() const;
   unsigned int getDMRColorCode() const;
+  bool         getDMREmbeddedLCOnly() const;
   bool         getDMRSelfOnly() const;
   std::vector<unsigned int> getDMRPrefixes() const;
   std::vector<unsigned int> getDMRBlackList() const;
@@ -243,6 +244,7 @@ private:
   unsigned int m_dmrId;
   unsigned int m_dmrColorCode;
   bool         m_dmrSelfOnly;
+  bool         m_dmrEmbeddedLCOnly;
   std::vector<unsigned int> m_dmrPrefixes;
   std::vector<unsigned int> m_dmrBlackList;
   std::vector<unsigned int> m_dmrWhiteList;
