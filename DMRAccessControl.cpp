@@ -75,6 +75,10 @@ bool CDMRAccessControl::validateTGId(unsigned int slotNo, bool group, unsigned i
 	if (!group)
 		return true;
 
+	// TG0 is never valid
+	if (id == 0U)
+		return false;
+	
 	if (slotNo == 1U) {
 		if (m_slot1TGWhiteList.empty())
 			return true;
