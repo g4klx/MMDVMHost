@@ -318,7 +318,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 				m_display->writeDStarRSSI(m_rssi);
 			}
 
-			LogDebug("D-Star, audio sequence no. %u, errs: %u/48", m_rfN, errors);
+			// LogDebug("D-Star, audio sequence no. %u, errs: %u/48", m_rfN, errors);
 
 			if (m_net)
 				writeNetworkDataRF(data, errors, false);
@@ -434,7 +434,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			m_rfErrs += errors;
 			m_rfBits += 48U;
 
-			LogDebug("D-Star, audio sequence no. %u, errs: %u/48", m_rfN, errors);
+			// LogDebug("D-Star, audio sequence no. %u, errs: %u/48", m_rfN, errors);
 
 			if (m_net)
 				writeNetworkDataRF(data, errors, false);
@@ -624,7 +624,7 @@ void CDStarControl::writeNetwork()
 
 		m_netN = n;
 
-		LogDebug("D-Star, audio sequence no. %u, errs: %u/48", m_netN, errors);
+		// LogDebug("D-Star, audio sequence no. %u, errs: %u/48", m_netN, errors);
 
 		// Regenerate the sync
 		if (n == 0U)
