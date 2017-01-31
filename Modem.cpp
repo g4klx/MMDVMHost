@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2011-2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2011-2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -70,6 +70,8 @@ const unsigned char MMDVM_ACK         = 0x70U;
 const unsigned char MMDVM_NAK         = 0x7FU;
 
 const unsigned char MMDVM_SERIAL      = 0x80U;
+
+const unsigned char MMDVM_SAMPLES     = 0xF0U;
 
 const unsigned char MMDVM_DEBUG1      = 0xF1U;
 const unsigned char MMDVM_DEBUG2      = 0xF2U;
@@ -1129,6 +1131,7 @@ RESP_TYPE_MMDVM CModem::getResponse()
 		case MMDVM_ACK:
 		case MMDVM_NAK:
 		case MMDVM_SERIAL:
+		case MMDVM_SAMPLES:
 		case MMDVM_DEBUG1:
 		case MMDVM_DEBUG2:
 		case MMDVM_DEBUG3:
@@ -1171,6 +1174,10 @@ RESP_TYPE_MMDVM CModem::getResponse()
 	case MMDVM_DEBUG4:
 	case MMDVM_DEBUG5:
 		printDebug();
+		return RTM_TIMEOUT;
+
+	case MMDVM_SAMPLES:
+		printSamples();
 		return RTM_TIMEOUT;
 
 	default:
@@ -1303,4 +1310,41 @@ void CModem::printDebug()
 		short val4 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
 		LogMessage("Debug: %.*s %d %d %d %d", m_length - 11U, m_buffer + 3U, val1, val2, val3, val4);
 	}
+}
+
+void CModem::printSamples()
+{
+	const char* mode = NULL;
+	switch (m_buffer[3U]) {
+	case MODE_DSTAR:
+		mode = "D-Star";
+		break;
+	case MODE_DMR:
+		mode = "DMR";
+		break;
+	case MODE_YSF:
+		mode = "YSF";
+		break;
+	case MODE_P25:
+		mode = "P25";
+		break;
+	default:
+		mode = "???";
+		break;
+	}
+
+	char samples[50U];
+	samples[0U] = '\0';
+
+	unsigned char n = (m_buffer[1U] - 4U) / 2U;
+
+	for (unsigned char i = 0U; i < n; i++) {
+		unsigned char index = i * 2U + 4U;
+
+		short val = (m_buffer[index + 0U] << 8) | m_buffer[index + 1U];
+
+		::sprintf(samples + ::strlen(samples), " %d", val - 2048);
+	}
+
+	LogMessage("Debug: Samples dump: %s:%s", mode, samples);
 }
