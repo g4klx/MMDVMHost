@@ -1333,7 +1333,7 @@ void CModem::printSamples()
 		break;
 	}
 
-	char samples[50U];
+	char samples[250U];
 	samples[0U] = '\0';
 
 	unsigned char n = (m_buffer[1U] - 4U) / 2U;
