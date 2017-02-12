@@ -207,7 +207,9 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 
 		// Regenerate Audio
 		unsigned int errors = m_audio.process(data + 2U);
-		LogDebug("P25, LDU1 audio, errs: %u/1233", errors);
+		LogDebug("P25, LDU1 audio, errs: %u/1233 (%.1f%%)", errors, float(errors) / 12.33F);
+
+		m_display->writeP25BER(float(errors) / 12.33F);
 
 		m_rfBits += 1233U;
 		m_rfErrs += errors;
@@ -260,7 +262,9 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 
 		// Regenerate Audio
 		unsigned int errors = m_audio.process(data + 2U);
-		LogDebug("P25, LDU2 audio, errs: %u/1233", errors);
+		LogDebug("P25, LDU2 audio, errs: %u/1233 (%.1f%%)", errors, float(errors) / 12.33F);
+
+		m_display->writeP25BER(float(errors) / 12.33F);
 
 		m_rfBits += 1233U;
 		m_rfErrs += errors;

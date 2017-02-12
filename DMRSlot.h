@@ -61,10 +61,12 @@ private:
 	CDMREmbeddedData*          m_rfEmbeddedData;
 	unsigned int               m_rfEmbeddedReadN;
 	unsigned int               m_rfEmbeddedWriteN;
+	unsigned char              m_rfTalkerId;
 	CDMREmbeddedData           m_netEmbeddedLC;
 	CDMREmbeddedData*          m_netEmbeddedData;
 	unsigned int               m_netEmbeddedReadN;
 	unsigned int               m_netEmbeddedWriteN;
+	unsigned char              m_netTalkerId;
 	CDMRLC*                    m_rfLC;
 	CDMRLC*                    m_netLC;
 	CDMRDataHeader             m_rfDataHeader;

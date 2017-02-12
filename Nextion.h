@@ -43,18 +43,22 @@ protected:
 
   virtual void writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
   virtual void writeDStarRSSIInt(unsigned char rssi);
+  virtual void writeDStarBERInt(float ber);
   virtual void clearDStarInt();
 
   virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
   virtual void writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi);
+  virtual void writeDMRBERInt(unsigned int slotNo, float ber);
   virtual void clearDMRInt(unsigned int slotNo);
 
   virtual void writeFusionInt(const char* source, const char* dest, const char* type, const char* origin);
   virtual void writeFusionRSSIInt(unsigned char rssi);
+  virtual void writeFusionBERInt(float ber);
   virtual void clearFusionInt();
 
   virtual void writeP25Int(const char* source, bool group, unsigned int dest, const char* type);
   virtual void writeP25RSSIInt(unsigned char rssi);
+  virtual void writeP25BERInt(float ber);
   virtual void clearP25Int();
 
   virtual void writeCWInt();
@@ -72,8 +76,14 @@ private:
   bool          m_utc;
   unsigned int  m_idleBrightness;
   CTimer        m_clockDisplayTimer;
+  unsigned int  m_rssiAccum1;
+  unsigned int  m_rssiAccum2;
+  float         m_berAccum1;
+  float         m_berAccum2;
   unsigned int  m_rssiCount1;
   unsigned int  m_rssiCount2;
+  unsigned int  m_berCount1;
+  unsigned int  m_berCount2;
 
   void sendCommand(const char* command);
 };

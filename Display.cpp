@@ -90,6 +90,11 @@ void CDisplay::writeDStarRSSI(unsigned char rssi)
 		writeDStarRSSIInt(rssi);
 }
 
+void CDisplay::writeDStarBER(float ber)
+{
+  writeDStarBERInt(ber);
+}
+
 void CDisplay::clearDStar()
 {
 	if (m_timer1.hasExpired()) {
@@ -120,6 +125,11 @@ void CDisplay::writeDMRRSSI(unsigned int slotNo, unsigned char rssi)
 {
 	if (rssi != 0U)
 		writeDMRRSSIInt(slotNo, rssi);
+}
+
+void CDisplay::writeDMRBER(unsigned int slotNo, float ber)
+{
+  writeDMRBERInt(slotNo, ber);
 }
 
 void CDisplay::clearDMR(unsigned int slotNo)
@@ -162,6 +172,11 @@ void CDisplay::writeFusionRSSI(unsigned char rssi)
 		writeFusionRSSIInt(rssi);
 }
 
+void CDisplay::writeFusionBER(float ber)
+{
+  writeFusionBERInt(ber);
+}
+
 void CDisplay::clearFusion()
 {
 	if (m_timer1.hasExpired()) {
@@ -188,6 +203,11 @@ void CDisplay::writeP25RSSI(unsigned char rssi)
 {
 	if (rssi != 0U)
 		writeP25RSSIInt(rssi);
+}
+
+void CDisplay::writeP25BER(float ber)
+{
+  writeP25BERInt(ber);
 }
 
 void CDisplay::clearP25()
@@ -265,7 +285,15 @@ void CDisplay::writeDStarRSSIInt(unsigned char rssi)
 {
 }
 
+void CDisplay::writeDStarBERInt(float ber)
+{
+}
+
 void CDisplay::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
+{
+}
+
+void CDisplay::writeDMRBERInt(unsigned int slotNo, float ber)
 {
 }
 
@@ -273,6 +301,14 @@ void CDisplay::writeFusionRSSIInt(unsigned char rssi)
 {
 }
 
+void CDisplay::writeFusionBERInt(float ber)
+{
+}
+
 void CDisplay::writeP25RSSIInt(unsigned char rssi)
+{
+}
+
+void CDisplay::writeP25BERInt(float ber)
 {
 }

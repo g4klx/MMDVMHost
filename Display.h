@@ -37,18 +37,22 @@ public:
 
 	void writeDStar(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
 	void writeDStarRSSI(unsigned char rssi);
+	void writeDStarBER(float ber);
 	void clearDStar();
 
 	void writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
 	void writeDMRRSSI(unsigned int slotNo, unsigned char rssi);
+	void writeDMRBER(unsigned int slotNo, float ber);
 	void clearDMR(unsigned int slotNo);
 
 	void writeFusion(const char* source, const char* dest, const char* type, const char* origin);
 	void writeFusionRSSI(unsigned char rssi);
+	void writeFusionBER(float ber);
 	void clearFusion();
 
 	void writeP25(const char* source, bool group, unsigned int dest, const char* type);
 	void writeP25RSSI(unsigned char rssi);
+	void writeP25BER(float ber);
 	void clearP25();
 
 	void writeCW();
@@ -65,18 +69,22 @@ protected:
 
 	virtual void writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector) = 0;
 	virtual void writeDStarRSSIInt(unsigned char rssi);
+	virtual void writeDStarBERInt(float ber);
 	virtual void clearDStarInt() = 0;
 
 	virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type) = 0;
 	virtual void writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi);
+	virtual void writeDMRBERInt(unsigned int slotNo, float ber);
 	virtual void clearDMRInt(unsigned int slotNo) = 0;
 
 	virtual void writeFusionInt(const char* source, const char* dest, const char* type, const char* origin) = 0;
 	virtual void writeFusionRSSIInt(unsigned char rssi);
+	virtual void writeFusionBERInt(float ber);
 	virtual void clearFusionInt() = 0;
 
 	virtual void writeP25Int(const char* source, bool group, unsigned int dest, const char* type) = 0;
 	virtual void writeP25RSSIInt(unsigned char rssi);
+	virtual void writeP25BERInt(float ber);
 	virtual void clearP25Int() = 0;
 
 	virtual void writeCWInt() = 0;

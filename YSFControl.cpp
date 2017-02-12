@@ -273,6 +273,7 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 				unsigned int errors = m_rfPayload.processVDMode1Audio(data + 2U);
 				m_rfErrs += errors;
 				m_rfBits += 235U;
+				m_display->writeFusionBER(float(errors) / 2.35F);
 				LogDebug("YSF, V/D Mode 1, seq %u, AMBE FEC %u/235 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 2.35F);
 			}
 			break;
@@ -282,6 +283,7 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 				unsigned int errors = m_rfPayload.processVDMode2Audio(data + 2U);
 				m_rfErrs += errors;
 				m_rfBits += 135U;
+				m_display->writeFusionBER(float(errors) / 1.35F);
 				LogDebug("YSF, V/D Mode 2, seq %u, Repetition FEC %u/135 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 1.35F);
 			}
 			break;
@@ -297,6 +299,7 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 				unsigned int errors = m_rfPayload.processVoiceFRModeAudio(data + 2U);
 				m_rfErrs += errors;
 				m_rfBits += 720U;
+				m_display->writeFusionBER(float(errors) / 7.2F);
 				LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 7.2F);
 			}
 			valid = false;
@@ -542,7 +545,6 @@ void CYSFControl::writeNetwork()
 					// if (send) {
 						m_netErrs += errors;
 						m_netBits += 235U;
-						LogDebug("YSF, V/D Mode 1, seq %u, AMBE FEC %u/235 (%.1f%%)", n, errors, float(errors) / 2.35F);
 					// }
 				}
 				break;
@@ -554,13 +556,11 @@ void CYSFControl::writeNetwork()
 					// if (send) {
 						m_netErrs += errors;
 						m_netBits += 135U;
-						LogDebug("YSF, V/D Mode 2, seq %u, Repetition FEC %u/135 (%.1f%%)", n, errors, float(errors) / 1.35F);
 					// }
 				}
 				break;
 
 			case YSF_DT_DATA_FR_MODE:
-				LogDebug("YSF, Network data FICH B=%u/%u F=%u/%u", bn, bt, fn, ft);
 				m_netPayload.processDataFRModeData(data + 35U, fn, gateway);
 				break;
 
@@ -572,7 +572,6 @@ void CYSFControl::writeNetwork()
 					// if (send) {
 						m_netErrs += errors;
 						m_netBits += 720U;
-						LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%)", n, errors, float(errors) / 7.2F);
 					// }
 				}
 				break;

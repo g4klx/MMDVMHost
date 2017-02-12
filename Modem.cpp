@@ -465,7 +465,19 @@ void CModem::clock(unsigned int ms)
 				LogWarning("Received a NAK from the MMDVM, command = 0x%02X, reason = %u", m_buffer[3U], m_buffer[4U]);
 				break;
 
-			default:
+      case MMDVM_DEBUG1:
+      case MMDVM_DEBUG2:
+      case MMDVM_DEBUG3:
+      case MMDVM_DEBUG4:
+      case MMDVM_DEBUG5:
+        printDebug();
+        break;
+
+      case MMDVM_SAMPLES:
+        printSamples();
+        break;
+      
+      default:
 				LogMessage("Unknown message, type: %02X", m_buffer[2U]);
 				CUtils::dump("Buffer dump", m_buffer, m_length);
 				break;
@@ -1112,39 +1124,6 @@ RESP_TYPE_MMDVM CModem::getResponse()
 		if (ret == 0)
 			return RTM_TIMEOUT;
 
-		switch (m_buffer[2U]) {
-		case MMDVM_DSTAR_HEADER:
-		case MMDVM_DSTAR_DATA:
-		case MMDVM_DSTAR_LOST:
-		case MMDVM_DSTAR_EOT:
-		case MMDVM_DMR_DATA1:
-		case MMDVM_DMR_DATA2:
-		case MMDVM_DMR_LOST1:
-		case MMDVM_DMR_LOST2:
-		case MMDVM_YSF_DATA:
-		case MMDVM_YSF_LOST:
-		case MMDVM_P25_HDR:
-		case MMDVM_P25_LDU:
-		case MMDVM_P25_LOST:
-		case MMDVM_GET_STATUS:
-		case MMDVM_GET_VERSION:
-		case MMDVM_ACK:
-		case MMDVM_NAK:
-		case MMDVM_SERIAL:
-		case MMDVM_SAMPLES:
-		case MMDVM_DEBUG1:
-		case MMDVM_DEBUG2:
-		case MMDVM_DEBUG3:
-		case MMDVM_DEBUG4:
-		case MMDVM_DEBUG5:
-			break;
-
-		default:
-			LogError("Unknown message, type: %02X", m_buffer[2U]);
-			m_offset = 0U;
-			return RTM_ERROR;
-		}
-
 		m_offset = 3U;
 	}
 
@@ -1167,23 +1146,9 @@ RESP_TYPE_MMDVM CModem::getResponse()
 
 	m_offset = 0U;
 
-	switch (m_buffer[2U]) {
-	case MMDVM_DEBUG1:
-	case MMDVM_DEBUG2:
-	case MMDVM_DEBUG3:
-	case MMDVM_DEBUG4:
-	case MMDVM_DEBUG5:
-		printDebug();
-		return RTM_TIMEOUT;
+	// CUtils::dump(1U, "Received", m_buffer, m_length);
 
-	case MMDVM_SAMPLES:
-		printSamples();
-		return RTM_TIMEOUT;
-
-	default:
-		// CUtils::dump(1U, "Received", m_buffer, m_length);
-		return RTM_OK;
-	}
+  return RTM_OK;
 }
 
 HW_TYPE CModem::getHWType() const
