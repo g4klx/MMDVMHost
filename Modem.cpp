@@ -477,7 +477,7 @@ void CModem::clock(unsigned int ms)
 				printSamples();
 				break;
 
-			efault:
+			default:
 				LogMessage("Unknown message, type: %02X", m_buffer[2U]);
 				CUtils::dump("Buffer dump", m_buffer, m_length);
 				break;
