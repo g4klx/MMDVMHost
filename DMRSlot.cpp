@@ -462,7 +462,7 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				if (ret) {
 					trellis.encode(payload, data + 2U);
 				} else {
-					LogDebug("DMR Slot %u, unfixable rate 3/4 data", m_slotNo);
+					LogMessage("DMR Slot %u, unfixable RF rate 3/4 data", m_slotNo);
 					CUtils::dump(1U, "Data", data + 2U, DMR_FRAME_LENGTH_BYTES);
 				}
 			}
@@ -1469,8 +1469,12 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			CDMRTrellis trellis;
 			unsigned char payload[18U];
 			bool ret = trellis.decode(data + 2U, payload);
-			if (ret)
+			if (ret) {
 				trellis.encode(payload, data + 2U);
+			} else {
+				LogMessage("DMR Slot %u, unfixable network rate 3/4 data", m_slotNo);
+				CUtils::dump(1U, "Data", data + 2U, DMR_FRAME_LENGTH_BYTES);
+			}
 		}
 
 		// Regenerate the Slot Type
