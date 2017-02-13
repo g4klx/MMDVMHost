@@ -516,8 +516,6 @@ void CYSFControl::writeNetwork()
 	CYSFFICH fich;
 	bool valid = fich.decode(data + 35U);
 	if (valid) {
-		unsigned char bn = fich.getBN();
-		unsigned char bt = fich.getBT();
 		unsigned char dt = fich.getDT();
 		unsigned char fn = fich.getFN();
 		unsigned char ft = fich.getFT();
