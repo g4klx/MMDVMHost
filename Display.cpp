@@ -92,7 +92,7 @@ void CDisplay::writeDStarRSSI(unsigned char rssi)
 
 void CDisplay::writeDStarBER(float ber)
 {
-  writeDStarBERInt(ber);
+	writeDStarBERInt(ber);
 }
 
 void CDisplay::clearDStar()
@@ -129,7 +129,7 @@ void CDisplay::writeDMRRSSI(unsigned int slotNo, unsigned char rssi)
 
 void CDisplay::writeDMRBER(unsigned int slotNo, float ber)
 {
-  writeDMRBERInt(slotNo, ber);
+	writeDMRBERInt(slotNo, ber);
 }
 
 void CDisplay::clearDMR(unsigned int slotNo)
@@ -174,7 +174,7 @@ void CDisplay::writeFusionRSSI(unsigned char rssi)
 
 void CDisplay::writeFusionBER(float ber)
 {
-  writeFusionBERInt(ber);
+	writeFusionBERInt(ber);
 }
 
 void CDisplay::clearFusion()
@@ -207,7 +207,7 @@ void CDisplay::writeP25RSSI(unsigned char rssi)
 
 void CDisplay::writeP25BER(float ber)
 {
-  writeP25BERInt(ber);
+	writeP25BERInt(ber);
 }
 
 void CDisplay::clearP25()
