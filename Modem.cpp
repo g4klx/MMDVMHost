@@ -465,19 +465,19 @@ void CModem::clock(unsigned int ms)
 				LogWarning("Received a NAK from the MMDVM, command = 0x%02X, reason = %u", m_buffer[3U], m_buffer[4U]);
 				break;
 
-      case MMDVM_DEBUG1:
-      case MMDVM_DEBUG2:
-      case MMDVM_DEBUG3:
-      case MMDVM_DEBUG4:
-      case MMDVM_DEBUG5:
-        printDebug();
-        break;
+			case MMDVM_DEBUG1:
+			case MMDVM_DEBUG2:
+			case MMDVM_DEBUG3:
+			case MMDVM_DEBUG4:
+			case MMDVM_DEBUG5:
+				printDebug();
+				break;
 
-      case MMDVM_SAMPLES:
-        printSamples();
-        break;
-      
-      default:
+			case MMDVM_SAMPLES:
+				printSamples();
+				break;
+
+			efault:
 				LogMessage("Unknown message, type: %02X", m_buffer[2U]);
 				CUtils::dump("Buffer dump", m_buffer, m_length);
 				break;
