@@ -90,6 +90,7 @@ public:
   std::string  getDStarModule() const;
   bool         getDStarSelfOnly() const;
   std::vector<std::string> getDStarBlackList() const;
+  bool         getDStarErrorReply() const;
 
   // The DMR section
   bool         getDMREnabled() const;
@@ -238,6 +239,7 @@ private:
   std::string  m_dstarModule;
   bool         m_dstarSelfOnly;
   std::vector<std::string> m_dstarBlackList;
+  bool         m_dstarErrorReply;
 
   bool         m_dmrEnabled;
   bool         m_dmrBeacons;

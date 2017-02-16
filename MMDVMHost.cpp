@@ -329,15 +329,17 @@ int CMMDVMHost::run()
 		std::string module = m_conf.getDStarModule();
 		bool selfOnly      = m_conf.getDStarSelfOnly();
 		std::vector<std::string> blackList = m_conf.getDStarBlackList();
+		bool errorReply    = m_conf.getDStarErrorReply();
 
 		LogInfo("D-Star Parameters");
 		LogInfo("    Module: %s", module.c_str());
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
+		LogInfo("    Error Reply: %s", errorReply ? "yes" : "no");
 
 		if (blackList.size() > 0U)
 			LogInfo("    Black List: %u", blackList.size());
 
-		dstar = new CDStarControl(m_callsign, module, selfOnly, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex, rssi);
+		dstar = new CDStarControl(m_callsign, module, selfOnly, errorReply, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex, rssi);
 	}
 
 	CDMRControl* dmr = NULL;

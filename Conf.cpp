@@ -99,6 +99,7 @@ m_dstarEnabled(false),
 m_dstarModule("C"),
 m_dstarSelfOnly(false),
 m_dstarBlackList(),
+m_dstarErrorReply(true),
 m_dmrEnabled(false),
 m_dmrBeacons(false),
 m_dmrId(0U),
@@ -359,7 +360,8 @@ bool CConf::read()
 				}
 				p = ::strtok(NULL, ",\r\n");
 			}
-		}
+		} else if (::strcmp(key, "ErrorReply") == 0)
+			m_dstarErrorReply = ::atoi(value) == 1;
 	} else if (section == SECTION_DMR) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dmrEnabled = ::atoi(value) == 1;
@@ -777,6 +779,11 @@ bool CConf::getDStarSelfOnly() const
 std::vector<std::string> CConf::getDStarBlackList() const
 {
 	return m_dstarBlackList;
+}
+
+bool CConf::getDStarErrorReply() const
+{
+	return m_dstarErrorReply;
 }
 
 bool CConf::getDMREnabled() const
