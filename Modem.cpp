@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2011-2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2011-2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -70,6 +70,8 @@ const unsigned char MMDVM_ACK         = 0x70U;
 const unsigned char MMDVM_NAK         = 0x7FU;
 
 const unsigned char MMDVM_SERIAL      = 0x80U;
+
+const unsigned char MMDVM_SAMPLES     = 0xF0U;
 
 const unsigned char MMDVM_DEBUG1      = 0xF1U;
 const unsigned char MMDVM_DEBUG2      = 0xF2U;
@@ -461,6 +463,18 @@ void CModem::clock(unsigned int ms)
 
 			case MMDVM_NAK:
 				LogWarning("Received a NAK from the MMDVM, command = 0x%02X, reason = %u", m_buffer[3U], m_buffer[4U]);
+				break;
+
+			case MMDVM_DEBUG1:
+			case MMDVM_DEBUG2:
+			case MMDVM_DEBUG3:
+			case MMDVM_DEBUG4:
+			case MMDVM_DEBUG5:
+				printDebug();
+				break;
+
+			case MMDVM_SAMPLES:
+				printSamples();
 				break;
 
 			default:
@@ -1110,38 +1124,6 @@ RESP_TYPE_MMDVM CModem::getResponse()
 		if (ret == 0)
 			return RTM_TIMEOUT;
 
-		switch (m_buffer[2U]) {
-		case MMDVM_DSTAR_HEADER:
-		case MMDVM_DSTAR_DATA:
-		case MMDVM_DSTAR_LOST:
-		case MMDVM_DSTAR_EOT:
-		case MMDVM_DMR_DATA1:
-		case MMDVM_DMR_DATA2:
-		case MMDVM_DMR_LOST1:
-		case MMDVM_DMR_LOST2:
-		case MMDVM_YSF_DATA:
-		case MMDVM_YSF_LOST:
-		case MMDVM_P25_HDR:
-		case MMDVM_P25_LDU:
-		case MMDVM_P25_LOST:
-		case MMDVM_GET_STATUS:
-		case MMDVM_GET_VERSION:
-		case MMDVM_ACK:
-		case MMDVM_NAK:
-		case MMDVM_SERIAL:
-		case MMDVM_DEBUG1:
-		case MMDVM_DEBUG2:
-		case MMDVM_DEBUG3:
-		case MMDVM_DEBUG4:
-		case MMDVM_DEBUG5:
-			break;
-
-		default:
-			LogError("Unknown message, type: %02X", m_buffer[2U]);
-			m_offset = 0U;
-			return RTM_ERROR;
-		}
-
 		m_offset = 3U;
 	}
 
@@ -1164,19 +1146,9 @@ RESP_TYPE_MMDVM CModem::getResponse()
 
 	m_offset = 0U;
 
-	switch (m_buffer[2U]) {
-	case MMDVM_DEBUG1:
-	case MMDVM_DEBUG2:
-	case MMDVM_DEBUG3:
-	case MMDVM_DEBUG4:
-	case MMDVM_DEBUG5:
-		printDebug();
-		return RTM_TIMEOUT;
+	// CUtils::dump(1U, "Received", m_buffer, m_length);
 
-	default:
-		// CUtils::dump(1U, "Received", m_buffer, m_length);
-		return RTM_OK;
-	}
+  return RTM_OK;
 }
 
 HW_TYPE CModem::getHWType() const
@@ -1303,4 +1275,41 @@ void CModem::printDebug()
 		short val4 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
 		LogMessage("Debug: %.*s %d %d %d %d", m_length - 11U, m_buffer + 3U, val1, val2, val3, val4);
 	}
+}
+
+void CModem::printSamples()
+{
+	const char* mode = NULL;
+	switch (m_buffer[3U]) {
+	case MODE_DSTAR:
+		mode = "D-Star";
+		break;
+	case MODE_DMR:
+		mode = "DMR";
+		break;
+	case MODE_YSF:
+		mode = "YSF";
+		break;
+	case MODE_P25:
+		mode = "P25";
+		break;
+	default:
+		mode = "???";
+		break;
+	}
+
+	char samples[250U];
+	samples[0U] = '\0';
+
+	unsigned char n = (m_buffer[1U] - 4U) / 2U;
+
+	for (unsigned char i = 0U; i < n; i++) {
+		unsigned char index = i * 2U + 4U;
+
+		short val = (m_buffer[index + 0U] << 8) | m_buffer[index + 1U];
+
+		::sprintf(samples + ::strlen(samples), " %d", val - 2048);
+	}
+
+	LogMessage("Debug: Samples dump: %s:%s", mode, samples);
 }

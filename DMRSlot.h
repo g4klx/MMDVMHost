@@ -50,7 +50,7 @@ public:
 
 	void clock();
 
-	static void init(unsigned int colorCode, unsigned int callHang, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter);
+	static void init(unsigned int colorCode, bool embeddedLCOnly, unsigned int callHang, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter);
 
 private:
 	unsigned int               m_slotNo;
@@ -61,10 +61,12 @@ private:
 	CDMREmbeddedData*          m_rfEmbeddedData;
 	unsigned int               m_rfEmbeddedReadN;
 	unsigned int               m_rfEmbeddedWriteN;
+	unsigned char              m_rfTalkerId;
 	CDMREmbeddedData           m_netEmbeddedLC;
 	CDMREmbeddedData*          m_netEmbeddedData;
 	unsigned int               m_netEmbeddedReadN;
 	unsigned int               m_netEmbeddedWriteN;
+	unsigned char              m_netTalkerId;
 	CDMRLC*                    m_rfLC;
 	CDMRLC*                    m_netLC;
 	CDMRDataHeader             m_rfDataHeader;
@@ -97,6 +99,8 @@ private:
 	FILE*                      m_fp;
 
 	static unsigned int        m_colorCode;
+
+	static bool                m_embeddedLCOnly;
 
 	static CModem*             m_modem;
 	static CDMRNetwork*        m_network;
