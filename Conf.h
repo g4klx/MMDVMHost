@@ -79,6 +79,7 @@ public:
   unsigned int getModemP25TXLevel() const;
   int          getModemOscOffset() const;
   std::string  getModemRSSIMappingFile() const;
+  std::string  getModemSamplesDir() const;
   bool         getModemDebug() const;
 
   // The UMP section
@@ -230,6 +231,7 @@ private:
   unsigned int m_modemP25TXLevel;
   int          m_modemOscOffset;
   std::string  m_modemRSSIMappingFile;
+  std::string  m_modemSamplesDir;
   bool         m_modemDebug;
 
   bool         m_umpEnabled;
