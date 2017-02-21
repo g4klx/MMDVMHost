@@ -1347,7 +1347,7 @@ void CModem::dumpSamples()
 
 	struct tm* tm = ::localtime(&now);
 
-	char* mode = NULL;
+	const char* mode = NULL;
 	switch (m_buffer[5U]) {
 	case MODE_DSTAR:
 		mode = "DStar";
