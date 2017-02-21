@@ -72,8 +72,7 @@ const unsigned char MMDVM_NAK         = 0x7FU;
 
 const unsigned char MMDVM_SERIAL      = 0x80U;
 
-const unsigned char MMDVM_SAMPLES      = 0xEFU;
-const unsigned char MMDVM_SYNC_SAMPLES = 0xF0U;
+const unsigned char MMDVM_SAMPLES     = 0xF0U;
 
 const unsigned char MMDVM_DEBUG1      = 0xF1U;
 const unsigned char MMDVM_DEBUG2      = 0xF2U;
@@ -478,10 +477,6 @@ void CModem::clock(unsigned int ms)
 
 			case MMDVM_SAMPLES:
 				dumpSamples();
-				break;
-
-			case MMDVM_SYNC_SAMPLES:
-				printSyncSamples();
 				break;
 
 			default:
@@ -1300,43 +1295,6 @@ void CModem::printDebug()
 	}
 }
 
-void CModem::printSyncSamples()
-{
-	const char* mode = NULL;
-	switch (m_buffer[3U]) {
-	case MODE_DSTAR:
-		mode = "D-Star";
-		break;
-	case MODE_DMR:
-		mode = "DMR";
-		break;
-	case MODE_P25:
-		mode = "P25";
-		break;
-	case MODE_YSF:
-		mode = "YSF";
-		break;
-	default:
-		mode = "???";
-		break;
-	}
-
-	char samples[250U];
-	samples[0U] = '\0';
-
-	unsigned char n = (m_length - 4U) / 2U;
-
-	for (unsigned char i = 0U; i < n; i++) {
-		unsigned char index = i * 2U + 4U;
-
-		short val = (m_buffer[index + 0U] << 8) | m_buffer[index + 1U];
-
-		::sprintf(samples + ::strlen(samples), " %d", val - 2048);
-	}
-
-	LogMessage("Debug: Sync Samples dump: %s:%s", mode, samples);
-}
-
 void CModem::dumpSamples()
 {
 	if (m_samplesDir.empty())
@@ -1347,7 +1305,7 @@ void CModem::dumpSamples()
 
 	struct tm* tm = ::localtime(&now);
 
-	char* mode = NULL;
+	const char* mode = NULL;
 	switch (m_buffer[5U]) {
 	case MODE_DSTAR:
 		mode = "DStar";

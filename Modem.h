@@ -144,7 +144,6 @@ private:
 	bool setFrequency();
 
 	void printDebug();
-	void printSyncSamples();
 	void dumpSamples();
 
 	RESP_TYPE_MMDVM getResponse();
