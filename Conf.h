@@ -79,6 +79,7 @@ public:
   unsigned int getModemP25TXLevel() const;
   int          getModemOscOffset() const;
   std::string  getModemRSSIMappingFile() const;
+  std::string  getModemSamplesDir() const;
   bool         getModemDebug() const;
 
   // The UMP section
@@ -90,6 +91,7 @@ public:
   std::string  getDStarModule() const;
   bool         getDStarSelfOnly() const;
   std::vector<std::string> getDStarBlackList() const;
+  bool         getDStarErrorReply() const;
 
   // The DMR section
   bool         getDMREnabled() const;
@@ -229,6 +231,7 @@ private:
   unsigned int m_modemP25TXLevel;
   int          m_modemOscOffset;
   std::string  m_modemRSSIMappingFile;
+  std::string  m_modemSamplesDir;
   bool         m_modemDebug;
 
   bool         m_umpEnabled;
@@ -238,6 +241,7 @@ private:
   std::string  m_dstarModule;
   bool         m_dstarSelfOnly;
   std::vector<std::string> m_dstarBlackList;
+  bool         m_dstarErrorReply;
 
   bool         m_dmrEnabled;
   bool         m_dmrBeacons;

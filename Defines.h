@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -44,7 +44,8 @@ enum RPT_RF_STATE {
 	RS_RF_LATE_ENTRY,
 	RS_RF_AUDIO,
 	RS_RF_DATA,
-	RS_RF_REJECTED
+	RS_RF_REJECTED,
+	RS_RF_INVALID
 };
 
 enum RPT_NET_STATE {

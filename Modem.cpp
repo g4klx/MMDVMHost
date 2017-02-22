@@ -29,6 +29,7 @@
 #include <cstdio>
 #include <cassert>
 #include <cstdint>
+#include <ctime>
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <Windows.h>
@@ -81,10 +82,10 @@ const unsigned char MMDVM_DEBUG5      = 0xF5U;
 
 const unsigned int MAX_RESPONSES = 30U;
 
-const unsigned int BUFFER_LENGTH = 500U;
+const unsigned int BUFFER_LENGTH = 2000U;
 
 
-CModem::CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, int oscOffset, bool debug) :
+CModem::CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, int oscOffset, const std::string& samplesDir, bool debug) :
 m_port(port),
 m_colorCode(0U),
 m_duplex(duplex),
@@ -100,6 +101,7 @@ m_dmrTXLevel(0U),
 m_ysfTXLevel(0U),
 m_p25TXLevel(0U),
 m_oscOffset(oscOffset),
+m_samplesDir(samplesDir),
 m_debug(debug),
 m_rxFrequency(0U),
 m_txFrequency(0U),
@@ -474,7 +476,7 @@ void CModem::clock(unsigned int ms)
 				break;
 
 			case MMDVM_SAMPLES:
-				printSamples();
+				dumpSamples();
 				break;
 
 			default:
@@ -1128,6 +1130,22 @@ RESP_TYPE_MMDVM CModem::getResponse()
 	}
 
 	if (m_offset >= 3U) {
+		// Use later two byte length field
+		if (m_length == 0U) {
+			int ret = m_serial.read(m_buffer + 3U, 2U);
+			if (ret < 0) {
+				LogError("Error when reading from the modem");
+				m_offset = 0U;
+				return RTM_ERROR;
+			}
+
+			if (ret == 0)
+				return RTM_TIMEOUT;
+
+			m_length = (m_buffer[3U] << 8) | m_buffer[4U];
+			m_offset = 5U;
+		}
+
 		while (m_offset < m_length) {
 			int ret = m_serial.read(m_buffer + m_offset, m_length - m_offset);
 			if (ret < 0) {
@@ -1277,39 +1295,49 @@ void CModem::printDebug()
 	}
 }
 
-void CModem::printSamples()
+void CModem::dumpSamples()
 {
+	if (m_samplesDir.empty())
+		m_samplesDir = ".";
+
+	time_t now;
+	::time(&now);
+
+	struct tm* tm = ::localtime(&now);
+
 	const char* mode = NULL;
-	switch (m_buffer[3U]) {
+	switch (m_buffer[5U]) {
 	case MODE_DSTAR:
-		mode = "D-Star";
+		mode = "DStar";
 		break;
 	case MODE_DMR:
 		mode = "DMR";
 		break;
-	case MODE_YSF:
-		mode = "YSF";
-		break;
 	case MODE_P25:
 		mode = "P25";
 		break;
-	default:
-		mode = "???";
+	case MODE_YSF:
+		mode = "YSF";
 		break;
+	default:
+		LogWarning("Unknown protocol passed to samples dump - %u", m_buffer[5U]);
+		return;
 	}
 
-	char samples[250U];
-	samples[0U] = '\0';
+	char filename[150U];
+#if defined(_WIN32) || defined(_WIN64)
+	::sprintf(filename, "%s\\Samples-%s-%04d%02d%02d.dat", m_samplesDir.c_str(), mode, tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
+#else
+	::sprintf(filename, "%s/Samples-%s-%04d%02d%02d.dat", m_samplesDir.c_str(), mode, tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
+#endif
 
-	unsigned char n = (m_buffer[1U] - 4U) / 2U;
-
-	for (unsigned char i = 0U; i < n; i++) {
-		unsigned char index = i * 2U + 4U;
-
-		short val = (m_buffer[index + 0U] << 8) | m_buffer[index + 1U];
-
-		::sprintf(samples + ::strlen(samples), " %d", val - 2048);
+	FILE* fp = ::fopen(filename, "a+b");
+	if (fp == NULL) {
+		LogWarning("Unable to open samples file for writing - %s", filename);
+		return;
 	}
 
-	LogMessage("Debug: Samples dump: %s:%s", mode, samples);
+	::fwrite(m_buffer + 6U, 1U, m_length, fp);
+
+	::fclose(fp);
 }

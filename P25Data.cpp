@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -96,9 +96,14 @@ bool CP25Data::decodeLDU1(const unsigned char* data)
 	CP25Utils::decode(data, raw, 1356U, 1398U);
 	decodeLDUHamming(raw, rs + 15U);
 
-	bool ret = m_rs241213.decode(rs);
-	if (!ret)
+	try {
+		bool ret = m_rs241213.decode(rs);
+		if (!ret)
+			return false;
+	} catch (...) {
+		CUtils::dump(2U, "P25, RS carshed with input data", rs, 18U);
 		return false;
+	}
 
 	// Simple validation of the source id
 	unsigned int srcId = (rs[6U] << 16) + (rs[7U] << 8) + rs[8U];

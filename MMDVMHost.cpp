@@ -329,15 +329,17 @@ int CMMDVMHost::run()
 		std::string module = m_conf.getDStarModule();
 		bool selfOnly      = m_conf.getDStarSelfOnly();
 		std::vector<std::string> blackList = m_conf.getDStarBlackList();
+		bool errorReply    = m_conf.getDStarErrorReply();
 
 		LogInfo("D-Star Parameters");
 		LogInfo("    Module: %s", module.c_str());
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
+		LogInfo("    Error Reply: %s", errorReply ? "yes" : "no");
 
 		if (blackList.size() > 0U)
 			LogInfo("    Black List: %u", blackList.size());
 
-		dstar = new CDStarControl(m_callsign, module, selfOnly, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex, rssi);
+		dstar = new CDStarControl(m_callsign, module, selfOnly, errorReply, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex, rssi);
 	}
 
 	CDMRControl* dmr = NULL;
@@ -793,6 +795,7 @@ bool CMMDVMHost::createModem()
 	unsigned int rxFrequency  = m_conf.getRxFrequency();
 	unsigned int txFrequency  = m_conf.getTxFrequency();
 	int oscOffset             = m_conf.getModemOscOffset();
+	std::string samplesDir    = m_conf.getModemSamplesDir();
 
 	LogInfo("Modem Parameters");
 	LogInfo("    Port: %s", port.c_str());
@@ -809,10 +812,9 @@ bool CMMDVMHost::createModem()
 	LogInfo("    P25 TX Level: %u%%", p25TXLevel);
 	LogInfo("    RX Frequency: %uHz", rxFrequency);
 	LogInfo("    TX Frequency: %uHz", txFrequency);
-
 	LogInfo("    Osc. Offset: %dppm", oscOffset);
 
-	m_modem = new CModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, oscOffset, debug);
+	m_modem = new CModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, oscOffset, samplesDir, debug);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled);
 	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel);
 	m_modem->setRFParams(rxFrequency, txFrequency);
