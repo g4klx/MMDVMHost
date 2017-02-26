@@ -19,18 +19,12 @@
 #ifndef	MODEM_H
 #define	MODEM_H
 
-#include "SerialController.h"
 #include "RingBuffer.h"
 #include "Defines.h"
 #include "Timer.h"
 
 #include <string>
-
-enum RESP_TYPE_MMDVM {
-	RTM_OK,
-	RTM_TIMEOUT,
-	RTM_ERROR
-};
+#include <cstdint>
 
 class CModem {
 public:
@@ -87,66 +81,46 @@ public:
 	void close();
 
 private:
-	std::string                m_port;
-	unsigned int               m_colorCode;
-	bool                       m_duplex;
-	bool                       m_rxInvert;
-	bool                       m_txInvert;
-	bool                       m_pttInvert;
-	unsigned int               m_txDelay;
-	unsigned int               m_dmrDelay;
-	unsigned int               m_rxLevel;
-	unsigned int               m_cwIdTXLevel;
-	unsigned int               m_dstarTXLevel;
-	unsigned int               m_dmrTXLevel;
-	unsigned int               m_ysfTXLevel;
-	unsigned int               m_p25TXLevel;
-	int                        m_oscOffset;
 	std::string                m_samplesDir;
 	bool                       m_debug;
-	unsigned int               m_rxFrequency;
-	unsigned int               m_txFrequency;
-	bool                       m_dstarEnabled;
-	bool                       m_dmrEnabled;
-	bool                       m_ysfEnabled;
-	bool                       m_p25Enabled;
-	CSerialController          m_serial;
-	unsigned char*             m_buffer;
-	unsigned int               m_length;
-	unsigned int               m_offset;
 	CRingBuffer<unsigned char> m_rxDStarData;
-	CRingBuffer<unsigned char> m_txDStarData;
-	CRingBuffer<unsigned char> m_rxDMRData1;
 	CRingBuffer<unsigned char> m_rxDMRData2;
-	CRingBuffer<unsigned char> m_txDMRData1;
-	CRingBuffer<unsigned char> m_txDMRData2;
 	CRingBuffer<unsigned char> m_rxYSFData;
-	CRingBuffer<unsigned char> m_txYSFData;
 	CRingBuffer<unsigned char> m_rxP25Data;
-	CRingBuffer<unsigned char> m_txP25Data;
-	CTimer                     m_statusTimer;
-	CTimer                     m_inactivityTimer;
-	CTimer                     m_playoutTimer;
-	unsigned int               m_dstarSpace;
-	unsigned int               m_dmrSpace1;
-	unsigned int               m_dmrSpace2;
-	unsigned int               m_ysfSpace;
-	unsigned int               m_p25Space;
-	bool                       m_tx;
-	bool                       m_cd;
-	bool                       m_lockout;
-	bool                       m_error;
-	HW_TYPE                    m_hwType;
+  CTimer                     m_dmrTimer;
+	CTimer                     m_ysfTimer;
+  CTimer                     m_p25Timer;
+  FILE*                      m_dmrFP;
+	FILE*                      m_ysfFP;
+	FILE*                      m_p25FP;
+  int16_t                    m_dmrThresholdVal;
+  int16_t                    m_dmrCentreVal;
+  int16_t                    m_dmrThreshold[16U];
+  int16_t                    m_dmrCentre[16U];
+  uint16_t                   m_dmrAveragePtr;
+  int16_t                    m_ysfThresholdVal;
+	int16_t                    m_ysfCentreVal;
+	int16_t                    m_ysfThreshold[16U];
+	int16_t                    m_ysfCentre[16U];
+	uint16_t                   m_ysfAveragePtr;
+	int16_t                    m_p25ThresholdVal;
+	int16_t                    m_p25CentreVal;
+	int16_t                    m_p25Threshold[16U];
+	int16_t                    m_p25Centre[16U];
+	uint16_t                   m_p25AveragePtr;
 
-	bool readVersion();
-	bool readStatus();
-	bool setConfig();
-	bool setFrequency();
+	void processYSF();
+	void processP25();
+  void processDMR();
 
-	void printDebug();
-	void dumpSamples();
+  void dmrCalculateLevels(const int16_t* symbols);
+  void dmrSamplesToBits(const int16_t* symbols, unsigned char* buffer);
 
-	RESP_TYPE_MMDVM getResponse();
+  void ysfCalculateLevels(const int16_t* symbols);
+	void ysfSamplesToBits(const int16_t* symbols, unsigned char* buffer);
+
+	void p25CalculateLevels(const int16_t* symbols);
+	void p25SamplesToBits(const int16_t* symbols, unsigned char* buffer);
 };
 
 #endif

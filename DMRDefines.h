@@ -21,13 +21,15 @@
 
 #include "Defines.h"		// For TAG_DATA
 
-const unsigned int DMR_FRAME_LENGTH_BITS  = 264U;
-const unsigned int DMR_FRAME_LENGTH_BYTES = 33U;
+const unsigned int DMR_FRAME_LENGTH_BYTES   = 33U;
+const unsigned int DMR_FRAME_LENGTH_BITS    = DMR_FRAME_LENGTH_BYTES * 8U;
+const unsigned int DMR_FRAME_LENGTH_SYMBOLS = DMR_FRAME_LENGTH_BYTES * 4U;
 
-const unsigned int DMR_SYNC_LENGTH_BITS  = 48U;
-const unsigned int DMR_SYNC_LENGTH_BYTES = 6U;
+const unsigned int DMR_SYNC_LENGTH_BYTES   = 6U;
+const unsigned int DMR_SYNC_LENGTH_BITS    = DMR_SYNC_LENGTH_BYTES * 8U;
+const unsigned int DMR_SYNC_LENGTH_SYMBOLS = DMR_SYNC_LENGTH_BYTES * 4U;
 
-const unsigned int DMR_EMB_LENGTH_BITS  = 8U;
+const unsigned int DMR_EMB_LENGTH_BITS = 8U;
 const unsigned int DMR_EMB_LENGTH_BYTES = 1U;
 
 const unsigned int DMR_SLOT_TYPE_LENGTH_BITS  = 8U;

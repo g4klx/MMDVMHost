@@ -28,7 +28,6 @@
 #include <cmath>
 #include <cstdio>
 #include <cassert>
-#include <cstdint>
 #include <ctime>
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -37,575 +36,98 @@
 #include <unistd.h>
 #endif
 
-const unsigned char MMDVM_FRAME_START = 0xE0U;
+const uint8_t BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
 
-const unsigned char MMDVM_GET_VERSION = 0x00U;
-const unsigned char MMDVM_GET_STATUS  = 0x01U;
-const unsigned char MMDVM_SET_CONFIG  = 0x02U;
-const unsigned char MMDVM_SET_MODE    = 0x03U;
-const unsigned char MMDVM_SET_FREQ    = 0x04U;
+#define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 
-const unsigned char MMDVM_SEND_CWID   = 0x0AU;
-
-const unsigned char MMDVM_DSTAR_HEADER = 0x10U;
-const unsigned char MMDVM_DSTAR_DATA   = 0x11U;
-const unsigned char MMDVM_DSTAR_LOST   = 0x12U;
-const unsigned char MMDVM_DSTAR_EOT    = 0x13U;
-
-const unsigned char MMDVM_DMR_DATA1   = 0x18U;
-const unsigned char MMDVM_DMR_LOST1   = 0x19U;
-const unsigned char MMDVM_DMR_DATA2   = 0x1AU;
-const unsigned char MMDVM_DMR_LOST2   = 0x1BU;
-const unsigned char MMDVM_DMR_SHORTLC = 0x1CU;
-const unsigned char MMDVM_DMR_START   = 0x1DU;
-const unsigned char MMDVM_DMR_ABORT   = 0x1EU;
-
-const unsigned char MMDVM_YSF_DATA    = 0x20U;
-const unsigned char MMDVM_YSF_LOST    = 0x21U;
-
-const unsigned char MMDVM_P25_HDR     = 0x30U;
-const unsigned char MMDVM_P25_LDU     = 0x31U;
-const unsigned char MMDVM_P25_LOST    = 0x32U;
-
-const unsigned char MMDVM_ACK         = 0x70U;
-const unsigned char MMDVM_NAK         = 0x7FU;
-
-const unsigned char MMDVM_SERIAL      = 0x80U;
-
-const unsigned char MMDVM_SAMPLES     = 0xF0U;
-
-const unsigned char MMDVM_DEBUG1      = 0xF1U;
-const unsigned char MMDVM_DEBUG2      = 0xF2U;
-const unsigned char MMDVM_DEBUG3      = 0xF3U;
-const unsigned char MMDVM_DEBUG4      = 0xF4U;
-const unsigned char MMDVM_DEBUG5      = 0xF5U;
-
-const unsigned int MAX_RESPONSES = 30U;
-
-const unsigned int BUFFER_LENGTH = 2000U;
-
+const uint8_t NOAVEPTR = 99U;
 
 CModem::CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, int oscOffset, const std::string& samplesDir, bool debug) :
-m_port(port),
-m_colorCode(0U),
-m_duplex(duplex),
-m_rxInvert(rxInvert),
-m_txInvert(txInvert),
-m_pttInvert(pttInvert),
-m_txDelay(txDelay),
-m_dmrDelay(dmrDelay),
-m_rxLevel(0U),
-m_cwIdTXLevel(0U),
-m_dstarTXLevel(0U),
-m_dmrTXLevel(0U),
-m_ysfTXLevel(0U),
-m_p25TXLevel(0U),
-m_oscOffset(oscOffset),
 m_samplesDir(samplesDir),
 m_debug(debug),
-m_rxFrequency(0U),
-m_txFrequency(0U),
-m_dstarEnabled(false),
-m_dmrEnabled(false),
-m_ysfEnabled(false),
-m_p25Enabled(false),
-m_serial(port, SERIAL_115200, true),
-m_buffer(NULL),
-m_length(0U),
-m_offset(0U),
 m_rxDStarData(1000U, "Modem RX D-Star"),
-m_txDStarData(1000U, "Modem TX D-Star"),
-m_rxDMRData1(1000U, "Modem RX DMR1"),
 m_rxDMRData2(1000U, "Modem RX DMR2"),
-m_txDMRData1(1000U, "Modem TX DMR1"),
-m_txDMRData2(1000U, "Modem TX DMR2"),
 m_rxYSFData(1000U, "Modem RX YSF"),
-m_txYSFData(1000U, "Modem TX YSF"),
 m_rxP25Data(1000U, "Modem RX P25"),
-m_txP25Data(1000U, "Modem TX P25"),
-m_statusTimer(1000U, 0U, 250U),
-m_inactivityTimer(1000U, 2U),
-m_playoutTimer(1000U, 0U, 10U),
-m_dstarSpace(0U),
-m_dmrSpace1(0U),
-m_dmrSpace2(0U),
-m_ysfSpace(0U),
-m_p25Space(0U),
-m_tx(false),
-m_cd(false),
-m_lockout(false),
-m_error(false),
-m_hwType(HWT_UNKNOWN)
+m_dmrTimer(1000U, 0U, 60U),
+m_ysfTimer(1000U, 0U, 100U),
+m_p25Timer(1000U, 0U, 180U),
+m_dmrFP(NULL),
+m_ysfFP(NULL),
+m_p25FP(NULL),
+m_dmrThresholdVal(0),
+m_dmrCentreVal(0),
+m_dmrThreshold(),
+m_dmrCentre(),
+m_dmrAveragePtr(NOAVEPTR),
+m_ysfThresholdVal(0),
+m_ysfCentreVal(0),
+m_ysfThreshold(),
+m_ysfCentre(),
+m_ysfAveragePtr(NOAVEPTR),
+m_p25ThresholdVal(0),
+m_p25CentreVal(0),
+m_p25Threshold(),
+m_p25Centre(),
+m_p25AveragePtr(NOAVEPTR)
 {
-	assert(!port.empty());
-
-	m_buffer = new unsigned char[BUFFER_LENGTH];
 }
 
 CModem::~CModem()
 {
-	delete[] m_buffer;
 }
 
 void CModem::setRFParams(unsigned int rxFrequency, unsigned int txFrequency)
 {
-	m_rxFrequency = rxFrequency;
-	m_txFrequency = txFrequency;
 }
 
 void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled)
 {
-	m_dstarEnabled = dstarEnabled;
-	m_dmrEnabled   = dmrEnabled;
-	m_ysfEnabled   = ysfEnabled;
-	m_p25Enabled   = p25Enabled;
 }
 
 void CModem::setLevels(unsigned int rxLevel, unsigned int cwIdTXLevel, unsigned int dstarTXLevel, unsigned int dmrTXLevel, unsigned int ysfTXLevel, unsigned int p25TXLevel)
 {
-	m_rxLevel      = rxLevel;
-	m_cwIdTXLevel  = cwIdTXLevel;
-	m_dstarTXLevel = dstarTXLevel;
-	m_dmrTXLevel   = dmrTXLevel;
-	m_ysfTXLevel   = ysfTXLevel;
-	m_p25TXLevel   = p25TXLevel;
 }
 
 void CModem::setDMRParams(unsigned int colorCode)
 {
-	assert(colorCode < 16U);
-
-	m_colorCode = colorCode;
 }
 
 bool CModem::open()
 {
-	::LogMessage("Opening the MMDVM");
+	::LogMessage("Opening the MMDVM Simulator");
 
-	bool ret = m_serial.open();
-	if (!ret)
-		return false;
-
-	ret = readVersion();
-	if (!ret) {
-		m_serial.close();
-		return false;
-	} else {
-		/* Stopping the inactivity timer here when a firmware version has been
-		   successfuly read prevents the death spiral of "no reply from modem..." */
-		m_inactivityTimer.stop();
-	}
-
-	ret = setFrequency();
-	if (!ret) {
-		m_serial.close();
-		return false;
-	}
-
-	ret = setConfig();
-	if (!ret) {
-		m_serial.close();
-		return false;
-	}
-
-	m_statusTimer.start();
-
-	m_error  = false;
-	m_offset = 0U;
+	m_dmrTimer.start();
+	m_ysfTimer.start();
+	m_p25Timer.start();
 
 	return true;
 }
 
 void CModem::clock(unsigned int ms)
 {
-	// Poll the modem status every 250ms
-	m_statusTimer.clock(ms);
-	if (m_statusTimer.hasExpired()) {
-		readStatus();
-		m_statusTimer.start();
+	m_dmrTimer.clock(ms);
+	if (m_dmrTimer.hasExpired()) {
+		processDMR();
+		m_dmrTimer.start();
 	}
 
-	m_inactivityTimer.clock(ms);
-	if (m_inactivityTimer.hasExpired()) {
-		LogError("No reply from the modem for some time, resetting it");
-		m_error = true;
-		close();
-
-		CThread::sleep(2000U);		// 2s
-		while (!open())
-			CThread::sleep(5000U);	// 5s
+	m_ysfTimer.clock(ms);
+	if (m_ysfTimer.hasExpired()) {
+		processYSF();
+		m_ysfTimer.start();
 	}
 
-	RESP_TYPE_MMDVM type = getResponse();
-
-	if (type == RTM_TIMEOUT) {
-		// Nothing to do
-	} else if (type == RTM_ERROR) {
-		// Nothing to do
-	} else {
-		// type == RTM_OK
-		switch (m_buffer[2U]) {
-			case MMDVM_DSTAR_HEADER: {
-					if (m_debug)
-						CUtils::dump(1U, "RX D-Star Header", m_buffer, m_length);
-
-					unsigned char data = m_length - 2U;
-					m_rxDStarData.addData(&data, 1U);
-
-					data = TAG_HEADER;
-					m_rxDStarData.addData(&data, 1U);
-
-					m_rxDStarData.addData(m_buffer + 3U, m_length - 3U);
-				}
-				break;
-
-			case MMDVM_DSTAR_DATA: {
-					if (m_debug)
-						CUtils::dump(1U, "RX D-Star Data", m_buffer, m_length);
-
-					unsigned char data = m_length - 2U;
-					m_rxDStarData.addData(&data, 1U);
-
-					data = TAG_DATA;
-					m_rxDStarData.addData(&data, 1U);
-
-					m_rxDStarData.addData(m_buffer + 3U, m_length - 3U);
-				}
-				break;
-
-			case MMDVM_DSTAR_LOST: {
-					if (m_debug)
-						CUtils::dump(1U, "RX D-Star Lost", m_buffer, m_length);
-
-					unsigned char data = 1U;
-					m_rxDStarData.addData(&data, 1U);
-
-					data = TAG_LOST;
-					m_rxDStarData.addData(&data, 1U);
-				}
-				break;
-
-			case MMDVM_DSTAR_EOT: {
-					if (m_debug)
-						CUtils::dump(1U, "RX D-Star EOT", m_buffer, m_length);
-
-					unsigned char data = 1U;
-					m_rxDStarData.addData(&data, 1U);
-
-					data = TAG_EOT;
-					m_rxDStarData.addData(&data, 1U);
-				}
-				break;
-
-			case MMDVM_DMR_DATA1: {
-					if (m_debug)
-						CUtils::dump(1U, "RX DMR Data 1", m_buffer, m_length);
-
-					unsigned char data = m_length - 2U;
-					m_rxDMRData1.addData(&data, 1U);
-
-					if (m_buffer[3U] == (DMR_SYNC_DATA | DT_TERMINATOR_WITH_LC))
-						data = TAG_EOT;
-					else
-						data = TAG_DATA;
-					m_rxDMRData1.addData(&data, 1U);
-
-					m_rxDMRData1.addData(m_buffer + 3U, m_length - 3U);
-				}
-				break;
-
-			case MMDVM_DMR_DATA2: {
-					if (m_debug)
-						CUtils::dump(1U, "RX DMR Data 2", m_buffer, m_length);
-
-					unsigned char data = m_length - 2U;
-					m_rxDMRData2.addData(&data, 1U);
-
-					if (m_buffer[3U] == (DMR_SYNC_DATA | DT_TERMINATOR_WITH_LC))
-						data = TAG_EOT;
-					else
-						data = TAG_DATA;
-					m_rxDMRData2.addData(&data, 1U);
-
-					m_rxDMRData2.addData(m_buffer + 3U, m_length - 3U);
-				}
-				break;
-
-			case MMDVM_DMR_LOST1: {
-					if (m_debug)
-						CUtils::dump(1U, "RX DMR Lost 1", m_buffer, m_length);
-
-					unsigned char data = 1U;
-					m_rxDMRData1.addData(&data, 1U);
-
-					data = TAG_LOST;
-					m_rxDMRData1.addData(&data, 1U);
-				}
-				break;
-
-			case MMDVM_DMR_LOST2: {
-					if (m_debug)
-						CUtils::dump(1U, "RX DMR Lost 2", m_buffer, m_length);
-
-					unsigned char data = 1U;
-					m_rxDMRData2.addData(&data, 1U);
-
-					data = TAG_LOST;
-					m_rxDMRData2.addData(&data, 1U);
-				}
-				break;
-
-			case MMDVM_YSF_DATA: {
-					if (m_debug)
-						CUtils::dump(1U, "RX YSF Data", m_buffer, m_length);
-
-					unsigned char data = m_length - 2U;
-					m_rxYSFData.addData(&data, 1U);
-
-					data = TAG_DATA;
-					m_rxYSFData.addData(&data, 1U);
-
-					m_rxYSFData.addData(m_buffer + 3U, m_length - 3U);
-				}
-				break;
-
-			case MMDVM_YSF_LOST: {
-					if (m_debug)
-						CUtils::dump(1U, "RX YSF Lost", m_buffer, m_length);
-
-					unsigned char data = 1U;
-					m_rxYSFData.addData(&data, 1U);
-
-					data = TAG_LOST;
-					m_rxYSFData.addData(&data, 1U);
-				}
-				break;
-
-			case MMDVM_P25_HDR: {
-				if (m_debug)
-					CUtils::dump(1U, "RX P25 Header", m_buffer, m_length);
-
-				unsigned char data = m_length - 2U;
-				m_rxP25Data.addData(&data, 1U);
-
-				data = TAG_HEADER;
-				m_rxP25Data.addData(&data, 1U);
-
-				m_rxP25Data.addData(m_buffer + 3U, m_length - 3U);
-			}
-			break;
-
-			case MMDVM_P25_LDU: {
-				if (m_debug)
-					CUtils::dump(1U, "RX P25 LDU", m_buffer, m_length);
-
-				unsigned char data = m_length - 2U;
-				m_rxP25Data.addData(&data, 1U);
-
-				data = TAG_DATA;
-				m_rxP25Data.addData(&data, 1U);
-
-				m_rxP25Data.addData(m_buffer + 3U, m_length - 3U);
-			}
-			break;
-
-			case MMDVM_P25_LOST: {
-				if (m_debug)
-					CUtils::dump(1U, "RX P25 Lost", m_buffer, m_length);
-
-				unsigned char data = 1U;
-				m_rxP25Data.addData(&data, 1U);
-
-				data = TAG_LOST;
-				m_rxP25Data.addData(&data, 1U);
-			}
-			break;
-
-			case MMDVM_GET_STATUS: {
-					// if (m_debug)
-					//	CUtils::dump(1U, "GET_STATUS", m_buffer, m_length);
-
-					m_tx = (m_buffer[5U] & 0x01U) == 0x01U;
-
-					bool adcOverflow = (m_buffer[5U] & 0x02U) == 0x02U;
-					if (adcOverflow)
-						LogError("MMDVM ADC levels have overflowed");
-
-					bool rxOverflow = (m_buffer[5U] & 0x04U) == 0x04U;
-					if (rxOverflow)
-						LogError("MMDVM RX buffer has overflowed");
-
-					bool txOverflow = (m_buffer[5U] & 0x08U) == 0x08U;
-					if (txOverflow)
-						LogError("MMDVM TX buffer has overflowed");
-
-					m_lockout = (m_buffer[5U] & 0x10U) == 0x10U;
-
-					bool dacOverflow = (m_buffer[5U] & 0x20U) == 0x20U;
-					if (dacOverflow)
-						LogError("MMDVM DAC levels have overflowed");
-						
-					m_cd = (m_buffer[5U] & 0x40U) == 0x40U;
-
-					m_dstarSpace = m_buffer[6U];
-					m_dmrSpace1  = m_buffer[7U];
-					m_dmrSpace2  = m_buffer[8U];
-					m_ysfSpace   = m_buffer[9U];
-					m_p25Space   = m_buffer[10U];
-
-					m_inactivityTimer.start();
-					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u lockout=%d, cd=%d", m_buffer[5U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, int(m_lockout), int(m_cd));
-				}
-				break;
-
-			// These should not be received, but don't complain if we do
-			case MMDVM_GET_VERSION:
-			case MMDVM_ACK:
-				break;
-
-			case MMDVM_NAK:
-				LogWarning("Received a NAK from the MMDVM, command = 0x%02X, reason = %u", m_buffer[3U], m_buffer[4U]);
-				break;
-
-			case MMDVM_DEBUG1:
-			case MMDVM_DEBUG2:
-			case MMDVM_DEBUG3:
-			case MMDVM_DEBUG4:
-			case MMDVM_DEBUG5:
-				printDebug();
-				break;
-
-			case MMDVM_SAMPLES:
-				dumpSamples();
-				break;
-
-			default:
-				LogMessage("Unknown message, type: %02X", m_buffer[2U]);
-				CUtils::dump("Buffer dump", m_buffer, m_length);
-				break;
-		}
-	}
-
-	// Only feed data to the modem if the playout timer has expired
-	m_playoutTimer.clock(ms);
-	if (!m_playoutTimer.hasExpired())
-		return;
-
-	if (m_dstarSpace > 1U && !m_txDStarData.isEmpty()) {
-		unsigned char buffer[4U];
-		m_txDStarData.peek(buffer, 4U);
-
-		if ((buffer[3U] == MMDVM_DSTAR_HEADER && m_dstarSpace > 4U) ||
-			(buffer[3U] == MMDVM_DSTAR_DATA   && m_dstarSpace > 1U) ||
-			(buffer[3U] == MMDVM_DSTAR_EOT    && m_dstarSpace > 1U)) {
-			unsigned char len = 0U;
-			m_txDStarData.getData(&len, 1U);
-			m_txDStarData.getData(m_buffer, len);
-
-			switch (buffer[3U]) {
-			case MMDVM_DSTAR_HEADER:
-				if (m_debug)
-					CUtils::dump(1U, "TX D-Star Header", m_buffer, len);
-				m_dstarSpace -= 4U;
-				break;
-			case MMDVM_DSTAR_DATA:
-				if (m_debug)
-					CUtils::dump(1U, "TX D-Star Data", m_buffer, len);
-				m_dstarSpace -= 1U;
-				break;
-			default:
-				if (m_debug)
-					CUtils::dump(1U, "TX D-Star EOT", m_buffer, len);
-				m_dstarSpace -= 1U;
-				break;
-			}
-
-			int ret = m_serial.write(m_buffer, len);
-			if (ret != int(len))
-				LogWarning("Error when writing D-Star data to the MMDVM");
-
-			m_playoutTimer.start();
-		}
-	}
-
-	if (m_dmrSpace1 > 1U && !m_txDMRData1.isEmpty()) {
-		unsigned char len = 0U;
-		m_txDMRData1.getData(&len, 1U);
-		m_txDMRData1.getData(m_buffer, len);
-
-		if (m_debug)
-			CUtils::dump(1U, "TX DMR Data 1", m_buffer, len);
-
-		int ret = m_serial.write(m_buffer, len);
-		if (ret != int(len))
-			LogWarning("Error when writing DMR data to the MMDVM");
-
-		m_playoutTimer.start();
-
-		m_dmrSpace1--;
-	}
-
-	if (m_dmrSpace2 > 1U && !m_txDMRData2.isEmpty()) {
-		unsigned char len = 0U;
-		m_txDMRData2.getData(&len, 1U);
-		m_txDMRData2.getData(m_buffer, len);
-
-		if (m_debug)
-			CUtils::dump(1U, "TX DMR Data 2", m_buffer, len);
-
-		int ret = m_serial.write(m_buffer, len);
-		if (ret != int(len))
-			LogWarning("Error when writing DMR data to the MMDVM");
-
-		m_playoutTimer.start();
-
-		m_dmrSpace2--;
-	}
-
-	if (m_ysfSpace > 1U && !m_txYSFData.isEmpty()) {
-		unsigned char len = 0U;
-		m_txYSFData.getData(&len, 1U);
-		m_txYSFData.getData(m_buffer, len);
-
-		if (m_debug)
-			CUtils::dump(1U, "TX YSF Data", m_buffer, len);
-
-		int ret = m_serial.write(m_buffer, len);
-		if (ret != int(len))
-			LogWarning("Error when writing YSF data to the MMDVM");
-
-		m_playoutTimer.start();
-
-		m_ysfSpace--;
-	}
-
-	if (m_p25Space > 1U && !m_txP25Data.isEmpty()) {
-		unsigned char len = 0U;
-		m_txP25Data.getData(&len, 1U);
-		m_txP25Data.getData(m_buffer, len);
-
-		if (m_debug) {
-			if (m_buffer[2U] == MMDVM_P25_HDR)
-				CUtils::dump(1U, "TX P25 HDR", m_buffer, len);
-			else
-				CUtils::dump(1U, "TX P25 LDU", m_buffer, len);
-		}
-
-		int ret = m_serial.write(m_buffer, len);
-		if (ret != int(len))
-			LogWarning("Error when writing P25 data to the MMDVM");
-
-		m_playoutTimer.start();
-
-		m_p25Space--;
+	m_p25Timer.clock(ms);
+	if (m_p25Timer.hasExpired()) {
+		processP25();
+		m_p25Timer.start();
 	}
 }
 
 void CModem::close()
 {
-	::LogMessage("Closing the MMDVM");
-
-	m_serial.close();
+	::LogMessage("Closing the MMDVM Simulator");
 }
 
 unsigned int CModem::readDStarData(unsigned char* data)
@@ -624,16 +146,7 @@ unsigned int CModem::readDStarData(unsigned char* data)
 
 unsigned int CModem::readDMRData1(unsigned char* data)
 {
-	assert(data != NULL);
-
-	if (m_rxDMRData1.isEmpty())
-		return 0U;
-
-	unsigned char len = 0U;
-	m_rxDMRData1.getData(&len, 1U);
-	m_rxDMRData1.getData(data, len);
-
-	return len;
+	return 0U;
 }
 
 unsigned int CModem::readDMRData2(unsigned char* data)
@@ -681,663 +194,541 @@ unsigned int CModem::readP25Data(unsigned char* data)
 // To be implemented later if needed
 unsigned int CModem::readSerial(unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
-	assert(length > 0U);
-
 	return 0U;
 }
 
 bool CModem::hasDStarSpace() const
 {
-	unsigned int space = m_txDStarData.freeSpace() / (DSTAR_FRAME_LENGTH_BYTES + 4U);
-
-	return space > 1U;
+	return true;
 }
 
 bool CModem::writeDStarData(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
-	assert(length > 0U);
-
-	unsigned char buffer[50U];
-
-	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = length + 2U;
-
-	switch (data[0U]) {
-		case TAG_HEADER:
-			buffer[2U] = MMDVM_DSTAR_HEADER;
-			break;
-		case TAG_DATA:
-			buffer[2U] = MMDVM_DSTAR_DATA;
-			break;
-		case TAG_EOT:
-			buffer[2U] = MMDVM_DSTAR_EOT;
-			break;
-		default:
-			CUtils::dump(2U, "Unknown D-Star packet type", data, length);
-			return false;
-	}
-
-	::memcpy(buffer + 3U, data + 1U, length - 1U);
-
-	unsigned char len = length + 2U;
-	m_txDStarData.addData(&len, 1U);
-	m_txDStarData.addData(buffer, len);
-
 	return true;
 }
 
 bool CModem::hasDMRSpace1() const
 {
-	unsigned int space = m_txDMRData1.freeSpace() / (DMR_FRAME_LENGTH_BYTES + 4U);
-
-	return space > 1U;
+	return true;
 }
 
 bool CModem::hasDMRSpace2() const
 {
-	unsigned int space = m_txDMRData2.freeSpace() / (DMR_FRAME_LENGTH_BYTES + 4U);
-
-	return space > 1U;
+	return true;
 }
 
 bool CModem::writeDMRData1(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
-	assert(length > 0U);
-
-	if (data[0U] != TAG_DATA && data[0U] != TAG_EOT)
-		return false;
-
-	unsigned char buffer[40U];
-
-	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = length + 2U;
-	buffer[2U] = MMDVM_DMR_DATA1;
-
-	::memcpy(buffer + 3U, data + 1U, length - 1U);
-
-	unsigned char len = length + 2U;
-	m_txDMRData1.addData(&len, 1U);
-	m_txDMRData1.addData(buffer, len);
-
 	return true;
 }
 
 bool CModem::writeDMRData2(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
-	assert(length > 0U);
-
-	if (data[0U] != TAG_DATA && data[0U] != TAG_EOT)
-		return false;
-
-	unsigned char buffer[40U];
-
-	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = length + 2U;
-	buffer[2U] = MMDVM_DMR_DATA2;
-
-	::memcpy(buffer + 3U, data + 1U, length - 1U);
-
-	unsigned char len = length + 2U;
-	m_txDMRData2.addData(&len, 1U);
-	m_txDMRData2.addData(buffer, len);
-
 	return true;
 }
 
 bool CModem::hasYSFSpace() const
 {
-	unsigned int space = m_txYSFData.freeSpace() / (YSF_FRAME_LENGTH_BYTES + 4U);
-
-	return space > 1U;
+	return true;
 }
 
 bool CModem::writeYSFData(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
-	assert(length > 0U);
-
-	if (data[0U] != TAG_DATA && data[0U] != TAG_EOT)
-		return false;
-
-	unsigned char buffer[130U];
-
-	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = length + 2U;
-	buffer[2U] = MMDVM_YSF_DATA;
-
-	::memcpy(buffer + 3U, data + 1U, length - 1U);
-
-	unsigned char len = length + 2U;
-	m_txYSFData.addData(&len, 1U);
-	m_txYSFData.addData(buffer, len);
-
 	return true;
 }
 
 bool CModem::hasP25Space() const
 {
-	unsigned int space = m_txP25Data.freeSpace() / (P25_LDU_FRAME_LENGTH_BYTES + 4U);
-
-	return space > 1U;
+	return true;
 }
 
 bool CModem::writeP25Data(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
-	assert(length > 0U);
-
-	if (data[0U] != TAG_HEADER && data[0U] != TAG_DATA && data[0U] != TAG_EOT)
-		return false;
-
-	unsigned char buffer[250U];
-
-	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = length + 2U;
-	buffer[2U] = (data[0U] == TAG_HEADER) ? MMDVM_P25_HDR : MMDVM_P25_LDU;
-
-	::memcpy(buffer + 3U, data + 1U, length - 1U);
-
-	unsigned char len = length + 2U;
-	m_txP25Data.addData(&len, 1U);
-	m_txP25Data.addData(buffer, len);
-
 	return true;
 }
 
 bool CModem::writeSerial(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
-	assert(length > 0U);
-
-	unsigned char buffer[250U];
-
-	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = length + 3U;
-	buffer[2U] = MMDVM_SERIAL;
-
-	::memcpy(buffer + 3U, data, length);
-
-	int ret = m_serial.write(buffer, length + 3U);
-
-	return ret != int(length + 3U);
+	return false;
 }
 
 bool CModem::hasTX() const
 {
-	return m_tx;
+	return false;
 }
 
 bool CModem::hasCD() const
 {
-	return m_cd;
+	return false;
 }
 
 bool CModem::hasLockout() const
 {
-	return m_lockout;
+	return false;
 }
 
 bool CModem::hasError() const
 {
-	return m_error;
-}
-
-bool CModem::readVersion()
-{
-	CThread::sleep(2000U);	// 2s
-
-	for (unsigned int i = 0U; i < 6U; i++) {
-		unsigned char buffer[3U];
-
-		buffer[0U] = MMDVM_FRAME_START;
-		buffer[1U] = 3U;
-		buffer[2U] = MMDVM_GET_VERSION;
-
-		// CUtils::dump(1U, "Written", buffer, 3U);
-
-		int ret = m_serial.write(buffer, 3U);
-		if (ret != 3)
-			return false;
-
-		for (unsigned int count = 0U; count < MAX_RESPONSES; count++) {
-			CThread::sleep(10U);
-			RESP_TYPE_MMDVM resp = getResponse();
-			if (resp == RTM_OK && m_buffer[2U] == MMDVM_GET_VERSION) {
-				if (::memcmp(m_buffer + 4U, "MMDVM", 5U) == 0)
-					m_hwType = HWT_MMDVM;
-				else if (::memcmp(m_buffer + 4U, "DVMEGA", 6U) == 0)
-					m_hwType = HWT_DVMEGA;
-
-				LogInfo("MMDVM protocol version: %u, description: %.*s", m_buffer[3U], m_length - 4U, m_buffer + 4U);
-				return true;
-			}
-		}
-
-		CThread::sleep(1000U);
-	}
-
-	LogError("Unable to read the firmware version after six attempts");
-
 	return false;
-}
-
-bool CModem::readStatus()
-{
-	unsigned char buffer[3U];
-
-	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = 3U;
-	buffer[2U] = MMDVM_GET_STATUS;
-
-	// CUtils::dump(1U, "Written", buffer, 3U);
-
-	return m_serial.write(buffer, 3U) == 3;
-}
-
-bool CModem::setConfig()
-{
-	unsigned char buffer[20U];
-
-	buffer[0U] = MMDVM_FRAME_START;
-
-	buffer[1U] = 16U;
-
-	buffer[2U] = MMDVM_SET_CONFIG;
-
-	buffer[3U] = 0x00U;
-	if (m_rxInvert)
-		buffer[3U] |= 0x01U;
-	if (m_txInvert)
-		buffer[3U] |= 0x02U;
-	if (m_pttInvert)
-		buffer[3U] |= 0x04U;
-	if (!m_duplex)
-		buffer[3U] |= 0x80U;
-
-	buffer[4U] = 0x00U;
-	if (m_dstarEnabled)
-		buffer[4U] |= 0x01U;
-	if (m_dmrEnabled)
-		buffer[4U] |= 0x02U;
-	if (m_ysfEnabled)
-		buffer[4U] |= 0x04U;
-	if (m_p25Enabled)
-		buffer[4U] |= 0x08U;
-
-	buffer[5U] = m_txDelay / 10U;		// In 10ms units
-
-	buffer[6U] = MODE_IDLE;
-
-	buffer[7U] = (m_rxLevel * 255U) / 100U;
-
-	buffer[8U] = (m_cwIdTXLevel * 255U) / 100U;
-
-	buffer[9U] = m_colorCode;
-
-	buffer[10U] = m_dmrDelay;
-
-	buffer[11U] = (unsigned char)(m_oscOffset + 128);
-
-	buffer[12U] = (m_dstarTXLevel * 255U) / 100U;
-	buffer[13U] = (m_dmrTXLevel * 255U) / 100U;
-	buffer[14U] = (m_ysfTXLevel * 255U) / 100U;
-	buffer[15U] = (m_p25TXLevel * 255U) / 100U;
-
-	// CUtils::dump(1U, "Written", buffer, 16U);
-
-	int ret = m_serial.write(buffer, 16U);
-	if (ret != 16)
-		return false;
-
-	unsigned int count = 0U;
-	RESP_TYPE_MMDVM resp;
-	do {
-		CThread::sleep(10U);
-
-		resp = getResponse();
-		if (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK) {
-			count++;
-			if (count >= MAX_RESPONSES) {
-				LogError("The MMDVM is not responding to the SET_CONFIG command");
-				return false;
-			}
-		}
-	} while (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK);
-
-	// CUtils::dump(1U, "Response", m_buffer, m_length);
-
-	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
-		LogError("Received a NAK to the SET_CONFIG command from the modem");
-		return false;
-	}
-
-	m_playoutTimer.start();
-
-	return true;
-}
-
-bool CModem::setFrequency()
-{
-	unsigned char buffer[15U];
-
-	buffer[0U]  = MMDVM_FRAME_START;
-
-	buffer[1U]  = 12U;
-
-	buffer[2U]  = MMDVM_SET_FREQ;
-
-	buffer[3U]  = 0x00U;
-
-	buffer[4U]  = (m_rxFrequency >> 0) & 0xFFU;
-	buffer[5U]  = (m_rxFrequency >> 8) & 0xFFU;
-	buffer[6U]  = (m_rxFrequency >> 16) & 0xFFU;
-	buffer[7U]  = (m_rxFrequency >> 24) & 0xFFU;
-
-	buffer[8U]  = (m_txFrequency >> 0) & 0xFFU;
-	buffer[9U]  = (m_txFrequency >> 8) & 0xFFU;
-	buffer[10U] = (m_txFrequency >> 16) & 0xFFU;
-	buffer[11U] = (m_txFrequency >> 24) & 0xFFU;
-
-	// CUtils::dump(1U, "Written", buffer, 12U);
-
-	int ret = m_serial.write(buffer, 12U);
-	if (ret != 12)
-		return false;
-
-	unsigned int count = 0U;
-	RESP_TYPE_MMDVM resp;
-	do {
-		CThread::sleep(10U);
-
-		resp = getResponse();
-		if (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK) {
-			count++;
-			if (count >= MAX_RESPONSES) {
-				LogError("The MMDVM is not responding to the SET_FREQ command");
-				return false;
-			}
-		}
-	} while (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK);
-
-	// CUtils::dump(1U, "Response", m_buffer, m_length);
-
-	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
-		LogError("Received a NAK to the SET_FREQ command from the modem");
-		return false;
-	}
-
-	return true;
-}
-
-RESP_TYPE_MMDVM CModem::getResponse()
-{
-	if (m_offset == 0U) {
-		// Get the start of the frame or nothing at all
-		int ret = m_serial.read(m_buffer + 0U, 1U);
-		if (ret < 0) {
-			LogError("Error when reading from the modem");
-			return RTM_ERROR;
-		}
-
-		if (ret == 0)
-			return RTM_TIMEOUT;
-
-		if (m_buffer[0U] != MMDVM_FRAME_START)
-			return RTM_TIMEOUT;
-
-		m_offset = 1U;
-	}
-
-	if (m_offset == 1U) {
-		// Get the length of the frame
-		int ret = m_serial.read(m_buffer + 1U, 1U);
-		if (ret < 0) {
-			LogError("Error when reading from the modem");
-			m_offset = 0U;
-			return RTM_ERROR;
-		}
-
-		if (ret == 0)
-			return RTM_TIMEOUT;
-
-		if (m_buffer[1U] >= 250U) {
-			LogError("Invalid length received from the modem - %u", m_buffer[1U]);
-			m_offset = 0U;
-			return RTM_ERROR;
-		}
-
-		m_length = m_buffer[1U];
-		m_offset = 2U;
-	}
-
-	if (m_offset == 2U) {
-		// Get the frame type
-		int ret = m_serial.read(m_buffer + 2U, 1U);
-		if (ret < 0) {
-			LogError("Error when reading from the modem");
-			m_offset = 0U;
-			return RTM_ERROR;
-		}
-
-		if (ret == 0)
-			return RTM_TIMEOUT;
-
-		m_offset = 3U;
-	}
-
-	if (m_offset >= 3U) {
-		// Use later two byte length field
-		if (m_length == 0U) {
-			int ret = m_serial.read(m_buffer + 3U, 2U);
-			if (ret < 0) {
-				LogError("Error when reading from the modem");
-				m_offset = 0U;
-				return RTM_ERROR;
-			}
-
-			if (ret == 0)
-				return RTM_TIMEOUT;
-
-			m_length = (m_buffer[3U] << 8) | m_buffer[4U];
-			m_offset = 5U;
-		}
-
-		while (m_offset < m_length) {
-			int ret = m_serial.read(m_buffer + m_offset, m_length - m_offset);
-			if (ret < 0) {
-				LogError("Error when reading from the modem");
-				m_offset = 0U;
-				return RTM_ERROR;
-			}
-
-			if (ret == 0)
-				return RTM_TIMEOUT;
-
-			if (ret > 0)
-				m_offset += ret;
-		}
-	}
-
-	m_offset = 0U;
-
-	// CUtils::dump(1U, "Received", m_buffer, m_length);
-
-  return RTM_OK;
 }
 
 HW_TYPE CModem::getHWType() const
 {
-	return m_hwType;
+	return HWT_MMDVM;
 }
 
 bool CModem::setMode(unsigned char mode)
 {
-	unsigned char buffer[4U];
-
-	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = 4U;
-	buffer[2U] = MMDVM_SET_MODE;
-	buffer[3U] = mode;
-
-	// CUtils::dump(1U, "Written", buffer, 4U);
-
-	return m_serial.write(buffer, 4U) == 4;
+	return true;
 }
 
 bool CModem::sendCWId(const std::string& callsign)
 {
-	unsigned int length = callsign.length();
-	if (length > 200U)
-		length = 200U;
-
-	unsigned char buffer[205U];
-
-	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = length + 3U;
-	buffer[2U] = MMDVM_SEND_CWID;
-
-	for (unsigned int i = 0U; i < length; i++)
-		buffer[i + 3U] = callsign.at(i);
-
-	// CUtils::dump(1U, "Written", buffer, length + 3U);
-
-	return m_serial.write(buffer, length + 3U) == int(length + 3U);
+	return true;
 }
 
 bool CModem::writeDMRStart(bool tx)
 {
-	if (tx && m_tx)
-		return true;
-	if (!tx && !m_tx)
-		return true;
-
-	unsigned char buffer[4U];
-
-	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = 4U;
-	buffer[2U] = MMDVM_DMR_START;
-	buffer[3U] = tx ? 0x01U : 0x00U;
-
-	// CUtils::dump(1U, "Written", buffer, 4U);
-
-	return m_serial.write(buffer, 4U) == 4;
+	return true;
 }
 
 bool CModem::writeDMRAbort(unsigned int slotNo)
 {
-	if (slotNo == 1U)
-		m_txDMRData1.clear();
-	else
-		m_txDMRData2.clear();
-
-	unsigned char buffer[4U];
-
-	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = 4U;
-	buffer[2U] = MMDVM_DMR_ABORT;
-	buffer[3U] = slotNo;
-
-	// CUtils::dump(1U, "Written", buffer, 4U);
-
-	return m_serial.write(buffer, 4U) == 4;
+	return true;
 }
 
 bool CModem::writeDMRShortLC(const unsigned char* lc)
 {
-	assert(lc != NULL);
-
-	unsigned char buffer[12U];
-
-	buffer[0U]  = MMDVM_FRAME_START;
-	buffer[1U]  = 12U;
-	buffer[2U]  = MMDVM_DMR_SHORTLC;
-	buffer[3U]  = lc[0U];
-	buffer[4U]  = lc[1U];
-	buffer[5U]  = lc[2U];
-	buffer[6U]  = lc[3U];
-	buffer[7U]  = lc[4U];
-	buffer[8U]  = lc[5U];
-	buffer[9U]  = lc[6U];
-	buffer[10U] = lc[7U];
-	buffer[11U] = lc[8U];
-
-	// CUtils::dump(1U, "Written", buffer, 12U);
-
-	return m_serial.write(buffer, 12U) == 12;
+	return true;
 }
 
-void CModem::printDebug()
+void CModem::processDMR()
 {
-	if (m_buffer[2U] == 0xF1U) {
-		LogMessage("Debug: %.*s", m_length - 3U, m_buffer + 3U);
-	} else if (m_buffer[2U] == 0xF2U) {
-		short val1 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
-		LogMessage("Debug: %.*s %d", m_length - 5U, m_buffer + 3U, val1);
-	} else if (m_buffer[2U] == 0xF3U) {
-		short val1 = (m_buffer[m_length - 4U] << 8) | m_buffer[m_length - 3U];
-		short val2 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
-		LogMessage("Debug: %.*s %d %d", m_length - 7U, m_buffer + 3U, val1, val2);
-	} else if (m_buffer[2U] == 0xF4U) {
-		short val1 = (m_buffer[m_length - 6U] << 8) | m_buffer[m_length - 5U];
-		short val2 = (m_buffer[m_length - 4U] << 8) | m_buffer[m_length - 3U];
-		short val3 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
-		LogMessage("Debug: %.*s %d %d %d", m_length - 9U, m_buffer + 3U, val1, val2, val3);
-	} else if (m_buffer[2U] == 0xF5U) {
-		short val1 = (m_buffer[m_length - 8U] << 8) | m_buffer[m_length - 7U];
-		short val2 = (m_buffer[m_length - 6U] << 8) | m_buffer[m_length - 5U];
-		short val3 = (m_buffer[m_length - 4U] << 8) | m_buffer[m_length - 3U];
-		short val4 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
-		LogMessage("Debug: %.*s %d %d %d %d", m_length - 11U, m_buffer + 3U, val1, val2, val3, val4);
-	}
-}
+  if (m_dmrFP == NULL) {
+    if (m_samplesDir.empty())
+      m_samplesDir = ".";
 
-void CModem::dumpSamples()
-{
-	if (m_samplesDir.empty())
-		m_samplesDir = ".";
-
-	time_t now;
-	::time(&now);
-
-	struct tm* tm = ::localtime(&now);
-
-	const char* mode = NULL;
-	switch (m_buffer[5U]) {
-	case MODE_DSTAR:
-		mode = "DStar";
-		break;
-	case MODE_DMR:
-		mode = "DMR";
-		break;
-	case MODE_P25:
-		mode = "P25";
-		break;
-	case MODE_YSF:
-		mode = "YSF";
-		break;
-	default:
-		LogWarning("Unknown protocol passed to samples dump - %u", m_buffer[5U]);
-		return;
-	}
-
-	char filename[150U];
+    char filename[150U];
 #if defined(_WIN32) || defined(_WIN64)
-	::sprintf(filename, "%s\\Samples-%s-%04d%02d%02d.dat", m_samplesDir.c_str(), mode, tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
+    ::sprintf(filename, "%s\\Samples-DMR.dat", m_samplesDir.c_str());
 #else
-	::sprintf(filename, "%s/Samples-%s-%04d%02d%02d.dat", m_samplesDir.c_str(), mode, tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
+    ::sprintf(filename, "%s/Samples-DMR.dat", m_samplesDir.c_str());
 #endif
 
-	FILE* fp = ::fopen(filename, "a+b");
-	if (fp == NULL) {
-		LogWarning("Unable to open samples file for writing - %s", filename);
-		return;
+    FILE* m_dmrFP = ::fopen(filename, "rb");
+    if (m_dmrFP == NULL)
+      return;
+  }
+
+  if (feof(m_dmrFP))
+    return;
+
+  uint8_t control;
+  ::fread(&control, sizeof(uint8_t), 1U, m_dmrFP);
+
+  unsigned char bytes[DMR_FRAME_LENGTH_SYMBOLS * sizeof(int16_t)];
+  ::fread(bytes, sizeof(int16_t), DMR_FRAME_LENGTH_SYMBOLS, m_dmrFP);
+
+  int16_t symbols[DMR_FRAME_LENGTH_SYMBOLS];
+  for (unsigned int i = 0U; i < DMR_FRAME_LENGTH_SYMBOLS; i++) {
+    int16_t sample = (bytes[i * 2U + 0U] << 8) | bytes[i * 2U + 1U];
+    symbols[i] = sample - 2048;
+  }
+
+  dmrCalculateLevels(symbols);
+
+  unsigned char frame[DMR_FRAME_LENGTH_BYTES];
+  dmrSamplesToBits(symbols, frame);
+
+  if (m_debug)
+    CUtils::dump(1U, "RX DMR Data", frame, DMR_FRAME_LENGTH_BYTES);
+
+  unsigned char data = DMR_FRAME_LENGTH_BYTES + 2U;
+  m_rxDMRData2.addData(&data, 1U);
+
+  data = TAG_DATA;
+  m_rxDMRData2.addData(&data, 1U);
+
+  data = control;
+  m_rxDMRData2.addData(&data, 1U);
+
+  m_rxDMRData2.addData(frame, DMR_FRAME_LENGTH_BYTES);
+}
+
+void CModem::processP25()
+{
+	if (m_p25FP == NULL) {
+		if (m_samplesDir.empty())
+			m_samplesDir = ".";
+
+		char filename[150U];
+#if defined(_WIN32) || defined(_WIN64)
+		::sprintf(filename, "%s\\Samples-P25.dat", m_samplesDir.c_str());
+#else
+		::sprintf(filename, "%s/Samples-P25.dat", m_samplesDir.c_str());
+#endif
+
+		FILE* m_p25FP = ::fopen(filename, "rb");
+		if (m_p25FP == NULL)
+			return;
 	}
 
-	::fwrite(m_buffer + 6U, 1U, m_length, fp);
+	if (feof(m_p25FP))
+		return;
 
-	::fclose(fp);
+	uint8_t control;
+	::fread(&control, sizeof(uint8_t), 1U, m_p25FP);
+
+	unsigned char bytes[P25_LDU_FRAME_LENGTH_SYMBOLS * sizeof(int16_t)];
+	::fread(bytes, sizeof(int16_t), P25_LDU_FRAME_LENGTH_SYMBOLS, m_p25FP);
+
+	int16_t symbols[P25_LDU_FRAME_LENGTH_SYMBOLS];
+	for (unsigned int i = 0U; i < P25_LDU_FRAME_LENGTH_SYMBOLS; i++) {
+		int16_t sample = (bytes[i * 2U + 0U] << 8) | bytes[i * 2U + 1U];
+		symbols[i] = sample - 2048;
+	}
+
+	p25CalculateLevels(symbols);
+
+	unsigned char frame[P25_LDU_FRAME_LENGTH_BYTES];
+	p25SamplesToBits(symbols, frame);
+
+	if (m_debug)
+		CUtils::dump(1U, "RX P25 LDU", frame, P25_LDU_FRAME_LENGTH_BYTES);
+
+	unsigned char data = P25_LDU_FRAME_LENGTH_BYTES + 2U;
+	m_rxP25Data.addData(&data, 1U);
+
+	data = TAG_DATA;
+	m_rxP25Data.addData(&data, 1U);
+
+	data = control;
+	m_rxP25Data.addData(&data, 1U);
+
+	m_rxP25Data.addData(frame, P25_LDU_FRAME_LENGTH_BYTES);
+}
+
+void CModem::processYSF()
+{
+	if (m_ysfFP == NULL) {
+		if (m_samplesDir.empty())
+			m_samplesDir = ".";
+
+		char filename[150U];
+#if defined(_WIN32) || defined(_WIN64)
+		::sprintf(filename, "%s\\Samples-YSF.dat", m_samplesDir.c_str());
+#else
+		::sprintf(filename, "%s/Samples-YSF.dat", m_samplesDir.c_str());
+#endif
+
+		FILE* m_ysfFP = ::fopen(filename, "rb");
+		if (m_ysfFP == NULL)
+			return;
+	}
+
+	if (feof(m_ysfFP))
+		return;
+
+	uint8_t control;
+	::fread(&control, sizeof(uint8_t), 1U, m_ysfFP);
+
+	unsigned char bytes[YSF_FRAME_LENGTH_SYMBOLS * sizeof(int16_t)];
+	::fread(bytes, sizeof(int16_t), YSF_FRAME_LENGTH_SYMBOLS, m_ysfFP);
+
+	int16_t symbols[YSF_FRAME_LENGTH_SYMBOLS];
+	for (unsigned int i = 0U; i < YSF_FRAME_LENGTH_SYMBOLS; i++) {
+		int16_t sample = (bytes[i * 2U + 0U] << 8) | bytes[i * 2U + 1U];
+		symbols[i] = sample - 2048;
+	}
+
+	ysfCalculateLevels(symbols);
+
+	unsigned char frame[YSF_FRAME_LENGTH_BYTES];
+	ysfSamplesToBits(symbols, frame);
+
+	if (m_debug)
+		CUtils::dump(1U, "RX YSF Data", frame, YSF_FRAME_LENGTH_BYTES);
+
+	unsigned char data = YSF_FRAME_LENGTH_BYTES + 2U;
+	m_rxP25Data.addData(&data, 1U);
+
+	data = TAG_DATA;
+	m_rxP25Data.addData(&data, 1U);
+
+	data = control;
+	m_rxP25Data.addData(&data, 1U);
+
+	m_rxP25Data.addData(frame, YSF_FRAME_LENGTH_BYTES);
+}
+
+void CModem::p25CalculateLevels(const int16_t* symbols)
+{
+	int16_t maxPos = -16000;
+	int16_t minPos = 16000;
+	int16_t maxNeg = 16000;
+	int16_t minNeg = -16000;
+
+	for (uint16_t i = 0U; i < P25_LDU_FRAME_LENGTH_SYMBOLS; i++) {
+		int16_t sample = symbols[i];
+
+		if (sample > 0) {
+			if (sample > maxPos)
+				maxPos = sample;
+			if (sample < minPos)
+				minPos = sample;
+		} else {
+			if (sample < maxNeg)
+				maxNeg = sample;
+			if (sample > minNeg)
+				minNeg = sample;
+		}
+	}
+
+	int16_t posThresh = (maxPos + minPos) >> 1;
+	int16_t negThresh = (maxNeg + minNeg) >> 1;
+
+	int16_t centre = (posThresh + negThresh) >> 1;
+
+	int16_t threshold = posThresh - centre;
+
+	LogMessage("P25RX: pos/neg/centre/threshold %d/%d/%d/%d", posThresh, negThresh, centre, threshold);
+
+	if (m_p25AveragePtr == NOAVEPTR) {
+		for (uint8_t i = 0U; i < 16U; i++) {
+			m_p25Centre[i]    = centre;
+			m_p25Threshold[i] = threshold;
+		}
+
+		m_p25AveragePtr = 0U;
+	} else {
+		m_p25Centre[m_p25AveragePtr]    = centre;
+		m_p25Threshold[m_p25AveragePtr] = threshold;
+
+		m_p25AveragePtr++;
+		if (m_p25AveragePtr >= 16U)
+			m_p25AveragePtr = 0U;
+	}
+
+	m_p25CentreVal    = 0;
+	m_p25ThresholdVal = 0;
+
+	for (uint8_t i = 0U; i < 16U; i++) {
+		m_p25CentreVal    += m_p25Centre[i];
+		m_p25ThresholdVal += m_p25Threshold[i];
+	}
+
+	m_p25CentreVal    >>= 4;
+	m_p25ThresholdVal >>= 4;
+}
+
+void CModem::p25SamplesToBits(const int16_t* symbols, unsigned char* buffer)
+{
+	unsigned int offset = 0U;
+	for (uint16_t i = 0U; i < P25_LDU_FRAME_LENGTH_SYMBOLS; i++) {
+		int16_t sample = symbols[i] - m_p25CentreVal;
+
+		if (sample < -m_p25ThresholdVal) {
+			WRITE_BIT1(buffer, offset, false);
+			offset++;
+			WRITE_BIT1(buffer, offset, true);
+			offset++;
+		} else if (sample < 0) {
+			WRITE_BIT1(buffer, offset, false);
+			offset++;
+			WRITE_BIT1(buffer, offset, false);
+			offset++;
+		} else if (sample < m_p25ThresholdVal) {
+			WRITE_BIT1(buffer, offset, true);
+			offset++;
+			WRITE_BIT1(buffer, offset, false);
+			offset++;
+		} else {
+			WRITE_BIT1(buffer, offset, true);
+			offset++;
+			WRITE_BIT1(buffer, offset, true);
+			offset++;
+		}
+	}
+}
+
+void CModem::ysfCalculateLevels(const int16_t* symbols)
+{
+	int16_t maxPos = -16000;
+	int16_t minPos = 16000;
+	int16_t maxNeg = 16000;
+	int16_t minNeg = -16000;
+
+	for (uint16_t i = 0U; i < YSF_FRAME_LENGTH_SYMBOLS; i++) {
+		int16_t sample = symbols[i];
+
+		if (sample > 0) {
+			if (sample > maxPos)
+				maxPos = sample;
+			if (sample < minPos)
+				minPos = sample;
+		}
+		else {
+			if (sample < maxNeg)
+				maxNeg = sample;
+			if (sample > minNeg)
+				minNeg = sample;
+		}
+	}
+
+	int16_t posThresh = (maxPos + minPos) >> 1;
+	int16_t negThresh = (maxNeg + minNeg) >> 1;
+
+	int16_t centre = (posThresh + negThresh) >> 1;
+
+	int16_t threshold = posThresh - centre;
+
+	LogMessage("YSFRX: pos/neg/centre/threshold %d/%d/%d/%d", posThresh, negThresh, centre, threshold);
+
+	if (m_ysfAveragePtr == NOAVEPTR) {
+		for (uint8_t i = 0U; i < 16U; i++) {
+			m_ysfCentre[i]    = centre;
+			m_ysfThreshold[i] = threshold;
+		}
+
+		m_ysfAveragePtr = 0U;
+	} else {
+		m_ysfCentre[m_ysfAveragePtr] = centre;
+		m_ysfThreshold[m_ysfAveragePtr] = threshold;
+
+		m_ysfAveragePtr++;
+		if (m_ysfAveragePtr >= 16U)
+			m_ysfAveragePtr = 0U;
+	}
+
+	m_ysfCentreVal    = 0;
+	m_ysfThresholdVal = 0;
+
+	for (uint8_t i = 0U; i < 16U; i++) {
+		m_ysfCentreVal    += m_ysfCentre[i];
+		m_ysfThresholdVal += m_ysfThreshold[i];
+	}
+
+	m_ysfCentreVal    >>= 4;
+	m_ysfThresholdVal >>= 4;
+}
+
+void CModem::ysfSamplesToBits(const int16_t* symbols, unsigned char* buffer)
+{
+	unsigned int offset = 0U;
+	for (uint16_t i = 0U; i < YSF_FRAME_LENGTH_SYMBOLS; i++) {
+		int16_t sample = symbols[i] - m_ysfCentreVal;
+
+		if (sample < -m_ysfThresholdVal) {
+			WRITE_BIT1(buffer, offset, false);
+			offset++;
+			WRITE_BIT1(buffer, offset, true);
+			offset++;
+		} else if (sample < 0) {
+			WRITE_BIT1(buffer, offset, false);
+			offset++;
+			WRITE_BIT1(buffer, offset, false);
+			offset++;
+		} else if (sample < m_ysfThresholdVal) {
+			WRITE_BIT1(buffer, offset, true);
+			offset++;
+			WRITE_BIT1(buffer, offset, false);
+			offset++;
+		} else {
+			WRITE_BIT1(buffer, offset, true);
+			offset++;
+			WRITE_BIT1(buffer, offset, true);
+			offset++;
+		}
+	}
+}
+
+
+void CModem::dmrCalculateLevels(const int16_t* symbols)
+{
+  int16_t maxPos = -16000;
+  int16_t minPos = 16000;
+  int16_t maxNeg = 16000;
+  int16_t minNeg = -16000;
+
+  for (uint16_t i = 0U; i < DMR_FRAME_LENGTH_SYMBOLS; i++) {
+    int16_t sample = symbols[i];
+
+    if (sample > 0) {
+      if (sample > maxPos)
+        maxPos = sample;
+      if (sample < minPos)
+        minPos = sample;
+    } else {
+      if (sample < maxNeg)
+        maxNeg = sample;
+      if (sample > minNeg)
+        minNeg = sample;
+    }
+  }
+
+  int16_t posThresh = (maxPos + minPos) >> 1;
+  int16_t negThresh = (maxNeg + minNeg) >> 1;
+
+  int16_t centre = (posThresh + negThresh) >> 1;
+
+  int16_t threshold = posThresh - centre;
+
+  LogMessage("DMRRX: pos/neg/centre/threshold %d/%d/%d/%d", posThresh, negThresh, centre, threshold);
+
+  if (m_dmrAveragePtr == NOAVEPTR) {
+    for (uint8_t i = 0U; i < 16U; i++) {
+      m_dmrCentre[i]    = centre;
+      m_dmrThreshold[i] = threshold;
+    }
+
+    m_dmrAveragePtr = 0U;
+  } else {
+    m_dmrCentre[m_dmrAveragePtr]    = centre;
+    m_dmrThreshold[m_dmrAveragePtr] = threshold;
+
+    m_dmrAveragePtr++;
+    if (m_dmrAveragePtr >= 16U)
+      m_dmrAveragePtr = 0U;
+  }
+
+  m_dmrCentreVal    = 0;
+  m_dmrThresholdVal = 0;
+
+  for (uint8_t i = 0U; i < 16U; i++) {
+    m_dmrCentreVal    += m_dmrCentre[i];
+    m_dmrThresholdVal += m_dmrThreshold[i];
+  }
+
+  m_dmrCentreVal >>= 4;
+  m_dmrThresholdVal >>= 4;
+}
+
+void CModem::dmrSamplesToBits(const int16_t* symbols, unsigned char* buffer)
+{
+  unsigned int offset = 0U;
+  for (uint16_t i = 0U; i < DMR_FRAME_LENGTH_SYMBOLS; i++) {
+    int16_t sample = symbols[i] - m_ysfCentreVal;
+
+    if (sample < -m_ysfThresholdVal) {
+      WRITE_BIT1(buffer, offset, false);
+      offset++;
+      WRITE_BIT1(buffer, offset, true);
+      offset++;
+    } else if (sample < 0) {
+      WRITE_BIT1(buffer, offset, false);
+      offset++;
+      WRITE_BIT1(buffer, offset, false);
+      offset++;
+    } else if (sample < m_ysfThresholdVal) {
+      WRITE_BIT1(buffer, offset, true);
+      offset++;
+      WRITE_BIT1(buffer, offset, false);
+      offset++;
+    } else {
+      WRITE_BIT1(buffer, offset, true);
+      offset++;
+      WRITE_BIT1(buffer, offset, true);
+      offset++;
+    }
+  }
 }
