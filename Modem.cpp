@@ -377,7 +377,13 @@ void CModem::processP25()
 		return;
 
 	uint8_t control;
-	::fread(&control, sizeof(uint8_t), 1U, m_p25FP);
+	if (::fread(&control, sizeof(uint8_t), 1U, m_p25FP) != 1) {
+		unsigned char data = 1U;
+		m_rxP25Data.addData(&data, 1U);
+
+		data = TAG_LOST;
+		m_rxP25Data.addData(&data, 1U);
+	}
 
 	unsigned char bytes[P25_LDU_FRAME_LENGTH_SYMBOLS * sizeof(int16_t)];
 	::fread(bytes, sizeof(int16_t), P25_LDU_FRAME_LENGTH_SYMBOLS, m_p25FP);
@@ -430,7 +436,13 @@ void CModem::processYSF()
 		return;
 
 	uint8_t control;
-	::fread(&control, sizeof(uint8_t), 1U, m_ysfFP);
+	if (::fread(&control, sizeof(uint8_t), 1U, m_ysfFP) != 1) {
+		unsigned char data = 1U;
+		m_rxYSFData.addData(&data, 1U);
+
+		data = TAG_LOST;
+		m_rxYSFData.addData(&data, 1U);
+	}
 
 	unsigned char bytes[YSF_FRAME_LENGTH_SYMBOLS * sizeof(int16_t)];
 	::fread(bytes, sizeof(int16_t), YSF_FRAME_LENGTH_SYMBOLS, m_ysfFP);
