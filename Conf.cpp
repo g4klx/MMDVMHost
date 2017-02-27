@@ -107,6 +107,7 @@ m_dmrId(0U),
 m_dmrColorCode(2U),
 m_dmrSelfOnly(false),
 m_dmrEmbeddedLCOnly(false),
+m_dmrDumpTAData(true),
 m_dmrPrefixes(),
 m_dmrBlackList(),
 m_dmrWhiteList(),
@@ -378,6 +379,8 @@ bool CConf::read()
 			m_dmrSelfOnly = ::atoi(value) == 1;
 		else if (::strcmp(key, "EmbeddedLCOnly") == 0)
 			m_dmrEmbeddedLCOnly = ::atoi(value) == 1;
+		else if (::strcmp(key, "DumpTAData") == 0)
+			m_dmrDumpTAData = ::atoi(value) == 1;
 		else if (::strcmp(key, "Prefixes") == 0) {
 			char* p = ::strtok(value, ",\r\n");
 			while (p != NULL) {
@@ -822,6 +825,11 @@ bool CConf::getDMRSelfOnly() const
 bool CConf::getDMREmbeddedLCOnly() const
 {
 	return m_dmrEmbeddedLCOnly;
+}
+
+bool CConf::getDMRDumpTAData() const
+{
+	return m_dmrDumpTAData;
 }
 
 std::vector<unsigned int> CConf::getDMRPrefixes() const
