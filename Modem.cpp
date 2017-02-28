@@ -1166,7 +1166,7 @@ RESP_TYPE_MMDVM CModem::getResponse()
 
 	// CUtils::dump(1U, "Received", m_buffer, m_length);
 
-  return RTM_OK;
+	return RTM_OK;
 }
 
 HW_TYPE CModem::getHWType() const
@@ -1337,7 +1337,7 @@ void CModem::dumpSamples()
 		return;
 	}
 
-	::fwrite(m_buffer + 6U, 1U, m_length, fp);
+	::fwrite(m_buffer + 6U, 1U, m_length - 6U, fp);
 
 	::fclose(fp);
 }
