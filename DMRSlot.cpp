@@ -569,8 +569,9 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 						if (m_dumpTAData) {
 							::sprintf(text, "DMR Slot %u, Embedded Talker Alias Header", m_slotNo);
 							CUtils::dump(2U, text, data, 9U);
-							m_rfTalkerId |= TALKER_ID_HEADER;
 						}
+
+						m_rfTalkerId |= TALKER_ID_HEADER;
 					}
 					break;
 				case FLCO_TALKER_ALIAS_BLOCK1:
@@ -578,8 +579,9 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 						if (m_dumpTAData) {
 							::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 1", m_slotNo);
 							CUtils::dump(2U, text, data, 9U);
-							m_rfTalkerId |= TALKER_ID_BLOCK1;
 						}
+
+						m_rfTalkerId |= TALKER_ID_BLOCK1;
 					}
 					break;
 				case FLCO_TALKER_ALIAS_BLOCK2:
@@ -587,8 +589,9 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 						if (m_dumpTAData) {
 							::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 2", m_slotNo);
 							CUtils::dump(2U, text, data, 9U);
-							m_rfTalkerId |= TALKER_ID_BLOCK2;
 						}
+
+						m_rfTalkerId |= TALKER_ID_BLOCK2;
 					}
 					break;
 				case FLCO_TALKER_ALIAS_BLOCK3:
@@ -596,8 +599,9 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 						if (m_dumpTAData) {
 							::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 3", m_slotNo);
 							CUtils::dump(2U, text, data, 9U);
-							m_rfTalkerId |= TALKER_ID_BLOCK3;
 						}
+
+						m_rfTalkerId |= TALKER_ID_BLOCK3;
 					}
 					break;
 				default:
@@ -1335,8 +1339,9 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 					if (m_dumpTAData) {
 						::sprintf(text, "DMR Slot %u, Embedded Talker Alias Header", m_slotNo);
 						CUtils::dump(2U, text, data, 9U);
-						m_netTalkerId |= TALKER_ID_HEADER;
 					}
+
+					m_netTalkerId |= TALKER_ID_HEADER;
 				}
 				break;
 			case FLCO_TALKER_ALIAS_BLOCK1:
@@ -1344,8 +1349,9 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 					if (m_dumpTAData) {
 						::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 1", m_slotNo);
 						CUtils::dump(2U, text, data, 9U);
-						m_netTalkerId |= TALKER_ID_BLOCK1;
 					}
+
+					m_netTalkerId |= TALKER_ID_BLOCK1;
 				}
 				break;
 			case FLCO_TALKER_ALIAS_BLOCK2:
@@ -1353,8 +1359,9 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 					if (m_dumpTAData) {
 						::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 2", m_slotNo);
 						CUtils::dump(2U, text, data, 9U);
-						m_netTalkerId |= TALKER_ID_BLOCK2;
 					}
+
+					m_netTalkerId |= TALKER_ID_BLOCK2;
 				}
 				break;
 			case FLCO_TALKER_ALIAS_BLOCK3:
@@ -1362,8 +1369,9 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 					if (m_dumpTAData) {
 						::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 3", m_slotNo);
 						CUtils::dump(2U, text, data, 9U);
-						m_netTalkerId |= TALKER_ID_BLOCK3;
 					}
+
+					m_netTalkerId |= TALKER_ID_BLOCK3;
 				}
 				break;
 			default:
