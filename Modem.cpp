@@ -383,6 +383,8 @@ void CModem::processP25()
 
 		data = TAG_LOST;
 		m_rxP25Data.addData(&data, 1U);
+		
+		return;
 	}
 
 	unsigned char bytes[P25_LDU_FRAME_LENGTH_SYMBOLS * sizeof(int16_t)];
@@ -442,6 +444,8 @@ void CModem::processYSF()
 
 		data = TAG_LOST;
 		m_rxYSFData.addData(&data, 1U);
+		
+		return;
 	}
 
 	unsigned char bytes[YSF_FRAME_LENGTH_SYMBOLS * sizeof(int16_t)];
