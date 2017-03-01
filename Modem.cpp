@@ -55,21 +55,11 @@ m_p25Timer(1000U, 0U, 180U),
 m_dmrFP(NULL),
 m_ysfFP(NULL),
 m_p25FP(NULL),
-m_dmrThresholdVal(0),
-m_dmrCentreVal(0),
-m_dmrThreshold(),
-m_dmrCentre(),
-m_dmrAveragePtr(NOAVEPTR),
-m_ysfThresholdVal(0),
-m_ysfCentreVal(0),
-m_ysfThreshold(),
-m_ysfCentre(),
-m_ysfAveragePtr(NOAVEPTR),
-m_p25ThresholdVal(0),
-m_p25CentreVal(0),
-m_p25Threshold(),
-m_p25Centre(),
-m_p25AveragePtr(NOAVEPTR)
+m_thresholdVal(0),
+m_centreVal(0),
+m_threshold(),
+m_centre(),
+m_averagePtr(NOAVEPTR)
 {
 }
 
@@ -318,6 +308,8 @@ void CModem::processDMR()
     FILE* m_dmrFP = ::fopen(filename, "rb");
     if (m_dmrFP == NULL)
       return;
+
+    m_averagePtr = NOAVEPTR;
   }
 
   if (feof(m_dmrFP))
@@ -371,6 +363,8 @@ void CModem::processP25()
 		FILE* m_p25FP = ::fopen(filename, "rb");
 		if (m_p25FP == NULL)
 			return;
+
+		m_averagePtr = NOAVEPTR;
 	}
 
 	if (feof(m_p25FP))
@@ -432,6 +426,8 @@ void CModem::processYSF()
 		FILE* m_ysfFP = ::fopen(filename, "rb");
 		if (m_ysfFP == NULL)
 			return;
+
+		m_averagePtr = NOAVEPTR;
 	}
 
 	if (feof(m_ysfFP))
@@ -509,41 +505,41 @@ void CModem::p25CalculateLevels(const int16_t* symbols)
 
 	LogMessage("P25RX: pos/neg/centre/threshold %d/%d/%d/%d", posThresh, negThresh, centre, threshold);
 
-	if (m_p25AveragePtr == NOAVEPTR) {
+	if (m_averagePtr == NOAVEPTR) {
 		for (uint8_t i = 0U; i < 16U; i++) {
-			m_p25Centre[i]    = centre;
-			m_p25Threshold[i] = threshold;
+			m_centre[i]    = centre;
+			m_threshold[i] = threshold;
 		}
 
-		m_p25AveragePtr = 0U;
+		m_averagePtr = 0U;
 	} else {
-		m_p25Centre[m_p25AveragePtr]    = centre;
-		m_p25Threshold[m_p25AveragePtr] = threshold;
+		m_centre[m_averagePtr]    = centre;
+		m_threshold[m_averagePtr] = threshold;
 
-		m_p25AveragePtr++;
-		if (m_p25AveragePtr >= 16U)
-			m_p25AveragePtr = 0U;
+		m_averagePtr++;
+		if (m_averagePtr >= 16U)
+			m_averagePtr = 0U;
 	}
 
-	m_p25CentreVal    = 0;
-	m_p25ThresholdVal = 0;
+	m_centreVal    = 0;
+	m_thresholdVal = 0;
 
 	for (uint8_t i = 0U; i < 16U; i++) {
-		m_p25CentreVal    += m_p25Centre[i];
-		m_p25ThresholdVal += m_p25Threshold[i];
+		m_centreVal    += m_centre[i];
+		m_thresholdVal += m_threshold[i];
 	}
 
-	m_p25CentreVal    >>= 4;
-	m_p25ThresholdVal >>= 4;
+	m_centreVal    >>= 4;
+	m_thresholdVal >>= 4;
 }
 
 void CModem::p25SamplesToBits(const int16_t* symbols, unsigned char* buffer)
 {
 	unsigned int offset = 0U;
 	for (uint16_t i = 0U; i < P25_LDU_FRAME_LENGTH_SYMBOLS; i++) {
-		int16_t sample = symbols[i] - m_p25CentreVal;
+		int16_t sample = symbols[i] - m_centreVal;
 
-		if (sample < -m_p25ThresholdVal) {
+		if (sample < -m_thresholdVal) {
 			WRITE_BIT1(buffer, offset, false);
 			offset++;
 			WRITE_BIT1(buffer, offset, true);
@@ -553,7 +549,7 @@ void CModem::p25SamplesToBits(const int16_t* symbols, unsigned char* buffer)
 			offset++;
 			WRITE_BIT1(buffer, offset, false);
 			offset++;
-		} else if (sample < m_p25ThresholdVal) {
+		} else if (sample < m_thresholdVal) {
 			WRITE_BIT1(buffer, offset, true);
 			offset++;
 			WRITE_BIT1(buffer, offset, false);
@@ -600,41 +596,41 @@ void CModem::ysfCalculateLevels(const int16_t* symbols)
 
 	LogMessage("YSFRX: pos/neg/centre/threshold %d/%d/%d/%d", posThresh, negThresh, centre, threshold);
 
-	if (m_ysfAveragePtr == NOAVEPTR) {
+	if (m_averagePtr == NOAVEPTR) {
 		for (uint8_t i = 0U; i < 16U; i++) {
-			m_ysfCentre[i]    = centre;
-			m_ysfThreshold[i] = threshold;
+			m_centre[i]    = centre;
+			m_threshold[i] = threshold;
 		}
 
-		m_ysfAveragePtr = 0U;
+		m_averagePtr = 0U;
 	} else {
-		m_ysfCentre[m_ysfAveragePtr] = centre;
-		m_ysfThreshold[m_ysfAveragePtr] = threshold;
+		m_centre[m_averagePtr]    = centre;
+		m_threshold[m_averagePtr] = threshold;
 
-		m_ysfAveragePtr++;
-		if (m_ysfAveragePtr >= 16U)
-			m_ysfAveragePtr = 0U;
+		m_averagePtr++;
+		if (m_averagePtr >= 16U)
+			m_averagePtr = 0U;
 	}
 
-	m_ysfCentreVal    = 0;
-	m_ysfThresholdVal = 0;
+	m_centreVal    = 0;
+	m_thresholdVal = 0;
 
 	for (uint8_t i = 0U; i < 16U; i++) {
-		m_ysfCentreVal    += m_ysfCentre[i];
-		m_ysfThresholdVal += m_ysfThreshold[i];
+		m_centreVal    += m_centre[i];
+		m_thresholdVal += m_threshold[i];
 	}
 
-	m_ysfCentreVal    >>= 4;
-	m_ysfThresholdVal >>= 4;
+	m_centreVal    >>= 4;
+	m_thresholdVal >>= 4;
 }
 
 void CModem::ysfSamplesToBits(const int16_t* symbols, unsigned char* buffer)
 {
 	unsigned int offset = 0U;
 	for (uint16_t i = 0U; i < YSF_FRAME_LENGTH_SYMBOLS; i++) {
-		int16_t sample = symbols[i] - m_ysfCentreVal;
+		int16_t sample = symbols[i] - m_centreVal;
 
-		if (sample < -m_ysfThresholdVal) {
+		if (sample < -m_thresholdVal) {
 			WRITE_BIT1(buffer, offset, false);
 			offset++;
 			WRITE_BIT1(buffer, offset, true);
@@ -644,7 +640,7 @@ void CModem::ysfSamplesToBits(const int16_t* symbols, unsigned char* buffer)
 			offset++;
 			WRITE_BIT1(buffer, offset, false);
 			offset++;
-		} else if (sample < m_ysfThresholdVal) {
+		} else if (sample < m_thresholdVal) {
 			WRITE_BIT1(buffer, offset, true);
 			offset++;
 			WRITE_BIT1(buffer, offset, false);
@@ -691,41 +687,41 @@ void CModem::dmrCalculateLevels(const int16_t* symbols)
 
   LogMessage("DMRRX: pos/neg/centre/threshold %d/%d/%d/%d", posThresh, negThresh, centre, threshold);
 
-  if (m_dmrAveragePtr == NOAVEPTR) {
+  if (m_averagePtr == NOAVEPTR) {
     for (uint8_t i = 0U; i < 16U; i++) {
-      m_dmrCentre[i]    = centre;
-      m_dmrThreshold[i] = threshold;
+      m_centre[i]    = centre;
+      m_threshold[i] = threshold;
     }
 
-    m_dmrAveragePtr = 0U;
+    m_averagePtr = 0U;
   } else {
-    m_dmrCentre[m_dmrAveragePtr]    = centre;
-    m_dmrThreshold[m_dmrAveragePtr] = threshold;
+    m_centre[m_averagePtr]    = centre;
+    m_threshold[m_averagePtr] = threshold;
 
-    m_dmrAveragePtr++;
-    if (m_dmrAveragePtr >= 16U)
-      m_dmrAveragePtr = 0U;
+    m_averagePtr++;
+    if (m_averagePtr >= 16U)
+      m_averagePtr = 0U;
   }
 
-  m_dmrCentreVal    = 0;
-  m_dmrThresholdVal = 0;
+  m_centreVal    = 0;
+  m_thresholdVal = 0;
 
   for (uint8_t i = 0U; i < 16U; i++) {
-    m_dmrCentreVal    += m_dmrCentre[i];
-    m_dmrThresholdVal += m_dmrThreshold[i];
+    m_centreVal    += m_centre[i];
+    m_thresholdVal += m_threshold[i];
   }
 
-  m_dmrCentreVal >>= 4;
-  m_dmrThresholdVal >>= 4;
+  m_centreVal >>= 4;
+  m_thresholdVal >>= 4;
 }
 
 void CModem::dmrSamplesToBits(const int16_t* symbols, unsigned char* buffer)
 {
   unsigned int offset = 0U;
   for (uint16_t i = 0U; i < DMR_FRAME_LENGTH_SYMBOLS; i++) {
-    int16_t sample = symbols[i] - m_ysfCentreVal;
+    int16_t sample = symbols[i] - m_centreVal;
 
-    if (sample < -m_ysfThresholdVal) {
+    if (sample < -m_thresholdVal) {
       WRITE_BIT1(buffer, offset, false);
       offset++;
       WRITE_BIT1(buffer, offset, true);
@@ -735,7 +731,7 @@ void CModem::dmrSamplesToBits(const int16_t* symbols, unsigned char* buffer)
       offset++;
       WRITE_BIT1(buffer, offset, false);
       offset++;
-    } else if (sample < m_ysfThresholdVal) {
+    } else if (sample < m_thresholdVal) {
       WRITE_BIT1(buffer, offset, true);
       offset++;
       WRITE_BIT1(buffer, offset, false);

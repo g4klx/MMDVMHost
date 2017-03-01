@@ -87,36 +87,26 @@ private:
 	CRingBuffer<unsigned char> m_rxDMRData2;
 	CRingBuffer<unsigned char> m_rxYSFData;
 	CRingBuffer<unsigned char> m_rxP25Data;
-  CTimer                     m_dmrTimer;
+	CTimer                     m_dmrTimer;
 	CTimer                     m_ysfTimer;
-  CTimer                     m_p25Timer;
-  FILE*                      m_dmrFP;
+	CTimer                     m_p25Timer;
+	FILE*                      m_dmrFP;
 	FILE*                      m_ysfFP;
 	FILE*                      m_p25FP;
-  int16_t                    m_dmrThresholdVal;
-  int16_t                    m_dmrCentreVal;
-  int16_t                    m_dmrThreshold[16U];
-  int16_t                    m_dmrCentre[16U];
-  uint16_t                   m_dmrAveragePtr;
-  int16_t                    m_ysfThresholdVal;
-	int16_t                    m_ysfCentreVal;
-	int16_t                    m_ysfThreshold[16U];
-	int16_t                    m_ysfCentre[16U];
-	uint16_t                   m_ysfAveragePtr;
-	int16_t                    m_p25ThresholdVal;
-	int16_t                    m_p25CentreVal;
-	int16_t                    m_p25Threshold[16U];
-	int16_t                    m_p25Centre[16U];
-	uint16_t                   m_p25AveragePtr;
+	int16_t                    m_thresholdVal;
+	int16_t                    m_centreVal;
+	int16_t                    m_threshold[16U];
+	int16_t                    m_centre[16U];
+	uint16_t                   m_averagePtr;
 
 	void processYSF();
 	void processP25();
-  void processDMR();
+	void processDMR();
 
-  void dmrCalculateLevels(const int16_t* symbols);
-  void dmrSamplesToBits(const int16_t* symbols, unsigned char* buffer);
+	void dmrCalculateLevels(const int16_t* symbols);
+	void dmrSamplesToBits(const int16_t* symbols, unsigned char* buffer);
 
-  void ysfCalculateLevels(const int16_t* symbols);
+	void ysfCalculateLevels(const int16_t* symbols);
 	void ysfSamplesToBits(const int16_t* symbols, unsigned char* buffer);
 
 	void p25CalculateLevels(const int16_t* symbols);
