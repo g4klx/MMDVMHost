@@ -379,8 +379,10 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			LogMessage("DMR Slot %u, received RF data header from %s to %s%s, %u blocks", m_slotNo, src.c_str(), gi ? "TG ": "", dst.c_str(), m_rfFrames);
 
-			if (m_rfFrames == 0U)
-				endOfRFData();
+			if (m_rfFrames == 0U) {
+				LogMessage("DMR Slot %u, ended RF data transmission", m_slotNo);
+				writeEndRF();
+			}
 		} else if (dataType == DT_CSBK) {
 			CDMRCSBK csbk;
 			bool valid = csbk.put(data + 2U);
@@ -484,8 +486,10 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			writeNetworkRF(data, dataType);
 
-			if (m_rfFrames == 0U)
-				endOfRFData();
+			if (m_rfFrames == 0U) {
+				LogMessage("DMR Slot %u, ended RF data transmission", m_slotNo);
+				writeEndRF();
+			}
 		}
 	} else if (audioSync) {
 		if (m_rfState == RS_RF_AUDIO) {
@@ -775,33 +779,6 @@ unsigned int CDMRSlot::readModem(unsigned char* data)
 	return len;
 }
 
-void CDMRSlot::endOfRFData()
-{
-	LogMessage("DMR Slot %u, ended RF data transmission", m_slotNo);
-
-	if (m_duplex) {
-		unsigned char bytes[DMR_FRAME_LENGTH_BYTES + 2U];
-
-		CSync::addDMRDataSync(bytes + 2U, m_duplex);
-
-		CDMRSlotType slotType;
-		slotType.setDataType(DT_TERMINATOR_WITH_LC);
-		slotType.setColorCode(m_colorCode);
-		slotType.getData(bytes + 2U);
-
-		m_rfDataHeader.getTerminator(bytes + 2U);
-
-		bytes[0U] = TAG_EOT;
-		bytes[1U] = 0x00U;
-
-		writeQueueRF(bytes);
-		writeQueueRF(bytes);
-		writeQueueRF(bytes);
-	}
-
-	writeEndRF();
-}
-
 void CDMRSlot::writeEndRF(bool writeEnd)
 {
 	m_rfState = RS_RF_LISTENING;
@@ -842,33 +819,6 @@ void CDMRSlot::writeEndRF(bool writeEnd)
 
 	delete m_rfLC;
 	m_rfLC = NULL;
-}
-
-void CDMRSlot::endOfNetData()
-{
-	LogMessage("DMR Slot %u, ended network data transmission", m_slotNo);
-
-	if (m_duplex) {
-		unsigned char bytes[DMR_FRAME_LENGTH_BYTES + 2U];
-
-		CSync::addDMRDataSync(bytes + 2U, m_duplex);
-
-		CDMRSlotType slotType;
-		slotType.setDataType(DT_TERMINATOR_WITH_LC);
-		slotType.setColorCode(m_colorCode);
-		slotType.getData(bytes + 2U);
-
-		m_netDataHeader.getTerminator(bytes + 2U);
-
-		bytes[0U] = TAG_EOT;
-		bytes[1U] = 0x00U;
-
-		writeQueueNet(bytes);
-		writeQueueNet(bytes);
-		writeQueueNet(bytes);
-	}
-
-	writeEndNet();
 }
 
 void CDMRSlot::writeEndNet(bool writeEnd)
@@ -1184,8 +1134,10 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		LogMessage("DMR Slot %u, received network data header from %s to %s%s, %u blocks", m_slotNo, src.c_str(), gi ? "TG ": "", dst.c_str(), m_netFrames);
 
-		if (m_netFrames == 0U)
-			endOfNetData();
+		if (m_netFrames == 0U) {
+			LogMessage("DMR Slot %u, ended network data transmission", m_slotNo);
+			writeEndNet();
+		}
 	} else if (dataType == DT_VOICE_SYNC) {
 		if (m_netState == RS_NET_IDLE) {
 			CDMRLC* lc = new CDMRLC(dmrData.getFLCO(), dmrData.getSrcId(), dmrData.getDstId());
@@ -1525,8 +1477,10 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 #endif
 		writeQueueNet(data);
 
-		if (m_netFrames == 0U)
-			endOfNetData();
+		if (m_netFrames == 0U) {
+			LogMessage("DMR Slot %u, ended network data transmission", m_slotNo);
+			writeEndNet();
+		}
 	} else {
 		// Unhandled data type
 		LogWarning("DMR Slot %u, unhandled network data type - 0x%02X", m_slotNo, dataType);
