@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 
 #include "MMDVMHost.h"
+#include "RSSIInterpolator.h"
 #include "SerialController.h"
 #include "ModemSerialPort.h"
 #include "Version.h"
@@ -29,6 +30,7 @@
 #include "YSFControl.h"
 #include "P25Control.h"
 #include "Nextion.h"
+#include "LCDproc.h"
 #include "Thread.h"
 #include "Log.h"
 
@@ -126,6 +128,7 @@ m_dmrNetwork(NULL),
 m_ysfNetwork(NULL),
 m_p25Network(NULL),
 m_display(NULL),
+m_ump(NULL),
 m_mode(MODE_IDLE),
 m_rfModeHang(10U),
 m_netModeHang(3U),
@@ -189,7 +192,7 @@ int CMMDVMHost::run()
 		::close(STDIN_FILENO);
 		::close(STDOUT_FILENO);
 		::close(STDERR_FILENO);
-#if !defined(HD44780)
+#if !defined(HD44780) && !defined(OLED)
 		//If we are currently root...
 		if (getuid() == 0) {
 			struct passwd* user = ::getpwnam("mmdvm");
@@ -239,6 +242,20 @@ int CMMDVMHost::run()
 	if (!ret)
 		return 1;
 
+	if (m_conf.getUMPEnabled()) {
+		std::string port = m_conf.getUMPPort();
+
+		LogInfo("Universal MMDVM Peripheral");
+		LogInfo("    Port: %s", port.c_str());
+
+		m_ump = new CUMP(port);
+		bool ret = m_ump->open();
+		if (!ret) {
+			delete m_ump;
+			m_ump = NULL;
+		}
+	}
+
 	createDisplay();
 
 	if (m_dstarEnabled && m_conf.getDStarNetworkEnabled()) {
@@ -280,6 +297,16 @@ int CMMDVMHost::run()
 	CTimer dmrBeaconTimer(1000U, 4U);
 	bool dmrBeaconsEnabled = m_dmrEnabled && m_conf.getDMRBeacons();
 
+	// For all modes we handle RSSI
+	std::string rssiMappingFile = m_conf.getModemRSSIMappingFile();
+
+	CRSSIInterpolator* rssi = new CRSSIInterpolator;
+	if (!rssiMappingFile.empty()) {
+		LogInfo("RSSI");
+		LogInfo("    Mapping File: %s", rssiMappingFile.c_str());
+		rssi->load(rssiMappingFile);
+	}
+
 	// For DMR and P25 we try to map IDs to callsigns
 	if (m_dmrEnabled || m_p25Enabled) {
 		std::string lookupFile  = m_conf.getDMRIdLookupFile();
@@ -302,41 +329,34 @@ int CMMDVMHost::run()
 		std::string module = m_conf.getDStarModule();
 		bool selfOnly      = m_conf.getDStarSelfOnly();
 		std::vector<std::string> blackList = m_conf.getDStarBlackList();
+		bool errorReply    = m_conf.getDStarErrorReply();
 
 		LogInfo("D-Star Parameters");
 		LogInfo("    Module: %s", module.c_str());
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
+		LogInfo("    Error Reply: %s", errorReply ? "yes" : "no");
 
 		if (blackList.size() > 0U)
 			LogInfo("    Black List: %u", blackList.size());
 
-		dstar = new CDStarControl(m_callsign, module, selfOnly, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex);
+		dstar = new CDStarControl(m_callsign, module, selfOnly, errorReply, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex, rssi);
 	}
 
 	CDMRControl* dmr = NULL;
 	if (m_dmrEnabled) {
-		unsigned int id        = m_conf.getDMRId();
-		unsigned int colorCode = m_conf.getDMRColorCode();
-		bool selfOnly          = m_conf.getDMRSelfOnly();
-		bool TGRewriteSlot1    = m_conf.getDMRTGRewriteSlot1();
-		bool TGRewriteSlot2    = m_conf.getDMRTGRewriteSlot2();
-		bool BMAutoRewrite     = m_conf.getDMRBMAutoRewrite();
-		bool BMRewriteReflectorVoicePrompts = m_conf.getDMRBMRewriteReflectorVoicePrompts();
-		std::vector<unsigned int> prefixes = m_conf.getDMRPrefixes();
+		unsigned int id             = m_conf.getDMRId();
+		unsigned int colorCode      = m_conf.getDMRColorCode();
+		bool selfOnly               = m_conf.getDMRSelfOnly();
+		bool embeddedLCOnly         = m_conf.getDMREmbeddedLCOnly();
+		bool dumpTAData             = m_conf.getDMRDumpTAData();
+		std::vector<unsigned int> prefixes  = m_conf.getDMRPrefixes();
 		std::vector<unsigned int> blackList = m_conf.getDMRBlackList();
-		std::vector<unsigned int> dstIDBlackListSlot1RF = m_conf.getDMRDstIdBlacklistSlot1RF();
-		std::vector<unsigned int> dstIDBlackListSlot2RF = m_conf.getDMRDstIdBlacklistSlot2RF();
-		std::vector<unsigned int> dstIDWhiteListSlot1RF = m_conf.getDMRDstIdWhitelistSlot1RF();
-		std::vector<unsigned int> dstIDWhiteListSlot2RF = m_conf.getDMRDstIdWhitelistSlot2RF();
-		std::vector<unsigned int> dstIDBlackListSlot1NET = m_conf.getDMRDstIdBlacklistSlot1NET();
-		std::vector<unsigned int> dstIDBlackListSlot2NET = m_conf.getDMRDstIdBlacklistSlot2NET();
-		std::vector<unsigned int> dstIDWhiteListSlot1NET = m_conf.getDMRDstIdWhitelistSlot1NET();
-		std::vector<unsigned int> dstIDWhiteListSlot2NET = m_conf.getDMRDstIdWhitelistSlot2NET();
-		unsigned int callHang  = m_conf.getDMRCallHang();
-		unsigned int txHang    = m_conf.getDMRTXHang();
-		int rssiMultiplier     = m_conf.getModemRSSIMultiplier();
-		int rssiOffset         = m_conf.getModemRSSIOffset();
-		unsigned int jitter    = m_conf.getDMRNetworkJitter();
+		std::vector<unsigned int> whiteList = m_conf.getDMRWhiteList();
+		std::vector<unsigned int> slot1TGWhiteList = m_conf.getDMRSlot1TGWhiteList();
+		std::vector<unsigned int> slot2TGWhiteList = m_conf.getDMRSlot2TGWhiteList();
+		unsigned int callHang       = m_conf.getDMRCallHang();
+		unsigned int txHang         = m_conf.getDMRTXHang();
+		unsigned int jitter         = m_conf.getDMRNetworkJitter();
 
 		if (txHang > m_rfModeHang)
 			txHang = m_rfModeHang;
@@ -350,46 +370,23 @@ int CMMDVMHost::run()
 		LogInfo("    Id: %u", id);
 		LogInfo("    Color Code: %u", colorCode);
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
+		LogInfo("    Embedded LC Only: %s", embeddedLCOnly ? "yes" : "no");
+		LogInfo("    Dump Talker Alias Data: %s", dumpTAData ? "yes" : "no");
 		LogInfo("    Prefixes: %u", prefixes.size());
 		
 		if (blackList.size() > 0U)
 			LogInfo("    Source ID Black List: %u", blackList.size());
-		if (dstIDBlackListSlot1RF.size() > 0U)
-			LogInfo("    Slot 1 RF Destination ID Black List: %u entries", dstIDBlackListSlot1RF.size());
-		if (dstIDBlackListSlot2RF.size() > 0U)
-			LogInfo("    Slot 2 RF Destination ID Black List: %u entries", dstIDBlackListSlot2RF.size());
-		if (dstIDWhiteListSlot1RF.size() > 0U)
-			LogInfo("    Slot 1 RF Destination ID White List: %u entries", dstIDWhiteListSlot1RF.size());
-		if (dstIDWhiteListSlot2RF.size() > 0U)
-			LogInfo("    Slot 2 RF Destination ID White List: %u entries", dstIDWhiteListSlot2RF.size());
-		if (dstIDBlackListSlot1NET.size() > 0U)
-			LogInfo("    Slot 1 NET Destination ID Black List: %u entries", dstIDBlackListSlot1NET.size());
-		if (dstIDBlackListSlot2NET.size() > 0U)
-			LogInfo("    Slot 2 NET Destination ID Black List: %u entries", dstIDBlackListSlot2NET.size());
-		if (dstIDWhiteListSlot1NET.size() > 0U)
-			LogInfo("    Slot 1 NET Destination ID White List: %u entries", dstIDWhiteListSlot1NET.size());
-		if (dstIDWhiteListSlot2NET.size() > 0U)
-			LogInfo("    Slot 2 NET Destination ID White List: %u entries", dstIDWhiteListSlot2NET.size());
-		
+		if (whiteList.size() > 0U)
+			LogInfo("    Source ID White List: %u", whiteList.size());
+		if (slot1TGWhiteList.size() > 0U)
+			LogInfo("    Slot 1 TG White List: %u", slot1TGWhiteList.size());
+		if (slot2TGWhiteList.size() > 0U)
+			LogInfo("    Slot 2 TG White List: %u", slot2TGWhiteList.size());
+
 		LogInfo("    Call Hang: %us", callHang);
 		LogInfo("    TX Hang: %us", txHang);
 
-		if (rssiMultiplier != 0) {
-			LogInfo("    RSSI Multiplier: %d", rssiMultiplier);
-			LogInfo("    RSSI Offset: %d", rssiOffset);
-		}
-		
-		if (TGRewriteSlot1)
-		  LogInfo("    TG Rewrite Slot 1 enabled");
-		
-		if (TGRewriteSlot2)
-		  LogInfo("    TG Rewrite Slot 2 enabled");
-		if (BMAutoRewrite)
-		  LogInfo("    BrandMeister Auto Rewrite enabled");
-		if (BMRewriteReflectorVoicePrompts)
-		  LogInfo("    BrandMeister Rewrite Reflector Voice Prompts enabled");
-		
-		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, prefixes, blackList,dstIDBlackListSlot1RF,dstIDWhiteListSlot1RF, dstIDBlackListSlot2RF, dstIDWhiteListSlot2RF, dstIDBlackListSlot1NET,dstIDWhiteListSlot1NET, dstIDBlackListSlot2NET, dstIDWhiteListSlot2NET, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_lookup, rssiMultiplier, rssiOffset, jitter, TGRewriteSlot1, TGRewriteSlot2, BMAutoRewrite, BMRewriteReflectorVoicePrompts);
+		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, dumpTAData, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_lookup, rssi, jitter);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}
@@ -401,7 +398,7 @@ int CMMDVMHost::run()
 		LogInfo("YSF Parameters");
 		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
 
-		ysf = new CYSFControl(m_callsign, m_ysfNetwork, m_display, m_timeout, m_duplex, remoteGateway);
+		ysf = new CYSFControl(m_callsign, m_ysfNetwork, m_display, m_timeout, m_duplex, remoteGateway, rssi);
 	}
 
 	CP25Control* p25 = NULL;
@@ -411,7 +408,7 @@ int CMMDVMHost::run()
 		LogInfo("P25 Parameters");
 		LogInfo("    NAC: $%03X", nac);
 
-		p25 = new CP25Control(nac, m_p25Network, m_display, m_timeout, m_duplex, m_lookup);
+		p25 = new CP25Control(nac, m_p25Network, m_display, m_timeout, m_duplex, m_lookup, rssi);
 	}
 
 	setMode(MODE_IDLE);
@@ -419,10 +416,13 @@ int CMMDVMHost::run()
 	LogMessage("MMDVMHost-%s is running", VERSION);
 
 	while (!m_killed) {
-		bool lockout = m_modem->hasLockout();
-		if (lockout && m_mode != MODE_LOCKOUT)
+		bool lockout1 = m_modem->hasLockout();
+		bool lockout2 = false;
+		if (m_ump != NULL)
+			lockout2 = m_ump->getLockout();
+		if ((lockout1 || lockout2) && m_mode != MODE_LOCKOUT)
 			setMode(MODE_LOCKOUT);
-		else if (!lockout && m_mode == MODE_LOCKOUT)
+		else if ((!lockout1 && !lockout2) && m_mode == MODE_LOCKOUT)
 			setMode(MODE_IDLE);
 
 		bool error = m_modem->hasError();
@@ -430,6 +430,13 @@ int CMMDVMHost::run()
 			setMode(MODE_ERROR);
 		else if (!error && m_mode == MODE_ERROR)
 			setMode(MODE_IDLE);
+
+		if (m_ump != NULL) {
+			bool tx = m_modem->hasTX();
+			m_ump->setTX(tx);
+			bool cd = m_modem->hasCD();
+			m_ump->setCD(cd);
+		}
 
 		unsigned char data[200U];
 		unsigned int len;
@@ -718,6 +725,9 @@ int CMMDVMHost::run()
 			m_dmrTXTimer.stop();
 		}
 
+		if (m_ump != NULL)
+			m_ump->clock(ms);
+
 		if (ms < 5U)
 			CThread::sleep(5U);
 	}
@@ -731,6 +741,11 @@ int CMMDVMHost::run()
 
 	m_display->close();
 	delete m_display;
+
+	if (m_ump != NULL) {
+		m_ump->close();
+		delete m_ump;
+	}
 
 	if (m_lookup != NULL)
 		m_lookup->stop();
@@ -782,6 +797,7 @@ bool CMMDVMHost::createModem()
 	unsigned int rxFrequency  = m_conf.getRxFrequency();
 	unsigned int txFrequency  = m_conf.getTxFrequency();
 	int oscOffset             = m_conf.getModemOscOffset();
+	std::string samplesDir    = m_conf.getModemSamplesDir();
 
 	LogInfo("Modem Parameters");
 	LogInfo("    Port: %s", port.c_str());
@@ -798,10 +814,9 @@ bool CMMDVMHost::createModem()
 	LogInfo("    P25 TX Level: %u%%", p25TXLevel);
 	LogInfo("    RX Frequency: %uHz", rxFrequency);
 	LogInfo("    TX Frequency: %uHz", txFrequency);
-
 	LogInfo("    Osc. Offset: %dppm", oscOffset);
 
-	m_modem = new CModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, oscOffset, debug);
+	m_modem = new CModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, oscOffset, samplesDir, debug);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled);
 	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel);
 	m_modem->setRFParams(rxFrequency, txFrequency);
@@ -854,7 +869,6 @@ bool CMMDVMHost::createDMRNetwork()
 	unsigned int jitter  = m_conf.getDMRNetworkJitter();
 	bool slot1           = m_conf.getDMRNetworkSlot1();
 	bool slot2           = m_conf.getDMRNetworkSlot2();
-	bool rssi            = m_conf.getDMRNetworkRSSI();
 	HW_TYPE hwType       = m_modem->getHWType();
 
 	LogInfo("DMR Network Parameters");
@@ -867,9 +881,14 @@ bool CMMDVMHost::createDMRNetwork()
 	LogInfo("    Jitter: %ums", jitter);
 	LogInfo("    Slot 1: %s", slot1 ? "enabled" : "disabled");
 	LogInfo("    Slot 2: %s", slot2 ? "enabled" : "disabled");
-	LogInfo("    RSSI: %s", rssi ? "enabled" : "disabled");
 
-	m_dmrNetwork = new CDMRNetwork(address, port, local, id, password, m_duplex, VERSION, debug, slot1, slot2, rssi, hwType);
+	m_dmrNetwork = new CDMRNetwork(address, port, local, id, password, m_duplex, VERSION, debug, slot1, slot2, hwType);
+
+	std::string options = m_conf.getDMRNetworkOptions();
+	if (!options.empty()) {
+		LogInfo("    Options: %s", options.c_str());
+		m_dmrNetwork->setOptions(options);
+	}
 
 	unsigned int rxFrequency = m_conf.getRxFrequency();
 	unsigned int txFrequency = m_conf.getTxFrequency();
@@ -1023,13 +1042,39 @@ void CMMDVMHost::createDisplay()
 			LogInfo("    Display UTC: %s", utc ? "yes" : "no");
 		LogInfo("    Idle Brightness: %u", idleBrightness);
 
-		ISerialPort* serial = NULL;
-		if (port == "modem")
-			serial = new CModemSerialPort(m_modem);
-		else
-			serial = new CSerialController(port, SERIAL_9600);
+		if (port == "modem") {
+			ISerialPort* serial = new CModemSerialPort(m_modem);
+			m_display = new CNextion(m_callsign, dmrid, serial, brightness, displayClock, utc, idleBrightness);
+		} else if (port == "ump") {
+			if (m_ump != NULL)
+				m_display = new CNextion(m_callsign, dmrid, m_ump, brightness, displayClock, utc, idleBrightness);
+		} else {
+			ISerialPort* serial = new CSerialController(port, SERIAL_9600);
+			m_display = new CNextion(m_callsign, dmrid, serial, brightness, displayClock, utc, idleBrightness);
+		}
+	} else if (type == "LCDproc") {
+		std::string address       = m_conf.getLCDprocAddress();
+		unsigned int port         = m_conf.getLCDprocPort();
+		unsigned int localPort    = m_conf.getLCDprocLocalPort();
+		bool displayClock         = m_conf.getLCDprocDisplayClock();
+		bool utc                  = m_conf.getLCDprocUTC();
+		bool dimOnIdle            = m_conf.getLCDprocDimOnIdle();
 
-		m_display = new CNextion(m_callsign, dmrid, serial, brightness, displayClock, utc, idleBrightness);
+		LogInfo("    Address: %s", address.c_str());
+		LogInfo("    Port: %u", port);
+
+		if (localPort == 0 )
+			LogInfo("    Local Port: random");
+		else
+			LogInfo("    Local Port: %u", localPort);
+
+		LogInfo("    Dim Display on Idle: %s", dimOnIdle ? "yes" : "no");
+		LogInfo("    Clock Display: %s", displayClock ? "yes" : "no");
+
+		if (displayClock)
+			LogInfo("    Display UTC: %s", utc ? "yes" : "no");
+
+		m_display = new CLCDproc(address.c_str(), port, localPort, m_callsign, dmrid, displayClock, utc, m_duplex, dimOnIdle);
 #if defined(HD44780)
 	} else if (type == "HD44780") {
 		unsigned int rows              = m_conf.getHD44780Rows();
@@ -1070,13 +1115,19 @@ void CMMDVMHost::createDisplay()
 
 #if defined(OLED)
 	} else if (type == "OLED") {
-        unsigned char displayType       = m_conf.getOLEDType();
-        unsigned char displayBrightness = m_conf.getOLEDBrightness();
-        unsigned char displayInvert     = m_conf.getOLEDInvert();
-		m_display = new COLED(displayType, displayBrightness, displayInvert);
+        unsigned char type       = m_conf.getOLEDType();
+        unsigned char brightness = m_conf.getOLEDBrightness();
+        bool          invert     = m_conf.getOLEDInvert();
+		m_display = new COLED(type, brightness, invert);
 #endif
 	} else {
 		m_display = new CNullDisplay;
+	}
+
+	if (m_display == NULL) {
+		LogWarning("No valid display found, disabling");
+		m_display = new CNullDisplay;
+		return;
 	}
 
 	bool ret = m_display->open();
@@ -1100,6 +1151,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_p25Network != NULL)
 			m_p25Network->enable(false);
 		m_modem->setMode(MODE_DSTAR);
+		if (m_ump != NULL)
+			m_ump->setMode(MODE_DSTAR);
 		m_mode = MODE_DSTAR;
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
@@ -1113,6 +1166,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_p25Network != NULL)
 			m_p25Network->enable(false);
 		m_modem->setMode(MODE_DMR);
+		if (m_ump != NULL)
+			m_ump->setMode(MODE_DMR);
 		if (m_duplex) {
 			m_modem->writeDMRStart(true);
 			m_dmrTXTimer.start();
@@ -1130,6 +1185,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_p25Network != NULL)
 			m_p25Network->enable(false);
 		m_modem->setMode(MODE_YSF);
+		if (m_ump != NULL)
+			m_ump->setMode(MODE_YSF);
 		m_mode = MODE_YSF;
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
@@ -1143,6 +1200,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_ysfNetwork != NULL)
 			m_ysfNetwork->enable(false);
 		m_modem->setMode(MODE_P25);
+		if (m_ump != NULL)
+			m_ump->setMode(MODE_P25);
 		m_mode = MODE_P25;
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
@@ -1163,6 +1222,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dmrTXTimer.stop();
 		}
 		m_modem->setMode(MODE_IDLE);
+		if (m_ump != NULL)
+			m_ump->setMode(MODE_IDLE);
 		m_display->setLockout();
 		m_mode = MODE_LOCKOUT;
 		m_modeTimer.stop();
@@ -1183,6 +1244,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
 		}
+		if (m_ump != NULL)
+			m_ump->setMode(MODE_IDLE);
 		m_display->setError("MODEM");
 		m_mode = MODE_ERROR;
 		m_modeTimer.stop();
@@ -1203,6 +1266,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dmrTXTimer.stop();
 		}
 		m_modem->setMode(MODE_IDLE);
+		if (m_ump != NULL)
+			m_ump->setMode(MODE_IDLE);
 		if (m_mode == MODE_ERROR || m_mode == MODE_LOCKOUT) {
 			m_modem->sendCWId(m_callsign);
 			m_cwIdTimer.setTimeout(m_cwIdTime);

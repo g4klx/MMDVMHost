@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,7 +19,8 @@
 #if !defined(DMRSlot_H)
 #define	DMRSlot_H
 
-#include "DMREmbeddedLC.h"
+#include "RSSIInterpolator.h"
+#include "DMREmbeddedData.h"
 #include "DMRDataHeader.h"
 #include "DMRNetwork.h"
 #include "RingBuffer.h"
@@ -30,7 +31,6 @@
 #include "DMRData.h"
 #include "Display.h"
 #include "Defines.h"
-#include "DMREMB.h"
 #include "Timer.h"
 #include "Modem.h"
 #include "DMRLC.h"
@@ -50,15 +50,23 @@ public:
 
 	void clock();
 
-	static void init(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& SrcIdBlackList, const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF,  const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, int rssiMultiplier, int rssiOffset, unsigned int jitter, bool TGRewriteSlot1, bool TGRewriteSlot2, bool BMAutoRewrite, bool BMRewriteReflectorVoicePrompts);
+	static void init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData, unsigned int callHang, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter);
 
 private:
 	unsigned int               m_slotNo;
 	CRingBuffer<unsigned char> m_queue;
 	RPT_RF_STATE               m_rfState;
 	RPT_NET_STATE              m_netState;
-	CDMREmbeddedLC             m_rfEmbeddedLC;
-	CDMREmbeddedLC             m_netEmbeddedLC;
+	CDMREmbeddedData           m_rfEmbeddedLC;
+	CDMREmbeddedData*          m_rfEmbeddedData;
+	unsigned int               m_rfEmbeddedReadN;
+	unsigned int               m_rfEmbeddedWriteN;
+	unsigned char              m_rfTalkerId;
+	CDMREmbeddedData           m_netEmbeddedLC;
+	CDMREmbeddedData*          m_netEmbeddedData;
+	unsigned int               m_netEmbeddedReadN;
+	unsigned int               m_netEmbeddedWriteN;
+	unsigned char              m_netTalkerId;
 	CDMRLC*                    m_rfLC;
 	CDMRLC*                    m_netLC;
 	CDMRDataHeader             m_rfDataHeader;
@@ -83,15 +91,17 @@ private:
 	unsigned int               m_netErrs;
 	unsigned char*             m_lastFrame;
 	bool                       m_lastFrameValid;
-	CDMREMB                    m_lastEMB;
 	unsigned char              m_rssi;
+	unsigned char              m_maxRSSI;
+	unsigned char              m_minRSSI;
+	unsigned int               m_aveRSSI;
+	unsigned int               m_rssiCount;
 	FILE*                      m_fp;
 
-	static unsigned int        m_id;
 	static unsigned int        m_colorCode;
-	static bool                m_selfOnly;
-	static std::vector<unsigned int> m_prefixes;
-	static std::vector<unsigned int> m_blackList;
+
+	static bool                m_embeddedLCOnly;
+	static bool                m_dumpTAData;
 
 	static CModem*             m_modem;
 	static CDMRNetwork*        m_network;
@@ -100,8 +110,7 @@ private:
 	static CDMRLookup*         m_lookup;
 	static unsigned int        m_hangCount;
 
-	static int                 m_rssiMultiplier;
-	static int                 m_rssiOffset;
+	static CRSSIInterpolator*  m_rssiMapper;
 
 	static unsigned int        m_jitterTime;
 	static unsigned int        m_jitterSlots;
@@ -119,9 +128,6 @@ private:
 	void writeQueueNet(const unsigned char* data);
 	void writeNetworkRF(const unsigned char* data, unsigned char dataType, unsigned char errors = 0U);
 	void writeNetworkRF(const unsigned char* data, unsigned char dataType, FLCO flco, unsigned int srcId, unsigned int dstId, unsigned char errors = 0U);
-
-	void endOfRFData();
-	void endOfNetData();
 
 	void writeEndRF(bool writeEnd = false);
 	void writeEndNet(bool writeEnd = false);

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@ enum SECTION {
   SECTION_CWID,
   SECTION_DMRID_LOOKUP,
   SECTION_MODEM,
+  SECTION_UMP,
   SECTION_DSTAR,
   SECTION_DMR,
   SECTION_FUSION,
@@ -47,6 +48,7 @@ enum SECTION {
   SECTION_HD44780,
   SECTION_NEXTION,
   SECTION_OLED,
+  SECTION_LCDPROC,
   SECTION_TGREWRITE
 };
 
@@ -89,32 +91,28 @@ m_modemDMRTXLevel(50U),
 m_modemYSFTXLevel(50U),
 m_modemP25TXLevel(50U),
 m_modemOscOffset(0),
-m_modemRSSIMultiplier(0),
-m_modemRSSIOffset(0),
+m_modemRSSIMappingFile(),
+m_modemSamplesDir(),
 m_modemDebug(false),
+m_umpEnabled(false),
+m_umpPort(),
 m_dstarEnabled(false),
 m_dstarModule("C"),
 m_dstarSelfOnly(false),
 m_dstarBlackList(),
+m_dstarErrorReply(true),
 m_dmrEnabled(false),
 m_dmrBeacons(false),
 m_dmrId(0U),
 m_dmrColorCode(2U),
 m_dmrSelfOnly(false),
-m_dmrTGRewriteSlot1(false),
-m_dmrTGRewriteSlot2(false),
-m_dmrBMAutoRewrite(false),
-m_dmrBMRewriteReflectorVoicePrompts(false),
+m_dmrEmbeddedLCOnly(false),
+m_dmrDumpTAData(true),
 m_dmrPrefixes(),
 m_dmrBlackList(),
-m_dmrDstIdBlacklistSlot1RF(),
-m_dmrDstIdBlacklistSlot2RF(),
-m_dmrDstIdWhitelistSlot1RF(),
-m_dmrDstIdWhitelistSlot2RF(),
-m_dmrDstIdBlacklistSlot1NET(),
-m_dmrDstIdBlacklistSlot2NET(),
-m_dmrDstIdWhitelistSlot1NET(),
-m_dmrDstIdWhitelistSlot2NET(),
+m_dmrWhiteList(),
+m_dmrSlot1TGWhiteList(),
+m_dmrSlot2TGWhiteList(),
 m_dmrCallHang(3U),
 m_dmrTXHang(4U),
 m_fusionEnabled(false),
@@ -131,11 +129,11 @@ m_dmrNetworkAddress(),
 m_dmrNetworkPort(0U),
 m_dmrNetworkLocal(0U),
 m_dmrNetworkPassword(),
+m_dmrNetworkOptions(),
 m_dmrNetworkDebug(false),
 m_dmrNetworkJitter(300U),
 m_dmrNetworkSlot1(true),
 m_dmrNetworkSlot2(true),
-m_dmrNetworkRSSI(false),
 m_fusionNetworkEnabled(false),
 m_fusionNetworkMyAddress(),
 m_fusionNetworkMyPort(0U),
@@ -164,9 +162,14 @@ m_nextionBrightness(50U),
 m_nextionDisplayClock(false),
 m_nextionUTC(false),
 m_nextionIdleBrightness(20U),
-m_oledType(3),
-m_oledBrightness(0),
-m_oledInvert(0)
+m_oledType(3U),
+m_oledBrightness(0U),
+m_oledInvert(false),
+m_lcdprocAddress(),
+m_lcdprocPort(0U),
+m_lcdprocLocalPort(0U),
+m_lcdprocDisplayClock(false),
+m_lcdprocUTC(false)
 {
 }
 
@@ -201,7 +204,9 @@ bool CConf::read()
 	  else if (::strncmp(buffer, "[DMR Id Lookup]", 15U) == 0)
 		  section = SECTION_DMRID_LOOKUP;
 	  else if (::strncmp(buffer, "[Modem]", 7U) == 0)
-        section = SECTION_MODEM;
+		  section = SECTION_MODEM;
+	  else if (::strncmp(buffer, "[UMP]", 5U) == 0)
+		  section = SECTION_UMP;
 	  else if (::strncmp(buffer, "[D-Star]", 8U) == 0)
 		  section = SECTION_DSTAR;
 	  else if (::strncmp(buffer, "[DMR]", 5U) == 0)
@@ -211,24 +216,25 @@ bool CConf::read()
 	  else if (::strncmp(buffer, "[P25]", 5U) == 0)
 		  section = SECTION_P25;
 	  else if (::strncmp(buffer, "[D-Star Network]", 16U) == 0)
-        section = SECTION_DSTAR_NETWORK;
+		  section = SECTION_DSTAR_NETWORK;
       else if (::strncmp(buffer, "[DMR Network]", 13U) == 0)
-        section = SECTION_DMR_NETWORK;
+		  section = SECTION_DMR_NETWORK;
       else if (::strncmp(buffer, "[System Fusion Network]", 23U) == 0)
-        section = SECTION_FUSION_NETWORK;
+		  section = SECTION_FUSION_NETWORK;
 	  else if (::strncmp(buffer, "[P25 Network]", 13U) == 0)
 		  section = SECTION_P25_NETWORK;
 	  else if (::strncmp(buffer, "[TFT Serial]", 12U) == 0)
-        section = SECTION_TFTSERIAL;
+		  section = SECTION_TFTSERIAL;
 	  else if (::strncmp(buffer, "[HD44780]", 9U) == 0)
 		  section = SECTION_HD44780;
 	  else if (::strncmp(buffer, "[Nextion]", 9U) == 0)
 		  section = SECTION_NEXTION;
 	  else if (::strncmp(buffer, "[OLED]", 6U) == 0)
 		  section = SECTION_OLED;
-
+	  else if (::strncmp(buffer, "[LCDproc]", 9U) == 0)
+		  section = SECTION_LCDPROC;
 	  else
-        section = SECTION_NONE;
+		  section = SECTION_NONE;
 
       continue;
     }
@@ -325,12 +331,17 @@ bool CConf::read()
 			m_modemP25TXLevel = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "OscOffset") == 0)
 			m_modemOscOffset = ::atoi(value);
-		else if (::strcmp(key, "RSSIMultiplier") == 0)
-			m_modemRSSIMultiplier = ::atoi(value);
-		else if (::strcmp(key, "RSSIOffset") == 0)
-			m_modemRSSIOffset = ::atoi(value);
+		else if (::strcmp(key, "RSSIMappingFile") == 0)
+			m_modemRSSIMappingFile = value;
+		else if (::strcmp(key, "SamplesDir") == 0)
+			m_modemSamplesDir = value;
 		else if (::strcmp(key, "Debug") == 0)
 			m_modemDebug = ::atoi(value) == 1;
+	} else if (section == SECTION_UMP) {
+		if (::strcmp(key, "Enable") == 0)
+			m_umpEnabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "Port") == 0)
+			m_umpPort = value;
 	} else if (section == SECTION_DSTAR) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dstarEnabled = ::atoi(value) == 1;
@@ -353,7 +364,8 @@ bool CConf::read()
 				}
 				p = ::strtok(NULL, ",\r\n");
 			}
-		}
+		} else if (::strcmp(key, "ErrorReply") == 0)
+			m_dstarErrorReply = ::atoi(value) == 1;
 	} else if (section == SECTION_DMR) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dmrEnabled = ::atoi(value) == 1;
@@ -365,6 +377,10 @@ bool CConf::read()
 			m_dmrColorCode = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "SelfOnly") == 0)
 			m_dmrSelfOnly = ::atoi(value) == 1;
+		else if (::strcmp(key, "EmbeddedLCOnly") == 0)
+			m_dmrEmbeddedLCOnly = ::atoi(value) == 1;
+		else if (::strcmp(key, "DumpTAData") == 0)
+			m_dmrDumpTAData = ::atoi(value) == 1;
 		else if (::strcmp(key, "Prefixes") == 0) {
 			char* p = ::strtok(value, ",\r\n");
 			while (p != NULL) {
@@ -381,82 +397,34 @@ bool CConf::read()
 					m_dmrBlackList.push_back(id);
 				p = ::strtok(NULL, ",\r\n");
 			}
-		}  else if (::strcmp(key, "DstIdBlackListSlot1RF") == 0) {
+		} else if (::strcmp(key, "WhiteList") == 0) {
 			char* p = ::strtok(value, ",\r\n");
 			while (p != NULL) {
 				unsigned int id = (unsigned int)::atoi(p);
 				if (id > 0U)
-					m_dmrDstIdBlacklistSlot1RF.push_back(id);
-				p = ::strtok(NULL, ",\r\n");
-			}	
-		} else if (::strcmp(key, "DstIdBlackListSlot2RF") == 0) {
-			char* p = ::strtok(value, ",\r\n");
-			while (p != NULL) {
-				unsigned int id = (unsigned int)::atoi(p);
-				if (id > 0U)
-					m_dmrDstIdBlacklistSlot2RF.push_back(id);
+					m_dmrWhiteList.push_back(id);
 				p = ::strtok(NULL, ",\r\n");
 			}
-		} else if (::strcmp(key, "DstIdWhiteListSlot1RF") == 0) {
+		} else if (::strcmp(key, "Slot1TGWhiteList") == 0) {
 			char* p = ::strtok(value, ",\r\n");
 			while (p != NULL) {
 				unsigned int id = (unsigned int)::atoi(p);
 				if (id > 0U)
-					m_dmrDstIdWhitelistSlot1RF.push_back(id);
+					m_dmrSlot1TGWhiteList.push_back(id);
 				p = ::strtok(NULL, ",\r\n");
 			}
-		} else if (::strcmp(key, "DstIdWhiteListSlot2RF") == 0) {
+		} else if (::strcmp(key, "Slot2TGWhiteList") == 0) {
 			char* p = ::strtok(value, ",\r\n");
 			while (p != NULL) {
 				unsigned int id = (unsigned int)::atoi(p);
 				if (id > 0U)
-					m_dmrDstIdWhitelistSlot2RF.push_back(id);
-				p = ::strtok(NULL, ",\r\n");
-			}
-		}  else if (::strcmp(key, "DstIdBlackListSlot1NET") == 0) {
-			char* p = ::strtok(value, ",\r\n");
-			while (p != NULL) {
-				unsigned int id = (unsigned int)::atoi(p);
-				if (id > 0U)
-					m_dmrDstIdBlacklistSlot1NET.push_back(id);
-				p = ::strtok(NULL, ",\r\n");
-			}	
-		} else if (::strcmp(key, "DstIdBlackListSlot2NET") == 0) {
-			char* p = ::strtok(value, ",\r\n");
-			while (p != NULL) {
-				unsigned int id = (unsigned int)::atoi(p);
-				if (id > 0U)
-					m_dmrDstIdBlacklistSlot2NET.push_back(id);
-				p = ::strtok(NULL, ",\r\n");
-			}
-		} else if (::strcmp(key, "DstIdWhiteListSlot1NET") == 0) {
-			char* p = ::strtok(value, ",\r\n");
-			while (p != NULL) {
-				unsigned int id = (unsigned int)::atoi(p);
-				if (id > 0U)
-					m_dmrDstIdWhitelistSlot1NET.push_back(id);
-				p = ::strtok(NULL, ",\r\n");
-			}
-		} else if (::strcmp(key, "DstIdWhiteListSlot2NET") == 0) {
-			char* p = ::strtok(value, ",\r\n");
-			while (p != NULL) {
-				unsigned int id = (unsigned int)::atoi(p);
-				if (id > 0U)
-					m_dmrDstIdWhitelistSlot2NET.push_back(id);
+					m_dmrSlot2TGWhiteList.push_back(id);
 				p = ::strtok(NULL, ",\r\n");
 			}
 		} else if (::strcmp(key, "TXHang") == 0)
 			m_dmrTXHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "CallHang") == 0)
 			m_dmrCallHang = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "TGRewriteSlot1") == 0)
-			m_dmrTGRewriteSlot1 = ::atoi(value) == 1;
-		else if (::strcmp(key, "TGRewriteSlot2") == 0)
-			m_dmrTGRewriteSlot2 = ::atoi(value) == 1;
-		else if (::strcmp(key, "BMAutoRewrite") == 0)
-			m_dmrBMAutoRewrite = ::atoi(value) == 1;
-		else if (::strcmp(key, "BMRewriteReflectorVoicePrompts") == 0)
-			m_dmrBMRewriteReflectorVoicePrompts = ::atoi(value) == 1;
 	} else if (section == SECTION_FUSION) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fusionEnabled = ::atoi(value) == 1;
@@ -489,6 +457,8 @@ bool CConf::read()
 			m_dmrNetworkLocal = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Password") == 0)
 			m_dmrNetworkPassword = value;
+		else if (::strcmp(key, "Options") == 0)
+			m_dmrNetworkOptions = value;
 		else if (::strcmp(key, "Debug") == 0)
 			m_dmrNetworkDebug = ::atoi(value) == 1;
 		else if (::strcmp(key, "Jitter") == 0)
@@ -497,8 +467,6 @@ bool CConf::read()
 			m_dmrNetworkSlot1 = ::atoi(value) == 1;
 		else if (::strcmp(key, "Slot2") == 0)
 			m_dmrNetworkSlot2 = ::atoi(value) == 1;
-		else if (::strcmp(key, "RSSI") == 0)
-			m_dmrNetworkRSSI = ::atoi(value) == 1;
 	} else if (section == SECTION_FUSION_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fusionNetworkEnabled = ::atoi(value) == 1;
@@ -569,13 +537,24 @@ bool CConf::read()
 	} else if (section == SECTION_OLED) {
 		if (::strcmp(key, "Type") == 0)
 			m_oledType = (unsigned char)::atoi(value);
-		else if (::strcmp(key, "Port") == 0)
-			m_oledBrightness = (unsigned char)::atoi(value);
 		else if (::strcmp(key, "Brightness") == 0)
-			m_oledInvert = (unsigned char)::atoi(value);
-		
+			m_oledBrightness = (unsigned char)::atoi(value);
+		else if (::strcmp(key, "Invert") == 0)
+			m_oledInvert = ::atoi(value) == 1;
+	} else if (section == SECTION_LCDPROC) {
+		if (::strcmp(key, "Address") == 0)
+			m_lcdprocAddress = value;
+		else if (::strcmp(key, "Port") == 0)
+			m_lcdprocPort = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "LocalPort") == 0)
+			m_lcdprocLocalPort = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "DisplayClock") == 0)
+			m_lcdprocDisplayClock = ::atoi(value) == 1;
+		else if (::strcmp(key, "UTC") == 0)
+			m_lcdprocUTC = ::atoi(value) == 1;
+		else if (::strcmp(key, "DimOnIdle") == 0)
+			m_lcdprocDimOnIdle = ::atoi(value) == 1;
 	}
-
   }
 
   ::fclose(fp);
@@ -768,19 +747,29 @@ int CConf::getModemOscOffset() const
 	return m_modemOscOffset;
 }
 
-int CConf::getModemRSSIMultiplier () const
+std::string CConf::getModemRSSIMappingFile () const
 {
-	return m_modemRSSIMultiplier;
+	return m_modemRSSIMappingFile;
 }
 
-int CConf::getModemRSSIOffset() const
+std::string CConf::getModemSamplesDir() const
 {
-	return m_modemRSSIOffset;
+	return m_modemSamplesDir;
 }
 
 bool CConf::getModemDebug() const
 {
 	return m_modemDebug;
+}
+
+bool CConf::getUMPEnabled() const
+{
+	return m_umpEnabled;
+}
+
+std::string CConf::getUMPPort() const
+{
+	return m_umpPort;
 }
 
 bool CConf::getDStarEnabled() const
@@ -801,6 +790,11 @@ bool CConf::getDStarSelfOnly() const
 std::vector<std::string> CConf::getDStarBlackList() const
 {
 	return m_dstarBlackList;
+}
+
+bool CConf::getDStarErrorReply() const
+{
+	return m_dstarErrorReply;
 }
 
 bool CConf::getDMREnabled() const
@@ -828,24 +822,14 @@ bool CConf::getDMRSelfOnly() const
 	return m_dmrSelfOnly;
 }
 
-bool CConf::getDMRTGRewriteSlot1() const
+bool CConf::getDMREmbeddedLCOnly() const
 {
-	return m_dmrTGRewriteSlot1;
+	return m_dmrEmbeddedLCOnly;
 }
 
-bool CConf::getDMRTGRewriteSlot2() const
+bool CConf::getDMRDumpTAData() const
 {
-	return m_dmrTGRewriteSlot2;
-}
-
-bool CConf::getDMRBMAutoRewrite() const
-{
-	return m_dmrBMAutoRewrite;
-}
-
-bool CConf::getDMRBMRewriteReflectorVoicePrompts() const
-{
-	return m_dmrBMRewriteReflectorVoicePrompts;
+	return m_dmrDumpTAData;
 }
 
 std::vector<unsigned int> CConf::getDMRPrefixes() const
@@ -858,44 +842,19 @@ std::vector<unsigned int> CConf::getDMRBlackList() const
 	return m_dmrBlackList;
 }
 
-std::vector<unsigned int> CConf::getDMRDstIdBlacklistSlot1RF() const
+std::vector<unsigned int> CConf::getDMRWhiteList() const
 {
-	return m_dmrDstIdBlacklistSlot1RF;
+	return m_dmrWhiteList;
 }
 
-std::vector<unsigned int> CConf::getDMRDstIdBlacklistSlot2RF() const
+std::vector<unsigned int> CConf::getDMRSlot1TGWhiteList() const
 {
-	return m_dmrDstIdBlacklistSlot2RF;
+	return m_dmrSlot1TGWhiteList;
 }
 
-std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot1RF() const
+std::vector<unsigned int> CConf::getDMRSlot2TGWhiteList() const
 {
-	return m_dmrDstIdWhitelistSlot1RF;
-}
-
-std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot2RF() const
-{
-	return m_dmrDstIdWhitelistSlot2RF;
-}
-
-std::vector<unsigned int> CConf::getDMRDstIdBlacklistSlot1NET() const
-{
-	return m_dmrDstIdBlacklistSlot1NET;
-}
-
-std::vector<unsigned int> CConf::getDMRDstIdBlacklistSlot2NET() const
-{
-	return m_dmrDstIdBlacklistSlot2NET;
-}
-
-std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot1NET() const
-{
-	return m_dmrDstIdWhitelistSlot1NET;
-}
-
-std::vector<unsigned int> CConf::getDMRDstIdWhitelistSlot2NET() const
-{
-	return m_dmrDstIdWhitelistSlot2NET;
+	return m_dmrSlot2TGWhiteList;
 }
 
 unsigned int CConf::getDMRCallHang() const
@@ -978,6 +937,11 @@ std::string CConf::getDMRNetworkPassword() const
   return m_dmrNetworkPassword;
 }
 
+std::string CConf::getDMRNetworkOptions() const
+{
+	return m_dmrNetworkOptions;
+}
+
 bool CConf::getDMRNetworkDebug() const
 {
 	return m_dmrNetworkDebug;
@@ -996,11 +960,6 @@ bool CConf::getDMRNetworkSlot1() const
 bool CConf::getDMRNetworkSlot2() const
 {
 	return m_dmrNetworkSlot2;
-}
-
-bool CConf::getDMRNetworkRSSI() const
-{
-	return m_dmrNetworkRSSI;
 }
 
 bool CConf::getFusionNetworkEnabled() const
@@ -1153,7 +1112,37 @@ unsigned char CConf::getOLEDBrightness() const
 	return m_oledBrightness;
 }
 
-unsigned char CConf::getOLEDInvert() const
+bool CConf::getOLEDInvert() const
 {
 	return m_oledInvert;
+}
+
+std::string CConf::getLCDprocAddress() const
+{
+	return m_lcdprocAddress;
+}
+
+unsigned int CConf::getLCDprocPort() const
+{
+	return m_lcdprocPort;
+}
+
+unsigned int CConf::getLCDprocLocalPort() const
+{
+	return m_lcdprocLocalPort;
+}
+
+bool CConf::getLCDprocDisplayClock() const
+{
+	return m_lcdprocDisplayClock;
+}
+
+bool CConf::getLCDprocUTC() const
+{
+	return m_lcdprocUTC;
+}
+
+bool CConf::getLCDprocDimOnIdle() const
+{
+	return m_lcdprocDimOnIdle;
 }

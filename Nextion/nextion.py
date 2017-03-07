@@ -1,120 +1,136 @@
-#!/usr/bin/python
-# coding=utf-8
+'''
+ *   Copyright (C) 2016 Alex Koren
+ *
+ *   This program is free software; you can redistribute it and/or modify
+ *   it under the terms of the GNU General Public License as published by
+ *   the Free Software Foundation; either version 2 of the License, or
+ *   (at your option) any later version.
+ *
+ *   This program is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with this program; if not, write to the Free Software
+ *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+'''
 
-import threading
-import time
-import os
-import sys
 import serial
+import time
+import sys
+import os
+import re
 
+e = "\xff\xff\xff"
 
-PORT = '/dev/ttyAMA0'
-BAUDCOMM = 9600
-BAUDUPLOAD = 115200
-CHECK_MODEL = 'NX3224T024'
+def getBaudrate(ser, fSize=None, checkModel=None):
+    for baudrate in (2400, 4800, 9600, 19200, 38400, 57600, 115200):
+        ser.baudrate = baudrate
+        ser.timeout = 3000 / baudrate + .2
+        print 'Trying with baudrate: ' + str(baudrate) + '...'
+        ser.write("\xff\xff\xff")
+        ser.write('connect')
+        ser.write("\xff\xff\xff")
+        r = ser.read(128)
+        if 'comok' in r:
+            print 'Connected with baudrate: ' + str(baudrate) + '...'
+            noConnect = False
+            status, unknown1, model, fwversion, mcucode, serial, flashSize = r.strip("\xff\x00").split(',')
+            print 'Status: ' + status.split(' ')[0]
+            if status.split(' ')[1] == "1":
+                print 'Touchscreen: yes'
+            else:
+                print 'Touchscreen: no'
+            print 'Model: ' + model
+            print 'Firmware version: ' + fwversion
+            print 'MCU code: ' + mcucode
+            print 'Serial: ' + serial
+            print 'Flash size: ' + flashSize
+            if fSize and fSize > flashSize:
+                print 'File too big!'
+                return False
+            if checkModel and not checkModel in model:
+                print 'Wrong Display!'
+                return False
+            return True
+    return False
 
-if len(sys.argv) != 2:
-	print 'usage: python %s file_to_upload.tft' % sys.argv[0]
-	exit(-2)
+def setDownloadBaudrate(ser, fSize, baudrate):
+    ser.write("")
+    ser.write("whmi-wri " + str(fSize) + "," + str(baudrate) + ",0" + e)
+    time.sleep(.05)
+    ser.baudrate = baudrate
+    ser.timeout = .5
+    r = ser.read(1)
+    if "\x05" in r:
+        return True
+    return False
 
-file_path = sys.argv[1]
-
-if os.path.isfile(file_path):
-	print 'uploading %s (%i bytes)...' % (file_path, os.path.getsize(file_path))
-else:
-	print 'file not found'
-	exit(-1)
-
-fsize = os.path.getsize(file_path)
-print('Filesize: ' + str(fsize))
-
-ser = serial.Serial(PORT, BAUDCOMM, timeout=.1, )
-
-acked = threading.Event()
-stop_thread = threading.Event()
-
-def reader():
-    global acked
-    global ser
-    while stop_thread.is_set() == False:
-        r = ser.read(1)
-        if r == '':
-            continue
-        elif '\x05' in r:
-            acked.set()
-            continue
-        else:
-            print '<%r>' % r
-            continue
-
-            
-def upload():
-    global acked
-    global ser
-    global stop_thread
-    ser.write('tjchmi-wri %i,%i,0' % (fsize, BAUDUPLOAD))
-    ser.write("\xff\xff\xff")
-    ser.flush()
-    acked.clear()
-    ser.baudrate = BAUDUPLOAD
-    ser.timeout = 0.1
-    threader.start()
-    print 'Waiting for ACK...'
-    acked.wait()
-    print 'Uploading...'
-    with open(file_path, 'rb') as hmif:
+def transferFile(ser, filename, fSize):
+    with open(filename, 'rb') as hmif:
         dcount = 0
         while True:
-            #time.sleep(.1)
             data = hmif.read(4096)
-            if len(data) == 0: break
+            if len(data) == 0:
+                break
             dcount += len(data)
-            #print 'writing %i...' % len(data)
+            ser.timeout = 5
             ser.write(data)
-            acked.clear()
-            sys.stdout.write('\rDownloading, %3.1f%%...' % (dcount/ float(fsize)*100.0))
+            sys.stdout.write('\rDownloading, %3.1f%%...'% (dcount / float(fSize) * 100.0))
             sys.stdout.flush()
-            #print 'waiting for hmi...'
-            acked.wait()
-        print('')
-    stop_thread.set()
-    threader.join(1)
+            ser.timeout = .5
+            time.sleep(.5)
+            r = ser.read(1)
+            if "\x05" in r:
+                continue
+            else:
+                print
+                return False
+                break
+        print
+    return True
 
+def upload(ser, filename, checkModel=None):
+    if not getBaudrate(ser, os.path.getsize(filename), checkModel):
+        print 'Could not find baudrate'
+        exit(1)
 
-threader = threading.Thread(target = reader)
-threader.daemon = True
+    if not setDownloadBaudrate(ser, os.path.getsize(filename), 115200):
+        print 'Could not set download baudrate'
+        exit(1)
 
-no_connect = True
-for baudrate in (2400, 4800, 9600, 19200, 38400, 57600, 115200):
-    ser.baudrate = baudrate
-    ser.timeout = 3000/baudrate + 0.2
-    print('Trying with ' + str(baudrate) + '...')
-    ser.write("\xff\xff\xff")
-    ser.write('connect')
-    ser.write("\xff\xff\xff")
-    r = ser.read(128)
-    if 'comok' in r:
-        print('Connected with ' + str(baudrate) + '!')
-        no_connect = False
-        status, unknown1, model, unknown2, version, serial, flash_size = r.strip("\xff\x00").split(',')
-        print('Status: ' + status)
-        print('Model: ' + model)
-        print('Version: ' + version)
-        print('Serial: ' + serial)
-        print('Flash size: ' + flash_size)
-        if fsize > flash_size:
-            print('File too big!')
-            break
-        if not CHECK_MODEL in model:
-            print('Wrong Display!')
-            break
-        upload()
-        break
+    if not transferFile(ser, filename, os.path.getsize(filename)):
+        print 'Could not transfer file'
+        exit(1)
 
-if no_connect:
-    print('No connection!')
-else:
-    print('File written to Display!')
+    print 'File transferred successfully'
+    exit(0)
 
-ser.close()
+if __name__ == "__main__":
+    if len(sys.argv) != 4 and len(sys.argv) != 3:
+        print 'usage:\npython nextion.py file_to_upload.tft /path/to/dev/ttyDevice [nextion_model_name]\
+        \nexample: nextion.py newUI.tft /dev/ttyUSB0 NX3224T024\
+        \nnote: model name is optional'
+        exit(1)
 
+    try:
+        ser = serial.Serial(sys.argv[2], 9600, timeout=5)
+    except serial.serialutil.SerialException:
+        print 'could not open serial device ' + sys.argv[2]
+        exit(1)
+    if serial.VERSION <= "3.0":
+        if not ser.isOpen():
+            ser.open()
+    else:
+        if not ser.is_open:
+            ser.open()
+
+    checkModel = None
+    if len(sys.argv) == 4:
+        checkModel = sys.argv[3]
+        pattern = re.compile("^NX\d{4}[TK]\d{3}$")
+        if not pattern.match(checkModel):
+            print 'Invalid model name. Please give a correct one (e.g. NX3224T024)'
+            exit(1)
+    upload(ser, sys.argv[1], checkModel)

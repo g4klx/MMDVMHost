@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -96,23 +96,32 @@ bool CP25Data::decodeLDU1(const unsigned char* data)
 	CP25Utils::decode(data, raw, 1356U, 1398U);
 	decodeLDUHamming(raw, rs + 15U);
 
-	bool ret = m_rs241213.decode(rs);
-	if (!ret)
+	try {
+		bool ret = m_rs241213.decode(rs);
+		if (!ret)
+			return false;
+	} catch (...) {
+		CUtils::dump(2U, "P25, RS carshed with input data", rs, 18U);
+		return false;
+	}
+
+	// Simple validation of the source id
+	unsigned int srcId = (rs[6U] << 16) + (rs[7U] << 8) + rs[8U];
+	if (srcId < 1000000U)
 		return false;
 
-	switch (m_lcf) {
+	switch (rs[0U]) {
 	case P25_LCF_GROUP:
 		m_emergency = (rs[2U] & 0x80U) == 0x80U;
 		m_dstId = (rs[4U] << 8) + rs[5U];
-		m_srcId = (rs[6U] << 16) + (rs[7U] << 8) + rs[8U];
+		m_srcId = srcId;
 		break;
 	case P25_LCF_PRIVATE:
 		m_emergency = false;
 		m_dstId = (rs[3U] << 16) + (rs[4U] << 8) + rs[5U];
-		m_srcId = (rs[6U] << 16) + (rs[7U] << 8) + rs[8U];
+		m_srcId = srcId;
 		break;
 	default:
-		LogMessage("P25, unknown LCF value in LDU1 - $%02X", m_lcf);
 		return false;
 	}
 

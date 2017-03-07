@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2011-2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2011-2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 #include <cstdio>
 #include <cassert>
 #include <cstdint>
+#include <ctime>
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <Windows.h>
@@ -71,6 +72,8 @@ const unsigned char MMDVM_NAK         = 0x7FU;
 
 const unsigned char MMDVM_SERIAL      = 0x80U;
 
+const unsigned char MMDVM_SAMPLES     = 0xF0U;
+
 const unsigned char MMDVM_DEBUG1      = 0xF1U;
 const unsigned char MMDVM_DEBUG2      = 0xF2U;
 const unsigned char MMDVM_DEBUG3      = 0xF3U;
@@ -79,10 +82,10 @@ const unsigned char MMDVM_DEBUG5      = 0xF5U;
 
 const unsigned int MAX_RESPONSES = 30U;
 
-const unsigned int BUFFER_LENGTH = 500U;
+const unsigned int BUFFER_LENGTH = 2000U;
 
 
-CModem::CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, int oscOffset, bool debug) :
+CModem::CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, int oscOffset, const std::string& samplesDir, bool debug) :
 m_port(port),
 m_colorCode(0U),
 m_duplex(duplex),
@@ -98,6 +101,7 @@ m_dmrTXLevel(0U),
 m_ysfTXLevel(0U),
 m_p25TXLevel(0U),
 m_oscOffset(oscOffset),
+m_samplesDir(samplesDir),
 m_debug(debug),
 m_rxFrequency(0U),
 m_txFrequency(0U),
@@ -128,6 +132,7 @@ m_dmrSpace2(0U),
 m_ysfSpace(0U),
 m_p25Space(0U),
 m_tx(false),
+m_cd(false),
 m_lockout(false),
 m_error(false),
 m_hwType(HWT_UNKNOWN)
@@ -439,6 +444,8 @@ void CModem::clock(unsigned int ms)
 					bool dacOverflow = (m_buffer[5U] & 0x20U) == 0x20U;
 					if (dacOverflow)
 						LogError("MMDVM DAC levels have overflowed");
+						
+					m_cd = (m_buffer[5U] & 0x40U) == 0x40U;
 
 					m_dstarSpace = m_buffer[6U];
 					m_dmrSpace1  = m_buffer[7U];
@@ -447,7 +454,7 @@ void CModem::clock(unsigned int ms)
 					m_p25Space   = m_buffer[10U];
 
 					m_inactivityTimer.start();
-					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u lockout=%d", m_buffer[5U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, int(m_lockout));
+					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u lockout=%d, cd=%d", m_buffer[5U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, int(m_lockout), int(m_cd));
 				}
 				break;
 
@@ -458,6 +465,18 @@ void CModem::clock(unsigned int ms)
 
 			case MMDVM_NAK:
 				LogWarning("Received a NAK from the MMDVM, command = 0x%02X, reason = %u", m_buffer[3U], m_buffer[4U]);
+				break;
+
+			case MMDVM_DEBUG1:
+			case MMDVM_DEBUG2:
+			case MMDVM_DEBUG3:
+			case MMDVM_DEBUG4:
+			case MMDVM_DEBUG5:
+				printDebug();
+				break;
+
+			case MMDVM_SAMPLES:
+				dumpSamples();
 				break;
 
 			default:
@@ -852,6 +871,11 @@ bool CModem::hasTX() const
 	return m_tx;
 }
 
+bool CModem::hasCD() const
+{
+	return m_cd;
+}
+
 bool CModem::hasLockout() const
 {
 	return m_lockout;
@@ -1102,42 +1126,26 @@ RESP_TYPE_MMDVM CModem::getResponse()
 		if (ret == 0)
 			return RTM_TIMEOUT;
 
-		switch (m_buffer[2U]) {
-		case MMDVM_DSTAR_HEADER:
-		case MMDVM_DSTAR_DATA:
-		case MMDVM_DSTAR_LOST:
-		case MMDVM_DSTAR_EOT:
-		case MMDVM_DMR_DATA1:
-		case MMDVM_DMR_DATA2:
-		case MMDVM_DMR_LOST1:
-		case MMDVM_DMR_LOST2:
-		case MMDVM_YSF_DATA:
-		case MMDVM_YSF_LOST:
-		case MMDVM_P25_HDR:
-		case MMDVM_P25_LDU:
-		case MMDVM_P25_LOST:
-		case MMDVM_GET_STATUS:
-		case MMDVM_GET_VERSION:
-		case MMDVM_ACK:
-		case MMDVM_NAK:
-		case MMDVM_SERIAL:
-		case MMDVM_DEBUG1:
-		case MMDVM_DEBUG2:
-		case MMDVM_DEBUG3:
-		case MMDVM_DEBUG4:
-		case MMDVM_DEBUG5:
-			break;
-
-		default:
-			LogError("Unknown message, type: %02X", m_buffer[2U]);
-			m_offset = 0U;
-			return RTM_ERROR;
-		}
-
 		m_offset = 3U;
 	}
 
 	if (m_offset >= 3U) {
+		// Use later two byte length field
+		if (m_length == 0U) {
+			int ret = m_serial.read(m_buffer + 3U, 2U);
+			if (ret < 0) {
+				LogError("Error when reading from the modem");
+				m_offset = 0U;
+				return RTM_ERROR;
+			}
+
+			if (ret == 0)
+				return RTM_TIMEOUT;
+
+			m_length = (m_buffer[3U] << 8) | m_buffer[4U];
+			m_offset = 5U;
+		}
+
 		while (m_offset < m_length) {
 			int ret = m_serial.read(m_buffer + m_offset, m_length - m_offset);
 			if (ret < 0) {
@@ -1156,19 +1164,9 @@ RESP_TYPE_MMDVM CModem::getResponse()
 
 	m_offset = 0U;
 
-	switch (m_buffer[2U]) {
-	case MMDVM_DEBUG1:
-	case MMDVM_DEBUG2:
-	case MMDVM_DEBUG3:
-	case MMDVM_DEBUG4:
-	case MMDVM_DEBUG5:
-		printDebug();
-		return RTM_TIMEOUT;
+	// CUtils::dump(1U, "Received", m_buffer, m_length);
 
-	default:
-		// CUtils::dump(1U, "Received", m_buffer, m_length);
-		return RTM_OK;
-	}
+	return RTM_OK;
 }
 
 HW_TYPE CModem::getHWType() const
@@ -1295,4 +1293,51 @@ void CModem::printDebug()
 		short val4 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
 		LogMessage("Debug: %.*s %d %d %d %d", m_length - 11U, m_buffer + 3U, val1, val2, val3, val4);
 	}
+}
+
+void CModem::dumpSamples()
+{
+	if (m_samplesDir.empty())
+		m_samplesDir = ".";
+
+	time_t now;
+	::time(&now);
+
+	struct tm* tm = ::localtime(&now);
+
+	const char* mode = NULL;
+	switch (m_buffer[5U]) {
+	case MODE_DSTAR:
+		mode = "DStar";
+		break;
+	case MODE_DMR:
+		mode = "DMR";
+		break;
+	case MODE_P25:
+		mode = "P25";
+		break;
+	case MODE_YSF:
+		mode = "YSF";
+		break;
+	default:
+		LogWarning("Unknown protocol passed to samples dump - %u", m_buffer[5U]);
+		return;
+	}
+
+	char filename[150U];
+#if defined(_WIN32) || defined(_WIN64)
+	::sprintf(filename, "%s\\Samples-%s-%04d%02d%02d.dat", m_samplesDir.c_str(), mode, tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
+#else
+	::sprintf(filename, "%s/Samples-%s-%04d%02d%02d.dat", m_samplesDir.c_str(), mode, tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
+#endif
+
+	FILE* fp = ::fopen(filename, "a+b");
+	if (fp == NULL) {
+		LogWarning("Unable to open samples file for writing - %s", filename);
+		return;
+	}
+
+	::fwrite(m_buffer + 6U, 1U, m_length - 6U, fp);
+
+	::fclose(fp);
 }

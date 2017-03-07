@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,9 +16,10 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef DMREmbeddedLC_H
-#define DMREmbeddedLC_H
+#ifndef DMREmbeddedData_H
+#define DMREmbeddedData_H
 
+#include "DMRDefines.h"
 #include "DMRLC.h"
 
 enum LC_STATE {
@@ -28,23 +29,35 @@ enum LC_STATE {
 	LCS_THIRD
 };
 
-class CDMREmbeddedLC
+class CDMREmbeddedData
 {
 public:
-	CDMREmbeddedLC();
-	~CDMREmbeddedLC();
+	CDMREmbeddedData();
+	~CDMREmbeddedData();
 
-	CDMRLC* addData(const unsigned char* data, unsigned char lcss);
+	bool addData(const unsigned char* data, unsigned char lcss);
 
-	void setData(const CDMRLC& lc);
+	CDMRLC* getLC() const;
+	void setLC(const CDMRLC& lc);
+
 	unsigned char getData(unsigned char* data, unsigned char n) const;
 
-private:
-	bool*    m_rawLC;
-	LC_STATE m_state;
+	bool getRawData(unsigned char* data) const;
 
-	CDMRLC* processMultiBlockEmbeddedLC();
-	void    processSingleBlockEmbeddedLC(const bool* data);
+	bool isValid() const;
+	FLCO getFLCO() const;
+
+	void reset();
+
+private:
+	bool*        m_raw;
+	LC_STATE     m_state;
+	bool*        m_data;
+	FLCO         m_FLCO;
+	bool         m_valid;
+
+	void decodeEmbeddedData();
+	void encodeEmbeddedData();
 };
 
 #endif

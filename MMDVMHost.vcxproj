@@ -160,7 +160,7 @@
     <ClInclude Include="DMRDataHeader.h" />
     <ClInclude Include="DMRDefines.h" />
     <ClInclude Include="DMREMB.h" />
-    <ClInclude Include="DMREmbeddedLC.h" />
+    <ClInclude Include="DMREmbeddedData.h" />
     <ClInclude Include="DMRFullLC.h" />
     <ClInclude Include="DMRLC.h" />
     <ClInclude Include="DMRNetwork.h" />
@@ -177,6 +177,7 @@
     <ClInclude Include="Golay24128.h" />
     <ClInclude Include="Hamming.h" />
     <ClInclude Include="DMRLookup.h" />
+    <ClInclude Include="LCDproc.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MMDVMHost.h" />
     <ClInclude Include="Modem.h" />
@@ -196,6 +197,7 @@
     <ClInclude Include="RingBuffer.h" />
     <ClInclude Include="RS129.h" />
     <ClInclude Include="RS241213.h" />
+    <ClInclude Include="RSSIInterpolator.h" />
     <ClInclude Include="SerialController.h" />
     <ClInclude Include="SerialPort.h" />
     <ClInclude Include="SHA256.h" />
@@ -205,6 +207,7 @@
     <ClInclude Include="Thread.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="UDPSocket.h" />
+    <ClInclude Include="UMP.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Version.h" />
     <ClInclude Include="YSFControl.h" />
@@ -227,7 +230,7 @@
     <ClCompile Include="DMRData.cpp" />
     <ClCompile Include="DMRDataHeader.cpp" />
     <ClCompile Include="DMREMB.cpp" />
-    <ClCompile Include="DMREmbeddedLC.cpp" />
+    <ClCompile Include="DMREmbeddedData.cpp" />
     <ClCompile Include="DMRFullLC.cpp" />
     <ClCompile Include="DMRLC.cpp" />
     <ClCompile Include="DMRLookup.cpp" />
@@ -243,6 +246,7 @@
     <ClCompile Include="Golay2087.cpp" />
     <ClCompile Include="Golay24128.cpp" />
     <ClCompile Include="Hamming.cpp" />
+    <ClCompile Include="LCDproc.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MMDVMHost.cpp" />
     <ClCompile Include="Modem.cpp" />
@@ -260,6 +264,7 @@
     <ClCompile Include="QR1676.cpp" />
     <ClCompile Include="RS129.cpp" />
     <ClCompile Include="RS241213.cpp" />
+    <ClCompile Include="RSSIInterpolator.cpp" />
     <ClCompile Include="SerialController.cpp" />
     <ClCompile Include="SerialPort.cpp" />
     <ClCompile Include="SHA256.cpp" />
@@ -269,6 +274,7 @@
     <ClCompile Include="Thread.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="UDPSocket.cpp" />
+    <ClCompile Include="UMP.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="YSFNetwork.cpp" />
     <ClCompile Include="YSFPayload.cpp" />

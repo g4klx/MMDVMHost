@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2011-2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2011-2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ enum RESP_TYPE_MMDVM {
 
 class CModem {
 public:
-	CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, int oscOffset, bool debug = false);
+	CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, int oscOffset, const std::string& samplesDir, bool debug = false);
 	~CModem();
 
 	void setRFParams(unsigned int rxFrequency, unsigned int txFrequency);
@@ -59,6 +59,7 @@ public:
 	bool hasP25Space() const;
 
 	bool hasTX() const;
+	bool hasCD() const;
 
 	bool hasLockout() const;
 	bool hasError() const;
@@ -101,6 +102,7 @@ private:
 	unsigned int               m_ysfTXLevel;
 	unsigned int               m_p25TXLevel;
 	int                        m_oscOffset;
+	std::string                m_samplesDir;
 	bool                       m_debug;
 	unsigned int               m_rxFrequency;
 	unsigned int               m_txFrequency;
@@ -131,6 +133,7 @@ private:
 	unsigned int               m_ysfSpace;
 	unsigned int               m_p25Space;
 	bool                       m_tx;
+	bool                       m_cd;
 	bool                       m_lockout;
 	bool                       m_error;
 	HW_TYPE                    m_hwType;
@@ -141,6 +144,7 @@ private:
 	bool setFrequency();
 
 	void printDebug();
+	void dumpSamples();
 
 	RESP_TYPE_MMDVM getResponse();
 };

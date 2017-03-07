@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015,2016 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015,2016,2017 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 
 // #define	DUMP_YSF
 
-CYSFControl::CYSFControl(const std::string& callsign, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway) :
+CYSFControl::CYSFControl(const std::string& callsign, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
 m_callsign(NULL),
 m_network(network),
 m_display(display),
@@ -56,9 +56,16 @@ m_lastMR(YSF_MR_NOT_BUSY),
 m_netN(0U),
 m_rfPayload(),
 m_netPayload(),
+m_rssiMapper(rssiMapper),
+m_rssi(0U),
+m_maxRSSI(0U),
+m_minRSSI(0U),
+m_aveRSSI(0U),
+m_rssiCount(0U),
 m_fp(NULL)
 {
 	assert(display != NULL);
+	assert(rssiMapper != NULL);
 
 	m_rfPayload.setUplink(callsign);
 	m_rfPayload.setDownlink(callsign);
@@ -94,13 +101,38 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 	unsigned char type = data[0U];
 
 	if (type == TAG_LOST && m_rfState == RS_RF_AUDIO) {
-		LogMessage("YSF, transmission lost, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+		if (m_rssi != 0U)
+			LogMessage("YSF, transmission lost, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+		else
+			LogMessage("YSF, transmission lost, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 		writeEndRF();
 		return false;
 	}
 
 	if (type == TAG_LOST)
 		return false;
+
+	// Have we got RSSI bytes on the end?
+	if (len == (YSF_FRAME_LENGTH_BYTES + 4U)) {
+		uint16_t raw = 0U;
+		raw |= (data[122U] << 8) & 0xFF00U;
+		raw |= (data[123U] << 0) & 0x00FFU;
+
+		// Convert the raw RSSI to dBm
+		int rssi = m_rssiMapper->interpolate(raw);
+		LogDebug("YSF, raw RSSI: %u, reported RSSI: %d dBm", raw, rssi);
+
+		// RSSI is always reported as positive
+		m_rssi = (rssi >= 0) ? rssi : -rssi;
+
+		if (m_rssi > m_minRSSI)
+			m_minRSSI = m_rssi;
+		if (m_rssi < m_maxRSSI)
+			m_maxRSSI = m_rssi;
+
+		m_aveRSSI += m_rssi;
+		m_rssiCount++;
+	}
 
 	CYSFFICH fich;
 	bool valid = fich.decode(data + 2U);
@@ -116,6 +148,11 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 		m_rfTimeoutTimer.start();
 		m_rfPayload.reset();
 		m_rfState = RS_RF_AUDIO;
+
+		m_minRSSI = m_rssi;
+		m_maxRSSI = m_rssi;
+		m_aveRSSI = m_rssi;
+		m_rssiCount = 1U;
 #if defined(DUMP_YSF)
 		openFile();
 #endif
@@ -185,6 +222,8 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 		}
 
 		m_rfFrames++;
+
+		m_display->writeFusionRSSI(m_rssi);
 	} else if (valid && fi == YSF_FI_TERMINATOR) {
 		CSync::addYSFSync(data + 2U);
 
@@ -209,7 +248,11 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 
 		m_rfFrames++;
 
-		LogMessage("YSF, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+		if (m_rssi != 0U)
+			LogMessage("YSF, received RF end of transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+		else
+			LogMessage("YSF, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+
 		writeEndRF();
 
 		return false;
@@ -230,6 +273,7 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 				unsigned int errors = m_rfPayload.processVDMode1Audio(data + 2U);
 				m_rfErrs += errors;
 				m_rfBits += 235U;
+				m_display->writeFusionBER(float(errors) / 2.35F);
 				LogDebug("YSF, V/D Mode 1, seq %u, AMBE FEC %u/235 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 2.35F);
 			}
 			break;
@@ -239,6 +283,7 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 				unsigned int errors = m_rfPayload.processVDMode2Audio(data + 2U);
 				m_rfErrs += errors;
 				m_rfBits += 135U;
+				m_display->writeFusionBER(float(errors) / 1.35F);
 				LogDebug("YSF, V/D Mode 2, seq %u, Repetition FEC %u/135 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 1.35F);
 			}
 			break;
@@ -254,6 +299,7 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 				unsigned int errors = m_rfPayload.processVoiceFRModeAudio(data + 2U);
 				m_rfErrs += errors;
 				m_rfBits += 720U;
+				m_display->writeFusionBER(float(errors) / 7.2F);
 				LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 7.2F);
 			}
 			valid = false;
@@ -314,6 +360,8 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 #endif
 
 		m_rfFrames++;
+
+		m_display->writeFusionRSSI(m_rssi);
 	} else {
 		CSync::addYSFSync(data + 2U);
 
@@ -329,6 +377,8 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 		writeFile(data + 2U);
 #endif
 		m_rfFrames++;
+
+		m_display->writeFusionRSSI(m_rssi);
 	}
 
 	return true;
@@ -466,8 +516,6 @@ void CYSFControl::writeNetwork()
 	CYSFFICH fich;
 	bool valid = fich.decode(data + 35U);
 	if (valid) {
-		unsigned char bn = fich.getBN();
-		unsigned char bt = fich.getBT();
 		unsigned char dt = fich.getDT();
 		unsigned char fn = fich.getFN();
 		unsigned char ft = fich.getFT();
@@ -495,7 +543,6 @@ void CYSFControl::writeNetwork()
 					// if (send) {
 						m_netErrs += errors;
 						m_netBits += 235U;
-						LogDebug("YSF, V/D Mode 1, seq %u, AMBE FEC %u/235 (%.1f%%)", n, errors, float(errors) / 2.35F);
 					// }
 				}
 				break;
@@ -507,13 +554,11 @@ void CYSFControl::writeNetwork()
 					// if (send) {
 						m_netErrs += errors;
 						m_netBits += 135U;
-						LogDebug("YSF, V/D Mode 2, seq %u, Repetition FEC %u/135 (%.1f%%)", n, errors, float(errors) / 1.35F);
 					// }
 				}
 				break;
 
 			case YSF_DT_DATA_FR_MODE:
-				LogDebug("YSF, Network data FICH B=%u/%u F=%u/%u", bn, bt, fn, ft);
 				m_netPayload.processDataFRModeData(data + 35U, fn, gateway);
 				break;
 
@@ -525,7 +570,6 @@ void CYSFControl::writeNetwork()
 					// if (send) {
 						m_netErrs += errors;
 						m_netBits += 720U;
-						LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%)", n, errors, float(errors) / 7.2F);
 					// }
 				}
 				break;

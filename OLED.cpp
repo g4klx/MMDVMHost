@@ -18,7 +18,65 @@
 
 #include "OLED.h"
 
-COLED::COLED(unsigned char displayType, unsigned char displayBrightness, unsigned char displayInvert) :
+static unsigned char logo_glcd_bmp[] =
+  { 0b00101011, 0b11010100,
+    0b01010111, 0b11101010,
+    0b01010111, 0b11101010,
+    0b00101011, 0b11010100,
+    0b00000001, 0b10000000,
+    0b00000001, 0b10000000,
+    0b00000001, 0b10000000,
+    0b00000001, 0b10000000,
+    0b00000001, 0b10000000,
+    0b00000001, 0b10000000,
+    0b00000001, 0b10000000,
+    0b00000001, 0b10000000,
+    0b00000001, 0b10000000,
+    0b00000001, 0b10000000,
+    0b00000001, 0b10000000,
+    0b00000000, 0b00000000 };
+
+//DMR 48x16 px
+static unsigned char logo_dmr_bmp[] =
+  { 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111,
+    0b10000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000001,
+    0b10111111, 0b11111000, 0b01111000, 0b00011110, 0b01111111, 0b11100001,
+    0b10111111, 0b11111110, 0b01111100, 0b00111110, 0b01100000, 0b00011001,
+    0b10110000, 0b00001110, 0b01100110, 0b01100110, 0b01100000, 0b00011001,
+    0b10110000, 0b00000110, 0b01100011, 0b11000110, 0b01100000, 0b00011001,
+    0b10110000, 0b00000110, 0b01100001, 0b10000110, 0b01100000, 0b00011001,
+    0b10110000, 0b00000110, 0b01100000, 0b00000110, 0b01111111, 0b11111001,
+    0b10110000, 0b00000110, 0b01100000, 0b00000110, 0b01111000, 0b00000001,
+    0b10110000, 0b00000110, 0b01100000, 0b00000110, 0b01101100, 0b00000001,
+    0b10110000, 0b00000110, 0b01100000, 0b00000110, 0b01100110, 0b00000001,
+    0b10110000, 0b00001110, 0b01100000, 0b00000110, 0b01100011, 0b00000001,
+    0b10111111, 0b11111110, 0b01100000, 0b00000110, 0b01100001, 0b10000001,
+    0b10011111, 0b11111000, 0b01100000, 0b00000110, 0b01100000, 0b11000001,
+    0b10000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000001,
+    0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111
+  };
+
+//D-Star 64x16 px
+static unsigned char logo_dstar_bmp[] =
+  { 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111,
+    0b10000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000001,
+    0b10000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000001,
+    0b10000001, 0b11111100, 0b00000000, 0b00111100, 0b00000000, 0b00000000, 0b00000000, 0b01000001,
+    0b10000001, 0b00000010, 0b00000000, 0b01000010, 0b01000000, 0b00000000, 0b00000000, 0b01000001,
+    0b10000001, 0b00000010, 0b00000000, 0b01000000, 0b01000000, 0b00000000, 0b00000000, 0b01000001,
+    0b10000001, 0b00000010, 0b00000000, 0b01000000, 0b01000000, 0b00000000, 0b00000000, 0b01000001,
+    0b10000001, 0b00000010, 0b01111111, 0b00111100, 0b01111000, 0b00111100, 0b00111100, 0b01000001,
+    0b10000001, 0b00000010, 0b00000000, 0b00000010, 0b01000000, 0b00000010, 0b01000010, 0b01000001,
+    0b10000001, 0b00000010, 0b00000000, 0b00000010, 0b01000000, 0b00111110, 0b01000000, 0b01000001,
+    0b10000001, 0b00000010, 0b00000000, 0b00000010, 0b01000000, 0b01000010, 0b01000000, 0b00000001,
+    0b10000001, 0b00000010, 0b00000000, 0b01000010, 0b01000010, 0b01000010, 0b01000000, 0b01000001,
+    0b10000001, 0b11111100, 0b00000000, 0b00111100, 0b00111100, 0b00111100, 0b01000000, 0b01000001,
+    0b10000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000001,
+    0b10000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000001,
+    0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111
+  };
+
+COLED::COLED(unsigned char displayType, unsigned char displayBrightness, bool displayInvert) :
 m_displayType(displayType),
 m_displayBrightness(displayBrightness),
 m_displayInvert(displayInvert)
@@ -47,8 +105,8 @@ bool COLED::open()
 
     display.begin();
 
-    display.invertDisplay(m_displayInvert);
-    if (m_displayBrightness > 0)
+    display.invertDisplay(m_displayInvert ? 1 : 0);
+    if (m_displayBrightness > 0U)
         display.setBrightness(m_displayBrightness);
 
     // init done
@@ -70,7 +128,7 @@ void COLED::setIdleInt()
     display.clearDisplay();
     OLED_statusbar();
     display.setCursor(0,display.height()/2);
-    display.setTextSize(3);
+    display.setTextSize(2);
     display.print("Idle");
     display.setTextSize(1);
     display.display();
@@ -233,6 +291,28 @@ void COLED::clearP25Int()
     display.display();
 }
 
+void COLED::writeCWInt()
+{
+    display.clearDisplay();
+    display.setCursor(0,display.height()/2);
+    display.setTextSize(3);
+    display.print("CW TX");
+    display.setTextSize(1);
+    display.display();
+    display.startscrollright(0x02,0x0f);
+}
+
+void COLED::clearCWInt()
+{
+    display.clearDisplay();
+    display.setCursor(0,display.height()/2);
+    display.setTextSize(2);
+    display.print("Idle");
+    display.setTextSize(1);
+    display.display();
+    display.startscrollright(0x02,0x0f);
+}
+
 void COLED::close()
 {
     display.close();
@@ -243,11 +323,11 @@ void COLED::OLED_statusbar()
     display.stopscroll();
     display.fillRect(0, 0, display.width(), 16, BLACK);
     display.setTextColor(WHITE);
-	display.setCursor(0,0);
+    display.setCursor(0,0);
     if (m_mode == MODE_DMR)
       display.drawBitmap(0, 0, logo_dmr_bmp, 48, 16, WHITE);
     else if (m_mode == MODE_DSTAR)
-      display.print("D-Star");
+      display.drawBitmap(0, 0, logo_dstar_bmp, 64, 16, WHITE);
     else if (m_mode == MODE_YSF)
       display.print("Fusion");
     else if (m_mode == MODE_P25)

@@ -131,7 +131,7 @@
     <ClInclude Include="DMREMB.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DMREmbeddedLC.h">
+    <ClInclude Include="DMREmbeddedData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DMRFullLC.h">
@@ -210,6 +210,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Mutex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="LCDproc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UMP.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RSSIInterpolator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -316,7 +325,7 @@
     <ClCompile Include="DMREMB.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DMREmbeddedLC.cpp">
+    <ClCompile Include="DMREmbeddedData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DMRFullLC.cpp">
@@ -392,6 +401,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Mutex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="LCDproc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UMP.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RSSIInterpolator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

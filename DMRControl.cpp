@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015,2016 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015,2016,2017 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -12,6 +12,7 @@
  */
 
 #include "DMRControl.h"
+#include "DMRAccessControl.h"
 #include "Defines.h"
 #include "DMRCSBK.h"
 #include "Log.h"
@@ -20,23 +21,25 @@
 #include <cassert>
 #include <algorithm>
 
-CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF, const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, unsigned int timeout, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, int rssiMultiplier, int rssiOffset, unsigned int jitter, bool TGRewriteSlot1, bool TGRewriteSlot2, bool BMAutoRewrite, bool BMRewriteReflectorVoicePrompts) :
+CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, bool embeddedLCOnly, bool dumpTAData, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& whitelist, const std::vector<unsigned int>& slot1TGWhitelist, const std::vector<unsigned int>& slot2TGWhitelist, unsigned int timeout, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssi, unsigned int jitter) :
 m_id(id),
 m_colorCode(colorCode),
-m_selfOnly(selfOnly),
-m_prefixes(prefixes),
-m_blackList(blackList),
 m_modem(modem),
 m_network(network),
 m_slot1(1U, timeout),
 m_slot2(2U, timeout),
 m_lookup(lookup)
 {
+	assert(id != 0U);
 	assert(modem != NULL);
 	assert(display != NULL);
 	assert(lookup != NULL);
+	assert(rssi != NULL);
 
-	CDMRSlot::init(id, colorCode, callHang, selfOnly, prefixes, blackList, DstIdBlacklistSlot1RF, DstIdWhitelistSlot1RF, DstIdBlacklistSlot2RF, DstIdWhitelistSlot2RF, DstIdBlacklistSlot1NET, DstIdWhitelistSlot1NET, DstIdBlacklistSlot2NET, DstIdWhitelistSlot2NET, modem, network, display, duplex, m_lookup, rssiMultiplier, rssiOffset, jitter, TGRewriteSlot1, TGRewriteSlot2, BMAutoRewrite, BMRewriteReflectorVoicePrompts);
+	// Load black and white lists to DMRAccessControl
+	CDMRAccessControl::init(blacklist, whitelist, slot1TGWhitelist, slot2TGWhitelist, selfOnly, prefixes, id);
+
+	CDMRSlot::init(colorCode, embeddedLCOnly, dumpTAData, callHang, modem, network, display, duplex, m_lookup, rssi, jitter);
 }
 
 CDMRControl::~CDMRControl()
@@ -65,29 +68,10 @@ bool CDMRControl::processWakeup(const unsigned char* data)
 
 	std::string src = m_lookup->find(srcId);
 
-	if (m_selfOnly) {
-		if (srcId != m_id) {
-			LogMessage("Invalid CSBK BS_Dwn_Act received from %s", src.c_str());
-			return false;
-		}
-	} else {
-		if (std::find(m_blackList.begin(), m_blackList.end(), srcId) != m_blackList.end()) {
-			LogMessage("Invalid CSBK BS_Dwn_Act received from %s", src.c_str());
-			return false;
-		}
-
-		unsigned int prefix = srcId / 10000U;
-		if (prefix == 0U || prefix > 999U) {
-			LogMessage("Invalid CSBK BS_Dwn_Act received from %s", src.c_str());
-			return false;
-		}
-
-		if (m_prefixes.size() > 0U) {
-			if (std::find(m_prefixes.begin(), m_prefixes.end(), prefix) == m_prefixes.end()) {
-				LogMessage("Invalid CSBK BS_Dwn_Act received from %s", src.c_str());
-				return false;
-			}
-		}
+	bool ret = CDMRAccessControl::validateSrcId(srcId);
+	if (!ret) {
+		LogMessage("Invalid CSBK BS_Dwn_Act received from %s", src.c_str());
+		return false;
 	}
 
 	if (bsId == 0xFFFFFFU) {

@@ -54,6 +54,9 @@ public:
 	unsigned int  getSrcId() const;
 	unsigned int  getDstId() const;
 
+	bool          getDataContent() const;
+	unsigned char getCBF() const;
+
 private:
 	unsigned char* m_data;
 	CSBKO          m_CSBKO;
@@ -62,6 +65,8 @@ private:
 	unsigned int   m_bsId;
 	unsigned int   m_srcId;
 	unsigned int   m_dstId;
+	bool           m_dataContent;
+	unsigned char  m_CBF;
 };
 
 #endif

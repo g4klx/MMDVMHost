@@ -1,5 +1,5 @@
 /*
-*	Copyright (C) 2016 Jonathan Naylor, G4KLX
+*	Copyright (C) 2016,2017 Jonathan Naylor, G4KLX
 *	Copyright (C) 2016 Mathias Weyland, HB9FRV
 *
 *	This program is free software; you can redistribute it and/or modify
@@ -397,12 +397,14 @@ unsigned int CYSFPayload::processVDMode2Audio(unsigned char* data)
 
 	// We have a total of 5 VCH sections, iterate through each
 	for (unsigned int j = 0U; j < 5U; j++, offset += 144U) {
+		unsigned int errs = 0U;
+
 		unsigned char vch[13U];
 
 		// Deinterleave
 		for (unsigned int i = 0U; i < 104U; i++) {
 			unsigned int n = INTERLEAVE_TABLE_26_4[i];
-			bool s = READ_BIT1(data, offset + n) != 0x00U;
+			bool s = READ_BIT1(data, offset + n);
 			WRITE_BIT1(vch, i, s);
 		}
 
@@ -413,19 +415,34 @@ unsigned int CYSFPayload::processVDMode2Audio(unsigned char* data)
 		//		errors += READ_BIT1(vch, 103); // Padding bit must be zero but apparently it is not...
 
 		for (unsigned int i = 0U; i < 81U; i += 3) {
-			uint8_t vote = bool(READ_BIT1(vch, i)) + bool(READ_BIT1(vch, i + 1)) + bool(READ_BIT1(vch, i + 2));
-			if (vote == 1 || vote == 2) {
-				bool decision = vote / 2; // exploit integer division: 1/2 == 0, 2/2 == 1.
-				WRITE_BIT1(vch, i, decision);
-				WRITE_BIT1(vch, i + 1, decision);
-				WRITE_BIT1(vch, i + 2, decision);
-				errors++;
+			uint8_t vote = 0U;
+			vote += READ_BIT1(vch, i + 0U) ? 1U : 0U;
+			vote += READ_BIT1(vch, i + 1U) ? 1U : 0U;
+			vote += READ_BIT1(vch, i + 2U) ? 1U : 0U;
+
+			switch (vote) {
+			case 1U:		// 1 0 0, or 0 1 0, or 0 0 1, convert to 0 0 0
+				WRITE_BIT1(vch, i + 0U, false);
+				WRITE_BIT1(vch, i + 1U, false);
+				WRITE_BIT1(vch, i + 2U, false);
+				errs++;
+				break;
+			case 2U:		// 1 1 0, or 0 1 1, or 1 0 1, convert to 1 1 1
+				WRITE_BIT1(vch, i + 0U, true);
+				WRITE_BIT1(vch, i + 1U, true);
+				WRITE_BIT1(vch, i + 2U, true);
+				errs++;
+				break;
+			default:	// 0U (0 0 0), or 3U (1 1 1), no errors
+				break;
 			}
 		}
 
-		// Reconstruct only if we have bit errors. Technically we could even
-		// constrain it individually to the 5 VCH sections.
-		if (errors > 0U) {
+		// Reconstruct only if we have bit errors.
+		if (errs > 0U) {
+			// Accumulate the total number of errors
+			errors += errs;
+
 			// Scramble
 			for (unsigned int i = 0U; i < 13U; i++)
 				vch[i] ^= WHITENING_DATA[i];

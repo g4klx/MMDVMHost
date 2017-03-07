@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -78,36 +78,34 @@ public:
   unsigned int getModemYSFTXLevel() const;
   unsigned int getModemP25TXLevel() const;
   int          getModemOscOffset() const;
-  int          getModemRSSIMultiplier() const;
-  int          getModemRSSIOffset() const;
+  std::string  getModemRSSIMappingFile() const;
+  std::string  getModemSamplesDir() const;
   bool         getModemDebug() const;
+
+  // The UMP section
+  bool         getUMPEnabled() const;
+  std::string  getUMPPort() const;
 
   // The D-Star section
   bool         getDStarEnabled() const;
   std::string  getDStarModule() const;
   bool         getDStarSelfOnly() const;
   std::vector<std::string> getDStarBlackList() const;
+  bool         getDStarErrorReply() const;
 
   // The DMR section
   bool         getDMREnabled() const;
   bool         getDMRBeacons() const;
   unsigned int getDMRId() const;
   unsigned int getDMRColorCode() const;
+  bool         getDMREmbeddedLCOnly() const;
+  bool         getDMRDumpTAData() const;
   bool         getDMRSelfOnly() const;
-  bool	       getDMRTGRewriteSlot1() const;
-  bool	       getDMRTGRewriteSlot2() const;
-  bool	       getDMRBMAutoRewrite() const;
-  bool         getDMRBMRewriteReflectorVoicePrompts() const;
   std::vector<unsigned int> getDMRPrefixes() const;
   std::vector<unsigned int> getDMRBlackList() const;
-  std::vector<unsigned int> getDMRDstIdBlacklistSlot1RF() const;
-  std::vector<unsigned int> getDMRDstIdBlacklistSlot2RF() const;
-  std::vector<unsigned int> getDMRDstIdWhitelistSlot1RF() const;
-  std::vector<unsigned int> getDMRDstIdWhitelistSlot2RF() const;
-  std::vector<unsigned int> getDMRDstIdBlacklistSlot1NET() const;
-  std::vector<unsigned int> getDMRDstIdBlacklistSlot2NET() const;
-  std::vector<unsigned int> getDMRDstIdWhitelistSlot1NET() const;
-  std::vector<unsigned int> getDMRDstIdWhitelistSlot2NET() const;
+  std::vector<unsigned int> getDMRWhiteList() const;
+  std::vector<unsigned int> getDMRSlot1TGWhiteList() const;
+  std::vector<unsigned int> getDMRSlot2TGWhiteList() const;
   unsigned int getDMRCallHang() const;
   unsigned int getDMRTXHang() const;
 
@@ -132,11 +130,11 @@ public:
   unsigned int getDMRNetworkPort() const;
   unsigned int getDMRNetworkLocal() const;
   std::string  getDMRNetworkPassword() const;
+  std::string  getDMRNetworkOptions() const;
   bool         getDMRNetworkDebug() const;
   unsigned int getDMRNetworkJitter() const;
   bool         getDMRNetworkSlot1() const;
   bool         getDMRNetworkSlot2() const;
-  bool         getDMRNetworkRSSI() const;
 
   // The System Fusion Network section
   bool         getFusionNetworkEnabled() const;
@@ -179,7 +177,15 @@ public:
   // The OLED section
   unsigned char  getOLEDType() const;
   unsigned char  getOLEDBrightness() const;
-  unsigned char  getOLEDInvert() const;
+  bool           getOLEDInvert() const;
+
+  // The LCDproc section
+  std::string  getLCDprocAddress() const;
+  unsigned int getLCDprocPort() const;
+  unsigned int getLCDprocLocalPort() const;
+  bool         getLCDprocDisplayClock() const;
+  bool         getLCDprocUTC() const;
+  bool         getLCDprocDimOnIdle() const;
 
 private:
   std::string  m_file;
@@ -225,34 +231,31 @@ private:
   unsigned int m_modemYSFTXLevel;
   unsigned int m_modemP25TXLevel;
   int          m_modemOscOffset;
-  int          m_modemRSSIMultiplier;
-  int          m_modemRSSIOffset;
+  std::string  m_modemRSSIMappingFile;
+  std::string  m_modemSamplesDir;
   bool         m_modemDebug;
+
+  bool         m_umpEnabled;
+  std::string  m_umpPort;
 
   bool         m_dstarEnabled;
   std::string  m_dstarModule;
   bool         m_dstarSelfOnly;
   std::vector<std::string> m_dstarBlackList;
+  bool         m_dstarErrorReply;
 
   bool         m_dmrEnabled;
   bool         m_dmrBeacons;
   unsigned int m_dmrId;
   unsigned int m_dmrColorCode;
   bool         m_dmrSelfOnly;
-  bool	       m_dmrTGRewriteSlot1;
-  bool	       m_dmrTGRewriteSlot2;
-  bool	       m_dmrBMAutoRewrite;
-  bool	       m_dmrBMRewriteReflectorVoicePrompts;
+  bool         m_dmrEmbeddedLCOnly;
+  bool         m_dmrDumpTAData;
   std::vector<unsigned int> m_dmrPrefixes;
   std::vector<unsigned int> m_dmrBlackList;
-  std::vector<unsigned int> m_dmrDstIdBlacklistSlot1RF;
-  std::vector<unsigned int> m_dmrDstIdBlacklistSlot2RF;
-  std::vector<unsigned int> m_dmrDstIdWhitelistSlot1RF;
-  std::vector<unsigned int> m_dmrDstIdWhitelistSlot2RF;
-  std::vector<unsigned int> m_dmrDstIdBlacklistSlot1NET;
-  std::vector<unsigned int> m_dmrDstIdBlacklistSlot2NET;
-  std::vector<unsigned int> m_dmrDstIdWhitelistSlot1NET;
-  std::vector<unsigned int> m_dmrDstIdWhitelistSlot2NET;
+  std::vector<unsigned int> m_dmrWhiteList;
+  std::vector<unsigned int> m_dmrSlot1TGWhiteList;
+  std::vector<unsigned int> m_dmrSlot2TGWhiteList;
   unsigned int m_dmrCallHang;
   unsigned int m_dmrTXHang;
 
@@ -273,11 +276,11 @@ private:
   unsigned int m_dmrNetworkPort;
   unsigned int m_dmrNetworkLocal;
   std::string  m_dmrNetworkPassword;
+  std::string  m_dmrNetworkOptions;
   bool         m_dmrNetworkDebug;
   unsigned int m_dmrNetworkJitter;
   bool         m_dmrNetworkSlot1;
   bool         m_dmrNetworkSlot2;
-  bool         m_dmrNetworkRSSI;
 
   bool         m_fusionNetworkEnabled;
   std::string  m_fusionNetworkMyAddress;
@@ -314,7 +317,14 @@ private:
 
   unsigned char m_oledType;
   unsigned char m_oledBrightness;
-  unsigned char m_oledInvert;
+  bool          m_oledInvert;
+
+  std::string  m_lcdprocAddress;
+  unsigned int m_lcdprocPort;
+  unsigned int m_lcdprocLocalPort;
+  bool         m_lcdprocDisplayClock;
+  bool         m_lcdprocUTC;
+  bool         m_lcdprocDimOnIdle;
 };
 
 #endif

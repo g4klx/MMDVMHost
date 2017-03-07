@@ -34,48 +34,10 @@
 #include "Adafruit_GFX.h"
 #include "ArduiPi_OLED.h"
 
-static unsigned char logo_glcd_bmp[] =
-  { 0b00101011, 0b11010100,
-    0b01010111, 0b11101010,
-    0b01010111, 0b11101010,
-    0b00101011, 0b11010100,
-    0b00000001, 0b10000000,
-    0b00000001, 0b10000000,
-    0b00000001, 0b10000000,
-    0b00000001, 0b10000000,
-    0b00000001, 0b10000000,
-    0b00000001, 0b10000000,
-    0b00000001, 0b10000000,
-    0b00000001, 0b10000000,
-    0b00000001, 0b10000000,
-    0b00000001, 0b10000000,
-    0b00000001, 0b10000000,
-    0b00000000, 0b00000000 };
-
-//DMR 48x16 px
-static unsigned char logo_dmr_bmp[] =
-  { 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111,
-    0b10000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000001,
-    0b10111111, 0b11111000, 0b01111000, 0b00011110, 0b01111111, 0b11100001,
-    0b10111111, 0b11111110, 0b01111100, 0b00111110, 0b01100000, 0b00011001,
-    0b10110000, 0b00001110, 0b01100110, 0b01100110, 0b01100000, 0b00011001,
-    0b10110000, 0b00000110, 0b01100011, 0b11000110, 0b01100000, 0b00011001,
-    0b10110000, 0b00000110, 0b01100001, 0b10000110, 0b01100000, 0b00011001,
-    0b10110000, 0b00000110, 0b01100000, 0b00000110, 0b01111111, 0b11111001,
-    0b10110000, 0b00000110, 0b01100000, 0b00000110, 0b01111000, 0b00000001,
-    0b10110000, 0b00000110, 0b01100000, 0b00000110, 0b01101100, 0b00000001,
-    0b10110000, 0b00000110, 0b01100000, 0b00000110, 0b01100110, 0b00000001,
-    0b10110000, 0b00001110, 0b01100000, 0b00000110, 0b01100011, 0b00000001,
-    0b10111111, 0b11111110, 0b01100000, 0b00000110, 0b01100001, 0b10000001,
-    0b10011111, 0b11111000, 0b01100000, 0b00000110, 0b01100000, 0b11000001,
-    0b10000000, 0b00000000, 0b00000000, 0b00000000, 0b00000000, 0b00000001,
-    0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111, 0b11111111
-  };
-
 class COLED : public CDisplay 
 {
 public:
-  COLED(unsigned char displayType, unsigned char displayBrighness, unsigned char displayInvert);
+  COLED(unsigned char displayType, unsigned char displayBrighness, bool displayInvert);
   virtual ~COLED();
 
   virtual bool open();
@@ -94,19 +56,21 @@ public:
   virtual void writeFusionInt(const char* source, const char* dest, const char* type, const char* origin);
   virtual void clearFusionInt();
 
-	virtual void writeP25Int(const char* source, bool group, unsigned int dest, const char* type);
-	virtual void clearP25Int();
+  virtual void writeP25Int(const char* source, bool group, unsigned int dest, const char* type);
+  virtual void clearP25Int();
+
+  virtual void writeCWInt();
+  virtual void clearCWInt();
 
   virtual void close();
 
 private:
-  const char* m_slot1_state;
-  const char* m_slot2_state;
-  unsigned char     m_mode;
-  unsigned char     m_displayType;
-  unsigned char     m_displayBrightness;
-  unsigned char     m_displayInvert;
-
+  const char*   m_slot1_state;
+  const char*   m_slot2_state;
+  unsigned char m_mode;
+  unsigned char m_displayType;
+  unsigned char m_displayBrightness;
+  bool          m_displayInvert;
 
   ArduiPi_OLED display;
   void OLED_statusbar();

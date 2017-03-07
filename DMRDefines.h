@@ -114,8 +114,13 @@ const unsigned char FID_ETSI = 0U;
 const unsigned char FID_DMRA = 16U;
 
 enum FLCO {
-	FLCO_GROUP = 0,
-	FLCO_USER_USER = 3
+	FLCO_GROUP               = 0,
+	FLCO_USER_USER           = 3,
+	FLCO_TALKER_ALIAS_HEADER = 4,
+	FLCO_TALKER_ALIAS_BLOCK1 = 5,
+	FLCO_TALKER_ALIAS_BLOCK2 = 6,
+	FLCO_TALKER_ALIAS_BLOCK3 = 7,
+	FLCO_GPS_INFO            = 8
 };
 
 #endif

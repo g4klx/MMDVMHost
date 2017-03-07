@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #if !defined(DMRControl_H)
 #define	DMRControl_H
 
+#include "RSSIInterpolator.h"
 #include "DMRNetwork.h"
 #include "DMRLookup.h"
 #include "Display.h"
@@ -30,7 +31,7 @@
 
 class CDMRControl {
 public:
-	CDMRControl(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blackList, const std::vector<unsigned int>& DstIdBlacklistSlot1RF, const std::vector<unsigned int>& DstIdWhitelistSlot1RF, const std::vector<unsigned int>& DstIdBlacklistSlot2RF, const std::vector<unsigned int>& DstIdWhitelistSlot2RF,const std::vector<unsigned int>& DstIdBlacklistSlot1NET, const std::vector<unsigned int>& DstIdWhitelistSlot1NET, const std::vector<unsigned int>& DstIdBlacklistSlot2NET, const std::vector<unsigned int>& DstIdWhitelistSlot2NET, unsigned int timeout, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, int rssiMultiplier, int rssiOffset, unsigned int jitter, bool TGRewriteSlot1, bool TGRewriteSlot2, bool BMAutoRewrite, bool BMRewriteReflectorVoicePrompts);
+	CDMRControl(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, bool embeddedLCOnly, bool dumpTAData, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& whitelist, const std::vector<unsigned int>& slot1TGWhitelist, const std::vector<unsigned int>& slot2TGWhitelist, unsigned int timeout, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssi, unsigned int jitter);
 	~CDMRControl();
 
 	bool processWakeup(const unsigned char* data);
@@ -44,16 +45,13 @@ public:
 	void clock();
 
 private:
-	unsigned int              m_id;
-	unsigned int              m_colorCode;
-	bool                      m_selfOnly;
-	std::vector<unsigned int> m_prefixes;
-	std::vector<unsigned int> m_blackList;
-	CModem*                   m_modem;
-	CDMRNetwork*              m_network;
-	CDMRSlot                  m_slot1;
-	CDMRSlot                  m_slot2;
-	CDMRLookup*               m_lookup;
+	unsigned int m_id;
+	unsigned int m_colorCode;
+	CModem*      m_modem;
+	CDMRNetwork* m_network;
+	CDMRSlot     m_slot1;
+	CDMRSlot     m_slot2;
+	CDMRLookup*  m_lookup;
 };
 
 #endif

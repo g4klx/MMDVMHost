@@ -37,8 +37,6 @@ public:
 
 	void enable(bool enabled);
 
-	bool writeHeader();
-
 	bool writeLDU1(const unsigned char* ldu1, const CP25Data& control, const CP25LowSpeedData& lsd, bool end);
 
 	bool writeLDU2(const unsigned char* ldu2, const CP25Data& control, const CP25LowSpeedData& lsd, bool end);

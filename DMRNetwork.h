@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -31,8 +31,10 @@
 class CDMRNetwork
 {
 public:
-	CDMRNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, bool rssi, HW_TYPE hwType);
+	CDMRNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, HW_TYPE hwType);
 	~CDMRNetwork();
+
+	void setOptions(const std::string& options);
 
 	void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url);
 
@@ -62,7 +64,6 @@ private:
 	bool         m_enabled;
 	bool         m_slot1;
 	bool         m_slot2;
-	bool         m_rssi;
 	HW_TYPE      m_hwType;
 
 	enum STATUS {
@@ -70,6 +71,7 @@ private:
 		WAITING_LOGIN,
 		WAITING_AUTHORISATION,
 		WAITING_CONFIG,
+		WAITING_OPTIONS,
 		RUNNING
 	};
 
@@ -81,6 +83,8 @@ private:
 	uint32_t*      m_streamId;
 
 	CRingBuffer<unsigned char> m_rxData;
+
+	std::string    m_options;
 
 	std::string    m_callsign;
 	unsigned int   m_rxFrequency;
@@ -98,6 +102,7 @@ private:
 
 	bool writeLogin();
 	bool writeAuthorisation();
+	bool writeOptions();
 	bool writeConfig();
 	bool writePing();
 

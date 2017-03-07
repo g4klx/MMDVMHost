@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #if !defined(DStarControl_H)
 #define	DStarControl_H
 
+#include "RSSIInterpolator.h"
 #include "DStarNetwork.h"
 #include "DStarSlowData.h"
 #include "DStarDefines.h"
@@ -36,7 +37,7 @@
 
 class CDStarControl {
 public:
-	CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, const std::vector<std::string>& blackList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex);
+	CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool errorReply, const std::vector<std::string>& blackList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, CRSSIInterpolator* rssiMapper);
 	~CDStarControl();
 
 	bool writeModem(unsigned char* data, unsigned int len);
@@ -49,6 +50,7 @@ private:
 	unsigned char*             m_callsign;
 	unsigned char*             m_gateway;
 	bool                       m_selfOnly;
+	bool                       m_errorReply;
 	std::vector<std::string>   m_blackList;
 	CDStarNetwork*             m_network;
 	CDisplay*                  m_display;
@@ -67,6 +69,7 @@ private:
 	CTimer                     m_netTimeoutTimer;
 	CTimer                     m_packetTimer;
 	CTimer                     m_ackTimer;
+	CTimer                     m_errTimer;
 	CStopWatch                 m_interval;
 	CStopWatch                 m_elapsed;
 	unsigned int               m_rfFrames;
@@ -79,6 +82,12 @@ private:
 	unsigned int               m_netErrs;
 	unsigned char*             m_lastFrame;
 	bool                       m_lastFrameValid;
+	CRSSIInterpolator*         m_rssiMapper;
+	unsigned char              m_rssi;
+	unsigned char              m_maxRSSI;
+	unsigned char              m_minRSSI;
+	unsigned int               m_aveRSSI;
+	unsigned int               m_rssiCount;
 	FILE*                      m_fp;
 
 	void writeNetwork();
@@ -105,6 +114,7 @@ private:
 	void blankDTMF(unsigned char* data) const;
 
 	void sendAck();
+	void sendError();
 };
 
 #endif

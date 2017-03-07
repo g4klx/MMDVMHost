@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #if !defined(YSFControl_H)
 #define	YSFControl_H
 
+#include "RSSIInterpolator.h"
 #include "YSFNetwork.h"
 #include "YSFDefines.h"
 #include "YSFPayload.h"
@@ -33,7 +34,7 @@
 
 class CYSFControl {
 public:
-	CYSFControl(const std::string& callsign, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway);
+	CYSFControl(const std::string& callsign, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper);
 	~CYSFControl();
 
 	bool writeModem(unsigned char* data, unsigned int len);
@@ -74,6 +75,12 @@ private:
 	unsigned char              m_netN;
 	CYSFPayload                m_rfPayload;
 	CYSFPayload                m_netPayload;
+	CRSSIInterpolator*         m_rssiMapper;
+	unsigned char              m_rssi;
+	unsigned char              m_maxRSSI;
+	unsigned char              m_minRSSI;
+	unsigned int               m_aveRSSI;
+	unsigned int               m_rssiCount;
 	FILE*                      m_fp;
 
 	void writeQueueRF(const unsigned char* data);
