@@ -1268,7 +1268,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modem->setMode(MODE_IDLE);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_IDLE);
-		if (m_mode == MODE_ERROR || m_mode == MODE_LOCKOUT) {
+		if (m_mode == MODE_ERROR) {
 			m_modem->sendCWId(m_callsign);
 			m_cwIdTimer.setTimeout(m_cwIdTime);
 			m_cwIdTimer.start();
