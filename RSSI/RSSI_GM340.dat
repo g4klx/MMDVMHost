@@ -8,11 +8,11 @@
 # Both S-meter (6dB) and decade (10dB) steps are included between the noise floor and saturation.
 # George M1GEO / GB7KH - 01/01/2017
 #
-2841		-20
-2848		-30
-2854		-40
-2858		-43
-2858		-48
+2858		-20
+2857		-30
+2856		-40
+2855		-43
+2854		-48
 2853		-50
 2845		-53
 2780		-58
