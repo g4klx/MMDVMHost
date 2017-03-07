@@ -4,7 +4,8 @@
 # The format of the file is:
 # Raw RSSI Value		dBm Value
 #
-# Measured with a Marconi 2955 Test set and Motorola GM340 UHF (430.6125 MHz).
+# Measured with a Marconi 2955 Test set and Motorola GM340 UHF (430.6125 MHz) using Arduino DUE.
+# No resistor divider, 100nF decoupling capacitor from ADC to ground.
 # Both S-meter (6dB) and decade (10dB) steps are included between the noise floor and saturation.
 # George M1GEO / GB7KH - 01/01/2017
 #
