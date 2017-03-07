@@ -77,7 +77,6 @@ public:
   unsigned int getModemDMRTXLevel() const;
   unsigned int getModemYSFTXLevel() const;
   unsigned int getModemP25TXLevel() const;
-  int          getModemOscOffset() const;
   std::string  getModemRSSIMappingFile() const;
   std::string  getModemSamplesDir() const;
   bool         getModemDebug() const;
@@ -230,7 +229,6 @@ private:
   unsigned int m_modemDMRTXLevel;
   unsigned int m_modemYSFTXLevel;
   unsigned int m_modemP25TXLevel;
-  int          m_modemOscOffset;
   std::string  m_modemRSSIMappingFile;
   std::string  m_modemSamplesDir;
   bool         m_modemDebug;

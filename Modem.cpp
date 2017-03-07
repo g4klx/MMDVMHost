@@ -85,7 +85,7 @@ const unsigned int MAX_RESPONSES = 30U;
 const unsigned int BUFFER_LENGTH = 2000U;
 
 
-CModem::CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, int oscOffset, const std::string& samplesDir, bool debug) :
+CModem::CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, const std::string& samplesDir, bool debug) :
 m_port(port),
 m_colorCode(0U),
 m_duplex(duplex),
@@ -100,7 +100,6 @@ m_dstarTXLevel(0U),
 m_dmrTXLevel(0U),
 m_ysfTXLevel(0U),
 m_p25TXLevel(0U),
-m_oscOffset(oscOffset),
 m_samplesDir(samplesDir),
 m_debug(debug),
 m_rxFrequency(0U),
@@ -980,7 +979,7 @@ bool CModem::setConfig()
 
 	buffer[10U] = m_dmrDelay;
 
-	buffer[11U] = (unsigned char)(m_oscOffset + 128);
+	buffer[11U] = 0U;           // Was OscOffset
 
 	buffer[12U] = (m_dstarTXLevel * 255U) / 100U;
 	buffer[13U] = (m_dmrTXLevel * 255U) / 100U;

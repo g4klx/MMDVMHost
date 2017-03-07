@@ -796,7 +796,6 @@ bool CMMDVMHost::createModem()
 	unsigned int colorCode    = m_conf.getDMRColorCode();
 	unsigned int rxFrequency  = m_conf.getRxFrequency();
 	unsigned int txFrequency  = m_conf.getTxFrequency();
-	int oscOffset             = m_conf.getModemOscOffset();
 	std::string samplesDir    = m_conf.getModemSamplesDir();
 
 	LogInfo("Modem Parameters");
@@ -814,9 +813,8 @@ bool CMMDVMHost::createModem()
 	LogInfo("    P25 TX Level: %u%%", p25TXLevel);
 	LogInfo("    RX Frequency: %uHz", rxFrequency);
 	LogInfo("    TX Frequency: %uHz", txFrequency);
-	LogInfo("    Osc. Offset: %dppm", oscOffset);
 
-	m_modem = new CModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, oscOffset, samplesDir, debug);
+	m_modem = new CModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, samplesDir, debug);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled);
 	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel);
 	m_modem->setRFParams(rxFrequency, txFrequency);
