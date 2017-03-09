@@ -50,7 +50,7 @@ public:
 
 	void clock();
 
-	static void init(unsigned int colorCode, bool embeddedLCOnly, unsigned int callHang, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter);
+	static void init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData, unsigned int callHang, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter);
 
 private:
 	unsigned int               m_slotNo;
@@ -101,6 +101,7 @@ private:
 	static unsigned int        m_colorCode;
 
 	static bool                m_embeddedLCOnly;
+	static bool                m_dumpTAData;
 
 	static CModem*             m_modem;
 	static CDMRNetwork*        m_network;
@@ -127,9 +128,6 @@ private:
 	void writeQueueNet(const unsigned char* data);
 	void writeNetworkRF(const unsigned char* data, unsigned char dataType, unsigned char errors = 0U);
 	void writeNetworkRF(const unsigned char* data, unsigned char dataType, FLCO flco, unsigned int srcId, unsigned int dstId, unsigned char errors = 0U);
-
-	void endOfRFData();
-	void endOfNetData();
 
 	void writeEndRF(bool writeEnd = false);
 	void writeEndNet(bool writeEnd = false);

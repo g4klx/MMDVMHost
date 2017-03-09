@@ -1,0 +1,7 @@
+D-Star: No obvious issues.
+
+DMR: There is an issue where transmitted data (text messages) isn’t picked up as reliably from an MMDVM than (say) a Hytera repeater. In order to address this, I need to see a trace from a Hytera repeater transmitting text, both from cold (no tx) and when already running. The DMRRX receiver from the DV4RX code in my GitHub repository would do the job, provided you have a DV4mini and a repeater within range.
+
+YSF: There is an issue that need addressing: The data sent to aprs.fi from southern hemisphere users isn’t always correct. Maybe the GPS format used by YSF still has some secrets to reveal.
+
+P25: No obvious issues.

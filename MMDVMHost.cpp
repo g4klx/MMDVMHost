@@ -347,13 +347,14 @@ int CMMDVMHost::run()
 		unsigned int id             = m_conf.getDMRId();
 		unsigned int colorCode      = m_conf.getDMRColorCode();
 		bool selfOnly               = m_conf.getDMRSelfOnly();
-		bool embeddedLCOnly = m_conf.getDMREmbeddedLCOnly();
+		bool embeddedLCOnly         = m_conf.getDMREmbeddedLCOnly();
+		bool dumpTAData             = m_conf.getDMRDumpTAData();
 		std::vector<unsigned int> prefixes  = m_conf.getDMRPrefixes();
 		std::vector<unsigned int> blackList = m_conf.getDMRBlackList();
 		std::vector<unsigned int> whiteList = m_conf.getDMRWhiteList();
 		std::vector<unsigned int> slot1TGWhiteList = m_conf.getDMRSlot1TGWhiteList();
 		std::vector<unsigned int> slot2TGWhiteList = m_conf.getDMRSlot2TGWhiteList();
-		unsigned int callHang = m_conf.getDMRCallHang();
+		unsigned int callHang       = m_conf.getDMRCallHang();
 		unsigned int txHang         = m_conf.getDMRTXHang();
 		unsigned int jitter         = m_conf.getDMRNetworkJitter();
 
@@ -370,6 +371,7 @@ int CMMDVMHost::run()
 		LogInfo("    Color Code: %u", colorCode);
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
 		LogInfo("    Embedded LC Only: %s", embeddedLCOnly ? "yes" : "no");
+		LogInfo("    Dump Talker Alias Data: %s", dumpTAData ? "yes" : "no");
 		LogInfo("    Prefixes: %u", prefixes.size());
 		
 		if (blackList.size() > 0U)
@@ -384,7 +386,7 @@ int CMMDVMHost::run()
 		LogInfo("    Call Hang: %us", callHang);
 		LogInfo("    TX Hang: %us", txHang);
 
-		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_lookup, rssi, jitter);
+		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, dumpTAData, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_lookup, rssi, jitter);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}
@@ -794,7 +796,6 @@ bool CMMDVMHost::createModem()
 	unsigned int colorCode    = m_conf.getDMRColorCode();
 	unsigned int rxFrequency  = m_conf.getRxFrequency();
 	unsigned int txFrequency  = m_conf.getTxFrequency();
-	int oscOffset             = m_conf.getModemOscOffset();
 	std::string samplesDir    = m_conf.getModemSamplesDir();
 
 	LogInfo("Modem Parameters");
@@ -812,9 +813,8 @@ bool CMMDVMHost::createModem()
 	LogInfo("    P25 TX Level: %u%%", p25TXLevel);
 	LogInfo("    RX Frequency: %uHz", rxFrequency);
 	LogInfo("    TX Frequency: %uHz", txFrequency);
-	LogInfo("    Osc. Offset: %dppm", oscOffset);
 
-	m_modem = new CModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, oscOffset, samplesDir, debug);
+	m_modem = new CModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, samplesDir, debug);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled);
 	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel);
 	m_modem->setRFParams(rxFrequency, txFrequency);
@@ -1266,7 +1266,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modem->setMode(MODE_IDLE);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_IDLE);
-		if (m_mode == MODE_ERROR || m_mode == MODE_LOCKOUT) {
+		if (m_mode == MODE_ERROR) {
 			m_modem->sendCWId(m_callsign);
 			m_cwIdTimer.setTimeout(m_cwIdTime);
 			m_cwIdTimer.start();
