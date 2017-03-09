@@ -979,7 +979,7 @@ bool CModem::setConfig()
 
 	buffer[10U] = m_dmrDelay;
 
-	buffer[11U] = 0U;           // Was OscOffset
+	buffer[11U] = 128U;           // Was OscOffset
 
 	buffer[12U] = (m_dstarTXLevel * 255U) / 100U;
 	buffer[13U] = (m_dmrTXLevel * 255U) / 100U;
