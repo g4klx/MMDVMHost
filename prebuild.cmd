@@ -29,7 +29,7 @@ for /f %%i in ('type !HASHFILE!') do set GITHASH=%%i
 goto :WRITEGITVERSIONHEADER
 
 :WRITEGITVERSIONHEADER
-echo # File contains Git commit ID SHA1 present at buildtime (prebuild.cmd) > GitVersion.h
+echo // File contains Git commit ID SHA1 present at buildtime (prebuild.cmd) > GitVersion.h
 echo const char *gitversion = "%GITHASH%"; >> GitVersion.h
 echo Current Git HASH: %GITHASH%
 goto :FINISHED
