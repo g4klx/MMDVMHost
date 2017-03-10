@@ -15,17 +15,17 @@ OBJECTS = \
 
 all:		MMDVMHost
 
-MMDVMHost:	gitversion.h $(OBJECTS) 
+MMDVMHost:	GitVersion.h $(OBJECTS) 
 		$(CXX) $(OBJECTS) $(CFLAGS) $(LIBS) -o MMDVMHost
 
 %.o: %.cpp
 		$(CXX) $(CFLAGS) -c -o $@ $<
 
 clean:
-		$(RM) MMDVMHost *.o *.d *.bak *~ gitversion.h
+		$(RM) MMDVMHost *.o *.d *.bak *~ GitVersion.h
 
 # Export the current git version if the index file exists, else 000...
-gitversion.h:
+GitVersion.h:
 ifneq ("$(wildcard .git/index)","")
 	echo "const char *gitversion = \"$(shell git rev-parse HEAD)\";" > $@ 
 else
