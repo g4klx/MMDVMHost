@@ -33,6 +33,7 @@
 #include "LCDproc.h"
 #include "Thread.h"
 #include "Log.h"
+#include "GitVersion.h"
 
 #if defined(HD44780)
 #include "HD44780.h"
@@ -73,7 +74,7 @@ static void sigHandler(int signum)
 const char* HEADER1 = "This software is for use on amateur radio networks only,";
 const char* HEADER2 = "it is to be used for educational purposes only. Its use on";
 const char* HEADER3 = "commercial networks is strictly prohibited.";
-const char* HEADER4 = "Copyright(C) 2015, 2016 by Jonathan Naylor, G4KLX and others";
+const char* HEADER4 = "Copyright(C) 2015-2017 by Jonathan Naylor, G4KLX and others";
 
 int main(int argc, char** argv)
 {
@@ -235,6 +236,7 @@ int CMMDVMHost::run()
 	LogInfo(HEADER4);
 
 	LogMessage("MMDVMHost-%s is starting", VERSION);
+	LogMessage("Built %s %s (GitID #%.7s)", __TIME__, __DATE__, gitversion);
 
 	readParams();
 
