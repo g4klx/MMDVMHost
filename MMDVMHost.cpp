@@ -33,6 +33,7 @@
 #include "LCDproc.h"
 #include "Thread.h"
 #include "Log.h"
+#include "GitVersion.h"
 
 #if defined(HD44780)
 #include "HD44780.h"
@@ -235,6 +236,7 @@ int CMMDVMHost::run()
 	LogInfo(HEADER4);
 
 	LogMessage("MMDVMHost-%s is starting", VERSION);
+	LogMessage("Built %s %s (GitID #%.7s)", __TIME__, __DATE__, gitversion);
 
 	readParams();
 
