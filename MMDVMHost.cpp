@@ -33,7 +33,7 @@
 #include "LCDproc.h"
 #include "Thread.h"
 #include "Log.h"
-#include "gitversion.h"
+#include "GitVersion.h"
 
 #if defined(HD44780)
 #include "HD44780.h"
