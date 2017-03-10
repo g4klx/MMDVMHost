@@ -41,7 +41,7 @@
 #
 # ... and add the following line to the bottom of the file ...
 #
-#     0  0  *  *  *  /path/to/script/DMRIDUpdate.sh 1>/dev/null 2>&1
+#     0  0  *  *  *  /path/to/script/DMRIDUpdateBM.sh 1>/dev/null 2>&1
 #
 # ... where /path/to/script/ should be replaced by the path to this script.
 #
