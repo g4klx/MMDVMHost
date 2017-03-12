@@ -484,11 +484,13 @@ int CMMDVMHost::run()
 						m_dmrTXTimer.start();
 					}
 				} else {
-					dmr->writeModemSlot1(data, len);
-					dmrBeaconTimer.stop();
-					m_modeTimer.start();
-					if (m_duplex)
-						m_dmrTXTimer.start();
+					bool ret = dmr->writeModemSlot1(data, len);
+					if (ret) {
+						dmrBeaconTimer.stop();
+						m_modeTimer.start();
+						if (m_duplex)
+							m_dmrTXTimer.start();
+					}
 				}
 			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("DMR modem data received when in mode %u", m_mode);
@@ -519,11 +521,13 @@ int CMMDVMHost::run()
 						m_dmrTXTimer.start();
 					}
 				} else {
-					dmr->writeModemSlot2(data, len);
-					dmrBeaconTimer.stop();
-					m_modeTimer.start();
-					if (m_duplex)
-						m_dmrTXTimer.start();
+					bool ret = dmr->writeModemSlot2(data, len);
+					if (ret) {
+						dmrBeaconTimer.stop();
+						m_modeTimer.start();
+						if (m_duplex)
+							m_dmrTXTimer.start();
+					}
 				}
 			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("DMR modem data received when in mode %u", m_mode);

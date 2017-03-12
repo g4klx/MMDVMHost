@@ -42,7 +42,7 @@ public:
 	CDMRSlot(unsigned int slotNo, unsigned int timeout);
 	~CDMRSlot();
 
-	void writeModem(unsigned char* data, unsigned int len);
+	bool writeModem(unsigned char* data, unsigned int len);
 
 	unsigned int readModem(unsigned char* data);
 
@@ -89,6 +89,8 @@ private:
 	unsigned int               m_netBits;
 	unsigned int               m_rfErrs;
 	unsigned int               m_netErrs;
+	bool                       m_rfTimeout;
+	bool                       m_netTimeout;
 	unsigned char*             m_lastFrame;
 	bool                       m_lastFrameValid;
 	unsigned char              m_rssi;

@@ -100,6 +100,8 @@ m_rfBits(1U),
 m_netBits(1U),
 m_rfErrs(0U),
 m_netErrs(0U),
+m_rfTimeout(false),
+m_netTimeout(false),
 m_lastFrame(NULL),
 m_lastFrameValid(false),
 m_rssi(0U),
@@ -124,7 +126,7 @@ CDMRSlot::~CDMRSlot()
 	delete[] m_lastFrame;
 }
 
-void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
+bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 {
 	assert(data != NULL);
 
@@ -134,18 +136,18 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 		else
 			LogMessage("DMR Slot %u, RF voice transmission lost, %.1f seconds, BER: %.1f%%", m_slotNo, float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
 		writeEndRF(true);
-		return;
+		return true;
 	}
 
 	if (data[0U] == TAG_LOST && m_rfState == RS_RF_DATA) {
 		LogMessage("DMR Slot %u, RF data transmission lost", m_slotNo);
 		writeEndRF();
-		return;
+		return true;
 	}
 
 	if (data[0U] == TAG_LOST) {
 		m_rfState = RS_RF_LISTENING;
-		return;
+		return false;
 	}
 
 	// Have we got RSSI bytes on the end?
@@ -183,12 +185,12 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 		if (dataType == DT_VOICE_LC_HEADER) {
 			if (m_rfState == RS_RF_AUDIO)
-				return;
+				return true;
 
 			CDMRFullLC fullLC;
 			CDMRLC* lc = fullLC.decode(data + 2U, DT_VOICE_LC_HEADER);
 			if (lc == NULL)
-				return;
+				return false;
 
 			unsigned int srcId = lc->getSrcId();
 			unsigned int dstId = lc->getDstId();
@@ -197,13 +199,13 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			if (!CDMRAccessControl::validateSrcId(srcId)) {
 				LogMessage("DMR Slot %u, RF user %u rejected", m_slotNo, srcId);
 			    delete lc;
-			    return;
+			    return false;
 			}
 
 			if (!CDMRAccessControl::validateTGId(m_slotNo, flco == FLCO_GROUP, dstId)) {
 				LogMessage("DMR Slot %u, RF user %u rejected for using TG %u", m_slotNo, srcId, dstId);
 				delete lc;
-				return;
+				return false;
 			}
 
 			m_rfLC = lc;
@@ -226,6 +228,7 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			data[1U] = 0x00U;
 
 			m_rfTimeoutTimer.start();
+			m_rfTimeout = false;
 
 			m_rfFrames = 0U;
 			m_rfSeqNo  = 0U;
@@ -264,9 +267,11 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			}
 
 			LogMessage("DMR Slot %u, received RF voice header from %s to %s%s", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str());
+
+			return true;
 		} else if (dataType == DT_VOICE_PI_HEADER) {
 			if (m_rfState != RS_RF_AUDIO)
-				return;
+				return false;
 
 			// Regenerate the Slot Type
 			slotType.getData(data + 2U);
@@ -287,9 +292,11 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				writeQueueRF(data);
 
 			writeNetworkRF(data, DT_VOICE_PI_HEADER);
+
+			return true;
 		} else if (dataType == DT_TERMINATOR_WITH_LC) {
 			if (m_rfState != RS_RF_AUDIO)
-				return;
+				return false;
 
 			// Regenerate the LC data
 			CDMRFullLC fullLC;
@@ -301,15 +308,17 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			// Convert the Data Sync to be from the BS or MS as needed
 			CSync::addDMRDataSync(data + 2U, m_duplex);
 
-			data[0U] = TAG_EOT;
-			data[1U] = 0x00U;
+			if (!m_rfTimeout) {
+				data[0U] = TAG_EOT;
+				data[1U] = 0x00U;
 
-			writeNetworkRF(data, DT_TERMINATOR_WITH_LC);
-			writeNetworkRF(data, DT_TERMINATOR_WITH_LC);
+				writeNetworkRF(data, DT_TERMINATOR_WITH_LC);
+				writeNetworkRF(data, DT_TERMINATOR_WITH_LC);
 
-			if (m_duplex) {
-				for (unsigned int i = 0U; i < m_hangCount; i++)
-					writeQueueRF(data);
+				if (m_duplex) {
+					for (unsigned int i = 0U; i < m_hangCount; i++)
+						writeQueueRF(data);
+				}
 			}
 
 			if (m_rssi != 0U)
@@ -318,14 +327,16 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				LogMessage("DMR Slot %u, received RF end of voice transmission, %.1f seconds, BER: %.1f%%", m_slotNo, float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
 
 			writeEndRF();
+
+			return true;
 		} else if (dataType == DT_DATA_HEADER) {
 			if (m_rfState == RS_RF_DATA)
-				return;
+				return true;
 
 			CDMRDataHeader dataHeader;
 			bool valid = dataHeader.put(data + 2U);
 			if (!valid)
-				return;
+				return false;
 
 			bool gi = dataHeader.getGI();
 			unsigned int srcId = dataHeader.getSrcId();
@@ -333,12 +344,12 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			if (!CDMRAccessControl::validateSrcId(srcId)) {
 				LogMessage("DMR Slot %u, RF user %u rejected", m_slotNo, srcId);
-				return;
+				return false;
 			}
 
 			if (!CDMRAccessControl::validateTGId(m_slotNo, gi, dstId)) {
 				LogMessage("DMR Slot %u, RF user %u rejected for using TG %u", m_slotNo, srcId, dstId);
-				return;
+				return false;
 			}
 
 			m_rfFrames = dataHeader.getBlocks();
@@ -383,15 +394,17 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				LogMessage("DMR Slot %u, ended RF data transmission", m_slotNo);
 				writeEndRF();
 			}
+
+			return true;
 		} else if (dataType == DT_CSBK) {
 			CDMRCSBK csbk;
 			bool valid = csbk.put(data + 2U);
 			if (!valid)
-				return;
+				return false;
 
 			CSBKO csbko = csbk.getCSBKO();
 			if (csbko == CSBKO_BSDWNACT)
-				return;
+				return false;
 
 			bool gi = csbk.getGI();
 			unsigned int srcId = csbk.getSrcId();
@@ -400,12 +413,12 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			if (srcId != 0U || dstId != 0U) {
 				if (!CDMRAccessControl::validateSrcId(srcId)) {
 					LogMessage("DMR Slot %u, RF user %u rejected", m_slotNo, srcId);
-					return;
+					return false;
 				}
 
 				if (!CDMRAccessControl::validateTGId(m_slotNo, gi, dstId)) {
 					LogMessage("DMR Slot %u, RF user %u rejected for using TG %u", m_slotNo, srcId, dstId);
-					return;
+					return false;
 				}
 			}
 			
@@ -448,9 +461,11 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				LogWarning("DMR Slot %u, unhandled RF CSBK type - 0x%02X", m_slotNo, csbko);
 				break;
 			}
+
+			return true;
 		} else if (dataType == DT_RATE_12_DATA || dataType == DT_RATE_34_DATA || dataType == DT_RATE_1_DATA) {
 			if (m_rfState != RS_RF_DATA || m_rfFrames == 0U)
-				return;
+				return false;
 
 			// Regenerate the rate 1/2 payload
 			if (dataType == DT_RATE_12_DATA) {
@@ -490,6 +505,8 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				LogMessage("DMR Slot %u, ended RF data transmission", m_slotNo);
 				writeEndRF();
 			}
+
+			return true;
 		}
 	} else if (audioSync) {
 		if (m_rfState == RS_RF_AUDIO) {
@@ -508,23 +525,28 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			m_rfBits += 141U;
 			m_rfFrames++;
 
-			data[0U] = TAG_DATA;
-			data[1U] = 0x00U;
-
 			m_rfEmbeddedReadN  = (m_rfEmbeddedReadN  + 1U) % 2U;
 			m_rfEmbeddedWriteN = (m_rfEmbeddedWriteN + 1U) % 2U;
 
 			m_rfEmbeddedData[m_rfEmbeddedWriteN].reset();
 
-			if (m_duplex)
-				writeQueueRF(data);
+			if (!m_rfTimeout) {
+				data[0U] = TAG_DATA;
+				data[1U] = 0x00U;
 
-			writeNetworkRF(data, DT_VOICE_SYNC, errors);
+				if (m_duplex)
+					writeQueueRF(data);
+
+				writeNetworkRF(data, DT_VOICE_SYNC, errors);
+			}
 
 			m_display->writeDMRRSSI(m_slotNo, m_rssi);
+
+			return !m_rfTimeout;
 		} else if (m_rfState == RS_RF_LISTENING) {
 			m_rfEmbeddedLC.reset();
 			m_rfState = RS_RF_LATE_ENTRY;
+			return false;
 		}
 	} else {
 		if (m_rfState == RS_RF_AUDIO) {
@@ -629,7 +651,8 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
 
-			writeNetworkRF(data, DT_VOICE, errors);
+			if (!m_rfTimeout)
+				writeNetworkRF(data, DT_VOICE, errors);
 
 			if (m_embeddedLCOnly) {
 				// Only send the previously received LC
@@ -641,8 +664,12 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				emb.getData(data + 2U);
 			}
 
-			if (m_duplex)
-				writeQueueRF(data);
+			if (!m_rfTimeout) {
+				if (m_duplex)
+					writeQueueRF(data);
+			}
+
+			return !m_rfTimeout;
 		} else if (m_rfState == RS_RF_LATE_ENTRY) {
 			CDMREMB emb;
 			emb.putData(data + 2U);
@@ -650,7 +677,7 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			// If we haven't received an LC yet, then be strict on the color code
 			unsigned char colorCode = emb.getColorCode();
 			if (colorCode != m_colorCode)
-				return;
+				return false;
 
 			m_rfEmbeddedLC.addData(data + 2U, emb.getLCSS());
 			CDMRLC* lc = m_rfEmbeddedLC.getLC();
@@ -662,13 +689,13 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				if (!CDMRAccessControl::validateSrcId(srcId)) {
 					LogMessage("DMR Slot %u, RF user %u rejected", m_slotNo, srcId);
 					delete lc;
-				    return;
+				    return false;
 				}
 
 				if (!CDMRAccessControl::validateTGId(m_slotNo, flco == FLCO_GROUP, dstId)) {
 					LogMessage("DMR Slot %u, RF user %u rejected for using TG %u", m_slotNo, srcId, dstId);
 					delete lc;
-					return;
+					return false;
 				}
 
 				m_rfLC = lc;
@@ -695,6 +722,7 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				start[1U] = 0x00U;
 
 				m_rfTimeoutTimer.start();
+				m_rfTimeout = false;
 
 				m_rfFrames = 0U;
 				m_rfSeqNo  = 0U;
@@ -759,9 +787,13 @@ void CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				}
 
 				LogMessage("DMR Slot %u, received RF late entry from %s to %s%s", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str());
+
+				return true;
 			}
 		}
 	}
+
+	return false;
 }
 
 unsigned int CDMRSlot::readModem(unsigned char* data)
@@ -788,14 +820,8 @@ void CDMRSlot::writeEndRF(bool writeEnd)
 		m_display->clearDMR(m_slotNo);
 	}
 
-	m_rfTimeoutTimer.stop();
-
-	m_rfFrames = 0U;
-	m_rfErrs = 0U;
-	m_rfBits = 1U;
-
 	if (writeEnd) {
-		if (m_netState == RS_NET_IDLE && m_duplex) {
+		if (m_netState == RS_NET_IDLE && m_duplex && !m_rfTimeout) {
 			// Create a dummy start end frame
 			unsigned char data[DMR_FRAME_LENGTH_BYTES + 2U];
 
@@ -817,6 +843,13 @@ void CDMRSlot::writeEndRF(bool writeEnd)
 		}
 	}
 
+	m_rfTimeoutTimer.stop();
+	m_rfTimeout = false;
+
+	m_rfFrames = 0U;
+	m_rfErrs = 0U;
+	m_rfBits = 1U;
+
 	delete m_rfLC;
 	m_rfLC = NULL;
 }
@@ -831,17 +864,7 @@ void CDMRSlot::writeEndNet(bool writeEnd)
 
 	m_lastFrameValid = false;
 
-	m_networkWatchdog.stop();
-	m_netTimeoutTimer.stop();
-	m_packetTimer.stop();
-
-	m_netFrames = 0U;
-	m_netLost = 0U;
-
-	m_netErrs = 0U;
-	m_netBits = 1U;
-
-	if (writeEnd) {
+	if (writeEnd && !m_netTimeout) {
 		// Create a dummy start end frame
 		unsigned char data[DMR_FRAME_LENGTH_BYTES + 2U];
 
@@ -866,6 +889,17 @@ void CDMRSlot::writeEndNet(bool writeEnd)
 				writeQueueNet(data);
 		}
 	}
+
+	m_networkWatchdog.stop();
+	m_netTimeoutTimer.stop();
+	m_packetTimer.stop();
+	m_netTimeout = false;
+
+	m_netFrames = 0U;
+	m_netLost = 0U;
+
+	m_netErrs = 0U;
+	m_netBits = 1U;
 
 	delete m_netLC;
 	m_netLC = NULL;
@@ -926,6 +960,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		m_lastFrameValid = false;
 
 		m_netTimeoutTimer.start();
+		m_netTimeout = false;
 
 		m_netFrames = 0U;
 		m_netLost = 0U;
@@ -974,6 +1009,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			m_lastFrameValid = false;
 
 			m_netTimeoutTimer.start();
+			m_netTimeout = false;
 
 			if (m_duplex) {
 				m_queue.clear();
@@ -1063,15 +1099,18 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		// Convert the Data Sync to be from the BS or MS as needed
 		CSync::addDMRDataSync(data + 2U, m_duplex);
 
-		data[0U] = TAG_EOT;
-		data[1U] = 0x00U;
+		if (!m_netTimeout) {
+			data[0U] = TAG_EOT;
+			data[1U] = 0x00U;
 
-		if (m_duplex) {
-			for (unsigned int i = 0U; i < m_hangCount; i++)
-				writeQueueNet(data);
-		} else {
-			for (unsigned int i = 0U; i < 3U; i++)
-				writeQueueNet(data);
+			if (m_duplex) {
+				for (unsigned int i = 0U; i < m_hangCount; i++)
+					writeQueueNet(data);
+			}
+			else {
+				for (unsigned int i = 0U; i < 3U; i++)
+					writeQueueNet(data);
+			}
 		}
 
 #if defined(DUMP_DMR)
@@ -1155,6 +1194,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			m_lastFrameValid = false;
 
 			m_netTimeoutTimer.start();
+			m_netTimeout = false;
 
 			if (m_duplex) {
 				m_queue.clear();
@@ -1231,7 +1271,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				insertSilence(data, dmrData.getSeqNo());
 			}
 
-			writeQueueNet(data);
+			if (!m_netTimeout)
+				writeQueueNet(data);
 
 			m_netEmbeddedReadN  = (m_netEmbeddedReadN  + 1U) % 2U;
 			m_netEmbeddedWriteN = (m_netEmbeddedWriteN + 1U) % 2U;
@@ -1363,7 +1404,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			insertSilence(data, dmrData.getSeqNo());
 		}
 
-		writeQueueNet(data);
+		if (!m_netTimeout)
+			writeQueueNet(data);
 
 		m_packetTimer.start();
 		m_elapsed.start();
@@ -1493,7 +1535,20 @@ void CDMRSlot::clock()
 	m_interval.start();
 
 	m_rfTimeoutTimer.clock(ms);
+	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired()) {
+		if (!m_rfTimeout) {
+			LogMessage("DMR Slot %u, RF user has timed out", m_slotNo);
+			m_rfTimeout = true;
+		}
+	}
+
 	m_netTimeoutTimer.clock(ms);
+	if (m_netTimeoutTimer.isRunning() && m_netTimeoutTimer.hasExpired()) {
+		if (!m_netTimeout) {
+			LogMessage("DMR Slot %u, network user has timed out", m_slotNo);
+			m_netTimeout = true;
+		}
+	}
 
 	if (m_netState == RS_NET_AUDIO || m_netState == RS_NET_DATA) {
 		m_networkWatchdog.clock(ms);
@@ -1549,12 +1604,7 @@ void CDMRSlot::writeQueueRF(const unsigned char *data)
 	}
 
 	m_queue.addData(&len, 1U);
-
-	// If the timeout has expired, replace the audio with idles to keep the slot busy
-	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired())
-		m_queue.addData(m_idle, len);
-	else
-		m_queue.addData(data, len);
+	m_queue.addData(data, len);
 }
 
 void CDMRSlot::writeNetworkRF(const unsigned char* data, unsigned char dataType, FLCO flco, unsigned int srcId, unsigned int dstId, unsigned char errors)
@@ -1565,10 +1615,6 @@ void CDMRSlot::writeNetworkRF(const unsigned char* data, unsigned char dataType,
 		return;
 
 	if (m_network == NULL)
-		return;
-
-	// Don't send to the network if the timeout has expired
-	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired())
 		return;
 
 	CDMRData dmrData;
@@ -1610,12 +1656,7 @@ void CDMRSlot::writeQueueNet(const unsigned char *data)
 	}
 
 	m_queue.addData(&len, 1U);
-
-	// If the timeout has expired, replace the audio with idles to keep the slot busy
-	if (m_netTimeoutTimer.isRunning() && m_netTimeoutTimer.hasExpired())
-		m_queue.addData(m_idle, len);
-	else
-		m_queue.addData(data, len);
+	m_queue.addData(data, len);
 }
 
 void CDMRSlot::init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData, unsigned int callHang, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter)
