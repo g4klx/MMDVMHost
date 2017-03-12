@@ -135,8 +135,13 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			LogMessage("DMR Slot %u, RF voice transmission lost, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_slotNo, float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 		else
 			LogMessage("DMR Slot %u, RF voice transmission lost, %.1f seconds, BER: %.1f%%", m_slotNo, float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
-		writeEndRF(true);
-		return true;
+		if (m_rfTimeout) {
+			writeEndRF();
+			return false;
+		} else {
+			writeEndRF(true);
+			return true;
+		}
 	}
 
 	if (data[0U] == TAG_LOST && m_rfState == RS_RF_DATA) {
@@ -326,9 +331,13 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			else
 				LogMessage("DMR Slot %u, received RF end of voice transmission, %.1f seconds, BER: %.1f%%", m_slotNo, float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
 
-			writeEndRF();
-
-			return true;
+			if (m_rfTimeout) {
+				writeEndRF();
+				return false;
+			} else {
+				writeEndRF();
+				return true;
+			}
 		} else if (dataType == DT_DATA_HEADER) {
 			if (m_rfState == RS_RF_DATA)
 				return true;
@@ -530,6 +539,8 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			m_rfEmbeddedData[m_rfEmbeddedWriteN].reset();
 
+			m_display->writeDMRRSSI(m_slotNo, m_rssi);
+
 			if (!m_rfTimeout) {
 				data[0U] = TAG_DATA;
 				data[1U] = 0x00U;
@@ -538,11 +549,11 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					writeQueueRF(data);
 
 				writeNetworkRF(data, DT_VOICE_SYNC, errors);
+
+				return true;
 			}
 
-			m_display->writeDMRRSSI(m_slotNo, m_rssi);
-
-			return !m_rfTimeout;
+			return false;
 		} else if (m_rfState == RS_RF_LISTENING) {
 			m_rfEmbeddedLC.reset();
 			m_rfState = RS_RF_LATE_ENTRY;
@@ -648,28 +659,29 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			emb.setLCSS(lcss);
 			emb.getData(data + 2U);
 
-			data[0U] = TAG_DATA;
-			data[1U] = 0x00U;
+			if (!m_rfTimeout) {
+				data[0U] = TAG_DATA;
+				data[1U] = 0x00U;
 
-			if (!m_rfTimeout)
 				writeNetworkRF(data, DT_VOICE, errors);
 
-			if (m_embeddedLCOnly) {
-				// Only send the previously received LC
-				lcss = m_rfEmbeddedLC.getData(data + 2U, m_rfN);
+				if (m_embeddedLCOnly) {
+					// Only send the previously received LC
+					lcss = m_rfEmbeddedLC.getData(data + 2U, m_rfN);
 
-				// Regenerate the EMB
-				emb.setColorCode(m_colorCode);
-				emb.setLCSS(lcss);
-				emb.getData(data + 2U);
-			}
+					// Regenerate the EMB
+					emb.setColorCode(m_colorCode);
+					emb.setLCSS(lcss);
+					emb.getData(data + 2U);
+				}
 
-			if (!m_rfTimeout) {
 				if (m_duplex)
 					writeQueueRF(data);
+
+				return true;
 			}
 
-			return !m_rfTimeout;
+			return false;
 		} else if (m_rfState == RS_RF_LATE_ENTRY) {
 			CDMREMB emb;
 			emb.putData(data + 2U);
