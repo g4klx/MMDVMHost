@@ -59,8 +59,6 @@ private:
 	bool           m_assertRTS;
 #if defined(_WIN32) || defined(_WIN64)
 	HANDLE         m_handle;
-	OVERLAPPED     m_readOverlapped;
-	OVERLAPPED     m_writeOverlapped;
 #else
 	int            m_fd;
 #endif

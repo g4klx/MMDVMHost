@@ -44,9 +44,7 @@ CSerialController::CSerialController(const std::string& device, SERIAL_SPEED spe
 m_device(device),
 m_speed(speed),
 m_assertRTS(assertRTS),
-m_handle(INVALID_HANDLE_VALUE),
-m_readOverlapped(),
-m_writeOverlapped()
+m_handle(INVALID_HANDLE_VALUE)
 {
 	assert(!device.empty());
 }
@@ -63,7 +61,7 @@ bool CSerialController::open()
 
 	std::string baseName = m_device.substr(4U);		// Convert "\\.\COM10" to "COM10"
 
-	m_handle = ::CreateFileA(m_device.c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
+	m_handle = ::CreateFileA(m_device.c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (m_handle == INVALID_HANDLE_VALUE) {
 		LogError("Cannot open device - %s, err=%04lx", m_device.c_str(), ::GetLastError());
 		return false;
@@ -131,12 +129,6 @@ bool CSerialController::open()
 
 	::ClearCommError(m_handle, &errCode, NULL);
 
-	::memset(&m_readOverlapped, 0x00U, sizeof(OVERLAPPED));
-	::memset(&m_writeOverlapped, 0x00U, sizeof(OVERLAPPED));
-
-	m_readOverlapped.hEvent  = ::CreateEvent(NULL, TRUE, FALSE, NULL);
-	m_writeOverlapped.hEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
-
 	return true;
 }
 
@@ -170,38 +162,28 @@ int CSerialController::readNonblock(unsigned char* buffer, unsigned int length)
 	if (length == 0U)
 		return 0;
 
-  DWORD errors;
-  COMSTAT status;
-  if (::ClearCommError(m_handle, &errors, &status) == 0) {
-    LogError("Error from ClearCommError for %s, err=%04lx", m_device.c_str(), ::GetLastError());
-    return -1;
-  }
-
-  if (status.cbInQue == 0UL)
-    return 0;
-
-  DWORD readLength = status.cbInQue;
-  if (length < status.cbInQue)
-    readLength = length;
-
-	DWORD bytes = 0UL;
-	BOOL res = ::ReadFile(m_handle, buffer, readLength, &bytes, &m_readOverlapped);
-	if (res)
-		return int(bytes);
-
-	DWORD error = ::GetLastError();
-	if (error != ERROR_IO_PENDING) {
-		LogError("Error from ReadFile for %s: %04lx", m_device.c_str(), error);
+	DWORD errors;
+	COMSTAT status;
+	if (::ClearCommError(m_handle, &errors, &status) == 0) {
+		LogError("Error from ClearCommError for %s, err=%04lx", m_device.c_str(), ::GetLastError());
 		return -1;
 	}
 
-  DWORD ret = ::WaitForSingleObject(m_readOverlapped.hEvent, 100UL);
-  if (ret != WAIT_OBJECT_0) {
-    LogError("Error from WaitForSIngleObject for %s: %04lx", m_device.c_str(), ret);
-    return -1;
-  }
+	if (status.cbInQue == 0UL)
+		return 0;
 
-  return int(bytes);
+	DWORD readLength = status.cbInQue;
+	if (length < readLength)
+		readLength = length;
+
+	DWORD bytes = 0UL;
+	BOOL ret = ::ReadFile(m_handle, buffer, readLength, &bytes, NULL);
+	if (!ret) {
+		LogError("Error from ReadFile for %s: %04lx", m_device.c_str(), ::GetLastError());
+		return -1;
+	}
+
+	return int(bytes);
 }
 
 int CSerialController::write(const unsigned char* buffer, unsigned int length)
@@ -216,19 +198,10 @@ int CSerialController::write(const unsigned char* buffer, unsigned int length)
 
 	while (ptr < length) {
 		DWORD bytes = 0UL;
-		BOOL res = ::WriteFile(m_handle, buffer + ptr, length - ptr, &bytes, &m_writeOverlapped);
-		if (!res) {
-			DWORD error = ::GetLastError();
-			if (error != ERROR_IO_PENDING) {
-				LogError("Error from WriteFile for %s: %04lx", m_device.c_str(), error);
-				return -1;
-			}
-
-			res = ::GetOverlappedResult(m_handle, &m_writeOverlapped, &bytes, TRUE);
-			if (!res) {
-				LogError("Error from GetOverlappedResult for %s: %04lx", m_device.c_str(), ::GetLastError());
-				return -1;
-			}
+		BOOL ret = ::WriteFile(m_handle, buffer + ptr, length - ptr, &bytes, NULL);
+		if (!ret) {
+			LogError("Error from WriteFile for %s: %04lx", m_device.c_str(), ::GetLastError());
+			return -1;
 		}
 
 		ptr += bytes;
@@ -243,9 +216,6 @@ void CSerialController::close()
 
 	::CloseHandle(m_handle);
 	m_handle = INVALID_HANDLE_VALUE;
-
-	::CloseHandle(m_readOverlapped.hEvent);
-	::CloseHandle(m_writeOverlapped.hEvent);
 }
 
 #else
