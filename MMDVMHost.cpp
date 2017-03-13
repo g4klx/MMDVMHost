@@ -74,7 +74,7 @@ static void sigHandler(int signum)
 const char* HEADER1 = "This software is for use on amateur radio networks only,";
 const char* HEADER2 = "it is to be used for educational purposes only. Its use on";
 const char* HEADER3 = "commercial networks is strictly prohibited.";
-const char* HEADER4 = "Copyright(C) 2015, 2016 by Jonathan Naylor, G4KLX and others";
+const char* HEADER4 = "Copyright(C) 2015-2017 by Jonathan Naylor, G4KLX and others";
 
 int main(int argc, char** argv)
 {
@@ -484,11 +484,13 @@ int CMMDVMHost::run()
 						m_dmrTXTimer.start();
 					}
 				} else {
-					dmr->writeModemSlot1(data, len);
-					dmrBeaconTimer.stop();
-					m_modeTimer.start();
-					if (m_duplex)
-						m_dmrTXTimer.start();
+					bool ret = dmr->writeModemSlot1(data, len);
+					if (ret) {
+						dmrBeaconTimer.stop();
+						m_modeTimer.start();
+						if (m_duplex)
+							m_dmrTXTimer.start();
+					}
 				}
 			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("DMR modem data received when in mode %u", m_mode);
@@ -519,11 +521,13 @@ int CMMDVMHost::run()
 						m_dmrTXTimer.start();
 					}
 				} else {
-					dmr->writeModemSlot2(data, len);
-					dmrBeaconTimer.stop();
-					m_modeTimer.start();
-					if (m_duplex)
-						m_dmrTXTimer.start();
+					bool ret = dmr->writeModemSlot2(data, len);
+					if (ret) {
+						dmrBeaconTimer.stop();
+						m_modeTimer.start();
+						if (m_duplex)
+							m_dmrTXTimer.start();
+					}
 				}
 			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("DMR modem data received when in mode %u", m_mode);
