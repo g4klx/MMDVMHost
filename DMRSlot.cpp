@@ -147,7 +147,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 	if (data[0U] == TAG_LOST && m_rfState == RS_RF_DATA) {
 		LogMessage("DMR Slot %u, RF data transmission lost", m_slotNo);
 		writeEndRF();
-		return true;
+		return false;
 	}
 
 	if (data[0U] == TAG_LOST) {
