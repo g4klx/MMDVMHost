@@ -90,7 +90,6 @@ m_modemDStarTXLevel(50U),
 m_modemDMRTXLevel(50U),
 m_modemYSFTXLevel(50U),
 m_modemP25TXLevel(50U),
-m_modemOscOffset(0),
 m_modemRSSIMappingFile(),
 m_modemSamplesDir(),
 m_modemDebug(false),
@@ -107,6 +106,7 @@ m_dmrId(0U),
 m_dmrColorCode(2U),
 m_dmrSelfOnly(false),
 m_dmrEmbeddedLCOnly(false),
+m_dmrDumpTAData(true),
 m_dmrPrefixes(),
 m_dmrBlackList(),
 m_dmrWhiteList(),
@@ -193,7 +193,7 @@ bool CConf::read()
 
     if (buffer[0U] == '[') {
       if (::strncmp(buffer, "[General]", 9U) == 0)
-        section = SECTION_GENERAL;
+          section = SECTION_GENERAL;
 	  else if (::strncmp(buffer, "[Info]", 6U) == 0)
 		  section = SECTION_INFO;
 	  else if (::strncmp(buffer, "[Log]", 5U) == 0)
@@ -216,9 +216,9 @@ bool CConf::read()
 		  section = SECTION_P25;
 	  else if (::strncmp(buffer, "[D-Star Network]", 16U) == 0)
 		  section = SECTION_DSTAR_NETWORK;
-      else if (::strncmp(buffer, "[DMR Network]", 13U) == 0)
+	  else if (::strncmp(buffer, "[DMR Network]", 13U) == 0)
 		  section = SECTION_DMR_NETWORK;
-      else if (::strncmp(buffer, "[System Fusion Network]", 23U) == 0)
+	  else if (::strncmp(buffer, "[System Fusion Network]", 23U) == 0)
 		  section = SECTION_FUSION_NETWORK;
 	  else if (::strncmp(buffer, "[P25 Network]", 13U) == 0)
 		  section = SECTION_P25_NETWORK;
@@ -235,15 +235,18 @@ bool CConf::read()
 	  else
 		  section = SECTION_NONE;
 
-      continue;
-    }
+	  continue;
+  }
 
-    char* key   = ::strtok(buffer, " \t=\r\n");
-    if (key == NULL)
-      continue;
+  char* key   = ::strtok(buffer, " \t=\r\n");
+  if (key == NULL)
+    continue;
 
-    char* value = ::strtok(NULL, "\r\n");
-	if (section == SECTION_GENERAL) {
+  char* value = ::strtok(NULL, "\r\n");
+  if (value == NULL)
+    continue;
+  
+  if (section == SECTION_GENERAL) {
 		if (::strcmp(key, "Callsign") == 0) {
 			// Convert the callsign to upper case
 			for (unsigned int i = 0U; value[i] != 0; i++)
@@ -328,8 +331,6 @@ bool CConf::read()
 			m_modemYSFTXLevel = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "P25TXLevel") == 0)
 			m_modemP25TXLevel = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "OscOffset") == 0)
-			m_modemOscOffset = ::atoi(value);
 		else if (::strcmp(key, "RSSIMappingFile") == 0)
 			m_modemRSSIMappingFile = value;
 		else if (::strcmp(key, "SamplesDir") == 0)
@@ -378,6 +379,8 @@ bool CConf::read()
 			m_dmrSelfOnly = ::atoi(value) == 1;
 		else if (::strcmp(key, "EmbeddedLCOnly") == 0)
 			m_dmrEmbeddedLCOnly = ::atoi(value) == 1;
+		else if (::strcmp(key, "DumpTAData") == 0)
+			m_dmrDumpTAData = ::atoi(value) == 1;
 		else if (::strcmp(key, "Prefixes") == 0) {
 			char* p = ::strtok(value, ",\r\n");
 			while (p != NULL) {
@@ -739,11 +742,6 @@ unsigned int CConf::getModemP25TXLevel() const
 	return m_modemP25TXLevel;
 }
 
-int CConf::getModemOscOffset() const
-{
-	return m_modemOscOffset;
-}
-
 std::string CConf::getModemRSSIMappingFile () const
 {
 	return m_modemRSSIMappingFile;
@@ -822,6 +820,11 @@ bool CConf::getDMRSelfOnly() const
 bool CConf::getDMREmbeddedLCOnly() const
 {
 	return m_dmrEmbeddedLCOnly;
+}
+
+bool CConf::getDMRDumpTAData() const
+{
+	return m_dmrDumpTAData;
 }
 
 std::vector<unsigned int> CConf::getDMRPrefixes() const
