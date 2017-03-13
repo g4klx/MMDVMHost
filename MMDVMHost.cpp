@@ -85,8 +85,11 @@ int main(int argc, char** argv)
 			if ((arg == "-v") || (arg == "--version")) {
 				::fprintf(stdout, "MMDVMHost version %s\n", VERSION);
 				return 0;
+			} else if((arg == "-g") || (arg == "--git")) {
+				::fprintf(stdout, "MMDVMHost GitID #%.7s\n", gitversion);
+				return 0;
 			} else if (arg.substr(0,1) == "-") {
-				::fprintf(stderr, "Usage: MMDVMHost [-v|--version] [filename]\n");
+				::fprintf(stderr, "Usage: MMDVMHost [-v|--version] [-g|--git] [filename]\n");
 				return 1;
 			} else {
 				iniFile = argv[currentArg];
