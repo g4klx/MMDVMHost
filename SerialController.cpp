@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2002-2004,2007-2011,2013,2014-2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2002-2004,2007-2011,2013,2014-2017 by Jonathan Naylor G4KLX
  *   Copyright (C) 1999-2001 by Thomas Sailor HB9JNX
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -40,27 +40,19 @@
 
 #if defined(_WIN32) || defined(_WIN64)
 
-const unsigned int BUFFER_LENGTH = 1000U;
-
 CSerialController::CSerialController(const std::string& device, SERIAL_SPEED speed, bool assertRTS) :
 m_device(device),
 m_speed(speed),
 m_assertRTS(assertRTS),
 m_handle(INVALID_HANDLE_VALUE),
 m_readOverlapped(),
-m_writeOverlapped(),
-m_readBuffer(NULL),
-m_readLength(0U),
-m_readPending(false)
+m_writeOverlapped()
 {
 	assert(!device.empty());
-
-	m_readBuffer = new unsigned char[BUFFER_LENGTH];
 }
 
 CSerialController::~CSerialController()
 {
-	delete[] m_readBuffer;
 }
 
 bool CSerialController::open()
@@ -145,10 +137,6 @@ bool CSerialController::open()
 	m_readOverlapped.hEvent  = ::CreateEvent(NULL, TRUE, FALSE, NULL);
 	m_writeOverlapped.hEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
 
-	m_readLength  = 0U;
-	m_readPending = false;
-	::memset(m_readBuffer, 0x00U, BUFFER_LENGTH);
-
 	return true;
 }
 
@@ -179,51 +167,41 @@ int CSerialController::readNonblock(unsigned char* buffer, unsigned int length)
 	assert(m_handle != INVALID_HANDLE_VALUE);
 	assert(buffer != NULL);
 
-	if (length > BUFFER_LENGTH)
-		length = BUFFER_LENGTH;
-
-	if (m_readPending && length != m_readLength) {
-		::CancelIo(m_handle);
-		m_readPending = false;
-	}
-
-	m_readLength = length;
-
 	if (length == 0U)
 		return 0;
 
-	if (!m_readPending) {
-		DWORD bytes = 0UL;
-		BOOL res = ::ReadFile(m_handle, m_readBuffer, m_readLength, &bytes, &m_readOverlapped);
-		if (res) {
-			::memcpy(buffer, m_readBuffer, bytes);
-			return int(bytes);
-		}
+  DWORD errors;
+  COMSTAT status;
+  if (::ClearCommError(m_handle, &errors, &status) == 0) {
+    LogError("Error from ClearCommError for %s, err=%04lx", m_device.c_str(), ::GetLastError());
+    return -1;
+  }
 
-		DWORD error = ::GetLastError();
-		if (error != ERROR_IO_PENDING) {
-			LogError("Error from ReadFile: %04lx", error);
-			return -1;
-		}
+  if (status.cbInQue == 0UL)
+    return 0;
 
-		m_readPending = true;
-	}
-
-	BOOL res = HasOverlappedIoCompleted(&m_readOverlapped);
-	if (!res)
-		return 0;
+  DWORD readLength = status.cbInQue;
+  if (length < status.cbInQue)
+    readLength = length;
 
 	DWORD bytes = 0UL;
-	res = ::GetOverlappedResult(m_handle, &m_readOverlapped, &bytes, TRUE);
-	if (!res) {
-		LogError("Error from GetOverlappedResult (ReadFile): %04lx", ::GetLastError());
+	BOOL res = ::ReadFile(m_handle, buffer, readLength, &bytes, &m_readOverlapped);
+	if (res)
+		return int(bytes);
+
+	DWORD error = ::GetLastError();
+	if (error != ERROR_IO_PENDING) {
+		LogError("Error from ReadFile for %s: %04lx", m_device.c_str(), error);
 		return -1;
 	}
 
-	::memcpy(buffer, m_readBuffer, bytes);
-	m_readPending = false;
+  DWORD ret = ::WaitForSingleObject(m_readOverlapped.hEvent, 100UL);
+  if (ret != WAIT_OBJECT_0) {
+    LogError("Error from WaitForSIngleObject for %s: %04lx", m_device.c_str(), ret);
+    return -1;
+  }
 
-	return int(bytes);
+  return int(bytes);
 }
 
 int CSerialController::write(const unsigned char* buffer, unsigned int length)
@@ -242,13 +220,13 @@ int CSerialController::write(const unsigned char* buffer, unsigned int length)
 		if (!res) {
 			DWORD error = ::GetLastError();
 			if (error != ERROR_IO_PENDING) {
-				LogError("Error from WriteFile: %04lx", error);
+				LogError("Error from WriteFile for %s: %04lx", m_device.c_str(), error);
 				return -1;
 			}
 
 			res = ::GetOverlappedResult(m_handle, &m_writeOverlapped, &bytes, TRUE);
 			if (!res) {
-				LogError("Error from GetOverlappedResult (WriteFile): %04lx", ::GetLastError());
+				LogError("Error from GetOverlappedResult for %s: %04lx", m_device.c_str(), ::GetLastError());
 				return -1;
 			}
 		}
