@@ -1,10 +1,10 @@
-#Data to RSSI.dat by RA4NHY
+#The data to RSSI.dat by RA4NHY
 #Values in the RSSI.dat file are obtained using the MMDVMCal calibration program (S mode), the high-frequency generator and the Motorola GM340UHF radio station.
 #For different radio stations, the values are slightly different.
 #For example, for those GM340 that I had, the discrepancy is about 10 dB.
 #Therefore, it is desirable to carry out calibration for each radio station.
 #More about RSSI and a homebrew MMDVM node you can read here https://drive.google.com/file/d/0B_UNZTdPtyZUUjN2d2llV0RtNTQ/view  but unfortunately in Russian only
-#Ivan, RA4NHY
+#Anton, RA4NHY
 
 1045	-43
 1043	-46
