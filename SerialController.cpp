@@ -75,17 +75,18 @@ bool CSerialController::open()
 		return false;
 	}
 
-	dcb.BaudRate     = DWORD(m_speed);
-	dcb.ByteSize     = 8;
-	dcb.Parity       = NOPARITY;
-	dcb.fParity      = FALSE;
-	dcb.StopBits     = ONESTOPBIT;
-	dcb.fInX         = FALSE;
-	dcb.fOutX        = FALSE;
-	dcb.fOutxCtsFlow = FALSE;
-	dcb.fOutxDsrFlow = FALSE;
-	dcb.fDtrControl  = DTR_CONTROL_DISABLE;
-	dcb.fRtsControl  = RTS_CONTROL_DISABLE;
+	dcb.BaudRate        = DWORD(m_speed);
+	dcb.ByteSize        = 8;
+	dcb.Parity          = NOPARITY;
+	dcb.fParity         = FALSE;
+	dcb.StopBits        = ONESTOPBIT;
+	dcb.fInX            = FALSE;
+	dcb.fOutX           = FALSE;
+	dcb.fOutxCtsFlow    = FALSE;
+	dcb.fOutxDsrFlow    = FALSE;
+	dcb.fDsrSensitivity = FALSE;
+	dcb.fDtrControl     = DTR_CONTROL_DISABLE;
+	dcb.fRtsControl     = RTS_CONTROL_DISABLE;
 
 	if (::SetCommState(m_handle, &dcb) == 0) {
 		LogError("Cannot set the attributes for %s, err=%04lx", m_device.c_str(), ::GetLastError());
