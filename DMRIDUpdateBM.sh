@@ -6,6 +6,7 @@
 #
 # Copyright (C) 2016 by Tony Corbett G0WFV
 # edit by R2AJV
+# edit by CT2JAY
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -91,13 +92,7 @@ then
 fi
 
 # Generate new file
-wget http://registry.dstar.su/dmr/DMRIds.php -O DMRIds-temp1.dat
-cat DMRIds-temp1.dat | sed -e 's/ /\t\t/g' > DMRIds-temp2.dat
-cat DMRIds-temp2.dat | sed -e 's/\t/ /g' > DMRIds-temp3.dat
-cat DMRIds-temp3.dat | sed -e 's/  / /g' > DMRIds.dat
-rm -f DMRIds-temp1.dat
-rm -f DMRIds-temp2.dat
-rm -f DMRIds-temp3.dat
+curl 'http://registry.dstar.su/dmr/DMRIds.php' 2>/dev/null | sed -e 's/[[:space:]]\+/ /g' > ${DMRIDFILE}
 
 # Restart MMDVMHost
 eval ${RESTARTCOMMAND}
