@@ -9,5 +9,3 @@ It seems like there is a need to add some idle frames at the beginning of a DMO 
 YSF: There is an issue that need addressing: The data sent to aprs.fi from southern hemisphere users isn’t always correct. Maybe the GPS format used by YSF still has some secrets to reveal.
 
 P25: No obvious issues.
-
-General: The Windows serial handling isn't working with the STM32 series of devices. This needs investigating.
