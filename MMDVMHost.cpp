@@ -78,21 +78,21 @@ const char* HEADER4 = "Copyright(C) 2015-2017 by Jonathan Naylor, G4KLX and othe
 
 int main(int argc, char** argv)
 {
-	const char* iniFile = DEFAULT_INI_FILE;
-	if (argc > 1) {
-		for (int currentArg = 1; currentArg < argc; ++currentArg) {
-			std::string arg = argv[currentArg];
-			if ((arg == "-v") || (arg == "--version")) {
-				::fprintf(stdout, "MMDVMHost version %s\n", VERSION);
-				return 0;
-			} else if (arg.substr(0,1) == "-") {
-				::fprintf(stderr, "Usage: MMDVMHost [-v|--version] [filename]\n");
-				return 1;
-			} else {
-				iniFile = argv[currentArg];
-			}
-		}
-	}
+        const char* iniFile = DEFAULT_INI_FILE;
+        if (argc > 1) {
+                for (int currentArg = 1; currentArg < argc; ++currentArg) {
+                        std::string arg = argv[currentArg];
+                        if ((arg == "-v") || (arg == "--version")) {
+                                ::fprintf(stdout, "MMDVMHost version %s git #%.7s\n", VERSION, gitversion);
+                                return 0;
+                        } else if (arg.substr(0,1) == "-") {
+                                ::fprintf(stderr, "Usage: MMDVMHost [-v|--version] [filename]\n");
+                                return 1;
+                        } else {
+                                iniFile = argv[currentArg];
+                        }
+                }
+        }
 
 #if !defined(_WIN32) && !defined(_WIN64)
   ::signal(SIGTERM, sigHandler);
@@ -484,11 +484,13 @@ int CMMDVMHost::run()
 						m_dmrTXTimer.start();
 					}
 				} else {
-					dmr->writeModemSlot1(data, len);
-					dmrBeaconTimer.stop();
-					m_modeTimer.start();
-					if (m_duplex)
-						m_dmrTXTimer.start();
+					bool ret = dmr->writeModemSlot1(data, len);
+					if (ret) {
+						dmrBeaconTimer.stop();
+						m_modeTimer.start();
+						if (m_duplex)
+							m_dmrTXTimer.start();
+					}
 				}
 			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("DMR modem data received when in mode %u", m_mode);
@@ -519,11 +521,13 @@ int CMMDVMHost::run()
 						m_dmrTXTimer.start();
 					}
 				} else {
-					dmr->writeModemSlot2(data, len);
-					dmrBeaconTimer.stop();
-					m_modeTimer.start();
-					if (m_duplex)
-						m_dmrTXTimer.start();
+					bool ret = dmr->writeModemSlot2(data, len);
+					if (ret) {
+						dmrBeaconTimer.stop();
+						m_modeTimer.start();
+						if (m_duplex)
+							m_dmrTXTimer.start();
+					}
 				}
 			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("DMR modem data received when in mode %u", m_mode);

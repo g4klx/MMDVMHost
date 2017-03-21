@@ -36,8 +36,8 @@ public:
 
 	bool processWakeup(const unsigned char* data);
 
-	void writeModemSlot1(unsigned char* data, unsigned int len);
-	void writeModemSlot2(unsigned char* data, unsigned int len);
+	bool writeModemSlot1(unsigned char* data, unsigned int len);
+	bool writeModemSlot2(unsigned char* data, unsigned int len);
 
 	unsigned int readModemSlot1(unsigned char* data);
 	unsigned int readModemSlot2(unsigned char* data);

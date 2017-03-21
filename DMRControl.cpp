@@ -85,18 +85,18 @@ bool CDMRControl::processWakeup(const unsigned char* data)
 	return false;
 }
 
-void CDMRControl::writeModemSlot1(unsigned char *data, unsigned int len)
+bool CDMRControl::writeModemSlot1(unsigned char *data, unsigned int len)
 {
 	assert(data != NULL);
 
-	m_slot1.writeModem(data, len);
+	return m_slot1.writeModem(data, len);
 }
 
-void CDMRControl::writeModemSlot2(unsigned char *data, unsigned int len)
+bool CDMRControl::writeModemSlot2(unsigned char *data, unsigned int len)
 {
 	assert(data != NULL);
 
-	m_slot2.writeModem(data, len);
+	return m_slot2.writeModem(data, len);
 }
 
 unsigned int CDMRControl::readModemSlot1(unsigned char *data)
