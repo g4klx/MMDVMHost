@@ -241,7 +241,7 @@ bool CRS241213::decode(unsigned char* data)
 		if (q == 0) { //it is a root
 			//store root (index-form) and error location number
 			root[count] = i;
-			locn[count] = i - 1;
+			locn[count] = i - 40;
 			//if wehave max possible roots, abort search to save time
 			count = count + 1;
 			
@@ -317,7 +317,8 @@ bool CRS241213::decode(unsigned char* data)
 
 		// apply error to data
 		if (num1 != 0) {
-			HB[locn[j]] = HB[locn[j]] ^ (rsGFexp[(rsGFlog[num1] + rsGFlog[num2] + 63 - rsGFlog[den]) % 63]);
+			if(locn[j] < 24)
+				HB[locn[j]] = HB[locn[j]] ^ (rsGFexp[(rsGFlog[num1] + rsGFlog[num2] + 63 - rsGFlog[den]) % 63]);
 		}
 	}
 
