@@ -17,7 +17,7 @@
 */
 
 #if !defined(RS241213_H)
-#define	RS241213
+#define	RS241213_H
 
 class CRS241213
 {
