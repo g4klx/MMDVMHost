@@ -110,6 +110,7 @@ public:
 
   // The System Fusion section
   bool         getFusionEnabled() const;
+  bool         getFusionLowDeviation() const;
   bool         getFusionRemoteGateway() const;
 
   // The P25 section
@@ -258,6 +259,7 @@ private:
   unsigned int m_dmrTXHang;
 
   bool         m_fusionEnabled;
+  bool         m_fusionLowDeviation;
   bool         m_fusionRemoteGateway;
 
   bool         m_p25Enabled;

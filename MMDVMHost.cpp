@@ -395,12 +395,14 @@ int CMMDVMHost::run()
 
 	CYSFControl* ysf = NULL;
 	if (m_ysfEnabled) {
+		bool lowDeviation  = m_conf.getFusionLowDeviation();
 		bool remoteGateway = m_conf.getFusionRemoteGateway();
 
 		LogInfo("YSF Parameters");
+		LogInfo("    Low Deviation: %s", lowDeviation ? "yes" : "no");
 		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
 
-		ysf = new CYSFControl(m_callsign, m_ysfNetwork, m_display, m_timeout, m_duplex, remoteGateway, rssi);
+		ysf = new CYSFControl(m_callsign, m_ysfNetwork, m_display, m_timeout, m_duplex, lowDeviation, remoteGateway, rssi);
 	}
 
 	CP25Control* p25 = NULL;
@@ -800,6 +802,7 @@ bool CMMDVMHost::createModem()
 	unsigned int p25TXLevel   = m_conf.getModemP25TXLevel();
 	bool debug                = m_conf.getModemDebug();
 	unsigned int colorCode    = m_conf.getDMRColorCode();
+	bool lowDeviation         = m_conf.getFusionLowDeviation();
 	unsigned int rxFrequency  = m_conf.getRxFrequency();
 	unsigned int txFrequency  = m_conf.getTxFrequency();
 	std::string samplesDir    = m_conf.getModemSamplesDir();
@@ -825,6 +828,7 @@ bool CMMDVMHost::createModem()
 	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel);
 	m_modem->setRFParams(rxFrequency, txFrequency);
 	m_modem->setDMRParams(colorCode);
+	m_modem->setYSFParams(lowDeviation);
 
 	bool ret = m_modem->open();
 	if (!ret) {

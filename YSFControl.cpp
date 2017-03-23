@@ -24,11 +24,12 @@
 
 // #define	DUMP_YSF
 
-CYSFControl::CYSFControl(const std::string& callsign, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
+CYSFControl::CYSFControl(const std::string& callsign, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool lowDeviation, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
 m_callsign(NULL),
 m_network(network),
 m_display(display),
 m_duplex(duplex),
+m_lowDeviation(lowDeviation),
 m_remoteGateway(remoteGateway),
 m_queue(5000U, "YSF Control"),
 m_rfState(RS_RF_LISTENING),
@@ -217,6 +218,7 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 
 		if (m_duplex) {
 			fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
+			fich.setDev(m_lowDeviation);
 			fich.encode(data + 2U);
 			writeQueueRF(data);
 		}
@@ -242,6 +244,7 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 
 		if (m_duplex) {
 			fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
+			fich.setDev(m_lowDeviation);
 			fich.encode(data + 2U);
 			writeQueueRF(data);
 		}
@@ -351,6 +354,7 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 
 		if (m_duplex) {
 			fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
+			fich.setDev(m_lowDeviation);
 			fich.encode(data + 2U);
 			writeQueueRF(data);
 		}
@@ -523,6 +527,7 @@ void CYSFControl::writeNetwork()
 
 		fich.setVoIP(true);
 		fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
+		fich.setDev(m_lowDeviation);
 		fich.encode(data + 35U);
 
 		m_lastMode = dt;

@@ -41,6 +41,7 @@ public:
 	void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled);
 	void setLevels(unsigned int rxLevel, unsigned int cwIdTXLevel, unsigned int dstarTXLevel, unsigned int dmrTXLevel, unsigned int ysfTXLevel, unsigned int p25Enabled);
 	void setDMRParams(unsigned int colorCode);
+	void setYSFParams(bool loDev);
 
 	bool open();
 
@@ -88,7 +89,8 @@ public:
 
 private:
 	std::string                m_port;
-	unsigned int               m_colorCode;
+	unsigned int               m_dmrColorCode;
+	bool                       m_ysfLoDev;
 	bool                       m_duplex;
 	bool                       m_rxInvert;
 	bool                       m_txInvert;

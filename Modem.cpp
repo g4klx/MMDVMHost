@@ -87,7 +87,8 @@ const unsigned int BUFFER_LENGTH = 2000U;
 
 CModem::CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, const std::string& samplesDir, bool debug) :
 m_port(port),
-m_colorCode(0U),
+m_dmrColorCode(0U),
+m_ysfLoDev(false),
 m_duplex(duplex),
 m_rxInvert(rxInvert),
 m_txInvert(txInvert),
@@ -174,7 +175,12 @@ void CModem::setDMRParams(unsigned int colorCode)
 {
 	assert(colorCode < 16U);
 
-	m_colorCode = colorCode;
+	m_dmrColorCode = colorCode;
+}
+
+void CModem::setYSFParams(bool loDev)
+{
+	m_ysfLoDev = loDev;
 }
 
 bool CModem::open()
@@ -954,6 +960,8 @@ bool CModem::setConfig()
 		buffer[3U] |= 0x02U;
 	if (m_pttInvert)
 		buffer[3U] |= 0x04U;
+	if (m_ysfLoDev)
+		buffer[3U] |= 0x08U;
 	if (!m_duplex)
 		buffer[3U] |= 0x80U;
 
@@ -975,7 +983,7 @@ bool CModem::setConfig()
 
 	buffer[8U] = (m_cwIdTXLevel * 255U) / 100U;
 
-	buffer[9U] = m_colorCode;
+	buffer[9U] = m_dmrColorCode;
 
 	buffer[10U] = m_dmrDelay;
 

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -199,6 +199,11 @@ unsigned char CYSFFICH::getMR() const
 	return (m_fich[2U] >> 3) & 0x03U;
 }
 
+bool CYSFFICH::getDev() const
+{
+	return (m_fich[2U] & 0x40U) == 0x40U;
+}
+
 void CYSFFICH::setMR(unsigned char mr)
 {
 	m_fich[2U] &= 0xC7U;
@@ -211,4 +216,12 @@ void CYSFFICH::setVoIP(bool on)
 		m_fich[2U] |= 0x04U;
 	else
 		m_fich[2U] &= 0xFBU;
+}
+
+void CYSFFICH::setDev(bool on)
+{
+	if (on)
+		m_fich[2U] |= 0x40U;
+	else
+		m_fich[2U] &= 0xBFU;
 }

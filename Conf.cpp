@@ -115,6 +115,7 @@ m_dmrSlot2TGWhiteList(),
 m_dmrCallHang(3U),
 m_dmrTXHang(4U),
 m_fusionEnabled(false),
+m_fusionLowDeviation(false),
 m_fusionRemoteGateway(false),
 m_p25Enabled(false),
 m_p25NAC(0x293U),
@@ -428,6 +429,8 @@ bool CConf::read()
 	} else if (section == SECTION_FUSION) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fusionEnabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "LowDeviation") == 0)
+			m_fusionLowDeviation = ::atoi(value) == 1;
 		else if (::strcmp(key, "RemoteGateway") == 0)
 			m_fusionRemoteGateway = ::atoi(value) == 1;
 	} else if (section == SECTION_P25) {
@@ -865,6 +868,11 @@ unsigned int CConf::getDMRTXHang() const
 bool CConf::getFusionEnabled() const
 {
 	return m_fusionEnabled;
+}
+
+bool CConf::getFusionLowDeviation() const
+{
+	return m_fusionLowDeviation;
 }
 
 bool CConf::getFusionRemoteGateway() const
