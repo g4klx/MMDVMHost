@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -30,13 +30,17 @@ public:
 
 	unsigned char getFI() const;
 	unsigned char getCM() const;
+	unsigned char getBN() const;
+	unsigned char getBT() const;
 	unsigned char getFN() const;
 	unsigned char getFT() const;
 	unsigned char getDT() const;
+	unsigned char getMR() const;
+	bool getDev() const;
 
-	void setFI(unsigned char fi);
 	void setMR(unsigned char mr);
 	void setVoIP(bool set);
+	void setDev(bool set);
 
 private:
 	unsigned char* m_fich;

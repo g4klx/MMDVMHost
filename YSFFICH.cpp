@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 
 #include <cstdio>
 #include <cassert>
-
+#include <cstring>
 
 const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U};
 
@@ -57,7 +57,7 @@ const unsigned int INTERLEAVE_TABLE[] = {
 CYSFFICH::CYSFFICH() :
 m_fich(NULL)
 {
-	m_fich = new unsigned char[6U];
+	m_fich  = new unsigned char[6U];
 }
 
 CYSFFICH::~CYSFFICH()
@@ -169,6 +169,16 @@ unsigned char CYSFFICH::getCM() const
 	return (m_fich[0U] >> 2) & 0x03U;
 }
 
+unsigned char CYSFFICH::getBN() const
+{
+	return m_fich[0U] & 0x03U;
+}
+
+unsigned char CYSFFICH::getBT() const
+{
+	return (m_fich[1U] >> 6) & 0x03U;
+}
+
 unsigned char CYSFFICH::getFN() const
 {
 	return (m_fich[1U] >> 3) & 0x07U;
@@ -184,16 +194,20 @@ unsigned char CYSFFICH::getDT() const
 	return m_fich[2U] & 0x03U;
 }
 
-void CYSFFICH::setFI(unsigned char fi)
+unsigned char CYSFFICH::getMR() const
 {
-	m_fich[0U] &= 0x3FU;
-	m_fich[0U] |= (fi << 6) & 0xC0U;
+	return (m_fich[2U] >> 3) & 0x03U;
+}
+
+bool CYSFFICH::getDev() const
+{
+	return (m_fich[2U] & 0x40U) == 0x40U;
 }
 
 void CYSFFICH::setMR(unsigned char mr)
 {
 	m_fich[2U] &= 0xC7U;
-	m_fich[2U] |= mr;
+	m_fich[2U] |= (mr << 3) & 0x38U;
 }
 
 void CYSFFICH::setVoIP(bool on)
@@ -202,4 +216,12 @@ void CYSFFICH::setVoIP(bool on)
 		m_fich[2U] |= 0x04U;
 	else
 		m_fich[2U] &= 0xFBU;
+}
+
+void CYSFFICH::setDev(bool on)
+{
+	if (on)
+		m_fich[2U] |= 0x40U;
+	else
+		m_fich[2U] &= 0xBFU;
 }

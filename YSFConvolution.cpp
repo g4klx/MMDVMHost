@@ -30,6 +30,11 @@ const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U
 const uint8_t BRANCH_TABLE1[] = {0U, 0U, 0U, 0U, 1U, 1U, 1U, 1U};
 const uint8_t BRANCH_TABLE2[] = {0U, 1U, 1U, 0U, 0U, 1U, 1U, 0U};
 
+const unsigned int NUM_OF_STATES_D2 = 8U;
+const unsigned int NUM_OF_STATES = 16U;
+const uint32_t     M = 2U;
+const unsigned int K = 5U;
+
 CYSFConvolution::CYSFConvolution() :
 m_metrics1(NULL),
 m_metrics2(NULL),
@@ -49,11 +54,6 @@ CYSFConvolution::~CYSFConvolution()
 	delete[] m_metrics2;
 	delete[] m_decisions;
 }
-
-const unsigned int NUM_OF_STATES_D2 = 8U;
-const unsigned int NUM_OF_STATES = 16U;
-const uint32_t     M = 3U;
-const unsigned int K = 5U;
 
 void CYSFConvolution::start()
 {

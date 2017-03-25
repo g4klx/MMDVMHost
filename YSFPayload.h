@@ -28,7 +28,17 @@ public:
 	CYSFPayload();
 	~CYSFPayload();
 
-	void process(unsigned char* bytes, unsigned char fi, unsigned char fn, unsigned char ft, unsigned char dt);
+	bool processHeaderData(unsigned char* bytes);
+
+	bool processVDMode1Data(unsigned char* bytes, unsigned char fn, bool gateway = false);
+	unsigned int processVDMode1Audio(unsigned char* bytes);
+
+	bool processVDMode2Data(unsigned char* bytes, unsigned char fn, bool gateway = false);
+	unsigned int processVDMode2Audio(unsigned char* bytes);
+
+	bool processDataFRModeData(unsigned char* bytes, unsigned char fn, bool gateway = false);
+
+	unsigned int processVoiceFRModeAudio(unsigned char* bytes);
 
 	unsigned char* getSource();
 	unsigned char* getDest();
@@ -44,12 +54,6 @@ private:
 	unsigned char* m_source;
 	unsigned char* m_dest;
 	CAMBEFEC       m_fec;
-
-	void processHeader(unsigned char* bytes);
-	void processVDMode1(unsigned char* bytes, unsigned char fn);
-	void processVDMode2(unsigned char* bytes, unsigned char fn);
-	void processDataFRMode(unsigned char* bytes, unsigned char fn);
-	void processVoiceFRMode(unsigned char* bytes);
 };
 
 #endif

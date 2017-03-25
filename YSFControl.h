@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,14 +19,14 @@
 #if !defined(YSFControl_H)
 #define	YSFControl_H
 
+#include "RSSIInterpolator.h"
+#include "YSFNetwork.h"
 #include "YSFDefines.h"
 #include "YSFPayload.h"
 #include "RingBuffer.h"
 #include "StopWatch.h"
-#include "YSFParrot.h"
 #include "Display.h"
 #include "Defines.h"
-#include "YSFFICH.h"
 #include "Timer.h"
 #include "Modem.h"
 
@@ -34,38 +34,70 @@
 
 class CYSFControl {
 public:
-	CYSFControl(const std::string& callsign, IDisplay* display, unsigned int timeout, bool duplex, bool parrot);
+	CYSFControl(const std::string& callsign, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool lowDeviation, bool remoteGateway, CRSSIInterpolator* rssiMapper);
 	~CYSFControl();
 
-	bool writeModem(unsigned char* data);
+	bool writeModem(unsigned char* data, unsigned int len);
 
 	unsigned int readModem(unsigned char* data);
 
-	void clock();
+	void clock(unsigned int ms);
 
 private:
-	IDisplay*                  m_display;
+	unsigned char*             m_callsign;
+	CYSFNetwork*               m_network;
+	CDisplay*                  m_display;
 	bool                       m_duplex;
+	bool                       m_lowDeviation;
+	bool                       m_remoteGateway;
 	CRingBuffer<unsigned char> m_queue;
-	RPT_RF_STATE               m_state;
-	CTimer                     m_timeoutTimer;
-	CStopWatch                 m_interval;
-	unsigned int               m_frames;
-	CYSFFICH                   m_fich;
-	unsigned char*             m_source;
-	unsigned char*             m_dest;
-	CYSFPayload                m_payload;
-	CYSFParrot*                m_parrot;
+	RPT_RF_STATE               m_rfState;
+	RPT_NET_STATE              m_netState;
+	CTimer                     m_rfTimeoutTimer;
+	CTimer                     m_netTimeoutTimer;
+	CTimer                     m_packetTimer;
+	CTimer                     m_networkWatchdog;
+	CStopWatch                 m_elapsed;
+	unsigned int               m_rfFrames;
+	unsigned int               m_netFrames;
+	unsigned int               m_netLost;
+	unsigned int               m_rfErrs;
+	unsigned int               m_rfBits;
+	unsigned int               m_netErrs;
+	unsigned int               m_netBits;
+	unsigned char*             m_rfSource;
+	unsigned char*             m_rfDest;
+	unsigned char*             m_netSource;
+	unsigned char*             m_netDest;
+	unsigned char*             m_lastFrame;
+	bool                       m_lastFrameValid;
+	unsigned char              m_lastMode;
+	unsigned char              m_lastMR;
+	unsigned char              m_netN;
+	CYSFPayload                m_rfPayload;
+	CYSFPayload                m_netPayload;
+	CRSSIInterpolator*         m_rssiMapper;
+	unsigned char              m_rssi;
+	unsigned char              m_maxRSSI;
+	unsigned char              m_minRSSI;
+	unsigned int               m_aveRSSI;
+	unsigned int               m_rssiCount;
 	FILE*                      m_fp;
 
-	void writeQueue(const unsigned char* data);
-	void writeParrot(const unsigned char* data);
+	void writeQueueRF(const unsigned char* data);
+	void writeQueueNet(const unsigned char* data);
+	void writeNetwork(const unsigned char* data, unsigned int count);
+	void writeNetwork();
 
-	void writeEndOfTransmission();
+	void writeEndRF();
+	void writeEndNet();
 
 	bool openFile();
 	bool writeFile(const unsigned char* data);
 	void closeFile();
+
+	bool insertSilence(const unsigned char* data, unsigned char n);
+	void insertSilence(unsigned int count);
 };
 
 #endif
