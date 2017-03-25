@@ -2,6 +2,6 @@ D-Star: No obvious issues.
 
 DMR: DMO mode doesn't wake up older radios like other radios do. Find out why and reproduce it.
 
-YSF: Investigate using lower deviation mode.
+YSF: Improve the quality of the transmitted signal.
 
 P25: Upgrade the filters, processing power in the Due permiting.
