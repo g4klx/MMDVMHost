@@ -71,7 +71,7 @@ void CP25Data::encodeHeader(unsigned char* data)
 	CP25Utils::encode(DUMMY_HEADER, data, 114U, 780U);
 }
 
-bool CP25Data::decodeLDU1(const unsigned char* data, bool m_network, bool m_uidoverride)
+bool CP25Data::decodeLDU1(const unsigned char* data, bool m_network, bool m_uidOverride)
 {
 	assert(data != NULL);
 
@@ -107,10 +107,11 @@ bool CP25Data::decodeLDU1(const unsigned char* data, bool m_network, bool m_uido
 
 		// Simple validation of the source id - does not check if no network
 	unsigned int srcId = (rs[6U] << 16) + (rs[7U] << 8) + rs[8U];
-	if(m_network || (!m_network && !m_uidoverride))  {
+	if (m_network || (!m_network && !m_uidOverride))  {
 		if (srcId < 1000000U)
 			return false;
 	}
+
 	switch (rs[0U]) {
 	case P25_LCF_GROUP:
 		m_emergency = (rs[2U] & 0x80U) == 0x80U;

@@ -439,6 +439,8 @@ bool CConf::read()
 			m_p25Enabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "NAC") == 0)
 			m_p25NAC = (unsigned int)::strtoul(value, NULL, 16);
+		else if (::strcmp(key, "OverrideUIDCheck") == 0)
+			m_p25OverrideUID = ::atoi(value) == 1;
 	} else if (section == SECTION_DSTAR_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dstarNetworkEnabled = ::atoi(value) == 1;
@@ -495,8 +497,6 @@ bool CConf::read()
 			m_p25LocalPort = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Debug") == 0)
 			m_p25NetworkDebug = ::atoi(value) == 1;
-		else if (::strcmp(key, "OverrideUIDCheck") == 0)
-			m_p25OverrideUID = ::atoi(value) == 1;
 	} else if (section == SECTION_TFTSERIAL) {
 		if (::strcmp(key, "Port") == 0)
 			m_tftSerialPort = value;

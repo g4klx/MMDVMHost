@@ -36,7 +36,7 @@
 
 class CP25Control {
 public:
-	CP25Control(unsigned int nac, bool uidoverride, CP25Network* network, CDisplay* display, unsigned int timeout, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper);
+	CP25Control(unsigned int nac, bool uidOverride, CP25Network* network, CDisplay* display, unsigned int timeout, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper);
 	~CP25Control();
 
 	bool writeModem(unsigned char* data, unsigned int len);
@@ -47,7 +47,7 @@ public:
 
 private:
 	unsigned int               m_nac;
-	bool                       m_uidoverride;
+	bool                       m_uidOverride;
 	CP25Network*               m_network;
 	CDisplay*                  m_display;
 	bool                       m_duplex;
