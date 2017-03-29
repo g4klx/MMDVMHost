@@ -412,7 +412,7 @@ int CMMDVMHost::run()
 		LogInfo("P25 Parameters");
 		LogInfo("    NAC: $%03X", nac);
 
-		p25 = new CP25Control(nac, m_p25Network, m_display, m_timeout, m_duplex, m_lookup, rssi);
+		p25 = new CP25Control(nac, m_conf.getP25OverrideUID(), m_p25Network, m_display, m_timeout, m_duplex, m_lookup, rssi);
 	}
 
 	setMode(MODE_IDLE);

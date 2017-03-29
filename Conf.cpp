@@ -145,6 +145,7 @@ m_p25GatewayAddress(),
 m_p25GatewayPort(0U),
 m_p25LocalPort(0U),
 m_p25NetworkDebug(false),
+m_p25OverrideUID(false),
 m_tftSerialPort("/dev/ttyAMA0"),
 m_tftSerialBrightness(50U),
 m_hd44780Rows(2U),
@@ -494,6 +495,8 @@ bool CConf::read()
 			m_p25LocalPort = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Debug") == 0)
 			m_p25NetworkDebug = ::atoi(value) == 1;
+		else if (::strcmp(key, "OverrideUIDCheck") == 0)
+			m_p25OverrideUID = ::atoi(value) == 1;
 	} else if (section == SECTION_TFTSERIAL) {
 		if (::strcmp(key, "Port") == 0)
 			m_tftSerialPort = value;
@@ -1018,6 +1021,11 @@ unsigned int CConf::getP25LocalPort() const
 bool CConf::getP25NetworkDebug() const
 {
 	return m_p25NetworkDebug;
+}
+
+bool CConf::getP25OverrideUID() const
+{
+	return m_p25OverrideUID;
 }
 
 std::string CConf::getTFTSerialPort() const

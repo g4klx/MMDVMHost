@@ -28,7 +28,7 @@ public:
 
 	void encodeHeader(unsigned char* data);
 
-	bool decodeLDU1(const unsigned char* data);
+	bool decodeLDU1(const unsigned char* data, bool m_network, bool m_overrideuid);
 	void encodeLDU1(unsigned char* data);
 
 	void encodeLDU2(unsigned char* data);
