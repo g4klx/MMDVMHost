@@ -150,6 +150,7 @@ public:
   unsigned int getP25GatewayPort() const;
   unsigned int getP25LocalPort() const;
   bool         getP25NetworkDebug() const;
+  bool         getP25OverrideUID() const;
 
   // The TFTSERIAL section
   std::string  getTFTSerialPort() const;
@@ -294,6 +295,7 @@ private:
   unsigned int m_p25GatewayPort;
   unsigned int m_p25LocalPort;
   bool         m_p25NetworkDebug;
+  bool         m_p25OverrideUID;
 
   std::string  m_tftSerialPort;
   unsigned int m_tftSerialBrightness;
