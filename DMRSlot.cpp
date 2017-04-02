@@ -61,6 +61,9 @@ const unsigned char TALKER_ID_BLOCK1 = 0x02U;
 const unsigned char TALKER_ID_BLOCK2 = 0x04U;
 const unsigned char TALKER_ID_BLOCK3 = 0x08U;
 
+const unsigned int NO_HEADERS_SIMPLEX = 8U;
+const unsigned int NO_HEADERS_DUPLEX  = 3U;
+
 // #define	DUMP_DMR
 
 CDMRSlot::CDMRSlot(unsigned int slotNo, unsigned int timeout) :
@@ -253,9 +256,8 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				m_queue.clear();
 				m_modem->writeDMRAbort(m_slotNo);
 
-				writeQueueRF(data);
-				writeQueueRF(data);
-				writeQueueRF(data);
+				for (unsigned int i = 0U; i < NO_HEADERS_DUPLEX; i++)
+					writeQueueRF(data);
 			}
 
 			writeNetworkRF(data, DT_VOICE_LC_HEADER);
@@ -754,9 +756,8 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					m_queue.clear();
 					m_modem->writeDMRAbort(m_slotNo);
 
-					writeQueueRF(start);
-					writeQueueRF(start);
-					writeQueueRF(start);
+					for (unsigned int i = 0U; i < NO_HEADERS_DUPLEX; i++)
+						writeQueueRF(start);
 				}
 
 				writeNetworkRF(start, DT_VOICE_LC_HEADER);
@@ -991,9 +992,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		for (unsigned int i = 0U; i < m_jitterSlots; i++)
 			writeQueueNet(m_idle);
 
-		writeQueueNet(data);
-		writeQueueNet(data);
-		writeQueueNet(data);
+		if (m_duplex) {
+			for (unsigned int i = 0U; i < NO_HEADERS_DUPLEX; i++)
+				writeQueueNet(data);
+		} else {
+			for (unsigned int i = 0U; i < NO_HEADERS_SIMPLEX; i++)
+				writeQueueNet(data);
+		}
 
 		m_netState = RS_NET_AUDIO;
 
@@ -1047,9 +1052,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			start[0U] = TAG_DATA;
 			start[1U] = 0x00U;
 
-			writeQueueRF(start);
-			writeQueueRF(start);
-			writeQueueRF(start);
+			if (m_duplex) {
+				for (unsigned int i = 0U; i < NO_HEADERS_DUPLEX; i++)
+					writeQueueRF(start);
+			} else {
+				for (unsigned int i = 0U; i < NO_HEADERS_SIMPLEX; i++)
+					writeQueueRF(start);
+			}
 
 #if defined(DUMP_DMR)
 			openFile();
@@ -1118,8 +1127,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			if (m_duplex) {
 				for (unsigned int i = 0U; i < m_hangCount; i++)
 					writeQueueNet(data);
-			}
-			else {
+			} else {
 				for (unsigned int i = 0U; i < 3U; i++)
 					writeQueueNet(data);
 			}
@@ -1232,9 +1240,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			start[0U] = TAG_DATA;
 			start[1U] = 0x00U;
 
-			writeQueueRF(start);
-			writeQueueRF(start);
-			writeQueueRF(start);
+			if (m_duplex) {
+				for (unsigned int i = 0U; i < NO_HEADERS_DUPLEX; i++)
+					writeQueueRF(start);
+			} else {
+				for (unsigned int i = 0U; i < NO_HEADERS_SIMPLEX; i++)
+					writeQueueRF(start);
+			}
 
 #if defined(DUMP_DMR)
 			openFile();
