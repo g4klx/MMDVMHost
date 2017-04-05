@@ -316,7 +316,7 @@ bool CDMREmbeddedData::getRawData(unsigned char* data) const
 	CUtils::bitsToByteBE(m_data + 40U, data[5U]);
 	CUtils::bitsToByteBE(m_data + 48U, data[6U]);
 	CUtils::bitsToByteBE(m_data + 56U, data[7U]);
-	CUtils::bitsToByteBE(m_data + 65U, data[8U]);
+	CUtils::bitsToByteBE(m_data + 64U, data[8U]);
 
 	return true;
 }
