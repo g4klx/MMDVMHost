@@ -1,0 +1,41 @@
+# This file maps the raw RSSI values to dBm values to send to the DMR network. A number of data
+# points should be entered and the software will use those to work out the in-between values.
+#
+# The format of the file is:
+# Raw RSSI Value		dBm Value		#output voltage
+#
+# The following values were measured with a Marconi 2024 signal generator.
+# Setup is MMDVM (PCB by Toufik, F0DEI v1.1) on a STM32F446RE Nucleo board.
+# The values in the comments are the voltage measured at the GM340 RSSI output pin.
+# Florian DF2ET, 07.04.2017
+#
+1461		-46		#1.87
+1461		-49		#1.87
+1457		-52		#1.86
+1446		-55		#1.85
+1422		-58		#1.82
+1381		-61		#1.77
+1334		-64		#1.71
+1284		-67		#1.64
+1240		-70		#1.59
+1200		-73		#1.54
+1162		-76		#1.49
+1121		-79		#1.44
+1073		-82		#1.38
+1032		-85		#1.32
+995		-88		#1.28
+961		-91		#1.23
+921		-94		#1.18
+878		-97		#1.13
+830		-100		#1.07
+785		-103		#1.01
+742		-106		#0.95
+701		-109		#0.90
+657		-112		#0.85
+610		-115		#0.79
+571		-118		#0.74
+536		-121		#0.69
+505		-124		#0.65
+479		-127		#0.62
+463		-130		#0.60
+454		-133		#0.59
