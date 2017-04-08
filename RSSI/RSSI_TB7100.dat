@@ -5,7 +5,7 @@
 # Raw RSSI Value		dBm Value		#output voltage
 #
 # The following values were measured with a Marconi 2024 signal generator.
-# Setup is MMDVM (PCB by Toufik, F0DEI) on a STM32F446RE Nucleo board.
+# Setup is MMDVM (PCB by Toufik, F0DEI v1.2) on a STM32F446RE Nucleo board.
 # The values in the comments are the voltage measured at the TB7100 RSSI output pin.
 # Florian DF2ET, 03.03.2017
 #
