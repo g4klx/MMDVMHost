@@ -44,7 +44,7 @@ private:
   CConf          m_conf;
   CModem*        m_modem;
   CDStarNetwork* m_dstarNetwork;
-  CDMRNetwork*   m_dmrNetwork;
+  IDMRNetwork*   m_dmrNetwork;
   CYSFNetwork*   m_ysfNetwork;
   CP25Network*   m_p25Network;
   CDisplay*      m_display;

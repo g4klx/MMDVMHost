@@ -28,29 +28,53 @@
 #include <string>
 #include <cstdint>
 
-class CDMRNetwork
-{
+class IDMRNetwork {
+public:
+  virtual ~IDMRNetwork() = 0;
+
+  virtual void setOptions(const std::string& options) = 0;
+
+  virtual void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url) = 0;
+
+  virtual bool open() = 0;
+
+  virtual void enable(bool enabled) = 0;
+
+  virtual bool read(CDMRData& data) = 0;
+
+  virtual bool write(const CDMRData& data) = 0;
+
+  virtual bool wantsBeacon() = 0;
+
+  virtual void clock(unsigned int ms) = 0;
+
+  virtual void close() = 0;
+
+private:
+};
+
+class CDMRNetwork : public IDMRNetwork {
 public:
 	CDMRNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, HW_TYPE hwType);
-	~CDMRNetwork();
+	virtual ~CDMRNetwork();
 
-	void setOptions(const std::string& options);
+	virtual void setOptions(const std::string& options);
 
-	void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url);
+	virtual void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url);
 
-	bool open();
+	virtual bool open();
 
-	void enable(bool enabled);
+	virtual void enable(bool enabled);
 
-	bool read(CDMRData& data);
+	virtual bool read(CDMRData& data);
 
-	bool write(const CDMRData& data);
+	virtual bool write(const CDMRData& data);
 
-	bool wantsBeacon();
+	virtual bool wantsBeacon();
 
-	void clock(unsigned int ms);
+	virtual void clock(unsigned int ms);
 
-	void close();
+	virtual void close();
 
 private: 
 	in_addr      m_address;
