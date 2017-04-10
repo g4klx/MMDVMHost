@@ -72,6 +72,8 @@ public:
 
 	virtual bool wantsBeacon();
 
+  virtual bool isRunning() const;
+
 	virtual void clock(unsigned int ms);
 
 	virtual void close();

@@ -573,3 +573,8 @@ bool CDMRNetwork::write(const unsigned char* data, unsigned int length)
 
 	return true;
 }
+
+bool CDMRNetwork::isRunning() const
+{
+  return m_status == RUNNING;
+}

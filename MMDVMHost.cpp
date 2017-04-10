@@ -20,6 +20,8 @@
 #include "RSSIInterpolator.h"
 #include "SerialController.h"
 #include "ModemSerialPort.h"
+#include "DMRNetworkManager.h"
+#include "DMRNetwork.h"
 #include "Version.h"
 #include "StopWatch.h"
 #include "Defines.h"
@@ -872,29 +874,61 @@ bool CMMDVMHost::createDStarNetwork()
 
 bool CMMDVMHost::createDMRNetwork()
 {
-	std::string address  = m_conf.getDMRNetworkAddress();
-	unsigned int port    = m_conf.getDMRNetworkPort();
-	unsigned int local   = m_conf.getDMRNetworkLocal();
-	unsigned int id      = m_conf.getDMRId();
-	std::string password = m_conf.getDMRNetworkPassword();
-	bool debug           = m_conf.getDMRNetworkDebug();
-	unsigned int jitter  = m_conf.getDMRNetworkJitter();
-	bool slot1           = m_conf.getDMRNetworkSlot1();
-	bool slot2           = m_conf.getDMRNetworkSlot2();
-	HW_TYPE hwType       = m_modem->getHWType();
+	std::string primaryAddress    = m_conf.getDMRNetworkPrimaryAddress();
+  bool failover                 = m_conf.getDMRNetworkFailover();
+  unsigned int primaryPort      = m_conf.getDMRNetworkPrimaryPort();
+  unsigned int primaryLocal     = m_conf.getDMRNetworkPrimaryLocal();
+  std::string primaryPassword   = m_conf.getDMRNetworkPrimaryPassword();
+  std::string secondaryAddress  = m_conf.getDMRNetworkSecondaryAddress();
+  unsigned int secondaryPort    = m_conf.getDMRNetworkSecondaryPort();
+  unsigned int secondaryLocal   = m_conf.getDMRNetworkSecondaryLocal();
+  std::string secondaryPassword = m_conf.getDMRNetworkSecondaryPassword();
+  unsigned int id               = m_conf.getDMRId();
+  bool debug                    = m_conf.getDMRNetworkDebug();
+	unsigned int jitter           = m_conf.getDMRNetworkJitter();
+	bool slot1                    = m_conf.getDMRNetworkSlot1();
+	bool slot2                    = m_conf.getDMRNetworkSlot2();
+	HW_TYPE hwType                = m_modem->getHWType();
 
 	LogInfo("DMR Network Parameters");
-	LogInfo("    Address: %s", address.c_str());
-	LogInfo("    Port: %u", port);
-	if (local > 0U)
-		LogInfo("    Local: %u", local);
-	else
-		LogInfo("    Local: random");
-	LogInfo("    Jitter: %ums", jitter);
+  if (failover) {
+    LogInfo("    Failover: yes");
+
+    LogInfo("    Primary Address: %s", primaryAddress.c_str());
+    LogInfo("    Primary Port: %u", primaryPort);
+    if (primaryLocal > 0U)
+      LogInfo("    Primary Local: %u", primaryLocal);
+    else
+      LogInfo("    Primary Local: random");
+
+    LogInfo("    Secondary Address: %s", secondaryAddress.c_str());
+    LogInfo("    Secondary Port: %u", secondaryPort);
+    if (secondaryLocal > 0U)
+      LogInfo("    Secondary Local: %u", secondaryLocal);
+    else
+      LogInfo("    Secondary Local: random");
+  } else {
+    LogInfo("    Failover: no");
+    LogInfo("    Address: %s", primaryAddress.c_str());
+    LogInfo("    Port: %u", primaryPort);
+    if (primaryLocal > 0U)
+      LogInfo("    Local: %u", primaryLocal);
+    else
+      LogInfo("    Local: random");
+  }
+
+  LogInfo("    Jitter: %ums", jitter);
 	LogInfo("    Slot 1: %s", slot1 ? "enabled" : "disabled");
 	LogInfo("    Slot 2: %s", slot2 ? "enabled" : "disabled");
 
-	m_dmrNetwork = new CDMRNetwork(address, port, local, id, password, m_duplex, VERSION, debug, slot1, slot2, hwType);
+  if (failover) {
+    CDMRNetwork* primary   = new CDMRNetwork(primaryAddress, primaryPort, primaryLocal, id, primaryPassword, m_duplex, VERSION, debug, slot1, slot2, hwType);
+    CDMRNetwork* secondary = new CDMRNetwork(secondaryAddress, secondaryPort, secondaryLocal, id, secondaryPassword, m_duplex, VERSION, debug, slot1, slot2, hwType);
+
+    m_dmrNetwork = new CDMRNetworkManager(primary, secondary);
+  } else {
+    m_dmrNetwork = new CDMRNetwork(primaryAddress, primaryPort, primaryLocal, id, primaryPassword, m_duplex, VERSION, debug, slot1, slot2, hwType);
+  }
 
 	std::string options = m_conf.getDMRNetworkOptions();
 	if (!options.empty()) {

@@ -126,10 +126,15 @@ public:
 
   // The DMR Network section
   bool         getDMRNetworkEnabled() const;
-  std::string  getDMRNetworkAddress() const;
-  unsigned int getDMRNetworkPort() const;
-  unsigned int getDMRNetworkLocal() const;
-  std::string  getDMRNetworkPassword() const;
+  bool         getDMRNetworkFailover() const;
+  std::string  getDMRNetworkPrimaryAddress() const;
+  unsigned int getDMRNetworkPrimaryPort() const;
+  unsigned int getDMRNetworkPrimaryLocal() const;
+  std::string  getDMRNetworkPrimaryPassword() const;
+  std::string  getDMRNetworkSecondaryAddress() const;
+  unsigned int getDMRNetworkSecondaryPort() const;
+  unsigned int getDMRNetworkSecondaryLocal() const;
+  std::string  getDMRNetworkSecondaryPassword() const;
   std::string  getDMRNetworkOptions() const;
   bool         getDMRNetworkDebug() const;
   unsigned int getDMRNetworkJitter() const;
@@ -273,10 +278,15 @@ private:
   bool         m_dstarNetworkDebug;
 
   bool         m_dmrNetworkEnabled;
-  std::string  m_dmrNetworkAddress;
-  unsigned int m_dmrNetworkPort;
-  unsigned int m_dmrNetworkLocal;
-  std::string  m_dmrNetworkPassword;
+  bool         m_dmrNetworkFailover;
+  std::string  m_dmrNetworkPrimaryAddress;
+  unsigned int m_dmrNetworkPrimaryPort;
+  unsigned int m_dmrNetworkPrimaryLocal;
+  std::string  m_dmrNetworkPrimaryPassword;
+  std::string  m_dmrNetworkSecondaryAddress;
+  unsigned int m_dmrNetworkSecondaryPort;
+  unsigned int m_dmrNetworkSecondaryLocal;
+  std::string  m_dmrNetworkSecondaryPassword;
   std::string  m_dmrNetworkOptions;
   bool         m_dmrNetworkDebug;
   unsigned int m_dmrNetworkJitter;

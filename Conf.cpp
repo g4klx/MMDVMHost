@@ -125,10 +125,15 @@ m_dstarGatewayPort(0U),
 m_dstarLocalPort(0U),
 m_dstarNetworkDebug(false),
 m_dmrNetworkEnabled(false),
-m_dmrNetworkAddress(),
-m_dmrNetworkPort(0U),
-m_dmrNetworkLocal(0U),
-m_dmrNetworkPassword(),
+m_dmrNetworkFailover(false),
+m_dmrNetworkPrimaryAddress(),
+m_dmrNetworkPrimaryPort(0U),
+m_dmrNetworkPrimaryLocal(0U),
+m_dmrNetworkPrimaryPassword(),
+m_dmrNetworkSecondaryAddress(),
+m_dmrNetworkSecondaryPort(0U),
+m_dmrNetworkSecondaryLocal(0U),
+m_dmrNetworkSecondaryPassword(),
 m_dmrNetworkOptions(),
 m_dmrNetworkDebug(false),
 m_dmrNetworkJitter(300U),
@@ -460,15 +465,25 @@ bool CConf::read()
 	} else if (section == SECTION_DMR_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dmrNetworkEnabled = ::atoi(value) == 1;
-		else if (::strcmp(key, "Address") == 0)
-			m_dmrNetworkAddress = value;
-		else if (::strcmp(key, "Port") == 0)
-			m_dmrNetworkPort = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "Local") == 0)
-			m_dmrNetworkLocal = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "Password") == 0)
-			m_dmrNetworkPassword = value;
-		else if (::strcmp(key, "Options") == 0)
+    else if (::strcmp(key, "Failover") == 0)
+      m_dmrNetworkFailover = ::atoi(value) == 1;
+    else if (::strcmp(key, "Address") == 0 || ::strcmp(key, "PrimaryAddress") == 0)
+			m_dmrNetworkPrimaryAddress = value;
+    else if (::strcmp(key, "Port") == 0 || ::strcmp(key, "PrimaryPort") == 0)
+			m_dmrNetworkPrimaryPort = (unsigned int)::atoi(value);
+    else if (::strcmp(key, "Local") == 0 || ::strcmp(key, "PrimaryLocal") == 0)
+			m_dmrNetworkPrimaryLocal = (unsigned int)::atoi(value);
+    else if (::strcmp(key, "Password") == 0 || ::strcmp(key, "PrimaryPassword") == 0)
+			m_dmrNetworkPrimaryPassword = value;
+    else if (::strcmp(key, "SecondaryAddress") == 0)
+      m_dmrNetworkSecondaryAddress = value;
+    else if (::strcmp(key, "SecondaryPort") == 0)
+      m_dmrNetworkSecondaryPort = (unsigned int)::atoi(value);
+    else if (::strcmp(key, "SecondaryLocal") == 0)
+      m_dmrNetworkSecondaryLocal = (unsigned int)::atoi(value);
+    else if (::strcmp(key, "SecondaryPassword") == 0)
+      m_dmrNetworkSecondaryPassword = value;
+    else if (::strcmp(key, "Options") == 0)
 			m_dmrNetworkOptions = value;
 		else if (::strcmp(key, "Debug") == 0)
 			m_dmrNetworkDebug = ::atoi(value) == 1;
@@ -928,24 +943,49 @@ bool CConf::getDMRNetworkEnabled() const
 	return m_dmrNetworkEnabled;
 }
 
-std::string CConf::getDMRNetworkAddress() const
+bool CConf::getDMRNetworkFailover() const
 {
-  return m_dmrNetworkAddress;
+  return m_dmrNetworkFailover;
 }
 
-unsigned int CConf::getDMRNetworkPort() const
+std::string CConf::getDMRNetworkPrimaryAddress() const
 {
-  return m_dmrNetworkPort;
+  return m_dmrNetworkPrimaryAddress;
 }
 
-unsigned int CConf::getDMRNetworkLocal() const
+unsigned int CConf::getDMRNetworkPrimaryPort() const
 {
-	return m_dmrNetworkLocal;
+  return m_dmrNetworkPrimaryPort;
 }
 
-std::string CConf::getDMRNetworkPassword() const
+unsigned int CConf::getDMRNetworkPrimaryLocal() const
 {
-  return m_dmrNetworkPassword;
+  return m_dmrNetworkPrimaryLocal;
+}
+
+std::string CConf::getDMRNetworkPrimaryPassword() const
+{
+  return m_dmrNetworkPrimaryPassword;
+}
+
+std::string CConf::getDMRNetworkSecondaryAddress() const
+{
+  return m_dmrNetworkSecondaryAddress;
+}
+
+unsigned int CConf::getDMRNetworkSecondaryPort() const
+{
+  return m_dmrNetworkSecondaryPort;
+}
+
+unsigned int CConf::getDMRNetworkSecondaryLocal() const
+{
+  return m_dmrNetworkSecondaryLocal;
+}
+
+std::string CConf::getDMRNetworkSecondaryPassword() const
+{
+  return m_dmrNetworkSecondaryPassword;
 }
 
 std::string CConf::getDMRNetworkOptions() const

@@ -170,6 +170,7 @@
     <ClInclude Include="DMRFullLC.h" />
     <ClInclude Include="DMRLC.h" />
     <ClInclude Include="DMRNetwork.h" />
+    <ClInclude Include="DMRNetworkManager.h" />
     <ClInclude Include="DMRShortLC.h" />
     <ClInclude Include="DMRSlot.h" />
     <ClInclude Include="DMRSlotType.h" />
@@ -241,6 +242,7 @@
     <ClCompile Include="DMRLC.cpp" />
     <ClCompile Include="DMRLookup.cpp" />
     <ClCompile Include="DMRNetwork.cpp" />
+    <ClCompile Include="DMRNetworkManager.cpp" />
     <ClCompile Include="DMRShortLC.cpp" />
     <ClCompile Include="DMRSlot.cpp" />
     <ClCompile Include="DMRSlotType.cpp" />
