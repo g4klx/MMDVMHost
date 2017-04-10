@@ -144,7 +144,8 @@ m_ysfEnabled(false),
 m_p25Enabled(false),
 m_cwIdTime(0U),
 m_lookup(NULL),
-m_callsign()
+m_callsign(),
+m_cwCallsign()
 {
 }
 
@@ -286,9 +287,11 @@ int CMMDVMHost::run()
 
 	if (m_conf.getCWIdEnabled()) {
 		unsigned int time = m_conf.getCWIdTime();
+    m_cwCallsign      = m_conf.getCWIdCallsign();
 
 		LogInfo("CW Id Parameters");
 		LogInfo("    Time: %u mins", time);
+    LogInfo("    Callsign: %s", m_cwCallsign.c_str());
 
 		m_cwIdTime = time * 60U;
 
@@ -716,7 +719,7 @@ int CMMDVMHost::run()
 			if (m_mode == MODE_IDLE && !m_modem->hasTX()){
 				LogDebug("sending CW ID");
 				m_display->writeCW();
-				m_modem->sendCWId(m_callsign);
+				m_modem->sendCWId(m_cwCallsign);
 
 				m_cwIdTimer.setTimeout(m_cwIdTime);
 				m_cwIdTimer.start();

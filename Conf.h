@@ -59,6 +59,7 @@ public:
   // The CW ID section
   bool         getCWIdEnabled() const;
   unsigned int getCWIdTime() const;
+  std::string  getCWIdCallsign() const;
 
   // The DMR Id section
   std::string  getDMRIdLookupFile() const;
@@ -214,6 +215,7 @@ private:
 
   bool         m_cwIdEnabled;
   unsigned int m_cwIdTime;
+  std::string  m_cwIdCallsign;
 
   std::string  m_dmrIdLookupFile;
   unsigned int m_dmrIdLookupTime;

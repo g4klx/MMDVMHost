@@ -76,6 +76,7 @@ m_logFilePath(),
 m_logFileRoot(),
 m_cwIdEnabled(false),
 m_cwIdTime(10U),
+m_cwIdCallsign(),
 m_dmrIdLookupFile(),
 m_dmrIdLookupTime(0U),
 m_modemPort(),
@@ -252,7 +253,7 @@ bool CConf::read()
 			// Convert the callsign to upper case
 			for (unsigned int i = 0U; value[i] != 0; i++)
 				value[i] = ::toupper(value[i]);
-			m_callsign = value;
+			m_cwIdCallsign = m_callsign = value;
 		} else if (::strcmp(key, "Timeout") == 0)
 			m_timeout = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Duplex") == 0)
@@ -300,7 +301,14 @@ bool CConf::read()
 			m_cwIdEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "Time") == 0)
 			m_cwIdTime = (unsigned int)::atoi(value);
-	} else if (section == SECTION_DMRID_LOOKUP) {
+    else if (::strcmp(key, "Callsign") == 0) {
+      // Convert the callsign to upper case
+      for (unsigned int i = 0U; value[i] != 0; i++)
+        value[i] = ::toupper(value[i]);
+      m_cwIdCallsign = value;
+    }
+  }
+  else if (section == SECTION_DMRID_LOOKUP) {
 		if (::strcmp(key, "File") == 0)
 			m_dmrIdLookupFile = value;
 		else if (::strcmp(key, "Time") == 0)
@@ -673,6 +681,11 @@ bool CConf::getCWIdEnabled() const
 unsigned int CConf::getCWIdTime() const
 {
 	return m_cwIdTime;
+}
+
+std::string CConf::getCWIdCallsign() const
+{
+  return m_cwIdCallsign;
 }
 
 std::string CConf::getDMRIdLookupFile() const
