@@ -301,14 +301,13 @@ bool CConf::read()
 			m_cwIdEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "Time") == 0)
 			m_cwIdTime = (unsigned int)::atoi(value);
-    else if (::strcmp(key, "Callsign") == 0) {
-      // Convert the callsign to upper case
-      for (unsigned int i = 0U; value[i] != 0; i++)
-        value[i] = ::toupper(value[i]);
-      m_cwIdCallsign = value;
-    }
-  }
-  else if (section == SECTION_DMRID_LOOKUP) {
+		else if (::strcmp(key, "Callsign") == 0) {
+			// Convert the callsign to upper case
+			for (unsigned int i = 0U; value[i] != 0; i++)
+				value[i] = ::toupper(value[i]);
+			m_cwIdCallsign = value;
+		}
+	} else if (section == SECTION_DMRID_LOOKUP) {
 		if (::strcmp(key, "File") == 0)
 			m_dmrIdLookupFile = value;
 		else if (::strcmp(key, "Time") == 0)
@@ -575,22 +574,22 @@ bool CConf::read()
 
 std::string CConf::getCallsign() const
 {
-  return m_callsign;
+	return m_callsign;
 }
 
 unsigned int CConf::getTimeout() const
 {
-  return m_timeout;
+	return m_timeout;
 }
 
 bool CConf::getDuplex() const
 {
-  return m_duplex;
+	return m_duplex;
 }
 
 unsigned int CConf::getRFModeHang() const
 {
-  return m_rfModeHang;
+	return m_rfModeHang;
 }
 
 unsigned int CConf::getNetModeHang() const
@@ -600,7 +599,7 @@ unsigned int CConf::getNetModeHang() const
 
 std::string CConf::getDisplay() const
 {
-  return m_display;
+	return m_display;
 }
 
 bool CConf::getDaemon() const
@@ -665,12 +664,12 @@ unsigned int CConf::getLogFileLevel() const
 
 std::string CConf::getLogFilePath() const
 {
-  return m_logFilePath;
+	return m_logFilePath;
 }
 
 std::string CConf::getLogFileRoot() const
 {
-  return m_logFileRoot;
+	return m_logFileRoot;
 }
 
 bool CConf::getCWIdEnabled() const
@@ -685,7 +684,7 @@ unsigned int CConf::getCWIdTime() const
 
 std::string CConf::getCWIdCallsign() const
 {
-  return m_cwIdCallsign;
+	return m_cwIdCallsign;
 }
 
 std::string CConf::getDMRIdLookupFile() const
@@ -905,17 +904,17 @@ bool CConf::getDStarNetworkEnabled() const
 
 std::string CConf::getDStarGatewayAddress() const
 {
-  return m_dstarGatewayAddress;
+	return m_dstarGatewayAddress;
 }
 
 unsigned int CConf::getDStarGatewayPort() const
 {
-  return m_dstarGatewayPort;
+	return m_dstarGatewayPort;
 }
 
 unsigned int CConf::getDStarLocalPort() const
 {
-  return m_dstarLocalPort;
+	return m_dstarLocalPort;
 }
 
 bool CConf::getDStarNetworkDebug() const
@@ -930,12 +929,12 @@ bool CConf::getDMRNetworkEnabled() const
 
 std::string CConf::getDMRNetworkAddress() const
 {
-  return m_dmrNetworkAddress;
+	return m_dmrNetworkAddress;
 }
 
 unsigned int CConf::getDMRNetworkPort() const
 {
-  return m_dmrNetworkPort;
+	return m_dmrNetworkPort;
 }
 
 unsigned int CConf::getDMRNetworkLocal() const
@@ -945,7 +944,7 @@ unsigned int CConf::getDMRNetworkLocal() const
 
 std::string CConf::getDMRNetworkPassword() const
 {
-  return m_dmrNetworkPassword;
+	return m_dmrNetworkPassword;
 }
 
 std::string CConf::getDMRNetworkOptions() const
@@ -990,12 +989,12 @@ unsigned int CConf::getFusionNetworkMyPort() const
 
 std::string CConf::getFusionNetworkGwyAddress() const
 {
-  return m_fusionNetworkGwyAddress;
+	return m_fusionNetworkGwyAddress;
 }
 
 unsigned int CConf::getFusionNetworkGwyPort() const
 {
-  return m_fusionNetworkGwyPort;
+	return m_fusionNetworkGwyPort;
 }
 
 bool CConf::getFusionNetworkDebug() const
@@ -1035,7 +1034,7 @@ bool CConf::getP25OverrideUID() const
 
 std::string CConf::getTFTSerialPort() const
 {
-  return m_tftSerialPort;
+	return m_tftSerialPort;
 }
 
 unsigned int CConf::getTFTSerialBrightness() const

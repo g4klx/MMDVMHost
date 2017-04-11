@@ -287,11 +287,11 @@ int CMMDVMHost::run()
 
 	if (m_conf.getCWIdEnabled()) {
 		unsigned int time = m_conf.getCWIdTime();
-    m_cwCallsign      = m_conf.getCWIdCallsign();
+		m_cwCallsign      = m_conf.getCWIdCallsign();
 
 		LogInfo("CW Id Parameters");
 		LogInfo("    Time: %u mins", time);
-    LogInfo("    Callsign: %s", m_cwCallsign.c_str());
+		LogInfo("    Callsign: %s", m_cwCallsign.c_str());
 
 		m_cwIdTime = time * 60U;
 
