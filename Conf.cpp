@@ -306,14 +306,13 @@ bool CConf::read()
 			m_cwIdEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "Time") == 0)
 			m_cwIdTime = (unsigned int)::atoi(value);
-    else if (::strcmp(key, "Callsign") == 0) {
-      // Convert the callsign to upper case
-      for (unsigned int i = 0U; value[i] != 0; i++)
-        value[i] = ::toupper(value[i]);
-      m_cwIdCallsign = value;
-    }
-  }
-  else if (section == SECTION_DMRID_LOOKUP) {
+		else if (::strcmp(key, "Callsign") == 0) {
+			// Convert the callsign to upper case
+			for (unsigned int i = 0U; value[i] != 0; i++)
+				value[i] = ::toupper(value[i]);
+			m_cwIdCallsign = value;
+		}
+	} else if (section == SECTION_DMRID_LOOKUP) {
 		if (::strcmp(key, "File") == 0)
 			m_dmrIdLookupFile = value;
 		else if (::strcmp(key, "Time") == 0)
@@ -465,25 +464,25 @@ bool CConf::read()
 	} else if (section == SECTION_DMR_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dmrNetworkEnabled = ::atoi(value) == 1;
-    else if (::strcmp(key, "Failover") == 0)
-      m_dmrNetworkFailover = ::atoi(value) == 1;
-    else if (::strcmp(key, "Address") == 0 || ::strcmp(key, "PrimaryAddress") == 0)
+		else if (::strcmp(key, "Failover") == 0)
+			m_dmrNetworkFailover = ::atoi(value) == 1;
+		else if (::strcmp(key, "Address") == 0 || ::strcmp(key, "PrimaryAddress") == 0)
 			m_dmrNetworkPrimaryAddress = value;
-    else if (::strcmp(key, "Port") == 0 || ::strcmp(key, "PrimaryPort") == 0)
+		else if (::strcmp(key, "Port") == 0 || ::strcmp(key, "PrimaryPort") == 0)
 			m_dmrNetworkPrimaryPort = (unsigned int)::atoi(value);
-    else if (::strcmp(key, "Local") == 0 || ::strcmp(key, "PrimaryLocal") == 0)
+		else if (::strcmp(key, "Local") == 0 || ::strcmp(key, "PrimaryLocal") == 0)
 			m_dmrNetworkPrimaryLocal = (unsigned int)::atoi(value);
-    else if (::strcmp(key, "Password") == 0 || ::strcmp(key, "PrimaryPassword") == 0)
+		else if (::strcmp(key, "Password") == 0 || ::strcmp(key, "PrimaryPassword") == 0)
 			m_dmrNetworkPrimaryPassword = value;
-    else if (::strcmp(key, "SecondaryAddress") == 0)
-      m_dmrNetworkSecondaryAddress = value;
-    else if (::strcmp(key, "SecondaryPort") == 0)
-      m_dmrNetworkSecondaryPort = (unsigned int)::atoi(value);
-    else if (::strcmp(key, "SecondaryLocal") == 0)
-      m_dmrNetworkSecondaryLocal = (unsigned int)::atoi(value);
-    else if (::strcmp(key, "SecondaryPassword") == 0)
-      m_dmrNetworkSecondaryPassword = value;
-    else if (::strcmp(key, "Options") == 0)
+		else if (::strcmp(key, "SecondaryAddress") == 0)
+			m_dmrNetworkSecondaryAddress = value;
+		else if (::strcmp(key, "SecondaryPort") == 0)
+			m_dmrNetworkSecondaryPort = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "SecondaryLocal") == 0)
+			m_dmrNetworkSecondaryLocal = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "SecondaryPassword") == 0)
+			m_dmrNetworkSecondaryPassword = value;
+		else if (::strcmp(key, "Options") == 0)
 			m_dmrNetworkOptions = value;
 		else if (::strcmp(key, "Debug") == 0)
 			m_dmrNetworkDebug = ::atoi(value) == 1;
@@ -590,22 +589,22 @@ bool CConf::read()
 
 std::string CConf::getCallsign() const
 {
-  return m_callsign;
+	return m_callsign;
 }
 
 unsigned int CConf::getTimeout() const
 {
-  return m_timeout;
+	return m_timeout;
 }
 
 bool CConf::getDuplex() const
 {
-  return m_duplex;
+	return m_duplex;
 }
 
 unsigned int CConf::getRFModeHang() const
 {
-  return m_rfModeHang;
+	return m_rfModeHang;
 }
 
 unsigned int CConf::getNetModeHang() const
@@ -615,7 +614,7 @@ unsigned int CConf::getNetModeHang() const
 
 std::string CConf::getDisplay() const
 {
-  return m_display;
+	return m_display;
 }
 
 bool CConf::getDaemon() const
@@ -680,12 +679,12 @@ unsigned int CConf::getLogFileLevel() const
 
 std::string CConf::getLogFilePath() const
 {
-  return m_logFilePath;
+	return m_logFilePath;
 }
 
 std::string CConf::getLogFileRoot() const
 {
-  return m_logFileRoot;
+	return m_logFileRoot;
 }
 
 bool CConf::getCWIdEnabled() const
@@ -700,7 +699,7 @@ unsigned int CConf::getCWIdTime() const
 
 std::string CConf::getCWIdCallsign() const
 {
-  return m_cwIdCallsign;
+	return m_cwIdCallsign;
 }
 
 std::string CConf::getDMRIdLookupFile() const
@@ -920,17 +919,17 @@ bool CConf::getDStarNetworkEnabled() const
 
 std::string CConf::getDStarGatewayAddress() const
 {
-  return m_dstarGatewayAddress;
+	return m_dstarGatewayAddress;
 }
 
 unsigned int CConf::getDStarGatewayPort() const
 {
-  return m_dstarGatewayPort;
+	return m_dstarGatewayPort;
 }
 
 unsigned int CConf::getDStarLocalPort() const
 {
-  return m_dstarLocalPort;
+	return m_dstarLocalPort;
 }
 
 bool CConf::getDStarNetworkDebug() const
@@ -945,47 +944,47 @@ bool CConf::getDMRNetworkEnabled() const
 
 bool CConf::getDMRNetworkFailover() const
 {
-  return m_dmrNetworkFailover;
+	return m_dmrNetworkFailover;
 }
 
 std::string CConf::getDMRNetworkPrimaryAddress() const
 {
-  return m_dmrNetworkPrimaryAddress;
+	return m_dmrNetworkPrimaryAddress;
 }
 
 unsigned int CConf::getDMRNetworkPrimaryPort() const
 {
-  return m_dmrNetworkPrimaryPort;
+	return m_dmrNetworkPrimaryPort;
 }
 
 unsigned int CConf::getDMRNetworkPrimaryLocal() const
 {
-  return m_dmrNetworkPrimaryLocal;
+	return m_dmrNetworkPrimaryLocal;
 }
 
 std::string CConf::getDMRNetworkPrimaryPassword() const
 {
-  return m_dmrNetworkPrimaryPassword;
+	return m_dmrNetworkPrimaryPassword;
 }
 
 std::string CConf::getDMRNetworkSecondaryAddress() const
 {
-  return m_dmrNetworkSecondaryAddress;
+	return m_dmrNetworkSecondaryAddress;
 }
 
 unsigned int CConf::getDMRNetworkSecondaryPort() const
 {
-  return m_dmrNetworkSecondaryPort;
+	return m_dmrNetworkSecondaryPort;
 }
 
 unsigned int CConf::getDMRNetworkSecondaryLocal() const
 {
-  return m_dmrNetworkSecondaryLocal;
+	return m_dmrNetworkSecondaryLocal;
 }
 
 std::string CConf::getDMRNetworkSecondaryPassword() const
 {
-  return m_dmrNetworkSecondaryPassword;
+	return m_dmrNetworkSecondaryPassword;
 }
 
 std::string CConf::getDMRNetworkOptions() const
@@ -1030,12 +1029,12 @@ unsigned int CConf::getFusionNetworkMyPort() const
 
 std::string CConf::getFusionNetworkGwyAddress() const
 {
-  return m_fusionNetworkGwyAddress;
+	return m_fusionNetworkGwyAddress;
 }
 
 unsigned int CConf::getFusionNetworkGwyPort() const
 {
-  return m_fusionNetworkGwyPort;
+	return m_fusionNetworkGwyPort;
 }
 
 bool CConf::getFusionNetworkDebug() const
@@ -1075,7 +1074,7 @@ bool CConf::getP25OverrideUID() const
 
 std::string CConf::getTFTSerialPort() const
 {
-  return m_tftSerialPort;
+	return m_tftSerialPort;
 }
 
 unsigned int CConf::getTFTSerialBrightness() const
