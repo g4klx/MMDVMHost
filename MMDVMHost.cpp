@@ -144,7 +144,8 @@ m_ysfEnabled(false),
 m_p25Enabled(false),
 m_cwIdTime(0U),
 m_lookup(NULL),
-m_callsign()
+m_callsign(),
+m_cwCallsign()
 {
 }
 
@@ -286,9 +287,11 @@ int CMMDVMHost::run()
 
 	if (m_conf.getCWIdEnabled()) {
 		unsigned int time = m_conf.getCWIdTime();
+		m_cwCallsign      = m_conf.getCWIdCallsign();
 
 		LogInfo("CW Id Parameters");
 		LogInfo("    Time: %u mins", time);
+		LogInfo("    Callsign: %s", m_cwCallsign.c_str());
 
 		m_cwIdTime = time * 60U;
 
@@ -716,7 +719,7 @@ int CMMDVMHost::run()
 			if (m_mode == MODE_IDLE && !m_modem->hasTX()){
 				LogDebug("sending CW ID");
 				m_display->writeCW();
-				m_modem->sendCWId(m_callsign);
+				m_modem->sendCWId(m_cwCallsign);
 
 				m_cwIdTimer.setTimeout(m_cwIdTime);
 				m_cwIdTimer.start();
@@ -807,7 +810,6 @@ bool CMMDVMHost::createModem()
 	bool lowDeviation         = m_conf.getFusionLowDeviation();
 	unsigned int rxFrequency  = m_conf.getRxFrequency();
 	unsigned int txFrequency  = m_conf.getTxFrequency();
-	std::string samplesDir    = m_conf.getModemSamplesDir();
 
 	LogInfo("Modem Parameters");
 	LogInfo("    Port: %s", port.c_str());
@@ -825,7 +827,7 @@ bool CMMDVMHost::createModem()
 	LogInfo("    RX Frequency: %uHz", rxFrequency);
 	LogInfo("    TX Frequency: %uHz", txFrequency);
 
-	m_modem = new CModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, samplesDir, debug);
+	m_modem = new CModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, debug);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled);
 	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel);
 	m_modem->setRFParams(rxFrequency, txFrequency);

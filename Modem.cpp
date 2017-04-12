@@ -72,8 +72,6 @@ const unsigned char MMDVM_NAK         = 0x7FU;
 
 const unsigned char MMDVM_SERIAL      = 0x80U;
 
-const unsigned char MMDVM_SAMPLES     = 0xF0U;
-
 const unsigned char MMDVM_DEBUG1      = 0xF1U;
 const unsigned char MMDVM_DEBUG2      = 0xF2U;
 const unsigned char MMDVM_DEBUG3      = 0xF3U;
@@ -85,7 +83,7 @@ const unsigned int MAX_RESPONSES = 30U;
 const unsigned int BUFFER_LENGTH = 2000U;
 
 
-CModem::CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, const std::string& samplesDir, bool debug) :
+CModem::CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool debug) :
 m_port(port),
 m_dmrColorCode(0U),
 m_ysfLoDev(false),
@@ -101,7 +99,6 @@ m_dstarTXLevel(0U),
 m_dmrTXLevel(0U),
 m_ysfTXLevel(0U),
 m_p25TXLevel(0U),
-m_samplesDir(samplesDir),
 m_debug(debug),
 m_rxFrequency(0U),
 m_txFrequency(0U),
@@ -478,10 +475,6 @@ void CModem::clock(unsigned int ms)
 			case MMDVM_DEBUG4:
 			case MMDVM_DEBUG5:
 				printDebug();
-				break;
-
-			case MMDVM_SAMPLES:
-				dumpSamples();
 				break;
 
 			default:
@@ -1300,51 +1293,4 @@ void CModem::printDebug()
 		short val4 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
 		LogMessage("Debug: %.*s %d %d %d %d", m_length - 11U, m_buffer + 3U, val1, val2, val3, val4);
 	}
-}
-
-void CModem::dumpSamples()
-{
-	if (m_samplesDir.empty())
-		m_samplesDir = ".";
-
-	time_t now;
-	::time(&now);
-
-	struct tm* tm = ::localtime(&now);
-
-	const char* mode = NULL;
-	switch (m_buffer[5U]) {
-	case MODE_DSTAR:
-		mode = "DStar";
-		break;
-	case MODE_DMR:
-		mode = "DMR";
-		break;
-	case MODE_P25:
-		mode = "P25";
-		break;
-	case MODE_YSF:
-		mode = "YSF";
-		break;
-	default:
-		LogWarning("Unknown protocol passed to samples dump - %u", m_buffer[5U]);
-		return;
-	}
-
-	char filename[150U];
-#if defined(_WIN32) || defined(_WIN64)
-	::sprintf(filename, "%s\\Samples-%s-%04d%02d%02d.dat", m_samplesDir.c_str(), mode, tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
-#else
-	::sprintf(filename, "%s/Samples-%s-%04d%02d%02d.dat", m_samplesDir.c_str(), mode, tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
-#endif
-
-	FILE* fp = ::fopen(filename, "a+b");
-	if (fp == NULL) {
-		LogWarning("Unable to open samples file for writing - %s", filename);
-		return;
-	}
-
-	::fwrite(m_buffer + 6U, 1U, m_length - 6U, fp);
-
-	::fclose(fp);
 }

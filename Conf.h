@@ -59,6 +59,7 @@ public:
   // The CW ID section
   bool         getCWIdEnabled() const;
   unsigned int getCWIdTime() const;
+  std::string  getCWIdCallsign() const;
 
   // The DMR Id section
   std::string  getDMRIdLookupFile() const;
@@ -78,7 +79,6 @@ public:
   unsigned int getModemYSFTXLevel() const;
   unsigned int getModemP25TXLevel() const;
   std::string  getModemRSSIMappingFile() const;
-  std::string  getModemSamplesDir() const;
   bool         getModemDebug() const;
 
   // The UMP section
@@ -215,6 +215,7 @@ private:
 
   bool         m_cwIdEnabled;
   unsigned int m_cwIdTime;
+  std::string  m_cwIdCallsign;
 
   std::string  m_dmrIdLookupFile;
   unsigned int m_dmrIdLookupTime;
@@ -232,7 +233,6 @@ private:
   unsigned int m_modemYSFTXLevel;
   unsigned int m_modemP25TXLevel;
   std::string  m_modemRSSIMappingFile;
-  std::string  m_modemSamplesDir;
   bool         m_modemDebug;
 
   bool         m_umpEnabled;
