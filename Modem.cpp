@@ -83,7 +83,7 @@ const unsigned int MAX_RESPONSES = 30U;
 const unsigned int BUFFER_LENGTH = 2000U;
 
 
-CModem::CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool debug) :
+CModem::CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool trace, bool debug) :
 m_port(port),
 m_dmrColorCode(0U),
 m_ysfLoDev(false),
@@ -99,6 +99,7 @@ m_dstarTXLevel(0U),
 m_dmrTXLevel(0U),
 m_ysfTXLevel(0U),
 m_p25TXLevel(0U),
+m_trace(trace),
 m_debug(debug),
 m_rxFrequency(0U),
 m_txFrequency(0U),
@@ -248,7 +249,7 @@ void CModem::clock(unsigned int ms)
 		// type == RTM_OK
 		switch (m_buffer[2U]) {
 			case MMDVM_DSTAR_HEADER: {
-					if (m_debug)
+					if (m_trace)
 						CUtils::dump(1U, "RX D-Star Header", m_buffer, m_length);
 
 					unsigned char data = m_length - 2U;
@@ -262,7 +263,7 @@ void CModem::clock(unsigned int ms)
 				break;
 
 			case MMDVM_DSTAR_DATA: {
-					if (m_debug)
+					if (m_trace)
 						CUtils::dump(1U, "RX D-Star Data", m_buffer, m_length);
 
 					unsigned char data = m_length - 2U;
@@ -276,7 +277,7 @@ void CModem::clock(unsigned int ms)
 				break;
 
 			case MMDVM_DSTAR_LOST: {
-					if (m_debug)
+					if (m_trace)
 						CUtils::dump(1U, "RX D-Star Lost", m_buffer, m_length);
 
 					unsigned char data = 1U;
@@ -288,7 +289,7 @@ void CModem::clock(unsigned int ms)
 				break;
 
 			case MMDVM_DSTAR_EOT: {
-					if (m_debug)
+					if (m_trace)
 						CUtils::dump(1U, "RX D-Star EOT", m_buffer, m_length);
 
 					unsigned char data = 1U;
@@ -300,7 +301,7 @@ void CModem::clock(unsigned int ms)
 				break;
 
 			case MMDVM_DMR_DATA1: {
-					if (m_debug)
+					if (m_trace)
 						CUtils::dump(1U, "RX DMR Data 1", m_buffer, m_length);
 
 					unsigned char data = m_length - 2U;
@@ -317,7 +318,7 @@ void CModem::clock(unsigned int ms)
 				break;
 
 			case MMDVM_DMR_DATA2: {
-					if (m_debug)
+					if (m_trace)
 						CUtils::dump(1U, "RX DMR Data 2", m_buffer, m_length);
 
 					unsigned char data = m_length - 2U;
@@ -334,7 +335,7 @@ void CModem::clock(unsigned int ms)
 				break;
 
 			case MMDVM_DMR_LOST1: {
-					if (m_debug)
+					if (m_trace)
 						CUtils::dump(1U, "RX DMR Lost 1", m_buffer, m_length);
 
 					unsigned char data = 1U;
@@ -346,7 +347,7 @@ void CModem::clock(unsigned int ms)
 				break;
 
 			case MMDVM_DMR_LOST2: {
-					if (m_debug)
+					if (m_trace)
 						CUtils::dump(1U, "RX DMR Lost 2", m_buffer, m_length);
 
 					unsigned char data = 1U;
@@ -358,7 +359,7 @@ void CModem::clock(unsigned int ms)
 				break;
 
 			case MMDVM_YSF_DATA: {
-					if (m_debug)
+					if (m_trace)
 						CUtils::dump(1U, "RX YSF Data", m_buffer, m_length);
 
 					unsigned char data = m_length - 2U;
@@ -372,7 +373,7 @@ void CModem::clock(unsigned int ms)
 				break;
 
 			case MMDVM_YSF_LOST: {
-					if (m_debug)
+					if (m_trace)
 						CUtils::dump(1U, "RX YSF Lost", m_buffer, m_length);
 
 					unsigned char data = 1U;
@@ -384,7 +385,7 @@ void CModem::clock(unsigned int ms)
 				break;
 
 			case MMDVM_P25_HDR: {
-				if (m_debug)
+				if (m_trace)
 					CUtils::dump(1U, "RX P25 Header", m_buffer, m_length);
 
 				unsigned char data = m_length - 2U;
@@ -398,7 +399,7 @@ void CModem::clock(unsigned int ms)
 			break;
 
 			case MMDVM_P25_LDU: {
-				if (m_debug)
+				if (m_trace)
 					CUtils::dump(1U, "RX P25 LDU", m_buffer, m_length);
 
 				unsigned char data = m_length - 2U;
@@ -412,7 +413,7 @@ void CModem::clock(unsigned int ms)
 			break;
 
 			case MMDVM_P25_LOST: {
-				if (m_debug)
+				if (m_trace)
 					CUtils::dump(1U, "RX P25 Lost", m_buffer, m_length);
 
 				unsigned char data = 1U;
@@ -424,7 +425,7 @@ void CModem::clock(unsigned int ms)
 			break;
 
 			case MMDVM_GET_STATUS: {
-					// if (m_debug)
+					// if (m_trace)
 					//	CUtils::dump(1U, "GET_STATUS", m_buffer, m_length);
 
 					m_tx = (m_buffer[5U] & 0x01U) == 0x01U;
@@ -502,17 +503,17 @@ void CModem::clock(unsigned int ms)
 
 			switch (buffer[3U]) {
 			case MMDVM_DSTAR_HEADER:
-				if (m_debug)
+				if (m_trace)
 					CUtils::dump(1U, "TX D-Star Header", m_buffer, len);
 				m_dstarSpace -= 4U;
 				break;
 			case MMDVM_DSTAR_DATA:
-				if (m_debug)
+				if (m_trace)
 					CUtils::dump(1U, "TX D-Star Data", m_buffer, len);
 				m_dstarSpace -= 1U;
 				break;
 			default:
-				if (m_debug)
+				if (m_trace)
 					CUtils::dump(1U, "TX D-Star EOT", m_buffer, len);
 				m_dstarSpace -= 1U;
 				break;
@@ -531,7 +532,7 @@ void CModem::clock(unsigned int ms)
 		m_txDMRData1.getData(&len, 1U);
 		m_txDMRData1.getData(m_buffer, len);
 
-		if (m_debug)
+		if (m_trace)
 			CUtils::dump(1U, "TX DMR Data 1", m_buffer, len);
 
 		int ret = m_serial.write(m_buffer, len);
@@ -548,7 +549,7 @@ void CModem::clock(unsigned int ms)
 		m_txDMRData2.getData(&len, 1U);
 		m_txDMRData2.getData(m_buffer, len);
 
-		if (m_debug)
+		if (m_trace)
 			CUtils::dump(1U, "TX DMR Data 2", m_buffer, len);
 
 		int ret = m_serial.write(m_buffer, len);
@@ -565,7 +566,7 @@ void CModem::clock(unsigned int ms)
 		m_txYSFData.getData(&len, 1U);
 		m_txYSFData.getData(m_buffer, len);
 
-		if (m_debug)
+		if (m_trace)
 			CUtils::dump(1U, "TX YSF Data", m_buffer, len);
 
 		int ret = m_serial.write(m_buffer, len);
@@ -582,7 +583,7 @@ void CModem::clock(unsigned int ms)
 		m_txP25Data.getData(&len, 1U);
 		m_txP25Data.getData(m_buffer, len);
 
-		if (m_debug) {
+		if (m_trace) {
 			if (m_buffer[2U] == MMDVM_P25_HDR)
 				CUtils::dump(1U, "TX P25 HDR", m_buffer, len);
 			else
@@ -955,6 +956,8 @@ bool CModem::setConfig()
 		buffer[3U] |= 0x04U;
 	if (m_ysfLoDev)
 		buffer[3U] |= 0x08U;
+	if (m_debug)
+		buffer[3U] |= 0x10U;
 	if (!m_duplex)
 		buffer[3U] |= 0x80U;
 
@@ -1272,21 +1275,21 @@ bool CModem::writeDMRShortLC(const unsigned char* lc)
 
 void CModem::printDebug()
 {
-	if (m_buffer[2U] == 0xF1U) {
+	if (m_buffer[2U] == MMDVM_DEBUG1) {
 		LogMessage("Debug: %.*s", m_length - 3U, m_buffer + 3U);
-	} else if (m_buffer[2U] == 0xF2U) {
+	} else if (m_buffer[2U] == MMDVM_DEBUG2) {
 		short val1 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
 		LogMessage("Debug: %.*s %d", m_length - 5U, m_buffer + 3U, val1);
-	} else if (m_buffer[2U] == 0xF3U) {
+	} else if (m_buffer[2U] == MMDVM_DEBUG3) {
 		short val1 = (m_buffer[m_length - 4U] << 8) | m_buffer[m_length - 3U];
 		short val2 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
 		LogMessage("Debug: %.*s %d %d", m_length - 7U, m_buffer + 3U, val1, val2);
-	} else if (m_buffer[2U] == 0xF4U) {
+	} else if (m_buffer[2U] == MMDVM_DEBUG4) {
 		short val1 = (m_buffer[m_length - 6U] << 8) | m_buffer[m_length - 5U];
 		short val2 = (m_buffer[m_length - 4U] << 8) | m_buffer[m_length - 3U];
 		short val3 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
 		LogMessage("Debug: %.*s %d %d %d", m_length - 9U, m_buffer + 3U, val1, val2, val3);
-	} else if (m_buffer[2U] == 0xF5U) {
+	} else if (m_buffer[2U] == MMDVM_DEBUG5) {
 		short val1 = (m_buffer[m_length - 8U] << 8) | m_buffer[m_length - 7U];
 		short val2 = (m_buffer[m_length - 6U] << 8) | m_buffer[m_length - 5U];
 		short val3 = (m_buffer[m_length - 4U] << 8) | m_buffer[m_length - 3U];

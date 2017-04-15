@@ -79,6 +79,7 @@ public:
   unsigned int getModemYSFTXLevel() const;
   unsigned int getModemP25TXLevel() const;
   std::string  getModemRSSIMappingFile() const;
+  bool         getModemTrace() const;
   bool         getModemDebug() const;
 
   // The UMP section
@@ -233,6 +234,7 @@ private:
   unsigned int m_modemYSFTXLevel;
   unsigned int m_modemP25TXLevel;
   std::string  m_modemRSSIMappingFile;
+  bool         m_modemTrace;
   bool         m_modemDebug;
 
   bool         m_umpEnabled;

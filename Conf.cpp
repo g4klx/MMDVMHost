@@ -92,6 +92,7 @@ m_modemDMRTXLevel(50U),
 m_modemYSFTXLevel(50U),
 m_modemP25TXLevel(50U),
 m_modemRSSIMappingFile(),
+m_modemTrace(false),
 m_modemDebug(false),
 m_umpEnabled(false),
 m_umpPort(),
@@ -341,6 +342,8 @@ bool CConf::read()
 			m_modemP25TXLevel = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "RSSIMappingFile") == 0)
 			m_modemRSSIMappingFile = value;
+		else if (::strcmp(key, "Trace") == 0)
+			m_modemTrace = ::atoi(value) == 1;
 		else if (::strcmp(key, "Debug") == 0)
 			m_modemDebug = ::atoi(value) == 1;
 	} else if (section == SECTION_UMP) {
@@ -760,6 +763,11 @@ unsigned int CConf::getModemP25TXLevel() const
 std::string CConf::getModemRSSIMappingFile () const
 {
 	return m_modemRSSIMappingFile;
+}
+
+bool CConf::getModemTrace() const
+{
+	return m_modemTrace;
 }
 
 bool CConf::getModemDebug() const
