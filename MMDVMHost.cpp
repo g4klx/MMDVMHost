@@ -225,6 +225,8 @@ int CMMDVMHost::run()
 			}
 		}
 	}
+#else
+	}
 #endif
 #endif
 
