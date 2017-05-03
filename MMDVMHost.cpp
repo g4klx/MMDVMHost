@@ -66,8 +66,8 @@ static int  m_signal = 0;
 #if !defined(_WIN32) && !defined(_WIN64)
 static void sigHandler(int signum)
 {
-  m_killed = true;
-  m_signal = signum;
+	m_killed = true;
+	m_signal = signum;
 }
 #endif
 
@@ -78,47 +78,47 @@ const char* HEADER4 = "Copyright(C) 2015-2017 by Jonathan Naylor, G4KLX and othe
 
 int main(int argc, char** argv)
 {
-        const char* iniFile = DEFAULT_INI_FILE;
-        if (argc > 1) {
-                for (int currentArg = 1; currentArg < argc; ++currentArg) {
-                        std::string arg = argv[currentArg];
-                        if ((arg == "-v") || (arg == "--version")) {
-                                ::fprintf(stdout, "MMDVMHost version %s git #%.7s\n", VERSION, gitversion);
-                                return 0;
-                        } else if (arg.substr(0,1) == "-") {
-                                ::fprintf(stderr, "Usage: MMDVMHost [-v|--version] [filename]\n");
-                                return 1;
-                        } else {
-                                iniFile = argv[currentArg];
-                        }
-                }
-        }
+	const char* iniFile = DEFAULT_INI_FILE;
+	if (argc > 1) {
+ 		for (int currentArg = 1; currentArg < argc; ++currentArg) {
+			std::string arg = argv[currentArg];
+			if ((arg == "-v") || (arg == "--version")) {
+				::fprintf(stdout, "MMDVMHost version %s git #%.7s\n", VERSION, gitversion);
+				return 0;
+			} else if (arg.substr(0,1) == "-") {
+				::fprintf(stderr, "Usage: MMDVMHost [-v|--version] [filename]\n");
+				return 1;
+			} else {
+				iniFile = argv[currentArg];
+			}
+		}
+	}
 
 #if !defined(_WIN32) && !defined(_WIN64)
-  ::signal(SIGTERM, sigHandler);
-  ::signal(SIGHUP,  sigHandler);
+	::signal(SIGTERM, sigHandler);
+	::signal(SIGHUP,  sigHandler);
 #endif
 
-  int ret = 0;
+	int ret = 0;
 
-  do {
-	  m_signal = 0;
+	do {
+		m_signal = 0;
 
-	  CMMDVMHost* host = new CMMDVMHost(std::string(iniFile));
-	  ret = host->run();
+		CMMDVMHost* host = new CMMDVMHost(std::string(iniFile));
+		ret = host->run();
 
-	  delete host;
+		delete host;
 
-	  if (m_signal == 15)
-		  ::LogInfo("Caught SIGTERM, exiting");
+		if (m_signal == 15)
+			::LogInfo("Caught SIGTERM, exiting");
 
-	  if (m_signal == 1)
-		  ::LogInfo("Caught SIGHUP, restarting");
-  } while (m_signal == 1);
+		if (m_signal == 1)
+			::LogInfo("Caught SIGHUP, restarting");
+	} while (m_signal == 1);
 
-  ::LogFinalise();
+	::LogFinalise();
 
-  return ret;
+	return ret;
 }
 
 CMMDVMHost::CMMDVMHost(const std::string& confFile) :
@@ -173,60 +173,57 @@ int CMMDVMHost::run()
 		// Create new process
 		pid_t pid = ::fork();
 		if (pid == -1) {
-			    ::LogWarning("Couldn't fork() , exiting");
-			    return -1;
-		    }
-		else if (pid != 0)
+			LogWarning("Couldn't fork() , exiting");
+			return -1;
+		} else if (pid != 0) {
 			exit(EXIT_SUCCESS);
+		}
 
 		// Create new session and process group
 		if (::setsid() == -1){
-			    ::LogWarning("Couldn't setsid(), exiting");
-			    return -1;
-		    }
+			LogWarning("Couldn't setsid(), exiting");
+			return -1;
+		}
 
 		// Set the working directory to the root directory
 		if (::chdir("/") == -1){
-			    ::LogWarning("Couldn't cd /, exiting");
-			    return -1;
-		    }
+			LogWarning("Couldn't cd /, exiting");
+			return -1;
+		}
 
 		::close(STDIN_FILENO);
 		::close(STDOUT_FILENO);
 		::close(STDERR_FILENO);
+
 #if !defined(HD44780) && !defined(OLED)
 		//If we are currently root...
 		if (getuid() == 0) {
 			struct passwd* user = ::getpwnam("mmdvm");
 			if (user == NULL) {
-				::LogError("Could not get the mmdvm user, exiting");
+				LogError("Could not get the mmdvm user, exiting");
 				return -1;
 			}
-			
+
 			uid_t mmdvm_uid = user->pw_uid;
-		    gid_t mmdvm_gid = user->pw_gid;
+			gid_t mmdvm_gid = user->pw_gid;
 
-		    //Set user and group ID's to mmdvm:mmdvm
-		    if (setgid(mmdvm_gid) != 0) {
-			    ::LogWarning("Could not set mmdvm GID, exiting");
-			    return -1;
-		    }
+			//Set user and group ID's to mmdvm:mmdvm
+			if (::setgid(mmdvm_gid) != 0) {
+				LogWarning("Could not set mmdvm GID, exiting");
+				return -1;
+			}
 
-			if (setuid(mmdvm_uid) != 0) {
-			    ::LogWarning("Could not set mmdvm UID, exiting");
-			    return -1;
-		    }
-		    
-		    //Double check it worked (AKA Paranoia) 
-		    if (setuid(0) != -1){
-			    ::LogWarning("It's possible to regain root - something is wrong!, exiting");
-			    return -1;
-		    }
-		
+			if (::setuid(mmdvm_uid) != 0) {
+				LogWarning("Could not set mmdvm UID, exiting");
+				return -1;
+			}
+
+			//Double check it worked (AKA Paranoia) 
+			if (::setuid(0) != -1){
+				LogWarning("It's possible to regain root - something is wrong!, exiting");
+				return -1;
+			}
 		}
-	}
-#else
-	::LogWarning("Dropping root permissions in daemon mode is disabled with HD44780 display");
 	}
 #endif
 #endif
