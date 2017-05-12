@@ -947,6 +947,12 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		unsigned int dstId = lc->getDstId();
 		unsigned int srcId = lc->getSrcId();
+		FLCO flco          = lc->getFLCO();
+
+		if (dstId != dmrData.getDstId() || srcId != dmrData.getSrcId() || flco != dmrData.getFLCO())
+			LogWarning("DMR Slot %u, DMRD header doesn't match the DMR RF header: %u->%s%u %u->%s%u", m_slotNo,
+				dmrData.getSrcId(), dmrData.getFLCO() == FLCO_GROUP ? "TG" : "", dmrData.getDstId(),
+				srcId, flco == FLCO_GROUP ? "TG" : "", dstId);
 
 		m_netLC = lc;
 
@@ -1002,18 +1008,18 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		m_netState = RS_NET_AUDIO;
 
-		setShortLC(m_slotNo, dstId, m_netLC->getFLCO(), true);
+		setShortLC(m_slotNo, dstId, flco, true);
 
 		std::string src = m_lookup->find(srcId);
 		std::string dst = m_lookup->find(dstId);
 
-		m_display->writeDMR(m_slotNo, src, m_netLC->getFLCO() == FLCO_GROUP, dst, "N");
+		m_display->writeDMR(m_slotNo, src, flco == FLCO_GROUP, dst, "N");
 
 #if defined(DUMP_DMR)
 		openFile();
 		writeFile(data);
 #endif
-		LogMessage("DMR Slot %u, received network voice header from %s to %s%s", m_slotNo, src.c_str(), m_netLC->getFLCO() == FLCO_GROUP ? "TG " : "", dst.c_str());
+		LogMessage("DMR Slot %u, received network voice header from %s to %s%s", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str());
 	} else if (dataType == DT_VOICE_PI_HEADER) {
 		if (m_netState != RS_NET_AUDIO) {
 			CDMRLC* lc = new CDMRLC(dmrData.getFLCO(), dmrData.getSrcId(), dmrData.getDstId());
