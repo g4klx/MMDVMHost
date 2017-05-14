@@ -126,13 +126,13 @@ bool CDMRDataHeader::put(const unsigned char* bytes)
 		break;
 	}
 
-	if (dpf == DPF_UDT && m_blocks == 0U) {
-		unsigned char format = m_data[1U] & 0x0FU;
-		if (format == UDTF_NMEA) {
-			LogDebug("DMR, fixing broken Tytera MD-390 GPS data block count");
-			m_blocks = 3U;
-		}
-	}
+	//if (dpf == DPF_UDT && m_blocks == 0U) {
+	//	unsigned char format = m_data[1U] & 0x0FU;
+	//	if (format == UDTF_NMEA) {
+	//		LogDebug("DMR, fixing broken Tytera MD-390 GPS data block count");
+	//		m_blocks = 3U;
+	//	}
+	//}
 
 	return true;
 }
