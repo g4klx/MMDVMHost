@@ -1,6 +1,6 @@
 /*
- *	 Copyright (C) 2012 by Ian Wraith
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2012 by Ian Wraith
+ *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -118,7 +118,7 @@ bool CDMRDataHeader::put(const unsigned char* bytes)
 
 	case DPF_UDT:
 		CUtils::dump(1U, "DMR, Unified Data Transport Header", m_data, 12U);
-		m_blocks = m_data[8U] & 0x03U;
+		m_blocks = (m_data[8U] & 0x03U) + 1U;
 		break;
 
 	default:
@@ -126,6 +126,7 @@ bool CDMRDataHeader::put(const unsigned char* bytes)
 		break;
 	}
 
+	// This may not be needed any longer
 	if (dpf == DPF_UDT && m_blocks == 0U) {
 		unsigned char format = m_data[1U] & 0x0FU;
 		if (format == UDTF_NMEA) {
