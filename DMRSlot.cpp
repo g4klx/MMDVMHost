@@ -410,6 +410,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 		} else if (dataType == DT_RATE_12_DATA) {
 			if (m_rfState == RS_RF_DATA)
 				return true;
+			// Tested on RT8 with md380-tools S13.020 5840962 2017-05-15
 			LogMessage("DT_RATE_12_DATA Packet received");
 			
 			char latSign[2];
