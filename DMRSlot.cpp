@@ -432,21 +432,13 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			else
 				strcpy(lonSign,"W");
 			
-
-
 			uint8_t latDeg = ((payload[1U] & 0x1F) << 2) + ((payload[2U] & 0xC0) >> 6);
 			uint8_t latMin = payload[2U] & 0x6F;
 			int32_t latSec = (payload[3U] << 6) + (payload[4U] & 0xFC);
 			uint8_t lonDeg = ((payload[4U] & 0x03) << 6) + ((payload[5U] & 0xFC) >> 2);
 			uint8_t lonMin = ((payload[5U] & 0x03) << 4) + ((payload[6U] & 0xF0) >> 4);
 			uint32_t lonSec = ((payload[6U] & 0x0F) << 8) + (payload[7U] << 2) + ((payload[8U] & 0xA0) >>6);
-		    uint8_t alt = ( ((payload[8U] & 0x3F) << 8 ) + payload[9U]);  
-
-
-			//LogDebug("UTC Hour %d", (payload[8U] & 0x3E) >> 1);
-			//LogDebug("ALT %d", alt);  
-			//LogDebug("UTC Minute (?) %d", ((payload[8U] & 0x01) << 5) + ((payload[9U] & 0xF4) >> 3));
-			//LogDebug("UTC Second (?) %d", (payload[9U] & 0x03)* 10);
+			uint8_t alt = ( ((payload[8U] & 0x3F) << 8 ) + payload[9U]);  
 
 			if ((payload[0U] & 0x10U) >> 4){
 			 	LogDebug("GPS Fix");
