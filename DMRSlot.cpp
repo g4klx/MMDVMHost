@@ -64,6 +64,8 @@ const unsigned char TALKER_ID_BLOCK3 = 0x08U;
 const unsigned int NO_HEADERS_SIMPLEX = 8U;
 const unsigned int NO_HEADERS_DUPLEX  = 3U;
 
+// FixMe. Need somehwere to hold DMR Source ID from previous frame. 
+unsigned int GPSsrcId = 0U;
 // #define	DUMP_DMR
 
 CDMRSlot::CDMRSlot(unsigned int slotNo, unsigned int timeout) :
@@ -352,6 +354,8 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			bool gi = dataHeader.getGI();
 			unsigned int srcId = dataHeader.getSrcId();
 			unsigned int dstId = dataHeader.getDstId();
+			// FixMe: Save Source for use with next 1/2 Rate Frame
+			GPSsrcId = srcId;
 
 			if (!CDMRAccessControl::validateSrcId(srcId)) {
 				LogMessage("DMR Slot %u, RF user %u rejected", m_slotNo, srcId);
@@ -410,9 +414,33 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 		} else if (dataType == DT_RATE_12_DATA) {
 			if (m_rfState == RS_RF_DATA)
 				return true;
+			CDMRDataHeader dataHeader;
 			// Tested on RT8 with md380-tools S13.020 5840962 2017-05-15
 			LogMessage("DT_RATE_12_DATA Packet received");
 			
+			bool gi = dataHeader.getGI();
+			unsigned int srcId = GPSsrcId; // Grabs the Global value... FixMe
+			unsigned int dstId = 272999;   // APRS Destination for Ireland
+			LogDebug("src: %d, dst: %d", srcId, dstId);
+			if (!CDMRAccessControl::validateSrcId(srcId)) {
+				LogMessage("DMR Slot %u, RF user %u rejected", m_slotNo, srcId);
+				return false;
+			}
+
+			if (!CDMRAccessControl::validateTGId(m_slotNo, gi, dstId)) {
+				LogMessage("DMR Slot %u, RF user %u rejected for using TG %u", m_slotNo, srcId, dstId);
+				return false;
+			}
+
+			m_rfFrames = dataHeader.getBlocks();
+
+			m_rfDataHeader = dataHeader;
+
+			m_rfSeqNo  = 0U;
+
+			m_rfLC = new CDMRLC(gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
+
+
 			char latSign[2];
 			char lonSign[2];
 			CBPTC19696 bptc;
@@ -442,8 +470,23 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			if ((payload[0U] & 0x10U) >> 4){
 			 	LogDebug("GPS Fix");
-			 	LogDebug("Position: %02d %02d.%03d%s, %03d %02d.%03d%s at Alt of %dm", latDeg, latMin, latSec,latSign,
-		    							                      lonDeg, lonMin, lonSec, lonSign, alt);
+			 	LogDebug("Position: %02d %02d.%03d%s, %03d %02d.%03d%s at Alt of %dm",	latDeg, latMin, latSec,latSign,
+										                      							lonDeg, lonMin, lonSec, lonSign, alt);
+				
+				// Winging it completely! All I can say is it doesn't crash! 
+				// Does BM even accept this type of data frame?
+				bptc.encode(payload, data + 2U);
+				CDMRSlotType slotType;
+				slotType.putData(data + 2U);
+				slotType.setColorCode(m_colorCode);
+				slotType.getData(data + 2U);
+				// Convert the Data Sync to be from the BS or MS as needed
+				CSync::addDMRDataSync(data + 2U, m_duplex);
+				data[0U] = TAG_EOT;
+
+				data[1U] = 0x00U;
+
+				writeNetworkRF(data, dataType);
 			}
 			else
 				LogDebug("No GPS Fix");
