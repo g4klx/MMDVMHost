@@ -126,6 +126,8 @@ bool CDMRDataHeader::put(const unsigned char* bytes)
 		break;
 	}
 
+	// Any Value other than 0 generates an "Invalid CRC-16 checksum" on BM Servers.
+	// Tested on RT8 with md380-tools S13.020 5840962 2017-05-15
 	//if (dpf == DPF_UDT && m_blocks == 0U) {
 	//	unsigned char format = m_data[1U] & 0x0FU;
 	//	if (format == UDTF_NMEA) {
