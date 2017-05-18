@@ -597,6 +597,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					// ::sprintf(text, "DMR Slot %u, Embedded LC", m_slotNo);
 					// CUtils::dump(1U, text, data, 9U);
 					break;
+
 				case FLCO_GPS_INFO:
 					if (m_dumpTAData) {
 						::sprintf(text, "DMR Slot %u, Embedded GPS Info", m_slotNo);
@@ -605,58 +606,63 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					if (m_network != NULL)
 						m_network->writePosition(m_rfLC->getSrcId(), data);
 					break;
+
 				case FLCO_TALKER_ALIAS_HEADER:
+					if (m_network != NULL)
+						m_network->writeTalkerAlias(m_rfLC->getSrcId(), 0U, data);
+
 					if (!(m_rfTalkerId & TALKER_ID_HEADER)) {
 						if (m_dumpTAData) {
 							::sprintf(text, "DMR Slot %u, Embedded Talker Alias Header", m_slotNo);
 							CUtils::dump(2U, text, data, 9U);
 						}
 
-						if (m_network != NULL)
-							m_network->writeTalkerAlias(m_rfLC->getSrcId(), 0U, data);
-
 						m_rfTalkerId |= TALKER_ID_HEADER;
 					}
 					break;
+
 				case FLCO_TALKER_ALIAS_BLOCK1:
+					if (m_network != NULL)
+						m_network->writeTalkerAlias(m_rfLC->getSrcId(), 1U, data);
+
 					if (!(m_rfTalkerId & TALKER_ID_BLOCK1)) {
 						if (m_dumpTAData) {
 							::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 1", m_slotNo);
 							CUtils::dump(2U, text, data, 9U);
 						}
 
-						if (m_network != NULL)
-							m_network->writeTalkerAlias(m_rfLC->getSrcId(), 1U, data);
-
 						m_rfTalkerId |= TALKER_ID_BLOCK1;
 					}
 					break;
+
 				case FLCO_TALKER_ALIAS_BLOCK2:
+					if (m_network != NULL)
+						m_network->writeTalkerAlias(m_rfLC->getSrcId(), 2U, data);
+
 					if (!(m_rfTalkerId & TALKER_ID_BLOCK2)) {
 						if (m_dumpTAData) {
 							::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 2", m_slotNo);
 							CUtils::dump(2U, text, data, 9U);
 						}
 
-						if (m_network != NULL)
-							m_network->writeTalkerAlias(m_rfLC->getSrcId(), 2U, data);
-
 						m_rfTalkerId |= TALKER_ID_BLOCK2;
 					}
 					break;
+
 				case FLCO_TALKER_ALIAS_BLOCK3:
+					if (m_network != NULL)
+						m_network->writeTalkerAlias(m_rfLC->getSrcId(), 3U, data);
+
 					if (!(m_rfTalkerId & TALKER_ID_BLOCK3)) {
 						if (m_dumpTAData) {
 							::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 3", m_slotNo);
 							CUtils::dump(2U, text, data, 9U);
 						}
 
-						if (m_network != NULL)
-							m_network->writeTalkerAlias(m_rfLC->getSrcId(), 3U, data);
-
 						m_rfTalkerId |= TALKER_ID_BLOCK3;
 					}
 					break;
+
 				default:
 					::sprintf(text, "DMR Slot %u, Unknown Embedded Data", m_slotNo);
 					CUtils::dump(1U, text, data, 9U);
