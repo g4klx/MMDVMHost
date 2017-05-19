@@ -916,7 +916,7 @@ bool CModem::readVersion()
 			}
 		}
 
-		CThread::sleep(1000U);
+		CThread::sleep(1500U);
 	}
 
 	LogError("Unable to read the firmware version after six attempts");
