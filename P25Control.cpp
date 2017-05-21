@@ -177,7 +177,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 	if (duid == P25_DUID_LDU1) {
 		if (m_rfState == RS_RF_LISTENING) {
 			m_rfData.reset();
-			bool ret = m_rfData.decodeLDU1(data + 2U, m_network, m_uidOverride);
+			bool ret = m_rfData.decodeLDU1(data + 2U, m_network != NULL, m_uidOverride);
 			if (!ret) {
 				m_lastDUID = duid;
 				return false;
