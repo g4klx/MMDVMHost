@@ -12,6 +12,7 @@
  */
 
 #include "DMRAccessControl.h"
+#include "DMRDataHeader.h"
 #include "DMRSlotType.h"
 #include "DMRShortLC.h"
 #include "DMRTrellis.h"
@@ -83,8 +84,6 @@ m_netEmbeddedWriteN(1U),
 m_netTalkerId(TALKER_ID_NONE),
 m_rfLC(NULL),
 m_netLC(NULL),
-m_rfDataHeader(),
-m_netDataHeader(),
 m_rfSeqNo(0U),
 m_netSeqNo(0U),
 m_rfN(0U),
@@ -364,8 +363,6 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			}
 
 			m_rfFrames = dataHeader.getBlocks();
-
-			m_rfDataHeader = dataHeader;
 
 			m_rfSeqNo  = 0U;
 
@@ -1178,8 +1175,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			LogMessage("DMR Slot %u, unable to decode the network data header", m_slotNo);
 			return;
 		}
-
-		m_netDataHeader = dataHeader;
 
 		bool gi = dataHeader.getGI();
 		unsigned int srcId = dataHeader.getSrcId();

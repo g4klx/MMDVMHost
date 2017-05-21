@@ -21,7 +21,6 @@
 
 #include "RSSIInterpolator.h"
 #include "DMREmbeddedData.h"
-#include "DMRDataHeader.h"
 #include "DMRNetwork.h"
 #include "RingBuffer.h"
 #include "StopWatch.h"
@@ -69,8 +68,6 @@ private:
 	unsigned char              m_netTalkerId;
 	CDMRLC*                    m_rfLC;
 	CDMRLC*                    m_netLC;
-	CDMRDataHeader             m_rfDataHeader;
-	CDMRDataHeader             m_netDataHeader;
 	unsigned char              m_rfSeqNo;
 	unsigned char              m_netSeqNo;
 	unsigned char              m_rfN;
