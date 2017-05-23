@@ -278,6 +278,48 @@ bool CDMRNetwork::write(const CDMRData& data)
 	return true;
 }
 
+bool CDMRNetwork::writePosition(unsigned int id, const unsigned char* data)
+{
+	if (m_status != RUNNING)
+		return false;
+
+	unsigned char buffer[20U];
+
+	::memcpy(buffer + 0U, "DMRG", 4U);
+
+	::memcpy(buffer + 4U, m_id, 4U);
+
+	buffer[8U]  = id >> 16;
+	buffer[9U]  = id >> 8;
+	buffer[10U] = id >> 0;
+
+	::memcpy(buffer + 11U, data + 2U, 7U);
+
+	return write(buffer, 18U);
+}
+
+bool CDMRNetwork::writeTalkerAlias(unsigned int id, unsigned char type, const unsigned char* data)
+{
+	if (m_status != RUNNING)
+		return false;
+
+	unsigned char buffer[20U];
+
+	::memcpy(buffer + 0U, "DMRA", 4U);
+
+	::memcpy(buffer + 4U, m_id, 4U);
+
+	buffer[8U]  = id >> 16;
+	buffer[9U]  = id >> 8;
+	buffer[10U] = id >> 0;
+
+	buffer[11U] = type;
+
+	::memcpy(buffer + 12U, data + 2U, 7U);
+
+	return write(buffer, 19U);
+}
+
 void CDMRNetwork::close()
 {
 	LogMessage("DMR, Closing DMR Network");

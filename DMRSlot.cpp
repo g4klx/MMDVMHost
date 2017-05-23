@@ -12,6 +12,7 @@
  */
 
 #include "DMRAccessControl.h"
+#include "DMRDataHeader.h"
 #include "DMRSlotType.h"
 #include "DMRShortLC.h"
 #include "DMRTrellis.h"
@@ -83,8 +84,6 @@ m_netEmbeddedWriteN(1U),
 m_netTalkerId(TALKER_ID_NONE),
 m_rfLC(NULL),
 m_netLC(NULL),
-m_rfDataHeader(),
-m_netDataHeader(),
 m_rfSeqNo(0U),
 m_netSeqNo(0U),
 m_rfN(0U),
@@ -365,8 +364,6 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			m_rfFrames = dataHeader.getBlocks();
 
-			m_rfDataHeader = dataHeader;
-
 			m_rfSeqNo  = 0U;
 
 			m_rfLC = new CDMRLC(gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
@@ -597,13 +594,20 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					// ::sprintf(text, "DMR Slot %u, Embedded LC", m_slotNo);
 					// CUtils::dump(1U, text, data, 9U);
 					break;
+
 				case FLCO_GPS_INFO:
 					if (m_dumpTAData) {
 						::sprintf(text, "DMR Slot %u, Embedded GPS Info", m_slotNo);
 						CUtils::dump(2U, text, data, 9U);
 					}
+					if (m_network != NULL)
+						m_network->writePosition(m_rfLC->getSrcId(), data);
 					break;
+
 				case FLCO_TALKER_ALIAS_HEADER:
+					if (m_network != NULL)
+						m_network->writeTalkerAlias(m_rfLC->getSrcId(), 0U, data);
+
 					if (!(m_rfTalkerId & TALKER_ID_HEADER)) {
 						if (m_dumpTAData) {
 							::sprintf(text, "DMR Slot %u, Embedded Talker Alias Header", m_slotNo);
@@ -613,7 +617,11 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 						m_rfTalkerId |= TALKER_ID_HEADER;
 					}
 					break;
+
 				case FLCO_TALKER_ALIAS_BLOCK1:
+					if (m_network != NULL)
+						m_network->writeTalkerAlias(m_rfLC->getSrcId(), 1U, data);
+
 					if (!(m_rfTalkerId & TALKER_ID_BLOCK1)) {
 						if (m_dumpTAData) {
 							::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 1", m_slotNo);
@@ -623,7 +631,11 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 						m_rfTalkerId |= TALKER_ID_BLOCK1;
 					}
 					break;
+
 				case FLCO_TALKER_ALIAS_BLOCK2:
+					if (m_network != NULL)
+						m_network->writeTalkerAlias(m_rfLC->getSrcId(), 2U, data);
+
 					if (!(m_rfTalkerId & TALKER_ID_BLOCK2)) {
 						if (m_dumpTAData) {
 							::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 2", m_slotNo);
@@ -633,7 +645,11 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 						m_rfTalkerId |= TALKER_ID_BLOCK2;
 					}
 					break;
+
 				case FLCO_TALKER_ALIAS_BLOCK3:
+					if (m_network != NULL)
+						m_network->writeTalkerAlias(m_rfLC->getSrcId(), 3U, data);
+
 					if (!(m_rfTalkerId & TALKER_ID_BLOCK3)) {
 						if (m_dumpTAData) {
 							::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 3", m_slotNo);
@@ -643,6 +659,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 						m_rfTalkerId |= TALKER_ID_BLOCK3;
 					}
 					break;
+
 				default:
 					::sprintf(text, "DMR Slot %u, Unknown Embedded Data", m_slotNo);
 					CUtils::dump(1U, text, data, 9U);
@@ -947,6 +964,12 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		unsigned int dstId = lc->getDstId();
 		unsigned int srcId = lc->getSrcId();
+		FLCO flco          = lc->getFLCO();
+
+		if (dstId != dmrData.getDstId() || srcId != dmrData.getSrcId() || flco != dmrData.getFLCO())
+			LogWarning("DMR Slot %u, DMRD header doesn't match the DMR RF header: %u->%s%u %u->%s%u", m_slotNo,
+				dmrData.getSrcId(), dmrData.getFLCO() == FLCO_GROUP ? "TG" : "", dmrData.getDstId(),
+				srcId, flco == FLCO_GROUP ? "TG" : "", dstId);
 
 		m_netLC = lc;
 
@@ -1002,18 +1025,18 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		m_netState = RS_NET_AUDIO;
 
-		setShortLC(m_slotNo, dstId, m_netLC->getFLCO(), true);
+		setShortLC(m_slotNo, dstId, flco, true);
 
 		std::string src = m_lookup->find(srcId);
 		std::string dst = m_lookup->find(dstId);
 
-		m_display->writeDMR(m_slotNo, src, m_netLC->getFLCO() == FLCO_GROUP, dst, "N");
+		m_display->writeDMR(m_slotNo, src, flco == FLCO_GROUP, dst, "N");
 
 #if defined(DUMP_DMR)
 		openFile();
 		writeFile(data);
 #endif
-		LogMessage("DMR Slot %u, received network voice header from %s to %s%s", m_slotNo, src.c_str(), m_netLC->getFLCO() == FLCO_GROUP ? "TG " : "", dst.c_str());
+		LogMessage("DMR Slot %u, received network voice header from %s to %s%s", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str());
 	} else if (dataType == DT_VOICE_PI_HEADER) {
 		if (m_netState != RS_NET_AUDIO) {
 			CDMRLC* lc = new CDMRLC(dmrData.getFLCO(), dmrData.getSrcId(), dmrData.getDstId());
@@ -1152,8 +1175,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			LogMessage("DMR Slot %u, unable to decode the network data header", m_slotNo);
 			return;
 		}
-
-		m_netDataHeader = dataHeader;
 
 		bool gi = dataHeader.getGI();
 		unsigned int srcId = dataHeader.getSrcId();
