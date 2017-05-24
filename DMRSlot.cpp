@@ -419,7 +419,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			LogMessage("DT_RATE_12_DATA Packet received");
 			
 			bool gi = dataHeader.getGI();
-			unsigned int srcId = GPSsrcId; // Grabs the Global value... FixMe
+			unsigned int srcId = 272999;
 			unsigned int dstId = 272999;   // APRS Destination for Ireland
 			LogDebug("src: %d, dst: %d", srcId, dstId);
 			if (!CDMRAccessControl::validateSrcId(srcId)) {
@@ -473,8 +473,10 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			 	LogDebug("Position: %02d %02d.%03d%s, %03d %02d.%03d%s at Alt of %dm",	latDeg, latMin, latSec,latSign,
 										                      							lonDeg, lonMin, lonSec, lonSign, alt);
 				
+				
 				// Winging it completely! All I can say is it doesn't crash! 
 				// Does BM even accept this type of data frame?
+				
 				bptc.encode(payload, data + 2U);
 				CDMRSlotType slotType;
 				slotType.putData(data + 2U);
@@ -486,7 +488,9 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 				data[1U] = 0x00U;
 
+
 				writeNetworkRF(data, dataType);
+				CUtils::dump(1U, "Data Dump", data, 12U);
 			}
 			else
 				LogDebug("No GPS Fix");
