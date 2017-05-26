@@ -421,17 +421,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			bool gi = dataHeader.getGI();
 			unsigned int srcId = 272999;
 			unsigned int dstId = 272999;   // APRS Destination for Ireland
-			LogDebug("src: %d, dst: %d", srcId, dstId);
-			if (!CDMRAccessControl::validateSrcId(srcId)) {
-				LogMessage("DMR Slot %u, RF user %u rejected", m_slotNo, srcId);
-				return false;
-			}
-
-			if (!CDMRAccessControl::validateTGId(m_slotNo, gi, dstId)) {
-				LogMessage("DMR Slot %u, RF user %u rejected for using TG %u", m_slotNo, srcId, dstId);
-				return false;
-			}
-
+			
 			m_rfFrames = dataHeader.getBlocks();
 
 			m_rfDataHeader = dataHeader;
@@ -440,43 +430,14 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			m_rfLC = new CDMRLC(gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
 
-
-			char latSign[2];
-			char lonSign[2];
 			CBPTC19696 bptc;
 			
 			unsigned char payload[12U];
 			bptc.decode(data + 2U, payload);
 			
-			CUtils::dump(1U, "Data Dump", payload, 12U);
-	
-			if ((payload[0U] & 0x40U) >> 6)
-				strcpy(latSign,"N");
-			else
-				strcpy(latSign,"S");
-
-			if ((payload[0U] & 0x20U) >> 5)
-				strcpy(lonSign,"E");
-			else
-				strcpy(lonSign,"W");
-			
-			uint8_t latDeg = ((payload[1U] & 0x1F) << 2) + ((payload[2U] & 0xC0) >> 6);
-			uint8_t latMin = payload[2U] & 0x6F;
-			int32_t latSec = (payload[3U] << 6) + (payload[4U] & 0xFC);
-			uint8_t lonDeg = ((payload[4U] & 0x03) << 6) + ((payload[5U] & 0xFC) >> 2);
-			uint8_t lonMin = ((payload[5U] & 0x03) << 4) + ((payload[6U] & 0xF0) >> 4);
-			uint32_t lonSec = ((payload[6U] & 0x0F) << 8) + (payload[7U] << 2) + ((payload[8U] & 0xA0) >>6);
-			uint8_t alt = ( ((payload[8U] & 0x3F) << 8 ) + payload[9U]);  
-
+		
 			if ((payload[0U] & 0x10U) >> 4){
-			 	LogDebug("GPS Fix");
-			 	LogDebug("Position: %02d %02d.%03d%s, %03d %02d.%03d%s at Alt of %dm",	latDeg, latMin, latSec,latSign,
-										                      							lonDeg, lonMin, lonSec, lonSign, alt);
-				
-				
-				// Winging it completely! All I can say is it doesn't crash! 
-				// Does BM even accept this type of data frame?
-				
+			 	LogDebug("GPS Fix");			
 				bptc.encode(payload, data + 2U);
 				CDMRSlotType slotType;
 				slotType.putData(data + 2U);
@@ -490,7 +451,6 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 
 				writeNetworkRF(data, dataType);
-				CUtils::dump(1U, "Data Dump", data, 12U);
 			}
 			else
 				LogDebug("No GPS Fix");
