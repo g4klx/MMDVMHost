@@ -456,8 +456,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				dstId = lastDstIdSlot1;
 				lastDstIdSlot1 = 0;
 
-			}
-			if (m_slotNo == 2){
+			}else if (m_slotNo == 2){
 				srcId = lastSrcIdSlot2;
 				lastSrcIdSlot2 = 0;
 				dstId = lastDstIdSlot2;
@@ -477,8 +476,6 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 
 			LogDebug("Setting Src to %d, Dst to %d", srcId, dstId);
-			//unsigned int srcId = 272999;
-			//unsigned int dstId = 272999;   // APRS Destination for Ireland
 			
 			m_rfFrames = dataHeader.getBlocks();
 
@@ -489,31 +486,31 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			m_rfLC = new CDMRLC(gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
 
 			CBPTC19696 bptc;
-			
 			unsigned char payload[12U];
 			bptc.decode(data + 2U, payload);
-			
-		
-			if ((payload[0U] & 0x10U) >> 4){
-			 	LogDebug("GPS Fix");
-			}
-
-			else
-				LogDebug("No GPS Fix, no packet sent");
-			
 			bptc.encode(payload, data + 2U);
-			CDMRSlotType slotType;
-			slotType.putData(data + 2U);
-			slotType.setColorCode(m_colorCode);
+
+			// Regenerate the Slot Type
 			slotType.getData(data + 2U);
+
 			// Convert the Data Sync to be from the BS or MS as needed
 			CSync::addDMRDataSync(data + 2U, m_duplex);
-			data[0U] = TAG_EOT;
+
+			m_rfFrames--;
+
+			data[0U] = m_rfFrames == 0U ? TAG_EOT : TAG_DATA;
 			data[1U] = 0x00U;
 
+			if (m_duplex)
+				writeQueueRF(data);
 
 			writeNetworkRF(data, dataType);
-			
+
+			if (m_rfFrames == 0U) {
+				LogMessage("DMR Slot %u, ended RF data transmission", m_slotNo);
+				writeEndRF();
+			}
+
 			return true;
 		} else if (dataType == DT_CSBK) {
 			CDMRCSBK csbk;
