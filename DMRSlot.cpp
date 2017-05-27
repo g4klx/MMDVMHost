@@ -1,6 +1,7 @@
 /*
  *	Copyright (C) 2015,2016,2017 Jonathan Naylor, G4KLX
- *
+ *  MD-390/RT8 Modifications (C) 2017, John Ronan, EI7IG
+ * 
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
  *	the Free Software Foundation; version 2 of the License.
@@ -65,7 +66,11 @@ const unsigned int NO_HEADERS_SIMPLEX = 8U;
 const unsigned int NO_HEADERS_DUPLEX  = 3U;
 
 // FixMe. Need somehwere to hold DMR Source ID from previous frame. 
-unsigned int GPSsrcId = 0U;
+unsigned int lastSrcIdSlot1 = 0;
+unsigned int lastSrcIdSlot2 = 0;
+unsigned int lastDstIdSlot1 = 0;
+unsigned int lastDstIdSlot2 = 0;
+
 // #define	DUMP_DMR
 
 CDMRSlot::CDMRSlot(unsigned int slotNo, unsigned int timeout) :
@@ -354,9 +359,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			bool gi = dataHeader.getGI();
 			unsigned int srcId = dataHeader.getSrcId();
 			unsigned int dstId = dataHeader.getDstId();
-			// FixMe: Save Source for use with next 1/2 Rate Frame
-			GPSsrcId = srcId;
-
+	
 			if (!CDMRAccessControl::validateSrcId(srcId)) {
 				LogMessage("DMR Slot %u, RF user %u rejected", m_slotNo, srcId);
 				return false;
@@ -366,6 +369,28 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				LogMessage("DMR Slot %u, RF user %u rejected for using TG %u", m_slotNo, srcId, dstId);
 				return false;
 			}
+
+			CBPTC19696 bptc;
+			
+			unsigned char payload[12U];
+			bptc.decode(data + 2U, payload);
+
+			if ( ((payload[1U] & 0x05U) == 0x05U) && ((payload[8U] & 0x03U) == 0x00U) )
+				{
+					LogDebug("UDT/NMEA Frame, Slot %d, 1 Appended data block to come.", m_slotNo, srcId, dstId);
+					// Store Source and destination ID's  per slot
+					if (m_slotNo == 1)
+					{	
+						lastSrcIdSlot1 = srcId;
+						lastDstIdSlot1 = dstId;
+						LogDebug("Setting Slot1 Src to %d, Dst to %d", lastSrcIdSlot1, lastDstIdSlot1);
+					}
+					if (m_slotNo == 2){
+						lastSrcIdSlot2 = srcId;
+						lastDstIdSlot2 = dstId;
+						LogDebug("Setting Slot2 Src to %d, Dst to %d", lastSrcIdSlot2, lastDstIdSlot2);
+					}
+				}
 
 			m_rfFrames = dataHeader.getBlocks();
 
@@ -415,12 +440,45 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			if (m_rfState == RS_RF_DATA)
 				return true;
 			CDMRDataHeader dataHeader;
+			
+
 			// Tested on RT8 with md380-tools S13.020 5840962 2017-05-15
+			unsigned int srcId = 0;
+			unsigned int dstId = 0;
 			LogMessage("DT_RATE_12_DATA Packet received");
 			
 			bool gi = dataHeader.getGI();
-			unsigned int srcId = 272999;
-			unsigned int dstId = 272999;   // APRS Destination for Ireland
+			
+			if (m_slotNo == 1)
+			{
+				srcId = lastSrcIdSlot1;
+				lastSrcIdSlot1 = 0;
+				dstId = lastDstIdSlot1;
+				lastDstIdSlot1 = 0;
+
+			}
+			if (m_slotNo == 2){
+				srcId = lastSrcIdSlot2;
+				lastSrcIdSlot2 = 0;
+				dstId = lastDstIdSlot2;
+				lastDstIdSlot2 = 0;
+			}
+
+
+			if (!CDMRAccessControl::validateSrcId(srcId)) {
+				LogMessage("DMR Slot %u, RF user %u rejected", m_slotNo, srcId);
+				return false;
+			}
+
+			if (!CDMRAccessControl::validateTGId(m_slotNo, gi, dstId)) {
+				LogMessage("DMR Slot %u, RF user %u rejected for using TG %u", m_slotNo, srcId, dstId);
+				return false;
+			}
+
+
+			LogDebug("Setting Src to %d, Dst to %d", srcId, dstId);
+			//unsigned int srcId = 272999;
+			//unsigned int dstId = 272999;   // APRS Destination for Ireland
 			
 			m_rfFrames = dataHeader.getBlocks();
 
@@ -437,24 +495,25 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			
 		
 			if ((payload[0U] & 0x10U) >> 4){
-			 	LogDebug("GPS Fix");			
-				bptc.encode(payload, data + 2U);
-				CDMRSlotType slotType;
-				slotType.putData(data + 2U);
-				slotType.setColorCode(m_colorCode);
-				slotType.getData(data + 2U);
-				// Convert the Data Sync to be from the BS or MS as needed
-				CSync::addDMRDataSync(data + 2U, m_duplex);
-				data[0U] = TAG_EOT;
-
-				data[1U] = 0x00U;
-
-
-				writeNetworkRF(data, dataType);
+			 	LogDebug("GPS Fix");
 			}
-			else
-				LogDebug("No GPS Fix");
 
+			else
+				LogDebug("No GPS Fix, no packet sent");
+			
+			bptc.encode(payload, data + 2U);
+			CDMRSlotType slotType;
+			slotType.putData(data + 2U);
+			slotType.setColorCode(m_colorCode);
+			slotType.getData(data + 2U);
+			// Convert the Data Sync to be from the BS or MS as needed
+			CSync::addDMRDataSync(data + 2U, m_duplex);
+			data[0U] = TAG_EOT;
+			data[1U] = 0x00U;
+
+
+			writeNetworkRF(data, dataType);
+			
 			return true;
 		} else if (dataType == DT_CSBK) {
 			CDMRCSBK csbk;
