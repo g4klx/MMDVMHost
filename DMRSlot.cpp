@@ -377,7 +377,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			if ( ((payload[1U] & 0x05U) == 0x05U) && ((payload[8U] & 0x03U) == 0x00U) )
 				{
-					LogDebug("UDT/NMEA Frame, Slot %d, 1 Appended data block to come.", m_slotNo, srcId, dstId);
+					LogDebug("UDT/NMEA Frame, Slot %d, 1 Appended data block outstanding, storing Src %d, Dst %d", m_slotNo, srcId, dstId);
 					// Store Source and destination ID's  per slot
 					if (m_slotNo == 1)
 					{	
@@ -495,10 +495,8 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			// Convert the Data Sync to be from the BS or MS as needed
 			CSync::addDMRDataSync(data + 2U, m_duplex);
-
-			m_rfFrames--;
-
-			data[0U] = m_rfFrames == 0U ? TAG_EOT : TAG_DATA;
+			
+			data[0U] = TAG_EOT;
 			data[1U] = 0x00U;
 
 			if (m_duplex)
