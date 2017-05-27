@@ -20,6 +20,7 @@ class CUtils {
 public:
 	static void dump(const std::string& title, const unsigned char* data, unsigned int length);
 	static void dump(int level, const std::string& title, const unsigned char* data, unsigned int length);
+	static void dump(unsigned int slot, int level, const std::string& title, const unsigned char* data, unsigned int length);
 
 	static void dump(const std::string& title, const bool* bits, unsigned int length);
 	static void dump(int level, const std::string& title, const bool* bits, unsigned int length);

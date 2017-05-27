@@ -598,7 +598,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				case FLCO_GPS_INFO:
 					if (m_dumpTAData) {
 						::sprintf(text, "DMR Slot %u, Embedded GPS Info", m_slotNo);
-						CUtils::dump(2U, text, data, 9U);
+						CUtils::dump(m_slotNo, 2U, text, data, 9U);
 					}
 					if (m_network != NULL)
 						m_network->writePosition(m_rfLC->getSrcId(), data);
@@ -611,7 +611,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					if (!(m_rfTalkerId & TALKER_ID_HEADER)) {
 						if (m_dumpTAData) {
 							::sprintf(text, "DMR Slot %u, Embedded Talker Alias Header", m_slotNo);
-							CUtils::dump(2U, text, data, 9U);
+							CUtils::dump(m_slotNo, 2U, text, data, 9U);
 						}
 
 						m_rfTalkerId |= TALKER_ID_HEADER;
@@ -625,7 +625,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					if (!(m_rfTalkerId & TALKER_ID_BLOCK1)) {
 						if (m_dumpTAData) {
 							::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 1", m_slotNo);
-							CUtils::dump(2U, text, data, 9U);
+							CUtils::dump(m_slotNo, 2U, text, data, 9U);
 						}
 
 						m_rfTalkerId |= TALKER_ID_BLOCK1;
@@ -639,7 +639,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					if (!(m_rfTalkerId & TALKER_ID_BLOCK2)) {
 						if (m_dumpTAData) {
 							::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 2", m_slotNo);
-							CUtils::dump(2U, text, data, 9U);
+							CUtils::dump(m_slotNo, 2U, text, data, 9U);
 						}
 
 						m_rfTalkerId |= TALKER_ID_BLOCK2;
@@ -653,7 +653,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					if (!(m_rfTalkerId & TALKER_ID_BLOCK3)) {
 						if (m_dumpTAData) {
 							::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 3", m_slotNo);
-							CUtils::dump(2U, text, data, 9U);
+							CUtils::dump(m_slotNo, 2U, text, data, 9U);
 						}
 
 						m_rfTalkerId |= TALKER_ID_BLOCK3;
@@ -662,7 +662,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 				default:
 					::sprintf(text, "DMR Slot %u, Unknown Embedded Data", m_slotNo);
-					CUtils::dump(1U, text, data, 9U);
+					CUtils::dump(m_slotNo, 1U, text, data, 9U);
 					break;
 				}
 			}
@@ -1369,14 +1369,14 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			case FLCO_GPS_INFO:
 				if (m_dumpTAData) {
 					::sprintf(text, "DMR Slot %u, Embedded GPS Info", m_slotNo);
-					CUtils::dump(2U, text, data, 9U);
+					CUtils::dump(m_slotNo, 2U, text, data, 9U);
 				}
 				break;
 			case FLCO_TALKER_ALIAS_HEADER:
 				if (!(m_netTalkerId & TALKER_ID_HEADER)) {
 					if (m_dumpTAData) {
 						::sprintf(text, "DMR Slot %u, Embedded Talker Alias Header", m_slotNo);
-						CUtils::dump(2U, text, data, 9U);
+						CUtils::dump(m_slotNo, 2U, text, data, 9U);
 					}
 
 					m_netTalkerId |= TALKER_ID_HEADER;
@@ -1386,7 +1386,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				if (!(m_netTalkerId & TALKER_ID_BLOCK1)) {
 					if (m_dumpTAData) {
 						::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 1", m_slotNo);
-						CUtils::dump(2U, text, data, 9U);
+						CUtils::dump(m_slotNo, 2U, text, data, 9U);
 					}
 
 					m_netTalkerId |= TALKER_ID_BLOCK1;
@@ -1396,7 +1396,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				if (!(m_netTalkerId & TALKER_ID_BLOCK2)) {
 					if (m_dumpTAData) {
 						::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 2", m_slotNo);
-						CUtils::dump(2U, text, data, 9U);
+						CUtils::dump(m_slotNo, 2U, text, data, 9U);
 					}
 
 					m_netTalkerId |= TALKER_ID_BLOCK2;
@@ -1406,7 +1406,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				if (!(m_netTalkerId & TALKER_ID_BLOCK3)) {
 					if (m_dumpTAData) {
 						::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 3", m_slotNo);
-						CUtils::dump(2U, text, data, 9U);
+						CUtils::dump(m_slotNo, 2U, text, data, 9U);
 					}
 
 					m_netTalkerId |= TALKER_ID_BLOCK3;
@@ -1414,7 +1414,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				break;
 			default:
 				::sprintf(text, "DMR Slot %u, Unknown Embedded Data", m_slotNo);
-				CUtils::dump(1U, text, data, 9U);
+				CUtils::dump(m_slotNo, 1U, text, data, 9U);
 				break;
 			}
 		}

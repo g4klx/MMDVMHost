@@ -28,6 +28,13 @@ void CUtils::dump(int level, const std::string& title, const unsigned char* data
 {
 	assert(data != NULL);
 
+	dump(0U, 2U, title, data, length);
+}
+
+void CUtils::dump(unsigned int slot, int level, const std::string& title, const unsigned char* data, unsigned int length)
+{
+	assert(data != NULL);
+
 	::Log(level, "%s", title.c_str());
 
 	unsigned int offset = 0U;
@@ -59,7 +66,12 @@ void CUtils::dump(int level, const std::string& title, const unsigned char* data
 
 		output += '*';
 
-		::Log(level, "%04X:  %s", offset, output.c_str());
+
+		if (slot != 0) {
+			::Log(level, "DMR Slot %u, %04X:  %s", slot, offset, output.c_str());
+		} else {
+			::Log(level, "%04X:  %s", offset, output.c_str());
+		}
 
 		offset += 16U;
 
