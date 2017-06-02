@@ -327,19 +327,19 @@ bool CConf::read()
 		else if (::strcmp(key, "DMRDelay") == 0)
 			m_modemDMRDelay = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "RXLevel") == 0)
-			m_modemRXLevel = (unsigned int)::atoi(value);
+			m_modemRXLevel = float(::atof(value));
 		else if (::strcmp(key, "TXLevel") == 0)
-			m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = ::atof(value);
+			m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = float(::atof(value));
 		else if (::strcmp(key, "CWIdTXLevel") == 0)
-			m_modemCWIdTXLevel = ::atof(value);
+			m_modemCWIdTXLevel = float(::atof(value));
 		else if (::strcmp(key, "D-StarTXLevel") == 0)
-			m_modemDStarTXLevel = ::atof(value);
+			m_modemDStarTXLevel = float(::atof(value));
 		else if (::strcmp(key, "DMRTXLevel") == 0)
-			m_modemDMRTXLevel = ::atof(value);
+			m_modemDMRTXLevel = float(::atof(value));
 		else if (::strcmp(key, "YSFTXLevel") == 0)
-			m_modemYSFTXLevel = ::atof(value);
+			m_modemYSFTXLevel = float(::atof(value));
 		else if (::strcmp(key, "P25TXLevel") == 0)
-			m_modemP25TXLevel = ::atof(value);
+			m_modemP25TXLevel = float(::atof(value));
 		else if (::strcmp(key, "RSSIMappingFile") == 0)
 			m_modemRSSIMappingFile = value;
 		else if (::strcmp(key, "Trace") == 0)
