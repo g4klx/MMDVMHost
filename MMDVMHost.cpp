@@ -799,12 +799,12 @@ bool CMMDVMHost::createModem()
 	bool pttInvert            = m_conf.getModemPTTInvert();
 	unsigned int txDelay      = m_conf.getModemTXDelay();
 	unsigned int dmrDelay     = m_conf.getModemDMRDelay();
-	unsigned int rxLevel      = m_conf.getModemRXLevel();
-	unsigned int cwIdTXLevel  = m_conf.getModemCWIdTXLevel();
-	unsigned int dstarTXLevel = m_conf.getModemDStarTXLevel();
-	unsigned int dmrTXLevel   = m_conf.getModemDMRTXLevel();
-	unsigned int ysfTXLevel   = m_conf.getModemYSFTXLevel();
-	unsigned int p25TXLevel   = m_conf.getModemP25TXLevel();
+	float rxLevel             = m_conf.getModemRXLevel();
+	float cwIdTXLevel         = m_conf.getModemCWIdTXLevel();
+	float dstarTXLevel        = m_conf.getModemDStarTXLevel();
+	float dmrTXLevel          = m_conf.getModemDMRTXLevel();
+	float ysfTXLevel          = m_conf.getModemYSFTXLevel();
+	float p25TXLevel          = m_conf.getModemP25TXLevel();
 	bool trace                = m_conf.getModemTrace();
 	bool debug                = m_conf.getModemDebug();
 	unsigned int colorCode    = m_conf.getDMRColorCode();
@@ -819,12 +819,12 @@ bool CMMDVMHost::createModem()
 	LogInfo("    PTT Invert: %s", pttInvert ? "yes" : "no");
 	LogInfo("    TX Delay: %ums", txDelay);
 	LogInfo("    DMR Delay: %u (%.1fms)", dmrDelay, float(dmrDelay) * 0.0416666F);
-	LogInfo("    RX Level: %u%%", rxLevel);
-	LogInfo("    CW Id TX Level: %u%%", cwIdTXLevel);
-	LogInfo("    D-Star TX Level: %u%%", dstarTXLevel);
-	LogInfo("    DMR TX Level: %u%%", dmrTXLevel);
-	LogInfo("    YSF TX Level: %u%%", ysfTXLevel);
-	LogInfo("    P25 TX Level: %u%%", p25TXLevel);
+	LogInfo("    RX Level: %.1f%%", rxLevel);
+	LogInfo("    CW Id TX Level: %.1f%%", cwIdTXLevel);
+	LogInfo("    D-Star TX Level: %.1f%%", dstarTXLevel);
+	LogInfo("    DMR TX Level: %.1f%%", dmrTXLevel);
+	LogInfo("    YSF TX Level: %.1f%%", ysfTXLevel);
+	LogInfo("    P25 TX Level: %.1f%%", p25TXLevel);
 	LogInfo("    RX Frequency: %uHz", rxFrequency);
 	LogInfo("    TX Frequency: %uHz", txFrequency);
 

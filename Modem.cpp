@@ -159,7 +159,7 @@ void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, 
 	m_p25Enabled   = p25Enabled;
 }
 
-void CModem::setLevels(unsigned int rxLevel, unsigned int cwIdTXLevel, unsigned int dstarTXLevel, unsigned int dmrTXLevel, unsigned int ysfTXLevel, unsigned int p25TXLevel)
+void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel)
 {
 	m_rxLevel      = rxLevel;
 	m_cwIdTXLevel  = cwIdTXLevel;
@@ -975,9 +975,9 @@ bool CModem::setConfig()
 
 	buffer[6U] = MODE_IDLE;
 
-	buffer[7U] = (m_rxLevel * 255U) / 100U;
+	buffer[7U] = (unsigned char)(m_rxLevel * 2.55F + 0.5F);
 
-	buffer[8U] = (m_cwIdTXLevel * 255U) / 100U;
+	buffer[8U] = (unsigned char)(m_cwIdTXLevel * 2.55F + 0.5F);
 
 	buffer[9U] = m_dmrColorCode;
 
@@ -985,10 +985,10 @@ bool CModem::setConfig()
 
 	buffer[11U] = 128U;           // Was OscOffset
 
-	buffer[12U] = (m_dstarTXLevel * 255U) / 100U;
-	buffer[13U] = (m_dmrTXLevel * 255U) / 100U;
-	buffer[14U] = (m_ysfTXLevel * 255U) / 100U;
-	buffer[15U] = (m_p25TXLevel * 255U) / 100U;
+	buffer[12U] = (unsigned char)(m_dstarTXLevel * 2.55F + 0.5F);
+	buffer[13U] = (unsigned char)(m_dmrTXLevel * 2.55F + 0.5F);
+	buffer[14U] = (unsigned char)(m_ysfTXLevel * 2.55F + 0.5F);
+	buffer[15U] = (unsigned char)(m_p25TXLevel * 2.55F + 0.5F);
 
 	// CUtils::dump(1U, "Written", buffer, 16U);
 

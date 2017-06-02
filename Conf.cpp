@@ -85,12 +85,12 @@ m_modemTXInvert(false),
 m_modemPTTInvert(false),
 m_modemTXDelay(100U),
 m_modemDMRDelay(0U),
-m_modemRXLevel(50U),
-m_modemCWIdTXLevel(50U),
-m_modemDStarTXLevel(50U),
-m_modemDMRTXLevel(50U),
-m_modemYSFTXLevel(50U),
-m_modemP25TXLevel(50U),
+m_modemRXLevel(50.0F),
+m_modemCWIdTXLevel(50.0F),
+m_modemDStarTXLevel(50.0F),
+m_modemDMRTXLevel(50.0F),
+m_modemYSFTXLevel(50.0F),
+m_modemP25TXLevel(50.0F),
 m_modemRSSIMappingFile(),
 m_modemTrace(false),
 m_modemDebug(false),
@@ -329,17 +329,17 @@ bool CConf::read()
 		else if (::strcmp(key, "RXLevel") == 0)
 			m_modemRXLevel = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "TXLevel") == 0)
-			m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = (unsigned int)::atoi(value);
+			m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = ::atof(value);
 		else if (::strcmp(key, "CWIdTXLevel") == 0)
-			m_modemCWIdTXLevel = (unsigned int)::atoi(value);
+			m_modemCWIdTXLevel = ::atof(value);
 		else if (::strcmp(key, "D-StarTXLevel") == 0)
-			m_modemDStarTXLevel = (unsigned int)::atoi(value);
+			m_modemDStarTXLevel = ::atof(value);
 		else if (::strcmp(key, "DMRTXLevel") == 0)
-			m_modemDMRTXLevel = (unsigned int)::atoi(value);
+			m_modemDMRTXLevel = ::atof(value);
 		else if (::strcmp(key, "YSFTXLevel") == 0)
-			m_modemYSFTXLevel = (unsigned int)::atoi(value);
+			m_modemYSFTXLevel = ::atof(value);
 		else if (::strcmp(key, "P25TXLevel") == 0)
-			m_modemP25TXLevel = (unsigned int)::atoi(value);
+			m_modemP25TXLevel = ::atof(value);
 		else if (::strcmp(key, "RSSIMappingFile") == 0)
 			m_modemRSSIMappingFile = value;
 		else if (::strcmp(key, "Trace") == 0)
@@ -730,32 +730,32 @@ unsigned int CConf::getModemDMRDelay() const
 	return m_modemDMRDelay;
 }
 
-unsigned int CConf::getModemRXLevel() const
+float CConf::getModemRXLevel() const
 {
 	return m_modemRXLevel;
 }
 
-unsigned int CConf::getModemCWIdTXLevel() const
+float CConf::getModemCWIdTXLevel() const
 {
 	return m_modemCWIdTXLevel;
 }
 
-unsigned int CConf::getModemDStarTXLevel() const
+float CConf::getModemDStarTXLevel() const
 {
 	return m_modemDStarTXLevel;
 }
 
-unsigned int CConf::getModemDMRTXLevel() const
+float CConf::getModemDMRTXLevel() const
 {
 	return m_modemDMRTXLevel;
 }
 
-unsigned int CConf::getModemYSFTXLevel() const
+float CConf::getModemYSFTXLevel() const
 {
 	return m_modemYSFTXLevel;
 }
 
-unsigned int CConf::getModemP25TXLevel() const
+float CConf::getModemP25TXLevel() const
 {
 	return m_modemP25TXLevel;
 }
