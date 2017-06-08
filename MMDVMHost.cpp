@@ -111,10 +111,10 @@ int main(int argc, char** argv)
 		delete host;
 
 		if (m_signal == 2)
-			::LogInfo("MMDVMHost-%s is exited on receipt of SIGINT", VERSION);
+			::LogInfo("MMDVMHost-%s exited on receipt of SIGINT", VERSION);
 
 		if (m_signal == 15)
-			::LogInfo("MMDVMHost-%s is exited on receipt of SIGTERM", VERSION);
+			::LogInfo("MMDVMHost-%s exited on receipt of SIGTERM", VERSION);
 
 		if (m_signal == 1)
 			::LogInfo("MMDVMHost-%s is restarting on receipt of SIGHUP", VERSION);
