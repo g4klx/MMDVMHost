@@ -95,6 +95,7 @@ int main(int argc, char** argv)
 	}
 
 #if !defined(_WIN32) && !defined(_WIN64)
+	::signal(SIGINT,  sigHandler);
 	::signal(SIGTERM, sigHandler);
 	::signal(SIGHUP,  sigHandler);
 #endif
@@ -109,11 +110,14 @@ int main(int argc, char** argv)
 
 		delete host;
 
+		if (m_signal == 2)
+			::LogInfo("MMDVMHost-%s is exited on receipt of SIGINT", VERSION);
+
 		if (m_signal == 15)
-			::LogInfo("Caught SIGTERM, exiting");
+			::LogInfo("MMDVMHost-%s is exited on receipt of SIGTERM", VERSION);
 
 		if (m_signal == 1)
-			::LogInfo("Caught SIGHUP, restarting");
+			::LogInfo("MMDVMHost-%s is restarting on receipt of SIGHUP", VERSION);
 	} while (m_signal == 1);
 
 	::LogFinalise();
@@ -744,8 +748,6 @@ int CMMDVMHost::run()
 		if (ms < 5U)
 			CThread::sleep(5U);
 	}
-
-	LogMessage("MMDVMHost-%s is exiting on receipt of SIGHUP1", VERSION);
 
 	setMode(MODE_IDLE);
 
