@@ -36,10 +36,11 @@ bool CallsignCompare(const std::string& arg, const unsigned char* my)
 
 // #define	DUMP_DSTAR
 
-CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool errorReply, const std::vector<std::string>& blackList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, CRSSIInterpolator* rssiMapper) :
+CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool ackReply, bool errorReply, const std::vector<std::string>& blackList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, CRSSIInterpolator* rssiMapper) :
 m_callsign(NULL),
 m_gateway(NULL),
 m_selfOnly(selfOnly),
+m_ackReply(ackReply),
 m_errorReply(errorReply),
 m_blackList(blackList),
 m_network(network),
@@ -523,7 +524,9 @@ void CDStarControl::writeEndRF()
 
 	if (m_netState == RS_NET_IDLE) {
 		m_display->clearDStar();
-		m_ackTimer.start();
+
+		if (m_ackReply)
+			m_ackTimer.start();
 
 		if (m_network != NULL)
 			m_network->reset();

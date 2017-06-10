@@ -100,6 +100,7 @@ m_dstarEnabled(false),
 m_dstarModule("C"),
 m_dstarSelfOnly(false),
 m_dstarBlackList(),
+m_dstarAckReply(true),
 m_dstarErrorReply(true),
 m_dmrEnabled(false),
 m_dmrBeacons(false),
@@ -373,7 +374,9 @@ bool CConf::read()
 				}
 				p = ::strtok(NULL, ",\r\n");
 			}
-		} else if (::strcmp(key, "ErrorReply") == 0)
+		} else if (::strcmp(key, "AckReply") == 0)
+			m_dstarAckReply = ::atoi(value) == 1;
+		else if (::strcmp(key, "ErrorReply") == 0)
 			m_dstarErrorReply = ::atoi(value) == 1;
 	} else if (section == SECTION_DMR) {
 		if (::strcmp(key, "Enable") == 0)
@@ -803,6 +806,11 @@ bool CConf::getDStarSelfOnly() const
 std::vector<std::string> CConf::getDStarBlackList() const
 {
 	return m_dstarBlackList;
+}
+
+bool CConf::getDStarAckReply() const
+{
+	return m_dstarAckReply;
 }
 
 bool CConf::getDStarErrorReply() const
