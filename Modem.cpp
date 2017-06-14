@@ -145,10 +145,10 @@ CModem::~CModem()
 	delete[] m_buffer;
 }
 
-void CModem::setRFParams(unsigned int rxFrequency, unsigned int txFrequency)
+void CModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset)
 {
-	m_rxFrequency = rxFrequency;
-	m_txFrequency = txFrequency;
+	m_rxFrequency = rxFrequency + rxOffset;
+	m_txFrequency = txFrequency + txOffset;
 }
 
 void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled)

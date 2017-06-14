@@ -72,6 +72,8 @@ public:
   bool         getModemPTTInvert() const;
   unsigned int getModemTXDelay() const;
   unsigned int getModemDMRDelay() const;
+  int          getModemTxOffset() const;
+  int          getModemRxOffset() const;
   float        getModemRXLevel() const;
   float        getModemCWIdTXLevel() const;
   float        getModemDStarTXLevel() const;
@@ -228,6 +230,8 @@ private:
   bool         m_modemPTTInvert;
   unsigned int m_modemTXDelay;
   unsigned int m_modemDMRDelay;
+  int          m_modemTxOffset;
+  int          m_modemRxOffset;
   float        m_modemRXLevel;
   float        m_modemCWIdTXLevel;
   float        m_modemDStarTXLevel;

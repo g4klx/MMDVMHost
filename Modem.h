@@ -37,7 +37,7 @@ public:
 	CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool trace, bool debug);
 	~CModem();
 
-	void setRFParams(unsigned int rxFrequency, unsigned int txFrequency);
+	void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset);
 	void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled);
 	void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25Enabled);
 	void setDMRParams(unsigned int colorCode);
