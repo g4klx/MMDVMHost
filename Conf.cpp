@@ -103,6 +103,7 @@ m_dstarModule("C"),
 m_dstarSelfOnly(false),
 m_dstarBlackList(),
 m_dstarAckReply(true),
+m_dstarAckTime(750U),
 m_dstarErrorReply(true),
 m_dmrEnabled(false),
 m_dmrBeacons(false),
@@ -382,6 +383,8 @@ bool CConf::read()
 			}
 		} else if (::strcmp(key, "AckReply") == 0)
 			m_dstarAckReply = ::atoi(value) == 1;
+		else if (::strcmp(key, "AckTime") == 0)
+			m_dstarAckTime = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "ErrorReply") == 0)
 			m_dstarErrorReply = ::atoi(value) == 1;
 	} else if (section == SECTION_DMR) {
@@ -827,6 +830,11 @@ std::vector<std::string> CConf::getDStarBlackList() const
 bool CConf::getDStarAckReply() const
 {
 	return m_dstarAckReply;
+}
+
+unsigned int CConf::getDStarAckTime() const
+{
+	return m_dstarAckTime;
 }
 
 bool CConf::getDStarErrorReply() const

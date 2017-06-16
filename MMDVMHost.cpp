@@ -335,22 +335,24 @@ int CMMDVMHost::run()
 
 	CDStarControl* dstar = NULL;
 	if (m_dstarEnabled) {
-		std::string module = m_conf.getDStarModule();
-		bool selfOnly      = m_conf.getDStarSelfOnly();
+		std::string module                 = m_conf.getDStarModule();
+		bool selfOnly                      = m_conf.getDStarSelfOnly();
 		std::vector<std::string> blackList = m_conf.getDStarBlackList();
-		bool ackReply      = m_conf.getDStarAckReply();
-		bool errorReply    = m_conf.getDStarErrorReply();
+		bool ackReply                      = m_conf.getDStarAckReply();
+		unsigned int ackTime               = m_conf.getDStarAckTime();
+		bool errorReply                    = m_conf.getDStarErrorReply();
 
 		LogInfo("D-Star Parameters");
 		LogInfo("    Module: %s", module.c_str());
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
 		LogInfo("    Ack Reply: %s", ackReply ? "yes" : "no");
+		LogInfo("    Ack Time: %ums", ackTime);
 		LogInfo("    Error Reply: %s", errorReply ? "yes" : "no");
 
 		if (blackList.size() > 0U)
 			LogInfo("    Black List: %u", blackList.size());
 
-		dstar = new CDStarControl(m_callsign, module, selfOnly, ackReply, errorReply, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex, rssi);
+		dstar = new CDStarControl(m_callsign, module, selfOnly, ackReply, ackTime, errorReply, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex, rssi);
 	}
 
 	CDMRControl* dmr = NULL;
