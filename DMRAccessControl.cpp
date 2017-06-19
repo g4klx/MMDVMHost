@@ -28,17 +28,17 @@ std::vector<unsigned int> CDMRAccessControl::m_whiteList;
 
 std::vector<unsigned int> CDMRAccessControl::m_prefixes;
 
-std::vector<unsigned int> CDMRAccessControl::m_slot1TGWhiteList;
-std::vector<unsigned int> CDMRAccessControl::m_slot2TGWhiteList;
+std::vector<unsigned int> CDMRAccessControl::m_Slot1TGWhiteList;
+std::vector<unsigned int> CDMRAccessControl::m_Slot2TGWhiteList;
 
 bool CDMRAccessControl::m_selfOnly = false;
 
 unsigned int CDMRAccessControl::m_id = 0U;
 
-void CDMRAccessControl::init(const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& whitelist, const std::vector<unsigned int>& slot1TGWhitelist, const std::vector<unsigned int>& slot2TGWhitelist, bool selfOnly, const std::vector<unsigned int>& prefixes, unsigned int id)
+void CDMRAccessControl::init(const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& whitelist, const std::vector<unsigned int>& Slot1TGWhiteList, const std::vector<unsigned int>& Slot2TGWhiteList, bool selfOnly, const std::vector<unsigned int>& prefixes, unsigned int id)
 {
-	m_slot1TGWhiteList = slot1TGWhitelist;
-	m_slot2TGWhiteList = slot2TGWhitelist;
+	m_Slot1TGWhiteList = Slot1TGWhiteList;
+	m_Slot2TGWhiteList = Slot2TGWhiteList;
 	m_blackList        = blacklist;
 	m_whiteList        = whitelist;
 	m_selfOnly         = selfOnly;
@@ -80,14 +80,14 @@ bool CDMRAccessControl::validateTGId(unsigned int slotNo, bool group, unsigned i
 		return false;
 	
 	if (slotNo == 1U) {
-		if (m_slot1TGWhiteList.empty())
+		if (m_Slot1TGWhiteList.empty())
 			return true;
 
-		return std::find(m_slot1TGWhiteList.begin(), m_slot1TGWhiteList.end(), id) != m_slot1TGWhiteList.end();
+		return std::find(m_Slot1TGWhiteList.begin(), m_Slot1TGWhiteList.end(), id) != m_Slot1TGWhiteList.end();
 	} else {
-		if (m_slot2TGWhiteList.empty())
+		if (m_Slot2TGWhiteList.empty())
 			return true;
 
-		return std::find(m_slot2TGWhiteList.begin(), m_slot2TGWhiteList.end(), id) != m_slot2TGWhiteList.end();
+		return std::find(m_Slot2TGWhiteList.begin(), m_Slot2TGWhiteList.end(), id) != m_Slot2TGWhiteList.end();
 	}
 }

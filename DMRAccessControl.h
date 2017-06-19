@@ -26,7 +26,7 @@ public:
 
 	static bool validateTGId(unsigned int slotNo, bool group, unsigned int id);
 
-	static void init(const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& whitelist, const std::vector<unsigned int>& slot1TGWhitelist, const std::vector<unsigned int>& slot2TGWhitelist, bool selfOnly, const std::vector<unsigned int>& prefixes, unsigned int id);
+	static void init(const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& whitelist, const std::vector<unsigned int>& Slot1TGWhiteList, const std::vector<unsigned int>& Slot2TGWhiteList, bool selfOnly, const std::vector<unsigned int>& prefixes, unsigned int id);
 	
 private:
 	static std::vector<unsigned int> m_blackList;
@@ -34,8 +34,8 @@ private:
 
 	static std::vector<unsigned int> m_prefixes;
 
-	static std::vector<unsigned int> m_slot1TGWhiteList;
-	static std::vector<unsigned int> m_slot2TGWhiteList;
+	static std::vector<unsigned int> m_Slot1TGWhiteList;
+	static std::vector<unsigned int> m_Slot2TGWhiteList;
 
 	static bool m_selfOnly;
 	static unsigned int m_id;
