@@ -365,8 +365,8 @@ int CMMDVMHost::run()
 		std::vector<unsigned int> prefixes  = m_conf.getDMRPrefixes();
 		std::vector<unsigned int> blackList = m_conf.getDMRBlackList();
 		std::vector<unsigned int> whiteList = m_conf.getDMRWhiteList();
-		std::vector<unsigned int> slot1TGWhiteList = m_conf.getDMRSlot1TGWhiteList();
-		std::vector<unsigned int> slot2TGWhiteList = m_conf.getDMRSlot2TGWhiteList();
+		std::vector<unsigned int> Slot1TGWhiteList = m_conf.getDMRSlot1TGWhiteList();
+		std::vector<unsigned int> Slot2TGWhiteList = m_conf.getDMRSlot2TGWhiteList();
 		unsigned int callHang       = m_conf.getDMRCallHang();
 		unsigned int txHang         = m_conf.getDMRTXHang();
 		unsigned int jitter         = m_conf.getDMRNetworkJitter();
@@ -391,15 +391,15 @@ int CMMDVMHost::run()
 			LogInfo("    Source ID Black List: %u", blackList.size());
 		if (whiteList.size() > 0U)
 			LogInfo("    Source ID White List: %u", whiteList.size());
-		if (slot1TGWhiteList.size() > 0U)
-			LogInfo("    Slot 1 TG White List: %u", slot1TGWhiteList.size());
-		if (slot2TGWhiteList.size() > 0U)
-			LogInfo("    Slot 2 TG White List: %u", slot2TGWhiteList.size());
+		if (Slot1TGWhiteList.size() > 0U)
+			LogInfo("    Slot 1 TG White List: %u", Slot1TGWhiteList.size());
+		if (Slot2TGWhiteList.size() > 0U)
+			LogInfo("    Slot 2 TG White List: %u", Slot2TGWhiteList.size());
 
 		LogInfo("    Call Hang: %us", callHang);
 		LogInfo("    TX Hang: %us", txHang);
 
-		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, dumpTAData, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_lookup, rssi, jitter);
+		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, dumpTAData, prefixes, blackList, whiteList, Slot1TGWhiteList, Slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_lookup, rssi, jitter);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}
