@@ -1,6 +1,6 @@
 These are the source files for building the MMDVMHost, the program that interfaces to the MMDVM or DVMega on the one side, and a suitable network on the other. It supports D-Star, DMR, P25 Phase 1, and System Fusion.
 
-On the D-Star side the MMDVMHost interfaces with the ircDDB Gateway, on DMR it can connect to BrandMeister, DMR+, or HB Link, on System Fusion it connects to the YSF Gateway. On P25 it connects to the P25 Gateway.
+On the D-Star side the MMDVMHost interfaces with the ircDDB Gateway, on DMR it can connect to BrandMeister, DMR+, HB Link, XLX or [DMRGateway](https://github.com/g4klx/DMRGateway) (to connect to multiple DMR networks at once) on System Fusion it connects to the YSF Gateway. On P25 it connects to the P25 Gateway.
 
 It builds on 32-bit and 64-bit Linux as well as on Windows using VS2015 on x86 and x64. It can optionally control various Displays. Currently these are:
 
