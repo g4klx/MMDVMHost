@@ -11,6 +11,7 @@ It builds on 32-bit and 64-bit Linux as well as on Windows using VS2015 on x86 a
 - Nextion TFTs (sizes 2.4", 2.8", 3.2" and 3.5")
 - TFT display sold by Hobbytronics in UK
 - OLED 128x64 (SSD1306)
+- LCDproc
 
 The Nextion displays can connect to the UART on the Raspberry Pi, or via a USB to TTL serial converter like the FT-232RL. It may also be connected to the UART output of the MMDVM modem (Arduino Due, STM32, Teensy), or to the UART output on the UMP.
 
@@ -19,5 +20,7 @@ The HD44780 displays are integrated with wiringPi for Raspberry Pi based platfor
 The Hobbytronics TFT Display, which is a Pi-Hat, connects to the UART on the Raspbery Pi.
 
 The OLED display needs a extra library see OLED.md
+
+The LCDproc support enables the use of a multitude of other LCD screens. See the [supported devices](http://lcdproc.omnipotent.net/hardware.php3) page on the LCDproc website for more info.
 
 This software is licenced under the GPL v2 and is intended for amateur and educational use only. Use of this software for commercial purposes is strictly forbidden.
