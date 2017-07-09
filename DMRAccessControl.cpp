@@ -49,11 +49,10 @@ void CDMRAccessControl::init(const std::vector<unsigned int>& blacklist, const s
  
 bool CDMRAccessControl::validateSrcId(unsigned int id)
 {
-	std::string str_id = std::to_string(id);	// DMR ID from RF
-	std::string str_m_id = std::to_string(m_id);	// MMDVMHost ID from Config
 	if (m_selfOnly) {
-//		return id == m_id;
-		if (str_m_id.compare(0,7,str_id) == 0) {// if the first 7 digits of the MMDVMHost ID match the WHOLE of the RF ID
+		std::string str_id = std::to_string(id);	// DMR ID from RF
+		std::string str_m_id = std::to_string(m_id);	// MMDVMHost ID from Config
+		if ((id == m_id) || (str_m_id.compare(0,7,str_id) == 0)) {// if the RF ID matched the configured ID or if the first 7 digits of the MMDVMHost ID match the WHOLE of the RF ID
 			return true;			// then allow the connection
 		} else {
 			return false;			// if not, reject it
