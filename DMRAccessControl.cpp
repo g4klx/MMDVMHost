@@ -22,6 +22,7 @@
 #include <algorithm>
 #include <vector>
 #include <cstring>
+#include <string>
 
 std::vector<unsigned int> CDMRAccessControl::m_blackList;
 std::vector<unsigned int> CDMRAccessControl::m_whiteList;
@@ -48,8 +49,15 @@ void CDMRAccessControl::init(const std::vector<unsigned int>& blacklist, const s
  
 bool CDMRAccessControl::validateSrcId(unsigned int id)
 {
-	if (m_selfOnly)
-		return id == m_id;
+	if (m_selfOnly) {
+		std::string str_id = std::to_string(id);	// DMR ID from RF
+		std::string str_m_id = std::to_string(m_id);	// MMDVMHost ID from Config
+		if ((id == m_id) || (str_m_id.compare(0,7,str_id) == 0)) {// if the RF ID matched the configured ID or if the first 7 digits of the MMDVMHost ID match the WHOLE of the RF ID
+			return true;			// then allow the connection
+		} else {
+			return false;			// if not, reject it
+		}
+	}	
 
 	if (std::find(m_blackList.begin(), m_blackList.end(), id) != m_blackList.end())
 		return false;
