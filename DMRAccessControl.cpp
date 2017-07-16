@@ -49,8 +49,10 @@ void CDMRAccessControl::init(const std::vector<unsigned int>& blacklist, const s
 bool CDMRAccessControl::validateSrcId(unsigned int id)
 {
 	if (m_selfOnly) {
-		if (m_id > 9999999U)									// Check that the Config DMR-ID is bigger than 7 digits
-			return (id == m_id / 10U) || (id == m_id / 100U);	// Does RF ID match Config ID / 10 or Config ID / 100
+		if (m_id > 99999999U)			// Check that the Config DMR-ID is bigger than 8 digits
+			return id == m_id / 100U;	// Does RF ID match Config ID / 100
+		else if (m_id > 9999999U)		// Check that the Config DMR-ID is bigger than 7 digits
+			return id == m_id / 10U;	// Does RF ID match Config ID / 10
 		else
 			return id == m_id;
 	}	
