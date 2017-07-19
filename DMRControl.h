@@ -45,7 +45,6 @@ public:
 	void clock();
 
 private:
-	unsigned int m_id;
 	unsigned int m_colorCode;
 	CModem*      m_modem;
 	CDMRNetwork* m_network;
