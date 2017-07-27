@@ -525,8 +525,7 @@ void CDStarControl::writeEndRF()
 	if (m_netState == RS_NET_IDLE) {
 		m_display->clearDStar();
 
-		if (m_ackReply)
-			m_ackTimer.start();
+		m_ackTimer.start();
 
 		if (m_network != NULL)
 			m_network->reset();
@@ -1013,6 +1012,9 @@ void CDStarControl::blankDTMF(unsigned char* data) const
 void CDStarControl::sendAck()
 {
 	m_rfTimeoutTimer.stop();
+
+	if (!m_ackReply)
+		return;
 
 	unsigned char user[DSTAR_LONG_CALLSIGN_LENGTH];
 	m_rfHeader.getMyCall1(user);
