@@ -24,6 +24,7 @@
 #define OLED_LINE2 26 
 #define OLED_LINE3 36
 #define OLED_LINE4 46
+#define OLED_LINE5 56
 
 #include "Display.h"
 #include "Defines.h"
@@ -71,6 +72,7 @@ private:
   unsigned char m_displayType;
   unsigned char m_displayBrightness;
   bool          m_displayInvert;
+;
 
   ArduiPi_OLED display;
   void OLED_statusbar();
