@@ -208,8 +208,6 @@ void COLED::writeDStarInt(const char* my1, const char* my2, const char* your, co
     display.setCursor(0,OLED_LINE5);
     display.printf("via %.8s",reflector);
  
-		
-
     OLED_statusbar();
     display.display();
 }
@@ -217,12 +215,11 @@ void COLED::writeDStarInt(const char* my1, const char* my2, const char* your, co
 void COLED::clearDStarInt()
 {
     display.clearDisplay();
-    display.fillRect(0,OLED_LINE2, display.width(),display.height(),BLACK); //clear everything under logo
+    display.fillRect(0,OLED_LINE1, display.width(),display.height(),BLACK); //clear everything under logo
 
     display.setCursor(40,38);
     display.print("Listening");
 
-    OLED_statusbar();
     display.display();
 }
 
@@ -322,7 +319,7 @@ void COLED::writeP25Int(const char* source, bool group, unsigned int dest, const
     m_mode = MODE_P25;
 
     display.clearDisplay();
-    display.fillRect(0, OLED_LINE2, display.width(), display.height(), BLACK);
+    display.fillRect(0, OLED_LINE1, display.width(), display.height(), BLACK);
 
     display.setCursor(0,OLED_LINE2);
     display.printf("%s %.10s", type, source);
@@ -337,7 +334,7 @@ void COLED::writeP25Int(const char* source, bool group, unsigned int dest, const
 void COLED::clearP25Int()
 {
     display.clearDisplay();
-    display.fillRect(0, OLED_LINE2, display.width(), display.height(), BLACK);
+    display.fillRect(0, OLED_LINE1, display.width(), display.height(), BLACK);
 
     display.setCursor(40,38);
     display.print("Listening");
