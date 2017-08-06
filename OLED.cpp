@@ -197,7 +197,7 @@ void COLED::writeDStarInt(const char* my1, const char* my2, const char* your, co
     m_mode = MODE_DSTAR;
 
     display.clearDisplay();
-    display.fillRect(0,OLED_LINE1,display.width(),display.height(),BLACK); //clear everything under logo
+    display.fillRect(0,OLED_LINE1,display.width(),display.height(),BLACK); //clear everything beneath logo
 
     display.setCursor(0,OLED_LINE2);
     display.printf("%s %.8s/%4.4s",type,my1,my2);
@@ -214,9 +214,8 @@ void COLED::writeDStarInt(const char* my1, const char* my2, const char* your, co
 
 void COLED::clearDStarInt()
 {
-    display.clearDisplay();
-    display.fillRect(0,OLED_LINE1, display.width(),display.height(),BLACK); //clear everything under logo
-
+    display.fillRect(0,OLED_LINE1, display.width(),display.height(),BLACK); //clear everything beneath the logo
+	
     display.setCursor(40,38);
     display.print("Listening");
 
@@ -333,7 +332,6 @@ void COLED::writeP25Int(const char* source, bool group, unsigned int dest, const
 
 void COLED::clearP25Int()
 {
-    display.clearDisplay();
     display.fillRect(0, OLED_LINE1, display.width(), display.height(), BLACK);
 
     display.setCursor(40,38);
