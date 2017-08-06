@@ -72,7 +72,6 @@ private:
   unsigned char m_displayType;
   unsigned char m_displayBrightness;
   bool          m_displayInvert;
-;
 
   ArduiPi_OLED display;
   void OLED_statusbar();
