@@ -160,7 +160,7 @@ void COLED::setIdleInt()
 //    display.print("Idle");
 
 //    display.setTextSize(1);
-    display.startscrolldiagright(0x00,0x0f);  //the log scrolls the whole screen
+    display.startscrolldiagright(0x00,0x0f);  //the MMDVM logo scrolls the whole screen
     display.display();
 }
 
