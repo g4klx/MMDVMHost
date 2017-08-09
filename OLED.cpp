@@ -155,12 +155,12 @@ void COLED::setIdleInt()
     display.clearDisplay();
     OLED_statusbar();
 
-    display.setCursor(0,30);
-    display.setTextSize(3);
-    display.print("Idle");
+//    display.setCursor(0,30);
+//    display.setTextSize(3);
+//    display.print("Idle");
 
-    display.setTextSize(1);
-    display.startscrollleft(0x02,0x0f);
+//    display.setTextSize(1);
+    display.startscrolldiagright(0x00,0x0f);  //the MMDVM logo scrolls the whole screen
     display.display();
 }
 
