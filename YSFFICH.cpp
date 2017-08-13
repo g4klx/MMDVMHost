@@ -204,6 +204,16 @@ bool CYSFFICH::getDev() const
 	return (m_fich[2U] & 0x40U) == 0x40U;
 }
 
+bool CYSFFICH::getSQL() const
+{
+	return (m_fich[3U] & 0x80U) == 0x80U;
+}
+
+unsigned char CYSFFICH::getSQ() const
+{
+	return m_fich[3U] & 0x7FU;
+}
+
 void CYSFFICH::setMR(unsigned char mr)
 {
 	m_fich[2U] &= 0xC7U;
@@ -224,4 +234,18 @@ void CYSFFICH::setDev(bool on)
 		m_fich[2U] |= 0x40U;
 	else
 		m_fich[2U] &= 0xBFU;
+}
+
+void CYSFFICH::setSQL(bool on)
+{
+	if (on)
+		m_fich[3U] |= 0x80U;
+	else
+		m_fich[3U] &= 0x7FU;
+}
+
+void CYSFFICH::setSQ(unsigned char sq)
+{
+	m_fich[3U] &= 0x80U;
+	m_fich[3U] |= sq & 0x7FU;
 }

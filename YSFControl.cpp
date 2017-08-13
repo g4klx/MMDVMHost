@@ -31,6 +31,8 @@ m_display(display),
 m_duplex(duplex),
 m_lowDeviation(lowDeviation),
 m_remoteGateway(remoteGateway),
+m_sqlEnabled(false),
+m_sqlValue(0U),
 m_queue(5000U, "YSF Control"),
 m_rfState(RS_RF_LISTENING),
 m_netState(RS_NET_IDLE),
@@ -95,6 +97,12 @@ CYSFControl::~CYSFControl()
 	delete[] m_callsign;
 }
 
+void CYSFControl::setSQL(bool on, unsigned char value)
+{
+	m_sqlEnabled = on;
+	m_sqlValue   = value;
+}
+
 bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 {
 	assert(data != NULL);
@@ -142,6 +150,14 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 		unsigned char fi = fich.getFI();
 		if (fi == YSF_FI_TERMINATOR)
 			return false;
+
+		if (m_sqlEnabled) {
+			bool sql = fich.getSQL();
+			unsigned char value = fich.getSQ();
+
+			if (!sql || value != m_sqlValue)
+				return false;
+		}
 
 		m_rfFrames = 0U;
 		m_rfErrs = 0U;
@@ -207,6 +223,11 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 			LogMessage("YSF, received RF header from ?????????? to ??????????");
 		}
 
+		// Remove any DSQ information
+		fich.setSQL(false);
+		fich.setSQ(0U);
+		fich.encode(data + 2U);
+
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
 
@@ -232,6 +253,11 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 		// LogDebug("YSF, FICH: FI: %u, DT: %u, FN: %u, FT: %u", fich.getFI(), fich.getDT(), fich.getFN(), fich.getFT());
 
 		m_rfPayload.processHeaderData(data + 2U);
+
+		// Remove any DSQ information
+		fich.setSQL(false);
+		fich.setSQ(0U);
+		fich.encode(data + 2U);
 
 		data[0U] = TAG_EOT;
 		data[1U] = 0x00U;
@@ -346,6 +372,11 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 				LogMessage("YSF, received RF data from ?????????? to %10.10s", m_rfDest);
 			}
 		}
+
+		// Remove any DSQ information
+		fich.setSQL(false);
+		fich.setSQ(0U);
+		fich.encode(data + 2U);
 
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
@@ -515,8 +546,6 @@ void CYSFControl::writeNetwork()
 	data[33U] = end ? TAG_EOT : TAG_DATA;
 	data[34U] = 0x00U;
 
-	// bool send = true;
-
 	CYSFFICH fich;
 	bool valid = fich.decode(data + 35U);
 	if (valid) {
@@ -524,6 +553,10 @@ void CYSFControl::writeNetwork()
 		unsigned char fn = fich.getFN();
 		unsigned char ft = fich.getFT();
 		unsigned char fi = fich.getFI();
+
+		// Add any DSQ information
+		fich.setSQL(m_sqlEnabled);
+		fich.setSQ(m_sqlValue);
 
 		fich.setVoIP(true);
 		fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
@@ -587,16 +620,13 @@ void CYSFControl::writeNetwork()
 		default:
 			break;
 		}
-	} else {
-		// send = insertSilence(data + 33U, n);
 	}
 
-	// if (send) {
-		writeQueueNet(data + 33U);
-		m_packetTimer.start();
-		m_netFrames++;
-		m_netN = n;
-	// }
+	writeQueueNet(data + 33U);
+
+	m_packetTimer.start();
+	m_netFrames++;
+	m_netN = n;
 
 	if (end) {
 		LogMessage("YSF, received network end of transmission, %.1f seconds, %u%% packet loss, BER: %.1f%%", float(m_netFrames) / 10.0F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));

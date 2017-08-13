@@ -37,10 +37,14 @@ public:
 	unsigned char getDT() const;
 	unsigned char getMR() const;
 	bool getDev() const;
+	bool getSQL() const;
+	unsigned char getSQ() const;
 
 	void setMR(unsigned char mr);
 	void setVoIP(bool set);
 	void setDev(bool set);
+	void setSQL(bool set);
+	void setSQ(unsigned char sq);
 
 private:
 	unsigned char* m_fich;

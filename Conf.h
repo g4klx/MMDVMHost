@@ -114,9 +114,11 @@ public:
   unsigned int getDMRTXHang() const;
 
   // The System Fusion section
-  bool         getFusionEnabled() const;
-  bool         getFusionLowDeviation() const;
-  bool         getFusionRemoteGateway() const;
+  bool          getFusionEnabled() const;
+  bool          getFusionLowDeviation() const;
+  bool          getFusionRemoteGateway() const;
+  bool          getFusionSQLEnabled() const;
+  unsigned char getFusionSQL() const;
 
   // The P25 section
   bool         getP25Enabled() const;
@@ -269,9 +271,11 @@ private:
   unsigned int m_dmrCallHang;
   unsigned int m_dmrTXHang;
 
-  bool         m_fusionEnabled;
-  bool         m_fusionLowDeviation;
-  bool         m_fusionRemoteGateway;
+  bool          m_fusionEnabled;
+  bool          m_fusionLowDeviation;
+  bool          m_fusionRemoteGateway;
+  bool          m_fusionSQLEnabled;
+  unsigned char m_fusionSQL;
 
   bool         m_p25Enabled;
   unsigned int m_p25NAC;

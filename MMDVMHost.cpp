@@ -408,12 +408,18 @@ int CMMDVMHost::run()
 	if (m_ysfEnabled) {
 		bool lowDeviation  = m_conf.getFusionLowDeviation();
 		bool remoteGateway = m_conf.getFusionRemoteGateway();
+		bool sqlEnabled    = m_conf.getFusionSQLEnabled();
+		unsigned char sql  = m_conf.getFusionSQL();
 
 		LogInfo("YSF Parameters");
 		LogInfo("    Low Deviation: %s", lowDeviation ? "yes" : "no");
 		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
+		LogInfo("    DSQ: %s", sqlEnabled ? "yes" : "no");
+		if (sqlEnabled)
+			LogInfo("    DSQ Value: %u", sql);
 
 		ysf = new CYSFControl(m_callsign, m_ysfNetwork, m_display, m_timeout, m_duplex, lowDeviation, remoteGateway, rssi);
+		ysf->setSQL(sqlEnabled, sql);
 	}
 
 	CP25Control* p25 = NULL;
