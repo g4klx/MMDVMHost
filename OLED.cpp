@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -103,10 +103,11 @@ const unsigned char logo_fusion_bmp [] =
 };
 
 
-COLED::COLED(unsigned char displayType, unsigned char displayBrightness, bool displayInvert) :
+COLED::COLED(unsigned char displayType, unsigned char displayBrightness, bool displayInvert, bool displayScroll) :
 m_displayType(displayType),
 m_displayBrightness(displayBrightness),
-m_displayInvert(displayInvert)
+m_displayInvert(displayInvert),
+m_displayScroll(displayScroll)
 {
 }
 
@@ -379,16 +380,16 @@ void COLED::OLED_statusbar()
 
     display.setCursor(0,0);
     if (m_mode == MODE_DMR)
-	display.drawBitmap(0, 0, logo_dmr_bmp, 128, 16, WHITE);
+	    display.drawBitmap(0, 0, logo_dmr_bmp, 128, 16, WHITE);
     else if (m_mode == MODE_DSTAR)
-	display.drawBitmap(0, 0, logo_dstar_bmp, 128, 16, WHITE);
+	    display.drawBitmap(0, 0, logo_dstar_bmp, 128, 16, WHITE);
     else if (m_mode == MODE_YSF)
-	display.drawBitmap(0, 0, logo_fusion_bmp, 128, 16, WHITE);
+	    display.drawBitmap(0, 0, logo_fusion_bmp, 128, 16, WHITE);
     else if (m_mode == MODE_P25)
       display.print("P25");
     else
       display.drawBitmap(0, 0, logo_glcd_bmp, 128, 16, WHITE);
 
-//    display.startscrollright(0x00,0x02);    //<-Uncomment this line to make the mode logo scroll
-
+    if (m_displayScroll)
+      display.startscrollright(0x00,0x02);    //<-Uncomment this line to make the mode logo scroll
 }

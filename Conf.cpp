@@ -173,6 +173,7 @@ m_nextionIdleBrightness(20U),
 m_oledType(3U),
 m_oledBrightness(0U),
 m_oledInvert(false),
+m_oledScroll(false),
 m_lcdprocAddress(),
 m_lcdprocPort(0U),
 m_lcdprocLocalPort(0U),
@@ -571,6 +572,8 @@ bool CConf::read()
 			m_oledBrightness = (unsigned char)::atoi(value);
 		else if (::strcmp(key, "Invert") == 0)
 			m_oledInvert = ::atoi(value) == 1;
+		else if (::strcmp(key, "Scroll") == 0)
+			m_oledScroll = ::atoi(value) == 1;
 	} else if (section == SECTION_LCDPROC) {
 		if (::strcmp(key, "Address") == 0)
 			m_lcdprocAddress = value;
@@ -1185,6 +1188,11 @@ unsigned char CConf::getOLEDBrightness() const
 bool CConf::getOLEDInvert() const
 {
 	return m_oledInvert;
+}
+
+bool CConf::getOLEDScroll() const
+{
+	return m_oledScroll;
 }
 
 std::string CConf::getLCDprocAddress() const

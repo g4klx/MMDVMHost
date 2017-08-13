@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@
 class COLED : public CDisplay 
 {
 public:
-  COLED(unsigned char displayType, unsigned char displayBrighness, bool displayInvert);
+  COLED(unsigned char displayType, unsigned char displayBrighness, bool displayInvert, bool displayScroll);
   virtual ~COLED();
 
   virtual bool open();
@@ -72,6 +72,7 @@ private:
   unsigned char m_displayType;
   unsigned char m_displayBrightness;
   bool          m_displayInvert;
+  bool          m_displayScroll;
 
   ArduiPi_OLED display;
   void OLED_statusbar();
