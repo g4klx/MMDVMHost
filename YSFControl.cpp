@@ -584,12 +584,54 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			openFile();
 #endif
 
-			// XXX Build a new header and transmit it here
+			// Build a new header and transmit it
+			unsigned char buffer[YSF_FRAME_LENGTH_BYTES + 2U];
+
+			CSync::addYSFSync(buffer + 2U);
+
+			CYSFFICH fich = m_lastFICH;
+			fich.setFI(YSF_FI_HEADER);
+			fich.setSQL(false);
+			fich.setSQ(0U);
+			fich.encode(buffer + 2U);
+
+			unsigned char csd1[20U], csd2[20U];
+			memcpy(csd1, m_rfSource, YSF_CALLSIGN_LENGTH);
+			memset(csd2, ' ', 20U);
+
+			unsigned char cm = fich.getCM();
+			if (cm == YSF_CM_GROUP)
+				memset(csd1 + YSF_CALLSIGN_LENGTH, '*', YSF_CALLSIGN_LENGTH);
+			else
+				memcpy(csd1 + YSF_CALLSIGN_LENGTH, m_rfDest, YSF_CALLSIGN_LENGTH);
+
+			CYSFPayload payload;
+			payload.writeHeader(buffer + 2U, csd1, csd2);
+
+			buffer[0U] = TAG_DATA;
+			buffer[1U] = 0x00U;
+
+			writeNetwork(buffer, m_rfFrames % 128U);
+
+			if (m_duplex) {
+				// Add the DSQ information.
+				fich.setSQL(m_sqlEnabled);
+				fich.setSQ(m_sqlValue);
+
+				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
+				fich.setDev(m_lowDeviation);
+				fich.encode(buffer + 2U);
+				writeQueueRF(buffer);
+			}
+
+#if defined(DUMP_YSF)
+			writeFile(buffer + 2U);
+#endif
 
 			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, "R", "          ");
 			LogMessage("YSF, received RF data from %10.10s to %10.10s", m_rfSource, m_rfDest);
 
-			CYSFFICH fich = m_lastFICH;
+			fich = m_lastFICH;
 
 			// Remove any DSQ information
 			fich.setSQL(false);

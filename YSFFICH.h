@@ -41,6 +41,7 @@ public:
 	bool getSQL() const;
 	unsigned char getSQ() const;
 
+	void setFI(unsigned char fi);
 	void setMR(unsigned char mr);
 	void setVoIP(bool set);
 	void setDev(bool set);

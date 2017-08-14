@@ -66,6 +66,8 @@ CYSFFICH::CYSFFICH() :
 m_fich(NULL)
 {
 	m_fich  = new unsigned char[6U];
+
+	memset(m_fich, 0x00U, 6U);
 }
 
 CYSFFICH::~CYSFFICH()
@@ -220,6 +222,12 @@ bool CYSFFICH::getSQL() const
 unsigned char CYSFFICH::getSQ() const
 {
 	return m_fich[3U] & 0x7FU;
+}
+
+void CYSFFICH::setFI(unsigned char fi)
+{
+	m_fich[0U] &= 0x3FU;
+	m_fich[0U] |= (fi << 6) & 0xC0U;
 }
 
 void CYSFFICH::setMR(unsigned char mr)

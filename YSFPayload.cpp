@@ -816,6 +816,105 @@ unsigned int CYSFPayload::processVoiceFRModeAudio(unsigned char* data)
 	return errors;
 }
 
+void CYSFPayload::writeHeader(unsigned char* data, const unsigned char* csd1, const unsigned char* csd2)
+{
+	assert(data != NULL);
+	assert(csd1 != NULL);
+	assert(csd2 != NULL);
+
+	writeDataFRModeData1(csd1, data);
+
+	writeDataFRModeData2(csd2, data);
+}
+
+void CYSFPayload::writeDataFRModeData1(const unsigned char* dt, unsigned char* data)
+{
+	assert(dt != NULL);
+	assert(data != NULL);
+
+	data += YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES;
+
+	unsigned char output[25U];
+	for (unsigned int i = 0U; i < 20U; i++)
+		output[i] = dt[i] ^ WHITENING_DATA[i];
+
+	CCRC::addCCITT162(output, 22U);
+	output[22U] = 0x00U;
+
+	unsigned char convolved[45U];
+
+	CYSFConvolution conv;
+	conv.encode(output, convolved, 180U);
+
+	unsigned char bytes[45U];
+	unsigned int j = 0U;
+	for (unsigned int i = 0U; i < 180U; i++) {
+		unsigned int n = INTERLEAVE_TABLE_9_20[i];
+
+		bool s0 = READ_BIT1(convolved, j) != 0U;
+		j++;
+
+		bool s1 = READ_BIT1(convolved, j) != 0U;
+		j++;
+
+		WRITE_BIT1(bytes, n, s0);
+
+		n++;
+		WRITE_BIT1(bytes, n, s1);
+	}
+
+	unsigned char* p1 = data;
+	unsigned char* p2 = bytes;
+	for (unsigned int i = 0U; i < 5U; i++) {
+		::memcpy(p1, p2, 9U);
+		p1 += 18U; p2 += 9U;
+	}
+}
+
+void CYSFPayload::writeDataFRModeData2(const unsigned char* dt, unsigned char* data)
+{
+	assert(dt != NULL);
+	assert(data != NULL);
+
+	data += YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES;
+
+	unsigned char output[25U];
+	for (unsigned int i = 0U; i < 20U; i++)
+		output[i] = dt[i] ^ WHITENING_DATA[i];
+
+	CCRC::addCCITT162(output, 22U);
+	output[22U] = 0x00U;
+
+	unsigned char convolved[45U];
+
+	CYSFConvolution conv;
+	conv.encode(output, convolved, 180U);
+
+	unsigned char bytes[45U];
+	unsigned int j = 0U;
+	for (unsigned int i = 0U; i < 180U; i++) {
+		unsigned int n = INTERLEAVE_TABLE_9_20[i];
+
+		bool s0 = READ_BIT1(convolved, j) != 0U;
+		j++;
+
+		bool s1 = READ_BIT1(convolved, j) != 0U;
+		j++;
+
+		WRITE_BIT1(bytes, n, s0);
+
+		n++;
+		WRITE_BIT1(bytes, n, s1);
+	}
+
+	unsigned char* p1 = data + 9U;
+	unsigned char* p2 = bytes;
+	for (unsigned int i = 0U; i < 5U; i++) {
+		::memcpy(p1, p2, 9U);
+		p1 += 18U; p2 += 9U;
+	}
+}
+
 void CYSFPayload::setUplink(const std::string& callsign)
 {
 	m_uplink = new unsigned char[YSF_CALLSIGN_LENGTH];
