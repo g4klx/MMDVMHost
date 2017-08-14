@@ -25,6 +25,7 @@
 #include "YSFPayload.h"
 #include "RingBuffer.h"
 #include "StopWatch.h"
+#include "YSFFICH.h"
 #include "Display.h"
 #include "Defines.h"
 #include "Timer.h"
@@ -73,12 +74,7 @@ private:
 	unsigned char*             m_rfDest;
 	unsigned char*             m_netSource;
 	unsigned char*             m_netDest;
-	unsigned char*             m_lastFrame;
-	bool                       m_lastFrameValid;
-	bool                       m_lastSQL;
-	unsigned char              m_lastSQ;
-	unsigned char              m_lastMode;
-	unsigned char              m_lastMR;
+	CYSFFICH                   m_lastFICH;
 	unsigned char              m_netN;
 	CYSFPayload                m_rfPayload;
 	CYSFPayload                m_netPayload;
@@ -89,6 +85,10 @@ private:
 	unsigned int               m_aveRSSI;
 	unsigned int               m_rssiCount;
 	FILE*                      m_fp;
+
+	bool processVWData(bool valid, unsigned char *data);
+	bool processDNData(bool valid, unsigned char *data);
+	bool processFRData(bool valid, unsigned char *data);
 
 	void writeQueueRF(const unsigned char* data);
 	void writeQueueNet(const unsigned char* data);
@@ -101,9 +101,6 @@ private:
 	bool openFile();
 	bool writeFile(const unsigned char* data);
 	void closeFile();
-
-	bool insertSilence(const unsigned char* data, unsigned char n);
-	void insertSilence(unsigned int count);
 };
 
 #endif

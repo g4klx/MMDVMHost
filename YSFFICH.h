@@ -21,6 +21,7 @@
 
 class CYSFFICH {
 public:
+	CYSFFICH(const CYSFFICH& fich);
 	CYSFFICH();
 	~CYSFFICH();
 
@@ -45,6 +46,8 @@ public:
 	void setDev(bool set);
 	void setSQL(bool set);
 	void setSQ(unsigned char sq);
+
+	CYSFFICH& operator=(const CYSFFICH& fich);
 
 private:
 	unsigned char* m_fich;

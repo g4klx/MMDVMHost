@@ -54,6 +54,14 @@ const unsigned int INTERLEAVE_TABLE[] = {
   36U, 76U, 116U, 156U, 196U,
   38U, 78U, 118U, 158U, 198U};
 
+CYSFFICH::CYSFFICH(const CYSFFICH& fich) :
+m_fich(NULL)
+{
+	m_fich = new unsigned char[6U];
+
+	::memcpy(m_fich, fich.m_fich, 6U);
+}
+
 CYSFFICH::CYSFFICH() :
 m_fich(NULL)
 {
@@ -248,4 +256,12 @@ void CYSFFICH::setSQ(unsigned char sq)
 {
 	m_fich[3U] &= 0x80U;
 	m_fich[3U] |= sq & 0x7FU;
+}
+
+CYSFFICH& CYSFFICH::operator=(const CYSFFICH& fich)
+{
+	if (&fich != this)
+		::memcpy(m_fich, fich.m_fich, 6U);
+
+	return *this;
 }
