@@ -242,6 +242,10 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 #endif
 
 		if (m_duplex) {
+			// Add the DSQ information.
+			fich.setSQL(m_sqlEnabled);
+			fich.setSQ(m_sqlValue);
+
 			fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 			fich.setDev(m_lowDeviation);
 			fich.encode(data + 2U);
@@ -276,6 +280,10 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 #endif
 
 		if (m_duplex) {
+			// Add the DSQ information.
+			fich.setSQL(m_sqlEnabled);
+			fich.setSQ(m_sqlValue);
+
 			fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 			fich.setDev(m_lowDeviation);
 			fich.encode(data + 2U);
@@ -325,6 +333,10 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 		writeNetwork(data, m_rfFrames % 128U);
 
 		if (m_duplex) {
+			// Add the DSQ information.
+			fich.setSQL(m_sqlEnabled);
+			fich.setSQ(m_sqlValue);
+
 			fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 			fich.setDev(m_lowDeviation);
 			fich.encode(data + 2U);
@@ -399,6 +411,10 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 #endif
 
 		if (m_duplex) {
+			// Add the DSQ information.
+			fich.setSQL(m_sqlEnabled);
+			fich.setSQ(m_sqlValue);
+
 			fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 			fich.setDev(m_lowDeviation);
 			fich.encode(data + 2U);
@@ -433,6 +449,10 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 #endif
 
 		if (m_duplex) {
+			// Add the DSQ information.
+			fich.setSQL(m_sqlEnabled);
+			fich.setSQ(m_sqlValue);
+
 			fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 			fich.setDev(m_lowDeviation);
 			fich.encode(data + 2U);
@@ -496,6 +516,10 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			writeNetwork(data, m_rfFrames % 128U);
 
 			if (m_duplex) {
+				// Add the DSQ information.
+				fich.setSQL(m_sqlEnabled);
+				fich.setSQ(m_sqlValue);
+
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -578,6 +602,10 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			writeNetwork(data, m_rfFrames % 128U);
 
 			if (m_duplex) {
+				// Add the DSQ information.
+				fich.setSQL(m_sqlEnabled);
+				fich.setSQ(m_sqlValue);
+
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -650,6 +678,10 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 #endif
 
 		if (m_duplex) {
+			// Add the DSQ information.
+			fich.setSQL(m_sqlEnabled);
+			fich.setSQ(m_sqlValue);
+
 			fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 			fich.setDev(m_lowDeviation);
 			fich.encode(data + 2U);
@@ -684,6 +716,10 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 #endif
 
 		if (m_duplex) {
+			// Add the DSQ information.
+			fich.setSQL(m_sqlEnabled);
+			fich.setSQ(m_sqlValue);
+
 			fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 			fich.setDev(m_lowDeviation);
 			fich.encode(data + 2U);
@@ -725,6 +761,10 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 		writeNetwork(data, m_rfFrames % 128U);
 
 		if (m_duplex) {
+			// Add the DSQ information.
+			fich.setSQL(m_sqlEnabled);
+			fich.setSQ(m_sqlValue);
+
 			fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 			fich.setDev(m_lowDeviation);
 			fich.encode(data + 2U);
