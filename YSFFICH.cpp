@@ -230,6 +230,18 @@ void CYSFFICH::setFI(unsigned char fi)
 	m_fich[0U] |= (fi << 6) & 0xC0U;
 }
 
+void CYSFFICH::setFN(unsigned char fn)
+{
+	m_fich[1U] &= 0xC7U;
+	m_fich[1U] |= (fn << 3) & 0x38U;
+}
+
+void CYSFFICH::setFT(unsigned char ft)
+{
+	m_fich[1U] &= 0xF8U;
+	m_fich[1U] |= ft & 0x07U;
+}
+
 void CYSFFICH::setMR(unsigned char mr)
 {
 	m_fich[2U] &= 0xC7U;

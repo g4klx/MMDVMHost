@@ -42,6 +42,8 @@ public:
 	unsigned char getSQ() const;
 
 	void setFI(unsigned char fi);
+	void setFN(unsigned char fn);
+	void setFT(unsigned char ft);
 	void setMR(unsigned char mr);
 	void setVoIP(bool set);
 	void setDev(bool set);

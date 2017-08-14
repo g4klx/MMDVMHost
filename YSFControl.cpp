@@ -189,7 +189,7 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 bool CYSFControl::processVWData(bool valid, unsigned char *data)
 {
 	unsigned char fi = m_lastFICH.getFI();
-	if (fi == YSF_FI_HEADER) {
+	if (valid && fi == YSF_FI_HEADER) {
 		if (m_rfState != RS_RF_LISTENING)
 			return false;
 
@@ -255,7 +255,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 		m_rfFrames++;
 
 		m_display->writeFusionRSSI(m_rssi);
-	} else if (fi == YSF_FI_TERMINATOR) {
+	} else if (valid && fi == YSF_FI_TERMINATOR) {
 		if (m_rfState != RS_RF_AUDIO)
 			return false;
 
@@ -304,7 +304,12 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 		if (m_rfState != RS_RF_AUDIO)
 			return false;
 
-		// XXX If valid is false, update the m_lastFICH for this transmission
+		// If valid is false, update the m_lastFICH for this transmission
+		if (!valid) {
+			// XXX Check these values
+			m_lastFICH.setFT(0U);
+			m_lastFICH.setFN(0U);
+		}
 
 		CSync::addYSFSync(data + 2U);
 
@@ -358,7 +363,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 bool CYSFControl::processDNData(bool valid, unsigned char *data)
 {
 	unsigned char fi = m_lastFICH.getFI();
-	if (fi == YSF_FI_HEADER) {
+	if (valid && fi == YSF_FI_HEADER) {
 		if (m_rfState != RS_RF_LISTENING)
 			return false;
 
@@ -424,7 +429,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 		m_rfFrames++;
 
 		m_display->writeFusionRSSI(m_rssi);
-	} else if (fi == YSF_FI_TERMINATOR) {
+	} else if (valid && fi == YSF_FI_TERMINATOR) {
 		if (m_rfState != RS_RF_AUDIO)
 			return false;
 
@@ -471,7 +476,16 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 		return false;
 	} else {
 		if (m_rfState == RS_RF_AUDIO) {
-			// XXX If valid is false, update the m_lastFICH for this transmission
+			// If valid is false, update the m_lastFICH for this transmission
+			if (!valid) {
+				unsigned char ft = m_lastFICH.getFT();
+				unsigned char fn = m_lastFICH.getFN() + 1U;
+
+				if (fn > ft)
+					fn = 0U;
+
+				m_lastFICH.setFN(fn);
+			}
 
 			CSync::addYSFSync(data + 2U);
 
@@ -534,6 +548,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			m_display->writeFusionRSSI(m_rssi);
 		} else if (valid) {
+			// Only use clean frames for late entry.
 			CSync::addYSFSync(data + 2U);
 
 			unsigned char fn = m_lastFICH.getFN();
@@ -596,14 +611,14 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			fich.encode(buffer + 2U);
 
 			unsigned char csd1[20U], csd2[20U];
-			memcpy(csd1, m_rfSource, YSF_CALLSIGN_LENGTH);
-			memset(csd2, ' ', 20U);
+			memcpy(csd1 + YSF_CALLSIGN_LENGTH, m_rfSource, YSF_CALLSIGN_LENGTH);
+			memset(csd2, ' ', YSF_CALLSIGN_LENGTH + YSF_CALLSIGN_LENGTH);
 
 			unsigned char cm = fich.getCM();
 			if (cm == YSF_CM_GROUP)
-				memset(csd1 + YSF_CALLSIGN_LENGTH, '*', YSF_CALLSIGN_LENGTH);
+				memset(csd1 + 0U, '*', YSF_CALLSIGN_LENGTH);
 			else
-				memcpy(csd1 + YSF_CALLSIGN_LENGTH, m_rfDest, YSF_CALLSIGN_LENGTH);
+				memcpy(csd1 + 0U, m_rfDest, YSF_CALLSIGN_LENGTH);
 
 			CYSFPayload payload;
 			payload.writeHeader(buffer + 2U, csd1, csd2);
@@ -670,7 +685,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 bool CYSFControl::processFRData(bool valid, unsigned char *data)
 {
 	unsigned char fi = m_lastFICH.getFI();
-	if (fi == YSF_FI_HEADER) {
+	if (valid && fi == YSF_FI_HEADER) {
 		if (m_rfState != RS_RF_LISTENING)
 			return false;
 
@@ -733,7 +748,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 		m_rfFrames++;
 
 		m_display->writeFusionRSSI(m_rssi);
-	} else if (fi == YSF_FI_TERMINATOR) {
+	} else if (valid && fi == YSF_FI_TERMINATOR) {
 		if (m_rfState != RS_RF_DATA)
 			return false;
 
@@ -782,7 +797,16 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 		if (m_rfState != RS_RF_DATA)
 			return false;
 
-		// XXX If valid is false, update the m_lastFICH for this transmission
+		// If valid is false, update the m_lastFICH for this transmission
+		if (!valid) {
+			unsigned char ft = m_lastFICH.getFT();
+			unsigned char fn = m_lastFICH.getFN() + 1U;
+
+			if (fn > ft)
+				fn = 0U;
+
+			m_lastFICH.setFN(fn);
+		}
 
 		CSync::addYSFSync(data + 2U);
 
