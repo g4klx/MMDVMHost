@@ -54,6 +54,8 @@ m_netSource(NULL),
 m_netDest(NULL),
 m_lastFrame(NULL),
 m_lastFrameValid(false),
+m_lastSQL(false),
+m_lastSQ(0U),
 m_lastMode(YSF_DT_VOICE_FR_MODE),
 m_lastMR(YSF_MR_NOT_BUSY),
 m_netN(0U),
@@ -146,37 +148,44 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 	CYSFFICH fich;
 	bool valid = fich.decode(data + 2U);
 
-	if (valid && m_rfState == RS_RF_LISTENING) {
-		unsigned char fi = fich.getFI();
-		if (fi == YSF_FI_TERMINATOR)
-			return false;
+	if (valid) {
+		m_lastSQL = fich.getSQL();
+		m_lastSQ  = fich.getSQ();
 
-		if (m_sqlEnabled) {
-			bool sql = fich.getSQL();
-			unsigned char value = fich.getSQ();
-
-			if (!sql || value != m_sqlValue)
+		if (m_rfState == RS_RF_LISTENING) {
+			unsigned char fi = fich.getFI();
+			if (fi == YSF_FI_TERMINATOR)
 				return false;
-		}
 
-		m_rfFrames = 0U;
-		m_rfErrs = 0U;
-		m_rfBits = 1U;
-		m_rfTimeoutTimer.start();
-		m_rfPayload.reset();
-		m_rfState = RS_RF_AUDIO;
+			if (m_sqlEnabled) {
+				if (!m_lastSQL || m_lastSQ != m_sqlValue)
+					return false;
+			}
 
-		m_minRSSI = m_rssi;
-		m_maxRSSI = m_rssi;
-		m_aveRSSI = m_rssi;
-		m_rssiCount = 1U;
+			m_rfFrames = 0U;
+			m_rfErrs = 0U;
+			m_rfBits = 1U;
+			m_rfTimeoutTimer.start();
+			m_rfPayload.reset();
+			m_rfState = RS_RF_AUDIO;
+
+			m_minRSSI = m_rssi;
+			m_maxRSSI = m_rssi;
+			m_aveRSSI = m_rssi;
+			m_rssiCount = 1U;
 #if defined(DUMP_YSF)
-		openFile();
+			openFile();
 #endif
+		}
 	}
 
 	if (m_rfState != RS_RF_AUDIO)
 		return false;
+
+	if (m_sqlEnabled) {
+		if (!m_lastSQL || m_lastSQ != m_sqlValue)
+			return false;
+	}
 
 	if (valid)
 		m_lastMR = fich.getMR();

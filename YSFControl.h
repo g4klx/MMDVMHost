@@ -75,6 +75,8 @@ private:
 	unsigned char*             m_netDest;
 	unsigned char*             m_lastFrame;
 	bool                       m_lastFrameValid;
+	bool                       m_lastSQL;
+	unsigned char              m_lastSQ;
 	unsigned char              m_lastMode;
 	unsigned char              m_lastMR;
 	unsigned char              m_netN;
