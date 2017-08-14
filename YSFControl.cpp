@@ -247,6 +247,10 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 #endif
 
 		if (m_duplex) {
+			// Add the DSQ information.
+			fich.setSQL(m_sqlEnabled);
+			fich.setSQ(m_sqlValue);
+
 			fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 			fich.setDev(m_lowDeviation);
 			fich.encode(data + 2U);
@@ -278,6 +282,10 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 #endif
 
 		if (m_duplex) {
+			// Add the DSQ information.
+			fich.setSQL(m_sqlEnabled);
+			fich.setSQ(m_sqlValue);
+
 			fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 			fich.setDev(m_lowDeviation);
 			fich.encode(data + 2U);
@@ -393,6 +401,10 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 		writeNetwork(data, m_rfFrames % 128U);
 
 		if (m_duplex) {
+			// Add the DSQ information.
+			fich.setSQL(m_sqlEnabled);
+			fich.setSQ(m_sqlValue);
+
 			fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 			fich.setDev(m_lowDeviation);
 			fich.encode(data + 2U);
