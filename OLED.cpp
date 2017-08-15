@@ -146,7 +146,7 @@ bool COLED::open()
     display.print("Startup");
     display.display();
 
-	return true;
+    return true;
 }
 
 void COLED::setIdleInt()
@@ -208,7 +208,7 @@ void COLED::writeDStarInt(const char* my1, const char* my2, const char* your, co
 
     display.setCursor(0,OLED_LINE5);
     display.printf("via %.8s",reflector);
- 
+
     OLED_statusbar();
     display.display();
 }
@@ -216,7 +216,7 @@ void COLED::writeDStarInt(const char* my1, const char* my2, const char* your, co
 void COLED::clearDStarInt()
 {
     display.fillRect(0,OLED_LINE1, display.width(),display.height(),BLACK); //clear everything beneath the logo
-	
+
     display.setCursor(40,38);
     display.print("Listening");
 
@@ -243,26 +243,26 @@ void COLED::writeDMRInt(unsigned int slotNo,const std::string& src,bool group,co
           display.fillRect(0,OLED_LINE2,display.width(),20,BLACK); //20=> clear 2 lines
           display.setCursor(0,OLED_LINE2);
           display.print("1 Listening");
- 
+
         }
     }
 
     if (slotNo == 1U)
-      	{
-        display.fillRect(0,OLED_LINE2,display.width(),20,BLACK);
-        display.setCursor(0,OLED_LINE2);
-        display.printf("%i %s %s",slotNo,type,src.c_str());
-        display.setCursor(0,OLED_LINE3);
-        display.printf("%s%s",group ? "TG" : "",dst.c_str());
-	}
+      {
+      display.fillRect(0,OLED_LINE2,display.width(),20,BLACK);
+      display.setCursor(0,OLED_LINE2);
+      display.printf("%i %s %s",slotNo,type,src.c_str());
+      display.setCursor(0,OLED_LINE3);
+      display.printf("%s%s",group ? "TG" : "",dst.c_str());
+      }
     else
-	{
-        display.fillRect(0,OLED_LINE4,display.width(),20,BLACK);
-        display.setCursor(0,OLED_LINE4);
-        display.printf("%i %s %s",slotNo,type,src.c_str());
-        display.setCursor(0,OLED_LINE5);
-        display.printf("%s%s", group ? "TG" : "", dst.c_str());
-        }
+      {
+      display.fillRect(0,OLED_LINE4,display.width(),20,BLACK);
+      display.setCursor(0,OLED_LINE4);
+      display.printf("%i %s %s",slotNo,type,src.c_str());
+      display.setCursor(0,OLED_LINE5);
+      display.printf("%s%s", group ? "TG" : "", dst.c_str());
+      }
 
     OLED_statusbar();
     display.display();
@@ -380,16 +380,16 @@ void COLED::OLED_statusbar()
 
     display.setCursor(0,0);
     if (m_mode == MODE_DMR)
-	    display.drawBitmap(0, 0, logo_dmr_bmp, 128, 16, WHITE);
+      display.drawBitmap(0, 0, logo_dmr_bmp, 128, 16, WHITE);
     else if (m_mode == MODE_DSTAR)
-	    display.drawBitmap(0, 0, logo_dstar_bmp, 128, 16, WHITE);
+      display.drawBitmap(0, 0, logo_dstar_bmp, 128, 16, WHITE);
     else if (m_mode == MODE_YSF)
-	    display.drawBitmap(0, 0, logo_fusion_bmp, 128, 16, WHITE);
+      display.drawBitmap(0, 0, logo_fusion_bmp, 128, 16, WHITE);
     else if (m_mode == MODE_P25)
       display.print("P25");
     else
       display.drawBitmap(0, 0, logo_glcd_bmp, 128, 16, WHITE);
 
     if (m_displayScroll)
-      display.startscrollright(0x00,0x02);    //<-Uncomment this line to make the mode logo scroll
+      display.startscrollright(0x00,0x02);
 }
