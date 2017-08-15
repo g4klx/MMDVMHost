@@ -126,6 +126,7 @@ m_fusionSQLEnabled(false),
 m_fusionSQL(0U),
 m_p25Enabled(false),
 m_p25NAC(0x293U),
+m_p25SelfOnly(false),
 m_dstarNetworkEnabled(false),
 m_dstarGatewayAddress(),
 m_dstarGatewayPort(0U),
@@ -466,6 +467,8 @@ bool CConf::read()
 			m_p25NAC = (unsigned int)::strtoul(value, NULL, 16);
 		else if (::strcmp(key, "OverrideUIDCheck") == 0)
 			m_p25OverrideUID = ::atoi(value) == 1;
+		else if (::strcmp(key, "SelfOnly") == 0)
+			m_p25SelfOnly = ::atoi(value) == 1;
 	} else if (section == SECTION_DSTAR_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dstarNetworkEnabled = ::atoi(value) == 1;
@@ -1088,6 +1091,11 @@ bool CConf::getP25NetworkDebug() const
 bool CConf::getP25OverrideUID() const
 {
 	return m_p25OverrideUID;
+}
+
+bool CConf::getP25SelfOnly() const
+{
+	return m_p25SelfOnly;
 }
 
 std::string CConf::getTFTSerialPort() const

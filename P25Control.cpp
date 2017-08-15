@@ -35,8 +35,10 @@ const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U
 #define WRITE_BIT(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
-CP25Control::CP25Control(unsigned int nac, bool uidOverride, CP25Network* network, CDisplay* display, unsigned int timeout, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper) :
+CP25Control::CP25Control(unsigned int nac, unsigned int id, bool selfOnly, bool uidOverride, CP25Network* network, CDisplay* display, unsigned int timeout, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper) :
 m_nac(nac),
+m_id(id),
+m_selfOnly(selfOnly),
 m_uidOverride(uidOverride),
 m_network(network),
 m_display(display),
@@ -234,6 +236,12 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 
 		if (m_rfState == RS_RF_LISTENING) {
 			unsigned int srcId = m_rfData.getSrcId();
+
+			if (m_selfOnly) {
+				if (srcId != m_id)
+					return false;
+			}
+
 			bool           grp = m_rfData.getLCF() == P25_LCF_GROUP;
 			unsigned int dstId = m_rfData.getDstId();
 			std::string source = m_lookup->find(srcId);

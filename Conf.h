@@ -123,6 +123,7 @@ public:
   // The P25 section
   bool         getP25Enabled() const;
   unsigned int getP25NAC() const;
+  bool         getP25SelfOnly() const;
 
   // The D-Star Network section
   bool         getDStarNetworkEnabled() const;
@@ -280,6 +281,7 @@ private:
 
   bool         m_p25Enabled;
   unsigned int m_p25NAC;
+  bool         m_p25SelfOnly;
 
   bool         m_dstarNetworkEnabled;
   std::string  m_dstarGatewayAddress;

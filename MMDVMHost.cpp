@@ -425,13 +425,17 @@ int CMMDVMHost::run()
 	CP25Control* p25 = NULL;
 	if (m_p25Enabled) {
 		unsigned int nac = m_conf.getP25NAC();
+		unsigned int id  = m_conf.getDMRId();
 		bool uidOverride = m_conf.getP25OverrideUID();
+		bool selfOnly    = m_conf.getP25SelfOnly();
 
 		LogInfo("P25 Parameters");
 		LogInfo("    NAC: $%03X", nac);
+		LogInfo("    Id: %u", id);
 		LogInfo("    UID Override: %s", uidOverride ? "yes" : "no");
+		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
 
-		p25 = new CP25Control(nac, uidOverride, m_p25Network, m_display, m_timeout, m_duplex, m_lookup, rssi);
+		p25 = new CP25Control(nac, id, selfOnly, uidOverride, m_p25Network, m_display, m_timeout, m_duplex, m_lookup, rssi);
 	}
 
 	setMode(MODE_IDLE);
