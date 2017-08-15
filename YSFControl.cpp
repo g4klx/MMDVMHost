@@ -23,8 +23,10 @@
 
 // #define	DUMP_YSF
 
-CYSFControl::CYSFControl(const std::string& callsign, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool lowDeviation, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
+CYSFControl::CYSFControl(const std::string& callsign, bool selfOnly, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool lowDeviation, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
 m_callsign(NULL),
+m_selfCallsign(NULL),
+m_selfOnly(selfOnly),
 m_network(network),
 m_display(display),
 m_duplex(duplex),
@@ -81,6 +83,12 @@ m_fp(NULL)
 
 	for (unsigned int i = 0U; i < YSF_CALLSIGN_LENGTH; i++)
 		m_callsign[i] = node.at(i);
+
+	m_selfCallsign = new unsigned char[YSF_CALLSIGN_LENGTH];
+	::memset(m_selfCallsign, 0x00U, YSF_CALLSIGN_LENGTH);
+
+	for (unsigned int i = 0U; i < callsign.length(); i++)
+		m_selfCallsign[i] = callsign.at(i);
 }
 
 CYSFControl::~CYSFControl()
@@ -88,6 +96,7 @@ CYSFControl::~CYSFControl()
 	delete[] m_netSource;
 	delete[] m_netDest;
 	delete[] m_callsign;
+	delete[] m_selfCallsign;
 }
 
 void CYSFControl::setSQL(bool on, unsigned char value)
@@ -200,6 +209,12 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 		CSync::addYSFSync(data + 2U);
 
 		m_rfSource = m_rfPayload.getSource();
+
+		if (m_selfOnly) {
+			bool ret = checkCallsign(m_rfSource);
+			if (!ret)
+				return false;
+		}
 
 		unsigned char cm = m_lastFICH.getCM();
 		if (cm == YSF_CM_GROUP)
@@ -374,6 +389,12 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 		CSync::addYSFSync(data + 2U);
 
 		m_rfSource = m_rfPayload.getSource();
+
+		if (m_selfOnly) {
+			bool ret = checkCallsign(m_rfSource);
+			if (!ret)
+				return false;
+		}
 
 		unsigned char cm = m_lastFICH.getCM();
 		if (cm == YSF_CM_GROUP)
@@ -584,6 +605,12 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			if (m_rfSource == NULL || m_rfDest == NULL)
 				return false;
 
+			if (m_selfOnly) {
+				bool ret = checkCallsign(m_rfSource);
+				if (!ret)
+					return false;
+			}
+
 			m_rfFrames = 0U;
 			m_rfErrs = 0U;
 			m_rfBits = 1U;
@@ -696,6 +723,12 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 		CSync::addYSFSync(data + 2U);
 
 		m_rfSource = m_rfPayload.getSource();
+
+		if (m_selfOnly) {
+			bool ret = checkCallsign(m_rfSource);
+			if (!ret)
+				return false;
+		}
 
 		unsigned char cm = m_lastFICH.getCM();
 		if (cm == YSF_CM_GROUP)
@@ -1162,4 +1195,9 @@ void CYSFControl::closeFile()
 		::fclose(m_fp);
 		m_fp = NULL;
 	}
+}
+
+bool CYSFControl::checkCallsign(const unsigned char* callsign) const
+{
+	return ::memcmp(callsign, m_selfCallsign, ::strlen((char*)m_selfCallsign)) == 0;
 }

@@ -117,6 +117,7 @@ public:
   bool          getFusionEnabled() const;
   bool          getFusionLowDeviation() const;
   bool          getFusionRemoteGateway() const;
+  bool          getFusionSelfOnly() const;
   bool          getFusionSQLEnabled() const;
   unsigned char getFusionSQL() const;
 
@@ -275,6 +276,7 @@ private:
   bool          m_fusionEnabled;
   bool          m_fusionLowDeviation;
   bool          m_fusionRemoteGateway;
+  bool          m_fusionSelfOnly;
   bool          m_fusionSQLEnabled;
   unsigned char m_fusionSQL;
 

@@ -35,7 +35,7 @@
 
 class CYSFControl {
 public:
-	CYSFControl(const std::string& callsign, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool lowDeviation, bool remoteGateway, CRSSIInterpolator* rssiMapper);
+	CYSFControl(const std::string& callsign, bool selfOnly, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool lowDeviation, bool remoteGateway, CRSSIInterpolator* rssiMapper);
 	~CYSFControl();
 
 	void setSQL(bool on, unsigned char value);
@@ -48,6 +48,8 @@ public:
 
 private:
 	unsigned char*             m_callsign;
+	unsigned char*             m_selfCallsign;
+	bool                       m_selfOnly;
 	CYSFNetwork*               m_network;
 	CDisplay*                  m_display;
 	bool                       m_duplex;
@@ -101,6 +103,8 @@ private:
 	bool openFile();
 	bool writeFile(const unsigned char* data);
 	void closeFile();
+
+	bool checkCallsign(const unsigned char* callsign) const;
 };
 
 #endif
