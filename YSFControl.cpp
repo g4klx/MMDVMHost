@@ -671,7 +671,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 #endif
 
 			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, "R", "          ");
-			LogMessage("YSF, received RF data from %10.10s to %10.10s", m_rfSource, m_rfDest);
+			LogMessage("YSF, received RF late entry from %10.10s to %10.10s", m_rfSource, m_rfDest);
 
 			fich = m_lastFICH;
 
