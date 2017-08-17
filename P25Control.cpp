@@ -188,7 +188,23 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			unsigned int srcId = m_rfData.getSrcId();
 
 			if (m_selfOnly) {
-				if (srcId != m_id) {
+				if (m_id > 99999999U) {		// Check that the Config DMR-ID is bigger than 8 digits
+					if (srcId != m_id / 100U) {
+						LogMessage("P25, invalid access attempt from %u", srcId);
+						m_rfState = RS_RF_REJECTED;
+						return false;
+					}
+				}
+
+				else if (m_id > 9999999U) {	// Check that the Config DMR-ID is bigger than 7 digits
+					if (srcId != m_id / 10U) {
+						LogMessage("P25, invalid access attempt from %u", srcId);
+						m_rfState = RS_RF_REJECTED;
+						return false;
+					}
+				}
+
+				else if (srcId != m_id) {	// All other cases
 					LogMessage("P25, invalid access attempt from %u", srcId);
 					m_rfState = RS_RF_REJECTED;
 					return false;
