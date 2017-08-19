@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -101,6 +101,17 @@ std::string CDMRLookup::find(unsigned int id)
 	m_mutex.unlock();
 
 	return callsign;
+}
+
+bool CDMRLookup::exists(unsigned int id)
+{
+	m_mutex.lock();
+
+	bool found = m_table.count(id) == 1U;
+
+	m_mutex.unlock();
+
+	return found;
 }
 
 bool CDMRLookup::load()

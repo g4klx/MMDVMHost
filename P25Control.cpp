@@ -179,7 +179,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 	if (duid == P25_DUID_LDU1) {
 		if (m_rfState == RS_RF_LISTENING) {
 			m_rfData.reset();
-			bool ret = m_rfData.decodeLDU1(data + 2U, m_network != NULL, m_uidOverride);
+			bool ret = m_rfData.decodeLDU1(data + 2U);
 			if (!ret) {
 				m_lastDUID = duid;
 				return false;
@@ -189,26 +189,24 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 
 			if (m_selfOnly) {
 				if (m_id > 99999999U) {		// Check that the Config DMR-ID is bigger than 8 digits
-					if (srcId != m_id / 100U) {
-						LogMessage("P25, invalid access attempt from %u", srcId);
-						m_rfState = RS_RF_REJECTED;
+					if (srcId != m_id / 100U)
 						return false;
-					}
 				}
 
 				else if (m_id > 9999999U) {	// Check that the Config DMR-ID is bigger than 7 digits
-					if (srcId != m_id / 10U) {
-						LogMessage("P25, invalid access attempt from %u", srcId);
-						m_rfState = RS_RF_REJECTED;
+					if (srcId != m_id / 10U)
 						return false;
-					}
 				}
 
 				else if (srcId != m_id) {	// All other cases
-					LogMessage("P25, invalid access attempt from %u", srcId);
-					m_rfState = RS_RF_REJECTED;
 					return false;
 				}
+			}
+
+			if (!m_uidOverride) {
+				bool found = m_lookup->exists(srcId);
+				if (!found)
+					return false;
 			}
 
 			bool           grp = m_rfData.getLCF() == P25_LCF_GROUP;
@@ -321,9 +319,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			return true;
 		}
 	} else if (duid == P25_DUID_TERM || duid == P25_DUID_TERM_LC) {
-		if (m_rfState == RS_RF_REJECTED) {
-			m_rfState = RS_RF_LISTENING;
-		} else if (m_rfState == RS_RF_AUDIO) {
+		if (m_rfState == RS_RF_AUDIO) {
 			writeNetwork(m_rfLDU, m_lastDUID, true);
 
 			::memset(data + 2U, 0x00U, P25_TERM_FRAME_LENGTH_BYTES);
