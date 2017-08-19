@@ -149,6 +149,7 @@ m_p25Enabled(false),
 m_cwIdTime(0U),
 m_lookup(NULL),
 m_callsign(),
+m_id(0U),
 m_cwCallsign()
 {
 }
@@ -426,14 +427,14 @@ int CMMDVMHost::run()
 
 	CP25Control* p25 = NULL;
 	if (m_p25Enabled) {
+		unsigned int id  = m_conf.getP25Id();
 		unsigned int nac = m_conf.getP25NAC();
-		unsigned int id  = m_conf.getDMRId();
 		bool uidOverride = m_conf.getP25OverrideUID();
 		bool selfOnly    = m_conf.getP25SelfOnly();
 
 		LogInfo("P25 Parameters");
-		LogInfo("    NAC: $%03X", nac);
 		LogInfo("    Id: %u", id);
+		LogInfo("    NAC: $%03X", nac);
 		LogInfo("    UID Override: %s", uidOverride ? "yes" : "no");
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
 
@@ -1024,6 +1025,7 @@ void CMMDVMHost::readParams()
 	m_p25Enabled   = m_conf.getP25Enabled();
 	m_duplex       = m_conf.getDuplex();
 	m_callsign     = m_conf.getCallsign();
+	m_id           = m_conf.getId();
 	m_timeout      = m_conf.getTimeout();
 
 	m_rfModeHang  = m_conf.getRFModeHang();
@@ -1031,6 +1033,7 @@ void CMMDVMHost::readParams()
 
 	LogInfo("General Parameters");
 	LogInfo("    Callsign: %s", m_callsign.c_str());
+	LogInfo("    Id: %u", m_id);
 	LogInfo("    Duplex: %s", m_duplex ? "yes" : "no");
 	LogInfo("    Timeout: %us", m_timeout);
 	LogInfo("    RF Mode Hang: %us", m_rfModeHang);

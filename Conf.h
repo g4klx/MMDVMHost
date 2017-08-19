@@ -32,6 +32,7 @@ public:
 
   // The General section
   std::string  getCallsign() const;
+  unsigned int getId() const;
   unsigned int getTimeout() const;
   bool         getDuplex() const;
   unsigned int getRFModeHang() const;
@@ -123,6 +124,7 @@ public:
 
   // The P25 section
   bool         getP25Enabled() const;
+  unsigned int getP25Id() const;
   unsigned int getP25NAC() const;
   bool         getP25SelfOnly() const;
 
@@ -200,6 +202,7 @@ public:
 
 private:
   std::string  m_file;
+  unsigned int m_id;
   std::string  m_callsign;
   unsigned int m_timeout;
   bool         m_duplex;
@@ -282,6 +285,7 @@ private:
   unsigned char m_fusionSQL;
 
   bool         m_p25Enabled;
+  unsigned int m_p25Id;
   unsigned int m_p25NAC;
   bool         m_p25SelfOnly;
 

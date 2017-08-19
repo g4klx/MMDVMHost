@@ -64,6 +64,7 @@ private:
   unsigned int   m_cwIdTime;
   CDMRLookup*    m_lookup;
   std::string    m_callsign;
+  unsigned int   m_id;
   std::string    m_cwCallsign;
 
   void readParams();

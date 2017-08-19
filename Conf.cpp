@@ -55,6 +55,7 @@ enum SECTION {
 CConf::CConf(const std::string& file) :
 m_file(file),
 m_callsign(),
+m_id(0U),
 m_timeout(120U),
 m_duplex(true),
 m_rfModeHang(10U),
@@ -126,6 +127,7 @@ m_fusionSelfOnly(false),
 m_fusionSQLEnabled(false),
 m_fusionSQL(0U),
 m_p25Enabled(false),
+m_p25Id(0U),
 m_p25NAC(0x293U),
 m_p25SelfOnly(false),
 m_dstarNetworkEnabled(false),
@@ -264,7 +266,9 @@ bool CConf::read()
 			for (unsigned int i = 0U; value[i] != 0; i++)
 				value[i] = ::toupper(value[i]);
 			m_cwIdCallsign = m_callsign = value;
-		} else if (::strcmp(key, "Timeout") == 0)
+		} else if (::strcmp(key, "Id") == 0)
+			m_id = m_p25Id = m_dmrId = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "Timeout") == 0)
 			m_timeout = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Duplex") == 0)
 			m_duplex = ::atoi(value) == 1;
@@ -466,6 +470,8 @@ bool CConf::read()
 	} else if (section == SECTION_P25) {
 		if (::strcmp(key, "Enable") == 0)
 			m_p25Enabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "Id") == 0)
+			m_p25Id = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "NAC") == 0)
 			m_p25NAC = (unsigned int)::strtoul(value, NULL, 16);
 		else if (::strcmp(key, "OverrideUIDCheck") == 0)
@@ -604,6 +610,11 @@ bool CConf::read()
 std::string CConf::getCallsign() const
 {
 	return m_callsign;
+}
+
+unsigned int CConf::getId() const
+{
+	return m_id;
 }
 
 unsigned int CConf::getTimeout() const
@@ -959,6 +970,11 @@ unsigned char CConf::getFusionSQL() const
 bool CConf::getP25Enabled() const
 {
 	return m_p25Enabled;
+}
+
+unsigned int CConf::getP25Id() const
+{
+	return m_p25Id;
 }
 
 unsigned int CConf::getP25NAC() const
