@@ -54,10 +54,20 @@ const unsigned int INTERLEAVE_TABLE[] = {
   36U, 76U, 116U, 156U, 196U,
   38U, 78U, 118U, 158U, 198U};
 
+CYSFFICH::CYSFFICH(const CYSFFICH& fich) :
+m_fich(NULL)
+{
+	m_fich = new unsigned char[6U];
+
+	::memcpy(m_fich, fich.m_fich, 6U);
+}
+
 CYSFFICH::CYSFFICH() :
 m_fich(NULL)
 {
 	m_fich  = new unsigned char[6U];
+
+	memset(m_fich, 0x00U, 6U);
 }
 
 CYSFFICH::~CYSFFICH()
@@ -214,6 +224,24 @@ unsigned char CYSFFICH::getSQ() const
 	return m_fich[3U] & 0x7FU;
 }
 
+void CYSFFICH::setFI(unsigned char fi)
+{
+	m_fich[0U] &= 0x3FU;
+	m_fich[0U] |= (fi << 6) & 0xC0U;
+}
+
+void CYSFFICH::setFN(unsigned char fn)
+{
+	m_fich[1U] &= 0xC7U;
+	m_fich[1U] |= (fn << 3) & 0x38U;
+}
+
+void CYSFFICH::setFT(unsigned char ft)
+{
+	m_fich[1U] &= 0xF8U;
+	m_fich[1U] |= ft & 0x07U;
+}
+
 void CYSFFICH::setMR(unsigned char mr)
 {
 	m_fich[2U] &= 0xC7U;
@@ -248,4 +276,12 @@ void CYSFFICH::setSQ(unsigned char sq)
 {
 	m_fich[3U] &= 0x80U;
 	m_fich[3U] |= sq & 0x7FU;
+}
+
+CYSFFICH& CYSFFICH::operator=(const CYSFFICH& fich)
+{
+	if (&fich != this)
+		::memcpy(m_fich, fich.m_fich, 6U);
+
+	return *this;
 }

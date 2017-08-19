@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -39,6 +39,11 @@ public:
 	bool processDataFRModeData(unsigned char* bytes, unsigned char fn, bool gateway = false);
 
 	unsigned int processVoiceFRModeAudio(unsigned char* bytes);
+
+	void writeHeader(unsigned char* data, const unsigned char* csd1, const unsigned char* csd2);
+
+	void writeDataFRModeData1(const unsigned char* dt, unsigned char* data);
+	void writeDataFRModeData2(const unsigned char* dt, unsigned char* data);
 
 	unsigned char* getSource();
 	unsigned char* getDest();
