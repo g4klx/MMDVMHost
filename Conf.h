@@ -202,8 +202,8 @@ public:
 
 private:
   std::string  m_file;
-  unsigned int m_id;
   std::string  m_callsign;
+  unsigned int m_id;
   unsigned int m_timeout;
   bool         m_duplex;
   unsigned int m_rfModeHang;
