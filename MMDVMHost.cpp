@@ -828,10 +828,11 @@ bool CMMDVMHost::createModem()
 	bool debug                = m_conf.getModemDebug();
 	unsigned int colorCode    = m_conf.getDMRColorCode();
 	bool lowDeviation         = m_conf.getFusionLowDeviation();
-	unsigned int rxFrequency  = m_conf.getRxFrequency();
-	unsigned int txFrequency  = m_conf.getTxFrequency();
-	int rxOffset              = m_conf.getModemRxOffset();
-	int txOffset              = m_conf.getModemTxOffset();
+	unsigned int rxFrequency  = m_conf.getRXFrequency();
+	unsigned int txFrequency  = m_conf.getTXFrequency();
+	int rxOffset              = m_conf.getModemRXOffset();
+	int txOffset              = m_conf.getModemTXOffset();
+	int txDCOffset            = m_conf.getModemTXDCOffset();
 
 	LogInfo("Modem Parameters");
 	LogInfo("    Port: %s", port.c_str());
@@ -841,6 +842,7 @@ bool CMMDVMHost::createModem()
 	LogInfo("    TX Delay: %ums", txDelay);
 	LogInfo("    RX Offset: %dHz", rxOffset);
 	LogInfo("    TX Offset: %dHz", txOffset);
+	LogInfo("    TX DC Offset: %d", txDCOffset);
 	LogInfo("    DMR Delay: %u (%.1fms)", dmrDelay, float(dmrDelay) * 0.0416666F);
 	LogInfo("    RX Level: %.1f%%", rxLevel);
 	LogInfo("    CW Id TX Level: %.1f%%", cwIdTXLevel);
@@ -854,7 +856,7 @@ bool CMMDVMHost::createModem()
 	m_modem = new CModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled);
 	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel);
-	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset);
+	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset);
 	m_modem->setDMRParams(colorCode);
 	m_modem->setYSFParams(lowDeviation);
 
@@ -926,8 +928,8 @@ bool CMMDVMHost::createDMRNetwork()
 		m_dmrNetwork->setOptions(options);
 	}
 
-	unsigned int rxFrequency = m_conf.getRxFrequency();
-	unsigned int txFrequency = m_conf.getTxFrequency();
+	unsigned int rxFrequency = m_conf.getRXFrequency();
+	unsigned int txFrequency = m_conf.getTXFrequency();
 	unsigned int power       = m_conf.getPower();
 	unsigned int colorCode   = m_conf.getDMRColorCode();
 	float latitude           = m_conf.getLatitude();

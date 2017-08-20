@@ -86,8 +86,9 @@ m_modemTXInvert(false),
 m_modemPTTInvert(false),
 m_modemTXDelay(100U),
 m_modemDMRDelay(0U),
-m_modemTxOffset(0),
-m_modemRxOffset(0),
+m_modemTXOffset(0),
+m_modemRXOffset(0),
+m_modemTXDCOffset(0),
 m_modemRXLevel(50.0F),
 m_modemCWIdTXLevel(50.0F),
 m_modemDStarTXLevel(50.0F),
@@ -340,9 +341,11 @@ bool CConf::read()
 		else if (::strcmp(key, "DMRDelay") == 0)
 			m_modemDMRDelay = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "RXOffset") == 0)
-			m_modemRxOffset = ::atoi(value);
+			m_modemRXOffset = ::atoi(value);
 		else if (::strcmp(key, "TXOffset") == 0)
-			m_modemTxOffset = ::atoi(value);
+			m_modemTXOffset = ::atoi(value);
+		else if (::strcmp(key, "TXDCOffset") == 0)
+			m_modemTXDCOffset = ::atoi(value);
 		else if (::strcmp(key, "RXLevel") == 0)
 			m_modemRXLevel = float(::atof(value));
 		else if (::strcmp(key, "TXLevel") == 0)
@@ -647,12 +650,12 @@ bool CConf::getDaemon() const
 	return m_daemon;
 }
 
-unsigned int CConf::getRxFrequency() const
+unsigned int CConf::getRXFrequency() const
 {
 	return m_rxFrequency;
 }
 
-unsigned int CConf::getTxFrequency() const
+unsigned int CConf::getTXFrequency() const
 {
 	return m_txFrequency;
 }
@@ -767,14 +770,19 @@ unsigned int CConf::getModemDMRDelay() const
 	return m_modemDMRDelay;
 }
 
-int CConf::getModemRxOffset() const
+int CConf::getModemRXOffset() const
 {
-	return m_modemRxOffset;
+	return m_modemRXOffset;
 }
 
-int CConf::getModemTxOffset() const
+int CConf::getModemTXOffset() const
 {
-	return m_modemTxOffset;
+	return m_modemTXOffset;
+}
+
+int CConf::getModemTXDCOffset() const
+{
+	return m_modemTXDCOffset;
 }
 
 float CConf::getModemRXLevel() const

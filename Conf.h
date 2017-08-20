@@ -41,8 +41,8 @@ public:
   bool         getDaemon() const;
 
   // The Info section
-  unsigned int getRxFrequency() const;
-  unsigned int getTxFrequency() const;
+  unsigned int getRXFrequency() const;
+  unsigned int getTXFrequency() const;
   unsigned int getPower() const;
   float        getLatitude() const;
   float        getLongitude() const;
@@ -73,8 +73,9 @@ public:
   bool         getModemPTTInvert() const;
   unsigned int getModemTXDelay() const;
   unsigned int getModemDMRDelay() const;
-  int          getModemTxOffset() const;
-  int          getModemRxOffset() const;
+  int          getModemTXOffset() const;
+  int          getModemRXOffset() const;
+  int          getModemTXDCOffset() const;
   float        getModemRXLevel() const;
   float        getModemCWIdTXLevel() const;
   float        getModemDStarTXLevel() const;
@@ -239,8 +240,9 @@ private:
   bool         m_modemPTTInvert;
   unsigned int m_modemTXDelay;
   unsigned int m_modemDMRDelay;
-  int          m_modemTxOffset;
-  int          m_modemRxOffset;
+  int          m_modemTXOffset;
+  int          m_modemRXOffset;
+  int          m_modemTXDCOffset;
   float        m_modemRXLevel;
   float        m_modemCWIdTXLevel;
   float        m_modemDStarTXLevel;
