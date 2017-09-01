@@ -35,8 +35,6 @@ public:
   unsigned int getId() const;
   unsigned int getTimeout() const;
   bool         getDuplex() const;
-  unsigned int getRFModeHang() const;
-  unsigned int getNetModeHang() const;
   std::string  getDisplay() const;
   bool         getDaemon() const;
 
@@ -98,6 +96,7 @@ public:
   bool         getDStarAckReply() const;
   unsigned int getDStarAckTime() const;
   bool         getDStarErrorReply() const;
+  unsigned int getDStarModeHang() const;
 
   // The DMR section
   bool         getDMREnabled() const;
@@ -114,6 +113,7 @@ public:
   std::vector<unsigned int> getDMRSlot2TGWhiteList() const;
   unsigned int getDMRCallHang() const;
   unsigned int getDMRTXHang() const;
+  unsigned int getDMRModeHang() const;
 
   // The System Fusion section
   bool          getFusionEnabled() const;
@@ -122,18 +122,22 @@ public:
   bool          getFusionSelfOnly() const;
   bool          getFusionSQLEnabled() const;
   unsigned char getFusionSQL() const;
+  unsigned int  getFusionModeHang() const;
 
   // The P25 section
   bool         getP25Enabled() const;
   unsigned int getP25Id() const;
   unsigned int getP25NAC() const;
   bool         getP25SelfOnly() const;
+  bool         getP25OverrideUID() const;
+  unsigned int getP25ModeHang() const;
 
   // The D-Star Network section
   bool         getDStarNetworkEnabled() const;
   std::string  getDStarGatewayAddress() const;
   unsigned int getDStarGatewayPort() const;
   unsigned int getDStarLocalPort() const;
+  unsigned int getDStarNetworkModeHang() const;
   bool         getDStarNetworkDebug() const;
 
   // The DMR Network section
@@ -147,6 +151,7 @@ public:
   unsigned int getDMRNetworkJitter() const;
   bool         getDMRNetworkSlot1() const;
   bool         getDMRNetworkSlot2() const;
+  unsigned int getDMRNetworkModeHang() const;
 
   // The System Fusion Network section
   bool         getFusionNetworkEnabled() const;
@@ -154,6 +159,7 @@ public:
   unsigned int getFusionNetworkMyPort() const;
   std::string  getFusionNetworkGwyAddress() const;
   unsigned int getFusionNetworkGwyPort() const;
+  unsigned int getFusionNetworkModeHang() const;
   bool         getFusionNetworkDebug() const;
 
   // The P25 Network section
@@ -161,8 +167,8 @@ public:
   std::string  getP25GatewayAddress() const;
   unsigned int getP25GatewayPort() const;
   unsigned int getP25LocalPort() const;
+  unsigned int getP25NetworkModeHang() const;
   bool         getP25NetworkDebug() const;
-  bool         getP25OverrideUID() const;
 
   // The TFTSERIAL section
   std::string  getTFTSerialPort() const;
@@ -207,8 +213,6 @@ private:
   unsigned int m_id;
   unsigned int m_timeout;
   bool         m_duplex;
-  unsigned int m_rfModeHang;
-  unsigned int m_netModeHang;
   std::string  m_display;
   bool         m_daemon;
 
@@ -263,6 +267,7 @@ private:
   bool         m_dstarAckReply;
   unsigned int m_dstarAckTime;
   bool         m_dstarErrorReply;
+  unsigned int m_dstarModeHang;
 
   bool         m_dmrEnabled;
   bool         m_dmrBeacons;
@@ -278,6 +283,7 @@ private:
   std::vector<unsigned int> m_dmrSlot2TGWhiteList;
   unsigned int m_dmrCallHang;
   unsigned int m_dmrTXHang;
+  unsigned int m_dmrModeHang;
 
   bool          m_fusionEnabled;
   bool          m_fusionLowDeviation;
@@ -285,16 +291,20 @@ private:
   bool          m_fusionSelfOnly;
   bool          m_fusionSQLEnabled;
   unsigned char m_fusionSQL;
+  unsigned int  m_fusionModeHang;
 
   bool         m_p25Enabled;
   unsigned int m_p25Id;
   unsigned int m_p25NAC;
   bool         m_p25SelfOnly;
+  bool         m_p25OverrideUID;
+  unsigned int m_p25ModeHang;
 
   bool         m_dstarNetworkEnabled;
   std::string  m_dstarGatewayAddress;
   unsigned int m_dstarGatewayPort;
   unsigned int m_dstarLocalPort;
+  unsigned int m_dstarNetworkModeHang;
   bool         m_dstarNetworkDebug;
 
   bool         m_dmrNetworkEnabled;
@@ -307,20 +317,22 @@ private:
   unsigned int m_dmrNetworkJitter;
   bool         m_dmrNetworkSlot1;
   bool         m_dmrNetworkSlot2;
+  unsigned int m_dmrNetworkModeHang;
 
   bool         m_fusionNetworkEnabled;
   std::string  m_fusionNetworkMyAddress;
   unsigned int m_fusionNetworkMyPort;
   std::string  m_fusionNetworkGwyAddress;
   unsigned int m_fusionNetworkGwyPort;
+  unsigned int m_fusionNetworkModeHang;
   bool         m_fusionNetworkDebug;
 
   bool         m_p25NetworkEnabled;
   std::string  m_p25GatewayAddress;
   unsigned int m_p25GatewayPort;
   unsigned int m_p25LocalPort;
+  unsigned int m_p25NetworkModeHang;
   bool         m_p25NetworkDebug;
-  bool         m_p25OverrideUID;
 
   std::string  m_tftSerialPort;
   unsigned int m_tftSerialBrightness;

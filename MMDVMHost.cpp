@@ -135,8 +135,14 @@ m_p25Network(NULL),
 m_display(NULL),
 m_ump(NULL),
 m_mode(MODE_IDLE),
-m_rfModeHang(10U),
-m_netModeHang(3U),
+m_dstarRFModeHang(10U),
+m_dmrRFModeHang(10U),
+m_ysfRFModeHang(10U),
+m_p25RFModeHang(10U),
+m_dstarNetModeHang(3U),
+m_dmrNetModeHang(3U),
+m_ysfNetModeHang(3U),
+m_p25NetModeHang(3U),
 m_modeTimer(1000U),
 m_dmrTXTimer(1000U),
 m_cwIdTimer(1000U),
@@ -342,13 +348,15 @@ int CMMDVMHost::run()
 		bool ackReply                      = m_conf.getDStarAckReply();
 		unsigned int ackTime               = m_conf.getDStarAckTime();
 		bool errorReply                    = m_conf.getDStarErrorReply();
+		m_dstarRFModeHang                  = m_conf.getDStarModeHang();
 
-		LogInfo("D-Star Parameters");
+		LogInfo("D-Star RF Parameters");
 		LogInfo("    Module: %s", module.c_str());
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
 		LogInfo("    Ack Reply: %s", ackReply ? "yes" : "no");
 		LogInfo("    Ack Time: %ums", ackTime);
 		LogInfo("    Error Reply: %s", errorReply ? "yes" : "no");
+		LogInfo("    Mode Hang: %us", m_dstarRFModeHang);
 
 		if (blackList.size() > 0U)
 			LogInfo("    Black List: %u", blackList.size());
@@ -371,16 +379,20 @@ int CMMDVMHost::run()
 		unsigned int callHang       = m_conf.getDMRCallHang();
 		unsigned int txHang         = m_conf.getDMRTXHang();
 		unsigned int jitter         = m_conf.getDMRNetworkJitter();
+		m_dmrRFModeHang             = m_conf.getDMRModeHang();
 
-		if (txHang > m_rfModeHang)
-			txHang = m_rfModeHang;
-		if (txHang > m_netModeHang)
-			txHang = m_netModeHang;
+		if (txHang > m_dmrRFModeHang)
+			txHang = m_dmrRFModeHang;
+
+		if (m_conf.getDMRNetworkEnabled()) {
+			if (txHang > m_dmrNetModeHang)
+				txHang = m_dmrNetModeHang;
+		}
 
 		if (callHang > txHang)
 			callHang = txHang;
 
-		LogInfo("DMR Parameters");
+		LogInfo("DMR RF Parameters");
 		LogInfo("    Id: %u", id);
 		LogInfo("    Color Code: %u", colorCode);
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
@@ -399,6 +411,7 @@ int CMMDVMHost::run()
 
 		LogInfo("    Call Hang: %us", callHang);
 		LogInfo("    TX Hang: %us", txHang);
+		LogInfo("    Mode Hang: %us", m_dmrRFModeHang);
 
 		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, dumpTAData, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_lookup, rssi, jitter);
 
@@ -412,14 +425,16 @@ int CMMDVMHost::run()
 		bool selfOnly      = m_conf.getFusionSelfOnly();
 		bool sqlEnabled    = m_conf.getFusionSQLEnabled();
 		unsigned char sql  = m_conf.getFusionSQL();
+		m_ysfRFModeHang    = m_conf.getFusionModeHang();
 
-		LogInfo("YSF Parameters");
+		LogInfo("YSF RF Parameters");
 		LogInfo("    Low Deviation: %s", lowDeviation ? "yes" : "no");
 		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
 		LogInfo("    DSQ: %s", sqlEnabled ? "yes" : "no");
 		if (sqlEnabled)
 			LogInfo("    DSQ Value: %u", sql);
+		LogInfo("    Mode Hang: %us", m_ysfRFModeHang);
 
 		ysf = new CYSFControl(m_callsign, selfOnly, m_ysfNetwork, m_display, m_timeout, m_duplex, lowDeviation, remoteGateway, rssi);
 		ysf->setSQL(sqlEnabled, sql);
@@ -431,12 +446,14 @@ int CMMDVMHost::run()
 		unsigned int nac = m_conf.getP25NAC();
 		bool uidOverride = m_conf.getP25OverrideUID();
 		bool selfOnly    = m_conf.getP25SelfOnly();
+		m_p25RFModeHang  = m_conf.getP25ModeHang();
 
-		LogInfo("P25 Parameters");
+		LogInfo("P25 RF Parameters");
 		LogInfo("    Id: %u", id);
 		LogInfo("    NAC: $%03X", nac);
 		LogInfo("    UID Override: %s", uidOverride ? "yes" : "no");
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
+		LogInfo("    Mode Hang: %us", m_p25RFModeHang);
 
 		p25 = new CP25Control(nac, id, selfOnly, uidOverride, m_p25Network, m_display, m_timeout, m_duplex, m_lookup, rssi);
 	}
@@ -477,7 +494,7 @@ int CMMDVMHost::run()
 			if (m_mode == MODE_IDLE) {
 				bool ret = dstar->writeModem(data, len);
 				if (ret) {
-					m_modeTimer.setTimeout(m_rfModeHang);
+					m_modeTimer.setTimeout(m_dstarRFModeHang);
 					setMode(MODE_DSTAR);
 				}
 			} else if (m_mode == MODE_DSTAR) {
@@ -494,12 +511,12 @@ int CMMDVMHost::run()
 				if (m_duplex) {
 					bool ret = dmr->processWakeup(data);
 					if (ret) {
-						m_modeTimer.setTimeout(m_rfModeHang);
+						m_modeTimer.setTimeout(m_dmrRFModeHang);
 						setMode(MODE_DMR);
 						dmrBeaconTimer.stop();
 					}
 				} else {
-					m_modeTimer.setTimeout(m_rfModeHang);
+					m_modeTimer.setTimeout(m_dmrRFModeHang);
 					setMode(MODE_DMR);
 					dmr->writeModemSlot1(data, len);
 					dmrBeaconTimer.stop();
@@ -531,12 +548,12 @@ int CMMDVMHost::run()
 				if (m_duplex) {
 					bool ret = dmr->processWakeup(data);
 					if (ret) {
-						m_modeTimer.setTimeout(m_rfModeHang);
+						m_modeTimer.setTimeout(m_dmrRFModeHang);
 						setMode(MODE_DMR);
 						dmrBeaconTimer.stop();
 					}
 				} else {
-					m_modeTimer.setTimeout(m_rfModeHang);
+					m_modeTimer.setTimeout(m_dmrRFModeHang);
 					setMode(MODE_DMR);
 					dmr->writeModemSlot2(data, len);
 					dmrBeaconTimer.stop();
@@ -567,7 +584,7 @@ int CMMDVMHost::run()
 			if (m_mode == MODE_IDLE) {
 				bool ret = ysf->writeModem(data, len);
 				if (ret) {
-					m_modeTimer.setTimeout(m_rfModeHang);
+					m_modeTimer.setTimeout(m_ysfRFModeHang);
 					setMode(MODE_YSF);
 				}
 			} else if (m_mode == MODE_YSF) {
@@ -583,7 +600,7 @@ int CMMDVMHost::run()
 			if (m_mode == MODE_IDLE) {
 				bool ret = p25->writeModem(data, len);
 				if (ret) {
-					m_modeTimer.setTimeout(m_rfModeHang);
+					m_modeTimer.setTimeout(m_p25RFModeHang);
 					setMode(MODE_P25);
 				}
 			} else if (m_mode == MODE_P25) {
@@ -603,7 +620,7 @@ int CMMDVMHost::run()
 				len = dstar->readModem(data);
 				if (len > 0U) {
 					if (m_mode == MODE_IDLE) {
-						m_modeTimer.setTimeout(m_netModeHang);
+						m_modeTimer.setTimeout(m_dstarNetModeHang);
 						setMode(MODE_DSTAR);
 					}
 					if (m_mode == MODE_DSTAR) {
@@ -622,7 +639,7 @@ int CMMDVMHost::run()
 				len = dmr->readModemSlot1(data);
 				if (len > 0U) {
 					if (m_mode == MODE_IDLE) {
-						m_modeTimer.setTimeout(m_netModeHang);
+						m_modeTimer.setTimeout(m_dmrNetModeHang);
 						setMode(MODE_DMR);
 					}
 					if (m_mode == MODE_DMR) {
@@ -644,7 +661,7 @@ int CMMDVMHost::run()
 				len = dmr->readModemSlot2(data);
 				if (len > 0U) {
 					if (m_mode == MODE_IDLE) {
-						m_modeTimer.setTimeout(m_netModeHang);
+						m_modeTimer.setTimeout(m_dmrNetModeHang);
 						setMode(MODE_DMR);
 					}
 					if (m_mode == MODE_DMR) {
@@ -668,7 +685,7 @@ int CMMDVMHost::run()
 				len = ysf->readModem(data);
 				if (len > 0U) {
 					if (m_mode == MODE_IDLE) {
-						m_modeTimer.setTimeout(m_netModeHang);
+						m_modeTimer.setTimeout(m_ysfNetModeHang);
 						setMode(MODE_YSF);
 					}
 					if (m_mode == MODE_YSF) {
@@ -687,14 +704,13 @@ int CMMDVMHost::run()
 				len = p25->readModem(data);
 				if (len > 0U) {
 					if (m_mode == MODE_IDLE) {
-						m_modeTimer.setTimeout(m_netModeHang);
+						m_modeTimer.setTimeout(m_p25NetModeHang);
 						setMode(MODE_P25);
 					}
 					if (m_mode == MODE_P25) {
 						m_modem->writeP25Data(data, len);
 						m_modeTimer.start();
-					}
-					else if (m_mode != MODE_LOCKOUT) {
+					} else if (m_mode != MODE_LOCKOUT) {
 						LogWarning("P25 data received when in mode %u", m_mode);
 					}
 				}
@@ -873,14 +889,16 @@ bool CMMDVMHost::createModem()
 bool CMMDVMHost::createDStarNetwork()
 {
 	std::string gatewayAddress = m_conf.getDStarGatewayAddress();
-	unsigned int gatewayPort = m_conf.getDStarGatewayPort();
-	unsigned int localPort = m_conf.getDStarLocalPort();
-	bool debug = m_conf.getDStarNetworkDebug();
+	unsigned int gatewayPort   = m_conf.getDStarGatewayPort();
+	unsigned int localPort     = m_conf.getDStarLocalPort();
+	bool debug                 = m_conf.getDStarNetworkDebug();
+	m_dstarNetModeHang         = m_conf.getDStarNetworkModeHang();
 
 	LogInfo("D-Star Network Parameters");
 	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
 	LogInfo("    Gateway Port: %u", gatewayPort);
 	LogInfo("    Local Port: %u", localPort);
+	LogInfo("    Mode Hang: %us", m_dstarNetModeHang);
 
 	m_dstarNetwork = new CDStarNetwork(gatewayAddress, gatewayPort, localPort, m_duplex, VERSION, debug);
 
@@ -908,6 +926,7 @@ bool CMMDVMHost::createDMRNetwork()
 	bool slot1           = m_conf.getDMRNetworkSlot1();
 	bool slot2           = m_conf.getDMRNetworkSlot2();
 	HW_TYPE hwType       = m_modem->getHWType();
+	m_dmrNetModeHang     = m_conf.getDMRNetworkModeHang();
 
 	LogInfo("DMR Network Parameters");
 	LogInfo("    Address: %s", address.c_str());
@@ -919,6 +938,7 @@ bool CMMDVMHost::createDMRNetwork()
 	LogInfo("    Jitter: %ums", jitter);
 	LogInfo("    Slot 1: %s", slot1 ? "enabled" : "disabled");
 	LogInfo("    Slot 2: %s", slot2 ? "enabled" : "disabled");
+	LogInfo("    Mode Hang: %us", m_dmrNetModeHang);
 
 	m_dmrNetwork = new CDMRNetwork(address, port, local, id, password, m_duplex, VERSION, debug, slot1, slot2, hwType);
 
@@ -971,6 +991,7 @@ bool CMMDVMHost::createYSFNetwork()
 	unsigned int myPort    = m_conf.getFusionNetworkMyPort();
 	std::string gwyAddress = m_conf.getFusionNetworkGwyAddress();
 	unsigned int gwyPort   = m_conf.getFusionNetworkGwyPort();
+	m_ysfNetModeHang       = m_conf.getFusionNetworkModeHang();
 	bool debug             = m_conf.getFusionNetworkDebug();
 
 	LogInfo("System Fusion Network Parameters");
@@ -978,6 +999,7 @@ bool CMMDVMHost::createYSFNetwork()
 	LogInfo("    Local Port: %u", myPort);
 	LogInfo("    Gateway Address: %s", gwyAddress.c_str());
 	LogInfo("    Gateway Port: %u", gwyPort);
+	LogInfo("    Mode Hang: %us", m_ysfNetModeHang);
 
 	m_ysfNetwork = new CYSFNetwork(myAddress, myPort, gwyAddress, gwyPort, m_callsign, debug);
 
@@ -998,12 +1020,14 @@ bool CMMDVMHost::createP25Network()
 	std::string gatewayAddress = m_conf.getP25GatewayAddress();
 	unsigned int gatewayPort   = m_conf.getP25GatewayPort();
 	unsigned int localPort     = m_conf.getP25LocalPort();
+	m_p25NetModeHang           = m_conf.getP25NetworkModeHang();
 	bool debug                 = m_conf.getP25NetworkDebug();
 
 	LogInfo("P25 Network Parameters");
 	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
 	LogInfo("    Gateway Port: %u", gatewayPort);
 	LogInfo("    Local Port: %u", localPort);
+	LogInfo("    Mode Hang: %us", m_p25NetModeHang);
 
 	m_p25Network = new CP25Network(gatewayAddress, gatewayPort, localPort, debug);
 
@@ -1030,16 +1054,11 @@ void CMMDVMHost::readParams()
 	m_id           = m_conf.getId();
 	m_timeout      = m_conf.getTimeout();
 
-	m_rfModeHang  = m_conf.getRFModeHang();
-	m_netModeHang = m_conf.getNetModeHang();
-
 	LogInfo("General Parameters");
 	LogInfo("    Callsign: %s", m_callsign.c_str());
 	LogInfo("    Id: %u", m_id);
 	LogInfo("    Duplex: %s", m_duplex ? "yes" : "no");
 	LogInfo("    Timeout: %us", m_timeout);
-	LogInfo("    RF Mode Hang: %us", m_rfModeHang);
-	LogInfo("    Net Mode Hang: %us", m_netModeHang);
 	LogInfo("    D-Star: %s", m_dstarEnabled ? "enabled" : "disabled");
 	LogInfo("    DMR: %s", m_dmrEnabled ? "enabled" : "disabled");
 	LogInfo("    YSF: %s", m_ysfEnabled ? "enabled" : "disabled");

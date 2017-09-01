@@ -58,8 +58,6 @@ m_callsign(),
 m_id(0U),
 m_timeout(120U),
 m_duplex(true),
-m_rfModeHang(10U),
-m_netModeHang(3U),
 m_display(),
 m_daemon(false),
 m_rxFrequency(0U),
@@ -107,6 +105,7 @@ m_dstarBlackList(),
 m_dstarAckReply(true),
 m_dstarAckTime(750U),
 m_dstarErrorReply(true),
+m_dstarModeHang(10U),
 m_dmrEnabled(false),
 m_dmrBeacons(false),
 m_dmrId(0U),
@@ -121,20 +120,25 @@ m_dmrSlot1TGWhiteList(),
 m_dmrSlot2TGWhiteList(),
 m_dmrCallHang(3U),
 m_dmrTXHang(4U),
+m_dmrModeHang(10U),
 m_fusionEnabled(false),
 m_fusionLowDeviation(false),
 m_fusionRemoteGateway(false),
 m_fusionSelfOnly(false),
 m_fusionSQLEnabled(false),
 m_fusionSQL(0U),
+m_fusionModeHang(10U),
 m_p25Enabled(false),
 m_p25Id(0U),
 m_p25NAC(0x293U),
 m_p25SelfOnly(false),
+m_p25OverrideUID(false),
+m_p25ModeHang(10U),
 m_dstarNetworkEnabled(false),
 m_dstarGatewayAddress(),
 m_dstarGatewayPort(0U),
 m_dstarLocalPort(0U),
+m_dstarNetworkModeHang(3U),
 m_dstarNetworkDebug(false),
 m_dmrNetworkEnabled(false),
 m_dmrNetworkAddress(),
@@ -146,18 +150,20 @@ m_dmrNetworkDebug(false),
 m_dmrNetworkJitter(300U),
 m_dmrNetworkSlot1(true),
 m_dmrNetworkSlot2(true),
+m_dmrNetworkModeHang(3U),
 m_fusionNetworkEnabled(false),
 m_fusionNetworkMyAddress(),
 m_fusionNetworkMyPort(0U),
 m_fusionNetworkGwyAddress(),
 m_fusionNetworkGwyPort(0U),
+m_fusionNetworkModeHang(3U),
 m_fusionNetworkDebug(false),
 m_p25NetworkEnabled(false),
 m_p25GatewayAddress(),
 m_p25GatewayPort(0U),
 m_p25LocalPort(0U),
+m_p25NetworkModeHang(3U),
 m_p25NetworkDebug(false),
-m_p25OverrideUID(false),
 m_tftSerialPort("/dev/ttyAMA0"),
 m_tftSerialBrightness(50U),
 m_hd44780Rows(2U),
@@ -274,11 +280,12 @@ bool CConf::read()
 		else if (::strcmp(key, "Duplex") == 0)
 			m_duplex = ::atoi(value) == 1;
 		else if (::strcmp(key, "ModeHang") == 0)
-			m_rfModeHang  = m_netModeHang = (unsigned int)::atoi(value);
+			m_dstarNetworkModeHang = m_dmrNetworkModeHang = m_fusionNetworkModeHang = m_p25NetworkModeHang =
+			m_dstarModeHang        = m_dmrModeHang        = m_fusionModeHang        = m_p25ModeHang        = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "RFModeHang") == 0)
-			m_rfModeHang = (unsigned int)::atoi(value);
+			m_dstarModeHang = m_dmrModeHang = m_fusionModeHang = m_p25ModeHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "NetModeHang") == 0)
-			m_netModeHang = (unsigned int)::atoi(value);
+			m_dstarNetworkModeHang = m_dmrNetworkModeHang = m_fusionNetworkModeHang = m_p25NetworkModeHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Display") == 0)
 			m_display = value;
 		else if (::strcmp(key, "Daemon") == 0)
@@ -399,6 +406,8 @@ bool CConf::read()
 			m_dstarAckTime = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "ErrorReply") == 0)
 			m_dstarErrorReply = ::atoi(value) == 1;
+		else if (::strcmp(key, "ModeHang") == 0)
+			m_dstarModeHang = (unsigned int)::atoi(value);
 	} else if (section == SECTION_DMR) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dmrEnabled = ::atoi(value) == 1;
@@ -458,6 +467,8 @@ bool CConf::read()
 			m_dmrTXHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "CallHang") == 0)
 			m_dmrCallHang = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "ModeHang") == 0)
+			m_dmrModeHang = (unsigned int)::atoi(value);
 	} else if (section == SECTION_FUSION) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fusionEnabled = ::atoi(value) == 1;
@@ -470,6 +481,8 @@ bool CConf::read()
 			m_fusionRemoteGateway = ::atoi(value) == 1;
 		else if (::strcmp(key, "SelfOnly") == 0)
 			m_fusionSelfOnly = ::atoi(value) == 1;
+		else if (::strcmp(key, "ModeHang") == 0)
+			m_fusionModeHang = (unsigned int)::atoi(value);
 	} else if (section == SECTION_P25) {
 		if (::strcmp(key, "Enable") == 0)
 			m_p25Enabled = ::atoi(value) == 1;
@@ -481,6 +494,8 @@ bool CConf::read()
 			m_p25OverrideUID = ::atoi(value) == 1;
 		else if (::strcmp(key, "SelfOnly") == 0)
 			m_p25SelfOnly = ::atoi(value) == 1;
+		else if (::strcmp(key, "ModeHang") == 0)
+			m_p25ModeHang = (unsigned int)::atoi(value);
 	} else if (section == SECTION_DSTAR_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dstarNetworkEnabled = ::atoi(value) == 1;
@@ -490,6 +505,8 @@ bool CConf::read()
 			m_dstarGatewayPort = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "LocalPort") == 0)
 			m_dstarLocalPort = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "ModeHang") == 0)
+			m_dstarNetworkModeHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Debug") == 0)
 			m_dstarNetworkDebug = ::atoi(value) == 1;
 	} else if (section == SECTION_DMR_NETWORK) {
@@ -513,6 +530,8 @@ bool CConf::read()
 			m_dmrNetworkSlot1 = ::atoi(value) == 1;
 		else if (::strcmp(key, "Slot2") == 0)
 			m_dmrNetworkSlot2 = ::atoi(value) == 1;
+		else if (::strcmp(key, "ModeHang") == 0)
+			m_dmrNetworkModeHang = (unsigned int)::atoi(value);
 	} else if (section == SECTION_FUSION_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fusionNetworkEnabled = ::atoi(value) == 1;
@@ -524,6 +543,8 @@ bool CConf::read()
 			m_fusionNetworkGwyAddress = value;
 		else if (::strcmp(key, "GwyPort") == 0)
 			m_fusionNetworkGwyPort = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "ModeHang") == 0)
+			m_fusionNetworkModeHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Debug") == 0)
 			m_fusionNetworkDebug = ::atoi(value) == 1;
 	} else if (section == SECTION_P25_NETWORK) {
@@ -535,6 +556,8 @@ bool CConf::read()
 			m_p25GatewayPort = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "LocalPort") == 0)
 			m_p25LocalPort = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "ModeHang") == 0)
+			m_p25NetworkModeHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Debug") == 0)
 			m_p25NetworkDebug = ::atoi(value) == 1;
 	} else if (section == SECTION_TFTSERIAL) {
@@ -628,16 +651,6 @@ unsigned int CConf::getTimeout() const
 bool CConf::getDuplex() const
 {
 	return m_duplex;
-}
-
-unsigned int CConf::getRFModeHang() const
-{
-	return m_rfModeHang;
-}
-
-unsigned int CConf::getNetModeHang() const
-{
-	return m_netModeHang;
 }
 
 std::string CConf::getDisplay() const
@@ -875,6 +888,11 @@ bool CConf::getDStarErrorReply() const
 	return m_dstarErrorReply;
 }
 
+unsigned int CConf::getDStarModeHang() const
+{
+	return m_dstarModeHang;
+}
+
 bool CConf::getDMREnabled() const
 {
 	return m_dmrEnabled;
@@ -945,6 +963,11 @@ unsigned int CConf::getDMRTXHang() const
 	return m_dmrTXHang;
 }
 
+unsigned int CConf::getDMRModeHang() const
+{
+	return m_dmrModeHang;
+}
+
 bool CConf::getFusionEnabled() const
 {
 	return m_fusionEnabled;
@@ -975,6 +998,11 @@ unsigned char CConf::getFusionSQL() const
 	return m_fusionSQL;
 }
 
+unsigned int CConf::getFusionModeHang() const
+{
+	return m_fusionModeHang;
+}
+
 bool CConf::getP25Enabled() const
 {
 	return m_p25Enabled;
@@ -988,6 +1016,21 @@ unsigned int CConf::getP25Id() const
 unsigned int CConf::getP25NAC() const
 {
 	return m_p25NAC;
+}
+
+bool CConf::getP25OverrideUID() const
+{
+	return m_p25OverrideUID;
+}
+
+bool CConf::getP25SelfOnly() const
+{
+	return m_p25SelfOnly;
+}
+
+unsigned int CConf::getP25ModeHang() const
+{
+	return m_p25ModeHang;
 }
 
 bool CConf::getDStarNetworkEnabled() const
@@ -1008,6 +1051,11 @@ unsigned int CConf::getDStarGatewayPort() const
 unsigned int CConf::getDStarLocalPort() const
 {
 	return m_dstarLocalPort;
+}
+
+unsigned int CConf::getDStarNetworkModeHang() const
+{
+	return m_dstarNetworkModeHang;
 }
 
 bool CConf::getDStarNetworkDebug() const
@@ -1043,6 +1091,11 @@ std::string CConf::getDMRNetworkPassword() const
 std::string CConf::getDMRNetworkOptions() const
 {
 	return m_dmrNetworkOptions;
+}
+
+unsigned int CConf::getDMRNetworkModeHang() const
+{
+	return m_dmrNetworkModeHang;
 }
 
 bool CConf::getDMRNetworkDebug() const
@@ -1090,6 +1143,11 @@ unsigned int CConf::getFusionNetworkGwyPort() const
 	return m_fusionNetworkGwyPort;
 }
 
+unsigned int CConf::getFusionNetworkModeHang() const
+{
+	return m_fusionNetworkModeHang;
+}
+
 bool CConf::getFusionNetworkDebug() const
 {
 	return m_fusionNetworkDebug;
@@ -1115,19 +1173,14 @@ unsigned int CConf::getP25LocalPort() const
 	return m_p25LocalPort;
 }
 
+unsigned int CConf::getP25NetworkModeHang() const
+{
+	return m_p25NetworkModeHang;
+}
+
 bool CConf::getP25NetworkDebug() const
 {
 	return m_p25NetworkDebug;
-}
-
-bool CConf::getP25OverrideUID() const
-{
-	return m_p25OverrideUID;
-}
-
-bool CConf::getP25SelfOnly() const
-{
-	return m_p25SelfOnly;
 }
 
 std::string CConf::getTFTSerialPort() const
