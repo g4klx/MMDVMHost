@@ -219,7 +219,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 			}
 
 			unsigned char cm = m_lastFICH.getCM();
-			if (cm == YSF_CM_GROUP)
+			if (cm == YSF_CM_GROUP1 || cm == YSF_CM_GROUP2)
 				m_rfDest = (unsigned char*)"ALL       ";
 			else
 				m_rfDest = m_rfPayload.getDest();
@@ -402,7 +402,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			}
 
 			unsigned char cm = m_lastFICH.getCM();
-			if (cm == YSF_CM_GROUP)
+			if (cm == YSF_CM_GROUP1 || cm == YSF_CM_GROUP2)
 				m_rfDest = (unsigned char*)"ALL       ";
 			else
 				m_rfDest = m_rfPayload.getDest();
@@ -601,7 +601,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 				return false;
 
 			unsigned char cm = m_lastFICH.getCM();
-			if (cm == YSF_CM_GROUP)
+			if (cm == YSF_CM_GROUP1 || cm == YSF_CM_GROUP2)
 				m_rfDest = (unsigned char*)"ALL       ";
 			else
 				m_rfDest = m_rfPayload.getDest();
@@ -649,7 +649,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			memcpy(csd1 + YSF_CALLSIGN_LENGTH, m_rfSource, YSF_CALLSIGN_LENGTH);
 			memset(csd2, ' ', YSF_CALLSIGN_LENGTH + YSF_CALLSIGN_LENGTH);
 
-			if (cm == YSF_CM_GROUP)
+			if (cm == YSF_CM_GROUP1 || cm == YSF_CM_GROUP2)
 				memset(csd1 + 0U, '*', YSF_CALLSIGN_LENGTH);
 			else
 				memcpy(csd1 + 0U, m_rfDest, YSF_CALLSIGN_LENGTH);
@@ -741,7 +741,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 			}
 
 			unsigned char cm = m_lastFICH.getCM();
-			if (cm == YSF_CM_GROUP)
+			if (cm == YSF_CM_GROUP1 || cm == YSF_CM_GROUP2)
 				m_rfDest = (unsigned char*)"ALL       ";
 			else
 				m_rfDest = m_rfPayload.getDest();

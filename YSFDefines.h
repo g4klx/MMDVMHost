@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -42,7 +42,8 @@ const unsigned char YSF_DT_DATA_FR_MODE  = 0x01U;
 const unsigned char YSF_DT_VD_MODE2      = 0x02U;
 const unsigned char YSF_DT_VOICE_FR_MODE = 0x03U;
 
-const unsigned char YSF_CM_GROUP      = 0x00U;
+const unsigned char YSF_CM_GROUP1     = 0x00U;
+const unsigned char YSF_CM_GROUP2     = 0x01U;
 const unsigned char YSF_CM_INDIVIDUAL = 0x03U;
 
 const unsigned char YSF_MR_NOT_BUSY = 0x01U;
