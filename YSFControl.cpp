@@ -154,13 +154,23 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 	if (valid)
 		m_lastFICH = fich;
 
-	// Validate the DSQ value if enabled
+	// Validate the DSQ/DG-ID value if enabled
 	if (m_sqlEnabled) {
-		bool sql = m_lastFICH.getSQL();
-		unsigned char value = m_lastFICH.getSQ();
+		unsigned char cm = m_lastFICH.getCM();
+		if (cm == YSF_CM_GROUP2) {
+			// Using the DG-ID value
+			unsigned char value = m_lastFICH.getSQ();
 
-		if (!sql || value != m_sqlValue)
-			return false;
+			if (value != m_sqlValue)
+				return false;
+		} else {
+			// Using the DSQ value
+			bool sql = m_lastFICH.getSQL();
+			unsigned char value = m_lastFICH.getSQ();
+
+			if (!sql || value != m_sqlValue)
+				return false;
+		}
 	}
 
 	// Stop repeater packets coming through, unless we're acting as a remote gateway
