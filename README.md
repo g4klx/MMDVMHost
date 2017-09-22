@@ -2,7 +2,7 @@ These are the source files for building the MMDVMHost, the program that interfac
 
 On the D-Star side the MMDVMHost interfaces with the ircDDB Gateway, on DMR it can connect to BrandMeister, DMR+, HB Link, XLX or [DMRGateway](https://github.com/g4klx/DMRGateway) (to connect to multiple DMR networks at once) on System Fusion it connects to the YSF Gateway. On P25 it connects to the P25 Gateway.
 
-It builds on 32-bit and 64-bit Linux as well as on Windows using VS2015 on x86 and x64. It can optionally control various Displays. Currently these are:
+It builds on 32-bit and 64-bit Linux as well as on Windows using Visual Studio 2017 on x86 and x64. It can optionally control various Displays. Currently these are:
 
 - HD44780 (sizes 2x16, 2x40, 4x16, 4x20)
 	- Support for HD44780 via 4 bit GPIO connection (user selectable pins)
