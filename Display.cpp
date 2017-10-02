@@ -18,14 +18,15 @@
 
 #include "Display.h"
 #include "Defines.h"
+#include "Log.h"
 
 #include <cstdio>
 #include <cassert>
 #include <cstring>
 
 CDisplay::CDisplay() :
-m_timer1(1000U, 3U),
-m_timer2(1000U, 3U),
+m_timer1(3000U, 3U),
+m_timer2(3000U, 3U),
 m_mode1(MODE_IDLE),
 m_mode2(MODE_IDLE)
 {
@@ -117,7 +118,6 @@ void CDisplay::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 		m_timer2.start();
 		m_mode2 = MODE_IDLE;
 	}
-
 	writeDMRInt(slotNo, src, group, dst, type);
 }
 
@@ -127,11 +127,46 @@ void CDisplay::writeDMRRSSI(unsigned int slotNo, unsigned char rssi)
 		writeDMRRSSIInt(slotNo, rssi);
 }
 
+void CDisplay::writeDMRTA(unsigned int slotNo, unsigned char* talkerAlias, const char* type)
+{
+    unsigned char format;
+    char TA[32];
+    int i,j;
+
+    if (strcmp(type," ")==0) { writeDMRTAInt(slotNo, (unsigned char*)TA, type); return; }
+
+
+    format=talkerAlias[0]>>6;
+    strcpy(TA,"(could not decode)");
+    switch (format) {
+	case 0:		// 7 bit
+		break;
+	case 1:		// ISO 8 bit
+	case 2:		// UTF8
+		strcpy(TA,(char*)talkerAlias+1);
+		break;
+	case 3:		// UTF16
+		j=0;
+		memset (&TA,0,32);
+		for(i=0;i<15;i++) {
+		    if (talkerAlias[2*i+1]==0) 
+			TA[j++]=talkerAlias[2*i+2]; else TA[j++]='?';
+		}
+		TA[j]=0;
+		break;
+    }
+    i=strlen(TA);
+    j=(talkerAlias[0]&0x3F)>>1;
+    LogMessage("DMR Talker Alias (Data Format %u, Received %d/%d char): '%s'", format, i, j, TA);
+    if (i>j) { if (strlen(TA)<29) strcat(TA," ?"); else strcpy(TA+28," ?"); }
+    if (strlen((char*)TA)>4) writeDMRTAInt(slotNo, (unsigned char*)TA, type);
+
+}
+
 void CDisplay::writeDMRBER(unsigned int slotNo, float ber)
 {
 	writeDMRBERInt(slotNo, ber);
 }
-
 void CDisplay::clearDMR(unsigned int slotNo)
 {
 	if (slotNo == 1U) {
@@ -290,6 +325,10 @@ void CDisplay::writeDStarBERInt(float ber)
 }
 
 void CDisplay::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
+{
+}
+
+void CDisplay::writeDMRTAInt(unsigned int slotNo, unsigned char* talkerAlias, const char* type)
 {
 }
 
