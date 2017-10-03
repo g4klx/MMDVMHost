@@ -1796,7 +1796,6 @@ void CDMRSlot::setShortLC(unsigned int slotNo, unsigned int id, FLCO flco, ACTIV
 
 	if (m_id1 != 0U) {
 		lc[2U] = m_id1;
-        lc[1U] &= 0x0FU;
         if (m_activity1 == ACTIVITY_VOICE && m_flco1 == FLCO_GROUP)
             lc[1U] |= 0x80U;
         else if (m_activity1 == ACTIVITY_VOICE && m_flco1 == FLCO_USER_USER)
@@ -1813,7 +1812,6 @@ void CDMRSlot::setShortLC(unsigned int slotNo, unsigned int id, FLCO flco, ACTIV
 
 	if (m_id2 != 0U) {
 		lc[3U] = m_id2;
-        lc[1U] &= 0xF0U;
         if (m_activity2 == ACTIVITY_VOICE && m_flco2 == FLCO_GROUP)
             lc[1U] |= 0x08U;
         else if (m_activity2 == ACTIVITY_VOICE && m_flco2 == FLCO_USER_USER)
