@@ -51,10 +51,10 @@ unsigned char* CDMRSlot::m_idle = NULL;
 
 FLCO           CDMRSlot::m_flco1;
 unsigned char  CDMRSlot::m_id1 = 0U;
-ACTIVITY_TYPE  CDMRSlot::m_activity1 = ACTIVITY_NONE;
+unsigned char  CDMRSlot::m_activity1 = ACTIVITY_NONE;
 FLCO           CDMRSlot::m_flco2;
 unsigned char  CDMRSlot::m_id2 = 0U;
-ACTIVITY_TYPE  CDMRSlot::m_activity2 = ACTIVITY_NONE;
+unsigned char  CDMRSlot::m_activity2 = ACTIVITY_NONE;
 
 const unsigned char TALKER_ID_NONE   = 0x00U;
 const unsigned char TALKER_ID_HEADER = 0x01U;
@@ -472,7 +472,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
             // If data preamble, signal its existence
             if (m_netState == RS_NET_IDLE && csbko == CSBKO_PRECCSBK && csbk.getDataContent()) {
-                setShortLC(m_slotNo, dstId, gi ? FLCO_GROUP : FLCO_USER_USER, ACTIVITY_CSBK);
+                setShortLC(m_slotNo, dstId, gi ? FLCO_GROUP : FLCO_USER_USER, ACTIVITY_DATA);
                 m_display->writeDMR(m_slotNo, src, gi, dst, "R");
                 m_display->writeDMRRSSI(m_slotNo, m_rssi);
             }
@@ -1533,7 +1533,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
         // If data preamble, signal its existence
         if (csbko == CSBKO_PRECCSBK && csbk.getDataContent()) {
-            setShortLC(m_slotNo, dstId, gi ? FLCO_GROUP : FLCO_USER_USER, ACTIVITY_CSBK);
+            setShortLC(m_slotNo, dstId, gi ? FLCO_GROUP : FLCO_USER_USER, ACTIVITY_DATA);
             m_display->writeDMR(m_slotNo, src, gi, dst, "N");
         }
     } else if (dataType == DT_RATE_12_DATA || dataType == DT_RATE_34_DATA || dataType == DT_RATE_1_DATA) {
@@ -1750,7 +1750,7 @@ void CDMRSlot::init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData
 }
 
 
-void CDMRSlot::setShortLC(unsigned int slotNo, unsigned int id, FLCO flco, ACTIVITY_TYPE type)
+void CDMRSlot::setShortLC(unsigned int slotNo, unsigned int id, FLCO flco, unsigned char type)
 {
 	assert(m_modem != NULL);
 
@@ -1795,35 +1795,21 @@ void CDMRSlot::setShortLC(unsigned int slotNo, unsigned int id, FLCO flco, ACTIV
 	lc[3U] = 0x00U;
 
 	if (m_id1 != 0U) {
-		lc[2U] = m_id1;
-        if (m_activity1 == ACTIVITY_VOICE && m_flco1 == FLCO_GROUP)
-            lc[1U] |= 0x80U;
-        else if (m_activity1 == ACTIVITY_VOICE && m_flco1 == FLCO_USER_USER)
-            lc[1U] |= 0x90U;
-        else if (m_activity1 == ACTIVITY_DATA && m_flco1 == FLCO_GROUP)
-            lc[1U] |= 0xB0U;
-        else if (m_activity1 == ACTIVITY_DATA && m_flco1 == FLCO_USER_USER)
-            lc[1U] |= 0xA0U;
-        else if (m_activity1 == ACTIVITY_CSBK && m_flco1 == FLCO_GROUP)
-            lc[1U] |= 0x20U;
-        else if (m_activity1 == ACTIVITY_CSBK && m_flco1 == FLCO_USER_USER)
-            lc[1U] |= 0x30U;
+        unsigned char activity = m_activity1;
+        if (m_flco1 == FLCO_USER_USER)
+            activity |= 0x01U;
+
+        lc[2U]  = m_id1;
+        lc[1U] |= (activity << 0);
     }
 
 	if (m_id2 != 0U) {
-		lc[3U] = m_id2;
-        if (m_activity2 == ACTIVITY_VOICE && m_flco2 == FLCO_GROUP)
-            lc[1U] |= 0x08U;
-        else if (m_activity2 == ACTIVITY_VOICE && m_flco2 == FLCO_USER_USER)
-            lc[1U] |= 0x09U;
-        else if (m_activity2 == ACTIVITY_DATA && m_flco2 == FLCO_GROUP)
-            lc[1U] |= 0x0BU;
-        else if (m_activity2 == ACTIVITY_DATA && m_flco2 == FLCO_USER_USER)
-            lc[1U] |= 0x0AU;
-        else if (m_activity2 == ACTIVITY_CSBK && m_flco2 == FLCO_GROUP)
-            lc[1U] |= 0x02U;
-        else if (m_activity2 == ACTIVITY_CSBK && m_flco2 == FLCO_USER_USER)
-            lc[1U] |= 0x03U;
+        unsigned char activity = m_activity2;
+        if (m_flco2 == FLCO_USER_USER)
+            activity |= 0x01U;
+
+        lc[3U]  = m_id2;
+        lc[1U] |= (activity << 4);
     }
 
 	lc[4U] = CCRC::crc8(lc, 4U);

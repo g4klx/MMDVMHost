@@ -36,12 +36,11 @@
 
 #include <vector>
 
-enum ACTIVITY_TYPE {
-    ACTIVITY_NONE,
-    ACTIVITY_VOICE,
-    ACTIVITY_DATA,
-    ACTIVITY_CSBK
-};
+const unsigned char ACTIVITY_NONE  = 0x00U;
+const unsigned char ACTIVITY_CSBK  = 0x02U;
+const unsigned char ACTIVITY_VOICE = 0x08U;
+const unsigned char ACTIVITY_DATA  = 0x0AU;
+const unsigned char ACTIVITY_EMERG = 0x0CU;
 
 class CDMRSlot {
 public:
@@ -125,10 +124,10 @@ private:
 
     static FLCO                m_flco1;
 	static unsigned char       m_id1;
-	static ACTIVITY_TYPE       m_activity1;
+	static unsigned char       m_activity1;
 	static FLCO                m_flco2;
 	static unsigned char       m_id2;
-	static ACTIVITY_TYPE       m_activity2;
+	static unsigned char       m_activity2;
 
 	void writeQueueRF(const unsigned char* data);
 	void writeQueueNet(const unsigned char* data);
@@ -145,7 +144,7 @@ private:
 	bool insertSilence(const unsigned char* data, unsigned char seqNo);
 	void insertSilence(unsigned int count);
 
-	static void setShortLC(unsigned int slotNo, unsigned int id, FLCO flco = FLCO_GROUP, ACTIVITY_TYPE type = ACTIVITY_NONE);
+	static void setShortLC(unsigned int slotNo, unsigned int id, FLCO flco = FLCO_GROUP, unsigned char type = ACTIVITY_NONE);
 };
 
 #endif
