@@ -470,12 +470,12 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				break;
 			}
 
-            // If data preamble, signal its existence
-            if (m_netState == RS_NET_IDLE && csbko == CSBKO_PRECCSBK && csbk.getDataContent()) {
-                setShortLC(m_slotNo, dstId, gi ? FLCO_GROUP : FLCO_USER_USER, ACTIVITY_DATA);
-                m_display->writeDMR(m_slotNo, src, gi, dst, "R");
-                m_display->writeDMRRSSI(m_slotNo, m_rssi);
-            }
+			// If data preamble, signal its existence
+			if (m_netState == RS_NET_IDLE && csbko == CSBKO_PRECCSBK && csbk.getDataContent()) {
+				setShortLC(m_slotNo, dstId, gi ? FLCO_GROUP : FLCO_USER_USER, ACTIVITY_DATA);
+				m_display->writeDMR(m_slotNo, src, gi, dst, "R");
+				m_display->writeDMRRSSI(m_slotNo, m_rssi);
+			}
 
             return true;
 		} else if (dataType == DT_RATE_12_DATA || dataType == DT_RATE_34_DATA || dataType == DT_RATE_1_DATA) {
@@ -1531,11 +1531,11 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			break;
 		}
 
-        // If data preamble, signal its existence
-        if (csbko == CSBKO_PRECCSBK && csbk.getDataContent()) {
-            setShortLC(m_slotNo, dstId, gi ? FLCO_GROUP : FLCO_USER_USER, ACTIVITY_DATA);
-            m_display->writeDMR(m_slotNo, src, gi, dst, "N");
-        }
+		// If data preamble, signal its existence
+		if (csbko == CSBKO_PRECCSBK && csbk.getDataContent()) {
+			setShortLC(m_slotNo, dstId, gi ? FLCO_GROUP : FLCO_USER_USER, ACTIVITY_DATA);
+			m_display->writeDMR(m_slotNo, src, gi, dst, "N");
+		}
     } else if (dataType == DT_RATE_12_DATA || dataType == DT_RATE_34_DATA || dataType == DT_RATE_1_DATA) {
 		if (m_netState != RS_NET_DATA || m_netFrames == 0U)
 			return;
@@ -1796,45 +1796,45 @@ void CDMRSlot::setShortLC(unsigned int slotNo, unsigned int id, FLCO flco, ACTIV
 
 	if (m_id1 != 0U) {
 		lc[2U] = m_id1;
-        if (m_activity1 == ACTIVITY_VOICE && m_flco1 == FLCO_GROUP)
-            lc[1U] |= 0x08U;
-        else if (m_activity1 == ACTIVITY_VOICE && m_flco1 == FLCO_USER_USER)
-            lc[1U] |= 0x09U;
-        else if (m_activity1 == ACTIVITY_DATA && m_flco1 == FLCO_GROUP)
-            lc[1U] |= 0x0BU;
-        else if (m_activity1 == ACTIVITY_DATA && m_flco1 == FLCO_USER_USER)
-            lc[1U] |= 0x0AU;
-        else if (m_activity1 == ACTIVITY_CSBK && m_flco1 == FLCO_GROUP)
-            lc[1U] |= 0x02U;
-        else if (m_activity1 == ACTIVITY_CSBK && m_flco1 == FLCO_USER_USER)
-            lc[1U] |= 0x03U;
-        else if (m_activity1 == ACTIVITY_EMERG && m_flco1 == FLCO_GROUP)
-            lc[1U] |= 0x0CU;
-        else if (m_activity1 == ACTIVITY_EMERG && m_flco1 == FLCO_USER_USER)
-            lc[1U] |= 0x0DU;
-    }
+		if (m_activity1 == ACTIVITY_VOICE && m_flco1 == FLCO_GROUP)
+			lc[1U] |= 0x08U;
+		else if (m_activity1 == ACTIVITY_VOICE && m_flco1 == FLCO_USER_USER)
+			lc[1U] |= 0x09U;
+		else if (m_activity1 == ACTIVITY_DATA && m_flco1 == FLCO_GROUP)
+			lc[1U] |= 0x0BU;
+		else if (m_activity1 == ACTIVITY_DATA && m_flco1 == FLCO_USER_USER)
+			lc[1U] |= 0x0AU;
+		else if (m_activity1 == ACTIVITY_CSBK && m_flco1 == FLCO_GROUP)
+			lc[1U] |= 0x02U;
+		else if (m_activity1 == ACTIVITY_CSBK && m_flco1 == FLCO_USER_USER)
+			lc[1U] |= 0x03U;
+		else if (m_activity1 == ACTIVITY_EMERG && m_flco1 == FLCO_GROUP)
+			lc[1U] |= 0x0CU;
+		else if (m_activity1 == ACTIVITY_EMERG && m_flco1 == FLCO_USER_USER)
+			lc[1U] |= 0x0DU;
+	}
 
-    if (m_id2 != 0U) {
-        lc[3U] = m_id2;
-        if (m_activity2 == ACTIVITY_VOICE && m_flco2 == FLCO_GROUP)
-            lc[1U] |= 0x80U;
-        else if (m_activity2 == ACTIVITY_VOICE && m_flco2 == FLCO_USER_USER)
-            lc[1U] |= 0x90U;
-        else if (m_activity2 == ACTIVITY_DATA && m_flco2 == FLCO_GROUP)
-            lc[1U] |= 0xB0U;
-        else if (m_activity2 == ACTIVITY_DATA && m_flco2 == FLCO_USER_USER)
-            lc[1U] |= 0xA0U;
-        else if (m_activity2 == ACTIVITY_CSBK && m_flco2 == FLCO_GROUP)
-            lc[1U] |= 0x20U;
-        else if (m_activity2 == ACTIVITY_CSBK && m_flco2 == FLCO_USER_USER)
-            lc[1U] |= 0x30U;
-        else if (m_activity2 == ACTIVITY_EMERG && m_flco2 == FLCO_GROUP)
-            lc[1U] |= 0xC0U;
-        else if (m_activity2 == ACTIVITY_EMERG && m_flco2 == FLCO_USER_USER)
-            lc[1U] |= 0xD0U;
-    }
+	if (m_id2 != 0U) {
+		lc[3U] = m_id2;
+		if (m_activity2 == ACTIVITY_VOICE && m_flco2 == FLCO_GROUP)
+			lc[1U] |= 0x80U;
+		else if (m_activity2 == ACTIVITY_VOICE && m_flco2 == FLCO_USER_USER)
+			lc[1U] |= 0x90U;
+		else if (m_activity2 == ACTIVITY_DATA && m_flco2 == FLCO_GROUP)
+			lc[1U] |= 0xB0U;
+		else if (m_activity2 == ACTIVITY_DATA && m_flco2 == FLCO_USER_USER)
+			lc[1U] |= 0xA0U;
+		else if (m_activity2 == ACTIVITY_CSBK && m_flco2 == FLCO_GROUP)
+			lc[1U] |= 0x20U;
+		else if (m_activity2 == ACTIVITY_CSBK && m_flco2 == FLCO_USER_USER)
+			lc[1U] |= 0x30U;
+		else if (m_activity2 == ACTIVITY_EMERG && m_flco2 == FLCO_GROUP)
+			lc[1U] |= 0xC0U;
+		else if (m_activity2 == ACTIVITY_EMERG && m_flco2 == FLCO_USER_USER)
+			lc[1U] |= 0xD0U;
+	}
 
-    lc[4U] = CCRC::crc8(lc, 4U);
+	lc[4U] = CCRC::crc8(lc, 4U);
 
 	unsigned char sLC[9U];
 
