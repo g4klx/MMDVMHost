@@ -36,59 +36,79 @@ void CNetworkInfo::getNetworkInterface(unsigned char* info)
 {
 #define IFLISTSIZ 25
 
-        LogInfo("Interfaces Info");
-        struct ifaddrs *ifaddr, *ifa;
-        int family, s, n, ifnr;
-        char host[NI_MAXHOST];
-        char text[50+INET6_ADDRSTRLEN];
-        char interfacelist[IFLISTSIZ][50+INET6_ADDRSTRLEN];
-        char *p;
+    LogInfo("Interfaces Info");
+    struct ifaddrs *ifaddr, *ifa;
+    int family, s, n, ifnr;
+    char host[NI_MAXHOST];
+    char interfacelist[IFLISTSIZ][50+INET6_ADDRSTRLEN];
+    char *dflt, *p;
+    FILE *f;
+    char line[100];
 
-        strcpy(text,"(interface lookup failed)");
-        for(n=0;n<IFLISTSIZ;n++) {
-            interfacelist[n][0]=0;
+    dflt=NULL;
+    f = fopen("/proc/net/route" , "r");
+
+    while(fgets(line , 100 , f))
+    {
+        dflt = strtok(line , " \t");
+        p = strtok(NULL , " \t");
+
+        if(dflt!=NULL && p!=NULL)
+        {
+            if(strcmp(p , "00000000") == 0)
+            {
+                break;
+            }
         }
-        ifnr=0;
+    }
 
+
+    for(n=0;n<IFLISTSIZ;n++) {
+        interfacelist[n][0]=0;
+    }
+    ifnr=0;
         if (getifaddrs(&ifaddr) == -1) {
-            strcpy((char*)info,"getifaddrs failure");
-        } else {
-            for (ifa = ifaddr, n = 0; ifa != NULL; ifa = ifa->ifa_next, n++) {
-               if (ifa->ifa_addr == NULL)
-                   continue;
-
+        strcpy((char*)info,"getifaddrs failure");
+    } else {
+        for (ifa = ifaddr, n = 0; ifa != NULL; ifa = ifa->ifa_next, n++) {
+           if (ifa->ifa_addr == NULL)
+               continue;
                 family = ifa->ifa_addr->sa_family;
-
                 if (family == AF_INET || family == AF_INET6) {
-                    s = getnameinfo(ifa->ifa_addr,
-                        (family == AF_INET) ? sizeof(struct sockaddr_in) :
-                                              sizeof(struct sockaddr_in6),
-                        host, NI_MAXHOST,
-                        NULL, 0, NI_NUMERICHOST);
-                    if (s != 0) {
-                        LogInfo("getnameinfo() failed: %s\n", gai_strerror(s));
-                        continue;
-                    }
-                    if (family == AF_INET) {
-                        sprintf(interfacelist[ifnr], "%s: %s", ifa->ifa_name,host);
-                        LogInfo("    IPv4: %s", interfacelist[ifnr] );
-                    } else {
-                        sprintf(interfacelist[ifnr], "%s: %s", ifa->ifa_name,host);
-                        LogInfo("    IPv6: %s", interfacelist[ifnr] );
-                    }
-                    ifnr++;
+                s = getnameinfo(ifa->ifa_addr,
+                    (family == AF_INET) ? sizeof(struct sockaddr_in) :
+                                          sizeof(struct sockaddr_in6),
+                    host, NI_MAXHOST,
+                    NULL, 0, NI_NUMERICHOST);
+                if (s != 0) {
+                    LogInfo("getnameinfo() failed: %s\n", gai_strerror(s));
+                    continue;
                 }
-            }
-            freeifaddrs(ifaddr);
-            for(n=0;n<(ifnr);n++) {
-                p=strchr(interfacelist[n],'%');
-                if (p!=NULL) *p=0;
-                if (strstr(interfacelist[n],"lo")==NULL) {
-                    strcpy((char*)info,interfacelist[n]);
-                    break;
+                if (family == AF_INET) {
+                    sprintf(interfacelist[ifnr], "%s: %s", ifa->ifa_name,host);
+                    LogInfo("    IPv4: %s", interfacelist[ifnr] );
+                } else {
+                    sprintf(interfacelist[ifnr], "%s: %s", ifa->ifa_name,host);
+                    LogInfo("    IPv6: %s", interfacelist[ifnr] );
                 }
+                ifnr++;
             }
-            LogInfo("    IP to show: %s", info );
         }
+        freeifaddrs(ifaddr);
+
+
+        LogInfo("    Default interface is : %s" , dflt);
+
+        for(n=0;n<(ifnr);n++) {
+            p=strchr(interfacelist[n],'%');
+            if (p!=NULL) *p=0;
+            if(strstr(interfacelist[n], dflt) != 0)
+            {
+                strcpy((char*)info,interfacelist[n]);
+                break;
+            }
+        }
+        LogInfo("    IP to show: %s", info );
+    }
 }
 
