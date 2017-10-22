@@ -86,8 +86,11 @@ private:
   unsigned int  m_rssiCount2;
   unsigned int  m_berCount1;
   unsigned int  m_berCount2;
+  unsigned char m_screenLayout;
 
   void sendCommand(const char* command);
+  void checkScreenLayout();
+
 };
 
 #endif
