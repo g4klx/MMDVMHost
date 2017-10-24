@@ -48,6 +48,7 @@ protected:
 
   virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
   virtual void writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi);
+  virtual void writeDMRTAInt(unsigned int slotNo, unsigned char* talkerAlias, const char* type);
   virtual void writeDMRBERInt(unsigned int slotNo, float ber);
   virtual void clearDMRInt(unsigned int slotNo);
 
@@ -68,6 +69,7 @@ protected:
 
 private:
   std::string   m_callsign;
+  std::string   m_ipaddress;
   unsigned int  m_dmrid;
   ISerialPort*  m_serial;
   unsigned int  m_brightness;
@@ -84,8 +86,11 @@ private:
   unsigned int  m_rssiCount2;
   unsigned int  m_berCount1;
   unsigned int  m_berCount2;
+  unsigned char m_screenLayout;
 
   void sendCommand(const char* command);
+  void checkScreenLayout();
+
 };
 
 #endif

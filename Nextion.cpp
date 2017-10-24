@@ -18,12 +18,14 @@
 
 #include "Nextion.h"
 #include "Log.h"
+#include "Network.h"
 
 #include <cstdio>
 #include <cassert>
 #include <cstring>
 #include <ctime>
 #include <clocale>
+#include <unistd.h>
 
 const unsigned int DSTAR_RSSI_COUNT = 3U;		  // 3 * 420ms = 1260ms
 const unsigned int DSTAR_BER_COUNT  = 63U;		// 63 * 20ms = 1260ms
@@ -37,6 +39,7 @@ const unsigned int P25_BER_COUNT    = 7U;		  // 7 * 180ms = 1260ms
 CNextion::CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness) :
 CDisplay(),
 m_callsign(callsign),
+m_ipaddress("(ip unknown)"),
 m_dmrid(dmrid),
 m_serial(serial),
 m_brightness(brightness),
@@ -62,8 +65,13 @@ CNextion::~CNextion()
 {
 }
 
+
+
 bool CNextion::open()
 {
+        unsigned char info[100U];
+        CNetworkInfo* m_network;
+
 	bool ret = m_serial->open();
 	if (!ret) {
 		LogError("Cannot open the port for the Nextion display");
@@ -71,29 +79,41 @@ bool CNextion::open()
 		return false;
 	}
 
+        info[0]=0;
+        m_network = new CNetworkInfo;
+        m_network->getNetworkInterface(info);
+        m_ipaddress = (char*)info;
+
 	sendCommand("bkcmd=0");
+	m_screenLayout=100;
 
 	setIdle();
 
 	return true;
 }
 
+
 void CNextion::setIdleInt()
 {
+	char text[30U];
+
 	sendCommand("page MMDVM");
 
 	char command[30];
 	::sprintf(command, "dim=%u", m_idleBrightness);
 	sendCommand(command);
-
-	::sprintf(command, "t0.txt=\"%-6s / %u\"", m_callsign.c_str(), m_dmrid);
-
+	::sprintf(command, "t0.txt=\"%s/%u\"", m_callsign.c_str(), m_dmrid);
 	sendCommand(command);
 	sendCommand("t1.txt=\"MMDVM IDLE\"");
+
+	::sprintf(text, "t3.txt=\"%s\"", m_ipaddress.c_str());
+	sendCommand(text);
 
 	m_clockDisplayTimer.start();
 
 	m_mode = MODE_IDLE;
+
+        if (m_screenLayout==100) checkScreenLayout();
 }
 
 void CNextion::setErrorInt(const char* text)
@@ -226,10 +246,19 @@ void CNextion::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 	if (m_mode != MODE_DMR) {
 		sendCommand("page DMR");
 
-		if (slotNo == 1U)
+		if (slotNo == 1U) {
+			if (m_screenLayout==2) {
+			    sendCommand("t2.pco=0");
+			    sendCommand("t2.font=4");
+			}
 			sendCommand("t2.txt=\"2 Listening\"");
-		else
+		} else {
+			if (m_screenLayout==2) {
+			    sendCommand("t0.pco=0");
+			    sendCommand("t0.font=4");
+			}
 			sendCommand("t0.txt=\"1 Listening\"");
+		}
 	}
 
 	char text[30U];
@@ -238,14 +267,20 @@ void CNextion::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 
 	if (slotNo == 1U) {
 		::sprintf(text, "t0.txt=\"1 %s %s\"", type, src.c_str());
+		if (m_screenLayout==2) {
+		    sendCommand("t0.pco=0");
+		    sendCommand("t0.font=4");
+		}
 		sendCommand(text);
-
 		::sprintf(text, "t1.txt=\"%s%s\"", group ? "TG" : "", dst.c_str());
 		sendCommand(text);
 	} else {
 		::sprintf(text, "t2.txt=\"2 %s %s\"", type, src.c_str());
+		if (m_screenLayout==2) {
+		    sendCommand("t2.pco=0");
+		    sendCommand("t2.font=4");
+		}
 		sendCommand(text);
-
 		::sprintf(text, "t3.txt=\"%s%s\"", group ? "TG" : "", dst.c_str());
 		sendCommand(text);
 	}
@@ -306,6 +341,42 @@ void CNextion::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
 	}
 }
 
+
+void CNextion::writeDMRTAInt(unsigned int slotNo,  unsigned char* talkerAlias, const char* type)
+{
+    char text[40U];
+
+    if (type[0]==' ') {
+        if (slotNo == 1U) {
+	    sendCommand("t0.pco=33808");
+        } else {
+	    sendCommand("t2.pco=33808");
+        }
+        return;
+    }
+
+    if (slotNo == 1U) {
+	::sprintf(text, "t0.txt=\"1 %s %s\"",type,talkerAlias);
+	if (m_screenLayout==2) {
+	    if (strlen((char*)talkerAlias)>16-4) sendCommand("t0.font=3");
+	    if (strlen((char*)talkerAlias)>20-4) sendCommand("t0.font=2");
+	    if (strlen((char*)talkerAlias)>24-4) sendCommand("t0.font=1");
+	}
+	sendCommand("t0.pco=1024");
+	sendCommand(text);
+    } else {
+	::sprintf(text, "t2.txt=\"2 %s %s\"",type,talkerAlias);
+	if (m_screenLayout==2) {
+	    if (strlen((char*)talkerAlias)>16-4) sendCommand("t2.font=3");
+	    if (strlen((char*)talkerAlias)>20-4) sendCommand("t2.font=2");
+	    if (strlen((char*)talkerAlias)>24-4) sendCommand("t2.font=1");
+	}
+	sendCommand("t2.pco=1024");
+	sendCommand(text);
+    }
+}
+
+
 void CNextion::writeDMRBERInt(unsigned int slotNo, float ber)
 {
 	if (slotNo == 1U) {
@@ -353,11 +424,19 @@ void CNextion::clearDMRInt(unsigned int slotNo)
 {
 	if (slotNo == 1U) {
 		sendCommand("t0.txt=\"1 Listening\"");
+		sendCommand("t0.pco=0");
+		if (m_screenLayout==2) {
+		    sendCommand("t0.font=4");
+		}
 		sendCommand("t1.txt=\"\"");
 		sendCommand("t4.txt=\"\"");
 		sendCommand("t6.txt=\"\"");
 	} else {
 		sendCommand("t2.txt=\"2 Listening\"");
+		sendCommand("t2.pco=0");
+		if (m_screenLayout==2) {
+		    sendCommand("t2.font=4");
+		}
 		sendCommand("t3.txt=\"\"");
 		sendCommand("t5.txt=\"\"");
 		sendCommand("t7.txt=\"\"");
@@ -568,6 +647,8 @@ void CNextion::clockInt(unsigned int ms)
 
 void CNextion::close()
 {
+	sendCommand("page MMDVM");
+	sendCommand("t1.txt=\"MMDVM STOPPED\"");
 	m_serial->close();
 	delete m_serial;
 }
@@ -579,3 +660,44 @@ void CNextion::sendCommand(const char* command)
 	m_serial->write((unsigned char*)command, ::strlen(command));
 	m_serial->write((unsigned char*)"\xFF\xFF\xFF", 3U);
 }
+
+
+
+void CNextion::checkScreenLayout()
+{
+    unsigned int res;
+    int pos,length,screen;
+    unsigned char data[25];
+
+    memset(data,0,25);
+    pos=0;
+    length=1;
+    screen=0;
+
+	sendCommand("bkcmd=2");
+	res=1; while (m_serial->read(&data[0],1)>0) {;}
+	sendCommand("get MMDVM.screenLayout.val");
+	sleep(1);	//have to wait for answer
+
+	while (length>0) {
+	    length=m_serial->read(&data[pos],1);
+	    if (length>0) {
+//                LogMessage("Nextion %d data received %02X ",length,(char)data[pos]);
+		pos++;
+	    }
+	}
+	if (pos>0) {
+	    if ((data[0]==0x71)&&(pos>4)) screen=data[1]+(data[2]<<8)+(data[3]<<16)+(data[4]<<24);
+//	    LogMessage("Result value %d",screen);
+	}
+
+	if ((res==0x1A)||(screen==0)) {
+	    m_screenLayout=1;
+	    LogMessage("    Display Layout: %d (G4KLX)",screen);
+	} else {
+	    m_screenLayout=2;
+	    LogMessage("    Display Layout: %d (ON7LDS)",screen);
+	}
+	sendCommand("bkcmd=0");
+}
+

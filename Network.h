@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2017 by Lieven De Samblanx ON7LDS
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,9 +16,16 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(VERSION_H)
-#define	VERSION_H
+#if !defined(NETWORK_H)
+#define	NETWORK_H
 
-const char* VERSION = "20171003_ON7LDS";
+
+class CNetworkInfo {
+public:
+
+	void getNetworkInterface(unsigned char* info);
+
+
+};
 
 #endif
