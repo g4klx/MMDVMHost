@@ -69,7 +69,6 @@ private:
 	unsigned int               m_rfEmbeddedReadN;
 	unsigned int               m_rfEmbeddedWriteN;
 	unsigned char              m_rfTalkerId;
-	unsigned char*             m_rfTalkerAlias;
 	CDMREmbeddedData           m_netEmbeddedLC;
 	CDMREmbeddedData*          m_netEmbeddedData;
 	unsigned int               m_netEmbeddedReadN;
