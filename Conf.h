@@ -73,6 +73,7 @@ public:
   unsigned int getModemDMRDelay() const;
   int          getModemTXOffset() const;
   int          getModemRXOffset() const;
+  int          getModemRXDCOffset() const;
   int          getModemTXDCOffset() const;
   float        getModemRXLevel() const;
   float        getModemCWIdTXLevel() const;
@@ -246,6 +247,7 @@ private:
   unsigned int m_modemDMRDelay;
   int          m_modemTXOffset;
   int          m_modemRXOffset;
+  int          m_modemRXDCOffset;
   int          m_modemTXDCOffset;
   float        m_modemRXLevel;
   float        m_modemCWIdTXLevel;

@@ -107,6 +107,7 @@ m_dstarEnabled(false),
 m_dmrEnabled(false),
 m_ysfEnabled(false),
 m_p25Enabled(false),
+m_rxDCOffset(0),
 m_txDCOffset(0),
 m_serial(port, SERIAL_115200, true),
 m_buffer(NULL),
@@ -146,11 +147,12 @@ CModem::~CModem()
 	delete[] m_buffer;
 }
 
-void CModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset)
+void CModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset)
 {
 	m_rxFrequency = rxFrequency + rxOffset;
 	m_txFrequency = txFrequency + txOffset;
 	m_txDCOffset  = txDCOffset;
+	m_rxDCOffset  = rxDCOffset;
 }
 
 void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled)
@@ -945,7 +947,7 @@ bool CModem::setConfig()
 
 	buffer[0U] = MMDVM_FRAME_START;
 
-	buffer[1U] = 17U;
+	buffer[1U] = 18U;
 
 	buffer[2U] = MMDVM_SET_CONFIG;
 
@@ -993,11 +995,12 @@ bool CModem::setConfig()
 	buffer[15U] = (unsigned char)(m_p25TXLevel * 2.55F + 0.5F);
 
 	buffer[16U] = (unsigned char)(m_txDCOffset + 128);
+	buffer[17U] = (unsigned char)(m_rxDCOffset + 128);
 
-	// CUtils::dump(1U, "Written", buffer, 17U);
+	// CUtils::dump(1U, "Written", buffer, 18U);
 
-	int ret = m_serial.write(buffer, 17U);
-	if (ret != 17)
+	int ret = m_serial.write(buffer, 18U);
+	if (ret != 18)
 		return false;
 
 	unsigned int count = 0U;

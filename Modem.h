@@ -37,7 +37,7 @@ public:
 	CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool trace, bool debug);
 	~CModem();
 
-	void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset);
+	void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset);
 	void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled);
 	void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25Enabled);
 	void setDMRParams(unsigned int colorCode);
@@ -111,6 +111,7 @@ private:
 	bool                       m_dmrEnabled;
 	bool                       m_ysfEnabled;
 	bool                       m_p25Enabled;
+	int                        m_rxDCOffset;
 	int                        m_txDCOffset;
 	CSerialController          m_serial;
 	unsigned char*             m_buffer;
