@@ -35,11 +35,12 @@ const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U
 #define WRITE_BIT(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
-CP25Control::CP25Control(unsigned int nac, unsigned int id, bool selfOnly, bool uidOverride, CP25Network* network, CDisplay* display, unsigned int timeout, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper) :
+CP25Control::CP25Control(unsigned int nac, unsigned int id, bool selfOnly, bool uidOverride, CP25Network* network, CDisplay* display, unsigned int timeout, bool duplex, CDMRLookup* lookup, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
 m_nac(nac),
 m_id(id),
 m_selfOnly(selfOnly),
 m_uidOverride(uidOverride),
+m_remoteGateway(remoteGateway),
 m_network(network),
 m_display(display),
 m_duplex(duplex),
@@ -752,7 +753,10 @@ void CP25Control::createNetHeader()
 	m_netData.encodeHeader(buffer + 2U);
 
 	// Add busy bits
-	addBusyBits(buffer + 2U, P25_HDR_FRAME_LENGTH_BITS, false, true);
+	if (m_remoteGateway)
+		addBusyBits(buffer + 2U, P25_HDR_FRAME_LENGTH_BITS, true, false);
+	else
+		addBusyBits(buffer + 2U, P25_HDR_FRAME_LENGTH_BITS, false, true);
 
 	writeQueueNet(buffer, P25_HDR_FRAME_LENGTH_BYTES + 2U);
 }
@@ -793,7 +797,10 @@ void CP25Control::createNetLDU1()
 	m_netLSD.encode(buffer + 2U);
 
 	// Add busy bits
-	addBusyBits(buffer + 2U, P25_LDU_FRAME_LENGTH_BITS, false, true);
+	if (m_remoteGateway)
+		addBusyBits(buffer + 2U, P25_LDU_FRAME_LENGTH_BITS, true, false);
+	else
+		addBusyBits(buffer + 2U, P25_LDU_FRAME_LENGTH_BITS, false, true);
 
 	writeQueueNet(buffer, P25_LDU_FRAME_LENGTH_BYTES + 2U);
 
@@ -838,7 +845,10 @@ void CP25Control::createNetLDU2()
 	m_netLSD.encode(buffer + 2U);
 
 	// Add busy bits
-	addBusyBits(buffer + 2U, P25_LDU_FRAME_LENGTH_BITS, false, true);
+	if (m_remoteGateway)
+		addBusyBits(buffer + 2U, P25_LDU_FRAME_LENGTH_BITS, true, false);
+	else
+		addBusyBits(buffer + 2U, P25_LDU_FRAME_LENGTH_BITS, false, true);
 
 	writeQueueNet(buffer, P25_LDU_FRAME_LENGTH_BYTES + 2U);
 
@@ -862,7 +872,10 @@ void CP25Control::createNetTerminator()
 	m_nid.encode(buffer + 2U, P25_DUID_TERM);
 
 	// Add busy bits
-	addBusyBits(buffer + 2U, P25_TERM_FRAME_LENGTH_BITS, false, true);
+	if (m_remoteGateway)
+		addBusyBits(buffer + 2U, P25_TERM_FRAME_LENGTH_BITS, true, false);
+	else
+		addBusyBits(buffer + 2U, P25_TERM_FRAME_LENGTH_BITS, false, true);
 
 	writeQueueNet(buffer, P25_TERM_FRAME_LENGTH_BYTES + 2U);
 

@@ -36,12 +36,13 @@ bool CallsignCompare(const std::string& arg, const unsigned char* my)
 
 // #define	DUMP_DSTAR
 
-CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool ackReply, unsigned int ackTime, bool errorReply, const std::vector<std::string>& blackList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, CRSSIInterpolator* rssiMapper) :
+CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool ackReply, unsigned int ackTime, bool errorReply, const std::vector<std::string>& blackList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
 m_callsign(NULL),
 m_gateway(NULL),
 m_selfOnly(selfOnly),
 m_ackReply(ackReply),
 m_errorReply(errorReply),
+m_remoteGateway(remoteGateway),
 m_blackList(blackList),
 m_network(network),
 m_display(display),
@@ -589,7 +590,6 @@ void CDStarControl::writeNetwork()
 
 		m_netTimeoutTimer.start();
 		m_packetTimer.start();
-		//m_elapsed.start();                 // commented out and placed lower down due to delay introduced somewhere below here.
 		m_ackTimer.stop();
 		m_errTimer.stop();
 
@@ -602,6 +602,13 @@ void CDStarControl::writeNetwork()
 
 		m_netBits   = 1U;
 		m_netErrs   = 0U;
+
+		if (m_remoteGateway) {
+			header.setRepeater(true);
+			header.setRPTCall1(m_callsign);
+			header.setRPTCall2(m_callsign);
+			header.get(data + 1U);
+		}
 
 		writeQueueHeaderNet(data);
 

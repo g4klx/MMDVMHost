@@ -106,6 +106,7 @@ m_dstarBlackList(),
 m_dstarAckReply(true),
 m_dstarAckTime(750U),
 m_dstarErrorReply(true),
+m_dstarRemoteGateway(false),
 m_dstarModeHang(10U),
 m_dmrEnabled(false),
 m_dmrBeacons(false),
@@ -134,6 +135,7 @@ m_p25Id(0U),
 m_p25NAC(0x293U),
 m_p25SelfOnly(false),
 m_p25OverrideUID(false),
+m_p25RemoteGateway(false),
 m_p25ModeHang(10U),
 m_dstarNetworkEnabled(false),
 m_dstarGatewayAddress(),
@@ -409,6 +411,8 @@ bool CConf::read()
 			m_dstarAckTime = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "ErrorReply") == 0)
 			m_dstarErrorReply = ::atoi(value) == 1;
+		else if (::strcmp(key, "RemoteGateway") == 0)
+			m_dstarRemoteGateway = ::atoi(value) == 1;
 		else if (::strcmp(key, "ModeHang") == 0)
 			m_dstarModeHang = (unsigned int)::atoi(value);
 	} else if (section == SECTION_DMR) {
@@ -497,6 +501,8 @@ bool CConf::read()
 			m_p25OverrideUID = ::atoi(value) == 1;
 		else if (::strcmp(key, "SelfOnly") == 0)
 			m_p25SelfOnly = ::atoi(value) == 1;
+		else if (::strcmp(key, "RemoteGateway") == 0)
+			m_p25RemoteGateway = ::atoi(value) == 1;
 		else if (::strcmp(key, "ModeHang") == 0)
 			m_p25ModeHang = (unsigned int)::atoi(value);
 	} else if (section == SECTION_DSTAR_NETWORK) {
@@ -896,6 +902,11 @@ bool CConf::getDStarErrorReply() const
 	return m_dstarErrorReply;
 }
 
+bool CConf::getDStarRemoteGateway() const
+{
+	return m_dstarRemoteGateway;
+}
+
 unsigned int CConf::getDStarModeHang() const
 {
 	return m_dstarModeHang;
@@ -1034,6 +1045,11 @@ bool CConf::getP25OverrideUID() const
 bool CConf::getP25SelfOnly() const
 {
 	return m_p25SelfOnly;
+}
+
+bool CConf::getP25RemoteGateway() const
+{
+	return m_p25RemoteGateway;
 }
 
 unsigned int CConf::getP25ModeHang() const

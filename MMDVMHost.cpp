@@ -348,6 +348,7 @@ int CMMDVMHost::run()
 		bool ackReply                      = m_conf.getDStarAckReply();
 		unsigned int ackTime               = m_conf.getDStarAckTime();
 		bool errorReply                    = m_conf.getDStarErrorReply();
+		bool remoteGateway                 = m_conf.getDStarRemoteGateway();
 		m_dstarRFModeHang                  = m_conf.getDStarModeHang();
 
 		LogInfo("D-Star RF Parameters");
@@ -356,12 +357,13 @@ int CMMDVMHost::run()
 		LogInfo("    Ack Reply: %s", ackReply ? "yes" : "no");
 		LogInfo("    Ack Time: %ums", ackTime);
 		LogInfo("    Error Reply: %s", errorReply ? "yes" : "no");
+		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
 		LogInfo("    Mode Hang: %us", m_dstarRFModeHang);
 
 		if (blackList.size() > 0U)
 			LogInfo("    Black List: %u", blackList.size());
 
-		dstar = new CDStarControl(m_callsign, module, selfOnly, ackReply, ackTime, errorReply, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex, rssi);
+		dstar = new CDStarControl(m_callsign, module, selfOnly, ackReply, ackTime, errorReply, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex, remoteGateway, rssi);
 	}
 
 	CDMRControl* dmr = NULL;
@@ -442,20 +444,22 @@ int CMMDVMHost::run()
 
 	CP25Control* p25 = NULL;
 	if (m_p25Enabled) {
-		unsigned int id  = m_conf.getP25Id();
-		unsigned int nac = m_conf.getP25NAC();
-		bool uidOverride = m_conf.getP25OverrideUID();
-		bool selfOnly    = m_conf.getP25SelfOnly();
-		m_p25RFModeHang  = m_conf.getP25ModeHang();
+		unsigned int id    = m_conf.getP25Id();
+		unsigned int nac   = m_conf.getP25NAC();
+		bool uidOverride   = m_conf.getP25OverrideUID();
+		bool selfOnly      = m_conf.getP25SelfOnly();
+		bool remoteGateway = m_conf.getP25RemoteGateway();
+		m_p25RFModeHang    = m_conf.getP25ModeHang();
 
 		LogInfo("P25 RF Parameters");
 		LogInfo("    Id: %u", id);
 		LogInfo("    NAC: $%03X", nac);
 		LogInfo("    UID Override: %s", uidOverride ? "yes" : "no");
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
+		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
 		LogInfo("    Mode Hang: %us", m_p25RFModeHang);
 
-		p25 = new CP25Control(nac, id, selfOnly, uidOverride, m_p25Network, m_display, m_timeout, m_duplex, m_lookup, rssi);
+		p25 = new CP25Control(nac, id, selfOnly, uidOverride, m_p25Network, m_display, m_timeout, m_duplex, m_lookup, remoteGateway, rssi);
 	}
 
 	setMode(MODE_IDLE);

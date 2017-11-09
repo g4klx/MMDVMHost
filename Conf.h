@@ -97,6 +97,7 @@ public:
   bool         getDStarAckReply() const;
   unsigned int getDStarAckTime() const;
   bool         getDStarErrorReply() const;
+  bool         getDStarRemoteGateway() const;
   unsigned int getDStarModeHang() const;
 
   // The DMR section
@@ -131,6 +132,7 @@ public:
   unsigned int getP25NAC() const;
   bool         getP25SelfOnly() const;
   bool         getP25OverrideUID() const;
+  bool         getP25RemoteGateway() const;
   unsigned int getP25ModeHang() const;
 
   // The D-Star Network section
@@ -269,6 +271,7 @@ private:
   bool         m_dstarAckReply;
   unsigned int m_dstarAckTime;
   bool         m_dstarErrorReply;
+  bool         m_dstarRemoteGateway;
   unsigned int m_dstarModeHang;
 
   bool         m_dmrEnabled;
@@ -300,6 +303,7 @@ private:
   unsigned int m_p25NAC;
   bool         m_p25SelfOnly;
   bool         m_p25OverrideUID;
+  bool         m_p25RemoteGateway;
   unsigned int m_p25ModeHang;
 
   bool         m_dstarNetworkEnabled;
