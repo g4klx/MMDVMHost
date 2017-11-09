@@ -995,19 +995,19 @@ bool CMMDVMHost::createYSFNetwork()
 {
 	std::string myAddress  = m_conf.getFusionNetworkMyAddress();
 	unsigned int myPort    = m_conf.getFusionNetworkMyPort();
-	std::string gwyAddress = m_conf.getFusionNetworkGwyAddress();
-	unsigned int gwyPort   = m_conf.getFusionNetworkGwyPort();
+	std::string gatewayAddress = m_conf.getFusionNetworkGatewayAddress();
+	unsigned int gatewayPort   = m_conf.getFusionNetworkGatewayPort();
 	m_ysfNetModeHang       = m_conf.getFusionNetworkModeHang();
 	bool debug             = m_conf.getFusionNetworkDebug();
 
 	LogInfo("System Fusion Network Parameters");
 	LogInfo("    Local Address: %s", myAddress.c_str());
 	LogInfo("    Local Port: %u", myPort);
-	LogInfo("    Gateway Address: %s", gwyAddress.c_str());
-	LogInfo("    Gateway Port: %u", gwyPort);
+	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
+	LogInfo("    Gateway Port: %u", gatewayPort);
 	LogInfo("    Mode Hang: %us", m_ysfNetModeHang);
 
-	m_ysfNetwork = new CYSFNetwork(myAddress, myPort, gwyAddress, gwyPort, m_callsign, debug);
+	m_ysfNetwork = new CYSFNetwork(myAddress, myPort, gatewayAddress, gatewayPort, m_callsign, debug);
 
 	bool ret = m_ysfNetwork->open();
 	if (!ret) {

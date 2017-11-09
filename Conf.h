@@ -160,8 +160,8 @@ public:
   bool         getFusionNetworkEnabled() const;
   std::string  getFusionNetworkMyAddress() const;
   unsigned int getFusionNetworkMyPort() const;
-  std::string  getFusionNetworkGwyAddress() const;
-  unsigned int getFusionNetworkGwyPort() const;
+  std::string  getFusionNetworkGatewayAddress() const;
+  unsigned int getFusionNetworkGatewayPort() const;
   unsigned int getFusionNetworkModeHang() const;
   bool         getFusionNetworkDebug() const;
 
@@ -328,8 +328,8 @@ private:
   bool         m_fusionNetworkEnabled;
   std::string  m_fusionNetworkMyAddress;
   unsigned int m_fusionNetworkMyPort;
-  std::string  m_fusionNetworkGwyAddress;
-  unsigned int m_fusionNetworkGwyPort;
+  std::string  m_fusionNetworkGatewayAddress;
+  unsigned int m_fusionNetworkGatewayPort;
   unsigned int m_fusionNetworkModeHang;
   bool         m_fusionNetworkDebug;
 
