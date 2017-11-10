@@ -157,8 +157,8 @@ m_dmrNetworkModeHang(3U),
 m_fusionNetworkEnabled(false),
 m_fusionNetworkMyAddress(),
 m_fusionNetworkMyPort(0U),
-m_fusionNetworkGwyAddress(),
-m_fusionNetworkGwyPort(0U),
+m_fusionNetworkGatewayAddress(),
+m_fusionNetworkGatewayPort(0U),
 m_fusionNetworkModeHang(3U),
 m_fusionNetworkDebug(false),
 m_p25NetworkEnabled(false),
@@ -548,10 +548,10 @@ bool CConf::read()
 			m_fusionNetworkMyAddress = value;
 		else if (::strcmp(key, "LocalPort") == 0)
 			m_fusionNetworkMyPort = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "GwyAddress") == 0)
-			m_fusionNetworkGwyAddress = value;
-		else if (::strcmp(key, "GwyPort") == 0)
-			m_fusionNetworkGwyPort = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "GatewayAddress") == 0)
+			m_fusionNetworkGatewayAddress = value;
+		else if (::strcmp(key, "GatewayPort") == 0)
+			m_fusionNetworkGatewayPort = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "ModeHang") == 0)
 			m_fusionNetworkModeHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Debug") == 0)
@@ -1157,14 +1157,14 @@ unsigned int CConf::getFusionNetworkMyPort() const
 	return m_fusionNetworkMyPort;
 }
 
-std::string CConf::getFusionNetworkGwyAddress() const
+std::string CConf::getFusionNetworkGatewayAddress() const
 {
-	return m_fusionNetworkGwyAddress;
+	return m_fusionNetworkGatewayAddress;
 }
 
-unsigned int CConf::getFusionNetworkGwyPort() const
+unsigned int CConf::getFusionNetworkGatewayPort() const
 {
-	return m_fusionNetworkGwyPort;
+	return m_fusionNetworkGatewayPort;
 }
 
 unsigned int CConf::getFusionNetworkModeHang() const
