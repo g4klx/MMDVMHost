@@ -195,6 +195,7 @@ public:
   bool         getNextionDisplayClock() const;
   bool         getNextionUTC() const;
   unsigned int getNextionIdleBrightness() const;
+  unsigned int getNextionScreenLayout() const;
 
   // The OLED section
   unsigned char  getOLEDType() const;
@@ -359,6 +360,7 @@ private:
   bool         m_nextionDisplayClock;
   bool         m_nextionUTC;
   unsigned int m_nextionIdleBrightness;
+  unsigned int m_nextionScreenLayout;
 
   unsigned char m_oledType;
   unsigned char m_oledBrightness;

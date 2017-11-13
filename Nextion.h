@@ -29,7 +29,7 @@
 class CNextion : public CDisplay
 {
 public:
-  CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness);
+  CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness, unsigned int screenLayout);
   virtual ~CNextion();
 
   virtual bool open();
@@ -48,6 +48,7 @@ protected:
 
   virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
   virtual void writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi);
+  virtual void writeDMRTAInt(unsigned int slotNo, unsigned char* talkerAlias, const char* type);
   virtual void writeDMRBERInt(unsigned int slotNo, float ber);
   virtual void clearDMRInt(unsigned int slotNo);
 
@@ -68,6 +69,7 @@ protected:
 
 private:
   std::string   m_callsign;
+  std::string   m_ipaddress;
   unsigned int  m_dmrid;
   ISerialPort*  m_serial;
   unsigned int  m_brightness;
@@ -75,6 +77,7 @@ private:
   bool          m_displayClock;
   bool          m_utc;
   unsigned int  m_idleBrightness;
+  unsigned int  m_screenLayout;
   CTimer        m_clockDisplayTimer;
   unsigned int  m_rssiAccum1;
   unsigned int  m_rssiAccum2;
