@@ -344,6 +344,8 @@ void CNextion::writeDMRTAInt(unsigned int slotNo,  unsigned char* talkerAlias, c
 {
     char text[40U];
 
+    if (m_screenLayout<2U) return;
+
     if (type[0]==' ') {
         if (slotNo == 1U) {
 	    sendCommand("t0.pco=33808");
@@ -421,8 +423,8 @@ void CNextion::clearDMRInt(unsigned int slotNo)
 {
 	if (slotNo == 1U) {
 		sendCommand("t0.txt=\"1 Listening\"");
-		sendCommand("t0.pco=0");
 		if (m_screenLayout==2U) {
+		    sendCommand("t0.pco=0");
 		    sendCommand("t0.font=4");
 		}
 		sendCommand("t1.txt=\"\"");
@@ -430,8 +432,8 @@ void CNextion::clearDMRInt(unsigned int slotNo)
 		sendCommand("t6.txt=\"\"");
 	} else {
 		sendCommand("t2.txt=\"2 Listening\"");
-		sendCommand("t2.pco=0");
 		if (m_screenLayout==2U) {
+		    sendCommand("t2.pco=0");
 		    sendCommand("t2.font=4");
 		}
 		sendCommand("t3.txt=\"\"");
