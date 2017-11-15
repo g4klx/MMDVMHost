@@ -53,6 +53,10 @@ public:
 
 	virtual void close();
 
+#if defined(__APPLE__)
+	virtual int setNonblock(bool nonblock);
+#endif
+
 private:
 	std::string    m_device;
 	SERIAL_SPEED   m_speed;
@@ -65,6 +69,8 @@ private:
 
 #if defined(_WIN32) || defined(_WIN64)
 	int readNonblock(unsigned char* buffer, unsigned int length);
+#else
+	bool canWrite();
 #endif
 };
 
