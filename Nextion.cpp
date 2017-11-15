@@ -16,9 +16,9 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include "NetworkInfo.h"
 #include "Nextion.h"
 #include "Log.h"
-#include "Network.h"
 
 #include <cstdio>
 #include <cassert>
@@ -243,16 +243,18 @@ void CNextion::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 		sendCommand("page DMR");
 
 		if (slotNo == 1U) {
-			if (m_screenLayout==2U) {
+			if (m_screenLayout == 2U) {
 			    sendCommand("t2.pco=0");
 			    sendCommand("t2.font=4");
 			}
+
 			sendCommand("t2.txt=\"2 Listening\"");
 		} else {
-			if (m_screenLayout==2U) {
+			if (m_screenLayout == 2U) {
 			    sendCommand("t0.pco=0");
 			    sendCommand("t0.font=4");
 			}
+
 			sendCommand("t0.txt=\"1 Listening\"");
 		}
 	}
@@ -263,20 +265,24 @@ void CNextion::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 
 	if (slotNo == 1U) {
 		::sprintf(text, "t0.txt=\"1 %s %s\"", type, src.c_str());
-		if (m_screenLayout==2U) {
+
+		if (m_screenLayout == 2U) {
 		    sendCommand("t0.pco=0");
 		    sendCommand("t0.font=4");
 		}
+
 		sendCommand(text);
 
 		::sprintf(text, "t1.txt=\"%s%s\"", group ? "TG" : "", dst.c_str());
 		sendCommand(text);
 	} else {
 		::sprintf(text, "t2.txt=\"2 %s %s\"", type, src.c_str());
-		if (m_screenLayout==2U) {
+
+		if (m_screenLayout == 2U) {
 		    sendCommand("t2.pco=0");
 		    sendCommand("t2.font=4");
 		}
+
 		sendCommand(text);
 
 		::sprintf(text, "t3.txt=\"%s%s\"", group ? "TG" : "", dst.c_str());
@@ -339,40 +345,49 @@ void CNextion::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
 	}
 }
 
-
-void CNextion::writeDMRTAInt(unsigned int slotNo,  unsigned char* talkerAlias, const char* type)
+void CNextion::writeDMRTAInt(unsigned int slotNo, unsigned char* talkerAlias, const char* type)
 {
-    char text[40U];
+	if (m_screenLayout < 2U)
+		return;
 
-    if (m_screenLayout<2U) return;
-
-    if (type[0]==' ') {
-        if (slotNo == 1U) {
-	    sendCommand("t0.pco=33808");
-        } else {
-	    sendCommand("t2.pco=33808");
-        }
-        return;
+	if (type[0] == ' ') {
+		if (slotNo == 1U)
+			sendCommand("t0.pco=33808");
+		else
+			sendCommand("t2.pco=33808");
+		return;
     }
 
-    if (slotNo == 1U) {
-	::sprintf(text, "t0.txt=\"1 %s %s\"",type,talkerAlias);
-	if (m_screenLayout==2U) {
-	    if (::strlen((char*)talkerAlias)>(16U-4U)) sendCommand("t0.font=3");
-	    if (::strlen((char*)talkerAlias)>(20U-4U)) sendCommand("t0.font=2");
-	    if (::strlen((char*)talkerAlias)>(24U-4U)) sendCommand("t0.font=1");
-	}
-	sendCommand("t0.pco=1024");
-	sendCommand(text);
-    } else {
-	::sprintf(text, "t2.txt=\"2 %s %s\"",type,talkerAlias);
-	if (m_screenLayout==2U) {
-	    if (::strlen((char*)talkerAlias)>(16U-4U)) sendCommand("t2.font=3");
-	    if (::strlen((char*)talkerAlias)>(20U-4U)) sendCommand("t2.font=2");
-	    if (::strlen((char*)talkerAlias)>(24U-4U)) sendCommand("t2.font=1");
-	}
-	sendCommand("t2.pco=1024");
-	sendCommand(text);
+	if (slotNo == 1U) {
+		char text[40U];
+		::sprintf(text, "t0.txt=\"1 %s %s\"", type, talkerAlias);
+
+		if (m_screenLayout == 2U) {
+			if (::strlen((char*)talkerAlias) > (16U-4U))
+				sendCommand("t0.font=3");
+			if (::strlen((char*)talkerAlias) > (20U-4U))
+				sendCommand("t0.font=2");
+			if (::strlen((char*)talkerAlias) > (24U-4U))
+				sendCommand("t0.font=1");
+		}
+
+		sendCommand("t0.pco=1024");
+		sendCommand(text);
+	} else {
+		char text[40U];
+		::sprintf(text, "t2.txt=\"2 %s %s\"", type, talkerAlias);
+
+		if (m_screenLayout == 2U) {
+			if (::strlen((char*)talkerAlias) > (16U-4U))
+				sendCommand("t2.font=3");
+			if (::strlen((char*)talkerAlias) > (20U-4U))
+				sendCommand("t2.font=2");
+			if (::strlen((char*)talkerAlias) > (24U-4U))
+				sendCommand("t2.font=1");
+		}
+
+		sendCommand("t2.pco=1024");
+		sendCommand(text);
     }
 }
 
@@ -423,19 +438,23 @@ void CNextion::clearDMRInt(unsigned int slotNo)
 {
 	if (slotNo == 1U) {
 		sendCommand("t0.txt=\"1 Listening\"");
-		if (m_screenLayout==2U) {
+
+		if (m_screenLayout == 2U) {
 		    sendCommand("t0.pco=0");
 		    sendCommand("t0.font=4");
 		}
+
 		sendCommand("t1.txt=\"\"");
 		sendCommand("t4.txt=\"\"");
 		sendCommand("t6.txt=\"\"");
 	} else {
 		sendCommand("t2.txt=\"2 Listening\"");
-		if (m_screenLayout==2U) {
+
+		if (m_screenLayout == 2U) {
 		    sendCommand("t2.pco=0");
 		    sendCommand("t2.font=4");
 		}
+
 		sendCommand("t3.txt=\"\"");
 		sendCommand("t5.txt=\"\"");
 		sendCommand("t7.txt=\"\"");

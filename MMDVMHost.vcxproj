@@ -189,7 +189,7 @@
     <ClInclude Include="Modem.h" />
     <ClInclude Include="ModemSerialPort.h" />
     <ClInclude Include="Mutex.h" />
-    <ClInclude Include="Network.h" />
+    <ClInclude Include="NetworkInfo.h" />
     <ClInclude Include="Nextion.h" />
     <ClInclude Include="NullDisplay.h" />
     <ClInclude Include="P25Audio.h" />
@@ -259,7 +259,7 @@
     <ClCompile Include="Modem.cpp" />
     <ClCompile Include="ModemSerialPort.cpp" />
     <ClCompile Include="Mutex.cpp" />
-    <ClCompile Include="Network.cpp" />
+    <ClCompile Include="NetworkInfo.cpp" />
     <ClCompile Include="Nextion.cpp" />
     <ClCompile Include="NullDisplay.cpp" />
     <ClCompile Include="P25Audio.cpp" />

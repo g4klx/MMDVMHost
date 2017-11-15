@@ -1107,10 +1107,18 @@ void CMMDVMHost::createDisplay()
 		if (displayClock)
 			LogInfo("    Display UTC: %s", utc ? "yes" : "no");
 		LogInfo("    Idle Brightness: %u", idleBrightness);
-		if (screenLayout==0)
-			LogInfo("    Screen Layout: Default (G4KLX)");
-		else
-			LogInfo("    Screen Layout: %u (ON7LDS)", screenLayout);
+
+		switch (screenLayout) {
+		case 0U:
+			LogInfo("    Screen Layout: G4KLX (Default)");
+			break;
+		case 2U:
+			LogInfo("    Screen Layout: ON7LDS");
+			break;
+		default:
+			LogInfo("    Screen Layout: %u (Unknown)", screenLayout);
+			break;
+		}
 
 		if (port == "modem") {
 			ISerialPort* serial = new CModemSerialPort(m_modem);
