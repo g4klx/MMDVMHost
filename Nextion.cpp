@@ -18,12 +18,14 @@
 
 #include "Nextion.h"
 #include "Log.h"
+#include "Network.h"
 
 #include <cstdio>
 #include <cassert>
 #include <cstring>
 #include <ctime>
 #include <clocale>
+//#include <unistd.h>
 
 const unsigned int DSTAR_RSSI_COUNT = 3U;		  // 3 * 420ms = 1260ms
 const unsigned int DSTAR_BER_COUNT  = 63U;		// 63 * 20ms = 1260ms
@@ -34,9 +36,10 @@ const unsigned int YSF_BER_COUNT    = 13U;		// 13 * 100ms = 1300ms
 const unsigned int P25_RSSI_COUNT   = 7U;		  // 7 * 180ms = 1260ms
 const unsigned int P25_BER_COUNT    = 7U;		  // 7 * 180ms = 1260ms
 
-CNextion::CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness) :
+CNextion::CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness, unsigned int screenLayout) :
 CDisplay(),
 m_callsign(callsign),
+m_ipaddress("(ip unknown)"),
 m_dmrid(dmrid),
 m_serial(serial),
 m_brightness(brightness),
@@ -44,6 +47,7 @@ m_mode(MODE_IDLE),
 m_displayClock(displayClock),
 m_utc(utc),
 m_idleBrightness(idleBrightness),
+m_screenLayout(screenLayout),
 m_clockDisplayTimer(1000U, 0U, 400U),
 m_rssiAccum1(0U),
 m_rssiAccum2(0U),
@@ -64,12 +68,20 @@ CNextion::~CNextion()
 
 bool CNextion::open()
 {
+	unsigned char info[100U];
+	CNetworkInfo* m_network;
+
 	bool ret = m_serial->open();
 	if (!ret) {
 		LogError("Cannot open the port for the Nextion display");
 		delete m_serial;
 		return false;
 	}
+
+	info[0]=0;
+	m_network = new CNetworkInfo;
+	m_network->getNetworkInterface(info);
+	m_ipaddress = (char*)info;
 
 	sendCommand("bkcmd=0");
 
@@ -78,18 +90,22 @@ bool CNextion::open()
 	return true;
 }
 
+
 void CNextion::setIdleInt()
 {
 	sendCommand("page MMDVM");
 
-	char command[30];
+	char command[30U];
 	::sprintf(command, "dim=%u", m_idleBrightness);
 	sendCommand(command);
-
-	::sprintf(command, "t0.txt=\"%-6s / %u\"", m_callsign.c_str(), m_dmrid);
-
+	
+	::sprintf(command, "t0.txt=\"%s/%u\"", m_callsign.c_str(), m_dmrid);
 	sendCommand(command);
+
 	sendCommand("t1.txt=\"MMDVM IDLE\"");
+
+	::sprintf(command, "t3.txt=\"%s\"", m_ipaddress.c_str());
+	sendCommand(command);
 
 	m_clockDisplayTimer.start();
 
@@ -226,10 +242,19 @@ void CNextion::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 	if (m_mode != MODE_DMR) {
 		sendCommand("page DMR");
 
-		if (slotNo == 1U)
+		if (slotNo == 1U) {
+			if (m_screenLayout==2U) {
+			    sendCommand("t2.pco=0");
+			    sendCommand("t2.font=4");
+			}
 			sendCommand("t2.txt=\"2 Listening\"");
-		else
+		} else {
+			if (m_screenLayout==2U) {
+			    sendCommand("t0.pco=0");
+			    sendCommand("t0.font=4");
+			}
 			sendCommand("t0.txt=\"1 Listening\"");
+		}
 	}
 
 	char text[30U];
@@ -238,12 +263,20 @@ void CNextion::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 
 	if (slotNo == 1U) {
 		::sprintf(text, "t0.txt=\"1 %s %s\"", type, src.c_str());
+		if (m_screenLayout==2U) {
+		    sendCommand("t0.pco=0");
+		    sendCommand("t0.font=4");
+		}
 		sendCommand(text);
 
 		::sprintf(text, "t1.txt=\"%s%s\"", group ? "TG" : "", dst.c_str());
 		sendCommand(text);
 	} else {
 		::sprintf(text, "t2.txt=\"2 %s %s\"", type, src.c_str());
+		if (m_screenLayout==2U) {
+		    sendCommand("t2.pco=0");
+		    sendCommand("t2.font=4");
+		}
 		sendCommand(text);
 
 		::sprintf(text, "t3.txt=\"%s%s\"", group ? "TG" : "", dst.c_str());
@@ -306,6 +339,43 @@ void CNextion::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
 	}
 }
 
+
+void CNextion::writeDMRTAInt(unsigned int slotNo,  unsigned char* talkerAlias, const char* type)
+{
+    char text[40U];
+
+    if (m_screenLayout<2U) return;
+
+    if (type[0]==' ') {
+        if (slotNo == 1U) {
+	    sendCommand("t0.pco=33808");
+        } else {
+	    sendCommand("t2.pco=33808");
+        }
+        return;
+    }
+
+    if (slotNo == 1U) {
+	::sprintf(text, "t0.txt=\"1 %s %s\"",type,talkerAlias);
+	if (m_screenLayout==2U) {
+	    if (::strlen((char*)talkerAlias)>(16U-4U)) sendCommand("t0.font=3");
+	    if (::strlen((char*)talkerAlias)>(20U-4U)) sendCommand("t0.font=2");
+	    if (::strlen((char*)talkerAlias)>(24U-4U)) sendCommand("t0.font=1");
+	}
+	sendCommand("t0.pco=1024");
+	sendCommand(text);
+    } else {
+	::sprintf(text, "t2.txt=\"2 %s %s\"",type,talkerAlias);
+	if (m_screenLayout==2U) {
+	    if (::strlen((char*)talkerAlias)>(16U-4U)) sendCommand("t2.font=3");
+	    if (::strlen((char*)talkerAlias)>(20U-4U)) sendCommand("t2.font=2");
+	    if (::strlen((char*)talkerAlias)>(24U-4U)) sendCommand("t2.font=1");
+	}
+	sendCommand("t2.pco=1024");
+	sendCommand(text);
+    }
+}
+
 void CNextion::writeDMRBERInt(unsigned int slotNo, float ber)
 {
 	if (slotNo == 1U) {
@@ -353,11 +423,19 @@ void CNextion::clearDMRInt(unsigned int slotNo)
 {
 	if (slotNo == 1U) {
 		sendCommand("t0.txt=\"1 Listening\"");
+		if (m_screenLayout==2U) {
+		    sendCommand("t0.pco=0");
+		    sendCommand("t0.font=4");
+		}
 		sendCommand("t1.txt=\"\"");
 		sendCommand("t4.txt=\"\"");
 		sendCommand("t6.txt=\"\"");
 	} else {
 		sendCommand("t2.txt=\"2 Listening\"");
+		if (m_screenLayout==2U) {
+		    sendCommand("t2.pco=0");
+		    sendCommand("t2.font=4");
+		}
 		sendCommand("t3.txt=\"\"");
 		sendCommand("t5.txt=\"\"");
 		sendCommand("t7.txt=\"\"");
@@ -568,6 +646,8 @@ void CNextion::clockInt(unsigned int ms)
 
 void CNextion::close()
 {
+	sendCommand("page MMDVM");
+	sendCommand("t1.txt=\"MMDVM STOPPED\"");
 	m_serial->close();
 	delete m_serial;
 }

@@ -1099,6 +1099,7 @@ void CMMDVMHost::createDisplay()
 		bool displayClock           = m_conf.getNextionDisplayClock();
 		bool utc                    = m_conf.getNextionUTC();
 		unsigned int idleBrightness = m_conf.getNextionIdleBrightness();
+		unsigned int screenLayout   = m_conf.getNextionScreenLayout();
 
 		LogInfo("    Port: %s", port.c_str());
 		LogInfo("    Brightness: %u", brightness);
@@ -1106,16 +1107,20 @@ void CMMDVMHost::createDisplay()
 		if (displayClock)
 			LogInfo("    Display UTC: %s", utc ? "yes" : "no");
 		LogInfo("    Idle Brightness: %u", idleBrightness);
+		if (screenLayout==0)
+			LogInfo("    Screen Layout: Default (G4KLX)");
+		else
+			LogInfo("    Screen Layout: %u (ON7LDS)", screenLayout);
 
 		if (port == "modem") {
 			ISerialPort* serial = new CModemSerialPort(m_modem);
-			m_display = new CNextion(m_callsign, dmrid, serial, brightness, displayClock, utc, idleBrightness);
+			m_display = new CNextion(m_callsign, dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout);
 		} else if (port == "ump") {
 			if (m_ump != NULL)
-				m_display = new CNextion(m_callsign, dmrid, m_ump, brightness, displayClock, utc, idleBrightness);
+				m_display = new CNextion(m_callsign, dmrid, m_ump, brightness, displayClock, utc, idleBrightness, screenLayout);
 		} else {
 			ISerialPort* serial = new CSerialController(port, SERIAL_9600);
-			m_display = new CNextion(m_callsign, dmrid, serial, brightness, displayClock, utc, idleBrightness);
+			m_display = new CNextion(m_callsign, dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout);
 		}
 	} else if (type == "LCDproc") {
 		std::string address       = m_conf.getLCDprocAddress();
