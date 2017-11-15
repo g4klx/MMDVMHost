@@ -69,18 +69,27 @@ void CNetworkInfo::getNetworkInterface(unsigned char* info)
 		return;
 	}
 
+	char* dflt = NULL;
+
 	char line[100U];
 	while (::fgets(line, 100U, fp)) {
-		char* dflt = strtok(line , " \t");
-		char* p = strtok(NULL , " \t");
+		char* p1 = strtok(line , " \t");
+		char* p2 = strtok(NULL , " \t");
 
-		if (dflt != NULL && p != NULL) {
-			if (::strcmp(p , "00000000") == 0)
+		if (p1 != NULL && p2 != NULL) {
+			if (::strcmp(p2, "00000000") == 0) {
+				dflt = p1;
 				break;
+			}
 		}
 	}
 
 	::fclose(fp);
+
+	if (dflt == NULL) {
+		LogError("Unable to find the default route");
+		return;
+	}
 
 	char interfacelist[IFLISTSIZ][50+INET6_ADDRSTRLEN];
 	for (unsigned int n = 0U; n < IFLISTSIZ; n++)
@@ -133,7 +142,7 @@ void CNetworkInfo::getNetworkInterface(unsigned char* info)
 		}
 	}
 
-	LogInfo("    IP to show: %s", info );
+	LogInfo("    IP to show: %s", info);
 #else
 	PMIB_IPFORWARDTABLE pIpForwardTable = (MIB_IPFORWARDTABLE *)::malloc(sizeof(MIB_IPFORWARDTABLE));
 	if (pIpForwardTable == NULL) {
