@@ -36,6 +36,7 @@ const unsigned char TAG_EOT    = 0x03U;
 enum HW_TYPE {
 	HWT_MMDVM,
 	HWT_DVMEGA,
+	HWT_MMDVM_HSHAT,
 	HWT_UNKNOWN
 };
 

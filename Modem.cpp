@@ -918,6 +918,8 @@ bool CModem::readVersion()
 					m_hwType = HWT_MMDVM;
 				else if (::memcmp(m_buffer + 4U, "DVMEGA", 6U) == 0)
 					m_hwType = HWT_DVMEGA;
+				else if (::memcmp(m_buffer + 4U, "ZUMspot", 7U) == 0)
+					m_hwType = HWT_MMDVM_HSHAT;
 
 				LogInfo("MMDVM protocol version: %u, description: %.*s", m_buffer[3U], m_length - 4U, m_buffer + 4U);
 				return true;
