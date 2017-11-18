@@ -615,7 +615,7 @@ bool CConf::read()
 		else if (::strcmp(key, "IdleBrightness") == 0)
 			m_nextionIdleBrightness = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "ScreenLayout") == 0)
-			m_nextionScreenLayout = (unsigned int)::atoi;
+			m_nextionScreenLayout = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "FilesConfig") == 0)
 			m_nextionFilesConfig = value;
 
