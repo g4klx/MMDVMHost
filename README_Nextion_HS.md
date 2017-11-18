@@ -89,6 +89,10 @@ TG number to change mode to BrandMeister network
 
 Only the Owner  callsign are allowed to TX into those TG to activate functions.
 
+To compile use:
+
+make -f Makefile Nextion_HS
+
 Thanks to the effort of:
 G4KLX, ON7LDS,G0WFV, VK6LS & more for code
 EA4ATS for all graphics, a very BIG JOB !!
