@@ -786,7 +786,7 @@ void COLED::OLED_statusbar()
 //      display.drawBitmap(0, 0, logo_glcd_bmp, 128, 16, WHITE);
 
 // DmrPlus LOGO
-//      display.drawBitmap(0, 0, dmrplus, 128, 16, WHITE);
+//      display.drawBitmap(0, 0, dmrplus, 128, 32, WHITE);
 
 // BrandMeister LOGO 
      display.drawBitmap(0, 0, bm_B, 128, 26, WHITE);
