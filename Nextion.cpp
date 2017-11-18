@@ -36,7 +36,7 @@ const unsigned int YSF_BER_COUNT    = 13U;		// 13 * 100ms = 1300ms
 const unsigned int P25_RSSI_COUNT   = 7U;		  // 7 * 180ms = 1260ms
 const unsigned int P25_BER_COUNT    = 7U;		  // 7 * 180ms = 1260ms
 
-CNextion::CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness, unsigned int screenLayout) :
+CNextion::CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness, unsigned int screenLayout, const std::string& filesConfig ) :
 CDisplay(),
 m_callsign(callsign),
 m_ipaddress("(ip unknown)"),
@@ -48,6 +48,7 @@ m_displayClock(displayClock),
 m_utc(utc),
 m_idleBrightness(idleBrightness),
 m_screenLayout(screenLayout),
+m_filesConfig(filesConfig),
 m_clockDisplayTimer(1000U, 0U, 400U),
 m_rssiAccum1(0U),
 m_rssiAccum2(0U),
