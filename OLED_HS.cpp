@@ -507,7 +507,7 @@ display.display();
       }
 
 
-//      display.fillRect(0,OLED_LINE3,display.width(),55,BLACK);
+      display.fillRect(70,OLED_LINE6,display.width(),15,BLACK);
       display.setCursor(70,OLED_LINE6);
       display.setTextSize(1);
       display.printf("%s%s", group ? "TG:" : "", dst.c_str());
