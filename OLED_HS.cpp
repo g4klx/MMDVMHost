@@ -410,6 +410,7 @@ void COLED::writeDStarInt(const char* my1, const char* my2, const char* your, co
     display.fillRect(0,OLED_LINE1,display.width(),display.height(),BLACK); //clear everything beneath logo
 
     display.setCursor(0,OLED_LINE2);
+    display.setTextSize(1);
     display.printf("%s %.8s/%4.4s",type,my1,my2);
 
     display.setCursor(0,OLED_LINE3);
@@ -465,7 +466,8 @@ display.display();
       }
     else
       {
-
+      
+      display.stopscroll();    
 //CALLSIGN Size 2 
 
       display.fillRect(0,OLED_LINE2,display.width(),60,BLACK);
@@ -685,6 +687,7 @@ void COLED::writeFusionInt(const char* source, const char* dest, const char* typ
     m_mode = MODE_YSF;
 
     display.clearDisplay();
+    display.setTextSize(1);
     display.fillRect(0,OLED_LINE1,display.width(),display.height(),BLACK);
 
     display.setCursor(0,OLED_LINE2);
@@ -715,6 +718,7 @@ void COLED::writeP25Int(const char* source, bool group, unsigned int dest, const
     display.fillRect(0, OLED_LINE1, display.width(), display.height(), BLACK);
 
     display.setCursor(0,OLED_LINE2);
+    display.setTextSize(1);
     display.printf("%s %.10s", type, source);
 
     display.setCursor(0,OLED_LINE3);
