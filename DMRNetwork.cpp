@@ -543,6 +543,9 @@ bool CDMRNetwork::writeConfig()
 		case HWT_DVMEGA:
 			software = "MMDVM_DVMega";
 			break;
+		case HWT_MMDVM_HS:
+			software = "MMDVM_HS";
+			break;
 		default:
 			software = "MMDVM_Unknown";
 			break;
