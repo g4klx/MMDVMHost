@@ -1122,13 +1122,13 @@ void CMMDVMHost::createDisplay()
 
 		if (port == "modem") {
 			ISerialPort* serial = new CModemSerialPort(m_modem);
-			m_display = new CNextion(m_callsign, dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout,filesConfig);
+			m_display = new CNextion(m_callsign, dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout);
 		} else if (port == "ump") {
 			if (m_ump != NULL)
-				m_display = new CNextion(m_callsign, dmrid, m_ump, brightness, displayClock, utc, idleBrightness, screenLayout,filesConfig);
+				m_display = new CNextion(m_callsign, dmrid, m_ump, brightness, displayClock, utc, idleBrightness, screenLayout);
 		} else {
 			ISerialPort* serial = new CSerialController(port, SERIAL_9600);
-			m_display = new CNextion(m_callsign, dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout,filesConfig);
+			m_display = new CNextion(m_callsign, dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout);
 		}
 	} else if (type == "LCDproc") {
 		std::string address       = m_conf.getLCDprocAddress();
