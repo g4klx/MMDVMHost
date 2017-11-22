@@ -1100,16 +1100,14 @@ void CMMDVMHost::createDisplay()
 		bool utc                    = m_conf.getNextionUTC();
 		unsigned int idleBrightness = m_conf.getNextionIdleBrightness();
 		unsigned int screenLayout   = m_conf.getNextionScreenLayout();
-                std::string filesConfig     = m_conf.getNextionFilesConfig();
-
+                
 		LogInfo("    Port: %s", port.c_str());
 		LogInfo("    Brightness: %u", brightness);
 		LogInfo("    Clock Display: %s", displayClock ? "yes" : "no");
 		if (displayClock)
 			LogInfo("    Display UTC: %s", utc ? "yes" : "no");
 		LogInfo("    Idle Brightness: %u", idleBrightness);
-		LogInfo("    Nextion path Files: %s", filesConfig.c_str());
-
+		
 		switch (screenLayout) {
 		case 0U:
 			LogInfo("    Screen Layout: G4KLX (Default)");
