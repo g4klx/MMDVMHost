@@ -57,6 +57,9 @@ private:
 
 	JitterEntry* m_buffer;
 	unsigned int m_headSequenceNumber;
+
+	unsigned char* m_lastData;
+	bool           m_lastDataValid;
 };
 
 #endif
