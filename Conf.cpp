@@ -185,7 +185,6 @@ m_nextionDisplayClock(false),
 m_nextionUTC(false),
 m_nextionIdleBrightness(20U),
 m_nextionScreenLayout(0U),
-m_nextionFilesConfig(),
 m_oledType(3U),
 m_oledBrightness(0U),
 m_oledInvert(false),
@@ -617,8 +616,6 @@ bool CConf::read()
 			m_nextionIdleBrightness = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "ScreenLayout") == 0)
 			m_nextionScreenLayout = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "FilesConfig") == 0)
-			m_nextionFilesConfig = value;
 
 	} else if (section == SECTION_OLED) {
 		if (::strcmp(key, "Type") == 0)
@@ -1307,11 +1304,6 @@ unsigned int CConf::getNextionIdleBrightness() const
 unsigned int CConf::getNextionScreenLayout() const
 {
 	return m_nextionScreenLayout;
-}
-
-std::string CConf::getNextionFilesConfig() const
-{
-	return m_nextionFilesConfig;
 }
 
 unsigned char CConf::getOLEDType() const
