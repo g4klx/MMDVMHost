@@ -60,7 +60,7 @@ bool CJitterBuffer::addData(const unsigned char* data, unsigned int sequenceNumb
 
 	unsigned int headSequenceNumber =  m_headSequenceNumber % m_topSequenceNumber;
 	unsigned int tailSequenceNumber = (m_headSequenceNumber + m_blockCount) % m_topSequenceNumber;
-	
+
 	// Is the data out of sequence?
 	if (headSequenceNumber < tailSequenceNumber) {
 		if (sequenceNumber < headSequenceNumber || sequenceNumber >= tailSequenceNumber)
@@ -70,14 +70,20 @@ bool CJitterBuffer::addData(const unsigned char* data, unsigned int sequenceNumb
 			return false;
 	}
 
-	unsigned int number = sequenceNumber - headSequenceNumber;
+	unsigned int number;
+	if (sequenceNumber >= headSequenceNumber)
+		number = sequenceNumber - headSequenceNumber;
+	else
+		number = (sequenceNumber + m_blockCount) - headSequenceNumber;;
+
+	unsigned int index = (m_headSequenceNumber + number) % m_blockCount;
 
 	// Do we already have the data?
-	if (m_buffer[number].m_used)
+	if (m_buffer[index].m_used)
 		return false;
 
-	::memcpy(m_buffer[number].m_data, data, m_blockSize);
-	m_buffer[number].m_used = true;
+	::memcpy(m_buffer[index].m_data, data, m_blockSize);
+	m_buffer[index].m_used = true;
 
 	if (!m_timer.isRunning())
 		m_timer.start();
@@ -98,8 +104,11 @@ JB_STATUS CJitterBuffer::getData(unsigned char* data)
 	if (m_headSequenceNumber > sequenceNumber)
 		return JBS_NO_DATA;
 	
-	if (m_buffer[m_headSequenceNumber].m_used) {
-		::memcpy(data, m_buffer[m_headSequenceNumber].m_data, m_blockSize);
+	unsigned int head = m_headSequenceNumber % m_blockCount;
+
+	if (m_buffer[head].m_used) {
+		::memcpy(data, m_buffer[head].m_data, m_blockSize);
+		m_buffer[head].m_used = false;
 
 		m_headSequenceNumber++;
 
