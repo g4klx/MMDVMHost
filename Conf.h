@@ -363,8 +363,7 @@ private:
   bool         m_nextionUTC;
   unsigned int m_nextionIdleBrightness;
   unsigned int m_nextionScreenLayout;
-  std::string  m_nextionFilesConfig;
-
+  
   unsigned char m_oledType;
   unsigned char m_oledBrightness;
   bool          m_oledInvert;
