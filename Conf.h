@@ -196,12 +196,14 @@ public:
   bool         getNextionUTC() const;
   unsigned int getNextionIdleBrightness() const;
   unsigned int getNextionScreenLayout() const;
+  std::string  getNextionFilesConfig() const;
 
   // The OLED section
   unsigned char  getOLEDType() const;
   unsigned char  getOLEDBrightness() const;
   bool           getOLEDInvert() const;
   bool           getOLEDScroll() const;
+  unsigned int   getOLEDLayout() const;
 
   // The LCDproc section
   std::string  getLCDprocAddress() const;
@@ -361,11 +363,13 @@ private:
   bool         m_nextionUTC;
   unsigned int m_nextionIdleBrightness;
   unsigned int m_nextionScreenLayout;
+  std::string  m_nextionFilesConfig;
 
   unsigned char m_oledType;
   unsigned char m_oledBrightness;
   bool          m_oledInvert;
   bool          m_oledScroll;
+  unsigned int  m_oledLayout;
 
   std::string  m_lcdprocAddress;
   unsigned int m_lcdprocPort;

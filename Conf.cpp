@@ -185,10 +185,12 @@ m_nextionDisplayClock(false),
 m_nextionUTC(false),
 m_nextionIdleBrightness(20U),
 m_nextionScreenLayout(0U),
+m_nextionFilesConfig(),
 m_oledType(3U),
 m_oledBrightness(0U),
 m_oledInvert(false),
 m_oledScroll(false),
+m_oledLayout(0U),
 m_lcdprocAddress(),
 m_lcdprocPort(0U),
 m_lcdprocLocalPort(0U),
@@ -615,6 +617,9 @@ bool CConf::read()
 			m_nextionIdleBrightness = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "ScreenLayout") == 0)
 			m_nextionScreenLayout = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "FilesConfig") == 0)
+			m_nextionFilesConfig = value;
+
 	} else if (section == SECTION_OLED) {
 		if (::strcmp(key, "Type") == 0)
 			m_oledType = (unsigned char)::atoi(value);
@@ -624,6 +629,10 @@ bool CConf::read()
 			m_oledInvert = ::atoi(value) == 1;
 		else if (::strcmp(key, "Scroll") == 0)
 			m_oledScroll = ::atoi(value) == 1;
+		else if (::strcmp(key, "OledLayout") == 0)
+			m_oledLayout = (unsigned int)::atoi(value);
+
+
 	} else if (section == SECTION_LCDPROC) {
 		if (::strcmp(key, "Address") == 0)
 			m_lcdprocAddress = value;
@@ -1300,6 +1309,11 @@ unsigned int CConf::getNextionScreenLayout() const
 	return m_nextionScreenLayout;
 }
 
+std::string CConf::getNextionFilesConfig() const
+{
+	return m_nextionFilesConfig;
+}
+
 unsigned char CConf::getOLEDType() const
 {
 	return m_oledType;
@@ -1319,7 +1333,10 @@ bool CConf::getOLEDScroll() const
 {
 	return m_oledScroll;
 }
-
+unsigned int CConf::getOLEDLayout() const
+{
+	return m_oledLayout;
+}
 std::string CConf::getLCDprocAddress() const
 {
 	return m_lcdprocAddress;
