@@ -722,18 +722,27 @@ if (strlen((char*)talkerAlias)>24-4)
 
 void COLED::clearDMRInt(unsigned int slotNo)
 {
-    if (slotNo == 1U)
+     if (slotNo == 1U)
       {
       display.fillRect(0, OLED_LINE2, display.width(), 20, BLACK);
       display.setCursor(0,OLED_LINE2);
       display.print("1 Listening");
       }
-    else
+    else if (slotNo != 1U && m_oledLayout!=2)
       {
       display.fillRect(0, OLED_LINE4, display.width(), 20, BLACK);
       display.setCursor(0, OLED_LINE4);
       display.print("2 Listening");
       }
+
+    else if (slotNo != 1U && m_oledLayout==2)
+      {
+      display.fillRect(0, OLED_LINE4, display.width(), 80, BLACK);
+      display.setCursor(0, OLED_LINE4);
+//      display.print("2 Listening");
+      }
+
+
 
     display.display();
 }
