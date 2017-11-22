@@ -483,8 +483,8 @@ void COLED::writeDMRInt(unsigned int slotNo,const std::string& src,bool group,co
           OLED_statusbar();
           display.fillRect(0,OLED_LINE2,display.width(),80,BLACK); //20=> clear 2 lines
           display.setCursor(30,OLED_LINE2);
-          display.setTextSize(2);
-          display.print("DMR RX");
+  //        display.setTextSize(2);
+  //        display.print("DMR RX");
          }
 
         else if (m_oledLayout!=2U)
