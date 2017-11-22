@@ -196,8 +196,7 @@ public:
   bool         getNextionUTC() const;
   unsigned int getNextionIdleBrightness() const;
   unsigned int getNextionScreenLayout() const;
-  std::string  getNextionFilesConfig() const;
-
+  
   // The OLED section
   unsigned char  getOLEDType() const;
   unsigned char  getOLEDBrightness() const;
