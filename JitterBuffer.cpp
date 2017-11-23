@@ -22,6 +22,7 @@
 
 #include <cstdio>
 #include <cassert>
+#include <cstring>
 
 CJitterBuffer::CJitterBuffer(unsigned int blockSize, unsigned int blockTime, unsigned int jitterTime, unsigned int topSequenceNumber) :
 m_blockSize(blockSize),
