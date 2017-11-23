@@ -532,6 +532,12 @@ else if (m_duplex==0U)
       display.printf("%s %s",type,src.c_str());
 
 // TG 
+if (strcmp ("8",dst.c_str())!=0 || strcmp ("6",dst.c_str()) !=0 || strcmp ("9",dst.c_str())!=0){
+    display.fillRect(0, 0, display.width(), 16, BLACK);
+    display.setTextColor(WHITE);
+    display.setCursor(0,0);
+    display.drawBitmap(0, 0, bm, 64, 16, WHITE);
+      }
 
  if (strcmp ("6",dst.c_str()) ==0) {
     display.fillRect(0, 0, display.width(), 16, BLACK);
@@ -546,15 +552,6 @@ if (strcmp ("8",dst.c_str()) ==0) {
     display.setCursor(0,0);
     display.drawBitmap(0, 0, plus, 64, 16, WHITE);
       }
-
-if (strcmp ("8",dst.c_str())!=0 || strcmp ("6",dst.c_str()) !=0 || strcmp ("9",dst.c_str())!=0){
-    display.fillRect(0, 0, display.width(), 16, BLACK);
-    display.setTextColor(WHITE);
-    display.setCursor(0,0);
-    display.drawBitmap(0, 0, bm, 64, 16, WHITE);
-      }
-
-
 
  if (strcmp ("4000",dst.c_str()) ==0 ||strcmp("4000",src.c_str()) ==0) {
     display.fillRect(0, 0, display.width(), 16, BLACK);
