@@ -25,7 +25,7 @@
 enum JB_STATUS {
 	JBS_NO_DATA,
 	JBS_DATA,
-	JBS_REPEAT
+	JBS_MISSING
 };
 
 class CJitterBuffer {

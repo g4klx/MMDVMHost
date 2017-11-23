@@ -131,8 +131,8 @@ JB_STATUS CJitterBuffer::getData(unsigned char* data)
 		::memset(data, 0x00U, m_blockSize);
 
 	m_headSequenceNumber++;
-	
-	return JBS_REPEAT;
+
+	return JBS_MISSING;
 }
 
 void CJitterBuffer::reset()
