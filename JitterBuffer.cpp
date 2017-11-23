@@ -31,7 +31,7 @@ m_stopWatch(),
 m_buffer(NULL),
 m_headSequenceNumber(0U),
 m_lastData(NULL),
-m_lastDataValid(false)
+m_lastDataLength(0U)
 {
 	assert(blockSize > 0U);
 	assert(blockTime > 0U);
@@ -59,9 +59,11 @@ CJitterBuffer::~CJitterBuffer()
 	delete[] m_lastData;
 }
 
-bool CJitterBuffer::addData(const unsigned char* data, unsigned int sequenceNumber)
+bool CJitterBuffer::addData(const unsigned char* data, unsigned int length, unsigned int sequenceNumber)
 {
 	assert(data != NULL);
+	assert(length > 0U);
+	assert(length <= m_blockSize);
 
 	unsigned int headSequenceNumber =  m_headSequenceNumber % m_topSequenceNumber;
 	unsigned int tailSequenceNumber = (m_headSequenceNumber + m_blockCount) % m_topSequenceNumber;
@@ -84,11 +86,11 @@ bool CJitterBuffer::addData(const unsigned char* data, unsigned int sequenceNumb
 	unsigned int index = (m_headSequenceNumber + number) % m_blockCount;
 
 	// Do we already have the data?
-	if (m_buffer[index].m_used)
+	if (m_buffer[index].m_length > 0U)
 		return false;
 
-	::memcpy(m_buffer[index].m_data, data, m_blockSize);
-	m_buffer[index].m_used = true;
+	::memcpy(m_buffer[index].m_data, data, length);
+	m_buffer[index].m_length = length;
 
 	if (!m_timer.isRunning())
 		m_timer.start();
@@ -96,7 +98,7 @@ bool CJitterBuffer::addData(const unsigned char* data, unsigned int sequenceNumb
 	return true;
 }
 
-JB_STATUS CJitterBuffer::getData(unsigned char* data)
+JB_STATUS CJitterBuffer::getData(unsigned char* data, unsigned int& length)
 {
 	assert(data != NULL);
 
@@ -111,38 +113,40 @@ JB_STATUS CJitterBuffer::getData(unsigned char* data)
 	
 	unsigned int head = m_headSequenceNumber % m_blockCount;
 
-	if (m_buffer[head].m_used) {
-		::memcpy(data, m_buffer[head].m_data, m_blockSize);
-		m_buffer[head].m_used = false;
+	m_headSequenceNumber++;
+
+	if (m_buffer[head].m_length > 0U) {
+		::memcpy(data, m_buffer[head].m_data, m_buffer[head].m_length);
+		length = m_buffer[head].m_length;
 
 		// Save this data in case no more data is available next time
-		::memcpy(m_lastData, m_buffer[head].m_data, m_blockSize);
-		m_lastDataValid = true;
+		::memcpy(m_lastData, m_buffer[head].m_data, m_buffer[head].m_length);
+		m_lastDataLength = m_buffer[head].m_length;
 
-		m_headSequenceNumber++;
+		m_buffer[head].m_length = 0U;
 
 		return JBS_DATA;
 	}
 
-	// Return the last data frame or null data if none exists
-	if (m_lastDataValid)
-		::memcpy(data, m_lastData, m_blockSize);
-	else
-		::memset(data, 0x00U, m_blockSize);
+	// Return the last data frame if we have it
+	if (m_lastDataLength > 0U) {
+		::memcpy(data, m_lastData, m_lastDataLength);
+		length = m_lastDataLength;
 
-	m_headSequenceNumber++;
+		return JBS_MISSING;
+	}
 
-	return JBS_MISSING;
+	return JBS_NO_DATA;
 }
 
 void CJitterBuffer::reset()
 {
 	for (unsigned int i = 0U; i < m_blockCount; i++)
-		m_buffer[i].m_used = false;
+		m_buffer[i].m_length = 0U;
 
 	m_headSequenceNumber = 0U;
 
-	m_lastDataValid = false;
+	m_lastDataLength = 0U;
 	
 	m_timer.stop();
 }

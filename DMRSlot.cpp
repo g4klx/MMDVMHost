@@ -44,9 +44,6 @@ unsigned int   CDMRSlot::m_hangCount = 3U * 17U;
 
 CRSSIInterpolator* CDMRSlot::m_rssiMapper = NULL;
 
-unsigned int   CDMRSlot::m_jitterTime  = 300U;
-unsigned int   CDMRSlot::m_jitterSlots = 5U;
-
 unsigned char* CDMRSlot::m_idle = NULL;
 
 FLCO           CDMRSlot::m_flco1;
@@ -86,15 +83,12 @@ m_netTalkerId(TALKER_ID_NONE),
 m_rfLC(NULL),
 m_netLC(NULL),
 m_rfSeqNo(0U),
-m_netSeqNo(0U),
 m_rfN(0U),
 m_netN(0U),
 m_networkWatchdog(1000U, 0U, 1500U),
 m_rfTimeoutTimer(1000U, timeout),
 m_netTimeoutTimer(1000U, timeout),
-m_packetTimer(1000U, 0U, 50U),
 m_interval(),
-m_elapsed(),
 m_rfFrames(0U),
 m_netFrames(0U),
 m_netLost(0U),
@@ -105,8 +99,6 @@ m_rfErrs(0U),
 m_netErrs(0U),
 m_rfTimeout(false),
 m_netTimeout(false),
-m_lastFrame(NULL),
-m_lastFrameValid(false),
 m_rssi(0U),
 m_maxRSSI(0U),
 m_minRSSI(0U),
@@ -115,7 +107,6 @@ m_rssiCount(0U),
 m_fp(NULL)
 {
 	m_rfTalkerAlias = new unsigned char[32U];
-	m_lastFrame = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
 
 	m_rfEmbeddedData  = new CDMREmbeddedData[2U];
 	m_netEmbeddedData = new CDMREmbeddedData[2U];
@@ -127,7 +118,6 @@ CDMRSlot::~CDMRSlot()
 {
 	delete[] m_rfEmbeddedData;
 	delete[] m_netEmbeddedData;
-	delete[] m_lastFrame;
 	delete[] m_rfTalkerAlias;
 }
 
@@ -906,6 +896,9 @@ void CDMRSlot::writeEndRF(bool writeEnd)
 		}
 	}
 
+	if (m_network != NULL)
+		m_network->reset(m_slotNo);
+
 	m_rfTimeoutTimer.stop();
 	m_rfTimeout = false;
 
@@ -924,8 +917,6 @@ void CDMRSlot::writeEndNet(bool writeEnd)
 	setShortLC(m_slotNo, 0U);
 
 	m_display->clearDMR(m_slotNo);
-
-	m_lastFrameValid = false;
 
 	if (writeEnd && !m_netTimeout) {
 		// Create a dummy start end frame
@@ -953,9 +944,11 @@ void CDMRSlot::writeEndNet(bool writeEnd)
 		}
 	}
 
+	if (m_network != NULL)
+		m_network->reset(m_slotNo);
+
 	m_networkWatchdog.stop();
 	m_netTimeoutTimer.stop();
-	m_packetTimer.stop();
 	m_netTimeout = false;
 
 	m_netFrames = 0U;
@@ -977,12 +970,19 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 	if (m_rfState != RS_RF_LISTENING && m_netState == RS_NET_IDLE)
 		return;
 
-	m_networkWatchdog.start();
-
-	unsigned char dataType = dmrData.getDataType();
-
 	unsigned char data[DMR_FRAME_LENGTH_BYTES + 2U];
 	dmrData.getData(data + 2U);
+
+	if (dmrData.isMissing()) {
+		m_netN = (m_netN + 1U) % 6U;
+		m_netLost++;
+		repeatFrame(data + 2U);
+	} else {
+		m_netN = dmrData.getN();
+		m_networkWatchdog.start();
+	}
+
+	unsigned char dataType = dmrData.getDataType();
 
 	if (dataType == DT_VOICE_LC_HEADER) {
 		if (m_netState == RS_NET_AUDIO)
@@ -1026,8 +1026,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
 
-		m_lastFrameValid = false;
-
 		m_netTimeoutTimer.start();
 		m_netTimeout = false;
 
@@ -1044,9 +1042,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			m_queue.clear();
 			m_modem->writeDMRAbort(m_slotNo);
 		}
-
-		for (unsigned int i = 0U; i < m_jitterSlots; i++)
-			writeQueueNet(m_idle);
 
 		if (m_duplex) {
 			for (unsigned int i = 0U; i < NO_HEADERS_DUPLEX; i++)
@@ -1079,8 +1074,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 			m_netLC = lc;
 
-			m_lastFrameValid = false;
-
 			m_netTimeoutTimer.start();
 			m_netTimeout = false;
 
@@ -1088,9 +1081,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				m_queue.clear();
 				m_modem->writeDMRAbort(m_slotNo);
 			}
-
-			for (unsigned int i = 0U; i < m_jitterSlots; i++)
-				writeQueueNet(m_idle);
 
 			// Create a dummy start frame
 			unsigned char start[DMR_FRAME_LENGTH_BYTES + 2U];
@@ -1265,8 +1255,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			m_netEmbeddedData[0U].setLC(*m_netLC);
 			m_netEmbeddedData[1U].setLC(*m_netLC);
 
-			m_lastFrameValid = false;
-
 			m_netTimeoutTimer.start();
 			m_netTimeout = false;
 
@@ -1274,9 +1262,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				m_queue.clear();
 				m_modem->writeDMRAbort(m_slotNo);
 			}
-
-			for (unsigned int i = 0U; i < m_jitterSlots; i++)
-				writeQueueNet(m_idle);
 
 			// Create a dummy start frame
 			unsigned char start[DMR_FRAME_LENGTH_BYTES + 2U];
@@ -1339,15 +1324,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			CSync::addDMRAudioSync(data + 2U, m_duplex);
 
 			// Initialise the lost packet data
-			if (m_netFrames == 0U) {
-				::memcpy(m_lastFrame, data, DMR_FRAME_LENGTH_BYTES + 2U);
-				m_lastFrameValid = true;
-				m_netSeqNo = dmrData.getSeqNo();
-				m_netN = dmrData.getN();
+			if (m_netFrames == 0U)
 				m_netLost = 0U;
-			} else {
-				insertSilence(data, dmrData.getSeqNo());
-			}
 
 			if (!m_netTimeout)
 				writeQueueNet(data);
@@ -1357,14 +1335,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 			m_netEmbeddedData[m_netEmbeddedWriteN].reset();
 
-			m_packetTimer.start();
-			m_elapsed.start();
-
 			m_netFrames++;
-
-			// Save details in case we need to infill data
-			m_netSeqNo = dmrData.getSeqNo();
-			m_netN = dmrData.getN();
 
 #if defined(DUMP_DMR)
 			writeFile(data);
@@ -1493,27 +1464,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		data[1U] = 0x00U;
 
 		// Initialise the lost packet data
-		if (m_netFrames == 0U) {
-			::memcpy(m_lastFrame, data, DMR_FRAME_LENGTH_BYTES + 2U);
-			m_lastFrameValid = true;
-			m_netSeqNo = dmrData.getSeqNo();
-			m_netN = dmrData.getN();
+		if (m_netFrames == 0U)
 			m_netLost = 0U;
-		} else {
-			insertSilence(data, dmrData.getSeqNo());
-		}
 
 		if (!m_netTimeout)
 			writeQueueNet(data);
 
-		m_packetTimer.start();
-		m_elapsed.start();
-
 		m_netFrames++;
-
-		// Save details in case we need to infill data
-		m_netSeqNo = dmrData.getSeqNo();
-		m_netN = dmrData.getN();
 
 #if defined(DUMP_DMR)
 		writeFile(data);
@@ -1726,21 +1683,6 @@ void CDMRSlot::clock()
 			}
 		}
 	}
-
-	if (m_netState == RS_NET_AUDIO) {
-		m_packetTimer.clock(ms);
-
-		if (m_packetTimer.isRunning() && m_packetTimer.hasExpired()) {
-			unsigned int elapsed = m_elapsed.elapsed();
-			if (elapsed >= m_jitterTime) {
-				LogDebug("DMR Slot %u, lost audio for %ums filling in", m_slotNo, elapsed);
-				insertSilence(m_jitterSlots);
-				m_elapsed.start();
-			}
-
-			m_packetTimer.start();
-		}
-	}
 }
 
 void CDMRSlot::writeQueueRF(const unsigned char *data)
@@ -1814,7 +1756,7 @@ void CDMRSlot::writeQueueNet(const unsigned char *data)
 	m_queue.addData(data, len);
 }
 
-void CDMRSlot::init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData, unsigned int callHang, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter)
+void CDMRSlot::init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData, unsigned int callHang, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper)
 {
 	assert(modem != NULL);
 	assert(display != NULL);
@@ -1832,9 +1774,6 @@ void CDMRSlot::init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData
 	m_hangCount      = callHang * 17U;
 
 	m_rssiMapper     = rssiMapper;
-
-	m_jitterTime     = jitter;
-	m_jitterSlots    = jitter / DMR_SLOT_TIME;
 
 	m_idle = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
 	::memcpy(m_idle, DMR_IDLE_DATA, DMR_FRAME_LENGTH_BYTES + 2U);
@@ -1981,88 +1920,16 @@ void CDMRSlot::closeFile()
 	}
 }
 
-bool CDMRSlot::insertSilence(const unsigned char* data, unsigned char seqNo)
+void CDMRSlot::repeatFrame(unsigned char* data)
 {
-	assert(data != NULL);
-
-	// Check to see if we have any spaces to fill?
-	unsigned char seq = m_netSeqNo + 1U;
-	if (seq == seqNo) {
-		// Just copy the data, nothing else to do here
-		::memcpy(m_lastFrame, data, DMR_FRAME_LENGTH_BYTES + 2U);
-		m_lastFrameValid = true;
-		return true;
-	}
-
-	unsigned int oldSeqNo = m_netSeqNo + 1U;
-	unsigned int newSeqNo = seqNo;
-
-	unsigned int count;
-	if (newSeqNo > oldSeqNo)
-		count = newSeqNo - oldSeqNo;
-	else
-		count = (256U + newSeqNo) - oldSeqNo;
-
-	if (count >= 10U)
-		return false;
-
-	insertSilence(count);
-
-	::memcpy(m_lastFrame, data, DMR_FRAME_LENGTH_BYTES + 2U);
-	m_lastFrameValid = true;
-
-	return true;
-}
-
-void CDMRSlot::insertSilence(unsigned int count)
-{
-	unsigned char data[DMR_FRAME_LENGTH_BYTES + 2U];
-
-	if (m_lastFrameValid) {
-		::memcpy(data, m_lastFrame, 2U);					// The control data
-		::memcpy(data + 2U, m_lastFrame + 24U + 2U, 9U);	// Copy the last audio block to the first
-		::memcpy(data + 24U + 2U, data + 2U, 9U);			// Copy the last audio block to the last
-		::memcpy(data + 9U + 2U, data + 2U, 5U);			// Copy the last audio block to the middle (1/2)
-		::memcpy(data + 19U + 2U, data + 4U + 2U, 5U);		// Copy the last audio block to the middle (2/2)
+	if (m_netN == 0U) {
+		CSync::addDMRAudioSync(data, m_duplex);
 	} else {
-		// Not sure what to do if this isn't AMBE audio
-		::memcpy(data, DMR_SILENCE_DATA, DMR_FRAME_LENGTH_BYTES + 2U);
-	}
+		m_netEmbeddedLC.getData(data, 0U);
 
-	unsigned char n = (m_netN + 1U) % 6U;
-	unsigned char seqNo = m_netSeqNo + 1U;
-
-	unsigned char fid = m_netLC->getFID();
-
-	CDMREMB emb;
-	emb.setColorCode(m_colorCode);
-	emb.setLCSS(0U);
-
-	for (unsigned int i = 0U; i < count; i++) {
-		// Only use our silence frame if its AMBE audio data
-		if (fid == FID_ETSI || fid == FID_DMRA) {
-			if (i > 0U) {
-				::memcpy(data, DMR_SILENCE_DATA, DMR_FRAME_LENGTH_BYTES + 2U);
-				m_lastFrameValid = false;
-			}
-		}
-
-		if (n == 0U) {
-			CSync::addDMRAudioSync(data + 2U, m_duplex);
-		} else {
-			m_netEmbeddedLC.getData(data + 2U, 0U);
-			emb.getData(data + 2U);
-		}
-
-		writeQueueNet(data);
-
-		m_netSeqNo = seqNo;
-		m_netN     = n;
-
-		m_netFrames++;
-		m_netLost++;
-
-		seqNo++;
-		n = (n + 1U) % 6U;
+		CDMREMB emb;
+		emb.setColorCode(m_colorCode);
+		emb.setLCSS(0U);
+		emb.getData(data);
 	}
 }

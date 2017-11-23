@@ -33,9 +33,9 @@ public:
 	CJitterBuffer(unsigned int blockSize, unsigned int blockTime, unsigned int jitterTime, unsigned int topSequenceNumber);
 	~CJitterBuffer();
 
-	bool addData(const unsigned char* data, unsigned int sequenceNumber);
+	bool addData(const unsigned char* data, unsigned int length, unsigned int sequenceNumber);
 
-	JB_STATUS getData(unsigned char* data);
+	JB_STATUS getData(unsigned char* data, unsigned int& length);
 	
 	void reset();
 	
@@ -52,14 +52,14 @@ private:
 	struct JitterEntry
 	{
 		unsigned char* m_data;
-		bool           m_used;
+		unsigned int   m_length;
 	};
 
 	JitterEntry* m_buffer;
 	unsigned int m_headSequenceNumber;
 
 	unsigned char* m_lastData;
-	bool           m_lastDataValid;
+	unsigned int   m_lastDataLength;
 };
 
 #endif
