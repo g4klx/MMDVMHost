@@ -22,7 +22,6 @@
 #include "JitterBuffer.h"
 #include "UDPSocket.h"
 #include "Timer.h"
-#include "RingBuffer.h"
 #include "DMRData.h"
 #include "Defines.h"
 
@@ -90,8 +89,6 @@ private:
 	unsigned char* m_salt;
 	uint32_t*      m_streamId;
 
-	CRingBuffer<unsigned char> m_rxData;
-
 	std::string    m_options;
 
 	std::string    m_callsign;
@@ -115,6 +112,8 @@ private:
 	bool writePing();
 
 	bool write(const unsigned char* data, unsigned int length);
+
+	void receiveData(const unsigned char* data, unsigned int length);
 };
 
 #endif
