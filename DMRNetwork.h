@@ -19,6 +19,7 @@
 #if !defined(DMRNetwork_H)
 #define	DMRNetwork_H
 
+#include "JitterBuffer.h"
 #include "UDPSocket.h"
 #include "Timer.h"
 #include "RingBuffer.h"
@@ -31,7 +32,7 @@
 class CDMRNetwork
 {
 public:
-	CDMRNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, HW_TYPE hwType);
+	CDMRNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, HW_TYPE hwType, unsigned int jitter);
 	~CDMRNetwork();
 
 	void setOptions(const std::string& options);
@@ -54,21 +55,24 @@ public:
 
 	void clock(unsigned int ms);
 
+	void reset(unsigned int slotNo);
+
 	void close();
 
 private: 
-	in_addr      m_address;
-	unsigned int m_port;
-	uint8_t*     m_id;
-	std::string  m_password;
-	bool         m_duplex;
-	const char*  m_version;
-	bool         m_debug;
-	CUDPSocket   m_socket;
-	bool         m_enabled;
-	bool         m_slot1;
-	bool         m_slot2;
-	HW_TYPE      m_hwType;
+	in_addr         m_address;
+	unsigned int    m_port;
+	uint8_t*        m_id;
+	std::string     m_password;
+	bool            m_duplex;
+	const char*     m_version;
+	bool            m_debug;
+	CUDPSocket      m_socket;
+	bool            m_enabled;
+	bool            m_slot1;
+	bool            m_slot2;
+	CJitterBuffer** m_jitterBuffers;
+	HW_TYPE         m_hwType;
 
 	enum STATUS {
 		WAITING_CONNECT,
