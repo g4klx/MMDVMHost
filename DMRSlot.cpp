@@ -29,6 +29,7 @@
 #include <cassert>
 #include <ctime>
 #include <algorithm>
+#include <cstdint>
 
 unsigned int   CDMRSlot::m_colorCode = 0U;
 
@@ -601,7 +602,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					if (m_dumpTAData) {
 						::sprintf(text, "DMR Slot %u, Embedded GPS Info", m_slotNo);
 						CUtils::dump(2U, text, data, 9U);
-						logGPSposition(data);
+						logGPSPosition(data);
 					}
 					if (m_network != NULL)
 						m_network->writePosition(m_rfLC->getSrcId(), data);
@@ -1390,7 +1391,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				if (m_dumpTAData) {
 					::sprintf(text, "DMR Slot %u, Embedded GPS Info", m_slotNo);
 					CUtils::dump(2U, text, data, 9U);
-					logGPSposition(data);
+					logGPSPosition(data);
 				}
 				break;
 			case FLCO_TALKER_ALIAS_HEADER:
@@ -1608,7 +1609,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 }
 
 
-void CDMRSlot::logGPSposition(const unsigned char* data)
+void CDMRSlot::logGPSPosition(const unsigned char* data)
 {
 	unsigned int errorI = (data[2U] & 0x0E) >> 1U;
 
@@ -1636,25 +1637,23 @@ void CDMRSlot::logGPSposition(const unsigned char* data)
 		::strcpy(errorS, "> 200km");
 		break;
 	default:
-		::strcpy(errorS, "not known or position invalid");
+		::strcpy(errorS, "not known");
 		break;
     }
 
-	long longitudeI = (data[3U] << 16) + (data[4U] << 8) + data[5U];
-	if ((data[2U] & 0x01U) == 0x01U)
-		longitudeI = -longitudeI;
+	int32_t longitudeI = ((data[2U] & 0x01U) << 31) | (data[3U] << 23) | (data[4U] << 15) | (data[5U] << 7);
+	longitudeI >>= 7;
 
-	long latitudeI = ((data[6U] & 0x7FU) << 16) + (data[7U] << 8) + data[8U];
-	if ((data[6U] & 0x80U) == 0x80U)
-		latitudeI = -latitudeI;
+	int32_t latitudeI = (data[6U] << 24) | (data[7U] << 16) | (data[8U] << 8);
+	latitudeI >>= 8;
 
 	float longitude = 360.0F / 33554432.0F;	// 360/2^25 steps
 	float latitude  = 180.0F / 16777216.0F;	// 180/2^24 steps
 
-	longitude *= longitudeI;
-	latitude  *= latitudeI;
+	longitude *= float(longitudeI);
+	latitude  *= float(latitudeI);
 
-	LogMessage("GPS position [%08f,%09f] (Position error %s)",latitude,longitude,errorS);
+	LogMessage("GPS position [%f,%f] (Position error %s)", latitude, longitude, errorS);
 }
 
 void CDMRSlot::clock()

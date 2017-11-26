@@ -124,7 +124,7 @@ private:
 	static unsigned char       m_id2;
 	static ACTIVITY_TYPE       m_activity2;
 
-	void logGPSposition(const unsigned char* data);
+	void logGPSPosition(const unsigned char* data);
 
 	void writeQueueRF(const unsigned char* data);
 	void writeQueueNet(const unsigned char* data);
