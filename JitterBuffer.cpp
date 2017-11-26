@@ -24,10 +24,11 @@
 #include <cassert>
 #include <cstring>
 
-CJitterBuffer::CJitterBuffer(unsigned int blockSize, unsigned int blockTime, unsigned int jitterTime, unsigned int topSequenceNumber) :
+CJitterBuffer::CJitterBuffer(unsigned int blockSize, unsigned int blockTime, unsigned int jitterTime, unsigned int topSequenceNumber, bool debug) :
 m_blockSize(blockSize),
 m_blockTime(blockTime),
 m_topSequenceNumber(topSequenceNumber),
+m_debug(debug),
 m_blockCount(0U),
 m_timer(1000U, 0U, jitterTime),
 m_stopWatch(),
@@ -74,12 +75,14 @@ bool CJitterBuffer::addData(const unsigned char* data, unsigned int length, unsi
 	// Is the data out of sequence?
 	if (headSequenceNumber < tailSequenceNumber) {
 		if (sequenceNumber < headSequenceNumber || sequenceNumber >= tailSequenceNumber) {
-			LogInfo("JitterBuffer: rejecting frame with seqNo=%u, head=%u, tail=%u", sequenceNumber, headSequenceNumber, tailSequenceNumber);
+			if (m_debug)
+				LogDebug("JitterBuffer: rejecting frame with seqNo=%u, head=%u, tail=%u", sequenceNumber, headSequenceNumber, tailSequenceNumber);
 			return false;
 		}
 	} else {
 		if (sequenceNumber >= tailSequenceNumber && sequenceNumber < headSequenceNumber) {
-			LogInfo("JitterBuffer: rejecting frame with seqNo=%u, head=%u, tail=%u", sequenceNumber, headSequenceNumber, tailSequenceNumber);
+			if (m_debug)
+				LogDebug("JitterBuffer: rejecting frame with seqNo=%u, head=%u, tail=%u", sequenceNumber, headSequenceNumber, tailSequenceNumber);
 			return false;
 		}
 	}
@@ -94,7 +97,8 @@ bool CJitterBuffer::addData(const unsigned char* data, unsigned int length, unsi
 
 	// Do we already have the data?
 	if (m_buffer[index].m_length > 0U) {
-		LogInfo("JitterBuffer: rejecting frame with seqNo=%u, already exists", sequenceNumber);
+		if (m_debug)
+			LogDebug("JitterBuffer: rejecting frame with seqNo=%u, already exists", sequenceNumber);
 		return false;
 	}
 
