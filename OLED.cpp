@@ -480,11 +480,12 @@ void COLED::writeDMRInt(unsigned int slotNo,const std::string& src,bool group,co
 
          else if (m_duplex==0U) 
          {
-          OLED_statusbar();
-          display.fillRect(0,OLED_LINE2,display.width(),80,BLACK); //20=> clear 2 lines
-          display.setCursor(30,OLED_LINE2);
-  //        display.setTextSize(2);
-  //        display.print("DMR RX");
+;
+         // OLED_statusbar();
+         /// display.fillRect(0,OLED_LINE2,display.width(),80,BLACK); //20=> clear 2 lines
+         // display.setCursor(30,OLED_LINE2);
+         // display.setTextSize(2);
+         // display.print("DMR RX");
          }
 
         else if (m_duplex!=0U)
@@ -522,7 +523,7 @@ void COLED::writeDMRInt(unsigned int slotNo,const std::string& src,bool group,co
 else if (m_duplex==0U)
   {
       display.stopscroll();    
-      OLED_statusbar();
+ //     OLED_statusbar();
 
 //CALLSIGN Size 2 
 
@@ -532,12 +533,14 @@ else if (m_duplex==0U)
       display.printf("%s %s",type,src.c_str());
 
 // TG 
-if (strcmp ("8",dst.c_str())!=0 || strcmp ("6",dst.c_str()) !=0 || strcmp ("9",dst.c_str())!=0){
+
+if (strcmp ("8",dst.c_str())!=0 || strcmp ("6",dst.c_str()) !=0 || strcmp ("9",dst.c_str())!=0|| strcmp ("9990",dst.c_str())!=0 || strcmp ("4000",dst.c_str())!=0 ){
     display.fillRect(0, 0, display.width(), 16, BLACK);
     display.setTextColor(WHITE);
     display.setCursor(0,0);
     display.drawBitmap(0, 0, bm, 64, 16, WHITE);
       }
+
 
  if (strcmp ("6",dst.c_str()) ==0) {
     display.fillRect(0, 0, display.width(), 16, BLACK);
@@ -552,6 +555,8 @@ if (strcmp ("8",dst.c_str()) ==0) {
     display.setCursor(0,0);
     display.drawBitmap(0, 0, plus, 64, 16, WHITE);
       }
+
+
 
  if (strcmp ("4000",dst.c_str()) ==0 ||strcmp("4000",src.c_str()) ==0) {
     display.fillRect(0, 0, display.width(), 16, BLACK);
@@ -568,7 +573,7 @@ if (strcmp ("8",dst.c_str()) ==0) {
     display.drawBitmap(0, 0, parrot, 64, 16, WHITE);
       }
 
-      display.fillRect(70,OLED_LINE6,display.width(),12,BLACK);
+//    display.fillRect(70,OLED_LINE6,display.width(),12,BLACK);
       display.setCursor(70,OLED_LINE6);
       display.setTextColor(WHITE);
       display.setTextSize(1);
@@ -739,16 +744,15 @@ void COLED::clearDMRInt(unsigned int slotNo)
       display.setCursor(0, OLED_LINE4);
       display.print("2 Listening");
       }
-
-    else if (slotNo != 1U && m_duplex==1U)
+      else if (slotNo != 1U && m_duplex==0U)
       {
-      display.fillRect(0, OLED_LINE4, display.width(), 80, BLACK);
-      display.setCursor(0, OLED_LINE4);
-//      display.print("2 Listening");
+      display.fillRect(0, OLED_LINE2, display.width(), 40, BLACK);
+      display.setCursor(25, OLED_LINE2);
+      display.setTextSize(2);
+      display.print("STANDBY");
       }
-
-
-
+      display.display();
+  
     display.display();
 }
 
