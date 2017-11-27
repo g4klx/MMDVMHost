@@ -35,7 +35,8 @@ m_stopWatch(),
 m_buffer(NULL),
 m_headSequenceNumber(0U),
 m_lastData(NULL),
-m_lastDataLength(0U)
+m_lastDataLength(0U),
+m_running(false)
 {
 	assert(blockSize > 0U);
 	assert(blockTime > 0U);
@@ -98,7 +99,7 @@ bool CJitterBuffer::addData(const unsigned char* data, unsigned int length, unsi
 	// Do we already have the data?
 	if (m_buffer[index].m_length > 0U) {
 		if (m_debug)
-			LogDebug("JitterBuffer: rejecting frame with seqNo=%u, already exists", sequenceNumber);
+			LogDebug("JitterBuffer: rejecting duplicate frame with seqNo=%u, raw=%u, head=%u, tail=%u", sequenceNumber, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
 		return false;
 	}
 
@@ -115,10 +116,8 @@ JB_STATUS CJitterBuffer::getData(unsigned char* data, unsigned int& length)
 {
 	assert(data != NULL);
 
-	if (!m_timer.isRunning() || !m_timer.hasExpired()) {
-		m_stopWatch.start();
+	if (!m_running)
 		return JBS_NO_DATA;
-	}
 
 	unsigned int sequenceNumber = m_stopWatch.elapsed() / m_blockTime;
 	if (m_headSequenceNumber > sequenceNumber)
@@ -141,8 +140,8 @@ JB_STATUS CJitterBuffer::getData(unsigned char* data, unsigned int& length)
 		return JBS_DATA;
 	}
 
-    if (m_debug)
-        LogDebug("JitterBuffer: no data available, elapsed=%ums, raw=%u, head=%u", m_stopWatch.elapsed(), m_headSequenceNumber - 1U, head);
+	if (m_debug)
+		LogDebug("JitterBuffer: no data available, elapsed=%ums, raw=%u, head=%u", m_stopWatch.elapsed(), m_headSequenceNumber - 1U, head);
 
 	// Return the last data frame if we have it
 	if (m_lastDataLength > 0U) {
@@ -165,9 +164,17 @@ void CJitterBuffer::reset()
 	m_lastDataLength = 0U;
 	
 	m_timer.stop();
+
+	m_running = false;
 }
 
 void CJitterBuffer::clock(unsigned int ms)
 {
 	m_timer.clock(ms);
+	if (m_timer.isRunning() && m_timer.hasExpired()) {
+		if (!m_running) {
+			m_stopWatch.start();
+			m_running = true;
+		}
+	}
 }
