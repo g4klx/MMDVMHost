@@ -18,6 +18,10 @@
 
 #include "OLED.h"
 
+
+
+
+
 //Logo MMDVM for Idle Screen
 static unsigned char logo_glcd_bmp[] =
 {
@@ -267,6 +271,13 @@ void COLED::writeDMRInt(unsigned int slotNo,const std::string& src,bool group,co
     OLED_statusbar();
     display.display();
 }
+
+
+void COLED::writeDMRTAInt(unsigned int slotNo,  unsigned char* talkerAlias, const char* type)
+{
+}
+
+
 
 void COLED::clearDMRInt(unsigned int slotNo)
 {
