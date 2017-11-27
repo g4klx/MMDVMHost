@@ -26,6 +26,15 @@
 #define OLED_LINE4 46
 #define OLED_LINE5 56
 
+
+/* OLED for HotSpots
+*
+* 
+*/
+#define OLED_LINE6 6
+
+
+
 #include "Display.h"
 #include "Defines.h"
 
@@ -38,7 +47,7 @@
 class COLED : public CDisplay 
 {
 public:
-  COLED(unsigned char displayType, unsigned char displayBrighness, bool displayInvert, bool displayScroll);
+  COLED(unsigned char displayType, unsigned char displayBrighness, bool displayInvert, bool displayScroll, bool duplex);
   virtual ~COLED();
 
   virtual bool open();
@@ -53,6 +62,7 @@ public:
 
   virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
   virtual void clearDMRInt(unsigned int slotNo);
+ virtual void writeDMRTAInt(unsigned int slotNo, unsigned char* talkerAlias, const char* type);
 
   virtual void writeFusionInt(const char* source, const char* dest, const char* type, const char* origin);
   virtual void clearFusionInt();
@@ -66,6 +76,7 @@ public:
   virtual void close();
 
 private:
+  std::string   m_ipaddress;    
   const char*   m_slot1_state;
   const char*   m_slot2_state;
   unsigned char m_mode;
@@ -73,6 +84,7 @@ private:
   unsigned char m_displayBrightness;
   bool          m_displayInvert;
   bool          m_displayScroll;
+  bool          m_duplex;
 
   ArduiPi_OLED display;
   void OLED_statusbar();
