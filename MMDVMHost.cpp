@@ -1099,14 +1099,14 @@ void CMMDVMHost::createDisplay()
 		bool utc                    = m_conf.getNextionUTC();
 		unsigned int idleBrightness = m_conf.getNextionIdleBrightness();
 		unsigned int screenLayout   = m_conf.getNextionScreenLayout();
-
+                
 		LogInfo("    Port: %s", port.c_str());
 		LogInfo("    Brightness: %u", brightness);
 		LogInfo("    Clock Display: %s", displayClock ? "yes" : "no");
 		if (displayClock)
 			LogInfo("    Display UTC: %s", utc ? "yes" : "no");
 		LogInfo("    Idle Brightness: %u", idleBrightness);
-
+		
 		switch (screenLayout) {
 		case 0U:
 			LogInfo("    Screen Layout: G4KLX (Default)");
@@ -1196,7 +1196,22 @@ void CMMDVMHost::createDisplay()
         unsigned char brightness = m_conf.getOLEDBrightness();
         bool          invert     = m_conf.getOLEDInvert();
 		bool          scroll     = m_conf.getOLEDScroll();
-		m_display = new COLED(type, brightness, invert, scroll);
+	unsigned int oledLayout   = m_conf.getOLEDLayout();
+
+
+switch (oledLayout) {
+		case 0U:
+			LogInfo("    OLED Layout: G4KLX (Default)");
+			break;
+		case 2U:
+			LogInfo("    OLED Layout: EA5SW");
+			break;
+		default:
+			LogInfo("    OLED Layout: %u (Unknown)", oledLayout);
+			break;
+		}
+
+		m_display = new COLED(type, brightness, invert, scroll, oledLayout);
 #endif
 	} else {
 		m_display = new CNullDisplay;
