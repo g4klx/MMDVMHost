@@ -172,14 +172,13 @@ bool CDMRNetwork::read(CDMRData& data)
 
 			if (wanted) {
 				unsigned char seqNo = m_buffer[4U];
-				m_jitterBuffers[slotNo]->addData(m_buffer, length, seqNo);
+				m_jitterBuffers[slotNo]->addData(m_buffer, seqNo);
 			}
 		}
 	}
 
 	for (unsigned int slotNo = 1U; slotNo <= 2U; slotNo++) {
-		unsigned int length = 0U;
-		JB_STATUS status = m_jitterBuffers[slotNo]->getData(m_buffer, length);
+		JB_STATUS status = m_jitterBuffers[slotNo]->getData(m_buffer);
 		if (status != JBS_NO_DATA) {
 			unsigned char seqNo = m_buffer[4U];
 
