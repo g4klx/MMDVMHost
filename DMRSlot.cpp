@@ -1640,33 +1640,32 @@ void CDMRSlot::logGPSPosition(const unsigned char* data)
 {
 	unsigned int errorI = (data[2U] & 0x0E) >> 1U;
 
-	char errorS[30];
-    switch (errorI) {
+	char* error;
+	switch (errorI) {
 	case 0U:
-		::strcpy(errorS, "< 2m");
+		error = "< 2m";
 		break;
 	case 1U:
-		::strcpy(errorS, "< 20m");
+		error = "< 20m";
 		break;
 	case 2U:
-		::strcpy(errorS, "< 200m");
+		error = "< 200m";
 		break;
 	case 3U:
-		::strcpy(errorS, "< 2km");
+		error = "< 2km";
 		break;
 	case 4U:
-		::strcpy(errorS, "< 20km");
+		error = "< 20km";
 		break;
 	case 5U:
-		::strcpy(errorS, "< 200km");
+		error = "< 200km";
 		break;
 	case 6U:
-		::strcpy(errorS, "> 200km");
+		error = "> 200km";
 		break;
 	default:
-		::strcpy(errorS, "not known");
-		break;
-    }
+		return;
+	}
 
 	int32_t longitudeI = ((data[2U] & 0x01U) << 31) | (data[3U] << 23) | (data[4U] << 15) | (data[5U] << 7);
 	longitudeI >>= 7;
@@ -1680,7 +1679,7 @@ void CDMRSlot::logGPSPosition(const unsigned char* data)
 	longitude *= float(longitudeI);
 	latitude  *= float(latitudeI);
 
-	LogMessage("GPS position [%f,%f] (Position error %s)", latitude, longitude, errorS);
+	LogMessage("GPS position [%f,%f] (Position error %s)", latitude, longitude, error);
 }
 
 void CDMRSlot::clock()
