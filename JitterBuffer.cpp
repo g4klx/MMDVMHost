@@ -18,8 +18,6 @@
 
 #include "JitterBuffer.h"
 
-#include "Log.h"
-
 #include <cstdio>
 #include <cassert>
 
@@ -72,15 +70,11 @@ bool CJitterBuffer::addData(const unsigned char* data, unsigned int length, unsi
 
 	// Is the data out of sequence?
 	if (headSequenceNumber < tailSequenceNumber) {
-		if (sequenceNumber < headSequenceNumber || sequenceNumber >= tailSequenceNumber) {
-			LogInfo("JitterBuffer: rejecting frame with seqNo=%u, head=%u, tail=%u", sequenceNumber, headSequenceNumber, tailSequenceNumber);
+		if (sequenceNumber < headSequenceNumber || sequenceNumber >= tailSequenceNumber)
 			return false;
-		}
 	} else {
-		if (sequenceNumber >= tailSequenceNumber && sequenceNumber < headSequenceNumber) {
-			LogInfo("JitterBuffer: rejecting frame with seqNo=%u, head=%u, tail=%u", sequenceNumber, headSequenceNumber, tailSequenceNumber);
+		if (sequenceNumber >= tailSequenceNumber && sequenceNumber < headSequenceNumber)
 			return false;
-		}
 	}
 
 	unsigned int number;
@@ -92,10 +86,8 @@ bool CJitterBuffer::addData(const unsigned char* data, unsigned int length, unsi
 	unsigned int index = (m_headSequenceNumber + number) % m_blockCount;
 
 	// Do we already have the data?
-	if (m_buffer[index].m_length > 0U) {
-		LogInfo("JitterBuffer: rejecting frame with seqNo=%u, already exists", sequenceNumber);
+	if (m_buffer[index].m_length > 0U)
 		return false;
-	}
 
 	::memcpy(m_buffer[index].m_data, data, length);
 	m_buffer[index].m_length = length;
