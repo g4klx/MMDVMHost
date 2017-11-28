@@ -1044,6 +1044,11 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			m_modem->writeDMRAbort(m_slotNo);
 		}
 
+		// Put a small delay into starting transmission
+		writeQueueNet(m_idle);
+		writeQueueNet(m_idle);
+		writeQueueNet(m_idle);
+
 		if (m_duplex) {
 			for (unsigned int i = 0U; i < NO_HEADERS_DUPLEX; i++)
 				writeQueueNet(data);
@@ -1082,6 +1087,11 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				m_queue.clear();
 				m_modem->writeDMRAbort(m_slotNo);
 			}
+
+			// Put a small delay into starting transmission
+			writeQueueNet(m_idle);
+			writeQueueNet(m_idle);
+			writeQueueNet(m_idle);
 
 			// Create a dummy start frame
 			unsigned char start[DMR_FRAME_LENGTH_BYTES + 2U];
@@ -1221,6 +1231,11 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		data[0U] = m_netFrames == 0U ? TAG_EOT : TAG_DATA;
 		data[1U] = 0x00U;
 
+		// Put a small delay into starting transmission
+		writeQueueNet(m_idle);
+		writeQueueNet(m_idle);
+		writeQueueNet(m_idle);
+
 		writeQueueNet(data);
 
 		m_netState = RS_NET_DATA;
@@ -1259,6 +1274,11 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				m_queue.clear();
 				m_modem->writeDMRAbort(m_slotNo);
 			}
+
+			// Put a small delay into starting transmission
+			writeQueueNet(m_idle);
+			writeQueueNet(m_idle);
+			writeQueueNet(m_idle);
 
 			// Create a dummy start frame
 			unsigned char start[DMR_FRAME_LENGTH_BYTES + 2U];
