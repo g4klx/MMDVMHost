@@ -946,7 +946,7 @@ bool CMMDVMHost::createDMRNetwork()
 	LogInfo("    Slot 2: %s", slot2 ? "enabled" : "disabled");
 	LogInfo("    Mode Hang: %us", m_dmrNetModeHang);
 
-	m_dmrNetwork = new CDMRNetwork(address, port, local, id, password, m_duplex, VERSION, debug, slot1, slot2, hwType, jitter);
+	m_dmrNetwork = new CDMRNetwork(address, port, local, id, password, m_duplex, VERSION, debug, slot1, slot2, hwType);
 
 	std::string options = m_conf.getDMRNetworkOptions();
 	if (!options.empty()) {
