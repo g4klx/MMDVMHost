@@ -1917,6 +1917,8 @@ void CDMRSlot::closeFile()
 
 void CDMRSlot::repeatFrame(unsigned char* data)
 {
+	::memcpy(data, DMR_SILENCE_DATA + 2U, DMR_FRAME_LENGTH_BYTES);
+
 	if (m_netN == 0U) {
 		CSync::addDMRAudioSync(data, m_duplex);
 	} else {
