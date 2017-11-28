@@ -30,12 +30,12 @@ enum JB_STATUS {
 
 class CJitterBuffer {
 public:
-	CJitterBuffer(unsigned int blockSize, unsigned int blockTime, unsigned int jitterTime, unsigned int topSequenceNumber);
+	CJitterBuffer(unsigned int blockSize, unsigned int blockTime, unsigned int jitterTime, unsigned int topSequenceNumber, bool debug);
 	~CJitterBuffer();
 
-	bool addData(const unsigned char* data, unsigned int sequenceNumber);
+	bool addData(const unsigned char* data, unsigned int length, unsigned int sequenceNumber);
 
-	JB_STATUS getData(unsigned char* data);
+	JB_STATUS getData(unsigned char* data, unsigned int& length);
 	
 	void reset();
 	
@@ -45,21 +45,23 @@ private:
 	unsigned int m_blockSize;
 	unsigned int m_blockTime;
 	unsigned int m_topSequenceNumber;
+	bool         m_debug;
 	unsigned int m_blockCount;
 	CTimer       m_timer;
 	CStopWatch   m_stopWatch;
-	
+	bool         m_running;
+
 	struct JitterEntry
 	{
 		unsigned char* m_data;
-		bool           m_used;
+		unsigned int   m_length;
 	};
 
 	JitterEntry* m_buffer;
 	unsigned int m_headSequenceNumber;
 
 	unsigned char* m_lastData;
-	bool           m_lastDataValid;
+	unsigned int   m_lastDataLength;
 };
 
 #endif
