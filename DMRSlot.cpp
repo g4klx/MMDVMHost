@@ -1640,7 +1640,7 @@ void CDMRSlot::logGPSPosition(const unsigned char* data)
 {
 	unsigned int errorI = (data[2U] & 0x0E) >> 1U;
 
-	char* error;
+	const char* error;
 	switch (errorI) {
 	case 0U:
 		error = "< 2m";
@@ -1664,7 +1664,8 @@ void CDMRSlot::logGPSPosition(const unsigned char* data)
 		error = "> 200km";
 		break;
 	default:
-		return;
+		error = "not known";
+		break;
 	}
 
 	int32_t longitudeI = ((data[2U] & 0x01U) << 31) | (data[3U] << 23) | (data[4U] << 15) | (data[5U] << 7);
