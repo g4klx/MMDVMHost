@@ -32,11 +32,11 @@ m_debug(debug),
 m_blockCount(0U),
 m_timer(1000U, 0U, jitterTime),
 m_stopWatch(),
+m_running(false),
 m_buffer(NULL),
 m_headSequenceNumber(0U),
 m_lastData(NULL),
-m_lastDataLength(0U),
-m_running(false)
+m_lastDataLength(0U)
 {
 	assert(blockSize > 0U);
 	assert(blockTime > 0U);
