@@ -51,7 +51,6 @@ m_timeoutTimer(1000U, 60U),
 m_buffer(NULL),
 m_salt(NULL),
 m_streamId(NULL),
-m_rxData(1000U, "DMR Network"),
 m_options(),
 m_callsign(),
 m_rxFrequency(0U),
@@ -147,35 +146,6 @@ bool CDMRNetwork::read(CDMRData& data)
 {
 	if (m_status != RUNNING)
 		return false;
-
-	if (!m_rxData.isEmpty()) {
-		unsigned char length = 0U;
-
-		m_rxData.getData(&length, 1U);
-		m_rxData.getData(m_buffer, length);
-
-		// Is this a data packet?
-		if (::memcmp(m_buffer, "DMRD", 4U) == 0) {
-			unsigned int slotNo = (m_buffer[15U] & 0x80U) == 0x80U ? 2U : 1U;
-
-			bool wanted = true;
-
-			// DMO mode slot disabling
-			if (slotNo == 1U && !m_duplex)
-				wanted = false;
-
-			// Individual slot disabling
-			if (slotNo == 1U && !m_slot1)
-				wanted = false;
-			if (slotNo == 2U && !m_slot2)
-				wanted = false;
-
-			if (wanted) {
-				unsigned char seqNo = m_buffer[4U];
-				m_jitterBuffers[slotNo]->addData(m_buffer, length, seqNo);
-			}
-		}
-	}
 
 	for (unsigned int slotNo = 1U; slotNo <= 2U; slotNo++) {
 		unsigned int length = 0U;
@@ -403,10 +373,7 @@ void CDMRNetwork::clock(unsigned int ms)
 			if (m_enabled) {
 				if (m_debug)
 					CUtils::dump(1U, "Network Received", m_buffer, length);
-
-				unsigned char len = length;
-				m_rxData.addData(&len, 1U);
-				m_rxData.addData(m_buffer, len);
+				receiveData(m_buffer, length);
 			}
 		} else if (::memcmp(m_buffer, "MSTNAK",  6U) == 0) {
 			if (m_status == RUNNING) {
@@ -512,6 +479,27 @@ void CDMRNetwork::reset(unsigned int slotNo)
 	assert(slotNo == 1U || slotNo == 2U);
 
 	m_jitterBuffers[slotNo]->reset();
+}
+
+void CDMRNetwork::receiveData(const unsigned char* data, unsigned int length)
+{
+	assert(data != NULL);
+	assert(length > 0U);
+
+	unsigned int slotNo = (data[15U] & 0x80U) == 0x80U ? 2U : 1U;
+
+	// DMO mode slot disabling
+	if (slotNo == 1U && !m_duplex)
+		return;
+
+	// Individual slot disabling
+	if (slotNo == 1U && !m_slot1)
+		return;
+	if (slotNo == 2U && !m_slot2)
+		return;
+
+	unsigned char seqNo = data[4U];
+	m_jitterBuffers[slotNo]->addData(data, length, seqNo);
 }
 
 bool CDMRNetwork::writeLogin()
