@@ -49,8 +49,7 @@ private:
 	unsigned int m_blockCount;
 	CTimer       m_timer;
 	CStopWatch   m_stopWatch;
-	bool         m_running;
-
+	
 	struct JitterEntry
 	{
 		unsigned char* m_data;
