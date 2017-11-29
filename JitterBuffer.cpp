@@ -99,11 +99,11 @@ bool CJitterBuffer::addData(const unsigned char* data, unsigned int length, unsi
 	// Do we already have the data?
 	if (m_buffer[index].m_length > 0U) {
 		if (m_debug)
-			LogDebug("JitterBuffer: rejecting duplicate frame with seqNo=%u, raw=%u, head=%u, tail=%u", sequenceNumber, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
+			LogDebug("JitterBuffer: rejecting duplicate frame with seqNo=%u, pos=%u, raw=%u, head=%u, tail=%u", sequenceNumber, index, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
 		return false;
 	}
 
-	LogDebug("JitterBuffer: adding frame with seqNo=%u, raw=%u, head=%u, tail=%u", sequenceNumber, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
+	LogDebug("JitterBuffer: adding frame with seqNo=%u, pos=%u, raw=%u, head=%u, tail=%u", sequenceNumber, index, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
 
 	::memcpy(m_buffer[index].m_data, data, length);
 	m_buffer[index].m_length = length;
@@ -145,6 +145,8 @@ JB_STATUS CJitterBuffer::getData(unsigned char* data, unsigned int& length)
 
 		return JBS_DATA;
 	}
+
+	m_buffer[head].m_length = 0U;
 
 	if (m_debug)
 		LogDebug("JitterBuffer: no data available, elapsed=%ums, raw=%u, head=%u", m_stopWatch.elapsed(), m_headSequenceNumber - 1U, head);
