@@ -1588,38 +1588,37 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 	}
 }
 
-
 void CDMRSlot::logGPSPosition(const unsigned char* data)
 {
 	unsigned int errorI = (data[2U] & 0x0E) >> 1U;
 
-	char errorS[30];
-    switch (errorI) {
+	const char* error;
+	switch (errorI) {
 	case 0U:
-		::strcpy(errorS, "< 2m");
+		error = "< 2m";
 		break;
 	case 1U:
-		::strcpy(errorS, "< 20m");
+		error = "< 20m";
 		break;
 	case 2U:
-		::strcpy(errorS, "< 200m");
+		error = "< 200m";
 		break;
 	case 3U:
-		::strcpy(errorS, "< 2km");
+		error = "< 2km";
 		break;
 	case 4U:
-		::strcpy(errorS, "< 20km");
+		error = "< 20km";
 		break;
 	case 5U:
-		::strcpy(errorS, "< 200km");
+		error = "< 200km";
 		break;
 	case 6U:
-		::strcpy(errorS, "> 200km");
+		error = "> 200km";
 		break;
 	default:
-		::strcpy(errorS, "not known");
+		error = "not known";
 		break;
-    }
+	}
 
 	int32_t longitudeI = ((data[2U] & 0x01U) << 31) | (data[3U] << 23) | (data[4U] << 15) | (data[5U] << 7);
 	longitudeI >>= 7;
@@ -1628,12 +1627,12 @@ void CDMRSlot::logGPSPosition(const unsigned char* data)
 	latitudeI >>= 8;
 
 	float longitude = 360.0F / 33554432.0F;	// 360/2^25 steps
-	float latitude  = 180.0F / 16777216.0F;	// 180/2^24 steps
+	float latitude = 180.0F / 16777216.0F;	// 180/2^24 steps
 
 	longitude *= float(longitudeI);
-	latitude  *= float(latitudeI);
+	latitude *= float(latitudeI);
 
-	LogMessage("GPS position [%f,%f] (Position error %s)", latitude, longitude, errorS);
+	LogMessage("GPS position [%f,%f] (Position error %s)", latitude, longitude, error);
 }
 
 void CDMRSlot::clock()
