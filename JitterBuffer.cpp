@@ -123,7 +123,7 @@ JB_STATUS CJitterBuffer::getData(unsigned char* data, unsigned int& length)
 	if (!m_running)
 		return JBS_NO_DATA;
 
-	unsigned int sequenceNumber = m_stopWatch.elapsed() / m_blockTime + 3U;
+	unsigned int sequenceNumber = m_stopWatch.elapsed() / m_blockTime + 2U;
 	if (m_headSequenceNumber > sequenceNumber)
 		return JBS_NO_DATA;
 	
