@@ -87,6 +87,7 @@ private:
 	unsigned int               m_rfFrames;
 	unsigned int               m_netFrames;
 	unsigned int               m_netLost;
+	unsigned int               m_netMissed;
 	CAMBEFEC                   m_fec;
 	unsigned int               m_rfBits;
 	unsigned int               m_netBits;

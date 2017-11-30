@@ -93,6 +93,7 @@ m_interval(),
 m_rfFrames(0U),
 m_netFrames(0U),
 m_netLost(0U),
+m_netMissed(0U),
 m_fec(),
 m_rfBits(1U),
 m_netBits(1U),
@@ -974,13 +975,16 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 	unsigned char data[DMR_FRAME_LENGTH_BYTES + 2U];
 	dmrData.getData(data + 2U);
 
-	if (dmrData.isMissing()) {
+	bool missing = dmrData.isMissing();
+
+	if (missing) {
 		m_netN = (m_netN + 1U) % 6U;
-		m_netLost++;
 		repeatFrame(data + 2U);
+		m_netLost++;
 	} else {
 		m_netN = dmrData.getN();
 		m_networkWatchdog.start();
+		m_netMissed = 0U;
 	}
 
 	unsigned char dataType = dmrData.getDataType();
@@ -1916,7 +1920,14 @@ void CDMRSlot::closeFile()
 
 void CDMRSlot::repeatFrame(unsigned char* data)
 {
-	::memcpy(data, DMR_SILENCE_DATA + 2U, DMR_FRAME_LENGTH_BYTES);
+	// Repeat the last audio for 60ms then silence after that
+	if (m_netMissed == 0U) {
+		::memcpy(data, data + 24U, 9U);				// Copy the last audio block to the first
+		::memcpy(data + 9U, data + 24U, 5U);		// Copy the last audio block to the middle (1/2)
+		::memcpy(data + 19U, data + 24U, 5U);		// Copy the last audio block to the middle (2/2)
+	} else {
+		::memcpy(data, DMR_SILENCE_DATA + 2U, DMR_FRAME_LENGTH_BYTES);
+	}
 
 	if (m_netN == 0U) {
 		CSync::addDMRAudioSync(data, m_duplex);
@@ -1928,4 +1939,6 @@ void CDMRSlot::repeatFrame(unsigned char* data)
 		emb.setLCSS(0U);
 		emb.getData(data);
 	}
+
+	m_netMissed++;
 }
