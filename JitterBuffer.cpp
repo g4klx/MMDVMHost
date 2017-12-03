@@ -43,7 +43,7 @@ m_lastDataLength(0U)
 	assert(jitterTime > 0U);
 	assert(topSequenceNumber > 0U);
 
-	m_blockCount = (jitterTime / blockTime) * 2U + 1U;
+	m_blockCount = topSequenceNumber / 2U;
 	
 	m_buffer = new JitterEntry[m_blockCount];
 
