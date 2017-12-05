@@ -89,6 +89,7 @@ private:
   unsigned int  m_berCount2;
 
   void sendCommand(const char* command);
+  void sendCommandAction(unsigned int field, unsigned int status);
 };
 
 #endif

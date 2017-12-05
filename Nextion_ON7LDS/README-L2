@@ -1,3 +1,12 @@
+Nextion Display Layouts by ON7LDS (for MMDVMHost)
+=================================================
+
+		################################
+		#                              #
+		#  screenLayout 2 files (-L2)  #
+		#                              #
+		################################
+
 The files in this directory are Nextion screen layouts with better fonts than
  the(rather ugly) standard Nextion fonts
 
@@ -26,4 +35,5 @@ There are some other changes:
     0 = auto (future use, for now it's G4KLX layout)
     1 = G4KLX layout
     2 = ON7LDS layout
+
 
