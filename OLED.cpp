@@ -369,6 +369,14 @@ void COLED::clearCWInt()
 
 void COLED::close()
 {
+    display.clearDisplay();
+	display.fillRect(0, 0, display.width(), 16, BLACK);
+	display.startscrollright(0x00,0x01);
+    display.setCursor(0,00);
+    display.setTextSize(2);
+    display.print("-CLOSE-");
+    display.display();
+	
     display.close();
 }
 
