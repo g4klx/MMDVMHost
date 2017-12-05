@@ -103,13 +103,15 @@ bool CJitterBuffer::addData(const unsigned char* data, unsigned int length, unsi
 		return false;
 	}
 
-	LogDebug("JitterBuffer: adding frame with seqNo=%u, pos=%u, raw=%u, head=%u, tail=%u", sequenceNumber, index, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
+	if (m_debug)
+		LogDebug("JitterBuffer: adding frame with seqNo=%u, pos=%u, raw=%u, head=%u, tail=%u", sequenceNumber, index, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
 
 	::memcpy(m_buffer[index].m_data, data, length);
 	m_buffer[index].m_length = length;
 
 	if (!m_timer.isRunning()) {
-		LogDebug("JitterBuffer: starting the timer");
+		if (m_debug)
+			LogDebug("JitterBuffer: starting the timer");
 		m_timer.start();
 	}
 	
@@ -132,7 +134,8 @@ JB_STATUS CJitterBuffer::getData(unsigned char* data, unsigned int& length)
 	m_headSequenceNumber++;
 
 	if (m_buffer[head].m_length > 0U) {
-		LogDebug("JitterBuffer: returning data, elapsed=%ums, raw=%u, head=%u", m_stopWatch.elapsed(), m_headSequenceNumber - 1U, head);
+		if (m_debug)
+			LogDebug("JitterBuffer: returning data, elapsed=%ums, raw=%u, head=%u", m_stopWatch.elapsed(), m_headSequenceNumber - 1U, head);
 
 		::memcpy(data, m_buffer[head].m_data, m_buffer[head].m_length);
 		length = m_buffer[head].m_length;
@@ -153,7 +156,8 @@ JB_STATUS CJitterBuffer::getData(unsigned char* data, unsigned int& length)
 
 	// Return the last data frame if we have it
 	if (m_lastDataLength > 0U) {
-		LogDebug("JitterBuffer: returning the last received frame");
+		if (m_debug)
+			LogDebug("JitterBuffer: returning the last received frame");
 		::memcpy(data, m_lastData, m_lastDataLength);
 		length = m_lastDataLength;
 
