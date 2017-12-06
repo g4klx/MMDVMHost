@@ -76,14 +76,12 @@ bool CJitterBuffer::addData(const unsigned char* data, unsigned int length, unsi
 	// Is the data out of sequence?
 	if (headSequenceNumber < tailSequenceNumber) {
 		if (sequenceNumber < headSequenceNumber || sequenceNumber >= tailSequenceNumber) {
-			if (m_debug)
-				LogDebug("JitterBuffer: rejecting frame with seqNo=%u, raw=%u, head=%u, tail=%u", sequenceNumber, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
+			LogDebug("JitterBuffer: rejecting frame with seqNo=%u, raw=%u, head=%u, tail=%u", sequenceNumber, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
 			return false;
 		}
 	} else {
 		if (sequenceNumber >= tailSequenceNumber && sequenceNumber < headSequenceNumber) {
-			if (m_debug)
-				LogDebug("JitterBuffer: rejecting frame with seqNo=%u, raw=%u, head=%u, tail=%u", sequenceNumber, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
+			LogDebug("JitterBuffer: rejecting frame with seqNo=%u, raw=%u, head=%u, tail=%u", sequenceNumber, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
 			return false;
 		}
 	}
@@ -98,8 +96,7 @@ bool CJitterBuffer::addData(const unsigned char* data, unsigned int length, unsi
 
 	// Do we already have the data?
 	if (m_buffer[index].m_length > 0U) {
-		if (m_debug)
-			LogDebug("JitterBuffer: rejecting duplicate frame with seqNo=%u, pos=%u, raw=%u, head=%u, tail=%u", sequenceNumber, index, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
+		LogDebug("JitterBuffer: rejecting duplicate frame with seqNo=%u, pos=%u, raw=%u, head=%u, tail=%u", sequenceNumber, index, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
 		return false;
 	}
 
@@ -110,8 +107,7 @@ bool CJitterBuffer::addData(const unsigned char* data, unsigned int length, unsi
 	m_buffer[index].m_length = length;
 
 	if (!m_timer.isRunning()) {
-		if (m_debug)
-			LogDebug("JitterBuffer: starting the timer");
+		LogDebug("JitterBuffer: starting the timer");
 		m_timer.start();
 	}
 	
@@ -151,13 +147,11 @@ JB_STATUS CJitterBuffer::getData(unsigned char* data, unsigned int& length)
 
 	m_buffer[head].m_length = 0U;
 
-	if (m_debug)
-		LogDebug("JitterBuffer: no data available, elapsed=%ums, raw=%u, head=%u", m_stopWatch.elapsed(), m_headSequenceNumber - 1U, head);
+	LogDebug("JitterBuffer: no data available, elapsed=%ums, raw=%u, head=%u", m_stopWatch.elapsed(), m_headSequenceNumber - 1U, head);
 
 	// Return the last data frame if we have it
 	if (m_lastDataLength > 0U) {
-		if (m_debug)
-			LogDebug("JitterBuffer: returning the last received frame");
+		LogDebug("JitterBuffer: returning the last received frame");
 		::memcpy(data, m_lastData, m_lastDataLength);
 		length = m_lastDataLength;
 
