@@ -11,11 +11,15 @@ are activated.
   3 = DIY layout  
   4 = DIY layout High Speed  
   
-  
+Layout 2 is a no-nonsense layout. It is the original (G4KLX) layout with the Talker Alias added. TA color and fonts size can not be changed. At least not easily.
+
+Layout 3 (as is 4) is a layout without any predefined layout options (color, fonts). All layout processing can and should be done in the display ittself. 
+
 More information about the layouts can be found in  
   * README-L2 for the screenLayout 2 setting
   * README-L2 for the screenLayout 3 and 4 settings
+
   
 When you want extra control over what has to be sent to the Nextion display,
-you could consider the program 'NextionDriver' at https://github.com/on7lds/NextionDriver  
-Also, in debug mode, this program shows you all communication between MMDVMHost and the display.
+you could consider the program 'NextionDriver' at https://github.com/on7lds/NextionDriver as a companion to MMDVMHost (it also makes it possible to use buttons on the display).  
+In verbose mode, this program shows you all communication between MMDVMHost and the display.
