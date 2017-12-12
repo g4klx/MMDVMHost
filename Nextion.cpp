@@ -454,7 +454,7 @@ void CNextion::writeDMRGPSInt(unsigned int slotNo, float latitude, float longitu
 	int minutesLon = (int)((longitude - (float)degreeLon) * 60.0);
 	float secondsLon = (float)((longitude - (float)degreeLon - (float)minutesLon / 60.0) * 60.0 * 60.0);
 
-	::sprintf(text, "%d°%d'%.2f\"%c %d°%d'%.2f\"%c",degreeLat,minutesLat,secondsLat,Lat,degreeLon,minutesLon,secondsLon,Lon);
+	::sprintf(text, "t%d.txt=\"%d%c%d'%.2f\\\" %c  %d%c%d'%.2f\\\" %c\"",2*slotNo+7,degreeLat,176U,minutesLat,secondsLat,Lat,degreeLon,176U,minutesLon,secondsLon,Lon);
 
 	if (slotNo == 1U) {
 		sendCommand(text);

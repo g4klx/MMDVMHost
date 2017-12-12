@@ -13,7 +13,7 @@ are activated.
   
 Layout 2 is a no-nonsense layout. It is the original (G4KLX) layout with the Talker Alias added. TA color and fonts size can not be changed. At least not easily.
 
-Layout 3 (as is 4) is a layout without any predefined layout options (color, fonts). All layout processing can and should be done in the display ittself. 
+Layout 3 (as is 4) is a layout without any predefined layout options (color, fonts). It sends the fields *and* information about what was sent to the display, so all layout processing can and should be done in the display ittself. 
 
 More information about the layouts can be found in  
   * README-L2 for the screenLayout 2 setting
