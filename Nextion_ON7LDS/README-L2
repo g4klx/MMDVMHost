@@ -37,5 +37,5 @@ There are some other changes:
     0 = auto (future use, for now it's G4KLX layout)
     1 = G4KLX layout
     2 = ON7LDS layout                  (this README file)
-	3 = DIY by ON7LDS layout           (see README-L3)
-	4 = DIY by ON7LDS layout Hig Speed (see README-L3)
+    3 = DIY by ON7LDS layout           (see README-L3)
+    4 = DIY by ON7LDS layout Hig Speed (see README-L3)
