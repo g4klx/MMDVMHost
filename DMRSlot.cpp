@@ -977,17 +977,17 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 	bool missing = dmrData.isMissing();
 
+	unsigned char dataType;
+
 	if (missing) {
 		m_netN = (m_netN + 1U) % 6U;
-		repeatFrame(data + 2U);
-		m_netLost++;
+		dataType = repeatFrame(data + 2U);
 	} else {
+		dataType = dmrData.getDataType();
 		m_netN = dmrData.getN();
 		m_networkWatchdog.start();
 		m_netMissed = 0U;
 	}
-
-	unsigned char dataType = dmrData.getDataType();
 
 	if (dataType == DT_VOICE_LC_HEADER) {
 		if (m_netState == RS_NET_AUDIO)
@@ -1324,10 +1324,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			// Convert the Audio Sync to be from the BS or MS as needed
 			CSync::addDMRAudioSync(data + 2U, m_duplex);
 
-			// Initialise the lost packet data
-			if (m_netFrames == 0U)
-				m_netLost = 0U;
-
 			if (!m_netTimeout)
 				writeQueueNet(data);
 
@@ -1335,6 +1331,9 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			m_netEmbeddedWriteN = (m_netEmbeddedWriteN + 1U) % 2U;
 
 			m_netEmbeddedData[m_netEmbeddedWriteN].reset();
+
+			if (missing)
+				m_netLost++;
 
 			m_netFrames++;
 
@@ -1464,12 +1463,11 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
 
-		// Initialise the lost packet data
-		if (m_netFrames == 0U)
-			m_netLost = 0U;
-
 		if (!m_netTimeout)
 			writeQueueNet(data);
+
+		if (missing)
+			m_netLost++;
 
 		m_netFrames++;
 
@@ -1918,7 +1916,7 @@ void CDMRSlot::closeFile()
 	}
 }
 
-void CDMRSlot::repeatFrame(unsigned char* data)
+unsigned char CDMRSlot::repeatFrame(unsigned char* data)
 {
 	// Repeat the last audio for 60ms then silence after that
 	if (m_netMissed == 0U) {
@@ -1931,6 +1929,10 @@ void CDMRSlot::repeatFrame(unsigned char* data)
 
 	if (m_netN == 0U) {
 		CSync::addDMRAudioSync(data, m_duplex);
+
+		m_netMissed++;
+
+		return DT_VOICE_SYNC;
 	} else {
 		m_netEmbeddedLC.getData(data, 0U);
 
@@ -1938,7 +1940,9 @@ void CDMRSlot::repeatFrame(unsigned char* data)
 		emb.setColorCode(m_colorCode);
 		emb.setLCSS(0U);
 		emb.getData(data);
-	}
 
-	m_netMissed++;
+		m_netMissed++;
+
+		return DT_VOICE;
+	}
 }

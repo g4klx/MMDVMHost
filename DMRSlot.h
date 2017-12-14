@@ -139,7 +139,7 @@ private:
 	bool writeFile(const unsigned char* data);
 	void closeFile();
 
-	void repeatFrame(unsigned char* data);
+	unsigned char repeatFrame(unsigned char* data);
 
 	static void setShortLC(unsigned int slotNo, unsigned int id, FLCO flco = FLCO_GROUP, ACTIVITY_TYPE type = ACTIVITY_NONE);
 };
