@@ -40,7 +40,7 @@ Whenever MMDVMHost sends new data to the screen, it also sends information
 about wat was sent:
 
 * global variable MMDVM.cmd will hold the number of the changed field
-	(not the object id ! 0 for t0, 1 for t1, etc.)
+	(not the object id! 0 for t0, 1 for t1, etc.)
 * global variable MMDVM.status will hold the status of the change
     (the type of information sent - see further in this document)
 
@@ -49,14 +49,28 @@ active page.
 In this event procedure, all processing can be done.
 
 Check the Touch Press Event of object 'S0' of the DMR page of the example
-HMI file. As a straightforward example, the code there will:
+HMI file. As a straightforward example, the code there will show you how
+to do some tasks when receiving data from MMDVMHost or NextionDriver:
 - change colors and fonts of the TA on the DMR page when it arrives.
   (TA length calculation is done in the display itsself !)
 - display the GPS data (if received) in a new field (called 'GPS'),
    by copying the GPS data form the field where MMDVMHost has
    written to (t11 for GPS data from slot 2 in DMS format)
+- remove the slot number from t2.txt (since it's always 2)
 
 
+NOTE: it might be good to not remove fields from the display when you do not
+ need them, but make them small (i.e. 10 x 10 pixels) and put them aside:
+ Give them the same font color and background color as where you put them
+ OR
+ Put them behind some picture: put them on top of the picture, then select the 
+ picture and click the 'Bring Top' button to put it on top of all those fields
+
+ This way, you can use the data from the fields to process them 
+ as is done with the GPS data in the example.
+
+
+ 
 
 Status codes that will be sent:
 -------------------------------
@@ -75,7 +89,7 @@ changed field.
 14 : ERROR
 15 : LOCKOUT
 16 : IPaddress
-17 : ID/Call
+17 : ID/Call (t0 and t4,t5 are sent!)
 19 : END
 
 21 : D-Star listening
@@ -119,6 +133,8 @@ t2 : date & time
 
 screenLayout >1 :
 t3 : ip address
+t4 : owner call
+t5 : owner ID
 
 
 D-Star

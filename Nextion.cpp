@@ -103,6 +103,12 @@ void CNextion::setIdleInt()
 	
 	::sprintf(command, "t0.txt=\"%s/%u\"", m_callsign.c_str(), m_dmrid);
 	sendCommand(command);
+	if (m_screenLayout > 2U) {
+		::sprintf(command, "t4.txt=\"%s\"", m_callsign.c_str());
+		sendCommand(command);
+		::sprintf(command, "t5.txt=\"%u\"", m_dmrid);
+		sendCommand(command);
+	}
 	sendCommandAction(0,17U);
 
 	sendCommand("t1.txt=\"MMDVM IDLE\"");
