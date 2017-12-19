@@ -1,0 +1,181 @@
+Nextion Display Layouts by ON7LDS (for MMDVMHost)
+=================================================
+
+		####################################
+		#                                  #
+		#  screenLayout 3 & 4 files (-L3)  #
+		#                                  #
+		#        DIY layouts               #
+		#                                  #
+		####################################
+
+The screenlayout has to be selected with the parameter ScreenLayout in the
+MMDVM.ini file under the Nextion section. This way, the extra functions
+are activated.
+    0 = auto (future use, for now it's G4KLX layout)
+    1 = G4KLX layout
+    2 = ON7LDS layout               (see README-L2)
+	3 = ON7LDS DIY layout           (this README file)
+	4 = ON7LDS DIY layout Hig Speed (this README file)
+
+screenLayout 3 and 4 are the same, but selecting 3, MMDVMHost wil communicate
+at 9600bps with the display and selecting 4 will set the baudrate to 115200.  
+If you select 4 (115200bps) *you* have to program your Nextion to default to
+that baudrate.
+
+How to set the default Nextion Display baudrate ?
+You could use the Nextion editor, connect to your display with the debug 
+ tool (do not forget to select your display and not the simulator) and
+ give the command 'bauds=115200'.
+Another option is to set the command above in the Preinitialization Event
+ of the first page. Nextion recommends to do the latter in any case,
+ because 'on rare occasions bauds has become lost'
+
+
+DIY layouts
+-----------
+When selecting this layout, all processing can and should be done in the 
+Nextion display itsself.
+Whenever MMDVMHost sends new data to the screen, it also sends information
+about wat was sent:
+
+* global variable MMDVM.cmd will hold the number of the changed field
+	(not the object id! 0 for t0, 1 for t1, etc.)
+* global variable MMDVM.status will hold the status of the change
+    (the type of information sent - see further in this document)
+
+Then MMDVMHost activates the Touch Press Event of object 'S0' of the 
+active page.
+In this event procedure, all processing can be done.
+
+Check the Touch Press Event of object 'S0' of the DMR page of the example
+HMI file. As a straightforward example, the code there will show you how
+to do some tasks when receiving data from MMDVMHost or NextionDriver:
+- change colors and fonts of the TA on the DMR page when it arrives.
+  (TA length calculation is done in the display itsself !)
+- display the GPS data (if received) in a new field (called 'GPS'),
+   by copying the GPS data form the field where MMDVMHost has
+   written to (t11 for GPS data from slot 2 in DMS format)
+- remove the slot number from t2.txt (since it's always 2)
+
+
+NOTE: it might be good to not remove fields from the display when you do not
+ need them, but make them small (i.e. 10 x 10 pixels) and put them aside:
+ Give them the same font color and background color as where you put them
+ OR
+ Put them behind some picture: put them on top of the picture, then select the 
+ picture and click the 'Bring Top' button to put it on top of all those fields
+
+ This way, you can use the data from the fields to process them 
+ as is done with the GPS data in the example.
+
+
+ 
+
+Status codes that will be sent:
+-------------------------------
+The status code gives more information about what was sent in the 
+changed field.
+
+ 1 : page MMDVM
+ 2 : page D-Star
+ 3 : page DMR
+ 4 : page YSF
+ 5 : page P25 
+ 
+11 : IDLE
+12 : CW
+13 : ERROR text
+14 : ERROR
+15 : LOCKOUT
+16 : IPaddress
+17 : ID/Call (t0 and t4,t5 are sent)
+19 : END
+
+21 : D-Star listening
+22 : type/my1/my2
+23 : your
+24 : reflector
+25 : RSSI
+26 : ber
+
+31 : DMR listening
+32 : ID
+33 : TA
+34 : Call end
+35 : GPS (t8,t9,t12 or t10,t11,t13 are sent)
+36 : TG
+37 : RSSI
+38 : ber
+
+41 : YSF listening
+42 : src
+43 : dest
+44 : origin
+45 : RSSI
+46 : ber
+
+51 : P25 listening
+52 : source
+53 : dest
+54 : RSSI
+55 : ber
+
+
+
+Fields (and their numbers) on the pages, used by MMDVMHost
+----------------------------------------------------------
+
+MMDVM
+t0 : owner call & ID / errortext  LOCKOUT
+t1 : status	/ ERROR
+t2 : date & time
+
+screenLayout >1 :
+t3 : ip address
+t4 : owner call
+t5 : owner ID
+
+
+D-Star
+t0 : type my1 my2
+t1 : your
+t2 : reflector
+t3 : rssi
+t4 : ber
+
+
+DMR
+t0 : src1 id / call / TA
+t1 : dst
+t2 : src2 id / call / TA
+t3 : dst
+t4 : rssi1
+t5 : rssi2
+t6 : ber1
+t7 : ber2
+
+screenLayout >1 :
+t8 : GPS1 dec
+t9 : GPS1 DMS
+t10: GPS2 dec
+t11: GPS2 DMS
+t12: GPS1 err
+t13: GPS2 err
+
+
+YSF
+t0 : type,source
+t1 : dst
+t2 : src
+t3 : rssi
+t4 : ber
+
+
+P25
+t0 : type,source
+t1 : dst
+t2 : rssi
+t3 : ber
+
+

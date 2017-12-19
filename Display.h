@@ -44,6 +44,7 @@ public:
 	void writeDMRRSSI(unsigned int slotNo, unsigned char rssi);
 	void writeDMRBER(unsigned int slotNo, float ber);
 	void writeDMRTA(unsigned int slotNo, unsigned char* talkerAlias, const char* type);
+	void writeDMRGPS(unsigned int slotNo, float latitude, float longitude, unsigned char positionError);
 	void clearDMR(unsigned int slotNo);
 
 	void writeFusion(const char* source, const char* dest, const char* type, const char* origin);
@@ -76,6 +77,7 @@ protected:
 	virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type) = 0;
 	virtual void writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi);
 	virtual void writeDMRTAInt(unsigned int slotNo, unsigned char* talkerAlias, const char* type);
+	virtual void writeDMRGPSInt(unsigned int slotNo, float latitude, float longitude, unsigned char positionError);
 	virtual void writeDMRBERInt(unsigned int slotNo, float ber);
 	virtual void clearDMRInt(unsigned int slotNo) = 0;
 

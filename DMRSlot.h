@@ -70,6 +70,9 @@ private:
 	unsigned int               m_rfEmbeddedWriteN;
 	unsigned char              m_rfTalkerId;
 	unsigned char*             m_rfTalkerAlias;
+	float                      m_rfGPSLatitude;
+	float                      m_rfGPSLongitude;
+	unsigned char              m_rfGPSPositionError;
 	CDMREmbeddedData           m_netEmbeddedLC;
 	CDMREmbeddedData*          m_netEmbeddedData;
 	unsigned int               m_netEmbeddedReadN;
@@ -132,7 +135,7 @@ private:
 	static unsigned char       m_id2;
 	static ACTIVITY_TYPE       m_activity2;
 
-	void logGPSPosition(const unsigned char* data);
+	void decodeGPSPosition(const unsigned char* data);
 
 	void writeQueueRF(const unsigned char* data);
 	void writeQueueNet(const unsigned char* data);
