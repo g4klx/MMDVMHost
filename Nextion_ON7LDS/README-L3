@@ -89,7 +89,7 @@ changed field.
 14 : ERROR
 15 : LOCKOUT
 16 : IPaddress
-17 : ID/Call (t0 and t4,t5 are sent!)
+17 : ID/Call (t0 and t4,t5 are sent)
 19 : END
 
 21 : D-Star listening
@@ -103,7 +103,7 @@ changed field.
 32 : ID
 33 : TA
 34 : Call end
-35 : GPS
+35 : GPS (t8,t9,t12 or t10,t11,t13 are sent)
 36 : TG
 37 : RSSI
 38 : ber

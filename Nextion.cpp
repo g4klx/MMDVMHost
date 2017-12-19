@@ -464,27 +464,23 @@ void CNextion::writeDMRGPSInt(unsigned int slotNo, float latitude, float longitu
 
 	if (slotNo == 1U) {
 		sendCommand(text);
-		sendCommandAction(9U,35U);
 
 		::sprintf(text, "t8.txt=\"%f %f\"", latitude, longitude);
 		sendCommand(text);
-		sendCommandAction(8U,35U);
 		
 		::sprintf(text, "t12.txt=\"%d\"", positionError);
 		sendCommand(text);
-		sendCommandAction(12U,35U);
+		sendCommandAction(8U,35U);
 	}
 	if (slotNo == 2U) {
 		sendCommand(text);
-		sendCommandAction(11U,35U);
 
 		::sprintf(text, "t10.txt=\"%f %f\"", latitude, longitude);
 		sendCommand(text);
-		sendCommandAction(10U,35U);
 
 		::sprintf(text, "t13.txt=\"%d\"", positionError);
 		sendCommand(text);
-		sendCommandAction(13U,35U);
+		sendCommandAction(10U,35U);
 	}
 }
 
@@ -710,7 +706,7 @@ void CNextion::writeP25RSSIInt(unsigned char rssi)
 		char text[20U];
 		::sprintf(text, "t2.txt=\"-%udBm\"", m_rssiAccum1 / P25_RSSI_COUNT);
 		sendCommand(text);
-		sendCommandAction(2U,54);
+		sendCommandAction(2U,54U);
 		m_rssiAccum1 = 0U;
 		m_rssiCount1 = 1U;
 	}
