@@ -1,0 +1,23 @@
+# This file maps the raw RSSI values to dBm values to send to the DMR network. A number of data
+# points should be entered and the software will use those to work out the in-between values.
+#
+# The format of the file is:
+# Raw RSSI Value		dBm Value
+#
+# provided by Wilm DL4OCH
+# Data taken with F0DEI MMDVM v1.2 and 47k/27k divider in RSSI input
+
+2263		-43
+2235		-53
+2108		-63
+1910		-73
+1809		-83
+1649		-93	# S9
+1514		-99	# S8
+1389		-105	# S7
+1287		-111	# S6
+1153		-117	# S5
+1041		-123	# S4
+977		-129	# S3
+940		-135	# S2
+934		-141	# S1

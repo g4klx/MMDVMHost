@@ -50,8 +50,14 @@ private:
   CDisplay*      m_display;
   CUMP*          m_ump;
   unsigned char  m_mode;
-  unsigned int   m_rfModeHang;
-  unsigned int   m_netModeHang;
+  unsigned int   m_dstarRFModeHang;
+  unsigned int   m_dmrRFModeHang;
+  unsigned int   m_ysfRFModeHang;
+  unsigned int   m_p25RFModeHang;
+  unsigned int   m_dstarNetModeHang;
+  unsigned int   m_dmrNetModeHang;
+  unsigned int   m_ysfNetModeHang;
+  unsigned int   m_p25NetModeHang;
   CTimer         m_modeTimer;
   CTimer         m_dmrTXTimer;
   CTimer         m_cwIdTimer;
@@ -64,6 +70,7 @@ private:
   unsigned int   m_cwIdTime;
   CDMRLookup*    m_lookup;
   std::string    m_callsign;
+  unsigned int   m_id;
   std::string    m_cwCallsign;
 
   void readParams();

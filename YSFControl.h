@@ -25,6 +25,7 @@
 #include "YSFPayload.h"
 #include "RingBuffer.h"
 #include "StopWatch.h"
+#include "YSFFICH.h"
 #include "Display.h"
 #include "Defines.h"
 #include "Timer.h"
@@ -34,8 +35,10 @@
 
 class CYSFControl {
 public:
-	CYSFControl(const std::string& callsign, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool lowDeviation, bool remoteGateway, CRSSIInterpolator* rssiMapper);
+	CYSFControl(const std::string& callsign, bool selfOnly, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool lowDeviation, bool remoteGateway, CRSSIInterpolator* rssiMapper);
 	~CYSFControl();
+
+	void setSQL(bool on, unsigned char value);
 
 	bool writeModem(unsigned char* data, unsigned int len);
 
@@ -45,11 +48,15 @@ public:
 
 private:
 	unsigned char*             m_callsign;
+	unsigned char*             m_selfCallsign;
+	bool                       m_selfOnly;
 	CYSFNetwork*               m_network;
 	CDisplay*                  m_display;
 	bool                       m_duplex;
 	bool                       m_lowDeviation;
 	bool                       m_remoteGateway;
+	bool                       m_sqlEnabled;
+	unsigned char              m_sqlValue;
 	CRingBuffer<unsigned char> m_queue;
 	RPT_RF_STATE               m_rfState;
 	RPT_NET_STATE              m_netState;
@@ -69,10 +76,7 @@ private:
 	unsigned char*             m_rfDest;
 	unsigned char*             m_netSource;
 	unsigned char*             m_netDest;
-	unsigned char*             m_lastFrame;
-	bool                       m_lastFrameValid;
-	unsigned char              m_lastMode;
-	unsigned char              m_lastMR;
+	CYSFFICH                   m_lastFICH;
 	unsigned char              m_netN;
 	CYSFPayload                m_rfPayload;
 	CYSFPayload                m_netPayload;
@@ -83,6 +87,10 @@ private:
 	unsigned int               m_aveRSSI;
 	unsigned int               m_rssiCount;
 	FILE*                      m_fp;
+
+	bool processVWData(bool valid, unsigned char *data);
+	bool processDNData(bool valid, unsigned char *data);
+	bool processFRData(bool valid, unsigned char *data);
 
 	void writeQueueRF(const unsigned char* data);
 	void writeQueueNet(const unsigned char* data);
@@ -96,8 +104,7 @@ private:
 	bool writeFile(const unsigned char* data);
 	void closeFile();
 
-	bool insertSilence(const unsigned char* data, unsigned char n);
-	void insertSilence(unsigned int count);
+	bool checkCallsign(const unsigned char* callsign) const;
 };
 
 #endif

@@ -21,6 +21,7 @@
 
 class CYSFFICH {
 public:
+	CYSFFICH(const CYSFFICH& fich);
 	CYSFFICH();
 	~CYSFFICH();
 
@@ -37,10 +38,19 @@ public:
 	unsigned char getDT() const;
 	unsigned char getMR() const;
 	bool getDev() const;
+	bool getSQL() const;
+	unsigned char getSQ() const;
 
+	void setFI(unsigned char fi);
+	void setFN(unsigned char fn);
+	void setFT(unsigned char ft);
 	void setMR(unsigned char mr);
 	void setVoIP(bool set);
 	void setDev(bool set);
+	void setSQL(bool set);
+	void setSQ(unsigned char sq);
+
+	CYSFFICH& operator=(const CYSFFICH& fich);
 
 private:
 	unsigned char* m_fich;

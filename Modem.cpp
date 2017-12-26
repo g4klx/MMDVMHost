@@ -107,6 +107,8 @@ m_dstarEnabled(false),
 m_dmrEnabled(false),
 m_ysfEnabled(false),
 m_p25Enabled(false),
+m_rxDCOffset(0),
+m_txDCOffset(0),
 m_serial(port, SERIAL_115200, true),
 m_buffer(NULL),
 m_length(0U),
@@ -145,10 +147,12 @@ CModem::~CModem()
 	delete[] m_buffer;
 }
 
-void CModem::setRFParams(unsigned int rxFrequency, unsigned int txFrequency)
+void CModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset)
 {
-	m_rxFrequency = rxFrequency;
-	m_txFrequency = txFrequency;
+	m_rxFrequency = rxFrequency + rxOffset;
+	m_txFrequency = txFrequency + txOffset;
+	m_txDCOffset  = txDCOffset;
+	m_rxDCOffset  = rxDCOffset;
 }
 
 void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled)
@@ -159,7 +163,7 @@ void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, 
 	m_p25Enabled   = p25Enabled;
 }
 
-void CModem::setLevels(unsigned int rxLevel, unsigned int cwIdTXLevel, unsigned int dstarTXLevel, unsigned int dmrTXLevel, unsigned int ysfTXLevel, unsigned int p25TXLevel)
+void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel)
 {
 	m_rxLevel      = rxLevel;
 	m_cwIdTXLevel  = cwIdTXLevel;
@@ -902,6 +906,10 @@ bool CModem::readVersion()
 		if (ret != 3)
 			return false;
 
+#if defined(__APPLE__)
+		m_serial.setNonblock(true);
+#endif
+
 		for (unsigned int count = 0U; count < MAX_RESPONSES; count++) {
 			CThread::sleep(10U);
 			RESP_TYPE_MMDVM resp = getResponse();
@@ -910,6 +918,8 @@ bool CModem::readVersion()
 					m_hwType = HWT_MMDVM;
 				else if (::memcmp(m_buffer + 4U, "DVMEGA", 6U) == 0)
 					m_hwType = HWT_DVMEGA;
+				else if (::memcmp(m_buffer + 4U, "ZUMspot", 7U) == 0)
+					m_hwType = HWT_MMDVM_HS;
 
 				LogInfo("MMDVM protocol version: %u, description: %.*s", m_buffer[3U], m_length - 4U, m_buffer + 4U);
 				return true;
@@ -943,7 +953,7 @@ bool CModem::setConfig()
 
 	buffer[0U] = MMDVM_FRAME_START;
 
-	buffer[1U] = 16U;
+	buffer[1U] = 18U;
 
 	buffer[2U] = MMDVM_SET_CONFIG;
 
@@ -975,9 +985,9 @@ bool CModem::setConfig()
 
 	buffer[6U] = MODE_IDLE;
 
-	buffer[7U] = (m_rxLevel * 255U) / 100U;
+	buffer[7U] = (unsigned char)(m_rxLevel * 2.55F + 0.5F);
 
-	buffer[8U] = (m_cwIdTXLevel * 255U) / 100U;
+	buffer[8U] = (unsigned char)(m_cwIdTXLevel * 2.55F + 0.5F);
 
 	buffer[9U] = m_dmrColorCode;
 
@@ -985,15 +995,18 @@ bool CModem::setConfig()
 
 	buffer[11U] = 128U;           // Was OscOffset
 
-	buffer[12U] = (m_dstarTXLevel * 255U) / 100U;
-	buffer[13U] = (m_dmrTXLevel * 255U) / 100U;
-	buffer[14U] = (m_ysfTXLevel * 255U) / 100U;
-	buffer[15U] = (m_p25TXLevel * 255U) / 100U;
+	buffer[12U] = (unsigned char)(m_dstarTXLevel * 2.55F + 0.5F);
+	buffer[13U] = (unsigned char)(m_dmrTXLevel * 2.55F + 0.5F);
+	buffer[14U] = (unsigned char)(m_ysfTXLevel * 2.55F + 0.5F);
+	buffer[15U] = (unsigned char)(m_p25TXLevel * 2.55F + 0.5F);
 
-	// CUtils::dump(1U, "Written", buffer, 16U);
+	buffer[16U] = (unsigned char)(m_txDCOffset + 128);
+	buffer[17U] = (unsigned char)(m_rxDCOffset + 128);
 
-	int ret = m_serial.write(buffer, 16U);
-	if (ret != 16)
+	// CUtils::dump(1U, "Written", buffer, 18U);
+
+	int ret = m_serial.write(buffer, 18U);
+	if (ret != 18)
 		return false;
 
 	unsigned int count = 0U;

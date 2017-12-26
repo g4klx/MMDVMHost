@@ -37,9 +37,9 @@ public:
 	CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool trace, bool debug);
 	~CModem();
 
-	void setRFParams(unsigned int rxFrequency, unsigned int txFrequency);
+	void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset);
 	void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled);
-	void setLevels(unsigned int rxLevel, unsigned int cwIdTXLevel, unsigned int dstarTXLevel, unsigned int dmrTXLevel, unsigned int ysfTXLevel, unsigned int p25Enabled);
+	void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25Enabled);
 	void setDMRParams(unsigned int colorCode);
 	void setYSFParams(bool loDev);
 
@@ -97,12 +97,12 @@ private:
 	bool                       m_pttInvert;
 	unsigned int               m_txDelay;
 	unsigned int               m_dmrDelay;
-	unsigned int               m_rxLevel;
-	unsigned int               m_cwIdTXLevel;
-	unsigned int               m_dstarTXLevel;
-	unsigned int               m_dmrTXLevel;
-	unsigned int               m_ysfTXLevel;
-	unsigned int               m_p25TXLevel;
+	float                      m_rxLevel;
+	float                      m_cwIdTXLevel;
+	float                      m_dstarTXLevel;
+	float                      m_dmrTXLevel;
+	float                      m_ysfTXLevel;
+	float                      m_p25TXLevel;
 	bool                       m_trace;
 	bool                       m_debug;
 	unsigned int               m_rxFrequency;
@@ -111,6 +111,8 @@ private:
 	bool                       m_dmrEnabled;
 	bool                       m_ysfEnabled;
 	bool                       m_p25Enabled;
+	int                        m_rxDCOffset;
+	int                        m_txDCOffset;
 	CSerialController          m_serial;
 	unsigned char*             m_buffer;
 	unsigned int               m_length;

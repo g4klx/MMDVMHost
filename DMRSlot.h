@@ -36,6 +36,14 @@
 
 #include <vector>
 
+enum ACTIVITY_TYPE {
+	ACTIVITY_NONE,
+	ACTIVITY_VOICE,
+	ACTIVITY_DATA,
+	ACTIVITY_CSBK,
+	ACTIVITY_EMERG
+};
+
 class CDMRSlot {
 public:
 	CDMRSlot(unsigned int slotNo, unsigned int timeout);
@@ -61,6 +69,7 @@ private:
 	unsigned int               m_rfEmbeddedReadN;
 	unsigned int               m_rfEmbeddedWriteN;
 	unsigned char              m_rfTalkerId;
+	unsigned char*             m_rfTalkerAlias;
 	CDMREmbeddedData           m_netEmbeddedLC;
 	CDMREmbeddedData*          m_netEmbeddedData;
 	unsigned int               m_netEmbeddedReadN;
@@ -116,12 +125,14 @@ private:
 
 	static unsigned char*      m_idle;
 
-	static FLCO                m_flco1;
+    static FLCO                m_flco1;
 	static unsigned char       m_id1;
-	static bool                m_voice1;
+	static ACTIVITY_TYPE       m_activity1;
 	static FLCO                m_flco2;
 	static unsigned char       m_id2;
-	static bool                m_voice2;
+	static ACTIVITY_TYPE       m_activity2;
+
+	void logGPSPosition(const unsigned char* data);
 
 	void writeQueueRF(const unsigned char* data);
 	void writeQueueNet(const unsigned char* data);
@@ -138,7 +149,7 @@ private:
 	bool insertSilence(const unsigned char* data, unsigned char seqNo);
 	void insertSilence(unsigned int count);
 
-	static void setShortLC(unsigned int slotNo, unsigned int id, FLCO flco = FLCO_GROUP, bool voice = true);
+	static void setShortLC(unsigned int slotNo, unsigned int id, FLCO flco = FLCO_GROUP, ACTIVITY_TYPE type = ACTIVITY_NONE);
 };
 
 #endif

@@ -221,6 +221,12 @@
     <ClInclude Include="RSSIInterpolator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="NetworkInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="JitterBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -410,6 +416,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RSSIInterpolator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="JitterBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

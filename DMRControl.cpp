@@ -22,7 +22,6 @@
 #include <algorithm>
 
 CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, bool embeddedLCOnly, bool dumpTAData, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& whitelist, const std::vector<unsigned int>& slot1TGWhitelist, const std::vector<unsigned int>& slot2TGWhitelist, unsigned int timeout, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssi, unsigned int jitter) :
-m_id(id),
 m_colorCode(colorCode),
 m_modem(modem),
 m_network(network),
@@ -64,25 +63,17 @@ bool CDMRControl::processWakeup(const unsigned char* data)
 		return false;
 
 	unsigned int srcId = csbk.getSrcId();
-	unsigned int bsId  = csbk.getBSId();
-
 	std::string src = m_lookup->find(srcId);
 
 	bool ret = CDMRAccessControl::validateSrcId(srcId);
 	if (!ret) {
-		LogMessage("Invalid CSBK BS_Dwn_Act received from %s", src.c_str());
+		LogMessage("Invalid Downlink Activate received from %s", src.c_str());
 		return false;
 	}
 
-	if (bsId == 0xFFFFFFU) {
-		LogMessage("CSBK BS_Dwn_Act for ANY received from %s", src.c_str());
-		return true;
-	} else if (bsId == m_id) {
-		LogMessage("CSBK BS_Dwn_Act for %u received from %s", bsId, src.c_str());
-		return true;
-	}
+	LogMessage("Downlink Activate received from %s", src.c_str());
 
-	return false;
+	return true;
 }
 
 bool CDMRControl::writeModemSlot1(unsigned char *data, unsigned int len)

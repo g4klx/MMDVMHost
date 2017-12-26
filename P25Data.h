@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ public:
 
 	void encodeHeader(unsigned char* data);
 
-	bool decodeLDU1(const unsigned char* data, bool m_network, bool m_uidOverride);
+	bool decodeLDU1(const unsigned char* data);
 	void encodeLDU1(unsigned char* data);
 
 	void encodeLDU2(unsigned char* data);
