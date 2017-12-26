@@ -524,7 +524,7 @@ bool CDMRNetwork::writeOptions()
 
 bool CDMRNetwork::writeConfig()
 {
-	const char* software = "MMDVM";
+	const char* software;
 	char slots = '0';
 	if (m_duplex) {
 		if (m_slot1 && m_slot2)
@@ -533,6 +533,18 @@ bool CDMRNetwork::writeConfig()
 			slots = '1';
 		else if (!m_slot1 && m_slot2)
 			slots = '2';
+			
+		switch (m_hwType) {
+		case HWT_MMDVM:
+			software = "MMDVM";
+			break;
+		case HWT_MMDVM_HS:
+			software = "MMDVM_MMDVM_HS";
+			break;
+		default:
+			software = "MMDVM_Unknown";
+			break;
+		}
 	} else {
 		slots = '4';
 
@@ -543,8 +555,14 @@ bool CDMRNetwork::writeConfig()
 		case HWT_DVMEGA:
 			software = "MMDVM_DVMega";
 			break;
+		case HWT_MMDVM_ZUMSPOT:
+			software = "MMDVM_ZUMspot";
+			break;
+		case HWT_MMDVM_HS_HAT:
+			software = "MMDVM_MMDVM_HS_Hat";
+			break;
 		case HWT_MMDVM_HS:
-			software = "MMDVM_HS";
+			software = "MMDVM_MMDVM_HS";
 			break;
 		default:
 			software = "MMDVM_Unknown";

@@ -914,11 +914,15 @@ bool CModem::readVersion()
 			CThread::sleep(10U);
 			RESP_TYPE_MMDVM resp = getResponse();
 			if (resp == RTM_OK && m_buffer[2U] == MMDVM_GET_VERSION) {
-				if (::memcmp(m_buffer + 4U, "MMDVM", 5U) == 0)
+				if (::memcmp(m_buffer + 4U, "MMDVM ", 6U) == 0)
 					m_hwType = HWT_MMDVM;
 				else if (::memcmp(m_buffer + 4U, "DVMEGA", 6U) == 0)
 					m_hwType = HWT_DVMEGA;
 				else if (::memcmp(m_buffer + 4U, "ZUMspot", 7U) == 0)
+					m_hwType = HWT_MMDVM_ZUMSPOT;
+				else if (::memcmp(m_buffer + 4U, "MMDVM_HS_Hat", 12U) == 0)
+					m_hwType = HWT_MMDVM_HS_HAT;
+				else if (::memcmp(m_buffer + 4U, "MMDVM_HS-", 9U) == 0)
 					m_hwType = HWT_MMDVM_HS;
 
 				LogInfo("MMDVM protocol version: %u, description: %.*s", m_buffer[3U], m_length - 4U, m_buffer + 4U);
