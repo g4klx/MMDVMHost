@@ -35,14 +35,10 @@ Another option is to set the command above in the Preinitialization Event
 DIY layouts
 -----------
 When selecting this layout, all processing can and should be done in the 
-Nextion display itsself.
+Nextion display itself.
 Whenever MMDVMHost sends new data to the screen, it also sends information
-about wat was sent:
-
-* global variable MMDVM.cmd will hold the number of the changed field
-	(not the object id! 0 for t0, 1 for t1, etc.)
-* global variable MMDVM.status will hold the status of the change
-    (the type of information sent - see further in this document)
+about what was sent as a number in global variable MMDVM.status.
+(see further in this document for a table of numbers and their events)
 
 Then MMDVMHost activates the Touch Press Event of object 'S0' of the 
 active page.
@@ -53,18 +49,32 @@ HMI file. As a straightforward example, the code there will show you how
 to do some tasks when receiving data from MMDVMHost or NextionDriver:
 - change colors and fonts of the TA on the DMR page when it arrives.
   (TA length calculation is done in the display itsself !)
+- remove the slot number from t2.txt (since it's always 2)
 - display the GPS data (if received) in a new field (called 'GPS'),
    by copying the GPS data form the field where MMDVMHost has
    written to (t11 for GPS data from slot 2 in DMS format)
-- remove the slot number from t2.txt (since it's always 2)
+
+The examples are there to give you an idea of what can be done.
+It is up to your imagination to go even further.
+When, for example, you want to change the text 'listening' to some
+other text, like 'RX', you just have to monitor the event status and 
+take action in the Touch Event of S0 of the corresponding page.
+Or you could hide/show pictures, switch to other pages, etc.
+   
+Check the NextionDriver program and the display layouts there to see
+ some other examples of what can be done by programming in the 
+ display. (https://github.com/on7lds/NextionDriver)
 
 
-NOTE: it might be good to not remove fields from the display when you do not
+NOTE: it might be good to *not* remove fields from the display when you do not
  need them, but make them small (i.e. 10 x 10 pixels) and put them aside:
  Give them the same font color and background color as where you put them
  OR
  Put them behind some picture: put them on top of the picture, then select the 
  picture and click the 'Bring Top' button to put it on top of all those fields
+ OR
+ set them invisible when the page is selected (with the 'vis' command) in the 
+ preinitialize event of the page
 
  This way, you can use the data from the fields to process them 
  as is done with the GPS data in the example.
@@ -92,34 +102,42 @@ changed field.
 17 : ID/Call (t0 and t4,t5 are sent)
 19 : END
 
-21 : D-Star listening
-22 : type/my1/my2
-23 : your
-24 : reflector
-25 : RSSI
-26 : ber
+41 : D-Star listening
+42 : type/my1/my2
+45 : your
+46 : reflector
+47 : RSSI
+48 : ber
 
-31 : DMR listening
-32 : ID
-33 : TA
-34 : Call end
-35 : GPS (t8,t9,t12 or t10,t11,t13 are sent)
-36 : TG
-37 : RSSI
-38 : ber
+61 : DMR listening1
+62 : ID1
+63 : TA1
+64 : Call end1
+65 : TG1
+66 : RSSI1
+67 : ber1
+69 : DMR listening2
+70 : ID2
+71 : TA2
+72 : Call end2
+73 : TG2
+74 : RSSI2
+75 : ber2
+76 : GPS1 (t8,t9,t12)
+77 : GPS2 (t10,t11,t13)
 
-41 : YSF listening
-42 : src
-43 : dest
-44 : origin
-45 : RSSI
-46 : ber
+81 : YSF listening
+82 : src
+83 : dest
+84 : origin
+85 : RSSI
+86 : ber
 
-51 : P25 listening
-52 : source
-53 : dest
-54 : RSSI
-55 : ber
+101 : P25 listening
+102 : source
+103 : dest
+104 : RSSI
+105 : ber
 
 
 
@@ -155,7 +173,7 @@ t5 : rssi2
 t6 : ber1
 t7 : ber2
 
-screenLayout >1 :
+screenLayout >2 :
 t8 : GPS1 dec
 t9 : GPS1 DMS
 t10: GPS2 dec

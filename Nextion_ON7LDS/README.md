@@ -21,5 +21,6 @@ More information about the layouts can be found in
 
   
 When you want extra control over what has to be sent to the Nextion display,
-you could consider the program 'NextionDriver' at https://github.com/on7lds/NextionDriver as a companion to MMDVMHost (it also makes it possible to use buttons on the display).  
+you could consider the program 'NextionDriver' at https://github.com/on7lds/NextionDriver as a companion to MMDVMHost.
+This program sends extra information about the host to the display and can do processing which would not be the task of MMDVMHost (for example: with the help of this program, it is possible to use buttons on the display).  
 In verbose mode, this program shows you all communication between MMDVMHost and the display.
