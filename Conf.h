@@ -75,6 +75,7 @@ public:
   int          getModemRXOffset() const;
   int          getModemRXDCOffset() const;
   int          getModemTXDCOffset() const;
+  float        getModemRFLevel() const;
   float        getModemRXLevel() const;
   float        getModemCWIdTXLevel() const;
   float        getModemDStarTXLevel() const;
@@ -252,6 +253,7 @@ private:
   int          m_modemRXOffset;
   int          m_modemRXDCOffset;
   int          m_modemTXDCOffset;
+  float        m_modemRFLevel;
   float        m_modemRXLevel;
   float        m_modemCWIdTXLevel;
   float        m_modemDStarTXLevel;
