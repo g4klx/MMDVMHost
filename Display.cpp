@@ -172,12 +172,6 @@ void CDisplay::writeDMRTA(unsigned int slotNo, unsigned char* talkerAlias, const
 
 }
 
-void CDisplay::writeDMRGPS(unsigned int slotNo, float latitude, float longitude, unsigned char positionError)
-{
-	writeDMRGPSInt(slotNo, latitude, longitude, positionError);
-}
-
-
 void CDisplay::writeDMRBER(unsigned int slotNo, float ber)
 {
 	writeDMRBERInt(slotNo, ber);
@@ -344,10 +338,6 @@ void CDisplay::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
 }
 
 void CDisplay::writeDMRTAInt(unsigned int slotNo, unsigned char* talkerAlias, const char* type)
-{
-}
-
-void CDisplay::writeDMRGPSInt(unsigned int slotNo, float latitude, float longitude, unsigned char positionError)
 {
 }
 

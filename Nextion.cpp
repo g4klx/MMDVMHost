@@ -434,56 +434,6 @@ void CNextion::writeDMRTAInt(unsigned int slotNo, unsigned char* talkerAlias, co
 	}
 }
 
-void CNextion::writeDMRGPSInt(unsigned int slotNo, float latitude, float longitude, unsigned char positionError)
-{
-	char Lat,Lon,text[40];
-
-	if (m_screenLayout < 3U)
-		return;
-
-	if (latitude<0) {
-		latitude=-latitude;
-		Lat='S';
-	} else {
-		Lat='N';
-	}
-	if (longitude<0) {
-		longitude=-longitude;
-		Lon='W';
-	} else {
-		Lon='E';
-	}
-	int degreeLat  = (int)latitude;
-	int minutesLat = (int)((latitude - (float)degreeLat) * 60.0);
-	float secondsLat = (float)((latitude - (float)degreeLat - (float)minutesLat / 60.0) * 60.0 * 60.0);
-	int degreeLon  = (int)longitude;
-	int minutesLon = (int)((longitude - (float)degreeLon) * 60.0);
-	float secondsLon = (float)((longitude - (float)degreeLon - (float)minutesLon / 60.0) * 60.0 * 60.0);
-
-	::sprintf(text, "t%d.txt=\"%d%c%d'%.2f\\\" %c  %d%c%d'%.2f\\\" %c\"",2U*slotNo+7U,degreeLat,176U,minutesLat,secondsLat,Lat,degreeLon,176U,minutesLon,secondsLon,Lon);
-
-	if (slotNo == 1U) {
-		sendCommand(text);
-
-		::sprintf(text, "t8.txt=\"%f %f\"", latitude, longitude);
-		sendCommand(text);
-		
-		::sprintf(text, "t12.txt=\"%d\"", positionError);
-		sendCommand(text);
-		sendCommandAction(76U);
-	}
-	if (slotNo == 2U) {
-		sendCommand(text);
-
-		::sprintf(text, "t10.txt=\"%f %f\"", latitude, longitude);
-		sendCommand(text);
-
-		::sprintf(text, "t13.txt=\"%d\"", positionError);
-		sendCommand(text);
-		sendCommandAction(77U);
-	}
-}
-
 void CNextion::writeDMRBERInt(unsigned int slotNo, float ber)
 {
 	if (slotNo == 1U) {

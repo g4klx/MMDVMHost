@@ -79,9 +79,6 @@ m_rfEmbeddedReadN(0U),
 m_rfEmbeddedWriteN(1U),
 m_rfTalkerId(TALKER_ID_NONE),
 m_rfTalkerAlias(NULL),
-m_rfGPSLatitude(0U),
-m_rfGPSLongitude(0U),
-m_rfGPSPositionError(0U),
 m_netEmbeddedLC(),
 m_netEmbeddedData(NULL),
 m_netEmbeddedReadN(0U),
@@ -615,8 +612,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					if (m_dumpTAData) {
 						::sprintf(text, "DMR Slot %u, Embedded GPS Info", m_slotNo);
 						CUtils::dump(2U, text, data, 9U);
-						decodeGPSPosition(data);
-						m_display->writeDMRGPS(m_slotNo, m_rfGPSLatitude, m_rfGPSLongitude,m_rfGPSPositionError);
+						logGPSPosition(data);
 					}
 					if (m_network != NULL)
 						m_network->writePosition(m_rfLC->getSrcId(), data);
@@ -1408,8 +1404,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				if (m_dumpTAData) {
 					::sprintf(text, "DMR Slot %u, Embedded GPS Info", m_slotNo);
 					CUtils::dump(2U, text, data, 9U);
-					decodeGPSPosition(data);
-					m_display->writeDMRGPS(m_slotNo, m_rfGPSLatitude, m_rfGPSLongitude,m_rfGPSPositionError);
+					logGPSPosition(data);
 				}
 				break;
 			case FLCO_TALKER_ALIAS_HEADER:
@@ -1641,7 +1636,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 }
 
 
-void CDMRSlot::decodeGPSPosition(const unsigned char* data)
+void CDMRSlot::logGPSPosition(const unsigned char* data)
 {
 	unsigned int errorI = (data[2U] & 0x0E) >> 1U;
 
@@ -1684,10 +1679,6 @@ void CDMRSlot::decodeGPSPosition(const unsigned char* data)
 
 	longitude *= float(longitudeI);
 	latitude  *= float(latitudeI);
-
-	m_rfGPSLongitude=longitude;
-	m_rfGPSLatitude=latitude;
-	m_rfGPSPositionError=errorI;
 
 	LogMessage("GPS position [%f,%f] (Position error %s)", latitude, longitude, error);
 }
