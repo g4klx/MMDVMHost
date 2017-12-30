@@ -88,6 +88,7 @@ m_modemTXOffset(0),
 m_modemRXOffset(0),
 m_modemRXDCOffset(0),
 m_modemTXDCOffset(0),
+m_modemRFLevel(100.0F),
 m_modemRXLevel(50.0F),
 m_modemCWIdTXLevel(50.0F),
 m_modemDStarTXLevel(50.0F),
@@ -359,6 +360,8 @@ bool CConf::read()
 			m_modemRXDCOffset = ::atoi(value);
 		else if (::strcmp(key, "TXDCOffset") == 0)
 			m_modemTXDCOffset = ::atoi(value);
+		else if (::strcmp(key, "RFLevel") == 0)
+			m_modemRFLevel = float(::atof(value));
 		else if (::strcmp(key, "RXLevel") == 0)
 			m_modemRXLevel = float(::atof(value));
 		else if (::strcmp(key, "TXLevel") == 0)
@@ -813,6 +816,11 @@ int CConf::getModemRXDCOffset() const
 int CConf::getModemTXDCOffset() const
 {
 	return m_modemTXDCOffset;
+}
+
+float CConf::getModemRFLevel() const
+{
+	return m_modemRFLevel;
 }
 
 float CConf::getModemRXLevel() const

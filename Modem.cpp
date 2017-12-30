@@ -147,12 +147,13 @@ CModem::~CModem()
 	delete[] m_buffer;
 }
 
-void CModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset)
+void CModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel)
 {
 	m_rxFrequency = rxFrequency + rxOffset;
 	m_txFrequency = txFrequency + txOffset;
 	m_txDCOffset  = txDCOffset;
 	m_rxDCOffset  = rxDCOffset;
+	m_rfLevel = rfLevel;
 }
 
 void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled)
@@ -1042,11 +1043,11 @@ bool CModem::setConfig()
 
 bool CModem::setFrequency()
 {
-	unsigned char buffer[15U];
+	unsigned char buffer[16U];
 
 	buffer[0U]  = MMDVM_FRAME_START;
 
-	buffer[1U]  = 12U;
+	buffer[1U]  = 13U;
 
 	buffer[2U]  = MMDVM_SET_FREQ;
 
@@ -1061,11 +1062,13 @@ bool CModem::setFrequency()
 	buffer[9U]  = (m_txFrequency >> 8) & 0xFFU;
 	buffer[10U] = (m_txFrequency >> 16) & 0xFFU;
 	buffer[11U] = (m_txFrequency >> 24) & 0xFFU;
+	
+	buffer[12U]  = (unsigned char)(m_rfLevel * 2.55F + 0.5F);
 
-	// CUtils::dump(1U, "Written", buffer, 12U);
+	// CUtils::dump(1U, "Written", buffer, 13U);
 
-	int ret = m_serial.write(buffer, 12U);
-	if (ret != 12)
+	int ret = m_serial.write(buffer, 13U);
+	if (ret != 13)
 		return false;
 
 	unsigned int count = 0U;

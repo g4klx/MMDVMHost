@@ -854,6 +854,7 @@ bool CMMDVMHost::createModem()
 	int txOffset              = m_conf.getModemTXOffset();
 	int rxDCOffset            = m_conf.getModemRXDCOffset();
 	int txDCOffset            = m_conf.getModemTXDCOffset();
+	float rfLevel             = m_conf.getModemRFLevel();
 
 	LogInfo("Modem Parameters");
 	LogInfo("    Port: %s", port.c_str());
@@ -865,6 +866,7 @@ bool CMMDVMHost::createModem()
 	LogInfo("    TX Offset: %dHz", txOffset);
 	LogInfo("    RX DC Offset: %d", rxDCOffset);
 	LogInfo("    TX DC Offset: %d", txDCOffset);
+	LogInfo("    RF Level: %.1f%%", rfLevel);
 	LogInfo("    DMR Delay: %u (%.1fms)", dmrDelay, float(dmrDelay) * 0.0416666F);
 	LogInfo("    RX Level: %.1f%%", rxLevel);
 	LogInfo("    CW Id TX Level: %.1f%%", cwIdTXLevel);
@@ -878,7 +880,7 @@ bool CMMDVMHost::createModem()
 	m_modem = new CModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled);
 	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel);
-	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset);
+	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel);
 	m_modem->setDMRParams(colorCode);
 	m_modem->setYSFParams(lowDeviation);
 
