@@ -50,9 +50,10 @@ to do some tasks when receiving data from MMDVMHost or NextionDriver:
 - change colors and fonts of the TA on the DMR page when it arrives.
   (TA length calculation is done in the display itsself !)
 - remove the slot number from t2.txt (since it's always 2)
-- display the GPS data (if received) in a new field (called 'GPS'),
-   by copying the GPS data form the field where MMDVMHost has
-   written to (t11 for GPS data from slot 2 in DMS format)
+- in the middle of the DMR screen, the previous user is displayed
+  for each slot (S1 at the left, S2 at the right)
+  This is done by copying the data from the ID/TA field to these
+   fields at call end.
 
 The examples are there to give you an idea of what can be done.
 It is up to your imagination to go even further.
