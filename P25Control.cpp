@@ -760,7 +760,7 @@ void CP25Control::createNetHeader()
 
 	// Add busy bits
 	if (m_remoteGateway)
-		addBusyBits(buffer + 2U, P25_HDR_FRAME_LENGTH_BITS, true, false);
+		addBusyBits(buffer + 2U, P25_HDR_FRAME_LENGTH_BITS, false, false);
 	else
 		addBusyBits(buffer + 2U, P25_HDR_FRAME_LENGTH_BITS, false, true);
 
@@ -804,7 +804,7 @@ void CP25Control::createNetLDU1()
 
 	// Add busy bits
 	if (m_remoteGateway)
-		addBusyBits(buffer + 2U, P25_LDU_FRAME_LENGTH_BITS, true, false);
+		addBusyBits(buffer + 2U, P25_LDU_FRAME_LENGTH_BITS, false, false);
 	else
 		addBusyBits(buffer + 2U, P25_LDU_FRAME_LENGTH_BITS, false, true);
 
@@ -852,7 +852,7 @@ void CP25Control::createNetLDU2()
 
 	// Add busy bits
 	if (m_remoteGateway)
-		addBusyBits(buffer + 2U, P25_LDU_FRAME_LENGTH_BITS, true, false);
+		addBusyBits(buffer + 2U, P25_LDU_FRAME_LENGTH_BITS, false, false);
 	else
 		addBusyBits(buffer + 2U, P25_LDU_FRAME_LENGTH_BITS, false, true);
 
@@ -879,7 +879,7 @@ void CP25Control::createNetTerminator()
 
 	// Add busy bits
 	if (m_remoteGateway)
-		addBusyBits(buffer + 2U, P25_TERM_FRAME_LENGTH_BITS, true, false);
+		addBusyBits(buffer + 2U, P25_TERM_FRAME_LENGTH_BITS, false, false);
 	else
 		addBusyBits(buffer + 2U, P25_TERM_FRAME_LENGTH_BITS, false, true);
 
