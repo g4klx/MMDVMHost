@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2017 by Jonathan Naylor G4KLX
+*   Copyright (C) 2017,2018 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -24,7 +24,8 @@
 #include <cassert>
 #include <cstring>
 
-CJitterBuffer::CJitterBuffer(unsigned int blockSize, unsigned int blockTime, unsigned int jitterTime, unsigned int topSequenceNumber, bool debug) :
+CJitterBuffer::CJitterBuffer(const std::string& name, unsigned int blockSize, unsigned int blockTime, unsigned int jitterTime, unsigned int topSequenceNumber, bool debug) :
+m_name(name),
 m_blockSize(blockSize),
 m_blockTime(blockTime),
 m_topSequenceNumber(topSequenceNumber),
@@ -76,12 +77,12 @@ bool CJitterBuffer::addData(const unsigned char* data, unsigned int length, unsi
 	// Is the data out of sequence?
 	if (headSequenceNumber < tailSequenceNumber) {
 		if (sequenceNumber < headSequenceNumber || sequenceNumber >= tailSequenceNumber) {
-			LogDebug("JitterBuffer: rejecting frame with seqNo=%u, raw=%u, head=%u, tail=%u", sequenceNumber, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
+			LogDebug("%s, JitterBuffer: rejecting frame with seqNo=%u, raw=%u, head=%u, tail=%u", m_name.c_str(), sequenceNumber, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
 			return false;
 		}
 	} else {
 		if (sequenceNumber >= tailSequenceNumber && sequenceNumber < headSequenceNumber) {
-			LogDebug("JitterBuffer: rejecting frame with seqNo=%u, raw=%u, head=%u, tail=%u", sequenceNumber, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
+			LogDebug("%s, JitterBuffer: rejecting frame with seqNo=%u, raw=%u, head=%u, tail=%u", m_name.c_str(), sequenceNumber, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
 			return false;
 		}
 	}
@@ -96,18 +97,18 @@ bool CJitterBuffer::addData(const unsigned char* data, unsigned int length, unsi
 
 	// Do we already have the data?
 	if (m_buffer[index].m_length > 0U) {
-		LogDebug("JitterBuffer: rejecting duplicate frame with seqNo=%u, pos=%u, raw=%u, head=%u, tail=%u", sequenceNumber, index, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
+		LogDebug("%s, JitterBuffer: rejecting duplicate frame with seqNo=%u, pos=%u, raw=%u, head=%u, tail=%u", m_name.c_str(), sequenceNumber, index, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
 		return false;
 	}
 
 	if (m_debug)
-		LogDebug("JitterBuffer: adding frame with seqNo=%u, pos=%u, raw=%u, head=%u, tail=%u", sequenceNumber, index, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
+		LogDebug("%s, JitterBuffer: adding frame with seqNo=%u, pos=%u, raw=%u, head=%u, tail=%u", m_name.c_str(), sequenceNumber, index, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
 
 	::memcpy(m_buffer[index].m_data, data, length);
 	m_buffer[index].m_length = length;
 
 	if (!m_timer.isRunning()) {
-		LogDebug("JitterBuffer: starting the timer");
+		LogDebug("%s, JitterBuffer: starting the timer", m_name.c_str());
 		m_timer.start();
 	}
 	
@@ -131,7 +132,7 @@ JB_STATUS CJitterBuffer::getData(unsigned char* data, unsigned int& length)
 
 	if (m_buffer[head].m_length > 0U) {
 		if (m_debug)
-			LogDebug("JitterBuffer: returning data, elapsed=%ums, raw=%u, head=%u", m_stopWatch.elapsed(), m_headSequenceNumber - 1U, head);
+			LogDebug("%s, JitterBuffer: returning data, elapsed=%ums, raw=%u, head=%u", m_name.c_str(), m_stopWatch.elapsed(), m_headSequenceNumber - 1U, head);
 
 		::memcpy(data, m_buffer[head].m_data, m_buffer[head].m_length);
 		length = m_buffer[head].m_length;
@@ -147,11 +148,11 @@ JB_STATUS CJitterBuffer::getData(unsigned char* data, unsigned int& length)
 
 	m_buffer[head].m_length = 0U;
 
-	LogDebug("JitterBuffer: no data available, elapsed=%ums, raw=%u, head=%u", m_stopWatch.elapsed(), m_headSequenceNumber - 1U, head);
+	LogDebug("%s, JitterBuffer: no data available, elapsed=%ums, raw=%u, head=%u", m_name.c_str(), m_stopWatch.elapsed(), m_headSequenceNumber - 1U, head);
 
 	// Return the last data frame if we have it
 	if (m_lastDataLength > 0U) {
-		LogDebug("JitterBuffer: returning the last received frame");
+		LogDebug("%s, JitterBuffer: returning the last received frame", m_name.c_str());
 		::memcpy(data, m_lastData, m_lastDataLength);
 		length = m_lastDataLength;
 
