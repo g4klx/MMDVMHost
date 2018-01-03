@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -149,6 +149,9 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			break;
 		case P25_DUID_LDU1:
 			duid = P25_DUID_LDU2;
+			break;
+		case P25_DUID_PDU:
+			duid = P25_DUID_PDU;
 			break;
 		default:
 			break;
@@ -358,6 +361,9 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 				writeQueueRF(data, P25_TERM_FRAME_LENGTH_BYTES + 2U);
 			}
 		}
+	} else if (duid == P25_DUID_PDU) {
+		LogMessage("P25, PDU received");
+		CUtils::dump("P25, PDU data", data + 2U, P25_LDU_FRAME_LENGTH_BYTES);
 	}
 
 	return false;

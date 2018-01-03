@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2018 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -32,7 +32,8 @@ m_hdr(NULL),
 m_ldu1(NULL),
 m_ldu2(NULL),
 m_termlc(NULL),
-m_term(NULL)
+m_term(NULL),
+m_pdu(NULL)
 {
 	CBCH bch;
 
@@ -70,6 +71,13 @@ m_term(NULL)
 	m_term[1U] |= P25_DUID_TERM;
 	bch.encode(m_term);
 	m_term[7U] &= 0xFEU;		// Clear the parity bit
+
+	m_pdu = new unsigned char[P25_NID_LENGTH_BYTES];
+	m_pdu[0U] = (nac >> 4) & 0xFFU;
+	m_pdu[1U] = (nac << 4) & 0xF0U;
+	m_pdu[1U] |= P25_DUID_PDU;
+	bch.encode(m_pdu);
+	m_pdu[7U] &= 0xFEU;		// Clear the parity bit
 }
 
 CP25NID::~CP25NID()
@@ -79,6 +87,7 @@ CP25NID::~CP25NID()
 	delete[] m_ldu2;
 	delete[] m_termlc;
 	delete[] m_term;
+	delete[] m_pdu;
 }
 
 bool CP25NID::decode(const unsigned char* data)
@@ -118,6 +127,12 @@ bool CP25NID::decode(const unsigned char* data)
 		return true;
 	}
 
+	errs = CP25Utils::compare(nid, m_pdu, P25_NID_LENGTH_BYTES);
+	if (errs < MAX_NID_ERRS) {
+		m_duid = P25_DUID_PDU;
+		return true;
+	}
+
 	return false;
 }
 
@@ -140,6 +155,9 @@ void CP25NID::encode(unsigned char* data, unsigned char duid) const
 		break;
 	case P25_DUID_TERM_LC:
 		CP25Utils::encode(m_termlc, data, 48U, 114U);
+		break;
+	case P25_DUID_PDU:
+		CP25Utils::encode(m_pdu, data, 48U, 114U);
 		break;
 	default:
 		break;
