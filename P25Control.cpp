@@ -364,6 +364,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 	} else if (duid == P25_DUID_PDU) {
 		LogMessage("P25, PDU received");
 		CUtils::dump("P25, PDU data", data + 2U, P25_LDU_FRAME_LENGTH_BYTES);
+		m_rfState = RS_RF_DATA;
 	}
 
 	return false;
