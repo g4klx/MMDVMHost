@@ -2,16 +2,17 @@ version: '3'
 services:
   mmdvmhost:
     build: https://github.com/f4hlv/MMDVMHost.git
+#   image: f4hlv/mmdvmhost
     container_name: mmdvmhost
-#    restart: unless-stopped
-#    volumes:
-#      - ./MMDVM.ini:/MMDVMHost/MMDVM.ini:ro
-#      - ./RSSI.dat:/MMDVMHost/RSSI.dat:ro
-#      - ./DMRIds.dat:/MMDVMHost/DMRIds.dat:ro
-#      - mmdvmhost:/MMDVMHost
-#    devices:
-#      - /dev/ttyACM0:/dev/ttyACM0
-#volumes:
-#  mmdvmhost:
+    restart: unless-stopped
+    volumes:
+      - ./MMDVM.ini:/MMDVMHost/MMDVM.ini:ro
+      - ./RSSI.dat:/MMDVMHost/RSSI.dat:ro
+      - ./DMRIds.dat:/MMDVMHost/DMRIds.dat:ro
+      - mmdvmhost:/MMDVMHost
+    devices:
+      - /dev/ttyACM0:/dev/ttyACM0
+volumes:
+  mmdvmhost:
 
 
