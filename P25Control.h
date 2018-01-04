@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -77,6 +77,10 @@ private:
 	unsigned char*             m_netLDU2;
 	unsigned char*             m_lastIMBE;
 	unsigned char*             m_rfLDU;
+	unsigned char*             m_rfPDURaw;
+	unsigned char*             m_rfPDUCooked;
+	unsigned int               m_rfPDUCount;
+	unsigned int               m_rfPDUBits;
 	CRSSIInterpolator*         m_rssiMapper;
 	unsigned char              m_rssi;
 	unsigned char              m_maxRSSI;

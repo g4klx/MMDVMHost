@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2018 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 #define WRITE_BIT(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
-void CP25Utils::decode(const unsigned char* in, unsigned char* out, unsigned int start, unsigned int stop)
+unsigned int CP25Utils::decode(const unsigned char* in, unsigned char* out, unsigned int start, unsigned int stop)
 {
 	assert(in != NULL);
 	assert(out != NULL);
@@ -53,9 +53,11 @@ void CP25Utils::decode(const unsigned char* in, unsigned char* out, unsigned int
 			n++;
 		}
 	}
+
+	return n;
 }
 
-void CP25Utils::encode(const unsigned char* in, unsigned char* out, unsigned int start, unsigned int stop)
+unsigned int CP25Utils::encode(const unsigned char* in, unsigned char* out, unsigned int start, unsigned int stop)
 {
 	assert(in != NULL);
 	assert(out != NULL);
@@ -81,6 +83,8 @@ void CP25Utils::encode(const unsigned char* in, unsigned char* out, unsigned int
 			n++;
 		}
 	}
+
+	return n;
 }
 
 unsigned int CP25Utils::compare(const unsigned char* data1, const unsigned char* data2, unsigned int length)

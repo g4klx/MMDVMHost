@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2018 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -21,9 +21,9 @@
 
 class CP25Utils {
 public:
-	static void encode(const unsigned char* in, unsigned char* out, unsigned int start, unsigned int stop);
+	static unsigned int encode(const unsigned char* in, unsigned char* out, unsigned int start, unsigned int stop);
 
-	static void decode(const unsigned char* in, unsigned char* out, unsigned int start, unsigned int stop);
+	static unsigned int decode(const unsigned char* in, unsigned char* out, unsigned int start, unsigned int stop);
 
 	static unsigned int compare(const unsigned char* data1, const unsigned char* data2, unsigned int length);
 

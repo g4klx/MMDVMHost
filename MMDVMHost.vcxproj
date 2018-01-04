@@ -200,6 +200,7 @@
     <ClInclude Include="P25LowSpeedData.h" />
     <ClInclude Include="P25Network.h" />
     <ClInclude Include="P25NID.h" />
+    <ClInclude Include="P25Trellis.h" />
     <ClInclude Include="P25Utils.h" />
     <ClInclude Include="QR1676.h" />
     <ClInclude Include="RingBuffer.h" />
@@ -270,6 +271,7 @@
     <ClCompile Include="P25LowSpeedData.cpp" />
     <ClCompile Include="P25Network.cpp" />
     <ClCompile Include="P25NID.cpp" />
+    <ClCompile Include="P25Trellis.cpp" />
     <ClCompile Include="P25Utils.cpp" />
     <ClCompile Include="QR1676.cpp" />
     <ClCompile Include="RS129.cpp" />

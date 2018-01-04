@@ -67,6 +67,10 @@ m_netLDU1(NULL),
 m_netLDU2(NULL),
 m_lastIMBE(NULL),
 m_rfLDU(NULL),
+m_rfPDURaw(NULL),
+m_rfPDUCooked(NULL),
+m_rfPDUCount(0U),
+m_rfPDUBits(0U),
 m_rssiMapper(rssiMapper),
 m_rssi(0U),
 m_maxRSSI(0U),
@@ -90,6 +94,12 @@ m_fp(NULL)
 
 	m_rfLDU = new unsigned char[P25_LDU_FRAME_LENGTH_BYTES];
 	::memset(m_rfLDU, 0x00U, P25_LDU_FRAME_LENGTH_BYTES);
+
+	m_rfPDURaw = new unsigned char[P25_MAX_PDU_COUNT * P25_LDU_FRAME_LENGTH_BYTES];
+	::memset(m_rfPDURaw, 0x00U, P25_MAX_PDU_COUNT * P25_LDU_FRAME_LENGTH_BYTES);
+
+	m_rfPDUCooked = new unsigned char[P25_MAX_PDU_COUNT * P25_LDU_FRAME_LENGTH_BYTES];
+	::memset(m_rfPDUCooked, 0x00U, P25_MAX_PDU_COUNT * P25_LDU_FRAME_LENGTH_BYTES);
 }
 
 CP25Control::~CP25Control()
@@ -98,6 +108,8 @@ CP25Control::~CP25Control()
 	delete[] m_netLDU2;
 	delete[] m_lastIMBE;
 	delete[] m_rfLDU;
+	delete[] m_rfPDURaw;
+	delete[] m_rfPDUCooked;
 }
 
 bool CP25Control::writeModem(unsigned char* data, unsigned int len)
@@ -120,6 +132,19 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		m_rfState = RS_RF_LISTENING;
 		m_rfTimeout.stop();
 		m_rfData.reset();
+#if defined(DUMP_P25)
+		closeFile();
+#endif
+		return false;
+	}
+
+	if (data[0U] == TAG_LOST && m_rfState == RS_RF_DATA) {
+		if (m_netState == RS_NET_IDLE)
+			m_display->clearP25();
+
+		m_rfState    = RS_RF_LISTENING;
+		m_rfPDUCount = 0U;
+		m_rfPDUBits  = 0U;
 #if defined(DUMP_P25)
 		closeFile();
 #endif
@@ -362,9 +387,29 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			}
 		}
 	} else if (duid == P25_DUID_PDU) {
+		if (m_rfState != RS_RF_DATA) {
+			m_rfPDUCount = 0U;
+			m_rfPDUBits  = 0U;
+			m_rfState    = RS_RF_DATA;
+		}
+
+		unsigned int start = m_rfPDUCount * P25_LDU_FRAME_LENGTH_BITS;
+
+		unsigned char buffer[P25_LDU_FRAME_LENGTH_BYTES];
+		unsigned int bits = CP25Utils::decode(data + 2U, buffer, start, start + P25_LDU_FRAME_LENGTH_BITS);
+
+		for (unsigned int i = 0U; i < bits; i++, m_rfPDUBits++) {
+			bool b = READ_BIT(buffer, i);
+			WRITE_BIT(m_rfPDUCooked, m_rfPDUBits, b);
+		}
+
+		::memcpy(m_rfPDURaw + m_rfPDUCount * P25_LDU_FRAME_LENGTH_BYTES, data + 2U, P25_LDU_FRAME_LENGTH_BYTES);
+		m_rfPDUCount++;
+
+		LogMessage("P25, received %u (%u) bits in %u LDUs", m_rfPDUBits, m_rfPDUBits - P25_SYNC_BITS_LENGTH - P25_NID_LENGTH_BITS, m_rfPDUCount);
+
 		LogMessage("P25, PDU received");
 		CUtils::dump("P25, PDU data", data + 2U, P25_LDU_FRAME_LENGTH_BYTES);
-		m_rfState = RS_RF_DATA;
 	}
 
 	return false;
