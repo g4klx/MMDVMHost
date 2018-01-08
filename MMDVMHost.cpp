@@ -1117,6 +1117,12 @@ void CMMDVMHost::createDisplay()
 		case 2U:
 			LogInfo("    Screen Layout: ON7LDS");
 			break;
+		case 3U:
+			LogInfo("    Screen Layout: DIY by ON7LDS");
+			break;
+		case 4U:
+			LogInfo("    Screen Layout: DIY by ON7LDS (High speed)");
+			break;
 		default:
 			LogInfo("    Screen Layout: %u (Unknown)", screenLayout);
 			break;
@@ -1129,7 +1135,10 @@ void CMMDVMHost::createDisplay()
 			if (m_ump != NULL)
 				m_display = new CNextion(m_callsign, dmrid, m_ump, brightness, displayClock, utc, idleBrightness, screenLayout);
 		} else {
-			ISerialPort* serial = new CSerialController(port, SERIAL_9600);
+			SERIAL_SPEED baudrate = SERIAL_9600;
+			if (screenLayout==4U)
+				baudrate = SERIAL_115200;
+			ISerialPort* serial = new CSerialController(port, baudrate);
 			m_display = new CNextion(m_callsign, dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout);
 		}
 	} else if (type == "LCDproc") {

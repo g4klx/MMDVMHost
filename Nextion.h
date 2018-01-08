@@ -49,6 +49,7 @@ protected:
   virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
   virtual void writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi);
   virtual void writeDMRTAInt(unsigned int slotNo, unsigned char* talkerAlias, const char* type);
+
   virtual void writeDMRBERInt(unsigned int slotNo, float ber);
   virtual void clearDMRInt(unsigned int slotNo);
 
@@ -89,6 +90,7 @@ private:
   unsigned int  m_berCount2;
 
   void sendCommand(const char* command);
+  void sendCommandAction(unsigned int status);
 };
 
 #endif
