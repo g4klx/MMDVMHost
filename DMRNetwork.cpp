@@ -83,8 +83,8 @@ m_beacon(false)
 	m_streamId[0U] = 0x00U;
 	m_streamId[1U] = 0x00U;
 
-	m_jitterBuffers[1U] = new CJitterBuffer("DMR", 60U, DMR_SLOT_TIME, jitter, 256U, debug);
-	m_jitterBuffers[2U] = new CJitterBuffer("DMR", 60U, DMR_SLOT_TIME, jitter, 256U, debug);
+	m_jitterBuffers[1U] = new CJitterBuffer("DMR Slot 1", 60U, DMR_SLOT_TIME, jitter, 256U, debug);
+	m_jitterBuffers[2U] = new CJitterBuffer("DMR Slot 2", 60U, DMR_SLOT_TIME, jitter, 256U, debug);
 
 	m_id[0U] = id >> 24;
 	m_id[1U] = id >> 16;
