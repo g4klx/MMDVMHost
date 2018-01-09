@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015,2016,2017 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015,2016,2017,2018 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -117,6 +117,14 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 		else
 			LogMessage("YSF, transmission lost, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 		writeEndRF();
+		return false;
+	}
+
+	if (type == TAG_LOST && m_rfState == RS_RF_REJECTED) {
+		m_rfPayload.reset();
+		m_rfSource = NULL;
+		m_rfDest   = NULL;
+		m_rfState  = RS_RF_LISTENING;
 		return false;
 	}
 
@@ -288,7 +296,10 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 		}
 	} else if (valid && fi == YSF_FI_TERMINATOR) {
 		if (m_rfState == RS_RF_REJECTED) {
-			m_rfState = RS_RF_LISTENING;
+			m_rfPayload.reset();
+			m_rfSource = NULL;
+			m_rfDest   = NULL;
+			m_rfState  = RS_RF_LISTENING;
 		} else if (m_rfState == RS_RF_AUDIO) {
 			m_rfPayload.processHeaderData(data + 2U);
 
@@ -471,7 +482,10 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 		}
 	} else if (valid && fi == YSF_FI_TERMINATOR) {
 		if (m_rfState == RS_RF_REJECTED) {
-			m_rfState = RS_RF_LISTENING;
+			m_rfPayload.reset();
+			m_rfSource = NULL;
+			m_rfDest   = NULL;
+			m_rfState  = RS_RF_LISTENING;
 		} else if (m_rfState == RS_RF_AUDIO) {
 			m_rfPayload.processHeaderData(data + 2U);
 
@@ -807,7 +821,10 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 		}
 	} else if (valid && fi == YSF_FI_TERMINATOR) {
 		if (m_rfState == RS_RF_REJECTED) {
-			m_rfState = RS_RF_LISTENING;
+			m_rfPayload.reset();
+			m_rfSource = NULL;
+			m_rfDest   = NULL;
+			m_rfState  = RS_RF_LISTENING;
 		} else if (m_rfState == RS_RF_DATA) {
 			m_rfPayload.processHeaderData(data + 2U);
 
