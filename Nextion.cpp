@@ -758,6 +758,6 @@ void CNextion::sendCommand(const char* command)
 {
 	assert(command != NULL);
 
-	m_serial->write((unsigned char*)command, ::strlen(command));
+	m_serial->write((unsigned char*)command, (unsigned int)::strlen(command));
 	m_serial->write((unsigned char*)"\xFF\xFF\xFF", 3U);
 }

@@ -480,7 +480,7 @@ void CTFTSerial::displayBitmap(unsigned char x, unsigned char y, const char* fil
 	m_serial->write((unsigned char*)"\x1B\x0D", 2U);
 	m_serial->write(&x, 1U);
 	m_serial->write(&y, 1U);
-	m_serial->write((unsigned char*)filename, ::strlen(filename));
+	m_serial->write((unsigned char*)filename, (unsigned int)::strlen(filename));
 	m_serial->write((unsigned char*)"\xFF", 1U);
 }
 
@@ -497,5 +497,5 @@ void CTFTSerial::displayText(const char* text)
 {
 	assert(text != NULL);
 
-	m_serial->write((unsigned char*)text, ::strlen(text));
+	m_serial->write((unsigned char*)text, (unsigned int)::strlen(text));
 }
