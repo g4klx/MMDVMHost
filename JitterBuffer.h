@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2017 by Jonathan Naylor G4KLX
+*   Copyright (C) 2017,2018 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 #include "StopWatch.h"
 #include "Timer.h"
 
+#include <string>
+
 enum JB_STATUS {
 	JBS_NO_DATA,
 	JBS_DATA,
@@ -30,7 +32,7 @@ enum JB_STATUS {
 
 class CJitterBuffer {
 public:
-	CJitterBuffer(unsigned int blockSize, unsigned int blockTime, unsigned int jitterTime, unsigned int topSequenceNumber, bool debug);
+	CJitterBuffer(const std::string& name, unsigned int blockSize, unsigned int blockTime, unsigned int jitterTime, unsigned int topSequenceNumber, bool debug);
 	~CJitterBuffer();
 
 	bool addData(const unsigned char* data, unsigned int length, unsigned int sequenceNumber);
@@ -42,6 +44,7 @@ public:
 	void clock(unsigned int ms);
 	
 private:
+	std::string  m_name;
 	unsigned int m_blockSize;
 	unsigned int m_blockTime;
 	unsigned int m_topSequenceNumber;
