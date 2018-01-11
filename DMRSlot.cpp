@@ -361,7 +361,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			m_rfFrames = dataHeader.getBlocks();
 
-			m_rfSeqNo  = 0U;
+			// m_rfSeqNo  = 0U;
 
 			m_rfLC = new CDMRLC(gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
 
@@ -436,7 +436,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			// Convert the Data Sync to be from the BS or MS as needed
 			CSync::addDMRDataSync(data + 2U, m_duplex);
 
-			m_rfSeqNo = 0U;
+			// m_rfSeqNo = 0U;
 
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
@@ -908,6 +908,9 @@ void CDMRSlot::writeEndRF(bool writeEnd)
 	m_rfErrs = 0U;
 	m_rfBits = 1U;
 
+	m_rfSeqNo = 0U;
+	m_rfN = 0U;
+
 	delete m_rfLC;
 	m_rfLC = NULL;
 }
@@ -958,6 +961,8 @@ void CDMRSlot::writeEndNet(bool writeEnd)
 
 	m_netErrs = 0U;
 	m_netBits = 1U;
+
+	m_netN = 0U;
 
 	delete m_netLC;
 	m_netLC = NULL;
