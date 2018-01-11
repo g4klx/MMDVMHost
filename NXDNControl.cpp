@@ -23,17 +23,14 @@
 
 // #define	DUMP_NXDN
 
-CNXDNControl::CNXDNControl(const std::string& callsign, bool selfOnly, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool lowDeviation, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
+CNXDNControl::CNXDNControl(const std::string& callsign, bool selfOnly, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
 m_callsign(NULL),
 m_selfCallsign(NULL),
 m_selfOnly(selfOnly),
 m_network(network),
 m_display(display),
 m_duplex(duplex),
-m_lowDeviation(lowDeviation),
 m_remoteGateway(remoteGateway),
-m_sqlEnabled(false),
-m_sqlValue(0U),
 m_queue(5000U, "NXDN Control"),
 m_rfState(RS_RF_LISTENING),
 m_netState(RS_NET_IDLE),
@@ -99,12 +96,6 @@ CNXDNControl::~CNXDNControl()
 	delete[] m_selfCallsign;
 }
 
-void CNXDNControl::setSQL(bool on, unsigned char value)
-{
-	m_sqlEnabled = on;
-	m_sqlValue   = value;
-}
-
 bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 {
 	assert(data != NULL);
@@ -162,25 +153,6 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 	if (valid)
 		m_lastFICH = fich;
 
-	// Validate the DSQ/DG-ID value if enabled
-	if (m_sqlEnabled) {
-		unsigned char cm = m_lastFICH.getCM();
-		if (cm == YSF_CM_GROUP2) {
-			// Using the DG-ID value
-			unsigned char value = m_lastFICH.getSQ();
-
-			if (value != m_sqlValue)
-				return false;
-		} else {
-			// Using the DSQ value
-			bool sql = m_lastFICH.getSQL();
-			unsigned char value = m_lastFICH.getSQ();
-
-			if (!sql || value != m_sqlValue)
-				return false;
-		}
-	}
-
 	// Stop repeater packets coming through, unless we're acting as a remote gateway
 	if (m_remoteGateway) {
 		unsigned char mr = m_lastFICH.getMR();
@@ -230,7 +202,7 @@ bool CNXDNControl::processVWData(bool valid, unsigned char *data)
 			if (m_selfOnly) {
 				bool ret = checkCallsign(m_rfSource);
 				if (!ret) {
-					LogMessage("YSF, invalid access attempt from %10.10s", m_rfSource);
+					LogMessage("NXDN, invalid access attempt from %10.10s", m_rfSource);
 					m_rfState = RS_RF_REJECTED;
 					return false;
 				}
@@ -257,9 +229,9 @@ bool CNXDNControl::processVWData(bool valid, unsigned char *data)
 #endif
 
 			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, "R", "          ");
-			LogMessage("YSF, received RF header from %10.10s to %10.10s", m_rfSource, m_rfDest);
+			LogMessage("NXDN, received RF header from %10.10s to %10.10s", m_rfSource, m_rfDest);
 
-			CSync::addYSFSync(data + 2U);
+			CSync::addNXDNSync(data + 2U);
 
 			CYSFFICH fich = m_lastFICH;
 
@@ -278,12 +250,7 @@ bool CNXDNControl::processVWData(bool valid, unsigned char *data)
 #endif
 
 			if (m_duplex) {
-				// Add the DSQ information.
-				fich.setSQL(m_sqlEnabled);
-				fich.setSQ(m_sqlValue);
-
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
 				writeQueueRF(data);
 			}
@@ -303,7 +270,7 @@ bool CNXDNControl::processVWData(bool valid, unsigned char *data)
 		} else if (m_rfState == RS_RF_AUDIO) {
 			m_rfPayload.processHeaderData(data + 2U);
 
-			CSync::addYSFSync(data + 2U);
+			CSync::addNXDNSync(data + 2U);
 
 			CYSFFICH fich = m_lastFICH;
 
@@ -322,12 +289,7 @@ bool CNXDNControl::processVWData(bool valid, unsigned char *data)
 #endif
 
 			if (m_duplex) {
-				// Add the DSQ information.
-				fich.setSQL(m_sqlEnabled);
-				fich.setSQ(m_sqlValue);
-
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
 				writeQueueRF(data);
 			}
@@ -335,9 +297,9 @@ bool CNXDNControl::processVWData(bool valid, unsigned char *data)
 			m_rfFrames++;
 
 			if (m_rssi != 0U)
-				LogMessage("YSF, received RF end of transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				LogMessage("NXDN, received RF end of transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			else
-				LogMessage("YSF, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+				LogMessage("NXDN, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 
 			writeEndRF();
 		}
@@ -350,7 +312,7 @@ bool CNXDNControl::processVWData(bool valid, unsigned char *data)
 				m_lastFICH.setFN(0U);
 			}
 
-			CSync::addYSFSync(data + 2U);
+			CSync::addNXDNSync(data + 2U);
 
 			CYSFFICH fich = m_lastFICH;
 
@@ -363,7 +325,7 @@ bool CNXDNControl::processVWData(bool valid, unsigned char *data)
 				m_rfErrs += errors;
 				m_rfBits += 720U;
 				m_display->writeFusionBER(float(errors) / 7.2F);
-				LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 7.2F);
+				LogDebug("NXDN, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 7.2F);
 			}
 
 			// Remove any DSQ information
@@ -377,12 +339,7 @@ bool CNXDNControl::processVWData(bool valid, unsigned char *data)
 			writeNetwork(data, m_rfFrames % 128U);
 
 			if (m_duplex) {
-				// Add the DSQ information.
-				fich.setSQL(m_sqlEnabled);
-				fich.setSQ(m_sqlValue);
-
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
 				writeQueueRF(data);
 			}
@@ -416,7 +373,7 @@ bool CNXDNControl::processDNData(bool valid, unsigned char *data)
 			if (m_selfOnly) {
 				bool ret = checkCallsign(m_rfSource);
 				if (!ret) {
-					LogMessage("YSF, invalid access attempt from %10.10s", m_rfSource);
+					LogMessage("NXDN, invalid access attempt from %10.10s", m_rfSource);
 					m_rfState = RS_RF_REJECTED;
 					return false;
 				}
@@ -443,9 +400,9 @@ bool CNXDNControl::processDNData(bool valid, unsigned char *data)
 #endif
 
 			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, "R", "          ");
-			LogMessage("YSF, received RF header from %10.10s to %10.10s", m_rfSource, m_rfDest);
+			LogMessage("NXDN, received RF header from %10.10s to %10.10s", m_rfSource, m_rfDest);
 
-			CSync::addYSFSync(data + 2U);
+			CSync::addNXDNSync(data + 2U);
 
 			CYSFFICH fich = m_lastFICH;
 
@@ -464,12 +421,7 @@ bool CNXDNControl::processDNData(bool valid, unsigned char *data)
 #endif
 
 			if (m_duplex) {
-				// Add the DSQ information.
-				fich.setSQL(m_sqlEnabled);
-				fich.setSQ(m_sqlValue);
-
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
 				writeQueueRF(data);
 			}
@@ -489,7 +441,7 @@ bool CNXDNControl::processDNData(bool valid, unsigned char *data)
 		} else if (m_rfState == RS_RF_AUDIO) {
 			m_rfPayload.processHeaderData(data + 2U);
 
-			CSync::addYSFSync(data + 2U);
+			CSync::addNXDNSync(data + 2U);
 
 			CYSFFICH fich = m_lastFICH;
 
@@ -508,12 +460,7 @@ bool CNXDNControl::processDNData(bool valid, unsigned char *data)
 #endif
 
 			if (m_duplex) {
-				// Add the DSQ information.
-				fich.setSQL(m_sqlEnabled);
-				fich.setSQ(m_sqlValue);
-
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
 				writeQueueRF(data);
 			}
@@ -521,9 +468,9 @@ bool CNXDNControl::processDNData(bool valid, unsigned char *data)
 			m_rfFrames++;
 
 			if (m_rssi != 0U)
-				LogMessage("YSF, received RF end of transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				LogMessage("NXDN, received RF end of transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			else
-				LogMessage("YSF, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+				LogMessage("NXDN, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 
 			writeEndRF();
 		}
@@ -540,7 +487,7 @@ bool CNXDNControl::processDNData(bool valid, unsigned char *data)
 				m_lastFICH.setFN(fn);
 			}
 
-			CSync::addYSFSync(data + 2U);
+			CSync::addNXDNSync(data + 2U);
 
 			unsigned char fn = m_lastFICH.getFN();
 			unsigned char dt = m_lastFICH.getDT();
@@ -552,7 +499,7 @@ bool CNXDNControl::processDNData(bool valid, unsigned char *data)
 					m_rfErrs += errors;
 					m_rfBits += 235U;
 					m_display->writeFusionBER(float(errors) / 2.35F);
-					LogDebug("YSF, V/D Mode 1, seq %u, AMBE FEC %u/235 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 2.35F);
+					LogDebug("NXDN, V/D Mode 1, seq %u, AMBE FEC %u/235 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 2.35F);
 				}
 				break;
 
@@ -562,7 +509,7 @@ bool CNXDNControl::processDNData(bool valid, unsigned char *data)
 					m_rfErrs += errors;
 					m_rfBits += 135U;
 					m_display->writeFusionBER(float(errors) / 1.35F);
-					LogDebug("YSF, V/D Mode 2, seq %u, Repetition FEC %u/135 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 1.35F);
+					LogDebug("NXDN, V/D Mode 2, seq %u, Repetition FEC %u/135 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 1.35F);
 				}
 				break;
 
@@ -583,12 +530,7 @@ bool CNXDNControl::processDNData(bool valid, unsigned char *data)
 			writeNetwork(data, m_rfFrames % 128U);
 
 			if (m_duplex) {
-				// Add the DSQ information.
-				fich.setSQL(m_sqlEnabled);
-				fich.setSQ(m_sqlValue);
-
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
 				writeQueueRF(data);
 			}
@@ -638,7 +580,7 @@ bool CNXDNControl::processDNData(bool valid, unsigned char *data)
 			if (m_selfOnly) {
 				bool ret = checkCallsign(m_rfSource);
 				if (!ret) {
-					LogMessage("YSF, invalid access attempt from %10.10s", m_rfSource);
+					LogMessage("NXDN, invalid access attempt from %10.10s", m_rfSource);
 					m_rfState = RS_RF_REJECTED;
 					return false;
 				}
@@ -661,7 +603,7 @@ bool CNXDNControl::processDNData(bool valid, unsigned char *data)
 			// Build a new header and transmit it
 			unsigned char buffer[YSF_FRAME_LENGTH_BYTES + 2U];
 
-			CSync::addYSFSync(buffer + 2U);
+			CSync::addNXDNSync(buffer + 2U);
 
 			CYSFFICH fich = m_lastFICH;
 			fich.setFI(YSF_FI_HEADER);
@@ -687,12 +629,7 @@ bool CNXDNControl::processDNData(bool valid, unsigned char *data)
 			writeNetwork(buffer, m_rfFrames % 128U);
 
 			if (m_duplex) {
-				// Add the DSQ information.
-				fich.setSQL(m_sqlEnabled);
-				fich.setSQ(m_sqlValue);
-
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-				fich.setDev(m_lowDeviation);
 				fich.encode(buffer + 2U);
 				writeQueueRF(buffer);
 			}
@@ -702,9 +639,9 @@ bool CNXDNControl::processDNData(bool valid, unsigned char *data)
 #endif
 
 			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, "R", "          ");
-			LogMessage("YSF, received RF late entry from %10.10s to %10.10s", m_rfSource, m_rfDest);
+			LogMessage("NXDN, received RF late entry from %10.10s to %10.10s", m_rfSource, m_rfDest);
 
-			CSync::addYSFSync(data + 2U);
+			CSync::addNXDNSync(data + 2U);
 
 			fich = m_lastFICH;
 
@@ -719,12 +656,7 @@ bool CNXDNControl::processDNData(bool valid, unsigned char *data)
 			writeNetwork(data, m_rfFrames % 128U);
 
 			if (m_duplex) {
-				// Add the DSQ information.
-				fich.setSQL(m_sqlEnabled);
-				fich.setSQ(m_sqlValue);
-
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
 				writeQueueRF(data);
 			}
@@ -758,7 +690,7 @@ bool CNXDNControl::processFRData(bool valid, unsigned char *data)
 			if (m_selfOnly) {
 				bool ret = checkCallsign(m_rfSource);
 				if (!ret) {
-					LogMessage("YSF, invalid access attempt from %10.10s", m_rfSource);
+					LogMessage("NXDN, invalid access attempt from %10.10s", m_rfSource);
 					m_rfState = RS_RF_REJECTED;
 					return false;
 				}
@@ -782,9 +714,9 @@ bool CNXDNControl::processFRData(bool valid, unsigned char *data)
 #endif
 
 			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, "R", "          ");
-			LogMessage("YSF, received RF header from %10.10s to %10.10s", m_rfSource, m_rfDest);
+			LogMessage("NXDN, received RF header from %10.10s to %10.10s", m_rfSource, m_rfDest);
 
-			CSync::addYSFSync(data + 2U);
+			CSync::addNXDNSync(data + 2U);
 
 			CYSFFICH fich = m_lastFICH;
 
@@ -803,12 +735,7 @@ bool CNXDNControl::processFRData(bool valid, unsigned char *data)
 #endif
 
 			if (m_duplex) {
-				// Add the DSQ information.
-				fich.setSQL(m_sqlEnabled);
-				fich.setSQ(m_sqlValue);
-
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
 				writeQueueRF(data);
 			}
@@ -828,7 +755,7 @@ bool CNXDNControl::processFRData(bool valid, unsigned char *data)
 		} else if (m_rfState == RS_RF_DATA) {
 			m_rfPayload.processHeaderData(data + 2U);
 
-			CSync::addYSFSync(data + 2U);
+			CSync::addNXDNSync(data + 2U);
 
 			CYSFFICH fich = m_lastFICH;
 
@@ -847,12 +774,7 @@ bool CNXDNControl::processFRData(bool valid, unsigned char *data)
 #endif
 
 			if (m_duplex) {
-				// Add the DSQ information.
-				fich.setSQL(m_sqlEnabled);
-				fich.setSQ(m_sqlValue);
-
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
 				writeQueueRF(data);
 			}
@@ -860,9 +782,9 @@ bool CNXDNControl::processFRData(bool valid, unsigned char *data)
 			m_rfFrames++;
 
 			if (m_rssi != 0U)
-				LogMessage("YSF, received RF end of transmission, %.1f seconds, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 10.0F, m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				LogMessage("NXDN, received RF end of transmission, %.1f seconds, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 10.0F, m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			else
-				LogMessage("YSF, received RF end of transmission, %.1f seconds", float(m_rfFrames) / 10.0F);
+				LogMessage("NXDN, received RF end of transmission, %.1f seconds", float(m_rfFrames) / 10.0F);
 
 			writeEndRF();
 		}
@@ -879,7 +801,7 @@ bool CNXDNControl::processFRData(bool valid, unsigned char *data)
 				m_lastFICH.setFN(fn);
 			}
 
-			CSync::addYSFSync(data + 2U);
+			CSync::addNXDNSync(data + 2U);
 
 			unsigned char fn = m_lastFICH.getFN();
 
@@ -898,12 +820,7 @@ bool CNXDNControl::processFRData(bool valid, unsigned char *data)
 			writeNetwork(data, m_rfFrames % 128U);
 
 			if (m_duplex) {
-				// Add the DSQ information.
-				fich.setSQL(m_sqlEnabled);
-				fich.setSQ(m_sqlValue);
-
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
 				writeQueueRF(data);
 			}
@@ -1236,9 +1153,4 @@ void CNXDNControl::closeFile()
 		::fclose(m_fp);
 		m_fp = NULL;
 	}
-}
-
-bool CNXDNControl::checkCallsign(const unsigned char* callsign) const
-{
-	return ::memcmp(callsign, m_selfCallsign, ::strlen((char*)m_selfCallsign)) == 0;
 }
