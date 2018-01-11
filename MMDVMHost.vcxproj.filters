@@ -230,6 +230,12 @@
     <ClInclude Include="P25Trellis.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="NXDNDefines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NXDNControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -428,6 +434,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="P25Trellis.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NXDNControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

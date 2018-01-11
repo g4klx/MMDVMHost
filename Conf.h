@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017,2018 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -82,6 +82,7 @@ public:
   float        getModemDMRTXLevel() const;
   float        getModemYSFTXLevel() const;
   float        getModemP25TXLevel() const;
+  float        getModemNXDNTXLevel() const;
   std::string  getModemRSSIMappingFile() const;
   bool         getModemTrace() const;
   bool         getModemDebug() const;
@@ -135,6 +136,14 @@ public:
   bool         getP25OverrideUID() const;
   bool         getP25RemoteGateway() const;
   unsigned int getP25ModeHang() const;
+
+  // The NXDN section
+  bool         getNXDNEnabled() const;
+  unsigned int getNXDNId() const;
+  unsigned int getNXDNRAN() const;
+  bool         getNXDNSelfOnly() const;
+  bool         getNXDNRemoteGateway() const;
+  unsigned int getNXDNModeHang() const;
 
   // The D-Star Network section
   bool         getDStarNetworkEnabled() const;
@@ -260,6 +269,7 @@ private:
   float        m_modemDMRTXLevel;
   float        m_modemYSFTXLevel;
   float        m_modemP25TXLevel;
+  float        m_modemNXDNTXLevel;
   std::string  m_modemRSSIMappingFile;
   bool         m_modemTrace;
   bool         m_modemDebug;
@@ -308,6 +318,13 @@ private:
   bool         m_p25OverrideUID;
   bool         m_p25RemoteGateway;
   unsigned int m_p25ModeHang;
+
+  bool         m_nxdnEnabled;
+  unsigned int m_nxdnId;
+  unsigned int m_nxdnRAN;
+  bool         m_nxdnSelfOnly;
+  bool         m_nxdnRemoteGateway;
+  unsigned int m_nxdnModeHang;
 
   bool         m_dstarNetworkEnabled;
   std::string  m_dstarGatewayAddress;

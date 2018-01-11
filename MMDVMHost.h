@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017,2018 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -54,10 +54,12 @@ private:
   unsigned int   m_dmrRFModeHang;
   unsigned int   m_ysfRFModeHang;
   unsigned int   m_p25RFModeHang;
+  unsigned int   m_nxdnRFModeHang;
   unsigned int   m_dstarNetModeHang;
   unsigned int   m_dmrNetModeHang;
   unsigned int   m_ysfNetModeHang;
   unsigned int   m_p25NetModeHang;
+  unsigned int   m_nxdnNetModeHang;
   CTimer         m_modeTimer;
   CTimer         m_dmrTXTimer;
   CTimer         m_cwIdTimer;
@@ -67,6 +69,7 @@ private:
   bool           m_dmrEnabled;
   bool           m_ysfEnabled;
   bool           m_p25Enabled;
+  bool           m_nxdnEnabled;
   unsigned int   m_cwIdTime;
   CDMRLookup*    m_lookup;
   std::string    m_callsign;

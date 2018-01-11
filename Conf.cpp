@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017,2018 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -40,10 +40,12 @@ enum SECTION {
   SECTION_DMR,
   SECTION_FUSION,
   SECTION_P25,
+  SECTION_NXDN,
   SECTION_DSTAR_NETWORK,
   SECTION_DMR_NETWORK,
   SECTION_FUSION_NETWORK,
   SECTION_P25_NETWORK,
+  SECTION_NXDN_NETWORK,
   SECTION_TFTSERIAL,
   SECTION_HD44780,
   SECTION_NEXTION,
@@ -95,6 +97,7 @@ m_modemDStarTXLevel(50.0F),
 m_modemDMRTXLevel(50.0F),
 m_modemYSFTXLevel(50.0F),
 m_modemP25TXLevel(50.0F),
+m_modemNXDNTXLevel(50.0F),
 m_modemRSSIMappingFile(),
 m_modemTrace(false),
 m_modemDebug(false),
@@ -138,6 +141,12 @@ m_p25SelfOnly(false),
 m_p25OverrideUID(false),
 m_p25RemoteGateway(false),
 m_p25ModeHang(10U),
+m_nxdnEnabled(false),
+m_nxdnId(0U),
+m_nxdnRAN(13U),
+m_nxdnSelfOnly(false),
+m_nxdnRemoteGateway(false),
+m_nxdnModeHang(10U),
 m_dstarNetworkEnabled(false),
 m_dstarGatewayAddress(),
 m_dstarGatewayPort(0U),
@@ -240,6 +249,8 @@ bool CConf::read()
 		  section = SECTION_FUSION;
 	  else if (::strncmp(buffer, "[P25]", 5U) == 0)
 		  section = SECTION_P25;
+	  else if (::strncmp(buffer, "[NXDN]", 6U) == 0)
+		  section = SECTION_NXDN;
 	  else if (::strncmp(buffer, "[D-Star Network]", 16U) == 0)
 		  section = SECTION_DSTAR_NETWORK;
 	  else if (::strncmp(buffer, "[DMR Network]", 13U) == 0)
@@ -248,6 +259,8 @@ bool CConf::read()
 		  section = SECTION_FUSION_NETWORK;
 	  else if (::strncmp(buffer, "[P25 Network]", 13U) == 0)
 		  section = SECTION_P25_NETWORK;
+	  else if (::strncmp(buffer, "[NXDN Network]", 14U) == 0)
+		  section = SECTION_NXDN_NETWORK;
 	  else if (::strncmp(buffer, "[TFT Serial]", 12U) == 0)
 		  section = SECTION_TFTSERIAL;
 	  else if (::strncmp(buffer, "[HD44780]", 9U) == 0)
@@ -365,7 +378,7 @@ bool CConf::read()
 		else if (::strcmp(key, "RXLevel") == 0)
 			m_modemRXLevel = float(::atof(value));
 		else if (::strcmp(key, "TXLevel") == 0)
-			m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = float(::atof(value));
+			m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = m_modemNXDNTXLevel = float(::atof(value));
 		else if (::strcmp(key, "CWIdTXLevel") == 0)
 			m_modemCWIdTXLevel = float(::atof(value));
 		else if (::strcmp(key, "D-StarTXLevel") == 0)
@@ -376,6 +389,8 @@ bool CConf::read()
 			m_modemYSFTXLevel = float(::atof(value));
 		else if (::strcmp(key, "P25TXLevel") == 0)
 			m_modemP25TXLevel = float(::atof(value));
+		else if (::strcmp(key, "NXDNTXLevel") == 0)
+			m_modemNXDNTXLevel = float(::atof(value));
 		else if (::strcmp(key, "RSSIMappingFile") == 0)
 			m_modemRSSIMappingFile = value;
 		else if (::strcmp(key, "Trace") == 0)
@@ -509,6 +524,19 @@ bool CConf::read()
 			m_p25RemoteGateway = ::atoi(value) == 1;
 		else if (::strcmp(key, "ModeHang") == 0)
 			m_p25ModeHang = (unsigned int)::atoi(value);
+	} else if (section == SECTION_NXDN) {
+		if (::strcmp(key, "Enable") == 0)
+			m_nxdnEnabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "Id") == 0)
+			m_nxdnId = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "RAN") == 0)
+			m_nxdnRAN = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "SelfOnly") == 0)
+			m_nxdnSelfOnly = ::atoi(value) == 1;
+		else if (::strcmp(key, "RemoteGateway") == 0)
+			m_nxdnRemoteGateway = ::atoi(value) == 1;
+		else if (::strcmp(key, "ModeHang") == 0)
+			m_nxdnModeHang = (unsigned int)::atoi(value);
 	} else if (section == SECTION_DSTAR_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dstarNetworkEnabled = ::atoi(value) == 1;
@@ -853,6 +881,11 @@ float CConf::getModemP25TXLevel() const
 	return m_modemP25TXLevel;
 }
 
+float CConf::getModemNXDNTXLevel() const
+{
+	return m_modemNXDNTXLevel;
+}
+
 std::string CConf::getModemRSSIMappingFile () const
 {
 	return m_modemRSSIMappingFile;
@@ -1066,6 +1099,36 @@ bool CConf::getP25RemoteGateway() const
 unsigned int CConf::getP25ModeHang() const
 {
 	return m_p25ModeHang;
+}
+
+bool CConf::getNXDNEnabled() const
+{
+	return m_nxdnEnabled;
+}
+
+unsigned int CConf::getNXDNId() const
+{
+	return m_nxdnId;
+}
+
+unsigned int CConf::getNXDNRAN() const
+{
+	return m_nxdnRAN;
+}
+
+bool CConf::getNXDNSelfOnly() const
+{
+	return m_nxdnSelfOnly;
+}
+
+bool CConf::getNXDNRemoteGateway() const
+{
+	return m_nxdnRemoteGateway;
+}
+
+unsigned int CConf::getNXDNModeHang() const
+{
+	return m_nxdnModeHang;
 }
 
 bool CConf::getDStarNetworkEnabled() const

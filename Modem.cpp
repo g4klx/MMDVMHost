@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2011-2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2011-2018 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 #include "DMRDefines.h"
 #include "YSFDefines.h"
 #include "P25Defines.h"
+#include "NXDNDefines.h"
 #include "Thread.h"
 #include "Modem.h"
 #include "Utils.h"
@@ -67,6 +68,9 @@ const unsigned char MMDVM_P25_HDR     = 0x30U;
 const unsigned char MMDVM_P25_LDU     = 0x31U;
 const unsigned char MMDVM_P25_LOST    = 0x32U;
 
+const unsigned char MMDVM_NXDN_DATA   = 0x40U;
+const unsigned char MMDVM_NXDN_LOST   = 0x41U;
+
 const unsigned char MMDVM_ACK         = 0x70U;
 const unsigned char MMDVM_NAK         = 0x7FU;
 
@@ -99,6 +103,7 @@ m_dstarTXLevel(0U),
 m_dmrTXLevel(0U),
 m_ysfTXLevel(0U),
 m_p25TXLevel(0U),
+m_nxdnTXLevel(0U),
 m_trace(trace),
 m_debug(debug),
 m_rxFrequency(0U),
@@ -107,6 +112,7 @@ m_dstarEnabled(false),
 m_dmrEnabled(false),
 m_ysfEnabled(false),
 m_p25Enabled(false),
+m_nxdnEnabled(false),
 m_rxDCOffset(0),
 m_txDCOffset(0),
 m_serial(port, SERIAL_115200, true),
@@ -123,6 +129,8 @@ m_rxYSFData(1000U, "Modem RX YSF"),
 m_txYSFData(1000U, "Modem TX YSF"),
 m_rxP25Data(1000U, "Modem RX P25"),
 m_txP25Data(1000U, "Modem TX P25"),
+m_rxNXDNData(1000U, "Modem RX NXDN"),
+m_txNXDNData(1000U, "Modem TX NXDN"),
 m_statusTimer(1000U, 0U, 250U),
 m_inactivityTimer(1000U, 2U),
 m_playoutTimer(1000U, 0U, 10U),
@@ -131,6 +139,7 @@ m_dmrSpace1(0U),
 m_dmrSpace2(0U),
 m_ysfSpace(0U),
 m_p25Space(0U),
+m_nxdnSpace(0U),
 m_tx(false),
 m_cd(false),
 m_lockout(false),
@@ -153,18 +162,19 @@ void CModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int tx
 	m_txFrequency = txFrequency + txOffset;
 	m_txDCOffset  = txDCOffset;
 	m_rxDCOffset  = rxDCOffset;
-	m_rfLevel = rfLevel;
+	m_rfLevel     = rfLevel;
 }
 
-void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled)
+void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled)
 {
 	m_dstarEnabled = dstarEnabled;
 	m_dmrEnabled   = dmrEnabled;
 	m_ysfEnabled   = ysfEnabled;
 	m_p25Enabled   = p25Enabled;
+	m_nxdnEnabled  = nxdnEnabled;
 }
 
-void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel)
+void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel)
 {
 	m_rxLevel      = rxLevel;
 	m_cwIdTXLevel  = cwIdTXLevel;
@@ -172,6 +182,7 @@ void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, flo
 	m_dmrTXLevel   = dmrTXLevel;
 	m_ysfTXLevel   = ysfTXLevel;
 	m_p25TXLevel   = p25TXLevel;
+	m_nxdnTXLevel  = nxdnTXLevel;
 }
 
 void CModem::setDMRParams(unsigned int colorCode)
@@ -429,6 +440,32 @@ void CModem::clock(unsigned int ms)
 			}
 			break;
 
+			case MMDVM_NXDN_DATA: {
+				if (m_trace)
+					CUtils::dump(1U, "RX NXDN Data", m_buffer, m_length);
+
+				unsigned char data = m_length - 2U;
+				m_rxNXDNData.addData(&data, 1U);
+
+				data = TAG_DATA;
+				m_rxNXDNData.addData(&data, 1U);
+
+				m_rxNXDNData.addData(m_buffer + 3U, m_length - 3U);
+			}
+			break;
+
+			case MMDVM_NXDN_LOST: {
+				if (m_trace)
+					CUtils::dump(1U, "RX NXDN Lost", m_buffer, m_length);
+
+				unsigned char data = 1U;
+				m_rxNXDNData.addData(&data, 1U);
+
+				data = TAG_LOST;
+				m_rxNXDNData.addData(&data, 1U);
+			}
+			break;
+
 			case MMDVM_GET_STATUS: {
 					// if (m_trace)
 					//	CUtils::dump(1U, "GET_STATUS", m_buffer, m_length);
@@ -460,6 +497,7 @@ void CModem::clock(unsigned int ms)
 					m_dmrSpace2  = m_buffer[8U];
 					m_ysfSpace   = m_buffer[9U];
 					m_p25Space   = m_buffer[10U];
+					m_nxdnSpace  = m_buffer[11U];
 
 					m_inactivityTimer.start();
 					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u lockout=%d, cd=%d", m_buffer[5U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, int(m_lockout), int(m_cd));
@@ -603,6 +641,23 @@ void CModem::clock(unsigned int ms)
 
 		m_p25Space--;
 	}
+
+	if (m_nxdnSpace > 1U && !m_txNXDNData.isEmpty()) {
+		unsigned char len = 0U;
+		m_txNXDNData.getData(&len, 1U);
+		m_txNXDNData.getData(m_buffer, len);
+
+		if (m_trace)
+			CUtils::dump(1U, "TX NXDN Data", m_buffer, len);
+
+		int ret = m_serial.write(m_buffer, len);
+		if (ret != int(len))
+			LogWarning("Error when writing NXDN data to the MMDVM");
+
+		m_playoutTimer.start();
+
+		m_nxdnSpace--;
+	}
 }
 
 void CModem::close()
@@ -678,6 +733,20 @@ unsigned int CModem::readP25Data(unsigned char* data)
 	unsigned char len = 0U;
 	m_rxP25Data.getData(&len, 1U);
 	m_rxP25Data.getData(data, len);
+
+	return len;
+}
+
+unsigned int CModem::readNXDNData(unsigned char* data)
+{
+	assert(data != NULL);
+
+	if (m_rxNXDNData.isEmpty())
+		return 0U;
+
+	unsigned char len = 0U;
+	m_rxNXDNData.getData(&len, 1U);
+	m_rxNXDNData.getData(data, len);
 
 	return len;
 }
@@ -852,6 +921,36 @@ bool CModem::writeP25Data(const unsigned char* data, unsigned int length)
 	return true;
 }
 
+bool CModem::hasNXDNSpace() const
+{
+	unsigned int space = m_txNXDNData.freeSpace() / (NXDN_FRAME_LENGTH_BYTES + 4U);
+
+	return space > 1U;
+}
+
+bool CModem::writeNXDNData(const unsigned char* data, unsigned int length)
+{
+	assert(data != NULL);
+	assert(length > 0U);
+
+	if (data[0U] != TAG_DATA && data[0U] != TAG_EOT)
+		return false;
+
+	unsigned char buffer[130U];
+
+	buffer[0U] = MMDVM_FRAME_START;
+	buffer[1U] = length + 2U;
+	buffer[2U] = MMDVM_NXDN_DATA;
+
+	::memcpy(buffer + 3U, data + 1U, length - 1U);
+
+	unsigned char len = length + 2U;
+	m_txNXDNData.addData(&len, 1U);
+	m_txNXDNData.addData(buffer, len);
+
+	return true;
+}
+
 bool CModem::writeSerial(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
@@ -958,7 +1057,7 @@ bool CModem::setConfig()
 
 	buffer[0U] = MMDVM_FRAME_START;
 
-	buffer[1U] = 18U;
+	buffer[1U] = 19U;
 
 	buffer[2U] = MMDVM_SET_CONFIG;
 
@@ -985,6 +1084,8 @@ bool CModem::setConfig()
 		buffer[4U] |= 0x04U;
 	if (m_p25Enabled)
 		buffer[4U] |= 0x08U;
+	if (m_nxdnEnabled)
+		buffer[4U] |= 0x10U;
 
 	buffer[5U] = m_txDelay / 10U;		// In 10ms units
 
@@ -1008,10 +1109,12 @@ bool CModem::setConfig()
 	buffer[16U] = (unsigned char)(m_txDCOffset + 128);
 	buffer[17U] = (unsigned char)(m_rxDCOffset + 128);
 
-	// CUtils::dump(1U, "Written", buffer, 18U);
+	buffer[18U] = (unsigned char)(m_nxdnTXLevel * 2.55F + 0.5F);
 
-	int ret = m_serial.write(buffer, 18U);
-	if (ret != 18)
+	// CUtils::dump(1U, "Written", buffer, 19U);
+
+	int ret = m_serial.write(buffer, 19U);
+	if (ret != 19)
 		return false;
 
 	unsigned int count = 0U;

@@ -29,6 +29,7 @@
 #include "NullDisplay.h"
 #include "YSFControl.h"
 #include "P25Control.h"
+#include "NXDNControl.h"
 #include "Nextion.h"
 #include "LCDproc.h"
 #include "Thread.h"
@@ -74,7 +75,7 @@ static void sigHandler(int signum)
 const char* HEADER1 = "This software is for use on amateur radio networks only,";
 const char* HEADER2 = "it is to be used for educational purposes only. Its use on";
 const char* HEADER3 = "commercial networks is strictly prohibited.";
-const char* HEADER4 = "Copyright(C) 2015-2017 by Jonathan Naylor, G4KLX and others";
+const char* HEADER4 = "Copyright(C) 2015-2018 by Jonathan Naylor, G4KLX and others";
 
 int main(int argc, char** argv)
 {
@@ -139,10 +140,12 @@ m_dstarRFModeHang(10U),
 m_dmrRFModeHang(10U),
 m_ysfRFModeHang(10U),
 m_p25RFModeHang(10U),
+m_nxdnRFModeHang(10U),
 m_dstarNetModeHang(3U),
 m_dmrNetModeHang(3U),
 m_ysfNetModeHang(3U),
 m_p25NetModeHang(3U),
+m_nxdnNetModeHang(3U),
 m_modeTimer(1000U),
 m_dmrTXTimer(1000U),
 m_cwIdTimer(1000U),
@@ -152,6 +155,7 @@ m_dstarEnabled(false),
 m_dmrEnabled(false),
 m_ysfEnabled(false),
 m_p25Enabled(false),
+m_nxdnEnabled(false),
 m_cwIdTime(0U),
 m_lookup(NULL),
 m_callsign(),
@@ -461,6 +465,24 @@ int CMMDVMHost::run()
 		p25 = new CP25Control(nac, id, selfOnly, uidOverride, m_p25Network, m_display, m_timeout, m_duplex, m_lookup, remoteGateway, rssi);
 	}
 
+	CNXDNControl* nxdn = NULL;
+	if (m_nxdnEnabled) {
+		unsigned int id    = m_conf.getNXDNId();
+		unsigned int ran   = m_conf.getNXDNRAN();
+		bool selfOnly      = m_conf.getNXDNSelfOnly();
+		bool remoteGateway = m_conf.getNXDNRemoteGateway();
+		m_nxdnRFModeHang   = m_conf.getNXDNModeHang();
+
+		LogInfo("NXDN RF Parameters");
+		LogInfo("    Id: %u", id);
+		LogInfo("    RAN: %u", ran);
+		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
+		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
+		LogInfo("    Mode Hang: %us", m_p25RFModeHang);
+
+		nxdn = new CNXDNControl(ran, id, selfOnly, NULL, m_display, m_timeout, m_duplex, m_lookup, remoteGateway, rssi);
+	}
+
 	setMode(MODE_IDLE);
 
 	LogMessage("MMDVMHost-%s is running", VERSION);
@@ -614,6 +636,22 @@ int CMMDVMHost::run()
 			}
 		}
 
+		len = m_modem->readNXDNData(data);
+		if (nxdn != NULL && len > 0U) {
+			if (m_mode == MODE_IDLE) {
+				bool ret = nxdn->writeModem(data, len);
+				if (ret) {
+					m_modeTimer.setTimeout(m_nxdnRFModeHang);
+					setMode(MODE_NXDN);
+				}
+			} else if (m_mode == MODE_NXDN) {
+				nxdn->writeModem(data, len);
+				m_modeTimer.start();
+			} else if (m_mode != MODE_LOCKOUT) {
+				LogWarning("NXDN modem data received when in mode %u", m_mode);
+			}
+		}
+
 		if (m_modeTimer.isRunning() && m_modeTimer.hasExpired())
 			setMode(MODE_IDLE);
 
@@ -720,6 +758,26 @@ int CMMDVMHost::run()
 			}
 		}
 
+		if (nxdn != NULL) {
+			ret = m_modem->hasNXDNSpace();
+			if (ret) {
+				len = nxdn->readModem(data);
+				if (len > 0U) {
+					if (m_mode == MODE_IDLE) {
+						m_modeTimer.setTimeout(m_nxdnNetModeHang);
+						setMode(MODE_NXDN);
+					}
+					if (m_mode == MODE_NXDN) {
+						m_modem->writeNXDNData(data, len);
+						m_modeTimer.start();
+					}
+					else if (m_mode != MODE_LOCKOUT) {
+						LogWarning("NXDN data received when in mode %u", m_mode);
+					}
+				}
+			}
+		}
+
 		if (m_dmrNetwork != NULL) {
 			bool run = m_dmrNetwork->wantsBeacon();
 			if (dmrBeaconsEnabled && run && m_mode == MODE_IDLE && !m_modem->hasTX()) {
@@ -744,6 +802,8 @@ int CMMDVMHost::run()
 			ysf->clock(ms);
 		if (p25 != NULL)
 			p25->clock(ms);
+		if (nxdn != NULL)
+			nxdn->clock(ms);
 
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->clock(ms);
@@ -825,6 +885,7 @@ int CMMDVMHost::run()
 	delete dmr;
 	delete ysf;
 	delete p25;
+	delete nxdn;
 
 	return 0;
 }
@@ -843,6 +904,7 @@ bool CMMDVMHost::createModem()
 	float dmrTXLevel          = m_conf.getModemDMRTXLevel();
 	float ysfTXLevel          = m_conf.getModemYSFTXLevel();
 	float p25TXLevel          = m_conf.getModemP25TXLevel();
+	float nxdnTXLevel         = m_conf.getModemNXDNTXLevel();
 	bool trace                = m_conf.getModemTrace();
 	bool debug                = m_conf.getModemDebug();
 	unsigned int colorCode    = m_conf.getDMRColorCode();
@@ -873,12 +935,13 @@ bool CMMDVMHost::createModem()
 	LogInfo("    DMR TX Level: %.1f%%", dmrTXLevel);
 	LogInfo("    YSF TX Level: %.1f%%", ysfTXLevel);
 	LogInfo("    P25 TX Level: %.1f%%", p25TXLevel);
+	LogInfo("    NXDN TX Level: %.1f%%", nxdnTXLevel);
 	LogInfo("    RX Frequency: %uHz (%uHz)", rxFrequency, rxFrequency + rxOffset);
 	LogInfo("    TX Frequency: %uHz (%uHz)", txFrequency, txFrequency + txOffset);
 
 	m_modem = new CModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
-	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled);
-	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel);
+	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEabled);
+	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel);
 	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel);
 	m_modem->setDMRParams(colorCode);
 	m_modem->setYSFParams(lowDeviation);
@@ -1056,6 +1119,7 @@ void CMMDVMHost::readParams()
 	m_dmrEnabled   = m_conf.getDMREnabled();
 	m_ysfEnabled   = m_conf.getFusionEnabled();
 	m_p25Enabled   = m_conf.getP25Enabled();
+	m_nxdnEnabled  = m_conf.getNXDNEnabled();
 	m_duplex       = m_conf.getDuplex();
 	m_callsign     = m_conf.getCallsign();
 	m_id           = m_conf.getId();
@@ -1070,6 +1134,7 @@ void CMMDVMHost::readParams()
 	LogInfo("    DMR: %s", m_dmrEnabled ? "enabled" : "disabled");
 	LogInfo("    YSF: %s", m_ysfEnabled ? "enabled" : "disabled");
 	LogInfo("    P25: %s", m_p25Enabled ? "enabled" : "disabled");
+	LogInfo("    NXDN: %s", m_nxdnEnabled ? "enabled" : "disabled");
 }
 
 void CMMDVMHost::createDisplay()
@@ -1292,6 +1357,23 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_P25);
 		m_mode = MODE_P25;
+		m_modeTimer.start();
+		m_cwIdTimer.stop();
+		break;
+
+	case MODE_NXDN:
+		if (m_dstarNetwork != NULL)
+			m_dstarNetwork->enable(false);
+		if (m_dmrNetwork != NULL)
+			m_dmrNetwork->enable(false);
+		if (m_ysfNetwork != NULL)
+			m_ysfNetwork->enable(false);
+		if (m_p25Network != NULL)
+			m_p25Network->enable(false);
+		m_modem->setMode(MODE_NXDN);
+		if (m_ump != NULL)
+			m_ump->setMode(MODE_NXDN);
+		m_mode = MODE_NXDN;
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
 		break;

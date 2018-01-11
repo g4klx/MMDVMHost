@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2011-2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2011-2018 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -38,8 +38,8 @@ public:
 	~CModem();
 
 	void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel);
-	void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled);
-	void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25Enabled);
+	void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled);
+	void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel);
 	void setDMRParams(unsigned int colorCode);
 	void setYSFParams(bool loDev);
 
@@ -50,6 +50,7 @@ public:
 	unsigned int readDMRData2(unsigned char* data);
 	unsigned int readYSFData(unsigned char* data);
 	unsigned int readP25Data(unsigned char* data);
+	unsigned int readNXDNData(unsigned char* data);
 
 	unsigned int readSerial(unsigned char* data, unsigned int length);
 
@@ -58,6 +59,7 @@ public:
 	bool hasDMRSpace2() const;
 	bool hasYSFSpace() const;
 	bool hasP25Space() const;
+	bool hasNXDNSpace() const;
 
 	bool hasTX() const;
 	bool hasCD() const;
@@ -70,6 +72,7 @@ public:
 	bool writeDMRData2(const unsigned char* data, unsigned int length);
 	bool writeYSFData(const unsigned char* data, unsigned int length);
 	bool writeP25Data(const unsigned char* data, unsigned int length);
+	bool writeNXDNData(const unsigned char* data, unsigned int length);
 
 	bool writeDMRStart(bool tx);
 	bool writeDMRShortLC(const unsigned char* lc);
@@ -103,6 +106,7 @@ private:
 	float                      m_dmrTXLevel;
 	float                      m_ysfTXLevel;
 	float                      m_p25TXLevel;
+	float                      m_nxdnTXLevel;
 	float                      m_rfLevel;
 	bool                       m_trace;
 	bool                       m_debug;
@@ -112,6 +116,7 @@ private:
 	bool                       m_dmrEnabled;
 	bool                       m_ysfEnabled;
 	bool                       m_p25Enabled;
+	bool                       m_nxdnEnabled;
 	int                        m_rxDCOffset;
 	int                        m_txDCOffset;
 	CSerialController          m_serial;
@@ -128,6 +133,8 @@ private:
 	CRingBuffer<unsigned char> m_txYSFData;
 	CRingBuffer<unsigned char> m_rxP25Data;
 	CRingBuffer<unsigned char> m_txP25Data;
+	CRingBuffer<unsigned char> m_rxNXDNData;
+	CRingBuffer<unsigned char> m_txNXDNData;
 	CTimer                     m_statusTimer;
 	CTimer                     m_inactivityTimer;
 	CTimer                     m_playoutTimer;
@@ -136,6 +143,7 @@ private:
 	unsigned int               m_dmrSpace2;
 	unsigned int               m_ysfSpace;
 	unsigned int               m_p25Space;
+	unsigned int               m_nxdnSpace;
 	bool                       m_tx;
 	bool                       m_cd;
 	bool                       m_lockout;
