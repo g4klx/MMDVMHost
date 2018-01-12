@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015,2016,2017 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015,2016,2017,2018 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -361,8 +361,6 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			m_rfFrames = dataHeader.getBlocks();
 
-			// m_rfSeqNo  = 0U;
-
 			m_rfLC = new CDMRLC(gi ? FLCO_GROUP : FLCO_USER_USER, srcId, dstId);
 
 			// Regenerate the data header
@@ -435,8 +433,6 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			// Convert the Data Sync to be from the BS or MS as needed
 			CSync::addDMRDataSync(data + 2U, m_duplex);
-
-			// m_rfSeqNo = 0U;
 
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;

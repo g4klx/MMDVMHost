@@ -80,9 +80,6 @@ m_beacon(false)
 	m_streamId      = new uint32_t[2U];
 	m_jitterBuffers = new CJitterBuffer*[3U];
 
-	m_streamId[0U] = 0x00U;
-	m_streamId[1U] = 0x00U;
-
 	m_jitterBuffers[1U] = new CJitterBuffer("DMR Slot 1", 60U, DMR_SLOT_TIME, jitter, 256U, debug);
 	m_jitterBuffers[2U] = new CJitterBuffer("DMR Slot 2", 60U, DMR_SLOT_TIME, jitter, 256U, debug);
 
@@ -93,6 +90,9 @@ m_beacon(false)
 
 	CStopWatch stopWatch;
 	::srand(stopWatch.start());
+
+	m_streamId[0U] = ::rand() + 1U;
+	m_streamId[1U] = ::rand() + 1U;
 }
 
 CDMRNetwork::~CDMRNetwork()
@@ -241,15 +241,8 @@ bool CDMRNetwork::write(const CDMRData& data)
 	} else if (dataType == DT_VOICE) {
 		buffer[15U] |= data.getN();
 	} else {
-		if (dataType == DT_VOICE_LC_HEADER) {
-			m_streamId[slotIndex] = ::rand() + 1U;
+		if (dataType == DT_VOICE_LC_HEADER)
 			count = 2U;
-		}
-
-		if (dataType == DT_CSBK || dataType == DT_DATA_HEADER) {
-			m_streamId[slotIndex] = ::rand() + 1U;
-			count = 1U;
-		}
 
 		buffer[15U] |= (0x20U | dataType);
 	}
@@ -479,7 +472,13 @@ void CDMRNetwork::reset(unsigned int slotNo)
 {
 	assert(slotNo == 1U || slotNo == 2U);
 
-	m_jitterBuffers[slotNo]->reset();
+	if (slotNo == 1U) {
+		m_jitterBuffers[1U]->reset();
+		m_streamId[0U] = ::rand() + 1U;
+	} else {
+		m_jitterBuffers[2U]->reset();
+		m_streamId[1U] = ::rand() + 1U;
+	}
 }
 
 void CDMRNetwork::receiveData(const unsigned char* data, unsigned int length)
