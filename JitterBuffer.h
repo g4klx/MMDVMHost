@@ -36,6 +36,7 @@ public:
 	~CJitterBuffer();
 
 	bool addData(const unsigned char* data, unsigned int length, unsigned int sequenceNumber);
+	bool appendData(const unsigned char* data, unsigned int length);
 
 	JB_STATUS getData(unsigned char* data, unsigned int& length);
 	
@@ -62,6 +63,8 @@ private:
 
 	JitterEntry* m_buffer;
 	unsigned int m_headSequenceNumber;
+
+	unsigned int m_appendSequenceNumber;
 
 	unsigned char* m_lastData;
 	unsigned int   m_lastDataLength;
