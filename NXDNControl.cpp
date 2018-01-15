@@ -46,14 +46,8 @@ m_rfErrs(0U),
 m_rfBits(1U),
 m_netErrs(0U),
 m_netBits(1U),
-m_rfSource(NULL),
-m_rfDest(NULL),
-m_netSource(NULL),
-m_netDest(NULL),
 m_lastFICH(),
 m_netN(0U),
-m_rfPayload(),
-m_netPayload(),
 m_rssiMapper(rssiMapper),
 m_rssi(0U),
 m_maxRSSI(0U),
@@ -65,35 +59,10 @@ m_fp(NULL)
 	assert(display != NULL);
 	assert(rssiMapper != NULL);
 
-	m_rfPayload.setUplink(callsign);
-	m_rfPayload.setDownlink(callsign);
-
-	m_netPayload.setDownlink(callsign);
-
-	m_netSource = new unsigned char[YSF_CALLSIGN_LENGTH];
-	m_netDest   = new unsigned char[YSF_CALLSIGN_LENGTH];
-
-	m_callsign = new unsigned char[YSF_CALLSIGN_LENGTH];
-
-	std::string node = callsign;
-	node.resize(YSF_CALLSIGN_LENGTH, ' ');
-
-	for (unsigned int i = 0U; i < YSF_CALLSIGN_LENGTH; i++)
-		m_callsign[i] = node.at(i);
-
-	m_selfCallsign = new unsigned char[YSF_CALLSIGN_LENGTH];
-	::memset(m_selfCallsign, 0x00U, YSF_CALLSIGN_LENGTH);
-
-	for (unsigned int i = 0U; i < callsign.length(); i++)
-		m_selfCallsign[i] = callsign.at(i);
 }
 
 CNXDNControl::~CNXDNControl()
 {
-	delete[] m_netSource;
-	delete[] m_netDest;
-	delete[] m_callsign;
-	delete[] m_selfCallsign;
 }
 
 bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
@@ -112,15 +81,11 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 	}
 
 	if (type == TAG_LOST && m_rfState == RS_RF_REJECTED) {
-		m_rfPayload.reset();
-		m_rfSource = NULL;
-		m_rfDest   = NULL;
 		m_rfState  = RS_RF_LISTENING;
 		return false;
 	}
 
 	if (type == TAG_LOST) {
-		m_rfPayload.reset();
 		m_rfState = RS_RF_LISTENING;
 		return false;
 	}
@@ -128,8 +93,8 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 	// Have we got RSSI bytes on the end?
 	if (len == (NXDN_FRAME_LENGTH_BYTES + 4U)) {
 		uint16_t raw = 0U;
-		raw |= (data[122U] << 8) & 0xFF00U;
-		raw |= (data[123U] << 0) & 0x00FFU;
+		raw |= (data[50U] << 8) & 0xFF00U;
+		raw |= (data[51U] << 0) & 0x00FFU;
 
 		// Convert the raw RSSI to dBm
 		int rssi = m_rssiMapper->interpolate(raw);
@@ -860,11 +825,6 @@ void CNXDNControl::writeEndRF()
 	m_rfState = RS_RF_LISTENING;
 
 	m_rfTimeoutTimer.stop();
-	m_rfPayload.reset();
-
-	// These variables are free'd by YSFPayload
-	m_rfSource = NULL;
-	m_rfDest = NULL;
 
 	if (m_netState == RS_NET_IDLE) {
 		m_display->clearFusion();
@@ -886,8 +846,6 @@ void CNXDNControl::writeEndNet()
 	m_networkWatchdog.stop();
 	m_packetTimer.stop();
 
-	m_netPayload.reset();
-
 	m_display->clearFusion();
 
 	if (m_network != NULL)
@@ -906,30 +864,17 @@ void CNXDNControl::writeNetwork()
 
 	m_networkWatchdog.start();
 
-	bool gateway = ::memcmp(data + 4U, m_callsign, YSF_CALLSIGN_LENGTH) == 0;
-
-	unsigned char n = (data[34U] & 0xFEU) >> 1;
-	bool end = (data[34U] & 0x01U) == 0x01U;
+	unsigned char n = (data[5U] & 0xFEU) >> 1;
+	bool end = (data[5U] & 0x01U) == 0x01U;
 
 	if (!m_netTimeoutTimer.isRunning()) {
 		if (end)
 			return;
 
-		if (::memcmp(data + 14U, "          ", YSF_CALLSIGN_LENGTH) != 0)
-			::memcpy(m_netSource, data + 14U, YSF_CALLSIGN_LENGTH);
-		else
-			::memcpy(m_netSource, "??????????", YSF_CALLSIGN_LENGTH);
-
-		if (::memcmp(data + 24U, "          ", YSF_CALLSIGN_LENGTH) != 0)
-			::memcpy(m_netDest, data + 24U, YSF_CALLSIGN_LENGTH);
-		else
-			::memcpy(m_netDest, "??????????", YSF_CALLSIGN_LENGTH);
-
 		m_display->writeFusion((char*)m_netSource, (char*)m_netDest, "N", (char*)(data + 4U));
-		LogMessage("YSF, received network data from %10.10s to %10.10s at %10.10s", m_netSource, m_netDest, data + 4U);
+		LogMessage("NXDN, received network data from %10.10s to %10.10s at %10.10s", m_netSource, m_netDest, data + 4U);
 
 		m_netTimeoutTimer.start();
-		m_netPayload.reset();
 		m_packetTimer.start();
 		m_elapsed.start();
 		m_netState  = RS_NET_AUDIO;
@@ -972,13 +917,8 @@ void CNXDNControl::writeNetwork()
 		unsigned char ft = fich.getFT();
 		unsigned char fi = fich.getFI();
 
-		// Add any DSQ information
-		fich.setSQL(m_sqlEnabled);
-		fich.setSQ(m_sqlValue);
-
 		fich.setVoIP(true);
 		fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-		fich.setDev(m_lowDeviation);
 		fich.encode(data + 35U);
 
 		// Set the downlink callsign
@@ -1112,7 +1052,7 @@ void CNXDNControl::writeNetwork(const unsigned char *data, unsigned int count)
 	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired())
 		return;
 
-	m_network->write(m_rfSource, m_rfDest, data + 2U, count, data[0U] == TAG_EOT);
+	m_network->write(data + 2U, count, data[0U] == TAG_EOT);
 }
 
 bool CNXDNControl::openFile()

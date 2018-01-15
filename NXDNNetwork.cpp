@@ -56,7 +56,7 @@ bool CNXDNNetwork::open()
 	return m_socket.open();
 }
 
-bool CNXDNNetwork::write(const unsigned char* src, const unsigned char* dest, const unsigned char* data, unsigned int count, bool end)
+bool CNXDNNetwork::write(const unsigned char* data, unsigned int count, bool end)
 {
 	assert(data != NULL);
 

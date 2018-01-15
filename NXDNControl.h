@@ -67,14 +67,8 @@ private:
 	unsigned int               m_rfBits;
 	unsigned int               m_netErrs;
 	unsigned int               m_netBits;
-	unsigned char*             m_rfSource;
-	unsigned char*             m_rfDest;
-	unsigned char*             m_netSource;
-	unsigned char*             m_netDest;
 	CYSFFICH                   m_lastFICH;
 	unsigned char              m_netN;
-	CYSFPayload                m_rfPayload;
-	CYSFPayload                m_netPayload;
 	CRSSIInterpolator*         m_rssiMapper;
 	unsigned char              m_rssi;
 	unsigned char              m_maxRSSI;
