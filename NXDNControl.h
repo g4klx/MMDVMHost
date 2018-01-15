@@ -67,7 +67,6 @@ private:
 	unsigned int               m_rfBits;
 	unsigned int               m_netErrs;
 	unsigned int               m_netBits;
-	CYSFFICH                   m_lastFICH;
 	unsigned char              m_netN;
 	CRSSIInterpolator*         m_rssiMapper;
 	unsigned char              m_rssi;
@@ -85,6 +84,8 @@ private:
 	void writeQueueNet(const unsigned char* data);
 	void writeNetwork(const unsigned char* data, unsigned int count);
 	void writeNetwork();
+
+	void scrambler(unsigned char* data) const;
 
 	void writeEndRF();
 	void writeEndNet();

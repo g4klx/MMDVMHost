@@ -21,6 +21,11 @@
 #include <cstring>
 #include <ctime>
 
+const unsigned char SCRAMBLER[] = {
+	0x00U, 0x00U, 0x02U, 0x72U, 0xACU, 0x37U, 0xA6U, 0xE4U, 0x50U, 0xADU, 0x3FU, 0x64U, 0x96U, 0xFCU, 0x9AU, 0x99U,
+	0x80U, 0xC6U, 0x51U, 0xA5U, 0xFDU, 0x16U, 0x3AU, 0xCBU, 0x3CU, 0x7DU, 0xD0U, 0x6BU, 0x6EU, 0xC1U, 0x6BU, 0xEAU,
+	0xA0U, 0x52U, 0xBCU, 0xBBU, 0x81U, 0xCEU, 0x93U, 0xD7U, 0x51U, 0x21U, 0x9CU, 0x2FU, 0x6CU, 0xD0U, 0xEFU, 0x0FU};
+
 // #define	DUMP_NXDN
 
 CNXDNControl::CNXDNControl(unsigned int ran, unsigned int id, bool selfOnly, CNXDNNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
@@ -46,7 +51,6 @@ m_rfErrs(0U),
 m_rfBits(1U),
 m_netErrs(0U),
 m_netBits(1U),
-m_lastFICH(),
 m_netN(0U),
 m_rssiMapper(rssiMapper),
 m_rssi(0U),
@@ -58,7 +62,6 @@ m_fp(NULL)
 {
 	assert(display != NULL);
 	assert(rssiMapper != NULL);
-
 }
 
 CNXDNControl::~CNXDNControl()
@@ -111,6 +114,8 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 		m_aveRSSI += m_rssi;
 		m_rssiCount++;
 	}
+
+	scrambler(data + 2U);
 
 	CYSFFICH fich;
 	bool valid = fich.decode(data + 2U);
@@ -189,7 +194,7 @@ bool CNXDNControl::processVWData(bool valid, unsigned char *data)
 			m_maxRSSI = m_rssi;
 			m_aveRSSI = m_rssi;
 			m_rssiCount = 1U;
-#if defined(DUMP_YSF)
+#if defined(DUMP_NXDN)
 			openFile();
 #endif
 
@@ -210,7 +215,7 @@ bool CNXDNControl::processVWData(bool valid, unsigned char *data)
 
 			writeNetwork(data, m_rfFrames % 128U);
 
-#if defined(DUMP_YSF)
+#if defined(DUMP_NXDN)
 			writeFile(data + 2U);
 #endif
 
@@ -249,7 +254,7 @@ bool CNXDNControl::processVWData(bool valid, unsigned char *data)
 
 			writeNetwork(data, m_rfFrames % 128U);
 
-#if defined(DUMP_YSF)
+#if defined(DUMP_NXDN)
 			writeFile(data + 2U);
 #endif
 
@@ -309,7 +314,7 @@ bool CNXDNControl::processVWData(bool valid, unsigned char *data)
 				writeQueueRF(data);
 			}
 
-#if defined(DUMP_YSF)
+#if defined(DUMP_NXDN)
 			writeFile(data + 2U);
 #endif
 
@@ -360,7 +365,7 @@ bool CNXDNControl::processDNData(bool valid, unsigned char *data)
 			m_maxRSSI = m_rssi;
 			m_aveRSSI = m_rssi;
 			m_rssiCount = 1U;
-#if defined(DUMP_YSF)
+#if defined(DUMP_NXDN)
 			openFile();
 #endif
 
@@ -381,7 +386,7 @@ bool CNXDNControl::processDNData(bool valid, unsigned char *data)
 
 			writeNetwork(data, m_rfFrames % 128U);
 
-#if defined(DUMP_YSF)
+#if defined(DUMP_NXDN)
 			writeFile(data + 2U);
 #endif
 
@@ -420,7 +425,7 @@ bool CNXDNControl::processDNData(bool valid, unsigned char *data)
 
 			writeNetwork(data, m_rfFrames % 128U);
 
-#if defined(DUMP_YSF)
+#if defined(DUMP_NXDN)
 			writeFile(data + 2U);
 #endif
 
@@ -500,7 +505,7 @@ bool CNXDNControl::processDNData(bool valid, unsigned char *data)
 				writeQueueRF(data);
 			}
 
-#if defined(DUMP_YSF)
+#if defined(DUMP_NXDN)
 			writeFile(data + 2U);
 #endif
 
@@ -561,7 +566,7 @@ bool CNXDNControl::processDNData(bool valid, unsigned char *data)
 			m_maxRSSI = m_rssi;
 			m_aveRSSI = m_rssi;
 			m_rssiCount = 1U;
-#if defined(DUMP_YSF)
+#if defined(DUMP_NXDN)
 			openFile();
 #endif
 
@@ -599,7 +604,7 @@ bool CNXDNControl::processDNData(bool valid, unsigned char *data)
 				writeQueueRF(buffer);
 			}
 
-#if defined(DUMP_YSF)
+#if defined(DUMP_NXDN)
 			writeFile(buffer + 2U);
 #endif
 
@@ -626,7 +631,7 @@ bool CNXDNControl::processDNData(bool valid, unsigned char *data)
 				writeQueueRF(data);
 			}
 
-#if defined(DUMP_YSF)
+#if defined(DUMP_NXDN)
 			writeFile(data + 2U);
 #endif
 
@@ -674,7 +679,7 @@ bool CNXDNControl::processFRData(bool valid, unsigned char *data)
 			m_maxRSSI = m_rssi;
 			m_aveRSSI = m_rssi;
 			m_rssiCount = 1U;
-#if defined(DUMP_YSF)
+#if defined(DUMP_NXDN)
 			openFile();
 #endif
 
@@ -695,7 +700,7 @@ bool CNXDNControl::processFRData(bool valid, unsigned char *data)
 
 			writeNetwork(data, m_rfFrames % 128U);
 
-#if defined(DUMP_YSF)
+#if defined(DUMP_NXDN)
 			writeFile(data + 2U);
 #endif
 
@@ -734,7 +739,7 @@ bool CNXDNControl::processFRData(bool valid, unsigned char *data)
 
 			writeNetwork(data, m_rfFrames % 128U);
 
-#if defined(DUMP_YSF)
+#if defined(DUMP_NXDN)
 			writeFile(data + 2U);
 #endif
 
@@ -790,7 +795,7 @@ bool CNXDNControl::processFRData(bool valid, unsigned char *data)
 				writeQueueRF(data);
 			}
 
-#if defined(DUMP_YSF)
+#if defined(DUMP_NXDN)
 			writeFile(data + 2U);
 #endif
 
@@ -833,7 +838,7 @@ void CNXDNControl::writeEndRF()
 			m_network->reset();
 	}
 
-#if defined(DUMP_YSF)
+#if defined(DUMP_NXDN)
 	closeFile();
 #endif
 }
@@ -1053,6 +1058,14 @@ void CNXDNControl::writeNetwork(const unsigned char *data, unsigned int count)
 		return;
 
 	m_network->write(data + 2U, count, data[0U] == TAG_EOT);
+}
+
+void CNXDNControl::scrambler(unsigned char* data) const
+{
+	assert(data != NULL);
+
+	for (unsigned int i = 0U; i < NXDN_FRAME_LENGTH_BYTES; i++)
+		data[i] ^= SCRAMBLER[i];
 }
 
 bool CNXDNControl::openFile()
