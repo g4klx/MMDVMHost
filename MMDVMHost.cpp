@@ -144,6 +144,7 @@ m_dmrNetModeHang(3U),
 m_ysfNetModeHang(3U),
 m_p25NetModeHang(3U),
 m_modeTimer(1000U),
+m_dmrBeaconTimer(1000U),
 m_dmrTXTimer(1000U),
 m_cwIdTimer(1000U),
 m_duplex(false),
@@ -310,9 +311,6 @@ int CMMDVMHost::run()
 		m_cwIdTimer.start();
 	}
 
-	CTimer dmrBeaconTimer(1000U, 4U);
-	bool dmrBeaconsEnabled = m_dmrEnabled && m_conf.getDMRBeacons();
-
 	// For all modes we handle RSSI
 	std::string rssiMappingFile = m_conf.getModemRSSIMappingFile();
 
@@ -381,6 +379,7 @@ int CMMDVMHost::run()
 		unsigned int callHang       = m_conf.getDMRCallHang();
 		unsigned int txHang         = m_conf.getDMRTXHang();
 		m_dmrRFModeHang             = m_conf.getDMRModeHang();
+		unsigned int dmrBeacons     = m_conf.getDMRBeacons();
 
 		if (txHang > m_dmrRFModeHang)
 			txHang = m_dmrRFModeHang;
@@ -413,6 +412,12 @@ int CMMDVMHost::run()
 		LogInfo("    Call Hang: %us", callHang);
 		LogInfo("    TX Hang: %us", txHang);
 		LogInfo("    Mode Hang: %us", m_dmrRFModeHang);
+
+		if (dmrBeacons > 0U) {
+			LogInfo("    DMR Roaming Beacons: %u mins", dmrBeacons);
+			m_dmrBeaconTimer.setTimeout(dmrBeacons * 60U);
+			m_dmrBeaconTimer.start();
+		}
 
 		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, dumpTAData, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_lookup, rssi);
 
@@ -460,6 +465,8 @@ int CMMDVMHost::run()
 
 		p25 = new CP25Control(nac, id, selfOnly, uidOverride, m_p25Network, m_display, m_timeout, m_duplex, m_lookup, remoteGateway, rssi);
 	}
+
+	CTimer dmrBeaconTimer(1000U, 4U);
 
 	setMode(MODE_IDLE);
 
@@ -720,14 +727,6 @@ int CMMDVMHost::run()
 			}
 		}
 
-		if (m_dmrNetwork != NULL) {
-			bool run = m_dmrNetwork->wantsBeacon();
-			if (dmrBeaconsEnabled && run && m_mode == MODE_IDLE && !m_modem->hasTX()) {
-				setMode(MODE_DMR);
-				dmrBeaconTimer.start();
-			}
-		}
-
 		unsigned int ms = stopWatch.elapsed();
 		stopWatch.start();
 
@@ -763,6 +762,15 @@ int CMMDVMHost::run()
 
 				m_cwIdTimer.setTimeout(m_cwIdTime);
 				m_cwIdTimer.start();
+			}
+		}
+
+		m_dmrBeaconTimer.clock(ms);
+		if (m_dmrBeaconTimer.isRunning() && m_dmrBeaconTimer.hasExpired()) {
+			if (m_mode == MODE_IDLE && !m_modem->hasTX()) {
+				setMode(MODE_DMR);
+				m_dmrBeaconTimer.start();
+				dmrBeaconTimer.start();
 			}
 		}
 
