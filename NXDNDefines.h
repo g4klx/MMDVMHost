@@ -27,8 +27,8 @@ const unsigned int NXDN_FSW_LENGTH_BITS    = 20U;
 const unsigned int NXDN_FSW_LENGTH_SYMBOLS = NXDN_FSW_LENGTH_BITS / 2U;
 const unsigned int NXDN_FSW_LENGTH_SAMPLES = NXDN_FSW_LENGTH_SYMBOLS * NXDN_RADIO_SYMBOL_LENGTH;
 
-const unsigned char NXDN_FSW_BYTES[]      = {0x0CU, 0xDFU, 0x59U};
-const unsigned char NXDN_FSW_BYTES_MASK[] = {0x0FU, 0xFFU, 0xFFU};
+const unsigned char NXDN_FSW_BYTES[]      = {0xCDU, 0xF5U, 0x90U};
+const unsigned char NXDN_FSW_BYTES_MASK[] = {0xFFU, 0xFFU, 0xF0U};
 const unsigned int  NXDN_FSW_BYTES_LENGTH = 3U;
 
 #endif
