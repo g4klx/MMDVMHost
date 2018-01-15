@@ -498,8 +498,19 @@ void CDMRNetwork::receiveData(const unsigned char* data, unsigned int length)
 	if (slotNo == 2U && !m_slot2)
 		return;
 
-	unsigned char seqNo = data[4U];
-	m_jitterBuffers[slotNo]->addData(data, length, seqNo);
+	unsigned char dataType = data[15U] & 0x3FU;
+	if (dataType == (0x20U | DT_CSBK) ||
+		dataType == (0x20U | DT_DATA_HEADER) ||
+	    dataType == (0x20U | DT_RATE_1_DATA) ||
+		dataType == (0x20U | DT_RATE_34_DATA) ||
+	    dataType == (0x20U | DT_RATE_12_DATA)) {
+		// Data & CSBK frames
+		m_jitterBuffers[slotNo]->appendData(data, length);
+	} else {
+		// Voice frames
+		unsigned char seqNo = data[4U];
+		m_jitterBuffers[slotNo]->addData(data, length, seqNo);
+	}
 }
 
 bool CDMRNetwork::writeLogin()

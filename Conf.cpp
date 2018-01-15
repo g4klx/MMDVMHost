@@ -113,7 +113,7 @@ m_dstarErrorReply(true),
 m_dstarRemoteGateway(false),
 m_dstarModeHang(10U),
 m_dmrEnabled(false),
-m_dmrBeacons(false),
+m_dmrBeacons(0U),
 m_dmrId(0U),
 m_dmrColorCode(2U),
 m_dmrSelfOnly(false),
@@ -445,7 +445,7 @@ bool CConf::read()
 		if (::strcmp(key, "Enable") == 0)
 			m_dmrEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "Beacons") == 0)
-			m_dmrBeacons = ::atoi(value) == 1;
+			m_dmrBeacons = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Id") == 0)
 			m_dmrId = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "ColorCode") == 0)
@@ -983,7 +983,7 @@ bool CConf::getDMREnabled() const
 	return m_dmrEnabled;
 }
 
-bool CConf::getDMRBeacons() const
+unsigned int CConf::getDMRBeacons() const
 {
 	return m_dmrBeacons;
 }

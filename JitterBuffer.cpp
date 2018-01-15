@@ -36,6 +36,7 @@ m_stopWatch(),
 m_running(false),
 m_buffer(NULL),
 m_headSequenceNumber(0U),
+m_appendSequenceNumber(0U),
 m_lastData(NULL),
 m_lastDataLength(0U)
 {
@@ -115,6 +116,52 @@ bool CJitterBuffer::addData(const unsigned char* data, unsigned int length, unsi
 	return true;
 }
 
+bool CJitterBuffer::appendData(const unsigned char* data, unsigned int length)
+{
+	assert(data != NULL);
+	assert(length > 0U);
+	assert(length <= m_blockSize);
+
+	unsigned int headSequenceNumber = m_headSequenceNumber % m_topSequenceNumber;
+	unsigned int tailSequenceNumber = (m_headSequenceNumber + m_blockCount) % m_topSequenceNumber;
+
+	// Is the data out of sequence?
+	if (headSequenceNumber < tailSequenceNumber) {
+		if (m_appendSequenceNumber < headSequenceNumber || m_appendSequenceNumber >= tailSequenceNumber) {
+			LogDebug("%s, JitterBuffer: rejecting append frame with seqNo=%u, raw=%u, head=%u, tail=%u", m_name.c_str(), m_appendSequenceNumber, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
+			return false;
+		}
+	} else {
+		if (m_appendSequenceNumber >= tailSequenceNumber && m_appendSequenceNumber < headSequenceNumber) {
+			LogDebug("%s, JitterBuffer: rejecting append frame with seqNo=%u, raw=%u, head=%u, tail=%u", m_name.c_str(), m_appendSequenceNumber, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
+			return false;
+		}
+	}
+
+	unsigned int number;
+	if (m_appendSequenceNumber >= headSequenceNumber)
+		number = m_appendSequenceNumber - headSequenceNumber;
+	else
+		number = (m_appendSequenceNumber + m_blockCount) - headSequenceNumber;;
+
+	unsigned int index = (m_headSequenceNumber + number) % m_blockCount;
+
+	if (m_debug)
+		LogDebug("%s, JitterBuffer: appending frame with seqNo=%u, pos=%u, raw=%u, head=%u, tail=%u", m_name.c_str(), m_appendSequenceNumber, index, m_headSequenceNumber, headSequenceNumber, tailSequenceNumber);
+
+	::memcpy(m_buffer[index].m_data, data, length);
+	m_buffer[index].m_length = length;
+
+	if (!m_timer.isRunning()) {
+		LogDebug("%s, JitterBuffer: starting the timer from append", m_name.c_str());
+		m_timer.start();
+	}
+
+	m_appendSequenceNumber++;
+
+	return true;
+}
+
 JB_STATUS CJitterBuffer::getData(unsigned char* data, unsigned int& length)
 {
 	assert(data != NULL);
@@ -168,6 +215,7 @@ void CJitterBuffer::reset()
 		m_buffer[i].m_length = 0U;
 
 	m_headSequenceNumber = 0U;
+	m_appendSequenceNumber = 0U;
 
 	m_lastDataLength = 0U;
 	
