@@ -133,6 +133,7 @@ m_dstarNetwork(NULL),
 m_dmrNetwork(NULL),
 m_ysfNetwork(NULL),
 m_p25Network(NULL),
+m_nxdnNetwork(NULL),
 m_display(NULL),
 m_ump(NULL),
 m_mode(MODE_IDLE),
@@ -296,6 +297,12 @@ int CMMDVMHost::run()
 
 	if (m_p25Enabled && m_conf.getP25NetworkEnabled()) {
 		ret = createP25Network();
+		if (!ret)
+			return 1;
+	}
+
+	if (m_nxdnEnabled && m_conf.getNXDNNetworkEnabled()) {
+		ret = createNXDNNetwork();
 		if (!ret)
 			return 1;
 	}
@@ -478,9 +485,9 @@ int CMMDVMHost::run()
 		LogInfo("    RAN: %u", ran);
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
 		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
-		LogInfo("    Mode Hang: %us", m_p25RFModeHang);
+		LogInfo("    Mode Hang: %us", m_nxdnRFModeHang);
 
-		nxdn = new CNXDNControl(ran, id, selfOnly, NULL, m_display, m_timeout, m_duplex, m_lookup, remoteGateway, rssi);
+		nxdn = new CNXDNControl(ran, id, selfOnly, m_nxdnNetwork, m_display, m_timeout, m_duplex, remoteGateway, rssi);
 	}
 
 	setMode(MODE_IDLE);
@@ -813,6 +820,8 @@ int CMMDVMHost::run()
 			m_ysfNetwork->clock(ms);
 		if (m_p25Network != NULL)
 			m_p25Network->clock(ms);
+		if (m_nxdnNetwork != NULL)
+			m_nxdnNetwork->clock(ms);
 
 		m_cwIdTimer.clock(ms);
 		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
@@ -881,6 +890,11 @@ int CMMDVMHost::run()
 		delete m_p25Network;
 	}
 
+	if (m_nxdnNetwork != NULL) {
+		m_nxdnNetwork->close();
+		delete m_nxdnNetwork;
+	}
+
 	delete dstar;
 	delete dmr;
 	delete ysf;
@@ -940,7 +954,7 @@ bool CMMDVMHost::createModem()
 	LogInfo("    TX Frequency: %uHz (%uHz)", txFrequency, txFrequency + txOffset);
 
 	m_modem = new CModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
-	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEabled);
+	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled);
 	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel);
 	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel);
 	m_modem->setDMRParams(colorCode);
@@ -1109,6 +1123,36 @@ bool CMMDVMHost::createP25Network()
 	}
 
 	m_p25Network->enable(true);
+
+	return true;
+}
+
+bool CMMDVMHost::createNXDNNetwork()
+{
+	std::string myAddress      = m_conf.getNXDNNetworkMyAddress();
+	unsigned int myPort        = m_conf.getNXDNNetworkMyPort();
+	std::string gatewayAddress = m_conf.getNXDNNetworkGatewayAddress();
+	unsigned int gatewayPort   = m_conf.getNXDNNetworkGatewayPort();
+	m_nxdnNetModeHang          = m_conf.getNXDNNetworkModeHang();
+	bool debug                 = m_conf.getNXDNNetworkDebug();
+
+	LogInfo("NXDN Network Parameters");
+	LogInfo("    Local Address: %s", myAddress.c_str());
+	LogInfo("    Local Port: %u", myPort);
+	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
+	LogInfo("    Gateway Port: %u", gatewayPort);
+	LogInfo("    Mode Hang: %us", m_nxdnNetModeHang);
+
+	m_nxdnNetwork = new CNXDNNetwork(myAddress, myPort, gatewayAddress, gatewayPort, m_callsign, debug);
+
+	bool ret = m_nxdnNetwork->open();
+	if (!ret) {
+		delete m_nxdnNetwork;
+		m_nxdnNetwork = NULL;
+		return false;
+	}
+
+	m_nxdnNetwork->enable(true);
 
 	return true;
 }
@@ -1304,6 +1348,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_ysfNetwork->enable(false);
 		if (m_p25Network != NULL)
 			m_p25Network->enable(false);
+		if (m_nxdnNetwork != NULL)
+			m_nxdnNetwork->enable(false);
 		m_modem->setMode(MODE_DSTAR);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_DSTAR);
@@ -1319,6 +1365,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_ysfNetwork->enable(false);
 		if (m_p25Network != NULL)
 			m_p25Network->enable(false);
+		if (m_nxdnNetwork != NULL)
+			m_nxdnNetwork->enable(false);
 		m_modem->setMode(MODE_DMR);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_DMR);
@@ -1338,6 +1386,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dmrNetwork->enable(false);
 		if (m_p25Network != NULL)
 			m_p25Network->enable(false);
+		if (m_nxdnNetwork != NULL)
+			m_nxdnNetwork->enable(false);
 		m_modem->setMode(MODE_YSF);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_YSF);
@@ -1353,6 +1403,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dmrNetwork->enable(false);
 		if (m_ysfNetwork != NULL)
 			m_ysfNetwork->enable(false);
+		if (m_nxdnNetwork != NULL)
+			m_nxdnNetwork->enable(false);
 		m_modem->setMode(MODE_P25);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_P25);
@@ -1388,6 +1440,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_ysfNetwork->enable(false);
 		if (m_p25Network != NULL)
 			m_p25Network->enable(false);
+		if (m_nxdnNetwork != NULL)
+			m_nxdnNetwork->enable(false);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
@@ -1411,6 +1465,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_ysfNetwork->enable(false);
 		if (m_p25Network != NULL)
 			m_p25Network->enable(false);
+		if (m_nxdnNetwork != NULL)
+			m_nxdnNetwork->enable(false);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
@@ -1432,6 +1488,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_ysfNetwork->enable(true);
 		if (m_p25Network != NULL)
 			m_p25Network->enable(true);
+		if (m_nxdnNetwork != NULL)
+			m_nxdnNetwork->enable(false);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();

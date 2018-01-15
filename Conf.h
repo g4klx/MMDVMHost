@@ -183,6 +183,15 @@ public:
   unsigned int getP25NetworkModeHang() const;
   bool         getP25NetworkDebug() const;
 
+  // The NXDN Network section
+  bool         getNXDNNetworkEnabled() const;
+  std::string  getNXDNNetworkMyAddress() const;
+  unsigned int getNXDNNetworkMyPort() const;
+  std::string  getNXDNNetworkGatewayAddress() const;
+  unsigned int getNXDNNetworkGatewayPort() const;
+  unsigned int getNXDNNetworkModeHang() const;
+  bool         getNXDNNetworkDebug() const;
+
   // The TFTSERIAL section
   std::string  getTFTSerialPort() const;
   unsigned int getTFTSerialBrightness() const;
@@ -359,6 +368,14 @@ private:
   unsigned int m_p25LocalPort;
   unsigned int m_p25NetworkModeHang;
   bool         m_p25NetworkDebug;
+
+  bool         m_nxdnNetworkEnabled;
+  std::string  m_nxdnNetworkMyAddress;
+  unsigned int m_nxdnNetworkMyPort;
+  std::string  m_nxdnNetworkGatewayAddress;
+  unsigned int m_nxdnNetworkGatewayPort;
+  unsigned int m_nxdnNetworkModeHang;
+  bool         m_nxdnNetworkDebug;
 
   std::string  m_tftSerialPort;
   unsigned int m_tftSerialBrightness;

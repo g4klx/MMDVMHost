@@ -20,6 +20,7 @@
 #define	MMDVMHOST_H
 
 #include "DStarNetwork.h"
+#include "NXDNNetwork.h"
 #include "YSFNetwork.h"
 #include "P25Network.h"
 #include "DMRNetwork.h"
@@ -47,6 +48,7 @@ private:
   CDMRNetwork*   m_dmrNetwork;
   CYSFNetwork*   m_ysfNetwork;
   CP25Network*   m_p25Network;
+  CNXDNNetwork*  m_nxdnNetwork;
   CDisplay*      m_display;
   CUMP*          m_ump;
   unsigned char  m_mode;
@@ -82,6 +84,7 @@ private:
   bool createDMRNetwork();
   bool createYSFNetwork();
   bool createP25Network();
+  bool createNXDNNetwork();
   void createDisplay();
 
   void setMode(unsigned char mode);

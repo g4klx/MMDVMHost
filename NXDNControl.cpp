@@ -23,9 +23,9 @@
 
 // #define	DUMP_NXDN
 
-CNXDNControl::CNXDNControl(const std::string& callsign, bool selfOnly, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
-m_callsign(NULL),
-m_selfCallsign(NULL),
+CNXDNControl::CNXDNControl(unsigned int ran, unsigned int id, bool selfOnly, CNXDNNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
+m_ran(ran),
+m_id(id),
 m_selfOnly(selfOnly),
 m_network(network),
 m_display(display),

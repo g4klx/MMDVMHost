@@ -20,7 +20,7 @@
 #define	NXDNControl_H
 
 #include "RSSIInterpolator.h"
-// #include "YSFNetwork.h"
+#include "NXDNNetwork.h"
 #include "NXDNDefines.h"
 // #include "YSFPayload.h"
 #include "RingBuffer.h"
@@ -35,7 +35,7 @@
 
 class CNXDNControl {
 public:
-	CNXDNControl(const std::string& callsign, bool selfOnly, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper);
+	CNXDNControl(unsigned int ran, unsigned int id, bool selfOnly, CNXDNNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper);
 	~CNXDNControl();
 
 	bool writeModem(unsigned char* data, unsigned int len);
@@ -45,10 +45,10 @@ public:
 	void clock(unsigned int ms);
 
 private:
-	unsigned char*             m_callsign;
-	unsigned char*             m_selfCallsign;
+	unsigned int               m_ran;
+	unsigned int               m_id;
 	bool                       m_selfOnly;
-	CYSFNetwork*               m_network;
+	CNXDNNetwork*              m_network;
 	CDisplay*                  m_display;
 	bool                       m_duplex;
 	bool                       m_remoteGateway;

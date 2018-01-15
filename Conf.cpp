@@ -177,6 +177,13 @@ m_p25GatewayPort(0U),
 m_p25LocalPort(0U),
 m_p25NetworkModeHang(3U),
 m_p25NetworkDebug(false),
+m_nxdnNetworkEnabled(false),
+m_nxdnNetworkMyAddress(),
+m_nxdnNetworkMyPort(0U),
+m_nxdnNetworkGatewayAddress(),
+m_nxdnNetworkGatewayPort(0U),
+m_nxdnNetworkModeHang(3U),
+m_nxdnNetworkDebug(false),
 m_tftSerialPort("/dev/ttyAMA0"),
 m_tftSerialBrightness(50U),
 m_hd44780Rows(2U),
@@ -601,6 +608,21 @@ bool CConf::read()
 			m_p25NetworkModeHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Debug") == 0)
 			m_p25NetworkDebug = ::atoi(value) == 1;
+	} else if (section == SECTION_NXDN_NETWORK) {
+		if (::strcmp(key, "Enable") == 0)
+			m_nxdnNetworkEnabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "LocalAddress") == 0)
+			m_nxdnNetworkMyAddress = value;
+		else if (::strcmp(key, "LocalPort") == 0)
+			m_nxdnNetworkMyPort = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "GatewayAddress") == 0)
+			m_nxdnNetworkGatewayAddress = value;
+		else if (::strcmp(key, "GatewayPort") == 0)
+			m_nxdnNetworkGatewayPort = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "ModeHang") == 0)
+			m_nxdnNetworkModeHang = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "Debug") == 0)
+			m_nxdnNetworkDebug = ::atoi(value) == 1;
 	} else if (section == SECTION_TFTSERIAL) {
 		if (::strcmp(key, "Port") == 0)
 			m_tftSerialPort = value;
@@ -1279,6 +1301,41 @@ unsigned int CConf::getP25NetworkModeHang() const
 bool CConf::getP25NetworkDebug() const
 {
 	return m_p25NetworkDebug;
+}
+
+bool CConf::getNXDNNetworkEnabled() const
+{
+	return m_nxdnNetworkEnabled;
+}
+
+std::string CConf::getNXDNNetworkMyAddress() const
+{
+	return m_nxdnNetworkMyAddress;
+}
+
+unsigned int CConf::getNXDNNetworkMyPort() const
+{
+	return m_nxdnNetworkMyPort;
+}
+
+std::string CConf::getNXDNNetworkGatewayAddress() const
+{
+	return m_nxdnNetworkGatewayAddress;
+}
+
+unsigned int CConf::getNXDNNetworkGatewayPort() const
+{
+	return m_nxdnNetworkGatewayPort;
+}
+
+unsigned int CConf::getNXDNNetworkModeHang() const
+{
+	return m_nxdnNetworkModeHang;
+}
+
+bool CConf::getNXDNNetworkDebug() const
+{
+	return m_nxdnNetworkDebug;
 }
 
 std::string CConf::getTFTSerialPort() const
