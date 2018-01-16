@@ -174,11 +174,9 @@ void CP25Trellis::deinterleave(const unsigned char* data, signed char* dibits) c
 {
 	for (unsigned int i = 0U; i < 98U; i++) {
 		unsigned int n = i * 2U + 0U;
-		if (n >= 98U) n += 68U;
 		bool b1 = READ_BIT(data, n) != 0x00U;
 
 		n = i * 2U + 1U;
-		if (n >= 98U) n += 68U;
 		bool b2 = READ_BIT(data, n) != 0x00U;
 
 		signed char dibit;
@@ -222,11 +220,9 @@ void CP25Trellis::interleave(const signed char* dibits, unsigned char* data) con
 		}
 
 		n = i * 2U + 0U;
-		if (n >= 98U) n += 68U;
 		WRITE_BIT(data, n, b1);
 
 		n = i * 2U + 1U;
-		if (n >= 98U) n += 68U;
 		WRITE_BIT(data, n, b2);
 	}
 }
