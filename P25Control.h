@@ -66,6 +66,7 @@ private:
 	unsigned int               m_rfErrs;
 	unsigned int               m_netFrames;
 	unsigned int               m_netLost;
+	unsigned int               m_rfDataFrames;
 	CP25NID                    m_nid;
 	unsigned char              m_lastDUID;
 	CP25Audio                  m_audio;
@@ -77,8 +78,7 @@ private:
 	unsigned char*             m_netLDU2;
 	unsigned char*             m_lastIMBE;
 	unsigned char*             m_rfLDU;
-	unsigned char*             m_rfPDURaw;
-	unsigned char*             m_rfPDUCooked;
+	unsigned char*             m_rfPDU;
 	unsigned int               m_rfPDUCount;
 	unsigned int               m_rfPDUBits;
 	CRSSIInterpolator*         m_rssiMapper;

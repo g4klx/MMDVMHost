@@ -42,7 +42,12 @@ const unsigned char P25_SYNC_BYTES_LENGTH = 6U;
 
 const unsigned int  P25_MAX_PDU_COUNT = 10U;
 
-const unsigned int  P25_PDU_HEADER_LENGTH_BYTES = 12U;
+const unsigned int  P25_PDU_HEADER_LENGTH_BYTES      = 12U;
+const unsigned int  P25_PDU_CONFIRMED_LENGTH_BYTES   = 18U;
+const unsigned int  P25_PDU_UNCONFIRMED_LENGTH_BYTES = 12U;
+
+const unsigned int  P25_PDU_FEC_LENGTH_BYTES         = 24U;
+const unsigned int  P25_PDU_FEC_LENGTH_BITS          = P25_PDU_FEC_LENGTH_BYTES * 8U;
 
 const unsigned int  P25_MI_LENGTH_BYTES = 9U;
 
