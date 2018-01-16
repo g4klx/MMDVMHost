@@ -25,7 +25,7 @@
 // #include "YSFPayload.h"
 #include "RingBuffer.h"
 #include "StopWatch.h"
-// #include "YSFFICH.h"
+#include "NXDNLICH.h"
 #include "Display.h"
 #include "Defines.h"
 #include "Timer.h"
@@ -67,6 +67,7 @@ private:
 	unsigned int               m_rfBits;
 	unsigned int               m_netErrs;
 	unsigned int               m_netBits;
+	CNXDNLICH                  m_lastLICH;
 	unsigned char              m_netN;
 	CRSSIInterpolator*         m_rssiMapper;
 	unsigned char              m_rssi;
@@ -76,9 +77,12 @@ private:
 	unsigned int               m_rssiCount;
 	FILE*                      m_fp;
 
-	bool processVWData(bool valid, unsigned char *data);
-	bool processDNData(bool valid, unsigned char *data);
-	bool processFRData(bool valid, unsigned char *data);
+	bool processVCHOnly(bool valid, unsigned char *data);
+	bool processFACCH11(bool valid, unsigned char *data);
+	bool processFACCH12(bool valid, unsigned char *data);
+	bool processFACCH1(bool valid, unsigned char *data);
+	bool processUDCH(bool valid, unsigned char *data);
+	bool processFACCH2(bool valid, unsigned char *data);
 
 	void writeQueueRF(const unsigned char* data);
 	void writeQueueNet(const unsigned char* data);

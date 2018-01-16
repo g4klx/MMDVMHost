@@ -51,6 +51,7 @@ m_rfErrs(0U),
 m_rfBits(1U),
 m_netErrs(0U),
 m_netBits(1U),
+m_lastLICH(),
 m_netN(0U),
 m_rssiMapper(rssiMapper),
 m_rssi(0U),
@@ -115,49 +116,74 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 		m_rssiCount++;
 	}
 
+	CUtils::dump(2U, "NXDN, raw data", data, len);
+
 	scrambler(data + 2U);
 
-	CYSFFICH fich;
-	bool valid = fich.decode(data + 2U);
+	CUtils::dump(2U, "NXDN, after descrambling", data, len);
+
+	CNXDNLICH lich;
+	bool valid = lich.decode(data + 2U);
 
 	if (valid)
-		m_lastFICH = fich;
+		m_lastLICH = lich;
 
 	// Stop repeater packets coming through, unless we're acting as a remote gateway
 	if (m_remoteGateway) {
-		unsigned char mr = m_lastFICH.getMR();
-		if (mr != YSF_MR_BUSY)
+		unsigned char direction = m_lastLICH.getDirection();
+		if (direction != NXDN_LICH_DIRECTION_INBOUND)
 			return false;
 	} else {
-		unsigned char mr = m_lastFICH.getMR();
-		if (mr == YSF_MR_BUSY)
+		unsigned char direction = m_lastLICH.getDirection();
+		if (direction == NXDN_LICH_DIRECTION_OUTBOUND)
 			return false;
 	}
 
-	unsigned char dt = m_lastFICH.getDT();
+	unsigned char usc    = m_lastLICH.getFCT();
+	unsigned char option = m_lastLICH.getOption();
 
 	bool ret = false;
-	switch (dt) {
-	case YSF_DT_VOICE_FR_MODE:
-		ret = processVWData(valid, data);
-		break;
+#ifdef notdef
+	if (usc == NXDN_LICH_USC_SACCH_NS || usc == NXDN_LICH_USC_SACCH_SS) {
+		switch (option) {
+		case NXDN_LICH_STEAL_NONE:
+			ret = processVCHOnly(valid, data);
+			break;
 
-	case YSF_DT_VD_MODE1:
-	case YSF_DT_VD_MODE2:
-		ret = processDNData(valid, data);
-		break;
+		case NXDN_LICH_STEAL_FACCH1_1:
+			ret = processFACCH11(valid, data);
+			break;
 
-	case YSF_DT_DATA_FR_MODE:
-		ret = processFRData(valid, data);
-		break;
+		case NXDN_LICH_STEAL_FACCH1_2:
+			ret = processFACCH12(valid, data);
+			break;
 
-	default:
-		break;
+		case NXDN_LICH_STEAL_FACCH:
+			ret = processFACCH1(valid, data);
+			break;
+
+		default:
+			break;
+		}
+	} else if (usc == NXDN_LICH_USC_UDCH) {
+		switch (option) {
+		case NXDN_LICH_STEAL_NONE:
+			ret = processUDCH(valid, data);
+			break;
+
+		case NXDN_LICH_STEAL_FACCH:
+			ret = processFACCH2(valid, data);
+			break;
+
+		default:
+			break;
+		}
 	}
-
+#endif
 	return ret;
 }
 
+#ifdef notdef
 bool CNXDNControl::processVWData(bool valid, unsigned char *data)
 {
 	unsigned char fi = m_lastFICH.getFI();
@@ -810,6 +836,8 @@ bool CNXDNControl::processFRData(bool valid, unsigned char *data)
 	return false;
 }
 
+#endif
+
 unsigned int CNXDNControl::readModem(unsigned char* data)
 {
 	assert(data != NULL);
@@ -856,6 +884,8 @@ void CNXDNControl::writeEndNet()
 	if (m_network != NULL)
 		m_network->reset();
 }
+
+#ifdef notdef
 
 void CNXDNControl::writeNetwork()
 {
@@ -986,10 +1016,14 @@ void CNXDNControl::writeNetwork()
 	}
 }
 
+#endif
+
 void CNXDNControl::clock(unsigned int ms)
 {
+#ifdef notdef
 	if (m_network != NULL)
 		writeNetwork();
+#endif
 
 	m_rfTimeoutTimer.clock(ms);
 	m_netTimeoutTimer.clock(ms);

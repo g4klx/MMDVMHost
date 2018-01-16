@@ -239,6 +239,9 @@
     <ClInclude Include="NXDNNetwork.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="NXDNLICH.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -443,6 +446,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NXDNNetwork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NXDNLICH.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

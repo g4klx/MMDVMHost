@@ -784,8 +784,7 @@ int CMMDVMHost::run()
 					if (m_mode == MODE_NXDN) {
 						m_modem->writeNXDNData(data, len);
 						m_modeTimer.start();
-					}
-					else if (m_mode != MODE_LOCKOUT) {
+					} else if (m_mode != MODE_LOCKOUT) {
 						LogWarning("NXDN data received when in mode %u", m_mode);
 					}
 				}

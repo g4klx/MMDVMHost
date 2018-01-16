@@ -31,5 +31,24 @@ const unsigned char NXDN_FSW_BYTES[]      = {0xCDU, 0xF5U, 0x90U};
 const unsigned char NXDN_FSW_BYTES_MASK[] = {0xFFU, 0xFFU, 0xF0U};
 const unsigned int  NXDN_FSW_BYTES_LENGTH = 3U;
 
-#endif
+const unsigned int NXDN_LICH_LENGTH_BITS = 16U;
 
+const unsigned char NXDN_LICH_RFCT_RCCH   = 0U;
+const unsigned char NXDN_LICH_RFCT_RTCH   = 1U;
+const unsigned char NXDN_LICH_RFCT_RDCH   = 2U;
+const unsigned char NXDN_LICH_RFCT_RTCH_C = 3U;
+
+const unsigned char NXDN_LICH_USC_SACCH_NS      = 0U;
+const unsigned char NXDN_LICH_USC_UDCH          = 1U;
+const unsigned char NXDN_LICH_USC_SACCH_SS      = 2U;
+const unsigned char NXDN_LICH_USC_SACCH_SS_IDLE = 3U;
+
+const unsigned char NXDN_LICH_STEAL_NONE     = 3U;
+const unsigned char NXDN_LICH_STEAL_FACCH1_2 = 2U;
+const unsigned char NXDN_LICH_STEAL_FACCH1_1 = 1U;
+const unsigned char NXDN_LICH_STEAL_FACCH    = 0U;
+
+const unsigned char NXDN_LICH_DIRECTION_INBOUND  = 0U;
+const unsigned char NXDN_LICH_DIRECTION_OUTBOUND = 1U;
+
+#endif
