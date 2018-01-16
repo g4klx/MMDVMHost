@@ -59,7 +59,6 @@ private:
   unsigned int   m_ysfNetModeHang;
   unsigned int   m_p25NetModeHang;
   CTimer         m_modeTimer;
-  CTimer         m_dmrBeaconTimer;
   CTimer         m_dmrTXTimer;
   CTimer         m_cwIdTimer;
   bool           m_duplex;
