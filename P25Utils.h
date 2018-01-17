@@ -22,6 +22,7 @@
 class CP25Utils {
 public:
 	static unsigned int encode(const unsigned char* in, unsigned char* out, unsigned int start, unsigned int stop);
+	static unsigned int encode(const unsigned char* in, unsigned char* out, unsigned int length);
 
 	static unsigned int decode(const unsigned char* in, unsigned char* out, unsigned int start, unsigned int stop);
 
