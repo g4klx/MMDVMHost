@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -35,6 +35,8 @@ const unsigned int YSF_RSSI_COUNT   = 13U;		// 13 * 100ms = 1300ms
 const unsigned int YSF_BER_COUNT    = 13U;		// 13 * 100ms = 1300ms
 const unsigned int P25_RSSI_COUNT   = 7U;		  // 7 * 180ms = 1260ms
 const unsigned int P25_BER_COUNT    = 7U;		  // 7 * 180ms = 1260ms
+const unsigned int NXDN_RSSI_COUNT  = 28U;		  // 28 * 40ms = 1120ms
+const unsigned int NXDN_BER_COUNT   = 28U;		  // 28 * 40ms = 1120ms
 
 CNextion::CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness, unsigned int screenLayout) :
 CDisplay(),
@@ -687,6 +689,94 @@ void CNextion::writeP25BERInt(float ber)
 }
 
 void CNextion::clearP25Int()
+{
+	sendCommand("t0.txt=\"Listening\"");
+	sendCommandAction(101U);
+	sendCommand("t1.txt=\"\"");
+	sendCommand("t2.txt=\"\"");
+	sendCommand("t3.txt=\"\"");
+}
+
+void CNextion::writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type)
+{
+	assert(source != NULL);
+	assert(type != NULL);
+
+	if (m_mode != MODE_NXDN) {
+		sendCommand("page NXDN");
+		sendCommandAction(5U);
+	}
+
+	char text[30U];
+	::sprintf(text, "dim=%u", m_brightness);
+	sendCommand(text);
+
+	::sprintf(text, "t0.txt=\"%s %.10s\"", type, source);
+	sendCommand(text);
+	sendCommandAction(102U);
+
+	::sprintf(text, "t1.txt=\"%s%u\"", group ? "TG" : "", dest);
+	sendCommand(text);
+	sendCommandAction(103U);
+
+	m_clockDisplayTimer.stop();
+
+	m_mode = MODE_NXDN;
+	m_rssiAccum1 = 0U;
+	m_berAccum1  = 0.0F;
+	m_rssiCount1 = 0U;
+	m_berCount1  = 0U;
+}
+
+void CNextion::writeNXDNRSSIInt(unsigned char rssi)
+{
+	if (m_rssiCount1 == 0U) {
+		char text[20U];
+		::sprintf(text, "t2.txt=\"-%udBm\"", rssi);
+		sendCommand(text);
+		sendCommandAction(104U);
+		m_rssiCount1 = 1U;
+		return;
+	}
+
+	m_rssiAccum1 += rssi;
+	m_rssiCount1++;
+
+	if (m_rssiCount1 == NXDN_RSSI_COUNT) {
+		char text[20U];
+		::sprintf(text, "t2.txt=\"-%udBm\"", m_rssiAccum1 / NXDN_RSSI_COUNT);
+		sendCommand(text);
+		sendCommandAction(104U);
+		m_rssiAccum1 = 0U;
+		m_rssiCount1 = 1U;
+	}
+}
+
+void CNextion::writeNXDNBERInt(float ber)
+{
+	if (m_berCount1 == 0U) {
+		char text[20U];
+		::sprintf(text, "t3.txt=\"%.1f%%\"", ber);
+		sendCommand(text);
+		sendCommandAction(105U);
+		m_berCount1 = 1U;
+		return;
+	}
+
+	m_berAccum1 += ber;
+	m_berCount1++;
+
+	if (m_berCount1 == NXDN_BER_COUNT) {
+		char text[20U];
+		::sprintf(text, "t3.txt=\"%.1f%%\"", m_berAccum1 / float(NXDN_BER_COUNT));
+		sendCommand(text);
+		sendCommandAction(105U);
+		m_berAccum1 = 0.0F;
+		m_berCount1 = 1U;
+	}
+}
+
+void CNextion::clearNXDNInt()
 {
 	sendCommand("t0.txt=\"Listening\"");
 	sendCommandAction(101U);

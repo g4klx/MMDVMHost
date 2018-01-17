@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -343,6 +343,47 @@ void CTFTSerial::writeP25Int(const char* source, bool group, unsigned int dest, 
 }
 
 void CTFTSerial::clearP25Int()
+{
+	gotoPosPixel(5U, 70U);
+	displayText("  Listening   ");
+
+	gotoPosPixel(5U, 90U);
+	displayText("              ");
+
+	gotoPosPixel(5U, 110U);
+	displayText("              ");
+}
+
+void CTFTSerial::writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type)
+{
+	assert(source != NULL);
+	assert(type != NULL);
+
+	if (m_mode != MODE_NXDN) {
+		// Clear the screen
+		clearScreen();
+
+		setFontSize(FONT_MEDIUM);
+
+		// Draw the P25 insignia
+		displayBitmap(0U, 0U, "NXDN_sm.bmp");
+	}
+
+	char text[30U];
+	::sprintf(text, "%s %.10s", type, source);
+
+	gotoPosPixel(5U, 70U);
+	displayText(text);
+
+	::sprintf(text, "  %s%u", group ? "TG" : "", dest);
+
+	gotoPosPixel(5U, 90U);
+	displayText(text);
+
+	m_mode = MODE_NXDN;
+}
+
+void CTFTSerial::clearNXDNInt()
 {
 	gotoPosPixel(5U, 70U);
 	displayText("  Listening   ");

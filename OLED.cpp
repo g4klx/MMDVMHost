@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -341,6 +341,33 @@ void COLED::clearP25Int()
     display.display();
 }
 
+void COLED::writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type)
+{
+    m_mode = MODE_NXDN;
+
+    display.clearDisplay();
+    display.fillRect(0, OLED_LINE1, display.width(), display.height(), BLACK);
+
+    display.setCursor(0,OLED_LINE2);
+    display.printf("%s %.10s", type, source);
+
+    display.setCursor(0,OLED_LINE3);
+    display.printf("  %s%u", group ? "TG" : "", dest);
+
+    OLED_statusbar();
+    display.display();
+}
+
+void COLED::clearNXDNInt()
+{
+    display.fillRect(0, OLED_LINE1, display.width(), display.height(), BLACK);
+
+    display.setCursor(40,38);
+    display.print("Listening");
+
+    display.display();
+}
+
 void COLED::writeCWInt()
 {
     display.clearDisplay();
@@ -395,6 +422,8 @@ void COLED::OLED_statusbar()
       display.drawBitmap(0, 0, logo_fusion_bmp, 128, 16, WHITE);
     else if (m_mode == MODE_P25)
       display.print("P25");
+    else if (m_mode == MODE_NXDN)
+      display.print("NXDN");
     else
       display.drawBitmap(0, 0, logo_glcd_bmp, 128, 16, WHITE);
 

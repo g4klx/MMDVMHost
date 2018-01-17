@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -265,6 +265,39 @@ void CDisplay::clearP25()
 	}
 }
 
+void CDisplay::writeNXDN(const char* source, bool group, unsigned int dest, const char* type)
+{
+	assert(source != NULL);
+	assert(type != NULL);
+
+	m_timer1.start();
+	m_mode1 = MODE_IDLE;
+
+	writeNXDNInt(source, group, dest, type);
+}
+
+void CDisplay::writeNXDNRSSI(unsigned char rssi)
+{
+	if (rssi != 0U)
+		writeNXDNRSSIInt(rssi);
+}
+
+void CDisplay::writeNXDNBER(float ber)
+{
+	writeNXDNBERInt(ber);
+}
+
+void CDisplay::clearNXDN()
+{
+	if (m_timer1.hasExpired()) {
+		clearNXDNInt();
+		m_timer1.stop();
+		m_mode1 = MODE_IDLE;
+	} else {
+		m_mode1 = MODE_NXDN;
+	}
+}
+
 void CDisplay::writeCW()
 {
 	m_timer1.start();
@@ -295,6 +328,11 @@ void CDisplay::clock(unsigned int ms)
 			break;
 		case MODE_P25:
 			clearP25Int();
+			m_mode1 = MODE_IDLE;
+			m_timer1.stop();
+			break;
+		case MODE_NXDN:
+			clearNXDNInt();
 			m_mode1 = MODE_IDLE;
 			m_timer1.stop();
 			break;
@@ -358,5 +396,13 @@ void CDisplay::writeP25RSSIInt(unsigned char rssi)
 }
 
 void CDisplay::writeP25BERInt(float ber)
+{
+}
+
+void CDisplay::writeNXDNRSSIInt(unsigned char rssi)
+{
+}
+
+void CDisplay::writeNXDNBERInt(float ber)
 {
 }

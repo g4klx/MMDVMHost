@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2018 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -24,29 +24,20 @@
 #define PIN_LED     13
 #endif
 
-#if defined(__MK20DX256__)
 #define PIN_DSTAR   3
 #define PIN_DMR     4
 #define PIN_YSF     5
 #define PIN_P25     6
+#define PIN_NXDN    7
 
 #define PIN_TX      10
 #define PIN_CD      11
 
 #define PIN_LOCKOUT 12
 
+#if defined(__MK20DX256__)
 #define FLASH_DELAY 200000U
 #else
-#define PIN_DSTAR   2
-#define PIN_DMR     3
-#define PIN_YSF     4
-#define PIN_P25     5
-
-#define PIN_TX      6
-#define PIN_CD      7
-
-#define PIN_LOCKOUT 12
-
 #define FLASH_DELAY 3200U
 #endif
 
@@ -72,6 +63,7 @@ void setup()
   pinMode(PIN_DMR,     OUTPUT);
   pinMode(PIN_YSF,     OUTPUT);
   pinMode(PIN_P25,     OUTPUT);
+  pinMode(PIN_NXDN,    OUTPUT);
   pinMode(PIN_TX,      OUTPUT);
   pinMode(PIN_CD,      OUTPUT);
   pinMode(PIN_LOCKOUT, INPUT);
@@ -80,6 +72,7 @@ void setup()
   digitalWrite(PIN_DMR,   LOW);
   digitalWrite(PIN_YSF,   LOW);
   digitalWrite(PIN_P25,   LOW);
+  digitalWrite(PIN_NXDN,  LOW);
   digitalWrite(PIN_TX,    LOW);
   digitalWrite(PIN_CD,    LOW);
 }
@@ -101,6 +94,7 @@ void setup()
 #define MODE_DMR    2U
 #define MODE_YSF    3U
 #define MODE_P25    4U
+#define MODE_NXDN   5U
 
 bool     m_started = false;
 uint32_t m_count   = 0U;
@@ -139,6 +133,7 @@ void loop()
           digitalWrite(PIN_DMR,   m_buffer[3U] == MODE_DMR   ? HIGH : LOW);
           digitalWrite(PIN_YSF,   m_buffer[3U] == MODE_YSF   ? HIGH : LOW);
           digitalWrite(PIN_P25,   m_buffer[3U] == MODE_P25   ? HIGH : LOW);
+          digitalWrite(PIN_NXDN,  m_buffer[3U] == MODE_NXDN  ? HIGH : LOW);
           break;
         case UMP_SET_TX:
           digitalWrite(PIN_TX, m_buffer[3U] == 0x01U ? HIGH : LOW);

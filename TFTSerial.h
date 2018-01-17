@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -51,6 +51,9 @@ protected:
 
 	virtual void writeP25Int(const char* source, bool group, unsigned int dest, const char* type);
 	virtual void clearP25Int();
+
+	virtual void writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type);
+	virtual void clearNXDNInt();
 
 	virtual void writeCWInt();
 	virtual void clearCWInt();

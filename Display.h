@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -56,6 +56,11 @@ public:
 	void writeP25BER(float ber);
 	void clearP25();
 
+	void writeNXDN(const char* source, bool group, unsigned int dest, const char* type);
+	void writeNXDNRSSI(unsigned char rssi);
+	void writeNXDNBER(float ber);
+	void clearNXDN();
+
 	void writeCW();
 	void clearCW();
 
@@ -88,6 +93,11 @@ protected:
 	virtual void writeP25RSSIInt(unsigned char rssi);
 	virtual void writeP25BERInt(float ber);
 	virtual void clearP25Int() = 0;
+
+	virtual void writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type) = 0;
+	virtual void writeNXDNRSSIInt(unsigned char rssi);
+	virtual void writeNXDNBERInt(float ber);
+	virtual void clearNXDNInt() = 0;
 
 	virtual void writeCWInt() = 0;
 	virtual void clearCWInt() = 0;

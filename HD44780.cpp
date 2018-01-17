@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016, 2017 by Jonathan Naylor G4KLX & Tony Corbett G0WFV
+ *   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX & Tony Corbett G0WFV
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -38,8 +38,9 @@ char        m_buffer4[128U];
 
 const unsigned int DSTAR_RSSI_COUNT = 3U;    // 3 * 420ms = 1260ms 
 const unsigned int DMR_RSSI_COUNT   = 4U;    // 4 * 360ms = 1440ms 
-const unsigned int YSF_RSSI_COUNT   = 13U;    // 13 * 100ms = 1300ms 
+const unsigned int YSF_RSSI_COUNT   = 13U;   // 13 * 100ms = 1300ms 
 const unsigned int P25_RSSI_COUNT   = 7U;    // 7 * 180ms = 1260ms
+const unsigned int NXDN_RSSI_COUNT  = 28U;   // 28 * 40ms = 1120ms
 
 CHD44780::CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, unsigned int i2cAddress, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim, bool displayClock, bool utc, bool duplex) :
 CDisplay(),
@@ -856,6 +857,110 @@ void CHD44780::writeP25RSSIInt(unsigned char rssi)
 }
 
 void CHD44780::clearP25Int()
+{
+#ifdef ADAFRUIT_DISPLAY
+	adafruitLCDColour(AC_PURPLE);
+#endif
+
+	m_clockDisplayTimer.stop();           // Stop the clock display
+
+	if (m_rows == 2U && m_cols == 16U) {
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+	} else if (m_rows == 4U && m_cols == 16U) {
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+
+		::lcdPosition(m_fd, 0, 2);
+		::lcdPrintf(m_fd, "%.*s", m_cols, "                    ");
+
+		::lcdPosition(m_fd, 0, 3);
+		::lcdPrintf(m_fd, "%.*s", m_cols, "                    ");
+	} else if (m_rows == 4U && m_cols == 20U) {
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+
+		::lcdPosition(m_fd, 0, 2);
+		::lcdPrintf(m_fd, "%.*s", m_cols, "                    ");
+
+		::lcdPosition(m_fd, 0, 3);
+		::lcdPrintf(m_fd, "%.*s", m_cols, "                    ");
+	} else if (m_rows == 2 && m_cols == 40U) {
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, LISTENING);
+	}
+}
+
+void CHD44780::writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type)
+{
+	assert(source != NULL);
+	assert(type != NULL);
+
+#ifdef ADAFRUIT_DISPLAY
+		adafruitLCDColour(AC_RED);
+#endif
+
+	m_clockDisplayTimer.stop();           // Stop the clock display
+	::lcdClear(m_fd);
+
+	if (m_pwm) {
+		if (m_pwmPin != 1U)
+			::softPwmWrite(m_pwmPin, m_pwmBright);
+		else
+			::pwmWrite(m_pwmPin, (m_pwmBright / 100) * 1024);
+	}
+
+	::lcdPosition(m_fd, 0, 0);
+	::lcdPuts(m_fd, "NXDN");
+
+	if (m_rows == 2U && m_cols == 16U) {
+		char m_buffer1[16U];
+		::sprintf(m_buffer1, "%.10s >", source);
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
+	} else if (m_rows == 4U && m_cols == 16U) {
+		char m_buffer1[16U];
+		::sprintf(m_buffer1, "%.10s >", source);
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
+
+		::sprintf(m_buffer1, "%s%u", group ? "TG" : "", dest);
+		::lcdPosition(m_fd, 0, 2);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
+	} else if (m_rows == 4U && m_cols == 20U) {
+		char m_buffer1[20U];
+		::sprintf(m_buffer1, "%.10s >", source);
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
+
+		::sprintf(m_buffer1, "%s%u", group ? "TG" : "", dest);
+		::lcdPosition(m_fd, 0, 2);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
+	} else if (m_rows == 2 && m_cols == 40U) {
+		char m_buffer1[40U];
+		::sprintf(m_buffer1, "%.10s > %s%u", source, group ? "TG" : "", dest);
+
+		::lcdPosition(m_fd, 0, 1);
+		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
+	}
+
+	m_dmr = false;
+  m_rssiCount1 = 0U; 
+} 
+ 
+void CHD44780::writeNXDNRSSIInt(unsigned char rssi) 
+{ 
+  if (m_rssiCount1 == 0U && m_rows > 2) { 
+		::lcdPosition(m_fd, 0, 3);
+		::lcdPrintf(m_fd, "-%3udBm", rssi);
+  } 
+ 
+  m_rssiCount1++; 
+  if (m_rssiCount1 >= NXDN_RSSI_COUNT) 
+    m_rssiCount1 = 0U; 
+}
+
+void CHD44780::clearNXDNInt()
 {
 #ifdef ADAFRUIT_DISPLAY
 	adafruitLCDColour(AC_PURPLE);
