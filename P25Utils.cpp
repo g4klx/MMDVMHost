@@ -87,6 +87,33 @@ unsigned int CP25Utils::encode(const unsigned char* in, unsigned char* out, unsi
 	return n;
 }
 
+unsigned int CP25Utils::encode(const unsigned char* in, unsigned char* out, unsigned int length)
+{
+	assert(in != NULL);
+	assert(out != NULL);
+
+	// Move the SSx positions to the range needed
+	unsigned int ss0Pos = P25_SS0_START;
+	unsigned int ss1Pos = P25_SS1_START;
+
+	unsigned int n = 0U;
+	unsigned int pos = 0U;
+	while (n < length) {
+		if (pos == ss0Pos) {
+			ss0Pos += P25_SS_INCREMENT;
+		} else if (pos == ss1Pos) {
+			ss1Pos += P25_SS_INCREMENT;
+		} else {
+			bool b = READ_BIT(in, n);
+			WRITE_BIT(out, pos, b);
+			n++;
+		}
+		pos++;
+	}
+
+	return pos;
+}
+
 unsigned int CP25Utils::compare(const unsigned char* data1, const unsigned char* data2, unsigned int length)
 {
 	assert(data1 != NULL);

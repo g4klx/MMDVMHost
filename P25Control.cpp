@@ -414,6 +414,8 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 				m_rfDataFrames    = header[6U] & 0x7FU;
 
 				m_display->writeP25("DATA", false, llId, "R");
+				m_display->writeP25RSSI(m_rssi);
+
 				LogMessage("P25, received RF data transmission to %u, %u blocks", llId, m_rfDataFrames);
 			} else {
 				m_rfPDUCount   = 0U;
@@ -457,7 +459,10 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 				unsigned char pdu[1024U];
 
 				// Add the data
-				CP25Utils::encode(m_rfPDU, pdu + 2U, 0U, bitLength);
+				unsigned int newBitLength = CP25Utils::encode(m_rfPDU, pdu + 2U, bitLength);
+				unsigned int newByteLength = newBitLength / 8U;
+				if ((newBitLength % 8U) > 0U)
+					newByteLength++;
 
 				// Regenerate Sync
 				CSync::addP25Sync(pdu + 2U);
@@ -466,16 +471,12 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 				m_nid.encode(pdu + 2U, P25_DUID_PDU);
 
 				// Add busy bits
-				addBusyBits(pdu + 2U, bitLength, false, true);
+				addBusyBits(pdu + 2U, newBitLength, false, true);
 
 				if (m_duplex) {
-					unsigned int byteLength = bitLength / 8U;
-					if ((bitLength % 8U) > 0U)
-						byteLength++;
-
 					pdu[0U] = TAG_DATA;
 					pdu[1U] = 0x00U;
-					writeQueueRF(pdu, byteLength + 2U);
+					writeQueueRF(pdu, newByteLength + 2U);
 				}
 
 				LogMessage("P25, ended RF data transmission");
