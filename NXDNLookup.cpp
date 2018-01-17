@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#include "DMRLookup.h"
+#include "NXDNLookup.h"
 #include "Timer.h"
 #include "Log.h"
 
@@ -25,7 +25,7 @@
 #include <cstring>
 #include <cctype>
 
-CDMRLookup::CDMRLookup(const std::string& filename, unsigned int reloadTime) :
+CNXDNLookup::CNXDNLookup(const std::string& filename, unsigned int reloadTime) :
 CThread(),
 m_filename(filename),
 m_reloadTime(reloadTime),
@@ -35,11 +35,11 @@ m_stop(false)
 {
 }
 
-CDMRLookup::~CDMRLookup()
+CNXDNLookup::~CNXDNLookup()
 {
 }
 
-bool CDMRLookup::read()
+bool CNXDNLookup::read()
 {
 	bool ret = load();
 
@@ -49,9 +49,9 @@ bool CDMRLookup::read()
 	return ret;
 }
 
-void CDMRLookup::entry()
+void CNXDNLookup::entry()
 {
-	LogInfo("Started the DMR Id lookup reload thread");
+	LogInfo("Started the NXDN Id lookup reload thread");
 
 	CTimer timer(1U, 3600U * m_reloadTime);
 	timer.start();
@@ -66,10 +66,10 @@ void CDMRLookup::entry()
 		}
 	}
 
-	LogInfo("Stopped the DMR Id lookup reload thread");
+	LogInfo("Stopped the NXDN Id lookup reload thread");
 }
 
-void CDMRLookup::stop()
+void CNXDNLookup::stop()
 {
 	if (m_reloadTime == 0U) {
 		delete this;
@@ -81,11 +81,11 @@ void CDMRLookup::stop()
 	wait();
 }
 
-std::string CDMRLookup::find(unsigned int id)
+std::string CNXDNLookup::find(unsigned int id)
 {
 	std::string callsign;
 
-	if (id == 0xFFFFFFU)
+	if (id == 0xFFFFU)
 		return std::string("ALL");
 
 	m_mutex.lock();
@@ -103,7 +103,7 @@ std::string CDMRLookup::find(unsigned int id)
 	return callsign;
 }
 
-bool CDMRLookup::exists(unsigned int id)
+bool CNXDNLookup::exists(unsigned int id)
 {
 	m_mutex.lock();
 
@@ -114,11 +114,11 @@ bool CDMRLookup::exists(unsigned int id)
 	return found;
 }
 
-bool CDMRLookup::load()
+bool CNXDNLookup::load()
 {
 	FILE* fp = ::fopen(m_filename.c_str(), "rt");
 	if (fp == NULL) {
-		LogWarning("Cannot open the DMR Id lookup file - %s", m_filename.c_str());
+		LogWarning("Cannot open the NXDN Id lookup file - %s", m_filename.c_str());
 		return false;
 	}
 
@@ -132,8 +132,8 @@ bool CDMRLookup::load()
 		if (buffer[0U] == '#')
 			continue;
 
-		char* p1 = ::strtok(buffer, " \t\r\n");
-		char* p2 = ::strtok(NULL, " \t\r\n");
+		char* p1 = ::strtok(buffer, ",\t\r\n");
+		char* p2 = ::strtok(NULL, ",\t\r\n");
 
 		if (p1 != NULL && p2 != NULL) {
 			unsigned int id = (unsigned int)::atoi(p1);
@@ -152,7 +152,7 @@ bool CDMRLookup::load()
 	if (size == 0U)
 		return false;
 
-	LogInfo("Loaded %u Ids to the DMR callsign lookup table", size);
+	LogInfo("Loaded %u Ids to the NXDN callsign lookup table", size);
 
 	return true;
 }

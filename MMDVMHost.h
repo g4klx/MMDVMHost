@@ -21,6 +21,7 @@
 
 #include "DStarNetwork.h"
 #include "NXDNNetwork.h"
+#include "NXDNLookup.h"
 #include "YSFNetwork.h"
 #include "P25Network.h"
 #include "DMRNetwork.h"
@@ -73,7 +74,8 @@ private:
   bool           m_p25Enabled;
   bool           m_nxdnEnabled;
   unsigned int   m_cwIdTime;
-  CDMRLookup*    m_lookup;
+  CDMRLookup*    m_dmrLookup;
+  CNXDNLookup*   m_nxdnLookup;
   std::string    m_callsign;
   unsigned int   m_id;
   std::string    m_cwCallsign;

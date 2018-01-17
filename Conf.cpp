@@ -34,6 +34,7 @@ enum SECTION {
   SECTION_LOG,
   SECTION_CWID,
   SECTION_DMRID_LOOKUP,
+  SECTION_NXDNID_LOOKUP,
   SECTION_MODEM,
   SECTION_UMP,
   SECTION_DSTAR,
@@ -80,6 +81,8 @@ m_cwIdTime(10U),
 m_cwIdCallsign(),
 m_dmrIdLookupFile(),
 m_dmrIdLookupTime(0U),
+m_nxdnIdLookupFile(),
+m_nxdnIdLookupTime(0U),
 m_modemPort(),
 m_modemRXInvert(false),
 m_modemTXInvert(false),
@@ -246,6 +249,8 @@ bool CConf::read()
 		  section = SECTION_CWID;
 	  else if (::strncmp(buffer, "[DMR Id Lookup]", 15U) == 0)
 		  section = SECTION_DMRID_LOOKUP;
+	  else if (::strncmp(buffer, "[NXDN Id Lookup]", 16U) == 0)
+		  section = SECTION_NXDNID_LOOKUP;
 	  else if (::strncmp(buffer, "[Modem]", 7U) == 0)
 		  section = SECTION_MODEM;
 	  else if (::strncmp(buffer, "[UMP]", 5U) == 0)
@@ -361,6 +366,11 @@ bool CConf::read()
 			m_dmrIdLookupFile = value;
 		else if (::strcmp(key, "Time") == 0)
 			m_dmrIdLookupTime = (unsigned int)::atoi(value);
+	} else if (section == SECTION_NXDNID_LOOKUP) {
+		if (::strcmp(key, "File") == 0)
+			m_nxdnIdLookupFile = value;
+		else if (::strcmp(key, "Time") == 0)
+			m_nxdnIdLookupTime = (unsigned int)::atoi(value);
 	} else if (section == SECTION_MODEM) {
 		if (::strcmp(key, "Port") == 0)
 			m_modemPort = value;
@@ -822,6 +832,16 @@ std::string CConf::getDMRIdLookupFile() const
 unsigned int CConf::getDMRIdLookupTime() const
 {
 	return m_dmrIdLookupTime;
+}
+
+std::string CConf::getNXDNIdLookupFile() const
+{
+	return m_nxdnIdLookupFile;
+}
+
+unsigned int CConf::getNXDNIdLookupTime() const
+{
+	return m_nxdnIdLookupTime;
 }
 
 std::string CConf::getModemPort() const

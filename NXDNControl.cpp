@@ -28,7 +28,7 @@ const unsigned char SCRAMBLER[] = {
 
 // #define	DUMP_NXDN
 
-CNXDNControl::CNXDNControl(unsigned int ran, unsigned int id, bool selfOnly, CNXDNNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
+CNXDNControl::CNXDNControl(unsigned int ran, unsigned int id, bool selfOnly, CNXDNNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CNXDNLookup* lookup, CRSSIInterpolator* rssiMapper) :
 m_ran(ran),
 m_id(id),
 m_selfOnly(selfOnly),
@@ -36,6 +36,7 @@ m_network(network),
 m_display(display),
 m_duplex(duplex),
 m_remoteGateway(remoteGateway),
+m_lookup(lookup),
 m_queue(5000U, "NXDN Control"),
 m_rfState(RS_RF_LISTENING),
 m_netState(RS_NET_IDLE),
@@ -62,6 +63,7 @@ m_rssiCount(0U),
 m_fp(NULL)
 {
 	assert(display != NULL);
+	assert(lookup != NULL);
 	assert(rssiMapper != NULL);
 }
 

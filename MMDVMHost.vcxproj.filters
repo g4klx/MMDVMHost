@@ -242,6 +242,15 @@
     <ClInclude Include="NXDNLICH.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="NXDNConvolution.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NXDNCRC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NXDNLookup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -449,6 +458,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NXDNLICH.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NXDNConvolution.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NXDNCRC.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NXDNLookup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

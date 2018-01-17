@@ -22,7 +22,7 @@
 #include "RSSIInterpolator.h"
 #include "NXDNNetwork.h"
 #include "NXDNDefines.h"
-// #include "YSFPayload.h"
+#include "NXDNLookup.h"
 #include "RingBuffer.h"
 #include "StopWatch.h"
 #include "NXDNLICH.h"
@@ -35,7 +35,7 @@
 
 class CNXDNControl {
 public:
-	CNXDNControl(unsigned int ran, unsigned int id, bool selfOnly, CNXDNNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper);
+	CNXDNControl(unsigned int ran, unsigned int id, bool selfOnly, CNXDNNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CNXDNLookup* lookup, CRSSIInterpolator* rssiMapper);
 	~CNXDNControl();
 
 	bool writeModem(unsigned char* data, unsigned int len);
@@ -52,6 +52,7 @@ private:
 	CDisplay*                  m_display;
 	bool                       m_duplex;
 	bool                       m_remoteGateway;
+	CNXDNLookup*               m_lookup;
 	CRingBuffer<unsigned char> m_queue;
 	RPT_RF_STATE               m_rfState;
 	RPT_NET_STATE              m_netState;

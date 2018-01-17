@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,15 +16,15 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(YSFConvolution_H)
-#define  YSFConvolution_H
+#if !defined(NXDNConvolution_H)
+#define  NXDNConvolution_H
 
 #include <cstdint>
 
-class CYSFConvolution {
+class CNXDNConvolution {
 public:
-	CYSFConvolution();
-	~CYSFConvolution();
+	CNXDNConvolution();
+	~CNXDNConvolution();
 
 	void start();
 	void decode(uint8_t s0, uint8_t s1);

@@ -64,6 +64,10 @@ public:
   std::string  getDMRIdLookupFile() const;
   unsigned int getDMRIdLookupTime() const;
 
+  // The NXDN Id section
+  std::string  getNXDNIdLookupFile() const;
+  unsigned int getNXDNIdLookupTime() const;
+
   // The Modem section
   std::string  getModemPort() const;
   bool         getModemRXInvert() const;
@@ -262,6 +266,9 @@ private:
 
   std::string  m_dmrIdLookupFile;
   unsigned int m_dmrIdLookupTime;
+
+  std::string  m_nxdnIdLookupFile;
+  unsigned int m_nxdnIdLookupTime;
 
   std::string  m_modemPort;
   bool         m_modemRXInvert;

@@ -158,7 +158,8 @@ m_ysfEnabled(false),
 m_p25Enabled(false),
 m_nxdnEnabled(false),
 m_cwIdTime(0U),
-m_lookup(NULL),
+m_dmrLookup(NULL),
+m_nxdnLookup(NULL),
 m_callsign(),
 m_id(0U),
 m_cwCallsign()
@@ -341,8 +342,8 @@ int CMMDVMHost::run()
 		if (reloadTime > 0U)
 			LogInfo("    Reload: %u hours", reloadTime);
 
-		m_lookup = new CDMRLookup(lookupFile, reloadTime);
-		m_lookup->read();
+		m_dmrLookup = new CDMRLookup(lookupFile, reloadTime);
+		m_dmrLookup->read();
 	}
 
 	CStopWatch stopWatch;
@@ -439,7 +440,7 @@ int CMMDVMHost::run()
 			dmrBeaconIntervalTimer.start();
 		}
 
-		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, dumpTAData, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_lookup, rssi);
+		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, dumpTAData, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_dmrLookup, rssi);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}
@@ -483,11 +484,22 @@ int CMMDVMHost::run()
 		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
 		LogInfo("    Mode Hang: %us", m_p25RFModeHang);
 
-		p25 = new CP25Control(nac, id, selfOnly, uidOverride, m_p25Network, m_display, m_timeout, m_duplex, m_lookup, remoteGateway, rssi);
+		p25 = new CP25Control(nac, id, selfOnly, uidOverride, m_p25Network, m_display, m_timeout, m_duplex, m_dmrLookup, remoteGateway, rssi);
 	}
 
 	CNXDNControl* nxdn = NULL;
 	if (m_nxdnEnabled) {
+		std::string lookupFile  = m_conf.getNXDNIdLookupFile();
+		unsigned int reloadTime = m_conf.getNXDNIdLookupTime();
+
+		LogInfo("NXDN Id Lookups");
+		LogInfo("    File: %s", lookupFile.length() > 0U ? lookupFile.c_str() : "None");
+		if (reloadTime > 0U)
+			LogInfo("    Reload: %u hours", reloadTime);
+
+		m_nxdnLookup = new CNXDNLookup(lookupFile, reloadTime);
+		m_nxdnLookup->read();
+
 		unsigned int id    = m_conf.getNXDNId();
 		unsigned int ran   = m_conf.getNXDNRAN();
 		bool selfOnly      = m_conf.getNXDNSelfOnly();
@@ -501,7 +513,7 @@ int CMMDVMHost::run()
 		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
 		LogInfo("    Mode Hang: %us", m_nxdnRFModeHang);
 
-		nxdn = new CNXDNControl(ran, id, selfOnly, m_nxdnNetwork, m_display, m_timeout, m_duplex, remoteGateway, rssi);
+		nxdn = new CNXDNControl(ran, id, selfOnly, m_nxdnNetwork, m_display, m_timeout, m_duplex, remoteGateway, m_nxdnLookup, rssi);
 	}
 
 	setMode(MODE_IDLE);
@@ -881,8 +893,11 @@ int CMMDVMHost::run()
 		delete m_ump;
 	}
 
-	if (m_lookup != NULL)
-		m_lookup->stop();
+	if (m_dmrLookup != NULL)
+		m_dmrLookup->stop();
+
+	if (m_nxdnLookup != NULL)
+		m_nxdnLookup->stop();
 
 	if (m_dstarNetwork != NULL) {
 		m_dstarNetwork->close();

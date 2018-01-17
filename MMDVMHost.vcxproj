@@ -194,8 +194,11 @@
     <ClInclude Include="Nextion.h" />
     <ClInclude Include="NullDisplay.h" />
     <ClInclude Include="NXDNControl.h" />
+    <ClInclude Include="NXDNConvolution.h" />
+    <ClInclude Include="NXDNCRC.h" />
     <ClInclude Include="NXDNDefines.h" />
     <ClInclude Include="NXDNLICH.h" />
+    <ClInclude Include="NXDNLookup.h" />
     <ClInclude Include="NXDNNetwork.h" />
     <ClInclude Include="P25Audio.h" />
     <ClInclude Include="P25Control.h" />
@@ -270,7 +273,10 @@
     <ClCompile Include="Nextion.cpp" />
     <ClCompile Include="NullDisplay.cpp" />
     <ClCompile Include="NXDNControl.cpp" />
+    <ClCompile Include="NXDNConvolution.cpp" />
+    <ClCompile Include="NXDNCRC.cpp" />
     <ClCompile Include="NXDNLICH.cpp" />
+    <ClCompile Include="NXDNLookup.cpp" />
     <ClCompile Include="NXDNNetwork.cpp" />
     <ClCompile Include="P25Audio.cpp" />
     <ClCompile Include="P25Control.cpp" />
