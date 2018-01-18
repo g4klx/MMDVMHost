@@ -50,43 +50,20 @@ bool CNXDNLICH::decode(const unsigned char* bytes)
 	unsigned char lich[1U];
 	lich[0U] = 0x00U;
 
-	unsigned int offset = NXDN_FSW_LENGTH_BITS;
-	bool b7 = READ_BIT1(bytes, offset);
-	WRITE_BIT1(lich, 7U, b7);
+	bool b[8U];
 
-	offset++;
-	bool b6 = READ_BIT1(bytes, offset);
-	WRITE_BIT1(lich, 6U, b6);
+	unsigned int offset1 = NXDN_FSW_LENGTH_BITS;
+	unsigned int offset2 = 7U;
+	for (unsigned int i = 0U; i < (NXDN_LICH_LENGTH_BITS / 2U); i++, offset1 += 2U, offset2--) {
+		b[offset2] = READ_BIT1(bytes, offset1);
+		WRITE_BIT1(lich, offset2, b[offset2]);
+	}
 
-	offset++;
-	bool b5 = READ_BIT1(bytes, offset);
-	WRITE_BIT1(lich, 5U, b5);
+	bool parity = b[7U] ^ b[6U] ^ b[5U] ^ b[4U];
 
-	offset++;
-	bool b4 = READ_BIT1(bytes, offset);
-	WRITE_BIT1(lich, 4U, b4);
+	// LogMessage("NXDN, LICH bits: %d%d %d%d %d%d %d - %d, parity: %d", b[7U] ? 1 : 0, b[6U] ? 1 : 0, b[5U] ? 1 : 0, b[4U] ? 1 : 0, b[3U] ? 1 : 0, b[2U] ? 1 : 0, b[1U] ? 1 : 0, b[0U] ? 1 : 0, parity ? 1 : 0);
 
-	offset++;
-	bool b3 = READ_BIT1(bytes, offset);
-	WRITE_BIT1(lich, 3U, b3);
-
-	offset++;
-	bool b2 = READ_BIT1(bytes, offset);
-	WRITE_BIT1(lich, 2U, b2);
-
-	offset++;
-	bool b1 = READ_BIT1(bytes, offset);
-	WRITE_BIT1(lich, 1U, b1);
-
-	offset++;
-	bool b0 = READ_BIT1(bytes, offset);
-	WRITE_BIT1(lich, 0U, b0);
-
-	bool parity = b7 ^ b6 ^ b5 ^ b4;
-
-	LogMessage("NXDN, LICH bits: %d%d %d%d %d%d %d - %d, parity: %d", b7 ? 1 : 0, b6 ? 1 : 0, b5 ? 1 : 0, b4 ? 1 : 0, b3 ? 1 : 0, b2 ? 1 : 0, b1 ? 1 : 0, b0 ? 1 : 0, parity ? 1 : 0);
-
-	if (parity != b0)
+	if (parity != b[0U])
 		return false;
 
 	m_lich = lich[0U] >> 1;
@@ -102,58 +79,22 @@ void CNXDNLICH::encode(unsigned char* bytes)
 
 	lich[0U] = m_lich << 1;
 
-	bool b7 = READ_BIT1(lich, 7U);
-	bool b6 = READ_BIT1(lich, 6U);
-	bool b5 = READ_BIT1(lich, 5U);
-	bool b4 = READ_BIT1(lich, 4U);
-	bool b3 = READ_BIT1(lich, 3U);
-	bool b2 = READ_BIT1(lich, 2U);
-	bool b1 = READ_BIT1(lich, 1U);
-	bool b0 = READ_BIT1(lich, 0U);
+	bool b[8U];
 
-	bool parity = b7 ^ b6 ^ b5 ^ b4;
+	unsigned int offset = 7U;
+	for (unsigned int i = 0U; i < (NXDN_LICH_LENGTH_BITS / 2U); i++, offset--)
+		b[offset] = READ_BIT1(lich, offset);
 
-	WRITE_BIT1(lich, 0U, parity);
+	b[0U] = b[7U] ^ b[6U] ^ b[5U] ^ b[4U];
 
-	unsigned int offset = NXDN_FSW_LENGTH_BITS;
-	WRITE_BIT1(bytes, offset, b7);
-	offset++;
-	WRITE_BIT1(bytes, offset, true);
-	offset++;
-
-	WRITE_BIT1(bytes, offset, b6);
-	offset++;
-	WRITE_BIT1(bytes, offset, true);
-	offset++;
-
-	WRITE_BIT1(bytes, offset, b5);
-	offset++;
-	WRITE_BIT1(bytes, offset, true);
-	offset++;
-
-	WRITE_BIT1(bytes, offset, b4);
-	offset++;
-	WRITE_BIT1(bytes, offset, true);
-	offset++;
-
-	WRITE_BIT1(bytes, offset, b3);
-	offset++;
-	WRITE_BIT1(bytes, offset, true);
-	offset++;
-
-	WRITE_BIT1(bytes, offset, b2);
-	offset++;
-	WRITE_BIT1(bytes, offset, true);
-	offset++;
-
-	WRITE_BIT1(bytes, offset, b1);
-	offset++;
-	WRITE_BIT1(bytes, offset, true);
-	offset++;
-
-	WRITE_BIT1(bytes, offset, b0);
-	offset++;
-	WRITE_BIT1(bytes, offset, true);
+	unsigned int offset1 = NXDN_FSW_LENGTH_BITS;
+	unsigned int offset2 = 7U;
+	for (unsigned int i = 0U; i < (NXDN_LICH_LENGTH_BITS / 2U); i++, offset2--) {
+		WRITE_BIT1(bytes, offset1, b[offset2]);
+		offset1++;
+		WRITE_BIT1(bytes, offset1, true);
+		offset1++;
+	}
 }
 
 unsigned char CNXDNLICH::getRFCT() const

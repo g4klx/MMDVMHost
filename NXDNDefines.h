@@ -21,7 +21,9 @@
 
 const unsigned int NXDN_RADIO_SYMBOL_LENGTH = 5U;      // At 24 kHz sample rate
 
-const unsigned int NXDN_FRAME_LENGTH_BYTES  = 48U;
+const unsigned int NXDN_FRAME_LENGTH_BITS    = 384U;
+const unsigned int NXDN_FRAME_LENGTH_BYTES   = NXDN_FRAME_LENGTH_BITS / 8U;
+const unsigned int NXDN_FRAME_LENGTH_SYMBOLS = NXDN_FRAME_LENGTH_BITS / 2U;
 
 const unsigned int NXDN_FSW_LENGTH_BITS    = 20U;
 const unsigned int NXDN_FSW_LENGTH_SYMBOLS = NXDN_FSW_LENGTH_BITS / 2U;

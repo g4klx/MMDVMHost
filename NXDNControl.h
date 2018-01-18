@@ -78,12 +78,8 @@ private:
 	unsigned int               m_rssiCount;
 	FILE*                      m_fp;
 
-	bool processVCHOnly(bool valid, unsigned char *data);
-	bool processFACCH11(bool valid, unsigned char *data);
-	bool processFACCH12(bool valid, unsigned char *data);
-	bool processFACCH1(bool valid, unsigned char *data);
-	bool processUDCH(bool valid, unsigned char *data);
-	bool processFACCH2(bool valid, unsigned char *data);
+	bool processVoice(unsigned char usc, unsigned char option, unsigned char *data);
+	bool processData(unsigned char option, unsigned char *data);
 
 	void writeQueueRF(const unsigned char* data);
 	void writeQueueNet(const unsigned char* data);

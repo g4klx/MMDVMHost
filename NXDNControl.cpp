@@ -22,11 +22,17 @@
 #include <ctime>
 
 const unsigned char SCRAMBLER[] = {
-	0x00U, 0x00U, 0x02U, 0x72U, 0xACU, 0x37U, 0xA6U, 0xE4U, 0x50U, 0xADU, 0x3FU, 0x64U, 0x96U, 0xFCU, 0x9AU, 0x99U,
-	0x80U, 0xC6U, 0x51U, 0xA5U, 0xFDU, 0x16U, 0x3AU, 0xCBU, 0x3CU, 0x7DU, 0xD0U, 0x6BU, 0x6EU, 0xC1U, 0x6BU, 0xEAU,
-	0xA0U, 0x52U, 0xBCU, 0xBBU, 0x81U, 0xCEU, 0x93U, 0xD7U, 0x51U, 0x21U, 0x9CU, 0x2FU, 0x6CU, 0xD0U, 0xEFU, 0x0FU};
+	0x00U, 0x09U, 0xCAU, 0xB0U, 0xDEU, 0x9BU, 0x91U, 0x42U,
+	0xB4U, 0xFDU, 0x92U, 0x5BU, 0xF2U, 0x6AU, 0x66U, 0x03U,
+	0x19U, 0x46U, 0x97U, 0xF4U, 0x58U, 0xEBU, 0x2CU, 0xF1U,
+	0xF7U};
 
 // #define	DUMP_NXDN
+
+const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
+
+#define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
+#define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
 CNXDNControl::CNXDNControl(unsigned int ran, unsigned int id, bool selfOnly, CNXDNNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CNXDNLookup* lookup, CRSSIInterpolator* rssiMapper) :
 m_ran(ran),
@@ -118,11 +124,11 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 		m_rssiCount++;
 	}
 
-	CUtils::dump(2U, "NXDN, raw data", data, len);
+	CUtils::dump(2U, "NXDN, raw data", data + 2U, NXDN_FRAME_LENGTH_BYTES);
 
 	scrambler(data + 2U);
 
-	CUtils::dump(2U, "NXDN, after descrambling", data, len);
+	CUtils::dump(2U, "NXDN, after descrambling", data + 2U, NXDN_FRAME_LENGTH_BYTES);
 
 	CNXDNLICH lich;
 	bool valid = lich.decode(data + 2U);
@@ -133,7 +139,7 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 	// Stop repeater packets coming through, unless we're acting as a remote gateway
 	if (m_remoteGateway) {
 		unsigned char direction = m_lastLICH.getDirection();
-		if (direction != NXDN_LICH_DIRECTION_INBOUND)
+		if (direction == NXDN_LICH_DIRECTION_INBOUND)
 			return false;
 	} else {
 		unsigned char direction = m_lastLICH.getDirection();
@@ -146,41 +152,10 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 
 	bool ret = false;
 #ifdef notdef
-	if (usc == NXDN_LICH_USC_SACCH_NS || usc == NXDN_LICH_USC_SACCH_SS) {
-		switch (option) {
-		case NXDN_LICH_STEAL_NONE:
-			ret = processVCHOnly(valid, data);
-			break;
-
-		case NXDN_LICH_STEAL_FACCH1_1:
-			ret = processFACCH11(valid, data);
-			break;
-
-		case NXDN_LICH_STEAL_FACCH1_2:
-			ret = processFACCH12(valid, data);
-			break;
-
-		case NXDN_LICH_STEAL_FACCH:
-			ret = processFACCH1(valid, data);
-			break;
-
-		default:
-			break;
-		}
-	} else if (usc == NXDN_LICH_USC_UDCH) {
-		switch (option) {
-		case NXDN_LICH_STEAL_NONE:
-			ret = processUDCH(valid, data);
-			break;
-
-		case NXDN_LICH_STEAL_FACCH:
-			ret = processFACCH2(valid, data);
-			break;
-
-		default:
-			break;
-		}
-	}
+	if (usc == NXDN_LICH_USC_UDCH) {
+		ret = processData(option, data);
+	else
+		ret = processVoice(usc, option, data);
 #endif
 	return ret;
 }
@@ -1100,8 +1075,35 @@ void CNXDNControl::scrambler(unsigned char* data) const
 {
 	assert(data != NULL);
 
-	for (unsigned int i = 0U; i < NXDN_FRAME_LENGTH_BYTES; i++)
-		data[i] ^= SCRAMBLER[i];
+	unsigned int offset = 0U;
+	for (unsigned int i = 0U; i < NXDN_FRAME_LENGTH_SYMBOLS; i++, offset += 2U) {
+		bool invert = READ_BIT1(SCRAMBLER, i);
+		if (invert) {
+			unsigned int offset1 = offset + 0U;
+			unsigned int offset2 = offset + 1U;
+
+			bool b1 = READ_BIT1(data, offset1);
+			bool b2 = READ_BIT1(data, offset2);
+
+			if (b1 && b2) {
+				// -3 to +3, 11 to 01
+				WRITE_BIT1(data, offset1, false);
+				WRITE_BIT1(data, offset2, true);
+			} else if (b1 && !b2) {
+				// -1 to +1, 10 to 00
+				WRITE_BIT1(data, offset1, false);
+				WRITE_BIT1(data, offset2, false);
+			} else if (!b1 && b2) {
+				// +3 to -3, 01 to 11
+				WRITE_BIT1(data, offset1, true);
+				WRITE_BIT1(data, offset2, true);
+			} else {
+				// +1 to -1, 00 to 10
+				WRITE_BIT1(data, offset1, true);
+				WRITE_BIT1(data, offset2, false);
+			}
+		}
+	}
 }
 
 bool CNXDNControl::openFile()
