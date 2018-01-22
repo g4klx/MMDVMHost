@@ -35,6 +35,10 @@ const unsigned int  NXDN_FSW_BYTES_LENGTH = 3U;
 
 const unsigned int NXDN_LICH_LENGTH_BITS = 16U;
 
+const unsigned int NXDN_SACCH_LENGTH_BITS  = 60U;
+const unsigned int NXDN_FACCH1_LENGTH_BITS = 144U;
+const unsigned int NXDN_FACCH2_LENGTH_BITS = 348U;
+
 const unsigned char NXDN_LICH_RFCT_RCCH   = 0U;
 const unsigned char NXDN_LICH_RFCT_RTCH   = 1U;
 const unsigned char NXDN_LICH_RFCT_RDCH   = 2U;
@@ -52,5 +56,11 @@ const unsigned char NXDN_LICH_STEAL_FACCH    = 0U;
 
 const unsigned char NXDN_LICH_DIRECTION_INBOUND  = 0U;
 const unsigned char NXDN_LICH_DIRECTION_OUTBOUND = 1U;
+
+const unsigned char NXDN_SR_SINGLE = 0U;
+const unsigned char NXDN_SR_4_4    = 0U;
+const unsigned char NXDN_SR_3_4    = 1U;
+const unsigned char NXDN_SR_2_4    = 2U;
+const unsigned char NXDN_SR_1_4    = 3U;
 
 #endif

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2018 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,19 +19,24 @@
 #if !defined(NXDNCRC_H)
 #define	NXDNCRC_H
 
+#include <cstdint>
+
 class CNXDNCRC
 {
 public:
-	static bool checkFiveBit(bool* in, unsigned int tcrc);
-	static void encodeFiveBit(const bool* in, unsigned int& tcrc);
+	static bool checkCRC6(const unsigned char* in, unsigned int offset, unsigned int length);
+	static void encodeCRC6(unsigned char* in, unsigned int offset, unsigned int length);
 
-	static void addCCITT161(unsigned char* in, unsigned int length);
-	static void addCCITT162(unsigned char* in, unsigned int length);
+	static bool checkCRC12(const unsigned char* in, unsigned int offset, unsigned int length);
+	static void encodeCRC12(unsigned char* in, unsigned int offset, unsigned int length);
 
-	static bool checkCCITT161(const unsigned char* in, unsigned int length);
-	static bool checkCCITT162(const unsigned char* in, unsigned int length);
+	static bool checkCRC15(const unsigned char* in, unsigned int offset, unsigned int length);
+	static void encodeCRC15(unsigned char* in, unsigned int offset, unsigned int length);
 
-	static unsigned char crc8(const unsigned char* in, unsigned int length);
+private:
+	static uint8_t  createCRC6(const unsigned char* in, unsigned int offser, unsigned int length);
+	static uint16_t createCRC12(const unsigned char* in, unsigned int offser, unsigned int length);
+	static uint16_t createCRC15(const unsigned char* in, unsigned int offser, unsigned int length);
 };
 
 #endif

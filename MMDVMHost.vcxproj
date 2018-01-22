@@ -214,6 +214,7 @@
     <ClInclude Include="RS129.h" />
     <ClInclude Include="RS241213.h" />
     <ClInclude Include="RSSIInterpolator.h" />
+    <ClInclude Include="NXDNSACCH.h" />
     <ClInclude Include="SerialController.h" />
     <ClInclude Include="SerialPort.h" />
     <ClInclude Include="SHA256.h" />
@@ -278,6 +279,7 @@
     <ClCompile Include="NXDNLICH.cpp" />
     <ClCompile Include="NXDNLookup.cpp" />
     <ClCompile Include="NXDNNetwork.cpp" />
+    <ClCompile Include="NXDNSACCH.cpp" />
     <ClCompile Include="P25Audio.cpp" />
     <ClCompile Include="P25Control.cpp" />
     <ClCompile Include="P25Data.cpp" />

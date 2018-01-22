@@ -12,6 +12,7 @@
  */
 
 #include "NXDNControl.h"
+#include "NXDNSACCH.h"
 #include "Utils.h"
 #include "Sync.h"
 #include "Log.h"
@@ -150,190 +151,21 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 	unsigned char usc    = m_lastLICH.getFCT();
 	unsigned char option = m_lastLICH.getOption();
 
-	bool ret = false;
-#ifdef notdef
-	if (usc == NXDN_LICH_USC_UDCH) {
+	bool ret;
+	if (usc == NXDN_LICH_USC_UDCH)
 		ret = processData(option, data);
 	else
 		ret = processVoice(usc, option, data);
-#endif
+
 	return ret;
 }
 
+bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigned char *data)
+{
+	CNXDNSACCH sacch;
+	sacch.decode(data + 2U);
+
 #ifdef notdef
-bool CNXDNControl::processVWData(bool valid, unsigned char *data)
-{
-	unsigned char fi = m_lastFICH.getFI();
-	if (valid && fi == YSF_FI_HEADER) {
-		if (m_rfState == RS_RF_LISTENING) {
-			bool valid = m_rfPayload.processHeaderData(data + 2U);
-			if (!valid)
-				return false;
-
-			m_rfSource = m_rfPayload.getSource();
-
-			if (m_selfOnly) {
-				bool ret = checkCallsign(m_rfSource);
-				if (!ret) {
-					LogMessage("NXDN, invalid access attempt from %10.10s", m_rfSource);
-					m_rfState = RS_RF_REJECTED;
-					return false;
-				}
-			}
-
-			unsigned char cm = m_lastFICH.getCM();
-			if (cm == YSF_CM_GROUP1 || cm == YSF_CM_GROUP2)
-				m_rfDest = (unsigned char*)"ALL       ";
-			else
-				m_rfDest = m_rfPayload.getDest();
-
-			m_rfFrames = 0U;
-			m_rfErrs = 0U;
-			m_rfBits = 1U;
-			m_rfTimeoutTimer.start();
-			m_rfState = RS_RF_AUDIO;
-
-			m_minRSSI = m_rssi;
-			m_maxRSSI = m_rssi;
-			m_aveRSSI = m_rssi;
-			m_rssiCount = 1U;
-#if defined(DUMP_NXDN)
-			openFile();
-#endif
-
-			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, "R", "          ");
-			LogMessage("NXDN, received RF header from %10.10s to %10.10s", m_rfSource, m_rfDest);
-
-			CSync::addNXDNSync(data + 2U);
-
-			CYSFFICH fich = m_lastFICH;
-
-			// Remove any DSQ information
-			fich.setSQL(false);
-			fich.setSQ(0U);
-			fich.encode(data + 2U);
-
-			data[0U] = TAG_DATA;
-			data[1U] = 0x00U;
-
-			writeNetwork(data, m_rfFrames % 128U);
-
-#if defined(DUMP_NXDN)
-			writeFile(data + 2U);
-#endif
-
-			if (m_duplex) {
-				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-				fich.encode(data + 2U);
-				writeQueueRF(data);
-			}
-
-			m_rfFrames++;
-
-			m_display->writeFusionRSSI(m_rssi);
-
-			return true;
-		}
-	} else if (valid && fi == YSF_FI_TERMINATOR) {
-		if (m_rfState == RS_RF_REJECTED) {
-			m_rfPayload.reset();
-			m_rfSource = NULL;
-			m_rfDest   = NULL;
-			m_rfState  = RS_RF_LISTENING;
-		} else if (m_rfState == RS_RF_AUDIO) {
-			m_rfPayload.processHeaderData(data + 2U);
-
-			CSync::addNXDNSync(data + 2U);
-
-			CYSFFICH fich = m_lastFICH;
-
-			// Remove any DSQ information
-			fich.setSQL(false);
-			fich.setSQ(0U);
-			fich.encode(data + 2U);
-
-			data[0U] = TAG_EOT;
-			data[1U] = 0x00U;
-
-			writeNetwork(data, m_rfFrames % 128U);
-
-#if defined(DUMP_NXDN)
-			writeFile(data + 2U);
-#endif
-
-			if (m_duplex) {
-				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-				fich.encode(data + 2U);
-				writeQueueRF(data);
-			}
-
-			m_rfFrames++;
-
-			if (m_rssi != 0U)
-				LogMessage("NXDN, received RF end of transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-			else
-				LogMessage("NXDN, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
-
-			writeEndRF();
-		}
-	} else {
-		if (m_rfState == RS_RF_AUDIO) {
-			// If valid is false, update the m_lastFICH for this transmission
-			if (!valid) {
-				// XXX Check these values
-				m_lastFICH.setFT(0U);
-				m_lastFICH.setFN(0U);
-			}
-
-			CSync::addNXDNSync(data + 2U);
-
-			CYSFFICH fich = m_lastFICH;
-
-			unsigned char fn = fich.getFN();
-			unsigned char ft = fich.getFT();
-
-			if (fn != 0U || ft != 1U) {
-				// The first packet after the header is odd, don't try and regenerate it
-				unsigned int errors = m_rfPayload.processVoiceFRModeAudio(data + 2U);
-				m_rfErrs += errors;
-				m_rfBits += 720U;
-				m_display->writeFusionBER(float(errors) / 7.2F);
-				LogDebug("NXDN, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 7.2F);
-			}
-
-			// Remove any DSQ information
-			fich.setSQL(false);
-			fich.setSQ(0U);
-			fich.encode(data + 2U);
-
-			data[0U] = TAG_DATA;
-			data[1U] = 0x00U;
-
-			writeNetwork(data, m_rfFrames % 128U);
-
-			if (m_duplex) {
-				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-				fich.encode(data + 2U);
-				writeQueueRF(data);
-			}
-
-#if defined(DUMP_NXDN)
-			writeFile(data + 2U);
-#endif
-
-			m_rfFrames++;
-
-			m_display->writeFusionRSSI(m_rssi);
-
-			return true;
-		}
-	}
-
-	return false;
-}
-
-bool CNXDNControl::processDNData(bool valid, unsigned char *data)
-{
 	unsigned char fi = m_lastFICH.getFI();
 	if (valid && fi == YSF_FI_HEADER) {
 		if (m_rfState == RS_RF_LISTENING) {
@@ -645,12 +477,14 @@ bool CNXDNControl::processDNData(bool valid, unsigned char *data)
 			return true;
 		}
 	}
+#endif
 
 	return false;
 }
 
-bool CNXDNControl::processFRData(bool valid, unsigned char *data)
+bool CNXDNControl::processData(unsigned char usc, unsigned char *data)
 {
+#ifdef notdef
 	unsigned char fi = m_lastFICH.getFI();
 	if (valid && fi == YSF_FI_HEADER) {
 		if (m_rfState == RS_RF_LISTENING) {
@@ -809,11 +643,9 @@ bool CNXDNControl::processFRData(bool valid, unsigned char *data)
 			return true;
 		}
 	}
-
+#endif
 	return false;
 }
-
-#endif
 
 unsigned int CNXDNControl::readModem(unsigned char* data)
 {
@@ -837,7 +669,7 @@ void CNXDNControl::writeEndRF()
 	m_rfTimeoutTimer.stop();
 
 	if (m_netState == RS_NET_IDLE) {
-		m_display->clearFusion();
+		m_display->clearNXDN();
 
 		if (m_network != NULL)
 			m_network->reset();
@@ -856,7 +688,7 @@ void CNXDNControl::writeEndNet()
 	m_networkWatchdog.stop();
 	m_packetTimer.stop();
 
-	m_display->clearFusion();
+	m_display->clearNXDN();
 
 	if (m_network != NULL)
 		m_network->reset();
