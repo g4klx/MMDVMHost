@@ -165,6 +165,8 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 	CNXDNSACCH sacch;
 	sacch.decode(data + 2U);
 
+	sacch.encode(data + 2U);
+
 #ifdef notdef
 	unsigned char fi = m_lastFICH.getFI();
 	if (valid && fi == YSF_FI_HEADER) {

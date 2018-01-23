@@ -27,12 +27,12 @@ const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U
 #define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
-const uint8_t BRANCH_TABLE1[] = {0U, 0U, 0U, 0U, 1U, 1U, 1U, 1U};
-const uint8_t BRANCH_TABLE2[] = {0U, 1U, 1U, 0U, 0U, 1U, 1U, 0U};
+const uint8_t BRANCH_TABLE1[] = {0U, 0U, 0U, 0U, 2U, 2U, 2U, 2U};
+const uint8_t BRANCH_TABLE2[] = {0U, 2U, 2U, 0U, 0U, 2U, 2U, 0U};
 
 const unsigned int NUM_OF_STATES_D2 = 8U;
 const unsigned int NUM_OF_STATES = 16U;
-const uint32_t     M = 2U;
+const uint32_t     M = 4U;
 const unsigned int K = 5U;
 
 CNXDNConvolution::CNXDNConvolution() :

@@ -22,6 +22,7 @@
 #include "NXDNDefines.h"
 #include "NXDNCRC.h"
 #include "Utils.h"
+#include "Log.h"
 
 #include <cstdio>
 #include <cassert>
@@ -76,41 +77,41 @@ bool CNXDNSACCH::decode(const unsigned char* data)
 
 	CUtils::dump("NXDN, SACCH de-interleaved", temp1, 8U);
 
-	unsigned char temp2[9U];
+	uint8_t temp2[72U];
+
+	char text[500U];
+	::strcpy(text, "NXDN, SACCH de-punctured: ");
 
 	unsigned int n = 0U;
 	unsigned int index = 0U;
 	for (unsigned int i = 0U; i < NXDN_SACCH_LENGTH_BITS; i++) {
-		if (i == PUNCTURE_LIST[index]) {
-			WRITE_BIT1(temp2, n, false);
+		if (n == PUNCTURE_LIST[index]) {
+			::strcat(text, "1, ");
+			temp2[n++] = 1U;
 			index++;
-			n++;
 		}
 
 		bool b = READ_BIT1(temp1, i);
-		WRITE_BIT1(temp2, n, b);
-		n++;
+		temp2[n++] = b ? 2U : 0U;
+		::strcat(text, b ? "2, " : "0, ");
 	}
 
-	CUtils::dump("NXDN, SACCH de-punctured", temp2, 9U);
+	LogMessage(text);
 
 	CNXDNConvolution conv;
 	conv.start();
 
 	n = 0U;
 	for (unsigned int i = 0U; i < 36U; i++) {
-		uint8_t s0 = READ_BIT1(temp2, n) ? 1U : 0U;
-		n++;
-
-		uint8_t s1 = READ_BIT1(temp2, n) ? 1U : 0U;
-		n++;
+		uint8_t s0 = temp2[n++];
+		uint8_t s1 = temp2[n++];
 
 		conv.decode(s0, s1);
 	}
 
 	conv.chainback(m_data, 36U);
 
-	CUtils::dump("NXDN, SACCH", m_data, 5U);
+	CUtils::dump("NXDN, SACCH decoded", m_data, 5U);
 
 	return CNXDNCRC::checkCRC6(m_data, 26U);
 }
@@ -129,10 +130,14 @@ void CNXDNSACCH::encode(unsigned char* data) const
 
 	CNXDNCRC::encodeCRC6(temp1, 26U);
 
+	CUtils::dump("NXDN, SACCH encoded with CRC", temp1, 5U);
+
 	unsigned char temp2[9U];
 
 	CNXDNConvolution conv;
 	conv.encode(temp1, temp2, 36U);
+
+	CUtils::dump("NXDN, SACCH convolved", temp2, 9U);
 
 	unsigned char temp3[8U];
 
@@ -148,11 +153,15 @@ void CNXDNSACCH::encode(unsigned char* data) const
 		}
 	}
 
+	CUtils::dump("NXDN, SACCH punctured", temp3, 8U);
+
 	for (unsigned int i = 0U; i < NXDN_SACCH_LENGTH_BITS; i++) {
 		unsigned int n = INTERLEAVE_TABLE[i] + NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS;
 		bool b = READ_BIT1(temp3, i);
 		WRITE_BIT1(data, n, b);
 	}
+
+	CUtils::dump("NXDN, SACCH re-encoded", data, 12U);
 }
 
 unsigned char CNXDNSACCH::getRAN() const
