@@ -39,6 +39,9 @@ const unsigned int NXDN_SACCH_LENGTH_BITS  = 60U;
 const unsigned int NXDN_FACCH1_LENGTH_BITS = 144U;
 const unsigned int NXDN_FACCH2_LENGTH_BITS = 348U;
 
+const unsigned int NXDN_FSW_LICH_SACCH_LENGTH_BITS  = NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS;
+const unsigned int NXDN_FSW_LICH_SACCH_LENGTH_BYTES = NXDN_FSW_LICH_SACCH_LENGTH_BITS / 8U;
+
 const unsigned char NXDN_LICH_RFCT_RCCH   = 0U;
 const unsigned char NXDN_LICH_RFCT_RTCH   = 1U;
 const unsigned char NXDN_LICH_RFCT_RDCH   = 2U;

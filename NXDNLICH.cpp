@@ -56,7 +56,7 @@ bool CNXDNLICH::decode(const unsigned char* bytes)
 	unsigned int offset2 = 7U;
 	for (unsigned int i = 0U; i < (NXDN_LICH_LENGTH_BITS / 2U); i++, offset1 += 2U, offset2--) {
 		b[offset2] = READ_BIT1(bytes, offset1);
-		WRITE_BIT1(lich, offset2, b[offset2]);
+		WRITE_BIT1(lich, i, b[offset2]);
 	}
 
 	bool parity = b[7U] ^ b[6U] ^ b[5U] ^ b[4U];
