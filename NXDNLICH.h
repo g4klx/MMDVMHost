@@ -21,7 +21,7 @@
 
 class CNXDNLICH {
 public:
-	CNXDNLICH(const CNXDNLICH& fich);
+	CNXDNLICH(const CNXDNLICH& lich);
 	CNXDNLICH();
 	~CNXDNLICH();
 
@@ -39,7 +39,7 @@ public:
 	void setOption(unsigned char option);
 	void setDirection(unsigned char direction);
 
-	CNXDNLICH& operator=(const CNXDNLICH& fich);
+	CNXDNLICH& operator=(const CNXDNLICH& lich);
 
 private:
 	unsigned char m_lich;

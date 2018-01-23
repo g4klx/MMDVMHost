@@ -24,19 +24,19 @@
 class CNXDNCRC
 {
 public:
-	static bool checkCRC6(const unsigned char* in, unsigned int offset, unsigned int length);
-	static void encodeCRC6(unsigned char* in, unsigned int offset, unsigned int length);
+	static bool checkCRC6(const unsigned char* in, unsigned int length);
+	static void encodeCRC6(unsigned char* in, unsigned int length);
 
-	static bool checkCRC12(const unsigned char* in, unsigned int offset, unsigned int length);
-	static void encodeCRC12(unsigned char* in, unsigned int offset, unsigned int length);
+	static bool checkCRC12(const unsigned char* in, unsigned int length);
+	static void encodeCRC12(unsigned char* in, unsigned int length);
 
-	static bool checkCRC15(const unsigned char* in, unsigned int offset, unsigned int length);
-	static void encodeCRC15(unsigned char* in, unsigned int offset, unsigned int length);
+	static bool checkCRC15(const unsigned char* in, unsigned int length);
+	static void encodeCRC15(unsigned char* in, unsigned int length);
 
 private:
-	static uint8_t  createCRC6(const unsigned char* in, unsigned int offser, unsigned int length);
-	static uint16_t createCRC12(const unsigned char* in, unsigned int offser, unsigned int length);
-	static uint16_t createCRC15(const unsigned char* in, unsigned int offser, unsigned int length);
+	static uint8_t  createCRC6(const unsigned char* in, unsigned int length);
+	static uint16_t createCRC12(const unsigned char* in, unsigned int length);
+	static uint16_t createCRC15(const unsigned char* in, unsigned int length);
 };
 
 #endif

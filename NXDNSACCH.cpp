@@ -35,12 +35,19 @@ const unsigned int INTERLEAVE_TABLE[] = {
 	4U, 9U, 14U, 19U, 24U, 29U, 34U, 39U, 44U, 49U, 54U, 59U
 };
 
-const unsigned int PUNCTURE_LIST[] = { 5U, 11U, 17U, 23U, 29U, 35U, 41U, 47U, 53U, 59U };
+const unsigned int PUNCTURE_LIST[] = { 5U, 11U, 17U, 23U, 29U, 35U, 41U, 47U, 53U, 59U, 65U, 71U };
 
 const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
 
 #define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
+
+CNXDNSACCH::CNXDNSACCH(const CNXDNSACCH& sacch) :
+m_data(NULL)
+{
+	m_data = new unsigned char[5U];
+	::memcpy(m_data, sacch.m_data, 5U);
+}
 
 CNXDNSACCH::CNXDNSACCH() :
 m_data(NULL)
@@ -57,15 +64,19 @@ bool CNXDNSACCH::decode(const unsigned char* data)
 {
 	assert(data != NULL);
 
+	CUtils::dump("NXDN, SACCH input", data, 12U);
+
 	unsigned char temp1[8U];
 
 	for (unsigned int i = 0U; i < NXDN_SACCH_LENGTH_BITS; i++) {
-		unsigned int n = INTERLEAVE_TABLE[i] + NXDN_LICH_LENGTH_BITS;
+		unsigned int n = INTERLEAVE_TABLE[i] + NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS;
 		bool b = READ_BIT1(data, n);
 		WRITE_BIT1(temp1, i, b);
 	}
 
-	unsigned char temp2[8U];
+	CUtils::dump("NXDN, SACCH de-interleaved", temp1, 8U);
+
+	unsigned char temp2[9U];
 
 	unsigned int n = 0U;
 	unsigned int index = 0U;
@@ -81,6 +92,8 @@ bool CNXDNSACCH::decode(const unsigned char* data)
 		n++;
 	}
 
+	CUtils::dump("NXDN, SACCH de-punctured", temp2, 9U);
+
 	CNXDNConvolution conv;
 	conv.start();
 
@@ -88,7 +101,9 @@ bool CNXDNSACCH::decode(const unsigned char* data)
 	for (unsigned int i = 0U; i < 36U; i++) {
 		uint8_t s0 = READ_BIT1(temp2, n) ? 1U : 0U;
 		n++;
+
 		uint8_t s1 = READ_BIT1(temp2, n) ? 1U : 0U;
+		n++;
 
 		conv.decode(s0, s1);
 	}
@@ -97,11 +112,47 @@ bool CNXDNSACCH::decode(const unsigned char* data)
 
 	CUtils::dump("NXDN, SACCH", m_data, 5U);
 
-	bool valid = CNXDNCRC::checkCRC6(m_data, 0U, 32U);
-	// if (!valid)
-	//	return false;
+	return CNXDNCRC::checkCRC6(m_data, 26U);
+}
 
-	return true;
+void CNXDNSACCH::encode(unsigned char* data) const
+{
+	assert(data != NULL);
+
+	unsigned char temp1[5U];
+	::memset(temp1, 0x00U, 5U);
+
+	for (unsigned int i = 0U; i < 26U; i++) {
+		bool b = READ_BIT1(m_data, i);
+		WRITE_BIT1(temp1, i, b);
+	}
+
+	CNXDNCRC::encodeCRC6(temp1, 26U);
+
+	unsigned char temp2[9U];
+
+	CNXDNConvolution conv;
+	conv.encode(temp1, temp2, 36U);
+
+	unsigned char temp3[8U];
+
+	unsigned int n = 0U;
+	unsigned int index = 0U;
+	for (unsigned int i = 0U; i < 72U; i++) {
+		if (i != PUNCTURE_LIST[index]) {
+			bool b = READ_BIT1(temp2, i);
+			WRITE_BIT1(temp3, n, b);
+			n++;
+		} else {
+			index++;
+		}
+	}
+
+	for (unsigned int i = 0U; i < NXDN_SACCH_LENGTH_BITS; i++) {
+		unsigned int n = INTERLEAVE_TABLE[i] + NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS;
+		bool b = READ_BIT1(temp3, i);
+		WRITE_BIT1(data, n, b);
+	}
 }
 
 unsigned char CNXDNSACCH::getRAN() const
@@ -138,4 +189,12 @@ void CNXDNSACCH::setData(const unsigned char* data)
 	assert(data != NULL);
 
 	::memcpy(m_data + 1U, data, 3U);
+}
+
+CNXDNSACCH& CNXDNSACCH::operator=(const CNXDNSACCH& sacch)
+{
+	if (&sacch != this)
+		::memcpy(m_data, sacch.m_data, 5U);
+
+	return *this;
 }

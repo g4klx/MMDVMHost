@@ -21,12 +21,13 @@
 
 class CNXDNSACCH {
 public:
+	CNXDNSACCH(const CNXDNSACCH& sacch);
 	CNXDNSACCH();
 	~CNXDNSACCH();
 
 	bool decode(const unsigned char* data);
 
-	void encode(unsigned char* data);
+	void encode(unsigned char* data) const;
 
 	unsigned char getRAN() const;
 	unsigned char getStructure() const;
@@ -37,6 +38,8 @@ public:
 	void setStructure(unsigned char structure);
 
 	void setData(const unsigned char* data);
+
+	CNXDNSACCH& operator=(const CNXDNSACCH& fich);
 
 private:
 	unsigned char* m_data;

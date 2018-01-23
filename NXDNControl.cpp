@@ -125,11 +125,11 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 		m_rssiCount++;
 	}
 
-	CUtils::dump(2U, "NXDN, raw data", data + 2U, NXDN_FRAME_LENGTH_BYTES);
+	// CUtils::dump(2U, "NXDN, raw data", data + 2U, NXDN_FRAME_LENGTH_BYTES);
 
 	scrambler(data + 2U);
 
-	CUtils::dump(2U, "NXDN, after descrambling", data + 2U, NXDN_FRAME_LENGTH_BYTES);
+	// CUtils::dump(2U, "NXDN, after descrambling", data + 2U, NXDN_FRAME_LENGTH_BYTES);
 
 	CNXDNLICH lich;
 	bool valid = lich.decode(data + 2U);
