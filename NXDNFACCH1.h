@@ -16,33 +16,25 @@
 *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#if !defined(NXDNSACCH_H)
-#define	NXDNSACCH_H
+#if !defined(NXDNFACCH1_H)
+#define	NXDNFACCH1_H
 
-class CNXDNSACCH {
+class CNXDNFACCH1 {
 public:
-	CNXDNSACCH(const CNXDNSACCH& sacch);
-	CNXDNSACCH();
-	~CNXDNSACCH();
+	CNXDNFACCH1(const CNXDNFACCH1& facch);
+	CNXDNFACCH1();
+	~CNXDNFACCH1();
 
 	bool decode(const unsigned char* data);
 
 	void encode(unsigned char* data) const;
-
-	unsigned char getRAN() const;
-	unsigned char getStructure() const;
-
 	void getData(unsigned char* data) const;
-
-	void setRAN(unsigned char ran);
-	void setStructure(unsigned char structure);
 
 	void setData(const unsigned char* data);
 
-	CNXDNSACCH& operator=(const CNXDNSACCH& sacch);
+	CNXDNFACCH1& operator=(const CNXDNFACCH1& facch);
 
 private:
-	unsigned char* m_data;
 };
 
 #endif

@@ -197,9 +197,12 @@
     <ClInclude Include="NXDNConvolution.h" />
     <ClInclude Include="NXDNCRC.h" />
     <ClInclude Include="NXDNDefines.h" />
+    <ClInclude Include="NXDNFACCH1.h" />
+    <ClInclude Include="NXDNFACCH2.h" />
     <ClInclude Include="NXDNLICH.h" />
     <ClInclude Include="NXDNLookup.h" />
     <ClInclude Include="NXDNNetwork.h" />
+    <ClInclude Include="NXDNUDCH.h" />
     <ClInclude Include="P25Audio.h" />
     <ClInclude Include="P25Control.h" />
     <ClInclude Include="P25Defines.h" />
@@ -276,10 +279,13 @@
     <ClCompile Include="NXDNControl.cpp" />
     <ClCompile Include="NXDNConvolution.cpp" />
     <ClCompile Include="NXDNCRC.cpp" />
+    <ClCompile Include="NXDNFACCH1.cpp" />
+    <ClCompile Include="NXDNFACCH2.cpp" />
     <ClCompile Include="NXDNLICH.cpp" />
     <ClCompile Include="NXDNLookup.cpp" />
     <ClCompile Include="NXDNNetwork.cpp" />
     <ClCompile Include="NXDNSACCH.cpp" />
+    <ClCompile Include="NXDNUDCH.cpp" />
     <ClCompile Include="P25Audio.cpp" />
     <ClCompile Include="P25Control.cpp" />
     <ClCompile Include="P25Data.cpp" />
