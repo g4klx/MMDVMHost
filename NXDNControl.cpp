@@ -12,7 +12,11 @@
  */
 
 #include "NXDNControl.h"
+#include "NXDNFACCH1.h"
+#include "NXDNFACCH2.h"
 #include "NXDNSACCH.h"
+#include "NXDNUDCH.h"
+#include "AMBEFEC.h"
 #include "Utils.h"
 #include "Sync.h"
 #include "Log.h"
@@ -163,9 +167,25 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigned char *data)
 {
 	CNXDNSACCH sacch;
-	sacch.decode(data + 2U);
+	bool valid = sacch.decode(data + 2U);
+	if (valid) {
+		unsigned char ran = sacch.getRAN();
+		if (ran != m_ran && ran != 0U)
+			return false;
+	}
 
-	sacch.encode(data + 2U);
+	if (option == NXDN_LICH_STEAL_NONE) {
+		CAMBEFEC ambe;
+		unsigned int errors = 0U;
+		//errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
+		//errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
+		//errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
+		//errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
+		//LogDebug("NXDN, EHR, AMBE FEC %u/188 (%.1f%%)", errors, float(errors) / 1.88F);
+		//errors += ambe.regenerateIMBE(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
+		//errors += ambe.regenerateIMBE(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
+		//LogDebug("NXDN, EFR, AMBE FEC %u/288 (%.1f%%)", errors, float(errors) / 2.88F);
+	}
 
 #ifdef notdef
 	unsigned char fi = m_lastFICH.getFI();
@@ -484,8 +504,71 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 	return false;
 }
 
-bool CNXDNControl::processData(unsigned char usc, unsigned char *data)
+bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 {
+	if (option == NXDN_LICH_STEAL_FACCH) {
+		CNXDNFACCH2 facch2;
+		bool valid = facch2.decode(data + 2U);
+		if (valid) {
+			unsigned char ran = facch2.getRAN();
+			if (ran != m_ran && ran != 0U)
+				return false;
+
+			data[0U] = TAG_DATA;
+			data[1U] = 0x00U;
+
+			CSync::addNXDNSync(data + 2U);
+
+			CNXDNLICH lich;
+			lich.setRFCT(NXDN_LICH_RFCT_RDCH);
+			lich.setFCT(NXDN_LICH_USC_UDCH);
+			lich.setOption(NXDN_LICH_STEAL_FACCH);
+			lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
+			lich.encode(data + 2U);
+
+			facch2.setRAN(m_ran);
+			facch2.encode(data + 2U);
+
+			writeQueueNet(data);
+
+			if (m_duplex)
+				writeQueueRF(data);
+
+#if defined(DUMP_NXDN)
+			writeFile(data + 2U);
+#endif
+			return true;
+		}
+	} else {
+		CNXDNUDCH udch;
+		bool valid = udch.decode(data + 2U);
+		if (valid) {
+			data[0U] = TAG_DATA;
+			data[1U] = 0x00U;
+
+			CSync::addNXDNSync(data + 2U);
+
+			CNXDNLICH lich;
+			lich.setRFCT(NXDN_LICH_RFCT_RDCH);
+			lich.setFCT(NXDN_LICH_USC_UDCH);
+			lich.setOption(NXDN_LICH_STEAL_NONE);
+			lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
+			lich.encode(data + 2U);
+
+			udch.encode(data + 2U);
+
+			writeQueueNet(data);
+
+			if (m_duplex)
+				writeQueueRF(data);
+
+#if defined(DUMP_NXDN)
+			writeFile(data + 2U);
+#endif
+			return true;
+		}
+	}
+
 #ifdef notdef
 	unsigned char fi = m_lastFICH.getFI();
 	if (valid && fi == YSF_FI_HEADER) {
@@ -911,31 +994,10 @@ void CNXDNControl::scrambler(unsigned char* data) const
 
 	unsigned int offset = 0U;
 	for (unsigned int i = 0U; i < NXDN_FRAME_LENGTH_SYMBOLS; i++, offset += 2U) {
-		bool invert = READ_BIT1(SCRAMBLER, i);
+		bool invert = READ_BIT1(SCRAMBLER, i) != 0x00U;
 		if (invert) {
-			unsigned int offset1 = offset + 0U;
-			unsigned int offset2 = offset + 1U;
-
-			bool b1 = READ_BIT1(data, offset1);
-			bool b2 = READ_BIT1(data, offset2);
-
-			if (b1 && b2) {
-				// -3 to +3, 11 to 01
-				WRITE_BIT1(data, offset1, false);
-				WRITE_BIT1(data, offset2, true);
-			} else if (b1 && !b2) {
-				// -1 to +1, 10 to 00
-				WRITE_BIT1(data, offset1, false);
-				WRITE_BIT1(data, offset2, false);
-			} else if (!b1 && b2) {
-				// +3 to -3, 01 to 11
-				WRITE_BIT1(data, offset1, true);
-				WRITE_BIT1(data, offset2, true);
-			} else {
-				// +1 to -1, 00 to 10
-				WRITE_BIT1(data, offset1, true);
-				WRITE_BIT1(data, offset2, false);
-			}
+			bool b = READ_BIT1(data, offset) == 0x00U;
+			WRITE_BIT1(data, offset, b);
 		}
 	}
 }

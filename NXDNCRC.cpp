@@ -157,7 +157,6 @@ uint8_t CNXDNCRC::createCRC6(const unsigned char* in, unsigned int length)
 	return crc & 0x3FU;
 }
 
-
 uint16_t CNXDNCRC::createCRC12(const unsigned char* in, unsigned int length)
 {
 	uint16_t crc = 0x0D9EU;
