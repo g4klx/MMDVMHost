@@ -27,10 +27,10 @@
 #include <ctime>
 
 const unsigned char SCRAMBLER[] = {
-	0x00U, 0x09U, 0xCAU, 0xB0U, 0xDEU, 0x9BU, 0x91U, 0x42U,
-	0xB4U, 0xFDU, 0x92U, 0x5BU, 0xF2U, 0x6AU, 0x66U, 0x03U,
-	0x19U, 0x46U, 0x97U, 0xF4U, 0x58U, 0xEBU, 0x2CU, 0xF1U,
-	0xF7U};
+	0x00U, 0x00U, 0x00U, 0x82U, 0xA0U, 0x88U, 0x8AU, 0x00U, 0xA2U, 0xA8U, 0x82U, 0x8AU, 0x82U, 0x02U,
+	0x20U, 0x08U, 0x8AU, 0x20U, 0xAAU, 0xA2U, 0x82U, 0x08U, 0x22U, 0x8AU, 0xAAU, 0x08U, 0x28U, 0x88U,
+	0x28U, 0x28U, 0x00U, 0x0AU, 0x02U, 0x82U, 0x20U, 0x28U, 0x82U, 0x2AU, 0xAAU, 0x20U, 0x22U, 0x80U,
+	0xA8U, 0x8AU, 0x08U, 0xA0U, 0xAAU, 0x02U };
 
 // #define	DUMP_NXDN
 
@@ -533,42 +533,38 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 
 			if (m_duplex)
 				writeQueueRF(data);
-
 #if defined(DUMP_NXDN)
 			writeFile(data + 2U);
 #endif
 			return true;
 		}
 	} else {
-		if (m_rfState == RS_RF_DATA) {
-			CNXDNUDCH udch;
-			bool valid = udch.decode(data + 2U);
-			if (valid) {
-				data[0U] = TAG_DATA;
-				data[1U] = 0x00U;
+		CNXDNUDCH udch;
+		bool valid = udch.decode(data + 2U);
+		if (valid) {
+			data[0U] = TAG_DATA;
+			data[1U] = 0x00U;
 
-				CSync::addNXDNSync(data + 2U);
+			CSync::addNXDNSync(data + 2U);
 
-				CNXDNLICH lich;
-				lich.setRFCT(NXDN_LICH_RFCT_RDCH);
-				lich.setFCT(NXDN_LICH_USC_UDCH);
-				lich.setOption(NXDN_LICH_STEAL_NONE);
-				lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
-				lich.encode(data + 2U);
+			CNXDNLICH lich;
+			lich.setRFCT(NXDN_LICH_RFCT_RDCH);
+			lich.setFCT(NXDN_LICH_USC_UDCH);
+			lich.setOption(NXDN_LICH_STEAL_NONE);
+			lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
+			lich.encode(data + 2U);
 
-				udch.encode(data + 2U);
+			udch.encode(data + 2U);
 
-				writeQueueNet(data);
+			writeQueueNet(data);
 
-				if (m_duplex)
-					writeQueueRF(data);
-
+			if (m_duplex)
+				writeQueueRF(data);
 #if defined(DUMP_NXDN)
-				writeFile(data + 2U);
+			writeFile(data + 2U);
 #endif
-				return true;
+			return true;
 			}
-		}
 	}
 
 #ifdef notdef
@@ -994,14 +990,8 @@ void CNXDNControl::scrambler(unsigned char* data) const
 {
 	assert(data != NULL);
 
-	unsigned int offset = 0U;
-	for (unsigned int i = 0U; i < NXDN_FRAME_LENGTH_SYMBOLS; i++, offset += 2U) {
-		bool invert = READ_BIT1(SCRAMBLER, i) != 0x00U;
-		if (invert) {
-			bool b = READ_BIT1(data, offset) == 0x00U;
-			WRITE_BIT1(data, offset, b);
-		}
-	}
+	for (unsigned int i = 0U; i < NXDN_FRAME_LENGTH_BYTES; i++)
+		data[i] ^= SCRAMBLER[i];
 }
 
 bool CNXDNControl::openFile()
