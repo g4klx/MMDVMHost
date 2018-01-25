@@ -411,12 +411,10 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 
 			if (valid) {
 				unsigned int llId = (header[3U] << 16) + (header[4U] << 8) + header[5U];
+				unsigned int sap  = header[1U] & 0x3FU;
 				m_rfDataFrames    = header[6U] & 0x7FU;
 
-				m_display->writeP25("DATA", false, llId, "R");
-				m_display->writeP25RSSI(m_rssi);
-
-				LogMessage("P25, received RF data transmission to %u, %u blocks", llId, m_rfDataFrames);
+				LogMessage("P25, received RF data transmission for Local Link Id %u, SAP %u, %u blocks", llId, sap, m_rfDataFrames);
 			} else {
 				m_rfPDUCount   = 0U;
 				m_rfPDUBits    = 0U;
