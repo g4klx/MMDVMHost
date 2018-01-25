@@ -180,8 +180,8 @@ void CNXDNSACCH::getData(unsigned char* data) const
 
 	unsigned int offset = 8U;
 	for (unsigned int i = 0U; i < 18U; i++, offset++) {
-		bool b = READ_BIT1(data, offset);
-		WRITE_BIT1(m_data, i, b);
+		bool b = READ_BIT1(m_data, offset);
+		WRITE_BIT1(data, i, b);
 	}
 }
 

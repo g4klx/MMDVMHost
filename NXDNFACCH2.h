@@ -40,6 +40,7 @@ public:
 	CNXDNFACCH2& operator=(const CNXDNFACCH2& facch);
 
 private:
+	unsigned char* m_data;
 };
 
 #endif

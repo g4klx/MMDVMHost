@@ -18,9 +18,8 @@
 
 #include "NXDNFACCH2.h"
 
-#include "NXDNConvolution.h"
 #include "NXDNDefines.h"
-#include "NXDNCRC.h"
+#include "NXDNUDCH.h"
 #include "Utils.h"
 #include "Log.h"
 
@@ -33,21 +32,34 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 #define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
-CNXDNFACCH2::CNXDNFACCH2(const CNXDNFACCH2& facch2)
+CNXDNFACCH2::CNXDNFACCH2(const CNXDNFACCH2& facch2) :
+m_data(NULL)
 {
+	m_data = new unsigned char[25U];
+	::memcpy(m_data, facch2.m_data, 25U);
 }
 
-CNXDNFACCH2::CNXDNFACCH2()
+CNXDNFACCH2::CNXDNFACCH2() :
+m_data(NULL)
 {
+	m_data = new unsigned char[25U];
 }
 
 CNXDNFACCH2::~CNXDNFACCH2()
 {
+	delete[] m_data;
 }
 
 bool CNXDNFACCH2::decode(const unsigned char* data)
 {
 	assert(data != NULL);
+
+	CNXDNUDCH udch;
+	bool valid = udch.decode(data);
+	if (!valid)
+		return false;
+
+	udch.getData(m_data);
 
 	return true;
 }
@@ -55,28 +67,51 @@ bool CNXDNFACCH2::decode(const unsigned char* data)
 void CNXDNFACCH2::encode(unsigned char* data) const
 {
 	assert(data != NULL);
+
+	CNXDNUDCH udch;
+
+	udch.setData(m_data);
+
+	udch.encode(data);
 }
 
 unsigned char CNXDNFACCH2::getRAN() const
 {
-	return 0U;
+	return m_data[0U] & 0x3FU;
 }
 
 void CNXDNFACCH2::getData(unsigned char* data) const
 {
 	assert(data != NULL);
+
+	unsigned int offset = 8U;
+	for (unsigned int i = 0U; i < 168U; i++, offset++) {
+		bool b = READ_BIT1(m_data, offset);
+		WRITE_BIT1(data, i, b);
+	}
 }
 
 void CNXDNFACCH2::setRAN(unsigned char ran)
 {
+	m_data[0U] &= 0xC0U;
+	m_data[0U] |= ran;
 }
 
 void CNXDNFACCH2::setData(const unsigned char* data)
 {
 	assert(data != NULL);
+
+	unsigned int offset = 8U;
+	for (unsigned int i = 0U; i < 168U; i++, offset++) {
+		bool b = READ_BIT1(data, i);
+		WRITE_BIT1(m_data, offset, b);
+	}
 }
 
 CNXDNFACCH2& CNXDNFACCH2::operator=(const CNXDNFACCH2& facch2)
 {
+	if (&facch2 != this)
+		::memcpy(m_data, facch2.m_data, 25U);
+
 	return *this;
 }

@@ -540,32 +540,34 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 			return true;
 		}
 	} else {
-		CNXDNUDCH udch;
-		bool valid = udch.decode(data + 2U);
-		if (valid) {
-			data[0U] = TAG_DATA;
-			data[1U] = 0x00U;
+		if (m_rfState == RS_RF_DATA) {
+			CNXDNUDCH udch;
+			bool valid = udch.decode(data + 2U);
+			if (valid) {
+				data[0U] = TAG_DATA;
+				data[1U] = 0x00U;
 
-			CSync::addNXDNSync(data + 2U);
+				CSync::addNXDNSync(data + 2U);
 
-			CNXDNLICH lich;
-			lich.setRFCT(NXDN_LICH_RFCT_RDCH);
-			lich.setFCT(NXDN_LICH_USC_UDCH);
-			lich.setOption(NXDN_LICH_STEAL_NONE);
-			lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
-			lich.encode(data + 2U);
+				CNXDNLICH lich;
+				lich.setRFCT(NXDN_LICH_RFCT_RDCH);
+				lich.setFCT(NXDN_LICH_USC_UDCH);
+				lich.setOption(NXDN_LICH_STEAL_NONE);
+				lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
+				lich.encode(data + 2U);
 
-			udch.encode(data + 2U);
+				udch.encode(data + 2U);
 
-			writeQueueNet(data);
+				writeQueueNet(data);
 
-			if (m_duplex)
-				writeQueueRF(data);
+				if (m_duplex)
+					writeQueueRF(data);
 
 #if defined(DUMP_NXDN)
-			writeFile(data + 2U);
+				writeFile(data + 2U);
 #endif
-			return true;
+				return true;
+			}
 		}
 	}
 
