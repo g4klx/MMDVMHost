@@ -35,6 +35,7 @@ public:
 	CNXDNFACCH1& operator=(const CNXDNFACCH1& facch);
 
 private:
+	unsigned char* m_data;
 };
 
 #endif

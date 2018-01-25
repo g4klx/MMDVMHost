@@ -36,6 +36,7 @@ public:
 	CNXDNUDCH& operator=(const CNXDNUDCH& udch);
 
 private:
+	unsigned char* m_data;
 };
 
 #endif

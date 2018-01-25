@@ -33,16 +33,22 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 #define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
-CNXDNUDCH::CNXDNUDCH(const CNXDNUDCH& udch)
+CNXDNUDCH::CNXDNUDCH(const CNXDNUDCH& udch) :
+m_data(NULL)
 {
+	m_data = new unsigned char[23U + 2U];
+	::memcpy(m_data, udch.m_data, 23U + 2U);
 }
 
-CNXDNUDCH::CNXDNUDCH()
+CNXDNUDCH::CNXDNUDCH() :
+m_data(NULL)
 {
+	m_data = new unsigned char[23U + 2U];
 }
 
 CNXDNUDCH::~CNXDNUDCH()
 {
+	delete[] m_data;
 }
 
 bool CNXDNUDCH::decode(const unsigned char* data)
@@ -60,14 +66,21 @@ void CNXDNUDCH::encode(unsigned char* data) const
 void CNXDNUDCH::getData(unsigned char* data) const
 {
 	assert(data != NULL);
+
+	::memcpy(data, m_data, 23U);
 }
 
 void CNXDNUDCH::setData(const unsigned char* data)
 {
 	assert(data != NULL);
+
+	::memcpy(m_data, data, 23U);
 }
 
 CNXDNUDCH& CNXDNUDCH::operator=(const CNXDNUDCH& udch)
 {
+	if (&udch != this)
+		::memcpy(m_data, udch.m_data, 23U + 2U);
+
 	return *this;
 }

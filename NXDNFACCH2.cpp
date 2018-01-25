@@ -35,14 +35,14 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 CNXDNFACCH2::CNXDNFACCH2(const CNXDNFACCH2& facch2) :
 m_data(NULL)
 {
-	m_data = new unsigned char[25U];
-	::memcpy(m_data, facch2.m_data, 25U);
+	m_data = new unsigned char[23U];
+	::memcpy(m_data, facch2.m_data, 23U);
 }
 
 CNXDNFACCH2::CNXDNFACCH2() :
 m_data(NULL)
 {
-	m_data = new unsigned char[25U];
+	m_data = new unsigned char[23U];
 }
 
 CNXDNFACCH2::~CNXDNFACCH2()
@@ -84,11 +84,7 @@ void CNXDNFACCH2::getData(unsigned char* data) const
 {
 	assert(data != NULL);
 
-	unsigned int offset = 8U;
-	for (unsigned int i = 0U; i < 168U; i++, offset++) {
-		bool b = READ_BIT1(m_data, offset);
-		WRITE_BIT1(data, i, b);
-	}
+	::memcpy(data, m_data + 1U, 22U);
 }
 
 void CNXDNFACCH2::setRAN(unsigned char ran)
@@ -101,17 +97,13 @@ void CNXDNFACCH2::setData(const unsigned char* data)
 {
 	assert(data != NULL);
 
-	unsigned int offset = 8U;
-	for (unsigned int i = 0U; i < 168U; i++, offset++) {
-		bool b = READ_BIT1(data, i);
-		WRITE_BIT1(m_data, offset, b);
-	}
+	::memcpy(m_data + 1U, data, 22U);
 }
 
 CNXDNFACCH2& CNXDNFACCH2::operator=(const CNXDNFACCH2& facch2)
 {
 	if (&facch2 != this)
-		::memcpy(m_data, facch2.m_data, 25U);
+		::memcpy(m_data, facch2.m_data, 23U);
 
 	return *this;
 }
