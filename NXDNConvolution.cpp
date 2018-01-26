@@ -27,12 +27,12 @@ const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U
 #define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
-const uint8_t BRANCH_TABLE1[] = {0U, 0U, 0U, 0U, 2U, 2U, 2U, 2U};
-const uint8_t BRANCH_TABLE2[] = {0U, 2U, 2U, 0U, 0U, 2U, 2U, 0U};
+const uint8_t BRANCH_TABLE1[] = {0U, 0U, 0U, 0U, 1U, 1U, 1U, 1U};
+const uint8_t BRANCH_TABLE2[] = {0U, 1U, 1U, 0U, 0U, 1U, 1U, 0U};
 
 const unsigned int NUM_OF_STATES_D2 = 8U;
 const unsigned int NUM_OF_STATES = 16U;
-const uint32_t     M = 4U;
+const uint32_t     M = 2U;
 const unsigned int K = 5U;
 
 CNXDNConvolution::CNXDNConvolution() :
@@ -72,7 +72,16 @@ void CNXDNConvolution::decode(uint8_t s0, uint8_t s1)
   for (uint8_t i = 0U; i < NUM_OF_STATES_D2; i++) {
     uint8_t j = i * 2U;
 
-    uint16_t metric = (BRANCH_TABLE1[i] ^ s0) + (BRANCH_TABLE2[i] ^ s1);
+    uint16_t metric0 = 0;
+    uint16_t metric1 = 0;
+    
+	if (s0 != 99U)
+    	metric0 = (BRANCH_TABLE1[i] ^ s0);
+    	
+	if (s1 != 99U)
+    	metric1 = (BRANCH_TABLE2[i] ^ s1);
+    	
+    uint16_t metric = metric0 + metric1;
 
     uint16_t m0 = m_oldMetrics[i] + metric;
     uint16_t m1 = m_oldMetrics[i + NUM_OF_STATES_D2] + (M - metric);
