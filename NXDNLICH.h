@@ -42,7 +42,7 @@ public:
 	CNXDNLICH& operator=(const CNXDNLICH& lich);
 
 private:
-	unsigned char m_lich;
+	unsigned char* m_lich;
 };
 
 #endif

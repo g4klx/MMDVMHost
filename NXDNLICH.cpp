@@ -30,33 +30,33 @@ const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U
 #define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
 CNXDNLICH::CNXDNLICH(const CNXDNLICH& lich) :
-m_lich(lich.m_lich)
+m_lich(NULL)
 {
+	m_lich = new unsigned char[1U];
+	m_lich[0U] = lich.m_lich[0U];
 }
 
 CNXDNLICH::CNXDNLICH() :
-m_lich(0U)
+m_lich(NULL)
 {
+	m_lich = new unsigned char[1U];
 }
 
 CNXDNLICH::~CNXDNLICH()
 {
+	delete[] m_lich;
 }
 
 bool CNXDNLICH::decode(const unsigned char* bytes)
 {
 	assert(bytes != NULL);
 
-	unsigned char lich[1U];
-	lich[0U] = 0x00U;
-
 	bool b[8U];
-
 	unsigned int offset1 = NXDN_FSW_LENGTH_BITS;
 	unsigned int offset2 = 7U;
 	for (unsigned int i = 0U; i < (NXDN_LICH_LENGTH_BITS / 2U); i++, offset1 += 2U, offset2--) {
 		b[offset2] = READ_BIT1(bytes, offset1);
-		WRITE_BIT1(lich, i, b[offset2]);
+		WRITE_BIT1(m_lich, i, b[offset2]);
 	}
 
 	bool parity = b[7U] ^ b[6U] ^ b[5U] ^ b[4U];
@@ -66,8 +66,6 @@ bool CNXDNLICH::decode(const unsigned char* bytes)
 	if (parity != b[0U])
 		return false;
 
-	m_lich = lich[0U] >> 1;
-
 	return true;
 }
 
@@ -75,15 +73,10 @@ void CNXDNLICH::encode(unsigned char* bytes)
 {
 	assert(bytes != NULL);
 
-	unsigned char lich[1U];
-
-	lich[0U] = m_lich << 1;
-
 	bool b[8U];
-
 	unsigned int offset = 7U;
 	for (unsigned int i = 0U; i < (NXDN_LICH_LENGTH_BITS / 2U); i++, offset--)
-		b[offset] = READ_BIT1(lich, offset);
+		b[offset] = READ_BIT1(m_lich, offset);
 
 	b[0U] = b[7U] ^ b[6U] ^ b[5U] ^ b[4U];
 
@@ -99,52 +92,52 @@ void CNXDNLICH::encode(unsigned char* bytes)
 
 unsigned char CNXDNLICH::getRFCT() const
 {
-	return (m_lich >> 5) & 0x03U;
+	return (m_lich[0U] >> 6) & 0x03U;
 }
 
 unsigned char CNXDNLICH::getFCT() const
 {
-	return (m_lich >> 3) & 0x03U;
+	return (m_lich[0U] >> 4) & 0x03U;
 }
 
 unsigned char CNXDNLICH::getOption() const
 {
-	return (m_lich >> 1) & 0x03U;
+	return (m_lich[0U] >> 2) & 0x03U;
 }
 
 unsigned char CNXDNLICH::getDirection() const
 {
-	return m_lich & 0x01U;
+	return (m_lich[0U] >> 1) & 0x01U;
 }
 
 void CNXDNLICH::setRFCT(unsigned char rfct)
 {
-	m_lich &= 0x1FU;
-	m_lich |= (rfct << 5) & 0x60U;
+	m_lich[0U] &= 0x3FU;
+	m_lich[0U] |= (rfct << 6) & 0xC0U;
 }
 
 void CNXDNLICH::setFCT(unsigned char usc)
 {
-	m_lich &= 0x67U;
-	m_lich |= (usc << 3) & 0x18U;
+	m_lich[0U] &= 0xCFU;
+	m_lich[0U] |= (usc << 4) & 0x30U;
 }
 
 void CNXDNLICH::setOption(unsigned char option)
 {
-	m_lich &= 0x79U;
-	m_lich |= (option << 1) & 0x06U;
+	m_lich[0U] &= 0xF3U;
+	m_lich[0u] |= (option << 2) & 0x0CU;
 }
 
 void CNXDNLICH::setDirection(unsigned char direction)
 {
-	m_lich &= 0x7EU;
-	m_lich |= direction & 0x01U;
+	m_lich[0U] &= 0xFDU;
+	m_lich[0U] |= (direction << 1) & 0x02U;
 }
 
 CNXDNLICH& CNXDNLICH::operator=(const CNXDNLICH& lich)
 {
 	if (&lich != this)
-		m_lich = lich.m_lich;
+		m_lich[0U] = lich.m_lich[0U];
 
 	return *this;
 }
