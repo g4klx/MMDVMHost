@@ -140,7 +140,7 @@ uint8_t CNXDNCRC::createCRC6(const unsigned char* in, unsigned int length)
 			crc |= 0x01U;
 
 		if (bit2)
-			crc |= 0x27U;
+			crc ^= 0x27U;
 
 		crc &= 0x3FU;
 	}
@@ -154,7 +154,7 @@ uint8_t CNXDNCRC::createCRC6(const unsigned char* in, unsigned int length)
 			crc ^= 0x27U;
 	}
 
-	return crc & 0x3FU;
+	return (crc & 0x3FU) << 2U;
 }
 
 uint16_t CNXDNCRC::createCRC12(const unsigned char* in, unsigned int length)
@@ -185,7 +185,7 @@ uint16_t CNXDNCRC::createCRC12(const unsigned char* in, unsigned int length)
 			crc ^= 0x080FU;
 	}
 
-	return crc & 0x0FFFU;
+	return (crc & 0x0FFFU) << 4U;
 }
 
 uint16_t CNXDNCRC::createCRC15(const unsigned char* in, unsigned int length)
@@ -216,5 +216,5 @@ uint16_t CNXDNCRC::createCRC15(const unsigned char* in, unsigned int length)
 			crc ^= 0x4CC5U;
 	}
 
-	return crc & 0x7FFFU;
+	return (crc & 0x7FFFU) << 1U;
 }
