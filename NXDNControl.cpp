@@ -983,7 +983,7 @@ void CNXDNControl::writeNetwork(const unsigned char *data, unsigned int count)
 	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired())
 		return;
 
-	m_network->write(data + 2U, count, data[0U] == TAG_EOT);
+	// m_network->write(data + 2U, count, data[0U] == TAG_EOT);
 }
 
 void CNXDNControl::scrambler(unsigned char* data) const

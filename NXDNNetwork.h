@@ -36,9 +36,9 @@ public:
 
 	void enable(bool enabled);
 
-	bool write(const unsigned char* data, unsigned int count, bool end);
+	bool write(const unsigned char* data, unsigned short src, bool grp, unsigned short dst, unsigned int cnt, bool end);
 
-	unsigned int read(unsigned char* data);
+	unsigned int read(unsigned char* data, unsigned short& src, bool& grp, unsigned short& dst, unsigned int& cnt, bool& end);
 
 	void reset();
 

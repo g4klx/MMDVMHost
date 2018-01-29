@@ -56,11 +56,11 @@ bool CNXDNNetwork::open()
 	return m_socket.open();
 }
 
-bool CNXDNNetwork::write(const unsigned char* data, unsigned int count, bool end)
+bool CNXDNNetwork::write(const unsigned char* data, unsigned short src, bool grp, unsigned short dst, unsigned int cnt, bool end)
 {
 	assert(data != NULL);
 
-	unsigned char buffer[200U];
+	unsigned char buffer[100U];
 
 	buffer[0U] = 'N';
 	buffer[1U] = 'X';
@@ -68,15 +68,23 @@ bool CNXDNNetwork::write(const unsigned char* data, unsigned int count, bool end
 	buffer[3U] = 'N';
 	buffer[4U] = 'D';
 
-	buffer[5U] = end ? 0x01U : 0x00U;
-	buffer[5U] |= (count & 0x7FU) << 1;
+	buffer[5U] = (src >> 8) & 0xFFU;
+	buffer[6U] = (src >> 8) & 0xFFU;
 
-	::memcpy(buffer + 6U, data, NXDN_FRAME_LENGTH_BYTES);
+	buffer[7U] = grp ? 0x01U : 0x00U;
+
+	buffer[8U] = (dst >> 8) & 0xFFU;
+	buffer[9U] = (dst >> 8) & 0xFFU;
+
+	buffer[10U] = end ? 0x80U : 0x00U;
+	buffer[10U] |= (cnt & 0x7FU) << 1;
+
+	::memcpy(buffer + 11U, data, NXDN_FRAME_LENGTH_BYTES);
 
 	if (m_debug)
-		CUtils::dump(1U, "NXDN Network Data Sent", buffer, 54U);
+		CUtils::dump(1U, "NXDN Network Data Sent", buffer, 59U);
 
-	return m_socket.write(buffer, 54U, m_address, m_port);
+	return m_socket.write(buffer, 59U, m_address, m_port);
 }
 
 bool CNXDNNetwork::writePoll()
@@ -131,19 +139,29 @@ void CNXDNNetwork::clock(unsigned int ms)
 	if (m_debug)
 		CUtils::dump(1U, "NXDN Network Data Received", buffer, length);
 
-	m_buffer.addData(buffer, 54U);
+	m_buffer.addData(buffer, 59U);
 }
 
-unsigned int CNXDNNetwork::read(unsigned char* data)
+unsigned int CNXDNNetwork::read(unsigned char* data, unsigned short& src, bool& grp, unsigned short& dst, unsigned int& cnt, bool& end)
 {
 	assert(data != NULL);
 
 	if (m_buffer.isEmpty())
 		return 0U;
 
-	m_buffer.getData(data, 54U);
+	unsigned char buffer[100U];
+	m_buffer.getData(buffer, 59U);
 
-	return 155U;
+	src = (buffer[5U] << 8) + buffer[6U];
+	grp = (buffer[7U] & 0x01U) == 0x01U;
+	dst = (buffer[8U] << 8) + buffer[9U];
+
+	end = (buffer[10U] & 0x80U) == 0x80U;
+	cnt = buffer[10U] & 0x7FU;
+
+	::memcpy(data, buffer + 11U, NXDN_FRAME_LENGTH_BYTES);
+
+	return NXDN_FRAME_LENGTH_BYTES;
 }
 
 void CNXDNNetwork::reset()
