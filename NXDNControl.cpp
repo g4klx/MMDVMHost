@@ -344,6 +344,8 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
 
+		scrambler(data + 2U);
+
 		writeNetwork(data, m_rfFrames % 128U);
 
 #if defined(DUMP_NXDN)
@@ -402,6 +404,8 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 
 		udch.setRAN(m_ran);
 		udch.encode(data + 2U);
+
+		scrambler(data + 2U);
 
 		writeQueueNet(data);
 
