@@ -257,9 +257,6 @@
     <ClInclude Include="NXDNFACCH1.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="NXDNFACCH2.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="NXDNUDCH.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -488,9 +485,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NXDNFACCH1.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NXDNFACCH2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NXDNUDCH.cpp">

@@ -88,4 +88,17 @@ const unsigned char NXDN_MESSAGE_TYPE_AUTH_INQ_REQ    = 0x28U;
 const unsigned char NXDN_MESSAGE_TYPE_AUTH_INQ_RESP   = 0x29U;
 const unsigned char NXDN_MESSAGE_TYPE_PROP_FORM       = 0x3FU;
 
+const unsigned char NXDN_VOICE_CALL_OPTION_HALF_DUPLEX = 0x00U;
+const unsigned char NXDN_VOICE_CALL_OPTION_DUPLEX      = 0x10U;
+
+const unsigned char NXDN_VOICE_CALL_OPTION_4800_EHR = 0x00U;
+const unsigned char NXDN_VOICE_CALL_OPTION_9600_EHR = 0x02U;
+const unsigned char NXDN_VOICE_CALL_OPTION_9600_EFR = 0x03U;
+
+const unsigned char NXDN_DATA_CALL_OPTION_HALF_DUPLEX = 0x00U;
+const unsigned char NXDN_DATA_CALL_OPTION_DUPLEX      = 0x10U;
+
+const unsigned char NXDN_DATA_CALL_OPTION_4800 = 0x00U;
+const unsigned char NXDN_DATA_CALL_OPTION_9600 = 0x02U;
+
 #endif

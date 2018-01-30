@@ -85,24 +85,17 @@ bool CNXDNFACCH1::decode(const unsigned char* data, unsigned int offset)
 
 	uint8_t temp2[192U];
 
-	char text[500U];
-	::strcpy(text, "NXDN, FACCH1 de-punctured: ");
-
 	unsigned int n = 0U;
 	unsigned int index = 0U;
 	for (unsigned int i = 0U; i < NXDN_FACCH1_LENGTH_BITS; i++) {
 		if (n == PUNCTURE_LIST[index]) {
-			::strcat(text, "X, ");
 			temp2[n++] = 99U;
 			index++;
 		}
 
 		bool b = READ_BIT1(temp1, i);
 		temp2[n++] = b ? 1U : 0U;
-		::strcat(text, b ? "1, " : "0, ");
 	}
-
-	LogMessage(text);
 
 	CNXDNConvolution conv;
 	conv.start();

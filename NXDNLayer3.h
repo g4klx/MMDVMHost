@@ -33,6 +33,7 @@ public:
 	unsigned short getSourceUnitId() const;
 	unsigned short getDestinationGroupId() const;
 	bool           getIsGroup() const;
+	unsigned char  getCallOptions() const;
 
 	CNXDNLayer3& operator=(const CNXDNLayer3& layer3);
 

@@ -198,7 +198,6 @@
     <ClInclude Include="NXDNCRC.h" />
     <ClInclude Include="NXDNDefines.h" />
     <ClInclude Include="NXDNFACCH1.h" />
-    <ClInclude Include="NXDNFACCH2.h" />
     <ClInclude Include="NXDNLayer3.h" />
     <ClInclude Include="NXDNLICH.h" />
     <ClInclude Include="NXDNLookup.h" />
@@ -281,7 +280,6 @@
     <ClCompile Include="NXDNConvolution.cpp" />
     <ClCompile Include="NXDNCRC.cpp" />
     <ClCompile Include="NXDNFACCH1.cpp" />
-    <ClCompile Include="NXDNFACCH2.cpp" />
     <ClCompile Include="NXDNLayer3.cpp" />
     <ClCompile Include="NXDNLICH.cpp" />
     <ClCompile Include="NXDNLookup.cpp" />

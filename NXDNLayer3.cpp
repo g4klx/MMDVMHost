@@ -88,6 +88,11 @@ bool CNXDNLayer3::getIsGroup() const
 	return (m_data[2U] & 0x80U) != 0x80U;
 }
 
+unsigned char CNXDNLayer3::getCallOptions() const
+{
+	return m_data[2U] & 0x1FU;
+}
+
 CNXDNLayer3& CNXDNLayer3::operator=(const CNXDNLayer3& layer3)
 {
 	if (&layer3 != this)

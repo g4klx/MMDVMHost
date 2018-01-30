@@ -106,24 +106,17 @@ bool CNXDNUDCH::decode(const unsigned char* data)
 
 	uint8_t temp2[406U];
 
-	char text[500U];
-	::strcpy(text, "NXDN, UDCH/FACCH2 de-punctured: ");
-
 	unsigned int n = 0U;
 	unsigned int index = 0U;
 	for (unsigned int i = 0U; i < NXDN_FACCH2_LENGTH_BITS; i++) {
 		if (n == PUNCTURE_LIST[index]) {
-			::strcat(text, "X, ");
 			temp2[n++] = 99U;
 			index++;
 		}
 
 		bool b = READ_BIT1(temp1, i);
 		temp2[n++] = b ? 1U : 0U;
-		::strcat(text, b ? "1, " : "0, ");
 	}
-
-	LogMessage(text);
 
 	CNXDNConvolution conv;
 	conv.start();
@@ -189,18 +182,29 @@ void CNXDNUDCH::encode(unsigned char* data) const
 	}
 }
 
+unsigned char CNXDNUDCH::getRAN() const
+{
+	return m_data[0U] & 0x3FU;
+}
+
 void CNXDNUDCH::getData(unsigned char* data) const
 {
 	assert(data != NULL);
 
-	::memcpy(data, m_data, 23U);
+	::memcpy(data, m_data + 1U, 22U);
+}
+
+void CNXDNUDCH::setRAN(unsigned char ran)
+{
+	m_data[0U] &= 0xC0U;
+	m_data[0U] |= ran;
 }
 
 void CNXDNUDCH::setData(const unsigned char* data)
 {
 	assert(data != NULL);
 
-	::memcpy(m_data, data, 23U);
+	::memcpy(m_data + 1U, data, 22U);
 }
 
 CNXDNUDCH& CNXDNUDCH::operator=(const CNXDNUDCH& udch)
