@@ -63,7 +63,9 @@ m_rfErrs(0U),
 m_rfBits(1U),
 m_netErrs(0U),
 m_netBits(1U),
-m_lastLICH(),
+m_rfLastLICH(),
+m_rfSACCHMessage(),
+m_rfMask(0x00U),
 m_netN(0U),
 m_rssiMapper(rssiMapper),
 m_rssi(0U),
@@ -139,21 +141,21 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 	bool valid = lich.decode(data + 2U);
 
 	if (valid)
-		m_lastLICH = lich;
+		m_rfLastLICH = lich;
 
 	// Stop repeater packets coming through, unless we're acting as a remote gateway
 	if (m_remoteGateway) {
-		unsigned char direction = m_lastLICH.getDirection();
+		unsigned char direction = m_rfLastLICH.getDirection();
 		if (direction == NXDN_LICH_DIRECTION_INBOUND)
 			return false;
 	} else {
-		unsigned char direction = m_lastLICH.getDirection();
+		unsigned char direction = m_rfLastLICH.getDirection();
 		if (direction == NXDN_LICH_DIRECTION_OUTBOUND)
 			return false;
 	}
 
-	unsigned char usc    = m_lastLICH.getFCT();
-	unsigned char option = m_lastLICH.getOption();
+	unsigned char usc    = m_rfLastLICH.getFCT();
+	unsigned char option = m_rfLastLICH.getOption();
 
 	bool ret;
 	if (usc == NXDN_LICH_USC_UDCH)
@@ -173,6 +175,77 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		if (ran != m_ran && ran != 0U)
 			return false;
 	}
+
+	if (m_rfState == RS_RF_LISTENING && !valid)
+		return false;
+
+	if (m_rfState == RS_RF_LISTENING) {
+		unsigned char message[3U];
+		sacch.getData(message);
+
+		unsigned char structure = sacch.getStructure();
+		switch (structure) {
+		case NXDN_SR_1_4:
+			m_rfMask |= 0x01U;
+			m_rfSACCHMessage.decode(message, 18U, 0U);
+			break;
+		case NXDN_SR_2_4:
+			m_rfMask |= 0x02U;
+			m_rfSACCHMessage.decode(message, 18U, 18U);
+			break;
+		case NXDN_SR_3_4:
+			m_rfMask |= 0x04U;
+			m_rfSACCHMessage.decode(message, 18U, 36U);
+			break;
+		case NXDN_SR_4_4:
+			m_rfMask |= 0x08U;
+			m_rfSACCHMessage.decode(message, 18U, 54U);
+			break;
+		default:
+			break;
+		}
+
+		if (m_rfMask != 0x0FU)
+			return false;
+
+		unsigned char messageType = m_rfSACCHMessage.getMessageType();
+		if (messageType == NXDN_MESSAGE_TYPE_IDLE)
+			return false;
+
+		unsigned short srcId = m_rfSACCHMessage.getSourceUnitId();
+		unsigned short dstId = m_rfSACCHMessage.getDestinationGroupId();
+		bool grp = m_rfSACCHMessage.getIsGroup();
+
+		if (m_selfOnly) {
+			if (srcId != m_id) {
+				m_rfState = RS_RF_REJECTED;
+				return false;
+			}
+		}
+
+		m_rfFrames = 0U;
+		m_rfErrs = 0U;
+		m_rfBits = 1U;
+		m_rfTimeoutTimer.start();
+		m_rfState = RS_RF_AUDIO;
+
+		m_minRSSI = m_rssi;
+		m_maxRSSI = m_rssi;
+		m_aveRSSI = m_rssi;
+		m_rssiCount = 1U;
+#if defined(DUMP_NXDN)
+		openFile();
+#endif
+		std::string source = m_lookup->find(srcId);
+		LogMessage("NXDN, received RF voice transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
+		m_display->writeNXDN(source.c_str(), grp, dstId, "R");
+
+		m_rfState = RS_RF_AUDIO;
+	}
+
+	// XXX What about rejected?
+	if (m_rfState != RS_RF_AUDIO)
+		return false;
 
 	if (option == NXDN_LICH_STEAL_NONE) {
 		CAMBEFEC ambe;
@@ -748,6 +821,8 @@ unsigned int CNXDNControl::readModem(unsigned char* data)
 void CNXDNControl::writeEndRF()
 {
 	m_rfState = RS_RF_LISTENING;
+
+	m_rfMask = 0x00U;
 
 	m_rfTimeoutTimer.stop();
 
