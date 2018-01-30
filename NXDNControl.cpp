@@ -98,8 +98,13 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 		return false;
 	}
 
+	if (type == TAG_LOST && m_rfState == RS_RF_DATA) {
+		writeEndRF();
+		return false;
+	}
+
 	if (type == TAG_LOST && m_rfState == RS_RF_REJECTED) {
-		m_rfState  = RS_RF_LISTENING;
+		m_rfState = RS_RF_LISTENING;
 		return false;
 	}
 
@@ -178,6 +183,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 	if (m_rfState == RS_RF_LISTENING && !valid)
 		return false;
 
+	// XXX the FACCH1 data in the header may also be useful
 	if (m_rfState == RS_RF_LISTENING) {
 		unsigned char message[3U];
 		sacch.getData(message);
@@ -242,395 +248,135 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		m_rfState = RS_RF_AUDIO;
 	}
 
-	// XXX What about rejected?
-	if (m_rfState != RS_RF_AUDIO)
-		return false;
+	if (m_rfState == RS_RF_AUDIO) {
+		// Regenerate the sync
+		CSync::addNXDNSync(data + 2U);
 
-	unsigned char voiceMode = m_rfSACCHMessage.getCallOptions() & 0x07U;
+		// Regenerate the LICH
+		CNXDNLICH lich;
+		lich.setRFCT(NXDN_LICH_RFCT_RDCH);
+		lich.setFCT(usc);
+		lich.setOption(option);
+		lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
+		lich.encode(data + 2U);
 
-	if (option == NXDN_LICH_STEAL_NONE) {
-		CAMBEFEC ambe;
-		unsigned int errors = 0U;
-		if (voiceMode == NXDN_VOICE_CALL_OPTION_9600_EFR) {
-			errors += ambe.regenerateIMBE(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
-			errors += ambe.regenerateIMBE(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
-			m_rfErrs += errors;
-			m_rfBits += 288U;
-			m_display->writeNXDNBER(float(errors) / 2.88F);
-			LogDebug("NXDN, EFR, AMBE FEC %u/288 (%.1f%%)", errors, float(errors) / 2.88F);
+		// XXX Regenerate SACCH here
+
+		// Regenerate the audio and interpret the FACCH1 data
+		unsigned char voiceMode = m_rfSACCHMessage.getCallOptions() & 0x07U;
+
+		if (option == NXDN_LICH_STEAL_NONE) {
+			CAMBEFEC ambe;
+			unsigned int errors = 0U;
+			if (voiceMode == NXDN_VOICE_CALL_OPTION_9600_EFR) {
+				errors += ambe.regenerateIMBE(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
+				errors += ambe.regenerateIMBE(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
+				m_rfErrs += errors;
+				m_rfBits += 288U;
+				m_display->writeNXDNBER(float(errors) / 2.88F);
+				LogDebug("NXDN, EFR, AMBE FEC %u/288 (%.1f%%)", errors, float(errors) / 2.88F);
+			} else {
+				errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
+				errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
+				errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
+				errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
+				m_rfErrs += errors;
+				m_rfBits += 188U;
+				m_display->writeNXDNBER(float(errors) / 1.88F);
+				LogDebug("NXDN, EHR, AMBE FEC %u/188 (%.1f%%)", errors, float(errors) / 1.88F);
+			}
+		} else if (option == NXDN_LICH_STEAL_FACCH1_1) {
+			CNXDNFACCH1 facch1;
+			bool valid = facch1.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
+			if (valid)
+				facch1.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
+
+			CAMBEFEC ambe;
+			unsigned int errors = 0U;
+			if (voiceMode == NXDN_VOICE_CALL_OPTION_9600_EFR) {
+				errors += ambe.regenerateIMBE(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
+				m_rfErrs += errors;
+				m_rfBits += 144U;
+				m_display->writeNXDNBER(float(errors) / 1.44F);
+				LogDebug("NXDN, EFR, AMBE FEC %u/144 (%.1f%%)", errors, float(errors) / 1.44F);
+			} else {
+				errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
+				errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
+				m_rfErrs += errors;
+				m_rfBits += 94U;
+				m_display->writeNXDNBER(float(errors) / 0.94F);
+				LogDebug("NXDN, EHR, AMBE FEC %u/94 (%.1f%%)", errors, float(errors) / 0.94F);
+			}
+		} else if (option == NXDN_LICH_STEAL_FACCH1_2) {
+			CAMBEFEC ambe;
+			unsigned int errors = 0U;
+			if (voiceMode == NXDN_VOICE_CALL_OPTION_9600_EFR) {
+				errors += ambe.regenerateIMBE(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
+				m_rfErrs += errors;
+				m_rfBits += 144U;
+				m_display->writeNXDNBER(float(errors) / 1.44F);
+				LogDebug("NXDN, EFR, AMBE FEC %u/144 (%.1f%%)", errors, float(errors) / 1.44F);
+			} else {
+				errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
+				errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
+				m_rfErrs += errors;
+				m_rfBits += 94U;
+				m_display->writeNXDNBER(float(errors) / 0.94F);
+				LogDebug("NXDN, EHR, AMBE FEC %u/94 (%.1f%%)", errors, float(errors) / 0.94F);
+			}
+
+			CNXDNFACCH1 facch1;
+			bool valid = facch1.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
+			if (valid)
+				facch1.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
 		} else {
-			errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
-			errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
-			errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
-			errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
-			m_rfErrs += errors;
-			m_rfBits += 188U;
-			m_display->writeNXDNBER(float(errors) / 1.88F);
-			LogDebug("NXDN, EHR, AMBE FEC %u/188 (%.1f%%)", errors, float(errors) / 1.88F);
-		}
-	} else if (option == NXDN_LICH_STEAL_FACCH1_1) {
-		CNXDNFACCH1 facch1;
-		facch1.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
+			CNXDNFACCH1 facch11;
+			bool valid1 = facch11.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
+			if (valid1)
+				facch11.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
 
-		CAMBEFEC ambe;
-		unsigned int errors = 0U;
-		if (voiceMode == NXDN_VOICE_CALL_OPTION_9600_EFR) {
-			errors += ambe.regenerateIMBE(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
-			m_rfErrs += errors;
-			m_rfBits += 144U;
-			m_display->writeNXDNBER(float(errors) / 1.44F);
-			LogDebug("NXDN, EFR, AMBE FEC %u/144 (%.1f%%)", errors, float(errors) / 1.44F);
-		} else {
-			errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
-			errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
-			m_rfErrs += errors;
-			m_rfBits += 94U;
-			m_display->writeNXDNBER(float(errors) / 0.94F);
-			LogDebug("NXDN, EHR, AMBE FEC %u/94 (%.1f%%)", errors, float(errors) / 0.94F);
-		}
-	} else if (option == NXDN_LICH_STEAL_FACCH1_2) {
-		CAMBEFEC ambe;
-		unsigned int errors = 0U;
-		if (voiceMode == NXDN_VOICE_CALL_OPTION_9600_EFR) {
-			errors += ambe.regenerateIMBE(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
-			m_rfErrs += errors;
-			m_rfBits += 144U;
-			m_display->writeNXDNBER(float(errors) / 1.44F);
-			LogDebug("NXDN, EFR, AMBE FEC %u/144 (%.1f%%)", errors, float(errors) / 1.44F);
-		} else {
-			errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
-			errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
-			m_rfErrs += errors;
-			m_rfBits += 94U;
-			m_display->writeNXDNBER(float(errors) / 0.94F);
-			LogDebug("NXDN, EHR, AMBE FEC %u/94 (%.1f%%)", errors, float(errors) / 0.94F);
+			CNXDNFACCH1 facch12;
+			bool valid2 = facch12.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
+			if (valid2)
+				facch12.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
 		}
 
-		CNXDNFACCH1 facch1;
-		facch1.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
-	} else {
-		CNXDNFACCH1 facch11;
-		facch11.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
+		data[0U] = TAG_DATA;
+		data[1U] = 0x00U;
 
-		CNXDNFACCH1 facch12;
-		facch12.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
+		writeNetwork(data, m_rfFrames % 128U);
+
+#if defined(DUMP_NXDN)
+		writeFile(data + 2U);
+#endif
+
+		if (m_duplex)
+			writeQueueRF(data);
+
+		m_rfFrames++;
+
+		m_display->writeNXDNRSSI(m_rssi);
 	}
 
 #ifdef notdef
-	unsigned char fi = m_lastFICH.getFI();
-	if (valid && fi == YSF_FI_HEADER) {
-		if (m_rfState == RS_RF_LISTENING) {
-			bool valid = m_rfPayload.processHeaderData(data + 2U);
-			if (!valid)
-				return false;
-
-			m_rfSource = m_rfPayload.getSource();
-
-			if (m_selfOnly) {
-				bool ret = checkCallsign(m_rfSource);
-				if (!ret) {
-					LogMessage("NXDN, invalid access attempt from %10.10s", m_rfSource);
-					m_rfState = RS_RF_REJECTED;
-					return false;
-				}
-			}
-
-			unsigned char cm = m_lastFICH.getCM();
-			if (cm == YSF_CM_GROUP1 || cm == YSF_CM_GROUP2)
-				m_rfDest = (unsigned char*)"ALL       ";
-			else
-				m_rfDest = m_rfPayload.getDest();
-
-			m_rfFrames = 0U;
-			m_rfErrs = 0U;
-			m_rfBits = 1U;
-			m_rfTimeoutTimer.start();
-			m_rfState = RS_RF_AUDIO;
-
-			m_minRSSI = m_rssi;
-			m_maxRSSI = m_rssi;
-			m_aveRSSI = m_rssi;
-			m_rssiCount = 1U;
-#if defined(DUMP_NXDN)
-			openFile();
-#endif
-
-			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, "R", "          ");
-			LogMessage("NXDN, received RF header from %10.10s to %10.10s", m_rfSource, m_rfDest);
-
-			CSync::addNXDNSync(data + 2U);
-
-			CYSFFICH fich = m_lastFICH;
-
-			// Remove any DSQ information
-			fich.setSQL(false);
-			fich.setSQ(0U);
-			fich.encode(data + 2U);
-
-			data[0U] = TAG_DATA;
-			data[1U] = 0x00U;
-
-			writeNetwork(data, m_rfFrames % 128U);
-
-#if defined(DUMP_NXDN)
-			writeFile(data + 2U);
-#endif
-
-			if (m_duplex) {
-				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-				fich.encode(data + 2U);
-				writeQueueRF(data);
-			}
-
-			m_rfFrames++;
-
-			m_display->writeFusionRSSI(m_rssi);
-
-			return true;
-		}
-	} else if (valid && fi == YSF_FI_TERMINATOR) {
-		if (m_rfState == RS_RF_REJECTED) {
-			m_rfPayload.reset();
-			m_rfSource = NULL;
-			m_rfDest   = NULL;
-			m_rfState  = RS_RF_LISTENING;
-		} else if (m_rfState == RS_RF_AUDIO) {
-			m_rfPayload.processHeaderData(data + 2U);
-
-			CSync::addNXDNSync(data + 2U);
-
-			CYSFFICH fich = m_lastFICH;
-
-			// Remove any DSQ information
-			fich.setSQL(false);
-			fich.setSQ(0U);
-			fich.encode(data + 2U);
-
-			data[0U] = TAG_EOT;
-			data[1U] = 0x00U;
-
-			writeNetwork(data, m_rfFrames % 128U);
-
-#if defined(DUMP_NXDN)
-			writeFile(data + 2U);
-#endif
-
-			if (m_duplex) {
-				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-				fich.encode(data + 2U);
-				writeQueueRF(data);
-			}
-
-			m_rfFrames++;
-
+	// Process end of audio here
+	if (endofdata) {
+		if (m_rfState == RS_RF_AUDIO) {
 			if (m_rssi != 0U)
 				LogMessage("NXDN, received RF end of transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			else
 				LogMessage("NXDN, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 
 			writeEndRF();
-		}
-	} else {
-		if (m_rfState == RS_RF_AUDIO) {
-			// If valid is false, update the m_lastFICH for this transmission
-			if (!valid) {
-				unsigned char ft = m_lastFICH.getFT();
-				unsigned char fn = m_lastFICH.getFN() + 1U;
-
-				if (fn > ft)
-					fn = 0U;
-
-				m_lastFICH.setFN(fn);
-			}
-
-			CSync::addNXDNSync(data + 2U);
-
-			unsigned char fn = m_lastFICH.getFN();
-			unsigned char dt = m_lastFICH.getDT();
-
-			switch (dt) {
-			case YSF_DT_VD_MODE1: {
-					m_rfPayload.processVDMode1Data(data + 2U, fn);
-					unsigned int errors = m_rfPayload.processVDMode1Audio(data + 2U);
-					m_rfErrs += errors;
-					m_rfBits += 235U;
-					m_display->writeFusionBER(float(errors) / 2.35F);
-					LogDebug("NXDN, V/D Mode 1, seq %u, AMBE FEC %u/235 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 2.35F);
-				}
-				break;
-
-			case YSF_DT_VD_MODE2: {
-					m_rfPayload.processVDMode2Data(data + 2U, fn);
-					unsigned int errors = m_rfPayload.processVDMode2Audio(data + 2U);
-					m_rfErrs += errors;
-					m_rfBits += 135U;
-					m_display->writeFusionBER(float(errors) / 1.35F);
-					LogDebug("NXDN, V/D Mode 2, seq %u, Repetition FEC %u/135 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 1.35F);
-				}
-				break;
-
-			default:
-				break;
-			}
-
-			CYSFFICH fich = m_lastFICH;
-
-			// Remove any DSQ information
-			fich.setSQL(false);
-			fich.setSQ(0U);
-			fich.encode(data + 2U);
-
-			data[0U] = TAG_DATA;
-			data[1U] = 0x00U;
-
-			writeNetwork(data, m_rfFrames % 128U);
-
-			if (m_duplex) {
-				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-				fich.encode(data + 2U);
-				writeQueueRF(data);
-			}
-
-#if defined(DUMP_NXDN)
-			writeFile(data + 2U);
-#endif
-
-			m_rfFrames++;
-
-			m_display->writeFusionRSSI(m_rssi);
-
-			return true;
-		} else if (valid && m_rfState == RS_RF_LISTENING) {
-			// Only use clean frames for late entry.
-			unsigned char fn = m_lastFICH.getFN();
-			unsigned char dt = m_lastFICH.getDT();
-
-			switch (dt) {
-			case YSF_DT_VD_MODE1:
-				valid = m_rfPayload.processVDMode1Data(data + 2U, fn);
-				break;
-
-			case YSF_DT_VD_MODE2:
-				valid = m_rfPayload.processVDMode2Data(data + 2U, fn);
-				break;
-
-			default:
-				valid = false;
-				break;
-			}
-
-			if (!valid)
-				return false;
-
-			unsigned char cm = m_lastFICH.getCM();
-			if (cm == YSF_CM_GROUP1 || cm == YSF_CM_GROUP2)
-				m_rfDest = (unsigned char*)"ALL       ";
-			else
-				m_rfDest = m_rfPayload.getDest();
-
-			m_rfSource = m_rfPayload.getSource();
-
-			if (m_rfSource == NULL || m_rfDest == NULL)
-				return false;
-
-			if (m_selfOnly) {
-				bool ret = checkCallsign(m_rfSource);
-				if (!ret) {
-					LogMessage("NXDN, invalid access attempt from %10.10s", m_rfSource);
-					m_rfState = RS_RF_REJECTED;
-					return false;
-				}
-			}
-
-			m_rfFrames = 0U;
-			m_rfErrs = 0U;
-			m_rfBits = 1U;
-			m_rfTimeoutTimer.start();
-			m_rfState = RS_RF_AUDIO;
-
-			m_minRSSI = m_rssi;
-			m_maxRSSI = m_rssi;
-			m_aveRSSI = m_rssi;
-			m_rssiCount = 1U;
-#if defined(DUMP_NXDN)
-			openFile();
-#endif
-
-			// Build a new header and transmit it
-			unsigned char buffer[YSF_FRAME_LENGTH_BYTES + 2U];
-
-			CSync::addNXDNSync(buffer + 2U);
-
-			CYSFFICH fich = m_lastFICH;
-			fich.setFI(YSF_FI_HEADER);
-			fich.setSQL(false);
-			fich.setSQ(0U);
-			fich.encode(buffer + 2U);
-
-			unsigned char csd1[20U], csd2[20U];
-			memcpy(csd1 + YSF_CALLSIGN_LENGTH, m_rfSource, YSF_CALLSIGN_LENGTH);
-			memset(csd2, ' ', YSF_CALLSIGN_LENGTH + YSF_CALLSIGN_LENGTH);
-
-			if (cm == YSF_CM_GROUP1 || cm == YSF_CM_GROUP2)
-				memset(csd1 + 0U, '*', YSF_CALLSIGN_LENGTH);
-			else
-				memcpy(csd1 + 0U, m_rfDest, YSF_CALLSIGN_LENGTH);
-
-			CYSFPayload payload;
-			payload.writeHeader(buffer + 2U, csd1, csd2);
-
-			buffer[0U] = TAG_DATA;
-			buffer[1U] = 0x00U;
-
-			writeNetwork(buffer, m_rfFrames % 128U);
-
-			if (m_duplex) {
-				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-				fich.encode(buffer + 2U);
-				writeQueueRF(buffer);
-			}
-
-#if defined(DUMP_NXDN)
-			writeFile(buffer + 2U);
-#endif
-
-			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, "R", "          ");
-			LogMessage("NXDN, received RF late entry from %10.10s to %10.10s", m_rfSource, m_rfDest);
-
-			CSync::addNXDNSync(data + 2U);
-
-			fich = m_lastFICH;
-
-			// Remove any DSQ information
-			fich.setSQL(false);
-			fich.setSQ(0U);
-			fich.encode(data + 2U);
-
-			data[0U] = TAG_DATA;
-			data[1U] = 0x00U;
-
-			writeNetwork(data, m_rfFrames % 128U);
-
-			if (m_duplex) {
-				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-				fich.encode(data + 2U);
-				writeQueueRF(data);
-			}
-
-#if defined(DUMP_NXDN)
-			writeFile(data + 2U);
-#endif
-
-			m_rfFrames++;
-
-			m_display->writeFusionRSSI(m_rssi);
-
-			return true;
+		} else {
+			m_rfState = RS_RF_LISTENING;
+			m_rfMask  = 0x00U;
+			return false;
 		}
 	}
 #endif
 
-	return false;
+	return true;
 }
 
 bool CNXDNControl::processData(unsigned char option, unsigned char *data)
