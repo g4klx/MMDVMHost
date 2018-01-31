@@ -101,4 +101,6 @@ const unsigned char NXDN_DATA_CALL_OPTION_DUPLEX      = 0x10U;
 const unsigned char NXDN_DATA_CALL_OPTION_4800 = 0x00U;
 const unsigned char NXDN_DATA_CALL_OPTION_9600 = 0x02U;
 
+const unsigned char SACCH_IDLE[] = { NXDN_MESSAGE_TYPE_IDLE, 0x00U, 0x00U };
+
 #endif

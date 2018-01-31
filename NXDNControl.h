@@ -70,7 +70,7 @@ private:
 	unsigned int               m_netErrs;
 	unsigned int               m_netBits;
 	CNXDNLICH                  m_rfLastLICH;
-	CNXDNLayer3                m_rfSACCHMessage;
+	CNXDNLayer3                m_rfLayer3;
 	unsigned char              m_rfMask;
 	unsigned char              m_netN;
 	CRSSIInterpolator*         m_rssiMapper;

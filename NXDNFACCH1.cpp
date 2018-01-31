@@ -71,7 +71,7 @@ bool CNXDNFACCH1::decode(const unsigned char* data, unsigned int offset)
 {
 	assert(data != NULL);
 
-	CUtils::dump("NXDN, FACCH1 input", data, 18U);
+	// CUtils::dump("NXDN, FACCH1 input", data, 18U);
 
 	unsigned char temp1[18U];
 
@@ -81,7 +81,7 @@ bool CNXDNFACCH1::decode(const unsigned char* data, unsigned int offset)
 		WRITE_BIT1(temp1, i, b);
 	}
 
-	CUtils::dump("NXDN, FACCH1 de-interleaved", temp1, 18U);
+	// CUtils::dump("NXDN, FACCH1 de-interleaved", temp1, 18U);
 
 	uint8_t temp2[192U];
 
@@ -129,14 +129,14 @@ void CNXDNFACCH1::encode(unsigned char* data, unsigned int offset) const
 
 	CNXDNCRC::encodeCRC12(temp1, 80U);
 
-	CUtils::dump("NXDN, FACCH1 encoded with CRC", temp1, 12U);
+	// CUtils::dump("NXDN, FACCH1 encoded with CRC", temp1, 12U);
 
 	unsigned char temp2[24U];
 
 	CNXDNConvolution conv;
 	conv.encode(temp1, temp2, 96U);
 
-	CUtils::dump("NXDN, FACCH1 convolved", temp2, 24U);
+	// CUtils::dump("NXDN, FACCH1 convolved", temp2, 24U);
 
 	unsigned char temp3[18U];
 
@@ -152,7 +152,7 @@ void CNXDNFACCH1::encode(unsigned char* data, unsigned int offset) const
 		}
 	}
 
-	CUtils::dump("NXDN, FACCH1 punctured", temp3, 18U);
+	// CUtils::dump("NXDN, FACCH1 punctured", temp3, 18U);
 
 	for (unsigned int i = 0U; i < NXDN_FACCH1_LENGTH_BITS; i++) {
 		unsigned int n = INTERLEAVE_TABLE[i] + offset;

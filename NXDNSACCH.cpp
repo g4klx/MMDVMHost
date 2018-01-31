@@ -65,7 +65,7 @@ bool CNXDNSACCH::decode(const unsigned char* data)
 {
 	assert(data != NULL);
 
-	CUtils::dump("NXDN, SACCH input", data, 12U);
+	// CUtils::dump("NXDN, SACCH input", data, 12U);
 
 	unsigned char temp1[8U];
 
@@ -75,7 +75,7 @@ bool CNXDNSACCH::decode(const unsigned char* data)
 		WRITE_BIT1(temp1, i, b);
 	}
 
-	CUtils::dump("NXDN, SACCH de-interleaved", temp1, 8U);
+	// CUtils::dump("NXDN, SACCH de-interleaved", temp1, 8U);
 
 	uint8_t temp2[72U];
 
@@ -130,7 +130,7 @@ void CNXDNSACCH::encode(unsigned char* data) const
 	CNXDNConvolution conv;
 	conv.encode(temp1, temp2, 36U);
 
-	CUtils::dump("NXDN, SACCH convolved", temp2, 8U);
+	// CUtils::dump("NXDN, SACCH convolved", temp2, 8U);
 
 	unsigned char temp3[8U];
 
@@ -146,7 +146,7 @@ void CNXDNSACCH::encode(unsigned char* data) const
 		}
 	}
 
-	CUtils::dump("NXDN, SACCH punctured", temp3, 8U);
+	// CUtils::dump("NXDN, SACCH punctured", temp3, 8U);
 
 	for (unsigned int i = 0U; i < NXDN_SACCH_LENGTH_BITS; i++) {
 		unsigned int n = INTERLEAVE_TABLE[i] + NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS;
