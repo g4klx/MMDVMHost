@@ -180,8 +180,8 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			return false;
 	}
 
-	if (m_rfState == RS_RF_LISTENING && !valid)
-		return false;
+	// if (m_rfState == RS_RF_LISTENING && !valid)
+	//	return false;
 
 	// XXX the FACCH1 data in the header may also be useful
 	if (m_rfState == RS_RF_LISTENING) {
@@ -248,7 +248,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		m_rfState = RS_RF_AUDIO;
 	}
 
-	if (m_rfState == RS_RF_AUDIO) {
+	// if (m_rfState == RS_RF_AUDIO) {
 		// Regenerate the sync
 		CSync::addNXDNSync(data + 2U);
 
@@ -346,7 +346,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 		scrambler(data + 2U);
 
-		writeNetwork(data, m_rfFrames % 128U);
+		// writeNetwork(data, m_rfFrames, );
 
 #if defined(DUMP_NXDN)
 		writeFile(data + 2U);
@@ -358,7 +358,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		m_rfFrames++;
 
 		m_display->writeNXDNRSSI(m_rssi);
-	}
+	// }
 
 #ifdef notdef
 	// Process end of audio here
@@ -468,7 +468,7 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
 
-			writeNetwork(data, m_rfFrames % 128U);
+			writeNetwork(data, m_rfFrames);
 
 #if defined(DUMP_NXDN)
 			writeFile(data + 2U);
@@ -507,7 +507,7 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 			data[0U] = TAG_EOT;
 			data[1U] = 0x00U;
 
-			writeNetwork(data, m_rfFrames % 128U);
+			writeNetwork(data, m_rfFrames);
 
 #if defined(DUMP_NXDN)
 			writeFile(data + 2U);
@@ -557,7 +557,7 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
 
-			writeNetwork(data, m_rfFrames % 128U);
+			writeNetwork(data, m_rfFrames);
 
 			if (m_duplex) {
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
@@ -825,7 +825,7 @@ void CNXDNControl::writeQueueNet(const unsigned char *data)
 	m_queue.addData(data, len);
 }
 
-void CNXDNControl::writeNetwork(const unsigned char *data, unsigned int count)
+void CNXDNControl::writeNetwork(const unsigned char *data, unsigned int count, bool end)
 {
 	assert(data != NULL);
 
@@ -835,7 +835,11 @@ void CNXDNControl::writeNetwork(const unsigned char *data, unsigned int count)
 	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired())
 		return;
 
-	// m_network->write(data + 2U, count, data[0U] == TAG_EOT);
+	unsigned short srcId = m_rfSACCHMessage.getSourceUnitId();
+	unsigned short dstId = m_rfSACCHMessage.getDestinationGroupId();
+	bool grp = m_rfSACCHMessage.getIsGroup();
+
+	m_network->write(data + 2U, srcId, grp, dstId, count % 256U, end);
 }
 
 void CNXDNControl::scrambler(unsigned char* data) const

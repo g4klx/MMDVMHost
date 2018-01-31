@@ -56,7 +56,7 @@ bool CNXDNNetwork::open()
 	return m_socket.open();
 }
 
-bool CNXDNNetwork::write(const unsigned char* data, unsigned short src, bool grp, unsigned short dst, unsigned int cnt, bool end)
+bool CNXDNNetwork::write(const unsigned char* data, unsigned short src, bool grp, unsigned short dst, unsigned char cnt, bool end)
 {
 	assert(data != NULL);
 
@@ -71,13 +71,13 @@ bool CNXDNNetwork::write(const unsigned char* data, unsigned short src, bool grp
 	buffer[5U] = (src >> 8) & 0xFFU;
 	buffer[6U] = (src >> 8) & 0xFFU;
 
-	buffer[7U] = grp ? 0x01U : 0x00U;
+	buffer[7U]  = grp ? 0x01U : 0x00U;
+	buffer[7U] |= end ? 0x80U : 0x00U;
 
 	buffer[8U] = (dst >> 8) & 0xFFU;
 	buffer[9U] = (dst >> 8) & 0xFFU;
 
-	buffer[10U] = end ? 0x80U : 0x00U;
-	buffer[10U] |= (cnt & 0x7FU) << 1;
+	buffer[10U] = cnt;
 
 	::memcpy(buffer + 11U, data, NXDN_FRAME_LENGTH_BYTES);
 
@@ -142,7 +142,7 @@ void CNXDNNetwork::clock(unsigned int ms)
 	m_buffer.addData(buffer, 59U);
 }
 
-unsigned int CNXDNNetwork::read(unsigned char* data, unsigned short& src, bool& grp, unsigned short& dst, unsigned int& cnt, bool& end)
+unsigned int CNXDNNetwork::read(unsigned char* data, unsigned short& src, bool& grp, unsigned short& dst, unsigned char& cnt, bool& end)
 {
 	assert(data != NULL);
 
@@ -154,10 +154,10 @@ unsigned int CNXDNNetwork::read(unsigned char* data, unsigned short& src, bool& 
 
 	src = (buffer[5U] << 8) + buffer[6U];
 	grp = (buffer[7U] & 0x01U) == 0x01U;
+	end = (buffer[7U] & 0x80U) == 0x80U;
 	dst = (buffer[8U] << 8) + buffer[9U];
 
-	end = (buffer[10U] & 0x80U) == 0x80U;
-	cnt = buffer[10U] & 0x7FU;
+	cnt = buffer[10U];
 
 	::memcpy(data, buffer + 11U, NXDN_FRAME_LENGTH_BYTES);
 
