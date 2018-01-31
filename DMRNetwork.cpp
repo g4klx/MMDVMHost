@@ -498,6 +498,9 @@ void CDMRNetwork::receiveData(const unsigned char* data, unsigned int length)
 	if (slotNo == 2U && !m_slot2)
 		return;
 
+	m_jitterBuffers[slotNo]->appendData(data, length);
+
+	/*
 	unsigned char dataType = data[15U] & 0x3FU;
 	if (dataType == (0x20U | DT_CSBK) ||
 		dataType == (0x20U | DT_DATA_HEADER) ||
@@ -511,6 +514,7 @@ void CDMRNetwork::receiveData(const unsigned char* data, unsigned int length)
 		unsigned char seqNo = data[4U];
 		m_jitterBuffers[slotNo]->addData(data, length, seqNo);
 	}
+	*/
 }
 
 bool CDMRNetwork::writeLogin()
