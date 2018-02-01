@@ -25,9 +25,10 @@ public:
 	CNXDNFACCH1();
 	~CNXDNFACCH1();
 
-	bool decode(const unsigned char* data);
+	bool decode(const unsigned char* data, unsigned int offset);
 
-	void encode(unsigned char* data) const;
+	void encode(unsigned char* data, unsigned int offset) const;
+
 	void getData(unsigned char* data) const;
 
 	void setData(const unsigned char* data);

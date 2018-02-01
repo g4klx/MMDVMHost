@@ -28,6 +28,22 @@
 #include <cassert>
 #include <cstring>
 
+const unsigned int INTERLEAVE_TABLE[] = {
+	0U,  9U, 18U, 27U, 36U, 45U, 54U, 63U, 72U, 81U, 90U,  99U, 108U, 117U, 126U, 135U,
+	1U, 10U, 19U, 28U, 37U, 46U, 55U, 64U, 73U, 82U, 91U, 100U, 109U, 118U, 127U, 136U,
+	2U, 11U, 20U, 29U, 38U, 47U, 56U, 65U, 74U, 83U, 92U, 101U, 110U, 119U, 128U, 137U,
+	3U, 12U, 21U, 30U, 39U, 48U, 57U, 66U, 75U, 84U, 93U, 102U, 111U, 120U, 129U, 138U,
+	4U, 13U, 22U, 31U, 40U, 49U, 58U, 67U, 76U, 85U, 94U, 103U, 112U, 121U, 130U, 139U,
+	5U, 14U, 23U, 32U, 41U, 50U, 59U, 68U, 77U, 86U, 95U, 104U, 113U, 122U, 131U, 140U,
+	6U, 15U, 24U, 33U, 42U, 51U, 60U, 69U, 78U, 87U, 96U, 105U, 114U, 123U, 132U, 141U,
+	7U, 16U, 25U, 34U, 43U, 52U, 61U, 70U, 79U, 88U, 97U, 106U, 115U, 124U, 133U, 142U,
+	8U, 17U, 26U, 35U, 44U, 53U, 62U, 71U, 80U, 89U, 98U, 107U, 116U, 125U, 134U, 143U };
+
+const unsigned int PUNCTURE_LIST[] = {  1U,   5U,   9U,  13U,  17U,  21U,  25U,  29U,  33U,  37U, 
+									   41U,  45U,  49U,  53U,  57U,  61U,  65U,  69U,  73U,  77U, 
+									   81U,  85U,  89U,  93U,  97U, 101U, 105U, 109U, 113U, 117U,
+									  121U, 125U, 129U, 133U, 137U, 141U};
+
 const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
 
 #define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
@@ -51,16 +67,98 @@ CNXDNFACCH1::~CNXDNFACCH1()
 	delete[] m_data;
 }
 
-bool CNXDNFACCH1::decode(const unsigned char* data)
+bool CNXDNFACCH1::decode(const unsigned char* data, unsigned int offset)
 {
 	assert(data != NULL);
 
-	return true;
+	// CUtils::dump("NXDN, FACCH1 input", data, 18U);
+
+	unsigned char temp1[18U];
+
+	for (unsigned int i = 0U; i < NXDN_FACCH1_LENGTH_BITS; i++) {
+		unsigned int n = INTERLEAVE_TABLE[i] + offset;
+		bool b = READ_BIT1(data, n);
+		WRITE_BIT1(temp1, i, b);
+	}
+
+	// CUtils::dump("NXDN, FACCH1 de-interleaved", temp1, 18U);
+
+	uint8_t temp2[192U];
+
+	unsigned int n = 0U;
+	unsigned int index = 0U;
+	for (unsigned int i = 0U; i < NXDN_FACCH1_LENGTH_BITS; i++) {
+		if (n == PUNCTURE_LIST[index]) {
+			temp2[n++] = 99U;
+			index++;
+		}
+
+		bool b = READ_BIT1(temp1, i);
+		temp2[n++] = b ? 1U : 0U;
+	}
+
+	CNXDNConvolution conv;
+	conv.start();
+
+	n = 0U;
+	for (unsigned int i = 0U; i < 96U; i++) {
+		uint8_t s0 = temp2[n++];
+		uint8_t s1 = temp2[n++];
+
+		conv.decode(s0, s1);
+	}
+
+	conv.chainback(m_data, 92U);
+
+	CUtils::dump("NXDN, FACCH1 decoded", m_data, 12U);
+
+	return CNXDNCRC::checkCRC12(m_data, 80U);
 }
 
-void CNXDNFACCH1::encode(unsigned char* data) const
+void CNXDNFACCH1::encode(unsigned char* data, unsigned int offset) const
 {
 	assert(data != NULL);
+
+	unsigned char temp1[12U];
+	::memset(temp1, 0x00U, 12U);
+
+	for (unsigned int i = 0U; i < 80U; i++) {
+		bool b = READ_BIT1(m_data, i);
+		WRITE_BIT1(temp1, i, b);
+	}
+
+	CNXDNCRC::encodeCRC12(temp1, 80U);
+
+	// CUtils::dump("NXDN, FACCH1 encoded with CRC", temp1, 12U);
+
+	unsigned char temp2[24U];
+
+	CNXDNConvolution conv;
+	conv.encode(temp1, temp2, 96U);
+
+	// CUtils::dump("NXDN, FACCH1 convolved", temp2, 24U);
+
+	unsigned char temp3[18U];
+
+	unsigned int n = 0U;
+	unsigned int index = 0U;
+	for (unsigned int i = 0U; i < 192U; i++) {
+		if (i != PUNCTURE_LIST[index]) {
+			bool b = READ_BIT1(temp2, i);
+			WRITE_BIT1(temp3, n, b);
+			n++;
+		} else {
+			index++;
+		}
+	}
+
+	// CUtils::dump("NXDN, FACCH1 punctured", temp3, 18U);
+
+	for (unsigned int i = 0U; i < NXDN_FACCH1_LENGTH_BITS; i++) {
+		unsigned int n = INTERLEAVE_TABLE[i] + offset;
+		bool b = READ_BIT1(temp3, i);
+		WRITE_BIT1(data, n, b);
+	}
 }
 
 void CNXDNFACCH1::getData(unsigned char* data) const

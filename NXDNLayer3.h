@@ -16,28 +16,26 @@
 *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#if !defined(NXDNFACCH2_H)
-#define	NXDNFACCH2_H
+#if !defined(NXDNLayer3_H)
+#define  NXDNLayer3_H
 
-class CNXDNFACCH2 {
+class CNXDNLayer3 {
 public:
-	CNXDNFACCH2(const CNXDNFACCH2& facch);
-	CNXDNFACCH2();
-	~CNXDNFACCH2();
+	CNXDNLayer3(const CNXDNLayer3& layer3);
+	CNXDNLayer3();
+	~CNXDNLayer3();
 
-	bool decode(const unsigned char* data);
+	void decode(const unsigned char* bytes, unsigned int length, unsigned int offset = 0U);
 
-	void encode(unsigned char* data) const;
+	void encode(unsigned char* bytes, unsigned int length, unsigned int offset = 0U);
 
-	unsigned char getRAN() const;
+	unsigned char  getMessageType() const;
+	unsigned short getSourceUnitId() const;
+	unsigned short getDestinationGroupId() const;
+	bool           getIsGroup() const;
+	unsigned char  getCallOptions() const;
 
-	void getData(unsigned char* data) const;
-
-	void setRAN(unsigned char ran);
-
-	void setData(const unsigned char* data);
-
-	CNXDNFACCH2& operator=(const CNXDNFACCH2& facch);
+	CNXDNLayer3& operator=(const CNXDNLayer3& layer3);
 
 private:
 	unsigned char* m_data;

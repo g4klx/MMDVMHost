@@ -29,7 +29,11 @@ public:
 
 	void encode(unsigned char* data) const;
 
+	unsigned char getRAN() const;
+
 	void getData(unsigned char* data) const;
+
+	void setRAN(unsigned char ran);
 
 	void setData(const unsigned char* data);
 

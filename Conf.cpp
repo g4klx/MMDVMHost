@@ -298,7 +298,14 @@ bool CConf::read()
   char* value = ::strtok(NULL, "\r\n");
   if (value == NULL)
     continue;
-  
+
+  // Remove quotes from the value
+  size_t len = ::strlen(value);
+  if (len > 1U && *value == '"' && value[len - 1U] == '"') {
+	  value[len - 1U] = '\0';
+	  value++;
+  }
+
   if (section == SECTION_GENERAL) {
 		if (::strcmp(key, "Callsign") == 0) {
 			// Convert the callsign to upper case

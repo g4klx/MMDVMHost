@@ -66,4 +66,41 @@ const unsigned char NXDN_SR_3_4    = 1U;
 const unsigned char NXDN_SR_2_4    = 2U;
 const unsigned char NXDN_SR_1_4    = 3U;
 
+const unsigned char NXDN_MESSAGE_TYPE_VCALL           = 0x01U;
+const unsigned char NXDN_MESSAGE_TYPE_VCALL_IV        = 0x03U;
+const unsigned char NXDN_MESSAGE_TYPE_DCALL_HDR       = 0x09U;
+const unsigned char NXDN_MESSAGE_TYPE_DCALL_DATA      = 0x0BU;
+const unsigned char NXDN_MESSAGE_TYPE_DCALL_ACK       = 0x0CU;
+const unsigned char NXDN_MESSAGE_TYPE_TX_REL          = 0x08U;
+const unsigned char NXDN_MESSAGE_TYPE_HEAD_DLY        = 0x0FU;
+const unsigned char NXDN_MESSAGE_TYPE_SDCALL_REQ_HDR  = 0x38U;
+const unsigned char NXDN_MESSAGE_TYPE_SDCALL_REQ_DATA = 0x39U;
+const unsigned char NXDN_MESSAGE_TYPE_SDCALL_RESP     = 0x3BU;
+const unsigned char NXDN_MESSAGE_TYPE_SDCALL_IV       = 0x3AU;
+const unsigned char NXDN_MESSAGE_TYPE_STAT_INQ_REQ    = 0x30U;
+const unsigned char NXDN_MESSAGE_TYPE_STAT_INQ_RESP   = 0x31U;
+const unsigned char NXDN_MESSAGE_TYPE_STAT_REQ        = 0x32U;
+const unsigned char NXDN_MESSAGE_TYPE_STAT_RESP       = 0x33U;
+const unsigned char NXDN_MESSAGE_TYPE_REM_CON_REQ     = 0x34U;
+const unsigned char NXDN_MESSAGE_TYPE_REM_CON_RESP    = 0x35U;
+const unsigned char NXDN_MESSAGE_TYPE_IDLE            = 0x10U;
+const unsigned char NXDN_MESSAGE_TYPE_AUTH_INQ_REQ    = 0x28U;
+const unsigned char NXDN_MESSAGE_TYPE_AUTH_INQ_RESP   = 0x29U;
+const unsigned char NXDN_MESSAGE_TYPE_PROP_FORM       = 0x3FU;
+
+const unsigned char NXDN_VOICE_CALL_OPTION_HALF_DUPLEX = 0x00U;
+const unsigned char NXDN_VOICE_CALL_OPTION_DUPLEX      = 0x10U;
+
+const unsigned char NXDN_VOICE_CALL_OPTION_4800_EHR = 0x00U;
+const unsigned char NXDN_VOICE_CALL_OPTION_9600_EHR = 0x02U;
+const unsigned char NXDN_VOICE_CALL_OPTION_9600_EFR = 0x03U;
+
+const unsigned char NXDN_DATA_CALL_OPTION_HALF_DUPLEX = 0x00U;
+const unsigned char NXDN_DATA_CALL_OPTION_DUPLEX      = 0x10U;
+
+const unsigned char NXDN_DATA_CALL_OPTION_4800 = 0x00U;
+const unsigned char NXDN_DATA_CALL_OPTION_9600 = 0x02U;
+
+const unsigned char SACCH_IDLE[] = { NXDN_MESSAGE_TYPE_IDLE, 0x00U, 0x00U };
+
 #endif

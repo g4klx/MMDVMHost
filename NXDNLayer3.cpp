@@ -16,11 +16,8 @@
 *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#include "NXDNFACCH2.h"
-
 #include "NXDNDefines.h"
-#include "NXDNUDCH.h"
-#include "Utils.h"
+#include "NXDNLayer3.h"
 #include "Log.h"
 
 #include <cstdio>
@@ -32,78 +29,74 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 #define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
-CNXDNFACCH2::CNXDNFACCH2(const CNXDNFACCH2& facch2) :
+CNXDNLayer3::CNXDNLayer3(const CNXDNLayer3& layer3) :
 m_data(NULL)
 {
-	m_data = new unsigned char[23U];
-	::memcpy(m_data, facch2.m_data, 23U);
+	m_data = new unsigned char[22U];
+	::memcpy(m_data, layer3.m_data, 22U);
 }
 
-CNXDNFACCH2::CNXDNFACCH2() :
+CNXDNLayer3::CNXDNLayer3() :
 m_data(NULL)
 {
-	m_data = new unsigned char[23U];
+	m_data = new unsigned char[22U];
+	::memset(m_data, 0x00U, 22U);
 }
 
-CNXDNFACCH2::~CNXDNFACCH2()
+CNXDNLayer3::~CNXDNLayer3()
 {
 	delete[] m_data;
 }
 
-bool CNXDNFACCH2::decode(const unsigned char* data)
+void CNXDNLayer3::decode(const unsigned char* bytes, unsigned int length, unsigned int offset)
 {
-	assert(data != NULL);
+	assert(bytes != NULL);
 
-	CNXDNUDCH udch;
-	bool valid = udch.decode(data);
-	if (!valid)
-		return false;
-
-	udch.getData(m_data);
-
-	return true;
+	for (unsigned int i = 0U; i < length; i++, offset++) {
+		bool b = READ_BIT1(bytes, offset);
+		WRITE_BIT1(m_data, i, b);
+	}
 }
 
-void CNXDNFACCH2::encode(unsigned char* data) const
+void CNXDNLayer3::encode(unsigned char* bytes, unsigned int length, unsigned int offset)
 {
-	assert(data != NULL);
+	assert(bytes != NULL);
 
-	CNXDNUDCH udch;
-
-	udch.setData(m_data);
-
-	udch.encode(data);
+	for (unsigned int i = 0U; i < length; i++, offset++) {
+		bool b = READ_BIT1(m_data, i);
+		WRITE_BIT1(bytes, offset, b);
+	}
 }
 
-unsigned char CNXDNFACCH2::getRAN() const
+unsigned char CNXDNLayer3::getMessageType() const
 {
 	return m_data[0U] & 0x3FU;
 }
 
-void CNXDNFACCH2::getData(unsigned char* data) const
+unsigned short CNXDNLayer3::getSourceUnitId() const
 {
-	assert(data != NULL);
-
-	::memcpy(data, m_data + 1U, 22U);
+	return (m_data[3U] << 8) | m_data[4U];
 }
 
-void CNXDNFACCH2::setRAN(unsigned char ran)
+unsigned short CNXDNLayer3::getDestinationGroupId() const
 {
-	m_data[0U] &= 0xC0U;
-	m_data[0U] |= ran;
+	return (m_data[5U] << 8) | m_data[6U];
 }
 
-void CNXDNFACCH2::setData(const unsigned char* data)
+bool CNXDNLayer3::getIsGroup() const
 {
-	assert(data != NULL);
-
-	::memcpy(m_data + 1U, data, 22U);
+	return (m_data[2U] & 0x80U) != 0x80U;
 }
 
-CNXDNFACCH2& CNXDNFACCH2::operator=(const CNXDNFACCH2& facch2)
+unsigned char CNXDNLayer3::getCallOptions() const
 {
-	if (&facch2 != this)
-		::memcpy(m_data, facch2.m_data, 23U);
+	return m_data[2U] & 0x1FU;
+}
+
+CNXDNLayer3& CNXDNLayer3::operator=(const CNXDNLayer3& layer3)
+{
+	if (&layer3 != this)
+		::memcpy(m_data, layer3.m_data, 22U);
 
 	return *this;
 }

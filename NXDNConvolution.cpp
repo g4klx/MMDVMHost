@@ -45,7 +45,7 @@ m_dp(NULL)
 {
 	m_metrics1  = new uint16_t[16U];
 	m_metrics2  = new uint16_t[16U];
-	m_decisions = new uint64_t[180U];
+	m_decisions = new uint64_t[300U];
 }
 
 CNXDNConvolution::~CNXDNConvolution()
@@ -98,7 +98,7 @@ void CNXDNConvolution::decode(uint8_t s0, uint8_t s1)
 
   ++m_dp;
 
-  assert((m_dp - m_decisions) <= 180);
+  assert((m_dp - m_decisions) <= 300);
 
   uint16_t* tmp = m_oldMetrics;
   m_oldMetrics = m_newMetrics;

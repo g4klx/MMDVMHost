@@ -22,6 +22,7 @@
 #include "RSSIInterpolator.h"
 #include "NXDNNetwork.h"
 #include "NXDNDefines.h"
+#include "NXDNLayer3.h"
 #include "NXDNLookup.h"
 #include "RingBuffer.h"
 #include "StopWatch.h"
@@ -68,7 +69,9 @@ private:
 	unsigned int               m_rfBits;
 	unsigned int               m_netErrs;
 	unsigned int               m_netBits;
-	CNXDNLICH                  m_lastLICH;
+	CNXDNLICH                  m_rfLastLICH;
+	CNXDNLayer3                m_rfLayer3;
+	unsigned char              m_rfMask;
 	unsigned char              m_netN;
 	CRSSIInterpolator*         m_rssiMapper;
 	unsigned char              m_rssi;
@@ -83,7 +86,7 @@ private:
 
 	void writeQueueRF(const unsigned char* data);
 	void writeQueueNet(const unsigned char* data);
-	void writeNetwork(const unsigned char* data, unsigned int count);
+	void writeNetwork(const unsigned char* data, unsigned int count, bool end);
 	void writeNetwork();
 
 	void scrambler(unsigned char* data) const;

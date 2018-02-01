@@ -61,7 +61,7 @@ bool CNXDNLICH::decode(const unsigned char* bytes)
 
 	bool parity = b[7U] ^ b[6U] ^ b[5U] ^ b[4U];
 
-	LogMessage("NXDN, LICH bits: %d%d %d%d %d%d %d - %d, parity: %d", b[7U] ? 1 : 0, b[6U] ? 1 : 0, b[5U] ? 1 : 0, b[4U] ? 1 : 0, b[3U] ? 1 : 0, b[2U] ? 1 : 0, b[1U] ? 1 : 0, b[0U] ? 1 : 0, parity ? 1 : 0);
+	// LogMessage("NXDN, LICH bits: %d%d %d%d %d%d %d - %d, parity: %d", b[7U] ? 1 : 0, b[6U] ? 1 : 0, b[5U] ? 1 : 0, b[4U] ? 1 : 0, b[3U] ? 1 : 0, b[2U] ? 1 : 0, b[1U] ? 1 : 0, b[0U] ? 1 : 0, parity ? 1 : 0);
 
 	if (parity != b[0U])
 		return false;
