@@ -23,14 +23,9 @@
 #include <cassert>
 
 const uint8_t  BIT_MASK_TABLE1[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
-const uint16_t BIT_MASK_TABLE2[] = { 0x8000U, 0x4000U, 0x2000U, 0x1000U, 0x0800U, 0x0400U, 0x0200U, 0x0100U,
-									 0x0080U, 0x0040U, 0x0020U, 0x0010U, 0x0008U, 0x0004U, 0x0002U, 0x0001U };
 
 #define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE1[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE1[(i)&7])
 #define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE1[(i)&7])
-
-#define WRITE_BIT2(p,i,b) p[(i)>>4] = (b) ? (p[(i)>>4] | BIT_MASK_TABLE2[(i)&15]) : (p[(i)>>3] & ~BIT_MASK_TABLE2[(i)&15])
-#define READ_BIT2(p,i)    (p[(i)>>4] & BIT_MASK_TABLE2[(i)&15])
 
 bool CNXDNCRC::checkCRC6(const unsigned char* in, unsigned int length)
 {
@@ -46,7 +41,7 @@ bool CNXDNCRC::checkCRC6(const unsigned char* in, unsigned int length)
 		WRITE_BIT1(temp, i, b);
 	}
 
-	LogMessage("NXDN, CRC6: new:%02X old:%02X", crc, temp[0U]);
+	// LogMessage("NXDN, CRC6: new:%02X old:%02X", crc, temp[0U]);
 
 	return crc == temp[0U];
 }
@@ -58,8 +53,10 @@ void CNXDNCRC::encodeCRC6(unsigned char* in, unsigned int length)
 	uint8_t crc[1U];
 	crc[0U] = createCRC6(in, length);
 
+	// LogMessage("NXDN, CRC6: new:%02X", crc[0U]);
+
 	unsigned int n = length;
-	for (unsigned int i = 0U; i < 6U; i++, n++) {
+	for (unsigned int i = 2U; i < 8U; i++, n++) {
 		bool b = READ_BIT1(crc, i);
 		WRITE_BIT1(in, n, b);
 	}
@@ -70,30 +67,39 @@ bool CNXDNCRC::checkCRC12(const unsigned char* in, unsigned int length)
 	assert(in != NULL);
 
 	uint16_t crc = createCRC12(in, length);
+	uint8_t temp1[2U];
+	temp1[0U] = (crc >> 8) & 0xFFU;
+	temp1[1U] = (crc >> 0) & 0xFFU;
 
-	uint16_t temp[1U];
-	temp[0U] = 0x00U;
+	uint8_t temp2[2U];
+	temp2[0U] = 0x00U;
+	temp2[1U] = 0x00U;
 	unsigned int j = length;
 	for (unsigned int i = 4U; i < 16U; i++, j++) {
 		bool b = READ_BIT1(in, j);
-		WRITE_BIT2(temp, i, b);
+		WRITE_BIT1(temp2, i, b);
 	}
 
-	LogMessage("NXDN, CRC12: new:%04X old:%04X", crc, temp[0U]);
+	// LogMessage("NXDN, CRC12: new:%02X%02X old:%02X%02X", temp1[0U], temp1[1U], temp2[0U], temp2[1U]);
 
-	return crc == temp[0U];
+	return temp1[0U] == temp2[0U] && temp1[1U] == temp2[1U];
 }
 
 void CNXDNCRC::encodeCRC12(unsigned char* in, unsigned int length)
 {
 	assert(in != NULL);
 
-	uint16_t crc[1U];
-	crc[0U] = createCRC12(in, length);
+	uint16_t crc = createCRC12(in, length);
+
+	uint8_t temp[2U];
+	temp[0U] = (crc >> 8) & 0xFFU;
+	temp[1U] = (crc >> 0) & 0xFFU;
+
+	// LogMessage("NXDN, CRC12: new:%02X%02X", temp[0U], temp[1U]);
 
 	unsigned int n = length;
-	for (unsigned int i = 0U; i < 12U; i++, n++) {
-		bool b = READ_BIT2(crc, i);
+	for (unsigned int i = 4U; i < 16U; i++, n++) {
+		bool b = READ_BIT1(temp, i);
 		WRITE_BIT1(in, n, b);
 	}
 }
@@ -103,30 +109,39 @@ bool CNXDNCRC::checkCRC15(const unsigned char* in, unsigned int length)
 	assert(in != NULL);
 
 	uint16_t crc = createCRC15(in, length);
+	uint8_t temp1[2U];
+	temp1[0U] = (crc >> 8) & 0xFFU;
+	temp1[1U] = (crc >> 0) & 0xFFU;
 
-	uint16_t temp[1U];
-	temp[0U] = 0x00U;
+	uint16_t temp2[2U];
+	temp2[0U] = 0x00U;
+	temp2[1U] = 0x00U;
 	unsigned int j = length;
 	for (unsigned int i = 1U; i < 16U; i++, j++) {
 		bool b = READ_BIT1(in, j);
-		WRITE_BIT2(temp, i, b);
+		WRITE_BIT1(temp2, i, b);
 	}
 
-	LogMessage("NXDN, CRC15: new:%04X old:%04X", crc, temp[0U]);
+	// LogMessage("NXDN, CRC15: new:%02X%02X old:%02X%02X", temp1[0U], temp1[1U], temp2[0U], temp2[1U]);
 
-	return crc == temp[0U];
+	return temp1[0U] == temp2[0U] && temp1[1U] == temp2[1U];
 }
 
 void CNXDNCRC::encodeCRC15(unsigned char* in, unsigned int length)
 {
 	assert(in != NULL);
 
-	uint16_t crc[1U];
-	crc[0U] = createCRC15(in, length);
+	uint16_t crc = createCRC15(in, length);
+
+	uint8_t temp[2U];
+	temp[0U] = (crc >> 8) & 0xFFU;
+	temp[1U] = (crc >> 0) & 0xFFU;
+
+	// LogMessage("NXDN, CRC15: new:%02X%02X", temp[0U], temp[1U]);
 
 	unsigned int n = length;
-	for (unsigned int i = 0U; i < 15U; i++, n++) {
-		bool b = READ_BIT2(crc, i);
+	for (unsigned int i = 1U; i < 16U; i++, n++) {
+		bool b = READ_BIT1(temp, i);
 		WRITE_BIT1(in, n, b);
 	}
 }

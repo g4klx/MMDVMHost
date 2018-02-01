@@ -115,7 +115,7 @@ bool CNXDNFACCH1::decode(const unsigned char* data, unsigned int offset)
 
 	conv.chainback(m_data, 96U);
 
-	CUtils::dump("NXDN, FACCH1 decoded", m_data, 12U);
+	// CUtils::dump("NXDN, FACCH1 decoded", m_data, 12U);
 
 	return CNXDNCRC::checkCRC12(m_data, 80U);
 }
@@ -126,7 +126,7 @@ void CNXDNFACCH1::encode(unsigned char* data, unsigned int offset) const
 
 	unsigned char temp1[12U];
 	::memset(temp1, 0x00U, 12U);
-	::memcpy(temp1, data, 10U);
+	::memcpy(temp1, m_data, 10U);
 
 	CNXDNCRC::encodeCRC12(temp1, 80U);
 

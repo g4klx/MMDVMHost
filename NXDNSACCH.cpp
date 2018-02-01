@@ -108,7 +108,7 @@ bool CNXDNSACCH::decode(const unsigned char* data)
 
 	conv.chainback(m_data, 36U);
 
-	CUtils::dump("NXDN, SACCH decoded", m_data, 4U);
+	// CUtils::dump("NXDN, SACCH decoded", m_data, 4U);
 
 	return CNXDNCRC::checkCRC6(m_data, 26U);
 }
@@ -127,7 +127,7 @@ void CNXDNSACCH::encode(unsigned char* data) const
 
 	CNXDNCRC::encodeCRC6(temp1, 26U);
 
-	CUtils::dump("NXDN, SACCH encoded with CRC", temp1, 5U);
+	// CUtils::dump("NXDN, SACCH encoded with CRC", temp1, 4U);
 
 	unsigned char temp2[9U];
 

@@ -175,7 +175,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		if (ran != m_ran && ran != 0U)
 			return false;
 	} else if (m_rfState == RS_RF_LISTENING) {
-		// return false;
+		return false;
 	}
 
 	// XXX Reconstruct invalid LICH
@@ -186,8 +186,8 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		bool valid = facch.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
 		if (!valid)
 			valid = facch.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
-		// if (!valid)
-		//	return false;
+		if (!valid)
+			return false;
 
 		unsigned char buffer[10U];
 		facch.getData(buffer);
@@ -273,8 +273,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		}
 
 		return true;
-	}
-	else {
+	} else {
 		// if (valid) {
 			unsigned char message[3U];
 			sacch.getData(message);
@@ -450,24 +449,6 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		m_rfFrames++;
 
 		m_display->writeNXDNRSSI(m_rssi);
-
-#ifdef notdef
-	// Process end of audio here
-	if (endofdata) {
-		if (m_rfState == RS_RF_AUDIO) {
-			if (m_rssi != 0U)
-				LogMessage("NXDN, received RF end of transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-			else
-				LogMessage("NXDN, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
-
-			writeEndRF();
-		} else {
-			m_rfState = RS_RF_LISTENING;
-			m_rfMask  = 0x00U;
-			return false;
-		}
-	}
-#endif
 
 	return true;
 }
