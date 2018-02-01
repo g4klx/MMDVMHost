@@ -93,7 +93,7 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 		if (m_rssi != 0U)
 			LogMessage("NXDN, transmission lost, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 		else
-			LogMessage("NXDN, transmission lost, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+			LogMessage("NXDN, transmission lost, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 		writeEndRF();
 		return false;
 	}
@@ -174,6 +174,8 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		unsigned char ran = sacch.getRAN();
 		if (ran != m_ran && ran != 0U)
 			return false;
+	} else if (m_rfState == RS_RF_LISTENING) {
+		// return false;
 	}
 
 	// XXX Reconstruct invalid LICH
@@ -184,161 +186,159 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		bool valid = facch.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
 		if (!valid)
 			valid = facch.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
-
-		if (valid) {
-			unsigned char buffer[10U];
-			facch.getData(buffer);
-
-			CNXDNLayer3 layer3;
-			layer3.decode(buffer, NXDN_FACCH1_LENGTH_BITS);
-
-			unsigned char type = layer3.getMessageType();
-			if (type == NXDN_MESSAGE_TYPE_TX_REL) {
-				if (m_rfState != RS_RF_AUDIO) {
-					m_rfState = RS_RF_LISTENING;
-					m_rfMask  = 0x00U;
-					return false;
-				}
-			} else {
-				if (m_selfOnly) {
-					unsigned short srcId = layer3.getSourceUnitId();
-					if (srcId != m_id) {
-						m_rfState = RS_RF_REJECTED;
-						return false;
-					}
-				}
-			}
-
-			data[0U] = type == NXDN_MESSAGE_TYPE_TX_REL ? TAG_EOT : TAG_DATA;
-			data[1U] = 0x00U;
-
-			CSync::addNXDNSync(data + 2U);
-
-			CNXDNLICH lich = m_rfLastLICH;
-			lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
-			lich.encode(data + 2U);
-
-			CNXDNSACCH sacch;
-			sacch.setRAN(m_ran);
-			sacch.setStructure(NXDN_SR_SINGLE);
-			sacch.setData(SACCH_IDLE);
-			sacch.encode(data + 2U);
-
-			facch.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
-			facch.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
-
-			scrambler(data + 2U);
-
-			// writeNetwork(data, m_rfFrames, );
-
-#if defined(DUMP_NXDN)
-			writeFile(data + 2U);
-#endif
-			if (m_duplex)
-				writeQueueRF(data);
-
-			if (type == NXDN_MESSAGE_TYPE_TX_REL) {
-				m_rfFrames++;
-				if (m_rssi != 0U)
-					LogMessage("NXDN, received RF end of transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-				else
-					LogMessage("NXDN, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
-				writeEndRF();
-				return true;
-			} else {
-				m_rfFrames  = 0U;
-				m_rfErrs    = 0U;
-				m_rfBits    = 1U;
-				m_rfTimeoutTimer.start();
-				m_rfState   = RS_RF_AUDIO;
-
-				m_minRSSI   = m_rssi;
-				m_maxRSSI   = m_rssi;
-				m_aveRSSI   = m_rssi;
-				m_rssiCount = 1U;
-#if defined(DUMP_NXDN)
-				openFile();
-#endif
-				m_rfLayer3 = layer3;
-
-				unsigned short srcId = m_rfLayer3.getSourceUnitId();
-				unsigned short dstId = m_rfLayer3.getDestinationGroupId();
-				bool grp             = m_rfLayer3.getIsGroup();
-
-				std::string source = m_lookup->find(srcId);
-				LogMessage("NXDN, received RF voice transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
-				m_display->writeNXDN(source.c_str(), grp, dstId, "R");
-
-				m_rfState = RS_RF_AUDIO;
-
-				return true;
-			}
-		}
-
-		return false;
-	} else {
-		unsigned char message[3U];
-		sacch.getData(message);
-
-		unsigned char structure = sacch.getStructure();
-		switch (structure) {
-		case NXDN_SR_1_4:
-			m_rfMask |= 0x01U;
-			m_rfLayer3.decode(message, 18U, 0U);
-			break;
-		case NXDN_SR_2_4:
-			m_rfMask |= 0x02U;
-			m_rfLayer3.decode(message, 18U, 18U);
-			break;
-		case NXDN_SR_3_4:
-			m_rfMask |= 0x04U;
-			m_rfLayer3.decode(message, 18U, 36U);
-			break;
-		case NXDN_SR_4_4:
-			m_rfMask |= 0x08U;
-			m_rfLayer3.decode(message, 18U, 54U);
-			break;
-		default:
-			break;
-		}
-
-		// if (m_rfMask != 0x0FU)
+		// if (!valid)
 		//	return false;
 
-		unsigned char messageType = m_rfLayer3.getMessageType();
-		if (messageType != NXDN_MESSAGE_TYPE_VCALL)
-			return false;
+		unsigned char buffer[10U];
+		facch.getData(buffer);
 
-		unsigned short srcId = m_rfLayer3.getSourceUnitId();
-		unsigned short dstId = m_rfLayer3.getDestinationGroupId();
-		bool grp             = m_rfLayer3.getIsGroup();
+		CNXDNLayer3 layer3;
+		layer3.decode(buffer, NXDN_FACCH1_LENGTH_BITS);
 
-		if (m_selfOnly) {
-			if (srcId != m_id) {
-				m_rfState = RS_RF_REJECTED;
+		unsigned char type = layer3.getMessageType();
+		if (type == NXDN_MESSAGE_TYPE_TX_REL) {
+			if (m_rfState != RS_RF_AUDIO) {
+				m_rfState = RS_RF_LISTENING;
+				m_rfMask  = 0x00U;
 				return false;
+			}
+		} else {
+			bool hasInfo = layer3.getHasInfo();
+			if (m_rfState == RS_RF_LISTENING && m_selfOnly && hasInfo) {
+				unsigned short srcId = layer3.getSourceUnitId();
+				if (srcId != m_id) {
+					m_rfState = RS_RF_REJECTED;
+					return false;
+				}
 			}
 		}
 
-		m_rfFrames = 0U;
-		m_rfErrs = 0U;
-		m_rfBits = 1U;
-		m_rfTimeoutTimer.start();
-		m_rfState = RS_RF_AUDIO;
+		data[0U] = type == NXDN_MESSAGE_TYPE_TX_REL ? TAG_EOT : TAG_DATA;
+		data[1U] = 0x00U;
 
-		m_minRSSI = m_rssi;
-		m_maxRSSI = m_rssi;
-		m_aveRSSI = m_rssi;
-		m_rssiCount = 1U;
+		CSync::addNXDNSync(data + 2U);
+
+		CNXDNLICH lich = m_rfLastLICH;
+		lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
+		lich.encode(data + 2U);
+
+		CNXDNSACCH sacch;
+		sacch.setRAN(m_ran);
+		sacch.setStructure(NXDN_SR_SINGLE);
+		sacch.setData(SACCH_IDLE);
+		sacch.encode(data + 2U);
+
+		facch.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
+		facch.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
+
+		scrambler(data + 2U);
+
+		// writeNetwork(data, m_rfFrames, );
+
 #if defined(DUMP_NXDN)
-		openFile();
+		writeFile(data + 2U);
 #endif
-		std::string source = m_lookup->find(srcId);
-		LogMessage("NXDN, received RF voice transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
-		m_display->writeNXDN(source.c_str(), grp, dstId, "R");
+		if (m_duplex)
+			writeQueueRF(data);
 
-		m_rfState = RS_RF_AUDIO;
+		if (type == NXDN_MESSAGE_TYPE_TX_REL) {
+			m_rfFrames++;
+			if (m_rssi != 0U)
+				LogMessage("NXDN, received RF end of transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			else
+				LogMessage("NXDN, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+			writeEndRF();
+		} else {
+			m_rfFrames  = 0U;
+			m_rfErrs    = 0U;
+			m_rfBits    = 1U;
+			m_rfTimeoutTimer.start();
+			m_rfState   = RS_RF_AUDIO;
+			m_minRSSI   = m_rssi;
+			m_maxRSSI   = m_rssi;
+			m_aveRSSI   = m_rssi;
+			m_rssiCount = 1U;
+#if defined(DUMP_NXDN)
+			openFile();
+#endif
+			m_rfLayer3 = layer3;
+
+			unsigned short srcId = m_rfLayer3.getSourceUnitId();
+			unsigned short dstId = m_rfLayer3.getDestinationGroupId();
+			bool grp             = m_rfLayer3.getIsGroup();
+
+			std::string source = m_lookup->find(srcId);
+			LogMessage("NXDN, received RF voice transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
+			m_display->writeNXDN(source.c_str(), grp, dstId, "R");
+		}
+
+		return true;
 	}
+	else {
+		// if (valid) {
+			unsigned char message[3U];
+			sacch.getData(message);
+
+			unsigned char structure = sacch.getStructure();
+			switch (structure) {
+			case NXDN_SR_1_4:
+				m_rfMask |= 0x01U;
+				m_rfLayer3.decode(message, 18U, 0U);
+				break;
+			case NXDN_SR_2_4:
+				m_rfMask |= 0x02U;
+				m_rfLayer3.decode(message, 18U, 18U);
+				break;
+			case NXDN_SR_3_4:
+				m_rfMask |= 0x04U;
+				m_rfLayer3.decode(message, 18U, 36U);
+				break;
+			case NXDN_SR_4_4:
+				m_rfMask |= 0x08U;
+				m_rfLayer3.decode(message, 18U, 54U);
+				break;
+			default:
+				break;
+			}
+
+			// if (m_rfMask != 0x0FU)
+			//	return false;
+
+			unsigned char messageType = m_rfLayer3.getMessageType();
+			if (messageType != NXDN_MESSAGE_TYPE_VCALL)
+				return false;
+
+			unsigned short srcId = m_rfLayer3.getSourceUnitId();
+			unsigned short dstId = m_rfLayer3.getDestinationGroupId();
+			bool grp = m_rfLayer3.getIsGroup();
+
+			if (m_selfOnly) {
+				if (srcId != m_id) {
+					m_rfState = RS_RF_REJECTED;
+					return false;
+				}
+			}
+
+			m_rfFrames = 0U;
+			m_rfErrs = 0U;
+			m_rfBits = 1U;
+			m_rfTimeoutTimer.start();
+			m_rfState = RS_RF_AUDIO;
+
+			m_minRSSI = m_rssi;
+			m_maxRSSI = m_rssi;
+			m_aveRSSI = m_rssi;
+			m_rssiCount = 1U;
+#if defined(DUMP_NXDN)
+			openFile();
+#endif
+			std::string source = m_lookup->find(srcId);
+			LogMessage("NXDN, received RF voice transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
+			m_display->writeNXDN(source.c_str(), grp, dstId, "R");
+
+			m_rfState = RS_RF_AUDIO;
+		}
+	// }
 
 	// if (m_rfState == RS_RF_AUDIO) {
 		// Regenerate the sync

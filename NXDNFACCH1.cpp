@@ -42,7 +42,8 @@ const unsigned int INTERLEAVE_TABLE[] = {
 const unsigned int PUNCTURE_LIST[] = {  1U,   5U,   9U,  13U,  17U,  21U,  25U,  29U,  33U,  37U, 
 									   41U,  45U,  49U,  53U,  57U,  61U,  65U,  69U,  73U,  77U, 
 									   81U,  85U,  89U,  93U,  97U, 101U, 105U, 109U, 113U, 117U,
-									  121U, 125U, 129U, 133U, 137U, 141U};
+									  121U, 125U, 129U, 133U, 137U, 141U, 145U, 149U, 153U, 157U,
+									  161U, 165U, 169U, 173U, 177U, 181U, 185U, 189U };
 
 const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
 
@@ -121,11 +122,7 @@ void CNXDNFACCH1::encode(unsigned char* data, unsigned int offset) const
 
 	unsigned char temp1[12U];
 	::memset(temp1, 0x00U, 12U);
-
-	for (unsigned int i = 0U; i < 80U; i++) {
-		bool b = READ_BIT1(m_data, i);
-		WRITE_BIT1(temp1, i, b);
-	}
+	::memcpy(temp1, data, 10U);
 
 	CNXDNCRC::encodeCRC12(temp1, 80U);
 

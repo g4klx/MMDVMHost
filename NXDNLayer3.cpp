@@ -93,6 +93,15 @@ unsigned char CNXDNLayer3::getCallOptions() const
 	return m_data[2U] & 0x1FU;
 }
 
+bool CNXDNLayer3::getHasInfo() const
+{
+	unsigned char type = getMessageType();
+
+	return type != NXDN_MESSAGE_TYPE_IDLE &&
+		   type != NXDN_MESSAGE_TYPE_VCALL_IV &&
+		   type != NXDN_MESSAGE_TYPE_SDCALL_IV;
+}
+
 CNXDNLayer3& CNXDNLayer3::operator=(const CNXDNLayer3& layer3)
 {
 	if (&layer3 != this)

@@ -63,7 +63,8 @@ const unsigned int PUNCTURE_LIST[] = { 3U,  11U,  17U,  25U,  31U,  39U,  45U,  
 									  73U,  81U,  87U,  95U, 101U, 109U, 115U, 123U, 129U, 137U,
 									 143U, 151U, 157U, 165U, 171U, 179U, 185U, 193U, 199U, 207U,
 									 213U, 221U, 227U, 235U, 241U, 249U, 255U, 263U, 269U, 277U,
-									 283U, 291U, 297U, 305U, 311U, 319U, 325U, 333U, 339U, 347U };
+									 283U, 291U, 297U, 305U, 311U, 319U, 325U, 333U, 339U, 347U,
+									 353U, 361U, 367U, 375U, 381U, 389U, 395U, 403U };
 
 const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
 
@@ -142,11 +143,7 @@ void CNXDNUDCH::encode(unsigned char* data) const
 
 	unsigned char temp1[25U];
 	::memset(temp1, 0x00U, 25U);
-
-	for (unsigned int i = 0U; i < 184U; i++) {
-		bool b = READ_BIT1(m_data, i);
-		WRITE_BIT1(temp1, i, b);
-	}
+	::memcpy(temp1, data, 23U);
 
 	CNXDNCRC::encodeCRC15(temp1, 184U);
 

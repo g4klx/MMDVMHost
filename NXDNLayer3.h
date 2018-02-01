@@ -34,6 +34,7 @@ public:
 	unsigned short getDestinationGroupId() const;
 	bool           getIsGroup() const;
 	unsigned char  getCallOptions() const;
+	bool           getHasInfo() const;
 
 	CNXDNLayer3& operator=(const CNXDNLayer3& layer3);
 

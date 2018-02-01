@@ -123,14 +123,14 @@ void CNXDNSACCH::encode(unsigned char* data) const
 
 	CNXDNCRC::encodeCRC6(temp1, 26U);
 
-	CUtils::dump("NXDN, SACCH encoded with CRC", temp1, 4U);
+	CUtils::dump("NXDN, SACCH encoded with CRC", temp1, 5U);
 
-	unsigned char temp2[8U];
+	unsigned char temp2[9U];
 
 	CNXDNConvolution conv;
 	conv.encode(temp1, temp2, 36U);
 
-	// CUtils::dump("NXDN, SACCH convolved", temp2, 8U);
+	// CUtils::dump("NXDN, SACCH convolved", temp2, 9U);
 
 	unsigned char temp3[8U];
 
