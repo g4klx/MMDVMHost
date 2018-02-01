@@ -274,7 +274,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 		return true;
 	} else {
-		// if (valid) {
+		if (m_rfState == RS_RF_LISTENING) {
 			unsigned char message[3U];
 			sacch.getData(message);
 
@@ -300,11 +300,11 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 				break;
 			}
 
-			// if (m_rfMask != 0x0FU)
-			//	return false;
+			if (m_rfMask != 0x0FU)
+				return false;
 
-			unsigned char messageType = m_rfLayer3.getMessageType();
-			if (messageType != NXDN_MESSAGE_TYPE_VCALL)
+			bool hasInfo = m_rfLayer3.getHasInfo();
+			if (!hasInfo)
 				return false;
 
 			unsigned short srcId = m_rfLayer3.getSourceUnitId();
@@ -337,9 +337,9 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 			m_rfState = RS_RF_AUDIO;
 		}
-	// }
+	}
 
-	// if (m_rfState == RS_RF_AUDIO) {
+	if (m_rfState == RS_RF_AUDIO) {
 		// Regenerate the sync
 		CSync::addNXDNSync(data + 2U);
 
@@ -449,6 +449,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		m_rfFrames++;
 
 		m_display->writeNXDNRSSI(m_rssi);
+	}
 
 	return true;
 }

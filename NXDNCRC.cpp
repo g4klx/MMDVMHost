@@ -17,7 +17,6 @@
  */
 
 #include "NXDNCRC.h"
-#include "Log.h"
 
 #include <cstdio>
 #include <cassert>
@@ -41,8 +40,6 @@ bool CNXDNCRC::checkCRC6(const unsigned char* in, unsigned int length)
 		WRITE_BIT1(temp, i, b);
 	}
 
-	// LogMessage("NXDN, CRC6: new:%02X old:%02X", crc, temp[0U]);
-
 	return crc == temp[0U];
 }
 
@@ -52,8 +49,6 @@ void CNXDNCRC::encodeCRC6(unsigned char* in, unsigned int length)
 
 	uint8_t crc[1U];
 	crc[0U] = createCRC6(in, length);
-
-	// LogMessage("NXDN, CRC6: new:%02X", crc[0U]);
 
 	unsigned int n = length;
 	for (unsigned int i = 2U; i < 8U; i++, n++) {
@@ -80,8 +75,6 @@ bool CNXDNCRC::checkCRC12(const unsigned char* in, unsigned int length)
 		WRITE_BIT1(temp2, i, b);
 	}
 
-	// LogMessage("NXDN, CRC12: new:%02X%02X old:%02X%02X", temp1[0U], temp1[1U], temp2[0U], temp2[1U]);
-
 	return temp1[0U] == temp2[0U] && temp1[1U] == temp2[1U];
 }
 
@@ -94,8 +87,6 @@ void CNXDNCRC::encodeCRC12(unsigned char* in, unsigned int length)
 	uint8_t temp[2U];
 	temp[0U] = (crc >> 8) & 0xFFU;
 	temp[1U] = (crc >> 0) & 0xFFU;
-
-	// LogMessage("NXDN, CRC12: new:%02X%02X", temp[0U], temp[1U]);
 
 	unsigned int n = length;
 	for (unsigned int i = 4U; i < 16U; i++, n++) {
@@ -122,8 +113,6 @@ bool CNXDNCRC::checkCRC15(const unsigned char* in, unsigned int length)
 		WRITE_BIT1(temp2, i, b);
 	}
 
-	// LogMessage("NXDN, CRC15: new:%02X%02X old:%02X%02X", temp1[0U], temp1[1U], temp2[0U], temp2[1U]);
-
 	return temp1[0U] == temp2[0U] && temp1[1U] == temp2[1U];
 }
 
@@ -136,8 +125,6 @@ void CNXDNCRC::encodeCRC15(unsigned char* in, unsigned int length)
 	uint8_t temp[2U];
 	temp[0U] = (crc >> 8) & 0xFFU;
 	temp[1U] = (crc >> 0) & 0xFFU;
-
-	// LogMessage("NXDN, CRC15: new:%02X%02X", temp[0U], temp[1U]);
 
 	unsigned int n = length;
 	for (unsigned int i = 1U; i < 16U; i++, n++) {
