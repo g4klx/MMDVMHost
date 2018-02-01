@@ -944,6 +944,7 @@ bool CMMDVMHost::createDMRNetwork()
 	unsigned int id      = m_conf.getDMRId();
 	std::string password = m_conf.getDMRNetworkPassword();
 	bool debug           = m_conf.getDMRNetworkDebug();
+	bool jitterEnabled   = m_conf.getDMRNetworkJitterEnabled();
 	unsigned int jitter  = m_conf.getDMRNetworkJitter();
 	bool slot1           = m_conf.getDMRNetworkSlot1();
 	bool slot2           = m_conf.getDMRNetworkSlot2();
@@ -957,12 +958,13 @@ bool CMMDVMHost::createDMRNetwork()
 		LogInfo("    Local: %u", local);
 	else
 		LogInfo("    Local: random");
+	LogInfo("    Jitter Buffer: %s", jitterEnabled ? "enabled" : "disabled");
 	LogInfo("    Jitter: %ums", jitter);
 	LogInfo("    Slot 1: %s", slot1 ? "enabled" : "disabled");
 	LogInfo("    Slot 2: %s", slot2 ? "enabled" : "disabled");
 	LogInfo("    Mode Hang: %us", m_dmrNetModeHang);
 
-	m_dmrNetwork = new CDMRNetwork(address, port, local, id, password, m_duplex, VERSION, debug, slot1, slot2, hwType, jitter);
+	m_dmrNetwork = new CDMRNetwork(address, port, local, id, password, m_duplex, VERSION, debug, slot1, slot2, hwType, jitterEnabled, jitter);
 
 	std::string options = m_conf.getDMRNetworkOptions();
 	if (!options.empty()) {
