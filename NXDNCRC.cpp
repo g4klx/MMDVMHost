@@ -36,28 +36,19 @@ bool CNXDNCRC::checkCRC6(const unsigned char* in, unsigned int length)
 {
 	assert(in != NULL);
 
-	uint8_t crc[1U];
-	crc[0U] = createCRC6(in, length);
+	uint8_t crc = createCRC6(in, length);
 
 	uint8_t temp[1U];
 	temp[0U] = 0x00U;
 	unsigned int j = length;
-	for (unsigned int i = 0U; i < 6U; i++, j++) {
+	for (unsigned int i = 2U; i < 8U; i++, j++) {
 		bool b = READ_BIT1(in, j);
 		WRITE_BIT1(temp, i, b);
 	}
 
-	LogMessage("NXDN, CRC6: new:%02X old:%02X", crc[0U], temp[0U]);
+	LogMessage("NXDN, CRC6: new:%02X old:%02X", crc, temp[0U]);
 
-	unsigned int n = length;
-	for (unsigned int i = 0U; i < 6U; i++, n++) {
-		bool b1 = READ_BIT1(crc, i);
-		bool b2 = READ_BIT1(in, n);
-		if (b1 != b2)
-			return false;
-	}
-
-	return true;
+	return crc == temp[0U];
 }
 
 void CNXDNCRC::encodeCRC6(unsigned char* in, unsigned int length)
@@ -78,28 +69,19 @@ bool CNXDNCRC::checkCRC12(const unsigned char* in, unsigned int length)
 {
 	assert(in != NULL);
 
-	uint16_t crc[1U];
-	crc[0U] = createCRC12(in, length);
+	uint16_t crc = createCRC12(in, length);
 
 	uint16_t temp[1U];
 	temp[0U] = 0x00U;
 	unsigned int j = length;
-	for (unsigned int i = 0U; i < 12U; i++, j++) {
+	for (unsigned int i = 4U; i < 16U; i++, j++) {
 		bool b = READ_BIT1(in, j);
 		WRITE_BIT2(temp, i, b);
 	}
 
-	LogMessage("NXDN, CRC12: new:%04X old:%04X", crc[0U], temp[0U]);
+	LogMessage("NXDN, CRC12: new:%04X old:%04X", crc, temp[0U]);
 
-	unsigned int n = length;
-	for (unsigned int i = 0U; i < 12U; i++, n++) {
-		bool b1 = READ_BIT2(crc, i);
-		bool b2 = READ_BIT1(in, n);
-		if (b1 != b2)
-			return false;
-	}
-
-	return true;
+	return crc == temp[0U];
 }
 
 void CNXDNCRC::encodeCRC12(unsigned char* in, unsigned int length)
@@ -120,28 +102,19 @@ bool CNXDNCRC::checkCRC15(const unsigned char* in, unsigned int length)
 {
 	assert(in != NULL);
 
-	uint16_t crc[1U];
-	crc[0U] = createCRC15(in, length);
+	uint16_t crc = createCRC15(in, length);
 
 	uint16_t temp[1U];
 	temp[0U] = 0x00U;
 	unsigned int j = length;
-	for (unsigned int i = 0U; i < 15U; i++, j++) {
+	for (unsigned int i = 1U; i < 16U; i++, j++) {
 		bool b = READ_BIT1(in, j);
 		WRITE_BIT2(temp, i, b);
 	}
 
-	LogMessage("NXDN, CRC15: new:%04X old:%04X", crc[0U], temp[0U]);
+	LogMessage("NXDN, CRC15: new:%04X old:%04X", crc, temp[0U]);
 
-	unsigned int n = length;
-	for (unsigned int i = 0U; i < 15U; i++, n++) {
-		bool b1 = READ_BIT2(crc, i);
-		bool b2 = READ_BIT1(in, n);
-		if (b1 != b2)
-			return false;
-	}
-
-	return true;
+	return crc == temp[0U];
 }
 
 void CNXDNCRC::encodeCRC15(unsigned char* in, unsigned int length)
@@ -167,13 +140,13 @@ uint8_t CNXDNCRC::createCRC6(const unsigned char* in, unsigned int length)
 		bool bit2 = (crc & 0x20U) == 0x20U;
 
 		crc <<= 1;
-		crc &= 0x3FU;
+		crc &= 0x3EU;
 
 		if (bit1 ^ bit2)
 			crc ^= 0x27U;
 	}
 
-	return crc & 0x3FU;
+	return crc;
 }
 
 uint16_t CNXDNCRC::createCRC12(const unsigned char* in, unsigned int length)
@@ -185,7 +158,7 @@ uint16_t CNXDNCRC::createCRC12(const unsigned char* in, unsigned int length)
 		bool bit2 = (crc & 0x0800U) == 0x0800U;
 
 		crc <<= 1;
-		crc &= 0x0FFFU;
+		crc &= 0x0FFEU;
 
 		if (bit1 ^ bit2)
 			crc ^= 0x080FU;
@@ -203,7 +176,7 @@ uint16_t CNXDNCRC::createCRC15(const unsigned char* in, unsigned int length)
 		bool bit2 = (crc & 0x4000U) == 0x4000U;
 
 		crc <<= 1;
-		crc &= 0x7FFFU;
+		crc &= 0x7FFEU;
 
 		if (bit1 ^ bit2)
 			crc ^= 0x4CC5U;
