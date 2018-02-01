@@ -42,7 +42,8 @@ const unsigned int INTERLEAVE_TABLE[] = {
 const unsigned int PUNCTURE_LIST[] = {  1U,   5U,   9U,  13U,  17U,  21U,  25U,  29U,  33U,  37U, 
 									   41U,  45U,  49U,  53U,  57U,  61U,  65U,  69U,  73U,  77U, 
 									   81U,  85U,  89U,  93U,  97U, 101U, 105U, 109U, 113U, 117U,
-									  121U, 125U, 129U, 133U, 137U, 141U};
+									  121U, 125U, 129U, 133U, 137U, 141U, 145U, 149U, 153U, 157U,
+									  161U, 165U, 169U, 173U, 177U, 181U, 185U, 189U };
 
 const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
 
@@ -83,7 +84,7 @@ bool CNXDNFACCH1::decode(const unsigned char* data, unsigned int offset)
 
 	// CUtils::dump("NXDN, FACCH1 de-interleaved", temp1, 18U);
 
-	uint8_t temp2[192U];
+	uint8_t temp2[210U];
 
 	unsigned int n = 0U;
 	unsigned int index = 0U;
@@ -97,18 +98,22 @@ bool CNXDNFACCH1::decode(const unsigned char* data, unsigned int offset)
 		temp2[n++] = b ? 2U : 0U;
 	}
 
+	for (unsigned int i = 0U; i < 8U; i++) {
+		temp2[n++] = 0U;
+	}
+
 	CNXDNConvolution conv;
 	conv.start();
 
 	n = 0U;
-	for (unsigned int i = 0U; i < 96U; i++) {
+	for (unsigned int i = 0U; i < 100U; i++) {
 		uint8_t s0 = temp2[n++];
 		uint8_t s1 = temp2[n++];
 
 		conv.decode(s0, s1);
 	}
 
-	conv.chainback(m_data, 92U);
+	conv.chainback(m_data, 96U);
 
 	CUtils::dump("NXDN, FACCH1 decoded", m_data, 12U);
 

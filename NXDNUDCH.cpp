@@ -63,7 +63,8 @@ const unsigned int PUNCTURE_LIST[] = { 3U,  11U,  17U,  25U,  31U,  39U,  45U,  
 									  73U,  81U,  87U,  95U, 101U, 109U, 115U, 123U, 129U, 137U,
 									 143U, 151U, 157U, 165U, 171U, 179U, 185U, 193U, 199U, 207U,
 									 213U, 221U, 227U, 235U, 241U, 249U, 255U, 263U, 269U, 277U,
-									 283U, 291U, 297U, 305U, 311U, 319U, 325U, 333U, 339U, 347U };
+									 283U, 291U, 297U, 305U, 311U, 319U, 325U, 333U, 339U, 347U,
+									 353U, 361U, 367U, 375U, 381U, 389U, 395U, 403U };
 
 const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
 
@@ -73,14 +74,14 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 CNXDNUDCH::CNXDNUDCH(const CNXDNUDCH& udch) :
 m_data(NULL)
 {
-	m_data = new unsigned char[23U + 2U];
-	::memcpy(m_data, udch.m_data, 23U + 2U);
+	m_data = new unsigned char[23U + 3U];
+	::memcpy(m_data, udch.m_data, 23U + 3U);
 }
 
 CNXDNUDCH::CNXDNUDCH() :
 m_data(NULL)
 {
-	m_data = new unsigned char[23U + 2U];
+	m_data = new unsigned char[23U + 3U];
 }
 
 CNXDNUDCH::~CNXDNUDCH()
@@ -104,7 +105,7 @@ bool CNXDNUDCH::decode(const unsigned char* data)
 
 	CUtils::dump("NXDN, UDCH/FACCH2 de-interleaved", temp1, 44U);
 
-	uint8_t temp2[406U];
+	uint8_t temp2[420U];
 
 	unsigned int n = 0U;
 	unsigned int index = 0U;
@@ -118,18 +119,22 @@ bool CNXDNUDCH::decode(const unsigned char* data)
 		temp2[n++] = b ? 2U : 0U;
 	}
 
+	for (unsigned int i = 0U; i < 8U; i++) {
+		temp2[n++] = 0U;
+	}
+
 	CNXDNConvolution conv;
 	conv.start();
 
 	n = 0U;
-	for (unsigned int i = 0U; i < 203U; i++) {
+	for (unsigned int i = 0U; i < 207U; i++) {
 		uint8_t s0 = temp2[n++];
 		uint8_t s1 = temp2[n++];
 
 		conv.decode(s0, s1);
 	}
 
-	conv.chainback(m_data, 199U);
+	conv.chainback(m_data, 203U);
 
 	CUtils::dump("NXDN, UDCH/FACCH2 decoded", m_data, 25U);
 
