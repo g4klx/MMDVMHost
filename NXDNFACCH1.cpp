@@ -84,32 +84,36 @@ bool CNXDNFACCH1::decode(const unsigned char* data, unsigned int offset)
 
 	// CUtils::dump("NXDN, FACCH1 de-interleaved", temp1, 18U);
 
-	uint8_t temp2[192U];
+	uint8_t temp2[210U];
 
 	unsigned int n = 0U;
 	unsigned int index = 0U;
 	for (unsigned int i = 0U; i < NXDN_FACCH1_LENGTH_BITS; i++) {
 		if (n == PUNCTURE_LIST[index]) {
-			temp2[n++] = 99U;
+			temp2[n++] = 1U;
 			index++;
 		}
 
 		bool b = READ_BIT1(temp1, i);
-		temp2[n++] = b ? 1U : 0U;
+		temp2[n++] = b ? 2U : 0U;
+	}
+
+	for (unsigned int i = 0U; i < 8U; i++) {
+		temp2[n++] = 0U;
 	}
 
 	CNXDNConvolution conv;
 	conv.start();
 
 	n = 0U;
-	for (unsigned int i = 0U; i < 96U; i++) {
+	for (unsigned int i = 0U; i < 100U; i++) {
 		uint8_t s0 = temp2[n++];
 		uint8_t s1 = temp2[n++];
 
 		conv.decode(s0, s1);
 	}
 
-	conv.chainback(m_data, 92U);
+	conv.chainback(m_data, 96U);
 
 	CUtils::dump("NXDN, FACCH1 decoded", m_data, 12U);
 
