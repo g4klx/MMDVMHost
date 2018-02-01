@@ -91,7 +91,7 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 
 	if (type == TAG_LOST && m_rfState == RS_RF_AUDIO) {
 		if (m_rssi != 0U)
-			LogMessage("NXDN, transmission lost, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			LogMessage("NXDN, transmission lost, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 		else
 			LogMessage("NXDN, transmission lost, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 		writeEndRF();
@@ -180,19 +180,15 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 	if (usc == NXDN_LICH_USC_SACCH_NS) {
 		// The SACCH on a non-superblock frame is usually an idle and not interesting apart from the RAN.
-		CNXDNFACCH1 facch11;
-		bool valid1 = facch11.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
+		CNXDNFACCH1 facch;
+		bool valid = facch.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
+		if (!valid)
+			valid = facch.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
 
-		CNXDNFACCH1 facch12;
-		bool valid2 = facch12.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
+		if (valid) {
+			unsigned char buffer[10U];
+			facch.getData(buffer);
 
-		unsigned char buffer[10U];
-		if (valid1)
-			facch11.getData(buffer);
-		else if (valid2)
-			facch12.getData(buffer);
-
-		if (valid1 || valid2) {
 			CNXDNLayer3 layer3;
 			layer3.decode(buffer, NXDN_FACCH1_LENGTH_BITS);
 
@@ -228,13 +224,8 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			sacch.setData(SACCH_IDLE);
 			sacch.encode(data + 2U);
 
-			if (valid1) {
-				facch11.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
-				facch11.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
-			} else {
-				facch12.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
-				facch12.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
-			}
+			facch.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
+			facch.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
 
 			scrambler(data + 2U);
 
@@ -243,7 +234,6 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 #if defined(DUMP_NXDN)
 			writeFile(data + 2U);
 #endif
-
 			if (m_duplex)
 				writeQueueRF(data);
 
@@ -312,8 +302,8 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			break;
 		}
 
-		if (m_rfMask != 0x0FU)
-			return false;
+		// if (m_rfMask != 0x0FU)
+		//	return false;
 
 		unsigned char messageType = m_rfLayer3.getMessageType();
 		if (messageType != NXDN_MESSAGE_TYPE_VCALL)
