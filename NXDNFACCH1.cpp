@@ -89,12 +89,12 @@ bool CNXDNFACCH1::decode(const unsigned char* data, unsigned int offset)
 	unsigned int index = 0U;
 	for (unsigned int i = 0U; i < NXDN_FACCH1_LENGTH_BITS; i++) {
 		if (n == PUNCTURE_LIST[index]) {
-			temp2[n++] = 99U;
+			temp2[n++] = 1U;
 			index++;
 		}
 
 		bool b = READ_BIT1(temp1, i);
-		temp2[n++] = b ? 1U : 0U;
+		temp2[n++] = b ? 2U : 0U;
 	}
 
 	CNXDNConvolution conv;
