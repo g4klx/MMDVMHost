@@ -268,7 +268,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			bool grp             = m_rfLayer3.getIsGroup();
 
 			std::string source = m_lookup->find(srcId);
-			LogMessage("NXDN, received RF voice transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
+			LogMessage("NXDN, received RF header from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
 			m_display->writeNXDN(source.c_str(), grp, dstId, "R");
 		}
 
@@ -333,7 +333,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			openFile();
 #endif
 			std::string source = m_lookup->find(srcId);
-			LogMessage("NXDN, received RF voice transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
+			LogMessage("NXDN, received RF late entry from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
 			m_display->writeNXDN(source.c_str(), grp, dstId, "R");
 
 			m_rfState = RS_RF_AUDIO;
