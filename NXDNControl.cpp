@@ -275,37 +275,72 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		return true;
 	} else {
 		if (m_rfState == RS_RF_LISTENING) {
-			unsigned char message[3U];
-			sacch.getData(message);
-
-			unsigned char structure = sacch.getStructure();
-			switch (structure) {
-			case NXDN_SR_1_4:
-				m_rfMask |= 0x01U;
-				m_rfLayer3.decode(message, 18U, 0U);
+			CNXDNFACCH1 facch;
+			bool valid = false;
+			switch (option) {
+			case NXDN_LICH_STEAL_FACCH:
+				valid = facch.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
+				if (!valid)
+					valid = facch.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
 				break;
-			case NXDN_SR_2_4:
-				m_rfMask |= 0x02U;
-				m_rfLayer3.decode(message, 18U, 18U);
+			case NXDN_LICH_STEAL_FACCH1_1:
+				valid = facch.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
 				break;
-			case NXDN_SR_3_4:
-				m_rfMask |= 0x04U;
-				m_rfLayer3.decode(message, 18U, 36U);
-				break;
-			case NXDN_SR_4_4:
-				m_rfMask |= 0x08U;
-				m_rfLayer3.decode(message, 18U, 54U);
+			case NXDN_LICH_STEAL_FACCH1_2:
+				valid = facch.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
 				break;
 			default:
 				break;
 			}
 
-			if (m_rfMask != 0x0FU)
-				return false;
+			bool hasInfo = false;
+			if (valid) {
+				unsigned char buffer[10U];
+				facch.getData(buffer);
 
-			bool hasInfo = m_rfLayer3.getHasInfo();
-			if (!hasInfo)
-				return false;
+				CNXDNLayer3 layer3;
+				layer3.decode(buffer, NXDN_FACCH1_LENGTH_BITS);
+
+				hasInfo = layer3.getHasInfo();
+				if (!hasInfo)
+					return false;
+
+				m_rfLayer3 = layer3;
+			}
+
+			if (!hasInfo) {
+				unsigned char message[3U];
+				sacch.getData(message);
+
+				unsigned char structure = sacch.getStructure();
+				switch (structure) {
+				case NXDN_SR_1_4:
+					m_rfMask |= 0x01U;
+					m_rfLayer3.decode(message, 18U, 0U);
+					break;
+				case NXDN_SR_2_4:
+					m_rfMask |= 0x02U;
+					m_rfLayer3.decode(message, 18U, 18U);
+					break;
+				case NXDN_SR_3_4:
+					m_rfMask |= 0x04U;
+					m_rfLayer3.decode(message, 18U, 36U);
+					break;
+				case NXDN_SR_4_4:
+					m_rfMask |= 0x08U;
+					m_rfLayer3.decode(message, 18U, 54U);
+					break;
+				default:
+					break;
+				}
+
+				if (m_rfMask != 0x0FU)
+					return false;
+
+				hasInfo = m_rfLayer3.getHasInfo();
+				if (!hasInfo)
+					return false;
+			}
 
 			unsigned short srcId = m_rfLayer3.getSourceUnitId();
 			unsigned short dstId = m_rfLayer3.getDestinationGroupId();
@@ -336,6 +371,46 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			m_display->writeNXDN(source.c_str(), grp, dstId, "R");
 
 			m_rfState = RS_RF_AUDIO;
+
+			// Create a dummy start message
+			unsigned char start[NXDN_FRAME_LENGTH_BYTES + 2U];
+
+			start[0U] = TAG_DATA;
+			start[1U] = 0x00U;
+
+			// Generate the sync
+			CSync::addNXDNSync(start + 2U);
+
+			// Generate the LICH
+			CNXDNLICH lich;
+			lich.setRFCT(NXDN_LICH_RFCT_RDCH);
+			lich.setFCT(NXDN_LICH_USC_SACCH_NS);
+			lich.setOption(NXDN_LICH_STEAL_FACCH);
+			lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
+			lich.encode(start + 2U);
+
+			CNXDNSACCH sacch;
+			sacch.setRAN(m_ran);
+			sacch.setStructure(NXDN_SR_SINGLE);
+			sacch.setData(SACCH_IDLE);
+			sacch.encode(start + 2U);
+
+			unsigned char message[22U];
+			m_rfLayer3.getData(message);
+
+			facch.setData(message);
+			facch.encode(start + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
+			facch.encode(start + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
+
+			scrambler(start + 2U);
+
+			// writeNetwork(start, m_rfFrames, );
+
+#if defined(DUMP_NXDN)
+			writeFile(start + 2U);
+#endif
+			if (m_duplex)
+				writeQueueRF(start);
 		}
 	}
 

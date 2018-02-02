@@ -36,6 +36,8 @@ public:
 	unsigned char  getCallOptions() const;
 	bool           getHasInfo() const;
 
+	void           getData(unsigned char* data) const;
+
 	CNXDNLayer3& operator=(const CNXDNLayer3& layer3);
 
 private:
