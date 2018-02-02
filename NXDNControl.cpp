@@ -367,10 +367,10 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 				m_display->writeNXDNBER(float(errors) / 2.88F);
 				LogDebug("NXDN, EFR, AMBE FEC %u/288 (%.1f%%)", errors, float(errors) / 2.88F);
 			} else {
-				errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
-				errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
-				errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
-				errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
+				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
+				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
+				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
+				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
 				m_rfErrs += errors;
 				m_rfBits += 188U;
 				m_display->writeNXDNBER(float(errors) / 1.88F);
@@ -391,8 +391,8 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 				m_display->writeNXDNBER(float(errors) / 1.44F);
 				LogDebug("NXDN, EFR, AMBE FEC %u/144 (%.1f%%)", errors, float(errors) / 1.44F);
 			} else {
-				errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
-				errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
+				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
+				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
 				m_rfErrs += errors;
 				m_rfBits += 94U;
 				m_display->writeNXDNBER(float(errors) / 0.94F);
@@ -408,8 +408,8 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 				m_display->writeNXDNBER(float(errors) / 1.44F);
 				LogDebug("NXDN, EFR, AMBE FEC %u/144 (%.1f%%)", errors, float(errors) / 1.44F);
 			} else {
-				errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
-				errors += ambe.regenerateDMR(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
+				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
+				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
 				m_rfErrs += errors;
 				m_rfBits += 94U;
 				m_display->writeNXDNBER(float(errors) / 0.94F);
