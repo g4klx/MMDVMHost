@@ -18,7 +18,6 @@
 
 #include "NXDNDefines.h"
 #include "NXDNLayer3.h"
-#include "Log.h"
 
 #include <cstdio>
 #include <cassert>
@@ -53,8 +52,8 @@ void CNXDNLayer3::decode(const unsigned char* bytes, unsigned int length, unsign
 	assert(bytes != NULL);
 
 	for (unsigned int i = 0U; i < length; i++, offset++) {
-		bool b = READ_BIT1(bytes, offset);
-		WRITE_BIT1(m_data, i, b);
+		bool b = READ_BIT1(bytes, i);
+		WRITE_BIT1(m_data, offset, b);
 	}
 }
 
