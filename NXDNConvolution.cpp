@@ -73,7 +73,7 @@ void CNXDNConvolution::decode(uint8_t s0, uint8_t s1)
   for (uint8_t i = 0U; i < NUM_OF_STATES_D2; i++) {
     uint8_t j = i * 2U;
 
-    uint16_t metric = ::abs(BRANCH_TABLE1[i] - s0) + ::abs(BRANCH_TABLE2[i] - s1);
+    uint16_t metric = std::abs(BRANCH_TABLE1[i] - s0) + std::abs(BRANCH_TABLE2[i] - s1);
 
     uint16_t m0 = m_oldMetrics[i] + metric;
     uint16_t m1 = m_oldMetrics[i + NUM_OF_STATES_D2] + (M - metric);
