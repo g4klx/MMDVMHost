@@ -22,7 +22,6 @@
 #include "NXDNDefines.h"
 #include "NXDNCRC.h"
 #include "Utils.h"
-#include "Log.h"
 
 #include <cstdio>
 #include <cassert>

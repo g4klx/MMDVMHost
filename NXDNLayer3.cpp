@@ -18,7 +18,6 @@
 
 #include "NXDNDefines.h"
 #include "NXDNLayer3.h"
-#include "Log.h"
 
 #include <cstdio>
 #include <cassert>
@@ -53,8 +52,8 @@ void CNXDNLayer3::decode(const unsigned char* bytes, unsigned int length, unsign
 	assert(bytes != NULL);
 
 	for (unsigned int i = 0U; i < length; i++, offset++) {
-		bool b = READ_BIT1(bytes, offset);
-		WRITE_BIT1(m_data, i, b);
+		bool b = READ_BIT1(bytes, i);
+		WRITE_BIT1(m_data, offset, b);
 	}
 }
 
@@ -100,6 +99,16 @@ bool CNXDNLayer3::getHasInfo() const
 	return type != NXDN_MESSAGE_TYPE_IDLE &&
 		   type != NXDN_MESSAGE_TYPE_VCALL_IV &&
 		   type != NXDN_MESSAGE_TYPE_SDCALL_IV;
+}
+
+void CNXDNLayer3::getData(unsigned char* data) const
+{
+	::memcpy(data, m_data, 22U);
+}
+
+void CNXDNLayer3::reset()
+{
+	::memset(m_data, 0x00U, 22U);
 }
 
 CNXDNLayer3& CNXDNLayer3::operator=(const CNXDNLayer3& layer3)
