@@ -38,6 +38,8 @@ public:
 
 	void           getData(unsigned char* data) const;
 
+	void           reset();
+
 	CNXDNLayer3& operator=(const CNXDNLayer3& layer3);
 
 private:

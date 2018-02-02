@@ -106,6 +106,11 @@ void CNXDNLayer3::getData(unsigned char* data) const
 	::memcpy(data, m_data, 22U);
 }
 
+void CNXDNLayer3::reset()
+{
+	::memset(m_data, 0x00U, 22U);
+}
+
 CNXDNLayer3& CNXDNLayer3::operator=(const CNXDNLayer3& layer3)
 {
 	if (&layer3 != this)

@@ -106,6 +106,7 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 	if (type == TAG_LOST) {
 		m_rfState = RS_RF_LISTENING;
 		m_rfMask  = 0x00U;
+		m_rfLayer3.reset();
 		return false;
 	}
 
@@ -131,11 +132,7 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 		m_rssiCount++;
 	}
 
-	// CUtils::dump(2U, "NXDN, raw data", data + 2U, NXDN_FRAME_LENGTH_BYTES);
-
 	scrambler(data + 2U);
-
-	// CUtils::dump(2U, "NXDN, after descrambling", data + 2U, NXDN_FRAME_LENGTH_BYTES);
 
 	CNXDNLICH lich;
 	bool valid = lich.decode(data + 2U);
@@ -200,6 +197,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			if (m_rfState != RS_RF_AUDIO) {
 				m_rfState = RS_RF_LISTENING;
 				m_rfMask  = 0x00U;
+				m_rfLayer3.reset();
 				return false;
 			}
 		} else {
@@ -748,6 +746,7 @@ void CNXDNControl::writeEndRF()
 	m_rfState = RS_RF_LISTENING;
 
 	m_rfMask = 0x00U;
+	m_rfLayer3.reset();
 
 	m_rfTimeoutTimer.stop();
 
