@@ -32,7 +32,7 @@ const unsigned int BUFFER_LENGTH = 500U;
 const unsigned int HOMEBREW_DATA_PACKET_LENGTH = 55U;
 
 
-CDMRNetwork::CDMRNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, HW_TYPE hwType, unsigned int jitter) :
+CDMRNetwork::CDMRNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, HW_TYPE hwType, bool jitterEnabled, unsigned int jitter) :
 m_address(),
 m_port(port),
 m_id(NULL),
@@ -44,6 +44,7 @@ m_socket(local),
 m_enabled(false),
 m_slot1(slot1),
 m_slot2(slot2),
+m_jitterEnabled(jitterEnabled),
 m_jitterBuffers(NULL),
 m_hwType(hwType),
 m_status(WAITING_CONNECT),
@@ -498,23 +499,23 @@ void CDMRNetwork::receiveData(const unsigned char* data, unsigned int length)
 	if (slotNo == 2U && !m_slot2)
 		return;
 
-	m_jitterBuffers[slotNo]->appendData(data, length);
-
-	/*
-	unsigned char dataType = data[15U] & 0x3FU;
-	if (dataType == (0x20U | DT_CSBK) ||
-		dataType == (0x20U | DT_DATA_HEADER) ||
-	    dataType == (0x20U | DT_RATE_1_DATA) ||
-		dataType == (0x20U | DT_RATE_34_DATA) ||
-	    dataType == (0x20U | DT_RATE_12_DATA)) {
-		// Data & CSBK frames
-		m_jitterBuffers[slotNo]->appendData(data, length);
+	if (m_jitterEnabled) {
+		unsigned char dataType = data[15U] & 0x3FU;
+		if (dataType == (0x20U | DT_CSBK) ||
+			dataType == (0x20U | DT_DATA_HEADER) ||
+			dataType == (0x20U | DT_RATE_1_DATA) ||
+			dataType == (0x20U | DT_RATE_34_DATA) ||
+			dataType == (0x20U | DT_RATE_12_DATA)) {
+			// Data & CSBK frames
+			m_jitterBuffers[slotNo]->appendData(data, length);
+		} else {
+			// Voice frames
+			unsigned char seqNo = data[4U];
+			m_jitterBuffers[slotNo]->addData(data, length, seqNo);
+		}
 	} else {
-		// Voice frames
-		unsigned char seqNo = data[4U];
-		m_jitterBuffers[slotNo]->addData(data, length, seqNo);
+		m_jitterBuffers[slotNo]->appendData(data, length);
 	}
-	*/
 }
 
 bool CDMRNetwork::writeLogin()
