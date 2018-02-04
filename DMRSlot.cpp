@@ -1540,8 +1540,10 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			m_display->writeDMR(m_slotNo, src, gi, dst, "N");
 		}
     } else if (dataType == DT_RATE_12_DATA || dataType == DT_RATE_34_DATA || dataType == DT_RATE_1_DATA) {
-		if (m_netState != RS_NET_DATA || m_netFrames == 0U)
+		if (m_netState != RS_NET_DATA || m_netFrames == 0U) {
+			writeEndNet();
 			return;
+		}
 
 		// Regenerate the rate 1/2 payload
 		if (dataType == DT_RATE_12_DATA) {
