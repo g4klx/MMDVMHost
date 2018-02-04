@@ -562,6 +562,9 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 		if (m_rfState == RS_RF_AUDIO) {
 			m_rfN = data[1U] & 0x0FU;
 
+			if(m_rfN > 5U)
+				return false;
+
 			unsigned int errors = 0U;
 			unsigned char fid = m_rfLC->getFID();
 			if (fid == FID_ETSI || fid == FID_DMRA) {
@@ -801,6 +804,9 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				writeNetworkRF(start, DT_VOICE_LC_HEADER);
 
 				m_rfN = data[1U] & 0x0FU;
+
+				if(m_rfN > 5U)
+					return false;
 
 				// Regenerate the EMB
 				emb.getData(data + 2U);
