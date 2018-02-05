@@ -263,6 +263,9 @@
     <ClInclude Include="NXDNLayer3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DelayBuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -491,6 +494,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NXDNLayer3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DelayBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

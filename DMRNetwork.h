@@ -20,6 +20,7 @@
 #define	DMRNetwork_H
 
 #include "JitterBuffer.h"
+#include "DelayBuffer.h"
 #include "UDPSocket.h"
 #include "Timer.h"
 #include "DMRData.h"
@@ -72,6 +73,7 @@ private:
 	bool            m_slot2;
 	bool            m_jitterEnabled;
 	CJitterBuffer** m_jitterBuffers;
+	CDelayBuffer**  m_delayBuffers;
 	HW_TYPE         m_hwType;
 
 	enum STATUS {
