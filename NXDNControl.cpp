@@ -175,8 +175,6 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		return false;
 	}
 
-	// XXX Reconstruct invalid LICH
-
 	if (usc == NXDN_LICH_USC_SACCH_NS) {
 		// The SACCH on a non-superblock frame is usually an idle and not interesting apart from the RAN.
 		CNXDNFACCH1 facch;
@@ -200,15 +198,16 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 				m_rfLayer3.reset();
 				return false;
 			}
-		} else {
-			bool hasInfo = layer3.getHasInfo();
-			if (m_rfState == RS_RF_LISTENING && m_selfOnly && hasInfo) {
+		} else if (type == NXDN_MESSAGE_TYPE_VCALL) {
+			if (m_rfState == RS_RF_LISTENING && m_selfOnly) {
 				unsigned short srcId = layer3.getSourceUnitId();
 				if (srcId != m_id) {
 					m_rfState = RS_RF_REJECTED;
 					return false;
 				}
 			}
+		} else {
+			return false;
 		}
 
 		data[0U] = type == NXDN_MESSAGE_TYPE_TX_REL ? TAG_EOT : TAG_DATA;
@@ -299,7 +298,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 				CNXDNLayer3 layer3;
 				layer3.decode(buffer, NXDN_FACCH1_LENGTH_BITS);
 
-				hasInfo = layer3.getHasInfo();
+				hasInfo = layer3.getMessageType() == NXDN_MESSAGE_TYPE_VCALL;
 				if (!hasInfo)
 					return false;
 
@@ -335,8 +334,8 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 				if (m_rfMask != 0x0FU)
 					return false;
 
-				hasInfo = m_rfLayer3.getHasInfo();
-				if (!hasInfo)
+				unsigned char type = m_rfLayer3.getMessageType();
+				if (type != NXDN_MESSAGE_TYPE_VCALL)
 					return false;
 			}
 
@@ -424,10 +423,16 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
 		lich.encode(data + 2U);
 
-		// XXX Regenerate SACCH here
+		// Regenerate SACCH if it's valid
+		CNXDNSACCH sacch;
+		bool validSACCH = sacch.decode(data + 2U);
+		if (validSACCH) {
+			sacch.setRAN(m_ran);
+			sacch.encode(data + 2U);
+		}
 
 		// Regenerate the audio and interpret the FACCH1 data
-		unsigned char voiceMode = m_rfLayer3.getCallOptions() & 0x07U;
+		unsigned char voiceMode = m_rfLayer3.getVoiceMode();
 
 		if (option == NXDN_LICH_STEAL_NONE) {
 			CAMBEFEC ambe;
@@ -530,200 +535,96 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 {
 	CNXDNUDCH udch;
-	bool valid = udch.decode(data + 2U);
-	if (valid) {
+	bool validUDCH = udch.decode(data + 2U);
+	if (m_rfState == RS_RF_LISTENING && !validUDCH)
+		return false;
+
+	if (validUDCH) {
 		unsigned char ran = udch.getRAN();
 		if (ran != m_ran && ran != 0U)
 			return false;
+	}
 
-		data[0U] = TAG_DATA;
-		data[1U] = 0x00U;
+	// The layer3 data will only be correct if valid is true
+	unsigned char buffer[23U];
+	udch.getData(buffer);
 
-		CSync::addNXDNSync(data + 2U);
+	CNXDNLayer3 layer3;
+	layer3.decode(buffer, 184U);
 
-		CNXDNLICH lich;
-		lich.setRFCT(NXDN_LICH_RFCT_RDCH);
-		lich.setFCT(NXDN_LICH_USC_UDCH);
-		lich.setOption(option);
-		lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
-		lich.encode(data + 2U);
+	if (m_rfState == RS_RF_LISTENING) {
+		unsigned char type = layer3.getMessageType();
+		if (type != NXDN_MESSAGE_TYPE_DCALL_HDR)
+			return false;
+
+		unsigned short srcId = layer3.getSourceUnitId();
+		unsigned short dstId = layer3.getDestinationGroupId();
+		bool grp             = layer3.getIsGroup();
+
+		if (m_selfOnly) {
+			if (srcId != m_id)
+				return false;
+		}
+
+		unsigned char frames = layer3.getDataBlocks();
+
+		std::string source = m_lookup->find(srcId);
+
+		m_display->writeNXDN(source.c_str(), grp, dstId, "R");
+		m_display->writeNXDNRSSI(m_rssi);
+
+		LogMessage("NXDN, received RF data header from %s to %s%u, %u blocks", source.c_str(), grp ? "TG " : "", dstId, frames);
+
+		m_rfState = RS_RF_DATA;
+
+#if defined(DUMP_NXDN)
+		openFile();
+#endif
+	}
+
+	if (m_rfState != RS_RF_DATA)
+		return false;
+
+	CSync::addNXDNSync(data + 2U);
+
+	CNXDNLICH lich;
+	lich.setRFCT(NXDN_LICH_RFCT_RDCH);
+	lich.setFCT(NXDN_LICH_USC_UDCH);
+	lich.setOption(option);
+	lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
+	lich.encode(data + 2U);
+
+	if (validUDCH) {
+		unsigned char type = layer3.getMessageType();
+		data[0U] = type == NXDN_MESSAGE_TYPE_TX_REL ? TAG_EOT : TAG_DATA;
 
 		udch.setRAN(m_ran);
 		udch.encode(data + 2U);
-
-		scrambler(data + 2U);
-
-		writeQueueNet(data);
-
-		if (m_duplex)
-			writeQueueRF(data);
-#if defined(DUMP_NXDN)
-		writeFile(data + 2U);
-#endif
-		return true;
+	} else {
+		data[0U] = TAG_DATA;
+		data[1U] = 0x00U;
 	}
 
-#ifdef notdef
-	unsigned char fi = m_lastFICH.getFI();
-	if (valid && fi == YSF_FI_HEADER) {
-		if (m_rfState == RS_RF_LISTENING) {
-			valid = m_rfPayload.processHeaderData(data + 2U);
-			if (!valid)
-				return false;
+	scrambler(data + 2U);
 
-			m_rfSource = m_rfPayload.getSource();
+	writeQueueNet(data);
 
-			if (m_selfOnly) {
-				bool ret = checkCallsign(m_rfSource);
-				if (!ret) {
-					LogMessage("NXDN, invalid access attempt from %10.10s", m_rfSource);
-					m_rfState = RS_RF_REJECTED;
-					return false;
-				}
-			}
-
-			unsigned char cm = m_lastFICH.getCM();
-			if (cm == YSF_CM_GROUP1 || cm == YSF_CM_GROUP2)
-				m_rfDest = (unsigned char*)"ALL       ";
-			else
-				m_rfDest = m_rfPayload.getDest();
-
-			m_rfFrames = 0U;
-			m_rfState = RS_RF_DATA;
-
-			m_minRSSI = m_rssi;
-			m_maxRSSI = m_rssi;
-			m_aveRSSI = m_rssi;
-			m_rssiCount = 1U;
-#if defined(DUMP_NXDN)
-			openFile();
-#endif
-
-			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, "R", "          ");
-			LogMessage("NXDN, received RF header from %10.10s to %10.10s", m_rfSource, m_rfDest);
-
-			CSync::addNXDNSync(data + 2U);
-
-			CYSFFICH fich = m_lastFICH;
-
-			// Remove any DSQ information
-			fich.setSQL(false);
-			fich.setSQ(0U);
-			fich.encode(data + 2U);
-
-			data[0U] = TAG_DATA;
-			data[1U] = 0x00U;
-
-			writeNetwork(data, m_rfFrames);
+	if (m_duplex)
+		writeQueueRF(data);
 
 #if defined(DUMP_NXDN)
-			writeFile(data + 2U);
+	writeFile(data + 2U);
 #endif
 
-			if (m_duplex) {
-				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-				fich.encode(data + 2U);
-				writeQueueRF(data);
-			}
-
-			m_rfFrames++;
-
-			m_display->writeFusionRSSI(m_rssi);
-
-			return true;
-		}
-	} else if (valid && fi == YSF_FI_TERMINATOR) {
-		if (m_rfState == RS_RF_REJECTED) {
-			m_rfPayload.reset();
-			m_rfSource = NULL;
-			m_rfDest   = NULL;
-			m_rfState  = RS_RF_LISTENING;
-		} else if (m_rfState == RS_RF_DATA) {
-			m_rfPayload.processHeaderData(data + 2U);
-
-			CSync::addNXDNSync(data + 2U);
-
-			CYSFFICH fich = m_lastFICH;
-
-			// Remove any DSQ information
-			fich.setSQL(false);
-			fich.setSQ(0U);
-			fich.encode(data + 2U);
-
-			data[0U] = TAG_EOT;
-			data[1U] = 0x00U;
-
-			writeNetwork(data, m_rfFrames);
-
-#if defined(DUMP_NXDN)
-			writeFile(data + 2U);
-#endif
-
-			if (m_duplex) {
-				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-				fich.encode(data + 2U);
-				writeQueueRF(data);
-			}
-
-			m_rfFrames++;
-
-			if (m_rssi != 0U)
-				LogMessage("NXDN, received RF end of transmission, %.1f seconds, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 10.0F, m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-			else
-				LogMessage("NXDN, received RF end of transmission, %.1f seconds", float(m_rfFrames) / 10.0F);
-
+	if (validUDCH) {
+		unsigned char type = layer3.getMessageType();
+		if (type == NXDN_MESSAGE_TYPE_TX_REL) {
+			LogMessage("NXDN, ended RF data transmission");
 			writeEndRF();
 		}
-	} else {
-		if (m_rfState == RS_RF_DATA) {
-			// If valid is false, update the m_lastFICH for this transmission
-			if (!valid) {
-				unsigned char ft = m_lastFICH.getFT();
-				unsigned char fn = m_lastFICH.getFN() + 1U;
-
-				if (fn > ft)
-					fn = 0U;
-
-				m_lastFICH.setFN(fn);
-			}
-
-			CSync::addNXDNSync(data + 2U);
-
-			unsigned char fn = m_lastFICH.getFN();
-
-			m_rfPayload.processDataFRModeData(data + 2U, fn);
-
-			CYSFFICH fich = m_lastFICH;
-
-			// Remove any DSQ information
-			fich.setSQL(false);
-			fich.setSQ(0U);
-			fich.encode(data + 2U);
-
-			data[0U] = TAG_DATA;
-			data[1U] = 0x00U;
-
-			writeNetwork(data, m_rfFrames);
-
-			if (m_duplex) {
-				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-				fich.encode(data + 2U);
-				writeQueueRF(data);
-			}
-
-#if defined(DUMP_NXDN)
-			writeFile(data + 2U);
-#endif
-
-			m_rfFrames++;
-
-			m_display->writeFusionRSSI(m_rssi);
-
-			return true;
-		}
 	}
-#endif
-	return false;
+
+	return true;
 }
 
 unsigned int CNXDNControl::readModem(unsigned char* data)
@@ -776,10 +677,9 @@ void CNXDNControl::writeEndNet()
 		m_network->reset();
 }
 
-#ifdef notdef
-
 void CNXDNControl::writeNetwork()
 {
+#ifdef notdef
 	unsigned char data[200U];
 	unsigned int length = m_network->read(data);
 	if (length == 0U)
@@ -789,132 +689,13 @@ void CNXDNControl::writeNetwork()
 		return;
 
 	m_networkWatchdog.start();
-
-	unsigned char n = (data[5U] & 0xFEU) >> 1;
-	bool end = (data[5U] & 0x01U) == 0x01U;
-
-	if (!m_netTimeoutTimer.isRunning()) {
-		if (end)
-			return;
-
-		m_display->writeFusion((char*)m_netSource, (char*)m_netDest, "N", (char*)(data + 4U));
-		LogMessage("NXDN, received network data from %10.10s to %10.10s at %10.10s", m_netSource, m_netDest, data + 4U);
-
-		m_netTimeoutTimer.start();
-		m_packetTimer.start();
-		m_elapsed.start();
-		m_netState  = RS_NET_AUDIO;
-		m_netFrames = 0U;
-		m_netLost   = 0U;
-		m_netErrs   = 0U;
-		m_netBits   = 1U;
-		m_netN      = 0U;
-	} else {
-		// Check for duplicate frames, if we can
-		if (m_netN == n)
-			return;
-
-		bool changed = false;
-
-		if (::memcmp(data + 14U, "          ", YSF_CALLSIGN_LENGTH) != 0 && ::memcmp(m_netSource, "??????????", YSF_CALLSIGN_LENGTH) == 0) {
-			::memcpy(m_netSource, data + 14U, YSF_CALLSIGN_LENGTH);
-			changed = true;
-		}
-
-		if (::memcmp(data + 24U, "          ", YSF_CALLSIGN_LENGTH) != 0 && ::memcmp(m_netDest, "??????????", YSF_CALLSIGN_LENGTH) == 0) {
-			::memcpy(m_netDest, data + 24U, YSF_CALLSIGN_LENGTH);
-			changed = true;
-		}
-
-		if (changed) {
-			m_display->writeFusion((char*)m_netSource, (char*)m_netDest, "N", (char*)(data + 4U));
-			LogMessage("YSF, received network data from %10.10s to %10.10s at %10.10s", m_netSource, m_netDest, data + 4U);
-		}
-	}
-
-	data[33U] = end ? TAG_EOT : TAG_DATA;
-	data[34U] = 0x00U;
-
-	CYSFFICH fich;
-	bool valid = fich.decode(data + 35U);
-	if (valid) {
-		unsigned char dt = fich.getDT();
-		unsigned char fn = fich.getFN();
-		unsigned char ft = fich.getFT();
-		unsigned char fi = fich.getFI();
-
-		fich.setVoIP(true);
-		fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
-		fich.encode(data + 35U);
-
-		// Set the downlink callsign
-		switch (fi) {
-		case YSF_FI_HEADER:
-		case YSF_FI_TERMINATOR:
-			m_netPayload.processHeaderData(data + 35U);
-			break;
-
-		case YSF_FI_COMMUNICATIONS:
-			switch (dt) {
-			case YSF_DT_VD_MODE1: {
-					m_netPayload.processVDMode1Data(data + 35U, fn, gateway);
-					unsigned int errors = m_netPayload.processVDMode1Audio(data + 35U);
-					m_netErrs += errors;
-					m_netBits += 235U;
-				}
-				break;
-
-			case YSF_DT_VD_MODE2: {
-					m_netPayload.processVDMode2Data(data + 35U, fn, gateway);
-					unsigned int errors = m_netPayload.processVDMode2Audio(data + 35U);
-					m_netErrs += errors;
-					m_netBits += 135U;
-				}
-				break;
-
-			case YSF_DT_DATA_FR_MODE:
-				m_netPayload.processDataFRModeData(data + 35U, fn, gateway);
-				break;
-
-			case YSF_DT_VOICE_FR_MODE:
-				if (fn != 0U || ft != 1U) {
-					// The first packet after the header is odd, don't try and regenerate it
-					unsigned int errors = m_netPayload.processVoiceFRModeAudio(data + 35U);
-					m_netErrs += errors;
-					m_netBits += 720U;
-				}
-				break;
-
-			default:
-				break;
-			}
-			break;
-
-		default:
-			break;
-		}
-	}
-
-	writeQueueNet(data + 33U);
-
-	m_packetTimer.start();
-	m_netFrames++;
-	m_netN = n;
-
-	if (end) {
-		LogMessage("NXDN, received network end of transmission, %.1f seconds, %u%% packet loss, BER: %.1f%%", float(m_netFrames) / 10.0F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
-		writeEndNet();
-	}
-}
-
 #endif
+}
 
 void CNXDNControl::clock(unsigned int ms)
 {
-#ifdef notdef
 	if (m_network != NULL)
 		writeNetwork();
-#endif
 
 	m_rfTimeoutTimer.clock(ms);
 	m_netTimeoutTimer.clock(ms);

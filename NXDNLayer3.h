@@ -33,8 +33,8 @@ public:
 	unsigned short getSourceUnitId() const;
 	unsigned short getDestinationGroupId() const;
 	bool           getIsGroup() const;
-	unsigned char  getCallOptions() const;
-	bool           getHasInfo() const;
+	unsigned char  getVoiceMode() const;
+	unsigned char  getDataBlocks() const;
 
 	void           getData(unsigned char* data) const;
 

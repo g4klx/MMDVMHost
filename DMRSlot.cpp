@@ -562,6 +562,9 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 		if (m_rfState == RS_RF_AUDIO) {
 			m_rfN = data[1U] & 0x0FU;
 
+			if(m_rfN > 5U)
+				return false;
+
 			unsigned int errors = 0U;
 			unsigned char fid = m_rfLC->getFID();
 			if (fid == FID_ETSI || fid == FID_DMRA) {
@@ -801,6 +804,9 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				writeNetworkRF(start, DT_VOICE_LC_HEADER);
 
 				m_rfN = data[1U] & 0x0FU;
+
+				if(m_rfN > 5U)
+					return false;
 
 				// Regenerate the EMB
 				emb.getData(data + 2U);
@@ -1540,8 +1546,10 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			m_display->writeDMR(m_slotNo, src, gi, dst, "N");
 		}
     } else if (dataType == DT_RATE_12_DATA || dataType == DT_RATE_34_DATA || dataType == DT_RATE_1_DATA) {
-		if (m_netState != RS_NET_DATA || m_netFrames == 0U)
+		if (m_netState != RS_NET_DATA || m_netFrames == 0U) {
+			writeEndNet();
 			return;
+		}
 
 		// Regenerate the rate 1/2 payload
 		if (dataType == DT_RATE_12_DATA) {
