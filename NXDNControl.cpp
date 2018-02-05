@@ -601,9 +601,6 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 	if (m_rfState != RS_RF_DATA)
 		return false;
 
-	data[0U] = TAG_DATA;
-	data[1U] = 0x00U;
-
 	CSync::addNXDNSync(data + 2U);
 
 	CNXDNLICH lich;
@@ -614,8 +611,14 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 	lich.encode(data + 2U);
 
 	if (validUDCH) {
+		unsigned char type = layer3.getMessageType();
+		data[0U] = type == NXDN_MESSAGE_TYPE_TX_REL ? TAG_EOT : TAG_DATA;
+
 		udch.setRAN(m_ran);
 		udch.encode(data + 2U);
+	} else {
+		data[0U] = TAG_DATA;
+		data[1U] = 0x00U;
 	}
 
 	scrambler(data + 2U);
