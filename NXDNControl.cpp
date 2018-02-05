@@ -158,37 +158,21 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 	if (usc == NXDN_LICH_USC_UDCH)
 		ret = processData(option, data);
 	else
-		ret = processVoice(valid, usc, option, data);
+		ret = processVoice(usc, option, data);
 
 	return ret;
 }
 
-bool CNXDNControl::processVoice(bool validLICH, unsigned char usc, unsigned char option, unsigned char *data)
+bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigned char *data)
 {
 	CNXDNSACCH sacch;
-	bool validSACCH = sacch.decode(data + 2U);
-	if (validSACCH) {
+	bool valid = sacch.decode(data + 2U);
+	if (valid) {
 		unsigned char ran = sacch.getRAN();
 		if (ran != m_ran && ran != 0U)
 			return false;
 	} else if (m_rfState == RS_RF_LISTENING) {
 		return false;
-	}
-
-	// Reconstruct invalid LICH
-	if (!validLICH) {
-		if (usc == NXDN_LICH_USC_SACCH_NS) {
-			option = NXDN_LICH_STEAL_NONE;
-			usc    = NXDN_LICH_USC_SACCH_SS;
-		} else {
-			if (option == NXDN_LICH_STEAL_FACCH)
-				option = NXDN_LICH_STEAL_NONE;
-			else if (option == NXDN_LICH_STEAL_NONE)
-				option = NXDN_LICH_STEAL_FACCH;
-		}
-
-		m_rfLastLICH.setFCT(usc);
-		m_rfLastLICH.setOption(option);
 	}
 
 	if (usc == NXDN_LICH_USC_SACCH_NS) {

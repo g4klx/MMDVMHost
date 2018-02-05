@@ -81,7 +81,7 @@ private:
 	unsigned int               m_rssiCount;
 	FILE*                      m_fp;
 
-	bool processVoice(bool validLICH, unsigned char usc, unsigned char option, unsigned char *data);
+	bool processVoice(unsigned char usc, unsigned char option, unsigned char *data);
 	bool processData(unsigned char option, unsigned char *data);
 
 	void writeQueueRF(const unsigned char* data);
