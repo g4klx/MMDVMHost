@@ -87,9 +87,9 @@ bool CNXDNLayer3::getIsGroup() const
 	return (m_data[2U] & 0x80U) != 0x80U;
 }
 
-unsigned char CNXDNLayer3::getCallOptions() const
+unsigned char CNXDNLayer3::getVoiceMode() const
 {
-	return m_data[2U] & 0x1FU;
+	return m_data[2U] & 0x07U;
 }
 
 unsigned char CNXDNLayer3::getDataBlocks() const

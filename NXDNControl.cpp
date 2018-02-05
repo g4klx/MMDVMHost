@@ -158,16 +158,16 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 	if (usc == NXDN_LICH_USC_UDCH)
 		ret = processData(option, data);
 	else
-		ret = processVoice(usc, option, data);
+		ret = processVoice(valid, usc, option, data);
 
 	return ret;
 }
 
-bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigned char *data)
+bool CNXDNControl::processVoice(bool validLICH, unsigned char usc, unsigned char option, unsigned char *data)
 {
 	CNXDNSACCH sacch;
-	bool valid = sacch.decode(data + 2U);
-	if (valid) {
+	bool validSACCH = sacch.decode(data + 2U);
+	if (validSACCH) {
 		unsigned char ran = sacch.getRAN();
 		if (ran != m_ran && ran != 0U)
 			return false;
@@ -175,7 +175,21 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		return false;
 	}
 
-	// XXX Reconstruct invalid LICH
+	// Reconstruct invalid LICH
+	if (!validLICH) {
+		if (usc == NXDN_LICH_USC_SACCH_NS) {
+			option = NXDN_LICH_STEAL_NONE;
+			usc    = NXDN_LICH_USC_SACCH_SS;
+		} else {
+			if (option == NXDN_LICH_STEAL_FACCH)
+				option = NXDN_LICH_STEAL_NONE;
+			else if (option == NXDN_LICH_STEAL_NONE)
+				option = NXDN_LICH_STEAL_FACCH;
+		}
+
+		m_rfLastLICH.setFCT(usc);
+		m_rfLastLICH.setOption(option);
+	}
 
 	if (usc == NXDN_LICH_USC_SACCH_NS) {
 		// The SACCH on a non-superblock frame is usually an idle and not interesting apart from the RAN.
@@ -425,10 +439,16 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
 		lich.encode(data + 2U);
 
-		// XXX Regenerate SACCH here
+		// Regenerate SACCH if it's valid
+		CNXDNSACCH sacch;
+		bool validSACCH = sacch.decode(data + 2U);
+		if (validSACCH) {
+			sacch.setRAN(m_ran);
+			sacch.encode(data + 2U);
+		}
 
 		// Regenerate the audio and interpret the FACCH1 data
-		unsigned char voiceMode = m_rfLayer3.getCallOptions() & 0x07U;
+		unsigned char voiceMode = m_rfLayer3.getVoiceMode();
 
 		if (option == NXDN_LICH_STEAL_NONE) {
 			CAMBEFEC ambe;
@@ -531,11 +551,11 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 {
 	CNXDNUDCH udch;
-	bool valid = udch.decode(data + 2U);
-	if (m_rfState == RS_RF_LISTENING && !valid)
+	bool validUDCH = udch.decode(data + 2U);
+	if (m_rfState == RS_RF_LISTENING && !validUDCH)
 		return false;
 
-	if (valid) {
+	if (validUDCH) {
 		unsigned char ran = udch.getRAN();
 		if (ran != m_ran && ran != 0U)
 			return false;
@@ -593,7 +613,7 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 	lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
 	lich.encode(data + 2U);
 
-	if (valid) {
+	if (validUDCH) {
 		udch.setRAN(m_ran);
 		udch.encode(data + 2U);
 	}
@@ -609,7 +629,7 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 	writeFile(data + 2U);
 #endif
 
-	if (valid) {
+	if (validUDCH) {
 		unsigned char type = layer3.getMessageType();
 		if (type == NXDN_MESSAGE_TYPE_TX_REL) {
 			LogMessage("NXDN, ended RF data transmission");
