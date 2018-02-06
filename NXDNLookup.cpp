@@ -137,10 +137,12 @@ bool CNXDNLookup::load()
 
 		if (p1 != NULL && p2 != NULL) {
 			unsigned int id = (unsigned int)::atoi(p1);
-			for (char* p = p2; *p != 0x00U; p++)
-				*p = ::toupper(*p);
+			if (id > 0U) {
+				for (char* p = p2; *p != 0x00U; p++)
+					*p = ::toupper(*p);
 
-			m_table[id] = std::string(p2);
+				m_table[id] = std::string(p2);
+			}
 		}
 	}
 
