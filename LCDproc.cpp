@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016, 2017 by Tony Corbett G0WFV
+ *   Copyright (C) 2016, 2017, 2018 by Tony Corbett G0WFV
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -453,7 +453,7 @@ void CLCDproc::clearP25Int()
 {
 	m_clockDisplayTimer.stop();           // Stop the clock display
 
-	socketPrintf(m_socketfd, "widget_set P25 Line3 1 2 15 2 h 3 Listening");
+	socketPrintf(m_socketfd, "widget_set P25 Line2 1 2 15 2 h 3 Listening");
 	socketPrintf(m_socketfd, "widget_set P25 Line3 1 3 15 3 h 3 \"\"");
 	socketPrintf(m_socketfd, "widget_set P25 Line4 1 4 15 4 h 3 \"\"");
 	socketPrintf(m_socketfd, "output 2"); // Set LED2 color green

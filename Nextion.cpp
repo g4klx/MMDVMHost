@@ -209,7 +209,7 @@ void CNextion::writeDStarRSSIInt(unsigned char rssi)
 	m_rssiCount1++;
 
 	if (m_rssiCount1 == DSTAR_RSSI_COUNT) {
-		char text[20U];
+		char text[25U];
 		::sprintf(text, "t3.txt=\"-%udBm\"", m_rssiAccum1 / DSTAR_RSSI_COUNT);
 		sendCommand(text);
 		sendCommandAction(47U);
@@ -224,7 +224,7 @@ void CNextion::writeDStarBERInt(float ber)
 	m_berCount1++;
 
 	if (m_berCount1 == DSTAR_BER_COUNT) {
-		char text[20U];
+		char text[25U];
 		::sprintf(text, "t4.txt=\"%.1f%%\"", m_berAccum1 / float(DSTAR_BER_COUNT));
 		sendCommand(text);
 		sendCommandAction(48U);
@@ -325,7 +325,7 @@ void CNextion::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
 		m_rssiCount1++;
     
 		if (m_rssiCount1 == DMR_RSSI_COUNT) {
-			char text[20U];
+			char text[25U];
 			::sprintf(text, "t4.txt=\"-%udBm\"", m_rssiAccum1 / DMR_RSSI_COUNT);
 			sendCommand(text);
 			sendCommandAction(66U);
@@ -337,7 +337,7 @@ void CNextion::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
 		m_rssiCount2++;
 
 		if (m_rssiCount2 == DMR_RSSI_COUNT) {
-			char text[20U];
+			char text[25U];
 			::sprintf(text, "t5.txt=\"-%udBm\"", m_rssiAccum2 / DMR_RSSI_COUNT);
 			sendCommand(text);
 			sendCommandAction(74U);
@@ -407,7 +407,7 @@ void CNextion::writeDMRBERInt(unsigned int slotNo, float ber)
 		m_berCount1++;
 
 		if (m_berCount1 == DMR_BER_COUNT) {
-			char text[20U];
+			char text[25U];
 			::sprintf(text, "t6.txt=\"%.1f%%\"", m_berAccum1 / DMR_BER_COUNT);
 			sendCommand(text);
 			sendCommandAction(67U);
@@ -419,7 +419,7 @@ void CNextion::writeDMRBERInt(unsigned int slotNo, float ber)
 		m_berCount2++;
 
 		if (m_berCount2 == DMR_BER_COUNT) {
-			char text[20U];
+			char text[25U];
 			::sprintf(text, "t7.txt=\"%.1f%%\"", m_berAccum2 / DMR_BER_COUNT);
 			sendCommand(text);
 			sendCommandAction(75U);
@@ -503,7 +503,7 @@ void CNextion::writeFusionRSSIInt(unsigned char rssi)
 	m_rssiCount1++;
 
 	if (m_rssiCount1 == YSF_RSSI_COUNT) {
-		char text[20U];
+		char text[25U];
 		::sprintf(text, "t3.txt=\"-%udBm\"", m_rssiAccum1 / YSF_RSSI_COUNT);
 		sendCommand(text);
 		sendCommandAction(85U);
@@ -518,7 +518,7 @@ void CNextion::writeFusionBERInt(float ber)
 	m_berCount1++;
 
 	if (m_berCount1 == YSF_BER_COUNT) {
-		char text[20U];
+		char text[25U];
 		::sprintf(text, "t4.txt=\"%.1f%%\"", m_berAccum1 / float(YSF_BER_COUNT));
 		sendCommand(text);
 		sendCommandAction(86U);
@@ -574,7 +574,7 @@ void CNextion::writeP25RSSIInt(unsigned char rssi)
 	m_rssiCount1++;
 
 	if (m_rssiCount1 == P25_RSSI_COUNT) {
-		char text[20U];
+		char text[25U];
 		::sprintf(text, "t2.txt=\"-%udBm\"", m_rssiAccum1 / P25_RSSI_COUNT);
 		sendCommand(text);
 		sendCommandAction(104U);
@@ -589,7 +589,7 @@ void CNextion::writeP25BERInt(float ber)
 	m_berCount1++;
 
 	if (m_berCount1 == P25_BER_COUNT) {
-		char text[20U];
+		char text[25U];
 		::sprintf(text, "t3.txt=\"%.1f%%\"", m_berAccum1 / float(P25_BER_COUNT));
 		sendCommand(text);
 		sendCommandAction(105U);
