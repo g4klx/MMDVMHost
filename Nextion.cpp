@@ -326,7 +326,7 @@ void CNextion::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
     
 		if (m_rssiCount1 == DMR_RSSI_COUNT) {
 			char text[20U];
-			::sprintf(text, "t4.txt=\"-%udBm\"", m_rssiAccum1 / DMR_RSSI_COUNT);
+			::sprintf(text, "t4.txt=\"-%udBm\"", m_rssiAccum1 / (DMR_RSSI_COUNT-1));
 			sendCommand(text);
 			sendCommandAction(66U);
 			m_rssiAccum1 = 0U;
@@ -338,7 +338,7 @@ void CNextion::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
 
 		if (m_rssiCount2 == DMR_RSSI_COUNT) {
 			char text[20U];
-			::sprintf(text, "t5.txt=\"-%udBm\"", m_rssiAccum2 / DMR_RSSI_COUNT);
+			::sprintf(text, "t5.txt=\"-%udBm\"", m_rssiAccum2 / (DMR_RSSI_COUNT-1));
 			sendCommand(text);
 			sendCommandAction(74U);
 			m_rssiAccum2 = 0U;
