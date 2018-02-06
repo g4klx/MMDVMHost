@@ -59,7 +59,7 @@ bool CNXDNNetwork::open()
 	return m_socket.open();
 }
 
-bool CNXDNNetwork::write(const unsigned char* data, unsigned short src, bool grp, unsigned short dst, bool dat, unsigned char cnt, bool end)
+bool CNXDNNetwork::write(const unsigned char* data, unsigned short src, bool grp, unsigned short dst, bool dat, bool efr, unsigned char cnt, bool end)
 {
 	assert(data != NULL);
 
@@ -77,6 +77,7 @@ bool CNXDNNetwork::write(const unsigned char* data, unsigned short src, bool grp
 	buffer[7U]  = grp ? 0x01U : 0x00U;
 	buffer[7U] |= dat ? 0x02U : 0x00U;
 	buffer[7U] |= end ? 0x04U : 0x00U;
+	buffer[7U] |= efr ? 0x08U : 0x00U;
 
 	buffer[8U] = (dst >> 8) & 0xFFU;
 	buffer[9U] = (dst >> 8) & 0xFFU;
@@ -149,7 +150,7 @@ void CNXDNNetwork::clock(unsigned int ms)
 	m_buffer.addData(buffer, 59U);
 }
 
-unsigned int CNXDNNetwork::read(unsigned char* data, unsigned short& src, bool& grp, unsigned short& dst, bool& dat, unsigned char& cnt, bool& end)
+unsigned int CNXDNNetwork::read(unsigned char* data, unsigned short& src, bool& grp, unsigned short& dst, bool& dat, bool& efr, unsigned char& cnt, bool& end)
 {
 	assert(data != NULL);
 
@@ -163,6 +164,7 @@ unsigned int CNXDNNetwork::read(unsigned char* data, unsigned short& src, bool& 
 	grp = (buffer[7U] & 0x01U) == 0x01U;
 	dat = (buffer[7U] & 0x02U) == 0x02U;
 	end = (buffer[7U] & 0x04U) == 0x04U;
+	efr = (buffer[7U] & 0x08U) == 0x08U;
 	dst = (buffer[8U] << 8) + buffer[9U];
 
 	cnt = buffer[10U];
