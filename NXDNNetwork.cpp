@@ -32,11 +32,14 @@ CNXDNNetwork::CNXDNNetwork(const std::string& myAddress, unsigned int myPort, co
 m_socket(myAddress, myPort),
 m_address(),
 m_port(gatewayPort),
+m_callsign(callsign),
 m_debug(debug),
 m_enabled(false),
 m_buffer(1000U, "NXDN Network"),
 m_pollTimer(1000U, 5U)
 {
+	m_callsign.resize(10U, ' ');
+
 	m_address = CUDPSocket::lookup(gatewayAddress);
 }
 
@@ -56,7 +59,7 @@ bool CNXDNNetwork::open()
 	return m_socket.open();
 }
 
-bool CNXDNNetwork::write(const unsigned char* data, unsigned short src, bool grp, unsigned short dst, unsigned char cnt, bool end)
+bool CNXDNNetwork::write(const unsigned char* data, unsigned short src, bool grp, unsigned short dst, bool dat, unsigned char cnt, bool end)
 {
 	assert(data != NULL);
 
@@ -72,7 +75,8 @@ bool CNXDNNetwork::write(const unsigned char* data, unsigned short src, bool grp
 	buffer[6U] = (src >> 8) & 0xFFU;
 
 	buffer[7U]  = grp ? 0x01U : 0x00U;
-	buffer[7U] |= end ? 0x80U : 0x00U;
+	buffer[7U] |= dat ? 0x02U : 0x00U;
+	buffer[7U] |= end ? 0x04U : 0x00U;
 
 	buffer[8U] = (dst >> 8) & 0xFFU;
 	buffer[9U] = (dst >> 8) & 0xFFU;
@@ -97,10 +101,13 @@ bool CNXDNNetwork::writePoll()
 	buffer[3U] = 'N';
 	buffer[4U] = 'P';
 
-	if (m_debug)
-		CUtils::dump(1U, "NXDN Network Poll Sent", buffer, 5U);
+	for (unsigned int i = 0U; i < 10U; i++)
+		buffer[5U + i] = m_callsign.at(i);
 
-	return m_socket.write(buffer, 5U, m_address, m_port);
+	if (m_debug)
+		CUtils::dump(1U, "NXDN Network Poll Sent", buffer, 15U);
+
+	return m_socket.write(buffer, 15U, m_address, m_port);
 }
 
 void CNXDNNetwork::clock(unsigned int ms)
@@ -142,7 +149,7 @@ void CNXDNNetwork::clock(unsigned int ms)
 	m_buffer.addData(buffer, 59U);
 }
 
-unsigned int CNXDNNetwork::read(unsigned char* data, unsigned short& src, bool& grp, unsigned short& dst, unsigned char& cnt, bool& end)
+unsigned int CNXDNNetwork::read(unsigned char* data, unsigned short& src, bool& grp, unsigned short& dst, bool& dat, unsigned char& cnt, bool& end)
 {
 	assert(data != NULL);
 
@@ -154,7 +161,8 @@ unsigned int CNXDNNetwork::read(unsigned char* data, unsigned short& src, bool& 
 
 	src = (buffer[5U] << 8) + buffer[6U];
 	grp = (buffer[7U] & 0x01U) == 0x01U;
-	end = (buffer[7U] & 0x80U) == 0x80U;
+	dat = (buffer[7U] & 0x02U) == 0x02U;
+	end = (buffer[7U] & 0x04U) == 0x04U;
 	dst = (buffer[8U] << 8) + buffer[9U];
 
 	cnt = buffer[10U];

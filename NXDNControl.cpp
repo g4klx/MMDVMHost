@@ -230,7 +230,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 		scrambler(data + 2U);
 
-		// writeNetwork(data, m_rfFrames, );
+		writeNetwork(data, false);
 
 #if defined(DUMP_NXDN)
 		writeFile(data + 2U);
@@ -401,7 +401,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 			scrambler(start + 2U);
 
-			// writeNetwork(start, m_rfFrames, );
+			writeNetwork(start, false);
 
 #if defined(DUMP_NXDN)
 			writeFile(start + 2U);
@@ -515,7 +515,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 		scrambler(data + 2U);
 
-		// writeNetwork(data, m_rfFrames, );
+		writeNetwork(data, false);
 
 #if defined(DUMP_NXDN)
 		writeFile(data + 2U);
@@ -575,6 +575,9 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 
 		LogMessage("NXDN, received RF data header from %s to %s%u, %u blocks", source.c_str(), grp ? "TG " : "", dstId, frames);
 
+		m_rfLayer3 = layer3;
+		m_rfFrames = 0U;
+
 		m_rfState = RS_RF_DATA;
 
 #if defined(DUMP_NXDN)
@@ -607,21 +610,20 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 
 	scrambler(data + 2U);
 
-	writeQueueNet(data);
+	writeNetwork(data, true);
 
 	if (m_duplex)
 		writeQueueRF(data);
+
+	m_rfFrames++;
 
 #if defined(DUMP_NXDN)
 	writeFile(data + 2U);
 #endif
 
-	if (validUDCH) {
-		unsigned char type = layer3.getMessageType();
-		if (type == NXDN_MESSAGE_TYPE_TX_REL) {
-			LogMessage("NXDN, ended RF data transmission");
-			writeEndRF();
-		}
+	if (data[0U] == TAG_EOT) {
+		LogMessage("NXDN, ended RF data transmission");
+		writeEndRF();
 	}
 
 	return true;
@@ -753,7 +755,7 @@ void CNXDNControl::writeQueueNet(const unsigned char *data)
 	m_queue.addData(data, len);
 }
 
-void CNXDNControl::writeNetwork(const unsigned char *data, unsigned int count, bool end)
+void CNXDNControl::writeNetwork(const unsigned char *data, bool dat)
 {
 	assert(data != NULL);
 
@@ -767,7 +769,9 @@ void CNXDNControl::writeNetwork(const unsigned char *data, unsigned int count, b
 	unsigned short dstId = m_rfLayer3.getDestinationGroupId();
 	bool grp             = m_rfLayer3.getIsGroup();
 
-	m_network->write(data + 2U, srcId, grp, dstId, count % 256U, end);
+	bool end = data[0U] == TAG_EOT;
+
+	m_network->write(data + 2U, srcId, grp, dstId, dat, m_rfFrames, end);
 }
 
 void CNXDNControl::scrambler(unsigned char* data) const
