@@ -91,9 +91,9 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 
 	if (type == TAG_LOST && m_rfState == RS_RF_AUDIO) {
 		if (m_rssi != 0U)
-			LogMessage("NXDN, transmission lost, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			LogMessage("NXDN, transmission lost, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 		else
-			LogMessage("NXDN, transmission lost, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+			LogMessage("NXDN, transmission lost, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits));
 		writeEndRF();
 		return false;
 	}
@@ -241,9 +241,9 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		if (data[0U] == TAG_EOT) {
 			m_rfFrames++;
 			if (m_rssi != 0U)
-				LogMessage("NXDN, received RF end of transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				LogMessage("NXDN, received RF end of transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			else
-				LogMessage("NXDN, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+				LogMessage("NXDN, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits));
 			writeEndRF();
 		} else {
 			m_rfFrames  = 0U;
@@ -813,7 +813,7 @@ void CNXDNControl::writeNetwork()
 		writeQueueNet(data);
 
 		if (end) {
-			LogMessage("NXDN, received network end of transmission, %.1f seconds, %u%% packet loss, BER: %.1f%%", float(m_netFrames) / 25.0F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
+			LogMessage("NXDN, received network end of transmission, %.1f seconds, %u%% packet loss, BER: %.1f%%", float(m_netFrames) / 12.5F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
 			writeEndNet();
 		}
 	}
@@ -831,7 +831,7 @@ void CNXDNControl::clock(unsigned int ms)
 		m_networkWatchdog.clock(ms);
 
 		if (m_networkWatchdog.hasExpired()) {
-			LogMessage("NXDN, network watchdog has expired, %.1f seconds, %u%% packet loss, BER: %.1f%%", float(m_netFrames) / 10.0F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
+			LogMessage("NXDN, network watchdog has expired, %.1f seconds, %u%% packet loss, BER: %.1f%%", float(m_netFrames) / 12.5F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
 			writeEndNet();
 		}
 	}
