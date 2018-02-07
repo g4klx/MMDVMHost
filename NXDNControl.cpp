@@ -432,28 +432,17 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		}
 
 		// Regenerate the audio and interpret the FACCH1 data
-		unsigned char voiceMode = m_rfLayer3.getVoiceMode();
-
 		if (option == NXDN_LICH_STEAL_NONE) {
 			CAMBEFEC ambe;
 			unsigned int errors = 0U;
-			if (voiceMode == NXDN_VOICE_CALL_OPTION_9600_EFR) {
-				errors += ambe.regenerateIMBE(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
-				errors += ambe.regenerateIMBE(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
-				m_rfErrs += errors;
-				m_rfBits += 288U;
-				m_display->writeNXDNBER(float(errors) / 2.88F);
-				LogDebug("NXDN, EFR, AMBE FEC %u/288 (%.1f%%)", errors, float(errors) / 2.88F);
-			} else {
-				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
-				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
-				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
-				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
-				m_rfErrs += errors;
-				m_rfBits += 188U;
-				m_display->writeNXDNBER(float(errors) / 1.88F);
-				LogDebug("NXDN, EHR, AMBE FEC %u/188 (%.1f%%)", errors, float(errors) / 1.88F);
-			}
+			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
+			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
+			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
+			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
+			m_rfErrs += errors;
+			m_rfBits += 188U;
+			m_display->writeNXDNBER(float(errors) / 1.88F);
+			LogDebug("NXDN, AMBE FEC %u/188 (%.1f%%)", errors, float(errors) / 1.88F);
 		} else if (option == NXDN_LICH_STEAL_FACCH1_1) {
 			CNXDNFACCH1 facch1;
 			bool valid = facch1.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
@@ -462,37 +451,21 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 			CAMBEFEC ambe;
 			unsigned int errors = 0U;
-			if (voiceMode == NXDN_VOICE_CALL_OPTION_9600_EFR) {
-				errors += ambe.regenerateIMBE(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
-				m_rfErrs += errors;
-				m_rfBits += 144U;
-				m_display->writeNXDNBER(float(errors) / 1.44F);
-				LogDebug("NXDN, EFR, AMBE FEC %u/144 (%.1f%%)", errors, float(errors) / 1.44F);
-			} else {
-				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
-				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
-				m_rfErrs += errors;
-				m_rfBits += 94U;
-				m_display->writeNXDNBER(float(errors) / 0.94F);
-				LogDebug("NXDN, EHR, AMBE FEC %u/94 (%.1f%%)", errors, float(errors) / 0.94F);
-			}
+			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
+			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
+			m_rfErrs += errors;
+			m_rfBits += 94U;
+			m_display->writeNXDNBER(float(errors) / 0.94F);
+			LogDebug("NXDN, AMBE FEC %u/94 (%.1f%%)", errors, float(errors) / 0.94F);
 		} else if (option == NXDN_LICH_STEAL_FACCH1_2) {
 			CAMBEFEC ambe;
 			unsigned int errors = 0U;
-			if (voiceMode == NXDN_VOICE_CALL_OPTION_9600_EFR) {
-				errors += ambe.regenerateIMBE(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
-				m_rfErrs += errors;
-				m_rfBits += 144U;
-				m_display->writeNXDNBER(float(errors) / 1.44F);
-				LogDebug("NXDN, EFR, AMBE FEC %u/144 (%.1f%%)", errors, float(errors) / 1.44F);
-			} else {
-				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
-				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
-				m_rfErrs += errors;
-				m_rfBits += 94U;
-				m_display->writeNXDNBER(float(errors) / 0.94F);
-				LogDebug("NXDN, EHR, AMBE FEC %u/94 (%.1f%%)", errors, float(errors) / 0.94F);
-			}
+			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
+			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
+			m_rfErrs += errors;
+			m_rfBits += 94U;
+			m_display->writeNXDNBER(float(errors) / 0.94F);
+			LogDebug("NXDN, AMBE FEC %u/94 (%.1f%%)", errors, float(errors) / 0.94F);
 
 			CNXDNFACCH1 facch1;
 			bool valid = facch1.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
@@ -686,10 +659,9 @@ void CNXDNControl::writeNetwork()
 	unsigned char count = 0U;
 	bool grp = false;
 	bool dat = false;
-	bool efr = false;
 	bool end = false;
 	unsigned char data[200U];
-	unsigned int length = m_network->read(data + 2U, srcId, grp, dstId, dat, efr, count, end);
+	unsigned int length = m_network->read(data + 2U, srcId, grp, dstId, dat, count, end);
 	if (length == 0U)
 		return;
 
@@ -794,19 +766,12 @@ void CNXDNControl::writeNetwork()
 		if (option == NXDN_LICH_STEAL_NONE) {
 			CAMBEFEC ambe;
 			unsigned int errors = 0U;
-			if (efr) {
-				errors += ambe.regenerateIMBE(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
-				errors += ambe.regenerateIMBE(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
-				m_netErrs += errors;
-				m_netBits += 288U;
-			} else {
-				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
-				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
-				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
-				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
-				m_netErrs += errors;
-				m_netBits += 188U;
-			}
+			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
+			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
+			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
+			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
+			m_netErrs += errors;
+			m_netBits += 188U;
 		} else if (option == NXDN_LICH_STEAL_FACCH1_1) {
 			CNXDNFACCH1 facch1;
 			bool valid = facch1.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
@@ -815,29 +780,17 @@ void CNXDNControl::writeNetwork()
 
 			CAMBEFEC ambe;
 			unsigned int errors = 0U;
-			if (efr) {
-				errors += ambe.regenerateIMBE(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
-				m_netErrs += errors;
-				m_netBits += 144U;
-			} else {
-				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
-				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
-				m_netErrs += errors;
-				m_netBits += 94U;
-			}
+			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
+			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
+			m_netErrs += errors;
+			m_netBits += 94U;
 		} else if (option == NXDN_LICH_STEAL_FACCH1_2) {
 			CAMBEFEC ambe;
 			unsigned int errors = 0U;
-			if (efr) {
-				errors += ambe.regenerateIMBE(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
-				m_netErrs += errors;
-				m_netBits += 144U;
-			} else {
-				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
-				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
-				m_netErrs += errors;
-				m_netBits += 94U;
-			}
+			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
+			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
+			m_netErrs += errors;
+			m_netBits += 94U;
 
 			CNXDNFACCH1 facch1;
 			bool valid = facch1.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
@@ -940,11 +893,10 @@ void CNXDNControl::writeNetwork(const unsigned char *data, bool dat)
 	unsigned short srcId = m_rfLayer3.getSourceUnitId();
 	unsigned short dstId = m_rfLayer3.getDestinationGroupId();
 	bool grp             = m_rfLayer3.getIsGroup();
-	bool efr             = m_rfLayer3.getVoiceMode() == NXDN_VOICE_CALL_OPTION_9600_EFR;
 
 	bool end = data[0U] == TAG_EOT;
 
-	m_network->write(data + 2U, srcId, grp, dstId, dat, efr, m_rfFrames, end);
+	m_network->write(data + 2U, srcId, grp, dstId, dat, m_rfFrames, end);
 }
 
 void CNXDNControl::scrambler(unsigned char* data) const
