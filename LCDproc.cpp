@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017 by Tony Corbett G0WFV
+ *   Copyright (C) 2016,2017,2018 by Tony Corbett G0WFV
  *   Copyright (C) 2018 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -463,7 +463,7 @@ void CLCDproc::clearP25Int()
 {
 	m_clockDisplayTimer.stop();           // Stop the clock display
 
-	socketPrintf(m_socketfd, "widget_set P25 Line3 1 2 15 2 h 3 Listening");
+	socketPrintf(m_socketfd, "widget_set P25 Line2 1 2 15 2 h 3 Listening");
 	socketPrintf(m_socketfd, "widget_set P25 Line3 1 3 15 3 h 3 \"\"");
 	socketPrintf(m_socketfd, "widget_set P25 Line4 1 4 15 4 h 3 \"\"");
 	socketPrintf(m_socketfd, "output 2"); // Set LED2 color green
@@ -508,7 +508,7 @@ void CLCDproc::clearNXDNInt()
 {
 	m_clockDisplayTimer.stop();           // Stop the clock display
 
-	socketPrintf(m_socketfd, "widget_set NXDN Line3 1 2 15 2 h 3 Listening");
+	socketPrintf(m_socketfd, "widget_set NXDN Line2 1 2 15 2 h 3 Listening");
 	socketPrintf(m_socketfd, "widget_set NXDN Line3 1 3 15 3 h 3 \"\"");
 	socketPrintf(m_socketfd, "widget_set NXDN Line4 1 4 15 4 h 3 \"\"");
 	socketPrintf(m_socketfd, "output 16"); // Set LED5 color green

@@ -230,7 +230,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 		scrambler(data + 2U);
 
-		// writeNetwork(data, m_rfFrames, );
+		writeNetwork(data, false);
 
 #if defined(DUMP_NXDN)
 		writeFile(data + 2U);
@@ -238,7 +238,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		if (m_duplex)
 			writeQueueRF(data);
 
-		if (type == NXDN_MESSAGE_TYPE_TX_REL) {
+		if (data[0U] == TAG_EOT) {
 			m_rfFrames++;
 			if (m_rssi != 0U)
 				LogMessage("NXDN, received RF end of transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
@@ -401,7 +401,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 			scrambler(start + 2U);
 
-			// writeNetwork(start, m_rfFrames, );
+			writeNetwork(start, false);
 
 #if defined(DUMP_NXDN)
 			writeFile(start + 2U);
@@ -515,7 +515,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 		scrambler(data + 2U);
 
-		// writeNetwork(data, m_rfFrames, );
+		writeNetwork(data, false);
 
 #if defined(DUMP_NXDN)
 		writeFile(data + 2U);
@@ -575,6 +575,9 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 
 		LogMessage("NXDN, received RF data header from %s to %s%u, %u blocks", source.c_str(), grp ? "TG " : "", dstId, frames);
 
+		m_rfLayer3 = layer3;
+		m_rfFrames = 0U;
+
 		m_rfState = RS_RF_DATA;
 
 #if defined(DUMP_NXDN)
@@ -607,21 +610,20 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 
 	scrambler(data + 2U);
 
-	writeQueueNet(data);
+	writeNetwork(data, true);
 
 	if (m_duplex)
 		writeQueueRF(data);
+
+	m_rfFrames++;
 
 #if defined(DUMP_NXDN)
 	writeFile(data + 2U);
 #endif
 
-	if (validUDCH) {
-		unsigned char type = layer3.getMessageType();
-		if (type == NXDN_MESSAGE_TYPE_TX_REL) {
-			LogMessage("NXDN, ended RF data transmission");
-			writeEndRF();
-		}
+	if (data[0U] == TAG_EOT) {
+		LogMessage("NXDN, ended RF data transmission");
+		writeEndRF();
 	}
 
 	return true;
@@ -679,17 +681,189 @@ void CNXDNControl::writeEndNet()
 
 void CNXDNControl::writeNetwork()
 {
-#ifdef notdef
+	unsigned short srcId = 0U;
+	unsigned short dstId = 0U;
+	unsigned char count = 0U;
+	bool grp = false;
+	bool dat = false;
+	bool efr = false;
+	bool end = false;
 	unsigned char data[200U];
-	unsigned int length = m_network->read(data);
+	unsigned int length = m_network->read(data + 2U, srcId, grp, dstId, dat, efr, count, end);
 	if (length == 0U)
 		return;
 
 	if (m_rfState != RS_RF_LISTENING && m_netState == RS_NET_IDLE)
 		return;
 
+	if (end && m_netState == RS_NET_IDLE)
+		return;
+
 	m_networkWatchdog.start();
-#endif
+
+	scrambler(data + 2U);
+
+	if (dat) {
+		CNXDNUDCH udch;
+		bool valid = udch.decode(data + 2U);
+		if (valid) {
+			if (m_netState == RS_NET_IDLE) {
+				unsigned char buffer[23U];
+				udch.getData(buffer);
+
+				CNXDNLayer3 layer3;
+				layer3.decode(buffer, 184U);
+
+				unsigned char type = layer3.getMessageType();
+				if (type == NXDN_MESSAGE_TYPE_DCALL_HDR) {
+					unsigned short srcId = layer3.getSourceUnitId();
+					unsigned short dstId = layer3.getDestinationGroupId();
+					bool grp = layer3.getIsGroup();
+
+					unsigned char frames = layer3.getDataBlocks();
+
+					std::string source = m_lookup->find(srcId);
+
+					m_display->writeNXDN(source.c_str(), grp, dstId, "N");
+
+					LogMessage("NXDN, received network data header from %s to %s%u, %u blocks", source.c_str(), grp ? "TG " : "", dstId, frames);
+
+					m_netState = RS_NET_DATA;
+				}
+			}
+
+			if (m_netState == RS_NET_DATA) {
+				data[0U] = end ? TAG_EOT : TAG_DATA;
+				data[1U] = 0x00U;
+
+				CSync::addNXDNSync(data + 2U);
+
+				CNXDNLICH lich;
+				lich.decode(data + 2U);
+				lich.encode(data + 2U);
+
+				udch.setRAN(m_ran);
+				udch.encode(data + 2U);
+
+				scrambler(data + 2U);
+
+				writeQueueNet(data);
+
+				if (end) {
+					LogMessage("NXDN, ended network data transmission");
+					writeEndNet();
+				}
+			}
+		}
+	} else {
+		if (m_netState == RS_NET_IDLE) {
+			std::string source = m_lookup->find(srcId);
+			LogMessage("NXDN, received network transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
+			m_display->writeNXDN(source.c_str(), grp, dstId, "N");
+
+			m_netTimeoutTimer.start();
+			m_packetTimer.start();
+			m_elapsed.start();
+			m_netState  = RS_NET_AUDIO;
+			m_netFrames = 0U;
+			m_netLost   = 0U;
+			m_netErrs   = 0U;
+			m_netBits   = 1U;
+			m_netN      = 0U;
+		}
+
+		m_netFrames++;
+
+		data[0U] = end ? TAG_EOT : TAG_DATA;
+		data[1U] = 0x00U;
+
+		CSync::addNXDNSync(data + 2U);
+
+		CNXDNLICH lich;
+		lich.decode(data + 2U);
+		lich.encode(data + 2U);
+		unsigned char option = lich.getOption();
+
+		CNXDNSACCH sacch;
+		bool valid = sacch.decode(data + 2U);
+		if (valid) {
+			sacch.setRAN(m_ran);
+			sacch.encode(data + 2U);
+		}
+
+		if (option == NXDN_LICH_STEAL_NONE) {
+			CAMBEFEC ambe;
+			unsigned int errors = 0U;
+			if (efr) {
+				errors += ambe.regenerateIMBE(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
+				errors += ambe.regenerateIMBE(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
+				m_netErrs += errors;
+				m_netBits += 288U;
+			} else {
+				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
+				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
+				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
+				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
+				m_netErrs += errors;
+				m_netBits += 188U;
+			}
+		} else if (option == NXDN_LICH_STEAL_FACCH1_1) {
+			CNXDNFACCH1 facch1;
+			bool valid = facch1.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
+			if (valid)
+				facch1.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
+
+			CAMBEFEC ambe;
+			unsigned int errors = 0U;
+			if (efr) {
+				errors += ambe.regenerateIMBE(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
+				m_netErrs += errors;
+				m_netBits += 144U;
+			} else {
+				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
+				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
+				m_netErrs += errors;
+				m_netBits += 94U;
+			}
+		} else if (option == NXDN_LICH_STEAL_FACCH1_2) {
+			CAMBEFEC ambe;
+			unsigned int errors = 0U;
+			if (efr) {
+				errors += ambe.regenerateIMBE(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
+				m_netErrs += errors;
+				m_netBits += 144U;
+			} else {
+				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
+				errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
+				m_netErrs += errors;
+				m_netBits += 94U;
+			}
+
+			CNXDNFACCH1 facch1;
+			bool valid = facch1.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
+			if (valid)
+				facch1.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
+		} else {
+			CNXDNFACCH1 facch11;
+			bool valid1 = facch11.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
+			if (valid1)
+				facch11.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
+
+			CNXDNFACCH1 facch12;
+			bool valid2 = facch12.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
+			if (valid2)
+				facch12.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
+		}
+
+		scrambler(data + 2U);
+
+		writeQueueNet(data);
+
+		if (end) {
+			LogMessage("NXDN, received network end of transmission, %.1f seconds, %u%% packet loss, BER: %.1f%%", float(m_netFrames) / 25.0F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
+			writeEndNet();
+		}
+	}
 }
 
 void CNXDNControl::clock(unsigned int ms)
@@ -753,7 +927,7 @@ void CNXDNControl::writeQueueNet(const unsigned char *data)
 	m_queue.addData(data, len);
 }
 
-void CNXDNControl::writeNetwork(const unsigned char *data, unsigned int count, bool end)
+void CNXDNControl::writeNetwork(const unsigned char *data, bool dat)
 {
 	assert(data != NULL);
 
@@ -766,8 +940,11 @@ void CNXDNControl::writeNetwork(const unsigned char *data, unsigned int count, b
 	unsigned short srcId = m_rfLayer3.getSourceUnitId();
 	unsigned short dstId = m_rfLayer3.getDestinationGroupId();
 	bool grp             = m_rfLayer3.getIsGroup();
+	bool efr             = m_rfLayer3.getVoiceMode() == NXDN_VOICE_CALL_OPTION_9600_EFR;
 
-	m_network->write(data + 2U, srcId, grp, dstId, count % 256U, end);
+	bool end = data[0U] == TAG_EOT;
+
+	m_network->write(data + 2U, srcId, grp, dstId, dat, efr, m_rfFrames, end);
 }
 
 void CNXDNControl::scrambler(unsigned char* data) const

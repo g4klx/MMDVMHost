@@ -36,9 +36,9 @@ public:
 
 	void enable(bool enabled);
 
-	bool write(const unsigned char* data, unsigned short src, bool grp, unsigned short dst, unsigned char cnt, bool end);
+	bool write(const unsigned char* data, unsigned short src, bool grp, unsigned short dst, bool dat, bool efr, unsigned char cnt, bool end);
 
-	unsigned int read(unsigned char* data, unsigned short& src, bool& grp, unsigned short& dst, unsigned char& cnt, bool& end);
+	unsigned int read(unsigned char* data, unsigned short& src, bool& grp, unsigned short& dst, bool& dat, bool& efr, unsigned char& cnt, bool& end);
 
 	void reset();
 
@@ -50,6 +50,7 @@ private:
 	CUDPSocket     m_socket;
 	in_addr        m_address;
 	unsigned int   m_port;
+	std::string    m_callsign;
 	bool           m_debug;
 	bool           m_enabled;
 	CRingBuffer<unsigned char> m_buffer;

@@ -87,8 +87,8 @@ m_beacon(false)
 	m_jitterBuffers[1U] = new CJitterBuffer("DMR Slot 1", 60U, DMR_SLOT_TIME, jitter, 256U, debug);
 	m_jitterBuffers[2U] = new CJitterBuffer("DMR Slot 2", 60U, DMR_SLOT_TIME, jitter, 256U, debug);
 
-	m_delayBuffers[1U] = new CDelayBuffer("DMR Slot 1", 60U, DMR_SLOT_TIME, jitter, debug);
-	m_delayBuffers[2U] = new CDelayBuffer("DMR Slot 2", 60U, DMR_SLOT_TIME, jitter, debug);
+	m_delayBuffers[1U] = new CDelayBuffer("DMR Slot 1", HOMEBREW_DATA_PACKET_LENGTH, DMR_SLOT_TIME, jitter, debug);
+	m_delayBuffers[2U] = new CDelayBuffer("DMR Slot 2", HOMEBREW_DATA_PACKET_LENGTH, DMR_SLOT_TIME, jitter, debug);
 
 	m_id[0U] = id >> 24;
 	m_id[1U] = id >> 16;
