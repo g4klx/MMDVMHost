@@ -45,7 +45,7 @@ unsigned int   CDMRSlot::m_hangCount = 3U * 17U;
 
 CRSSIInterpolator* CDMRSlot::m_rssiMapper = NULL;
 
-unsigned int   CDMRSlot::m_jitterTime = 300U;
+unsigned int   CDMRSlot::m_jitterTime  = 300U;
 unsigned int   CDMRSlot::m_jitterSlots = 5U;
 
 unsigned char* CDMRSlot::m_idle = NULL;
@@ -571,8 +571,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 	} else {
 		if (m_rfState == RS_RF_AUDIO) {
 			m_rfN = data[1U] & 0x0FU;
-
-			if(m_rfN > 5U)
+			if (m_rfN > 5U)
 				return false;
 
 			unsigned int errors = 0U;
@@ -814,8 +813,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				writeNetworkRF(start, DT_VOICE_LC_HEADER);
 
 				m_rfN = data[1U] & 0x0FU;
-
-				if(m_rfN > 5U)
+				if (m_rfN > 5U)
 					return false;
 
 				// Regenerate the EMB

@@ -246,8 +246,15 @@ bool CDMRNetwork::write(const CDMRData& data)
 	} else if (dataType == DT_VOICE) {
 		buffer[15U] |= data.getN();
 	} else {
-		if (dataType == DT_VOICE_LC_HEADER)
+		if (dataType == DT_VOICE_LC_HEADER) {
+			m_streamId[slotIndex] = ::rand() + 1U;
 			count = 2U;
+		}
+
+		if (dataType == DT_CSBK || dataType == DT_DATA_HEADER) {
+			m_streamId[slotIndex] = ::rand() + 1U;
+			count = 1U;
+		}
 
 		buffer[15U] |= (0x20U | dataType);
 	}
