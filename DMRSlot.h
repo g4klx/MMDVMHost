@@ -57,7 +57,7 @@ public:
 
 	void clock();
 
-	static void init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData, unsigned int callHang, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper);
+	static void init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData, unsigned int callHang, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter);
 
 private:
 	unsigned int               m_slotNo;
@@ -78,16 +78,18 @@ private:
 	CDMRLC*                    m_rfLC;
 	CDMRLC*                    m_netLC;
 	unsigned char              m_rfSeqNo;
+	unsigned char              m_netSeqNo;
 	unsigned char              m_rfN;
 	unsigned char              m_netN;
 	CTimer                     m_networkWatchdog;
 	CTimer                     m_rfTimeoutTimer;
 	CTimer                     m_netTimeoutTimer;
+	CTimer                     m_packetTimer;
 	CStopWatch                 m_interval;
+	CStopWatch                 m_elapsed;
 	unsigned int               m_rfFrames;
 	unsigned int               m_netFrames;
 	unsigned int               m_netLost;
-	unsigned int               m_netMissed;
 	CAMBEFEC                   m_fec;
 	unsigned int               m_rfBits;
 	unsigned int               m_netBits;
@@ -95,6 +97,8 @@ private:
 	unsigned int               m_netErrs;
 	bool                       m_rfTimeout;
 	bool                       m_netTimeout;
+	unsigned char*             m_lastFrame;
+	bool                       m_lastFrameValid;
 	unsigned char              m_rssi;
 	unsigned char              m_maxRSSI;
 	unsigned char              m_minRSSI;
@@ -115,6 +119,9 @@ private:
 	static unsigned int        m_hangCount;
 
 	static CRSSIInterpolator*  m_rssiMapper;
+
+	static unsigned int        m_jitterTime;
+	static unsigned int        m_jitterSlots;
 
 	static unsigned char*      m_idle;
 
@@ -139,7 +146,8 @@ private:
 	bool writeFile(const unsigned char* data);
 	void closeFile();
 
-	unsigned char repeatFrame(unsigned char* data);
+	bool insertSilence(const unsigned char* data, unsigned char seqNo);
+	void insertSilence(unsigned int count);
 
 	static void setShortLC(unsigned int slotNo, unsigned int id, FLCO flco = FLCO_GROUP, ACTIVITY_TYPE type = ACTIVITY_NONE);
 };
