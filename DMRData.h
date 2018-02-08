@@ -45,9 +45,6 @@ public:
 	unsigned char getDataType() const;
 	void setDataType(unsigned char dataType);
 
-	bool isMissing() const;
-	void setMissing(bool missing);
-
 	unsigned char getBER() const;
 	void setBER(unsigned char ber);
 
@@ -65,7 +62,6 @@ private:
 	FLCO           m_flco;
 	unsigned char  m_dataType;
 	unsigned char  m_seqNo;
-	bool           m_missing;
 	unsigned char  m_n;
 	unsigned char  m_ber;
 	unsigned char  m_rssi;

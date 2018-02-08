@@ -58,10 +58,4 @@ enum RPT_NET_STATE {
 	RS_NET_DATA
 };
 
-enum B_STATUS {
-	BS_NO_DATA,
-	BS_DATA,
-	BS_MISSING
-};
-
 #endif

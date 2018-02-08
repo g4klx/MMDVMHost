@@ -224,9 +224,6 @@
     <ClInclude Include="NetworkInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="JitterBuffer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="P25Trellis.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -261,9 +258,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NXDNLayer3.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DelayBuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -460,9 +454,6 @@
     <ClCompile Include="NetworkInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="JitterBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="P25Trellis.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -494,9 +485,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NXDNLayer3.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DelayBuffer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
