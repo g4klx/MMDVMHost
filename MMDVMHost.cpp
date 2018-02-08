@@ -1520,7 +1520,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_p25Network != NULL)
 			m_p25Network->enable(true);
 		if (m_nxdnNetwork != NULL)
-			m_nxdnNetwork->enable(false);
+			m_nxdnNetwork->enable(true);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
