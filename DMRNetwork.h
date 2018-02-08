@@ -19,10 +19,9 @@
 #if !defined(DMRNetwork_H)
 #define	DMRNetwork_H
 
-#include "JitterBuffer.h"
-#include "DelayBuffer.h"
 #include "UDPSocket.h"
 #include "Timer.h"
+#include "RingBuffer.h"
 #include "DMRData.h"
 #include "Defines.h"
 
@@ -32,7 +31,7 @@
 class CDMRNetwork
 {
 public:
-	CDMRNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, HW_TYPE hwType, bool jitterEnabled, unsigned int jitter);
+	CDMRNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, HW_TYPE hwType);
 	~CDMRNetwork();
 
 	void setOptions(const std::string& options);
@@ -55,8 +54,6 @@ public:
 
 	void clock(unsigned int ms);
 
-	void reset(unsigned int slotNo);
-
 	void close();
 
 private: 
@@ -71,9 +68,6 @@ private:
 	bool            m_enabled;
 	bool            m_slot1;
 	bool            m_slot2;
-	bool            m_jitterEnabled;
-	CJitterBuffer** m_jitterBuffers;
-	CDelayBuffer**  m_delayBuffers;
 	HW_TYPE         m_hwType;
 
 	enum STATUS {
@@ -91,6 +85,8 @@ private:
 	unsigned char* m_buffer;
 	unsigned char* m_salt;
 	uint32_t*      m_streamId;
+
+	CRingBuffer<unsigned char> m_rxData;
 
 	std::string    m_options;
 
@@ -115,8 +111,6 @@ private:
 	bool writePing();
 
 	bool write(const unsigned char* data, unsigned int length);
-
-	void receiveData(const unsigned char* data, unsigned int length);
 };
 
 #endif
