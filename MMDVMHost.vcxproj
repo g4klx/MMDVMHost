@@ -158,7 +158,6 @@
     <ClInclude Include="Conf.h" />
     <ClInclude Include="CRC.h" />
     <ClInclude Include="Defines.h" />
-    <ClInclude Include="DelayBuffer.h" />
     <ClInclude Include="Display.h" />
     <ClInclude Include="DMRAccessControl.h" />
     <ClInclude Include="DMRControl.h" />
@@ -184,7 +183,6 @@
     <ClInclude Include="Golay24128.h" />
     <ClInclude Include="Hamming.h" />
     <ClInclude Include="DMRLookup.h" />
-    <ClInclude Include="JitterBuffer.h" />
     <ClInclude Include="LCDproc.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MMDVMHost.h" />
@@ -244,7 +242,6 @@
     <ClCompile Include="BPTC19696.cpp" />
     <ClCompile Include="Conf.cpp" />
     <ClCompile Include="CRC.cpp" />
-    <ClCompile Include="DelayBuffer.cpp" />
     <ClCompile Include="Display.cpp" />
     <ClCompile Include="DMRAccessControl.cpp" />
     <ClCompile Include="DMRControl.cpp" />
@@ -268,7 +265,6 @@
     <ClCompile Include="Golay2087.cpp" />
     <ClCompile Include="Golay24128.cpp" />
     <ClCompile Include="Hamming.cpp" />
-    <ClCompile Include="JitterBuffer.cpp" />
     <ClCompile Include="LCDproc.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MMDVMHost.cpp" />

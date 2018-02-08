@@ -29,7 +29,6 @@ m_dstId(data.m_dstId),
 m_flco(data.m_flco),
 m_dataType(data.m_dataType),
 m_seqNo(data.m_seqNo),
-m_missing(data.m_missing),
 m_n(data.m_n),
 m_ber(data.m_ber),
 m_rssi(data.m_rssi)
@@ -46,7 +45,6 @@ m_dstId(0U),
 m_flco(FLCO_GROUP),
 m_dataType(0U),
 m_seqNo(0U),
-m_missing(false),
 m_n(0U),
 m_ber(0U),
 m_rssi(0U)
@@ -70,7 +68,6 @@ CDMRData& CDMRData::operator=(const CDMRData& data)
 		m_flco     = data.m_flco;
 		m_dataType = data.m_dataType;
 		m_seqNo    = data.m_seqNo;
-		m_missing  = data.m_missing;
 		m_n        = data.m_n;
 		m_ber      = data.m_ber;
 		m_rssi     = data.m_rssi;
@@ -139,16 +136,6 @@ unsigned char CDMRData::getSeqNo() const
 void CDMRData::setSeqNo(unsigned char seqNo)
 {
 	m_seqNo = seqNo;
-}
-
-bool CDMRData::isMissing() const
-{
-	return m_missing;
-}
-
-void CDMRData::setMissing(bool missing)
-{
-	m_missing = missing;
 }
 
 unsigned char CDMRData::getN() const

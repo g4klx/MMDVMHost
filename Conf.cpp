@@ -165,7 +165,6 @@ m_dmrNetworkLocal(0U),
 m_dmrNetworkPassword(),
 m_dmrNetworkOptions(),
 m_dmrNetworkDebug(false),
-m_dmrNetworkJitterEnabled(false),
 m_dmrNetworkJitter(300U),
 m_dmrNetworkSlot1(true),
 m_dmrNetworkSlot2(true),
@@ -596,8 +595,6 @@ bool CConf::read()
 			m_dmrNetworkOptions = value;
 		else if (::strcmp(key, "Debug") == 0)
 			m_dmrNetworkDebug = ::atoi(value) == 1;
-		else if (::strcmp(key, "JitterEnabled") == 0)
-			m_dmrNetworkJitterEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "Jitter") == 0)
 			m_dmrNetworkJitter = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Slot1") == 0)
@@ -1267,11 +1264,6 @@ unsigned int CConf::getDMRNetworkModeHang() const
 bool CConf::getDMRNetworkDebug() const
 {
 	return m_dmrNetworkDebug;
-}
-
-bool CConf::getDMRNetworkJitterEnabled() const
-{
-	return m_dmrNetworkJitterEnabled;
 }
 
 unsigned int CConf::getDMRNetworkJitter() const
