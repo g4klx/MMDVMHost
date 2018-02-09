@@ -45,8 +45,8 @@ unsigned int   CDMRSlot::m_hangCount = 3U * 17U;
 
 CRSSIInterpolator* CDMRSlot::m_rssiMapper = NULL;
 
-unsigned int   CDMRSlot::m_jitterTime  = 300U;
-unsigned int   CDMRSlot::m_jitterSlots = 5U;
+unsigned int   CDMRSlot::m_jitterTime  = 360U;
+unsigned int   CDMRSlot::m_jitterSlots = 6U;
 
 unsigned char* CDMRSlot::m_idle = NULL;
 
@@ -87,7 +87,6 @@ m_netTalkerId(TALKER_ID_NONE),
 m_rfLC(NULL),
 m_netLC(NULL),
 m_rfSeqNo(0U),
-m_netSeqNo(0U),
 m_rfN(0U),
 m_netN(0U),
 m_networkWatchdog(1000U, 0U, 1500U),
@@ -1349,12 +1348,11 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			if (m_netFrames == 0U) {
 				::memcpy(m_lastFrame, data, DMR_FRAME_LENGTH_BYTES + 2U);
 				m_lastFrameValid = true;
-				m_netSeqNo = dmrData.getSeqNo();
-				m_netN = dmrData.getN();
+				m_netN = 5U;
 				m_netLost = 0U;
-			} else {
-				insertSilence(data, dmrData.getSeqNo());
 			}
+
+			insertSilence(data, dmrData.getN());
 
 			if (!m_netTimeout)
 				writeQueueNet(data);
@@ -1370,7 +1368,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			m_netFrames++;
 
 			// Save details in case we need to infill data
-			m_netSeqNo = dmrData.getSeqNo();
 			m_netN = dmrData.getN();
 
 #if defined(DUMP_DMR)
@@ -1503,12 +1500,11 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		if (m_netFrames == 0U) {
 			::memcpy(m_lastFrame, data, DMR_FRAME_LENGTH_BYTES + 2U);
 			m_lastFrameValid = true;
-			m_netSeqNo = dmrData.getSeqNo();
-			m_netN = dmrData.getN();
+			m_netN = 5U;
 			m_netLost = 0U;
-		} else {
-			insertSilence(data, dmrData.getSeqNo());
 		}
+
+		insertSilence(data, dmrData.getN());
 
 		if (!m_netTimeout)
 			writeQueueNet(data);
@@ -1519,7 +1515,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		m_netFrames++;
 
 		// Save details in case we need to infill data
-		m_netSeqNo = dmrData.getSeqNo();
 		m_netN = dmrData.getN();
 
 #if defined(DUMP_DMR)
@@ -1992,7 +1987,8 @@ bool CDMRSlot::insertSilence(const unsigned char* data, unsigned char seqNo)
 	assert(data != NULL);
 
 	// Check to see if we have any spaces to fill?
-	unsigned char seq = m_netSeqNo + 1U;
+	unsigned char seq = (m_netN + 1U) % 6U;
+
 	if (seq == seqNo) {
 		// Just copy the data, nothing else to do here
 		::memcpy(m_lastFrame, data, DMR_FRAME_LENGTH_BYTES + 2U);
@@ -2000,17 +1996,7 @@ bool CDMRSlot::insertSilence(const unsigned char* data, unsigned char seqNo)
 		return true;
 	}
 
-	unsigned int oldSeqNo = m_netSeqNo + 1U;
-	unsigned int newSeqNo = seqNo;
-
-	unsigned int count;
-	if (newSeqNo > oldSeqNo)
-		count = newSeqNo - oldSeqNo;
-	else
-		count = (256U + newSeqNo) - oldSeqNo;
-
-	if (count >= 10U)
-		return false;
+	unsigned int count = (seqNo - seq + 6U) % 6U;
 
 	insertSilence(count);
 
@@ -2036,7 +2022,6 @@ void CDMRSlot::insertSilence(unsigned int count)
 	}
 
 	unsigned char n = (m_netN + 1U) % 6U;
-	unsigned char seqNo = m_netSeqNo + 1U;
 
 	unsigned char fid = m_netLC->getFID();
 
@@ -2062,13 +2047,11 @@ void CDMRSlot::insertSilence(unsigned int count)
 
 		writeQueueNet(data);
 
-		m_netSeqNo = seqNo;
 		m_netN = n;
 
 		m_netFrames++;
 		m_netLost++;
 
-		seqNo++;
 		n = (n + 1U) % 6U;
 	}
 }
