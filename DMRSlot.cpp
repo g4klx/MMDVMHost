@@ -1353,10 +1353,10 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				m_netLost = 0U;
 			}
 
-			insertSilence(data, dmrData.getN());
-
-			if (!m_netTimeout)
-				writeQueueNet(data);
+			if (insertSilence(data, dmrData.getN())) {
+				if (!m_netTimeout)
+					writeQueueNet(data);
+			}
 
 			m_netEmbeddedReadN  = (m_netEmbeddedReadN  + 1U) % 2U;
 			m_netEmbeddedWriteN = (m_netEmbeddedWriteN + 1U) % 2U;
@@ -1505,10 +1505,10 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			m_netLost = 0U;
 		}
 
-		insertSilence(data, dmrData.getN());
-
-		if (!m_netTimeout)
-			writeQueueNet(data);
+		if (insertSilence(data, dmrData.getN())) {
+			if (!m_netTimeout)
+				writeQueueNet(data);
+		}
 
 		m_packetTimer.start();
 		m_elapsed.start();
@@ -1988,6 +1988,10 @@ void CDMRSlot::closeFile()
 bool CDMRSlot::insertSilence(const unsigned char* data, unsigned char seqNo)
 {
 	assert(data != NULL);
+
+	// Do not send duplicate
+	if (seqNo == m_netN)
+		return false;
 
 	// Check to see if we have any spaces to fill?
 	unsigned char seq = (m_netN + 1U) % 6U;
