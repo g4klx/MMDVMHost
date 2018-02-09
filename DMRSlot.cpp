@@ -2034,7 +2034,6 @@ void CDMRSlot::insertSilence(unsigned int count)
 
 	CDMREMB emb;
 	emb.setColorCode(m_colorCode);
-	emb.setLCSS(0U);
 
 	for (unsigned int i = 0U; i < count; i++) {
 		// Only use our silence frame if its AMBE audio data
@@ -2048,7 +2047,8 @@ void CDMRSlot::insertSilence(unsigned int count)
 		if (n == 0U) {
 			CSync::addDMRAudioSync(data + 2U, m_duplex);
 		} else {
-			m_netEmbeddedLC.getData(data + 2U, 0U);
+			unsigned char lcss = m_netEmbeddedLC.getData(data + 2U, n);
+			emb.setLCSS(lcss);
 			emb.getData(data + 2U);
 		}
 
