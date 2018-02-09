@@ -30,6 +30,7 @@
 #include <ctime>
 #include <algorithm>
 #include <cstdint>
+#include <cmath>
 
 unsigned int   CDMRSlot::m_colorCode = 0U;
 
@@ -1835,7 +1836,9 @@ void CDMRSlot::init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData
 	m_rssiMapper     = rssiMapper;
 
 	m_jitterTime     = jitter;
-	m_jitterSlots    = jitter / DMR_SLOT_TIME;
+	
+	float jitter_tmp = float(jitter) / 360.0F;
+	m_jitterSlots    = (unsigned int) (std::ceil(jitter_tmp) * 6.0F);
 
 	m_idle = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
 	::memcpy(m_idle, DMR_IDLE_DATA, DMR_FRAME_LENGTH_BYTES + 2U);
