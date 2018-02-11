@@ -30,6 +30,7 @@
 #include <ctime>
 #include <algorithm>
 #include <cstdint>
+#include <cmath>
 
 unsigned int   CDMRSlot::m_colorCode = 0U;
 
@@ -45,8 +46,8 @@ unsigned int   CDMRSlot::m_hangCount = 3U * 17U;
 
 CRSSIInterpolator* CDMRSlot::m_rssiMapper = NULL;
 
-unsigned int   CDMRSlot::m_jitterTime  = 300U;
-unsigned int   CDMRSlot::m_jitterSlots = 5U;
+unsigned int   CDMRSlot::m_jitterTime  = 360U;
+unsigned int   CDMRSlot::m_jitterSlots = 6U;
 
 unsigned char* CDMRSlot::m_idle = NULL;
 
@@ -87,7 +88,6 @@ m_netTalkerId(TALKER_ID_NONE),
 m_rfLC(NULL),
 m_netLC(NULL),
 m_rfSeqNo(0U),
-m_netSeqNo(0U),
 m_rfN(0U),
 m_netN(0U),
 m_networkWatchdog(1000U, 0U, 1500U),
@@ -1349,15 +1349,14 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			if (m_netFrames == 0U) {
 				::memcpy(m_lastFrame, data, DMR_FRAME_LENGTH_BYTES + 2U);
 				m_lastFrameValid = true;
-				m_netSeqNo = dmrData.getSeqNo();
-				m_netN = dmrData.getN();
+				m_netN = 5U;
 				m_netLost = 0U;
-			} else {
-				insertSilence(data, dmrData.getSeqNo());
 			}
 
-			if (!m_netTimeout)
-				writeQueueNet(data);
+			if (insertSilence(data, dmrData.getN())) {
+				if (!m_netTimeout)
+					writeQueueNet(data);
+			}
 
 			m_netEmbeddedReadN  = (m_netEmbeddedReadN  + 1U) % 2U;
 			m_netEmbeddedWriteN = (m_netEmbeddedWriteN + 1U) % 2U;
@@ -1370,7 +1369,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			m_netFrames++;
 
 			// Save details in case we need to infill data
-			m_netSeqNo = dmrData.getSeqNo();
 			m_netN = dmrData.getN();
 
 #if defined(DUMP_DMR)
@@ -1503,15 +1501,14 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		if (m_netFrames == 0U) {
 			::memcpy(m_lastFrame, data, DMR_FRAME_LENGTH_BYTES + 2U);
 			m_lastFrameValid = true;
-			m_netSeqNo = dmrData.getSeqNo();
-			m_netN = dmrData.getN();
+			m_netN = 5U;
 			m_netLost = 0U;
-		} else {
-			insertSilence(data, dmrData.getSeqNo());
 		}
 
-		if (!m_netTimeout)
-			writeQueueNet(data);
+		if (insertSilence(data, dmrData.getN())) {
+			if (!m_netTimeout)
+				writeQueueNet(data);
+		}
 
 		m_packetTimer.start();
 		m_elapsed.start();
@@ -1519,7 +1516,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		m_netFrames++;
 
 		// Save details in case we need to infill data
-		m_netSeqNo = dmrData.getSeqNo();
 		m_netN = dmrData.getN();
 
 #if defined(DUMP_DMR)
@@ -1840,7 +1836,9 @@ void CDMRSlot::init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData
 	m_rssiMapper     = rssiMapper;
 
 	m_jitterTime     = jitter;
-	m_jitterSlots    = jitter / DMR_SLOT_TIME;
+	
+	float jitter_tmp = float(jitter) / 360.0F;
+	m_jitterSlots    = (unsigned int) (std::ceil(jitter_tmp) * 6.0F);
 
 	m_idle = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
 	::memcpy(m_idle, DMR_IDLE_DATA, DMR_FRAME_LENGTH_BYTES + 2U);
@@ -1991,8 +1989,13 @@ bool CDMRSlot::insertSilence(const unsigned char* data, unsigned char seqNo)
 {
 	assert(data != NULL);
 
+	// Do not send duplicate
+	if (seqNo == m_netN)
+		return false;
+
 	// Check to see if we have any spaces to fill?
-	unsigned char seq = m_netSeqNo + 1U;
+	unsigned char seq = (m_netN + 1U) % 6U;
+
 	if (seq == seqNo) {
 		// Just copy the data, nothing else to do here
 		::memcpy(m_lastFrame, data, DMR_FRAME_LENGTH_BYTES + 2U);
@@ -2000,17 +2003,7 @@ bool CDMRSlot::insertSilence(const unsigned char* data, unsigned char seqNo)
 		return true;
 	}
 
-	unsigned int oldSeqNo = m_netSeqNo + 1U;
-	unsigned int newSeqNo = seqNo;
-
-	unsigned int count;
-	if (newSeqNo > oldSeqNo)
-		count = newSeqNo - oldSeqNo;
-	else
-		count = (256U + newSeqNo) - oldSeqNo;
-
-	if (count >= 10U)
-		return false;
+	unsigned int count = (seqNo - seq + 6U) % 6U;
 
 	insertSilence(count);
 
@@ -2036,13 +2029,11 @@ void CDMRSlot::insertSilence(unsigned int count)
 	}
 
 	unsigned char n = (m_netN + 1U) % 6U;
-	unsigned char seqNo = m_netSeqNo + 1U;
 
 	unsigned char fid = m_netLC->getFID();
 
 	CDMREMB emb;
 	emb.setColorCode(m_colorCode);
-	emb.setLCSS(0U);
 
 	for (unsigned int i = 0U; i < count; i++) {
 		// Only use our silence frame if its AMBE audio data
@@ -2056,19 +2047,18 @@ void CDMRSlot::insertSilence(unsigned int count)
 		if (n == 0U) {
 			CSync::addDMRAudioSync(data + 2U, m_duplex);
 		} else {
-			m_netEmbeddedLC.getData(data + 2U, 0U);
+			unsigned char lcss = m_netEmbeddedLC.getData(data + 2U, n);
+			emb.setLCSS(lcss);
 			emb.getData(data + 2U);
 		}
 
 		writeQueueNet(data);
 
-		m_netSeqNo = seqNo;
 		m_netN = n;
 
 		m_netFrames++;
 		m_netLost++;
 
-		seqNo++;
 		n = (n + 1U) % 6U;
 	}
 }

@@ -76,7 +76,7 @@ void CNXDNLICH::encode(unsigned char* bytes)
 	bool b[8U];
 	unsigned int offset = 7U;
 	for (unsigned int i = 0U; i < (NXDN_LICH_LENGTH_BITS / 2U); i++, offset--)
-		b[offset] = READ_BIT1(m_lich, offset);
+		b[offset] = READ_BIT1(m_lich, i);
 
 	b[0U] = b[7U] ^ b[6U] ^ b[5U] ^ b[4U];
 
