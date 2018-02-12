@@ -312,8 +312,11 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 				unsigned char structure = sacch.getStructure();
 				switch (structure) {
 				case NXDN_SR_1_4:
-					m_rfMask |= 0x01U;
 					m_rfLayer3.decode(message, 18U, 0U);
+					if(m_rfLayer3.getMessageType() == NXDN_MESSAGE_TYPE_VCALL)
+						m_rfMask = 0x01U;
+					else
+						m_rfMask = 0x00U;
 					break;
 				case NXDN_SR_2_4:
 					m_rfMask |= 0x02U;
