@@ -210,6 +210,8 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			return false;
 		}
 
+		m_rfLayer3 = layer3;
+
 		data[0U] = type == NXDN_MESSAGE_TYPE_TX_REL ? TAG_EOT : TAG_DATA;
 		data[1U] = 0x00U;
 
@@ -258,8 +260,6 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 #if defined(DUMP_NXDN)
 			openFile();
 #endif
-			m_rfLayer3 = layer3;
-
 			unsigned short srcId = m_rfLayer3.getSourceUnitId();
 			unsigned short dstId = m_rfLayer3.getDestinationGroupId();
 			bool grp             = m_rfLayer3.getIsGroup();

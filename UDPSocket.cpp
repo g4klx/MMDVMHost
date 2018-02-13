@@ -32,8 +32,6 @@ m_address(address),
 m_port(port),
 m_fd(-1)
 {
-	assert(!address.empty());
-
 #if defined(_WIN32) || defined(_WIN64)
 	WSAData data;
 	int wsaRet = ::WSAStartup(MAKEWORD(2, 2), &data);

@@ -72,14 +72,14 @@ bool CNXDNNetwork::write(const unsigned char* data, unsigned short src, bool grp
 	buffer[4U] = 'D';
 
 	buffer[5U] = (src >> 8) & 0xFFU;
-	buffer[6U] = (src >> 8) & 0xFFU;
+	buffer[6U] = (src >> 0) & 0xFFU;
 
 	buffer[7U]  = grp ? 0x01U : 0x00U;
 	buffer[7U] |= dat ? 0x02U : 0x00U;
 	buffer[7U] |= end ? 0x04U : 0x00U;
 
 	buffer[8U] = (dst >> 8) & 0xFFU;
-	buffer[9U] = (dst >> 8) & 0xFFU;
+	buffer[9U] = (dst >> 0) & 0xFFU;
 
 	buffer[10U] = cnt;
 
