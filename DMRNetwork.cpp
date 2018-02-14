@@ -561,6 +561,9 @@ bool CDMRNetwork::writeConfig()
 		case HWT_MMDVM_HS_HAT:
 			software = "MMDVM_MMDVM_HS_Hat";
 			break;
+		case HWT_NANO_HOTSPOT:
+			software = "MMDVM_Nano_hotSPOT";
+			break;
 		case HWT_MMDVM_HS:
 			software = "MMDVM_MMDVM_HS";
 			break;
