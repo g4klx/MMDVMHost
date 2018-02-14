@@ -21,7 +21,6 @@
 #include "NXDNConvolution.h"
 #include "NXDNDefines.h"
 #include "NXDNCRC.h"
-#include "Utils.h"
 
 #include <cstdio>
 #include <cassert>
@@ -64,8 +63,6 @@ bool CNXDNSACCH::decode(const unsigned char* data)
 {
 	assert(data != NULL);
 
-	// CUtils::dump("NXDN, SACCH input", data, 12U);
-
 	unsigned char temp1[8U];
 
 	for (unsigned int i = 0U; i < NXDN_SACCH_LENGTH_BITS; i++) {
@@ -73,8 +70,6 @@ bool CNXDNSACCH::decode(const unsigned char* data)
 		bool b = READ_BIT1(data, n);
 		WRITE_BIT1(temp1, i, b);
 	}
-
-	// CUtils::dump("NXDN, SACCH de-interleaved", temp1, 8U);
 
 	uint8_t temp2[90U];
 
@@ -107,8 +102,6 @@ bool CNXDNSACCH::decode(const unsigned char* data)
 
 	conv.chainback(m_data, 36U);
 
-	// CUtils::dump("NXDN, SACCH decoded", m_data, 4U);
-
 	return CNXDNCRC::checkCRC6(m_data, 26U);
 }
 
@@ -126,14 +119,10 @@ void CNXDNSACCH::encode(unsigned char* data) const
 
 	CNXDNCRC::encodeCRC6(temp1, 26U);
 
-	// CUtils::dump("NXDN, SACCH encoded with CRC", temp1, 4U);
-
 	unsigned char temp2[9U];
 
 	CNXDNConvolution conv;
 	conv.encode(temp1, temp2, 36U);
-
-	// CUtils::dump("NXDN, SACCH convolved", temp2, 9U);
 
 	unsigned char temp3[8U];
 
@@ -148,8 +137,6 @@ void CNXDNSACCH::encode(unsigned char* data) const
 			index++;
 		}
 	}
-
-	// CUtils::dump("NXDN, SACCH punctured", temp3, 8U);
 
 	for (unsigned int i = 0U; i < NXDN_SACCH_LENGTH_BITS; i++) {
 		unsigned int n = INTERLEAVE_TABLE[i] + NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS;

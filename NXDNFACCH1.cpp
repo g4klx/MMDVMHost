@@ -21,7 +21,6 @@
 #include "NXDNConvolution.h"
 #include "NXDNDefines.h"
 #include "NXDNCRC.h"
-#include "Utils.h"
 
 #include <cstdio>
 #include <cassert>
@@ -71,8 +70,6 @@ bool CNXDNFACCH1::decode(const unsigned char* data, unsigned int offset)
 {
 	assert(data != NULL);
 
-	// CUtils::dump("NXDN, FACCH1 input", data, 18U);
-
 	unsigned char temp1[18U];
 
 	for (unsigned int i = 0U; i < NXDN_FACCH1_LENGTH_BITS; i++) {
@@ -80,8 +77,6 @@ bool CNXDNFACCH1::decode(const unsigned char* data, unsigned int offset)
 		bool b = READ_BIT1(data, n);
 		WRITE_BIT1(temp1, i, b);
 	}
-
-	// CUtils::dump("NXDN, FACCH1 de-interleaved", temp1, 18U);
 
 	uint8_t temp2[210U];
 
@@ -114,8 +109,6 @@ bool CNXDNFACCH1::decode(const unsigned char* data, unsigned int offset)
 
 	conv.chainback(m_data, 96U);
 
-	// CUtils::dump("NXDN, FACCH1 decoded", m_data, 12U);
-
 	return CNXDNCRC::checkCRC12(m_data, 80U);
 }
 
@@ -129,14 +122,10 @@ void CNXDNFACCH1::encode(unsigned char* data, unsigned int offset) const
 
 	CNXDNCRC::encodeCRC12(temp1, 80U);
 
-	// CUtils::dump("NXDN, FACCH1 encoded with CRC", temp1, 12U);
-
 	unsigned char temp2[24U];
 
 	CNXDNConvolution conv;
 	conv.encode(temp1, temp2, 96U);
-
-	// CUtils::dump("NXDN, FACCH1 convolved", temp2, 24U);
 
 	unsigned char temp3[18U];
 
@@ -151,8 +140,6 @@ void CNXDNFACCH1::encode(unsigned char* data, unsigned int offset) const
 			index++;
 		}
 	}
-
-	// CUtils::dump("NXDN, FACCH1 punctured", temp3, 18U);
 
 	for (unsigned int i = 0U; i < NXDN_FACCH1_LENGTH_BITS; i++) {
 		unsigned int n = INTERLEAVE_TABLE[i] + offset;

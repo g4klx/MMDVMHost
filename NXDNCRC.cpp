@@ -104,7 +104,7 @@ bool CNXDNCRC::checkCRC15(const unsigned char* in, unsigned int length)
 	temp1[0U] = (crc >> 8) & 0xFFU;
 	temp1[1U] = (crc >> 0) & 0xFFU;
 
-	uint16_t temp2[2U];
+	uint8_t temp2[2U];
 	temp2[0U] = 0x00U;
 	temp2[1U] = 0x00U;
 	unsigned int j = length;
