@@ -69,7 +69,9 @@ private:
 	unsigned int               m_rfBits;
 	CNXDNLICH                  m_rfLastLICH;
 	CNXDNLayer3                m_rfLayer3;
+	CNXDNLayer3                m_netLayer3;
 	unsigned char              m_rfMask;
+	unsigned char              m_netMask;
 	CRSSIInterpolator*         m_rssiMapper;
 	unsigned char              m_rssi;
 	unsigned char              m_maxRSSI;
