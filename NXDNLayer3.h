@@ -35,6 +35,7 @@ public:
 	bool           getIsGroup() const;
 	unsigned char  getDataBlocks() const;
 
+	void           setData(const unsigned char* data, unsigned int length);
 	void           getData(unsigned char* data) const;
 
 	void           reset();

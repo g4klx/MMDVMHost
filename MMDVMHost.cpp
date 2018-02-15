@@ -1173,7 +1173,7 @@ bool CMMDVMHost::createNXDNNetwork()
 	LogInfo("    Gateway Port: %u", gatewayPort);
 	LogInfo("    Mode Hang: %us", m_nxdnNetModeHang);
 
-	m_nxdnNetwork = new CNXDNNetwork(myAddress, myPort, gatewayAddress, gatewayPort, m_callsign, debug);
+	m_nxdnNetwork = new CNXDNNetwork(myAddress, myPort, gatewayAddress, gatewayPort, debug);
 
 	bool ret = m_nxdnNetwork->open();
 	if (!ret) {

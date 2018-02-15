@@ -28,18 +28,14 @@
 
 const unsigned int BUFFER_LENGTH = 200U;
 
-CNXDNNetwork::CNXDNNetwork(const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, const std::string& callsign, bool debug) :
+CNXDNNetwork::CNXDNNetwork(const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug) :
 m_socket(myAddress, myPort),
 m_address(),
 m_port(gatewayPort),
-m_callsign(callsign),
 m_debug(debug),
 m_enabled(false),
-m_buffer(1000U, "NXDN Network"),
-m_pollTimer(1000U, 5U)
+m_buffer(1000U, "NXDN Network")
 {
-	m_callsign.resize(10U, ' ');
-
 	m_address = CUDPSocket::lookup(gatewayAddress);
 }
 
@@ -54,70 +50,39 @@ bool CNXDNNetwork::open()
 	if (m_address.s_addr == INADDR_NONE)
 		return false;
 
-	m_pollTimer.start();
-
 	return m_socket.open();
 }
 
-bool CNXDNNetwork::write(const unsigned char* data, unsigned short src, bool grp, unsigned short dst, bool dat, unsigned char cnt, bool end)
+bool CNXDNNetwork::write(const unsigned char* data, bool single)
 {
 	assert(data != NULL);
 
-	unsigned char buffer[100U];
+	unsigned char buffer[110U];
+	::memset(buffer, 0x00U, 110U);
 
-	buffer[0U] = 'N';
-	buffer[1U] = 'X';
-	buffer[2U] = 'D';
-	buffer[3U] = 'N';
-	buffer[4U] = 'D';
+	buffer[0U] = 'I';
+	buffer[1U] = 'C';
+	buffer[2U] = 'O';
+	buffer[3U] = 'M';
+	buffer[4U] = 0x01U;
+	buffer[5U] = 0x01U;
+	buffer[6U] = 0x08U;
+	buffer[7U] = 0xE0U;
 
-	buffer[5U] = (src >> 8) & 0xFFU;
-	buffer[6U] = (src >> 0) & 0xFFU;
+	buffer[37U] = 0x23U;
+	buffer[38U] = single ? 0x1CU : 0x10U;
+	buffer[39U] = 0x21U;
 
-	buffer[7U]  = grp ? 0x01U : 0x00U;
-	buffer[7U] |= dat ? 0x02U : 0x00U;
-	buffer[7U] |= end ? 0x04U : 0x00U;
-
-	buffer[8U] = (dst >> 8) & 0xFFU;
-	buffer[9U] = (dst >> 0) & 0xFFU;
-
-	buffer[10U] = cnt;
-
-	::memcpy(buffer + 11U, data, NXDN_FRAME_LENGTH_BYTES);
+	::memcpy(buffer + 40U, data, 33U);
 
 	if (m_debug)
-		CUtils::dump(1U, "NXDN Network Data Sent", buffer, 59U);
+		CUtils::dump(1U, "NXDN Network Data Sent", buffer, 102U);
 
-	return m_socket.write(buffer, 59U, m_address, m_port);
-}
-
-bool CNXDNNetwork::writePoll()
-{
-	unsigned char buffer[20U];
-
-	buffer[0U] = 'N';
-	buffer[1U] = 'X';
-	buffer[2U] = 'D';
-	buffer[3U] = 'N';
-	buffer[4U] = 'P';
-
-	for (unsigned int i = 0U; i < 10U; i++)
-		buffer[5U + i] = m_callsign.at(i);
-
-	if (m_debug)
-		CUtils::dump(1U, "NXDN Network Poll Sent", buffer, 15U);
-
-	return m_socket.write(buffer, 15U, m_address, m_port);
+	return m_socket.write(buffer, 102U, m_address, m_port);
 }
 
 void CNXDNNetwork::clock(unsigned int ms)
 {
-	m_pollTimer.clock(ms);
-	if (m_pollTimer.hasExpired()) {
-		writePoll();
-		m_pollTimer.start();
-	}
-
 	unsigned char buffer[BUFFER_LENGTH];
 
 	in_addr address;
@@ -132,12 +97,11 @@ void CNXDNNetwork::clock(unsigned int ms)
 		return;
 	}
 
-	// Ignore incoming polls
-	if (::memcmp(buffer, "NXDNP", 5U) == 0)
+	// Invalid packet type?
+	if (::memcmp(buffer, "ICOM", 4U) != 0)
 		return;
 
-	// Invalid packet type?
-	if (::memcmp(buffer, "NXDND", 5U) != 0)
+	if (length != 102)
 		return;
 
 	if (!m_enabled)
@@ -146,30 +110,19 @@ void CNXDNNetwork::clock(unsigned int ms)
 	if (m_debug)
 		CUtils::dump(1U, "NXDN Network Data Received", buffer, length);
 
-	m_buffer.addData(buffer, 59U);
+	m_buffer.addData(buffer + 40U, 33U);
 }
 
-unsigned int CNXDNNetwork::read(unsigned char* data, unsigned short& src, bool& grp, unsigned short& dst, bool& dat, unsigned char& cnt, bool& end)
+bool CNXDNNetwork::read(unsigned char* data)
 {
 	assert(data != NULL);
 
 	if (m_buffer.isEmpty())
-		return 0U;
+		return false;
 
-	unsigned char buffer[100U];
-	m_buffer.getData(buffer, 59U);
+	m_buffer.getData(data, 33U);
 
-	src = (buffer[5U] << 8) + buffer[6U];
-	grp = (buffer[7U] & 0x01U) == 0x01U;
-	dat = (buffer[7U] & 0x02U) == 0x02U;
-	end = (buffer[7U] & 0x04U) == 0x04U;
-	dst = (buffer[8U] << 8) + buffer[9U];
-
-	cnt = buffer[10U];
-
-	::memcpy(data, buffer + 11U, NXDN_FRAME_LENGTH_BYTES);
-
-	return NXDN_FRAME_LENGTH_BYTES;
+	return true;
 }
 
 void CNXDNNetwork::reset()

@@ -29,16 +29,16 @@
 
 class CNXDNNetwork {
 public:
-	CNXDNNetwork(const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, const std::string& callsign, bool debug);
+	CNXDNNetwork(const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug);
 	~CNXDNNetwork();
 
 	bool open();
 
 	void enable(bool enabled);
 
-	bool write(const unsigned char* data, unsigned short src, bool grp, unsigned short dst, bool dat, unsigned char cnt, bool end);
+	bool write(const unsigned char* data, bool single);
 
-	unsigned int read(unsigned char* data, unsigned short& src, bool& grp, unsigned short& dst, bool& dat, unsigned char& cnt, bool& end);
+	bool read(unsigned char* data);
 
 	void reset();
 
@@ -50,13 +50,9 @@ private:
 	CUDPSocket     m_socket;
 	in_addr        m_address;
 	unsigned int   m_port;
-	std::string    m_callsign;
 	bool           m_debug;
 	bool           m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
-	CTimer         m_pollTimer;
-
-	bool writePoll();
 };
 
 #endif

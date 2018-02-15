@@ -107,6 +107,11 @@ unsigned char CNXDNLICH::getDirection() const
 	return (m_lich[0U] >> 1) & 0x01U;
 }
 
+unsigned char CNXDNLICH::getData() const
+{
+	return m_lich[0U];
+}
+
 void CNXDNLICH::setRFCT(unsigned char rfct)
 {
 	m_lich[0U] &= 0x3FU;
@@ -129,6 +134,11 @@ void CNXDNLICH::setDirection(unsigned char direction)
 {
 	m_lich[0U] &= 0xFDU;
 	m_lich[0U] |= (direction << 1) & 0x02U;
+}
+
+void CNXDNLICH::setData(unsigned char lich)
+{
+	m_lich[0U] = lich;
 }
 
 CNXDNLICH& CNXDNLICH::operator=(const CNXDNLICH& lich)

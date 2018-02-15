@@ -60,12 +60,9 @@ m_netFrames(0U),
 m_netLost(0U),
 m_rfErrs(0U),
 m_rfBits(1U),
-m_netErrs(0U),
-m_netBits(1U),
 m_rfLastLICH(),
 m_rfLayer3(),
 m_rfMask(0x00U),
-m_netN(0U),
 m_rssiMapper(rssiMapper),
 m_rssi(0U),
 m_maxRSSI(0U),
@@ -232,7 +229,8 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 		scrambler(data + 2U);
 
-		writeNetwork(data, false);
+		// XXX This is wrong
+		writeNetwork(data, true);
 
 #if defined(DUMP_NXDN)
 		writeFile(data + 2U);
@@ -404,7 +402,8 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 			scrambler(start + 2U);
 
-			writeNetwork(start, false);
+			// XXX This is wrong
+			writeNetwork(start, true);
 
 #if defined(DUMP_NXDN)
 			writeFile(start + 2U);
@@ -491,6 +490,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 		scrambler(data + 2U);
 
+		// XXX This is wrong
 		writeNetwork(data, false);
 
 #if defined(DUMP_NXDN)
@@ -586,6 +586,7 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 
 	scrambler(data + 2U);
 
+	// XXX This is wrong
 	writeNetwork(data, true);
 
 	if (m_duplex)
@@ -657,80 +658,123 @@ void CNXDNControl::writeEndNet()
 
 void CNXDNControl::writeNetwork()
 {
-	unsigned short srcId = 0U;
-	unsigned short dstId = 0U;
-	unsigned char count = 0U;
-	bool grp = false;
-	bool dat = false;
-	bool end = false;
-	unsigned char data[200U];
-	unsigned int length = m_network->read(data + 2U, srcId, grp, dstId, dat, count, end);
-	if (length == 0U)
+	unsigned char netData[40U];
+	bool exists = m_network->read(netData);
+	if (!exists)
 		return;
 
 	if (m_rfState != RS_RF_LISTENING && m_netState == RS_NET_IDLE)
 		return;
 
-	if (end && m_netState == RS_NET_IDLE)
-		return;
-
 	m_networkWatchdog.start();
 
-	scrambler(data + 2U);
+	unsigned char data[NXDN_FRAME_LENGTH_BYTES + 2U];
 
-	if (dat) {
-		CNXDNUDCH udch;
-		bool valid = udch.decode(data + 2U);
-		if (valid) {
-			if (m_netState == RS_NET_IDLE) {
-				unsigned char buffer[23U];
-				udch.getData(buffer);
+	CSync::addNXDNSync(data + 2U);
 
-				CNXDNLayer3 layer3;
-				layer3.decode(buffer, 184U);
+	CNXDNLICH lich;
+	lich.setData(netData[0U]);
+	unsigned char usc    = lich.getFCT();
+	unsigned char option = lich.getOption();
+	lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
+	lich.encode(data + 2U);
 
-				unsigned char type = layer3.getMessageType();
-				if (type == NXDN_MESSAGE_TYPE_DCALL_HDR) {
-					unsigned short srcId = layer3.getSourceUnitId();
-					unsigned short dstId = layer3.getDestinationGroupId();
-					bool grp = layer3.getIsGroup();
+	if (usc == NXDN_LICH_USC_UDCH) {
+		CNXDNLayer3 layer3;
+		layer3.setData(netData + 2U, 23U);
+		unsigned char type = layer3.getMessageType();
 
-					unsigned char frames = layer3.getDataBlocks();
+		if (m_netState == RS_NET_IDLE) {
+			if (type == NXDN_MESSAGE_TYPE_DCALL_HDR) {
+				unsigned short srcId = layer3.getSourceUnitId();
+				unsigned short dstId = layer3.getDestinationGroupId();
+				bool grp = layer3.getIsGroup();
 
-					std::string source = m_lookup->find(srcId);
+				unsigned char frames = layer3.getDataBlocks();
 
-					m_display->writeNXDN(source.c_str(), grp, dstId, "N");
+				std::string source = m_lookup->find(srcId);
+				m_display->writeNXDN(source.c_str(), grp, dstId, "N");
+				LogMessage("NXDN, received network data header from %s to %s%u, %u blocks", source.c_str(), grp ? "TG " : "", dstId, frames);
 
-					LogMessage("NXDN, received network data header from %s to %s%u, %u blocks", source.c_str(), grp ? "TG " : "", dstId, frames);
-
-					m_netState = RS_NET_DATA;
-				}
-			}
-
-			if (m_netState == RS_NET_DATA) {
-				data[0U] = end ? TAG_EOT : TAG_DATA;
-				data[1U] = 0x00U;
-
-				CSync::addNXDNSync(data + 2U);
-
-				CNXDNLICH lich;
-				lich.decode(data + 2U);
-				lich.encode(data + 2U);
-
-				udch.setRAN(m_ran);
-				udch.encode(data + 2U);
-
-				scrambler(data + 2U);
-
-				writeQueueNet(data);
-
-				if (end) {
-					LogMessage("NXDN, ended network data transmission");
-					writeEndNet();
-				}
+				m_netState = RS_NET_DATA;
+			} else {
+				return;
 			}
 		}
-	} else {
+
+		if (m_netState == RS_NET_DATA) {
+			data[0U] = type == NXDN_MESSAGE_TYPE_TX_REL ? TAG_EOT : TAG_DATA;
+			data[1U] = 0x00U;
+
+			CNXDNUDCH udch;
+			udch.setRAN(m_ran);
+			udch.setData(netData + 2U);
+			udch.encode(data + 2U);
+
+			scrambler(data + 2U);
+
+			writeQueueNet(data);
+
+			if (type == NXDN_MESSAGE_TYPE_TX_REL) {
+				LogMessage("NXDN, ended network data transmission");
+				writeEndNet();
+			}
+		}
+	} else if (usc == NXDN_LICH_USC_SACCH_NS) {
+		CNXDNLayer3 layer3;
+		layer3.setData(netData + 5U, 10U);
+
+		unsigned char type = layer3.getMessageType();
+		if (type == NXDN_MESSAGE_TYPE_TX_REL && m_netState == RS_RF_LISTENING)
+			return;
+		if (type == NXDN_MESSAGE_TYPE_VCALL && m_netState != RS_RF_LISTENING)
+			return;
+
+		CNXDNSACCH sacch;
+		sacch.setRAN(m_ran);
+		sacch.setStructure(NXDN_SR_SINGLE);
+		sacch.setData(SACCH_IDLE);
+		sacch.encode(data + 2U);
+
+		unsigned char message[22U];
+		m_rfLayer3.getData(message);
+
+		CNXDNFACCH1 facch;
+		facch.setData(message);
+		facch.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
+		facch.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
+
+		data[0U] = type == NXDN_MESSAGE_TYPE_TX_REL ? TAG_EOT : TAG_DATA;
+		data[1U] = 0x00U;
+
+		scrambler(data + 2U);
+
+		writeQueueNet(data);
+
+		if (type == NXDN_MESSAGE_TYPE_TX_REL) {
+			m_netFrames++;
+			LogMessage("NXDN, received network end of transmission, %.1f seconds, %u%% packet loss", float(m_netFrames) / 12.5F, (m_netLost * 100U) / m_netFrames);
+			writeEndNet();
+		} else if (type == NXDN_MESSAGE_TYPE_VCALL) {
+			unsigned short srcId = layer3.getSourceUnitId();
+			unsigned short dstId = layer3.getDestinationGroupId();
+			bool grp             = layer3.getIsGroup();
+
+			std::string source = m_lookup->find(srcId);
+			LogMessage("NXDN, received network transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
+			m_display->writeNXDN(source.c_str(), grp, dstId, "N");
+
+			m_netTimeoutTimer.start();
+			m_packetTimer.start();
+			m_elapsed.start();
+			m_netState  = RS_NET_AUDIO;
+			m_netFrames = 1U;
+			m_netLost   = 0U;
+		} else {
+			m_netFrames++;
+			CUtils::dump(2U, "NXDN, interesting non superblock network frame", netData, 33U);
+		}
+	} else if (m_netState == RS_NET_IDLE) {
 		if (m_netState == RS_NET_IDLE) {
 			std::string source = m_lookup->find(srcId);
 			LogMessage("NXDN, received network transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
@@ -742,39 +786,25 @@ void CNXDNControl::writeNetwork()
 			m_netState  = RS_NET_AUDIO;
 			m_netFrames = 0U;
 			m_netLost   = 0U;
-			m_netErrs   = 0U;
-			m_netBits   = 1U;
-			m_netN      = 0U;
 		}
-
+	} else {
 		m_netFrames++;
 
-		data[0U] = end ? TAG_EOT : TAG_DATA;
+		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
 
-		CSync::addNXDNSync(data + 2U);
-
-		CNXDNLICH lich;
-		lich.decode(data + 2U);
-		lich.encode(data + 2U);
-		unsigned char option = lich.getOption();
-
 		CNXDNSACCH sacch;
-		bool valid = sacch.decode(data + 2U);
-		if (valid) {
-			sacch.setRAN(m_ran);
-			sacch.encode(data + 2U);
-		}
+		sacch.setData(netData + 1U);
+		sacch.setRAN(m_ran);
+		sacch.encode(data + 2U);
 
+		// XXX this is wrong
 		if (option == NXDN_LICH_STEAL_NONE) {
 			CAMBEFEC ambe;
-			unsigned int errors = 0U;
-			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
-			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
-			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
-			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
-			m_netErrs += errors;
-			m_netBits += 188U;
+			ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
+			ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
+			ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
+			ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
 		} else if (option == NXDN_LICH_STEAL_FACCH1_1) {
 			CNXDNFACCH1 facch1;
 			bool valid = facch1.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
@@ -782,18 +812,12 @@ void CNXDNControl::writeNetwork()
 				facch1.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
 
 			CAMBEFEC ambe;
-			unsigned int errors = 0U;
-			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
-			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
-			m_netErrs += errors;
-			m_netBits += 94U;
+			ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
+			ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
 		} else if (option == NXDN_LICH_STEAL_FACCH1_2) {
 			CAMBEFEC ambe;
-			unsigned int errors = 0U;
-			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
-			errors += ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
-			m_netErrs += errors;
-			m_netBits += 94U;
+			ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
+			ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
 
 			CNXDNFACCH1 facch1;
 			bool valid = facch1.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
@@ -814,11 +838,6 @@ void CNXDNControl::writeNetwork()
 		scrambler(data + 2U);
 
 		writeQueueNet(data);
-
-		if (end) {
-			LogMessage("NXDN, received network end of transmission, %.1f seconds, %u%% packet loss, BER: %.1f%%", float(m_netFrames) / 12.5F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
-			writeEndNet();
-		}
 	}
 }
 
@@ -834,7 +853,7 @@ void CNXDNControl::clock(unsigned int ms)
 		m_networkWatchdog.clock(ms);
 
 		if (m_networkWatchdog.hasExpired()) {
-			LogMessage("NXDN, network watchdog has expired, %.1f seconds, %u%% packet loss, BER: %.1f%%", float(m_netFrames) / 12.5F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
+			LogMessage("NXDN, network watchdog has expired, %.1f seconds, %u%% packet loss", float(m_netFrames) / 12.5F, (m_netLost * 100U) / m_netFrames);
 			writeEndNet();
 		}
 	}
@@ -883,7 +902,7 @@ void CNXDNControl::writeQueueNet(const unsigned char *data)
 	m_queue.addData(data, len);
 }
 
-void CNXDNControl::writeNetwork(const unsigned char *data, bool dat)
+void CNXDNControl::writeNetwork(const unsigned char *data, bool single)
 {
 	assert(data != NULL);
 
@@ -893,13 +912,7 @@ void CNXDNControl::writeNetwork(const unsigned char *data, bool dat)
 	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired())
 		return;
 
-	unsigned short srcId = m_rfLayer3.getSourceUnitId();
-	unsigned short dstId = m_rfLayer3.getDestinationGroupId();
-	bool grp             = m_rfLayer3.getIsGroup();
-
-	bool end = data[0U] == TAG_EOT;
-
-	m_network->write(data + 2U, srcId, grp, dstId, dat, m_rfFrames, end);
+	m_network->write(data, single);
 }
 
 void CNXDNControl::scrambler(unsigned char* data) const

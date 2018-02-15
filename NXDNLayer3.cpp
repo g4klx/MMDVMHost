@@ -97,6 +97,12 @@ void CNXDNLayer3::getData(unsigned char* data) const
 	::memcpy(data, m_data, 22U);
 }
 
+void CNXDNLayer3::setData(const unsigned char* data, unsigned int length)
+{
+	::memset(m_data, 0x00U, 22U);
+	::memcpy(m_data, data, length);
+}
+
 void CNXDNLayer3::reset()
 {
 	::memset(m_data, 0x00U, 22U);
