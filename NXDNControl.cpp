@@ -693,7 +693,7 @@ void CNXDNControl::writeNetwork()
 			if (type == NXDN_MESSAGE_TYPE_DCALL_HDR) {
 				unsigned short srcId = layer3.getSourceUnitId();
 				unsigned short dstId = layer3.getDestinationGroupId();
-				bool grp = layer3.getIsGroup();
+				bool grp             = layer3.getIsGroup();
 
 				unsigned char frames = layer3.getDataBlocks();
 
@@ -726,10 +726,9 @@ void CNXDNControl::writeNetwork()
 			}
 		}
 	} else if (usc == NXDN_LICH_USC_SACCH_NS) {
-		CNXDNLayer3 layer3;
-		layer3.setData(netData + 5U, 10U);
+		m_netLayer3.setData(netData + 5U + 0U, 10U);
 
-		unsigned char type = layer3.getMessageType();
+		unsigned char type = m_netLayer3.getMessageType();
 		if (type == NXDN_MESSAGE_TYPE_TX_REL && m_netState == RS_RF_LISTENING)
 			return;
 		if (type == NXDN_MESSAGE_TYPE_VCALL && m_netState != RS_RF_LISTENING)
@@ -741,11 +740,8 @@ void CNXDNControl::writeNetwork()
 		sacch.setData(SACCH_IDLE);
 		sacch.encode(data + 2U);
 
-		unsigned char message[22U];
-		m_rfLayer3.getData(message);
-
 		CNXDNFACCH1 facch;
-		facch.setData(message);
+		facch.setData(netData + 5U + 0U);
 		facch.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
 		facch.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
 
@@ -761,9 +757,9 @@ void CNXDNControl::writeNetwork()
 			LogMessage("NXDN, received network end of transmission, %.1f seconds, %u%% packet loss", float(m_netFrames) / 12.5F, (m_netLost * 100U) / m_netFrames);
 			writeEndNet();
 		} else if (type == NXDN_MESSAGE_TYPE_VCALL) {
-			unsigned short srcId = layer3.getSourceUnitId();
-			unsigned short dstId = layer3.getDestinationGroupId();
-			bool grp             = layer3.getIsGroup();
+			unsigned short srcId = m_netLayer3.getSourceUnitId();
+			unsigned short dstId = m_netLayer3.getDestinationGroupId();
+			bool grp             = m_netLayer3.getIsGroup();
 
 			std::string source = m_lookup->find(srcId);
 			LogMessage("NXDN, received network transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
@@ -883,9 +879,8 @@ void CNXDNControl::writeNetwork()
 			ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
 		} else if (option == NXDN_LICH_STEAL_FACCH1_1) {
 			CNXDNFACCH1 facch1;
-			bool valid = facch1.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
-			if (valid)
-				facch1.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
+			facch1.setData(netData + 5U + 0U);
+			facch1.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
 
 			CAMBEFEC ambe;
 			ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
@@ -896,19 +891,16 @@ void CNXDNControl::writeNetwork()
 			ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
 
 			CNXDNFACCH1 facch1;
-			bool valid = facch1.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
-			if (valid)
-				facch1.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
+			facch1.setData(netData + 5U + 14U);
+			facch1.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
 		} else {
 			CNXDNFACCH1 facch11;
-			bool valid1 = facch11.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
-			if (valid1)
-				facch11.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
+			facch11.setData(netData + 5U + 0U);
+			facch11.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
 
 			CNXDNFACCH1 facch12;
-			bool valid2 = facch12.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
-			if (valid2)
-				facch12.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
+			facch12.setData(netData + 5U + 14U);
+			facch12.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
 		}
 
 		scrambler(data + 2U);
