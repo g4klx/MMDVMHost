@@ -14,6 +14,7 @@
 #include "NXDNControl.h"
 #include "NXDNFACCH1.h"
 #include "NXDNSACCH.h"
+#include "NXDNAudio.h"
 #include "NXDNUDCH.h"
 #include "AMBEFEC.h"
 #include "Utils.h"
@@ -870,25 +871,20 @@ void CNXDNControl::writeNetwork()
 		sacch.setRAN(m_ran);
 		sacch.encode(data + 2U);
 
-		// XXX this is wrong
 		if (option == NXDN_LICH_STEAL_NONE) {
-			CAMBEFEC ambe;
-			ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
-			ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
-			ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
-			ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
+			CNXDNAudio audio;
+			audio.encode(netData + 5U + 0U,  data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 0U);
+			audio.encode(netData + 5U + 14U, data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
 		} else if (option == NXDN_LICH_STEAL_FACCH1_1) {
 			CNXDNFACCH1 facch1;
 			facch1.setData(netData + 5U + 0U);
 			facch1.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
 
-			CAMBEFEC ambe;
-			ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
-			ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
+			CNXDNAudio audio;
+			audio.encode(netData + 5U + 14U, data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
 		} else if (option == NXDN_LICH_STEAL_FACCH1_2) {
-			CAMBEFEC ambe;
-			ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES);
-			ambe.regenerateYSFDN(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
+			CNXDNAudio audio;
+			audio.encode(netData + 5U + 0U, data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 0U);
 
 			CNXDNFACCH1 facch1;
 			facch1.setData(netData + 5U + 14U);
