@@ -155,14 +155,19 @@ unsigned char CNXDNSACCH::getStructure() const
 	return (m_data[0U] >> 6) & 0x03U;
 }
 
-void CNXDNSACCH::getData(unsigned char* data) const
+void CNXDNSACCH::getData(unsigned char* data, bool checksum) const
 {
 	assert(data != NULL);
 
-	unsigned int offset = 8U;
-	for (unsigned int i = 0U; i < 18U; i++, offset++) {
-		bool b = READ_BIT1(m_data, offset);
-		WRITE_BIT1(data, i, b);
+	if (checksum) {
+		::memcpy(data, m_data, 4U);
+		CNXDNCRC::encodeCRC6(data, 26U);
+	} else {
+		unsigned int offset = 8U;
+		for (unsigned int i = 0U; i < 18U; i++, offset++) {
+			bool b = READ_BIT1(m_data, offset);
+			WRITE_BIT1(data, i, b);
+		}
 	}
 }
 

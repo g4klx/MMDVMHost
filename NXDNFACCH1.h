@@ -29,7 +29,7 @@ public:
 
 	void encode(unsigned char* data, unsigned int offset) const;
 
-	void getData(unsigned char* data) const;
+	void getData(unsigned char* data, bool checksum = false) const;
 
 	void setData(const unsigned char* data);
 

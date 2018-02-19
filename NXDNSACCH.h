@@ -32,7 +32,7 @@ public:
 	unsigned char getRAN() const;
 	unsigned char getStructure() const;
 
-	void getData(unsigned char* data) const;
+	void getData(unsigned char* data, bool checksum = false) const;
 
 	void setRAN(unsigned char ran);
 	void setStructure(unsigned char structure);

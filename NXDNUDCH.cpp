@@ -174,11 +174,17 @@ unsigned char CNXDNUDCH::getRAN() const
 	return m_data[0U] & 0x3FU;
 }
 
-void CNXDNUDCH::getData(unsigned char* data) const
+void CNXDNUDCH::getData(unsigned char* data, bool checksum) const
 {
 	assert(data != NULL);
 
-	::memcpy(data, m_data + 1U, 22U);
+	if (checksum) {
+		::memset(data, 0x00U, 25U);
+		::memcpy(data, m_data, 23U);
+		CNXDNCRC::encodeCRC15(data, 184U);
+	} else {
+		::memcpy(data, m_data + 1U, 22U);
+	}
 }
 
 void CNXDNUDCH::setRAN(unsigned char ran)

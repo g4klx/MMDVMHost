@@ -31,7 +31,7 @@ public:
 
 	unsigned char getRAN() const;
 
-	void getData(unsigned char* data) const;
+	void getData(unsigned char* data, bool checksum = false) const;
 
 	void setRAN(unsigned char ran);
 

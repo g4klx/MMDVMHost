@@ -148,11 +148,17 @@ void CNXDNFACCH1::encode(unsigned char* data, unsigned int offset) const
 	}
 }
 
-void CNXDNFACCH1::getData(unsigned char* data) const
+void CNXDNFACCH1::getData(unsigned char* data, bool checksum) const
 {
 	assert(data != NULL);
 
-	::memcpy(data, m_data, 10U);
+	if (checksum) {
+		::memset(data, 0x00U, 12U);
+		::memcpy(data, m_data, 10U);
+		CNXDNCRC::encodeCRC12(data, 80U);
+	} else {
+		::memcpy(data, m_data, 10U);
+	}
 }
 
 void CNXDNFACCH1::setData(const unsigned char* data)
