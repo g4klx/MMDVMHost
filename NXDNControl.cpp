@@ -773,8 +773,8 @@ void CNXDNControl::writeNetwork()
 			m_netFrames = 1U;
 			m_netLost   = 0U;
 		} else {
-			m_netFrames++;
 			CUtils::dump(2U, "NXDN, interesting non superblock network frame", netData, 33U);
+			return;
 		}
 	} else {
 		if (m_netState == RS_NET_IDLE) {

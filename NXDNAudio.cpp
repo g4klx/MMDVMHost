@@ -498,18 +498,13 @@ void CNXDNAudio::decode(const unsigned char* in, unsigned char* out, unsigned in
 		MASK >>= 1;
 	}
 
-	bool b24 = (b & 0x01U) == 0x01U;
-
 	unsigned int data  = CGolay24128::decode24128(a);
 
 	// The PRNG
 	unsigned int p = PRNG_TABLE[data];
-
 	b ^= p;
-	unsigned int datb  = CGolay24128::decode24128(b);
 
-	datb &= 0xFFFFFEU;
-	datb |= b24 ? 0x01U : 0x00U;
+	unsigned int datb  = CGolay24128::decode24128(b);
 
 	MASK = 0x000800U;
 	for (unsigned int i = 0U; i < 12U; i++) {
@@ -564,18 +559,14 @@ void CNXDNAudio::encode(const unsigned char* in, unsigned char* out, unsigned in
 		MASK >>= 1;
 	}
 
-	bool b24 = (cOrig & 0x1000000U) == 0x1000000U;
+	unsigned int a = CGolay24128::encode24128(aOrig);
 
 	// The PRNG
 	unsigned int p = PRNG_TABLE[aOrig];
-
-	unsigned int a = CGolay24128::encode24128(aOrig);
 	unsigned int b = CGolay24128::encode24128(bOrig);
-	unsigned int c = cOrig;
-
 	b ^= p;
-	b &= 0xFFFFFEU;
-	b |= b24 ? 0x01U : 0x00U;
+
+	unsigned int c = cOrig;
 
 	MASK = 0x800000U;
 	for (unsigned int i = 0U; i < 24U; i++) {
