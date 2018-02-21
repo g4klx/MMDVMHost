@@ -32,12 +32,14 @@ public:
 	unsigned char getRAN() const;
 	unsigned char getStructure() const;
 
-	void getData(unsigned char* data, bool checksum = false) const;
+	void getData(unsigned char* data) const;
+	void getRaw(unsigned char* data) const;
 
 	void setRAN(unsigned char ran);
 	void setStructure(unsigned char structure);
 
 	void setData(const unsigned char* data);
+	void setRaw(const unsigned char* data);
 
 	CNXDNSACCH& operator=(const CNXDNSACCH& sacch);
 

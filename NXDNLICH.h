@@ -33,13 +33,13 @@ public:
 	unsigned char getFCT() const;
 	unsigned char getOption() const;
 	unsigned char getDirection() const;
-	unsigned char getData() const;
+	unsigned char getRaw() const;
 	
 	void setRFCT(unsigned char rfct);
 	void setFCT(unsigned char usc);
 	void setOption(unsigned char option);
 	void setDirection(unsigned char direction);
-	void setData(unsigned char lich);
+	void setRaw(unsigned char lich);
 
 	CNXDNLICH& operator=(const CNXDNLICH& lich);
 

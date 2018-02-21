@@ -679,7 +679,7 @@ void CNXDNControl::writeNetwork()
 	CSync::addNXDNSync(data + 2U);
 
 	CNXDNLICH lich;
-	lich.setData(netData[0U]);
+	lich.setRaw(netData[0U]);
 	unsigned char usc    = lich.getFCT();
 	unsigned char option = lich.getOption();
 	lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);

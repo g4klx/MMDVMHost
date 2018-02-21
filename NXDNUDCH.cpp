@@ -174,17 +174,21 @@ unsigned char CNXDNUDCH::getRAN() const
 	return m_data[0U] & 0x3FU;
 }
 
-void CNXDNUDCH::getData(unsigned char* data, bool checksum) const
+void CNXDNUDCH::getData(unsigned char* data) const
 {
 	assert(data != NULL);
 
-	if (checksum) {
-		::memset(data, 0x00U, 25U);
-		::memcpy(data, m_data, 23U);
-		CNXDNCRC::encodeCRC15(data, 184U);
-	} else {
-		::memcpy(data, m_data + 1U, 22U);
-	}
+	::memcpy(data, m_data + 1U, 22U);
+}
+
+void CNXDNUDCH::getRaw(unsigned char* data) const
+{
+	assert(data != NULL);
+
+	::memset(data, 0x00U, 25U);
+	::memcpy(data, m_data, 23U);
+
+	CNXDNCRC::encodeCRC15(data, 184U);
 }
 
 void CNXDNUDCH::setRAN(unsigned char ran)
@@ -197,6 +201,13 @@ void CNXDNUDCH::setData(const unsigned char* data)
 	assert(data != NULL);
 
 	::memcpy(m_data + 1U, data, 22U);
+}
+
+void CNXDNUDCH::setRaw(const unsigned char* data)
+{
+	assert(data != NULL);
+
+	::memcpy(m_data, data, 25U);
 }
 
 CNXDNUDCH& CNXDNUDCH::operator=(const CNXDNUDCH& udch)

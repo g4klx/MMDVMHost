@@ -29,9 +29,11 @@ public:
 
 	void encode(unsigned char* data, unsigned int offset) const;
 
-	void getData(unsigned char* data, bool checksum = false) const;
+	void getData(unsigned char* data) const;
+	void getRaw(unsigned char* data) const;
 
 	void setData(const unsigned char* data);
+	void setRaw(const unsigned char* data);
 
 	CNXDNFACCH1& operator=(const CNXDNFACCH1& facch);
 
