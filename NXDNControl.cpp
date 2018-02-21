@@ -58,7 +58,6 @@ m_networkWatchdog(1000U, 0U, 1500U),
 m_elapsed(),
 m_rfFrames(0U),
 m_netFrames(0U),
-m_netLost(0U),
 m_rfErrs(0U),
 m_rfBits(1U),
 m_rfLastLICH(),
@@ -755,7 +754,7 @@ void CNXDNControl::writeNetwork()
 
 		if (type == NXDN_MESSAGE_TYPE_TX_REL) {
 			m_netFrames++;
-			LogMessage("NXDN, received network end of transmission, %.1f seconds, %u%% packet loss", float(m_netFrames) / 12.5F, (m_netLost * 100U) / m_netFrames);
+			LogMessage("NXDN, received network end of transmission, %.1f seconds", float(m_netFrames) / 12.5F);
 			writeEndNet();
 		} else if (type == NXDN_MESSAGE_TYPE_VCALL) {
 			unsigned short srcId = m_netLayer3.getSourceUnitId();
@@ -771,7 +770,6 @@ void CNXDNControl::writeNetwork()
 			m_elapsed.start();
 			m_netState  = RS_NET_AUDIO;
 			m_netFrames = 1U;
-			m_netLost   = 0U;
 		} else {
 			CUtils::dump(2U, "NXDN, interesting non superblock network frame", netData, 33U);
 			return;
@@ -823,7 +821,6 @@ void CNXDNControl::writeNetwork()
 			m_elapsed.start();
 			m_netState  = RS_NET_AUDIO;
 			m_netFrames = 1U;
-			m_netLost   = 0U;
 
 			// Create a dummy start message
 			unsigned char start[NXDN_FRAME_LENGTH_BYTES + 2U];
@@ -917,7 +914,7 @@ void CNXDNControl::clock(unsigned int ms)
 		m_networkWatchdog.clock(ms);
 
 		if (m_networkWatchdog.hasExpired()) {
-			LogMessage("NXDN, network watchdog has expired, %.1f seconds, %u%% packet loss", float(m_netFrames) / 12.5F, (m_netLost * 100U) / m_netFrames);
+			LogMessage("NXDN, network watchdog has expired, %.1f seconds", float(m_netFrames) / 12.5F);
 			writeEndNet();
 		}
 	}

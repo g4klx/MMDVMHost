@@ -64,7 +64,6 @@ private:
 	CStopWatch                 m_elapsed;
 	unsigned int               m_rfFrames;
 	unsigned int               m_netFrames;
-	unsigned int               m_netLost;
 	unsigned int               m_rfErrs;
 	unsigned int               m_rfBits;
 	CNXDNLICH                  m_rfLastLICH;
