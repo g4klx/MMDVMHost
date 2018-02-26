@@ -1067,6 +1067,17 @@ void CYSFControl::writeNetwork()
 		// Set the downlink callsign
 		switch (fi) {
 		case YSF_FI_HEADER:
+			m_netPayload.processHeaderData(data + 35U);
+			if (::memcmp(m_netSource, "??????????", YSF_CALLSIGN_LENGTH) == 0) {
+				unsigned char* source = m_netPayload.getSource();
+				if (source != NULL) {
+					::memcpy(m_netSource, source, YSF_CALLSIGN_LENGTH);
+					m_display->writeFusion((char*)m_netSource, (char*)m_netDest, "N", (char*)(data + 4U));
+					LogMessage("YSF, received network data from %10.10s to %10.10s at %10.10s", m_netSource, m_netDest, data + 4U);
+				}
+			}
+			break;
+
 		case YSF_FI_TERMINATOR:
 			m_netPayload.processHeaderData(data + 35U);
 			break;
@@ -1078,6 +1089,15 @@ void CYSFControl::writeNetwork()
 					unsigned int errors = m_netPayload.processVDMode1Audio(data + 35U);
 					m_netErrs += errors;
 					m_netBits += 235U;
+
+					if (::memcmp(m_netSource, "??????????", YSF_CALLSIGN_LENGTH) == 0) {
+						unsigned char* source = m_netPayload.getSource();
+						if (source != NULL) {
+							::memcpy(m_netSource, source, YSF_CALLSIGN_LENGTH);
+							m_display->writeFusion((char*)m_netSource, (char*)m_netDest, "N", (char*)(data + 4U));
+							LogMessage("YSF, received network data from %10.10s to %10.10s at %10.10s", m_netSource, m_netDest, data + 4U);
+						}
+					}
 				}
 				break;
 
@@ -1086,6 +1106,15 @@ void CYSFControl::writeNetwork()
 					unsigned int errors = m_netPayload.processVDMode2Audio(data + 35U);
 					m_netErrs += errors;
 					m_netBits += 135U;
+
+					if (::memcmp(m_netSource, "??????????", YSF_CALLSIGN_LENGTH) == 0) {
+						unsigned char* source = m_netPayload.getSource();
+						if (source != NULL) {
+							::memcpy(m_netSource, source, YSF_CALLSIGN_LENGTH);
+							m_display->writeFusion((char*)m_netSource, (char*)m_netDest, "N", (char*)(data + 4U));
+							LogMessage("YSF, received network data from %10.10s to %10.10s at %10.10s", m_netSource, m_netDest, data + 4U);
+						}
+					}
 				}
 				break;
 
