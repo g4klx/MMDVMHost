@@ -263,7 +263,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DSQ information
+			// Remove any DSQ/DG-ID information
 			fich.setSQL(false);
 			fich.setSQ(0U);
 			fich.encode(data + 2U);
@@ -278,8 +278,12 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 #endif
 
 			if (m_duplex) {
-				// Add the DSQ information.
-				fich.setSQL(m_sqlEnabled);
+				// Add the DSQ/DG-ID information.
+				unsigned char cm = fich.getCM();
+				if (cm == YSF_CM_GROUP2)
+					fich.setSQL(false);
+				else
+					fich.setSQL(m_sqlEnabled);
 				fich.setSQ(m_sqlValue);
 
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
@@ -307,7 +311,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DSQ information
+			// Remove any DSQ/DG-ID information
 			fich.setSQL(false);
 			fich.setSQ(0U);
 			fich.encode(data + 2U);
@@ -322,8 +326,12 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 #endif
 
 			if (m_duplex) {
-				// Add the DSQ information.
-				fich.setSQL(m_sqlEnabled);
+				// Add the DSQ/DG-ID information.
+				unsigned char cm = fich.getCM();
+				if (cm == YSF_CM_GROUP2)
+					fich.setSQL(false);
+				else
+					fich.setSQL(m_sqlEnabled);
 				fich.setSQ(m_sqlValue);
 
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
@@ -366,7 +374,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 				LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 7.2F);
 			}
 
-			// Remove any DSQ information
+			// Remove any DSQ/DG-ID information
 			fich.setSQL(false);
 			fich.setSQ(0U);
 			fich.encode(data + 2U);
@@ -377,8 +385,12 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 			writeNetwork(data, m_rfFrames % 128U);
 
 			if (m_duplex) {
-				// Add the DSQ information.
-				fich.setSQL(m_sqlEnabled);
+				// Add the DSQ/DG-ID information.
+				unsigned char cm = fich.getCM();
+				if (cm == YSF_CM_GROUP2)
+					fich.setSQL(false);
+				else
+					fich.setSQL(m_sqlEnabled);
 				fich.setSQ(m_sqlValue);
 
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
@@ -449,7 +461,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DSQ information
+			// Remove any DSQ/DG-ID information
 			fich.setSQL(false);
 			fich.setSQ(0U);
 			fich.encode(data + 2U);
@@ -464,8 +476,12 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 #endif
 
 			if (m_duplex) {
-				// Add the DSQ information.
-				fich.setSQL(m_sqlEnabled);
+				// Add the DSQ/DG-ID information.
+				unsigned char cm = fich.getCM();
+				if (cm == YSF_CM_GROUP2)
+					fich.setSQL(false);
+				else
+					fich.setSQL(m_sqlEnabled);
 				fich.setSQ(m_sqlValue);
 
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
@@ -493,7 +509,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DSQ information
+			// Remove any DSQ/DG-ID information
 			fich.setSQL(false);
 			fich.setSQ(0U);
 			fich.encode(data + 2U);
@@ -508,8 +524,12 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 #endif
 
 			if (m_duplex) {
-				// Add the DSQ information.
-				fich.setSQL(m_sqlEnabled);
+				// Add the DSQ/DG-ID information.
+				unsigned char cm = fich.getCM();
+				if (cm == YSF_CM_GROUP2)
+					fich.setSQL(false);
+				else
+					fich.setSQL(m_sqlEnabled);
 				fich.setSQ(m_sqlValue);
 
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
@@ -572,7 +592,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DSQ information
+			// Remove any DSQ/DG-ID information
 			fich.setSQL(false);
 			fich.setSQ(0U);
 			fich.encode(data + 2U);
@@ -583,8 +603,12 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			writeNetwork(data, m_rfFrames % 128U);
 
 			if (m_duplex) {
-				// Add the DSQ information.
-				fich.setSQL(m_sqlEnabled);
+				// Add the DSQ/DG-ID information.
+				unsigned char cm = fich.getCM();
+				if (cm == YSF_CM_GROUP2)
+					fich.setSQL(false);
+				else
+					fich.setSQL(m_sqlEnabled);
 				fich.setSQ(m_sqlValue);
 
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
@@ -687,8 +711,12 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			writeNetwork(buffer, m_rfFrames % 128U);
 
 			if (m_duplex) {
-				// Add the DSQ information.
-				fich.setSQL(m_sqlEnabled);
+				// Add the DSQ/DG-ID information.
+				unsigned char cm = fich.getCM();
+				if (cm == YSF_CM_GROUP2)
+					fich.setSQL(false);
+				else
+					fich.setSQL(m_sqlEnabled);
 				fich.setSQ(m_sqlValue);
 
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
@@ -708,7 +736,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			fich = m_lastFICH;
 
-			// Remove any DSQ information
+			// Remove any DSQ/DG-ID information
 			fich.setSQL(false);
 			fich.setSQ(0U);
 			fich.encode(data + 2U);
@@ -719,8 +747,12 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			writeNetwork(data, m_rfFrames % 128U);
 
 			if (m_duplex) {
-				// Add the DSQ information.
-				fich.setSQL(m_sqlEnabled);
+				// Add the DSQ/DG-ID information.
+				unsigned char cm = fich.getCM();
+				if (cm == YSF_CM_GROUP2)
+					fich.setSQL(false);
+				else
+					fich.setSQL(m_sqlEnabled);
 				fich.setSQ(m_sqlValue);
 
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
@@ -788,7 +820,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DSQ information
+			// Remove any DSQ/DG-ID information
 			fich.setSQL(false);
 			fich.setSQ(0U);
 			fich.encode(data + 2U);
@@ -803,8 +835,12 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 #endif
 
 			if (m_duplex) {
-				// Add the DSQ information.
-				fich.setSQL(m_sqlEnabled);
+				// Add the DSQ/DG-ID information.
+				unsigned char cm = fich.getCM();
+				if (cm == YSF_CM_GROUP2)
+					fich.setSQL(false);
+				else
+					fich.setSQL(m_sqlEnabled);
 				fich.setSQ(m_sqlValue);
 
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
@@ -832,7 +868,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DSQ information
+			// Remove any DSQ/DG-ID information
 			fich.setSQL(false);
 			fich.setSQ(0U);
 			fich.encode(data + 2U);
@@ -847,8 +883,12 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 #endif
 
 			if (m_duplex) {
-				// Add the DSQ information.
-				fich.setSQL(m_sqlEnabled);
+				// Add the DSQ/DG-ID information.
+				unsigned char cm = fich.getCM();
+				if (cm == YSF_CM_GROUP2)
+					fich.setSQL(false);
+				else
+					fich.setSQL(m_sqlEnabled);
 				fich.setSQ(m_sqlValue);
 
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
@@ -887,7 +927,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DSQ information
+			// Remove any DSQ/DG-ID information
 			fich.setSQL(false);
 			fich.setSQ(0U);
 			fich.encode(data + 2U);
@@ -898,8 +938,12 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 			writeNetwork(data, m_rfFrames % 128U);
 
 			if (m_duplex) {
-				// Add the DSQ information.
-				fich.setSQL(m_sqlEnabled);
+				// Add the DSQ/DG-ID information.
+				unsigned char cm = fich.getCM();
+				if (cm == YSF_CM_GROUP2)
+					fich.setSQL(false);
+				else
+					fich.setSQL(m_sqlEnabled);
 				fich.setSQ(m_sqlValue);
 
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
@@ -998,18 +1042,13 @@ void CYSFControl::writeNetwork()
 		if (end)
 			return;
 
-		if (::memcmp(data + 14U, "          ", YSF_CALLSIGN_LENGTH) != 0)
-			::memcpy(m_netSource, data + 14U, YSF_CALLSIGN_LENGTH);
-		else
-			::memcpy(m_netSource, "??????????", YSF_CALLSIGN_LENGTH);
+		::memcpy(m_netSource, data + 14U, YSF_CALLSIGN_LENGTH);
+		::memcpy(m_netDest,   data + 24U, YSF_CALLSIGN_LENGTH);
 
-		if (::memcmp(data + 24U, "          ", YSF_CALLSIGN_LENGTH) != 0)
-			::memcpy(m_netDest, data + 24U, YSF_CALLSIGN_LENGTH);
-		else
-			::memcpy(m_netDest, "??????????", YSF_CALLSIGN_LENGTH);
-
-		m_display->writeFusion((char*)m_netSource, (char*)m_netDest, "N", (char*)(data + 4U));
-		LogMessage("YSF, received network data from %10.10s to %10.10s at %10.10s", m_netSource, m_netDest, data + 4U);
+		if (::memcmp(m_netSource, "          ", 10U) != 0 && ::memcmp(m_netDest, "          ", 10U) != 0) {
+			m_display->writeFusion((char*)m_netSource, (char*)m_netDest, "N", (char*)(data + 4U));
+			LogMessage("YSF, received network data from %10.10s to %10.10s at %10.10s", m_netSource, m_netDest, data + 4U);
+		}
 
 		m_netTimeoutTimer.start();
 		m_netPayload.reset();
@@ -1025,23 +1064,6 @@ void CYSFControl::writeNetwork()
 		// Check for duplicate frames, if we can
 		if (m_netN == n)
 			return;
-
-		bool changed = false;
-
-		if (::memcmp(data + 14U, "          ", YSF_CALLSIGN_LENGTH) != 0 && ::memcmp(m_netSource, "??????????", YSF_CALLSIGN_LENGTH) == 0) {
-			::memcpy(m_netSource, data + 14U, YSF_CALLSIGN_LENGTH);
-			changed = true;
-		}
-
-		if (::memcmp(data + 24U, "          ", YSF_CALLSIGN_LENGTH) != 0 && ::memcmp(m_netDest, "??????????", YSF_CALLSIGN_LENGTH) == 0) {
-			::memcpy(m_netDest, data + 24U, YSF_CALLSIGN_LENGTH);
-			changed = true;
-		}
-
-		if (changed) {
-			m_display->writeFusion((char*)m_netSource, (char*)m_netDest, "N", (char*)(data + 4U));
-			LogMessage("YSF, received network data from %10.10s to %10.10s at %10.10s", m_netSource, m_netDest, data + 4U);
-		}
 	}
 
 	data[33U] = end ? TAG_EOT : TAG_DATA;
@@ -1054,27 +1076,37 @@ void CYSFControl::writeNetwork()
 		unsigned char fn = fich.getFN();
 		unsigned char ft = fich.getFT();
 		unsigned char fi = fich.getFI();
+		unsigned char cm = fich.getCM();
 
-		// Add any DSQ information
-		fich.setSQL(m_sqlEnabled);
+		if (::memcmp(m_netDest, "          ", YSF_CALLSIGN_LENGTH) == 0) {
+			if (cm == YSF_CM_GROUP1 || cm == YSF_CM_GROUP2)
+				::memcpy(m_netDest, "ALL       ", YSF_CALLSIGN_LENGTH);
+		}
+
+		// Add any DSQ/DG-ID information
+		if (cm == YSF_CM_GROUP2)
+			fich.setSQL(false);
+		else
+			fich.setSQL(m_sqlEnabled);
 		fich.setSQ(m_sqlValue);
 
-		fich.setVoIP(true);
-		fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
+		if (m_remoteGateway) {
+			fich.setVoIP(false);
+			fich.setMR(YSF_MR_NOT_BUSY);
+		} else {
+			fich.setVoIP(true);
+			fich.setMR(YSF_MR_BUSY);
+		}
+
 		fich.setDev(m_lowDeviation);
 		fich.encode(data + 35U);
 
 		// Set the downlink callsign
 		switch (fi) {
-		case YSF_FI_HEADER:
-			m_netPayload.processHeaderData(data + 35U);
-			if (::memcmp(m_netSource, "??????????", YSF_CALLSIGN_LENGTH) == 0) {
-				unsigned char* source = m_netPayload.getSource();
-				if (source != NULL) {
-					::memcpy(m_netSource, source, YSF_CALLSIGN_LENGTH);
-					m_display->writeFusion((char*)m_netSource, (char*)m_netDest, "N", (char*)(data + 4U));
-					LogMessage("YSF, received network data from %10.10s to %10.10s at %10.10s", m_netSource, m_netDest, data + 4U);
-				}
+		case YSF_FI_HEADER: {
+				bool ok = m_netPayload.processHeaderData(data + 35U);
+				if (ok)
+					processNetCallsigns(data);
 			}
 			break;
 
@@ -1085,36 +1117,24 @@ void CYSFControl::writeNetwork()
 		case YSF_FI_COMMUNICATIONS:
 			switch (dt) {
 			case YSF_DT_VD_MODE1: {
-					m_netPayload.processVDMode1Data(data + 35U, fn, gateway);
+					bool ok = m_netPayload.processVDMode1Data(data + 35U, fn, gateway);
+					if (ok)
+						processNetCallsigns(data);
+
 					unsigned int errors = m_netPayload.processVDMode1Audio(data + 35U);
 					m_netErrs += errors;
 					m_netBits += 235U;
-
-					if (::memcmp(m_netSource, "??????????", YSF_CALLSIGN_LENGTH) == 0) {
-						unsigned char* source = m_netPayload.getSource();
-						if (source != NULL) {
-							::memcpy(m_netSource, source, YSF_CALLSIGN_LENGTH);
-							m_display->writeFusion((char*)m_netSource, (char*)m_netDest, "N", (char*)(data + 4U));
-							LogMessage("YSF, received network data from %10.10s to %10.10s at %10.10s", m_netSource, m_netDest, data + 4U);
-						}
-					}
 				}
 				break;
 
 			case YSF_DT_VD_MODE2: {
-					m_netPayload.processVDMode2Data(data + 35U, fn, gateway);
+					bool ok = m_netPayload.processVDMode2Data(data + 35U, fn, gateway);
+					if (ok)
+						processNetCallsigns(data);
+
 					unsigned int errors = m_netPayload.processVDMode2Audio(data + 35U);
 					m_netErrs += errors;
 					m_netBits += 135U;
-
-					if (::memcmp(m_netSource, "??????????", YSF_CALLSIGN_LENGTH) == 0) {
-						unsigned char* source = m_netPayload.getSource();
-						if (source != NULL) {
-							::memcpy(m_netSource, source, YSF_CALLSIGN_LENGTH);
-							m_display->writeFusion((char*)m_netSource, (char*)m_netDest, "N", (char*)(data + 4U));
-							LogMessage("YSF, received network data from %10.10s to %10.10s at %10.10s", m_netSource, m_netDest, data + 4U);
-						}
-					}
 				}
 				break;
 
@@ -1270,4 +1290,28 @@ void CYSFControl::closeFile()
 bool CYSFControl::checkCallsign(const unsigned char* callsign) const
 {
 	return ::memcmp(callsign, m_selfCallsign, ::strlen((char*)m_selfCallsign)) == 0;
+}
+
+void CYSFControl::processNetCallsigns(const unsigned char* data)
+{
+	assert(data != NULL);
+
+	if (::memcmp(m_netSource, "          ", 10U) == 0 || ::memcmp(m_netDest, "          ", 10U) == 0) {
+		if (::memcmp(m_netSource, "          ", YSF_CALLSIGN_LENGTH) == 0) {
+			unsigned char* source = m_netPayload.getSource();
+			if (source != NULL)
+				::memcpy(m_netSource, source, YSF_CALLSIGN_LENGTH);
+		}
+
+		if (::memcmp(m_netDest, "          ", YSF_CALLSIGN_LENGTH) == 0) {
+			unsigned char* dest = m_netPayload.getDest();
+			if (dest != NULL)
+				::memcpy(m_netDest, dest, YSF_CALLSIGN_LENGTH);
+		}
+
+		if (::memcmp(m_netSource, "          ", 10U) != 0 && ::memcmp(m_netDest, "          ", 10U) != 0) {
+			m_display->writeFusion((char*)m_netSource, (char*)m_netDest, "N", (char*)(data + 4U));
+			LogMessage("YSF, received network data from %10.10s to %10.10s at %10.10s", m_netSource, m_netDest, data + 4U);
+		}
+	}
 }

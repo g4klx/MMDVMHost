@@ -105,6 +105,7 @@ private:
 	void closeFile();
 
 	bool checkCallsign(const unsigned char* callsign) const;
+	void processNetCallsigns(const unsigned char* data);
 };
 
 #endif
