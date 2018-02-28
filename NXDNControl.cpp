@@ -219,7 +219,10 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 		CSync::addNXDNSync(data + 2U);
 
-		CNXDNLICH lich = m_rfLastLICH;
+		CNXDNLICH lich;
+		lich.setRFCT(NXDN_LICH_RFCT_RDCH);
+		lich.setFCT(NXDN_LICH_USC_SACCH_NS);
+		lich.setOption(NXDN_LICH_STEAL_FACCH);
 		lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
 		lich.encode(data + 2U);
 
@@ -437,7 +440,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		// Regenerate the LICH
 		CNXDNLICH lich;
 		lich.setRFCT(NXDN_LICH_RFCT_RDCH);
-		lich.setFCT(usc);
+		lich.setFCT(NXDN_LICH_USC_SACCH_SS);
 		lich.setOption(option);
 		lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
 		lich.encode(data + 2U);
