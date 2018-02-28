@@ -471,8 +471,8 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			LogDebug("NXDN, AMBE FEC %u/188 (%.1f%%)", errors, float(errors) / 1.88F);
 
 			CNXDNAudio audio;
-			audio.encode(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 0U,  netData + 5U + 0U);
-			audio.encode(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U, netData + 5U + 14U);
+			audio.decode(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 0U,  netData + 5U + 0U);
+			audio.decode(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U, netData + 5U + 14U);
 		} else if (option == NXDN_LICH_STEAL_FACCH1_1) {
 			CNXDNFACCH1 facch1;
 			bool valid = facch1.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
@@ -490,7 +490,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			LogDebug("NXDN, AMBE FEC %u/94 (%.1f%%)", errors, float(errors) / 0.94F);
 
 			CNXDNAudio audio;
-			audio.encode(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U, netData + 5U + 14U);
+			audio.decode(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 18U, netData + 5U + 14U);
 		} else if (option == NXDN_LICH_STEAL_FACCH1_2) {
 			CAMBEFEC ambe;
 			unsigned int errors = 0U;
@@ -502,7 +502,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			LogDebug("NXDN, AMBE FEC %u/94 (%.1f%%)", errors, float(errors) / 0.94F);
 
 			CNXDNAudio audio;
-			audio.encode(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 0U, netData + 5U + 0U);
+			audio.decode(data + 2U + NXDN_FSW_LICH_SACCH_LENGTH_BYTES + 0U, netData + 5U + 0U);
 
 			CNXDNFACCH1 facch1;
 			bool valid = facch1.decode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
