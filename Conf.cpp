@@ -183,10 +183,7 @@ m_p25LocalPort(0U),
 m_p25NetworkModeHang(3U),
 m_p25NetworkDebug(false),
 m_nxdnNetworkEnabled(false),
-m_nxdnNetworkMyAddress(),
-m_nxdnNetworkMyPort(0U),
-m_nxdnNetworkGatewayAddress(),
-m_nxdnNetworkGatewayPort(0U),
+m_nxdnNetworkAddress(),
 m_nxdnNetworkModeHang(3U),
 m_nxdnNetworkDebug(false),
 m_tftSerialPort("/dev/ttyAMA0"),
@@ -634,14 +631,8 @@ bool CConf::read()
 	} else if (section == SECTION_NXDN_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_nxdnNetworkEnabled = ::atoi(value) == 1;
-		else if (::strcmp(key, "LocalAddress") == 0)
-			m_nxdnNetworkMyAddress = value;
-		else if (::strcmp(key, "LocalPort") == 0)
-			m_nxdnNetworkMyPort = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "GatewayAddress") == 0)
-			m_nxdnNetworkGatewayAddress = value;
-		else if (::strcmp(key, "GatewayPort") == 0)
-			m_nxdnNetworkGatewayPort = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "Address") == 0)
+			m_nxdnNetworkAddress = value;
 		else if (::strcmp(key, "ModeHang") == 0)
 			m_nxdnNetworkModeHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Debug") == 0)
@@ -1351,24 +1342,9 @@ bool CConf::getNXDNNetworkEnabled() const
 	return m_nxdnNetworkEnabled;
 }
 
-std::string CConf::getNXDNNetworkMyAddress() const
+std::string CConf::getNXDNNetworkAddress() const
 {
-	return m_nxdnNetworkMyAddress;
-}
-
-unsigned int CConf::getNXDNNetworkMyPort() const
-{
-	return m_nxdnNetworkMyPort;
-}
-
-std::string CConf::getNXDNNetworkGatewayAddress() const
-{
-	return m_nxdnNetworkGatewayAddress;
-}
-
-unsigned int CConf::getNXDNNetworkGatewayPort() const
-{
-	return m_nxdnNetworkGatewayPort;
+	return m_nxdnNetworkAddress;
 }
 
 unsigned int CConf::getNXDNNetworkModeHang() const

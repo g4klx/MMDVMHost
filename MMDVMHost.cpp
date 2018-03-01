@@ -1159,21 +1159,15 @@ bool CMMDVMHost::createP25Network()
 
 bool CMMDVMHost::createNXDNNetwork()
 {
-	std::string myAddress      = m_conf.getNXDNNetworkMyAddress();
-	unsigned int myPort        = m_conf.getNXDNNetworkMyPort();
-	std::string gatewayAddress = m_conf.getNXDNNetworkGatewayAddress();
-	unsigned int gatewayPort   = m_conf.getNXDNNetworkGatewayPort();
-	m_nxdnNetModeHang          = m_conf.getNXDNNetworkModeHang();
-	bool debug                 = m_conf.getNXDNNetworkDebug();
+	std::string address = m_conf.getNXDNNetworkAddress();
+	m_nxdnNetModeHang   = m_conf.getNXDNNetworkModeHang();
+	bool debug          = m_conf.getNXDNNetworkDebug();
 
 	LogInfo("NXDN Network Parameters");
-	LogInfo("    Local Address: %s", myAddress.c_str());
-	LogInfo("    Local Port: %u", myPort);
-	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
-	LogInfo("    Gateway Port: %u", gatewayPort);
+	LogInfo("    Address: %s", address.c_str());
 	LogInfo("    Mode Hang: %us", m_nxdnNetModeHang);
 
-	m_nxdnNetwork = new CNXDNNetwork(myAddress, myPort, gatewayAddress, gatewayPort, debug);
+	m_nxdnNetwork = new CNXDNNetwork(address, debug);
 
 	bool ret = m_nxdnNetwork->open();
 	if (!ret) {
