@@ -511,8 +511,8 @@ void CNXDNAudio::decode(const unsigned char* in, unsigned char* out, unsigned in
 		unsigned int aPos = i + 0U;
 		unsigned int bPos = i + 12U;
 
-		WRITE_BIT(out, aPos, a & MASK);
-		WRITE_BIT(out, bPos, b & MASK);
+		WRITE_BIT(out, aPos, data & MASK);
+		WRITE_BIT(out, bPos, datb & MASK);
 
 		MASK >>= 1;
 	}

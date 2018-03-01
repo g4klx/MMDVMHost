@@ -770,9 +770,9 @@ void CNXDNControl::writeNetwork()
 		m_netLayer3.setData(netData + 5U + 0U, 10U);
 
 		unsigned char type = m_netLayer3.getMessageType();
-		if (type == NXDN_MESSAGE_TYPE_TX_REL && m_netState == RS_RF_LISTENING)
+		if (type == NXDN_MESSAGE_TYPE_TX_REL && m_netState == RS_NET_IDLE)
 			return;
-		if (type == NXDN_MESSAGE_TYPE_VCALL && m_netState != RS_RF_LISTENING)
+		if (type == NXDN_MESSAGE_TYPE_VCALL && m_netState != RS_NET_IDLE)
 			return;
 
 		CNXDNSACCH sacch;
