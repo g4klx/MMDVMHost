@@ -29,7 +29,7 @@
 
 class CNXDNNetwork {
 public:
-	CNXDNNetwork(const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug);
+	CNXDNNetwork(const std::string& address, bool debug);
 	~CNXDNNetwork();
 
 	bool open();
@@ -47,11 +47,10 @@ public:
 	void clock(unsigned int ms);
 
 private:
-	CUDPSocket     m_socket;
-	in_addr        m_address;
-	unsigned int   m_port;
-	bool           m_debug;
-	bool           m_enabled;
+	CUDPSocket                 m_socket;
+	in_addr                    m_address;
+	bool                       m_debug;
+	bool                       m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
 };
 

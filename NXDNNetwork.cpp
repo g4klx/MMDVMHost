@@ -28,15 +28,14 @@
 
 const unsigned int BUFFER_LENGTH = 200U;
 
-CNXDNNetwork::CNXDNNetwork(const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug) :
-m_socket(myAddress, myPort),
+CNXDNNetwork::CNXDNNetwork(const std::string& address, bool debug) :
+m_socket("", NXCORE_ICOM_PORT),
 m_address(),
-m_port(gatewayPort),
 m_debug(debug),
 m_enabled(false),
 m_buffer(1000U, "NXDN Network")
 {
-	m_address = CUDPSocket::lookup(gatewayAddress);
+	m_address = CUDPSocket::lookup(address);
 }
 
 CNXDNNetwork::~CNXDNNetwork()
@@ -78,7 +77,7 @@ bool CNXDNNetwork::write(const unsigned char* data, bool single)
 	if (m_debug)
 		CUtils::dump(1U, "NXDN Network Data Sent", buffer, 102U);
 
-	return m_socket.write(buffer, 102U, m_address, m_port);
+	return m_socket.write(buffer, 102U, m_address, NXCORE_ICOM_PORT);
 }
 
 void CNXDNNetwork::clock(unsigned int ms)
@@ -92,8 +91,8 @@ void CNXDNNetwork::clock(unsigned int ms)
 		return;
 
 	// Check if the data is for us
-	if (m_address.s_addr != address.s_addr || m_port != port) {
-		LogMessage("NXDN packet received from an invalid source, %08X != %08X and/or %u != %u", m_address.s_addr, address.s_addr, m_port, port);
+	if (m_address.s_addr != address.s_addr || port != NXCORE_ICOM_PORT) {
+		LogMessage("NXDN packet received from an invalid source, %08X != %08X and/or %u != %u", m_address.s_addr, address.s_addr, NXCORE_ICOM_PORT, port);
 		return;
 	}
 
