@@ -1,0 +1,5 @@
+find_library(ARDUIPI_OLED_LIBRARIES ArduiPi_OLED)
+find_path(ARDUIPI_OLED_INCLUDE_DIRS NAMES ArduiPi_OLED.h ArduiPi_OLED_lib.h)
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(ArduiPi_OLED DEFAULT_MSG ARDUIPI_OLED_LIBRARIES ARDUIPI_OLED_INCLUDE_DIRS)

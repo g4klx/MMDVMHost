@@ -1,0 +1,4 @@
+find_library(WIRINGPIDEV_LIBRARIES wiringPiDev)
+
+include(FindPackageHandleStandardArgs)
+find_package_handle_standard_args(wiringPiDev DEFAULT_MSG WIRINGPIDEV_LIBRARIES)
