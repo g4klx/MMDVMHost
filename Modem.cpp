@@ -1022,6 +1022,8 @@ bool CModem::readVersion()
 					m_hwType = HWT_MMDVM_ZUMSPOT;
 				else if (::memcmp(m_buffer + 4U, "MMDVM_HS_Hat", 12U) == 0)
 					m_hwType = HWT_MMDVM_HS_HAT;
+				else if (::memcmp(m_buffer + 4U, "MMDVM_HS_Dual_Hat", 17U) == 0)
+					m_hwType = HWT_MMDVM_HS_DUAL_HAT;
 				else if (::memcmp(m_buffer + 4U, "Nano_hotSPOT", 12U) == 0)
 					m_hwType = HWT_NANO_HOTSPOT;
 				else if (::memcmp(m_buffer + 4U, "MMDVM_HS-", 9U) == 0)
