@@ -508,8 +508,8 @@ void CNXDNAudio::decode(const unsigned char* in, unsigned char* out, unsigned in
 
 	MASK = 0x000800U;
 	for (unsigned int i = 0U; i < 12U; i++) {
-		unsigned int aPos = i + 0U;
-		unsigned int bPos = i + 12U;
+		unsigned int aPos = i + offset + 0U;
+		unsigned int bPos = i + offset + 12U;
 
 		WRITE_BIT(out, aPos, data & MASK);
 		WRITE_BIT(out, bPos, datb & MASK);
@@ -519,7 +519,7 @@ void CNXDNAudio::decode(const unsigned char* in, unsigned char* out, unsigned in
 
 	MASK = 0x800000U;
 	for (unsigned int i = 0U; i < 24U; i++) {
-		unsigned int cPos = i + 24U;
+		unsigned int cPos = i + offset + 24U;
 
 		WRITE_BIT(out, cPos, c & MASK);
 
