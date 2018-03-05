@@ -541,6 +541,9 @@ bool CDMRNetwork::writeConfig()
 		case HWT_MMDVM_HS:
 			software = "MMDVM_MMDVM_HS";
 			break;
+		case HWT_MMDVM_HS_DUAL_HAT:
+			software = "MMDVM_MMDVM_HS_Dual_Hat";
+			break;
 		default:
 			software = "MMDVM_Unknown";
 			break;
