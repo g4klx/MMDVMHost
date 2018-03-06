@@ -443,9 +443,9 @@ const unsigned int PRNG_TABLE[] = {
 const unsigned int A_TABLE[] = {  0U,  4U,  8U, 12U, 16U, 20U, 24U, 28U, 32U, 36U, 40U, 44U,
 								 48U, 52U, 56U, 60U, 64U, 68U,  1U,  5U,  9U, 13U, 17U, 21U };
 const unsigned int B_TABLE[] = { 25U, 29U, 33U, 37U, 41U, 45U, 49U, 53U, 57U, 61U, 65U, 69U,
-								  2U,  6U, 10U, 14U, 18U, 22U, 26U, 30U, 34U, 38U, 42U, 46U };
-const unsigned int C_TABLE[] = { 50U, 54U, 58U, 62U, 66U, 70U,  3U,  7U, 11U, 15U, 19U, 23U,
-								 27U, 31U, 35U, 39U, 43U, 47U, 51U, 55U, 59U, 63U, 67U, 71U };
+								  2U,  6U, 10U, 14U, 18U, 22U, 26U, 30U, 34U, 38U, 42U };
+const unsigned int C_TABLE[] = { 46U, 50U, 54U, 58U, 62U, 66U, 70U,  3U,  7U, 11U, 15U, 19U,
+								 23U, 27U, 31U, 35U, 39U, 43U, 47U, 51U, 55U, 59U, 63U, 67U, 71U };
 
 CNXDNAudio::CNXDNAudio()
 {
@@ -479,51 +479,49 @@ void CNXDNAudio::decode(const unsigned char* in, unsigned char* out, unsigned in
 	assert(out != NULL);
 
 	unsigned int a = 0U;
-	unsigned int b = 0U;
-	unsigned int c = 0U;
-
 	unsigned int MASK = 0x800000U;
-	for (unsigned int i = 0U; i < 24U; i++) {
+	for (unsigned int i = 0U; i < 24U; i++, MASK >>= 1) {
 		unsigned int aPos = A_TABLE[i];
-		unsigned int bPos = B_TABLE[i];
-		unsigned int cPos = C_TABLE[i];
-
 		if (READ_BIT(in, aPos))
 			a |= MASK;
+	}
+
+	unsigned int b = 0U;
+	MASK = 0x400000U;
+	for (unsigned int i = 0U; i < 23U; i++, MASK >>= 1) {
+		unsigned int bPos = B_TABLE[i];
 		if (READ_BIT(in, bPos))
 			b |= MASK;
+	}
+
+	unsigned int c = 0U;
+	MASK = 0x1000000U;
+	for (unsigned int i = 0U; i < 25U; i++, MASK >>= 1) {
+		unsigned int cPos = C_TABLE[i];
 		if (READ_BIT(in, cPos))
 			c |= MASK;
-
-		MASK >>= 1;
 	}
 
 	unsigned int data  = CGolay24128::decode24128(a);
 
 	// The PRNG
-	unsigned int p = PRNG_TABLE[data];
+	unsigned int p = PRNG_TABLE[data] >> 1;
 	b ^= p;
 
-	unsigned int datb  = CGolay24128::decode24128(b);
+	unsigned int datb  = CGolay24128::decode23127(b);
 
 	MASK = 0x000800U;
-	for (unsigned int i = 0U; i < 12U; i++) {
+	for (unsigned int i = 0U; i < 12U; i++, MASK >>= 1) {
 		unsigned int aPos = i + offset + 0U;
 		unsigned int bPos = i + offset + 12U;
-
 		WRITE_BIT(out, aPos, data & MASK);
 		WRITE_BIT(out, bPos, datb & MASK);
-
-		MASK >>= 1;
 	}
 
-	MASK = 0x800000U;
-	for (unsigned int i = 0U; i < 24U; i++) {
+	MASK = 0x1000000U;
+	for (unsigned int i = 0U; i < 25U; i++, MASK >>= 1) {
 		unsigned int cPos = i + offset + 24U;
-
 		WRITE_BIT(out, cPos, c & MASK);
-
-		MASK >>= 1;
 	}
 }
 
@@ -537,47 +535,45 @@ void CNXDNAudio::encode(const unsigned char* in, unsigned char* out, unsigned in
 	unsigned int cOrig = 0U;
 
 	unsigned int MASK = 0x000800U;
-	for (unsigned int i = 0U; i < 12U; i++) {
+	for (unsigned int i = 0U; i < 12U; i++, MASK >>= 1) {
 		unsigned int n1 = i + offset + 0U;
 		unsigned int n2 = i + offset + 12U;
-
 		if (READ_BIT(in, n1))
 			aOrig |= MASK;
 		if (READ_BIT(in, n2))
 			bOrig |= MASK;
-
-		MASK >>= 1;
 	}
 
 	MASK = 0x1000000U;
-	for (unsigned int i = 0U; i < 25U; i++) {
+	for (unsigned int i = 0U; i < 25U; i++, MASK >>= 1) {
 		unsigned int n = i + offset + 24U;
-
 		if (READ_BIT(in, n))
 			cOrig |= MASK;
-
-		MASK >>= 1;
 	}
 
 	unsigned int a = CGolay24128::encode24128(aOrig);
 
 	// The PRNG
-	unsigned int p = PRNG_TABLE[aOrig];
-	unsigned int b = CGolay24128::encode24128(bOrig);
+	unsigned int p = PRNG_TABLE[aOrig] >> 1;
+
+	unsigned int b = CGolay24128::encode23127(bOrig);
 	b ^= p;
 
-	unsigned int c = cOrig;
-
 	MASK = 0x800000U;
-	for (unsigned int i = 0U; i < 24U; i++) {
+	for (unsigned int i = 0U; i < 24U; i++, MASK >>= 1) {
 		unsigned int aPos = A_TABLE[i];
-		unsigned int bPos = B_TABLE[i];
-		unsigned int cPos = C_TABLE[i];
-
 		WRITE_BIT(out, aPos, a & MASK);
-		WRITE_BIT(out, bPos, b & MASK);
-		WRITE_BIT(out, cPos, c & MASK);
+	}
 
-		MASK >>= 1;
+	MASK = 0x400000U;
+	for (unsigned int i = 0U; i < 23U; i++, MASK >>= 1) {
+		unsigned int bPos = B_TABLE[i];
+		WRITE_BIT(out, bPos, b & MASK);
+	}
+
+	MASK = 0x1000000U;
+	for (unsigned int i = 0U; i < 25U; i++, MASK >>= 1) {
+		unsigned int cPos = C_TABLE[i];
+		WRITE_BIT(out, cPos, cOrig & MASK);
 	}
 }
