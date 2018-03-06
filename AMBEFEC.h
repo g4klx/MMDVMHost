@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2010,2014,2016,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2010,2014,2016 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -33,8 +33,7 @@ public:
 	unsigned int regenerateIMBE(unsigned char* bytes) const;
 
 private:
-	unsigned int regenerateDStar(unsigned int& a, unsigned int& b) const;
-	unsigned int regenerateDMR(unsigned int& a, unsigned int& b) const;
+	unsigned int regenerate(unsigned int& a, unsigned int& b, unsigned int& c, bool b23) const;
 };
 
 #endif
