@@ -170,7 +170,8 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 		
 		// Convert the raw RSSI to dBm
 		int rssi = m_rssiMapper->interpolate(raw);
-		LogDebug("DMR Slot %u, raw RSSI: %u, reported RSSI: %d dBm", m_slotNo, raw, rssi);
+		if (rssi != 0)
+			LogDebug("DMR Slot %u, raw RSSI: %u, reported RSSI: %d dBm", m_slotNo, raw, rssi);
 
 		// RSSI is always reported as positive
 		m_rssi = (rssi >= 0) ? rssi : -rssi;

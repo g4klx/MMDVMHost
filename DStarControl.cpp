@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015,2016,2017 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015,2016,2017,2018 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -157,7 +157,8 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 
 		// Convert the raw RSSI to dBm
 		int rssi = m_rssiMapper->interpolate(raw);
-		LogDebug("D-Star, raw RSSI: %u, reported RSSI: %d dBm", raw, rssi);
+		if (rssi != 0)
+			LogDebug("D-Star, raw RSSI: %u, reported RSSI: %d dBm", raw, rssi);
 
 		// RSSI is always reported as positive
 		m_rssi = (rssi >= 0) ? rssi : -rssi;
@@ -179,7 +180,8 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 
 		// Convert the raw RSSI to dBm
 		int rssi = m_rssiMapper->interpolate(raw);
-		LogDebug("D-Star, raw RSSI: %u, reported RSSI: %d dBm", raw, rssi);
+		if (rssi != 0)
+			LogDebug("D-Star, raw RSSI: %u, reported RSSI: %d dBm", raw, rssi);
 
 		// RSSI is always reported as positive
 		m_rssi = (rssi >= 0) ? rssi : -rssi;
