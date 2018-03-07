@@ -556,7 +556,7 @@ void CNXDNAudio::encode(const unsigned char* in, unsigned char* out, unsigned in
 	// The PRNG
 	unsigned int p = PRNG_TABLE[aOrig] >> 1;
 
-	unsigned int b = CGolay24128::encode23127(bOrig);
+	unsigned int b = CGolay24128::encode23127(bOrig) >> 1;
 	b ^= p;
 
 	MASK = 0x800000U;
