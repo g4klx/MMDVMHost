@@ -34,7 +34,7 @@ public:
 
 private:
 	unsigned int regenerateDStar(unsigned int& a, unsigned int& b) const;
-	unsigned int regenerateDMR(unsigned int& a, unsigned int& b) const;
+	unsigned int regenerateDMR(unsigned int& a, unsigned int& b,unsigned int& c) const;
 };
 
 #endif

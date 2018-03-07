@@ -527,9 +527,9 @@ unsigned int CAMBEFEC::regenerateDMR(unsigned char* bytes) const
 			c3 |= MASK;
 	}
 
-	unsigned int errors = regenerateDMR(a1, b1);
-	errors += regenerateDMR(a2, b2);
-	errors += regenerateDMR(a3, b3);
+	unsigned int errors = regenerateDMR(a1, b1, c1);
+	errors += regenerateDMR(a2, b2, c2);
+	errors += regenerateDMR(a3, b3, c3);
 
 	MASK = 0x800000U;
 	for (unsigned int i = 0U; i < 24U; i++, MASK >>= 1) {
@@ -633,7 +633,7 @@ unsigned int CAMBEFEC::regenerateYSFDN(unsigned char* bytes) const
 			c |= MASK;
 	}
 
-	unsigned int errors = regenerateDMR(a, b);
+	unsigned int errors = regenerateDMR(a, b, c);
 
 	MASK = 0x800000U;
 	for (unsigned int i = 0U; i < 24U; i++, MASK >>= 1) {
@@ -827,7 +827,7 @@ unsigned int CAMBEFEC::regenerateDStar(unsigned int& a, unsigned int& b) const
 	return errsA + errsB;
 }
 
-unsigned int CAMBEFEC::regenerateDMR(unsigned int& a, unsigned int& b) const
+unsigned int CAMBEFEC::regenerateDMR(unsigned int& a, unsigned int& b, unsigned int& c) const
 {
 	unsigned int orig_a = a;
 	unsigned int orig_b = b;
@@ -859,6 +859,12 @@ unsigned int CAMBEFEC::regenerateDMR(unsigned int& a, unsigned int& b) const
 	while (v != 0U) {
 		v &= v - 1U;
 		errsB++;
+	}
+
+	if (errsA >= 4U || ((errsA + errsB) >= 6U && errsA >= 2U)) {
+		a = 0xF00292U;
+		b = 0x0E0B20U;
+		c = 0x000000U;
 	}
 
 	return errsA + errsB;
