@@ -502,20 +502,18 @@ void CNXDNAudio::decode(const unsigned char* in, unsigned char* out, unsigned in
 			c |= MASK;
 	}
 
-	unsigned int data  = CGolay24128::decode24128(a);
+	a >>= 12;
 
 	// The PRNG
-	unsigned int p = PRNG_TABLE[data] >> 1;
-	b ^= p;
-
-	unsigned int datb  = CGolay24128::decode23127(b);
+	b ^= (PRNG_TABLE[a] >> 1);
+	b >>= 11;
 
 	MASK = 0x000800U;
 	for (unsigned int i = 0U; i < 12U; i++, MASK >>= 1) {
 		unsigned int aPos = i + offset + 0U;
 		unsigned int bPos = i + offset + 12U;
-		WRITE_BIT(out, aPos, data & MASK);
-		WRITE_BIT(out, bPos, datb & MASK);
+		WRITE_BIT(out, aPos, a & MASK);
+		WRITE_BIT(out, bPos, b & MASK);
 	}
 
 	MASK = 0x1000000U;
