@@ -224,7 +224,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		lich.setRFCT(NXDN_LICH_RFCT_RDCH);
 		lich.setFCT(NXDN_LICH_USC_SACCH_NS);
 		lich.setOption(NXDN_LICH_STEAL_FACCH);
-		lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
+		lich.setDirection(m_remoteGateway || !m_duplex ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
 		lich.encode(data + 2U);
 
 		netData[0U] = lich.getRaw();
@@ -399,7 +399,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			lich.setRFCT(NXDN_LICH_RFCT_RDCH);
 			lich.setFCT(NXDN_LICH_USC_SACCH_NS);
 			lich.setOption(NXDN_LICH_STEAL_FACCH);
-			lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
+			lich.setDirection(m_remoteGateway || !m_duplex ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
 			lich.encode(start + 2U);
 
 			netData[0U] = lich.getRaw();
@@ -443,7 +443,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		lich.setRFCT(NXDN_LICH_RFCT_RDCH);
 		lich.setFCT(NXDN_LICH_USC_SACCH_SS);
 		lich.setOption(option);
-		lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
+		lich.setDirection(m_remoteGateway || !m_duplex ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
 		lich.encode(data + 2U);
 
 		netData[0U] = lich.getRaw();
@@ -611,7 +611,7 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 	lich.setRFCT(NXDN_LICH_RFCT_RDCH);
 	lich.setFCT(NXDN_LICH_USC_UDCH);
 	lich.setOption(option);
-	lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
+	lich.setDirection(m_remoteGateway || !m_duplex ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
 	lich.encode(data + 2U);
 
 	netData[0U] = lich.getRaw();
@@ -723,7 +723,7 @@ void CNXDNControl::writeNetwork()
 	lich.setRaw(netData[0U]);
 	unsigned char usc    = lich.getFCT();
 	unsigned char option = lich.getOption();
-	lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
+	lich.setDirection(m_remoteGateway || !m_duplex ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
 	lich.encode(data + 2U);
 
 	if (usc == NXDN_LICH_USC_UDCH) {
@@ -878,7 +878,7 @@ void CNXDNControl::writeNetwork()
 			lich.setRFCT(NXDN_LICH_RFCT_RDCH);
 			lich.setFCT(NXDN_LICH_USC_SACCH_NS);
 			lich.setOption(NXDN_LICH_STEAL_FACCH);
-			lich.setDirection(m_remoteGateway ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
+			lich.setDirection(m_remoteGateway || !m_duplex ? NXDN_LICH_DIRECTION_INBOUND : NXDN_LICH_DIRECTION_OUTBOUND);
 			lich.encode(start + 2U);
 
 			CNXDNSACCH sacch;

@@ -3,7 +3,7 @@
 CC      = gcc
 CXX     = g++
 CFLAGS  = -g -O3 -Wall -std=c++0x -pthread -DOLED -I/usr/local/include
-LIBS    = -lArduiPi_OLED -li2c -lpthread
+LIBS    = -lArduiPi_OLED -lwiringPi -lpthread
 LDFLAGS = -g -L/usr/local/lib
 
 OBJECTS = \
