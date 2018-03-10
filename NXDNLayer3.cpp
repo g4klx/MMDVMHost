@@ -62,8 +62,8 @@ void CNXDNLayer3::encode(unsigned char* bytes, unsigned int length, unsigned int
 	assert(bytes != NULL);
 
 	for (unsigned int i = 0U; i < length; i++, offset++) {
-		bool b = READ_BIT1(m_data, i);
-		WRITE_BIT1(bytes, offset, b);
+		bool b = READ_BIT1(m_data, offset);
+		WRITE_BIT1(bytes, i, b);
 	}
 }
 
