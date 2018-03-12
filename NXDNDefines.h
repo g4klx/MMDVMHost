@@ -99,6 +99,4 @@ const unsigned char NXDN_DATA_CALL_OPTION_9600 = 0x02U;
 
 const unsigned char SACCH_IDLE[] = { NXDN_MESSAGE_TYPE_IDLE, 0x00U, 0x00U };
 
-const unsigned int NXCORE_ICOM_PORT = 41300U;
-
 #endif
