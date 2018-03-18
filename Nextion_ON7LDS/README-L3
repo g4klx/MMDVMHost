@@ -5,7 +5,7 @@ Nextion Display Layouts by ON7LDS (for MMDVMHost)
 		#                                  #
 		#  screenLayout 3 & 4 files (-L3)  #
 		#                                  #
-		#        DIY layouts               #
+		#       ON7LDS DIY layouts         #
 		#                                  #
 		####################################
 
@@ -14,11 +14,11 @@ MMDVM.ini file under the Nextion section. This way, the extra functions
 are activated.
     0 = auto (future use, for now it's G4KLX layout)
     1 = G4KLX layout
-    2 = ON7LDS layout               (see README-L2)
-	3 = ON7LDS DIY layout           (this README file)
-	4 = ON7LDS DIY layout Hig Speed (this README file)
+    2 = ON7LDS layout                (see README-L2)
+	3 = ON7LDS DIY layout            (this README file)
+	4 = ON7LDS DIY layout High Speed (this README file)
 
-screenLayout 3 and 4 are the same, but selecting 3, MMDVMHost wil communicate
+screenLayout 3 and 4 are the same, but selecting 3, MMDVMHost will communicate
 at 9600bps with the display and selecting 4 will set the baudrate to 115200.  
 If you select 4 (115200bps) *you* have to program your Nextion to default to
 that baudrate.
@@ -32,8 +32,8 @@ Another option is to set the command above in the Preinitialization Event
  because 'on rare occasions bauds has become lost'
 
 
-DIY layouts
------------
+ON7LDS DIY layouts
+------------------
 When selecting this layout, all processing can and should be done in the 
 Nextion display itself.
 Whenever MMDVMHost sends new data to the screen, it also sends information
@@ -48,7 +48,7 @@ Check the Touch Press Event of object 'S0' of the DMR page of the example
 HMI file. As a straightforward example, the code there will show you how
 to do some tasks when receiving data from MMDVMHost or NextionDriver:
 - change colors and fonts of the TA on the DMR page when it arrives.
-  (TA length calculation is done in the display itsself !)
+  (TA length calculation is done in the display itself !)
 - remove the slot number from t2.txt (since it's always 2)
 - in the middle of the DMR screen, the previous user is displayed
   for each slot (S1 at the left, S2 at the right)
@@ -93,6 +93,7 @@ changed field.
  3 : page DMR
  4 : page YSF
  5 : page P25 
+ 6 : page NXDN
  
 11 : IDLE
 12 : CW
@@ -139,6 +140,12 @@ changed field.
 103 : dest
 104 : RSSI
 105 : ber
+
+121 : NXDN listening
+122 : source
+123 : dest
+124 : RSSI
+125 : ber
 
 
 
@@ -197,4 +204,10 @@ t1 : dst
 t2 : rssi
 t3 : ber
 
+
+NXDN
+t0 : type,source
+t1 : dst
+t2 : rssi
+t3 : ber
 
