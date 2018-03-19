@@ -36,6 +36,6 @@ There are some other changes:
   to automatically change the font size, is activated.
     0 = auto (future use, for now it's G4KLX layout)
     1 = G4KLX layout
-    2 = ON7LDS layout                  (this README file)
-    3 = DIY by ON7LDS layout           (see README-L3)
-    4 = DIY by ON7LDS layout Hig Speed (see README-L3)
+    2 = ON7LDS layout                (this README file)
+    3 = ON7LDS DIY layout            (see README-L3)
+    4 = ON7LDS DIY layout High Speed (see README-L3)
