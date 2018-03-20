@@ -33,10 +33,14 @@ public:
 	static bool checkCRC15(const unsigned char* in, unsigned int length);
 	static void encodeCRC15(unsigned char* in, unsigned int length);
 
+	static bool checkLICHParity(unsigned char in);
+	static void encodeLICHParity(unsigned char& in);
+
 private:
 	static uint8_t  createCRC6(const unsigned char* in, unsigned int length);
 	static uint16_t createCRC12(const unsigned char* in, unsigned int length);
 	static uint16_t createCRC15(const unsigned char* in, unsigned int length);
+	static bool     createLICHParity(unsigned char in);
 };
 
 #endif

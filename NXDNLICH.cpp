@@ -18,6 +18,7 @@
 
 #include "NXDNDefines.h"
 #include "NXDNLICH.h"
+#include "NXDNCRC.h"
 
 #include <cstdio>
 #include <cassert>
@@ -50,37 +51,26 @@ bool CNXDNLICH::decode(const unsigned char* bytes)
 {
 	assert(bytes != NULL);
 
-	bool b[8U];
-	unsigned int offset1 = NXDN_FSW_LENGTH_BITS;
-	unsigned int offset2 = 7U;
-	for (unsigned int i = 0U; i < (NXDN_LICH_LENGTH_BITS / 2U); i++, offset1 += 2U, offset2--) {
-		b[offset2] = READ_BIT1(bytes, offset1);
-		WRITE_BIT1(m_lich, i, b[offset2]);
+	unsigned int offset = NXDN_FSW_LENGTH_BITS;
+	for (unsigned int i = 0U; i < (NXDN_LICH_LENGTH_BITS / 2U); i++, offset += 2U) {
+		bool b = READ_BIT1(bytes, offset);
+		WRITE_BIT1(m_lich, i, b);
 	}
 
-	bool parity = b[7U] ^ b[6U] ^ b[5U] ^ b[4U];
-
-	if (parity != b[0U])
-		return false;
-
-	return true;
+	return CNXDNCRC::checkLICHParity(m_lich[0U]);
 }
 
 void CNXDNLICH::encode(unsigned char* bytes)
 {
 	assert(bytes != NULL);
 
-	bool b[8U];
-	unsigned int offset = 7U;
-	for (unsigned int i = 0U; i < (NXDN_LICH_LENGTH_BITS / 2U); i++, offset--)
-		b[offset] = READ_BIT1(m_lich, i);
-
-	b[0U] = b[7U] ^ b[6U] ^ b[5U] ^ b[4U];
+	CNXDNCRC::encodeLICHParity(m_lich[0U]);
 
 	unsigned int offset1 = NXDN_FSW_LENGTH_BITS;
 	unsigned int offset2 = 7U;
 	for (unsigned int i = 0U; i < (NXDN_LICH_LENGTH_BITS / 2U); i++, offset2--) {
-		WRITE_BIT1(bytes, offset1, b[offset2]);
+		bool b = READ_BIT1(m_lich, offset2);
+		WRITE_BIT1(bytes, offset1, b);
 		offset1++;
 		WRITE_BIT1(bytes, offset1, true);
 		offset1++;
@@ -109,6 +99,8 @@ unsigned char CNXDNLICH::getDirection() const
 
 unsigned char CNXDNLICH::getRaw() const
 {
+	CNXDNCRC::encodeLICHParity(m_lich[0U]);
+
 	return m_lich[0U];
 }
 
@@ -127,7 +119,7 @@ void CNXDNLICH::setFCT(unsigned char usc)
 void CNXDNLICH::setOption(unsigned char option)
 {
 	m_lich[0U] &= 0xF3U;
-	m_lich[0u] |= (option << 2) & 0x0CU;
+	m_lich[0U] |= (option << 2) & 0x0CU;
 }
 
 void CNXDNLICH::setDirection(unsigned char direction)
