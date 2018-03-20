@@ -109,6 +109,16 @@ unsigned char CNXDNLICH::getDirection() const
 
 unsigned char CNXDNLICH::getRaw() const
 {
+	switch (m_lich[0U] & 0xF0U) {
+	case 0x80U:
+	case 0xB0U:
+		m_lich[0U] |= 0x01U;
+		break;
+	default:
+		m_lich[0U] &= 0xFEU;
+		break;
+	}
+
 	return m_lich[0U];
 }
 
@@ -127,7 +137,7 @@ void CNXDNLICH::setFCT(unsigned char usc)
 void CNXDNLICH::setOption(unsigned char option)
 {
 	m_lich[0U] &= 0xF3U;
-	m_lich[0u] |= (option << 2) & 0x0CU;
+	m_lich[0U] |= (option << 2) & 0x0CU;
 }
 
 void CNXDNLICH::setDirection(unsigned char direction)
