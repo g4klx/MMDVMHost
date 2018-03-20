@@ -133,25 +133,6 @@ void CNXDNCRC::encodeCRC15(unsigned char* in, unsigned int length)
 	}
 }
 
-bool CNXDNCRC::checkLICHParity(unsigned char in)
-{
-	bool newParity = createLICHParity(in);
-
-	bool oldParity = (in & 0x01U) == 0x01U;
-
-	return newParity == oldParity;
-}
-
-void CNXDNCRC::encodeLICHParity(unsigned char& in)
-{
-	bool parity = createLICHParity(in);
-
-	if (parity)
-		in |= 0x01U;
-	else
-		in &= 0xFEU;
-}
-
 uint8_t CNXDNCRC::createCRC6(const unsigned char* in, unsigned int length)
 {
 	uint8_t crc = 0x3FU;
@@ -201,15 +182,4 @@ uint16_t CNXDNCRC::createCRC15(const unsigned char* in, unsigned int length)
 	}
 
 	return crc & 0x7FFFU;
-}
-
-bool CNXDNCRC::createLICHParity(unsigned char in)
-{
-	switch (in & 0xF0U) {
-	case 0x80U:
-	case 0xB0U:
-		return true;
-	default:
-		return false;
-	}
 }
