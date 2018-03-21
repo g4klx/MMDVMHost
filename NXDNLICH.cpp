@@ -50,40 +50,35 @@ bool CNXDNLICH::decode(const unsigned char* bytes)
 {
 	assert(bytes != NULL);
 
-	bool b[8U];
-	unsigned int offset1 = NXDN_FSW_LENGTH_BITS;
-	unsigned int offset2 = 7U;
-	for (unsigned int i = 0U; i < (NXDN_LICH_LENGTH_BITS / 2U); i++, offset1 += 2U, offset2--) {
-		b[offset2] = READ_BIT1(bytes, offset1);
-		WRITE_BIT1(m_lich, i, b[offset2]);
+	unsigned int offset = NXDN_FSW_LENGTH_BITS;
+	for (unsigned int i = 0U; i < (NXDN_LICH_LENGTH_BITS / 2U); i++, offset += 2U) {
+		bool b = READ_BIT1(bytes, offset);
+		WRITE_BIT1(m_lich, i, b);
 	}
 
-	bool parity = b[7U] ^ b[6U] ^ b[5U] ^ b[4U];
+	bool newParity  = getParity();
+	bool origParity = (m_lich[0U] & 0x01U) == 0x01U;
 
-	if (parity != b[0U])
-		return false;
-
-	return true;
+	return origParity == newParity;
 }
 
 void CNXDNLICH::encode(unsigned char* bytes)
 {
 	assert(bytes != NULL);
 
-	bool b[8U];
-	unsigned int offset = 7U;
-	for (unsigned int i = 0U; i < (NXDN_LICH_LENGTH_BITS / 2U); i++, offset--)
-		b[offset] = READ_BIT1(m_lich, i);
+	bool parity = getParity();
+	if (parity)
+		m_lich[0U] |= 0x01U;
+	else
+		m_lich[0U] &= 0xFEU;
 
-	b[0U] = b[7U] ^ b[6U] ^ b[5U] ^ b[4U];
-
-	unsigned int offset1 = NXDN_FSW_LENGTH_BITS;
-	unsigned int offset2 = 7U;
-	for (unsigned int i = 0U; i < (NXDN_LICH_LENGTH_BITS / 2U); i++, offset2--) {
-		WRITE_BIT1(bytes, offset1, b[offset2]);
-		offset1++;
-		WRITE_BIT1(bytes, offset1, true);
-		offset1++;
+	unsigned int offset = NXDN_FSW_LENGTH_BITS;
+	for (unsigned int i = 0U; i < (NXDN_LICH_LENGTH_BITS / 2U); i++) {
+		bool b = READ_BIT1(m_lich, i);
+		WRITE_BIT1(bytes, offset, b);
+		offset++;
+		WRITE_BIT1(bytes, offset, true);
+		offset++;
 	}
 }
 
@@ -109,15 +104,11 @@ unsigned char CNXDNLICH::getDirection() const
 
 unsigned char CNXDNLICH::getRaw() const
 {
-	switch (m_lich[0U] & 0xF0U) {
-	case 0x80U:
-	case 0xB0U:
+	bool parity = getParity();
+	if (parity)
 		m_lich[0U] |= 0x01U;
-		break;
-	default:
+	else
 		m_lich[0U] &= 0xFEU;
-		break;
-	}
 
 	return m_lich[0U];
 }
@@ -157,4 +148,15 @@ CNXDNLICH& CNXDNLICH::operator=(const CNXDNLICH& lich)
 		m_lich[0U] = lich.m_lich[0U];
 
 	return *this;
+}
+
+bool CNXDNLICH::getParity() const
+{
+	switch (m_lich[0U] & 0xF0U) {
+	case 0x80U:
+	case 0xB0U:
+		return true;
+	default:
+		return false;
+	}
 }

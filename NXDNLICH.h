@@ -45,6 +45,8 @@ public:
 
 private:
 	unsigned char* m_lich;
+
+	bool getParity() const;
 };
 
 #endif
