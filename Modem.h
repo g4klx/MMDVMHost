@@ -51,6 +51,7 @@ public:
 	unsigned int readYSFData(unsigned char* data);
 	unsigned int readP25Data(unsigned char* data);
 	unsigned int readNXDNData(unsigned char* data);
+	unsigned int readTransparentData(unsigned char* data);
 
 	unsigned int readSerial(unsigned char* data, unsigned int length);
 
@@ -73,6 +74,7 @@ public:
 	bool writeYSFData(const unsigned char* data, unsigned int length);
 	bool writeP25Data(const unsigned char* data, unsigned int length);
 	bool writeNXDNData(const unsigned char* data, unsigned int length);
+	bool writeTransparentData(const unsigned char* data, unsigned int length);
 
 	bool writeDMRStart(bool tx);
 	bool writeDMRShortLC(const unsigned char* lc);
@@ -135,6 +137,8 @@ private:
 	CRingBuffer<unsigned char> m_txP25Data;
 	CRingBuffer<unsigned char> m_rxNXDNData;
 	CRingBuffer<unsigned char> m_txNXDNData;
+	CRingBuffer<unsigned char> m_rxTransparentData;
+	CRingBuffer<unsigned char> m_txTransparentData;
 	CTimer                     m_statusTimer;
 	CTimer                     m_inactivityTimer;
 	CTimer                     m_playoutTimer;

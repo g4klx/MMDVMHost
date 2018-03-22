@@ -308,6 +308,32 @@ int CMMDVMHost::run()
 			return 1;
 	}
 
+	in_addr transparentAddress;
+	unsigned int transparentPort = 0U;
+	CUDPSocket* transparentSocket = NULL;
+
+	if (m_conf.getTransparentEnabled()) {
+		std::string remoteAddress = m_conf.getTransparentRemoteAddress();
+		unsigned int remotePort   = m_conf.getTransparentRemotePort();
+		unsigned int localPort    = m_conf.getTransparentLocalPort();
+
+		LogInfo("Transparent Data");
+		LogInfo("    Remote Address: %s", remoteAddress.c_str());
+		LogInfo("    Remote Port: %u", remotePort);
+		LogInfo("    Local Port: %u", localPort);
+
+		transparentAddress = CUDPSocket::lookup(remoteAddress);
+		transparentPort    = remotePort;
+
+		transparentSocket = new CUDPSocket(localPort);
+		ret = transparentSocket->open();
+		if (!ret) {
+			LogWarning("Could not open the Transparent data socket, disabling");
+			delete transparentSocket;
+			transparentSocket = NULL;
+		}
+	}
+
 	if (m_conf.getCWIdEnabled()) {
 		unsigned int time = m_conf.getCWIdTime();
 		m_cwCallsign      = m_conf.getCWIdCallsign();
@@ -686,6 +712,10 @@ int CMMDVMHost::run()
 			}
 		}
 
+		len = m_modem->readTransparentData(data);
+		if (transparentSocket != NULL && len > 0U)
+			transparentSocket->write(data, len, transparentAddress, transparentPort);
+
 		if (m_modeTimer.isRunning() && m_modeTimer.hasExpired())
 			setMode(MODE_IDLE);
 
@@ -811,6 +841,14 @@ int CMMDVMHost::run()
 			}
 		}
 
+		if (transparentSocket != NULL) {
+			in_addr address;
+			unsigned int port = 0U;
+			len = transparentSocket->read(data, 200U, address, port);
+			if (len > 0U)
+				m_modem->writeTransparentData(data, len);
+		}
+
 		unsigned int ms = stopWatch.elapsed();
 		stopWatch.start();
 
@@ -923,6 +961,11 @@ int CMMDVMHost::run()
 	if (m_nxdnNetwork != NULL) {
 		m_nxdnNetwork->close();
 		delete m_nxdnNetwork;
+	}
+
+	if (transparentSocket != NULL) {
+		transparentSocket->close();
+		delete transparentSocket;
 	}
 
 	delete dstar;
