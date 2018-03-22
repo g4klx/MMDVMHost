@@ -439,7 +439,7 @@ UID,Call,Name,Location,Notes
 26208,DK6PX,Stefan,JN57TU,ICOM-F4161DT
 26209,DL4TTB,Maggie,JN57OQ,ICOM- F4461DT
 26240,DB0DDS,Repeater Dortmund,"Dortmund, JO31SL",
-26244,DF1VB,Jochen,Dortmund,IC-F4400DT
+26244,DF1VB,JochenDortmund,IC-F4400DT
 27040,IZ7DJV,Tony,Monopoli,Portable
 27101,KI4SWB,Mark,"Melbourne Beach, FL",Icom Portable
 27102,KP4OO,Carlos,"Palm Bay, FL",Icom Portable
@@ -614,13 +614,13 @@ UID,Call,Name,Location,Notes
 2709,VA7CNN,Fred (VA7UN0,"Kelowna, BC, Canada",MMDVM - Rpt - DMR302709
 2710,VA7NBC,Fred (VA7UN),"Kelowna, BC, Canada",MMDVM - Rpt - DMR302710
 3751,BG6WNP,Lianyun Huang,"Wuhan,Hubei,China",Kenwood Nx300
-4047,KD9IAQ,Doug Paquette,"Merrillville, Indiana",Doug's Car
-4288,KD9IAQ,Doug Paquette,"Merrillville, Indiana",Doug's Car
+4047,KD9IAQ,Doug Paquette,"Merrillville, Indiana",Doug?s Car
+4288,KD9IAQ,Doug Paquette,"Merrillville, Indiana",Doug?s Car
 4365,KD9IAQ,Doug Paquette,"Merrillville, Indiana",Doug?s Base Radio
 4401,W1KFR,Bill Carreira,"Kingsland, GA",
-4512,KD9IAQ,Doug Paquette,"Merrillville, Indiana",Doug's Extra Mobile
-4921,KD9IAQ,Doug Paquette,"Merrillville, Indiana",Doug's Portable
-4941,KD9IAQ,Doug Paquette,"Merrillville, Indiana",Doug's Portable
+4512,KD9IAQ,Doug Paquette,"Merrillville, Indiana",Doug?s Extra Mobile
+4921,KD9IAQ,Doug Paquette,"Merrillville, Indiana",Doug?s Portable
+4941,KD9IAQ,Doug Paquette,"Merrillville, Indiana",Doug?s Portable
 5035,PY1FT,Florisval Tenorio,Rio de Janeiro,
 5077,N9EXR,Michael R. Smith,North Little Rock AR,Kenwood 5200
 6353,WB5EKU,Donald Jacob,"Los Angeles, CA",
@@ -695,7 +695,7 @@ UID,Call,Name,Location,Notes
 4034,BI4RFO,RFO,China,Portable
 1044,W4DBG,Doug Gooden,"Troy, Alabama USA",
 39239,W8CTC,CHRIS,"HILLSBORO,OH",
-17239,N9PBD,Greg,"O'Fallon, Illinois, USA",
+17239,N9PBD,Greg,"O\'Fallon, Illinois, USA",
 7890,W4RSS,Dick Smith,"Fletcher, NC",
 22280,IU8ADS,Pasquale,Casalnuovo di Napoli (NA),Napoli
 13109,K0OQL,Joel,"Omaha, NE",
@@ -730,7 +730,7 @@ UID,Call,Name,Location,Notes
 22121,N5WIG,Michael Kikuchi,"Metairie, Louisiana",Kenwood NX 5800 K2
 6622,KJ4KSG,Woody,Manatee Co.,First try
 6025,BG6WWH,Utopia Wang,"Enshi, Hubei，China",Kenwood NX348-c
-5555,EA5HKZ,Josa Mara Lopez Box,IM98Si,
+5555,EA5HKZ,José María Lopez Box,IM98Si,
 5554,EA5HKZ,JOSE MARIA ,IM98SI,TXEMA
 24018,CT2GFP,Joao Jose,"Portalegre, PT",
 2008,PU2MLA,Mauro Abrantes,Milford - CT- USA,
@@ -741,3 +741,20 @@ UID,Call,Name,Location,Notes
 37946,K4RSG,Shawn,"Harrisburg, NC",
 46003,PD0PVL,ROBERT,NETHERLANDS,
 46004,PD0PVL,ROBERT,HOENDERLOO,
+42164,EA2DCR,Agustin,IE92EU,Pamplona-Spain
+47222,EA7CTL,Manuel,Spain,IM66VL
+20801,F1MIJ,PASCAL,BOUCHAIN,CCS7 ID 2089001
+20831,F1IZL,JEAN-YVES,Ariege,
+20835,F5UII,Christian,France,
+26280,DB0ULR,Deba Relais München,JN58SB,Icom FR6000
+26281,DM0ULR,Relais Wendelstein,JN67AQ,FR6000
+30018,CT1HDC,Paulo Pereira,Lisbon,
+3039,BG3PVL,"Hue Feng Ma	",Shijiazhuang,Portable
+42039,EC2UT,Oscar,"Zaragoza, Spain",
+7327,BH7IOY,"Li Haifeng	",China,Portable
+272,BI7OZD,"Kwansik Lee	",China,Portable
+20844,F1IWQ,Frederic,Nord France,
+9999,MMDVM,MMDVM,MMDVM,Internal MMDVM Id for voice announcements
+42005,N3RPV,Chris ,"Allentown, PA ",
+5000,BI7IFF,SHEN,China,Portable
+26379,AD4UU,Dave Livesay,"Westland, MI",
