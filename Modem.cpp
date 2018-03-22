@@ -76,6 +76,8 @@ const unsigned char MMDVM_NAK         = 0x7FU;
 
 const unsigned char MMDVM_SERIAL      = 0x80U;
 
+const unsigned char MMDVM_TRANSPARENT = 0x90U;
+
 const unsigned char MMDVM_DEBUG1      = 0xF1U;
 const unsigned char MMDVM_DEBUG2      = 0xF2U;
 const unsigned char MMDVM_DEBUG3      = 0xF3U;
@@ -131,6 +133,8 @@ m_rxP25Data(1000U, "Modem RX P25"),
 m_txP25Data(1000U, "Modem TX P25"),
 m_rxNXDNData(1000U, "Modem RX NXDN"),
 m_txNXDNData(1000U, "Modem TX NXDN"),
+m_rxTransparentData(1000U, "Modem RX Transparent"),
+m_txTransparentData(1000U, "Modem TX Transparent"),
 m_statusTimer(1000U, 0U, 250U),
 m_inactivityTimer(1000U, 2U),
 m_playoutTimer(1000U, 0U, 10U),
@@ -504,6 +508,17 @@ void CModem::clock(unsigned int ms)
 				}
 				break;
 
+			case MMDVM_TRANSPARENT: {
+					if (m_trace)
+						CUtils::dump(1U, "RX Transparent Data", m_buffer, m_length);
+
+					unsigned char data = m_length - 3U;
+					m_rxTransparentData.addData(&data, 1U);
+
+					m_rxTransparentData.addData(m_buffer + 3U, m_length - 3U);
+				}
+				break;
+
 			// These should not be received, but don't complain if we do
 			case MMDVM_GET_VERSION:
 			case MMDVM_ACK:
@@ -658,6 +673,19 @@ void CModem::clock(unsigned int ms)
 
 		m_nxdnSpace--;
 	}
+
+	if (!m_txTransparentData.isEmpty()) {
+		unsigned char len = 0U;
+		m_txTransparentData.getData(&len, 1U);
+		m_txTransparentData.getData(m_buffer, len);
+
+		if (m_trace)
+			CUtils::dump(1U, "TX Transparent Data", m_buffer, len);
+
+		int ret = m_serial.write(m_buffer, len);
+		if (ret != int(len))
+			LogWarning("Error when writing Transparent data to the MMDVM");
+	}
 }
 
 void CModem::close()
@@ -747,6 +775,20 @@ unsigned int CModem::readNXDNData(unsigned char* data)
 	unsigned char len = 0U;
 	m_rxNXDNData.getData(&len, 1U);
 	m_rxNXDNData.getData(data, len);
+
+	return len;
+}
+
+unsigned int CModem::readTransparentData(unsigned char* data)
+{
+	assert(data != NULL);
+
+	if (m_rxTransparentData.isEmpty())
+		return 0U;
+
+	unsigned char len = 0U;
+	m_rxTransparentData.getData(&len, 1U);
+	m_rxTransparentData.getData(data, len);
 
 	return len;
 }
@@ -947,6 +989,26 @@ bool CModem::writeNXDNData(const unsigned char* data, unsigned int length)
 	unsigned char len = length + 2U;
 	m_txNXDNData.addData(&len, 1U);
 	m_txNXDNData.addData(buffer, len);
+
+	return true;
+}
+
+bool CModem::writeTransparentData(const unsigned char* data, unsigned int length)
+{
+	assert(data != NULL);
+	assert(length > 0U);
+
+	unsigned char buffer[250U];
+
+	buffer[0U] = MMDVM_FRAME_START;
+	buffer[1U] = length + 3U;
+	buffer[2U] = MMDVM_TRANSPARENT;
+
+	::memcpy(buffer + 3U, data, length);
+
+	unsigned char len = length + 3U;
+	m_txTransparentData.addData(&len, 1U);
+	m_txTransparentData.addData(buffer, len);
 
 	return true;
 }

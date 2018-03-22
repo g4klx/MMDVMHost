@@ -1,570 +1,743 @@
-UID,Call,Name,Location,Notes,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-1,KB3AWQ,John Springman,"Williamsport, PA",KB3AWQ.com,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-2,W2FLY/M,Harry,Southern NJ,UHF NX-800 mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3,WB2OOM/M,Tina,Southern NJ,UHF NX-800 Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-4,W2FLY/M,Harry,Southern NJ,UHF NX-800 Van,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-7,F1PRY,Emmanuel,BEAUVAIS FR,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-8,W2FLY/P,Harry,Southern NJ,UHF NX-820 Port 2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-9,KE8BGA,Lowell Katz,"Cleveland, Ohio","on the north shore, NX-800",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-17,KC2SNI,Jim Hannon,"West Berlin, New Jersey",My Radio is an Icom IC-3161DT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25,WB2RUH/P,Bruce,Southern NJ,UHF NX-320,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-26,WB2RUH/M,Bruce,Southern NJ,UHF NX-800 mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-30,KD4MOJ,Doug,,Doug,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-74,N2IXC,Ed,Chatsworth NJ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-76,W2FLY/P,Harry,Southern NJ,UFH NX5300 Port 1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-77,W2FLY/P,Harry,"Somers Point, NJ",UHF NX-800 Shore Base,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-78,W2FLY,Harry,"Mullica Hill, NJ",UHF NX-800,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-79,W2FLY/M,Harry,Southern NJ,UHF NX-5800,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-80,W2FLY/M,Harry,Southern NJ,VHF NX-5700 mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-82,W2FLY/P,Harry,"Somers Point, NJ",VHF NX-700 Shore Base,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-85,W2FLY/M,Harry,Southern NJ,VHF NX_700 van,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-86,W2FLY,Harry,"Mullica Hill, NJ",VHF NX-700 base,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-87,W2FLY/M,Harry,Southern NJ,VHF NX-700 mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-88,W2FLY/P,Harry,Southern NJ,VHF NX-220 portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-89,WB2RUH,Bruce,Vineland NJ,VHF NX-700 base,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-99,K1ZSG,Don,,Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-134,N2SRO,Mike,Pitman,Mobile Radio,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-134,N2SRO,Mike,NJ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-141,KF2M,Greg Popovich,"Mt Laurel, NJ",IC-F4161DT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-231,BV2QS,JACK YANG,PL05SA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-401,W1KFR,Bill,,Bill,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-651,KC3KSJ,Chris,"Wilmington, DE",Home Office NX820,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-655,KC3KSJ,Chris,"Wilmington, DE",Mobile NX820,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-669,KC3KSJ,Chris,"Wilmington, DE",Portable NX320,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-672,KC3KSJ,Chris,"Wilmington, DE",Portable NX320,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-673,KC3KSJ,Chris,"Wilmington, DE",Portable NX320,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-674,KC3KSJ,Chris,"Wilmington, DE",Portable NX320,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-801,W2GLD,Jerry Dubzak,"Pinckney, Michigan",VHF Repeater,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-802,W2GLD,Jerry Dubzak,"Pinckney, Michigan",UHF Repeater,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-901,K1IFF,Cliff,CT,Cliff NX320,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-902,K1IFF,Cliff,CT,Cliff NX320 - demo,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-903,K1IFF,Cliff,CT,Cliff NX800H,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-905,WA1LMV,Rick,,Rick NX320,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-906,K1IFF,Cliff,CT,Cliff NX200,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-907,K1IFF,Cliff,CT,Future,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-908,W4CLL,Chuck,,CHUCK,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-909,AB1UB V,Woody,"Bristol, CT",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-909,AB1UB,Woody,"Bristol, CT",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-909,AB1UB,Woody,,Woody NX300,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-909,W4CCL,Chuck,,CHUCK,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-910,W4CLL,Chuck,,CHUCK,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-911,W4CLL,Chuck,,CHUCK,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-912,W4CCL,Chuck,,CHUCK,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-920,N1XDN,Bob,CT,Bob P1 UHF NX300,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-921,N1XDN,Bob,CT,Bob P1 VHF NX220,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-922,N1XDN,Bob,CT,Bob P2 UHF NX300,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-923,N1XDN,Bob,CT,Bob M1 VHF NX700,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-924,N1XDN,Bob,CT,Bob P3 UHF NX-5300,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-925,N1XDN,Bob,CT,Bob P2 VHF NX-5200,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-926,N1XDN,Bob,CT,Bob M1 UHF NX-5800,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-928,N1XDN,Bob,CT,Icom portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-930,K1IFF,Cliff,CT,NX300,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-931,K1IFF,Cliff,CT,NX300,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-936,W1GPO,John,,NX300,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-951,K1KGQ,Joel,,Joel NX800H,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-952,K1KGQ,Joel,CT,Truck radio,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-952,K1GML,Gail,,Gail NX800H,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-953,K1KGQ,Joel,,Joel NX320-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-954,K1KGQ,Joel,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-955,K1KGQ,Joel,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-956,K1KGQ,Joel,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-957,K1KGQ,Joel,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-958,K1KGQ,Joel,,Joel F4161,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-959,K1KGQ,Joel,,Future,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-960,K1ZXX,Gary,,Gary - Icom All radios,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-961,WA1SSB,Joe,,Joe NX800H,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-962,N1MAT,Dennis,,Dennis F4161,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-963,N1MAT,Dennis,,Dennis F4161,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-970,KB1VRI,Nick,CT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-970,KB1VRI,Nick,,Nick,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-971,N1ELE,Paul,CT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-972,N1ODJ,Kenny Schmitz,Middletown,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-973,W1VLF,Paul,CT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-980,W1RHS,Rick,Connecticut,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-995,K1IFF/Base,Cliff,"Brsitol, CT",NXR710 link radio,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-1001,KE4GWW,James,AL,NX200 Portable #1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-1002,KE4GWW,James,AL,NX200 Portable #2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-1003,KE4GWW,James,AL,NX300 Portable #1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-1004,KE4GWW,James,AL,NX300 Portable #2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-1005,KE4GWW,James,AL,NX700 Base,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-1006,KE4GWW,James,AL,NX800 Base,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-1007,KE4GWW,James M. Nelson,"Dothan, AL",NX700 Mobile#1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-1008,DK6PX,Stefan,Germany nr Bad Toelz,Coming up FR6000,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-1008,KE4GWW,James,AL,NX700 Mobile#2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-1009,KE4GWW,James,AL,NX800 Mobile#1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-1010,KE4GWW,James,AL,NX800 Mobile#2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-1066,KM4JXP,Peter Tasker,Longboat Key,NX5300,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-1243,G6VBJ,Peter,"Woking, Surrey, U.K.",MMDVM,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-1954,W4BPT,BILLY TAYLOR,"RINGGOLD,GA.",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-1956,KC7SDD,Dana Hanford,"Bainbridge Island, WA","Member BARC, W7NPC.org",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-1963,N5JRN,David Barts,"Bainbridge Island, WA","Handheld, Icom 4161",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-1966,ZS6IIX,Henry,Petit South Africa,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-1997,KC1AJR,Giovanni,East Hampton CT,kenwood NX800 K2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-2135,K3ETS,JOHN KEETING,"RIVERVIEW, FL",NXDN ICOM F6061D,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3070,W4ORL,Ralph,,Ralph - Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3071,W4LOV,Mike,,Mike - NX800,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3072,N4JTK,John,,John - NX800,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3073,N4JTK,John Knott,Orlando FL,Portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3074,W4MCA,Michael,,Michael - NX300,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3075,W4LOV,Mike,,Mike - NX800,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3079,NN4TT,Dave,Orlando,NX300,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3079,W4ORL,Ralph,,Ralph - Portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3081,W4MCA,Michael,,Michael - NX800,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3082,W4LOV,Mike,,Mike - Portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3083,KD4TWJ,Dean,,Dean - Mobile NX800,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3271,N4KEG,Richard,,RICHARD - Mobile and or ht's N4KEG (UHF),,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3274,KD4EFM,Evans,FL,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3275,KD4EFM,Evans,FL,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3278,KD4EFM,Evans,FL,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3279,N4KEG,Richard,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3280,KD4EFM,Evans,"Lakeland, Florida",work radio,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3280,KD4EFM,Evans,FL,Evans Mobile(s),,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3280,KD4EFM,Evans,FL,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3281,N4KEG,Richard,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3450,K0KAD,CHAD TAYLOR,"SPOKANE VALLEY, WA",My Portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3451,K0KAD,CHAD TAYLOR,"SPOKANE VALLEY, WA",My Base Station,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3452,K0KAD,CHAD TAYLOR,"SPOKANE VALLEY, WA",Mobile Radio,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3633,W8CTC,CHRIS,"HILLSBO,OHIO",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-4020,K4XXX,Ed,"London, KY",NX820 Base,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-4802,hb3yrb,Alex,Verbier,nx5300,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-4804,hb9fmf,Didier,Rougemont,NX5300,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5001,N5QZ,Ryan,AR,"N5QZ, Ryan McAfee, Searcy, AR - Kenwood NX-820",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5002,N5QZ,Ryan,AR,"N5QZ, Ryan McAfee, Searcy, AR - Kenwood NX-720",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5003,N5QS,Roger,AR,"N5QS, Roger Gray, Searcy, AR - Kenwood NX-820",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5004,N5QS,Roger,AR,"N5QS, Roger Gray, Searcy, AR - Kenwood NX-720",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5005,AC5AV,Larry,AR,"AC5AV, Larry Sicks, Searcy, AR",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5006,AC5AV,Larry,AR,"AC5AV, Larry Sicks, Searcy, AR",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5007,N5LKE,James,AR,"N5LKE, James Ferguson, Searcy, AR - Kenwood NX-800",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5008,AF5WN,Mason,AR,"AF5WN, Mason Creager, Cabot, AR - Kenwood NX-700H",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5009,KJ5SF,Stan,AR,"KJ5SF, Stan Rongey, Searcy, AR - Kenwood NX-800",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5100,K5SRS,Michael Smith,"Fayetteville, AR",NX-5800 Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5101,KC5YQB,Paul Blair,"Fayetteville, AR",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5125,AE5OQ,Armstead,"Higden, AR",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5125,AE5OQ,Armstead,AR,entered by k1iff,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5134,AE5OQ,Armstead,AR,"AE5OQ, Armstead M Feland, IV, Higdon, AR - Kenwood NX-200",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5150,WY6NN,Doug,"Los Angeles, CA",NX-300/5300,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5151,KC6HFJ,Tamara,"Los Angeles, CA",NX-300,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5170,K5WMZ,Gary,AR,"K5WMZ, Gary D Partlow, Ward, AR - Kenwood NX-700",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5209,VK2RFI,WICEN Hunter,Portable,MMDVM Repeater,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5209,VK2RFI,WICEN Hunter,Portable,Wicen MMDVM Repeater,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5301,zl1hn,brian,hamilton,icom exdn,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5302,ZL1RT,BRIAN,HAMILTON,ICOM,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5303,ZL3DMH,Doug,RE66IK,Icom F6061,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5304,ZL4DE,Daniel,Invercargill NZ,Icom,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5599,W1ZM,Ryan,,"W1ZM, Ryan Nelson, NX-5300",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5987,W5ZN,Joel,AR,"W5ZN, Joel Harrison, Judsonia, AR - Kenwood NX-800",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-6430,K4GFD,Norm,FL,Norm Greensboro Fla,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-6431,K4GFD,Norm,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-6432,K4GFD,Norm,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-6439,N4NKV,George,,George,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-6801,hb9vsd,relais de verbier,verbier,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-6802,HB9YRB,Alex,Verbier,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-6804,HB9FMF,Didier,Rougemont,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-7132,KF6S,James Valle,"West Hills, CA",Last 5 of DMR ID,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-7132,KF6S,James Valle,"West Hills, CA",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-7737,N4NKV,George,,George,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-7799,KG4DCX,David,Hopewell Va USA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-8001,W2GLD,Jerry Dubzak,"Pinckney, Michigan",Control Station,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-8002,W8CED,Colleen Dubzak,"Pinckney, Michigan",Control Station,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-9726,WR2M,Bill,Roxbury NJ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-9834,VA7NY,PJ,,PJ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-11485,WA5DKW,JAMES DOWIS,"DFW, TEXAS",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12002,W4KJP,Kevin Paus,"New Port Richey, FL",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12002,KM4LTG,Brad,"Pinellas County, Florida",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12002,W4KJP,Kevin,,KEVIN,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12003,W4KJP,Kevin Paus,"New Port Richey, FL",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12005,KD4TWJ,Dean,,Dean - Portable IC-F4161,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12006,W4MO,Stewart,,STEWART NX300 / 320,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12007,W4MO,Stewart,,STEWART NX800,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12010,kd4dwp,Ben,Orlando,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12013,K4NBC,Miguel Orama,"Palm Bay, Florida",Icom F4146DS UHF Portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12014,K4NBC,Miguel Orama,"Palm Bay, Florida",Kenwood NX200 VHF HT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12015,K4NBC,K4NBC-Miguel UHF Mobile,"Palm Bay, Florida",Future UHF Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12016,K4NBC,Miguel,"Palm Bay, Florida",M2 Icom F6061D,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12017,N4JFZ,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12021,W4PJT,Paul,,Paul,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12023,KD4NWL,John,,JOHN,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12045,KJ4SHL,Ryan Owens,"Tampa,FL",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12050,KM4LTG,Brad,Pinellas County,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12127,W4KDM,Rick,,Rick - Portable NX300,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12136,WA4KWK,John,"Dunedin, Fl",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12136,WA4KWK,John,"Dunedin, Fl",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12136,WA4KWK,John,,John F6121,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12200,NB9X,Paul,FL,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12201,NB9X,Paul,FL,PAUL,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12202,NB9X,Paul,FL,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12203,NB9X,Paul,FL,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12204,WX3C,Juan Arias,Florida,Orlando metro,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12204,NB9X,Paul,FL,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12208,NB9X,Paul,Florida,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12210,N4APG,Bill Pfost,"Nokomis, Florida, USA",NXDN Radio,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12210,N4APG,Bill,,Bill Pfost,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12211,N4APG,Bill Pfost,"Nokomis, Florida USA",NXDN Radio,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12211,N4APG,Bill,"Nokomis, Florida, USA",Kenwood NX-5300 Portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12211,N4APG,Bill,,Bill Pfost,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12212,N4APG,Bill Pfost,"Nokomis, Florida, USA",NXDN Radio,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12212,N4APG,Bill,,Bill Pfost,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12213,N4APG,Bill Pfost,"Nokomis, FL USA",NXDN Radio,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12213,N4APG,Bill,,Bill Pfost,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12214,N4APG,Bill Pfost,"Nokomis, Florida, USA",NXDN Radio,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12214,N4APG,Bill,,Bill Pfost,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12215,WA4ISB,Ed,,ED Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12216,WA4ISB,Ed,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12220,N4PK,Paul,,PAUK K.,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12221,N4PK,Paul,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12222,W4PJT,Paul,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12223,W4PJT,Paul,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12226,KI4SWY,William,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12230,KQ4KX,Richard,,Richard Sharp,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12231,KQ4KX,Richard,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12234,KD4TWJ,Dean,EL98,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12235,N1IC,Nick,,Nic,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12236,N1IC,Nick,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12239,K4DKK,CHRIS D,TRINITY FL,ICOM 4400DS,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12240,KR4X,Larry,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12241,KR4X,Larry,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12242,KM4JXP,Peter,Longboat Key,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12245,KD4ACG,Jason,"Hudson, FL",Icom Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12245,KD4ACG,Jason,,JASON,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12246,KD4ACG,Jason,"Hudson, FL",Icom Portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12246,KD4ACG,Jason,,JASON,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12247,K2MCI,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12250,KE4GYX,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12271,KG4YZY,Dave,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12272,KE4OSL,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12273,KE4OSL,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12275,W8OJ,DAN,"PUNTA GORDA, FL",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12374,KF4I,Thom,,Thom Base,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12375,KF4I,Thom,,Thom Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12502,W8OJ,Dan,Punta Gorda FL,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12523,KM4JVE,Ana,,Ana - IC-F4161,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12526,K4WZV,Robert Bretzman,"Brokksville, Florida",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12577,N2DLX,Richard,,Rich Dunajewski NX-5800,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12594,K4WZV,Robert Bretzman,"Brooksville, Florida",2nd radio,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12597,WA2FAA,JIM,Spring Hill FL.,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12604,K4CBN,Greg,,GREG,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12605,K4CBN,Greg,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12606,K4CBN,Greg,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12607,K4CBN,Greg,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12608,K4CBN,Greg,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12611,W4ZTH-1,Zach,Central Florida,NX-300,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12613,W4ECZ,Wayne,Spring Hill FL.,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12621,W4ZTH,Zach,Central Florida,NX-800,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12652,N4HYK,DOCK EDWARDS,"ST. PETERSBURG, FL",PORTABLE,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12652,N4HYK,Dock,"Saint Petersburg, Fl.",DV4mini V201.77 FW- on Pi3,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12666,KI4SWY,William,,William Stillwel ( All Radios ),,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12691,KE3WDW,Sam,,Sam,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12780,KC4YUA,Brett,,BRETT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12900,WX4RCF,Ryan French,"Tampa, FL",NX-5300,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-12969,AA0NO,JIM,DUNEDIN FL EL88OB,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-13105,W7QO,Alan,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-13106,W7QO,Alan,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-13107,W7QO,Alan,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-13121,W4CML,Chuck,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-13122,W4CML,Chuck,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-13125,KD4APP,Don,,Don - NX300,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-13126,KD4APP,Don,,Don - F6061D,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-13127,KD4APP,Don,,Don - NX200,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-13131,W5JR,Mike,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-13132,W5JR,Mike,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-13401,W1KFR,Bill,,Bill,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-13815,KG4BKO,Bill,GA,nx320,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-14003,AE4TC,Scott,"Montpelier, VA",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-14003,AE4TC,Scott Galloway,"Montpelier, VA",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-14020,K4XXX,Ed,"London, KY",NX5300,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-14021,K4XXX,Ed,"London, KY",NX5200,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15001,N5QZ,Ryan,AR,"N5QZ, Ryan McAfee, Searcy, AR - Kenwood NX-800H (Vehicle 1)",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15002,N5QZ,Ryan,AR,"N5QZ, Ryan McAfee, Searcy, AR - Kenwood NX-700 (Vehicle 1)",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15003,N5QZ,Ryan,AR,"N5QZ, Ryan McAfee, Searcy, AR - Kenwood NX-800 (Vehicle 2)",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15004,N5QZ,Ryan,AR,"N5QZ, Ryan McAfee, Searcy, AR - Kenwood NX-700 (Vehicle 2)",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15005,N5QS,Roger,AR,"N5QS, Roger Gray, Searcy, AR - Kenwood NX-800 (Vehicle 1)",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15006,N5QS,Roger,AR,"N5QS, Roger Gray, Searcy, AR - Kenwood NX-700 (Vehicle 1)",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15007,N5QS,Roger,AR,"N5QS, Roger Gray, Searcy, AR - Kenwood NX-800 (Vehicle 2)",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15008,N5QS,Roger,AR,"N5QS, Roger Gray, Searcy, AR - Kenwood NX-700 (Vehicle 2)",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15009,N5QS,Roger,AR,"N5QS, Roger Gray, Searcy, AR - Kenwood NX-800 (Vehicle 3)",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15010,N5QS,Roger,AR,"N5QS, Roger Gray, Searcy, AR - Kenwood NX-700 (Vehicle 3)",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15011,N5QT,Dawn,AR,"N5QT, Dawn Gray, Searcy, AR - Kenwood NX-800",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15012,AC5AV,Larry,AR,"AC5AV, Larry Sicks, Searcy, AR - Kenwood NX-800",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15013,AC5AV,Larry,AR,"AC5AV, Larry Sicks, Searcy, AR - Kenwood NX-700",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15014,N5QT,Dawn,AR,"N5QT, Dawn Gray, Searcy, AR - Kenwood NX-700",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15015,N5QS,Roger,AR,"N5QS, Roger Gray, Searcy, AR Motorcycle Mobile",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15016,KG5KS,Kenny,,"KG5KS, Kenny Thompson - Kenwood NX-700HK",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15017,KG5KS,Kenny,,"KG5KS, Kenny Thompson - Kenwood NX-800HK",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15018,N5QS,Roger,AR,"N5QS, Roger Gray, Searcy, AR ATV Mobile",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15019,N5QS,Roger,AR,"N5QS, Roger Gray, Searcy, AR ATV Mobile",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15020,WA8UBL,Allen,AR,"WA8UBL, Allen Herrick, Beebe, AR, Kenwood NX-700",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15021,KD5HRT,Heath,AR,"KD5HRT, Heath Taylor, McRae, AR, Kenwood NX-800",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15022,WA8UBL,Allen,AR,"WA8UBL, Allen Herrick, Beebe, AR - Kenwood NX-800",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15023,N5ZA,Joel,AR,"N5ZA, Joe Belew, Beebe, AR - Kenwood NX-700",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15024,KF5TPF,Ryan,AR,"KF5TPF, Ryan Nelson, Edgemont, AR NX-700",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15025,KE5YZP,Ryan,AR,"KE5YZP, Ryan Schwarck, Batesville, AR NX-700",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15026,AF5OD,Landon,AR,"AF5OD, Landon McCord, Searcy, AR",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-15027,KB5RFF,Scott,AR,"KB5RFF, Scott Gray, Searcy, AR - Kenwood NX-800",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-16033,N7ISP,Adam Crippen,"Post Falls, Idaho",ZumSpot,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-17002,KC9GMX,Stephen,,Stephen - Base F6121D,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-17004,KC9GMX,Stephen,,Stephen - F6061D,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-17005,KC9NPJ,Jarrett,,Jarrett F6121D,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-17006,KC9GMX,Stephen,,Stephen - F4161DS,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-17007,KC9NPJ,Jarrett,,Jarrett F4231DS,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-17008,KC9RHH,Jesse,,F4101D,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-17009,KC9PHK,Michael,,F4061DS,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-17011,N9BRG,Dan,,Dan kenwood nx800k2,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-17340,K9DPM,David Maria,"Mahomet, IL",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-17855,AG6RN,Demian,CA,NX-210,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-17982,K8DJN,Douglas Nipper,"Danville, IL USA",Icom IC-F6061D,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-18001,W2GLD,Jerry Dubzak,"Pinckney, Michigan",Portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-18002,W8CED,Colleen Dubzak,"Pinckney, Michigan",Portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-21007,WA1LMV,Rick,,Rick,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-21014,K2BUI,Eric,,Eric,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-22801,HB9FEF,Beni,"Basel, Switzerland",IC-F4400DT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-22802,HB9FEF,Beni,"Basel, Switzerland",IC-F4400DT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-22803,HB9FEF,Beni,"Basel, Switzerland",Kenwood NX-5300E,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-23000,G4KLX,Jonathan,"Worthing, UK","NX5300, MMDVM",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-23524,G0TJH,Ian,Newhaven Sussex GBR,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-24001,KD4RJN,Jamie,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-24002,KK4RER,Jennifer,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-24020,K4XXX,Ed,"London, KY",NX5800,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-24021,K4XXX,Ed,"London, KY",NX5700,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25001,N5QZ,Ryan,AR,"N5QZ, Ryan McAfee, Searcy, AR - Kenwood NX-300",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25002,N5QZ,Ryan,AR,"N5QZ, Ryan McAfee, Searcy, AR - Kenwood NX-200",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25003,N5QS,Roger,AR,"N5QS, Roger Gray, Searcy, AR - Kenwood NX-300",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25004,N5QS,Roger,AR,"N5QS, Roger Gray, Searcy, AR - Kenwood NX-200",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25005,N5QS,Roger,AR,"N5QS, Roger Gray, Searcy, AR - Kenwood NX-320",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25006,N5QS,Roger,AR,"N5QS, Roger Gray, Searcy, AR - Kenwood NX-340U",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25007,N5QT,Dawn,AR,"N5QT, Dawn Gray, Searcy, AR - Kenwood NX-300",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25008,N5QT,Dawn,AR,"N5QT, Dawn Gray, Searcy, AR - Kenwood NX-200",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25009,AC5AV,Larry,AR,"AC5AV, Larry Sicks, Searcy, AR - Kenwood NX-300",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25010,KD5OOW,Tom,AR,"KD5OOW, Tom McGee, Searcy, AR - Kenwood NX-300",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25011,W5ZN,Joel,AR,"W5ZN, Joel Harrison, Judsonia, AR - Kenwood NX-300",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25012,KD5HRT,Heath,AR,"KD5HRT, Heath Taylor, McRae, AR - Kenwood NX-300",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25013,KK5WA,Darin,AR,"KK5WA, Darin Dykes, Beebe, AR - Kenwood NX-320",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25014,N5LKE,James,AR,"N5LKE, James Ferguson, Searcy, AR - Kenwood NX-5300",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25015,KJ5ORD,John,AR,"KJ5ORD, John Ord, Searcy, AR - Kenwood NX-300",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25016,KB5RFF,Scott,AR,"KB5RFF, Scott Gray, Searcy, AR - Kenwood NX-300",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25017,KB5ZUH,Todd,AR,"KB5ZUH, Todd Williams, Searcy, AR - Kenwood NX-320",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25018,KB5ZUH,Todd,AR,"KB5ZUH, Todd Williams, Searcy, AR - Kenwood NX-340",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25019,KB5ZUH,Todd,AR,"KB5ZUH, Todd Williams, Searcy, AR - Kenwood NX-340",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25020,KB5ZUH,Todd,AR,"KB5ZUH, Todd Williams, Searcy, AR - Kenwood NX-320",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25021,KE5UZU,Raymond Prince,"England, AR",Kenwood Handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25021,AF5OD,Landon,AR,"AF5OD, Landon McCord, Searcy, AR",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25022,KE5UZU,Raymond Prince,"England, AR",Icom Handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25022,KE5YZP,Ryan,AR,"KE5YZP, Ryan A Schwarck, Batesville, AR - Icom",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25023,KE5YZP,Ryan,AR,"KE5YZP, Ryan A Schwarck, Batesville, AR - Icom",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25024,KG5CHM,Colt,AR,"KG5CHM, Colt Boyd, Searcy, AR - Kenwood NX-300",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25025,KJ5ORD,John,AR,"KJ5ORD, John Ord, Searcy, AR - Kenwood NX-xxx VHF",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25026,WA8UBL,Allen,AR,"WA8UBL, Allen Herrick, Beebe, AR - Kenwood NX-320",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25027,KF5TPF,Ryan,AR,"KF5TPF, Ryan Nelson, Edgemont, AR - Kenwood NX-200",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25028,WA8UBL,Allen,AR,"WA8UBL, Allen Herrick, Beebe, AR - Kenwood NX-220",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25029,KF5WHX,Trey,AR,"KF5WHX, Trey Ferguson, Searcy, AR - Kenwood NX-320",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25030,AC5AV,Larry,AR,"AC5AV, Larry Sicks, Searcy, AR",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25031,KJ5SF,Stan,AR,"KJ5SF, Stan Rongey, Searcy, AR - Kenwood NX-340",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25032,KC5DFH,Kirk,AR,"KC5DFH, Kirk Williams, Searcy, AR - Kenwood NX-340",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25033,AF5OD,Landon,AR,"AF5OD, Landon McCord, Searcy, AR, Icom F4161DS",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25034,KF5TPF,Ryan,AR,"KF5TPF, Ryan Nelson, Edgemont, AR - ICOM 4161",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25035,KG5BMB,Glenda,AR,"KG5BMB, Glenda McCord, Searcy, AR, Icom F4161DS",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25039,KC1JET,Jim,,JIM (BASE),,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25068,N1QD,Joe,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25069,N1COP,Bob,,Bob,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25070,WD1L,John,,John,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25125,N1TI,Tim,"Mattapoisett, MA",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25125,N1TI,Tim,"Mattapoisett, MA",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25144,W1WCF,Walter,,Walter,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25203,W1MSG,Craig,"N Oxford, MA",NX320,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25221,N0XIA,James,,James - Kenwood Mobile and Portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25222,KE4SDC,Ron,,Ron - Portable NX300,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25246,WG1U,Ken,"Assonet, MA",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25333,W1AKN,Jack,,Jack Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25390,KC1JET,Jim,,JIM (MOBILE),,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25390,KC1JET,Jim,,JIM,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25444,W1TAV,Steve,,Steve,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25555,WA1MNQ,Mike,,Mike,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25582,N1KXJ,Ray,"E. Bridgewater, MA.",Port.,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25582,N1KXJ,Ray Wall,East Bridgewater,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25585,N1AVA,Ken Howland,"DARTMOUTH,MA",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25700,NN1D,Tony Souza,"Swansea, MA",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25740,WG1U,Kenny,,KEN,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25743,WG1U,Kenny,,KEN,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25746,N1OTY,John,,JOHN,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25777,W1BON,Bump,,Bump,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25830,KB1CHU,Steve,MA,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25863,N1ZZN,Jeff,,JEFF,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25874,KB1KVD,Jason,,Jason - Icom Mob & Port,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25888,K1WGU,Bob,,Bob,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25889,AB1CQ,Gary,,Gary,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25900,N1ZZR,Matt,,Matt - mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25901,N1MRC,Matt,"Bridgewater, MA",N1MRC P-1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25901,N1ZZR,Matt,,Matt,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-25957,KC1HO,Steve,,STEVE,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-26008,W2GLD,Jerry Dubzak,"Pinckney, Michigan U.S.A.",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-26200,DF1VB,Jochen,Dortmund,NX-320,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-26201,DG9BEW,Hayo,Schwerte,NX-320,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-26202,DG9BEW,Hayo,Schwerte,IC-F4400DT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-26208,DK6PX,Stefan,JN57TU,ICOM-F4161DT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-26209,DL4TTB,Maggie,JN57OQ,ICOM- F4461DT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-26244,DF1VB,Jochen,Dortmund,IC-F4400DT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-27101,KI4SWB,Mark,"Florida, USA",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-27101,KI4SWB,Mark,"Melbourne Beach, FL",Icom Portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-27102,KP4OO,Carlos,"Palm Bay, FL",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-27102,KP4OO,Carlos,"Palm Bay, FL",Icom Portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-27111,K4BQN,Ed,"Florida, USA",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-27201,KI4SWB,Mark,"Melbourne Beach, FL",Icom Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-27202,KP4OO,Carlos,"Palm Bay, FL",Icom Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-28001,W2GLD,Jerry Dubzak,"Pinckney, Michigan",Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-28001,K3KRS,rYAN,CLEVLAND,OHIO,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-28002,W8CED,Colleen Dubzak,"Pinckney, Michigan",Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-30505,KG6MQE,Jim,MT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-30571,WX4RCF,Ryan F.,"Tampa, FL",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-31042,N9VJW,Bill Jackson,"Glendale, AZ",Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-31045,KJ4SHL,Ryan Owens,"Tampa, FL",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-31117,K4QHR,Pete,,Pete,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-31146,KD2KWD,Michael Santamaria,"Brandon, FL",Kenwood,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-31164,N2NUO,Mark,New York,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-31480,WA5VYK,S.J.Detiveaux,"Odessa, TX",wa5vyk@gmail.com,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-31672,MW0MWZ,Andy,Blackwood Wales UK,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-33000,N1PA-R,Paul,NH,PAUL - NEW HAMPSHIRE REPEATER,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-33001,N1PA,Paul,NH,PAUL - NEW HAMPSHIRE,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-33002,N1PA,Paul,NH,PAUL - NEW HAMPSHIRE,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-34001,N2WNS,Bill,NJ,N2WNS Portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-34002,N2WNS,Bill,NJ,N2WNS Base,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-34149,IV3JDV,Roberto,JN65VP,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-36001,W2CCR,Chris,NY,"Chris, Galway, NY NX300",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-36002,KC2VOB,Asad,NY,"Asad, NYC, NX-5800",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-36003,KC2VOB,Asad,NY,"Asad, NYC, NX-300GK",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-36134,N2SRO,Mike,"Pitman, NJ",Portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-36602,N2LEN,Len,"Catskill, New York",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-37001,KA4YMY,Steve,NC,"Steve, Charlotte, NC NX320",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-37009,KA4YMY,Steve,"Charlotte, NC",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-37010,KA4YMY,Steve,"Charlotte, NC",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-37010,KA4YMY,Steve,"Charlotte, NC",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-37309,KW4PD,David,Aquadale NC,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-37309,KW4PD,David,Aquadale NC,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-39114,WY8E,Matt,"Columbus, Ohio",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-40024,N5YEI,Jeff Dalrymple,"Jay, Oklahoma",NX-5800 Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-40073,K5SJW,John,"Broken Arrow, Ok",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-40076,K5SJW,John,"Broken Arrow, Ok",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-40124,N5YEI,Jeff Dalrymple,"Jay, Oklahoma",NX-5300 Portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-43751,N4IRS,Steve,,Steve,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-44001,K2BUI,Eric,RI,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-44002,K2BUI,Eric,"Providence, RI",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-44007,W2DAN,Dave,,Dave - NX700,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-44298,N1JBC,Jed,,JED,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-46600,BV5OO,Yaojun Hsieh,Taipei,Taiwan,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-46699,BM2GJP,Hyman Fan,Taipei,Taiwan,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-48541,KG5UBV,Jason Kingsbury,"McKinney, TX",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-48866,K5IMO,Larry Moyer,"Plano, TX",ICOM IC-F6061D,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-49101,WX7Y-1,Bret Mills,Castle Dale Utah,WX7y-1 Hand Held 1,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-49102,WX7Y-2,Bret Mills,"Caslte Dale, Utah",WX7Y-2 Hand held,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-49104,WX7Y-4,Bret Mills,"Castle Dale, Utah",WX7Y-4 Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-49106,WX7Y-6,Bret Mills,Castle Dale,WX7Y-6 Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-50120,VK2GG,Dan Joyce,"Lake Macquarie, NSW, Au",Kenwood 340U & Icom 4161,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-50210,VK2RFI,WICEN Hunter,Portable,MMDVM Repeater,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-51172,M0GLJ,Adrian,United Kingdom,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-52098,HS8JCV,Mr.X,THAILAND,F3400D with MMDVM Hat,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-52110,VK2HK,Ian Tulley,"Wyee, NSW, Australia",NX-5300/NX-5800,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-52114,VK2GG,Dan Joyce,"Lake Macquarie, NSW, Australia",Kenwod 340U,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-52118,VK2GP,Colin Garven,Toronto NSW Australia,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-52122,VK2KXX,Colin Garven,Toronto NSW Australia,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-53042,VK3JMA,Mark,"Melbourne, Australia",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-53055,VK3AS,Andrew,"Horsham,Australia",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-53062,VK3KAY,Douglas,Dimboola,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-53501,KH2MM,Jochen,"Dededo, GU",NX-320,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-54035,VK4TUX,Adrian,QG62EI,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-54035,VK4TUX,Adrian,QG62EI,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-54035,VK4TUX,Adrian,QG62EI,MMDVM REpeater,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-55100,N9FAV,Tim,"Milwaukee, WI",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-55101,N9FAV,Tim,"Milwaukee, WI",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-55105,N9FAV,Tim,"Milwaukee, WI",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-55700,WB9HKE,Rick,WI,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-55704,WB9HKE,Rick,WI,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57000,VE3SP,Andre,"Toronto, ON",mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57001,VE3SP,Andre,"Toronto, ON",handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57001,VE3EI,Eric,,Eric - Portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57002,VE3OKZ,Janusz,"Toronto, ON",mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57002,VE3EI,Eric,,Eric - Dongle,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57003,VE3OKZ,Janusz,"Toronto, ON",handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57004,VE3CCD,Curtis,"Scarborough, ON",handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57005,VE3NBI,Anoop,"Scarborough, ON",handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57006,VE3JLU,Sherwin,"Scarborough, ON",handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57007,va3rq,Jon,"Oakville, ON",handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57008,ve3ogb,Randy,"Toronto, ON",handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57009,va3mk,Mark,"Oakville, ON",handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57010,va3mk,Mark,"Oakville, ON",mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57011,VA3WZW,Andre,"Durham, ON",mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57012,VA3WZW,Andre,"Durham, ON",mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57013,VA3AGV,cottage,"Toronto, ON",mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57014,VE3BWP,Brian,"Caledon, ON",handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57015,VE3HY,Frank,"Caledon, ON",handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57016,VE3UBI,Paul,"Scarborough, ON",mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57017,VE3UBI,Paul,"Scarborough, ON",handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57018,VE3RZR,Richard,"Toronto, ON",handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57019,VE3AEP,Dom,"Toronto, ON",mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57020,VA3PEO,Adrian,"Toronto, ON",handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57021,va3wjo,Walter,"Toronto, ON",handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57022,ve3fkn,Tom,"Stoney Creek, ON",handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57023,ve3ips,John,"Toronto, ON",handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57024,VA3CQA,Brian,"Scarborough, ON",handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57025,VA3PAD,Andrew,"Scarborough, ON",mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57026,VA3PAD,Andrew,"Scarborough, ON",handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57027,VA3VAD,Arpad,"Hamilton, ON",handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57028,VA3KY,Shelly,"Thornhill, ON",mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57029,VA3KY,Shelly,"Thornhill, ON",handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57030,VE3KFQ,Doug,"Toronto, ON",mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57031,VE3KFQ,Doug,"Toronto, ON",handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57032,VE3AEP,Dom 2,"Toronto, ON",handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57033,VE3DJZ,Huey,"Hamilton, ON",mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57034,VE3DJZ,Huey,"Hamilton, ON",handheld,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57035,VA3RQ,Jon,Oakville ON,Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57036,VE3RNK,Rick,Carlisle ON,Base,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57037,VE3TTO,Gary,Hamilton ON,Base,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57038,VA3BL,John,Burlington ON,Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57039,VA3BL,John,Burlington ON,Portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57040,VE3DXT,Derek,Hamilton ON,Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57041,VA3EZT,David,Tavistock ON,Portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57042,VA3EZT,David,Tavistock On,Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57043,VE3WA,Jim,St.Catharines On,Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57044,VE3RNK,Rick,Carlisle ON,Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57045,VE3FLK,Dan,London On Canada,Mobile,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-57046,VE3FLK,Dan,London On Canada,Portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-61475,N1IRL,Rick Fiorey,"Budd Lake, NJ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-75901,PD2ML,Mark,Bussum Netherlands,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-142065,KO3Q,Malcolm Waring,"Shawnee on Delaware, PA",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-204001,PD2ML,Mark,Bussum Netherlands,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-206804,ON0LG,UBA-LGE Repeater,Seraing,JO20SO,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-206804,OP0P,Paul DELMELLE,Neupre,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-312524,KC1ACI,Craig,"N Oxford, MA",MMDVM Repeater,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-466577,BM2GJP,Hyman Fan,Taipei,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-505342,VK3JMA,Mark,"Victoria, Australia",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-1107132,KF6S,James Valle,"West Hills, CA",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-1148541,KG5UBV,Jason Kingsbury,"McKinney, TX",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-2068005,ON6DP,Paul Delmelle,Neupre,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-2147008,EA7UU,Jesus,Granada,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-2147076,EA7GIB,Blas,Seville IM77AJ SPAIN,NX320,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-2227040,iz7djv,Tony,Monopoli,Portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-2227163,iw7ecc,Antonio,Monopoli,Portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-2284018,HB9FEF,Beni,"Basel, Switzerland",iCOM IC-F4400DT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-2284019,HB9FEF,Beni,"Basel, Switzerland",iCOM IC-4400DT,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3023277,VA3EZT,David,EN93,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3101386,W4OA,Mitch,"EM72hq Opelika, AL USA",mmdvm_hs with RPi Zero W,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3104193,N7ZQS,Wayne Cummings,"Marana, AZ",DM42kl,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3104324,N9VJW,Bill Jackson,"Glendale, AZ",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3106418,N5ICK,Nicholas Nixon,"Rialto, Ca",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3112205,N2HUC,Phil Roberts,"Port St. Lucie, FL",DV4MINI AMBE voice,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3116032,N7ISP,Adam Crippen,"Post Falls, Idaho",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3116033,N7ISP,Adam Crippen,"Post Falls, Idaho",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3118365,NA9VY,Chris Gilbert,"New Palestine, IN",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3118366,N9UMJ,Rick Nicholson,Buddha Indiana,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3142058,N3BAH,L. Abraham Smith,Southwestern Pennsylvania,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3142473,KB3AWQ,John Springman,"Williamsport, PA",KB3AWQ.com,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3147900,W8BUG,Garret Scott,"Knoxville, TN",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3148009,WA5VYK,Joe Detiveaux,"Odessa, Tx",wa5vyk@gmail.com,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3149014,WA7KMF,Bill Neville,"Logan, UT",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-3342025,Xe2mbe,Eliud Bueno Moreno,"Durango, Mexico",,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-5154001,DW4CHZ,Chiz,Naga City,Portable,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
-26250,N8GY,Tom,.....,............................................
-53062,VK3KAY,Doug,.....,...........................................
-53055,VK3AS,Andy,.....,...........................................
-11485,WA5DKW,James,.....,...........................................
-04193,N7ZQS,Wayne,.....,...........................................
-39114,W8YE,,.....,...........................................
-47415,EA7KDO,Mitch,.....,...........................................
-65000,EA7GIB,Blas,.....,...........................................
+UID,Call,Name,Location,Notes
+1,KB3AWQ,John Springman,"Williamsport, PA",KB3AWQ.com
+2,W2FLY,Harry,Southern NJ,UHF NX-800 mobile
+3,WB2OOM,Tina,Southern NJ,UHF NX-800 Mobile
+4,W2FLY,Harry,Southern NJ,UHF NX-800 Van
+7,F1PRY,Emmanuel,BEAUVAIS FR,
+8,W2FLY,Harry,Southern NJ,UHF NX-820 Port 2
+9,KE8BGA,Lowell Katz,"Cleveland, Ohio","on the north shore, NX-800"
+17,KC2SNI,Jim Hannon,"West Berlin, New Jersey",My Radio is an Icom IC-3161DT
+25,WB2RUH,Bruce,Southern NJ,UHF NX-320
+26,WB2RUH,Bruce,Southern NJ,UHF NX-800 mobile
+30,KD4MOJ,Doug,,
+74,N2IXC,Ed,Chatsworth NJ,
+76,W2FLY,Harry,Southern NJ,UFH NX5300 Port 1
+77,W2FLY,Harry,"Somers Point, NJ",UHF NX-800 Shore Base
+78,W2FLY,Harry,"Mullica Hill, NJ",UHF NX-800
+79,W2FLY,Harry,Southern NJ,UHF NX-5800
+80,W2FLY,Harry,Southern NJ,VHF NX-5700 mobile
+82,W2FLY,Harry,"Somers Point, NJ",VHF NX-700 Shore Base
+85,W2FLY,Harry,Southern NJ,VHF NX_700 van
+86,W2FLY,Harry,"Mullica Hill, NJ",VHF NX-700 base
+87,W2FLY,Harry,Southern NJ,VHF NX-700 mobile
+88,W2FLY,Harry,Southern NJ,VHF NX-220 portable
+89,WB2RUH,Bruce,Vineland NJ,VHF NX-700 base
+99,K1ZSG,Don,,Mobile
+134,N2SRO,Mike,NJ,
+141,KF2M,Greg Popovich,"Mt Laurel, NJ",IC-F4161DT
+231,BV2QS,JACK YANG,PL05SA,
+401,W1KFR,Bill,,
+501,N5QS,,"Searcy, AR",NXR810
+502,AB5ER,,"Searcy, AR",NXR710
+503,N5LKE,,"Searcy, AR",NXR810
+650,KJ4PIU,,,CJ - NX-210
+651,KC3KSJ,Chris,"Wilmington, DE",Home Office NX820
+655,KC3KSJ,Chris,"Wilmington, DE",Mobile NX820
+669,KC3KSJ,Chris,"Wilmington, DE",Portable NX320
+672,KC3KSJ,Chris,"Wilmington, DE",Portable NX320
+673,KC3KSJ,Chris,"Wilmington, DE",Portable NX320
+674,KC3KSJ,Chris,"Wilmington, DE",Portable NX320
+690,KJ4PIU,CJ,,NX-700
+801,W2GLD,Jerry Dubzak,"Pinckney, Michigan",VHF Repeater
+802,W2GLD,Jerry Dubzak,"Pinckney, Michigan",UHF Repeater
+900,K1IFF,,"Bristol, CT",NXR810
+901,K1IFF,Cliff,CT,NX320
+902,K1IFF,Cliff,CT,NX320 - demo
+903,K1IFF,Cliff,CT,NX800H
+905,WA1LMV,Rick,,NX320
+906,K1IFF,Cliff,CT,NX200
+907,K1IFF,Cliff,CT,Future
+908,W4CLL,Chuck,,
+909,W4CCL,Chuck,,
+910,W4CLL,Chuck,,
+911,W4CLL,Chuck,,
+912,W4CCL,Chuck,,
+920,N1XDN,Bob,CT,P1 UHF NX300
+921,N1XDN,Bob,CT,P1 VHF NX220
+922,N1XDN,Bob,CT,P2 UHF NX300
+923,N1XDN,Bob,CT,M1 VHF NX700
+924,N1XDN,Bob,CT,P3 UHF NX-5300
+925,N1XDN,Bob,CT,P2 VHF NX-5200
+926,N1XDN,Bob,CT,M1 UHF NX-5800
+928,N1XDN,Bob,CT,Icom portable
+929,N1XDN ,,"Enfield, CT",
+930,K1IFF,Cliff,CT,NX300
+931,K1IFF,Cliff,CT,NX300
+936,W1GPO,John,,NX300
+950,K1KGQ,,"Torrington, CT",NXR810
+951,K1KGQ,Joel,,NX800H
+952,K1GML,Gail,,NX800H
+953,K1KGQ,Joel,,NX320-1
+954,K1KGQ,Joel,,
+955,K1KGQ,Joel,,
+956,K1KGQ,Joel,,
+957,K1KGQ,Joel,,
+958,K1KGQ,Joel,,F4161
+959,K1KGQ,Joel,,Future
+960,K1ZXX,Gary,,Icom All radios
+961,WA1SSB,Joe,,NX800H
+962,N1MAT,Dennis,,F4161
+963,N1MAT,Dennis,,F4161
+970,KB1VRI,Nick,CT,
+971,N1ELE,Paul,CT,
+972,N1ODJ,Kenny Schmitz,Middletown,
+973,W1VLF,Paul,CT,
+990,K1IFF,,,NXR810
+995,K1IFF,Cliff,"Brsitol, CT",NXR710 link radio
+1001,KE4GWW,James,AL,NX200 Portable #1
+1002,KE4GWW,James,AL,NX200 Portable #2
+1003,KE4GWW,James,AL,NX300 Portable #1
+1004,KE4GWW,James,AL,NX300 Portable #2
+1005,KE4GWW,James,AL,NX700 Base
+1006,KE4GWW,James,AL,NX800 Base
+1007,KE4GWW,James M. Nelson,"Dothan, AL",NX700 Mobile#1
+1008,KE4GWW,James,AL,NX700 Mobile#2
+1009,KE4GWW,James,AL,NX800 Mobile#1
+1010,KE4GWW,James,AL,NX800 Mobile#2
+1066,KM4JXP,Peter Tasker,Longboat Key,NX5300
+1243,G6VBJ,Peter,"Woking, Surrey, U.K.",MMDVM
+1386,W4OA,Mitch,"EM72hq Opelika, AL USA",mmdvm_hs with RPi Zero W
+1538,G7MNP,Glen Turner,United Kingdom,
+1702,KC9RHH,,,
+1703,KC9NPJ,,,
+1839,BG6TWT,Tim yang,Wuhan China,MMDVM
+1900,RIVERVIEW,,,
+1901,RVW-LINK,,,
+1910,VERNA-V,,,
+1911,VERNA-U,,,
+1912,VERNA-LINK,,,
+1920,PDALE,,,
+1921,PDALE LINK,,,
+1930,HOLIDAY,,,
+1931,HOLIDAY LI,,,
+1954,W4BPT,BILLY TAYLOR,"RINGGOLD,GA.",
+1956,KC7SDD,Dana Hanford,"Bainbridge Island, WA","Member BARC, W7NPC.org"
+1963,N5JRN,David Barts,"Bainbridge Island, WA","Handheld, Icom 4161"
+1966,ZS6IIX,Henry,Petit South Africa,
+1997,KC1AJR,Giovanni,East Hampton CT,kenwood NX800 K2
+2135,K3ETS,JOHN KEETING,"RIVERVIEW, FL",NXDN ICOM F6061D
+2332,VE3WHR,443.925 MMDVM Repeater,"Courtland,Ontario",443.925 MMDVM Repeater
+2345,VE3DPL,146.655 mmdvm repeater,"Courtland,Ontario",146.655 mmdvm repeater
+2501,KA1DTA,Dave,,(25)01
+2524,KC1ACI,Craig,"N Oxford, MA",MMDVM Repeater
+2716,VA7JPL,Fred,"Kelowna, BC. Canada",MMDVM - Rpt - DMR 302716
+3001,F1IZL,RICKLIN,French,NX200
+3070,W4ORL,Ralph,,Mobile
+3071,W4LOV,Mike,,NX800
+3072,N4JTK,John,,NX800
+3073,N4JTK,John Knott,Orlando FL,Portable
+3074,W4MCA,Michael,,NX300
+3075,W4LOV,Mike,,NX800
+3079,W4ORL,Ralph,,Portable
+3081,W4MCA,Michael,,NX800
+3082,W4LOV,Mike,,Portable
+3083,KD4TWJ,Dean,,Mobile NX800
+3271,N4KEG,Richard,,Mobile and or ht's (UHF)
+3274,KD4EFM,Evans,FL,
+3275,KD4EFM,Evans,FL,
+3278,KD4EFM,Evans,FL,
+3279,N4KEG,Richard,,
+3280,KD4EFM,Evans,"Lakeland, Florida",work radio
+3281,N4KEG,Richard,,
+3450,K0KAD,CHAD TAYLOR,"SPOKANE VALLEY, WA",My Portable
+3451,K0KAD,CHAD TAYLOR,"SPOKANE VALLEY, WA",My Base Station
+3452,K0KAD,CHAD TAYLOR,"SPOKANE VALLEY, WA",Mobile Radio
+3633,W8CTC,CHRIS,"HILLSBO,OHIO",
+4001,PD2ML,Mark,Bussum Netherlands,JO22OG
+4018,HB9FEF,Beni,"Basel, Switzerland",iCOM IC-F4400DT
+4020,K4XXX,Ed,"London, KY",NX820 Base
+4193,N7ZQS,Wayne Cummings,"Marana, AZ",DM42kl
+4317,KC3JCJ,Julio Cesar,"Easton, PA - USA",
+4324,N9VJW,Bill Jackson,"Glendale, AZ",
+4802,HB3YRB,Alex,Verbier,nx5300
+4804,HB9FMF,Didier,Rougemont,NX5300
+5001,N5QZ,Ryan McAfee,"Searcy, AR",Kenwood NX-820
+5002,N5QZ,Ryan McAfee,"Searcy, AR",Kenwood NX-720
+5003,N5QS,Roger Gray,"Searcy, AR",Kenwood NX-820
+5004,N5QS,Roger Gray,"Searcy, AR",Kenwood NX-720
+5005,AC5AV,Larry Sicks,"Searcy, AR",
+5006,AC5AV,Larry Sicks,"Searcy, AR",
+5007,N5LKE,James Ferguson,"Searcy, AR",Kenwood NX-800
+5008,AF5WN,Mason Creager,"Cabot, AR",Kenwood NX-700H
+5009,KJ5SF,Stan Rongey,"Searcy, AR",Kenwood NX-800
+5100,K5SRS,Michael Smith,"Fayetteville, AR",NX-5800 Mobile
+5101,KC5YQB,Paul Blair,"Fayetteville, AR",
+5125,AE5OQ,"Armstead M Feland, IV","Higdon, AR",
+5134,AE5OQ,"Armstead M Feland, IV","Higdon, AR",Kenwood NX-200
+5150,WY6NN,Doug,"Los Angeles, CA",NX-300/5300
+5151,KC6HFJ,Tamara,"Los Angeles, CA",NX-300
+5170,K5WMZ,Gary D Partlow,"Ward, AR",Kenwood NX-700
+5209,VK2RFI,WICEN Hunter,Portable,Wicen MMDVM Repeater
+5301,ZL1HN,Brian,Hamilton,icom exdn
+5302,ZL1RT,BRIAN,HAMILTON,ICOM
+5303,ZL3DMH,Doug,RE66IK,Icom F6061
+5304,ZL4DE,Daniel,Invercargill NZ,Icom
+5342,VK3JMA,Mark,"Victoria, Australia",
+5599,W1ZM,Ryan Nelson,,NX-5300
+5901,PD2ML,Mark,Bussum Netherlands,
+5987,W5ZN,Joel Harrison,"Judsonia, AR",Kenwood NX-800
+6418,N5ICK,Nicholas Nixon,"Rialto, Ca",
+6430,K4GFD,Norm,"Greensboro, FL",
+6431,K4GFD,Norm,,
+6432,K4GFD,Norm,,
+6439,N4NKV,George,,
+6577,BM2GJP,Hyman Fan,Taipei,
+6600,EA3IK,Enric,Barcelona - SPAIN,
+6801,HB9VSD,relais de verbier,verbier,
+6802,HB9YRB,Alex,Verbier,
+6803,HB9PE,,"Pays-D'Enhaut VD, Switzerland",
+6804,HB9FMF,Didier,Rougemont,
+7001,4O0LPG,R0 4O0LPG,"Podgorica, Montenegro",Multimode Repeater
+7132,KF6S,James Valle,"West Hills, CA",Last 5 of DMR ID
+7737,N4NKV,George,,
+7799,KG4DCX,David,Hopewell Va USA,
+8001,W2GLD,Jerry Dubzak,"Pinckney, Michigan",Control Station
+8002,W8CED,Colleen Dubzak,"Pinckney, Michigan",Control Station
+8005,ON6DP,Paul Delmelle,Neupre,
+9726,WR2M,Bill,Roxbury NJ,
+9834,VA7NY,PJ,,
+11485,WA5DKW,JAMES DOWIS,"DFW, TEXAS",
+12002,W4KJP,Kevin Paus,"New Port Richey, FL",
+12003,W4KJP,Kevin Paus,"New Port Richey, FL",
+12005,KD4TWJ,Dean,,Portable IC-F4161
+12006,W4MO,Stewart,,NX300 / 320
+12007,W4MO,Stewart,,NX800
+12010,KD4DWP,Ben,Orlando,
+12013,K4NBC,Miguel Orama,"Palm Bay, Florida",Icom F4146DS UHF Portable
+12014,K4NBC,Miguel Orama,"Palm Bay, Florida",Kenwood NX200 VHF HT
+12015,K4NBC,Miguel Orama,"Palm Bay, Florida",Future UHF Mobile
+12016,K4NBC,Miguel Orama,"Palm Bay, Florida",M2 Icom F6061D
+12017,N4JFZ,,,
+12021,W4PJT,Paul,,
+12023,KD4NWL,John,,
+12045,KJ4SHL,Ryan Owens,"Tampa,FL",
+12050,KM4LTG,Brad,Pinellas County,
+12127,W4KDM,Rick,,Portable NX300
+12136,WA4KWK,John,"Dunedin, Fl",
+12200,NB9X,Paul,FL,
+12201,NB9X,Paul,FL,
+12202,NB9X,Paul,FL,
+12203,NB9X,Paul,FL,
+12204,NB9X,Paul,FL,
+12205,N2HUC,Phil Roberts,"Port St. Lucie, FL",DV4MINI AMBE voice
+12208,NB9X,Paul,Florida,
+12210,N4APG,Bill Pfost,"Nokomis, Florida, USA",NXDN Radio
+12211,N4APG,Bill Pfost,"Nokomis, Florida USA",NXDN Radio
+12212,N4APG,Bill Pfost,"Nokomis, Florida, USA",NXDN Radio
+12213,N4APG,Bill Pfost,"Nokomis, FL USA",NXDN Radio
+12214,N4APG,Bill Pfost,"Nokomis, Florida, USA",NXDN Radio
+12215,WA4ISB,Ed,,ED Mobile
+12216,WA4ISB,Ed,,
+12220,N4PK,Paul,,PAUK K.
+12221,N4PK,Paul,,
+12222,W4PJT,Paul,,
+12223,W4PJT,Paul,,
+12226,KI4SWY,William,,
+12228,W4ECZ,Wayne,"Springhill, Fl",
+12230,KQ4KX,Richard,,Richard Sharp
+12231,KQ4KX,Richard,,
+12234,KD4TWJ,Dean,EL98,
+12235,N1IC,Nick,,Nic
+12236,N1IC,Nick,,
+12239,K4DKK,CHRIS D,TRINITY FL,ICOM 4400DS
+12240,KR4X,Larry,,
+12241,KR4X,Larry,,
+12242,KM4JXP,Peter,Longboat Key,
+12245,KD4ACG,Jason,"Hudson, FL",Icom Mobile
+12246,KD4ACG,Jason,"Hudson, FL",Icom Portable
+12247,K2MCI,,,
+12250,KE4GYX,,,
+12271,KG4YZY,Dave,,
+12272,KE4OSL,,,
+12273,KE4OSL,,,
+12275,W8OJ,Dan,"Punta Gorda, FL",
+12300,KB9RKM,Dave,,
+12326,NX4Y,David Krauss,,
+12350,KA1IJA,Norman,,Mobile Icom
+12374,KF4I,Thom,,Base
+12375,KF4I,Thom,,Mobile
+12502,W8OJ,Dan,"Punta Gorda, FL",
+12523,KM4JVE,Ana,,IC-F4161
+12524,KC1ACI,Craig,"N Oxford, MA",MMDVM Repeater
+12526,K4WZV,Robert Bretzman,"Brokksville, Florida",
+12577,N2DLX,Richard Dunajewski,,NX-5800
+12594,K4WZV,Robert Bretzman,"Brooksville, Florida",2nd radio
+12597,WA2FAA,JIM,Spring Hill FL.,
+12604,K4CBN,Greg,,
+12605,K4CBN,Greg,,
+12606,K4CBN,Greg,,
+12607,K4CBN,Greg,,
+12608,K4CBN,Greg,,
+12611,W4ZTH-1,Zach,Central Florida,NX-300
+12613,W4ECZ,Wayne,Spring Hill FL.,
+12621,W4ZTH,Zach,Central Florida,NX-800
+12652,N4HYK,Dock,"Saint Petersburg, Fl.",DV4mini V201.77 FW- on Pi3
+12666,KI4SWY,William Stillwel,,( All Radios )
+12691,KE3WDW,Sam,,Sam
+12780,KC4YUA,Brett,,
+12900,WX4RCF,Ryan French,"Tampa, FL",NX-5300
+12969,AA0NO,JIM,DUNEDIN FL EL88OB,
+13105,W7QO,Alan,,
+13106,W7QO,Alan,,
+13107,W7QO,Alan,,
+13121,W4CML,Chuck,,
+13122,W4CML,Chuck,,
+13125,KD4APP,Don,,NX300
+13126,KD4APP,Don,,F6061D
+13127,KD4APP,Don,,NX200
+13131,W5JR,Mike,,
+13132,W5JR,Mike,,
+13401,W1KFR,Bill,,
+13815,KG4BKO,Bill,GA,nx320
+13990,BUCKHEAD,,,
+13991,ATLANTA #2,,,
+13992,ATLANTA #3,,,
+13994,ATLANTA #1,,,
+14003,AE4TC,Scott Galloway,"Montpelier, VA",
+14020,K4XXX,Ed,"London, KY",NX5300
+14021,K4XXX,Ed,"London, KY",NX5200
+15001,N5QZ,Ryan McAfee,"Searcy, AR ",Kenwood NX-800H (Vehicle 1)
+15002,N5QZ,Ryan McAfee,"Searcy, AR ",Kenwood NX-700 (Vehicle 1)
+15003,N5QZ,Ryan McAfee,"Searcy, AR ",NX-800 (Vehicle 2)
+15004,N5QZ,Ryan McAfee,"Searcy, AR ",Kenwood NX-700 (Vehicle 2)
+15005,N5QS,Roger Gray,"Searcy, AR ",Kenwood NX-800 (Vehicle 1)
+15006,N5QS,Roger Gray,"Searcy, AR ",Kenwood NX-700 (Vehicle 1)
+15007,N5QS,Roger Gray,"Searcy, AR ",Kenwood NX-800 (Vehicle 2)
+15008,N5QS,Roger Gray,"Searcy, AR ",Kenwood NX-700 (Vehicle 2)
+15009,N5QS,Roger Gray,"Searcy, AR ",Kenwood NX-800 (Vehicle 3)
+15010,N5QS,Roger Gray,"Searcy, AR ",Kenwood NX-700 (Vehicle 3)
+15011,N5QT,Dawn Gray,"Searcy, AR ",Kenwood NX-800
+15012,AC5AV,Larry Sicks,"Searcy, AR",Kenwood NX-800
+15013,AC5AV,Larry Sicks,"Searcy, AR",Kenwood NX-700
+15014,N5QT,Dawn Gray,"Searcy, AR ",Kenwood NX-700
+15015,N5QS,Roger Gray,"Searcy, AR ",Motorcycle Mobile
+15016,KG5KS,Kenny Thompson,,NX-700HK
+15017,KG5KS,Kenny Thompson,,NX-800HK
+15018,N5QS,Roger Gray,"Searcy, AR ",ATV Mobile
+15019,N5QS,Roger Gray,"Searcy, AR ",ATV Mobile
+15020,WA8UBL,Allen Herrick,"Beebe, AR",NX-700
+15021,KD5HRT,Heath Taylor,"McRae, AR",NX-800
+15022,WA8UBL,Allen Herrick,"Beebe, AR",NX-800
+15023,N5ZA,Joel Belew,"Beebe, AR",NX-700
+15024,KF5TPF,Ryan Nelson,"Edgemont, AR",NX-700
+15025,KE5YZP,Ryan Schwarck,"Batesville, AR",NX-700
+15026,AF5OD,Landon McCord,"Searcy, AR",
+15027,KB5RFF,Scott Gray,"Searcy, AR",Kenwood NX-800
+16032,N7ISP,Adam Crippen,"Post Falls, Idaho",
+16033,N7ISP,Adam Crippen,"Post Falls, Idaho",ZumSpot
+16180,PY1EGR,DV Repeater,Rio de Janeiro,MMDVM
+17002,KC9GMX,Stephen,,Base F6121D
+17004,KC9GMX,Stephen,,F6061D
+17005,KC9NPJ,Jarrett,,F6121D
+17006,KC9GMX,Stephen,,F4161DS
+17007,KC9NPJ,Jarrett,,F4231DS
+17008,KC9RHH,Jesse,,F4101D
+17009,KC9PHK,Michael,,F4061DS
+17011,N9BRG,Dan,,kenwood nx800k2
+17340,K9DPM,David Maria,"Mahomet, IL",
+17855,AG6RN,Demian,CA,NX-210
+17982,K8DJN,Douglas Nipper,"Danville, IL USA",Icom IC-F6061D
+18001,W2GLD,Jerry Dubzak,"Pinckney, Michigan",Portable
+18002,W8CED,Colleen Dubzak,"Pinckney, Michigan",Portable
+18365,NA9VY,Chris Gilbert,"New Palestine, IN",
+18366,N9UMJ,Rick Nicholson,Buddha Indiana,
+20296,N7JYS,Eric Harrison,"Russell, Kansas",
+21003,K4KTR,Kyle Robinson,louisville,
+21007,WA1LMV,Rick,,Rick
+21014,K2BUI,Eric,,Eric
+21022,OE1GPA,Gerald Pechoc,JN88EF,
+21159,SV1HEP,CHRYSANTHOS,ATHENS-GREECE,
+22100,N5UXT,Angelo Glorioso,New Orleans,mmdvm
+22120,N5WIG,"MICHAEL A KIKUCHI, Sr",LA,
+22801,HB9FEF,Beni,"Basel, Switzerland",IC-F4400DT
+22802,HB9FEF,Beni,"Basel, Switzerland",IC-F4400DT
+22803,HB9FEF,Beni,"Basel, Switzerland",Kenwood NX-5300E
+22804,HB9FEF,Beni,"Basel, Switzerland",IC-F4400DT
+22805,HB9FEG,Jakob,"Basel, Switzerland",IC-F4400DT
+23000,G4KLX,Jonathan,"Worthing, UK","NX5300, MMDVM"
+23001,M6NBP,Norman,"Brighton, East Sussex, UK",
+23002,M6NBP,Norman,"Brighton, East Sussex, UK",
+23007,N1DOT,KENNETH GRIMARD,"TURNER, ME",
+23277,VA3EZT,David,EN93,
+23524,G0TJH,Ian,Newhaven Sussex GBR,
+24001,KD4RJN,Jamie,,
+24002,KK4RER,Jennifer,,
+24020,K4XXX,Ed,"London, KY",NX5800
+24021,K4XXX,Ed,"London, KY",NX5700
+25001,N5QZ,Ryan McAfee,"Searcy, AR",Kenwood NX-300
+25002,N5QZ,Ryan McAfee,"Searcy, AR",Kenwood NX-200
+25003,N5QS,Roger Gray,"Searcy, AR",Kenwood NX-300
+25004,N5QS,Roger Gray,"Searcy, AR",Kenwood NX-200
+25005,N5QS,Roger Gray,"Searcy, AR",Kenwood NX-320
+25006,N5QS,Roger Gray,"Searcy, AR",Kenwood NX-340U
+25007,N5QT,Dawn Gray,"Searcy, AR",Kenwood NX-300
+25008,N5QT,Dawn Gray,"Searcy, AR",Kenwood NX-200
+25009,AC5AV,Larry Sicks,"Searcy, AR",Kenwood NX-300
+25010,KD5OOW,Tom McGee,"Searcy, AR",Kenwood NX-300
+25011,W5ZN,Joel Harrison,"Judsonia, AR",Kenwood NX-300
+25012,KD5HRT,Heath Taylor,"McRae, AR",Kenwood NX-300
+25013,KK5WA,Darin Dykes,"Beebe, AR",Kenwood NX-320
+25014,N5LKE,James Ferguson,"Searcy, AR",Kenwood NX-5300
+25015,KJ5ORD,John Ord,"Searcy, AR",Kenwood NX-300
+25016,KB5RFF,Scott Gray,"Searcy, AR",Kenwood NX-300
+25017,KB5ZUH,Todd Williams,"Searcy, AR",Kenwood NX-320
+25018,KB5ZUH,Todd Williams,"Searcy, AR",Kenwood NX-340
+25019,KB5ZUH,Todd Williams,"Searcy, AR",Kenwood NX-340
+25020,KB5ZUH,Todd Williams,"Searcy, AR",Kenwood NX-320
+25021,AF5OD,Landon McCord,"Searcy, AR",
+25022,KE5YZP,Ryan A Schwarck,"Batesville, AR",Icom
+25023,KE5YZP,Ryan A Schwarck,"Batesville, AR",Icom
+25024,KG5CHM,Colt Boyd,"Searcy, AR",Kenwood NX-300
+25025,KJ5ORD,John Ord,"Searcy, AR",Kenwood NX-xxx VHF
+25026,WA8UBL,Allen Herrick,"Beebe, AR",Kenwood NX-320
+25027,KF5TPF,Ryan Nelson,"Edgemont, AR",Kenwood NX-200
+25028,WA8UBL,Allen Herrick,"Beebe, AR",Kenwood NX-220
+25029,KF5WHX,Trey Ferguson,"Searcy, AR",Kenwood NX-320
+25030,AC5AV,Larry Sicks,"Searcy, AR",
+25031,KJ5SF,Stan Rongey,"Searcy, AR",Kenwood NX-340
+25032,KC5DFH,Kirk Williams,"Searcy, AR",Kenwood NX-340
+25033,AF5OD,Landon McCord,"Searcy, AR",Icom F4161DS
+25034,KF5TPF,Ryan Nelson,"Edgemont, AR",ICOM 4161
+25035,KG5BMB,Glenda McCord,"Searcy, AR",Icom F4161DS
+25039,KC1JET,Jim,,Base
+25068,N1QD,Joe,,
+25069,N1COP,Bob,,
+25070,WD1L,John,,
+25101,KD5BVX,Mark Cartwright,"Batesville, AR",Kenwood NX-210
+25125,N1TI,Tim,"Mattapoisett, MA",
+25144,W1WCF,Walter,,
+25203,W1MSG,Craig,"N Oxford, MA",NX320
+25215,W1MSG,Craig,"N Oxford, MA",VHF
+25221,N0XIA,James,,Kenwood Mobile and Portable
+25222,KE4SDC,Ron,,Portable NX300
+25246,WG1U,Ken,"Assonet, MA",
+25333,W1AKN,Jack,,Mobile
+25390,KC1JET,Jim,,
+25444,W1TAV,Steve,,
+25555,WA1MNQ,Mike,,
+25582,N1KXJ,Ray,"E. Bridgewater, MA.",Port.
+25585,N1AVA,Ken Howland,"DARTMOUTH,MA",
+25700,NN1D,Tony Souza,"Swansea, MA",
+25740,WG1U,Kenny,,
+25743,WG1U,Kenny,,
+25746,N1OTY,John,,
+25777,W1BON,Bump,,
+25830,KB1CHU,Steve,MA,
+25863,N1ZZN,Jeff,,
+25874,KB1KVD,Jason,,Icom Mob & Port
+25888,K1WGU,Bob,,
+25889,AB1CQ,Gary,,
+25900,N1ZZR,Matt,,mobile
+25901,N1ZZR,Matt,,
+25957,KC1HO,Steve,,
+26008,W2GLD,Jerry Dubzak,"Pinckney, Michigan U.S.A.",
+26193,DL6SIX,GUSTAV,JN49H,
+26200,DF1VB,Jochen,Dortmund,NX-320
+26201,DG9BEW,Hayo,Schwerte,NX-320
+26202,DG9BEW,Hayo,Schwerte,IC-F4400DT
+26205,N8GY,Tom,,Icom IC-F6061-D
+26208,DK6PX,Stefan,JN57TU,ICOM-F4161DT
+26209,DL4TTB,Maggie,JN57OQ,ICOM- F4461DT
+26240,DB0DDS,Repeater Dortmund,"Dortmund, JO31SL",
+26244,DF1VB,Jochen,Dortmund,IC-F4400DT
+27040,IZ7DJV,Tony,Monopoli,Portable
+27101,KI4SWB,Mark,"Melbourne Beach, FL",Icom Portable
+27102,KP4OO,Carlos,"Palm Bay, FL",Icom Portable
+27111,K4BQN,Ed,"Florida, USA",
+27127,N9PBD,Greg Horine,"O Fallon, IL USA",
+27128,N9PBD,Greg Horine,O Fallon Illinois,
+27163,W7ECCL,Antonio,Monopoli,Portable
+27201,KI4SWB,Mark,"Melbourne Beach, FL",Icom Mobile
+27202,KP4OO,Carlos,"Palm Bay, FL",Icom Mobile
+28001,K3KRS,Ryan,"Cleveland, Ohio",
+28002,W8CED,Colleen Dubzak,"Pinckney, Michigan",Mobile
+29170,KC9RAT,Frank Lubinski,IL,
+30505,KG6MQE,Jim,MT,
+30571,WX4RCF,Ryan F.,"Tampa, FL",
+31042,N9VJW,Bill Jackson,"Glendale, AZ",Mobile
+31045,KJ4SHL,Ryan Owens,"Tampa, FL",
+31117,K4QHR,Pete,,
+31146,KD2KWD,Michael Santamaria,"Brandon, FL",Kenwood
+31164,N2NUO,Mark,New York,
+31415,PY1EGG,Carlos,Rio de Janeiro,
+31480,WA5VYK,S.J.Detiveaux,"Odessa, TX",wa5vyk@gmail.com
+31672,MW0MWZ,Andy,Blackwood Wales UK,
+33000,N1PA,Paul,NH,NEW HAMPSHIRE REPEATER
+33001,N1PA,Paul,NH,
+33002,N1PA,Paul,NH,
+33104,K1CF,Wayne,"Concord, NH",
+33333,N2XDC,LUIZ PONTES,NEW YORK,43159
+34001,N2WNS,Bill,NJ,Portable
+34002,N2WNS,Bill,NJ,Base
+34086,KC2VRJ,Paul Nannery,"Fords, NJ",
+34149,IV3JDV,Roberto,JN65VP,
+36001,W2CCR,Chris,"Galway, NY",NX300
+36002,KC2VOB,Asad,"NYC, NY",NX-5800
+36003,KC2VOB,Asad,"NYC, NY",NX-300GK
+36134,N2SRO,Mike,"Pitman, NJ",Portable
+36602,N2LEN,Len,"Catskill, New York",
+37001,KA4YMY,Steve,"Charlotte, NC",NX320
+37009,KA4YMY,Steve,"Charlotte, NC",
+37010,KA4YMY,Steve,"Charlotte, NC",
+37309,KW4PD,David,Aquadale NC,
+39114,WY8E,Matt,"Columbus, Ohio",
+40024,N5YEI,Jeff Dalrymple,"Jay, Oklahoma",NX-5800 Mobile
+40073,K5SJW,John,"Broken Arrow, Ok",
+40076,K5SJW,John,"Broken Arrow, Ok",
+40124,N5YEI,Jeff Dalrymple,"Jay, Oklahoma",NX-5300 Portable
+41421,PY1YB,Ivan,Rio de Janeiro,
+42025,XE2MBE,Eliud Bueno Moreno,"Durango, Mexico",
+42058,N3BAH,L. Abraham Smith,Southwestern Pennsylvania,
+42065,KO3Q,Malcolm Waring,"Shawnee on Delaware, PA",
+42344,G4FDL,Max France,"St Helens, UK",
+42473,KB3AWQ,John Springman,"Williamsport, PA",KB3AWQ.com
+42665,M6NBP,Norman,"Brighton, UK",
+43006,EA3IK,Enric,Barcelona - SPAIN,Kenwood
+43042,PA7LIM,David,Nieuwegein,BlueDV
+43694,M6PZT,Rick,"Dorset, UK",
+43751,N4IRS,Steve,,
+44001,K2BUI,Eric,RI,
+44002,K2BUI,Eric,"Providence, RI",
+44007,W2DAN,Dave,,NX700
+44298,N1JBC,Jed,,
+45078,EA5III,Paco Romero,Spain,
+46600,BV5OO,Yaojun Hsieh,"Taipei, Taiwan",
+46699,BM2GJP,Hyman Fan,"Taipei, Taiwan",
+47002,PU7LLS,Lucivaldo Sousa de Brito,"Mossoro, RN",43159
+47003,EA7JRS,Manuel,JEREZ,
+47008,EA7UU,Jesus,Granada,
+47076,EA7GIB,Blas,Seville IM77AJ SPAIN,NX320
+47415,EA7KDO,Mitch Savage,"Nerja, Spain",
+47900,W8BUG,Garret Scott,"Knoxville, TN",
+48009,WA5VYK,Joe Detiveaux,"Odessa, Tx",wa5vyk@gmail.com
+48541,KG5UBV,Jason Kingsbury,"McKinney, TX",
+48866,K5IMO,Larry Moyer,"Plano, TX",ICOM IC-F6061D
+49014,WA7KMF,Bill Neville,"Logan, UT",
+49101,WX7Y,Bret Mills,Castle Dale Utah,WX7y-1 Hand Held 1
+49102,WX7Y,Bret Mills,"Caslte Dale, Utah",WX7Y-2 Hand held
+49104,WX7Y,Bret Mills,"Castle Dale, Utah",WX7Y-4 Mobile
+49106,WX7Y,Bret Mills,Castle Dale,WX7Y-6 Mobile
+50120,VK2GG,Dan Joyce,"Lake Macquarie, NSW, Au",Kenwood 340U & Icom 4161
+50210,VK2RFI,WICEN Hunter,Portable,MMDVM Repeater
+51172,M0GLJ,Adrian,United Kingdom,
+52096,VK2JDS,Dave,,
+52098,HS8JCV,Mr.X,THAILAND,F3400D with MMDVM Hat
+52110,VK2HK,Ian Tulley,"Wyee, NSW, Australia",NX-5300/NX-5800
+52114,VK2GG,Dan Joyce,"Lake Macquarie, NSW, Australia",Kenwod 340U
+52118,VK2GP,Colin Garven,Toronto NSW Australia,
+52122,VK2KXX,Colin Garven,Toronto NSW Australia,
+52805,M6NBP,Norman,"Brighton, UK",
+53042,VK3JMA,Mark,"Melbourne, Australia",
+53055,VK3AS,Andrew,"Horsham,Australia",
+53062,VK3KAY,Douglas,Dimboola,
+53093,VK3AS,Abdy,,F6061D
+53501,KH2MM,Jochen,"Dededo, GU",NX-320
+54001,DW4CHZ,Chiz,Naga City,
+54035,VK4TUX,Adrian,QG62EI,MMDVM REpeater
+55100,N9FAV,Tim,"Milwaukee, WI",
+55101,N9FAV,Tim,"Milwaukee, WI",
+55102,N9FAV,Tim,"Milwaukee, WI",
+55103,N9FAV,Tim,"Milwaukee, WI",
+55105,N9FAV,Tim,"Milwaukee, WI",
+55700,WB9HKE,Rick,WI,
+55704,WB9HKE,Rick,WI,
+57000,VE3EI,,,
+57001,VE3EI,Eric,,Portable
+57002,VE3EI,Eric,,Dongle
+57003,VE3OKZ,Janusz,"Toronto, ON",handheld
+57004,VE3CCD,Curtis,"Scarborough, ON",handheld
+57005,VE3NBI,Anoop,"Scarborough, ON",handheld
+57006,VE3JLU,Sherwin,"Scarborough, ON",handheld
+57007,VA3RQ,Jon,"Oakville, ON",handheld
+57008,VA3OGB,Randy,"Toronto, ON",handheld
+57009,VA3MK,Mark,"Oakville, ON",handheld
+57010,VA3MK,Mark,"Oakville, ON",mobile
+57011,VA3WZW,Andre,"Durham, ON",mobile
+57012,VA3WZW,Andre,"Durham, ON",mobile
+57013,VA3AGV,cottage,"Toronto, ON",mobile
+57014,VE3BWP,Brian,"Caledon, ON",handheld
+57015,VE3HY,Frank,"Caledon, ON",handheld
+57016,VE3UBI,Paul,"Scarborough, ON",mobile
+57017,VE3UBI,Paul,"Scarborough, ON",handheld
+57018,VE3RZR,Richard,"Toronto, ON",handheld
+57019,VE3AEP,Dom,"Toronto, ON",mobile
+57020,VA3PEO,Adrian,"Toronto, ON",handheld
+57021,VA3WJO,Walter,"Toronto, ON",handheld
+57022,VE3FKN,Tom,"Stoney Creek, ON",handheld
+57023,VE3IPS,John,"Toronto, ON",handheld
+57024,VA3CQA,Brian,"Scarborough, ON",handheld
+57025,VA3PAD,Andrew,"Scarborough, ON",mobile
+57026,VA3PAD,Andrew,"Scarborough, ON",handheld
+57027,VA3VAD,Arpad,"Hamilton, ON",handheld
+57028,VA3KY,Shelly,"Thornhill, ON",mobile
+57029,VA3KY,Shelly,"Thornhill, ON",handheld
+57030,VE3KFQ,Doug,"Toronto, ON",mobile
+57031,VE3KFQ,Doug,"Toronto, ON",handheld
+57032,VE3AEP,Dom 2,"Toronto, ON",handheld
+57033,VE3DJZ,Huey,"Hamilton, ON",mobile
+57034,VE3DJZ,Huey,"Hamilton, ON",handheld
+57035,VA3RQ,Jon,Oakville ON,Mobile
+57036,VE3RNK,Rick,Carlisle ON,Base
+57037,VE3TTO,Gary,Hamilton ON,Base
+57038,VA3BL,John,Burlington ON,Mobile
+57039,VA3BL,John,Burlington ON,Portable
+57040,VE3DXT,Derek,Hamilton ON,Mobile
+57041,VA3EZT,David,Tavistock ON,Portable
+57042,VA3EZT,David,Tavistock On,Mobile
+57043,VE3WA,Jim,St.Catharines On,Mobile
+57044,VE3RNK,Rick,Carlisle ON,Mobile
+57045,VE3FLK,Dan,London On Canada,Mobile
+57046,VE3FLK,Dan,London On Canada,Portable
+57090,VE3MJM,Donald Mckay,"Embro, Ontario, Canada",
+57091,VA3MJM,Mari-jo Mckay,"Embro, Ontario, Canada",
+57174,VE3PPO,George,"Tillsonburg, Ontario",
+57177,VE3PPO,"George
+","Tillsonburg, Ontario",146.3625 hotspot
+57178,VE3PPO,"George
+","Tillsonburg, Ontario",444.575 MMDVM Repeater
+61031,BV5AC,YehHo Lee,Taiwan,
+61078,DW4CHZ,Chiz,Naga City,
+61475,N1IRL,Rick Fiorey,"Budd Lake, NJ",
+65027,SP5QIR,Artur,"Sochaczew, PL",
+65511,DW4CHZ,Chiz,Naga City,
+2712,VA7VTV,Fred (VA7UN),"Vernon, BC, Canada",MMDVM - Rpt - DMR302712
+2713,VA7PTV,Fred (VA7UN),"Penticton, BC, Canada",MMDVM - Rpt - DMR302713
+2717,VE7EQN,Chris (VE7EQN),"Kelowna, BC, Canada",MMDVM - Rpt - DMR302717
+2857,BH7PUE,Andy Wu,CHINA,Portable
+2714,VE7OJP,Fred (VA7UN),"Osoyoos, BC, Canada",MMDVM - Rpt - DMR302714
+2711,VA7NBC,Fred (VA7UN),"Kelowna, BC, Canada",MMDVM - Rpt - DMR302711
+164,VA7DBI,Darcy Buskermolen,"Central Okanagan, BC",
+303,BG6WUH,Jayden,"china,hubei,wuhan",MMDVM
+1181,W4KMG,Kristopher Garner,"Auburn, AL",
+1337,N5AMD,Ben Fogt,San Antonio Texas,N5AMD
+2708,VA7CNN,Fred (VA7UN),"Kelowna, BC, Canada",MMDVM - Rpt - DMR302708
+2709,VA7CNN,Fred (VA7UN0,"Kelowna, BC, Canada",MMDVM - Rpt - DMR302709
+2710,VA7NBC,Fred (VA7UN),"Kelowna, BC, Canada",MMDVM - Rpt - DMR302710
+3751,BG6WNP,Lianyun Huang,"Wuhan,Hubei,China",Kenwood Nx300
+4047,KD9IAQ,Doug Paquette,"Merrillville, Indiana",Doug's Car
+4288,KD9IAQ,Doug Paquette,"Merrillville, Indiana",Doug's Car
+4365,KD9IAQ,Doug Paquette,"Merrillville, Indiana",Doug?s Base Radio
+4401,W1KFR,Bill Carreira,"Kingsland, GA",
+4512,KD9IAQ,Doug Paquette,"Merrillville, Indiana",Doug's Extra Mobile
+4921,KD9IAQ,Doug Paquette,"Merrillville, Indiana",Doug's Portable
+4941,KD9IAQ,Doug Paquette,"Merrillville, Indiana",Doug's Portable
+5035,PY1FT,Florisval Tenorio,Rio de Janeiro,
+5077,N9EXR,Michael R. Smith,North Little Rock AR,Kenwood 5200
+6353,WB5EKU,Donald Jacob,"Los Angeles, CA",
+6405,ONLN,Repeater Gruitrode,Belgium,
+7334,K9NPX,Dan Moses,"Farmer City, IL",
+8018,BD8SGK,Tao Hu,CHINA,PORTABLE
+8036,K0GUR,Mike Gurski,"Denver, CO",
+8157,N2PDQ,Dirk,"Parker, Co",
+8306,K0GUR,Mike Gurski,"Denver, CO",
+9010,KC1DX,Mauro Abrantes,"Milford,CT US",
+11337,WA4ASI,George Hawk,"Covington, Ga.",
+13658,WA4ASI,George Hawk,"Covington, Ga.",
+17105,KC9OZA,Ryan Runyon,"Noble, IL",4161DS AND 6061D
+17373,W4OA,Mitch,"Opelika, AL USA",
+17433,KC9ZLL,ANDY R BURDETTE,"SPRINGFIELD, IL",NXDN
+17571,KB9TZQ,James Riley,"Ramsey, Illinois",
+20005,LA6UMA,TOMMY KOJEN,"OSLO, NORWAY",SYSOP
+20240,KE0NTT,Kevin Hood,Kansas,
+21008,IW1PPB,Andrea,Loano (SV) Italy,
+21112,IW1RNH,Alessio,Loano (SV) Italy,
+22039,AF5XP,Christopher Fuselier,"Sulphur, La",
+22040,AG5LG,William Hoover,"Lake Charles, LA",
+22052,K5LPD,Oren,"Carencro, LA",3122052 CC7
+23070,VA3GHI,Bogdan,Toronto ON,CCS7 1023070
+23542,PU2LRZ,Rubens Zolotujin,Artur Nogueira BRAZIL,
+26262,DL1FLW,Lawrence Williams,Leipzig Germany,
+27237,VA7UN,Fred,"Kelowna, BC, Canada",NXDN Radio (DMR3027237)
+27277,VE7EQN,Chris,"Kelowna, BC, Canada",NXDN Radio (DMR3027277)
+28089,I8ULU,Giacomo,Piedimonte Matese (CE) - ITALY,Loc. JN71EI
+29143,DL1FLW,Lawrence Williams,Leipzig Germany,
+31241,N3TUK,Louis Velis,"Adelphi,MD",
+32266,KG4DCX,David Clements,Hopewell Virginia,
+37775,N1UJ,Ted,NC,NX-320
+38888,BH7PUE,Andy Wu,China,Mobile
+41001,PD2ML,Mark,Bussum Netherlands,JO22OG
+42019,XE2SI,JUAN,"TIJUANA, MEXICO",
+42125,AA3XN,John,Pennsylvania USA,
+45007,EA5GVK,Joaquin,Murcia - Spain,Kenwood NX320E
+45008,EC5ZY,juan alfonso,"Cartagena, SP",
+45678,BG6TWT,Tim Yang,"Wuhan,China",Kenwood Nx300
+46049,BH8SXD,Wang Peng,OL15CA,
+47032,K9OJ,Rob Robinette,"Chuckey, TN",
+47350,EA7IBT,Domingo Mor?n,Coria del R?o (Sevilla),
+48432,N9BAV,Daniel Wiley,Fort Worth,
+52111,VK2IPT,Ian Tulley,"Wyee, NSW, Australia",NX-5300/5800
+54040,GM7RYR,Allister Watson,"Edinburgh, Scotland",
+54277,MM0BUH,Nigel Smith,"Banff, Scotland",
+55022,N9OIG,Kevin Drissel,Union Grove Wisconsin,
+56078,ZS6IIX,Henry,South Africa,
+57092,VE3NEJ,Terry Taylor,Kitchener.ON.CA,
+57094,VE3FM,Terry Taylor,Kitchener.ON.CA,
+57561,KG4GEM,Russell Wilson,"Jacksonville, Florida",HT
+58007,N5AMD,Ben Fogt,San Antonio,sadigitalradio.com
+60202,SP2FRN,Sebastian,"Gdynia, Poland",
+60204,SR2OX,Oksywie,"Gdynia, Poland",
+16405,ON0LN,REPEATER,GRUITRODE,
+20,HL4CNR,Kevin Ku,Republic of KOREA,
+701,NR6AM,Frank,San Diego,
+7101,NR6AM,Frank,San Diego,
+7111,NR6AM,Frank,San Diego,
+8048,BH8SLN,Ke Li,China,Portable
+7017,BI7KJP,Tran Ho,China,Portable
+7018,BH7KCJ,Eric Chan,China,Portable
+1053,BG1LSN,Zhang Aidong,China,
+6281,K6HP,Ed,"Murphys, CA",HT
+9310,K6HP,Ed,"Angels Camp, CA",NX5000
+21701,KV4S,Russell Thomas,"Chelsea, AL",
+54050,2M0PMR,Alastair Graham,"Edinburgh,Scotland ",
+224,BG2RKL,"Jiwei Wang	",China,Portable
+47005,W4EKG,Kevin,Tennessee,NX200 / MMDVM
+7046,BG7IPY,Ma,China,Portable
+4034,BI4RFO,RFO,China,Portable
+1044,W4DBG,Doug Gooden,"Troy, Alabama USA",
+39239,W8CTC,CHRIS,"HILLSBORO,OH",
+17239,N9PBD,Greg,"O'Fallon, Illinois, USA",
+7890,W4RSS,Dick Smith,"Fletcher, NC",
+22280,IU8ADS,Pasquale,Casalnuovo di Napoli (NA),Napoli
+13109,K0OQL,Joel,"Omaha, NE",
+31096,K0OQL,Joel,"Omaha, NE",
+243,BA7JG,Yan Jian,China,Portable
+7112,BI7ISX,"Wang Shaohua	",China,Portable
+8003,BD8SN,"Sheen Jianjun	",China,Portable
+6520,BG0CAB,"Chao Sun	",China,Portable
+55555,K1BOY,Jaturong Viriyadamrong,USA. Callsign,
+52999,HS2YTY,Jaturong Viriyadamrong,Thailand,
+52001,HS2YTY,Jaturong Viriyadamrong,Thailand,
+61970,EA1JM,FRAN,SALAMANCA - SPAIN,
+3285,K4SVT,William Klosowski,"Titusville, Florida",Nx300 UHF
+3287,K4SVT,William Klosowski,"Titusville, Florida",Nx800
+54061,DL1GFM,Markus,JN48FB,MMDVM
+47344,EA7HBZ,JOSE,SEVILLA,
+8000,ON5VDK,Tjardick,"Liege, Belgium",ON0LGE
+28105,WD5FNW,ED CSASZAR,"TUPELO, MS",
+7982,K9DJN,Doug,Illniois,IC-F6061
+13605,KC4YAP,PAUL GALLAGER,"DEVEREUX, GA",PART OF THE FALL LINE NETWORK
+6389,WB6DTB,David Young,"Oakley, Ca. USA",
+19691,CT1ESJ,HENRIQUE,SABUGAL,
+40001,VU3KAZ,Krishna,India,
+47128,EA7GWD,PEPE,SEVILLA,NX320
+52009,HS5YSU ,SURIYAN  GANTIYA ,Thailand ,
+33633,KK4ZVL ,SURIYAN GANTIYA,Thailand ,US callsign
+7244,KF4TIM,Tim Bernard,"Phoeix, AZ",
+46833,BH8TXK,FENG,CHN,UHV NX32
+59031,W4EBM,Golden Star Amateur Radio Club,"Fayetteville, NC",Nano-Spot
+7777,EA5IHI,Alberto,Alicante,
+75,EA5IHI,Alberto,Alicante,
+22121,N5WIG,Michael Kikuchi,"Metairie, Louisiana",Kenwood NX 5800 K2
+6622,KJ4KSG,Woody,Manatee Co.,First try
+6025,BG6WWH,Utopia Wang,"Enshi, Hubei，China",Kenwood NX348-c
+5555,EA5HKZ,Josa Mara Lopez Box,IM98Si,
+5554,EA5HKZ,JOSE MARIA ,IM98SI,TXEMA
+24018,CT2GFP,Joao Jose,"Portalegre, PT",
+2008,PU2MLA,Mauro Abrantes,Milford - CT- USA,
+43356,EA3DJC,Jordi,"Barcelona, España",
+42001,EA2IP,Jesus,Sestao,
+20823,F1PTL,Bruno,Rueil-Malmaison FR,
+37212,K4RSG,Shawn,"Harrisburg, NC",
+37946,K4RSG,Shawn,"Harrisburg, NC",
+46003,PD0PVL,ROBERT,NETHERLANDS,
+46004,PD0PVL,ROBERT,HOENDERLOO,

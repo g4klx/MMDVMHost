@@ -36,6 +36,7 @@ enum SECTION {
   SECTION_DMRID_LOOKUP,
   SECTION_NXDNID_LOOKUP,
   SECTION_MODEM,
+  SECTION_TRANSPARENT,
   SECTION_UMP,
   SECTION_DSTAR,
   SECTION_DMR,
@@ -104,6 +105,10 @@ m_modemNXDNTXLevel(50.0F),
 m_modemRSSIMappingFile(),
 m_modemTrace(false),
 m_modemDebug(false),
+m_transparentEnabled(false),
+m_transparentRemoteAddress(),
+m_transparentRemotePort(0U),
+m_transparentLocalPort(0U),
 m_umpEnabled(false),
 m_umpPort(),
 m_dstarEnabled(false),
@@ -253,6 +258,8 @@ bool CConf::read()
 		  section = SECTION_NXDNID_LOOKUP;
 	  else if (::strncmp(buffer, "[Modem]", 7U) == 0)
 		  section = SECTION_MODEM;
+	  else if (::strncmp(buffer, "[Transparent Data]", 18U) == 0)
+		  section = SECTION_TRANSPARENT;
 	  else if (::strncmp(buffer, "[UMP]", 5U) == 0)
 		  section = SECTION_UMP;
 	  else if (::strncmp(buffer, "[D-Star]", 8U) == 0)
@@ -423,6 +430,15 @@ bool CConf::read()
 			m_modemTrace = ::atoi(value) == 1;
 		else if (::strcmp(key, "Debug") == 0)
 			m_modemDebug = ::atoi(value) == 1;
+	} else if (section == SECTION_TRANSPARENT) {
+		if (::strcmp(key, "Enable") == 0)
+			m_transparentEnabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "RemoteAddress") == 0)
+			m_transparentRemoteAddress = value;
+		else if (::strcmp(key, "RemotePort") == 0)
+			m_transparentRemotePort = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "LocalPort") == 0)
+			m_transparentLocalPort = (unsigned int)::atoi(value);
 	} else if (section == SECTION_UMP) {
 		if (::strcmp(key, "Enable") == 0)
 			m_umpEnabled = ::atoi(value) == 1;
@@ -954,6 +970,26 @@ bool CConf::getModemTrace() const
 bool CConf::getModemDebug() const
 {
 	return m_modemDebug;
+}
+
+bool CConf::getTransparentEnabled() const
+{
+	return m_transparentEnabled;
+}
+
+std::string CConf::getTransparentRemoteAddress() const
+{
+	return m_transparentRemoteAddress;
+}
+
+unsigned int CConf::getTransparentRemotePort() const
+{
+	return m_transparentRemotePort;
+}
+
+unsigned int CConf::getTransparentLocalPort() const
+{
+	return m_transparentLocalPort;
 }
 
 bool CConf::getUMPEnabled() const
