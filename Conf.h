@@ -91,6 +91,12 @@ public:
   bool         getModemTrace() const;
   bool         getModemDebug() const;
 
+  // The Transparent Data section
+  bool         getTransparentEnabled() const;
+  std::string  getTransparentRemoteAddress() const;
+  unsigned int getTransparentRemotePort() const;
+  unsigned int getTransparentLocalPort() const;
+
   // The UMP section
   bool         getUMPEnabled() const;
   std::string  getUMPPort() const;
@@ -291,6 +297,11 @@ private:
   std::string  m_modemRSSIMappingFile;
   bool         m_modemTrace;
   bool         m_modemDebug;
+
+  bool         m_transparentEnabled;
+  std::string  m_transparentRemoteAddress;
+  unsigned int m_transparentRemotePort;
+  unsigned int m_transparentLocalPort;
 
   bool         m_umpEnabled;
   std::string  m_umpPort;
