@@ -546,7 +546,7 @@ bool CConf::read()
 			m_fusionEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "LowDeviation") == 0)
 			m_fusionLowDeviation = ::atoi(value) == 1;
-		else if (::strcmp(key, "DSQ") == 0) {
+		else if (::strcmp(key, "DSQ") == 0 || ::strcmp(key, "DGID") == 0) {
 			m_fusionSQLEnabled = true;
 			m_fusionSQL        = (unsigned int)::atoi(value);
 		} else if (::strcmp(key, "RemoteGateway") == 0)
