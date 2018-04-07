@@ -224,15 +224,15 @@ void COLED::writeDStarInt(const char* my1, const char* my2, const char* your, co
     m_mode = MODE_DSTAR;
 
     display.clearDisplay();
-    display.fillRect(0,OLED_LINE1,display.width(),display.height(),BLACK); //clear everything beneath logo
+    display.fillRect(0,OLED_LINE3,display.width(),display.height(),BLACK); //clear everything beneath logo
 
-    display.setCursor(0,OLED_LINE2);
+    display.setCursor(0,OLED_LINE4);
     display.printf("%s %.8s/%4.4s",type,my1,my2);
 
-    display.setCursor(0,OLED_LINE3);
+    display.setCursor(0,OLED_LINE5);
     display.printf("-> %.8s",your);
 
-    display.setCursor(0,OLED_LINE5);
+    display.setCursor(0,OLED_LINE6);
     display.printf("via %.8s",reflector);
 
     OLED_statusbar();
@@ -241,9 +241,9 @@ void COLED::writeDStarInt(const char* my1, const char* my2, const char* your, co
 
 void COLED::clearDStarInt()
 {
-    display.fillRect(0,OLED_LINE1, display.width(),display.height(),BLACK); //clear everything beneath the logo
+    display.fillRect(0,OLED_LINE3, display.width(),display.height(),BLACK); //clear everything beneath the logo
 
-    display.setCursor(40,OLED_LINE2);
+    display.setCursor(40,OLED_LINE3);
     display.print("Listening");
 	
 	display.setCursor(0,OLED_LINE5);
@@ -323,12 +323,12 @@ void COLED::writeFusionInt(const char* source, const char* dest, const char* typ
     m_mode = MODE_YSF;
 
     display.clearDisplay();
-    display.fillRect(0,OLED_LINE1,display.width(),display.height(),BLACK);
+    display.fillRect(0,OLED_LINE2,display.width(),display.height(),BLACK);
 
-    display.setCursor(0,OLED_LINE2);
+    display.setCursor(0,OLED_LINE4);
     display.printf("%s %.10s", type, source);
 
-    display.setCursor(0,OLED_LINE3);
+    display.setCursor(0,OLED_LINE5);
     display.printf("  %.10s", dest);
 
     OLED_statusbar();
@@ -337,12 +337,12 @@ void COLED::writeFusionInt(const char* source, const char* dest, const char* typ
 
 void COLED::clearFusionInt()
 {
-    display.fillRect(0, OLED_LINE1, display.width(), display.height(), BLACK);
+    display.fillRect(0, OLED_LINE2, display.width(), display.height(), BLACK);
 
-    display.setCursor(40,OLED_LINE2);
+    display.setCursor(40,OLED_LINE4);
     display.print("Listening");
 	
-	display.setCursor(0,OLED_LINE5);
+	display.setCursor(0,OLED_LINE6);
 	display.printf("%s",m_ipaddress.c_str());
 
     display.display();
@@ -355,10 +355,10 @@ void COLED::writeP25Int(const char* source, bool group, unsigned int dest, const
     display.clearDisplay();
     display.fillRect(0, OLED_LINE1, display.width(), display.height(), BLACK);
 
-    display.setCursor(0,OLED_LINE2);
+    display.setCursor(0,OLED_LINE3);
     display.printf("%s %.10s", type, source);
 
-    display.setCursor(0,OLED_LINE3);
+    display.setCursor(0,OLED_LINE4);
     display.printf("  %s%u", group ? "TG" : "", dest);
 
     OLED_statusbar();
@@ -369,10 +369,10 @@ void COLED::clearP25Int()
 {
     display.fillRect(0, OLED_LINE1, display.width(), display.height(), BLACK);
 
-    display.setCursor(40,OLED_LINE2);
+    display.setCursor(40,OLED_LINE4);
     display.print("Listening");
 	
-	display.setCursor(0,OLED_LINE5);
+	display.setCursor(0,OLED_LINE6);
 	display.printf("%s",m_ipaddress.c_str());
 
     display.display();
@@ -385,10 +385,10 @@ void COLED::writeNXDNInt(const char* source, bool group, unsigned int dest, cons
     display.clearDisplay();
     display.fillRect(0, OLED_LINE1, display.width(), display.height(), BLACK);
 
-    display.setCursor(0,OLED_LINE2);
+    display.setCursor(0,OLED_LINE3);
     display.printf("%s %.10s", type, source);
 
-    display.setCursor(0,OLED_LINE3);
+    display.setCursor(0,OLED_LINE5);
     display.printf("  %s%u", group ? "TG" : "", dest);
 
     OLED_statusbar();
@@ -399,10 +399,10 @@ void COLED::clearNXDNInt()
 {
     display.fillRect(0, OLED_LINE1, display.width(), display.height(), BLACK);
 
-    display.setCursor(40,OLED_LINE2);
+    display.setCursor(40,OLED_LINE4);
     display.print("Listening");
 	
-	display.setCursor(0,OLED_LINE5);
+	display.setCursor(0,OLED_LINE6);
 	display.printf("%s",m_ipaddress.c_str());
 
     display.display();
