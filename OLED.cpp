@@ -17,6 +17,10 @@
  */
 
 #include "OLED.h"
+#include "Log.h"
+
+static bool networkInfoInitialized = false;
+static unsigned char passCounter = 0;
 
 //Logo MMDVM for Idle Screen
 static unsigned char logo_glcd_bmp[] =
@@ -117,6 +121,7 @@ COLED::~COLED()
 
 bool COLED::open()
 {
+
     // SPI
     if (display.oled_is_spi_proto(m_displayType))
     {
@@ -131,6 +136,7 @@ bool COLED::open()
             return false; 
     }
 
+	
     display.begin();
 
     display.invertDisplay(m_displayInvert ? 1 : 0);
@@ -163,6 +169,26 @@ void COLED::setIdleInt()
 //    display.setTextSize(1);
     display.startscrolldiagright(0x00,0x0f);  //the MMDVM logo scrolls the whole screen
     display.display();
+	
+	unsigned char info[100U];
+	CNetworkInfo* m_network;
+	
+	passCounter ++;
+	if (passCounter > 253U)
+		networkInfoInitialized = false;
+	
+	if (! networkInfoInitialized) {
+		LogMessage("Initialize CNetworkInfo");
+		info[0]=0;
+		m_network = new CNetworkInfo;
+		m_network->getNetworkInterface(info);
+		m_ipaddress = (char*)info;
+		delete m_network;
+		
+		networkInfoInitialized = true;
+		passCounter = 0;
+	}
+	
 }
 
 void COLED::setErrorInt(const char* text)
@@ -217,8 +243,11 @@ void COLED::clearDStarInt()
 {
     display.fillRect(0,OLED_LINE1, display.width(),display.height(),BLACK); //clear everything beneath the logo
 
-    display.setCursor(40,38);
+    display.setCursor(40,OLED_LINE2);
     display.print("Listening");
+	
+	display.setCursor(0,OLED_LINE5);
+	display.printf("%s",m_ipaddress.c_str());
 
     display.display();
 }
@@ -243,7 +272,6 @@ void COLED::writeDMRInt(unsigned int slotNo,const std::string& src,bool group,co
           display.fillRect(0,OLED_LINE2,display.width(),20,BLACK); //20=> clear 2 lines
           display.setCursor(0,OLED_LINE2);
           display.print("1 Listening");
-
         }
     }
 
@@ -263,7 +291,8 @@ void COLED::writeDMRInt(unsigned int slotNo,const std::string& src,bool group,co
       display.setCursor(0,OLED_LINE5);
       display.printf("%s%s", group ? "TG" : "", dst.c_str());
       }
-
+	display.setCursor(0,OLED_LINE6);
+	display.printf("%s",m_ipaddress.c_str());
     OLED_statusbar();
     display.display();
 }
@@ -281,8 +310,10 @@ void COLED::clearDMRInt(unsigned int slotNo)
       display.fillRect(0, OLED_LINE4, display.width(), 20, BLACK);
       display.setCursor(0, OLED_LINE4);
       display.print("2 Listening");
-      }
 
+      }
+	display.setCursor(0,OLED_LINE6);
+	display.printf("%s",m_ipaddress.c_str());
     display.display();
 }
 
@@ -308,8 +339,11 @@ void COLED::clearFusionInt()
 {
     display.fillRect(0, OLED_LINE1, display.width(), display.height(), BLACK);
 
-    display.setCursor(40,38);
+    display.setCursor(40,OLED_LINE2);
     display.print("Listening");
+	
+	display.setCursor(0,OLED_LINE5);
+	display.printf("%s",m_ipaddress.c_str());
 
     display.display();
 }
@@ -335,8 +369,11 @@ void COLED::clearP25Int()
 {
     display.fillRect(0, OLED_LINE1, display.width(), display.height(), BLACK);
 
-    display.setCursor(40,38);
+    display.setCursor(40,OLED_LINE2);
     display.print("Listening");
+	
+	display.setCursor(0,OLED_LINE5);
+	display.printf("%s",m_ipaddress.c_str());
 
     display.display();
 }
@@ -362,8 +399,11 @@ void COLED::clearNXDNInt()
 {
     display.fillRect(0, OLED_LINE1, display.width(), display.height(), BLACK);
 
-    display.setCursor(40,38);
+    display.setCursor(40,OLED_LINE2);
     display.print("Listening");
+	
+	display.setCursor(0,OLED_LINE5);
+	display.printf("%s",m_ipaddress.c_str());
 
     display.display();
 }

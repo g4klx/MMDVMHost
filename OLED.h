@@ -20,11 +20,12 @@
 #define	OLED_H
 
 #define OLED_STATUSBAR 0
-#define OLED_LINE1 16
-#define OLED_LINE2 26 
-#define OLED_LINE3 36
-#define OLED_LINE4 46
-#define OLED_LINE5 56
+#define OLED_LINE1 8 //16
+#define OLED_LINE2 18 //26 
+#define OLED_LINE3 28 //36
+#define OLED_LINE4 37 //46
+#define OLED_LINE5 47 //56
+#define OLED_LINE6 57
 
 #include "Display.h"
 #include "Defines.h"
@@ -34,6 +35,7 @@
 #include "ArduiPi_OLED_lib.h"
 #include "Adafruit_GFX.h"
 #include "ArduiPi_OLED.h"
+#include "NetworkInfo.h"
 
 class COLED : public CDisplay 
 {
@@ -76,9 +78,12 @@ private:
   unsigned char m_displayBrightness;
   bool          m_displayInvert;
   bool          m_displayScroll;
-
+  std::string   m_ipaddress;
+  
   ArduiPi_OLED display;
   void OLED_statusbar();
+ 
+  
 };
 
 #endif
