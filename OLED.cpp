@@ -107,11 +107,13 @@ const unsigned char logo_fusion_bmp [] =
 };
 
 
-COLED::COLED(unsigned char displayType, unsigned char displayBrightness, bool displayInvert, bool displayScroll) :
+COLED::COLED(unsigned char displayType, unsigned char displayBrightness, bool displayInvert, bool displayScroll, bool slot1Enabled, bool slot2Enabled) :
 m_displayType(displayType),
 m_displayBrightness(displayBrightness),
 m_displayInvert(displayInvert),
-m_displayScroll(displayScroll)
+m_displayScroll(displayScroll),
+m_slot1Enabled(slot1Enabled),
+m_slot2Enabled(slot2Enabled)
 {
 }
 
@@ -148,7 +150,7 @@ bool COLED::open()
     display.display();        // display it (clear display)
 
     OLED_statusbar();
-    display.setCursor(0,OLED_LINE1);
+    display.setCursor(0,OLED_LINE3);
     display.print("Startup");
     display.display();
 
@@ -257,41 +259,41 @@ void COLED::writeDMRInt(unsigned int slotNo,const std::string& src,bool group,co
 
     if (m_mode != MODE_DMR) {
 
-    display.clearDisplay();
-
-        m_mode = MODE_DMR;
-
-        if (slotNo == 1U)
-          {
-          display.fillRect(0,OLED_LINE4,display.width(),20,BLACK); //20=> clear 2 lines
-          display.setCursor(0,OLED_LINE4);
-          display.print("2 Listening");
-          }
-        else
-          {
-          display.fillRect(0,OLED_LINE2,display.width(),20,BLACK); //20=> clear 2 lines
-          display.setCursor(0,OLED_LINE2);
-          display.print("1 Listening");
-        }
+		display.clearDisplay();
+		m_mode = MODE_DMR;
+		clearDMRInt(slotNo);
+		 
     }
-
-    if (slotNo == 1U)
-      {
-      display.fillRect(0,OLED_LINE2,display.width(),20,BLACK);
-      display.setCursor(0,OLED_LINE2);
-      display.printf("%i %s %s",slotNo,type,src.c_str());
-      display.setCursor(0,OLED_LINE3);
-      display.printf("%s%s",group ? "TG" : "",dst.c_str());
-      }
-    else
-      {
-      display.fillRect(0,OLED_LINE4,display.width(),20,BLACK);
-      display.setCursor(0,OLED_LINE4);
-      display.printf("%i %s %s",slotNo,type,src.c_str());
-      display.setCursor(0,OLED_LINE5);
-      display.printf("%s%s", group ? "TG" : "", dst.c_str());
-      }
-	display.setCursor(0,OLED_LINE6);
+	// if both slots, use lines 2-3 for slot 1, lines 4-5 for slot 2
+	// if single slot, use lines 3-4
+	if ( m_slot1Enabled && m_slot2Enabled ){
+		if (slotNo == 1U)
+		  {
+		  display.fillRect(0,OLED_LINE2,display.width(),40,BLACK);
+		  display.setCursor(0,OLED_LINE2);
+		  display.printf("%i %s %s",slotNo,type,src.c_str());
+		  display.setCursor(0,OLED_LINE3);
+		  display.printf("%s%s",group ? "TG" : "",dst.c_str());  
+		  }
+		else
+		  {
+		  display.fillRect(0,OLED_LINE4,display.width(),40,BLACK);
+		  display.setCursor(0,OLED_LINE4);
+		  display.printf("%i %s %s",slotNo,type,src.c_str());
+		  display.setCursor(0,OLED_LINE5);
+		  display.printf("%s%s", group ? "TG" : "", dst.c_str());
+		  }
+	}
+	else {
+		  display.fillRect(0,OLED_LINE3,display.width(),40,BLACK);
+		  display.setCursor(0,OLED_LINE3);
+		  display.printf("%i %s %s",slotNo,type,src.c_str());
+		  display.setCursor(0,OLED_LINE4);
+		  display.printf("%s%s",group ? "TG" : "",dst.c_str());
+	}
+	 
+	display.fillRect(0,OLED_LINE6,display.width(),20,BLACK);
+	display.setCursor(0,OLED_LINE6);	
 	display.printf("%s",m_ipaddress.c_str());
     OLED_statusbar();
     display.display();
@@ -299,20 +301,31 @@ void COLED::writeDMRInt(unsigned int slotNo,const std::string& src,bool group,co
 
 void COLED::clearDMRInt(unsigned int slotNo)
 {
-    if (slotNo == 1U)
-      {
-      display.fillRect(0, OLED_LINE2, display.width(), 20, BLACK);
-      display.setCursor(0,OLED_LINE2);
-      display.print("1 Listening");
-      }
-    else
-      {
-      display.fillRect(0, OLED_LINE4, display.width(), 20, BLACK);
-      display.setCursor(0, OLED_LINE4);
-      display.print("2 Listening");
+	// if both slots, use lines 2-3 for slot 1, lines 4-5 for slot 2
+	// if single slot, use lines 3-4
+	if ( m_slot1Enabled && m_slot2Enabled ){
+		if (slotNo == 1U)
+		  {
+		  display.fillRect(0, OLED_LINE2, display.width(), 40, BLACK);
+		  display.setCursor(0,OLED_LINE2);
+		  display.print("1 Listening");
+		  }
+		else
+		  {
+		  display.fillRect(0, OLED_LINE4, display.width(), 40, BLACK);
+		  display.setCursor(0, OLED_LINE4);
+		  display.print("2 Listening");
+		  }
+	}
+	else {
+		display.fillRect(0, OLED_LINE3, display.width(), 40, BLACK);
+		display.setCursor(0,OLED_LINE3);
+		display.printf("%i Listening",slotNo);
+	}
 
-      }
-	display.setCursor(0,OLED_LINE6);
+	 
+	display.fillRect(0, OLED_LINE5, display.width(), 20, BLACK);
+	display.setCursor(0,OLED_LINE5);
 	display.printf("%s",m_ipaddress.c_str());
     display.display();
 }

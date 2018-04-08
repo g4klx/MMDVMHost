@@ -40,7 +40,7 @@
 class COLED : public CDisplay 
 {
 public:
-  COLED(unsigned char displayType, unsigned char displayBrighness, bool displayInvert, bool displayScroll);
+  COLED(unsigned char displayType, unsigned char displayBrighness, bool displayInvert, bool displayScroll, bool slot1Enabled, bool slot2Enabled);
   virtual ~COLED();
 
   virtual bool open();
@@ -78,12 +78,12 @@ private:
   unsigned char m_displayBrightness;
   bool          m_displayInvert;
   bool          m_displayScroll;
+  bool			m_slot1Enabled;
+  bool			m_slot2Enabled;
   std::string   m_ipaddress;
   
   ArduiPi_OLED display;
   void OLED_statusbar();
- 
-  
 };
 
 #endif
