@@ -180,7 +180,7 @@ void COLED::setIdleInt()
 		networkInfoInitialized = false;
 	
 	if (! networkInfoInitialized) {
-		LogMessage("Initialize CNetworkInfo");
+		//LogMessage("Initialize CNetworkInfo");
 		info[0]=0;
 		m_network = new CNetworkInfo;
 		m_network->getNetworkInterface(info);
@@ -228,14 +228,17 @@ void COLED::writeDStarInt(const char* my1, const char* my2, const char* your, co
     display.clearDisplay();
     display.fillRect(0,OLED_LINE3,display.width(),display.height(),BLACK); //clear everything beneath logo
 
-    display.setCursor(0,OLED_LINE4);
+    display.setCursor(0,OLED_LINE3);
     display.printf("%s %.8s/%4.4s",type,my1,my2);
 
-    display.setCursor(0,OLED_LINE5);
+    display.setCursor(0,OLED_LINE4);
     display.printf("-> %.8s",your);
 
-    display.setCursor(0,OLED_LINE6);
+    display.setCursor(0,OLED_LINE5);
     display.printf("via %.8s",reflector);
+	
+	display.setCursor(0,OLED_LINE6);	
+	display.printf("%s",m_ipaddress.c_str());
 
     OLED_statusbar();
     display.display();
@@ -271,7 +274,7 @@ void COLED::writeDMRInt(unsigned int slotNo,const std::string& src,bool group,co
 			display.setCursor(0,OLED_LINE2);
 			display.printf("%s",src.c_str());
 			display.setCursor(0,OLED_LINE3);
-			display.printf("Slot: %i %s %s%s",slotNo,type,group ? "TG" : "",dst.c_str());
+			display.printf("Slot: %i %s %s%s",slotNo,type,group ? "TG: " : "",dst.c_str());
 		}
 		else
 		{
@@ -279,7 +282,7 @@ void COLED::writeDMRInt(unsigned int slotNo,const std::string& src,bool group,co
 			display.setCursor(0,OLED_LINE4);
 			display.printf("%s",src.c_str());
 			display.setCursor(0,OLED_LINE5);
-			display.printf("Slot: %i %s %s%s",slotNo,type,group ? "TG" : "",dst.c_str());
+			display.printf("Slot: %i %s %s%s",slotNo,type,group ? "TG: " : "",dst.c_str());
 		} 
 
 	}
@@ -289,7 +292,7 @@ void COLED::writeDMRInt(unsigned int slotNo,const std::string& src,bool group,co
 		display.setCursor(0,OLED_LINE3);
 		display.printf("%s",src.c_str());
 		display.setCursor(0,OLED_LINE4);
-		display.printf("Slot: %i %s %s%s",slotNo,type,group ? "TG" : "",dst.c_str()); 
+		display.printf("Slot: %i %s %s%s",slotNo,type,group ? "TG: " : "",dst.c_str()); 
 	}
 
 	display.fillRect(0,OLED_LINE6,display.width(),20,BLACK);

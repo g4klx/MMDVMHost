@@ -1067,16 +1067,16 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		m_netState = RS_NET_AUDIO;
 
 		setShortLC(m_slotNo, dstId, flco, ACTIVITY_VOICE);
-
 		std::string src = m_lookup->find(srcId);
 		std::string dst = m_lookup->find(dstId);
-
-		m_display->writeDMR(m_slotNo, src, flco == FLCO_GROUP, dst, "N");
+		std::string cn = m_lookup->findwithname(srcId);
+		m_display->writeDMR(m_slotNo, cn, flco == FLCO_GROUP, dst, "N");
 
 #if defined(DUMP_DMR)
 		openFile();
 		writeFile(data);
 #endif
+
 		LogMessage("DMR Slot %u, received network voice header from %s to %s%s", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str());
 	} else if (dataType == DT_VOICE_PI_HEADER) {
 		if (m_netState != RS_NET_AUDIO) {
