@@ -35,7 +35,7 @@ public:
 	virtual void entry();
 
 	std::string find(unsigned int id);
-	std::string findwithname(unsigned int id);
+	std::string findWithName(unsigned int id);
 
 	bool exists(unsigned int id);
 

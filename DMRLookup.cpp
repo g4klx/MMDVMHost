@@ -81,7 +81,7 @@ void CDMRLookup::stop()
 	wait();
 }
 
-std::string CDMRLookup::findwithname(unsigned int id)
+std::string CDMRLookup::findWithName(unsigned int id)
 {
 	std::string callsign;
 
@@ -92,7 +92,7 @@ std::string CDMRLookup::findwithname(unsigned int id)
 
 	try {
 		callsign = m_table.at(id);
-		LogDebug("Findwithname Found =%s",callsign.c_str());
+		LogDebug("FindWithName =%s",callsign.c_str());
 		
 	} catch (...) {
 		char text[10U];
