@@ -1389,7 +1389,7 @@ void CMMDVMHost::createDisplay()
         unsigned char brightness = m_conf.getOLEDBrightness();
         bool          invert     = m_conf.getOLEDInvert();
 		bool          scroll     = m_conf.getOLEDScroll();
-		m_display = new COLED(type, brightness, invert, scroll);
+		m_display = new COLED(type, brightness, invert, scroll, m_conf.getDMRNetworkSlot1(), m_conf.getDMRNetworkSlot2());
 #endif
 	} else {
 		m_display = new CNullDisplay;
