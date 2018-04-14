@@ -92,7 +92,8 @@ fi
 
 # Generate new file
 curl 'http://dmr-marc.net/cgi-bin/trbo-database/datadump.cgi?table=users&format=csv&header=0' 2>/dev/null | sed -e 's/\t//g' | awk -F"," '/,/{gsub(/ /, "", $2); printf "%s\t%s\t%s\n", $1, $2, $3}' | sed -e 's/\(.\) .*/\1/g' > ${DMRIDPATH}/DMRIds.tmp
-if [ -s ${DMRIDPATH}/DMRIds.tmp ]
+NUMOFLINES=$(wc -l ${DMRIDPATH}/DMRIds.tmp | awk '{print $1}')
+if [ $NUMOFLINES -gt 1 ]
 then
    mv ${DMRIDPATH}/DMRIds.tmp ${DMRIDFILE}
 else

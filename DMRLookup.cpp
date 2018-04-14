@@ -81,7 +81,7 @@ void CDMRLookup::stop()
 	wait();
 }
 
-std::string CDMRLookup::find(unsigned int id)
+std::string CDMRLookup::findWithName(unsigned int id)
 {
 	std::string callsign;
 
@@ -92,6 +92,40 @@ std::string CDMRLookup::find(unsigned int id)
 
 	try {
 		callsign = m_table.at(id);
+		LogDebug("FindWithName =%s",callsign.c_str());
+		
+	} catch (...) {
+		char text[10U];
+		::sprintf(text, "%u", id);
+		callsign = std::string(text);
+	}
+
+	m_mutex.unlock();
+
+	return callsign;
+}
+std::string CDMRLookup::find(unsigned int id)
+{
+	std::string callsign;
+	std::string b;
+	
+	
+	if (id == 0xFFFFFFU)
+		return std::string("ALL");
+
+	m_mutex.lock();
+
+	try {
+		b = m_table.at(id);
+		size_t n = b.find(" ");
+		if (n > 0) {
+			callsign = b.substr(0,n);
+			
+		} else {
+			LogDebug("b=%s",b.c_str());
+			callsign = b;
+		}
+		
 	} catch (...) {
 		char text[10U];
 		::sprintf(text, "%u", id);
@@ -133,13 +167,19 @@ bool CDMRLookup::load()
 			continue;
 
 		char* p1 = ::strtok(buffer, " \t\r\n");
-		char* p2 = ::strtok(NULL, " \t\r\n");
+		char* p2 = ::strtok(NULL, " \r\n");  // tokenize to eol to capture name as well
 
 		if (p1 != NULL && p2 != NULL) {
 			unsigned int id = (unsigned int)::atoi(p1);
-			for (char* p = p2; *p != 0x00U; p++)
-				*p = ::toupper(*p);
-
+			for (char* p = p2; *p != 0x00U; p++) {
+				
+				if(*p == 0x09U) 
+					*p = 0x20U;
+				
+				else 
+					*p = ::toupper(*p);
+				
+			}
 			m_table[id] = std::string(p2);
 		}
 	}

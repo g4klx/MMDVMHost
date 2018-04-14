@@ -116,10 +116,10 @@ void CNetworkInfo::getNetworkInterface(unsigned char* info)
 			}
 
 			if (family == AF_INET) {
-				::sprintf(interfacelist[ifnr], "%s: %s", ifa->ifa_name, host);
+				::sprintf(interfacelist[ifnr], "%s:%s", ifa->ifa_name, host);
 				LogInfo("    IPv4: %s", interfacelist[ifnr]);
 			} else {
-				::sprintf(interfacelist[ifnr], "%s: %s", ifa->ifa_name, host);
+				::sprintf(interfacelist[ifnr], "%s:%s", ifa->ifa_name, host);
 				LogInfo("    IPv6: %s", interfacelist[ifnr]);
 			}
 
