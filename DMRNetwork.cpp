@@ -570,6 +570,9 @@ bool CDMRNetwork::writeConfig()
 		case HWT_NANO_HOTSPOT:
 			software = "MMDVM_Nano_hotSPOT";
 			break;
+		case HWT_NANO_DV:
+			software = "MMDVM_Nano_DV";
+			break;
 		case HWT_MMDVM_HS:
 			software = "MMDVM_MMDVM_HS";
 			break;
