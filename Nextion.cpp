@@ -178,7 +178,7 @@ void CNextion::writeDStarInt(const char* my1, const char* my2, const char* your,
 		sendCommandAction(2U);
 	}
 
-	char text[30U];
+	char text[50U];
 	::sprintf(text, "dim=%u", m_brightness);
 	sendCommand(text);
 
@@ -273,7 +273,7 @@ void CNextion::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 		}
 	}
 
-	char text[30U];
+	char text[50U];
 	::sprintf(text, "dim=%u", m_brightness);
 	sendCommand(text);
 
@@ -367,7 +367,7 @@ void CNextion::writeDMRTAInt(unsigned int slotNo, unsigned char* talkerAlias, co
 	}
 
 	if (slotNo == 1U) {
-		char text[40U];
+		char text[50U];
 		::sprintf(text, "t0.txt=\"1 %s %s\"", type, talkerAlias);
 
 		if (m_screenLayout == 2U) {
@@ -384,7 +384,7 @@ void CNextion::writeDMRTAInt(unsigned int slotNo, unsigned char* talkerAlias, co
 		sendCommand(text);
 		sendCommandAction(63U);
 	} else {
-		char text[40U];
+		char text[50U];
 		::sprintf(text, "t2.txt=\"2 %s %s\"", type, talkerAlias);
 
 		if (m_screenLayout == 2U) {
