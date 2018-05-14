@@ -400,8 +400,8 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			LogMessage("P25, received RF TSDU transmission, ACK RESPONSE FNE from %u to %u", srcId, dstId);
 			::memset(data + 2U, 0x00U, P25_TSDU_FRAME_LENGTH_BYTES);
 
-            // Regenerate Sync
-            CSync::addP25Sync(data + 2U);
+			// Regenerate Sync
+			CSync::addP25Sync(data + 2U);
 
 			// Regenerate NID
 			m_nid.encode(data + 2U, P25_DUID_TSDU);
