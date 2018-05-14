@@ -1,5 +1,6 @@
 /*
 *   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
+*   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com>
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -19,6 +20,7 @@
 #include "P25Data.h"
 #include "P25Defines.h"
 #include "P25Utils.h"
+#include "CRC.h"
 #include "Hamming.h"
 #include "Utils.h"
 #include "Log.h"
@@ -54,7 +56,8 @@ m_lcf(0x00U),
 m_emergency(false),
 m_srcId(0U),
 m_dstId(0U),
-m_rs241213()
+m_rs241213(),
+m_trellis()
 {
 	m_mi = new unsigned char[P25_MI_LENGTH_BYTES];
 }
@@ -206,6 +209,116 @@ void CP25Data::encodeLDU2(unsigned char* data)
 	CP25Utils::encode(raw, data, 1356U, 1398U);
 }
 
+bool CP25Data::decodeTSDU(const unsigned char* data)
+{
+    assert(data != NULL);
+
+    // deinterleave
+    unsigned char tsbk[12U];
+    unsigned char raw[25U];
+    CP25Utils::decode(data, raw, 114U, 318U);
+
+    // decode 1/2 rate Trellis & check CRC-CCITT 16
+    try {
+        bool ret = m_trellis.decode12(raw, tsbk);
+        if (ret)
+            ret = CCRC::checkCCITT162(tsbk, 12U);
+        if (!ret)
+            return false;
+    }   
+    catch (...) {
+        CUtils::dump(2U, "P25, CRC failed with input data", tsbk, 12U);
+        return false;
+    }   
+
+    m_lcf = tsbk[0U] & 0x3F;
+    m_mfId = tsbk[1U];
+
+    unsigned long long tsbkValue = 0U; 
+
+    // combine bytes into rs value
+    tsbkValue = tsbk[2U];
+    tsbkValue = (tsbkValue << 8) + tsbk[3U];
+    tsbkValue = (tsbkValue << 8) + tsbk[4U];
+    tsbkValue = (tsbkValue << 8) + tsbk[5U];
+    tsbkValue = (tsbkValue << 8) + tsbk[6U];
+    tsbkValue = (tsbkValue << 8) + tsbk[7U];
+    tsbkValue = (tsbkValue << 8) + tsbk[8U];
+    tsbkValue = (tsbkValue << 8) + tsbk[9U];
+
+    switch (m_lcf) {
+    case P25_LCF_TSBK_CALL_ALERT:
+        m_dstId = (unsigned int)((tsbkValue >> 24) & 0xFFFFFFU);    // Target Radio Address
+        m_srcId = (unsigned int)(tsbkValue & 0xFFFFFFU);            // Source Radio Address
+        break;
+    case P25_LCF_TSBK_ACK_RSP_FNE:
+        m_serviceType = (unsigned char)((tsbkValue >> 56) & 0xFFU); // Service Type
+        m_dstId = (unsigned int)((tsbkValue >> 24) & 0xFFFFFFU);    // Target Radio Address
+        m_srcId = (unsigned int)(tsbkValue & 0xFFFFFFU);            // Source Radio Address
+        break;
+    default:
+        LogMessage("P25, unknown LCF value in TSDU - $%02X", m_lcf);
+        break;
+    }
+
+    return true;
+}
+
+void CP25Data::encodeTSDU(unsigned char* data)
+{
+    assert(data != NULL);
+
+    unsigned char tsbk[12U];
+    ::memset(tsbk, 0x00U, 12U);
+
+    unsigned long long tsbkValue = 0U;
+    tsbk[0U] = m_lcf;
+    tsbk[0U] |= 0x80;
+
+    tsbk[1U] = m_mfId;
+
+    switch (m_lcf) {
+    case P25_LCF_TSBK_CALL_ALERT:
+        tsbkValue = 0U;
+        tsbkValue = (tsbkValue << 16) + 0U;
+        tsbkValue = (tsbkValue << 24) + m_dstId;                    // Target Radio Address
+        tsbkValue = (tsbkValue << 24) + m_srcId;                    // Source Radio Address
+        break;
+    case P25_LCF_TSBK_ACK_RSP_FNE:
+        tsbkValue = 0U;                                             // Additional Info. Flag
+        tsbkValue = (tsbkValue << 1) + 0U;                          // Extended Address Flag
+        tsbkValue = (tsbkValue << 16) + (m_serviceType & 0xFF);     // Service Type
+        tsbkValue = (tsbkValue << 32) + m_dstId;                    // Target Radio Address
+        tsbkValue = (tsbkValue << 24) + m_srcId;                    // Source Radio Address
+        break;
+    default:
+        LogMessage("P25, unknown LCF value in TSDU - $%02X", m_lcf);
+        break;
+    }
+
+    // split rs value into bytes
+    tsbk[2U] = (unsigned char)((tsbkValue >> 56) & 0xFFU);
+    tsbk[3U] = (unsigned char)((tsbkValue >> 48) & 0xFFU);
+    tsbk[4U] = (unsigned char)((tsbkValue >> 40) & 0xFFU);
+    tsbk[5U] = (unsigned char)((tsbkValue >> 32) & 0xFFU);
+    tsbk[6U] = (unsigned char)((tsbkValue >> 24) & 0xFFU);
+    tsbk[7U] = (unsigned char)((tsbkValue >> 16) & 0xFFU);
+    tsbk[8U] = (unsigned char)((tsbkValue >> 8) & 0xFFU);
+    tsbk[9U] = (unsigned char)((tsbkValue >> 0) & 0xFFU);
+
+    // compute CRC-CCITT 16
+    CCRC::addCCITT162(tsbk, 12U);
+
+    unsigned char raw[25U];
+    ::memset(raw, 0x00U, 25U);
+
+    // encode 1/2 rate Trellis
+    m_trellis.encode12(tsbk, raw);
+
+    // interleave
+    CP25Utils::encode(raw, data, 114U, 318U);
+}
+
 void CP25Data::setMI(const unsigned char* mi)
 {
 	assert(mi != NULL);
@@ -288,6 +401,16 @@ void CP25Data::setDstId(unsigned int id)
 unsigned int CP25Data::getDstId() const
 {
 	return m_dstId;
+}
+
+void CP25Data::setServiceType(unsigned char type)
+{
+    m_serviceType = type;
+}
+
+unsigned char CP25Data::getServiceType() const
+{
+    return m_serviceType;
 }
 
 void CP25Data::reset()
