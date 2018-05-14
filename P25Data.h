@@ -35,8 +35,8 @@ public:
 
 	void encodeLDU2(unsigned char* data);
 
-    bool decodeTSDU(const unsigned char* data);
-    void encodeTSDU(unsigned char* data);
+	bool decodeTSDU(const unsigned char* data);
+	void encodeTSDU(unsigned char* data);
 
 	void setMI(const unsigned char* mi);
 	void getMI(unsigned char* mi) const;
@@ -62,8 +62,8 @@ public:
 	void setDstId(unsigned int id);
 	unsigned int getDstId() const;
 
-    void setServiceType(unsigned char type);
-    unsigned char getServiceType() const;
+	void setServiceType(unsigned char type);
+	unsigned char getServiceType() const;
 
 	void reset();
 
@@ -76,9 +76,9 @@ private:
 	bool           m_emergency;
 	unsigned int   m_srcId;
 	unsigned int   m_dstId;
-    unsigned char  m_serviceType;
+	unsigned char  m_serviceType;
 	CRS241213      m_rs241213;
-    CP25Trellis    m_trellis;
+	CP25Trellis    m_trellis;
 
 	void decodeLDUHamming(const unsigned char* raw, unsigned char* data);
 	void encodeLDUHamming(unsigned char* data, const unsigned char* raw);

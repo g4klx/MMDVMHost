@@ -350,86 +350,85 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 
 			return true;
 		}
-	else if (duid == P25_DUID_TSDU) {
-        if (m_rfState != RS_RF_DATA) {
-		    m_rfPDUCount = 0U;
-            m_rfPDUBits = 0U;
-            m_rfState = RS_RF_DATA;
-            m_rfDataFrames = 0U;
-        }
-
-        bool ret = m_rfData.decodeTSDU(data + 2U);
-        if (!ret) {
+	} else if (duid == P25_DUID_TSDU) {
+		if (m_rfState != RS_RF_DATA) {
+			m_rfPDUCount = 0U;
+			m_rfPDUBits = 0U;
+			m_rfState = RS_RF_DATA;
+			m_rfDataFrames = 0U;
+		}
+	
+		bool ret = m_rfData.decodeTSDU(data + 2U);
+		if (!ret) {
 			m_lastDUID = duid;
-            return false;
-        }
+			return false;
+		}
+	
+		unsigned int srcId = m_rfData.getSrcId();
+		unsigned int dstId = m_rfData.getDstId();
+	
+		unsigned char data[P25_TSDU_FRAME_LENGTH_BYTES + 2U];
+	
+		switch (m_rfData.getLCF()) {
+		case P25_LCF_TSBK_CALL_ALERT:
+			LogMessage("P25, received RF TSDU transmission, CALL ALERT from %u to %u", srcId, dstId);
+			::memset(data + 2U, 0x00U, P25_TSDU_FRAME_LENGTH_BYTES);
+	
+			// Regenerate Sync
+			CSync::addP25Sync(data + 2U);
 
-        unsigned int srcId = m_rfData.getSrcId();
-        unsigned int dstId = m_rfData.getDstId();
+			// Regenerate NID
+			m_nid.encode(data + 2U, P25_DUID_TSDU);
 
-        unsigned char data[P25_TSDU_FRAME_LENGTH_BYTES + 2U];
+			// Regenerate TDULC Data
+			m_rfData.encodeTSDU(data + 2U);
 
-        switch (m_rfData.getLCF()) {
-        case P25_LCF_TSBK_CALL_ALERT:
-	        LogMessage("P25, received RF TSDU transmission, CALL ALERT from %u to %u", srcId, dstId);
-            ::memset(data + 2U, 0x00U, P25_TSDU_FRAME_LENGTH_BYTES);
+			// Add busy bits
+			addBusyBits(data + 2U, P25_TSDU_FRAME_LENGTH_BITS, true, false);
+
+			// Set first busy bits to 1,1
+			setBusyBits(data + 2U, P25_SS0_START, true, true);
+
+			if (m_duplex) {
+				data[0U] = TAG_DATA;
+				data[1U] = 0x00U;
+
+				writeQueueRF(data, P25_TSDU_FRAME_LENGTH_BYTES + 2U);
+			}
+			break;
+		case P25_LCF_TSBK_ACK_RSP_FNE:
+			LogMessage("P25, received RF TSDU transmission, ACK RESPONSE FNE from %u to %u", srcId, dstId);
+			::memset(data + 2U, 0x00U, P25_TSDU_FRAME_LENGTH_BYTES);
 
             // Regenerate Sync
             CSync::addP25Sync(data + 2U);
 
-            // Regenerate NID
-            m_nid.encode(data + 2U, P25_DUID_TSDU);
+			// Regenerate NID
+			m_nid.encode(data + 2U, P25_DUID_TSDU);
 
-            // Regenerate TDULC Data
-            m_rfData.encodeTSDU(data + 2U);
+			// Regenerate TDULC Data
+			m_rfData.encodeTSDU(data + 2U);
 
-            // Add busy bits
-            addBusyBits(data + 2U, P25_TSDU_FRAME_LENGTH_BITS, true, false);
+			// Add busy bits
+			addBusyBits(data + 2U, P25_TSDU_FRAME_LENGTH_BITS, true, false);
 
-            // Set first busy bits to 1,1
-            setBusyBits(data + 2U, P25_SS0_START, true, true);
+			// Set first busy bits to 1,1
+			setBusyBits(data + 2U, P25_SS0_START, true, true);
 
-            if (m_duplex) {
-		        data[0U] = TAG_DATA;
-                data[1U] = 0x00U;
+			if (m_duplex) {
+				data[0U] = TAG_DATA;
+				data[1U] = 0x00U;
 
-                writeQueueRF(data, P25_TSDU_FRAME_LENGTH_BYTES + 2U);
-            }
-            break;
-            case P25_LCF_TSBK_ACK_RSP_FNE:
-                LogMessage("P25, received RF TSDU transmission, ACK RESPONSE FNE from %u to %u", srcId, dstId);
-                ::memset(data + 2U, 0x00U, P25_TSDU_FRAME_LENGTH_BYTES);
+				writeQueueRF(data, P25_TSDU_FRAME_LENGTH_BYTES + 2U);
+			}
+			break;
+		default:
+			LogMessage("P25, recieved RF TSDU transmission, unhandled LCF $%02X", m_rfData.getLCF());
+			break;
+		}
 
-                // Regenerate Sync
-                CSync::addP25Sync(data + 2U);
-
-                // Regenerate NID
-                m_nid.encode(data + 2U, P25_DUID_TSDU);
-
-                // Regenerate TDULC Data
-                m_rfData.encodeTSDU(data + 2U);
-
-                // Add busy bits
-                addBusyBits(data + 2U, P25_TSDU_FRAME_LENGTH_BITS, true, false);
-
-                // Set first busy bits to 1,1
-                setBusyBits(data + 2U, P25_SS0_START, true, true);
-
-                if (m_duplex) {
-                    data[0U] = TAG_DATA;
-                    data[1U] = 0x00U;
-
-                    writeQueueRF(data, P25_TSDU_FRAME_LENGTH_BYTES + 2U);
-                }
-                break;
-            default:
-                LogMessage("P25, recieved RF TSDU transmission, unhandled LCF $%02X", m_rfData.getLCF());
-                break;
-            }
-
-            m_rfState = RS_RF_LISTENING;
-            return true;
-        }
+		m_rfState = RS_RF_LISTENING;
+		return true;
 	} else if (duid == P25_DUID_TERM || duid == P25_DUID_TERM_LC) {
 		if (m_rfState == RS_RF_AUDIO) {
 			writeNetwork(m_rfLDU, m_lastDUID, true);
