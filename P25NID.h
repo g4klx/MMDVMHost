@@ -1,5 +1,6 @@
 /*
 *   Copyright (C) 2016,2018 by Jonathan Naylor G4KLX
+*   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com>
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -37,6 +38,7 @@ private:
 	unsigned char* m_ldu2;
 	unsigned char* m_termlc;
 	unsigned char* m_term;
+	unsigned char* m_tsdu;
 	unsigned char* m_pdu;
 };
 
