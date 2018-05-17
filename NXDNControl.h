@@ -84,7 +84,7 @@ private:
 
 	void writeQueueRF(const unsigned char* data);
 	void writeQueueNet(const unsigned char* data);
-	void writeNetwork(const unsigned char* data, bool single);
+	void writeNetwork(const unsigned char* data, NXDN_NETWORK_MESSAGE_TYPE type);
 	void writeNetwork();
 
 	void scrambler(unsigned char* data) const;

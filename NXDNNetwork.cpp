@@ -56,7 +56,7 @@ bool CNXDNNetwork::open()
 	return m_socket.open();
 }
 
-bool CNXDNNetwork::write(const unsigned char* data, bool single)
+bool CNXDNNetwork::write(const unsigned char* data, NXDN_NETWORK_MESSAGE_TYPE type)
 {
 	assert(data != NULL);
 
@@ -72,9 +72,28 @@ bool CNXDNNetwork::write(const unsigned char* data, bool single)
 	buffer[6U] = 0x08U;
 	buffer[7U] = 0xE0U;
 
-	buffer[37U] = 0x23U;
-	buffer[38U] = single ? 0x1CU : 0x10U;
-	buffer[39U] = 0x21U;
+	switch (type) {
+	case NNMT_VOICE_HEADER:
+	case NNMT_VOICE_TRAILER:
+		buffer[37U] = 0x23U;
+		buffer[38U] = 0x1CU;
+		buffer[39U] = 0x21U;
+		break;
+	case NNMT_VOICE_BODY:
+		buffer[37U] = 0x23U;
+		buffer[38U] = 0x10U;
+		buffer[39U] = 0x21U;
+		break;
+	case NNMT_DATA_HEADER:
+	case NNMT_DATA_BODY:
+	case NNMT_DATA_TRAILER:
+		buffer[37U] = 0x23U;
+		buffer[38U] = 0x02U;
+		buffer[39U] = 0x18U;
+		break;
+	default:
+		return false;
+	}
 
 	::memcpy(buffer + 40U, data, 33U);
 

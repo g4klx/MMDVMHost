@@ -245,7 +245,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 		scrambler(data + 2U);
 
-		writeNetwork(netData, true);
+		writeNetwork(netData, data[0U] == TAG_EOT ? NNMT_VOICE_TRAILER : NNMT_VOICE_HEADER);
 
 #if defined(DUMP_NXDN)
 		writeFile(data + 2U);
@@ -424,7 +424,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 			scrambler(start + 2U);
 
-			writeNetwork(netData, true);
+			writeNetwork(netData, NNMT_VOICE_HEADER);
 
 #if defined(DUMP_NXDN)
 			writeFile(start + 2U);
@@ -529,7 +529,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 		scrambler(data + 2U);
 
-		writeNetwork(netData, false);
+		writeNetwork(netData, NNMT_VOICE_BODY);
 
 #if defined(DUMP_NXDN)
 		writeFile(data + 2U);
@@ -618,8 +618,10 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 
 	udch.getRaw(netData + 1U);
 
+	unsigned char type = NXDN_MESSAGE_TYPE_DCALL_DATA;
+
 	if (validUDCH) {
-		unsigned char type = layer3.getMessageType();
+		type = layer3.getMessageType();
 		data[0U] = type == NXDN_MESSAGE_TYPE_TX_REL ? TAG_EOT : TAG_DATA;
 
 		udch.setRAN(m_ran);
@@ -631,7 +633,17 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 
 	scrambler(data + 2U);
 
-	writeNetwork(netData, true);
+	switch (type) {
+	case NXDN_MESSAGE_TYPE_DCALL_HDR:
+		writeNetwork(netData, NNMT_DATA_HEADER);
+		break;
+	case NXDN_MESSAGE_TYPE_TX_REL:
+		writeNetwork(netData, NNMT_DATA_TRAILER);
+		break;
+	default:
+		writeNetwork(netData, NNMT_DATA_BODY);
+		break;
+	}
 
 	if (m_duplex)
 		writeQueueRF(data);
@@ -1005,7 +1017,7 @@ void CNXDNControl::writeQueueNet(const unsigned char *data)
 	m_queue.addData(data, len);
 }
 
-void CNXDNControl::writeNetwork(const unsigned char *data, bool single)
+void CNXDNControl::writeNetwork(const unsigned char *data, NXDN_NETWORK_MESSAGE_TYPE type)
 {
 	assert(data != NULL);
 
@@ -1015,7 +1027,7 @@ void CNXDNControl::writeNetwork(const unsigned char *data, bool single)
 	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired())
 		return;
 
-	m_network->write(data, single);
+	m_network->write(data, type);
 }
 
 void CNXDNControl::scrambler(unsigned char* data) const

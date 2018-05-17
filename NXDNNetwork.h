@@ -27,6 +27,15 @@
 #include <cstdint>
 #include <string>
 
+enum NXDN_NETWORK_MESSAGE_TYPE {
+	NNMT_VOICE_HEADER,
+	NNMT_VOICE_BODY,
+	NNMT_VOICE_TRAILER,
+	NNMT_DATA_HEADER,
+	NNMT_DATA_BODY,
+	NNMT_DATA_TRAILER
+};
+
 class CNXDNNetwork {
 public:
 	CNXDNNetwork(const std::string& localAddress, unsigned int localPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug);
@@ -36,7 +45,7 @@ public:
 
 	void enable(bool enabled);
 
-	bool write(const unsigned char* data, bool single);
+	bool write(const unsigned char* data, NXDN_NETWORK_MESSAGE_TYPE type);
 
 	bool read(unsigned char* data);
 
