@@ -474,16 +474,18 @@ int CMMDVMHost::run()
 
 	CYSFControl* ysf = NULL;
 	if (m_ysfEnabled) {
-		bool lowDeviation  = m_conf.getFusionLowDeviation();
-		bool remoteGateway = m_conf.getFusionRemoteGateway();
-		bool selfOnly      = m_conf.getFusionSelfOnly();
-		bool sqlEnabled    = m_conf.getFusionSQLEnabled();
-		unsigned char sql  = m_conf.getFusionSQL();
-		m_ysfRFModeHang    = m_conf.getFusionModeHang();
+		bool lowDeviation   = m_conf.getFusionLowDeviation();
+		bool remoteGateway  = m_conf.getFusionRemoteGateway();
+		unsigned int txHang = m_conf.getFusionTXHang();
+		bool selfOnly       = m_conf.getFusionSelfOnly();
+		bool sqlEnabled     = m_conf.getFusionSQLEnabled();
+		unsigned char sql   = m_conf.getFusionSQL();
+		m_ysfRFModeHang     = m_conf.getFusionModeHang();
 
 		LogInfo("YSF RF Parameters");
 		LogInfo("    Low Deviation: %s", lowDeviation ? "yes" : "no");
 		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
+		LogInfo("    TX Hang: %us", txHang);
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
 		LogInfo("    DSQ: %s", sqlEnabled ? "yes" : "no");
 		if (sqlEnabled)
@@ -996,6 +998,7 @@ bool CMMDVMHost::createModem()
 	bool debug                = m_conf.getModemDebug();
 	unsigned int colorCode    = m_conf.getDMRColorCode();
 	bool lowDeviation         = m_conf.getFusionLowDeviation();
+	unsigned int txHang       = m_conf.getFusionTXHang();
 	unsigned int rxFrequency  = m_conf.getRXFrequency();
 	unsigned int txFrequency  = m_conf.getTXFrequency();
 	int rxOffset              = m_conf.getModemRXOffset();
@@ -1031,7 +1034,7 @@ bool CMMDVMHost::createModem()
 	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel);
 	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel);
 	m_modem->setDMRParams(colorCode);
-	m_modem->setYSFParams(lowDeviation);
+	m_modem->setYSFParams(lowDeviation, txHang);
 
 	bool ret = m_modem->open();
 	if (!ret) {

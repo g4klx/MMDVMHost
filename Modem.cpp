@@ -93,6 +93,7 @@ CModem::CModem(const std::string& port, bool duplex, bool rxInvert, bool txInver
 m_port(port),
 m_dmrColorCode(0U),
 m_ysfLoDev(false),
+m_ysfTXHang(4U),
 m_duplex(duplex),
 m_rxInvert(rxInvert),
 m_txInvert(txInvert),
@@ -196,9 +197,10 @@ void CModem::setDMRParams(unsigned int colorCode)
 	m_dmrColorCode = colorCode;
 }
 
-void CModem::setYSFParams(bool loDev)
+void CModem::setYSFParams(bool loDev, unsigned int txHang)
 {
-	m_ysfLoDev = loDev;
+	m_ysfLoDev  = loDev;
+	m_ysfTXHang = txHang;
 }
 
 bool CModem::open()
@@ -1125,7 +1127,7 @@ bool CModem::setConfig()
 
 	buffer[0U] = MMDVM_FRAME_START;
 
-	buffer[1U] = 19U;
+	buffer[1U] = 20U;
 
 	buffer[2U] = MMDVM_SET_CONFIG;
 
@@ -1179,10 +1181,12 @@ bool CModem::setConfig()
 
 	buffer[18U] = (unsigned char)(m_nxdnTXLevel * 2.55F + 0.5F);
 
-	// CUtils::dump(1U, "Written", buffer, 19U);
+	buffer[19U] = (unsigned char)m_ysfTXHang;
 
-	int ret = m_serial.write(buffer, 19U);
-	if (ret != 19)
+	// CUtils::dump(1U, "Written", buffer, 20U);
+
+	int ret = m_serial.write(buffer, 20U);
+	if (ret != 20)
 		return false;
 
 	unsigned int count = 0U;
