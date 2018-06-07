@@ -51,6 +51,10 @@
 # Full path to DMR ID file, without final slash
 DMRIDPATH=/path/to/DMR/ID/file
 DMRIDFILE=${DMRIDPATH}/DMRIds.dat
+
+# DMR-MARC.net has discontinued real time access. Now they offer a nightly dump instead.
+DATABASEURL='https://www.dmr-marc.net/static/users.csv'
+
 #
 # How many DMR ID files do you want backed up (0 = do not keep backups)
 DMRFILEBACKUP=1
@@ -91,7 +95,7 @@ then
 fi
 
 # Generate new file
-curl 'http://dmr-marc.net/cgi-bin/trbo-database/datadump.cgi?table=users&format=csv&header=0' 2>/dev/null | sed -e 's/\t//g' | awk -F"," '/,/{gsub(/ /, "", $2); printf "%s\t%s\t%s\n", $1, $2, $3}' | sed -e 's/\(.\) .*/\1/g' > ${DMRIDPATH}/DMRIds.tmp
+curl ${DATABASEURL} 2>/dev/null | sed -e 's/\t//g' | awk -F"," '/,/{gsub(/ /, "", $2); printf "%s\t%s\t%s\n", $1, $2, $3}' | sed -e 's/\(.\) .*/\1/g' > ${DMRIDPATH}/DMRIds.tmp
 NUMOFLINES=$(wc -l ${DMRIDPATH}/DMRIds.tmp | awk '{print $1}')
 if [ $NUMOFLINES -gt 1 ]
 then
