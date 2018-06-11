@@ -298,6 +298,25 @@ void CDisplay::clearNXDN()
 	}
 }
 
+void CDisplay::writePOCSAG(uint32_t ric, const std::string& message)
+{
+	m_timer1.start();
+	m_mode1 = MODE_POCSAG;
+
+	writePOCSAGInt(ric, message);
+}
+
+void CDisplay::clearPOCSAG()
+{
+	if (m_timer1.hasExpired()) {
+		clearPOCSAGInt();
+		m_timer1.stop();
+		m_mode1 = MODE_IDLE;
+	} else {
+		m_mode1 = MODE_POCSAG;
+	}
+}
+
 void CDisplay::writeCW()
 {
 	m_timer1.start();
@@ -333,6 +352,11 @@ void CDisplay::clock(unsigned int ms)
 			break;
 		case MODE_NXDN:
 			clearNXDNInt();
+			m_mode1 = MODE_IDLE;
+			m_timer1.stop();
+			break;
+		case MODE_POCSAG:
+			clearPOCSAGInt();
 			m_mode1 = MODE_IDLE;
 			m_timer1.stop();
 			break;

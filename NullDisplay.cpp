@@ -126,6 +126,20 @@ void CNullDisplay::clearNXDNInt()
 #endif
 }
 
+void CNullDisplay::writePOCSAGInt(uint32_t ric, const std::string& message)
+{
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 1);
+#endif
+}
+
+void CNullDisplay::clearPOCSAGInt()
+{
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 0);
+#endif
+}
+
 void CNullDisplay::writeCWInt()
 {
 }

@@ -26,6 +26,8 @@ const unsigned int POCSAG_RADIO_SYMBOL_LENGTH = 20U;      // At 24 kHz sample ra
 const unsigned int POCSAG_FRAME_LENGTH_WORDS = 17U;
 const unsigned int POCSAG_FRAME_LENGTH_BYTES = POCSAG_FRAME_LENGTH_WORDS * sizeof(uint32_t);
 
+const unsigned int POCSAG_FRAME_ADDRESSES = 8U;
+
 const uint32_t POCSAG_SYNC_WORD = 0x7CD215D8U;
 
 const uint32_t POCSAG_IDLE_WORD = 0x7A89C197U;

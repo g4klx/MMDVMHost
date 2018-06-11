@@ -121,6 +121,9 @@ protected:
   virtual void writeNXDNRSSIInt(unsigned char rssi); 
   virtual void clearNXDNInt();
 
+  virtual void writePOCSAG(uint32_t ric, const std::string& message);
+  virtual void clearPOCSAGInt();
+
   virtual void writeCWInt();
   virtual void clearCWInt();
 

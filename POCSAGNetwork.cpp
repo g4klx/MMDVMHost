@@ -114,7 +114,7 @@ void CPOCSAGNetwork::enable(bool enabled)
 	if (enabled && !m_enabled)
 		reset();
 
-	unsigned char c = enabled ? 0xFFU : 0x00U;
+	unsigned char c = enabled ? 0x00U : 0xFFU;
 	
 	m_socket.write(&c, 1U, m_address, m_port);
 	

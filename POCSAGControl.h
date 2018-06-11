@@ -25,7 +25,10 @@
 #include "Display.h"
 #include "Defines.h"
 
+#include <cstdint>
+
 #include <string>
+#include <deque>
 
 class CPOCSAGControl {
 public:
@@ -41,10 +44,27 @@ private:
 	CDisplay*                  m_display;
 	CRingBuffer<unsigned char> m_queue;
 	unsigned int               m_frames;
+	unsigned int               m_count;
+
+	enum POCSAG_STATE {
+		PS_NONE,
+		PS_WAITING,
+		PS_SENDING,
+		PS_ENDING
+	};
+
+	std::deque<uint32_t>       m_output;
+	std::deque<uint32_t>       m_buffer;
+	uint32_t                   m_ric;
+	std::string                m_text;
+	POCSAG_STATE               m_state;
 	FILE*                      m_fp;
 
-	void writeNetwork();
-
+	bool processData();
+	void writeQueue();
+	void addAddress();
+	void packASCII();
+	void addBCHAndParity(uint32_t& word) const;
 	bool openFile();
 	bool writeFile(const unsigned char* data);
 	void closeFile();

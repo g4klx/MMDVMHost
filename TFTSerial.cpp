@@ -395,6 +395,20 @@ void CTFTSerial::clearNXDNInt()
 	displayText("              ");
 }
 
+void CTFTSerial::writePOCSAGInt(uint32_t ric, const std::string& message)
+{
+	gotoPosPixel(15U, 90U);
+	displayText("POCSAG TX");
+
+	m_mode = MODE_CW;
+}
+
+void CTFTSerial::clearPOCSAGInt()
+{
+	gotoPosPixel(45U, 90U);
+	displayText("IDLE");
+}
+
 void CTFTSerial::writeCWInt()
 {
 	gotoPosPixel(45U, 90U);
