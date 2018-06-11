@@ -1059,7 +1059,7 @@ bool CNXDNControl::openFile()
 	if (m_fp == NULL)
 		return false;
 
-	::fwrite("NXDN", 1U, 3U, m_fp);
+	::fwrite("NXDN", 1U, 4U, m_fp);
 
 	return true;
 }
