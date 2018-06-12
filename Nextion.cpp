@@ -686,7 +686,7 @@ void CNextion::writePOCSAGInt(uint32_t ric, const std::string& message)
 		sendCommandAction(6U);
 	}
 
-	char text[30U];
+	char text[80U];
 	::sprintf(text, "dim=%u", m_brightness);
 	sendCommand(text);
 

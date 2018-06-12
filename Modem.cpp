@@ -1037,7 +1037,7 @@ bool CModem::writePOCSAGData(const unsigned char* data, unsigned int length)
 	unsigned char buffer[130U];
 
 	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = length + 2U;
+	buffer[1U] = length + 3U;
 	buffer[2U] = MMDVM_POCSAG_DATA;
 
 	::memcpy(buffer + 3U, data, length);
