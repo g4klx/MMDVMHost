@@ -184,14 +184,14 @@ void CPOCSAGControl::addAddress()
 
 void CPOCSAGControl::packASCII()
 {
-	const unsigned char MASK = 0x40U;
+	const unsigned char MASK = 0x01U;
 
 	uint32_t word = 0x80000000U;
 	unsigned int n = 0U;
 
 	for (std::string::const_iterator it = m_text.cbegin(); it != m_text.cend(); ++it) {
 		unsigned char c = *it;
-		for (unsigned int j = 0U; j < 7U; j++, c <<= 1) {
+		for (unsigned int j = 0U; j < 7U; j++, c >>= 1) {
 			bool b = (c & MASK) == MASK;
 			if (b)
 				word |= DATA_MASK[n];
@@ -209,7 +209,7 @@ void CPOCSAGControl::packASCII()
 	// Add at least one EOT to the message
 	do {
 		unsigned char c = ASCII_EOT;
-		for (unsigned int j = 0U; j < 7U; j++, c <<= 1) {
+		for (unsigned int j = 0U; j < 7U; j++, c >>= 1) {
 			bool b = (c & MASK) == MASK;
 			if (b)
 				word |= DATA_MASK[n];
