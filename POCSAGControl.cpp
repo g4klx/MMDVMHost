@@ -29,7 +29,7 @@ const uint32_t DATA_MASK[] = {             0x40000000U, 0x20000000U, 0x10000000U
 							  0x00008000U, 0x00004000U, 0x00002000U, 0x00001000U,
 							  0x00000800U};
 
-const unsigned char ASCII_EOT = 0x04U;
+const unsigned char ASCII_NUL = 0x00U;
 
 CPOCSAGControl::CPOCSAGControl(CPOCSAGNetwork* network, CDisplay* display) :
 m_network(network),
@@ -111,7 +111,6 @@ void CPOCSAGControl::clock(unsigned int ms)
 		openFile();
 #endif
 	}
-
 
 	m_output.clear();
 	m_output.push_back(POCSAG_SYNC_WORD);
@@ -206,9 +205,9 @@ void CPOCSAGControl::packASCII()
 		}
 	}
 
-	// Add at least one EOT to the message
-	do {
-		unsigned char c = ASCII_EOT;
+	// Fill remaining space wit NUL characters.
+	while (n != 0U) {
+		unsigned char c = ASCII_NUL;
 		for (unsigned int j = 0U; j < 7U; j++, c >>= 1) {
 			bool b = (c & MASK) == MASK;
 			if (b)
@@ -222,7 +221,7 @@ void CPOCSAGControl::packASCII()
 				n = 0U;
 			}
 		}
-	} while (n != 0U);
+	}
 }
 
 void CPOCSAGControl::addBCHAndParity(uint32_t& word) const
