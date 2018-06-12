@@ -719,8 +719,9 @@ void CNextion::writePOCSAGInt(uint32_t ric, const std::string& message)
 
 void CNextion::clearPOCSAGInt()
 {
-	sendCommand("t1.txt=\"MMDVM IDLE\"");
+	sendCommand("t0.txt=\"Waiting\"");
 	sendCommandAction(134U);
+	sendCommand("t1.txt=\"\"");
 }
 
 void CNextion::writeCWInt()
