@@ -161,6 +161,7 @@ public:
 
   // The POCSAG section
   bool         getPOCSAGEnabled() const;
+  unsigned int getPOCSAGFrequency() const;
 
   // The D-Star Network section
   bool         getDStarNetworkEnabled() const;
@@ -374,6 +375,7 @@ private:
   unsigned int m_nxdnModeHang;
 
   bool         m_pocsagEnabled;
+  unsigned int m_pocsagFrequency;
 
   bool         m_dstarNetworkEnabled;
   std::string  m_dstarGatewayAddress;

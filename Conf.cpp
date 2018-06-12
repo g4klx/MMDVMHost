@@ -162,6 +162,7 @@ m_nxdnSelfOnly(false),
 m_nxdnRemoteGateway(false),
 m_nxdnModeHang(10U),
 m_pocsagEnabled(false),
+m_pocsagFrequency(0U),
 m_dstarNetworkEnabled(false),
 m_dstarGatewayAddress(),
 m_dstarGatewayPort(0U),
@@ -354,7 +355,7 @@ bool CConf::read()
 			m_daemon = ::atoi(value) == 1;
 	} else if (section == SECTION_INFO) {
 		if (::strcmp(key, "TXFrequency") == 0)
-			m_txFrequency = (unsigned int)::atoi(value);
+			m_pocsagFrequency = m_txFrequency = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "RXFrequency") == 0)
 			m_rxFrequency = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Power") == 0)
@@ -606,6 +607,8 @@ bool CConf::read()
 	} else if (section == SECTION_POCSAG) {
 		if (::strcmp(key, "Enable") == 0)
 			m_pocsagEnabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "Frequency") == 0)
+			m_pocsagFrequency = (unsigned int)::atoi(value);
 	} else if (section == SECTION_DSTAR_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dstarNetworkEnabled = ::atoi(value) == 1;
@@ -1283,6 +1286,11 @@ unsigned int CConf::getNXDNModeHang() const
 bool CConf::getPOCSAGEnabled() const
 {
 	return m_pocsagEnabled;
+}
+
+unsigned int CConf::getPOCSAGFrequency() const
+{
+	return m_pocsagFrequency;
 }
 
 bool CConf::getDStarNetworkEnabled() const

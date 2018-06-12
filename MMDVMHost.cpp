@@ -556,8 +556,14 @@ int CMMDVMHost::run()
 	}
 
 	CPOCSAGControl* pocsag = NULL;
-	if (m_pocsagEnabled)
+	if (m_pocsagEnabled) {
+		unsigned int frequency = m_conf.getPOCSAGFrequency();
+
+		LogInfo("POCSAG RF Parameters");
+		LogInfo("    Frequency: %uHz", frequency);
+
 		pocsag = new CPOCSAGControl(m_pocsagNetwork, m_display);
+	}
 
 	setMode(MODE_IDLE);
 
@@ -1024,32 +1030,33 @@ int CMMDVMHost::run()
 
 bool CMMDVMHost::createModem()
 {
-	std::string port          = m_conf.getModemPort();
-	bool rxInvert             = m_conf.getModemRXInvert();
-	bool txInvert             = m_conf.getModemTXInvert();
-	bool pttInvert            = m_conf.getModemPTTInvert();
-	unsigned int txDelay      = m_conf.getModemTXDelay();
-	unsigned int dmrDelay     = m_conf.getModemDMRDelay();
-	float rxLevel             = m_conf.getModemRXLevel();
-	float cwIdTXLevel         = m_conf.getModemCWIdTXLevel();
-	float dstarTXLevel        = m_conf.getModemDStarTXLevel();
-	float dmrTXLevel          = m_conf.getModemDMRTXLevel();
-	float ysfTXLevel          = m_conf.getModemYSFTXLevel();
-	float p25TXLevel          = m_conf.getModemP25TXLevel();
-	float nxdnTXLevel         = m_conf.getModemNXDNTXLevel();
-	float pocsagTXLevel       = m_conf.getModemPOCSAGTXLevel();
-	bool trace                = m_conf.getModemTrace();
-	bool debug                = m_conf.getModemDebug();
-	unsigned int colorCode    = m_conf.getDMRColorCode();
-	bool lowDeviation         = m_conf.getFusionLowDeviation();
-	unsigned int txHang       = m_conf.getFusionTXHang();
-	unsigned int rxFrequency  = m_conf.getRXFrequency();
-	unsigned int txFrequency  = m_conf.getTXFrequency();
-	int rxOffset              = m_conf.getModemRXOffset();
-	int txOffset              = m_conf.getModemTXOffset();
-	int rxDCOffset            = m_conf.getModemRXDCOffset();
-	int txDCOffset            = m_conf.getModemTXDCOffset();
-	float rfLevel             = m_conf.getModemRFLevel();
+	std::string port             = m_conf.getModemPort();
+	bool rxInvert                = m_conf.getModemRXInvert();
+	bool txInvert                = m_conf.getModemTXInvert();
+	bool pttInvert               = m_conf.getModemPTTInvert();
+	unsigned int txDelay         = m_conf.getModemTXDelay();
+	unsigned int dmrDelay        = m_conf.getModemDMRDelay();
+	float rxLevel                = m_conf.getModemRXLevel();
+	float cwIdTXLevel            = m_conf.getModemCWIdTXLevel();
+	float dstarTXLevel           = m_conf.getModemDStarTXLevel();
+	float dmrTXLevel             = m_conf.getModemDMRTXLevel();
+	float ysfTXLevel             = m_conf.getModemYSFTXLevel();
+	float p25TXLevel             = m_conf.getModemP25TXLevel();
+	float nxdnTXLevel            = m_conf.getModemNXDNTXLevel();
+	float pocsagTXLevel          = m_conf.getModemPOCSAGTXLevel();
+	bool trace                   = m_conf.getModemTrace();
+	bool debug                   = m_conf.getModemDebug();
+	unsigned int colorCode       = m_conf.getDMRColorCode();
+	bool lowDeviation            = m_conf.getFusionLowDeviation();
+	unsigned int txHang          = m_conf.getFusionTXHang();
+	unsigned int rxFrequency     = m_conf.getRXFrequency();
+	unsigned int txFrequency     = m_conf.getTXFrequency();
+	unsigned int pocsagFrequency = m_conf.getPOCSAGFrequency();
+	int rxOffset                 = m_conf.getModemRXOffset();
+	int txOffset                 = m_conf.getModemTXOffset();
+	int rxDCOffset               = m_conf.getModemRXDCOffset();
+	int txDCOffset               = m_conf.getModemTXDCOffset();
+	float rfLevel                = m_conf.getModemRFLevel();
 
 	LogInfo("Modem Parameters");
 	LogInfo("    Port: %s", port.c_str());
@@ -1077,7 +1084,7 @@ bool CMMDVMHost::createModem()
 	m_modem = new CModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_pocsagEnabled);
 	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel);
-	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel);
+	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel, pocsagFrequency);
 	m_modem->setDMRParams(colorCode);
 	m_modem->setYSFParams(lowDeviation, txHang);
 

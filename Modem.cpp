@@ -115,6 +115,7 @@ m_trace(trace),
 m_debug(debug),
 m_rxFrequency(0U),
 m_txFrequency(0U),
+m_pocsagFrequency(0U),
 m_dstarEnabled(false),
 m_dmrEnabled(false),
 m_ysfEnabled(false),
@@ -168,13 +169,14 @@ CModem::~CModem()
 	delete[] m_buffer;
 }
 
-void CModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel)
+void CModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency)
 {
-	m_rxFrequency = rxFrequency + rxOffset;
-	m_txFrequency = txFrequency + txOffset;
-	m_txDCOffset  = txDCOffset;
-	m_rxDCOffset  = rxDCOffset;
-	m_rfLevel     = rfLevel;
+	m_rxFrequency     = rxFrequency + rxOffset;
+	m_txFrequency     = txFrequency + txOffset;
+	m_txDCOffset      = txDCOffset;
+	m_rxDCOffset      = rxDCOffset;
+	m_rfLevel         = rfLevel;
+	m_pocsagFrequency = pocsagFrequency + txOffset;
 }
 
 void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool pocsagEnabled)
@@ -1276,14 +1278,20 @@ bool CModem::setConfig()
 
 bool CModem::setFrequency()
 {
-	unsigned char buffer[16U];
+	unsigned char buffer[20U];
 	unsigned char len;
 	
 	if (m_hwType == HWT_DVMEGA)
 		len = 12U;
 	else {
 		buffer[12U]  = (unsigned char)(m_rfLevel * 2.55F + 0.5F);
-		len = 13U;
+
+		buffer[13U] = (m_pocsagFrequency >> 0)  & 0xFFU;
+		buffer[14U] = (m_pocsagFrequency >> 8)  & 0xFFU;
+		buffer[15U] = (m_pocsagFrequency >> 16) & 0xFFU;
+		buffer[16U] = (m_pocsagFrequency >> 24) & 0xFFU;
+
+		len = 17U;
 	}
 
 	buffer[0U]  = MMDVM_FRAME_START;
