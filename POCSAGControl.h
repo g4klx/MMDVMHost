@@ -62,8 +62,9 @@ private:
 
 	bool processData();
 	void writeQueue();
-	void addAddress();
+	void addAddress(unsigned char functional);
 	void packASCII();
+	void packNumeric();
 	void addBCHAndParity(uint32_t& word) const;
 	bool openFile();
 	bool writeFile(const unsigned char* data);

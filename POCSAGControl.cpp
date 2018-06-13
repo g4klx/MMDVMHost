@@ -22,15 +22,42 @@
 
 // #define	DUMP_POCSAG
 
-const uint32_t DATA_MASK[] = {             0x40000000U, 0x20000000U, 0x10000000U,
-							  0x08000000U, 0x04000000U, 0x02000000U, 0x01000000U,
-							  0x00800000U, 0x00400000U, 0x00200000U, 0x00100000U,
-							  0x00080000U, 0x00040000U, 0x00020000U, 0x00010000U,
-							  0x00008000U, 0x00004000U, 0x00002000U, 0x00001000U,
-							  0x00000800U};
+const struct BCD {
+	char     m_c;
+	uint32_t m_bcd[5U];
+} BCD_VALUES[] = {
+	{'0', {0x00000000U, 0x00000000U, 0x00000000U, 0x00000000U, 0x00000000U}},
+	{'1', {0x08000000U, 0x00800000U, 0x00080000U, 0x00008000U, 0x00000800U}},
+	{'2', {0x10000000U, 0x01000000U, 0x00100000U, 0x00010000U, 0x00001000U}},
+	{'3', {0x18000000U, 0x01800000U, 0x00180000U, 0x00018000U, 0x00001800U}},
+	{'4', {0x20000000U, 0x02000000U, 0x00200000U, 0x00020000U, 0x00002000U}},
+	{'5', {0x28000000U, 0x02800000U, 0x00280000U, 0x00028000U, 0x00002800U}},
+	{'6', {0x30000000U, 0x03000000U, 0x00300000U, 0x00030000U, 0x00003000U}},
+	{'7', {0x38000000U, 0x03800000U, 0x00380000U, 0x00038000U, 0x00003800U}},
+	{'8', {0x40000000U, 0x04000000U, 0x00400000U, 0x00040000U, 0x00004000U}},
+	{'9', {0x48000000U, 0x04800000U, 0x00480000U, 0x00048000U, 0x00004800U}},
+	{'U', {0x58000000U, 0x05800000U, 0x00580000U, 0x00058000U, 0x00005800U}},
+	{' ', {0x60000000U, 0x06000000U, 0x00600000U, 0x00060000U, 0x00006000U}},
+	{'-', {0x68000000U, 0x06800000U, 0x00680000U, 0x00068000U, 0x00006800U}},
+	{')', {0x70000000U, 0x07000000U, 0x00700000U, 0x00070000U, 0x00007000U}},
+	{'(', {0x78000000U, 0x07800000U, 0x00780000U, 0x00078000U, 0x00007800U}},
+	{0,   {0x00000000U, 0x00000000U, 0x00000000U, 0x00000000U, 0x00000000U}}
+};
+
+const uint32_t BCD_SPACES[] = {0x66666000U, 0x06666000U, 0x00666000U, 0x00066000U, 0x00006000U};
+
+const uint32_t DATA_MASK[] = {	           0x40000000U, 0x20000000U, 0x10000000U,
+			      0x08000000U, 0x04000000U, 0x02000000U, 0x01000000U,
+			      0x00800000U, 0x00400000U, 0x00200000U, 0x00100000U,
+			      0x00080000U, 0x00040000U, 0x00020000U, 0x00010000U,
+			      0x00008000U, 0x00004000U, 0x00002000U, 0x00001000U,
+			      0x00000800U};
 
 const unsigned char ASCII_NUL = 0x00U;
 const unsigned char ASCII_EOT = 0x04U;
+
+const unsigned char FUNCTIONAL_NUMERIC      = 0U;
+const unsigned char FUNCTIONAL_ALPHANUMERIC = 3U;
 
 CPOCSAGControl::CPOCSAGControl(CPOCSAGNetwork* network, CDisplay* display) :
 m_network(network),
@@ -83,13 +110,18 @@ bool CPOCSAGControl::processData()
 	m_ric |= (data[1U] << 8)  & 0x0000FF00U;
 	m_ric |= (data[2U] << 0)  & 0x000000FFU;
 
-	// uint8_t functional = data[3U];
+	unsigned char functional = data[3U];
 
 	m_text = std::string((char*)(data + 4U), length - 4U);
 
+	LogDebug("Message to %07u, func %s: \"%s\"", m_ric, functional == FUNCTIONAL_NUMERIC ? "Numeric" : "Alphanumeric", m_text.c_str());
+
 	m_buffer.clear();
-	addAddress();
-	packASCII();
+	addAddress(functional);
+	if (functional == FUNCTIONAL_ALPHANUMERIC)
+		packASCII();
+	else
+		packNumeric();
 
 	// Ensure data is an even number of words
 	if ((m_buffer.size() % 2U) == 1U)
@@ -173,9 +205,11 @@ void CPOCSAGControl::clock(unsigned int ms)
 	}
 }
 
-void CPOCSAGControl::addAddress()
+void CPOCSAGControl::addAddress(unsigned char functional)
 {
-	uint32_t word = 0x00001800U;
+	uint32_t word = 0x00000000U;
+	if (functional == FUNCTIONAL_ALPHANUMERIC)
+		word = 0x00001800U;
 
 	word |= (m_ric / POCSAG_FRAME_ADDRESSES) << 13;
 
@@ -242,6 +276,44 @@ void CPOCSAGControl::packASCII()
 				n = 0U;
 			}
 		}
+	}
+}
+
+void CPOCSAGControl::packNumeric()
+{
+	uint32_t word = 0x80000000U;
+	unsigned int n = 0U;
+
+	for (std::string::const_iterator it = m_text.cbegin(); it != m_text.cend(); ++it) {
+		char c = *it;
+
+		const BCD* bcd = NULL;
+		for (unsigned int i = 0U; BCD_VALUES[i].m_c != 0; i++) {
+			if (BCD_VALUES[i].m_c == c) {
+				bcd = BCD_VALUES + i;
+				break;
+			}
+		}
+
+		if (bcd != NULL) {
+			word |= bcd->m_bcd[n];
+			n++;
+
+			if (n == 5U) {
+				addBCHAndParity(word); 
+				m_buffer.push_back(word); 
+				word = 0x80000000U; 
+				n = 0U; 
+			}
+		}
+	}
+
+	// Pack the remainder of the word with BCD spaces.
+	if (n != 0U) {
+		word |= BCD_SPACES[n];
+
+		addBCHAndParity(word); 
+		m_buffer.push_back(word); 
 	}
 }
 
