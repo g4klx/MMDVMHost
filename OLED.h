@@ -65,6 +65,9 @@ public:
   virtual void writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type);
   virtual void clearNXDNInt();
 
+  virtual void writePOCSAGInt(uint32_t ric, const std::string& message);
+  virtual void clearPOCSAGInt();
+
   virtual void writeCWInt();
   virtual void clearCWInt();
 
