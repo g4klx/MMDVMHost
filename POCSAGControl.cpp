@@ -83,7 +83,9 @@ bool CPOCSAGControl::processData()
 	m_ric |= (data[1U] << 8)  & 0x0000FF00U;
 	m_ric |= (data[2U] << 0)  & 0x000000FFU;
 
-	m_text = std::string((char*)(data + 3U), length - 3U);
+	// uint8_t functional = data[3U];
+
+	m_text = std::string((char*)(data + 4U), length - 4U);
 
 	m_buffer.clear();
 	addAddress();
