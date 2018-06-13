@@ -467,6 +467,36 @@ void COLED::clearNXDNInt()
     display.display();
 }
 
+void COLED::writePOCSAGInt(uint32_t ric, const std::string& message)
+{
+    m_mode = MODE_POCSAG;
+
+    display.clearDisplay();
+    display.fillRect(0, OLED_LINE1, display.width(), display.height(), BLACK);
+
+    display.setCursor(0,OLED_LINE3);
+    display.printf("RIC: %u", ric);
+
+    display.setCursor(0,OLED_LINE5);
+    display.printf("MSG: %s", message.c_str());
+
+    OLED_statusbar();
+    display.display();
+}
+
+void COLED::clearPOCSAGInt()
+{
+    display.fillRect(0, OLED_LINE1, display.width(), display.height(), BLACK);
+
+    display.setCursor(40,OLED_LINE4);
+    display.print("Listening");
+	
+	display.setCursor(0,OLED_LINE6);
+	display.printf("%s",m_ipaddress.c_str());
+
+    display.display();
+}
+
 void COLED::writeCWInt()
 {
     display.clearDisplay();
