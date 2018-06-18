@@ -53,9 +53,6 @@ const uint32_t DATA_MASK[] = {	           0x40000000U, 0x20000000U, 0x10000000U,
 			      0x00008000U, 0x00004000U, 0x00002000U, 0x00001000U,
 			      0x00000800U};
 
-const unsigned char ASCII_NUL = 0x00U;
-const unsigned char ASCII_EOT = 0x04U;
-
 const unsigned char FUNCTIONAL_NUMERIC      = 0U;
 const unsigned char FUNCTIONAL_ALPHANUMERIC = 3U;
 
@@ -227,42 +224,6 @@ void CPOCSAGControl::packASCII()
 
 	for (std::string::const_iterator it = m_text.cbegin(); it != m_text.cend(); ++it) {
 		unsigned char c = *it;
-		for (unsigned int j = 0U; j < 7U; j++, c >>= 1) {
-			bool b = (c & MASK) == MASK;
-			if (b)
-				word |= DATA_MASK[n];
-			n++;
-
-			if (n == 20U) {
-				addBCHAndParity(word);
-				m_buffer.push_back(word);
-				word = 0x80000000U;
-				n = 0U;
-			}
-		}
-	}
-
-	// Add two EOT characters.
-	for (unsigned int i = 0U; i < 2U; i++) {
-		unsigned char c = ASCII_EOT;
-		for (unsigned int j = 0U; j < 7U; j++, c >>= 1) {
-			bool b = (c & MASK) == MASK;
-			if (b)
-				word |= DATA_MASK[n];
-			n++;
-
-			if (n == 20U) {
-				addBCHAndParity(word);
-				m_buffer.push_back(word);
-				word = 0x80000000U;
-				n = 0U;
-			}
-		}
-	}
-
-	// Fill remaining space with NUL characters.
-	while (n != 0U) {
-		unsigned char c = ASCII_NUL;
 		for (unsigned int j = 0U; j < 7U; j++, c >>= 1) {
 			bool b = (c & MASK) == MASK;
 			if (b)
