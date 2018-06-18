@@ -164,14 +164,6 @@ void CPOCSAGControl::clock(unsigned int ms)
 				m_output.push_back(POCSAG_IDLE_WORD);
 			}
 		} else if (m_state == PS_SENDING) {
-			uint32_t w1 = m_buffer.front();
-			m_buffer.pop_front();
-			uint32_t w2 = m_buffer.front();
-			m_buffer.pop_front();
-
-			m_output.push_back(w1);
-			m_output.push_back(w2);
-
 			if (m_buffer.empty()) {
 				bool ret = processData();
 				if (ret) {
@@ -180,6 +172,25 @@ void CPOCSAGControl::clock(unsigned int ms)
 					m_count++;
 				} else {
 					m_state = PS_ENDING;
+				}
+			} else {
+				uint32_t w1 = m_buffer.front();
+				m_buffer.pop_front();
+				uint32_t w2 = m_buffer.front();
+				m_buffer.pop_front();
+
+				m_output.push_back(w1);
+				m_output.push_back(w2);
+
+				if (m_buffer.empty()) {
+					bool ret = processData();
+					if (ret) {
+						m_display->writePOCSAG(m_ric, m_text);
+						m_state = PS_WAITING;
+						m_count++;
+					} else {
+						m_state = PS_ENDING;
+					}
 				}
 			}
 		} else {		// PS_ENDING
