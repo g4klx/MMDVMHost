@@ -694,21 +694,7 @@ void CNextion::writePOCSAGInt(uint32_t ric, const std::string& message)
 	sendCommand(text);
 	sendCommandAction(132U);
 
-	// Convert the text to multi-line with \r characters between.
-	std::string display;
-	unsigned int n = 0U;
-	for (std::string::const_iterator it = message.cbegin(); it != message.cend(); ++it) {
-		char c = *it;
-		display.push_back(c);
-		n++;
-
-		if (n == 16U) {
-			display.push_back('\r');
-			n = 0U;
-		}
-	}
-
-	::sprintf(text, "t1.txt=\"%s\"", display.c_str());
+	::sprintf(text, "t1.txt=\"%s\"", message.c_str());
 	sendCommand(text);
 	sendCommandAction(133U);
 
