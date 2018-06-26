@@ -487,6 +487,11 @@ void CModem::clock(unsigned int ms)
 					// if (m_trace)
 					//	CUtils::dump(1U, "GET_STATUS", m_buffer, m_length);
 
+					if (m_length < 13U) {
+						LogError("The length of the getStatus from the modem is too short, maybe the firmware is out of date?");
+						break;
+					}
+
 					m_tx = (m_buffer[5U] & 0x01U) == 0x01U;
 
 					bool adcOverflow = (m_buffer[5U] & 0x02U) == 0x02U;
