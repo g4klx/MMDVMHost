@@ -59,6 +59,7 @@ private:
 	std::string                m_text;
 	POCSAG_STATE               m_state;
 	FILE*                      m_fp;
+	uint8_t                    m_sequence;
 
 	bool processData();
 	void writeQueue();

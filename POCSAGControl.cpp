@@ -67,7 +67,8 @@ m_buffer(),
 m_ric(0U),
 m_text(),
 m_state(PS_NONE),
-m_fp(NULL)
+m_fp(NULL),
+m_sequence(0U)
 {
 	assert(display != NULL);
 }
@@ -312,8 +313,13 @@ void CPOCSAGControl::addBCHAndParity(uint32_t& word) const
 void CPOCSAGControl::writeQueue()
 {
 	// Convert 32-bit words to bytes
-	unsigned char data[POCSAG_FRAME_LENGTH_BYTES];
-	unsigned char len = 0U;
+	unsigned char data[POCSAG_FRAME_LENGTH_BYTES + 1U];
+
+	data[0U] = m_sequence++;
+
+	LogMessage("POCSAG, creating message %u", data[0U]);
+
+	unsigned char len = 1U;
 	for (std::deque<uint32_t>::const_iterator it = m_output.cbegin(); it != m_output.cend(); ++it) {
 		uint32_t word = *it;
 
@@ -331,7 +337,7 @@ void CPOCSAGControl::writeQueue()
 
 	CUtils::dump(1U, "Data to MMDVM", data, len);
 
-	assert(len == POCSAG_FRAME_LENGTH_BYTES);
+	assert(len == (POCSAG_FRAME_LENGTH_BYTES + 1U));
 
 	unsigned int space = m_queue.freeSpace();
 	if (space < (len + 1U)) {

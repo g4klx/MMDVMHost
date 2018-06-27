@@ -698,6 +698,8 @@ void CModem::clock(unsigned int ms)
 		m_txPOCSAGData.getData(&len, 1U);
 		m_txPOCSAGData.getData(m_buffer, len);
 
+		LogMessage("POCSAG, sending message %u", m_buffer[3U]);
+
 		if (m_trace)
 			CUtils::dump(1U, "TX POCSAG Data", m_buffer, len);
 
@@ -1048,6 +1050,8 @@ bool CModem::writePOCSAGData(const unsigned char* data, unsigned int length)
 	buffer[2U] = MMDVM_POCSAG_DATA;
 
 	::memcpy(buffer + 3U, data, length);
+
+	LogMessage("POCSAG, queueing message %u", buffer[3U]);
 
 	unsigned char len = length + 3U;		// XXX Check lengths
 	m_txPOCSAGData.addData(&len, 1U);
