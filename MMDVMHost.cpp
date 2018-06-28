@@ -556,6 +556,8 @@ int CMMDVMHost::run()
 		nxdn = new CNXDNControl(ran, id, selfOnly, m_nxdnNetwork, m_display, m_timeout, m_duplex, remoteGateway, m_nxdnLookup, rssi);
 	}
 
+	CTimer pocsagTimer(1000U, 30U);
+
 	CPOCSAGControl* pocsag = NULL;
 	if (m_pocsagEnabled) {
 		unsigned int frequency = m_conf.getPOCSAGFrequency();
@@ -564,6 +566,8 @@ int CMMDVMHost::run()
 		LogInfo("    Frequency: %uHz", frequency);
 
 		pocsag = new CPOCSAGControl(m_pocsagNetwork, m_display);
+
+		pocsagTimer.start();
 	}
 
 	setMode(MODE_IDLE);
@@ -956,6 +960,13 @@ int CMMDVMHost::run()
 		if (m_dmrTXTimer.isRunning() && m_dmrTXTimer.hasExpired()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
+		}
+
+		pocsagTimer.clock(ms);
+		if (pocsagTimer.isRunning() && pocsagTimer.hasExpired()) {
+			assert(m_pocsagNetwork != NULL);
+			m_pocsagNetwork->enable(m_mode == MODE_IDLE || m_mode == MODE_POCSAG);
+			pocsagTimer.start();
 		}
 
 		if (m_ump != NULL)
