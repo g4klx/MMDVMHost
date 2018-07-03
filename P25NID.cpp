@@ -95,6 +95,7 @@ CP25NID::~CP25NID()
 	delete[] m_ldu2;
 	delete[] m_termlc;
 	delete[] m_term;
+	delete[] m_tsdu;
 	delete[] m_pdu;
 }
 
