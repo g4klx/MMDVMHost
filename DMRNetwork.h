@@ -57,6 +57,7 @@ public:
 	void close();
 
 private: 
+	std::string     m_addressStr;
 	in_addr         m_address;
 	unsigned int    m_port;
 	uint8_t*        m_id;
