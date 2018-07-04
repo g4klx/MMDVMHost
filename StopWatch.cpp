@@ -17,7 +17,6 @@
  */
 
 #include "StopWatch.h"
-#include <time.h>
 
 #if defined(_WIN32) || defined(_WIN64)
 
@@ -53,6 +52,7 @@ unsigned int CStopWatch::elapsed()
 #else
 
 #include <cstdio>
+#include <ctime>
 
 CStopWatch::CStopWatch() :
 m_start()
@@ -66,7 +66,8 @@ CStopWatch::~CStopWatch()
 unsigned long CStopWatch::start()
 {
 	::clock_gettime(CLOCK_MONOTONIC, &m_start);
-	return (m_start.tv_sec * 1000UL) + (m_start.tv_nsec / 1000000UL);
+
+	return m_start.tv_sec * 1000UL + m_start.tv_nsec / 1000000UL;
 }
 
 unsigned int CStopWatch::elapsed()

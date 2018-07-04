@@ -26,7 +26,7 @@
 #include <cstdio>
 #include <cassert>
 #include <cstring>
-#include <stdlib.h>
+#include <cstdlib>
 
 const unsigned int BUFFER_LENGTH = 500U;
 
@@ -123,10 +123,10 @@ void CDMRNetwork::setConfig(const std::string& callsign, unsigned int rxFrequenc
 bool CDMRNetwork::open()
 {
 	LogMessage("DMR, Opening DMR Network");
+
 	if (m_address.s_addr == INADDR_NONE)
-	{
 		m_address = CUDPSocket::lookup(m_addressStr);
-	}
+
 	m_status = WAITING_CONNECT;
 	m_timeoutTimer.stop();
 	m_retryTimer.start();
