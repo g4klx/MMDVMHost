@@ -17,6 +17,7 @@
  */
 
 #include "StopWatch.h"
+#include <time.h>
 
 #if defined(_WIN32) || defined(_WIN64)
 
@@ -64,21 +65,16 @@ CStopWatch::~CStopWatch()
 
 unsigned long CStopWatch::start()
 {
-	::gettimeofday(&m_start, NULL);
-
-	return m_start.tv_usec;
+	::clock_gettime(CLOCK_MONOTONIC, &m_start);
+	return (m_start.tv_sec * 1000UL) + (m_start.tv_nsec / 1000000UL);
 }
 
 unsigned int CStopWatch::elapsed()
 {
-	struct timeval now;
-	::gettimeofday(&now, NULL);
-
-	unsigned int elapsed = (now.tv_sec - m_start.tv_sec) * 1000U;
-	elapsed += now.tv_usec / 1000U;
-	elapsed -= m_start.tv_usec / 1000U;
-
-	return elapsed;
+	struct timespec now;
+	::clock_gettime(CLOCK_MONOTONIC, &now);
+	int offset = ((now.tv_sec - m_start.tv_sec) * 1000000000UL + now.tv_nsec - m_start.tv_nsec ) / 1000000UL;
+	return (unsigned int)offset;
 }
 
 #endif

@@ -46,6 +46,7 @@
 
 #include <cstdio>
 #include <vector>
+#include <stdlib.h>
 
 #if !defined(_WIN32) && !defined(_WIN64)
 #include <sys/types.h>
@@ -206,7 +207,7 @@ int CMMDVMHost::run()
 		::close(STDOUT_FILENO);
 		::close(STDERR_FILENO);
 
-#if !defined(HD44780) && !defined(OLED)
+#if !defined(HD44780) && !defined(OLED) && !defined(_OPENWRT)
 		// If we are currently root...
 		if (getuid() == 0) {
 			struct passwd* user = ::getpwnam("mmdvm");
@@ -237,7 +238,7 @@ int CMMDVMHost::run()
 		}
 	}
 #else
-	::fprintf(stderr, "Dropping root permissions in daemon mode is disabled with HD44780 display\n");
+	::fprintf(stderr, "Dropping root permissions in daemon mode is disabled.\n");
 	}
 #endif
 #endif
