@@ -34,8 +34,8 @@ m_ldu1(NULL),
 m_ldu2(NULL),
 m_termlc(NULL),
 m_term(NULL),
-m_pdu(NULL),
-m_tsdu(NULL)
+m_tsdu(NULL),
+m_pdu(NULL)
 {
 	CBCH bch;
 

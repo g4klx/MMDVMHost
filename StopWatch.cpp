@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -74,7 +74,9 @@ unsigned int CStopWatch::elapsed()
 {
 	struct timespec now;
 	::clock_gettime(CLOCK_MONOTONIC, &now);
+
 	int offset = ((now.tv_sec - m_start.tv_sec) * 1000000000UL + now.tv_nsec - m_start.tv_nsec ) / 1000000UL;
+
 	return (unsigned int)offset;
 }
 
