@@ -66,7 +66,7 @@ CStopWatch::~CStopWatch()
 unsigned long CStopWatch::start()
 {
 	::clock_gettime(CLOCK_MONOTONIC, &m_start);
-	return m_start.tv_sec;
+	return (m_start.tv_sec * 1000UL) + (m_start.tv_nsec / 1000000UL);
 }
 
 unsigned int CStopWatch::elapsed()
