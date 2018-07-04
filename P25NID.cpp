@@ -34,7 +34,8 @@ m_ldu1(NULL),
 m_ldu2(NULL),
 m_termlc(NULL),
 m_term(NULL),
-m_pdu(NULL)
+m_pdu(NULL),
+m_tsdu(NULL)
 {
 	CBCH bch;
 
@@ -97,6 +98,7 @@ CP25NID::~CP25NID()
 	delete[] m_term;
 	delete[] m_tsdu;
 	delete[] m_pdu;
+	delete[] m_tsdu;
 }
 
 bool CP25NID::decode(const unsigned char* data)
