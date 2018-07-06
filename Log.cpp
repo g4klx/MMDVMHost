@@ -43,6 +43,7 @@ static struct tm m_tm;
 
 static char LEVELS[] = " DMIWEF";
 
+static bool m_utc = true;
 static bool LogOpen()
 {
 	if (m_fileLevel == 0U)
@@ -51,7 +52,13 @@ static bool LogOpen()
 	time_t now;
 	::time(&now);
 
-	struct tm* tm = ::gmtime(&now);
+	struct tm* tm;
+	if(m_utc)
+	{
+		tm = ::gmtime(&now);
+	}else{
+		tm = ::localtime(&now);
+	}
 
 	if (tm->tm_mday == m_tm.tm_mday && tm->tm_mon == m_tm.tm_mon && tm->tm_year == m_tm.tm_year) {
 		if (m_fpLog != NULL)
@@ -74,12 +81,13 @@ static bool LogOpen()
     return m_fpLog != NULL;
 }
 
-bool LogInitialise(const std::string& filePath, const std::string& fileRoot, unsigned int fileLevel, unsigned int displayLevel)
+bool LogInitialise(const std::string& filePath, const std::string& fileRoot, unsigned int fileLevel, unsigned int displayLevel, bool utc)
 {
 	m_filePath     = filePath;
 	m_fileRoot     = fileRoot;
 	m_fileLevel    = fileLevel;
 	m_displayLevel = displayLevel;
+	m_utc          = utc;
     return ::LogOpen();
 }
 
@@ -103,7 +111,14 @@ void Log(unsigned int level, const char* fmt, ...)
 	struct timeval now;
 	::gettimeofday(&now, NULL);
 
-	struct tm* tm = ::gmtime(&now.tv_sec);
+	struct tm* tm;
+	
+	if(m_utc)
+	{
+		tm = ::gmtime(&now.tv_sec);
+	}else{
+		tm = ::localtime(&now.tv_sec);
+	}
 
 	::sprintf(buffer, "%c: %04d-%02d-%02d %02d:%02d:%02d.%03lu ", LEVELS[level], tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, now.tv_usec / 1000U);
 #endif
