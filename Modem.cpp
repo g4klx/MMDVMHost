@@ -487,10 +487,9 @@ void CModem::clock(unsigned int ms)
 					// if (m_trace)
 					//	CUtils::dump(1U, "GET_STATUS", m_buffer, m_length);
 
-					if (m_length < 13U) {
-						LogError("The length of the getStatus from the modem is too short, maybe the firmware is out of date?");
-						break;
-					}
+					m_p25Space    = 0U;
+					m_nxdnSpace   = 0U;
+					m_pocsagSpace = 0U;
 
 					m_tx = (m_buffer[5U] & 0x01U) == 0x01U;
 
@@ -518,9 +517,13 @@ void CModem::clock(unsigned int ms)
 					m_dmrSpace1   = m_buffer[7U];
 					m_dmrSpace2   = m_buffer[8U];
 					m_ysfSpace    = m_buffer[9U];
-					m_p25Space    = m_buffer[10U];
-					m_nxdnSpace   = m_buffer[11U];
-					m_pocsagSpace = m_buffer[12U];
+
+					if (m_length > 10U)
+						m_p25Space    = m_buffer[10U];
+					if (m_length > 11U)
+						m_nxdnSpace   = m_buffer[11U];
+					if (m_length > 12U)
+						m_pocsagSpace = m_buffer[12U];
 
 					m_inactivityTimer.start();
 					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u,%u,%u lockout=%d, cd=%d", m_buffer[5U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, m_nxdnSpace, m_pocsagSpace, int(m_lockout), int(m_cd));
