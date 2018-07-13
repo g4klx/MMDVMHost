@@ -430,7 +430,7 @@ void COLED::writeP25Int(const char* source, bool group, unsigned int dest, const
     m_mode = MODE_P25;
 
     display.clearDisplay();
-    display.fillRect(0, OLED_LINE1, display.width(), display.height(), BLACK);
+    display.fillRect(0, OLED_LINE2, display.width(), display.height(), BLACK);
 
     display.setCursor(0,OLED_LINE3);
     display.printf("%s %.10s", type, source);
@@ -444,7 +444,7 @@ void COLED::writeP25Int(const char* source, bool group, unsigned int dest, const
 
 void COLED::clearP25Int()
 {
-    display.fillRect(0, OLED_LINE1, display.width(), display.height(), BLACK);
+    display.fillRect(0, OLED_LINE2, display.width(), display.height(), BLACK);
 
     display.setCursor(40,OLED_LINE4);
     display.print("Listening");
@@ -460,7 +460,7 @@ void COLED::writeNXDNInt(const char* source, bool group, unsigned int dest, cons
     m_mode = MODE_NXDN;
 
     display.clearDisplay();
-    display.fillRect(0, OLED_LINE1, display.width(), display.height(), BLACK);
+    display.fillRect(0, OLED_LINE2, display.width(), display.height(), BLACK);
 
     display.setCursor(0,OLED_LINE3);
     display.printf("%s %.10s", type, source);
@@ -474,7 +474,7 @@ void COLED::writeNXDNInt(const char* source, bool group, unsigned int dest, cons
 
 void COLED::clearNXDNInt()
 {
-    display.fillRect(0, OLED_LINE1, display.width(), display.height(), BLACK);
+    display.fillRect(0, OLED_LINE2, display.width(), display.height(), BLACK);
 
     display.setCursor(40,OLED_LINE4);
     display.print("Listening");
