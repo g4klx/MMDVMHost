@@ -54,6 +54,8 @@ const uint32_t DATA_MASK[] = {	           0x40000000U, 0x20000000U, 0x10000000U,
 			      0x00000800U};
 
 const unsigned char FUNCTIONAL_NUMERIC      = 0U;
+const unsigned char FUNCTIONAL_ALERT1       = 1U;
+const unsigned char FUNCTIONAL_ALERT2       = 2U;
 const unsigned char FUNCTIONAL_ALPHANUMERIC = 3U;
 
 CPOCSAGControl::CPOCSAGControl(CPOCSAGNetwork* network, CDisplay* display) :
@@ -109,16 +111,31 @@ bool CPOCSAGControl::processData()
 
 	unsigned char functional = data[3U];
 
-	m_text = std::string((char*)(data + 4U), length - 4U);
-
-	LogDebug("Message to %07u, func %s: \"%s\"", m_ric, functional == FUNCTIONAL_NUMERIC ? "Numeric" : "Alphanumeric", m_text.c_str());
-
 	m_buffer.clear();
 	addAddress(functional);
-	if (functional == FUNCTIONAL_ALPHANUMERIC)
-		packASCII();
-	else
-		packNumeric();
+
+	switch (functional) {
+		case FUNCTIONAL_ALPHANUMERIC:
+			m_text = std::string((char*)(data + 4U), length - 4U);
+			LogDebug("Message to %07u, func Alphanumeric: \"%s\"", m_ric, m_text.c_str());
+			packASCII();
+			break;
+		case FUNCTIONAL_NUMERIC:
+			m_text = std::string((char*)(data + 4U), length - 4U);
+			LogDebug("Message to %07u, func Numeric: \"%s\"", m_ric, m_text.c_str());
+			packNumeric();
+			break;
+		case FUNCTIONAL_ALERT1:
+			m_text.clear();
+			LogDebug("Message to %07u, func Alert 1", m_ric);
+			break;
+		case FUNCTIONAL_ALERT2:
+			m_text.clear();
+			LogDebug("Message to %07u, func Alert 2", m_ric);
+			break;
+		default:
+			break;
+	}
 
 	// Ensure data is an even number of words
 	if ((m_buffer.size() % 2U) == 1U)
@@ -208,8 +225,21 @@ void CPOCSAGControl::clock(unsigned int ms)
 void CPOCSAGControl::addAddress(unsigned char functional)
 {
 	uint32_t word = 0x00000000U;
-	if (functional == FUNCTIONAL_ALPHANUMERIC)
-		word = 0x00001800U;
+
+	switch (functional) {
+		case FUNCTIONAL_ALPHANUMERIC:
+			word = 0x00001800U;
+			break;
+		case FUNCTIONAL_ALERT1:
+			word = 0x00000800U;
+			break;
+		case FUNCTIONAL_ALERT2:
+			word = 0x00001000U;
+			break;
+		case FUNCTIONAL_NUMERIC:
+		default:
+			break;
+	}
 
 	word |= (m_ric / POCSAG_FRAME_ADDRESSES) << 13;
 
