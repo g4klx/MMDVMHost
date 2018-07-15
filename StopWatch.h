@@ -31,15 +31,18 @@ public:
 	CStopWatch();
 	~CStopWatch();
 
-	unsigned long start();
-	unsigned int  elapsed();
+	unsigned long long time() const;
+
+	unsigned long long start();
+	unsigned int       elapsed();
 
 private:
 #if defined(_WIN32) || defined(_WIN64)
-	LARGE_INTEGER  m_frequency;
+	LARGE_INTEGER  m_frequencyS;
+	LARGE_INTEGER  m_frequencyMS;
 	LARGE_INTEGER  m_start;
 #else
-	struct timespec m_start;
+	unsigned long long m_startMS;
 #endif
 };
 
