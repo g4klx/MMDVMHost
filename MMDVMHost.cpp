@@ -235,7 +235,7 @@ int CMMDVMHost::run()
 				return -1;
 			}
 
-			// Double check it worked (AKA Paranoia) 
+			// Double check it worked (AKA Paranoia)
 			if (::setuid(0) != -1){
 				::fprintf(stderr, "It's possible to regain root - something is wrong!, exiting\n");
 				return -1;
@@ -453,7 +453,7 @@ int CMMDVMHost::run()
 		LogInfo("    Embedded LC Only: %s", embeddedLCOnly ? "yes" : "no");
 		LogInfo("    Dump Talker Alias Data: %s", dumpTAData ? "yes" : "no");
 		LogInfo("    Prefixes: %u", prefixes.size());
-		
+
 		if (blackList.size() > 0U)
 			LogInfo("    Source ID Black List: %u", blackList.size());
 		if (whiteList.size() > 0U)
@@ -1045,6 +1045,8 @@ int CMMDVMHost::run()
 bool CMMDVMHost::createModem()
 {
 	std::string port             = m_conf.getModemPort();
+	std::string protocol	     = m_conf.getModemProtocol();
+	unsigned int address	     = m_conf.getModemAddress();
 	bool rxInvert                = m_conf.getModemRXInvert();
 	bool txInvert                = m_conf.getModemTXInvert();
 	bool pttInvert               = m_conf.getModemPTTInvert();
@@ -1074,6 +1076,10 @@ bool CMMDVMHost::createModem()
 
 	LogInfo("Modem Parameters");
 	LogInfo("    Port: %s", port.c_str());
+	if (protocol == "i2c"){
+	LogInfo("    Protocol: %s", protocol.c_str());
+	LogInfo("    i2c Address: %u", address);
+	}
 	LogInfo("    RX Invert: %s", rxInvert ? "yes" : "no");
 	LogInfo("    TX Invert: %s", txInvert ? "yes" : "no");
 	LogInfo("    PTT Invert: %s", pttInvert ? "yes" : "no");
@@ -1095,7 +1101,7 @@ bool CMMDVMHost::createModem()
 	LogInfo("    RX Frequency: %uHz (%uHz)", rxFrequency, rxFrequency + rxOffset);
 	LogInfo("    TX Frequency: %uHz (%uHz)", txFrequency, txFrequency + txOffset);
 
-	m_modem = new CModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
+	m_modem = new CModem(port, protocol, address, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_pocsagEnabled);
 	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel);
 	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel, pocsagFrequency);

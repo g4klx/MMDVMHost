@@ -34,7 +34,7 @@ enum RESP_TYPE_MMDVM {
 
 class CModem {
 public:
-	CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool trace, bool debug);
+	CModem(const std::string& port, const std::string& protocol, unsigned int address, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool trace, bool debug);
 	~CModem();
 
 	void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency);
@@ -96,6 +96,8 @@ public:
 
 private:
 	std::string                m_port;
+	std::string		           m_protocol;
+	unsigned int		       m_address;
 	unsigned int               m_dmrColorCode;
 	bool                       m_ysfLoDev;
 	unsigned int               m_ysfTXHang;

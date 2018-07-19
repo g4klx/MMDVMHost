@@ -92,8 +92,10 @@ const unsigned int MAX_RESPONSES = 30U;
 const unsigned int BUFFER_LENGTH = 2000U;
 
 
-CModem::CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool trace, bool debug) :
+CModem::CModem(const std::string& port, const std::string& protocol, unsigned int address, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool trace, bool debug) :
 m_port(port),
+m_protocol(protocol),
+m_address(address),
 m_dmrColorCode(0U),
 m_ysfLoDev(false),
 m_ysfTXHang(4U),
@@ -124,7 +126,7 @@ m_nxdnEnabled(false),
 m_pocsagEnabled(false),
 m_rxDCOffset(0),
 m_txDCOffset(0),
-m_serial(port, SERIAL_115200, true),
+m_serial(port, SERIAL_115200, protocol, address, true),
 m_buffer(NULL),
 m_length(0U),
 m_offset(0U),
@@ -510,7 +512,7 @@ void CModem::clock(unsigned int ms)
 					bool dacOverflow = (m_buffer[5U] & 0x20U) == 0x20U;
 					if (dacOverflow)
 						LogError("MMDVM DAC levels have overflowed");
-						
+
 					m_cd = (m_buffer[5U] & 0x40U) == 0x40U;
 
 					m_dstarSpace  = m_buffer[6U];
@@ -1288,7 +1290,7 @@ bool CModem::setFrequency()
 {
 	unsigned char buffer[20U];
 	unsigned char len;
-	
+
 	if (m_hwType == HWT_DVMEGA)
 		len = 12U;
 	else {
