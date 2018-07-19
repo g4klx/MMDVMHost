@@ -35,12 +35,13 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <termios.h>
+#include <linux/i2c-dev.h>
 #endif
 
 
 #if defined(_WIN32) || defined(_WIN64)
 
-CSerialController::CSerialController(const std::string& device, SERIAL_SPEED speed, bool assertRTS) :
+CSerialController::CSerialController(const std::string& device, SERIAL_SPEED speed, const std::string& protocol, unsigned int address, bool assertRTS) :
 m_device(device),
 m_speed(speed),
 m_assertRTS(assertRTS),
@@ -221,9 +222,11 @@ void CSerialController::close()
 
 #else
 
-CSerialController::CSerialController(const std::string& device, SERIAL_SPEED speed, bool assertRTS) :
+CSerialController::CSerialController(const std::string& device, SERIAL_SPEED speed, const std::string& protocol, unsigned int address, bool assertRTS) :
 m_device(device),
 m_speed(speed),
+m_protocol(protocol),
+m_address(address),
 m_assertRTS(assertRTS),
 m_fd(-1)
 {
@@ -237,6 +240,26 @@ CSerialController::~CSerialController()
 bool CSerialController::open()
 {
 	assert(m_fd == -1);
+
+	if (m_protocol == "i2c"){
+		m_fd = ::open(m_device.c_str(), O_RDWR);
+		if (m_fd < 0) {
+			LogError("Cannot open device - %s", m_device.c_str());
+			return false;
+		}
+		if (::ioctl(m_fd, I2C_TENBIT, 0) < 0) {
+			LogError("CI2C: failed to set 7bitaddress");
+		}
+		if (::ioctl(m_fd, I2C_SLAVE, m_address) < 0) {
+			LogError("CI2C: Failed to acquire bus access/talk to slave 0x%u", m_address);
+			::close(m_fd);
+			return false;
+		}
+
+		LogError("Conntected to Modem via i2c");
+
+	} else {
+
 #if defined(__APPLE__)
 	m_fd = ::open(m_device.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK); /*open in block mode under OSX*/
 #else
@@ -340,7 +363,7 @@ bool CSerialController::open()
 		}
 
 		y |= TIOCM_RTS;
-                                                                                
+
 		if (::ioctl(m_fd, TIOCMSET, &y) < 0) {
 			LogError("Cannot set the control attributes for %s", m_device.c_str());
 			::close(m_fd);
@@ -351,6 +374,7 @@ bool CSerialController::open()
 #if defined(__APPLE__)
 	setNonblock(false);
 #endif
+    }
 
 	return true;
 }
@@ -380,6 +404,19 @@ int CSerialController::read(unsigned char* buffer, unsigned int length)
 	unsigned int offset = 0U;
 
 	while (offset < length) {
+        if (m_protocol == "i2c"){
+			ssize_t n = ::read(m_fd, buffer + offset, 1U);
+			if (n < 0) {
+				if (errno != EAGAIN) {
+					LogError("Error returned from read(), errno=%d", errno);
+					return -1;
+				}
+			}
+
+			if (n > 0)
+				offset += n;
+		} else {
+
 		fd_set fds;
 		FD_ZERO(&fds);
 		FD_SET(m_fd, &fds);
@@ -411,6 +448,7 @@ int CSerialController::read(unsigned char* buffer, unsigned int length)
 
 			if (len > 0)
 				offset += len;
+		}
 		}
 	}
 
@@ -448,8 +486,12 @@ int CSerialController::write(const unsigned char* buffer, unsigned int length)
 	unsigned int ptr = 0U;
 	while (ptr < length) {
 		ssize_t n = 0U;
+		if (m_protocol == "i2c"){
+            n = ::write(m_fd, buffer + ptr, 1U);
+		} else {
 		if (canWrite())
 			n = ::write(m_fd, buffer + ptr, length - ptr);
+        }
 		if (n < 0) {
 			if (errno != EAGAIN) {
 				LogError("Error returned from write(), errno=%d", errno);
