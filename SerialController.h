@@ -42,7 +42,7 @@ enum SERIAL_SPEED {
 
 class CSerialController : public ISerialPort {
 public:
-	CSerialController(const std::string& device, SERIAL_SPEED speed, const std::string& protocol = "uart", unsigned int address = 0x22, bool assertRTS = false);
+	CSerialController(const std::string& device, SERIAL_SPEED speed, const std::string& protocol = "uart", unsigned int address = 0x22U, bool assertRTS = false);
 	virtual ~CSerialController();
 
 	virtual bool open();

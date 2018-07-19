@@ -1076,10 +1076,9 @@ bool CMMDVMHost::createModem()
 
 	LogInfo("Modem Parameters");
 	LogInfo("    Port: %s", port.c_str());
-	if (protocol == "i2c"){
 	LogInfo("    Protocol: %s", protocol.c_str());
-	LogInfo("    i2c Address: %u", address);
-	}
+	if (protocol == "i2c")
+		LogInfo("    i2c Address: %02X", address);
 	LogInfo("    RX Invert: %s", rxInvert ? "yes" : "no");
 	LogInfo("    TX Invert: %s", txInvert ? "yes" : "no");
 	LogInfo("    PTT Invert: %s", pttInvert ? "yes" : "no");

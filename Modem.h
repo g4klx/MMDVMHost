@@ -96,8 +96,6 @@ public:
 
 private:
 	std::string                m_port;
-	std::string		           m_protocol;
-	unsigned int		       m_address;
 	unsigned int               m_dmrColorCode;
 	bool                       m_ysfLoDev;
 	unsigned int               m_ysfTXHang;

@@ -94,8 +94,6 @@ const unsigned int BUFFER_LENGTH = 2000U;
 
 CModem::CModem(const std::string& port, const std::string& protocol, unsigned int address, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool trace, bool debug) :
 m_port(port),
-m_protocol(protocol),
-m_address(address),
 m_dmrColorCode(0U),
 m_ysfLoDev(false),
 m_ysfTXHang(4U),
