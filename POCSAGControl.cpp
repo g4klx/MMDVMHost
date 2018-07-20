@@ -130,8 +130,9 @@ bool CPOCSAGControl::processData()
 			LogDebug("Message to %07u, func Alert 1", m_ric);
 			break;
 		case FUNCTIONAL_ALERT2:
-			m_text.clear();
-			LogDebug("Message to %07u, func Alert 2", m_ric);
+			m_text = std::string((char*)(data + 4U), length - 4U);
+			LogDebug("Message to %07u, func Alert 2: \"%s\"", m_ric, m_text.c_str());
+			packASCII();
 			break;
 		default:
 			break;
