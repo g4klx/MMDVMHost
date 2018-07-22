@@ -35,7 +35,9 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <termios.h>
+#if !defined(__APPLE__)
 #include <linux/i2c-dev.h>
+#endif
 #endif
 
 
@@ -244,6 +246,7 @@ bool CSerialController::open()
 	assert(m_fd == -1);
 
 	if (m_protocol == "i2c"){
+#if !defined(__APPLE__)
 		m_fd = ::open(m_device.c_str(), O_RDWR);
 		if (m_fd < 0) {
 			LogError("Cannot open device - %s", m_device.c_str());
@@ -261,6 +264,7 @@ bool CSerialController::open()
 			::close(m_fd);
 			return false;
 		}
+#endif
 	} else {
 #if defined(__APPLE__)
 		m_fd = ::open(m_device.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK); /*open in block mode under OSX*/
@@ -293,12 +297,12 @@ bool CSerialController::open()
 		termios.c_cflag &= ~CSTOPB;     /* only need 1 stop bit */
 		termios.c_cflag &= ~CRTSCTS;    /* no hardware flowcontrol */
 
-	    /* setup for non-canonical mode */
+		/* setup for non-canonical mode */
 		termios.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
 		termios.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
 		termios.c_oflag &= ~OPOST;
 
-	    /* fetch bytes as they become available */
+		/* fetch bytes as they become available */
 		termios.c_cc[VMIN] = 1;
 		termios.c_cc[VTIME] = 1;
 #else
@@ -376,7 +380,7 @@ bool CSerialController::open()
 #if defined(__APPLE__)
 		setNonblock(false);
 #endif
-    }
+	}
 
 	return true;
 }
@@ -406,7 +410,8 @@ int CSerialController::read(unsigned char* buffer, unsigned int length)
 	unsigned int offset = 0U;
 
 	while (offset < length) {
-        if (m_protocol == "i2c"){
+		if (m_protocol == "i2c"){
+#if !defined(__APPLE__)
 			ssize_t n = ::read(m_fd, buffer + offset, 1U);
 			if (n < 0) {
 				if (errno != EAGAIN) {
@@ -417,6 +422,7 @@ int CSerialController::read(unsigned char* buffer, unsigned int length)
 
 			if (n > 0)
 				offset += n;
+#endif
 		} else {
 
 		fd_set fds;
@@ -489,11 +495,13 @@ int CSerialController::write(const unsigned char* buffer, unsigned int length)
 	while (ptr < length) {
 		ssize_t n = 0U;
 		if (m_protocol == "i2c"){
-            n = ::write(m_fd, buffer + ptr, 1U);
+#if !defined(__APPLE__)
+			n = ::write(m_fd, buffer + ptr, 1U);
+#endif
 		} else {
 		if (canWrite())
 			n = ::write(m_fd, buffer + ptr, length - ptr);
-        }
+		}
 		if (n < 0) {
 			if (errno != EAGAIN) {
 				LogError("Error returned from write(), errno=%d", errno);
