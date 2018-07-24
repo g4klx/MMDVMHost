@@ -210,7 +210,6 @@ int CMMDVMHost::run()
 
 		::close(STDIN_FILENO);
 		::close(STDOUT_FILENO);
-		::close(STDERR_FILENO);
 
 #if !defined(HD44780) && !defined(OLED) && !defined(_OPENWRT)
 		// If we are currently root...
@@ -254,6 +253,8 @@ int CMMDVMHost::run()
 		return 1;
 	}
 
+	if (m_daemon)
+		::close(STDERR_FILENO);
 
 	LogInfo(HEADER1);
 	LogInfo(HEADER2);
