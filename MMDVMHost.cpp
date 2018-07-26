@@ -208,9 +208,6 @@ int CMMDVMHost::run()
 			return -1;
 		}
 
-		::close(STDIN_FILENO);
-		::close(STDOUT_FILENO);
-
 #if !defined(HD44780) && !defined(OLED) && !defined(_OPENWRT)
 		// If we are currently root...
 		if (getuid() == 0) {
@@ -253,8 +250,13 @@ int CMMDVMHost::run()
 		return 1;
 	}
 
-	if (m_daemon)
+#if !defined(_WIN32) && !defined(_WIN64)
+	if (m_daemon) {
+		::close(STDIN_FILENO);
+		::close(STDOUT_FILENO);
 		::close(STDERR_FILENO);
+	}
+#endif
 
 	LogInfo(HEADER1);
 	LogInfo(HEADER2);
