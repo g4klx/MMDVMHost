@@ -15,8 +15,8 @@ are activated.
     0 = auto (future use, for now it's G4KLX layout)
     1 = G4KLX layout
     2 = ON7LDS layout                (see README-L2)
-	3 = ON7LDS DIY layout            (this README file)
-	4 = ON7LDS DIY layout High Speed (this README file)
+    3 = ON7LDS DIY layout            (this README file)
+    4 = ON7LDS DIY layout High Speed (this README file)
 
 screenLayout 3 and 4 are the same, but selecting 3, MMDVMHost will communicate
 at 9600bps with the display and selecting 4 will set the baudrate to 115200.  
@@ -69,7 +69,7 @@ Check the NextionDriver program and the display layouts there to see
 
 NOTE: it might be good to *not* remove fields from the display when you do not
  need them, but make them small (i.e. 10 x 10 pixels) and put them aside:
- Give them the same font color and background color as where you put them
+ Give them the same font colour and background colour as where you put them
  OR
  Put them behind some picture: put them on top of the picture, then select the 
  picture and click the 'Bring Top' button to put it on top of all those fields
@@ -94,6 +94,7 @@ changed field.
  4 : page YSF
  5 : page P25 
  6 : page NXDN
+ 7 : page POCSAG
  
 11 : IDLE
 12 : CW
@@ -147,6 +148,9 @@ changed field.
 124 : RSSI
 125 : ber
 
+132 : RIC
+133 : message text
+134 : waiting
 
 
 Fields (and their numbers) on the pages, used by MMDVMHost
@@ -154,7 +158,7 @@ Fields (and their numbers) on the pages, used by MMDVMHost
 
 MMDVM
 t0 : owner call & ID / errortext  LOCKOUT
-t1 : status	/ ERROR
+t1 : status / ERROR
 t2 : date & time
 
 screenLayout >1 :
@@ -211,3 +215,6 @@ t1 : dst
 t2 : rssi
 t3 : ber
 
+POCSAG
+t0 : waiting / RIC
+t1 : message
