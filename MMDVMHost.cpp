@@ -594,6 +594,7 @@ int CMMDVMHost::run()
 		unsigned int len;
 		bool ret;
 
+		if(m_dstarEnabled){
 		len = m_modem->readDStarData(data);
 		if (dstar != NULL && len > 0U) {
 			if (m_mode == MODE_IDLE) {
@@ -609,7 +610,9 @@ int CMMDVMHost::run()
 				LogWarning("D-Star modem data received when in mode %u", m_mode);
 			}
 		}
+		}
 
+		if(m_dmrEnabled){
 		len = m_modem->readDMRData1(data);
 		if (dmr != NULL && len > 0U) {
 			if (m_mode == MODE_IDLE) {
@@ -646,7 +649,9 @@ int CMMDVMHost::run()
 				LogWarning("DMR modem data received when in mode %u", m_mode);
 			}
 		}
+		}
 
+		if(m_dmrEnabled){
 		len = m_modem->readDMRData2(data);
 		if (dmr != NULL && len > 0U) {
 			if (m_mode == MODE_IDLE) {
@@ -683,7 +688,9 @@ int CMMDVMHost::run()
 				LogWarning("DMR modem data received when in mode %u", m_mode);
 			}
 		}
+		}
 
+		if(m_ysfEnabled){
 		len = m_modem->readYSFData(data);
 		if (ysf != NULL && len > 0U) {
 			if (m_mode == MODE_IDLE) {
@@ -699,7 +706,9 @@ int CMMDVMHost::run()
 				LogWarning("System Fusion modem data received when in mode %u", m_mode);
 			}
 		}
+		}
 
+		if(m_p25Enabled){
 		len = m_modem->readP25Data(data);
 		if (p25 != NULL && len > 0U) {
 			if (m_mode == MODE_IDLE) {
@@ -715,7 +724,9 @@ int CMMDVMHost::run()
 				LogWarning("P25 modem data received when in mode %u", m_mode);
 			}
 		}
+		}
 
+		if(m_nxdnEnabled){
 		len = m_modem->readNXDNData(data);
 		if (nxdn != NULL && len > 0U) {
 			if (m_mode == MODE_IDLE) {
@@ -730,6 +741,7 @@ int CMMDVMHost::run()
 			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("NXDN modem data received when in mode %u", m_mode);
 			}
+		}
 		}
 
 		len = m_modem->readTransparentData(data);
