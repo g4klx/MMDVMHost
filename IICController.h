@@ -17,33 +17,15 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef SerialController_H
-#define SerialController_H
+#ifndef IICController_H
+#define IICController_H
 
-#include "SerialPort.h"
+#include "SerialController.h"
 
-#include <string>
-
-#if defined(_WIN32) || defined(_WIN64)
-#include <windows.h>
-#endif
-
-enum SERIAL_SPEED {
-	SERIAL_1200   = 1200,
-	SERIAL_2400   = 2400,
-	SERIAL_4800   = 4800,
-	SERIAL_9600   = 9600,
-	SERIAL_19200  = 19200,
-	SERIAL_38400  = 38400,
-	SERIAL_76800  = 76800,
-	SERIAL_115200 = 115200,
-	SERIAL_230400 = 230400
-};
-
-class CSerialController : public ISerialPort {
+class CIICController : public CSerialController {
 public:
-	CSerialController(const std::string& device, SERIAL_SPEED speed, bool assertRTS = false);
-	virtual ~CSerialController();
+	CIICController(const std::string& device, SERIAL_SPEED speed, unsigned int address = 0x22U, bool assertRTS = false);
+	virtual ~CIICController();
 
 	virtual bool open();
 
@@ -51,27 +33,8 @@ public:
 
 	virtual int write(const unsigned char* buffer, unsigned int length);
 
-	virtual void close();
-
-#if defined(__APPLE__)
-	virtual int setNonblock(bool nonblock);
-#endif
-
-protected:
-	std::string    m_device;
-	SERIAL_SPEED   m_speed;
-	bool           m_assertRTS;
-#if defined(_WIN32) || defined(_WIN64)
-	HANDLE         m_handle;
-#else
-	int            m_fd;
-#endif
-
-#if defined(_WIN32) || defined(_WIN64)
-	int readNonblock(unsigned char* buffer, unsigned int length);
-#else
-	bool canWrite();
-#endif
+private:
+	unsigned int   m_address;
 };
 
 #endif
