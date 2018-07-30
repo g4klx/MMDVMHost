@@ -43,11 +43,9 @@
 
 #if defined(_WIN32) || defined(_WIN64)
 
-CSerialController::CSerialController(const std::string& device, SERIAL_SPEED speed, const std::string& protocol, unsigned int address, bool assertRTS) :
+CSerialController::CSerialController(const std::string& device, SERIAL_SPEED speed, bool assertRTS) :
 m_device(device),
 m_speed(speed),
-m_protocol(protocol),
-m_address(address),
 m_assertRTS(assertRTS),
 m_handle(INVALID_HANDLE_VALUE)
 {
