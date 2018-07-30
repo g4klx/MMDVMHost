@@ -128,7 +128,7 @@ private:
 	bool                       m_pocsagEnabled;
 	int                        m_rxDCOffset;
 	int                        m_txDCOffset;
-	CSerialController          *m_serial;
+	CSerialController*         m_serial;
 	unsigned char*             m_buffer;
 	unsigned int               m_length;
 	unsigned int               m_offset;

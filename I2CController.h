@@ -17,15 +17,15 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef IICController_H
-#define IICController_H
+#ifndef I2CController_H
+#define I2CController_H
 
 #include "SerialController.h"
 
-class CIICController : public CSerialController {
+class CI2CController : public CSerialController {
 public:
-	CIICController(const std::string& device, SERIAL_SPEED speed, unsigned int address = 0x22U, bool assertRTS = false);
-	virtual ~CIICController();
+	CI2CController(const std::string& device, SERIAL_SPEED speed, unsigned int address = 0x22U, bool assertRTS = false);
+	virtual ~CI2CController();
 
 	virtual bool open();
 
@@ -34,7 +34,7 @@ public:
 	virtual int write(const unsigned char* buffer, unsigned int length);
 
 private:
-	unsigned int   m_address;
+	unsigned int m_address;
 };
 
 #endif

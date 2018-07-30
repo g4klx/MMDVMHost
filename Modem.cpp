@@ -16,6 +16,7 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include "I2CController.h"
 #include "DStarDefines.h"
 #include "DMRDefines.h"
 #include "YSFDefines.h"
@@ -26,7 +27,6 @@
 #include "Modem.h"
 #include "Utils.h"
 #include "Log.h"
-#include "IICController.h"
 
 #include <cmath>
 #include <cstdio>
@@ -125,7 +125,7 @@ m_nxdnEnabled(false),
 m_pocsagEnabled(false),
 m_rxDCOffset(0),
 m_txDCOffset(0),
-m_serial(0),
+m_serial(NULL),
 m_buffer(NULL),
 m_length(0U),
 m_offset(0U),
@@ -167,16 +167,15 @@ m_hwType(HWT_UNKNOWN)
 
 CModem::~CModem()
 {
-	if(m_serial)
-		delete m_serial;
+	delete   m_serial;
 	delete[] m_buffer;
 }
 
 void CModem::setSerialParams(const std::string& protocol, unsigned int address)
 {
-	//Create the serial controller instance according the protocol specified in conf.
-	if(protocol == "i2c")
-		m_serial = new CIICController(m_port, SERIAL_115200, address, true);
+	// Create the serial controller instance according the protocol specified in conf.
+	if (protocol == "i2c")
+		m_serial = new CI2CController(m_port, SERIAL_115200, address, true);
 	else
 		m_serial = new CSerialController(m_port, SERIAL_115200, true);
 }
@@ -231,12 +230,17 @@ bool CModem::open()
 	::LogMessage("Opening the MMDVM");
 
 	bool ret = m_serial->open();
-	if (!ret)
+	if (!ret) {
+		delete m_serial;
+		m_serial = NULL;
 		return false;
+	}
 
 	ret = readVersion();
 	if (!ret) {
 		m_serial->close();
+		delete m_serial;
+		m_serial = NULL;
 		return false;
 	} else {
 		/* Stopping the inactivity timer here when a firmware version has been
@@ -247,12 +251,16 @@ bool CModem::open()
 	ret = setFrequency();
 	if (!ret) {
 		m_serial->close();
+		delete m_serial;
+		m_serial = NULL;
 		return false;
 	}
 
 	ret = setConfig();
 	if (!ret) {
 		m_serial->close();
+		delete m_serial;
+		m_serial = NULL;
 		return false;
 	}
 
@@ -266,6 +274,8 @@ bool CModem::open()
 
 void CModem::clock(unsigned int ms)
 {
+	assert(m_serial != NULL);
+
 	// Poll the modem status every 250ms
 	m_statusTimer.clock(ms);
 	if (m_statusTimer.hasExpired()) {
@@ -741,9 +751,13 @@ void CModem::clock(unsigned int ms)
 
 void CModem::close()
 {
+	assert(m_serial != NULL);
+
 	::LogMessage("Closing the MMDVM");
 
 	m_serial->close();
+	delete m_serial;
+	m_serial = NULL;
 }
 
 unsigned int CModem::readDStarData(unsigned char* data)
@@ -1093,6 +1107,7 @@ bool CModem::writeTransparentData(const unsigned char* data, unsigned int length
 
 bool CModem::writeSerial(const unsigned char* data, unsigned int length)
 {
+	assert(m_serial != NULL);
 	assert(data != NULL);
 	assert(length > 0U);
 
@@ -1131,6 +1146,8 @@ bool CModem::hasError() const
 
 bool CModem::readVersion()
 {
+	assert(m_serial != NULL);
+
 	CThread::sleep(2000U);	// 2s
 
 	for (unsigned int i = 0U; i < 6U; i++) {
@@ -1186,6 +1203,8 @@ bool CModem::readVersion()
 
 bool CModem::readStatus()
 {
+	assert(m_serial != NULL);
+
 	unsigned char buffer[3U];
 
 	buffer[0U] = MMDVM_FRAME_START;
@@ -1199,6 +1218,8 @@ bool CModem::readStatus()
 
 bool CModem::setConfig()
 {
+	assert(m_serial != NULL);
+
 	unsigned char buffer[30U];
 
 	buffer[0U] = MMDVM_FRAME_START;
@@ -1298,6 +1319,8 @@ bool CModem::setConfig()
 
 bool CModem::setFrequency()
 {
+	assert(m_serial != NULL);
+
 	unsigned char buffer[20U];
 	unsigned char len;
 
@@ -1365,6 +1388,8 @@ bool CModem::setFrequency()
 
 RESP_TYPE_MMDVM CModem::getResponse()
 {
+	assert(m_serial != NULL);
+
 	if (m_offset == 0U) {
 		// Get the start of the frame or nothing at all
 		int ret = m_serial->read(m_buffer + 0U, 1U);
@@ -1466,6 +1491,8 @@ HW_TYPE CModem::getHWType() const
 
 bool CModem::setMode(unsigned char mode)
 {
+	assert(m_serial != NULL);
+
 	unsigned char buffer[4U];
 
 	buffer[0U] = MMDVM_FRAME_START;
@@ -1480,6 +1507,8 @@ bool CModem::setMode(unsigned char mode)
 
 bool CModem::sendCWId(const std::string& callsign)
 {
+	assert(m_serial != NULL);
+
 	unsigned int length = callsign.length();
 	if (length > 200U)
 		length = 200U;
@@ -1500,6 +1529,8 @@ bool CModem::sendCWId(const std::string& callsign)
 
 bool CModem::writeDMRStart(bool tx)
 {
+	assert(m_serial != NULL);
+
 	if (tx && m_tx)
 		return true;
 	if (!tx && !m_tx)
@@ -1519,6 +1550,8 @@ bool CModem::writeDMRStart(bool tx)
 
 bool CModem::writeDMRAbort(unsigned int slotNo)
 {
+	assert(m_serial != NULL);
+
 	if (slotNo == 1U)
 		m_txDMRData1.clear();
 	else
@@ -1538,6 +1571,7 @@ bool CModem::writeDMRAbort(unsigned int slotNo)
 
 bool CModem::writeDMRShortLC(const unsigned char* lc)
 {
+	assert(m_serial != NULL);
 	assert(lc != NULL);
 
 	unsigned char buffer[12U];

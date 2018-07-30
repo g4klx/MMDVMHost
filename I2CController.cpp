@@ -17,7 +17,7 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "IICController.h"
+#include "I2CController.h"
 #include "Log.h"
 
 #include <cstring>
@@ -26,9 +26,37 @@
 #include <sys/types.h>
 
 #if defined(_WIN32) || defined(_WIN64)
+
 #include <setupapi.h>
 #include <winioctl.h>
+
+CI2CController::CI2CController(const std::string& device, SERIAL_SPEED speed, unsigned int address, bool assertRTS) :
+CSerialController(device, speed, assertRTS),
+m_address(address)
+{
+}
+
+CI2CController::~CI2CController()
+{
+}
+
+bool CI2CController::open()
+{
+	return CSerialController::open();
+}
+
+int CI2CController::read(unsigned char* buffer, unsigned int length)
+{
+	return CSerialController::read(buffer, length);
+}
+
+int CI2CController::write(const unsigned char* buffer, unsigned int length)
+{
+	return CSerialController::write(buffer, length);
+}
+
 #else
+
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <cerrno>
@@ -38,51 +66,21 @@
 #if !defined(__APPLE__)
 #include <linux/i2c-dev.h>
 #endif
-#endif
 
-
-#if defined(_WIN32) || defined(_WIN64)
-
-CIICController::CSerialController(const std::string& device, SERIAL_SPEED speed, unsigned int address, bool assertRTS) :
-CSerialController(device,speed,assertRTS),
+CI2CController::CI2CController(const std::string& device, SERIAL_SPEED speed, unsigned int address, bool assertRTS) :
+CSerialController(device, speed, assertRTS),
 m_address(address)
 {
 }
 
-CIICController::~CIICController()
+CI2CController::~CI2CController()
 {
 }
 
-bool CIICController::open()
-{
-	return CSerialController::open();
-}
-
-int CIICController::read(unsigned char* buffer, unsigned int length)
-{
-	return CSerialController::read(buffer,length);
-}
-
-int CIICController::write(const unsigned char* buffer, unsigned int length)
-{
-	return CSerialController:;write(buffer,length);
-}
-
-#else
-
-CIICController::CIICController(const std::string& device, SERIAL_SPEED speed, unsigned int address, bool assertRTS) :
-CSerialController(device,speed,assertRTS),
-m_address(address)
-{
-}
-
-CIICController::~CIICController()
-{
-}
-
-bool CIICController::open()
+bool CI2CController::open()
 {
 	assert(m_fd == -1);
+
 #if !defined(__APPLE__)
 	m_fd = ::open(m_device.c_str(), O_RDWR);
 	if (m_fd < 0) {
@@ -102,12 +100,13 @@ bool CIICController::open()
 		return false;
 	}
 #else
-#warning "I2C controller does not support OSX"
+	#warning "I2C controller does not support OSX"
 #endif
+
 	return true;
 }
 
-int CIICController::read(unsigned char* buffer, unsigned int length)
+int CI2CController::read(unsigned char* buffer, unsigned int length)
 {
 	assert(buffer != NULL);
 	assert(m_fd != -1);
@@ -135,7 +134,7 @@ int CIICController::read(unsigned char* buffer, unsigned int length)
 	return length;
 }
 
-int CIICController::write(const unsigned char* buffer, unsigned int length)
+int CI2CController::write(const unsigned char* buffer, unsigned int length)
 {
 	assert(buffer != NULL);
 	assert(m_fd != -1);
