@@ -514,6 +514,14 @@ void CLCDproc::clearNXDNInt()
 	socketPrintf(m_socketfd, "output 16"); // Set LED5 color green
 }
 
+void CLCDproc::writePOCSAGInt(uint32_t ric, const std::string& message)
+{
+}
+
+void CLCDproc::clearPOCSAGInt()
+{
+}
+
 void CLCDproc::writeCWInt()
 {
 }

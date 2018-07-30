@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2018 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,34 +16,41 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(STOPWATCH_H)
-#define	STOPWATCH_H
+#ifndef	POCSAGNetwork_H
+#define	POCSAGNetwork_H
 
-#if defined(_WIN32) || defined(_WIN64)
-#include <windows.h>
-#else
-#include <sys/time.h>
-#endif
+#include "POCSAGDefines.h"
+#include "RingBuffer.h"
+#include "UDPSocket.h"
+#include "Timer.h"
 
-class CStopWatch
-{
+#include <cstdint>
+#include <string>
+
+class CPOCSAGNetwork {
 public:
-	CStopWatch();
-	~CStopWatch();
+	CPOCSAGNetwork(const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug);
+	~CPOCSAGNetwork();
 
-	unsigned long long time() const;
+	bool open();
 
-	unsigned long long start();
-	unsigned int       elapsed();
+	void enable(bool enabled);
+
+	unsigned int read(unsigned char* data);
+
+	void reset();
+
+	void close();
+
+	void clock(unsigned int ms);
 
 private:
-#if defined(_WIN32) || defined(_WIN64)
-	LARGE_INTEGER  m_frequencyS;
-	LARGE_INTEGER  m_frequencyMS;
-	LARGE_INTEGER  m_start;
-#else
-	unsigned long long m_startMS;
-#endif
+	CUDPSocket     m_socket;
+	in_addr        m_address;
+	unsigned int   m_port;
+	bool           m_debug;
+	bool           m_enabled;
+	CRingBuffer<unsigned char> m_buffer;
 };
 
 #endif

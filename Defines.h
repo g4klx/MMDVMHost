@@ -25,6 +25,7 @@ const unsigned char MODE_DMR     = 2U;
 const unsigned char MODE_YSF     = 3U;
 const unsigned char MODE_P25     = 4U;
 const unsigned char MODE_NXDN    = 5U;
+const unsigned char MODE_POCSAG  = 6U;
 const unsigned char MODE_CW      = 98U;
 const unsigned char MODE_LOCKOUT = 99U;
 const unsigned char MODE_ERROR   = 100U;

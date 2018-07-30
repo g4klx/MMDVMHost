@@ -35,14 +35,19 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <termios.h>
+#if !defined(__APPLE__)
+#include <linux/i2c-dev.h>
+#endif
 #endif
 
 
 #if defined(_WIN32) || defined(_WIN64)
 
-CSerialController::CSerialController(const std::string& device, SERIAL_SPEED speed, bool assertRTS) :
+CSerialController::CSerialController(const std::string& device, SERIAL_SPEED speed, const std::string& protocol, unsigned int address, bool assertRTS) :
 m_device(device),
 m_speed(speed),
+m_protocol(protocol),
+m_address(address),
 m_assertRTS(assertRTS),
 m_handle(INVALID_HANDLE_VALUE)
 {
@@ -221,9 +226,11 @@ void CSerialController::close()
 
 #else
 
-CSerialController::CSerialController(const std::string& device, SERIAL_SPEED speed, bool assertRTS) :
+CSerialController::CSerialController(const std::string& device, SERIAL_SPEED speed, const std::string& protocol, unsigned int address, bool assertRTS) :
 m_device(device),
 m_speed(speed),
+m_protocol(protocol),
+m_address(address),
 m_assertRTS(assertRTS),
 m_fd(-1)
 {
@@ -237,120 +244,143 @@ CSerialController::~CSerialController()
 bool CSerialController::open()
 {
 	assert(m_fd == -1);
-#if defined(__APPLE__)
-	m_fd = ::open(m_device.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK); /*open in block mode under OSX*/
-#else
-	m_fd = ::open(m_device.c_str(), O_RDWR | O_NOCTTY | O_NDELAY, 0);
-#endif
-	if (m_fd < 0) {
-		LogError("Cannot open device - %s", m_device.c_str());
-		return false;
-	}
 
-	if (::isatty(m_fd) == 0) {
-		LogError("%s is not a TTY device", m_device.c_str());
-		::close(m_fd);
-		return false;
-	}
-
-	termios termios;
-	if (::tcgetattr(m_fd, &termios) < 0) {
-		LogError("Cannot get the attributes for %s", m_device.c_str());
-		::close(m_fd);
-		return false;
-	}
-
-	#if defined(__APPLE__)
-	termios.c_cflag |= (CLOCAL | CREAD);    /* ignore modem controls */
-	termios.c_cflag &= ~CSIZE;
-	termios.c_cflag |= CS8;         /* 8-bit characters */
-	termios.c_cflag &= ~PARENB;     /* no parity bit */
-	termios.c_cflag &= ~CSTOPB;     /* only need 1 stop bit */
-	termios.c_cflag &= ~CRTSCTS;    /* no hardware flowcontrol */
-
-    /* setup for non-canonical mode */
-	termios.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
-	termios.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
-	termios.c_oflag &= ~OPOST;
-
-    /* fetch bytes as they become available */
-	termios.c_cc[VMIN] = 1;
-	termios.c_cc[VTIME] = 1;
-#else
-	termios.c_lflag    &= ~(ECHO | ECHOE | ICANON | IEXTEN | ISIG);
-	termios.c_iflag    &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON | IXOFF | IXANY);
-	termios.c_cflag    &= ~(CSIZE | CSTOPB | PARENB | CRTSCTS);
-	termios.c_cflag    |= CS8;
-	termios.c_oflag    &= ~(OPOST);
-	termios.c_cc[VMIN]  = 0;
-	termios.c_cc[VTIME] = 10;
-#endif
-
-	switch (m_speed) {
-		case SERIAL_1200:
-			::cfsetospeed(&termios, B1200);
-			::cfsetispeed(&termios, B1200);
-			break;
-		case SERIAL_2400:
-			::cfsetospeed(&termios, B2400);
-			::cfsetispeed(&termios, B2400);
-			break;
-		case SERIAL_4800:
-			::cfsetospeed(&termios, B4800);
-			::cfsetispeed(&termios, B4800);
-			break;
-		case SERIAL_9600:
-			::cfsetospeed(&termios, B9600);
-			::cfsetispeed(&termios, B9600);
-			break;
-		case SERIAL_19200:
-			::cfsetospeed(&termios, B19200);
-			::cfsetispeed(&termios, B19200);
-			break;
-		case SERIAL_38400:
-			::cfsetospeed(&termios, B38400);
-			::cfsetispeed(&termios, B38400);
-			break;
-		case SERIAL_115200:
-			::cfsetospeed(&termios, B115200);
-			::cfsetispeed(&termios, B115200);
-			break;
-		case SERIAL_230400:
-			::cfsetospeed(&termios, B230400);
-			::cfsetispeed(&termios, B230400);
-			break;
-		default:
-			LogError("Unsupported serial port speed - %d", int(m_speed));
-			::close(m_fd);
+	if (m_protocol == "i2c"){
+#if !defined(__APPLE__)
+		m_fd = ::open(m_device.c_str(), O_RDWR);
+		if (m_fd < 0) {
+			LogError("Cannot open device - %s", m_device.c_str());
 			return false;
-	}
+		}
 
-	if (::tcsetattr(m_fd, TCSANOW, &termios) < 0) {
-		LogError("Cannot set the attributes for %s", m_device.c_str());
-		::close(m_fd);
-		return false;
-	}
-
-	if (m_assertRTS) {
-		unsigned int y;
-		if (::ioctl(m_fd, TIOCMGET, &y) < 0) {
-			LogError("Cannot get the control attributes for %s", m_device.c_str());
+		if (::ioctl(m_fd, I2C_TENBIT, 0) < 0) {
+			LogError("CI2C: failed to set 7bitaddress");
 			::close(m_fd);
 			return false;
 		}
 
-		y |= TIOCM_RTS;
-                                                                                
-		if (::ioctl(m_fd, TIOCMSET, &y) < 0) {
-			LogError("Cannot set the control attributes for %s", m_device.c_str());
+		if (::ioctl(m_fd, I2C_SLAVE, m_address) < 0) {
+			LogError("CI2C: Failed to acquire bus access/talk to slave 0x%02X", m_address);
 			::close(m_fd);
 			return false;
 		}
-	}
+#endif
+	} else {
+#if defined(__APPLE__)
+		m_fd = ::open(m_device.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK); /*open in block mode under OSX*/
+#else
+		m_fd = ::open(m_device.c_str(), O_RDWR | O_NOCTTY | O_NDELAY, 0);
+#endif
+		if (m_fd < 0) {
+			LogError("Cannot open device - %s", m_device.c_str());
+			return false;
+		}
+
+		if (::isatty(m_fd) == 0) {
+			LogError("%s is not a TTY device", m_device.c_str());
+			::close(m_fd);
+			return false;
+		}
+
+		termios termios;
+		if (::tcgetattr(m_fd, &termios) < 0) {
+			LogError("Cannot get the attributes for %s", m_device.c_str());
+			::close(m_fd);
+			return false;
+		}
 
 #if defined(__APPLE__)
-	setNonblock(false);
+		termios.c_cflag |= (CLOCAL | CREAD);    /* ignore modem controls */
+		termios.c_cflag &= ~CSIZE;
+		termios.c_cflag |= CS8;         /* 8-bit characters */
+		termios.c_cflag &= ~PARENB;     /* no parity bit */
+		termios.c_cflag &= ~CSTOPB;     /* only need 1 stop bit */
+		termios.c_cflag &= ~CRTSCTS;    /* no hardware flowcontrol */
+
+		/* setup for non-canonical mode */
+		termios.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
+		termios.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+		termios.c_oflag &= ~OPOST;
+
+		/* fetch bytes as they become available */
+		termios.c_cc[VMIN] = 1;
+		termios.c_cc[VTIME] = 1;
+#else
+		termios.c_lflag    &= ~(ECHO | ECHOE | ICANON | IEXTEN | ISIG);
+		termios.c_iflag    &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON | IXOFF | IXANY);
+		termios.c_cflag    &= ~(CSIZE | CSTOPB | PARENB | CRTSCTS);
+		termios.c_cflag    |= CS8;
+		termios.c_oflag    &= ~(OPOST);
+		termios.c_cc[VMIN]  = 0;
+		termios.c_cc[VTIME] = 10;
 #endif
+
+		switch (m_speed) {
+			case SERIAL_1200:
+				::cfsetospeed(&termios, B1200);
+				::cfsetispeed(&termios, B1200);
+				break;
+			case SERIAL_2400:
+				::cfsetospeed(&termios, B2400);
+				::cfsetispeed(&termios, B2400);
+				break;
+			case SERIAL_4800:
+				::cfsetospeed(&termios, B4800);
+				::cfsetispeed(&termios, B4800);
+				break;
+			case SERIAL_9600:
+				::cfsetospeed(&termios, B9600);
+				::cfsetispeed(&termios, B9600);
+				break;
+			case SERIAL_19200:
+				::cfsetospeed(&termios, B19200);
+				::cfsetispeed(&termios, B19200);
+				break;
+			case SERIAL_38400:
+				::cfsetospeed(&termios, B38400);
+				::cfsetispeed(&termios, B38400);
+				break;
+			case SERIAL_115200:
+				::cfsetospeed(&termios, B115200);
+				::cfsetispeed(&termios, B115200);
+				break;
+			case SERIAL_230400:
+				::cfsetospeed(&termios, B230400);
+				::cfsetispeed(&termios, B230400);
+				break;
+			default:
+				LogError("Unsupported serial port speed - %d", int(m_speed));
+				::close(m_fd);
+				return false;
+		}
+
+		if (::tcsetattr(m_fd, TCSANOW, &termios) < 0) {
+			LogError("Cannot set the attributes for %s", m_device.c_str());
+			::close(m_fd);
+			return false;
+		}
+
+		if (m_assertRTS) {
+			unsigned int y;
+			if (::ioctl(m_fd, TIOCMGET, &y) < 0) {
+				LogError("Cannot get the control attributes for %s", m_device.c_str());
+				::close(m_fd);
+				return false;
+			}
+
+			y |= TIOCM_RTS;
+
+			if (::ioctl(m_fd, TIOCMSET, &y) < 0) {
+				LogError("Cannot set the control attributes for %s", m_device.c_str());
+				::close(m_fd);
+				return false;
+			}
+		}
+
+#if defined(__APPLE__)
+		setNonblock(false);
+#endif
+	}
 
 	return true;
 }
@@ -380,6 +410,21 @@ int CSerialController::read(unsigned char* buffer, unsigned int length)
 	unsigned int offset = 0U;
 
 	while (offset < length) {
+		if (m_protocol == "i2c"){
+#if !defined(__APPLE__)
+			ssize_t n = ::read(m_fd, buffer + offset, 1U);
+			if (n < 0) {
+				if (errno != EAGAIN) {
+					LogError("Error returned from read(), errno=%d", errno);
+					return -1;
+				}
+			}
+
+			if (n > 0)
+				offset += n;
+#endif
+		} else {
+
 		fd_set fds;
 		FD_ZERO(&fds);
 		FD_SET(m_fd, &fds);
@@ -411,6 +456,7 @@ int CSerialController::read(unsigned char* buffer, unsigned int length)
 
 			if (len > 0)
 				offset += len;
+		}
 		}
 	}
 
@@ -448,8 +494,14 @@ int CSerialController::write(const unsigned char* buffer, unsigned int length)
 	unsigned int ptr = 0U;
 	while (ptr < length) {
 		ssize_t n = 0U;
+		if (m_protocol == "i2c"){
+#if !defined(__APPLE__)
+			n = ::write(m_fd, buffer + ptr, 1U);
+#endif
+		} else {
 		if (canWrite())
 			n = ::write(m_fd, buffer + ptr, length - ptr);
+		}
 		if (n < 0) {
 			if (errno != EAGAIN) {
 				LogError("Error returned from write(), errno=%d", errno);

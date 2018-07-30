@@ -263,6 +263,15 @@
     <ClInclude Include="NXDNAudio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="POCSAGNetwork.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="POCSAGControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="POCSAGDefines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -491,6 +500,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NXDNAudio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="POCSAGNetwork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="POCSAGControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
