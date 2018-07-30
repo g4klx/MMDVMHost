@@ -616,7 +616,7 @@ void CNextion::writeNXDNInt(const char* source, bool group, unsigned int dest, c
 
 	if (m_mode != MODE_NXDN) {
 		sendCommand("page NXDN");
-		sendCommandAction(7U);
+		sendCommandAction(6U);
 	}
 
 	char text[30U];
@@ -683,7 +683,7 @@ void CNextion::writePOCSAGInt(uint32_t ric, const std::string& message)
 {
 	if (m_mode != MODE_POCSAG) {
 		sendCommand("page POCSAG");
-		sendCommandAction(6U);
+		sendCommandAction(7U);
 	}
 
 	char text[200U];
