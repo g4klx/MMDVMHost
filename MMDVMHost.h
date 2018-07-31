@@ -92,7 +92,6 @@ private:
   bool createP25Network();
   bool createNXDNNetwork();
   bool createPOCSAGNetwork();
-  void createDisplay();
 
   void setMode(unsigned char mode);
 };
