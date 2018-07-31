@@ -25,6 +25,10 @@
 
 #include <cstdint>
 
+class CConf;
+class CModem;
+class CUMP;
+
 class CDisplay
 {
 public:
@@ -71,6 +75,8 @@ public:
 	virtual void close() = 0;
 
 	void clock(unsigned int ms);
+
+	static CDisplay* createDisplay(const CConf &conf, CUMP *ump, CModem *modem);
 
 protected:
 	virtual void setIdleInt() = 0;
