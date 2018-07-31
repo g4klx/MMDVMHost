@@ -18,7 +18,24 @@
 
 #include "Display.h"
 #include "Defines.h"
+#include "SerialController.h"
+#include "ModemSerialPort.h"
+#include "NullDisplay.h"
+#include "TFTSerial.h"
+#include "LCDproc.h"
+#include "Nextion.h"
+#include "Conf.h"
+#include "Modem.h"
+#include "UMP.h"
 #include "Log.h"
+
+#if defined(HD44780)
+#include "HD44780.h"
+#endif
+
+#if defined(OLED)
+#include "OLED.h"
+#endif
 
 #include <cstdio>
 #include <cassert>
@@ -432,26 +449,8 @@ void CDisplay::writeNXDNBERInt(float ber)
 }
 
 /* Factory method extracted from MMDVMHost.cpp - BG5HHP */
-#include "SerialController.h"
-#include "ModemSerialPort.h"
-#include "TFTSerial.h"
-#include "LCDproc.h"
-#include "Nextion.h"
-#include "NullDisplay.h"
-
-#include "Conf.h"
-#include "Modem.h"
-#include "UMP.h"
-
-#if defined(HD44780)
-#include "HD44780.h"
-#endif
-
-#if defined(OLED)
-#include "OLED.h"
-#endif
-
-CDisplay* CDisplay::createDisplay(const CConf &conf, CUMP *ump, CModem *modem){
+CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
+{
     CDisplay *display = NULL;
 
     std::string type   = conf.getDisplay();
@@ -601,5 +600,6 @@ CDisplay* CDisplay::createDisplay(const CConf &conf, CUMP *ump, CModem *modem){
 		delete display;
 		display = new CNullDisplay;
 	}
-    return display;
+
+	return display;
 }

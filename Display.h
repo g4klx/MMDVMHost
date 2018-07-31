@@ -76,7 +76,7 @@ public:
 
 	void clock(unsigned int ms);
 
-	static CDisplay* createDisplay(const CConf &conf, CUMP *ump, CModem *modem);
+	static CDisplay* createDisplay(const CConf& conf, CUMP* ump, CModem* modem);
 
 protected:
 	virtual void setIdleInt() = 0;
