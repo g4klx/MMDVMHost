@@ -203,8 +203,7 @@ int CMMDVMHost::run()
 		LogInfo("    Port: %s", port.c_str());
 
 		m_ump = new CUMP(port);
-		bool ret = m_ump->open();
-		if (!ret) {
+		if (!m_ump->open()) {
 			delete m_ump;
 			m_ump = NULL;
 		}
@@ -212,41 +211,23 @@ int CMMDVMHost::run()
 
 	m_display = CDisplay::createDisplay(m_conf,m_ump,m_modem);
 
-	if (m_dstarEnabled && m_conf.getDStarNetworkEnabled()) {
-		ret = createDStarNetwork();
-		if (!ret)
-			return 1;
-	}
+	if (!createDStarNetwork())
+		return 1;
 
-	if (m_dmrEnabled && m_conf.getDMRNetworkEnabled()) {
-		ret = createDMRNetwork();
-		if (!ret)
-			return 1;
-	}
+	if (!createDMRNetwork())
+		return 1;
 
-	if (m_ysfEnabled && m_conf.getFusionNetworkEnabled()) {
-		ret = createYSFNetwork();
-		if (!ret)
-			return 1;
-	}
+	if (!createYSFNetwork())
+		return 1;
 
-	if (m_p25Enabled && m_conf.getP25NetworkEnabled()) {
-		ret = createP25Network();
-		if (!ret)
-			return 1;
-	}
+	if (!createP25Network())
+		return 1;
 
-	if (m_nxdnEnabled && m_conf.getNXDNNetworkEnabled()) {
-		ret = createNXDNNetwork();
-		if (!ret)
-			return 1;
-	}
+	if (!createNXDNNetwork())
+		return 1;
 
-	if (m_pocsagEnabled && m_conf.getPOCSAGNetworkEnabled()) {
-		ret = createPOCSAGNetwork();
-		if (!ret)
-			return 1;
-	}
+	if (!createPOCSAGNetwork())
+		return 1;
 
 	in_addr transparentAddress;
 	unsigned int transparentPort = 0U;
@@ -1047,6 +1028,9 @@ bool CMMDVMHost::createModem()
 
 bool CMMDVMHost::createDStarNetwork()
 {
+	if (!m_dstarEnabled || !m_conf.getDStarNetworkEnabled())
+		return true;
+
 	std::string gatewayAddress = m_conf.getDStarGatewayAddress();
 	unsigned int gatewayPort   = m_conf.getDStarGatewayPort();
 	unsigned int localPort     = m_conf.getDStarLocalPort();
@@ -1075,6 +1059,9 @@ bool CMMDVMHost::createDStarNetwork()
 
 bool CMMDVMHost::createDMRNetwork()
 {
+	if (!m_dmrEnabled || m_conf.getDMRNetworkEnabled())
+		return true;
+
 	std::string address  = m_conf.getDMRNetworkAddress();
 	unsigned int port    = m_conf.getDMRNetworkPort();
 	unsigned int local   = m_conf.getDMRNetworkLocal();
@@ -1146,6 +1133,9 @@ bool CMMDVMHost::createDMRNetwork()
 
 bool CMMDVMHost::createYSFNetwork()
 {
+	if (!m_ysfEnabled || m_conf.getFusionNetworkEnabled())
+		return true;
+
 	std::string myAddress  = m_conf.getFusionNetworkMyAddress();
 	unsigned int myPort    = m_conf.getFusionNetworkMyPort();
 	std::string gatewayAddress = m_conf.getFusionNetworkGatewayAddress();
@@ -1176,6 +1166,9 @@ bool CMMDVMHost::createYSFNetwork()
 
 bool CMMDVMHost::createP25Network()
 {
+	if (!m_p25Enabled || !m_conf.getP25NetworkEnabled())
+		return true;
+
 	std::string gatewayAddress = m_conf.getP25GatewayAddress();
 	unsigned int gatewayPort   = m_conf.getP25GatewayPort();
 	unsigned int localPort     = m_conf.getP25LocalPort();
@@ -1204,6 +1197,9 @@ bool CMMDVMHost::createP25Network()
 
 bool CMMDVMHost::createNXDNNetwork()
 {
+	if (!m_nxdnEnabled || !m_conf.getNXDNNetworkEnabled())
+		return true;
+
 	std::string gatewayAddress = m_conf.getNXDNGatewayAddress();
 	unsigned int gatewayPort   = m_conf.getNXDNGatewayPort();
 	std::string localAddress   = m_conf.getNXDNLocalAddress();
@@ -1234,6 +1230,9 @@ bool CMMDVMHost::createNXDNNetwork()
 
 bool CMMDVMHost::createPOCSAGNetwork()
 {
+	if (!m_pocsagEnabled || !m_conf.getPOCSAGNetworkEnabled())
+		return true;
+
 	std::string gatewayAddress = m_conf.getPOCSAGGatewayAddress();
 	unsigned int gatewayPort   = m_conf.getPOCSAGGatewayPort();
 	std::string localAddress   = m_conf.getPOCSAGLocalAddress();
