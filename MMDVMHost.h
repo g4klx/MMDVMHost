@@ -92,6 +92,7 @@ private:
   bool createP25Network();
   bool createNXDNNetwork();
   bool createPOCSAGNetwork();
+  bool daemonize();
 
   void setMode(unsigned char mode);
 };
