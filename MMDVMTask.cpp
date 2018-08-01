@@ -22,6 +22,9 @@
 #include "Conf.h"
 #include "DMRNetwork.h"
 #include "DMRControl.h"
+#include "YSFNetwork.h"
+#include "YSFControl.h"
+
 extern const char* VERSION;
 
 #include <cmath>
@@ -30,10 +33,14 @@ extern const char* VERSION;
 #include <cstdint>
 #include <ctime>
 
-CMMDVMTask::CMMDVMTask() :
-m_host(NULL),
+//---------------------------------------------------------
+// Abstract Task Implementation
+//---------------------------------------------------------
+CMMDVMTask::CMMDVMTask(CMMDVMHost* host) :
+m_host(host),
 m_stopWatch()
 {
+    assert(host);
     m_stopWatch.start();
 }
 
@@ -41,8 +48,11 @@ CMMDVMTask::~CMMDVMTask()
 {
 }
 
-CDMRTask::CDMRTask() : 
-CMMDVMTask(),
+//---------------------------------------------------------
+// DMR Task Implementation
+//---------------------------------------------------------
+CDMRTask::CDMRTask(CMMDVMHost* host) : 
+CMMDVMTask(host),
 m_dmrControl(NULL),
 m_dmrNetwork(NULL),
 m_dmrBeaconDurationTimer(1000U),
@@ -65,38 +75,38 @@ CDMRTask::~CDMRTask()
         delete m_dmrControl;
 }
 
-CDMRTask* CDMRTask::create(CMMDVMTaskContext& ctx)
+CDMRTask* CDMRTask::create(CMMDVMHost* host, CRSSIInterpolator* rssi)
 {
-    assert(ctx.host);
-    assert(ctx.rssi);
-    bool dmrEnabled = ctx.host->m_conf.getDMREnabled();
+    assert(host);
+    assert(rssi);
+    bool dmrEnabled = host->m_conf.getDMREnabled();
     if (!dmrEnabled)
         return NULL;
 
-    CDMRTask *task = new CDMRTask();
-    task->m_host = ctx.host;
-    bool dmrNetEnabled = ctx.host->m_conf.getDMRNetworkEnabled();
+    CDMRTask *task = new CDMRTask(host);
+    bool dmrNetEnabled = host->m_conf.getDMRNetworkEnabled();
     if (dmrNetEnabled)
-        task->createDMRNetwork(ctx);
-
-    task->createDMRControl(ctx);
+        task->createDMRNetwork(host,rssi); // create network always returns true
+    task->createDMRControl(host,rssi); // create controller always returns true
 
     return task;
 }
 
-bool CDMRTask::createDMRNetwork(CMMDVMTaskContext& ctx)
+bool CDMRTask::createDMRNetwork(CMMDVMHost* host, CRSSIInterpolator* rssi)
 {
-	std::string address  = ctx.host->m_conf.getDMRNetworkAddress();
-	unsigned int port    = ctx.host->m_conf.getDMRNetworkPort();
-	unsigned int local   = ctx.host->m_conf.getDMRNetworkLocal();
-	unsigned int id      = ctx.host->m_conf.getDMRId();
-	std::string password = ctx.host->m_conf.getDMRNetworkPassword();
-	bool debug           = ctx.host->m_conf.getDMRNetworkDebug();
-	unsigned int jitter  = ctx.host->m_conf.getDMRNetworkJitter();
-	bool slot1           = ctx.host->m_conf.getDMRNetworkSlot1();
-	bool slot2           = ctx.host->m_conf.getDMRNetworkSlot2();
-	HW_TYPE hwType       = ctx.host->m_modem->getHWType();
-	m_dmrNetModeHang     = ctx.host->m_conf.getDMRNetworkModeHang();
+    (void)rssi;
+
+	std::string address  = host->m_conf.getDMRNetworkAddress();
+	unsigned int port    = host->m_conf.getDMRNetworkPort();
+	unsigned int local   = host->m_conf.getDMRNetworkLocal();
+	unsigned int id      = host->m_conf.getDMRId();
+	std::string password = host->m_conf.getDMRNetworkPassword();
+	bool debug           = host->m_conf.getDMRNetworkDebug();
+	unsigned int jitter  = host->m_conf.getDMRNetworkJitter();
+	bool slot1           = host->m_conf.getDMRNetworkSlot1();
+	bool slot2           = host->m_conf.getDMRNetworkSlot2();
+	HW_TYPE hwType       = host->m_modem->getHWType();
+	m_dmrNetModeHang     = host->m_conf.getDMRNetworkModeHang();
 
 	LogInfo("DMR Network Parameters");
 	LogInfo("    Address: %s", address.c_str());
@@ -110,27 +120,27 @@ bool CDMRTask::createDMRNetwork(CMMDVMTaskContext& ctx)
 	LogInfo("    Slot 2: %s", slot2 ? "enabled" : "disabled");
 	LogInfo("    Mode Hang: %us", m_dmrNetModeHang);
 
-	m_dmrNetwork = new CDMRNetwork(address, port, local, id, password, ctx.host->m_duplex, VERSION, debug, slot1, slot2, hwType);
+	m_dmrNetwork = new CDMRNetwork(address, port, local, id, password, host->m_duplex, VERSION, debug, slot1, slot2, hwType);
 
-	std::string options = ctx.host->m_conf.getDMRNetworkOptions();
+	std::string options = host->m_conf.getDMRNetworkOptions();
 	if (!options.empty()) {
 		LogInfo("    Options: %s", options.c_str());
 		m_dmrNetwork->setOptions(options);
 	}
 
-	unsigned int rxFrequency = ctx.host->m_conf.getRXFrequency();
-	unsigned int txFrequency = ctx.host->m_conf.getTXFrequency();
-	unsigned int power       = ctx.host->m_conf.getPower();
-	unsigned int colorCode   = ctx.host->m_conf.getDMRColorCode();
-	float latitude           = ctx.host->m_conf.getLatitude();
-	float longitude          = ctx.host->m_conf.getLongitude();
-	int height               = ctx.host->m_conf.getHeight();
-	std::string location     = ctx.host->m_conf.getLocation();
-	std::string description  = ctx.host->m_conf.getDescription();
-	std::string url          = ctx.host->m_conf.getURL();
+	unsigned int rxFrequency = host->m_conf.getRXFrequency();
+	unsigned int txFrequency = host->m_conf.getTXFrequency();
+	unsigned int power       = host->m_conf.getPower();
+	unsigned int colorCode   = host->m_conf.getDMRColorCode();
+	float latitude           = host->m_conf.getLatitude();
+	float longitude          = host->m_conf.getLongitude();
+	int height               = host->m_conf.getHeight();
+	std::string location     = host->m_conf.getLocation();
+	std::string description  = host->m_conf.getDescription();
+	std::string url          = host->m_conf.getURL();
 
 	LogInfo("Info Parameters");
-	LogInfo("    Callsign: %s", ctx.host->m_callsign.c_str());
+	LogInfo("    Callsign: %s", host->m_callsign.c_str());
 	LogInfo("    RX Frequency: %uHz", rxFrequency);
 	LogInfo("    TX Frequency: %uHz", txFrequency);
 	LogInfo("    Power: %uW", power);
@@ -141,7 +151,7 @@ bool CDMRTask::createDMRNetwork(CMMDVMTaskContext& ctx)
 	LogInfo("    Description: \"%s\"", description.c_str());
 	LogInfo("    URL: \"%s\"", url.c_str());
 
-	m_dmrNetwork->setConfig(ctx.host->m_callsign, rxFrequency, txFrequency, power, colorCode, latitude, longitude, height, location, description, url);
+	m_dmrNetwork->setConfig(host->m_callsign, rxFrequency, txFrequency, power, colorCode, latitude, longitude, height, location, description, url);
 
 	bool ret = m_dmrNetwork->open();
 	if (!ret) {
@@ -155,29 +165,29 @@ bool CDMRTask::createDMRNetwork(CMMDVMTaskContext& ctx)
     return true;
 }
 
-bool CDMRTask::createDMRControl(CMMDVMTaskContext& ctx)
+bool CDMRTask::createDMRControl(CMMDVMHost* host, CRSSIInterpolator* rssi)
 {
-    unsigned int id             = ctx.host->m_conf.getDMRId();
-    unsigned int colorCode      = ctx.host->m_conf.getDMRColorCode();
-    bool selfOnly               = ctx.host->m_conf.getDMRSelfOnly();
-    bool embeddedLCOnly         = ctx.host->m_conf.getDMREmbeddedLCOnly();
-    bool dumpTAData             = ctx.host->m_conf.getDMRDumpTAData();
-    std::vector<unsigned int> prefixes  = ctx.host->m_conf.getDMRPrefixes();
-    std::vector<unsigned int> blackList = ctx.host->m_conf.getDMRBlackList();
-    std::vector<unsigned int> whiteList = ctx.host->m_conf.getDMRWhiteList();
-    std::vector<unsigned int> slot1TGWhiteList = ctx.host->m_conf.getDMRSlot1TGWhiteList();
-    std::vector<unsigned int> slot2TGWhiteList = ctx.host->m_conf.getDMRSlot2TGWhiteList();
-    unsigned int callHang       = ctx.host->m_conf.getDMRCallHang();
-    unsigned int txHang         = ctx.host->m_conf.getDMRTXHang();
-    unsigned int jitter         = ctx.host->m_conf.getDMRNetworkJitter();
-    m_dmrRFModeHang  = ctx.host->m_conf.getDMRModeHang();
-    bool dmrBeacons             = ctx.host->m_conf.getDMRBeacons();
+    unsigned int id             = host->m_conf.getDMRId();
+    unsigned int colorCode      = host->m_conf.getDMRColorCode();
+    bool selfOnly               = host->m_conf.getDMRSelfOnly();
+    bool embeddedLCOnly         = host->m_conf.getDMREmbeddedLCOnly();
+    bool dumpTAData             = host->m_conf.getDMRDumpTAData();
+    std::vector<unsigned int> prefixes  = host->m_conf.getDMRPrefixes();
+    std::vector<unsigned int> blackList = host->m_conf.getDMRBlackList();
+    std::vector<unsigned int> whiteList = host->m_conf.getDMRWhiteList();
+    std::vector<unsigned int> slot1TGWhiteList = host->m_conf.getDMRSlot1TGWhiteList();
+    std::vector<unsigned int> slot2TGWhiteList = host->m_conf.getDMRSlot2TGWhiteList();
+    unsigned int callHang       = host->m_conf.getDMRCallHang();
+    unsigned int txHang         = host->m_conf.getDMRTXHang();
+    unsigned int jitter         = host->m_conf.getDMRNetworkJitter();
+    m_dmrRFModeHang             = host->m_conf.getDMRModeHang();
+    bool dmrBeacons             = host->m_conf.getDMRBeacons();
 
     if (txHang > m_dmrRFModeHang)
         txHang = m_dmrRFModeHang;
 
-    if (ctx.host->m_conf.getDMRNetworkEnabled()) {
-        unsigned dmrNetModeHang = ctx.host->m_conf.getDMRNetworkModeHang();
+    if (host->m_conf.getDMRNetworkEnabled()) {
+        unsigned dmrNetModeHang = host->m_conf.getDMRNetworkModeHang();
         if (txHang > dmrNetModeHang)
             txHang = dmrNetModeHang;
     }
@@ -207,8 +217,8 @@ bool CDMRTask::createDMRControl(CMMDVMTaskContext& ctx)
     LogInfo("    Mode Hang: %us", m_dmrRFModeHang);
 
     if (dmrBeacons) {
-        unsigned int dmrBeaconInterval = ctx.host->m_conf.getDMRBeaconInterval();
-        unsigned int dmrBeaconDuration = ctx.host->m_conf.getDMRBeaconDuration();
+        unsigned int dmrBeaconInterval = host->m_conf.getDMRBeaconInterval();
+        unsigned int dmrBeaconDuration = host->m_conf.getDMRBeaconDuration();
 
         LogInfo("    DMR Roaming Beacon Interval: %us", dmrBeaconInterval);
         LogInfo("    DMR Roaming Beacon Duration: %us", dmrBeaconDuration);
@@ -221,7 +231,7 @@ bool CDMRTask::createDMRControl(CMMDVMTaskContext& ctx)
 
     m_dmrControl = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, dumpTAData, 
             prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, 
-            ctx.host->m_timeout, ctx.host->m_modem, m_dmrNetwork, ctx.host->m_display, ctx.host->m_duplex, ctx.host->m_dmrLookup, ctx.rssi, jitter);
+            host->m_timeout, host->m_modem, m_dmrNetwork, host->m_display, host->m_duplex, host->m_dmrLookup, rssi, jitter);
 
     m_dmrTXTimer.setTimeout(txHang);
     return true;
@@ -232,7 +242,9 @@ bool CDMRTask::run(CMMDVMTaskContext* ctx)
     if(!m_dmrControl)
         return true;
 
+    assert(ctx->host);
     CMMDVMHost *host = ctx->host;
+
     unsigned char* data = (unsigned char*)ctx->data;
 
     // RF -> NET SLOT-1
@@ -387,10 +399,8 @@ bool CDMRTask::run(CMMDVMTaskContext* ctx)
 }
 
 void CDMRTask::enableNetwork(bool enabled){
-    if (!m_dmrNetwork)
-        return;
-
-    m_dmrNetwork->enable(enabled);
+    if (m_dmrNetwork != NULL)
+        m_dmrNetwork->enable(enabled);    
 }
 
 void CDMRTask::startDMR(bool started)
@@ -402,4 +412,161 @@ void CDMRTask::startDMR(bool started)
         m_host->m_modem->writeDMRStart(false);
 	    m_dmrTXTimer.stop();
     }
+}
+
+
+//---------------------------------------------------------
+// YSF Task Implementation
+//---------------------------------------------------------
+CYSFTask::CYSFTask(CMMDVMHost* host) : 
+CMMDVMTask(host),
+m_ysfControl(NULL),
+m_ysfNetwork(NULL),
+m_ysfRFModeHang(10U),
+m_ysfNetModeHang(3U)
+{
+}
+
+CYSFTask::~CYSFTask()
+{
+    if (m_ysfNetwork != NULL)
+    {
+        m_ysfNetwork->close();
+        delete m_ysfNetwork;
+    }
+
+    if (m_ysfControl != NULL)
+        delete m_ysfNetwork;
+}
+
+CYSFTask* CYSFTask::create(CMMDVMHost* host, CRSSIInterpolator* rssi)
+{
+    assert(host);
+    assert(rssi);
+    bool ysfEnabled = host->m_conf.getFusionEnabled();
+    if (!ysfEnabled)
+        return NULL;
+
+    CYSFTask *task = new CYSFTask(host);
+    bool ysfNetEnabled = host->m_conf.getFusionNetworkEnabled();
+    if (ysfNetEnabled)
+        task->createYSFNetwork(host,rssi); // always returns true
+    task->createYSFControl(host,rssi);     // always returns true
+
+    return task;
+}
+
+bool CYSFTask::createYSFControl(CMMDVMHost* host, CRSSIInterpolator* rssi)
+{
+    bool lowDeviation   = host->m_conf.getFusionLowDeviation();
+    bool remoteGateway  = host->m_conf.getFusionRemoteGateway();
+    unsigned int txHang = host->m_conf.getFusionTXHang();
+    bool selfOnly       = host->m_conf.getFusionSelfOnly();
+    bool sqlEnabled     = host->m_conf.getFusionSQLEnabled();
+    unsigned char sql   = host->m_conf.getFusionSQL();
+    m_ysfRFModeHang     = host->m_conf.getFusionModeHang();
+
+    LogInfo("YSF RF Parameters");
+    LogInfo("    Low Deviation: %s", lowDeviation ? "yes" : "no");
+    LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
+    LogInfo("    TX Hang: %us", txHang);
+    LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
+    LogInfo("    DSQ: %s", sqlEnabled ? "yes" : "no");
+    if (sqlEnabled)
+        LogInfo("    DSQ Value: %u", sql);
+    LogInfo("    Mode Hang: %us", m_ysfRFModeHang);
+
+    m_ysfControl = new CYSFControl(host->m_callsign, selfOnly, m_ysfNetwork, host->m_display, host->m_timeout, host->m_duplex, lowDeviation, remoteGateway, rssi);
+    m_ysfControl->setSQL(sqlEnabled, sql);
+
+    return true;
+}
+
+bool CYSFTask::createYSFNetwork(CMMDVMHost* host, CRSSIInterpolator* rssi)
+{
+	std::string myAddress  = host->m_conf.getFusionNetworkMyAddress();
+	unsigned int myPort    = host->m_conf.getFusionNetworkMyPort();
+	std::string gatewayAddress = host->m_conf.getFusionNetworkGatewayAddress();
+	unsigned int gatewayPort   = host->m_conf.getFusionNetworkGatewayPort();
+	m_ysfNetModeHang       = host->m_conf.getFusionNetworkModeHang();
+	bool debug             = host->m_conf.getFusionNetworkDebug();
+
+	LogInfo("System Fusion Network Parameters");
+	LogInfo("    Local Address: %s", myAddress.c_str());
+	LogInfo("    Local Port: %u", myPort);
+	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
+	LogInfo("    Gateway Port: %u", gatewayPort);
+	LogInfo("    Mode Hang: %us", m_ysfNetModeHang);
+
+	m_ysfNetwork = new CYSFNetwork(myAddress, myPort, gatewayAddress, gatewayPort, host->m_callsign, debug);
+
+	bool ret = m_ysfNetwork->open();
+	if (!ret) {
+		delete m_ysfNetwork;
+		m_ysfNetwork = NULL;
+		return false;
+	}
+
+	m_ysfNetwork->enable(true);
+
+	return true;
+}
+
+bool CYSFTask::run(CMMDVMTaskContext* ctx)
+{
+    if(!m_ysfControl)
+        return true;
+
+    assert(ctx->host);
+    CMMDVMHost *host = ctx->host;
+
+    unsigned char* data = (unsigned char*)ctx->data;
+    bool ret;
+    unsigned int len = host->m_modem->readYSFData(data);
+    if (len > 0U) {
+        if (host->m_mode == MODE_IDLE) {
+            ret = m_ysfControl->writeModem(data, len);
+            if (ret) {
+                host->m_modeTimer.setTimeout(m_ysfRFModeHang);
+                host->setMode(MODE_YSF);
+            }
+        } else if (host->m_mode == MODE_YSF) {
+            m_ysfControl->writeModem(data, len);
+            host->m_modeTimer.start();
+        } else if (host->m_mode != MODE_LOCKOUT) {
+            LogWarning("System Fusion modem data received when in mode %u", host->m_mode);
+        }
+    }
+
+    ret = host->m_modem->hasYSFSpace();
+    if (ret) {
+        len = m_ysfControl->readModem(data);
+        if (len > 0U) {
+            if (host->m_mode == MODE_IDLE) {
+                host->m_modeTimer.setTimeout(m_ysfNetModeHang);
+                host->setMode(MODE_YSF);
+            }
+            if (host->m_mode == MODE_YSF) {
+                host->m_modem->writeYSFData(data, len);
+                host->m_modeTimer.start();
+            } else if (host->m_mode != MODE_LOCKOUT) {
+                LogWarning("System Fusion data received when in mode %u", host->m_mode);
+            }
+        }
+    }
+
+    unsigned int ms = m_stopWatch.elapsed();
+	m_stopWatch.start();
+    m_ysfControl->clock(ms);
+
+    if (m_ysfNetwork != NULL)
+        m_ysfNetwork->clock(ms);
+
+    return true;
+}
+
+void CYSFTask::enableNetwork(bool enabled)
+{
+    if (m_ysfNetwork != NULL)
+        m_ysfNetwork->enable(enabled);
 }

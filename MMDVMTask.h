@@ -31,38 +31,39 @@ class CRSSIInterpolator;
 struct CMMDVMTaskContext
 {
     CMMDVMHost* host;
-    CRSSIInterpolator* rssi;
+    //CRSSIInterpolator* rssi;
     void* data;
 };
 
-/*
- * Task Abstract Class
- */
+//---------------------------------------------------------
+// Abstract Task Inteface
+//---------------------------------------------------------
 class CMMDVMTask{
 public:
-    CMMDVMTask();
+    CMMDVMTask(CMMDVMHost* host);
     virtual ~CMMDVMTask() = 0;
     virtual bool run(CMMDVMTaskContext* ctx) = 0;
+    virtual void enableNetwork(bool enabled) = 0;
 protected:
     CMMDVMHost*  m_host;
     CStopWatch   m_stopWatch;
 };
 
-/*
- * DMR Task
- */
+//---------------------------------------------------------
+// DMR Task
+//---------------------------------------------------------
 class CDMRControl;
 class CDMRNetwork;
 class CDMRTask : CMMDVMTask{
 public:
-    CDMRTask();
+    CDMRTask(CMMDVMHost* host);
     virtual ~CDMRTask();
 
-    static CDMRTask* create(CMMDVMTaskContext& ctx);
+    static CDMRTask* create(CMMDVMHost* host, CRSSIInterpolator* rssi);
 
     virtual bool run(CMMDVMTaskContext* ctx);
+    virtual void enableNetwork(bool enabled);
 
-    void enableNetwork(bool enabled);
     void startDMR(bool started);
 
 private:
@@ -76,7 +77,35 @@ private:
     unsigned int m_dmrRFModeHang;
     unsigned int m_dmrNetModeHang;
 
-    bool createDMRControl(CMMDVMTaskContext& ctx);
-    bool createDMRNetwork(CMMDVMTaskContext& ctx);
+    bool createDMRControl(CMMDVMHost* host, CRSSIInterpolator* rssi);
+    bool createDMRNetwork(CMMDVMHost* host, CRSSIInterpolator* rssi);
+};
+
+//---------------------------------------------------------
+// YSF Task
+//---------------------------------------------------------
+#pragma mark - 
+class CYSFControl;
+class CYSFNetwork;
+class CYSFTask : CMMDVMTask{
+
+public:
+    CYSFTask(CMMDVMHost* host);
+    virtual ~CYSFTask();
+
+    static CYSFTask* create(CMMDVMHost* host, CRSSIInterpolator* rssi);
+
+    virtual bool run(CMMDVMTaskContext* ctx);
+    virtual void enableNetwork(bool enabled);
+
+private:
+    CYSFControl* m_ysfControl;
+    CYSFNetwork* m_ysfNetwork;
+
+    unsigned int m_ysfRFModeHang;
+    unsigned int m_ysfNetModeHang;
+
+    bool createYSFControl(CMMDVMHost* host, CRSSIInterpolator* rssi);
+    bool createYSFNetwork(CMMDVMHost* host, CRSSIInterpolator* rssi);
 };
 #endif

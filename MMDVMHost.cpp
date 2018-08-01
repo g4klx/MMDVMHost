@@ -25,7 +25,6 @@
 #include "Defines.h"
 #include "DStarControl.h"
 #include "DMRControl.h"
-#include "YSFControl.h"
 #include "P25Control.h"
 #include "NXDNControl.h"
 #include "POCSAGControl.h"
@@ -122,7 +121,7 @@ m_conf(confFile),
 m_modem(NULL),
 m_dstarNetwork(NULL),
 m_dmrTask(NULL),
-m_ysfNetwork(NULL),
+m_ysfTask(NULL),
 m_p25Network(NULL),
 m_nxdnNetwork(NULL),
 m_pocsagNetwork(NULL),
@@ -130,11 +129,9 @@ m_display(NULL),
 m_ump(NULL),
 m_mode(MODE_IDLE),
 m_dstarRFModeHang(10U),
-m_ysfRFModeHang(10U),
 m_p25RFModeHang(10U),
 m_nxdnRFModeHang(10U),
 m_dstarNetModeHang(3U),
-m_ysfNetModeHang(3U),
 m_p25NetModeHang(3U),
 m_nxdnNetModeHang(3U),
 m_pocsagNetModeHang(3U),
@@ -211,10 +208,6 @@ int CMMDVMHost::run()
 	m_display = CDisplay::createDisplay(m_conf,m_ump,m_modem);
 
 	ret = createDStarNetwork();
-	if (!ret)
-		return 1;
-
-	ret = createYSFNetwork();
 	if (!ret)
 		return 1;
 
@@ -299,16 +292,17 @@ int CMMDVMHost::run()
 
 	CDStarControl* dstar = createDStarControl(rssi);
 
-	CMMDVMTaskContext ctx;
-	ctx.host = this;
-	ctx.rssi = rssi;
 	if (m_dmrEnabled)
 	{
-		m_dmrTask = CDMRTask::create(ctx);
+		m_dmrTask = CDMRTask::create(this,rssi);
 		assert(m_dmrTask);
 	}
 
-	CYSFControl* ysf = createYSFControl(rssi);
+	if (m_ysfEnabled)
+	{
+		m_ysfTask = CYSFTask::create(this,rssi);
+		assert(m_ysfTask);
+	}
 
 	CP25Control* p25 = createP25Control(rssi);
 
@@ -320,6 +314,9 @@ int CMMDVMHost::run()
 	setMode(MODE_IDLE);
 
 	LogMessage("MMDVMHost-%s is running", VERSION);
+
+	CMMDVMTaskContext ctx;
+	ctx.host = this;
 
 	while (!m_killed) {
 		bool lockout1 = m_modem->hasLockout();
@@ -365,24 +362,11 @@ int CMMDVMHost::run()
 			}
 		}
 
-		if (m_dmrTask)
+		if (m_dmrTask != NULL)
 			m_dmrTask->run(&ctx);
-
-		len = m_modem->readYSFData(data);
-		if (ysf != NULL && len > 0U) {
-			if (m_mode == MODE_IDLE) {
-				bool ret = ysf->writeModem(data, len);
-				if (ret) {
-					m_modeTimer.setTimeout(m_ysfRFModeHang);
-					setMode(MODE_YSF);
-				}
-			} else if (m_mode == MODE_YSF) {
-				ysf->writeModem(data, len);
-				m_modeTimer.start();
-			} else if (m_mode != MODE_LOCKOUT) {
-				LogWarning("System Fusion modem data received when in mode %u", m_mode);
-			}
-		}
+		
+		if (m_ysfTask != NULL)
+			m_ysfTask->run(&ctx);
 
 		len = m_modem->readP25Data(data);
 		if (p25 != NULL && len > 0U) {
@@ -437,25 +421,6 @@ int CMMDVMHost::run()
 						m_modeTimer.start();
 					} else if (m_mode != MODE_LOCKOUT) {
 						LogWarning("D-Star data received when in mode %u", m_mode);
-					}
-				}
-			}
-		}
-
-		if (ysf != NULL) {
-			ret = m_modem->hasYSFSpace();
-			if (ret) {
-				len = ysf->readModem(data);
-				if (len > 0U) {
-					if (m_mode == MODE_IDLE) {
-						m_modeTimer.setTimeout(m_ysfNetModeHang);
-						setMode(MODE_YSF);
-					}
-					if (m_mode == MODE_YSF) {
-						m_modem->writeYSFData(data, len);
-						m_modeTimer.start();
-					} else if (m_mode != MODE_LOCKOUT) {
-						LogWarning("System Fusion data received when in mode %u", m_mode);
 					}
 				}
 			}
@@ -536,8 +501,6 @@ int CMMDVMHost::run()
 
 		if (dstar != NULL)
 			dstar->clock();
-		if (ysf != NULL)
-			ysf->clock(ms);
 		if (p25 != NULL)
 			p25->clock(ms);
 		if (nxdn != NULL)
@@ -547,8 +510,6 @@ int CMMDVMHost::run()
 
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->clock(ms);
-		if (m_ysfNetwork != NULL)
-			m_ysfNetwork->clock(ms);
 		if (m_p25Network != NULL)
 			m_p25Network->clock(ms);
 		if (m_nxdnNetwork != NULL)
@@ -606,11 +567,6 @@ int CMMDVMHost::run()
 		delete m_dstarNetwork;
 	}
 
-	if (m_ysfNetwork != NULL) {
-		m_ysfNetwork->close();
-		delete m_ysfNetwork;
-	}
-
 	if (m_p25Network != NULL) {
 		m_p25Network->close();
 		delete m_p25Network;
@@ -634,12 +590,11 @@ int CMMDVMHost::run()
 	delete dstar;
 
 	if (m_dmrTask != NULL)
-	{
 		delete m_dmrTask;
-		m_dmrTask = NULL;
-	}
 
-	delete ysf;
+	if (m_ysfTask != NULL)
+		delete m_ysfTask;
+
 	delete p25;
 	delete nxdn;
 	delete pocsag;
@@ -750,39 +705,6 @@ bool CMMDVMHost::createDStarNetwork()
 	}
 
 	m_dstarNetwork->enable(true);
-
-	return true;
-}
-
-bool CMMDVMHost::createYSFNetwork()
-{
-	if (!m_ysfEnabled || m_conf.getFusionNetworkEnabled())
-		return true;
-
-	std::string myAddress  = m_conf.getFusionNetworkMyAddress();
-	unsigned int myPort    = m_conf.getFusionNetworkMyPort();
-	std::string gatewayAddress = m_conf.getFusionNetworkGatewayAddress();
-	unsigned int gatewayPort   = m_conf.getFusionNetworkGatewayPort();
-	m_ysfNetModeHang       = m_conf.getFusionNetworkModeHang();
-	bool debug             = m_conf.getFusionNetworkDebug();
-
-	LogInfo("System Fusion Network Parameters");
-	LogInfo("    Local Address: %s", myAddress.c_str());
-	LogInfo("    Local Port: %u", myPort);
-	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
-	LogInfo("    Gateway Port: %u", gatewayPort);
-	LogInfo("    Mode Hang: %us", m_ysfNetModeHang);
-
-	m_ysfNetwork = new CYSFNetwork(myAddress, myPort, gatewayAddress, gatewayPort, m_callsign, debug);
-
-	bool ret = m_ysfNetwork->open();
-	if (!ret) {
-		delete m_ysfNetwork;
-		m_ysfNetwork = NULL;
-		return false;
-	}
-
-	m_ysfNetwork->enable(true);
 
 	return true;
 }
@@ -986,8 +908,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_dstarNetwork->enable(false);
 	if (m_dmrTask != NULL)
 		m_dmrTask->enableNetwork(false);
-	if (m_ysfNetwork != NULL)
-		m_ysfNetwork->enable(false);
+	if (m_ysfTask != NULL)
+		m_ysfTask->enableNetwork(false);
 	if (m_p25Network != NULL)
 		m_p25Network->enable(false);
 	if (m_nxdnNetwork != NULL)
@@ -1022,8 +944,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 		break;
 
 	case MODE_YSF:
-		if (m_ysfNetwork != NULL)
-			m_ysfNetwork->enable(true);
+		if (m_ysfTask != NULL)
+			m_ysfTask->enableNetwork(true);
 		m_modem->setMode(MODE_YSF);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_YSF);
@@ -1097,8 +1019,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dstarNetwork->enable(true);
 		if (m_dmrTask != NULL)
 			m_dmrTask->enableNetwork(true);
-		if (m_ysfNetwork != NULL)
-			m_ysfNetwork->enable(true);
+		if (m_ysfTask != NULL)
+			m_ysfTask->enableNetwork(true);
 		if (m_p25Network != NULL)
 			m_p25Network->enable(true);
 		if (m_nxdnNetwork != NULL)
@@ -1153,33 +1075,6 @@ CDStarControl* CMMDVMHost::createDStarControl(CRSSIInterpolator* rssi){
 		dstar = new CDStarControl(m_callsign, module, selfOnly, ackReply, ackTime, errorReply, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex, remoteGateway, rssi);
 	}
 	return dstar;
-}
-
-CYSFControl* CMMDVMHost::createYSFControl(CRSSIInterpolator* rssi){
-	CYSFControl *ysf = NULL;
-	if (m_ysfEnabled) {
-		bool lowDeviation   = m_conf.getFusionLowDeviation();
-		bool remoteGateway  = m_conf.getFusionRemoteGateway();
-		unsigned int txHang = m_conf.getFusionTXHang();
-		bool selfOnly       = m_conf.getFusionSelfOnly();
-		bool sqlEnabled     = m_conf.getFusionSQLEnabled();
-		unsigned char sql   = m_conf.getFusionSQL();
-		m_ysfRFModeHang     = m_conf.getFusionModeHang();
-
-		LogInfo("YSF RF Parameters");
-		LogInfo("    Low Deviation: %s", lowDeviation ? "yes" : "no");
-		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
-		LogInfo("    TX Hang: %us", txHang);
-		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
-		LogInfo("    DSQ: %s", sqlEnabled ? "yes" : "no");
-		if (sqlEnabled)
-			LogInfo("    DSQ Value: %u", sql);
-		LogInfo("    Mode Hang: %us", m_ysfRFModeHang);
-
-		ysf = new CYSFControl(m_callsign, selfOnly, m_ysfNetwork, m_display, m_timeout, m_duplex, lowDeviation, remoteGateway, rssi);
-		ysf->setSQL(sqlEnabled, sql);
-	}
-	return ysf;
 }
 
 CP25Control* CMMDVMHost::createP25Control(CRSSIInterpolator* rssi){
