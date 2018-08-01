@@ -167,7 +167,11 @@ m_hwType(HWT_UNKNOWN)
 
 CModem::~CModem()
 {
-	delete   m_serial;
+	if (m_serial != NULL)
+	{
+		delete m_serial;
+		m_serial = NULL;
+	}
 	delete[] m_buffer;
 }
 
@@ -231,16 +235,12 @@ bool CModem::open()
 
 	bool ret = m_serial->open();
 	if (!ret) {
-		delete m_serial;
-		m_serial = NULL;
 		return false;
 	}
 
 	ret = readVersion();
 	if (!ret) {
 		m_serial->close();
-		delete m_serial;
-		m_serial = NULL;
 		return false;
 	} else {
 		/* Stopping the inactivity timer here when a firmware version has been
@@ -251,16 +251,12 @@ bool CModem::open()
 	ret = setFrequency();
 	if (!ret) {
 		m_serial->close();
-		delete m_serial;
-		m_serial = NULL;
 		return false;
 	}
 
 	ret = setConfig();
 	if (!ret) {
 		m_serial->close();
-		delete m_serial;
-		m_serial = NULL;
 		return false;
 	}
 
@@ -756,8 +752,6 @@ void CModem::close()
 	::LogMessage("Closing the MMDVM");
 
 	m_serial->close();
-	delete m_serial;
-	m_serial = NULL;
 }
 
 unsigned int CModem::readDStarData(unsigned char* data)
