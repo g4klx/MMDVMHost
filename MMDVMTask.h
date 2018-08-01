@@ -77,14 +77,14 @@ private:
     unsigned int m_dmrRFModeHang;
     unsigned int m_dmrNetModeHang;
 
-    bool createDMRControl(CMMDVMHost* host, CRSSIInterpolator* rssi);
-    bool createDMRNetwork(CMMDVMHost* host, CRSSIInterpolator* rssi);
+    bool createDMRControl(CRSSIInterpolator* rssi);
+    bool createDMRNetwork();
 };
 
 //---------------------------------------------------------
 // YSF Task
 //---------------------------------------------------------
-#pragma mark - 
+#pragma mark -
 class CYSFControl;
 class CYSFNetwork;
 class CYSFTask : CMMDVMTask{
@@ -105,7 +105,35 @@ private:
     unsigned int m_ysfRFModeHang;
     unsigned int m_ysfNetModeHang;
 
-    bool createYSFControl(CMMDVMHost* host, CRSSIInterpolator* rssi);
-    bool createYSFNetwork(CMMDVMHost* host, CRSSIInterpolator* rssi);
+    bool createYSFControl(CRSSIInterpolator* rssi);
+    bool createYSFNetwork();
+};
+
+//---------------------------------------------------------
+// P25 Task
+//---------------------------------------------------------
+#pragma mark -
+class CP25Control;
+class CP25Network;
+class CP25Task : CMMDVMTask{
+
+public:
+    CP25Task(CMMDVMHost* host);
+    virtual ~CP25Task();
+
+    static CP25Task* create(CMMDVMHost* host, CRSSIInterpolator* rssi);
+
+    virtual bool run(CMMDVMTaskContext* ctx);
+    virtual void enableNetwork(bool enabled);
+
+private:
+    CP25Control* m_p25Control;
+    CP25Network* m_p25Network;
+
+    unsigned int m_p25RFModeHang;
+    unsigned int m_p25NetModeHang;
+
+    bool createP25Control(CRSSIInterpolator* rssi);
+    bool createP25Network();
 };
 #endif

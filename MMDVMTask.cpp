@@ -24,6 +24,8 @@
 #include "DMRControl.h"
 #include "YSFNetwork.h"
 #include "YSFControl.h"
+#include "P25Network.h"
+#include "P25Control.h"
 
 extern const char* VERSION;
 
@@ -72,7 +74,9 @@ CDMRTask::~CDMRTask()
     }
 
     if (m_dmrControl)
+    {
         delete m_dmrControl;
+    }
 }
 
 CDMRTask* CDMRTask::create(CMMDVMHost* host, CRSSIInterpolator* rssi)
@@ -86,15 +90,16 @@ CDMRTask* CDMRTask::create(CMMDVMHost* host, CRSSIInterpolator* rssi)
     CDMRTask *task = new CDMRTask(host);
     bool dmrNetEnabled = host->m_conf.getDMRNetworkEnabled();
     if (dmrNetEnabled)
-        task->createDMRNetwork(host,rssi); // create network always returns true
-    task->createDMRControl(host,rssi); // create controller always returns true
+        task->createDMRNetwork(); // create network always returns true
+    task->createDMRControl(rssi); // create controller always returns true
 
     return task;
 }
 
-bool CDMRTask::createDMRNetwork(CMMDVMHost* host, CRSSIInterpolator* rssi)
+bool CDMRTask::createDMRNetwork()
 {
-    (void)rssi;
+    CMMDVMHost* host = m_host;
+    assert(host);
 
 	std::string address  = host->m_conf.getDMRNetworkAddress();
 	unsigned int port    = host->m_conf.getDMRNetworkPort();
@@ -165,8 +170,11 @@ bool CDMRTask::createDMRNetwork(CMMDVMHost* host, CRSSIInterpolator* rssi)
     return true;
 }
 
-bool CDMRTask::createDMRControl(CMMDVMHost* host, CRSSIInterpolator* rssi)
+bool CDMRTask::createDMRControl(CRSSIInterpolator* rssi)
 {
+    CMMDVMHost* host = m_host;
+    assert(host);
+
     unsigned int id             = host->m_conf.getDMRId();
     unsigned int colorCode      = host->m_conf.getDMRColorCode();
     bool selfOnly               = host->m_conf.getDMRSelfOnly();
@@ -429,14 +437,14 @@ m_ysfNetModeHang(3U)
 
 CYSFTask::~CYSFTask()
 {
-    if (m_ysfNetwork != NULL)
-    {
+    if (m_ysfNetwork){
         m_ysfNetwork->close();
         delete m_ysfNetwork;
     }
 
-    if (m_ysfControl != NULL)
-        delete m_ysfNetwork;
+    if (m_ysfControl){
+        delete m_ysfControl;
+    }
 }
 
 CYSFTask* CYSFTask::create(CMMDVMHost* host, CRSSIInterpolator* rssi)
@@ -450,14 +458,17 @@ CYSFTask* CYSFTask::create(CMMDVMHost* host, CRSSIInterpolator* rssi)
     CYSFTask *task = new CYSFTask(host);
     bool ysfNetEnabled = host->m_conf.getFusionNetworkEnabled();
     if (ysfNetEnabled)
-        task->createYSFNetwork(host,rssi); // always returns true
-    task->createYSFControl(host,rssi);     // always returns true
+        task->createYSFNetwork(); // always returns true
+    task->createYSFControl(rssi);     // always returns true
 
     return task;
 }
 
-bool CYSFTask::createYSFControl(CMMDVMHost* host, CRSSIInterpolator* rssi)
+bool CYSFTask::createYSFControl(CRSSIInterpolator* rssi)
 {
+    CMMDVMHost* host = m_host;
+    assert(host);
+
     bool lowDeviation   = host->m_conf.getFusionLowDeviation();
     bool remoteGateway  = host->m_conf.getFusionRemoteGateway();
     unsigned int txHang = host->m_conf.getFusionTXHang();
@@ -482,8 +493,11 @@ bool CYSFTask::createYSFControl(CMMDVMHost* host, CRSSIInterpolator* rssi)
     return true;
 }
 
-bool CYSFTask::createYSFNetwork(CMMDVMHost* host, CRSSIInterpolator* rssi)
+bool CYSFTask::createYSFNetwork()
 {
+    CMMDVMHost* host = m_host;
+    assert(host);
+
 	std::string myAddress  = host->m_conf.getFusionNetworkMyAddress();
 	unsigned int myPort    = host->m_conf.getFusionNetworkMyPort();
 	std::string gatewayAddress = host->m_conf.getFusionNetworkGatewayAddress();
@@ -569,4 +583,162 @@ void CYSFTask::enableNetwork(bool enabled)
 {
     if (m_ysfNetwork != NULL)
         m_ysfNetwork->enable(enabled);
+}
+
+//---------------------------------------------------------
+// P25 Task Implementation
+//---------------------------------------------------------
+CP25Task::CP25Task(CMMDVMHost* host) :
+CMMDVMTask(host),
+m_p25Control(NULL),
+m_p25Network(NULL),
+m_p25RFModeHang(10U),
+m_p25NetModeHang(3U)
+{
+    LogDebug("construct p25 task");
+}
+
+CP25Task::~CP25Task()
+{
+    LogDebug("destruct p25 task");
+    if (m_p25Network){
+        m_p25Network->close();
+        delete m_p25Network;
+    }
+
+    if (m_p25Control){
+        delete m_p25Control;
+    }
+}
+
+CP25Task* CP25Task::create(CMMDVMHost* host, CRSSIInterpolator* rssi)
+{
+    assert(host);
+    assert(rssi);
+    bool p25Enabled = host->m_conf.getP25Enabled();
+    if (!p25Enabled)
+        return NULL;
+
+    CP25Task *task = new CP25Task(host);
+    bool p25NetEnabled = host->m_conf.getP25NetworkEnabled();
+    if (p25NetEnabled)
+        task->createP25Network(); // always returns true
+
+    task->createP25Control(rssi);     // always returns true
+    return task;
+}
+
+bool CP25Task::createP25Control(CRSSIInterpolator* rssi)
+{
+    CMMDVMHost* host = m_host;
+    assert(host);
+
+    unsigned int id    = host->m_conf.getP25Id();
+    unsigned int nac   = host->m_conf.getP25NAC();
+    bool uidOverride   = host->m_conf.getP25OverrideUID();
+    bool selfOnly      = host->m_conf.getP25SelfOnly();
+    bool remoteGateway = host->m_conf.getP25RemoteGateway();
+    m_p25RFModeHang    = host->m_conf.getP25ModeHang();
+
+    LogInfo("P25 RF Parameters");
+    LogInfo("    Id: %u", id);
+    LogInfo("    NAC: $%03X", nac);
+    LogInfo("    UID Override: %s", uidOverride ? "yes" : "no");
+    LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
+    LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
+    LogInfo("    Mode Hang: %us", m_p25RFModeHang);
+
+	m_p25Control = new CP25Control(nac, id, selfOnly, uidOverride, m_p25Network, host->m_display, host->m_timeout, host->m_duplex, host->m_dmrLookup, remoteGateway, rssi);
+    return true;
+}
+
+bool CP25Task::createP25Network()
+{
+    CMMDVMHost* host = m_host;
+    assert(host);
+
+    std::string gatewayAddress = host->m_conf.getP25GatewayAddress();
+	unsigned int gatewayPort   = host->m_conf.getP25GatewayPort();
+	unsigned int localPort     = host->m_conf.getP25LocalPort();
+	m_p25NetModeHang           = host->m_conf.getP25NetworkModeHang();
+	bool debug                 = host->m_conf.getP25NetworkDebug();
+
+	LogInfo("P25 Network Parameters");
+	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
+	LogInfo("    Gateway Port: %u", gatewayPort);
+	LogInfo("    Local Port: %u", localPort);
+	LogInfo("    Mode Hang: %us", m_p25NetModeHang);
+
+	m_p25Network = new CP25Network(gatewayAddress, gatewayPort, localPort, debug);
+
+	bool ret = m_p25Network->open();
+	if (!ret) {
+		delete m_p25Network;
+		m_p25Network = NULL;
+		return false;
+	}
+
+	m_p25Network->enable(true);
+	return true;
+}
+
+bool CP25Task::run(CMMDVMTaskContext* ctx)
+{
+    if(!m_p25Control)
+        return true;
+
+    CMMDVMHost *host = ctx->host;
+    assert(host);
+
+    unsigned char* data = (unsigned char*)ctx->data;
+    bool ret;
+
+    unsigned int len = host->m_modem->readP25Data(data);
+    if (len > 0U) {
+        if (host->m_mode == MODE_IDLE) {
+            ret = m_p25Control->writeModem(data, len);
+            if (ret) {
+                host->m_modeTimer.setTimeout(m_p25RFModeHang);
+                host->setMode(MODE_P25);
+            }
+        } else if (host->m_mode == MODE_P25) {
+            m_p25Control->writeModem(data, len);
+            host->m_modeTimer.start();
+        } else if (host->m_mode != MODE_LOCKOUT) {
+            LogWarning("P25 modem data received when in mode %u", host->m_mode);
+        }
+    }
+
+    ret = host->m_modem->hasP25Space();
+    if (ret) {
+        len = m_p25Control->readModem(data);
+        if (len > 0U) {
+            if (host->m_mode == MODE_IDLE) {
+                host->m_modeTimer.setTimeout(m_p25NetModeHang);
+                host->setMode(MODE_P25);
+            }
+            if (host->m_mode == MODE_P25) {
+                host->m_modem->writeP25Data(data, len);
+                host->m_modeTimer.start();
+            } else if (host->m_mode != MODE_LOCKOUT) {
+                LogWarning("P25 data received when in mode %u", host->m_mode);
+            }
+        }
+    }
+
+    unsigned int ms = m_stopWatch.elapsed();
+    m_stopWatch.start();
+    m_p25Control->clock(ms);
+
+    if (m_p25Network)
+    {
+        m_p25Network->clock(ms);
+    }
+    return true;
+}
+
+void CP25Task::enableNetwork(bool enabled)
+{
+    if (m_p25Network != NULL)
+        m_p25Network->enable(enabled);
 }

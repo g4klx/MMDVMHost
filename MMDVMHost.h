@@ -23,8 +23,6 @@
 #include "DStarNetwork.h"
 #include "NXDNNetwork.h"
 #include "NXDNLookup.h"
-#include "P25Network.h"
-#include "DMRNetwork.h"
 #include "DMRLookup.h"
 #include "Display.h"
 #include "Timer.h"
@@ -38,7 +36,7 @@ class CRSSIInterpolator;
 class CDStarControl;
 class CDMRTask;
 class CYSFTask;
-class CP25Control;
+class CP25Task;
 class CNXDNControl;
 class CPOCSAGControl;
 
@@ -47,6 +45,7 @@ class CMMDVMHost
 public:
   friend class CDMRTask;
   friend class CYSFTask;
+  friend class CP25Task;
   CMMDVMHost(const std::string& confFile);
   ~CMMDVMHost();
 
@@ -58,17 +57,15 @@ private:
   CDStarNetwork*  m_dstarNetwork;
   CDMRTask*       m_dmrTask;
   CYSFTask*       m_ysfTask;
-  CP25Network*    m_p25Network;
+  CP25Task*       m_p25Task;
   CNXDNNetwork*   m_nxdnNetwork;
   CPOCSAGNetwork* m_pocsagNetwork;
   CDisplay*       m_display;
   CUMP*           m_ump;
   unsigned char   m_mode;
   unsigned int    m_dstarRFModeHang;
-  unsigned int    m_p25RFModeHang;
   unsigned int    m_nxdnRFModeHang;
   unsigned int    m_dstarNetModeHang;
-  unsigned int    m_p25NetModeHang;
   unsigned int    m_nxdnNetModeHang;
   unsigned int    m_pocsagNetModeHang;
   CTimer          m_modeTimer;
@@ -91,12 +88,10 @@ private:
   void readParams();
   bool createModem();
   bool createDStarNetwork();
-  bool createP25Network();
   bool createNXDNNetwork();
   bool createPOCSAGNetwork();
 
   CDStarControl* createDStarControl(CRSSIInterpolator* rssi);
-  CP25Control* createP25Control(CRSSIInterpolator* rssi);
   CNXDNControl* createNXDNControl(CRSSIInterpolator* rssi);
   CPOCSAGControl* createPOCSAGControl(CTimer& pocsagTimer);
 

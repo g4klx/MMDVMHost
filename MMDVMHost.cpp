@@ -1,5 +1,6 @@
 /*
  *   Copyright (C) 2015,2016,2017,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2018 by BG5HHP
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -24,8 +25,6 @@
 #include "StopWatch.h"
 #include "Defines.h"
 #include "DStarControl.h"
-#include "DMRControl.h"
-#include "P25Control.h"
 #include "NXDNControl.h"
 #include "POCSAGControl.h"
 #include "Thread.h"
@@ -122,17 +121,15 @@ m_modem(NULL),
 m_dstarNetwork(NULL),
 m_dmrTask(NULL),
 m_ysfTask(NULL),
-m_p25Network(NULL),
+m_p25Task(NULL),
 m_nxdnNetwork(NULL),
 m_pocsagNetwork(NULL),
 m_display(NULL),
 m_ump(NULL),
 m_mode(MODE_IDLE),
 m_dstarRFModeHang(10U),
-m_p25RFModeHang(10U),
 m_nxdnRFModeHang(10U),
 m_dstarNetModeHang(3U),
-m_p25NetModeHang(3U),
 m_nxdnNetModeHang(3U),
 m_pocsagNetModeHang(3U),
 m_modeTimer(1000U),
@@ -208,10 +205,6 @@ int CMMDVMHost::run()
 	m_display = CDisplay::createDisplay(m_conf,m_ump,m_modem);
 
 	ret = createDStarNetwork();
-	if (!ret)
-		return 1;
-
-	ret = createP25Network();
 	if (!ret)
 		return 1;
 
@@ -304,7 +297,11 @@ int CMMDVMHost::run()
 		assert(m_ysfTask);
 	}
 
-	CP25Control* p25 = createP25Control(rssi);
+	if (m_p25Enabled)
+	{
+		m_p25Task = CP25Task::create(this,rssi);
+		assert(m_p25Task);
+	}
 
 	CNXDNControl* nxdn = createNXDNControl(rssi);
 
@@ -368,21 +365,8 @@ int CMMDVMHost::run()
 		if (m_ysfTask != NULL)
 			m_ysfTask->run(&ctx);
 
-		len = m_modem->readP25Data(data);
-		if (p25 != NULL && len > 0U) {
-			if (m_mode == MODE_IDLE) {
-				bool ret = p25->writeModem(data, len);
-				if (ret) {
-					m_modeTimer.setTimeout(m_p25RFModeHang);
-					setMode(MODE_P25);
-				}
-			} else if (m_mode == MODE_P25) {
-				p25->writeModem(data, len);
-				m_modeTimer.start();
-			} else if (m_mode != MODE_LOCKOUT) {
-				LogWarning("P25 modem data received when in mode %u", m_mode);
-			}
-		}
+		if (m_p25Task != NULL)
+			m_p25Task->run(&ctx);
 
 		len = m_modem->readNXDNData(data);
 		if (nxdn != NULL && len > 0U) {
@@ -421,25 +405,6 @@ int CMMDVMHost::run()
 						m_modeTimer.start();
 					} else if (m_mode != MODE_LOCKOUT) {
 						LogWarning("D-Star data received when in mode %u", m_mode);
-					}
-				}
-			}
-		}
-
-		if (p25 != NULL) {
-			ret = m_modem->hasP25Space();
-			if (ret) {
-				len = p25->readModem(data);
-				if (len > 0U) {
-					if (m_mode == MODE_IDLE) {
-						m_modeTimer.setTimeout(m_p25NetModeHang);
-						setMode(MODE_P25);
-					}
-					if (m_mode == MODE_P25) {
-						m_modem->writeP25Data(data, len);
-						m_modeTimer.start();
-					} else if (m_mode != MODE_LOCKOUT) {
-						LogWarning("P25 data received when in mode %u", m_mode);
 					}
 				}
 			}
@@ -501,8 +466,6 @@ int CMMDVMHost::run()
 
 		if (dstar != NULL)
 			dstar->clock();
-		if (p25 != NULL)
-			p25->clock(ms);
 		if (nxdn != NULL)
 			nxdn->clock(ms);
 		if (pocsag != NULL)
@@ -510,8 +473,6 @@ int CMMDVMHost::run()
 
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->clock(ms);
-		if (m_p25Network != NULL)
-			m_p25Network->clock(ms);
 		if (m_nxdnNetwork != NULL)
 			m_nxdnNetwork->clock(ms);
 		if (m_pocsagNetwork != NULL)
@@ -567,11 +528,6 @@ int CMMDVMHost::run()
 		delete m_dstarNetwork;
 	}
 
-	if (m_p25Network != NULL) {
-		m_p25Network->close();
-		delete m_p25Network;
-	}
-
 	if (m_nxdnNetwork != NULL) {
 		m_nxdnNetwork->close();
 		delete m_nxdnNetwork;
@@ -595,7 +551,9 @@ int CMMDVMHost::run()
 	if (m_ysfTask != NULL)
 		delete m_ysfTask;
 
-	delete p25;
+	if (m_p25Task != NULL)
+		delete m_p25Task;
+
 	delete nxdn;
 	delete pocsag;
 
@@ -705,37 +663,6 @@ bool CMMDVMHost::createDStarNetwork()
 	}
 
 	m_dstarNetwork->enable(true);
-
-	return true;
-}
-
-bool CMMDVMHost::createP25Network()
-{
-	if (!m_p25Enabled || !m_conf.getP25NetworkEnabled())
-		return true;
-
-	std::string gatewayAddress = m_conf.getP25GatewayAddress();
-	unsigned int gatewayPort   = m_conf.getP25GatewayPort();
-	unsigned int localPort     = m_conf.getP25LocalPort();
-	m_p25NetModeHang           = m_conf.getP25NetworkModeHang();
-	bool debug                 = m_conf.getP25NetworkDebug();
-
-	LogInfo("P25 Network Parameters");
-	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
-	LogInfo("    Gateway Port: %u", gatewayPort);
-	LogInfo("    Local Port: %u", localPort);
-	LogInfo("    Mode Hang: %us", m_p25NetModeHang);
-
-	m_p25Network = new CP25Network(gatewayAddress, gatewayPort, localPort, debug);
-
-	bool ret = m_p25Network->open();
-	if (!ret) {
-		delete m_p25Network;
-		m_p25Network = NULL;
-		return false;
-	}
-
-	m_p25Network->enable(true);
 
 	return true;
 }
@@ -910,8 +837,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_dmrTask->enableNetwork(false);
 	if (m_ysfTask != NULL)
 		m_ysfTask->enableNetwork(false);
-	if (m_p25Network != NULL)
-		m_p25Network->enable(false);
+	if (m_p25Task)
+		m_p25Task->enableNetwork(false);
 	if (m_nxdnNetwork != NULL)
 		m_nxdnNetwork->enable(false);
 	if (m_pocsagNetwork != NULL)
@@ -955,8 +882,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 		break;
 
 	case MODE_P25:
-		if (m_p25Network != NULL)
-			m_p25Network->enable(true);
+		if (m_p25Task)
+			m_p25Task->enableNetwork(true);
 		m_modem->setMode(MODE_P25);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_P25);
@@ -1021,8 +948,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dmrTask->enableNetwork(true);
 		if (m_ysfTask != NULL)
 			m_ysfTask->enableNetwork(true);
-		if (m_p25Network != NULL)
-			m_p25Network->enable(true);
+		if (m_p25Task != NULL)
+			m_p25Task->enableNetwork(true);
 		if (m_nxdnNetwork != NULL)
 			m_nxdnNetwork->enable(true);
 		if (m_pocsagNetwork != NULL)
@@ -1075,29 +1002,6 @@ CDStarControl* CMMDVMHost::createDStarControl(CRSSIInterpolator* rssi){
 		dstar = new CDStarControl(m_callsign, module, selfOnly, ackReply, ackTime, errorReply, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex, remoteGateway, rssi);
 	}
 	return dstar;
-}
-
-CP25Control* CMMDVMHost::createP25Control(CRSSIInterpolator* rssi){
-	CP25Control *p25 = NULL;
-	if (m_p25Enabled) {
-		unsigned int id    = m_conf.getP25Id();
-		unsigned int nac   = m_conf.getP25NAC();
-		bool uidOverride   = m_conf.getP25OverrideUID();
-		bool selfOnly      = m_conf.getP25SelfOnly();
-		bool remoteGateway = m_conf.getP25RemoteGateway();
-		m_p25RFModeHang    = m_conf.getP25ModeHang();
-
-		LogInfo("P25 RF Parameters");
-		LogInfo("    Id: %u", id);
-		LogInfo("    NAC: $%03X", nac);
-		LogInfo("    UID Override: %s", uidOverride ? "yes" : "no");
-		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
-		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
-		LogInfo("    Mode Hang: %us", m_p25RFModeHang);
-
-		p25 = new CP25Control(nac, id, selfOnly, uidOverride, m_p25Network, m_display, m_timeout, m_duplex, m_dmrLookup, remoteGateway, rssi);
-	}
-	return p25;
 }
 
 CNXDNControl* CMMDVMHost::createNXDNControl(CRSSIInterpolator* rssi){
