@@ -35,6 +35,14 @@
 
 #include <string>
 
+class CRSSIInterpolator;
+class CDStarControl;
+class CDMRControl;
+class CYSFControl;
+class CP25Control;
+class CNXDNControl;
+class CPOCSAGControl;
+
 class CMMDVMHost
 {
 public:
@@ -92,6 +100,14 @@ private:
   bool createP25Network();
   bool createNXDNNetwork();
   bool createPOCSAGNetwork();
+
+  CDStarControl* createDStarControl(CRSSIInterpolator* rssi);
+  CDMRControl* createDMRControl(CRSSIInterpolator* rssi, CTimer& dmrBeaconDurationTimer, CTimer& dmrBeaconIntervalTimer);
+  CYSFControl* createYSFControl(CRSSIInterpolator* rssi);
+  CP25Control* createP25Control(CRSSIInterpolator* rssi);
+  CNXDNControl* createNXDNControl(CRSSIInterpolator* rssi);
+  CPOCSAGControl* createPOCSAGControl(CTimer& pocsagTimer);
+
   bool daemonize();
 
   void setMode(unsigned char mode);

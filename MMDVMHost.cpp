@@ -303,189 +303,20 @@ int CMMDVMHost::run()
 	CStopWatch stopWatch;
 	stopWatch.start();
 
-	CDStarControl* dstar = NULL;
-	if (m_dstarEnabled) {
-		std::string module                 = m_conf.getDStarModule();
-		bool selfOnly                      = m_conf.getDStarSelfOnly();
-		std::vector<std::string> blackList = m_conf.getDStarBlackList();
-		bool ackReply                      = m_conf.getDStarAckReply();
-		unsigned int ackTime               = m_conf.getDStarAckTime();
-		bool errorReply                    = m_conf.getDStarErrorReply();
-		bool remoteGateway                 = m_conf.getDStarRemoteGateway();
-		m_dstarRFModeHang                  = m_conf.getDStarModeHang();
-
-		LogInfo("D-Star RF Parameters");
-		LogInfo("    Module: %s", module.c_str());
-		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
-		LogInfo("    Ack Reply: %s", ackReply ? "yes" : "no");
-		LogInfo("    Ack Time: %ums", ackTime);
-		LogInfo("    Error Reply: %s", errorReply ? "yes" : "no");
-		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
-		LogInfo("    Mode Hang: %us", m_dstarRFModeHang);
-
-		if (blackList.size() > 0U)
-			LogInfo("    Black List: %u", blackList.size());
-
-		dstar = new CDStarControl(m_callsign, module, selfOnly, ackReply, ackTime, errorReply, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex, remoteGateway, rssi);
-	}
+	CDStarControl* dstar = createDStarControl(rssi);
 
 	CTimer dmrBeaconIntervalTimer(1000U);
 	CTimer dmrBeaconDurationTimer(1000U);
+	CDMRControl* dmr = createDMRControl(rssi,dmrBeaconDurationTimer,dmrBeaconIntervalTimer);
 
-	CDMRControl* dmr = NULL;
-	if (m_dmrEnabled) {
-		unsigned int id             = m_conf.getDMRId();
-		unsigned int colorCode      = m_conf.getDMRColorCode();
-		bool selfOnly               = m_conf.getDMRSelfOnly();
-		bool embeddedLCOnly         = m_conf.getDMREmbeddedLCOnly();
-		bool dumpTAData             = m_conf.getDMRDumpTAData();
-		std::vector<unsigned int> prefixes  = m_conf.getDMRPrefixes();
-		std::vector<unsigned int> blackList = m_conf.getDMRBlackList();
-		std::vector<unsigned int> whiteList = m_conf.getDMRWhiteList();
-		std::vector<unsigned int> slot1TGWhiteList = m_conf.getDMRSlot1TGWhiteList();
-		std::vector<unsigned int> slot2TGWhiteList = m_conf.getDMRSlot2TGWhiteList();
-		unsigned int callHang       = m_conf.getDMRCallHang();
-		unsigned int txHang         = m_conf.getDMRTXHang();
-		unsigned int jitter         = m_conf.getDMRNetworkJitter();
-		m_dmrRFModeHang             = m_conf.getDMRModeHang();
-		bool dmrBeacons             = m_conf.getDMRBeacons();
+	CYSFControl* ysf = createYSFControl(rssi);
 
-		if (txHang > m_dmrRFModeHang)
-			txHang = m_dmrRFModeHang;
+	CP25Control* p25 = createP25Control(rssi);
 
-		if (m_conf.getDMRNetworkEnabled()) {
-			if (txHang > m_dmrNetModeHang)
-				txHang = m_dmrNetModeHang;
-		}
-
-		if (callHang > txHang)
-			callHang = txHang;
-
-		LogInfo("DMR RF Parameters");
-		LogInfo("    Id: %u", id);
-		LogInfo("    Color Code: %u", colorCode);
-		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
-		LogInfo("    Embedded LC Only: %s", embeddedLCOnly ? "yes" : "no");
-		LogInfo("    Dump Talker Alias Data: %s", dumpTAData ? "yes" : "no");
-		LogInfo("    Prefixes: %u", prefixes.size());
-
-		if (blackList.size() > 0U)
-			LogInfo("    Source ID Black List: %u", blackList.size());
-		if (whiteList.size() > 0U)
-			LogInfo("    Source ID White List: %u", whiteList.size());
-		if (slot1TGWhiteList.size() > 0U)
-			LogInfo("    Slot 1 TG White List: %u", slot1TGWhiteList.size());
-		if (slot2TGWhiteList.size() > 0U)
-			LogInfo("    Slot 2 TG White List: %u", slot2TGWhiteList.size());
-
-		LogInfo("    Call Hang: %us", callHang);
-		LogInfo("    TX Hang: %us", txHang);
-		LogInfo("    Mode Hang: %us", m_dmrRFModeHang);
-
-		if (dmrBeacons) {
-			unsigned int dmrBeaconInterval = m_conf.getDMRBeaconInterval();
-			unsigned int dmrBeaconDuration = m_conf.getDMRBeaconDuration();
-
-			LogInfo("    DMR Roaming Beacon Interval: %us", dmrBeaconInterval);
-			LogInfo("    DMR Roaming Beacon Duration: %us", dmrBeaconDuration);
-
-			dmrBeaconDurationTimer.setTimeout(dmrBeaconDuration);
-
-			dmrBeaconIntervalTimer.setTimeout(dmrBeaconInterval);
-			dmrBeaconIntervalTimer.start();
-		}
-
-		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, dumpTAData, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_dmrLookup, rssi, jitter);
-
-		m_dmrTXTimer.setTimeout(txHang);
-	}
-
-	CYSFControl* ysf = NULL;
-	if (m_ysfEnabled) {
-		bool lowDeviation   = m_conf.getFusionLowDeviation();
-		bool remoteGateway  = m_conf.getFusionRemoteGateway();
-		unsigned int txHang = m_conf.getFusionTXHang();
-		bool selfOnly       = m_conf.getFusionSelfOnly();
-		bool sqlEnabled     = m_conf.getFusionSQLEnabled();
-		unsigned char sql   = m_conf.getFusionSQL();
-		m_ysfRFModeHang     = m_conf.getFusionModeHang();
-
-		LogInfo("YSF RF Parameters");
-		LogInfo("    Low Deviation: %s", lowDeviation ? "yes" : "no");
-		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
-		LogInfo("    TX Hang: %us", txHang);
-		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
-		LogInfo("    DSQ: %s", sqlEnabled ? "yes" : "no");
-		if (sqlEnabled)
-			LogInfo("    DSQ Value: %u", sql);
-		LogInfo("    Mode Hang: %us", m_ysfRFModeHang);
-
-		ysf = new CYSFControl(m_callsign, selfOnly, m_ysfNetwork, m_display, m_timeout, m_duplex, lowDeviation, remoteGateway, rssi);
-		ysf->setSQL(sqlEnabled, sql);
-	}
-
-	CP25Control* p25 = NULL;
-	if (m_p25Enabled) {
-		unsigned int id    = m_conf.getP25Id();
-		unsigned int nac   = m_conf.getP25NAC();
-		bool uidOverride   = m_conf.getP25OverrideUID();
-		bool selfOnly      = m_conf.getP25SelfOnly();
-		bool remoteGateway = m_conf.getP25RemoteGateway();
-		m_p25RFModeHang    = m_conf.getP25ModeHang();
-
-		LogInfo("P25 RF Parameters");
-		LogInfo("    Id: %u", id);
-		LogInfo("    NAC: $%03X", nac);
-		LogInfo("    UID Override: %s", uidOverride ? "yes" : "no");
-		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
-		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
-		LogInfo("    Mode Hang: %us", m_p25RFModeHang);
-
-		p25 = new CP25Control(nac, id, selfOnly, uidOverride, m_p25Network, m_display, m_timeout, m_duplex, m_dmrLookup, remoteGateway, rssi);
-	}
-
-	CNXDNControl* nxdn = NULL;
-	if (m_nxdnEnabled) {
-		std::string lookupFile  = m_conf.getNXDNIdLookupFile();
-		unsigned int reloadTime = m_conf.getNXDNIdLookupTime();
-
-		LogInfo("NXDN Id Lookups");
-		LogInfo("    File: %s", lookupFile.length() > 0U ? lookupFile.c_str() : "None");
-		if (reloadTime > 0U)
-			LogInfo("    Reload: %u hours", reloadTime);
-
-		m_nxdnLookup = new CNXDNLookup(lookupFile, reloadTime);
-		m_nxdnLookup->read();
-
-		unsigned int id    = m_conf.getNXDNId();
-		unsigned int ran   = m_conf.getNXDNRAN();
-		bool selfOnly      = m_conf.getNXDNSelfOnly();
-		bool remoteGateway = m_conf.getNXDNRemoteGateway();
-		m_nxdnRFModeHang   = m_conf.getNXDNModeHang();
-
-		LogInfo("NXDN RF Parameters");
-		LogInfo("    Id: %u", id);
-		LogInfo("    RAN: %u", ran);
-		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
-		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
-		LogInfo("    Mode Hang: %us", m_nxdnRFModeHang);
-
-		nxdn = new CNXDNControl(ran, id, selfOnly, m_nxdnNetwork, m_display, m_timeout, m_duplex, remoteGateway, m_nxdnLookup, rssi);
-	}
+	CNXDNControl* nxdn = createNXDNControl(rssi);
 
 	CTimer pocsagTimer(1000U, 30U);
-
-	CPOCSAGControl* pocsag = NULL;
-	if (m_pocsagEnabled) {
-		unsigned int frequency = m_conf.getPOCSAGFrequency();
-
-		LogInfo("POCSAG RF Parameters");
-		LogInfo("    Frequency: %uHz", frequency);
-
-		pocsag = new CPOCSAGControl(m_pocsagNetwork, m_display);
-
-		pocsagTimer.start();
-	}
+	CPOCSAGControl* pocsag = createPOCSAGControl(pocsagTimer);
 
 	setMode(MODE_IDLE);
 
@@ -1512,4 +1343,200 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.stop();
 		break;
 	}
+}
+
+CDStarControl* CMMDVMHost::createDStarControl(CRSSIInterpolator* rssi){
+	CDStarControl *dstar = NULL;
+	if (m_dstarEnabled) {
+		std::string module                 = m_conf.getDStarModule();
+		bool selfOnly                      = m_conf.getDStarSelfOnly();
+		std::vector<std::string> blackList = m_conf.getDStarBlackList();
+		bool ackReply                      = m_conf.getDStarAckReply();
+		unsigned int ackTime               = m_conf.getDStarAckTime();
+		bool errorReply                    = m_conf.getDStarErrorReply();
+		bool remoteGateway                 = m_conf.getDStarRemoteGateway();
+		m_dstarRFModeHang                  = m_conf.getDStarModeHang();
+
+		LogInfo("D-Star RF Parameters");
+		LogInfo("    Module: %s", module.c_str());
+		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
+		LogInfo("    Ack Reply: %s", ackReply ? "yes" : "no");
+		LogInfo("    Ack Time: %ums", ackTime);
+		LogInfo("    Error Reply: %s", errorReply ? "yes" : "no");
+		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
+		LogInfo("    Mode Hang: %us", m_dstarRFModeHang);
+
+		if (blackList.size() > 0U)
+			LogInfo("    Black List: %u", blackList.size());
+
+		dstar = new CDStarControl(m_callsign, module, selfOnly, ackReply, ackTime, errorReply, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex, remoteGateway, rssi);
+	}
+	return dstar;
+}
+
+CDMRControl* CMMDVMHost::createDMRControl(CRSSIInterpolator* rssi, CTimer& dmrBeaconDurationTimer, CTimer& dmrBeaconIntervalTimer){
+	CDMRControl *dmr = NULL;
+	if (m_dmrEnabled) {
+		unsigned int id             = m_conf.getDMRId();
+		unsigned int colorCode      = m_conf.getDMRColorCode();
+		bool selfOnly               = m_conf.getDMRSelfOnly();
+		bool embeddedLCOnly         = m_conf.getDMREmbeddedLCOnly();
+		bool dumpTAData             = m_conf.getDMRDumpTAData();
+		std::vector<unsigned int> prefixes  = m_conf.getDMRPrefixes();
+		std::vector<unsigned int> blackList = m_conf.getDMRBlackList();
+		std::vector<unsigned int> whiteList = m_conf.getDMRWhiteList();
+		std::vector<unsigned int> slot1TGWhiteList = m_conf.getDMRSlot1TGWhiteList();
+		std::vector<unsigned int> slot2TGWhiteList = m_conf.getDMRSlot2TGWhiteList();
+		unsigned int callHang       = m_conf.getDMRCallHang();
+		unsigned int txHang         = m_conf.getDMRTXHang();
+		unsigned int jitter         = m_conf.getDMRNetworkJitter();
+		m_dmrRFModeHang             = m_conf.getDMRModeHang();
+		bool dmrBeacons             = m_conf.getDMRBeacons();
+
+		if (txHang > m_dmrRFModeHang)
+			txHang = m_dmrRFModeHang;
+
+		if (m_conf.getDMRNetworkEnabled()) {
+			if (txHang > m_dmrNetModeHang)
+				txHang = m_dmrNetModeHang;
+		}
+
+		if (callHang > txHang)
+			callHang = txHang;
+
+		LogInfo("DMR RF Parameters");
+		LogInfo("    Id: %u", id);
+		LogInfo("    Color Code: %u", colorCode);
+		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
+		LogInfo("    Embedded LC Only: %s", embeddedLCOnly ? "yes" : "no");
+		LogInfo("    Dump Talker Alias Data: %s", dumpTAData ? "yes" : "no");
+		LogInfo("    Prefixes: %u", prefixes.size());
+
+		if (blackList.size() > 0U)
+			LogInfo("    Source ID Black List: %u", blackList.size());
+		if (whiteList.size() > 0U)
+			LogInfo("    Source ID White List: %u", whiteList.size());
+		if (slot1TGWhiteList.size() > 0U)
+			LogInfo("    Slot 1 TG White List: %u", slot1TGWhiteList.size());
+		if (slot2TGWhiteList.size() > 0U)
+			LogInfo("    Slot 2 TG White List: %u", slot2TGWhiteList.size());
+
+		LogInfo("    Call Hang: %us", callHang);
+		LogInfo("    TX Hang: %us", txHang);
+		LogInfo("    Mode Hang: %us", m_dmrRFModeHang);
+
+		if (dmrBeacons) {
+			unsigned int dmrBeaconInterval = m_conf.getDMRBeaconInterval();
+			unsigned int dmrBeaconDuration = m_conf.getDMRBeaconDuration();
+
+			LogInfo("    DMR Roaming Beacon Interval: %us", dmrBeaconInterval);
+			LogInfo("    DMR Roaming Beacon Duration: %us", dmrBeaconDuration);
+
+			dmrBeaconDurationTimer.setTimeout(dmrBeaconDuration);
+
+			dmrBeaconIntervalTimer.setTimeout(dmrBeaconInterval);
+			dmrBeaconIntervalTimer.start();
+		}
+
+		dmr = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, dumpTAData, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_dmrLookup, rssi, jitter);
+
+		m_dmrTXTimer.setTimeout(txHang);
+	}
+	return dmr;
+}
+
+CYSFControl* CMMDVMHost::createYSFControl(CRSSIInterpolator* rssi){
+	CYSFControl *ysf = NULL;
+	if (m_ysfEnabled) {
+		bool lowDeviation   = m_conf.getFusionLowDeviation();
+		bool remoteGateway  = m_conf.getFusionRemoteGateway();
+		unsigned int txHang = m_conf.getFusionTXHang();
+		bool selfOnly       = m_conf.getFusionSelfOnly();
+		bool sqlEnabled     = m_conf.getFusionSQLEnabled();
+		unsigned char sql   = m_conf.getFusionSQL();
+		m_ysfRFModeHang     = m_conf.getFusionModeHang();
+
+		LogInfo("YSF RF Parameters");
+		LogInfo("    Low Deviation: %s", lowDeviation ? "yes" : "no");
+		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
+		LogInfo("    TX Hang: %us", txHang);
+		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
+		LogInfo("    DSQ: %s", sqlEnabled ? "yes" : "no");
+		if (sqlEnabled)
+			LogInfo("    DSQ Value: %u", sql);
+		LogInfo("    Mode Hang: %us", m_ysfRFModeHang);
+
+		ysf = new CYSFControl(m_callsign, selfOnly, m_ysfNetwork, m_display, m_timeout, m_duplex, lowDeviation, remoteGateway, rssi);
+		ysf->setSQL(sqlEnabled, sql);
+	}
+	return ysf;
+}
+
+CP25Control* CMMDVMHost::createP25Control(CRSSIInterpolator* rssi){
+	CP25Control *p25 = NULL;
+	if (m_p25Enabled) {
+		unsigned int id    = m_conf.getP25Id();
+		unsigned int nac   = m_conf.getP25NAC();
+		bool uidOverride   = m_conf.getP25OverrideUID();
+		bool selfOnly      = m_conf.getP25SelfOnly();
+		bool remoteGateway = m_conf.getP25RemoteGateway();
+		m_p25RFModeHang    = m_conf.getP25ModeHang();
+
+		LogInfo("P25 RF Parameters");
+		LogInfo("    Id: %u", id);
+		LogInfo("    NAC: $%03X", nac);
+		LogInfo("    UID Override: %s", uidOverride ? "yes" : "no");
+		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
+		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
+		LogInfo("    Mode Hang: %us", m_p25RFModeHang);
+
+		p25 = new CP25Control(nac, id, selfOnly, uidOverride, m_p25Network, m_display, m_timeout, m_duplex, m_dmrLookup, remoteGateway, rssi);
+	}
+	return p25;
+}
+
+CNXDNControl* CMMDVMHost::createNXDNControl(CRSSIInterpolator* rssi){
+	CNXDNControl *nxdn = NULL;
+	if (m_nxdnEnabled) {
+		std::string lookupFile  = m_conf.getNXDNIdLookupFile();
+		unsigned int reloadTime = m_conf.getNXDNIdLookupTime();
+
+		LogInfo("NXDN Id Lookups");
+		LogInfo("    File: %s", lookupFile.length() > 0U ? lookupFile.c_str() : "None");
+		if (reloadTime > 0U)
+			LogInfo("    Reload: %u hours", reloadTime);
+
+		m_nxdnLookup = new CNXDNLookup(lookupFile, reloadTime);
+		m_nxdnLookup->read();
+
+		unsigned int id    = m_conf.getNXDNId();
+		unsigned int ran   = m_conf.getNXDNRAN();
+		bool selfOnly      = m_conf.getNXDNSelfOnly();
+		bool remoteGateway = m_conf.getNXDNRemoteGateway();
+		m_nxdnRFModeHang   = m_conf.getNXDNModeHang();
+
+		LogInfo("NXDN RF Parameters");
+		LogInfo("    Id: %u", id);
+		LogInfo("    RAN: %u", ran);
+		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
+		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
+		LogInfo("    Mode Hang: %us", m_nxdnRFModeHang);
+
+		nxdn = new CNXDNControl(ran, id, selfOnly, m_nxdnNetwork, m_display, m_timeout, m_duplex, remoteGateway, m_nxdnLookup, rssi);
+	}
+	return nxdn;
+}
+
+CPOCSAGControl* CMMDVMHost::createPOCSAGControl(CTimer& pocsagTimer){
+	CPOCSAGControl *pocsag = NULL;
+	if (m_pocsagEnabled) {
+		unsigned int frequency = m_conf.getPOCSAGFrequency();
+
+		LogInfo("POCSAG RF Parameters");
+		LogInfo("    Frequency: %uHz", frequency);
+
+		pocsag = new CPOCSAGControl(m_pocsagNetwork, m_display);
+		pocsagTimer.start();
+	}
+	return pocsag;
 }
