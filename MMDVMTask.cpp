@@ -595,12 +595,10 @@ m_p25Network(NULL),
 m_p25RFModeHang(10U),
 m_p25NetModeHang(3U)
 {
-    LogDebug("construct p25 task");
 }
 
 CP25Task::~CP25Task()
 {
-    LogDebug("destruct p25 task");
     if (m_p25Network){
         m_p25Network->close();
         delete m_p25Network;
