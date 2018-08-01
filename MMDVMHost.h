@@ -37,7 +37,7 @@
 
 class CRSSIInterpolator;
 class CDStarControl;
-class CDMRControl;
+class CDMRTask;
 class CYSFControl;
 class CP25Control;
 class CNXDNControl;
@@ -46,6 +46,7 @@ class CPOCSAGControl;
 class CMMDVMHost
 {
 public:
+  friend class CDMRTask;
   CMMDVMHost(const std::string& confFile);
   ~CMMDVMHost();
 
@@ -55,7 +56,7 @@ private:
   CConf           m_conf;
   CModem*         m_modem;
   CDStarNetwork*  m_dstarNetwork;
-  CDMRNetwork*    m_dmrNetwork;
+  CDMRTask*       m_dmrTask;
   CYSFNetwork*    m_ysfNetwork;
   CP25Network*    m_p25Network;
   CNXDNNetwork*   m_nxdnNetwork;
@@ -64,18 +65,15 @@ private:
   CUMP*           m_ump;
   unsigned char   m_mode;
   unsigned int    m_dstarRFModeHang;
-  unsigned int    m_dmrRFModeHang;
   unsigned int    m_ysfRFModeHang;
   unsigned int    m_p25RFModeHang;
   unsigned int    m_nxdnRFModeHang;
   unsigned int    m_dstarNetModeHang;
-  unsigned int    m_dmrNetModeHang;
   unsigned int    m_ysfNetModeHang;
   unsigned int    m_p25NetModeHang;
   unsigned int    m_nxdnNetModeHang;
   unsigned int    m_pocsagNetModeHang;
   CTimer          m_modeTimer;
-  CTimer          m_dmrTXTimer;
   CTimer          m_cwIdTimer;
   bool            m_duplex;
   unsigned int    m_timeout;
@@ -95,14 +93,12 @@ private:
   void readParams();
   bool createModem();
   bool createDStarNetwork();
-  bool createDMRNetwork();
   bool createYSFNetwork();
   bool createP25Network();
   bool createNXDNNetwork();
   bool createPOCSAGNetwork();
 
   CDStarControl* createDStarControl(CRSSIInterpolator* rssi);
-  CDMRControl* createDMRControl(CRSSIInterpolator* rssi, CTimer& dmrBeaconDurationTimer, CTimer& dmrBeaconIntervalTimer);
   CYSFControl* createYSFControl(CRSSIInterpolator* rssi);
   CP25Control* createP25Control(CRSSIInterpolator* rssi);
   CNXDNControl* createNXDNControl(CRSSIInterpolator* rssi);
