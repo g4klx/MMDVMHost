@@ -136,4 +136,32 @@ private:
     bool createP25Control(CRSSIInterpolator* rssi);
     bool createP25Network();
 };
+
+//---------------------------------------------------------
+// DStar Task
+//---------------------------------------------------------
+#pragma mark -
+class CDStarControl;
+class CDStarNetwork;
+class CDStarTask : CMMDVMTask{
+
+public:
+    CDStarTask(CMMDVMHost* host);
+    virtual ~CDStarTask();
+
+    static CDStarTask* create(CMMDVMHost* host, CRSSIInterpolator* rssi);
+
+    virtual bool run(CMMDVMTaskContext* ctx);
+    virtual void enableNetwork(bool enabled);
+
+private:
+    CDStarControl* m_dstarControl;
+    CDStarNetwork* m_dstarNetwork;
+
+    unsigned int m_dstarRFModeHang;
+    unsigned int m_dstarNetModeHang;
+
+    bool createDStarControl(CRSSIInterpolator* rssi);
+    bool createDStarNetwork();
+};
 #endif

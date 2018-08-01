@@ -20,7 +20,6 @@
 #define	MMDVMHOST_H
 
 #include "POCSAGNetwork.h"
-#include "DStarNetwork.h"
 #include "NXDNNetwork.h"
 #include "NXDNLookup.h"
 #include "DMRLookup.h"
@@ -33,7 +32,7 @@
 #include <string>
 
 class CRSSIInterpolator;
-class CDStarControl;
+class CDStarTask;
 class CDMRTask;
 class CYSFTask;
 class CP25Task;
@@ -43,6 +42,7 @@ class CPOCSAGControl;
 class CMMDVMHost
 {
 public:
+  friend class CDStarTask;
   friend class CDMRTask;
   friend class CYSFTask;
   friend class CP25Task;
@@ -54,7 +54,7 @@ public:
 private:
   CConf           m_conf;
   CModem*         m_modem;
-  CDStarNetwork*  m_dstarNetwork;
+  CDStarTask*     m_dstarTask;
   CDMRTask*       m_dmrTask;
   CYSFTask*       m_ysfTask;
   CP25Task*       m_p25Task;
@@ -63,9 +63,7 @@ private:
   CDisplay*       m_display;
   CUMP*           m_ump;
   unsigned char   m_mode;
-  unsigned int    m_dstarRFModeHang;
   unsigned int    m_nxdnRFModeHang;
-  unsigned int    m_dstarNetModeHang;
   unsigned int    m_nxdnNetModeHang;
   unsigned int    m_pocsagNetModeHang;
   CTimer          m_modeTimer;
@@ -87,11 +85,9 @@ private:
 
   void readParams();
   bool createModem();
-  bool createDStarNetwork();
   bool createNXDNNetwork();
   bool createPOCSAGNetwork();
 
-  CDStarControl* createDStarControl(CRSSIInterpolator* rssi);
   CNXDNControl* createNXDNControl(CRSSIInterpolator* rssi);
   CPOCSAGControl* createPOCSAGControl(CTimer& pocsagTimer);
 

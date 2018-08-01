@@ -26,6 +26,8 @@
 #include "YSFControl.h"
 #include "P25Network.h"
 #include "P25Control.h"
+#include "DStarNetwork.h"
+#include "DStarControl.h"
 
 extern const char* VERSION;
 
@@ -739,4 +741,169 @@ void CP25Task::enableNetwork(bool enabled)
 {
     if (m_p25Network != NULL)
         m_p25Network->enable(enabled);
+}
+
+//---------------------------------------------------------
+// DStar Task Implementation
+//---------------------------------------------------------
+CDStarTask::CDStarTask(CMMDVMHost* host) :
+CMMDVMTask(host),
+m_dstarControl(NULL),
+m_dstarNetwork(NULL),
+m_dstarRFModeHang(10U),
+m_dstarNetModeHang(3U)
+{
+}
+
+CDStarTask::~CDStarTask()
+{
+    if (m_dstarNetwork){
+        m_dstarNetwork->close();
+        delete m_dstarNetwork;
+    }
+
+    if (m_dstarControl){
+        delete m_dstarControl;
+    }
+}
+
+CDStarTask* CDStarTask::create(CMMDVMHost* host, CRSSIInterpolator* rssi)
+{
+    assert(host);
+    assert(rssi);
+    bool dstarEnabled = host->m_conf.getDStarEnabled();
+    if (!dstarEnabled)
+        return NULL;
+
+    CDStarTask *task = new CDStarTask(host);
+    bool dstarNetEnabled = host->m_conf.getDStarNetworkEnabled();
+    if (dstarNetEnabled)
+        task->createDStarNetwork();     // always returns true
+
+    task->createDStarControl(rssi);     // always returns true
+    return task;
+}
+
+bool CDStarTask::createDStarControl(CRSSIInterpolator* rssi)
+{
+    CMMDVMHost* host = m_host;
+    assert(host);
+
+    std::string module                 = host->m_conf.getDStarModule();
+    bool selfOnly                      = host->m_conf.getDStarSelfOnly();
+    std::vector<std::string> blackList = host->m_conf.getDStarBlackList();
+    bool ackReply                      = host->m_conf.getDStarAckReply();
+    unsigned int ackTime               = host->m_conf.getDStarAckTime();
+    bool errorReply                    = host->m_conf.getDStarErrorReply();
+    bool remoteGateway                 = host->m_conf.getDStarRemoteGateway();
+    m_dstarRFModeHang                  = host->m_conf.getDStarModeHang();
+
+    LogInfo("D-Star RF Parameters");
+    LogInfo("    Module: %s", module.c_str());
+    LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
+    LogInfo("    Ack Reply: %s", ackReply ? "yes" : "no");
+    LogInfo("    Ack Time: %ums", ackTime);
+    LogInfo("    Error Reply: %s", errorReply ? "yes" : "no");
+    LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
+    LogInfo("    Mode Hang: %us", m_dstarRFModeHang);
+
+    if (blackList.size() > 0U)
+        LogInfo("    Black List: %u", blackList.size());
+
+    m_dstarControl = new CDStarControl(host->m_callsign, module, selfOnly, ackReply, ackTime, errorReply, blackList, m_dstarNetwork, host->m_display, host->m_timeout, host->m_duplex, remoteGateway, rssi);
+    return true;
+}
+
+bool CDStarTask::createDStarNetwork()
+{
+    CMMDVMHost* host = m_host;
+    assert(host);
+
+	std::string gatewayAddress = host->m_conf.getDStarGatewayAddress();
+	unsigned int gatewayPort   = host->m_conf.getDStarGatewayPort();
+	unsigned int localPort     = host->m_conf.getDStarLocalPort();
+	bool debug                 = host->m_conf.getDStarNetworkDebug();
+	m_dstarNetModeHang         = host->m_conf.getDStarNetworkModeHang();
+
+	LogInfo("D-Star Network Parameters");
+	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
+	LogInfo("    Gateway Port: %u", gatewayPort);
+	LogInfo("    Local Port: %u", localPort);
+	LogInfo("    Mode Hang: %us", m_dstarNetModeHang);
+
+	m_dstarNetwork = new CDStarNetwork(gatewayAddress, gatewayPort, localPort, host->m_duplex, VERSION, debug);
+
+	bool ret = m_dstarNetwork->open();
+	if (!ret) {
+		delete m_dstarNetwork;
+		m_dstarNetwork = NULL;
+		return false;
+	}
+
+	m_dstarNetwork->enable(true);
+
+	return true;
+}
+
+bool CDStarTask::run(CMMDVMTaskContext* ctx)
+{
+    if(!m_dstarControl)
+        return true;
+
+    CMMDVMHost *host = ctx->host;
+    assert(host);
+
+    unsigned char* data = (unsigned char*)ctx->data;
+    bool ret;
+    unsigned int len;
+    
+    len = host->m_modem->readDStarData(data);
+    if (len > 0U) {
+        if (host->m_mode == MODE_IDLE) {
+            ret = m_dstarControl->writeModem(data, len);
+            if (ret) {
+                host->m_modeTimer.setTimeout(m_dstarRFModeHang);
+                host->setMode(MODE_DSTAR);
+            }
+        } else if (host->m_mode == MODE_DSTAR) {
+            m_dstarControl->writeModem(data, len);
+            host->m_modeTimer.start();
+        } else if (host->m_mode != MODE_LOCKOUT) {
+            LogWarning("D-Star modem data received when in mode %u", host->m_mode);
+        }
+    }
+
+    ret = host->m_modem->hasDStarSpace();
+    if (ret) {
+        len = m_dstarControl->readModem(data);
+        if (len > 0U) {
+            if (host->m_mode == MODE_IDLE) {
+                host->m_modeTimer.setTimeout(m_dstarNetModeHang);
+                host->setMode(MODE_DSTAR);
+            }
+            if (host->m_mode == MODE_DSTAR) {
+                host->m_modem->writeDStarData(data, len);
+                host->m_modeTimer.start();
+            } else if (host->m_mode != MODE_LOCKOUT) {
+                LogWarning("D-Star data received when in mode %u", host->m_mode);
+            }
+        }
+    }
+
+    unsigned int ms = m_stopWatch.elapsed();
+    m_stopWatch.start();
+    
+    m_dstarControl->clock();
+
+    if (m_dstarNetwork){
+        m_dstarNetwork->clock(ms);
+    }
+
+    return true;
+}
+
+void CDStarTask::enableNetwork(bool enabled)
+{
+    if (m_dstarNetwork != NULL)
+        m_dstarNetwork->enable(enabled);
 }

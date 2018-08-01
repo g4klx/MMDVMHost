@@ -24,7 +24,6 @@
 #include "Version.h"
 #include "StopWatch.h"
 #include "Defines.h"
-#include "DStarControl.h"
 #include "NXDNControl.h"
 #include "POCSAGControl.h"
 #include "Thread.h"
@@ -118,7 +117,7 @@ int main(int argc, char** argv)
 CMMDVMHost::CMMDVMHost(const std::string& confFile) :
 m_conf(confFile),
 m_modem(NULL),
-m_dstarNetwork(NULL),
+m_dstarTask(NULL),
 m_dmrTask(NULL),
 m_ysfTask(NULL),
 m_p25Task(NULL),
@@ -127,9 +126,7 @@ m_pocsagNetwork(NULL),
 m_display(NULL),
 m_ump(NULL),
 m_mode(MODE_IDLE),
-m_dstarRFModeHang(10U),
 m_nxdnRFModeHang(10U),
-m_dstarNetModeHang(3U),
 m_nxdnNetModeHang(3U),
 m_pocsagNetModeHang(3U),
 m_modeTimer(1000U),
@@ -203,10 +200,6 @@ int CMMDVMHost::run()
 	}
 
 	m_display = CDisplay::createDisplay(m_conf,m_ump,m_modem);
-
-	ret = createDStarNetwork();
-	if (!ret)
-		return 1;
 
 	ret = createNXDNNetwork();
 	if (!ret)
@@ -283,7 +276,11 @@ int CMMDVMHost::run()
 	CStopWatch stopWatch;
 	stopWatch.start();
 
-	CDStarControl* dstar = createDStarControl(rssi);
+	if (m_dstarEnabled)
+	{
+		m_dstarTask = CDStarTask::create(this,rssi);
+		assert(m_dstarTask);
+	}
 
 	if (m_dmrEnabled)
 	{
@@ -343,21 +340,8 @@ int CMMDVMHost::run()
 		bool ret;
 		ctx.data = data;
 
-		len = m_modem->readDStarData(data);
-		if (dstar != NULL && len > 0U) {
-			if (m_mode == MODE_IDLE) {
-				bool ret = dstar->writeModem(data, len);
-				if (ret) {
-					m_modeTimer.setTimeout(m_dstarRFModeHang);
-					setMode(MODE_DSTAR);
-				}
-			} else if (m_mode == MODE_DSTAR) {
-				dstar->writeModem(data, len);
-				m_modeTimer.start();
-			} else if (m_mode != MODE_LOCKOUT) {
-				LogWarning("D-Star modem data received when in mode %u", m_mode);
-			}
-		}
+		if (m_dstarTask != NULL)
+			m_dstarTask->run(&ctx);
 
 		if (m_dmrTask != NULL)
 			m_dmrTask->run(&ctx);
@@ -390,25 +374,6 @@ int CMMDVMHost::run()
 
 		if (m_modeTimer.isRunning() && m_modeTimer.hasExpired())
 			setMode(MODE_IDLE);
-
-		if (dstar != NULL) {
-			ret = m_modem->hasDStarSpace();
-			if (ret) {
-				len = dstar->readModem(data);
-				if (len > 0U) {
-					if (m_mode == MODE_IDLE) {
-						m_modeTimer.setTimeout(m_dstarNetModeHang);
-						setMode(MODE_DSTAR);
-					}
-					if (m_mode == MODE_DSTAR) {
-						m_modem->writeDStarData(data, len);
-						m_modeTimer.start();
-					} else if (m_mode != MODE_LOCKOUT) {
-						LogWarning("D-Star data received when in mode %u", m_mode);
-					}
-				}
-			}
-		}
 
 		if (nxdn != NULL) {
 			ret = m_modem->hasNXDNSpace();
@@ -464,15 +429,11 @@ int CMMDVMHost::run()
 		m_modem->clock(ms);
 		m_modeTimer.clock(ms);
 
-		if (dstar != NULL)
-			dstar->clock();
 		if (nxdn != NULL)
 			nxdn->clock(ms);
 		if (pocsag != NULL)
 			pocsag->clock(ms);
 
-		if (m_dstarNetwork != NULL)
-			m_dstarNetwork->clock(ms);
 		if (m_nxdnNetwork != NULL)
 			m_nxdnNetwork->clock(ms);
 		if (m_pocsagNetwork != NULL)
@@ -523,11 +484,6 @@ int CMMDVMHost::run()
 	if (m_nxdnLookup != NULL)
 		m_nxdnLookup->stop();
 
-	if (m_dstarNetwork != NULL) {
-		m_dstarNetwork->close();
-		delete m_dstarNetwork;
-	}
-
 	if (m_nxdnNetwork != NULL) {
 		m_nxdnNetwork->close();
 		delete m_nxdnNetwork;
@@ -543,7 +499,8 @@ int CMMDVMHost::run()
 		delete transparentSocket;
 	}
 
-	delete dstar;
+	if (m_dstarTask != NULL)
+		delete m_dstarTask;
 
 	if (m_dmrTask != NULL)
 		delete m_dmrTask;
@@ -632,37 +589,6 @@ bool CMMDVMHost::createModem()
 		m_modem = NULL;
 		return false;
 	}
-
-	return true;
-}
-
-bool CMMDVMHost::createDStarNetwork()
-{
-	if (!m_dstarEnabled || !m_conf.getDStarNetworkEnabled())
-		return true;
-
-	std::string gatewayAddress = m_conf.getDStarGatewayAddress();
-	unsigned int gatewayPort   = m_conf.getDStarGatewayPort();
-	unsigned int localPort     = m_conf.getDStarLocalPort();
-	bool debug                 = m_conf.getDStarNetworkDebug();
-	m_dstarNetModeHang         = m_conf.getDStarNetworkModeHang();
-
-	LogInfo("D-Star Network Parameters");
-	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
-	LogInfo("    Gateway Port: %u", gatewayPort);
-	LogInfo("    Local Port: %u", localPort);
-	LogInfo("    Mode Hang: %us", m_dstarNetModeHang);
-
-	m_dstarNetwork = new CDStarNetwork(gatewayAddress, gatewayPort, localPort, m_duplex, VERSION, debug);
-
-	bool ret = m_dstarNetwork->open();
-	if (!ret) {
-		delete m_dstarNetwork;
-		m_dstarNetwork = NULL;
-		return false;
-	}
-
-	m_dstarNetwork->enable(true);
 
 	return true;
 }
@@ -831,8 +757,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 	assert(m_modem != NULL);
 	assert(m_display != NULL);
 
-	if (m_dstarNetwork != NULL)
-		m_dstarNetwork->enable(false);
+	if (m_dstarTask != NULL)
+		m_dstarTask->enableNetwork(false);
 	if (m_dmrTask != NULL)
 		m_dmrTask->enableNetwork(false);
 	if (m_ysfTask != NULL)
@@ -846,8 +772,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 
 	switch (mode) {
 	case MODE_DSTAR:
-		if (m_dstarNetwork != NULL)
-			m_dstarNetwork->enable(true);
+		if (m_dstarTask != NULL)
+			m_dstarTask->enableNetwork(true);
 		m_modem->setMode(MODE_DSTAR);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_DSTAR);
@@ -942,8 +868,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 		break;
 
 	default: /* MODE_IDLE */
-		if (m_dstarNetwork != NULL)
-			m_dstarNetwork->enable(true);
+		if (m_dstarTask != NULL)
+			m_dstarTask->enableNetwork(true);
 		if (m_dmrTask != NULL)
 			m_dmrTask->enableNetwork(true);
 		if (m_ysfTask != NULL)
@@ -973,35 +899,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.stop();
 		break;
 	}
-}
-
-CDStarControl* CMMDVMHost::createDStarControl(CRSSIInterpolator* rssi){
-	CDStarControl *dstar = NULL;
-	if (m_dstarEnabled) {
-		std::string module                 = m_conf.getDStarModule();
-		bool selfOnly                      = m_conf.getDStarSelfOnly();
-		std::vector<std::string> blackList = m_conf.getDStarBlackList();
-		bool ackReply                      = m_conf.getDStarAckReply();
-		unsigned int ackTime               = m_conf.getDStarAckTime();
-		bool errorReply                    = m_conf.getDStarErrorReply();
-		bool remoteGateway                 = m_conf.getDStarRemoteGateway();
-		m_dstarRFModeHang                  = m_conf.getDStarModeHang();
-
-		LogInfo("D-Star RF Parameters");
-		LogInfo("    Module: %s", module.c_str());
-		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
-		LogInfo("    Ack Reply: %s", ackReply ? "yes" : "no");
-		LogInfo("    Ack Time: %ums", ackTime);
-		LogInfo("    Error Reply: %s", errorReply ? "yes" : "no");
-		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
-		LogInfo("    Mode Hang: %us", m_dstarRFModeHang);
-
-		if (blackList.size() > 0U)
-			LogInfo("    Black List: %u", blackList.size());
-
-		dstar = new CDStarControl(m_callsign, module, selfOnly, ackReply, ackTime, errorReply, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex, remoteGateway, rssi);
-	}
-	return dstar;
 }
 
 CNXDNControl* CMMDVMHost::createNXDNControl(CRSSIInterpolator* rssi){
