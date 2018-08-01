@@ -203,7 +203,8 @@ int CMMDVMHost::run()
 		LogInfo("    Port: %s", port.c_str());
 
 		m_ump = new CUMP(port);
-		if (!m_ump->open()) {
+		ret = m_ump->open();
+		if (!ret) {
 			delete m_ump;
 			m_ump = NULL;
 		}
@@ -211,22 +212,28 @@ int CMMDVMHost::run()
 
 	m_display = CDisplay::createDisplay(m_conf,m_ump,m_modem);
 
-	if (!createDStarNetwork())
+	ret = createDStarNetwork();
+	if (!ret)
 		return 1;
 
-	if (!createDMRNetwork())
+	ret = createDMRNetwork();
+	if (!ret)
 		return 1;
 
-	if (!createYSFNetwork())
+	ret = createYSFNetwork();
+	if (!ret)
 		return 1;
 
-	if (!createP25Network())
+	ret = createP25Network();
+	if (!ret)
 		return 1;
 
-	if (!createNXDNNetwork())
+	ret = createNXDNNetwork();
+	if (!ret)
 		return 1;
 
-	if (!createPOCSAGNetwork())
+	ret = createPOCSAGNetwork();
+	if (!ret)
 		return 1;
 
 	in_addr transparentAddress;
