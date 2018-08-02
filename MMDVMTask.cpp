@@ -32,6 +32,7 @@
 #include "NXDNControl.h"
 #include "POCSAGNetwork.h"
 #include "POCSAGControl.h"
+#include "UDPSocket.h"
 
 extern const char* VERSION;
 
@@ -1212,4 +1213,86 @@ void CPOCSAGTask::enableNetwork(bool enabled)
 {
     if (m_pocsagNetwork != NULL)
         m_pocsagNetwork->enable(enabled);
+}
+
+
+//---------------------------------------------------------
+// PassThrough Task Implementation
+//---------------------------------------------------------
+CPassThroughTask::CPassThroughTask(CMMDVMHost* host) :
+CMMDVMTask(host),
+m_socket(NULL),
+m_addr(),
+m_port(0)
+{
+}
+
+CPassThroughTask::~CPassThroughTask()
+{
+    if (m_socket){
+        m_socket->close();
+        delete m_socket;
+    }
+}
+
+CPassThroughTask* CPassThroughTask::create(CMMDVMHost* host)
+{
+    assert(host);
+	if (!host->m_conf.getTransparentEnabled())
+        return NULL;
+    
+    CPassThroughTask *t = new CPassThroughTask(host);
+    
+    std::string remoteAddress = host->m_conf.getTransparentRemoteAddress();
+    unsigned int remotePort   = host->m_conf.getTransparentRemotePort();
+    unsigned int localPort    = host->m_conf.getTransparentLocalPort();
+
+    LogInfo("Transparent Data");
+    LogInfo("    Remote Address: %s", remoteAddress.c_str());
+    LogInfo("    Remote Port: %u", remotePort);
+    LogInfo("    Local Port: %u", localPort);
+
+    t->m_addr = CUDPSocket::lookup(remoteAddress);
+    t->m_port    = remotePort;
+
+    CUDPSocket* socket = new CUDPSocket(localPort);
+    bool ret = socket->open();
+    if (!ret) {
+        LogWarning("Could not open the Transparent data socket, disabling");
+        delete socket;
+        socket = NULL;
+    }else{
+        t->m_socket = socket;
+    }
+
+    return t;
+}
+
+bool CPassThroughTask::run(CMMDVMTaskContext* ctx)
+{
+    if(!m_socket)
+        return true;
+
+    CMMDVMHost *host = ctx->host;
+    assert(host);
+
+    unsigned char* data = (unsigned char*)ctx->data;
+    unsigned int len;
+
+    len = host->m_modem->readTransparentData(data);
+    if (len > 0U)
+        m_socket->write(data, len, m_addr, m_port);
+
+    in_addr address;
+    unsigned int port = 0U;
+    len = m_socket->read(data, 200U, address, port);
+    if (len > 0U)
+        host->m_modem->writeTransparentData(data, len);
+
+    return true;
+}
+
+void CPassThroughTask::enableNetwork(bool enabled)
+{
+    (void) enabled;
 }

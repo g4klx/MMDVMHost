@@ -36,6 +36,7 @@ class CYSFTask;
 class CP25Task;
 class CNXDNTask;
 class CPOCSAGTask;
+class CPassThroughTask;
 
 class CMMDVMHost
 {
@@ -46,6 +47,8 @@ public:
   friend class CP25Task;
   friend class CNXDNTask;
   friend class CPOCSAGTask;
+  friend class CPassThroughTask;
+
   CMMDVMHost(const std::string& confFile);
   ~CMMDVMHost();
 

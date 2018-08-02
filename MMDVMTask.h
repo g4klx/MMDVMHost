@@ -230,4 +230,27 @@ private:
     bool createPOCSAGControl(CRSSIInterpolator* rssi);
     bool createPOCSAGNetwork();
 };
+
+
+//---------------------------------------------------------
+// PassThrough Task
+//---------------------------------------------------------
+#pragma mark -
+#include "UDPSocket.h"
+class CPassThroughTask : CMMDVMTask{
+
+public:
+    CPassThroughTask(CMMDVMHost* host);
+    virtual ~CPassThroughTask();
+
+    static CPassThroughTask* create(CMMDVMHost* host);
+
+    virtual bool run(CMMDVMTaskContext* ctx);
+    virtual void enableNetwork(bool enabled);
+
+private:
+    CUDPSocket*  m_socket;
+    in_addr      m_addr;
+	unsigned int m_port;
+};
 #endif

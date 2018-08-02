@@ -20,11 +20,10 @@
 #include "MMDVMHost.h"
 #include "MMDVMTask.h"
 #include "RSSIInterpolator.h"
-#include "SerialController.h"
 #include "Version.h"
 #include "StopWatch.h"
 #include "Defines.h"
-#include "POCSAGControl.h"
+#include "UDPSocket.h"
 #include "Thread.h"
 #include "Log.h"
 #include "GitVersion.h"
@@ -92,6 +91,7 @@ int main(int argc, char** argv)
 
 	do {
 		m_signal = 0;
+		m_killed = false;
 
 		CMMDVMHost* host = new CMMDVMHost(std::string(iniFile));
 		ret = host->run();
@@ -197,32 +197,6 @@ int CMMDVMHost::run()
 
 	m_display = CDisplay::createDisplay(m_conf,m_ump,m_modem);
 
-	in_addr transparentAddress;
-	unsigned int transparentPort = 0U;
-	CUDPSocket* transparentSocket = NULL;
-
-	if (m_conf.getTransparentEnabled()) {
-		std::string remoteAddress = m_conf.getTransparentRemoteAddress();
-		unsigned int remotePort   = m_conf.getTransparentRemotePort();
-		unsigned int localPort    = m_conf.getTransparentLocalPort();
-
-		LogInfo("Transparent Data");
-		LogInfo("    Remote Address: %s", remoteAddress.c_str());
-		LogInfo("    Remote Port: %u", remotePort);
-		LogInfo("    Local Port: %u", localPort);
-
-		transparentAddress = CUDPSocket::lookup(remoteAddress);
-		transparentPort    = remotePort;
-
-		transparentSocket = new CUDPSocket(localPort);
-		ret = transparentSocket->open();
-		if (!ret) {
-			LogWarning("Could not open the Transparent data socket, disabling");
-			delete transparentSocket;
-			transparentSocket = NULL;
-		}
-	}
-
 	if (m_conf.getCWIdEnabled()) {
 		unsigned int time = m_conf.getCWIdTime();
 		m_cwCallsign      = m_conf.getCWIdCallsign();
@@ -297,11 +271,14 @@ int CMMDVMHost::run()
 		m_nxdnTask = CNXDNTask::create(this,rssi);
 		assert(m_nxdnTask);
 	}
-
 	if (m_pocsagEnabled){
 		m_pocsagTask = CPOCSAGTask::create(this,rssi);
 		assert(m_pocsagTask);
 	}
+	
+	CPassThroughTask *transparentTask = NULL;
+	if (m_conf.getTransparentEnabled())
+		transparentTask = CPassThroughTask::create(this);
 
 	setMode(MODE_IDLE);
 
@@ -335,7 +312,6 @@ int CMMDVMHost::run()
 
 		unsigned char data[200U];
 		unsigned int len;
-		bool ret;
 		ctx.data = data;
 
 		if (m_dstarTask != NULL)
@@ -353,23 +329,14 @@ int CMMDVMHost::run()
 		if (m_nxdnTask != NULL)
 			m_nxdnTask->run(&ctx);
 
-		len = m_modem->readTransparentData(data);
-		if (transparentSocket != NULL && len > 0U)
-			transparentSocket->write(data, len, transparentAddress, transparentPort);
+		if (transparentTask != NULL)
+			transparentTask->run(&ctx);
 
 		if (m_modeTimer.isRunning() && m_modeTimer.hasExpired())
 			setMode(MODE_IDLE);
 
 		if (m_pocsagTask != NULL)
 			m_pocsagTask->run(&ctx);
-
-		if (transparentSocket != NULL) {
-			in_addr address;
-			unsigned int port = 0U;
-			len = transparentSocket->read(data, 200U, address, port);
-			if (len > 0U)
-				m_modem->writeTransparentData(data, len);
-		}
 
 		unsigned int ms = stopWatch.elapsed();
 		stopWatch.start();
@@ -417,11 +384,6 @@ int CMMDVMHost::run()
 	if (m_nxdnLookup != NULL)
 		m_nxdnLookup->stop();
 
-	if (transparentSocket != NULL) {
-		transparentSocket->close();
-		delete transparentSocket;
-	}
-
 	if (m_dstarTask != NULL)
 		delete m_dstarTask;
 
@@ -439,6 +401,9 @@ int CMMDVMHost::run()
 
 	if (m_pocsagTask != NULL)
 		delete m_pocsagTask;
+
+	if (transparentTask != NULL)
+		delete transparentTask;
 
 	return 0;
 }
