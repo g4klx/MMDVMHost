@@ -201,4 +201,33 @@ private:
     bool createNXDNControl(CRSSIInterpolator* rssi);
     bool createNXDNNetwork();
 };
+
+
+//---------------------------------------------------------
+// POCSAG Task
+//---------------------------------------------------------
+#pragma mark -
+class CPOCSAGControl;
+class CPOCSAGNetwork;
+class CPOCSAGTask : CMMDVMTask{
+
+public:
+    CPOCSAGTask(CMMDVMHost* host);
+    virtual ~CPOCSAGTask();
+
+    static CPOCSAGTask* create(CMMDVMHost* host, CRSSIInterpolator* rssi);
+
+    virtual bool run(CMMDVMTaskContext* ctx);
+    virtual void enableNetwork(bool enabled);
+
+private:
+    CPOCSAGControl* m_pocsagControl;
+    CPOCSAGNetwork* m_pocsagNetwork;
+
+    CTimer          m_pocsagTimer;
+    unsigned int m_pocsagNetModeHang;
+
+    bool createPOCSAGControl(CRSSIInterpolator* rssi);
+    bool createPOCSAGNetwork();
+};
 #endif

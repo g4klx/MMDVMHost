@@ -121,11 +121,10 @@ m_dmrTask(NULL),
 m_ysfTask(NULL),
 m_p25Task(NULL),
 m_nxdnTask(NULL),
-m_pocsagNetwork(NULL),
+m_pocsagTask(NULL),
 m_display(NULL),
 m_ump(NULL),
 m_mode(MODE_IDLE),
-m_pocsagNetModeHang(3U),
 m_modeTimer(1000U),
 m_cwIdTimer(1000U),
 m_duplex(false),
@@ -197,10 +196,6 @@ int CMMDVMHost::run()
 	}
 
 	m_display = CDisplay::createDisplay(m_conf,m_ump,m_modem);
-
-	ret = createPOCSAGNetwork();
-	if (!ret)
-		return 1;
 
 	in_addr transparentAddress;
 	unsigned int transparentPort = 0U;
@@ -303,8 +298,10 @@ int CMMDVMHost::run()
 		assert(m_nxdnTask);
 	}
 
-	CTimer pocsagTimer(1000U, 30U);
-	CPOCSAGControl* pocsag = createPOCSAGControl(pocsagTimer);
+	if (m_pocsagEnabled){
+		m_pocsagTask = CPOCSAGTask::create(this,rssi);
+		assert(m_pocsagTask);
+	}
 
 	setMode(MODE_IDLE);
 
@@ -363,24 +360,8 @@ int CMMDVMHost::run()
 		if (m_modeTimer.isRunning() && m_modeTimer.hasExpired())
 			setMode(MODE_IDLE);
 
-		if (pocsag != NULL) {
-			ret = m_modem->hasPOCSAGSpace();
-			if (ret) {
-				len = pocsag->readModem(data);
-				if (len > 0U) {
-					if (m_mode == MODE_IDLE) {
-						m_modeTimer.setTimeout(m_pocsagNetModeHang);
-						setMode(MODE_POCSAG);
-					}
-					if (m_mode == MODE_POCSAG) {
-						m_modem->writePOCSAGData(data, len);
-						m_modeTimer.start();
-					} else if (m_mode != MODE_LOCKOUT) {
-						LogWarning("POCSAG data received when in mode %u", m_mode);
-					}
-				}
-			}
-		}
+		if (m_pocsagTask != NULL)
+			m_pocsagTask->run(&ctx);
 
 		if (transparentSocket != NULL) {
 			in_addr address;
@@ -398,12 +379,6 @@ int CMMDVMHost::run()
 		m_modem->clock(ms);
 		m_modeTimer.clock(ms);
 
-		if (pocsag != NULL)
-			pocsag->clock(ms);
-
-		if (m_pocsagNetwork != NULL)
-			m_pocsagNetwork->clock(ms);
-
 		m_cwIdTimer.clock(ms);
 		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
 			if (m_mode == MODE_IDLE && !m_modem->hasTX()){
@@ -414,13 +389,6 @@ int CMMDVMHost::run()
 				m_cwIdTimer.setTimeout(m_cwIdTime);
 				m_cwIdTimer.start();
 			}
-		}
-
-		pocsagTimer.clock(ms);
-		if (pocsagTimer.isRunning() && pocsagTimer.hasExpired()) {
-			assert(m_pocsagNetwork != NULL);
-			m_pocsagNetwork->enable(m_mode == MODE_IDLE || m_mode == MODE_POCSAG);
-			pocsagTimer.start();
 		}
 
 		if (m_ump != NULL)
@@ -449,11 +417,6 @@ int CMMDVMHost::run()
 	if (m_nxdnLookup != NULL)
 		m_nxdnLookup->stop();
 
-	if (m_pocsagNetwork != NULL) {
-		m_pocsagNetwork->close();
-		delete m_pocsagNetwork;
-	}
-
 	if (transparentSocket != NULL) {
 		transparentSocket->close();
 		delete transparentSocket;
@@ -474,7 +437,8 @@ int CMMDVMHost::run()
 	if (m_nxdnTask != NULL)
 		delete m_nxdnTask;
 
-	delete pocsag;
+	if (m_pocsagTask != NULL)
+		delete m_pocsagTask;
 
 	return 0;
 }
@@ -551,39 +515,6 @@ bool CMMDVMHost::createModem()
 		m_modem = NULL;
 		return false;
 	}
-
-	return true;
-}
-
-bool CMMDVMHost::createPOCSAGNetwork()
-{
-	if (!m_pocsagEnabled || !m_conf.getPOCSAGNetworkEnabled())
-		return true;
-
-	std::string gatewayAddress = m_conf.getPOCSAGGatewayAddress();
-	unsigned int gatewayPort   = m_conf.getPOCSAGGatewayPort();
-	std::string localAddress   = m_conf.getPOCSAGLocalAddress();
-	unsigned int localPort     = m_conf.getPOCSAGLocalPort();
-	m_pocsagNetModeHang        = m_conf.getPOCSAGNetworkModeHang();
-	bool debug                 = m_conf.getPOCSAGNetworkDebug();
-
-	LogInfo("POCSAG Network Parameters");
-	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
-	LogInfo("    Gateway Port: %u", gatewayPort);
-	LogInfo("    Local Address: %s", localAddress.c_str());
-	LogInfo("    Local Port: %u", localPort);
-	LogInfo("    Mode Hang: %us", m_pocsagNetModeHang);
-
-	m_pocsagNetwork = new CPOCSAGNetwork(localAddress, localPort, gatewayAddress, gatewayPort, debug);
-
-	bool ret = m_pocsagNetwork->open();
-	if (!ret) {
-		delete m_pocsagNetwork;
-		m_pocsagNetwork = NULL;
-		return false;
-	}
-
-	m_pocsagNetwork->enable(true);
 
 	return true;
 }
@@ -696,8 +627,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_p25Task->enableNetwork(false);
 	if (m_nxdnTask != NULL)
 		m_nxdnTask->enableNetwork(false);
-	if (m_pocsagNetwork != NULL)
-		m_pocsagNetwork->enable(false);
+	if (m_pocsagTask != NULL)
+		m_pocsagTask->enableNetwork(false);
 
 	switch (mode) {
 	case MODE_DSTAR:
@@ -759,8 +690,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 		break;
 
 	case MODE_POCSAG:
-		if (m_pocsagNetwork != NULL)
-			m_pocsagNetwork->enable(false);
+		if (m_pocsagTask != NULL)
+			m_pocsagTask->enableNetwork(false);
 		m_modem->setMode(MODE_POCSAG);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_POCSAG);
@@ -807,8 +738,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25Task->enableNetwork(true);
 		if (m_nxdnTask != NULL)
 			m_nxdnTask->enableNetwork(true);
-		if (m_pocsagNetwork != NULL)
-			m_pocsagNetwork->enable(true);
+		if (m_pocsagTask != NULL)
+			m_pocsagTask->enableNetwork(true);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX() && m_dmrTask != NULL) {
 			m_dmrTask->startDMR(false);
 		}
@@ -828,18 +759,4 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.stop();
 		break;
 	}
-}
-
-CPOCSAGControl* CMMDVMHost::createPOCSAGControl(CTimer& pocsagTimer){
-	CPOCSAGControl *pocsag = NULL;
-	if (m_pocsagEnabled) {
-		unsigned int frequency = m_conf.getPOCSAGFrequency();
-
-		LogInfo("POCSAG RF Parameters");
-		LogInfo("    Frequency: %uHz", frequency);
-
-		pocsag = new CPOCSAGControl(m_pocsagNetwork, m_display);
-		pocsagTimer.start();
-	}
-	return pocsag;
 }

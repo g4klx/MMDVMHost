@@ -19,7 +19,6 @@
 #if !defined(MMDVMHOST_H)
 #define	MMDVMHOST_H
 
-#include "POCSAGNetwork.h"
 #include "NXDNLookup.h"
 #include "DMRLookup.h"
 #include "Display.h"
@@ -36,7 +35,7 @@ class CDMRTask;
 class CYSFTask;
 class CP25Task;
 class CNXDNTask;
-class CPOCSAGControl;
+class CPOCSAGTask;
 
 class CMMDVMHost
 {
@@ -46,6 +45,7 @@ public:
   friend class CYSFTask;
   friend class CP25Task;
   friend class CNXDNTask;
+  friend class CPOCSAGTask;
   CMMDVMHost(const std::string& confFile);
   ~CMMDVMHost();
 
@@ -59,11 +59,10 @@ private:
   CYSFTask*       m_ysfTask;
   CP25Task*       m_p25Task;
   CNXDNTask*      m_nxdnTask;
-  CPOCSAGNetwork* m_pocsagNetwork;
+  CPOCSAGTask*    m_pocsagTask;
   CDisplay*       m_display;
   CUMP*           m_ump;
   unsigned char   m_mode;
-  unsigned int    m_pocsagNetModeHang;
   CTimer          m_modeTimer;
   CTimer          m_cwIdTimer;
   bool            m_duplex;
@@ -83,9 +82,8 @@ private:
 
   void readParams();
   bool createModem();
-  bool createPOCSAGNetwork();
-
-  CPOCSAGControl* createPOCSAGControl(CTimer& pocsagTimer);
+  //bool createPOCSAGNetwork();
+  //CPOCSAGControl* createPOCSAGControl(CTimer& pocsagTimer);
 
   bool daemonize();
 

@@ -30,6 +30,8 @@
 #include "DStarControl.h"
 #include "NXDNNetwork.h"
 #include "NXDNControl.h"
+#include "POCSAGNetwork.h"
+#include "POCSAGControl.h"
 
 extern const char* VERSION;
 
@@ -1071,4 +1073,143 @@ void CNXDNTask::enableNetwork(bool enabled)
 {
     if (m_nxdnNetwork != NULL)
         m_nxdnNetwork->enable(enabled);
+}
+
+
+//---------------------------------------------------------
+// POCSAG Task Implementation
+//---------------------------------------------------------
+CPOCSAGTask::CPOCSAGTask(CMMDVMHost* host) :
+CMMDVMTask(host),
+m_pocsagControl(NULL),
+m_pocsagNetwork(NULL),
+m_pocsagTimer(1000U, 30U),
+m_pocsagNetModeHang(3U)
+{
+}
+
+CPOCSAGTask::~CPOCSAGTask()
+{
+    if (m_pocsagNetwork){
+        m_pocsagNetwork->close();
+        delete m_pocsagNetwork;
+    }
+    delete m_pocsagControl;
+}
+
+CPOCSAGTask* CPOCSAGTask::create(CMMDVMHost* host, CRSSIInterpolator* rssi)
+{
+    assert(host);
+    assert(rssi);
+    bool pocsagEnabled = host->m_conf.getPOCSAGEnabled();
+    if (!pocsagEnabled)
+        return NULL;
+
+    CPOCSAGTask *task = new CPOCSAGTask(host);
+    bool pocsagNetEnabled = host->m_conf.getPOCSAGNetworkEnabled();
+    if (pocsagNetEnabled)
+        task->createPOCSAGNetwork();     // always returns true
+
+    task->createPOCSAGControl(rssi);     // always returns true
+    return task;
+}
+
+bool CPOCSAGTask::createPOCSAGControl(CRSSIInterpolator* rssi)
+{
+    CMMDVMHost* host = m_host;
+    assert(host);
+
+    unsigned int frequency = host->m_conf.getPOCSAGFrequency();
+
+    LogInfo("POCSAG RF Parameters");
+    LogInfo("    Frequency: %uHz", frequency);
+
+    m_pocsagControl = new CPOCSAGControl(m_pocsagNetwork, host->m_display);
+    m_pocsagTimer.start();
+
+    return true;
+}
+
+bool CPOCSAGTask::createPOCSAGNetwork()
+{
+    CMMDVMHost* host = m_host;
+    assert(host);
+
+	std::string gatewayAddress = host->m_conf.getPOCSAGGatewayAddress();
+	unsigned int gatewayPort   = host->m_conf.getPOCSAGGatewayPort();
+	std::string localAddress   = host->m_conf.getPOCSAGLocalAddress();
+	unsigned int localPort     = host->m_conf.getPOCSAGLocalPort();
+	m_pocsagNetModeHang        = host->m_conf.getPOCSAGNetworkModeHang();
+	bool debug                 = host->m_conf.getPOCSAGNetworkDebug();
+
+	LogInfo("POCSAG Network Parameters");
+	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
+	LogInfo("    Gateway Port: %u", gatewayPort);
+	LogInfo("    Local Address: %s", localAddress.c_str());
+	LogInfo("    Local Port: %u", localPort);
+	LogInfo("    Mode Hang: %us", m_pocsagNetModeHang);
+
+	m_pocsagNetwork = new CPOCSAGNetwork(localAddress, localPort, gatewayAddress, gatewayPort, debug);
+
+	bool ret = m_pocsagNetwork->open();
+	if (!ret) {
+		delete m_pocsagNetwork;
+		m_pocsagNetwork = NULL;
+		return false;
+	}
+
+	m_pocsagNetwork->enable(true);
+
+	return true;
+}
+
+bool CPOCSAGTask::run(CMMDVMTaskContext* ctx)
+{
+    if(!m_pocsagControl)
+        return true;
+
+    CMMDVMHost *host = ctx->host;
+    assert(host);
+
+    unsigned char* data = (unsigned char*)ctx->data;
+    bool ret;
+    unsigned int len;
+
+    ret = host->m_modem->hasPOCSAGSpace();
+    if (ret) {
+        len = m_pocsagControl->readModem(data);
+        if (len > 0U) {
+            if (host->m_mode == MODE_IDLE) {
+                host->m_modeTimer.setTimeout(m_pocsagNetModeHang);
+                host->setMode(MODE_POCSAG);
+            }
+            if (host->m_mode == MODE_POCSAG) {
+                host->m_modem->writePOCSAGData(data, len);
+                host->m_modeTimer.start();
+            } else if (host->m_mode != MODE_LOCKOUT) {
+                LogWarning("POCSAG data received when in mode %u", host->m_mode);
+            }
+        }
+    }
+
+    unsigned int ms = m_stopWatch.elapsed();
+    m_stopWatch.start();
+
+    m_pocsagControl->clock(ms);
+    if (m_pocsagNetwork){
+        m_pocsagNetwork->clock(ms);
+    }
+    m_pocsagTimer.clock(ms);
+    if (m_pocsagTimer.isRunning() && m_pocsagTimer.hasExpired()) {
+        enableNetwork(host->m_mode == MODE_IDLE || host->m_mode == MODE_POCSAG);
+        m_pocsagTimer.start();
+    }
+
+    return true;
+}
+
+void CPOCSAGTask::enableNetwork(bool enabled)
+{
+    if (m_pocsagNetwork != NULL)
+        m_pocsagNetwork->enable(enabled);
 }
