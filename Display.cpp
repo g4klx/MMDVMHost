@@ -578,7 +578,7 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
 			if (displayClock)
 				LogInfo("    Display UTC: %s", utc ? "yes" : "no");
 
-			m_display = new CHD44780(rows, columns, conf.getCallsign(), dmrid, pins, i2cAddress, pwm, pwmPin, pwmBright, pwmDim, displayClock, utc, conf.getDuplex());
+			display = new CHD44780(rows, columns, conf.getCallsign(), dmrid, pins, i2cAddress, pwm, pwmPin, pwmBright, pwmDim, displayClock, utc, conf.getDuplex());
 		}
 #endif
 
