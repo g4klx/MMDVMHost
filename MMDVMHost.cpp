@@ -24,7 +24,6 @@
 #include "Version.h"
 #include "StopWatch.h"
 #include "Defines.h"
-#include "NXDNControl.h"
 #include "POCSAGControl.h"
 #include "Thread.h"
 #include "Log.h"
@@ -121,13 +120,11 @@ m_dstarTask(NULL),
 m_dmrTask(NULL),
 m_ysfTask(NULL),
 m_p25Task(NULL),
-m_nxdnNetwork(NULL),
+m_nxdnTask(NULL),
 m_pocsagNetwork(NULL),
 m_display(NULL),
 m_ump(NULL),
 m_mode(MODE_IDLE),
-m_nxdnRFModeHang(10U),
-m_nxdnNetModeHang(3U),
 m_pocsagNetModeHang(3U),
 m_modeTimer(1000U),
 m_cwIdTimer(1000U),
@@ -201,10 +198,6 @@ int CMMDVMHost::run()
 
 	m_display = CDisplay::createDisplay(m_conf,m_ump,m_modem);
 
-	ret = createNXDNNetwork();
-	if (!ret)
-		return 1;
-
 	ret = createPOCSAGNetwork();
 	if (!ret)
 		return 1;
@@ -273,34 +266,42 @@ int CMMDVMHost::run()
 		m_dmrLookup->read();
 	}
 
+	// Map IDs to callsigns for NXDN - should be merged with dmrLookup.
+	if (m_nxdnEnabled) {
+		std::string lookupFile  = m_conf.getNXDNIdLookupFile();
+    	unsigned int reloadTime = m_conf.getNXDNIdLookupTime();
+		LogInfo("NXDN Id Lookups");
+		LogInfo("    File: %s", lookupFile.length() > 0U ? lookupFile.c_str() : "None");
+		if (reloadTime > 0U)
+			LogInfo("    Reload: %u hours", reloadTime);
+
+		m_nxdnLookup = new CNXDNLookup(lookupFile, reloadTime);
+		m_nxdnLookup->read();
+	}
+
 	CStopWatch stopWatch;
 	stopWatch.start();
 
-	if (m_dstarEnabled)
-	{
+	if (m_dstarEnabled){
 		m_dstarTask = CDStarTask::create(this,rssi);
 		assert(m_dstarTask);
 	}
-
-	if (m_dmrEnabled)
-	{
+	if (m_dmrEnabled){
 		m_dmrTask = CDMRTask::create(this,rssi);
 		assert(m_dmrTask);
 	}
-
-	if (m_ysfEnabled)
-	{
+	if (m_ysfEnabled){
 		m_ysfTask = CYSFTask::create(this,rssi);
 		assert(m_ysfTask);
 	}
-
-	if (m_p25Enabled)
-	{
+	if (m_p25Enabled){
 		m_p25Task = CP25Task::create(this,rssi);
 		assert(m_p25Task);
 	}
-
-	CNXDNControl* nxdn = createNXDNControl(rssi);
+	if (m_nxdnEnabled){
+		m_nxdnTask = CNXDNTask::create(this,rssi);
+		assert(m_nxdnTask);
+	}
 
 	CTimer pocsagTimer(1000U, 30U);
 	CPOCSAGControl* pocsag = createPOCSAGControl(pocsagTimer);
@@ -352,21 +353,8 @@ int CMMDVMHost::run()
 		if (m_p25Task != NULL)
 			m_p25Task->run(&ctx);
 
-		len = m_modem->readNXDNData(data);
-		if (nxdn != NULL && len > 0U) {
-			if (m_mode == MODE_IDLE) {
-				bool ret = nxdn->writeModem(data, len);
-				if (ret) {
-					m_modeTimer.setTimeout(m_nxdnRFModeHang);
-					setMode(MODE_NXDN);
-				}
-			} else if (m_mode == MODE_NXDN) {
-				nxdn->writeModem(data, len);
-				m_modeTimer.start();
-			} else if (m_mode != MODE_LOCKOUT) {
-				LogWarning("NXDN modem data received when in mode %u", m_mode);
-			}
-		}
+		if (m_nxdnTask != NULL)
+			m_nxdnTask->run(&ctx);
 
 		len = m_modem->readTransparentData(data);
 		if (transparentSocket != NULL && len > 0U)
@@ -374,25 +362,6 @@ int CMMDVMHost::run()
 
 		if (m_modeTimer.isRunning() && m_modeTimer.hasExpired())
 			setMode(MODE_IDLE);
-
-		if (nxdn != NULL) {
-			ret = m_modem->hasNXDNSpace();
-			if (ret) {
-				len = nxdn->readModem(data);
-				if (len > 0U) {
-					if (m_mode == MODE_IDLE) {
-						m_modeTimer.setTimeout(m_nxdnNetModeHang);
-						setMode(MODE_NXDN);
-					}
-					if (m_mode == MODE_NXDN) {
-						m_modem->writeNXDNData(data, len);
-						m_modeTimer.start();
-					} else if (m_mode != MODE_LOCKOUT) {
-						LogWarning("NXDN data received when in mode %u", m_mode);
-					}
-				}
-			}
-		}
 
 		if (pocsag != NULL) {
 			ret = m_modem->hasPOCSAGSpace();
@@ -429,13 +398,9 @@ int CMMDVMHost::run()
 		m_modem->clock(ms);
 		m_modeTimer.clock(ms);
 
-		if (nxdn != NULL)
-			nxdn->clock(ms);
 		if (pocsag != NULL)
 			pocsag->clock(ms);
 
-		if (m_nxdnNetwork != NULL)
-			m_nxdnNetwork->clock(ms);
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->clock(ms);
 
@@ -484,11 +449,6 @@ int CMMDVMHost::run()
 	if (m_nxdnLookup != NULL)
 		m_nxdnLookup->stop();
 
-	if (m_nxdnNetwork != NULL) {
-		m_nxdnNetwork->close();
-		delete m_nxdnNetwork;
-	}
-
 	if (m_pocsagNetwork != NULL) {
 		m_pocsagNetwork->close();
 		delete m_pocsagNetwork;
@@ -511,7 +471,9 @@ int CMMDVMHost::run()
 	if (m_p25Task != NULL)
 		delete m_p25Task;
 
-	delete nxdn;
+	if (m_nxdnTask != NULL)
+		delete m_nxdnTask;
+
 	delete pocsag;
 
 	return 0;
@@ -589,39 +551,6 @@ bool CMMDVMHost::createModem()
 		m_modem = NULL;
 		return false;
 	}
-
-	return true;
-}
-
-bool CMMDVMHost::createNXDNNetwork()
-{
-	if (!m_nxdnEnabled || !m_conf.getNXDNNetworkEnabled())
-		return true;
-
-	std::string gatewayAddress = m_conf.getNXDNGatewayAddress();
-	unsigned int gatewayPort   = m_conf.getNXDNGatewayPort();
-	std::string localAddress   = m_conf.getNXDNLocalAddress();
-	unsigned int localPort     = m_conf.getNXDNLocalPort();
-	m_nxdnNetModeHang          = m_conf.getNXDNNetworkModeHang();
-	bool debug                 = m_conf.getNXDNNetworkDebug();
-
-	LogInfo("NXDN Network Parameters");
-	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
-	LogInfo("    Gateway Port: %u", gatewayPort);
-	LogInfo("    Local Address: %s", localAddress.c_str());
-	LogInfo("    Local Port: %u", localPort);
-	LogInfo("    Mode Hang: %us", m_nxdnNetModeHang);
-
-	m_nxdnNetwork = new CNXDNNetwork(localAddress, localPort, gatewayAddress, gatewayPort, debug);
-
-	bool ret = m_nxdnNetwork->open();
-	if (!ret) {
-		delete m_nxdnNetwork;
-		m_nxdnNetwork = NULL;
-		return false;
-	}
-
-	m_nxdnNetwork->enable(true);
 
 	return true;
 }
@@ -763,10 +692,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_dmrTask->enableNetwork(false);
 	if (m_ysfTask != NULL)
 		m_ysfTask->enableNetwork(false);
-	if (m_p25Task)
+	if (m_p25Task != NULL)
 		m_p25Task->enableNetwork(false);
-	if (m_nxdnNetwork != NULL)
-		m_nxdnNetwork->enable(false);
+	if (m_nxdnTask != NULL)
+		m_nxdnTask->enableNetwork(false);
 	if (m_pocsagNetwork != NULL)
 		m_pocsagNetwork->enable(false);
 
@@ -819,8 +748,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 		break;
 
 	case MODE_NXDN:
-		if (m_nxdnNetwork != NULL)
-			m_nxdnNetwork->enable(true);
+		if (m_nxdnTask != NULL)
+			m_nxdnTask->enableNetwork(true);
 		m_modem->setMode(MODE_NXDN);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_NXDN);
@@ -876,8 +805,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_ysfTask->enableNetwork(true);
 		if (m_p25Task != NULL)
 			m_p25Task->enableNetwork(true);
-		if (m_nxdnNetwork != NULL)
-			m_nxdnNetwork->enable(true);
+		if (m_nxdnTask != NULL)
+			m_nxdnTask->enableNetwork(true);
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(true);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX() && m_dmrTask != NULL) {
@@ -899,38 +828,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.stop();
 		break;
 	}
-}
-
-CNXDNControl* CMMDVMHost::createNXDNControl(CRSSIInterpolator* rssi){
-	CNXDNControl *nxdn = NULL;
-	if (m_nxdnEnabled) {
-		std::string lookupFile  = m_conf.getNXDNIdLookupFile();
-		unsigned int reloadTime = m_conf.getNXDNIdLookupTime();
-
-		LogInfo("NXDN Id Lookups");
-		LogInfo("    File: %s", lookupFile.length() > 0U ? lookupFile.c_str() : "None");
-		if (reloadTime > 0U)
-			LogInfo("    Reload: %u hours", reloadTime);
-
-		m_nxdnLookup = new CNXDNLookup(lookupFile, reloadTime);
-		m_nxdnLookup->read();
-
-		unsigned int id    = m_conf.getNXDNId();
-		unsigned int ran   = m_conf.getNXDNRAN();
-		bool selfOnly      = m_conf.getNXDNSelfOnly();
-		bool remoteGateway = m_conf.getNXDNRemoteGateway();
-		m_nxdnRFModeHang   = m_conf.getNXDNModeHang();
-
-		LogInfo("NXDN RF Parameters");
-		LogInfo("    Id: %u", id);
-		LogInfo("    RAN: %u", ran);
-		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
-		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
-		LogInfo("    Mode Hang: %us", m_nxdnRFModeHang);
-
-		nxdn = new CNXDNControl(ran, id, selfOnly, m_nxdnNetwork, m_display, m_timeout, m_duplex, remoteGateway, m_nxdnLookup, rssi);
-	}
-	return nxdn;
 }
 
 CPOCSAGControl* CMMDVMHost::createPOCSAGControl(CTimer& pocsagTimer){

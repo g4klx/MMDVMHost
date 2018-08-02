@@ -28,12 +28,17 @@
 class CMMDVMHost;
 class CRSSIInterpolator;
 
+
+//---------------------------------------------------------
+// Task Runtime Context
+//---------------------------------------------------------
 struct CMMDVMTaskContext
 {
     CMMDVMHost* host;
     //CRSSIInterpolator* rssi;
     void* data;
 };
+
 
 //---------------------------------------------------------
 // Abstract Task Inteface
@@ -48,6 +53,7 @@ protected:
     CMMDVMHost*  m_host;
     CStopWatch   m_stopWatch;
 };
+
 
 //---------------------------------------------------------
 // DMR Task
@@ -109,6 +115,7 @@ private:
     bool createYSFNetwork();
 };
 
+
 //---------------------------------------------------------
 // P25 Task
 //---------------------------------------------------------
@@ -137,6 +144,7 @@ private:
     bool createP25Network();
 };
 
+
 //---------------------------------------------------------
 // DStar Task
 //---------------------------------------------------------
@@ -163,5 +171,34 @@ private:
 
     bool createDStarControl(CRSSIInterpolator* rssi);
     bool createDStarNetwork();
+};
+
+
+//---------------------------------------------------------
+// NXDN Task
+//---------------------------------------------------------
+#pragma mark -
+class CNXDNControl;
+class CNXDNNetwork;
+class CNXDNTask : CMMDVMTask{
+
+public:
+    CNXDNTask(CMMDVMHost* host);
+    virtual ~CNXDNTask();
+
+    static CNXDNTask* create(CMMDVMHost* host, CRSSIInterpolator* rssi);
+
+    virtual bool run(CMMDVMTaskContext* ctx);
+    virtual void enableNetwork(bool enabled);
+
+private:
+    CNXDNControl* m_nxdnControl;
+    CNXDNNetwork* m_nxdnNetwork;
+
+    unsigned int m_nxdnRFModeHang;
+    unsigned int m_nxdnNetModeHang;
+
+    bool createNXDNControl(CRSSIInterpolator* rssi);
+    bool createNXDNNetwork();
 };
 #endif

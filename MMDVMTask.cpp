@@ -28,6 +28,8 @@
 #include "P25Control.h"
 #include "DStarNetwork.h"
 #include "DStarControl.h"
+#include "NXDNNetwork.h"
+#include "NXDNControl.h"
 
 extern const char* VERSION;
 
@@ -36,6 +38,7 @@ extern const char* VERSION;
 #include <cassert>
 #include <cstdint>
 #include <ctime>
+
 
 //---------------------------------------------------------
 // Abstract Task Implementation
@@ -51,6 +54,7 @@ m_stopWatch()
 CMMDVMTask::~CMMDVMTask()
 {
 }
+
 
 //---------------------------------------------------------
 // DMR Task Implementation
@@ -587,6 +591,7 @@ void CYSFTask::enableNetwork(bool enabled)
         m_ysfNetwork->enable(enabled);
 }
 
+
 //---------------------------------------------------------
 // P25 Task Implementation
 //---------------------------------------------------------
@@ -728,12 +733,13 @@ bool CP25Task::run(CMMDVMTaskContext* ctx)
 
     unsigned int ms = m_stopWatch.elapsed();
     m_stopWatch.start();
-    m_p25Control->clock(ms);
 
+    m_p25Control->clock(ms);
     if (m_p25Network)
     {
         m_p25Network->clock(ms);
     }
+
     return true;
 }
 
@@ -742,6 +748,7 @@ void CP25Task::enableNetwork(bool enabled)
     if (m_p25Network != NULL)
         m_p25Network->enable(enabled);
 }
+
 
 //---------------------------------------------------------
 // DStar Task Implementation
@@ -906,4 +913,162 @@ void CDStarTask::enableNetwork(bool enabled)
 {
     if (m_dstarNetwork != NULL)
         m_dstarNetwork->enable(enabled);
+}
+
+
+//---------------------------------------------------------
+// NXDN Task Implementation
+//---------------------------------------------------------
+CNXDNTask::CNXDNTask(CMMDVMHost* host) :
+CMMDVMTask(host),
+m_nxdnControl(NULL),
+m_nxdnNetwork(NULL),
+m_nxdnRFModeHang(10U),
+m_nxdnNetModeHang(3U)
+{
+}
+
+CNXDNTask::~CNXDNTask()
+{
+    if (m_nxdnNetwork){
+        m_nxdnNetwork->close();
+        delete m_nxdnNetwork;
+    }
+    delete m_nxdnControl;
+}
+
+CNXDNTask* CNXDNTask::create(CMMDVMHost* host, CRSSIInterpolator* rssi)
+{
+    assert(host);
+    assert(rssi);
+    bool nxdnEnabled = host->m_conf.getNXDNEnabled();
+    if (!nxdnEnabled)
+        return NULL;
+
+    CNXDNTask *task = new CNXDNTask(host);
+    bool nxdnNetEnabled = host->m_conf.getNXDNNetworkEnabled();
+    if (nxdnNetEnabled)
+        task->createNXDNNetwork();     // always returns true
+
+    task->createNXDNControl(rssi);     // always returns true
+    return task;
+}
+
+bool CNXDNTask::createNXDNControl(CRSSIInterpolator* rssi)
+{
+    CMMDVMHost* host = m_host;
+    assert(host);
+
+    unsigned int id    = host->m_conf.getNXDNId();
+    unsigned int ran   = host->m_conf.getNXDNRAN();
+    bool selfOnly      = host->m_conf.getNXDNSelfOnly();
+    bool remoteGateway = host->m_conf.getNXDNRemoteGateway();
+    m_nxdnRFModeHang   = host->m_conf.getNXDNModeHang();
+
+    LogInfo("NXDN RF Parameters");
+    LogInfo("    Id: %u", id);
+    LogInfo("    RAN: %u", ran);
+    LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
+    LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
+    LogInfo("    Mode Hang: %us", m_nxdnRFModeHang);
+
+    m_nxdnControl = new CNXDNControl(ran, id, selfOnly, m_nxdnNetwork, host->m_display, host->m_timeout, host->m_duplex, remoteGateway, host->m_nxdnLookup, rssi);
+    return true;
+}
+
+bool CNXDNTask::createNXDNNetwork()
+{
+    CMMDVMHost* host = m_host;
+    assert(host);
+
+	std::string gatewayAddress = host->m_conf.getNXDNGatewayAddress();
+	unsigned int gatewayPort   = host->m_conf.getNXDNGatewayPort();
+	std::string localAddress   = host->m_conf.getNXDNLocalAddress();
+	unsigned int localPort     = host->m_conf.getNXDNLocalPort();
+	m_nxdnNetModeHang          = host->m_conf.getNXDNNetworkModeHang();
+	bool debug                 = host->m_conf.getNXDNNetworkDebug();
+
+	LogInfo("NXDN Network Parameters");
+	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
+	LogInfo("    Gateway Port: %u", gatewayPort);
+	LogInfo("    Local Address: %s", localAddress.c_str());
+	LogInfo("    Local Port: %u", localPort);
+	LogInfo("    Mode Hang: %us", m_nxdnNetModeHang);
+
+	m_nxdnNetwork = new CNXDNNetwork(localAddress, localPort, gatewayAddress, gatewayPort, debug);
+
+	bool ret = m_nxdnNetwork->open();
+	if (!ret) {
+		delete m_nxdnNetwork;
+		m_nxdnNetwork = NULL;
+		return false;
+	}
+
+	m_nxdnNetwork->enable(true);
+
+	return true;
+}
+
+bool CNXDNTask::run(CMMDVMTaskContext* ctx)
+{
+    if(!m_nxdnControl)
+        return true;
+
+    CMMDVMHost *host = ctx->host;
+    assert(host);
+
+    unsigned char* data = (unsigned char*)ctx->data;
+    bool ret;
+    unsigned int len;
+    
+    // polling modem and write to network
+    len = host->m_modem->readNXDNData(data);
+    if (len > 0U) {
+        if (host->m_mode == MODE_IDLE) {
+            ret = m_nxdnControl->writeModem(data, len);
+            if (ret) {
+                host->m_modeTimer.setTimeout(m_nxdnRFModeHang);
+                host->setMode(MODE_NXDN);
+            }
+        } else if (host->m_mode == MODE_NXDN) {
+            m_nxdnControl->writeModem(data, len);
+            host->m_modeTimer.start();
+        } else if (host->m_mode != MODE_LOCKOUT) {
+            LogWarning("NXDN modem data received when in mode %u", host->m_mode);
+        }
+    }
+
+    // polling network and write to modem
+    ret = host->m_modem->hasNXDNSpace();
+    if (ret) {
+        len = m_nxdnControl->readModem(data);
+        if (len > 0U) {
+            if (host->m_mode == MODE_IDLE) {
+                host->m_modeTimer.setTimeout(m_nxdnNetModeHang);
+                host->setMode(MODE_NXDN);
+            }
+            if (host->m_mode == MODE_NXDN) {
+                host->m_modem->writeNXDNData(data, len);
+                host->m_modeTimer.start();
+            } else if (host->m_mode != MODE_LOCKOUT) {
+                LogWarning("NXDN data received when in mode %u", host->m_mode);
+            }
+        }
+    }
+
+    unsigned int ms = m_stopWatch.elapsed();
+    m_stopWatch.start();
+
+    m_nxdnControl->clock(ms);
+    if (m_nxdnNetwork){
+        m_nxdnNetwork->clock(ms);
+    }
+
+    return true;
+}
+
+void CNXDNTask::enableNetwork(bool enabled)
+{
+    if (m_nxdnNetwork != NULL)
+        m_nxdnNetwork->enable(enabled);
 }
