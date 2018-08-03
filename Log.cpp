@@ -104,8 +104,11 @@ void Log(unsigned int level, const char* fmt, ...)
 	::gettimeofday(&now, NULL);
 
 	struct tm* tm = ::gmtime(&now.tv_sec);
-
+#ifdef __APPLE__
+	::sprintf(buffer, "%c: %04d-%02d-%02d %02d:%02d:%02d.%03u ", LEVELS[level], tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, now.tv_usec / 1000U);
+#else
 	::sprintf(buffer, "%c: %04d-%02d-%02d %02d:%02d:%02d.%03lu ", LEVELS[level], tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, now.tv_usec / 1000U);
+#endif
 #endif
 
 	va_list vl;

@@ -19,13 +19,7 @@
 #if !defined(MMDVMHOST_H)
 #define	MMDVMHOST_H
 
-#include "POCSAGNetwork.h"
-#include "DStarNetwork.h"
-#include "NXDNNetwork.h"
 #include "NXDNLookup.h"
-#include "YSFNetwork.h"
-#include "P25Network.h"
-#include "DMRNetwork.h"
 #include "DMRLookup.h"
 #include "Display.h"
 #include "Timer.h"
@@ -35,9 +29,26 @@
 
 #include <string>
 
+class CRSSIInterpolator;
+class CDStarTask;
+class CDMRTask;
+class CYSFTask;
+class CP25Task;
+class CNXDNTask;
+class CPOCSAGTask;
+class CPassThroughTask;
+
 class CMMDVMHost
 {
 public:
+  friend class CDStarTask;
+  friend class CDMRTask;
+  friend class CYSFTask;
+  friend class CP25Task;
+  friend class CNXDNTask;
+  friend class CPOCSAGTask;
+  friend class CPassThroughTask;
+
   CMMDVMHost(const std::string& confFile);
   ~CMMDVMHost();
 
@@ -46,28 +57,16 @@ public:
 private:
   CConf           m_conf;
   CModem*         m_modem;
-  CDStarNetwork*  m_dstarNetwork;
-  CDMRNetwork*    m_dmrNetwork;
-  CYSFNetwork*    m_ysfNetwork;
-  CP25Network*    m_p25Network;
-  CNXDNNetwork*   m_nxdnNetwork;
-  CPOCSAGNetwork* m_pocsagNetwork;
+  CDStarTask*     m_dstarTask;
+  CDMRTask*       m_dmrTask;
+  CYSFTask*       m_ysfTask;
+  CP25Task*       m_p25Task;
+  CNXDNTask*      m_nxdnTask;
+  CPOCSAGTask*    m_pocsagTask;
   CDisplay*       m_display;
   CUMP*           m_ump;
   unsigned char   m_mode;
-  unsigned int    m_dstarRFModeHang;
-  unsigned int    m_dmrRFModeHang;
-  unsigned int    m_ysfRFModeHang;
-  unsigned int    m_p25RFModeHang;
-  unsigned int    m_nxdnRFModeHang;
-  unsigned int    m_dstarNetModeHang;
-  unsigned int    m_dmrNetModeHang;
-  unsigned int    m_ysfNetModeHang;
-  unsigned int    m_p25NetModeHang;
-  unsigned int    m_nxdnNetModeHang;
-  unsigned int    m_pocsagNetModeHang;
   CTimer          m_modeTimer;
-  CTimer          m_dmrTXTimer;
   CTimer          m_cwIdTimer;
   bool            m_duplex;
   unsigned int    m_timeout;
@@ -86,12 +85,10 @@ private:
 
   void readParams();
   bool createModem();
-  bool createDStarNetwork();
-  bool createDMRNetwork();
-  bool createYSFNetwork();
-  bool createP25Network();
-  bool createNXDNNetwork();
-  bool createPOCSAGNetwork();
+  //bool createPOCSAGNetwork();
+  //CPOCSAGControl* createPOCSAGControl(CTimer& pocsagTimer);
+
+  bool daemonize();
 
   void setMode(unsigned char mode);
 };
