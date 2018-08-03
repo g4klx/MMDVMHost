@@ -248,9 +248,6 @@ int CMMDVMHost::run()
 		m_nxdnLookup->read();
 	}
 
-	CStopWatch stopWatch;
-	stopWatch.start();
-
 	if (m_dstarEnabled){
 		m_dstarTask = CDStarTask::create(this,rssi);
 		assert(m_dstarTask);
@@ -286,6 +283,8 @@ int CMMDVMHost::run()
 
 	CMMDVMTaskContext ctx;
 	ctx.host = this;
+	CStopWatch stopWatch;
+	stopWatch.start();
 
 	while (!m_killed) {
 		bool lockout1 = m_modem->hasLockout();
@@ -310,10 +309,22 @@ int CMMDVMHost::run()
 			m_ump->setCD(cd);
 		}
 
-		unsigned char data[200U];
-		unsigned int len;
-		ctx.data = data;
+		unsigned int ms = stopWatch.elapsed();
+		stopWatch.start();
+#if 0
+		static int _c = 0;
+		static int _e = 0;
+		_e += ms;
+		if(_c++ == 999){
+			LogDebug("main loop elapsed %d ms",_e / 1000);
+			_e = 0;
+			_c = 0;
+		}
+#endif
+		m_modem->clock(ms);		// first polling modem data.
 
+		unsigned char data[200U];
+		ctx.data = data;
 		if (m_dstarTask != NULL)
 			m_dstarTask->run(&ctx);
 
@@ -332,19 +343,12 @@ int CMMDVMHost::run()
 		if (transparentTask != NULL)
 			transparentTask->run(&ctx);
 
-		if (m_modeTimer.isRunning() && m_modeTimer.hasExpired())
-			setMode(MODE_IDLE);
-
 		if (m_pocsagTask != NULL)
 			m_pocsagTask->run(&ctx);
 
-		unsigned int ms = stopWatch.elapsed();
-		stopWatch.start();
-
-		m_display->clock(ms);
-
-		m_modem->clock(ms);
 		m_modeTimer.clock(ms);
+		if (m_modeTimer.isRunning() && m_modeTimer.hasExpired())
+			setMode(MODE_IDLE);
 
 		m_cwIdTimer.clock(ms);
 		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
@@ -360,6 +364,8 @@ int CMMDVMHost::run()
 
 		if (m_ump != NULL)
 			m_ump->clock(ms);
+
+		m_display->clock(ms);
 
 		if (ms < 5U)
 			CThread::sleep(5U);
