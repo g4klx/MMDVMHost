@@ -1085,7 +1085,7 @@ bool CModem::writePOCSAGData(const unsigned char* data, unsigned int length)
 	return true;
 }
 
-bool CModem::writeTransparentData(const unsigned char* data, unsigned int length)
+bool CModem::writeTransparentData(const unsigned char* data, unsigned int length, unsigned int sendFrameType)
 {
 	assert(data != NULL);
 	assert(length > 0U);
@@ -1096,7 +1096,19 @@ bool CModem::writeTransparentData(const unsigned char* data, unsigned int length
 	buffer[1U] = length + 3U;
 	buffer[2U] = MMDVM_TRANSPARENT;
 
-	::memcpy(buffer + 3U, data, length);
+	if (sendFrameType>0) {
+		::memcpy(buffer + 2U, data, length);
+		length--;
+		buffer[1U]--;
+		//when sendFrameType==1 , only 0x80 and 0x90 (MMDVM_SERIAL and MMDVM_TRANSPARENT) are allowed
+		//  and reverted to default (MMDVM_TRANSPARENT) for any other value
+		//when >1, frame type is not checked
+		if (sendFrameType==1) {
+			if ((buffer[2U] & 0xE0) != 0x80) buffer[2U] = MMDVM_TRANSPARENT;
+		}
+	} else {
+		::memcpy(buffer + 3U, data, length);
+	}
 
 	unsigned char len = length + 3U;
 	m_txTransparentData.addData(&len, 1U);

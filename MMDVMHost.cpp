@@ -315,15 +315,18 @@ int CMMDVMHost::run()
 	unsigned int transparentPort = 0U;
 	CUDPSocket* transparentSocket = NULL;
 
+	unsigned int sendFrameType = 0U;
 	if (m_conf.getTransparentEnabled()) {
 		std::string remoteAddress = m_conf.getTransparentRemoteAddress();
 		unsigned int remotePort   = m_conf.getTransparentRemotePort();
 		unsigned int localPort    = m_conf.getTransparentLocalPort();
+		sendFrameType             = m_conf.getTransparentSendFrameType();
 
 		LogInfo("Transparent Data");
 		LogInfo("    Remote Address: %s", remoteAddress.c_str());
 		LogInfo("    Remote Port: %u", remotePort);
 		LogInfo("    Local Port: %u", localPort);
+		LogInfo("    Send Frame Type: %u", sendFrameType);
 
 		transparentAddress = CUDPSocket::lookup(remoteAddress);
 		transparentPort    = remotePort;
@@ -884,7 +887,7 @@ int CMMDVMHost::run()
 			unsigned int port = 0U;
 			len = transparentSocket->read(data, 200U, address, port);
 			if (len > 0U)
-				m_modem->writeTransparentData(data, len);
+				m_modem->writeTransparentData(data, len, sendFrameType);
 		}
 
 		unsigned int ms = stopWatch.elapsed();

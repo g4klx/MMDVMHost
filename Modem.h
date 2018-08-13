@@ -77,7 +77,7 @@ public:
 	bool writeP25Data(const unsigned char* data, unsigned int length);
 	bool writeNXDNData(const unsigned char* data, unsigned int length);
 	bool writePOCSAGData(const unsigned char* data, unsigned int length);
-	bool writeTransparentData(const unsigned char* data, unsigned int length);
+	bool writeTransparentData(const unsigned char* data, unsigned int length, unsigned int sendFrameType);
 
 	bool writeDMRStart(bool tx);
 	bool writeDMRShortLC(const unsigned char* lc);
