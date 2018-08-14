@@ -99,6 +99,7 @@ public:
   std::string  getTransparentRemoteAddress() const;
   unsigned int getTransparentRemotePort() const;
   unsigned int getTransparentLocalPort() const;
+  unsigned int getTransparentSendFrameType() const;
 
   // The UMP section
   bool         getUMPEnabled() const;
@@ -322,6 +323,7 @@ private:
   std::string  m_transparentRemoteAddress;
   unsigned int m_transparentRemotePort;
   unsigned int m_transparentLocalPort;
+  unsigned int m_transparentSendFrameType;
 
   bool         m_umpEnabled;
   std::string  m_umpPort;
