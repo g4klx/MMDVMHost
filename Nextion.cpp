@@ -99,7 +99,7 @@ void CNextion::setIdleInt()
 	sendCommand("page MMDVM");
 	sendCommandAction(1U);
 
-	char command[30U];
+	char command[100U];
 	::sprintf(command, "dim=%u", m_idleBrightness);
 	sendCommand(command);
 	
@@ -163,6 +163,27 @@ void CNextion::setLockoutInt()
 	m_clockDisplayTimer.stop();
 
 	m_mode = MODE_LOCKOUT;
+}
+
+void CNextion::setQuitInt()
+{
+	sendCommand("page MMDVM");
+	sendCommandAction(1U);
+
+	char command[100];
+	::sprintf(command, "dim=%u", m_idleBrightness);
+	sendCommand(command);
+
+	::sprintf(command, "t3.txt=\"%s\"", m_ipaddress.c_str());
+	sendCommand(command);
+	sendCommandAction(16U);
+
+	sendCommand("t0.txt=\"MMDVM STOPPED\"");
+	sendCommandAction(19U);
+
+	m_clockDisplayTimer.stop();
+
+	m_mode = MODE_QUIT;
 }
 
 void CNextion::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
@@ -750,10 +771,6 @@ void CNextion::clockInt(unsigned int ms)
 
 void CNextion::close()
 {
-	sendCommand("page MMDVM");
-	sendCommandAction(1U);
-	sendCommand("t1.txt=\"MMDVM STOPPED\"");
-	sendCommandAction(19U);
 	m_serial->close();
 	delete m_serial;
 }

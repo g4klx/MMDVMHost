@@ -283,6 +283,21 @@ void COLED::setLockoutInt()
     display.display();
 }
 
+void COLED::setQuitInt()
+{
+    m_mode = MODE_QUIT;
+
+    display.clearDisplay();
+    OLED_statusbar();
+
+    display.setCursor(0,30);
+    display.setTextSize(3);
+    display.print("Stopped");
+
+    display.setTextSize(1);
+    display.display();
+}
+
 void COLED::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
     m_mode = MODE_DSTAR;

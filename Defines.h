@@ -29,6 +29,7 @@ const unsigned char MODE_POCSAG  = 6U;
 const unsigned char MODE_CW      = 98U;
 const unsigned char MODE_LOCKOUT = 99U;
 const unsigned char MODE_ERROR   = 100U;
+const unsigned char MODE_QUIT    = 110U;
 
 const unsigned char TAG_HEADER = 0x00U;
 const unsigned char TAG_DATA   = 0x01U;

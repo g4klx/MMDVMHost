@@ -374,6 +374,31 @@ void CHD44780::setLockoutInt()
 	m_dmr = false;
 }
 
+void CHD44780::setQuitInt()
+{
+#ifdef ADAFRUIT_DISPLAY
+	adafruitLCDColour(AC_RED);
+#endif
+
+	m_clockDisplayTimer.stop();           // Stop the clock display
+	::lcdClear(m_fd);
+
+	if (m_pwm) {
+		if (m_pwmPin != 1U)
+			::softPwmWrite(m_pwmPin, m_pwmBright);
+		else
+			::pwmWrite(m_pwmPin, (m_pwmBright / 100) * 1024);
+	}
+
+	::lcdPosition(m_fd, 0, 0);
+	::lcdPuts(m_fd, "MMDVM");
+
+	::lcdPosition(m_fd, 0, 1);
+	::lcdPuts(m_fd, "STOPPED");
+
+	m_dmr = false;
+}
+
 void CHD44780::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
 	assert(my1 != NULL);

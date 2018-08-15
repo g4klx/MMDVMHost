@@ -971,7 +971,7 @@ int CMMDVMHost::run()
 			CThread::sleep(5U);
 	}
 
-	setMode(MODE_IDLE);
+	setMode(MODE_QUIT);
 
 	m_modem->close();
 	delete m_modem;
@@ -1560,6 +1560,9 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_cwIdTimer.start();
 		}
 		m_display->setIdle();
+		if (mode==MODE_QUIT) {
+			m_display->setQuit();
+		}
 		m_mode = MODE_IDLE;
 		m_modeTimer.stop();
 		break;
