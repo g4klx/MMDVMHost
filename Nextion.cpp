@@ -99,7 +99,7 @@ void CNextion::setIdleInt()
 	sendCommand("page MMDVM");
 	sendCommandAction(1U);
 
-	char command[30U];
+	char command[100U];
 	::sprintf(command, "dim=%u", m_idleBrightness);
 	sendCommand(command);
 	
