@@ -56,6 +56,10 @@ void CNullDisplay::setLockoutInt()
 {
 }
 
+void CNullDisplay::setQuitInt()
+{
+}
+
 void CNullDisplay::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
 #if defined(RASPBERRY_PI)
