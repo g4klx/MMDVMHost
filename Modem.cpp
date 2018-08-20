@@ -230,11 +230,8 @@ bool CModem::open()
 	::LogMessage("Opening the MMDVM");
 
 	bool ret = m_serial->open();
-	if (!ret) {
-		delete m_serial;
-		m_serial = NULL;
+	if (!ret)
 		return false;
-	}
 
 	ret = readVersion();
 	if (!ret) {
@@ -756,8 +753,6 @@ void CModem::close()
 	::LogMessage("Closing the MMDVM");
 
 	m_serial->close();
-	delete m_serial;
-	m_serial = NULL;
 }
 
 unsigned int CModem::readDStarData(unsigned char* data)
