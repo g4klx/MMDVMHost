@@ -8,7 +8,7 @@ It builds on 32-bit and 64-bit Linux as well as on Windows using Visual Studio 2
 	- Support for HD44780 via 4 bit GPIO connection (user selectable pins)
 	- Adafruit 16x2 LCD+Keypad Kits (I2C)
 	- Connection via PCF8574 GPIO Extender (I2C)
-- Nextion TFTs (sizes 2.4", 2.8", 3.2" and 3.5")
+- Nextion TFTs (all sizes, both Basic and Enhanced versions)
 - TFT display sold by Hobbytronics in UK
 - OLED 128x64 (SSD1306)
 - LCDproc
