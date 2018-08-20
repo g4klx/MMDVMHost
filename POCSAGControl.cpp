@@ -97,7 +97,8 @@ unsigned int CPOCSAGControl::readModem(unsigned char* data)
 
 bool CPOCSAGControl::processData()
 {
-	assert(m_network != NULL);
+	if (m_network == NULL)
+		return false;
 
 	unsigned char data[300U];
 	unsigned int length = m_network->read(data);

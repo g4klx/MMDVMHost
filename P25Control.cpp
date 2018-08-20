@@ -595,6 +595,10 @@ unsigned int CP25Control::readModem(unsigned char* data)
 void CP25Control::writeNetwork()
 {
 	unsigned char data[100U];
+
+	if (m_network == NULL)
+		return;
+
 	unsigned int length = m_network->read(data, 100U);
 	if (length == 0U)
 		return;
