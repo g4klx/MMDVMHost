@@ -57,7 +57,7 @@ public:
 	virtual int setNonblock(bool nonblock);
 #endif
 
-private:
+protected:
 	std::string    m_device;
 	SERIAL_SPEED   m_speed;
 	bool           m_assertRTS;

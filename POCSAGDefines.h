@@ -1,6 +1,5 @@
 /*
-*   Copyright (C) 2016,2018 by Jonathan Naylor G4KLX
-*   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com>
+*   Copyright (C) 2018 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -17,29 +16,20 @@
 *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#if !defined(P25NID_H)
-#define  P25NID_H
+#if !defined(POCSAGDEFINES_H)
+#define  POCSAGDEFINES_H
 
-class CP25NID {
-public:
-	CP25NID(unsigned int nac);
-	~CP25NID();
+#include <cstdint>
 
-	bool decode(const unsigned char* data);
+const unsigned int POCSAG_RADIO_SYMBOL_LENGTH = 20U;      // At 24 kHz sample rate
 
-	unsigned char getDUID() const;
+const unsigned int POCSAG_FRAME_LENGTH_WORDS = 17U;
+const unsigned int POCSAG_FRAME_LENGTH_BYTES = POCSAG_FRAME_LENGTH_WORDS * sizeof(uint32_t);
 
-	void encode(unsigned char* data, unsigned char duid) const;
+const unsigned int POCSAG_FRAME_ADDRESSES = 8U;
 
-private:
-	unsigned char  m_duid;
-	unsigned char* m_hdr;
-	unsigned char* m_ldu1;
-	unsigned char* m_ldu2;
-	unsigned char* m_termlc;
-	unsigned char* m_term;
-	unsigned char* m_tsdu;
-	unsigned char* m_pdu;
-};
+const uint32_t POCSAG_SYNC_WORD = 0x7CD215D8U;
+
+const uint32_t POCSAG_IDLE_WORD = 0x7A89C197U;
 
 #endif

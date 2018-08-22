@@ -23,6 +23,12 @@
 
 #include <string>
 
+#include <cstdint>
+
+class CConf;
+class CModem;
+class CUMP;
+
 class CDisplay
 {
 public:
@@ -34,6 +40,7 @@ public:
 	void setIdle();
 	void setLockout();
 	void setError(const char* text);
+	void setQuit();
 
 	void writeDStar(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
 	void writeDStarRSSI(unsigned char rssi);
@@ -61,17 +68,22 @@ public:
 	void writeNXDNBER(float ber);
 	void clearNXDN();
 
+	void writePOCSAG(uint32_t ric, const std::string& message);
+	void clearPOCSAG();
+
 	void writeCW();
-	void clearCW();
 
 	virtual void close() = 0;
 
 	void clock(unsigned int ms);
 
+	static CDisplay* createDisplay(const CConf& conf, CUMP* ump, CModem* modem);
+
 protected:
 	virtual void setIdleInt() = 0;
 	virtual void setLockoutInt() = 0;
 	virtual void setErrorInt(const char* text) = 0;
+	virtual void setQuitInt() = 0;
 
 	virtual void writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector) = 0;
 	virtual void writeDStarRSSIInt(unsigned char rssi);
@@ -98,6 +110,9 @@ protected:
 	virtual void writeNXDNRSSIInt(unsigned char rssi);
 	virtual void writeNXDNBERInt(float ber);
 	virtual void clearNXDNInt() = 0;
+
+	virtual void writePOCSAGInt(uint32_t ric, const std::string& message) = 0;
+	virtual void clearPOCSAGInt() = 0;
 
 	virtual void writeCWInt() = 0;
 	virtual void clearCWInt() = 0;

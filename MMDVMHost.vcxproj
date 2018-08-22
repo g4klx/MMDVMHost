@@ -183,6 +183,7 @@
     <ClInclude Include="Golay24128.h" />
     <ClInclude Include="Hamming.h" />
     <ClInclude Include="DMRLookup.h" />
+    <ClInclude Include="I2CController.h" />
     <ClInclude Include="LCDproc.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MMDVMHost.h" />
@@ -212,6 +213,9 @@
     <ClInclude Include="P25NID.h" />
     <ClInclude Include="P25Trellis.h" />
     <ClInclude Include="P25Utils.h" />
+    <ClInclude Include="POCSAGControl.h" />
+    <ClInclude Include="POCSAGDefines.h" />
+    <ClInclude Include="POCSAGNetwork.h" />
     <ClInclude Include="QR1676.h" />
     <ClInclude Include="RingBuffer.h" />
     <ClInclude Include="RS129.h" />
@@ -266,6 +270,7 @@
     <ClCompile Include="Golay2087.cpp" />
     <ClCompile Include="Golay24128.cpp" />
     <ClCompile Include="Hamming.cpp" />
+    <ClCompile Include="I2CController.cpp" />
     <ClCompile Include="LCDproc.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MMDVMHost.cpp" />
@@ -294,6 +299,8 @@
     <ClCompile Include="P25NID.cpp" />
     <ClCompile Include="P25Trellis.cpp" />
     <ClCompile Include="P25Utils.cpp" />
+    <ClCompile Include="POCSAGControl.cpp" />
+    <ClCompile Include="POCSAGNetwork.cpp" />
     <ClCompile Include="QR1676.cpp" />
     <ClCompile Include="RS129.cpp" />
     <ClCompile Include="RS241213.cpp" />

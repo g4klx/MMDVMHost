@@ -26,6 +26,7 @@
 #include <cstdio>
 #include <cassert>
 #include <cstring>
+#include <cstdlib>
 
 const unsigned int BUFFER_LENGTH = 100U;
 

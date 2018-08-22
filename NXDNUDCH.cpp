@@ -187,8 +187,6 @@ void CNXDNUDCH::getRaw(unsigned char* data) const
 
 	::memset(data, 0x00U, 25U);
 	::memcpy(data, m_data, 23U);
-
-	CNXDNCRC::encodeCRC15(data, 184U);
 }
 
 void CNXDNUDCH::setRAN(unsigned char ran)

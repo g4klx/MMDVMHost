@@ -79,6 +79,7 @@ private:
 	CDMRLC*                    m_netLC;
 	unsigned char              m_rfSeqNo;
 	unsigned char              m_rfN;
+	unsigned char              m_lastrfN;
 	unsigned char              m_netN;
 	CTimer                     m_networkWatchdog;
 	CTimer                     m_rfTimeoutTimer;

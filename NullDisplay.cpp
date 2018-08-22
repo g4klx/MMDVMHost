@@ -56,6 +56,10 @@ void CNullDisplay::setLockoutInt()
 {
 }
 
+void CNullDisplay::setQuitInt()
+{
+}
+
 void CNullDisplay::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
 #if defined(RASPBERRY_PI)
@@ -120,6 +124,20 @@ void CNullDisplay::writeNXDNInt(const char* source, bool group, unsigned int des
 }
 
 void CNullDisplay::clearNXDNInt()
+{
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 0);
+#endif
+}
+
+void CNullDisplay::writePOCSAGInt(uint32_t ric, const std::string& message)
+{
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 1);
+#endif
+}
+
+void CNullDisplay::clearPOCSAGInt()
 {
 #if defined(RASPBERRY_PI)
 	::digitalWrite(LED_STATUS, 0);

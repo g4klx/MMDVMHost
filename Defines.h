@@ -25,9 +25,11 @@ const unsigned char MODE_DMR     = 2U;
 const unsigned char MODE_YSF     = 3U;
 const unsigned char MODE_P25     = 4U;
 const unsigned char MODE_NXDN    = 5U;
+const unsigned char MODE_POCSAG  = 6U;
 const unsigned char MODE_CW      = 98U;
 const unsigned char MODE_LOCKOUT = 99U;
 const unsigned char MODE_ERROR   = 100U;
+const unsigned char MODE_QUIT    = 110U;
 
 const unsigned char TAG_HEADER = 0x00U;
 const unsigned char TAG_DATA   = 0x01U;
@@ -41,6 +43,7 @@ enum HW_TYPE {
 	HWT_MMDVM_HS_HAT,
 	HWT_MMDVM_HS_DUAL_HAT,
 	HWT_NANO_HOTSPOT,
+	HWT_NANO_DV,
 	HWT_MMDVM_HS,
 	HWT_UNKNOWN
 };

@@ -1,5 +1,6 @@
 /*
 *   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX
+*   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com>
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -94,6 +95,7 @@ private:
 	void writeNetwork(const unsigned char *data, unsigned char type, bool end);
 	void writeNetwork();
 
+	void setBusyBits(unsigned char* data, unsigned int ssOffset, bool b1, bool b2);
 	void addBusyBits(unsigned char* data, unsigned int length, bool b1, bool b2);
 
 	void checkNetLDU1();

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2014,2016,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2018 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,10 +16,10 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef	NXDNNetwork_H
-#define	NXDNNetwork_H
+#ifndef	POCSAGNetwork_H
+#define	POCSAGNetwork_H
 
-#include "NXDNDefines.h"
+#include "POCSAGDefines.h"
 #include "RingBuffer.h"
 #include "UDPSocket.h"
 #include "Timer.h"
@@ -27,27 +27,16 @@
 #include <cstdint>
 #include <string>
 
-enum NXDN_NETWORK_MESSAGE_TYPE {
-	NNMT_VOICE_HEADER,
-	NNMT_VOICE_BODY,
-	NNMT_VOICE_TRAILER,
-	NNMT_DATA_HEADER,
-	NNMT_DATA_BODY,
-	NNMT_DATA_TRAILER
-};
-
-class CNXDNNetwork {
+class CPOCSAGNetwork {
 public:
-	CNXDNNetwork(const std::string& localAddress, unsigned int localPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug);
-	~CNXDNNetwork();
+	CPOCSAGNetwork(const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug);
+	~CPOCSAGNetwork();
 
 	bool open();
 
 	void enable(bool enabled);
 
-	bool write(const unsigned char* data, NXDN_NETWORK_MESSAGE_TYPE type);
-
-	bool read(unsigned char* data);
+	unsigned int read(unsigned char* data);
 
 	void reset();
 
@@ -56,11 +45,11 @@ public:
 	void clock(unsigned int ms);
 
 private:
-	CUDPSocket                 m_socket;
-	in_addr                    m_address;
-	unsigned int               m_port;
-	bool                       m_debug;
-	bool                       m_enabled;
+	CUDPSocket     m_socket;
+	in_addr        m_address;
+	unsigned int   m_port;
+	bool           m_debug;
+	bool           m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
 };
 

@@ -224,6 +224,23 @@ void CLCDproc::setLockoutInt()
 
 // LED 4 Green 8 Red 128 Yellow 136
 
+void CLCDproc::setQuitInt()
+{
+	m_clockDisplayTimer.stop();           // Stop the clock display
+
+	if (m_screensDefined) {
+		socketPrintf(m_socketfd, "screen_set DStar -priority hidden");
+		socketPrintf(m_socketfd, "screen_set DMR -priority hidden");
+		socketPrintf(m_socketfd, "screen_set YSF -priority hidden");
+		socketPrintf(m_socketfd, "screen_set P25 -priority hidden");
+		socketPrintf(m_socketfd, "screen_set NXDN -priority hidden");
+		socketPrintf(m_socketfd, "widget_set Status Status %u %u Stopped", m_cols - 6, m_rows);
+		socketPrintf(m_socketfd, "output 0");   // Clear all LEDs
+	}
+
+	m_dmr = false;
+}
+
 void CLCDproc::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
 	assert(my1 != NULL);
@@ -512,6 +529,14 @@ void CLCDproc::clearNXDNInt()
 	socketPrintf(m_socketfd, "widget_set NXDN Line3 1 3 15 3 h 3 \"\"");
 	socketPrintf(m_socketfd, "widget_set NXDN Line4 1 4 15 4 h 3 \"\"");
 	socketPrintf(m_socketfd, "output 16"); // Set LED5 color green
+}
+
+void CLCDproc::writePOCSAGInt(uint32_t ric, const std::string& message)
+{
+}
+
+void CLCDproc::clearPOCSAGInt()
+{
 }
 
 void CLCDproc::writeCWInt()

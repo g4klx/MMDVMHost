@@ -89,7 +89,7 @@ bool CNXDNLayer3::getIsGroup() const
 
 unsigned char CNXDNLayer3::getDataBlocks() const
 {
-	return m_data[8U] & 0x0FU;
+	return (m_data[8U] & 0x0FU) + 1U;
 }
 
 void CNXDNLayer3::getData(unsigned char* data) const

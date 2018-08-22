@@ -29,6 +29,7 @@
 #define PIN_YSF     5
 #define PIN_P25     6
 #define PIN_NXDN    7
+#define PIN_POCSAG  8
 
 #define PIN_TX      10
 #define PIN_CD      11
@@ -64,17 +65,19 @@ void setup()
   pinMode(PIN_YSF,     OUTPUT);
   pinMode(PIN_P25,     OUTPUT);
   pinMode(PIN_NXDN,    OUTPUT);
+  pinMode(PIN_POCSAG,  OUTPUT);
   pinMode(PIN_TX,      OUTPUT);
   pinMode(PIN_CD,      OUTPUT);
   pinMode(PIN_LOCKOUT, INPUT);
 
-  digitalWrite(PIN_DSTAR, LOW);
-  digitalWrite(PIN_DMR,   LOW);
-  digitalWrite(PIN_YSF,   LOW);
-  digitalWrite(PIN_P25,   LOW);
-  digitalWrite(PIN_NXDN,  LOW);
-  digitalWrite(PIN_TX,    LOW);
-  digitalWrite(PIN_CD,    LOW);
+  digitalWrite(PIN_DSTAR,  LOW);
+  digitalWrite(PIN_DMR,    LOW);
+  digitalWrite(PIN_YSF,    LOW);
+  digitalWrite(PIN_P25,    LOW);
+  digitalWrite(PIN_NXDN,   LOW);
+  digitalWrite(PIN_POCSAG, LOW);
+  digitalWrite(PIN_TX,     LOW);
+  digitalWrite(PIN_CD,     LOW);
 }
 
 #define UMP_FRAME_START   0xF0U
@@ -95,6 +98,7 @@ void setup()
 #define MODE_YSF    3U
 #define MODE_P25    4U
 #define MODE_NXDN   5U
+#define MODE_POCSAG 6U
 
 bool     m_started = false;
 uint32_t m_count   = 0U;
@@ -129,11 +133,12 @@ void loop()
           m_started = true;
           break;
         case UMP_SET_MODE:
-          digitalWrite(PIN_DSTAR, m_buffer[3U] == MODE_DSTAR ? HIGH : LOW);
-          digitalWrite(PIN_DMR,   m_buffer[3U] == MODE_DMR   ? HIGH : LOW);
-          digitalWrite(PIN_YSF,   m_buffer[3U] == MODE_YSF   ? HIGH : LOW);
-          digitalWrite(PIN_P25,   m_buffer[3U] == MODE_P25   ? HIGH : LOW);
-          digitalWrite(PIN_NXDN,  m_buffer[3U] == MODE_NXDN  ? HIGH : LOW);
+          digitalWrite(PIN_DSTAR,  m_buffer[3U] == MODE_DSTAR  ? HIGH : LOW);
+          digitalWrite(PIN_DMR,    m_buffer[3U] == MODE_DMR    ? HIGH : LOW);
+          digitalWrite(PIN_YSF,    m_buffer[3U] == MODE_YSF    ? HIGH : LOW);
+          digitalWrite(PIN_P25,    m_buffer[3U] == MODE_P25    ? HIGH : LOW);
+          digitalWrite(PIN_NXDN,   m_buffer[3U] == MODE_NXDN   ? HIGH : LOW);
+          digitalWrite(PIN_POCSAG, m_buffer[3U] == MODE_POCSAG ? HIGH : LOW);
           break;
         case UMP_SET_TX:
           digitalWrite(PIN_TX, m_buffer[3U] == 0x01U ? HIGH : LOW);

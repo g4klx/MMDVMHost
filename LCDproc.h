@@ -39,6 +39,8 @@ protected:
   virtual void setIdleInt();
   virtual void setErrorInt(const char* text);
   virtual void setLockoutInt();
+  virtual void setQuitInt();
+  
 
   virtual void writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
   virtual void writeDStarRSSIInt(unsigned char rssi);
@@ -59,6 +61,9 @@ protected:
   virtual void writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type);
   virtual void writeNXDNRSSIInt(unsigned char rssi);
   virtual void clearNXDNInt();
+
+  virtual void writePOCSAGInt(uint32_t ric, const std::string& message);
+  virtual void clearPOCSAGInt();
 
   virtual void writeCWInt();
   virtual void clearCWInt();

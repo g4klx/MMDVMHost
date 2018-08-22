@@ -145,6 +145,22 @@ void CTFTSerial::setLockoutInt()
 	m_mode = MODE_LOCKOUT;
 }
 
+void CTFTSerial::setQuitInt()
+{
+	// Clear the screen
+	clearScreen();
+
+	setFontSize(FONT_LARGE);
+
+	// Draw MMDVM logo
+	displayBitmap(0U, 0U, "MMDVM_sm.bmp");
+
+	gotoPosPixel(20U, 60U);
+	displayText("STOPPED");
+
+	m_mode = MODE_QUIT;
+}
+
 void CTFTSerial::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
 	assert(my1 != NULL);
@@ -393,6 +409,20 @@ void CTFTSerial::clearNXDNInt()
 
 	gotoPosPixel(5U, 110U);
 	displayText("              ");
+}
+
+void CTFTSerial::writePOCSAGInt(uint32_t ric, const std::string& message)
+{
+	gotoPosPixel(15U, 90U);
+	displayText("POCSAG TX");
+
+	m_mode = MODE_CW;
+}
+
+void CTFTSerial::clearPOCSAGInt()
+{
+	gotoPosPixel(45U, 90U);
+	displayText("IDLE");
 }
 
 void CTFTSerial::writeCWInt()

@@ -16,11 +16,13 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include "I2CController.h"
 #include "DStarDefines.h"
 #include "DMRDefines.h"
 #include "YSFDefines.h"
 #include "P25Defines.h"
 #include "NXDNDefines.h"
+#include "POCSAGDefines.h"
 #include "Thread.h"
 #include "Modem.h"
 #include "Utils.h"
@@ -71,6 +73,8 @@ const unsigned char MMDVM_P25_LOST    = 0x32U;
 const unsigned char MMDVM_NXDN_DATA   = 0x40U;
 const unsigned char MMDVM_NXDN_LOST   = 0x41U;
 
+const unsigned char MMDVM_POCSAG_DATA = 0x50U;
+
 const unsigned char MMDVM_ACK         = 0x70U;
 const unsigned char MMDVM_NAK         = 0x7FU;
 
@@ -93,6 +97,7 @@ CModem::CModem(const std::string& port, bool duplex, bool rxInvert, bool txInver
 m_port(port),
 m_dmrColorCode(0U),
 m_ysfLoDev(false),
+m_ysfTXHang(4U),
 m_duplex(duplex),
 m_rxInvert(rxInvert),
 m_txInvert(txInvert),
@@ -106,18 +111,21 @@ m_dmrTXLevel(0U),
 m_ysfTXLevel(0U),
 m_p25TXLevel(0U),
 m_nxdnTXLevel(0U),
+m_pocsagTXLevel(0U),
 m_trace(trace),
 m_debug(debug),
 m_rxFrequency(0U),
 m_txFrequency(0U),
+m_pocsagFrequency(0U),
 m_dstarEnabled(false),
 m_dmrEnabled(false),
 m_ysfEnabled(false),
 m_p25Enabled(false),
 m_nxdnEnabled(false),
+m_pocsagEnabled(false),
 m_rxDCOffset(0),
 m_txDCOffset(0),
-m_serial(port, SERIAL_115200, true),
+m_serial(NULL),
 m_buffer(NULL),
 m_length(0U),
 m_offset(0U),
@@ -133,6 +141,7 @@ m_rxP25Data(1000U, "Modem RX P25"),
 m_txP25Data(1000U, "Modem TX P25"),
 m_rxNXDNData(1000U, "Modem RX NXDN"),
 m_txNXDNData(1000U, "Modem TX NXDN"),
+m_txPOCSAGData(1000U, "Modem TX POCSAG"),
 m_rxTransparentData(1000U, "Modem RX Transparent"),
 m_txTransparentData(1000U, "Modem TX Transparent"),
 m_statusTimer(1000U, 0U, 250U),
@@ -144,6 +153,7 @@ m_dmrSpace2(0U),
 m_ysfSpace(0U),
 m_p25Space(0U),
 m_nxdnSpace(0U),
+m_pocsagSpace(0U),
 m_tx(false),
 m_cd(false),
 m_lockout(false),
@@ -157,36 +167,49 @@ m_hwType(HWT_UNKNOWN)
 
 CModem::~CModem()
 {
+	delete   m_serial;
 	delete[] m_buffer;
 }
 
-void CModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel)
+void CModem::setSerialParams(const std::string& protocol, unsigned int address)
 {
-	m_rxFrequency = rxFrequency + rxOffset;
-	m_txFrequency = txFrequency + txOffset;
-	m_txDCOffset  = txDCOffset;
-	m_rxDCOffset  = rxDCOffset;
-	m_rfLevel     = rfLevel;
+	// Create the serial controller instance according the protocol specified in conf.
+	if (protocol == "i2c")
+		m_serial = new CI2CController(m_port, SERIAL_115200, address, true);
+	else
+		m_serial = new CSerialController(m_port, SERIAL_115200, true);
 }
 
-void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled)
+void CModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency)
 {
-	m_dstarEnabled = dstarEnabled;
-	m_dmrEnabled   = dmrEnabled;
-	m_ysfEnabled   = ysfEnabled;
-	m_p25Enabled   = p25Enabled;
-	m_nxdnEnabled  = nxdnEnabled;
+	m_rxFrequency     = rxFrequency + rxOffset;
+	m_txFrequency     = txFrequency + txOffset;
+	m_txDCOffset      = txDCOffset;
+	m_rxDCOffset      = rxDCOffset;
+	m_rfLevel         = rfLevel;
+	m_pocsagFrequency = pocsagFrequency + txOffset;
 }
 
-void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel)
+void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool pocsagEnabled)
 {
-	m_rxLevel      = rxLevel;
-	m_cwIdTXLevel  = cwIdTXLevel;
-	m_dstarTXLevel = dstarTXLevel;
-	m_dmrTXLevel   = dmrTXLevel;
-	m_ysfTXLevel   = ysfTXLevel;
-	m_p25TXLevel   = p25TXLevel;
-	m_nxdnTXLevel  = nxdnTXLevel;
+	m_dstarEnabled  = dstarEnabled;
+	m_dmrEnabled    = dmrEnabled;
+	m_ysfEnabled    = ysfEnabled;
+	m_p25Enabled    = p25Enabled;
+	m_nxdnEnabled   = nxdnEnabled;
+	m_pocsagEnabled = pocsagEnabled;
+}
+
+void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagTXLevel)
+{
+	m_rxLevel       = rxLevel;
+	m_cwIdTXLevel   = cwIdTXLevel;
+	m_dstarTXLevel  = dstarTXLevel;
+	m_dmrTXLevel    = dmrTXLevel;
+	m_ysfTXLevel    = ysfTXLevel;
+	m_p25TXLevel    = p25TXLevel;
+	m_nxdnTXLevel   = nxdnTXLevel;
+	m_pocsagTXLevel = pocsagTXLevel;
 }
 
 void CModem::setDMRParams(unsigned int colorCode)
@@ -196,22 +219,25 @@ void CModem::setDMRParams(unsigned int colorCode)
 	m_dmrColorCode = colorCode;
 }
 
-void CModem::setYSFParams(bool loDev)
+void CModem::setYSFParams(bool loDev, unsigned int txHang)
 {
-	m_ysfLoDev = loDev;
+	m_ysfLoDev  = loDev;
+	m_ysfTXHang = txHang;
 }
 
 bool CModem::open()
 {
 	::LogMessage("Opening the MMDVM");
 
-	bool ret = m_serial.open();
+	bool ret = m_serial->open();
 	if (!ret)
 		return false;
 
 	ret = readVersion();
 	if (!ret) {
-		m_serial.close();
+		m_serial->close();
+		delete m_serial;
+		m_serial = NULL;
 		return false;
 	} else {
 		/* Stopping the inactivity timer here when a firmware version has been
@@ -221,13 +247,17 @@ bool CModem::open()
 
 	ret = setFrequency();
 	if (!ret) {
-		m_serial.close();
+		m_serial->close();
+		delete m_serial;
+		m_serial = NULL;
 		return false;
 	}
 
 	ret = setConfig();
 	if (!ret) {
-		m_serial.close();
+		m_serial->close();
+		delete m_serial;
+		m_serial = NULL;
 		return false;
 	}
 
@@ -241,6 +271,8 @@ bool CModem::open()
 
 void CModem::clock(unsigned int ms)
 {
+	assert(m_serial != NULL);
+
 	// Poll the modem status every 250ms
 	m_statusTimer.clock(ms);
 	if (m_statusTimer.hasExpired()) {
@@ -474,6 +506,10 @@ void CModem::clock(unsigned int ms)
 					// if (m_trace)
 					//	CUtils::dump(1U, "GET_STATUS", m_buffer, m_length);
 
+					m_p25Space    = 0U;
+					m_nxdnSpace   = 0U;
+					m_pocsagSpace = 0U;
+
 					m_tx = (m_buffer[5U] & 0x01U) == 0x01U;
 
 					bool adcOverflow = (m_buffer[5U] & 0x02U) == 0x02U;
@@ -493,18 +529,23 @@ void CModem::clock(unsigned int ms)
 					bool dacOverflow = (m_buffer[5U] & 0x20U) == 0x20U;
 					if (dacOverflow)
 						LogError("MMDVM DAC levels have overflowed");
-						
+
 					m_cd = (m_buffer[5U] & 0x40U) == 0x40U;
 
-					m_dstarSpace = m_buffer[6U];
-					m_dmrSpace1  = m_buffer[7U];
-					m_dmrSpace2  = m_buffer[8U];
-					m_ysfSpace   = m_buffer[9U];
-					m_p25Space   = m_buffer[10U];
-					m_nxdnSpace  = m_buffer[11U];
+					m_dstarSpace  = m_buffer[6U];
+					m_dmrSpace1   = m_buffer[7U];
+					m_dmrSpace2   = m_buffer[8U];
+					m_ysfSpace    = m_buffer[9U];
+
+					if (m_length > 10U)
+						m_p25Space    = m_buffer[10U];
+					if (m_length > 11U)
+						m_nxdnSpace   = m_buffer[11U];
+					if (m_length > 12U)
+						m_pocsagSpace = m_buffer[12U];
 
 					m_inactivityTimer.start();
-					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u lockout=%d, cd=%d", m_buffer[5U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, int(m_lockout), int(m_cd));
+					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u,%u,%u lockout=%d, cd=%d", m_buffer[5U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, m_nxdnSpace, m_pocsagSpace, int(m_lockout), int(m_cd));
 				}
 				break;
 
@@ -577,7 +618,7 @@ void CModem::clock(unsigned int ms)
 				break;
 			}
 
-			int ret = m_serial.write(m_buffer, len);
+			int ret = m_serial->write(m_buffer, len);
 			if (ret != int(len))
 				LogWarning("Error when writing D-Star data to the MMDVM");
 
@@ -593,7 +634,7 @@ void CModem::clock(unsigned int ms)
 		if (m_trace)
 			CUtils::dump(1U, "TX DMR Data 1", m_buffer, len);
 
-		int ret = m_serial.write(m_buffer, len);
+		int ret = m_serial->write(m_buffer, len);
 		if (ret != int(len))
 			LogWarning("Error when writing DMR data to the MMDVM");
 
@@ -610,7 +651,7 @@ void CModem::clock(unsigned int ms)
 		if (m_trace)
 			CUtils::dump(1U, "TX DMR Data 2", m_buffer, len);
 
-		int ret = m_serial.write(m_buffer, len);
+		int ret = m_serial->write(m_buffer, len);
 		if (ret != int(len))
 			LogWarning("Error when writing DMR data to the MMDVM");
 
@@ -627,7 +668,7 @@ void CModem::clock(unsigned int ms)
 		if (m_trace)
 			CUtils::dump(1U, "TX YSF Data", m_buffer, len);
 
-		int ret = m_serial.write(m_buffer, len);
+		int ret = m_serial->write(m_buffer, len);
 		if (ret != int(len))
 			LogWarning("Error when writing YSF data to the MMDVM");
 
@@ -648,7 +689,7 @@ void CModem::clock(unsigned int ms)
 				CUtils::dump(1U, "TX P25 LDU", m_buffer, len);
 		}
 
-		int ret = m_serial.write(m_buffer, len);
+		int ret = m_serial->write(m_buffer, len);
 		if (ret != int(len))
 			LogWarning("Error when writing P25 data to the MMDVM");
 
@@ -665,13 +706,30 @@ void CModem::clock(unsigned int ms)
 		if (m_trace)
 			CUtils::dump(1U, "TX NXDN Data", m_buffer, len);
 
-		int ret = m_serial.write(m_buffer, len);
+		int ret = m_serial->write(m_buffer, len);
 		if (ret != int(len))
 			LogWarning("Error when writing NXDN data to the MMDVM");
 
 		m_playoutTimer.start();
 
 		m_nxdnSpace--;
+	}
+
+	if (m_pocsagSpace > 1U && !m_txPOCSAGData.isEmpty()) {
+		unsigned char len = 0U;
+		m_txPOCSAGData.getData(&len, 1U);
+		m_txPOCSAGData.getData(m_buffer, len);
+
+		if (m_trace)
+			CUtils::dump(1U, "TX POCSAG Data", m_buffer, len);
+
+		int ret = m_serial->write(m_buffer, len);
+		if (ret != int(len))
+			LogWarning("Error when writing POCSAG data to the MMDVM");
+
+		m_playoutTimer.start();
+
+		m_pocsagSpace--;
 	}
 
 	if (!m_txTransparentData.isEmpty()) {
@@ -682,7 +740,7 @@ void CModem::clock(unsigned int ms)
 		if (m_trace)
 			CUtils::dump(1U, "TX Transparent Data", m_buffer, len);
 
-		int ret = m_serial.write(m_buffer, len);
+		int ret = m_serial->write(m_buffer, len);
 		if (ret != int(len))
 			LogWarning("Error when writing Transparent data to the MMDVM");
 	}
@@ -690,9 +748,11 @@ void CModem::clock(unsigned int ms)
 
 void CModem::close()
 {
+	assert(m_serial != NULL);
+
 	::LogMessage("Closing the MMDVM");
 
-	m_serial.close();
+	m_serial->close();
 }
 
 unsigned int CModem::readDStarData(unsigned char* data)
@@ -993,7 +1053,34 @@ bool CModem::writeNXDNData(const unsigned char* data, unsigned int length)
 	return true;
 }
 
-bool CModem::writeTransparentData(const unsigned char* data, unsigned int length)
+bool CModem::hasPOCSAGSpace() const
+{
+	unsigned int space = m_txPOCSAGData.freeSpace() / (POCSAG_FRAME_LENGTH_BYTES + 4U);
+
+	return space > 1U;
+}
+
+bool CModem::writePOCSAGData(const unsigned char* data, unsigned int length)
+{
+	assert(data != NULL);
+	assert(length > 0U);
+
+	unsigned char buffer[130U];
+
+	buffer[0U] = MMDVM_FRAME_START;
+	buffer[1U] = length + 3U;
+	buffer[2U] = MMDVM_POCSAG_DATA;
+
+	::memcpy(buffer + 3U, data, length);
+
+	unsigned char len = length + 3U;		// XXX Check lengths
+	m_txPOCSAGData.addData(&len, 1U);
+	m_txPOCSAGData.addData(buffer, len);
+
+	return true;
+}
+
+bool CModem::writeTransparentData(const unsigned char* data, unsigned int length, unsigned int sendFrameType)
 {
 	assert(data != NULL);
 	assert(length > 0U);
@@ -1004,7 +1091,19 @@ bool CModem::writeTransparentData(const unsigned char* data, unsigned int length
 	buffer[1U] = length + 3U;
 	buffer[2U] = MMDVM_TRANSPARENT;
 
-	::memcpy(buffer + 3U, data, length);
+	if (sendFrameType>0) {
+		::memcpy(buffer + 2U, data, length);
+		length--;
+		buffer[1U]--;
+		//when sendFrameType==1 , only 0x80 and 0x90 (MMDVM_SERIAL and MMDVM_TRANSPARENT) are allowed
+		//  and reverted to default (MMDVM_TRANSPARENT) for any other value
+		//when >1, frame type is not checked
+		if (sendFrameType==1) {
+			if ((buffer[2U] & 0xE0) != 0x80) buffer[2U] = MMDVM_TRANSPARENT;
+		}
+	} else {
+		::memcpy(buffer + 3U, data, length);
+	}
 
 	unsigned char len = length + 3U;
 	m_txTransparentData.addData(&len, 1U);
@@ -1015,6 +1114,7 @@ bool CModem::writeTransparentData(const unsigned char* data, unsigned int length
 
 bool CModem::writeSerial(const unsigned char* data, unsigned int length)
 {
+	assert(m_serial != NULL);
 	assert(data != NULL);
 	assert(length > 0U);
 
@@ -1026,7 +1126,7 @@ bool CModem::writeSerial(const unsigned char* data, unsigned int length)
 
 	::memcpy(buffer + 3U, data, length);
 
-	int ret = m_serial.write(buffer, length + 3U);
+	int ret = m_serial->write(buffer, length + 3U);
 
 	return ret != int(length + 3U);
 }
@@ -1053,6 +1153,8 @@ bool CModem::hasError() const
 
 bool CModem::readVersion()
 {
+	assert(m_serial != NULL);
+
 	CThread::sleep(2000U);	// 2s
 
 	for (unsigned int i = 0U; i < 6U; i++) {
@@ -1064,12 +1166,12 @@ bool CModem::readVersion()
 
 		// CUtils::dump(1U, "Written", buffer, 3U);
 
-		int ret = m_serial.write(buffer, 3U);
+		int ret = m_serial->write(buffer, 3U);
 		if (ret != 3)
 			return false;
 
 #if defined(__APPLE__)
-		m_serial.setNonblock(true);
+		m_serial->setNonblock(true);
 #endif
 
 		for (unsigned int count = 0U; count < MAX_RESPONSES; count++) {
@@ -1088,6 +1190,8 @@ bool CModem::readVersion()
 					m_hwType = HWT_MMDVM_HS_DUAL_HAT;
 				else if (::memcmp(m_buffer + 4U, "Nano_hotSPOT", 12U) == 0)
 					m_hwType = HWT_NANO_HOTSPOT;
+				else if (::memcmp(m_buffer + 4U, "Nano_DV", 7U) == 0)
+					m_hwType = HWT_NANO_DV;
 				else if (::memcmp(m_buffer + 4U, "MMDVM_HS-", 9U) == 0)
 					m_hwType = HWT_MMDVM_HS;
 
@@ -1106,6 +1210,8 @@ bool CModem::readVersion()
 
 bool CModem::readStatus()
 {
+	assert(m_serial != NULL);
+
 	unsigned char buffer[3U];
 
 	buffer[0U] = MMDVM_FRAME_START;
@@ -1114,16 +1220,18 @@ bool CModem::readStatus()
 
 	// CUtils::dump(1U, "Written", buffer, 3U);
 
-	return m_serial.write(buffer, 3U) == 3;
+	return m_serial->write(buffer, 3U) == 3;
 }
 
 bool CModem::setConfig()
 {
-	unsigned char buffer[20U];
+	assert(m_serial != NULL);
+
+	unsigned char buffer[30U];
 
 	buffer[0U] = MMDVM_FRAME_START;
 
-	buffer[1U] = 19U;
+	buffer[1U] = 21U;
 
 	buffer[2U] = MMDVM_SET_CONFIG;
 
@@ -1152,6 +1260,8 @@ bool CModem::setConfig()
 		buffer[4U] |= 0x08U;
 	if (m_nxdnEnabled)
 		buffer[4U] |= 0x10U;
+	if (m_pocsagEnabled)
+		buffer[4U] |= 0x20U;
 
 	buffer[5U] = m_txDelay / 10U;		// In 10ms units
 
@@ -1177,10 +1287,14 @@ bool CModem::setConfig()
 
 	buffer[18U] = (unsigned char)(m_nxdnTXLevel * 2.55F + 0.5F);
 
-	// CUtils::dump(1U, "Written", buffer, 19U);
+	buffer[19U] = (unsigned char)m_ysfTXHang;
 
-	int ret = m_serial.write(buffer, 19U);
-	if (ret != 19)
+	buffer[20U] = (unsigned char)(m_pocsagTXLevel * 2.55F + 0.5F);
+
+	// CUtils::dump(1U, "Written", buffer, 21U);
+
+	int ret = m_serial->write(buffer, 21U);
+	if (ret != 21)
 		return false;
 
 	unsigned int count = 0U;
@@ -1212,14 +1326,22 @@ bool CModem::setConfig()
 
 bool CModem::setFrequency()
 {
-	unsigned char buffer[16U];
+	assert(m_serial != NULL);
+
+	unsigned char buffer[20U];
 	unsigned char len;
-	
+
 	if (m_hwType == HWT_DVMEGA)
 		len = 12U;
 	else {
 		buffer[12U]  = (unsigned char)(m_rfLevel * 2.55F + 0.5F);
-		len = 13U;
+
+		buffer[13U] = (m_pocsagFrequency >> 0)  & 0xFFU;
+		buffer[14U] = (m_pocsagFrequency >> 8)  & 0xFFU;
+		buffer[15U] = (m_pocsagFrequency >> 16) & 0xFFU;
+		buffer[16U] = (m_pocsagFrequency >> 24) & 0xFFU;
+
+		len = 17U;
 	}
 
 	buffer[0U]  = MMDVM_FRAME_START;
@@ -1242,7 +1364,7 @@ bool CModem::setFrequency()
 
 	// CUtils::dump(1U, "Written", buffer, len);
 
-	int ret = m_serial.write(buffer, len);
+	int ret = m_serial->write(buffer, len);
 	if (ret != len)
 		return false;
 
@@ -1273,9 +1395,11 @@ bool CModem::setFrequency()
 
 RESP_TYPE_MMDVM CModem::getResponse()
 {
+	assert(m_serial != NULL);
+
 	if (m_offset == 0U) {
 		// Get the start of the frame or nothing at all
-		int ret = m_serial.read(m_buffer + 0U, 1U);
+		int ret = m_serial->read(m_buffer + 0U, 1U);
 		if (ret < 0) {
 			LogError("Error when reading from the modem");
 			return RTM_ERROR;
@@ -1292,7 +1416,7 @@ RESP_TYPE_MMDVM CModem::getResponse()
 
 	if (m_offset == 1U) {
 		// Get the length of the frame
-		int ret = m_serial.read(m_buffer + 1U, 1U);
+		int ret = m_serial->read(m_buffer + 1U, 1U);
 		if (ret < 0) {
 			LogError("Error when reading from the modem");
 			m_offset = 0U;
@@ -1314,7 +1438,7 @@ RESP_TYPE_MMDVM CModem::getResponse()
 
 	if (m_offset == 2U) {
 		// Get the frame type
-		int ret = m_serial.read(m_buffer + 2U, 1U);
+		int ret = m_serial->read(m_buffer + 2U, 1U);
 		if (ret < 0) {
 			LogError("Error when reading from the modem");
 			m_offset = 0U;
@@ -1330,7 +1454,7 @@ RESP_TYPE_MMDVM CModem::getResponse()
 	if (m_offset >= 3U) {
 		// Use later two byte length field
 		if (m_length == 0U) {
-			int ret = m_serial.read(m_buffer + 3U, 2U);
+			int ret = m_serial->read(m_buffer + 3U, 2U);
 			if (ret < 0) {
 				LogError("Error when reading from the modem");
 				m_offset = 0U;
@@ -1345,7 +1469,7 @@ RESP_TYPE_MMDVM CModem::getResponse()
 		}
 
 		while (m_offset < m_length) {
-			int ret = m_serial.read(m_buffer + m_offset, m_length - m_offset);
+			int ret = m_serial->read(m_buffer + m_offset, m_length - m_offset);
 			if (ret < 0) {
 				LogError("Error when reading from the modem");
 				m_offset = 0U;
@@ -1374,6 +1498,8 @@ HW_TYPE CModem::getHWType() const
 
 bool CModem::setMode(unsigned char mode)
 {
+	assert(m_serial != NULL);
+
 	unsigned char buffer[4U];
 
 	buffer[0U] = MMDVM_FRAME_START;
@@ -1383,11 +1509,13 @@ bool CModem::setMode(unsigned char mode)
 
 	// CUtils::dump(1U, "Written", buffer, 4U);
 
-	return m_serial.write(buffer, 4U) == 4;
+	return m_serial->write(buffer, 4U) == 4;
 }
 
 bool CModem::sendCWId(const std::string& callsign)
 {
+	assert(m_serial != NULL);
+
 	unsigned int length = callsign.length();
 	if (length > 200U)
 		length = 200U;
@@ -1403,11 +1531,13 @@ bool CModem::sendCWId(const std::string& callsign)
 
 	// CUtils::dump(1U, "Written", buffer, length + 3U);
 
-	return m_serial.write(buffer, length + 3U) == int(length + 3U);
+	return m_serial->write(buffer, length + 3U) == int(length + 3U);
 }
 
 bool CModem::writeDMRStart(bool tx)
 {
+	assert(m_serial != NULL);
+
 	if (tx && m_tx)
 		return true;
 	if (!tx && !m_tx)
@@ -1422,11 +1552,13 @@ bool CModem::writeDMRStart(bool tx)
 
 	// CUtils::dump(1U, "Written", buffer, 4U);
 
-	return m_serial.write(buffer, 4U) == 4;
+	return m_serial->write(buffer, 4U) == 4;
 }
 
 bool CModem::writeDMRAbort(unsigned int slotNo)
 {
+	assert(m_serial != NULL);
+
 	if (slotNo == 1U)
 		m_txDMRData1.clear();
 	else
@@ -1441,11 +1573,12 @@ bool CModem::writeDMRAbort(unsigned int slotNo)
 
 	// CUtils::dump(1U, "Written", buffer, 4U);
 
-	return m_serial.write(buffer, 4U) == 4;
+	return m_serial->write(buffer, 4U) == 4;
 }
 
 bool CModem::writeDMRShortLC(const unsigned char* lc)
 {
+	assert(m_serial != NULL);
 	assert(lc != NULL);
 
 	unsigned char buffer[12U];
@@ -1465,7 +1598,7 @@ bool CModem::writeDMRShortLC(const unsigned char* lc)
 
 	// CUtils::dump(1U, "Written", buffer, 12U);
 
-	return m_serial.write(buffer, 12U) == 12;
+	return m_serial->write(buffer, 12U) == 12;
 }
 
 void CModem::printDebug()

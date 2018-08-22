@@ -26,6 +26,7 @@
 #include <cstdio>
 #include <cassert>
 #include <cstring>
+#include <cstdlib>
 
 const unsigned int BUFFER_LENGTH = 500U;
 
@@ -33,6 +34,7 @@ const unsigned int HOMEBREW_DATA_PACKET_LENGTH = 55U;
 
 
 CDMRNetwork::CDMRNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, HW_TYPE hwType) :
+m_addressStr(address),
 m_address(),
 m_port(port),
 m_id(NULL),
@@ -121,6 +123,9 @@ void CDMRNetwork::setConfig(const std::string& callsign, unsigned int rxFrequenc
 bool CDMRNetwork::open()
 {
 	LogMessage("DMR, Opening DMR Network");
+
+	if (m_address.s_addr == INADDR_NONE)
+		m_address = CUDPSocket::lookup(m_addressStr);
 
 	m_status = WAITING_CONNECT;
 	m_timeoutTimer.stop();
@@ -544,6 +549,9 @@ bool CDMRNetwork::writeConfig()
 		case HWT_MMDVM_HS_DUAL_HAT:
 			software = "MMDVM_MMDVM_HS_Dual_Hat";
 			break;
+		case HWT_NANO_HOTSPOT:
+			software = "MMDVM_Nano_hotSPOT";
+			break;
 		default:
 			software = "MMDVM_Unknown";
 			break;
@@ -569,6 +577,9 @@ bool CDMRNetwork::writeConfig()
 			break;
 		case HWT_NANO_HOTSPOT:
 			software = "MMDVM_Nano_hotSPOT";
+			break;
+		case HWT_NANO_DV:
+			software = "MMDVM_Nano_DV";
 			break;
 		case HWT_MMDVM_HS:
 			software = "MMDVM_MMDVM_HS";

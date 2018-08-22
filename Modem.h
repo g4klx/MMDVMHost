@@ -37,11 +37,12 @@ public:
 	CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool trace, bool debug);
 	~CModem();
 
-	void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel);
-	void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled);
-	void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel);
+	void setSerialParams(const std::string& protocol, unsigned int address);
+	void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency);
+	void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool pocsagEnabled);
+	void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagLevel);
 	void setDMRParams(unsigned int colorCode);
-	void setYSFParams(bool loDev);
+	void setYSFParams(bool loDev, unsigned int txHang);
 
 	bool open();
 
@@ -61,6 +62,7 @@ public:
 	bool hasYSFSpace() const;
 	bool hasP25Space() const;
 	bool hasNXDNSpace() const;
+	bool hasPOCSAGSpace() const;
 
 	bool hasTX() const;
 	bool hasCD() const;
@@ -74,7 +76,8 @@ public:
 	bool writeYSFData(const unsigned char* data, unsigned int length);
 	bool writeP25Data(const unsigned char* data, unsigned int length);
 	bool writeNXDNData(const unsigned char* data, unsigned int length);
-	bool writeTransparentData(const unsigned char* data, unsigned int length);
+	bool writePOCSAGData(const unsigned char* data, unsigned int length);
+	bool writeTransparentData(const unsigned char* data, unsigned int length, unsigned int sendFrameType);
 
 	bool writeDMRStart(bool tx);
 	bool writeDMRShortLC(const unsigned char* lc);
@@ -96,6 +99,7 @@ private:
 	std::string                m_port;
 	unsigned int               m_dmrColorCode;
 	bool                       m_ysfLoDev;
+	unsigned int               m_ysfTXHang;
 	bool                       m_duplex;
 	bool                       m_rxInvert;
 	bool                       m_txInvert;
@@ -109,19 +113,22 @@ private:
 	float                      m_ysfTXLevel;
 	float                      m_p25TXLevel;
 	float                      m_nxdnTXLevel;
+	float                      m_pocsagTXLevel;
 	float                      m_rfLevel;
 	bool                       m_trace;
 	bool                       m_debug;
 	unsigned int               m_rxFrequency;
 	unsigned int               m_txFrequency;
+	unsigned int               m_pocsagFrequency;
 	bool                       m_dstarEnabled;
 	bool                       m_dmrEnabled;
 	bool                       m_ysfEnabled;
 	bool                       m_p25Enabled;
 	bool                       m_nxdnEnabled;
+	bool                       m_pocsagEnabled;
 	int                        m_rxDCOffset;
 	int                        m_txDCOffset;
-	CSerialController          m_serial;
+	CSerialController*         m_serial;
 	unsigned char*             m_buffer;
 	unsigned int               m_length;
 	unsigned int               m_offset;
@@ -137,6 +144,7 @@ private:
 	CRingBuffer<unsigned char> m_txP25Data;
 	CRingBuffer<unsigned char> m_rxNXDNData;
 	CRingBuffer<unsigned char> m_txNXDNData;
+	CRingBuffer<unsigned char> m_txPOCSAGData;
 	CRingBuffer<unsigned char> m_rxTransparentData;
 	CRingBuffer<unsigned char> m_txTransparentData;
 	CTimer                     m_statusTimer;
@@ -148,6 +156,7 @@ private:
 	unsigned int               m_ysfSpace;
 	unsigned int               m_p25Space;
 	unsigned int               m_nxdnSpace;
+	unsigned int               m_pocsagSpace;
 	bool                       m_tx;
 	bool                       m_cd;
 	bool                       m_lockout;

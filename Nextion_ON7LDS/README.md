@@ -16,8 +16,8 @@ Layout 2 is a no-nonsense layout. It is the original (G4KLX) layout with the Tal
 Layout 3 (as is 4) is a layout without any predefined layout options (color, fonts). It sends the fields **and** information about what was sent to the display, so all layout processing can and should be done in the display itself. 
 
 More information about the layouts can be found in  
-  * README-L2 for the screenLayout 2 setting
-  * README-L2 for the screenLayout 3 and 4 settings
+  * README-L2 for the screenLayout 2 setting (list of field names : see README-L3)
+  * README-L3 for the screenLayout 3 and 4 settings
 
   
 When you want extra control over what has to be sent to the Nextion display, you could consider the program 'NextionDriver' at https://github.com/on7lds/NextionDriver as a companion to MMDVMHost.

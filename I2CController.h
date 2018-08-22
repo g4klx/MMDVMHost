@@ -1,5 +1,6 @@
 /*
- *   Copyright (C) 2015,2016,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2002-2004,2007-2009,2011-2013,2015-2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 1999-2001 by Thomas Sailor HB9JNX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,34 +17,24 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(STOPWATCH_H)
-#define	STOPWATCH_H
+#ifndef I2CController_H
+#define I2CController_H
 
-#if defined(_WIN32) || defined(_WIN64)
-#include <windows.h>
-#else
-#include <sys/time.h>
-#endif
+#include "SerialController.h"
 
-class CStopWatch
-{
+class CI2CController : public CSerialController {
 public:
-	CStopWatch();
-	~CStopWatch();
+	CI2CController(const std::string& device, SERIAL_SPEED speed, unsigned int address = 0x22U, bool assertRTS = false);
+	virtual ~CI2CController();
 
-	unsigned long long time() const;
+	virtual bool open();
 
-	unsigned long long start();
-	unsigned int       elapsed();
+	virtual int read(unsigned char* buffer, unsigned int length);
+
+	virtual int write(const unsigned char* buffer, unsigned int length);
 
 private:
-#if defined(_WIN32) || defined(_WIN64)
-	LARGE_INTEGER  m_frequencyS;
-	LARGE_INTEGER  m_frequencyMS;
-	LARGE_INTEGER  m_start;
-#else
-	unsigned long long m_startMS;
-#endif
+	unsigned int m_address;
 };
 
 #endif
