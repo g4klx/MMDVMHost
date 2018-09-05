@@ -38,7 +38,7 @@ const unsigned int P25_BER_COUNT    = 7U;		  // 7 * 180ms = 1260ms
 const unsigned int NXDN_RSSI_COUNT  = 28U;		  // 28 * 40ms = 1120ms
 const unsigned int NXDN_BER_COUNT   = 28U;		  // 28 * 40ms = 1120ms
 
-CNextion::CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness, unsigned int screenLayout) :
+CNextion::CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness, unsigned int screenLayout, unsigned int txFrequency, unsigned int rxFrequency, bool displayTempInF, const std::string& location) :
 CDisplay(),
 m_callsign(callsign),
 m_ipaddress("(ip unknown)"),
@@ -58,7 +58,11 @@ m_berAccum2(0.0F),
 m_rssiCount1(0U),
 m_rssiCount2(0U),
 m_berCount1(0U),
-m_berCount2(0U)
+m_berCount2(0U),
+m_txFrequency(txFrequency),
+m_rxFrequency(rxFrequency),
+m_displayTempInF(displayTempInF),
+m_location(location)
 {
 	assert(serial != NULL);
 	assert(brightness >= 0U && brightness <= 100U);
@@ -86,8 +90,14 @@ bool CNextion::open()
 	m_ipaddress = (char*)info;
 
 	sendCommand("bkcmd=0");
-	sendCommandAction(0);
+	sendCommandAction(0U);
+	
+	m_fl_txFrequency = m_txFrequency;
+	m_fl_txFrequency/=1000000U;
 
+	m_fl_rxFrequency = m_rxFrequency;
+	m_fl_rxFrequency/=1000000U;
+	
 	setIdle();
 
 	return true;
@@ -96,23 +106,58 @@ bool CNextion::open()
 
 void CNextion::setIdleInt()
 {
+	// a few bits borrowed from Lieven De Samblanx ON7LDS, NextionDriver
+	char command[100U];
+
 	sendCommand("page MMDVM");
 	sendCommandAction(1U);
 
-	char command[100U];
 	::sprintf(command, "dim=%u", m_idleBrightness);
 	sendCommand(command);
-	
+
 	::sprintf(command, "t0.txt=\"%s/%u\"", m_callsign.c_str(), m_dmrid);
 	sendCommand(command);
+
 	if (m_screenLayout > 2U) {
 		::sprintf(command, "t4.txt=\"%s\"", m_callsign.c_str());
 		sendCommand(command);
 		::sprintf(command, "t5.txt=\"%u\"", m_dmrid);
 		sendCommand(command);
-	}
-	sendCommandAction(17U);
+		sendCommandAction(17U);
 
+		::sprintf(command, "t30.txt=\"%3.4f\"",m_fl_rxFrequency);  // RX freq
+		sendCommand(command);
+		sendCommandAction(20U);
+		
+		::sprintf(command, "t32.txt=\"%3.4f\"",m_fl_txFrequency);  // TX freq
+		sendCommand(command);
+		sendCommandAction(21U);
+	
+		FILE *deviceInfoFile;
+		double val;
+		//CPU temperature
+		deviceInfoFile = fopen ("/sys/class/thermal/thermal_zone0/temp", "r");
+		if (deviceInfoFile != NULL) {
+				fscanf (deviceInfoFile, "%lf", &val);
+				fclose(deviceInfoFile);
+				val /= 1000;
+				if( m_displayTempInF){
+					val = (1.8 * val) + 32;
+					::sprintf(command, "t20.txt=\"%2.1f %cF\"", val, 176);
+				} else {	
+					::sprintf(command, "t20.txt=\"%2.1f %cC\"", val, 176);
+				}
+				sendCommand(command);
+				sendCommandAction(22U);
+		}
+		
+		::sprintf(command, "t31.txt=\"%s\"", m_location.c_str());  // location
+		sendCommand(command);
+		sendCommandAction(23U);
+	} else {
+		sendCommandAction(17U);
+	}
+	
 	sendCommand("t1.txt=\"MMDVM IDLE\"");
 	sendCommandAction(11U);
 
@@ -454,6 +499,7 @@ void CNextion::writeDMRBERInt(unsigned int slotNo, float ber)
 
 void CNextion::clearDMRInt(unsigned int slotNo)
 {
+	
 	if (slotNo == 1U) {
 		sendCommand("t0.txt=\"1 Listening\"");
 		sendCommandAction(61U);
@@ -777,7 +823,8 @@ void CNextion::close()
 
 void CNextion::sendCommandAction(unsigned int status)
 {
-    if (m_screenLayout<3U) return;
+    if (m_screenLayout<3U)
+		return;
 
     char text[30U];
     ::sprintf(text, "MMDVM.status.val=%d", status);
@@ -785,11 +832,14 @@ void CNextion::sendCommandAction(unsigned int status)
     sendCommand("click S0,1");
 }
 
-
 void CNextion::sendCommand(const char* command)
 {
 	assert(command != NULL);
 
 	m_serial->write((unsigned char*)command, (unsigned int)::strlen(command));
 	m_serial->write((unsigned char*)"\xFF\xFF\xFF", 3U);
-}
+	// Since we just firing commands at the display, and not listening for the response,
+	// we must add a bit of a delay to allow the display to process the commands, else some are getting mangled.
+	// 10 ms is just a guess, but seems to be sufficient.
+    CThread::sleep(10U);
+	}

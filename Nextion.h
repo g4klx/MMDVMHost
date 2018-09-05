@@ -23,13 +23,13 @@
 #include "Defines.h"
 #include "SerialPort.h"
 #include "Timer.h"
-
+#include "Thread.h"
 #include <string>
 
 class CNextion : public CDisplay
 {
 public:
-  CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness, unsigned int screenLayout);
+  CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness, unsigned int screenLayout, unsigned int txFrequency, unsigned int rxFrequency, bool displayTempInF, const std::string& location);
   virtual ~CNextion();
 
   virtual bool open();
@@ -97,7 +97,13 @@ private:
   unsigned int  m_rssiCount2;
   unsigned int  m_berCount1;
   unsigned int  m_berCount2;
-
+  unsigned int  m_txFrequency;
+  unsigned int  m_rxFrequency;
+  float         m_fl_txFrequency=0;
+  float         m_fl_rxFrequency=0;
+  bool          m_displayTempInF;
+  std::string   m_location;
+  
   void sendCommand(const char* command);
   void sendCommandAction(unsigned int status);
 };
