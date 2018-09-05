@@ -104,6 +104,10 @@ changed field.
 16 : IPaddress
 17 : ID/Call (t0 and t4,t5 are sent)
 19 : END
+20 : RX Frequency
+21 : TX Frequency
+22 : Temperature
+23 : Location
 
 41 : D-Star listening
 42 : type/my1/my2
@@ -161,10 +165,15 @@ t0 : owner call & ID / errortext  LOCKOUT
 t1 : status / ERROR
 t2 : date & time
 
-screenLayout >1 :
+
+screenLayout >2 :
 t3 : ip address
 t4 : owner call
 t5 : owner ID
+t20 : CPU Temperature in C.   ( Can be changed to F in mmdmvhost config setting: [NEXTION] Section, Setting=DisplayTempInFahrenheit=1)
+t30 : RX Frequency
+t31 : Location
+t32 : TX Frequency
 
 
 D-Star
