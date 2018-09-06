@@ -61,6 +61,8 @@ m_berCount1(0U),
 m_berCount2(0U),
 m_txFrequency(txFrequency),
 m_rxFrequency(rxFrequency),
+m_fl_txFrequency(0.0F),
+m_fl_rxFrequency(0.0F),
 m_displayTempInF(displayTempInF),
 m_location(location)
 {
@@ -84,7 +86,7 @@ bool CNextion::open()
 		return false;
 	}
 
-	info[0]=0;
+	info[0] = 0;
 	m_network = new CNetworkInfo;
 	m_network->getNetworkInterface(info);
 	m_ipaddress = (char*)info;
@@ -92,11 +94,8 @@ bool CNextion::open()
 	sendCommand("bkcmd=0");
 	sendCommandAction(0U);
 	
-	m_fl_txFrequency = m_txFrequency;
-	m_fl_txFrequency/=1000000U;
-
-	m_fl_rxFrequency = m_rxFrequency;
-	m_fl_rxFrequency/=1000000U;
+	m_fl_txFrequency = float(m_txFrequency) / 1000000.0F;
+	m_fl_rxFrequency = float(m_rxFrequency) / 1000000.0F;
 	
 	setIdle();
 
@@ -133,22 +132,24 @@ void CNextion::setIdleInt()
 		sendCommand(command);
 		sendCommandAction(21U);
 	
-		FILE *deviceInfoFile;
-		double val;
-		//CPU temperature
-		deviceInfoFile = fopen ("/sys/class/thermal/thermal_zone0/temp", "r");
-		if (deviceInfoFile != NULL) {
-				fscanf (deviceInfoFile, "%lf", &val);
-				fclose(deviceInfoFile);
-				val /= 1000;
-				if( m_displayTempInF){
-					val = (1.8 * val) + 32;
+		// CPU temperature
+		FILE* fp = ::fopen("/sys/class/thermal/thermal_zone0/temp", "rt");
+		if (fp != NULL) {
+			double val = 0.0;
+			int n = ::fscanf(fp, "%lf", &val);
+			::fclose(fp);
+
+			if (n == 1) {
+				val /= 1000.0;
+				if (m_displayTempInF) {
+					val = (1.8 * val) + 32.0;
 					::sprintf(command, "t20.txt=\"%2.1f %cF\"", val, 176);
 				} else {	
 					::sprintf(command, "t20.txt=\"%2.1f %cC\"", val, 176);
 				}
 				sendCommand(command);
 				sendCommandAction(22U);
+			}
 		}
 		
 		::sprintf(command, "t31.txt=\"%s\"", m_location.c_str());  // location
