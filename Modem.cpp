@@ -144,6 +144,7 @@ m_txNXDNData(1000U, "Modem TX NXDN"),
 m_txPOCSAGData(1000U, "Modem TX POCSAG"),
 m_rxTransparentData(1000U, "Modem RX Transparent"),
 m_txTransparentData(1000U, "Modem TX Transparent"),
+m_sendTransparentDataFrameType(0U),
 m_statusTimer(1000U, 0U, 250U),
 m_inactivityTimer(1000U, 2U),
 m_playoutTimer(1000U, 0U, 10U),
@@ -223,6 +224,11 @@ void CModem::setYSFParams(bool loDev, unsigned int txHang)
 {
 	m_ysfLoDev  = loDev;
 	m_ysfTXHang = txHang;
+}
+
+void CModem::setTransparentDataParams(unsigned int sendFrameType)
+{
+    m_sendTransparentDataFrameType = sendFrameType;
 }
 
 bool CModem::open()
@@ -553,10 +559,12 @@ void CModem::clock(unsigned int ms)
 					if (m_trace)
 						CUtils::dump(1U, "RX Transparent Data", m_buffer, m_length);
 
-					unsigned char data = m_length - 3U;
+					unsigned char offset = m_sendTransparentDataFrameType;
+					if (offset>1) offset=1;
+					unsigned char data = m_length - 3U + offset;
 					m_rxTransparentData.addData(&data, 1U);
 
-					m_rxTransparentData.addData(m_buffer + 3U, m_length - 3U);
+					m_rxTransparentData.addData(m_buffer + 3U - offset, m_length - 3U + offset);
 				}
 				break;
 
@@ -577,6 +585,21 @@ void CModem::clock(unsigned int ms)
 				printDebug();
 				break;
 
+			case MMDVM_SERIAL:
+				//MMDVMHost does not process serial data from the display,
+				// so we send it to the transparent port if sendFrameType==1
+				if (m_sendTransparentDataFrameType) {
+					if (m_trace)
+						CUtils::dump(1U, "RX Serial Data", m_buffer, m_length);
+
+					unsigned char offset = m_sendTransparentDataFrameType;
+					if (offset>1) offset=1;
+					unsigned char data = m_length - 3U + offset;
+					m_rxTransparentData.addData(&data, 1U);
+
+					m_rxTransparentData.addData(m_buffer + 3U - offset, m_length - 3U + offset);
+					break; //only break when sendFrameType>0, else message is unknown
+				}
 			default:
 				LogMessage("Unknown message, type: %02X", m_buffer[2U]);
 				CUtils::dump("Buffer dump", m_buffer, m_length);
@@ -1080,7 +1103,7 @@ bool CModem::writePOCSAGData(const unsigned char* data, unsigned int length)
 	return true;
 }
 
-bool CModem::writeTransparentData(const unsigned char* data, unsigned int length, unsigned int sendFrameType)
+bool CModem::writeTransparentData(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
 	assert(length > 0U);
@@ -1091,14 +1114,14 @@ bool CModem::writeTransparentData(const unsigned char* data, unsigned int length
 	buffer[1U] = length + 3U;
 	buffer[2U] = MMDVM_TRANSPARENT;
 
-	if (sendFrameType>0) {
+	if (m_sendTransparentDataFrameType>0) {
 		::memcpy(buffer + 2U, data, length);
 		length--;
 		buffer[1U]--;
 		//when sendFrameType==1 , only 0x80 and 0x90 (MMDVM_SERIAL and MMDVM_TRANSPARENT) are allowed
 		//  and reverted to default (MMDVM_TRANSPARENT) for any other value
 		//when >1, frame type is not checked
-		if (sendFrameType==1) {
+		if (m_sendTransparentDataFrameType==1) {
 			if ((buffer[2U] & 0xE0) != 0x80) buffer[2U] = MMDVM_TRANSPARENT;
 		}
 	} else {

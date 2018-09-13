@@ -111,8 +111,10 @@ void CNextion::setIdleInt()
 	sendCommand("page MMDVM");
 	sendCommandAction(1U);
 
-	::sprintf(command, "dim=%u", m_idleBrightness);
-	sendCommand(command);
+	if (m_brightness>0) {
+		::sprintf(command, "dim=%u", m_idleBrightness);
+		sendCommand(command);
+	}
 
 	::sprintf(command, "t0.txt=\"%s/%u\"", m_callsign.c_str(), m_dmrid);
 	sendCommand(command);
@@ -179,8 +181,10 @@ void CNextion::setErrorInt(const char* text)
 	sendCommandAction(1U);
 
 	char command[20];
-	::sprintf(command, "dim=%u", m_brightness);
-	sendCommand(command);
+	if (m_brightness>0) {
+		::sprintf(command, "dim=%u", m_brightness);
+		sendCommand(command);
+	}
 
 	::sprintf(command, "t0.txt=\"%s\"", text);
 	sendCommandAction(13U);
@@ -200,8 +204,10 @@ void CNextion::setLockoutInt()
 	sendCommandAction(1U);
 
 	char command[20];
-	::sprintf(command, "dim=%u", m_brightness);
-	sendCommand(command);
+	if (m_brightness>0) {
+		::sprintf(command, "dim=%u", m_brightness);
+		sendCommand(command);
+	}
 
 	sendCommand("t0.txt=\"LOCKOUT\"");
 	sendCommandAction(15U);
@@ -217,8 +223,10 @@ void CNextion::setQuitInt()
 	sendCommandAction(1U);
 
 	char command[100];
-	::sprintf(command, "dim=%u", m_idleBrightness);
-	sendCommand(command);
+	if (m_brightness>0) {
+		::sprintf(command, "dim=%u", m_idleBrightness);
+		sendCommand(command);
+	}
 
 	::sprintf(command, "t3.txt=\"%s\"", m_ipaddress.c_str());
 	sendCommand(command);
@@ -246,8 +254,10 @@ void CNextion::writeDStarInt(const char* my1, const char* my2, const char* your,
 	}
 
 	char text[50U];
-	::sprintf(text, "dim=%u", m_brightness);
-	sendCommand(text);
+	if (m_brightness>0) {
+		::sprintf(text, "dim=%u", m_brightness);
+		sendCommand(text);
+	}
 
 	::sprintf(text, "t0.txt=\"%s %.8s/%4.4s\"", type, my1, my2);
 	sendCommand(text);
@@ -341,8 +351,10 @@ void CNextion::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 	}
 
 	char text[50U];
-	::sprintf(text, "dim=%u", m_brightness);
-	sendCommand(text);
+	if (m_brightness>0) {
+		::sprintf(text, "dim=%u", m_brightness);
+		sendCommand(text);
+	}
 
 	if (slotNo == 1U) {
 		::sprintf(text, "t0.txt=\"1 %s %s\"", type, src.c_str());
@@ -542,8 +554,10 @@ void CNextion::writeFusionInt(const char* source, const char* dest, const char* 
 
 
 	char text[30U];
-	::sprintf(text, "dim=%u", m_brightness);
-	sendCommand(text);
+	if (m_brightness>0) {
+		::sprintf(text, "dim=%u", m_brightness);
+		sendCommand(text);
+	}
 
 	::sprintf(text, "t0.txt=\"%s %.10s\"", type, source);
 	sendCommand(text);
@@ -618,8 +632,10 @@ void CNextion::writeP25Int(const char* source, bool group, unsigned int dest, co
 	}
 
 	char text[30U];
-	::sprintf(text, "dim=%u", m_brightness);
-	sendCommand(text);
+	if (m_brightness>0) {
+		::sprintf(text, "dim=%u", m_brightness);
+		sendCommand(text);
+	}
 
 	::sprintf(text, "t0.txt=\"%s %.10s\"", type, source);
 	sendCommand(text);
@@ -688,8 +704,10 @@ void CNextion::writeNXDNInt(const char* source, bool group, unsigned int dest, c
 	}
 
 	char text[30U];
-	::sprintf(text, "dim=%u", m_brightness);
-	sendCommand(text);
+	if (m_brightness>0) {
+		::sprintf(text, "dim=%u", m_brightness);
+		sendCommand(text);
+	}
 
 	::sprintf(text, "t0.txt=\"%s %.10s\"", type, source);
 	sendCommand(text);
@@ -755,8 +773,10 @@ void CNextion::writePOCSAGInt(uint32_t ric, const std::string& message)
 	}
 
 	char text[200U];
-	::sprintf(text, "dim=%u", m_brightness);
-	sendCommand(text);
+	if (m_brightness>0) {
+		::sprintf(text, "dim=%u", m_brightness);
+		sendCommand(text);
+	}
 
 	::sprintf(text, "t0.txt=\"RIC: %u\"", ric);
 	sendCommand(text);
