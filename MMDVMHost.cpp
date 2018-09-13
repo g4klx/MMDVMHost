@@ -337,7 +337,9 @@ int CMMDVMHost::run()
 			LogWarning("Could not open the Transparent data socket, disabling");
 			delete transparentSocket;
 			transparentSocket = NULL;
+			sendFrameType=0;
 		}
+		m_modem->setTransparentDataParams(sendFrameType);
 	}
 
 	if (m_conf.getCWIdEnabled()) {
@@ -887,7 +889,7 @@ int CMMDVMHost::run()
 			unsigned int port = 0U;
 			len = transparentSocket->read(data, 200U, address, port);
 			if (len > 0U)
-				m_modem->writeTransparentData(data, len, sendFrameType);
+				m_modem->writeTransparentData(data, len);
 		}
 
 		unsigned int ms = stopWatch.elapsed();
