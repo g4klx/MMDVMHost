@@ -51,8 +51,8 @@ private:
 	unsigned char*             m_gateway;
 	bool                       m_selfOnly;
 	bool                       m_ackReply;
-	bool                       m_errorReply;
 	bool                       m_ackMessage;
+	bool                       m_errorReply;
 	bool                       m_remoteGateway;
 	std::vector<std::string>   m_blackList;
 	CDStarNetwork*             m_network;
