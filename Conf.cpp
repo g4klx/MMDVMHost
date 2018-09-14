@@ -123,6 +123,7 @@ m_dstarSelfOnly(false),
 m_dstarBlackList(),
 m_dstarAckReply(true),
 m_dstarAckTime(750U),
+m_dstarAckMessage(false),
 m_dstarErrorReply(true),
 m_dstarRemoteGateway(false),
 m_dstarModeHang(10U),
@@ -495,10 +496,12 @@ bool CConf::read()
 				}
 				p = ::strtok(NULL, ",\r\n");
 			}
-		} else if (::strcmp(key, "AckReply") == 0)
+		}else if (::strcmp(key, "AckReply") == 0)
 			m_dstarAckReply = ::atoi(value) == 1;
 		else if (::strcmp(key, "AckTime") == 0)
 			m_dstarAckTime = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "AckMessage") == 0)
+			m_dstarAckMessage = ::atoi(value) == 1;
 		else if (::strcmp(key, "ErrorReply") == 0)
 			m_dstarErrorReply = ::atoi(value) == 1;
 		else if (::strcmp(key, "RemoteGateway") == 0)
@@ -1103,6 +1106,11 @@ bool CConf::getDStarAckReply() const
 unsigned int CConf::getDStarAckTime() const
 {
 	return m_dstarAckTime;
+}
+
+bool CConf::getDStarAckMessage() const
+{
+	return m_dstarAckMessage;
 }
 
 bool CConf::getDStarErrorReply() const
