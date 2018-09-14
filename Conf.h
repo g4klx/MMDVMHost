@@ -334,7 +334,7 @@ private:
   std::string  m_dstarModule;
   bool         m_dstarSelfOnly;
   std::vector<std::string> m_dstarBlackList;
-  bool         m_dstarAckReply;	
+  bool         m_dstarAckReply;
   unsigned int m_dstarAckTime;
   bool         m_dstarAckMessage;
   bool         m_dstarErrorReply;
