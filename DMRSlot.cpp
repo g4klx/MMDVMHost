@@ -168,7 +168,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 		uint16_t raw = 0U;
 		raw |= (data[35U] << 8) & 0xFF00U;
 		raw |= (data[36U] << 0) & 0x00FFU;
-		
+
 		// Convert the raw RSSI to dBm
 		int rssi = m_rssiMapper->interpolate(raw);
 		if (rssi != 0)
@@ -212,8 +212,8 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			if (!CDMRAccessControl::validateSrcId(srcId)) {
 				LogMessage("DMR Slot %u, RF user %u rejected", m_slotNo, srcId);
-			    delete lc;
-			    return false;
+				delete lc;
+				return false;
 			}
 
 			if (!CDMRAccessControl::validateTGId(m_slotNo, flco == FLCO_GROUP, dstId)) {
@@ -482,7 +482,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				m_display->writeDMRRSSI(m_slotNo, m_rssi);
 			}
 
-            return true;
+			return true;
 		} else if (dataType == DT_RATE_12_DATA || dataType == DT_RATE_34_DATA || dataType == DT_RATE_1_DATA) {
 			if (m_rfState != RS_RF_DATA || m_rfFrames == 0U)
 				return false;
@@ -761,7 +761,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				if (!CDMRAccessControl::validateSrcId(srcId)) {
 					LogMessage("DMR Slot %u, RF user %u rejected", m_slotNo, srcId);
 					delete lc;
-				    return false;
+					return false;
 				}
 
 				if (!CDMRAccessControl::validateTGId(m_slotNo, flco == FLCO_GROUP, dstId)) {
@@ -1599,7 +1599,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			setShortLC(m_slotNo, dstId, gi ? FLCO_GROUP : FLCO_USER_USER, ACTIVITY_DATA);
 			m_display->writeDMR(m_slotNo, src, gi, dst, "N");
 		}
-    } else if (dataType == DT_RATE_12_DATA || dataType == DT_RATE_34_DATA || dataType == DT_RATE_1_DATA) {
+	} else if (dataType == DT_RATE_12_DATA || dataType == DT_RATE_34_DATA || dataType == DT_RATE_1_DATA) {
 		if (m_netState != RS_NET_DATA || m_netFrames == 0U) {
 			writeEndNet();
 			return;
@@ -1863,7 +1863,6 @@ void CDMRSlot::init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData
 	slotType.getData(m_idle + 2U);
 }
 
-
 void CDMRSlot::setShortLC(unsigned int slotNo, unsigned int id, FLCO flco, ACTIVITY_TYPE type)
 {
 	assert(m_modem != NULL);
@@ -2031,10 +2030,10 @@ void CDMRSlot::insertSilence(unsigned int count)
 	unsigned char data[DMR_FRAME_LENGTH_BYTES + 2U];
 
 	if (m_lastFrameValid) {
-		::memcpy(data, m_lastFrame, 2U);                                        // The control data
+		::memcpy(data, m_lastFrame, 2U);                        // The control data
 		::memcpy(data + 2U, m_lastFrame + 24U + 2U, 9U);        // Copy the last audio block to the first
-		::memcpy(data + 24U + 2U, data + 2U, 9U);                       // Copy the last audio block to the last
-		::memcpy(data + 9U + 2U, data + 2U, 5U);                        // Copy the last audio block to the middle (1/2)
+		::memcpy(data + 24U + 2U, data + 2U, 9U);               // Copy the last audio block to the last
+		::memcpy(data + 9U + 2U, data + 2U, 5U);                // Copy the last audio block to the middle (1/2)
 		::memcpy(data + 19U + 2U, data + 4U + 2U, 5U);          // Copy the last audio block to the middle (2/2)
 	} else {
 		// Not sure what to do if this isn't AMBE audio
