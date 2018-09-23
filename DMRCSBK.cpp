@@ -127,6 +127,14 @@ void CDMRCSBK::get(unsigned char* bytes) const
 {
 	assert(bytes != NULL);
 
+	m_data[10U] ^= CSBK_CRC_MASK[0U];
+	m_data[11U] ^= CSBK_CRC_MASK[1U];
+
+	CCRC::addCCITT162(m_data, 12U);
+
+	m_data[10U] ^= CSBK_CRC_MASK[0U];
+	m_data[11U] ^= CSBK_CRC_MASK[1U];
+
 	CBPTC19696 bptc;
 	bptc.encode(m_data, bytes);
 }
@@ -169,4 +177,9 @@ bool CDMRCSBK::getDataContent() const
 unsigned char CDMRCSBK::getCBF() const
 {
 	return m_CBF;
+}
+
+void CDMRCSBK::setCBF(unsigned char cbf)
+{
+	m_CBF = m_data[3U] = cbf;
 }

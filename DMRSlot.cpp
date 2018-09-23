@@ -66,6 +66,7 @@ const unsigned char TALKER_ID_BLOCK3 = 0x08U;
 
 const unsigned int NO_HEADERS_SIMPLEX = 8U;
 const unsigned int NO_HEADERS_DUPLEX  = 3U;
+const unsigned int NO_PREAMBLE_CSBK   = 15U;
 
 // #define	DUMP_DMR
 
@@ -1565,7 +1566,28 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
 
-		writeQueueNet(data);
+		if (csbko == CSBKO_PRECCSBK && csbk.getDataContent()) {
+			unsigned int cbf = NO_PREAMBLE_CSBK + csbk.getCBF() - 1U;
+			for (unsigned int i = 0U; i < NO_PREAMBLE_CSBK; i++, cbf--) {
+				// Change blocks to follow
+				csbk.setCBF(cbf);
+
+				// Regenerate the CSBK data
+				csbk.get(data + 2U);
+
+				// Regenerate the Slot Type
+				CDMRSlotType slotType;
+				slotType.putData(data + 2U);
+				slotType.setColorCode(m_colorCode);
+				slotType.getData(data + 2U);
+
+				// Convert the Data Sync to be from the BS or MS as needed
+				CSync::addDMRDataSync(data + 2U, m_duplex);
+
+				writeQueueNet(data);
+			}
+		} else
+			writeQueueNet(data);
 
 #if defined(DUMP_DMR)
 		openFile();

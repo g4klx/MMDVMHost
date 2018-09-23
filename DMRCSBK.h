@@ -57,6 +57,8 @@ public:
 	bool          getDataContent() const;
 	unsigned char getCBF() const;
 
+	void          setCBF(unsigned char cbf);
+
 private:
 	unsigned char* m_data;
 	CSBKO          m_CSBKO;
