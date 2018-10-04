@@ -258,8 +258,6 @@ bool CP25Data::decodeLDU2(const unsigned char* data)
 	CP25Utils::decode(data, raw, 1356U, 1398U);
 	decodeLDUHamming(raw, rs + 15U);
 
-	// CUtils::dump(2U, "LDU2 RS", rs, P25_LDU_LC_LENGTH_BYTES);
-
 	// decode RS (24,16,9) FEC
 	try {
 		bool ret = m_rs241213.decode24169(rs);
