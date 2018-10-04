@@ -104,7 +104,13 @@ void CP25Data::encodeHeader(unsigned char* data)
 	unsigned char rs[81U];
 	::memset(rs, 0x00U, 81U);
 
+	for (unsigned int i = 0; i < P25_MI_LENGTH_BYTES; i++)
+		rs[i] = m_mi[i];                                                            // Message Indicator
+
 	rs[9U] = m_mfId;                                                                // Mfg Id.
+	rs[10U] = m_algId;                                                              // Algorithm ID
+	rs[11U] = (m_kId >> 8) & 0xFFU;                                                 // Key ID MSB
+	rs[12U] = (m_kId >> 0) & 0xFFU;                                                 // Key ID LSB
 	rs[13U] = (m_dstId >> 8) & 0xFFU;                                               // Talkgroup Address MSB
 	rs[14U] = (m_dstId >> 0) & 0xFFU;                                               // Talkgroup Address LSB
 
