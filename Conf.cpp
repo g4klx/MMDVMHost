@@ -55,7 +55,8 @@ enum SECTION {
   SECTION_NEXTION,
   SECTION_OLED,
   SECTION_LCDPROC,
-  SECTION_TGREWRITE
+  SECTION_TGREWRITE,
+  SECTION_LOCKFILE
 };
 
 CConf::CConf(const std::string& file) :
@@ -238,7 +239,9 @@ m_lcdprocAddress(),
 m_lcdprocPort(0U),
 m_lcdprocLocalPort(0U),
 m_lcdprocDisplayClock(false),
-m_lcdprocUTC(false)
+m_lcdprocUTC(false),
+m_lockFileEnabled(false),
+m_lockFileName()
 {
 }
 
@@ -314,6 +317,8 @@ bool CConf::read()
 		  section = SECTION_OLED;
 	  else if (::strncmp(buffer, "[LCDproc]", 9U) == 0)
 		  section = SECTION_LCDPROC;
+	  else if (::strncmp(buffer, "[LOCKFILE]", 9U) == 0)
+		  section = SECTION_LOCKFILE;
 	  else
 		  section = SECTION_NONE;
 
@@ -785,6 +790,11 @@ bool CConf::read()
 			m_lcdprocUTC = ::atoi(value) == 1;
 		else if (::strcmp(key, "DimOnIdle") == 0)
 			m_lcdprocDimOnIdle = ::atoi(value) == 1;
+	} else if (section == SECTION_LOCKFILE) {
+		if (::strcmp(key, "Enable") == 0)
+			m_lockFileEnabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "File") == 0)
+			m_lockFileName = value;
 	}
   }
 
@@ -1691,4 +1701,14 @@ bool CConf::getLCDprocDimOnIdle() const
 bool CConf::getNextionTempInFahrenheit() const
 {
 	return m_nextionTempInFahrenheit;
+}
+
+bool CConf::getLockFileEnabled() const
+{
+	return m_lockFileEnabled;
+}
+
+std::string CConf::getLockFileName() const
+{
+	return m_lockFileName;
 }

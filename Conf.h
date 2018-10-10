@@ -262,6 +262,11 @@ public:
   bool         getLCDprocUTC() const;
   bool         getLCDprocDimOnIdle() const;
 
+  // The Lock File section
+  bool         getLockFileEnabled() const;
+  std::string  getLockFileName() const;
+
+
 private:
   std::string  m_file;
   std::string  m_callsign;
@@ -469,6 +474,9 @@ private:
   bool         m_lcdprocDisplayClock;
   bool         m_lcdprocUTC;
   bool         m_lcdprocDimOnIdle;
+
+  bool         m_lockFileEnabled;
+  std::string  m_lockFileName;
 };
 
 #endif

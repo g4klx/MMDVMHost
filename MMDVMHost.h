@@ -35,6 +35,8 @@
 
 #include <string>
 
+
+
 class CMMDVMHost
 {
 public:
@@ -83,6 +85,8 @@ private:
   std::string     m_callsign;
   unsigned int    m_id;
   std::string     m_cwCallsign;
+  bool            m_lockFileEnabled;
+  std::string     m_lockFileName;
 
   void readParams();
   bool createModem();
@@ -94,6 +98,9 @@ private:
   bool createPOCSAGNetwork();
 
   void setMode(unsigned char mode);
+
+  void createLockFile();
+  void removeLockFile();
 };
 
 #endif

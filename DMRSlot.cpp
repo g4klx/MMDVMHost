@@ -826,6 +826,8 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					return false;
 				if (m_rfN == m_lastrfN)
 					return false;
+				if (m_rfN != (m_lastrfN + 1U))
+					return false;
 				m_lastrfN = m_rfN;
 
 				// Regenerate the EMB
