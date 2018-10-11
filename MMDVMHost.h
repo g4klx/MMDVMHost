@@ -99,8 +99,8 @@ private:
 
   void setMode(unsigned char mode);
 
-  void createLockFile();
-  void removeLockFile();
+  void createLockFile(const char* mode) const;
+  void removeLockFile() const;
 };
 
 #endif

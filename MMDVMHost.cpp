@@ -345,9 +345,13 @@ int CMMDVMHost::run()
 	}
 
 	if (m_conf.getLockFileEnabled()) {
-		m_lockFileName = m_conf.getLockFileName();
+		m_lockFileEnabled = true;
+		m_lockFileName    = m_conf.getLockFileName();
+
 		LogInfo("Lock File Parameters");
 		LogInfo("    Name: %s", m_lockFileName.c_str());
+
+		removeLockFile();
 	}
 
 	if (m_conf.getCWIdEnabled()) {
@@ -604,9 +608,6 @@ int CMMDVMHost::run()
 			bool cd = m_modem->hasCD();
 			m_ump->setCD(cd);
 		}
-
-		if (m_mode == MODE_IDLE)
-			removeLockFile();
 
 		unsigned char data[200U];
 		unsigned int len;
@@ -1393,7 +1394,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_mode = MODE_DSTAR;
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
-		createLockFile();
+		createLockFile("D-Star");
 		break;
 
 	case MODE_DMR:
@@ -1417,7 +1418,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_mode = MODE_DMR;
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
-		createLockFile();
+		createLockFile("DMR");
 		break;
 
 	case MODE_YSF:
@@ -1437,7 +1438,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_mode = MODE_YSF;
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
-		createLockFile();
+		createLockFile("System Fusion");
 		break;
 
 	case MODE_P25:
@@ -1457,7 +1458,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_mode = MODE_P25;
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
-		createLockFile();
+		createLockFile("P25");
 		break;
 
 	case MODE_NXDN:
@@ -1477,7 +1478,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_mode = MODE_NXDN;
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
-		createLockFile();
+		createLockFile("NXDN");
 		break;
 
 	case MODE_POCSAG:
@@ -1497,7 +1498,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_mode = MODE_POCSAG;
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
-		createLockFile();
+		createLockFile("POCSAG");
 		break;
 
 	case MODE_LOCKOUT:
@@ -1525,6 +1526,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_mode = MODE_LOCKOUT;
 		m_modeTimer.stop();
 		m_cwIdTimer.stop();
+		removeLockFile();
 		break;
 
 	case MODE_ERROR:
@@ -1551,6 +1553,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_mode = MODE_ERROR;
 		m_modeTimer.stop();
 		m_cwIdTimer.stop();
+		removeLockFile();
 		break;
 
 	default:
@@ -1582,10 +1585,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_cwIdTimer.start();
 		}
 		m_display->setIdle();
-		if (mode == MODE_QUIT) {
+		if (mode == MODE_QUIT)
 			m_display->setQuit();
-			removeLockFile();
-		}
 		m_mode = MODE_IDLE;
 		m_modeTimer.stop();
 		removeLockFile();
@@ -1593,30 +1594,20 @@ void CMMDVMHost::setMode(unsigned char mode)
 	}
 }
 
-void  CMMDVMHost::createLockFile()
+void  CMMDVMHost::createLockFile(const char* mode) const
 {
 	if (m_lockFileEnabled) {
-		FILE* fp = ::fopen(m_lockFileName.c_str(), "r");
-		if (fp == NULL) { //if file does not exist, create it
-			fp = ::fopen(m_lockFileName.c_str(), "wt");
-			if (fp != NULL) {
-				::fputs("ACTIVE\n", fp);
-				::fclose(fp);
-			}
-		}
-		else {
+		FILE* fp = ::fopen(m_lockFileName.c_str(), "wt");
+		if (fp != NULL) {
+			::fprintf(fp, "%s\n", mode);
 			::fclose(fp);
 		}
 	}
 }
 
-void  CMMDVMHost::removeLockFile()
+void  CMMDVMHost::removeLockFile() const
 {
-	if (m_lockFileEnabled) {
-		FILE* fp = ::fopen(m_lockFileName.c_str(), "r");
-		if (fp != NULL) {
-			::fclose(fp);
-			::remove(m_lockFileName.c_str());
-		}
-	}
+	if (m_lockFileEnabled)
+		::remove(m_lockFileName.c_str());
 }
+
