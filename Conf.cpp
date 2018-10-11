@@ -55,8 +55,7 @@ enum SECTION {
   SECTION_NEXTION,
   SECTION_OLED,
   SECTION_LCDPROC,
-  SECTION_TGREWRITE,
-  SECTION_LOCKFILE
+  SECTION_LOCK_FILE
 };
 
 CConf::CConf(const std::string& file) :
@@ -317,8 +316,8 @@ bool CConf::read()
 		  section = SECTION_OLED;
 	  else if (::strncmp(buffer, "[LCDproc]", 9U) == 0)
 		  section = SECTION_LCDPROC;
-	  else if (::strncmp(buffer, "[LOCKFILE]", 9U) == 0)
-		  section = SECTION_LOCKFILE;
+	  else if (::strncmp(buffer, "[Lock File]", 11U) == 0)
+		  section = SECTION_LOCK_FILE;
 	  else
 		  section = SECTION_NONE;
 
@@ -790,7 +789,7 @@ bool CConf::read()
 			m_lcdprocUTC = ::atoi(value) == 1;
 		else if (::strcmp(key, "DimOnIdle") == 0)
 			m_lcdprocDimOnIdle = ::atoi(value) == 1;
-	} else if (section == SECTION_LOCKFILE) {
+	} else if (section == SECTION_LOCK_FILE) {
 		if (::strcmp(key, "Enable") == 0)
 			m_lockFileEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "File") == 0)
