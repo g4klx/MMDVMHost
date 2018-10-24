@@ -1093,7 +1093,7 @@ void CYSFControl::writeNetwork()
 
 		if (m_remoteGateway) {
 			fich.setVoIP(false);
-			fich.setMR(YSF_MR_NOT_BUSY);
+			fich.setMR(YSF_MR_DIRECT);
 		} else {
 			fich.setVoIP(true);
 			fich.setMR(YSF_MR_BUSY);
