@@ -253,6 +253,7 @@ public:
   unsigned char  getOLEDBrightness() const;
   bool           getOLEDInvert() const;
   bool           getOLEDScroll() const;
+  bool           getOLEDRotate() const;
 
   // The LCDproc section
   std::string  getLCDprocAddress() const;
@@ -467,6 +468,7 @@ private:
   unsigned char m_oledBrightness;
   bool          m_oledInvert;
   bool          m_oledScroll;
+  bool          m_oledRotate;
 
   std::string  m_lcdprocAddress;
   unsigned int m_lcdprocPort;

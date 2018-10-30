@@ -169,11 +169,12 @@ const unsigned char logo_POCSAG_bmp [] =
 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
 };
 
-COLED::COLED(unsigned char displayType, unsigned char displayBrightness, bool displayInvert, bool displayScroll, bool slot1Enabled, bool slot2Enabled) :
+COLED::COLED(unsigned char displayType, unsigned char displayBrightness, bool displayInvert, bool displayScroll, bool displayRotate, bool slot1Enabled, bool slot2Enabled) :
 m_displayType(displayType),
 m_displayBrightness(displayBrightness),
 m_displayInvert(displayInvert),
 m_displayScroll(displayScroll),
+m_displayRotate(displayRotate),
 m_slot1Enabled(slot1Enabled),
 m_slot2Enabled(slot2Enabled)
 {
@@ -206,6 +207,11 @@ bool COLED::open()
     display.invertDisplay(m_displayInvert ? 1 : 0);
     if (m_displayBrightness > 0U)
         display.setBrightness(m_displayBrightness);
+
+    if (m_displayRotate > 0U) {
+      display.sendCommand(0xC0);
+      display.sendCommand(0xA0);
+    }
 
     // init done
     display.clearDisplay();   // clears the screen  buffer
