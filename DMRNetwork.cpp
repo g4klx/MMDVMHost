@@ -283,7 +283,7 @@ bool CDMRNetwork::write(const CDMRData& data)
 	return true;
 }
 
-bool CDMRNetwork::writePosition(unsigned int id, const unsigned char* data)
+bool CDMRNetwork::writeRadioPosition(unsigned int id, const unsigned char* data)
 {
 	if (m_status != RUNNING)
 		return false;
@@ -323,6 +323,24 @@ bool CDMRNetwork::writeTalkerAlias(unsigned int id, unsigned char type, const un
 	::memcpy(buffer + 12U, data + 2U, 7U);
 
 	return write(buffer, 19U);
+}
+
+bool CDMRNetwork::writeHomePosition(float latitude, float longitude)
+{
+	m_latitude  = latitude;
+	m_longitude = longitude;
+
+	if (m_status != RUNNING)
+		return false;
+
+	char buffer[50U];
+
+	::memcpy(buffer + 0U, "RPTG", 4U);
+	::memcpy(buffer + 4U, m_id, 4U);
+
+	::sprintf(buffer + 8U, "%08f%09f", latitude, longitude);
+
+	return write((unsigned char*)buffer, 25U);
 }
 
 void CDMRNetwork::close()

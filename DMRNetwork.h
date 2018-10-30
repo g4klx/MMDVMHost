@@ -46,9 +46,11 @@ public:
 
 	bool write(const CDMRData& data);
 
-	bool writePosition(unsigned int id, const unsigned char* data);
+	bool writeRadioPosition(unsigned int id, const unsigned char* data);
 
 	bool writeTalkerAlias(unsigned int id, unsigned char type, const unsigned char* data);
+
+	bool writeHomePosition(float latitude, float longitude);
 
 	bool wantsBeacon();
 
