@@ -608,7 +608,8 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
         unsigned char brightness = conf.getOLEDBrightness();
         bool          invert     = conf.getOLEDInvert();
 		bool          scroll     = conf.getOLEDScroll();
-		display = new COLED(type, brightness, invert, scroll, conf.getDMRNetworkSlot1(), conf.getDMRNetworkSlot2());
+	bool          rotate     = conf.getOLEDRotate();
+		display = new COLED(type, brightness, invert, scroll, rotate, conf.getDMRNetworkSlot1(), conf.getDMRNetworkSlot2());
 #endif
 	} else {
 		LogWarning("No valid display found, disabling");

@@ -234,6 +234,7 @@ m_oledType(3U),
 m_oledBrightness(0U),
 m_oledInvert(false),
 m_oledScroll(false),
+m_oledRotate(false),
 m_lcdprocAddress(),
 m_lcdprocPort(0U),
 m_lcdprocLocalPort(0U),
@@ -776,6 +777,8 @@ bool CConf::read()
 			m_oledInvert = ::atoi(value) == 1;
 		else if (::strcmp(key, "Scroll") == 0)
 			m_oledScroll = ::atoi(value) == 1;
+		else if (::strcmp(key, "Rotate") == 0)
+			m_oledRotate = ::atoi(value) == 1;
 	} else if (section == SECTION_LCDPROC) {
 		if (::strcmp(key, "Address") == 0)
 			m_lcdprocAddress = value;
@@ -1665,6 +1668,11 @@ bool CConf::getOLEDInvert() const
 bool CConf::getOLEDScroll() const
 {
 	return m_oledScroll;
+}
+
+bool CConf::getOLEDRotate() const
+{
+	return m_oledRotate;
 }
 
 std::string CConf::getLCDprocAddress() const
