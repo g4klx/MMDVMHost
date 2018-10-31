@@ -81,12 +81,13 @@ public:
 
 	bool writeTransparentData(const unsigned char* data, unsigned int length);
 
-	bool writeDStarInfo(bool network, const unsigned char* my1, const unsigned char* my2, const unsigned char* your, const unsigned char* rpt1, const unsigned char* rpt2, const unsigned char* reflector);
-	bool writeDMRInfo(bool network, unsigned int slotNo, unsigned int src, bool group, unsigned int dest);
-	bool writeYSFInfo(bool network, const unsigned char* src, const unsigned char* dest, const unsigned char* reflector);
-	bool writeP25Info(bool network, unsigned int src, bool group, unsigned int dest);
-	bool writeNXDNInfo(bool network, unsigned int src, bool group, unsigned int dest);
-	bool writePOCSAGInfo(unsigned int ric, const unsigned char* message, unsigned int length);
+	bool writeDStarInfo(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
+	bool writeDMRInfo(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
+	bool writeYSFInfo(const char* source, const char* dest, const char* type, const char* origin);
+	bool writeP25Info(const char* source, bool group, unsigned int dest, const char* type);
+	bool writeNXDNInfo(const char* source, bool group, unsigned int dest, const char* type);
+	bool writePOCSAGInfo(unsigned int ric, const std::string& message);
+	bool writeIPInfo(const std::string& address);
 
 	bool writeDMRStart(bool tx);
 	bool writeDMRShortLC(const unsigned char* lc);

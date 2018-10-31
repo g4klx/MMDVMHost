@@ -459,13 +459,12 @@ void CDisplay::writeNXDNBERInt(float ber)
 {
 }
 	
-
 /* Factory method extracted from MMDVMHost.cpp - BG5HHP */
 CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
 {
-    CDisplay *display = NULL;
+        CDisplay *display = NULL;
 
-    std::string type   = conf.getDisplay();
+        std::string type   = conf.getDisplay();
 	unsigned int dmrid = conf.getDMRId();
 
 	LogInfo("Display Parameters");
@@ -528,10 +527,10 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
 		} else if (port == "ump") {
 			if (ump != NULL) {
 				display = new CNextion(conf.getCallsign(), dmrid, ump, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF, conf.getLocation());
-            } else {
-				LogInfo("    NullDisplay loaded");
-                display = new CNullDisplay;
-			}
+                        } else {
+                		LogInfo("    NullDisplay loaded");
+                		display = new CNullDisplay;
+                        }
 		} else {
 			SERIAL_SPEED baudrate = SERIAL_9600;
 			if (screenLayout==4U)
@@ -601,15 +600,16 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
 			display = new CHD44780(rows, columns, conf.getCallsign(), dmrid, pins, i2cAddress, pwm, pwmPin, pwmBright, pwmDim, displayClock, utc, conf.getDuplex());
 		}
 #endif
-
 #if defined(OLED)
 	} else if (type == "OLED") {
-        unsigned char type       = conf.getOLEDType();
-        unsigned char brightness = conf.getOLEDBrightness();
-        bool          invert     = conf.getOLEDInvert();
-		bool          scroll     = conf.getOLEDScroll();
-	bool          rotate     = conf.getOLEDRotate();
-		display = new COLED(type, brightness, invert, scroll, rotate, conf.getDMRNetworkSlot1(), conf.getDMRNetworkSlot2());
+	        unsigned char type       = conf.getOLEDType();
+	        unsigned char brightness = conf.getOLEDBrightness();
+	        bool          invert     = conf.getOLEDInvert();
+	        bool          scroll     = conf.getOLEDScroll();
+		bool          rotate     = conf.getOLEDRotate();
+		bool          cast       = conf.getOLEDCast();
+
+		display = new COLED(type, brightness, invert, scroll, rotate, conf.getDMRNetworkSlot1(), conf.getDMRNetworkSlot2(), cast ? modem : NULL);
 #endif
 	} else {
 		LogWarning("No valid display found, disabling");
