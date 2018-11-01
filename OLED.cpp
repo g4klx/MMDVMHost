@@ -394,7 +394,7 @@ void COLED::writeDMRInt(unsigned int slotNo,const std::string& src,bool group,co
     m_display.display();
 
     if (m_modem != NULL)
-        m_modem->writeDMRInfo(slotNo, src, group, dest, type);
+        m_modem->writeDMRInfo(slotNo, src, group, dst, type);
 }
 
 void COLED::clearDMRInt(unsigned int slotNo)
