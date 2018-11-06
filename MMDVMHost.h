@@ -27,6 +27,7 @@
 #include "P25Network.h"
 #include "DMRNetwork.h"
 #include "DMRLookup.h"
+#include "MobileGPS.h"
 #include "Display.h"
 #include "Timer.h"
 #include "Modem.h"
@@ -87,6 +88,7 @@ private:
   std::string     m_cwCallsign;
   bool            m_lockFileEnabled;
   std::string     m_lockFileName;
+  CMobileGPS*     m_mobileGPS;
 
   void readParams();
   bool createModem();

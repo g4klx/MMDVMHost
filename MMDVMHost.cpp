@@ -157,7 +157,8 @@ m_callsign(),
 m_id(0U),
 m_cwCallsign(),
 m_lockFileEnabled(false),
-m_lockFileName()
+m_lockFileName(),
+m_mobileGPS(NULL)
 {
 }
 
@@ -941,6 +942,9 @@ int CMMDVMHost::run()
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->clock(ms);
 
+		if (m_mobileGPS != NULL)
+			m_mobileGPS->clock(ms);
+
 		m_cwIdTimer.clock(ms);
 		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
 			if (m_mode == MODE_IDLE && !m_modem->hasTX()){
@@ -995,6 +999,11 @@ int CMMDVMHost::run()
 
 	m_display->close();
 	delete m_display;
+
+	if (m_mobileGPS != NULL) {
+		m_mobileGPS->close();
+		delete m_mobileGPS;
+	}
 
 	if (m_ump != NULL) {
 		m_ump->close();
@@ -1220,6 +1229,24 @@ bool CMMDVMHost::createDMRNetwork()
 		delete m_dmrNetwork;
 		m_dmrNetwork = NULL;
 		return false;
+	}
+
+	bool mobileGPSEnabled = m_conf.getMobileGPSEnabled();
+	if (mobileGPSEnabled) {
+		std::string mobileGPSAddress = m_conf.getMobileGPSAddress();
+		unsigned int mobileGPSPort   = m_conf.getMobileGPSPort();
+
+		LogInfo("Mobile GPS Parameters");
+		LogInfo("    Address: %s", mobileGPSAddress.c_str());
+		LogInfo("    Port; %u", mobileGPSPort);
+
+		m_mobileGPS = new CMobileGPS(address, port, m_dmrNetwork);
+
+		ret = m_mobileGPS->open();
+		if (!ret) {
+			delete m_mobileGPS;
+			m_mobileGPS = NULL;
+		}
 	}
 
 	m_dmrNetwork->enable(true);

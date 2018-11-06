@@ -187,6 +187,7 @@
     <ClInclude Include="LCDproc.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MMDVMHost.h" />
+    <ClInclude Include="MobileGPS.h" />
     <ClInclude Include="Modem.h" />
     <ClInclude Include="ModemSerialPort.h" />
     <ClInclude Include="Mutex.h" />
@@ -274,6 +275,7 @@
     <ClCompile Include="LCDproc.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MMDVMHost.cpp" />
+    <ClCompile Include="MobileGPS.cpp" />
     <ClCompile Include="Modem.cpp" />
     <ClCompile Include="ModemSerialPort.cpp" />
     <ClCompile Include="Mutex.cpp" />
