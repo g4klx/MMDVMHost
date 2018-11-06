@@ -93,8 +93,8 @@ void CMobileGPS::sendReport()
 	if (pLatitude == NULL || pLongitude == NULL)
 		return;
 
-	float latitude  = ::atof(pLatitude);
-	float longitude = ::atof(pLongitude);
+	float latitude  = float(::atof(pLatitude));
+	float longitude = float(::atof(pLongitude));
 
 	m_network->writeHomePosition(latitude, longitude);
 }
