@@ -277,10 +277,10 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		}
 
 		if (m_rfState == RS_RF_AUDIO) {
-			bool ret = m_rfData.decodeLDU1(data + 2U);
-			if (!ret) {
-				return false;
-			}
+			//bool ret = m_rfData.decodeLDU1(data + 2U);
+			//if (!ret) {
+			//	return false;
+			//}
 
 			// Regenerate Sync
 			CSync::addP25Sync(data + 2U);
@@ -326,10 +326,10 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		}
 	} else if (duid == P25_DUID_LDU2) {
 		if (m_rfState == RS_RF_AUDIO) {
-			bool ret = m_rfData.decodeLDU2(data + 2U);
-			if (!ret) {
-				return false;
-			}
+			//bool ret = m_rfData.decodeLDU2(data + 2U);
+			//if (!ret) {
+			//	return false;
+			//}
 
 			writeNetwork(m_rfLDU, m_lastDUID, false);
 
