@@ -30,6 +30,8 @@ public:
 	static void bitsToByteBE(const bool* bits, unsigned char& byte);
 	static void bitsToByteLE(const bool* bits, unsigned char& byte);
 
+	static unsigned int compare(const unsigned char* bytes1, const unsigned char* bytes2, unsigned int length);
+
 private:
 };
 

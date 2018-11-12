@@ -144,3 +144,22 @@ void CUtils::bitsToByteLE(const bool* bits, unsigned char& byte)
 	byte |= bits[6U] ? 0x40U : 0x00U;
 	byte |= bits[7U] ? 0x80U : 0x00U;
 }
+
+unsigned int CUtils::compare(const unsigned char* bytes1, const unsigned char* bytes2, unsigned int length)
+{
+	assert(bytes1 != NULL);
+	assert(bytes2 != NULL);
+
+	unsigned int diffs = 0U;
+
+	for (unsigned int i = 0U; i < length; i++) {
+		unsigned char v = bytes1[i] ^ bytes2[i];
+		while (v != 0U) {
+			v &= v - 1U;
+			diffs++;
+		}
+	}
+
+	return diffs;
+}
+
