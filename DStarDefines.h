@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -37,7 +37,8 @@ const unsigned char DSTAR_NULL_FRAME_SYNC_BYTES[] = { TAG_DATA, 0x9E, 0x8D, 0x32
 const unsigned char DSTAR_NULL_FRAME_DATA_BYTES[] = { TAG_DATA, 0x9E, 0x8D, 0x32, 0x88, 0x26, 0x1A, 0x3F, 0x61, 0xE8, 0x16, 0x29, 0xF5 };
 
 const unsigned char DSTAR_KENWOOD_DATA_MODE_BYTES[] = { 0xEEU, 0xC2U, 0xA1U, 0xC8U, 0x42U, 0x6EU, 0x52U, 0x51U, 0xC3U };
-const unsigned char DSTAR_ICOM_DATA_MODE_BYTES[]    = { 0xB2U, 0x4DU, 0x22U, 0x48U, 0xC0U, 0x16U, 0x28U, 0x26U, 0xC8U };
+const unsigned char DSTAR_ICOM_DATA_MODE_BYTES1[]   = { 0xB2U, 0x4DU, 0x22U, 0x48U, 0xC0U, 0x16U, 0x28U, 0x26U, 0xC8U };
+const unsigned char DSTAR_ICOM_DATA_MODE_BYTES2[]   = { 0x70U, 0x4FU, 0x93U, 0x40U, 0x64U, 0x74U, 0x6DU, 0x30U, 0x2BU };
 
 const unsigned int  DSTAR_VOICE_FRAME_LENGTH_BYTES = 9U;
 const unsigned int  DSTAR_DATA_FRAME_LENGTH_BYTES  = 3U;
