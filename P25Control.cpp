@@ -126,7 +126,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		else
 			LogMessage("P25, transmission lost, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
 
-        LogMessage("P25, total frames: %d, bits: %d, undecodable LC: %d, errors: %d, BER: %.4f%%", m_rfFrames, m_rfBits, m_rfUndecodableLC, m_rfErrs, float(m_rfErrs * 100U) / float(m_rfBits));
+		LogMessage("P25, total frames: %d, bits: %d, undecodable LC: %d, errors: %d, BER: %.4f%%", m_rfFrames, m_rfBits, m_rfUndecodableLC, m_rfErrs, float(m_rfErrs * 100U) / float(m_rfBits));
 
 		if (m_netState == RS_NET_IDLE)
 			m_display->clearP25();
@@ -213,23 +213,23 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		m_rssiCount++;
 	}
 
-    if (duid == P25_DUID_HEADER) {
-        if (m_rfState == RS_RF_LISTENING) {
-            m_rfData.reset();
-            bool ret = m_rfData.decodeHeader(data + 2U);
-            if (!ret) {
-                m_lastDUID = duid;
-                return false;
-            }
+	if (duid == P25_DUID_HEADER) {
+		if (m_rfState == RS_RF_LISTENING) {
+			m_rfData.reset();
+			bool ret = m_rfData.decodeHeader(data + 2U);
+			if (!ret) {
+				m_lastDUID = duid;
+				return false;
+			}
 
-            LogMessage("P25, received RF header");
+			LogMessage("P25, received RF header");
 
-            m_lastDUID = duid;
-            return true;
-        }
-    }
-    else if (duid == P25_DUID_LDU1) {
-        if (m_rfState == RS_RF_LISTENING) {
+			m_lastDUID = duid;
+			return true;
+		}
+	}
+	else if (duid == P25_DUID_LDU1) {
+		if (m_rfState == RS_RF_LISTENING) {
 			m_rfData.reset();
 			bool ret = m_rfData.decodeLDU1(data + 2U);
 			if (!ret) {
@@ -283,14 +283,14 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 
 		if (m_rfState == RS_RF_AUDIO) {
 			bool ret = m_rfData.decodeLDU1(data + 2U);
-            if (!ret) {
-                LogWarning("P25, LDU1 undecodable LC, using last LDU1 LC");
-                m_rfData = m_rfLastLDU1;
-                m_rfUndecodableLC++;
-            }
-            else {
-                m_rfLastLDU1 = m_rfData;
-            }
+			if (!ret) {
+				LogWarning("P25, LDU1 undecodable LC, using last LDU1 LC");
+				m_rfData = m_rfLastLDU1;
+				m_rfUndecodableLC++;
+			}
+			else {
+				m_rfLastLDU1 = m_rfData;
+			}
 
 			// Regenerate Sync
 			CSync::addP25Sync(data + 2U);
@@ -337,14 +337,14 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 	} else if (duid == P25_DUID_LDU2) {
 		if (m_rfState == RS_RF_AUDIO) {
 			bool ret = m_rfData.decodeLDU2(data + 2U);
-            if (!ret) {
-                LogWarning("P25, LDU2 undecodable LC, using last LDU2 LC");
-                m_rfData = m_rfLastLDU2;
-                m_rfUndecodableLC++;
-            }
-            else {
-                m_rfLastLDU2 = m_rfData;
-            }
+			if (!ret) {
+				LogWarning("P25, LDU2 undecodable LC, using last LDU2 LC");
+				m_rfData = m_rfLastLDU2;
+				m_rfUndecodableLC++;
+			}
+			else {
+				m_rfLastLDU2 = m_rfData;
+			}
 
 			writeNetwork(m_rfLDU, m_lastDUID, false);
 
@@ -494,7 +494,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			else
 				LogMessage("P25, received RF end of voice transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
 
-            LogMessage("P25, total frames: %d, bits: %d, undecodable LC: %d, errors: %d, BER: %.4f%%", m_rfFrames, m_rfBits, m_rfUndecodableLC, m_rfErrs, float(m_rfErrs * 100U) / float(m_rfBits));
+			LogMessage("P25, total frames: %d, bits: %d, undecodable LC: %d, errors: %d, BER: %.4f%%", m_rfFrames, m_rfBits, m_rfUndecodableLC, m_rfErrs, float(m_rfErrs * 100U) / float(m_rfBits));
 
 			m_display->clearP25();
 
@@ -953,9 +953,9 @@ void CP25Control::createRFHeader()
 
 	m_rfFrames = 0U;
 	m_rfErrs = 0U;
-    m_rfUndecodableLC = 0U;
-    m_rfLastLDU1.reset();
-    m_rfLastLDU2.reset();
+	m_rfUndecodableLC = 0U;
+	m_rfLastLDU1.reset();
+	m_rfLastLDU2.reset();
 	m_rfBits = 1U;
 	m_rfTimeout.start();
 	m_lastDUID = P25_DUID_HEADER;
