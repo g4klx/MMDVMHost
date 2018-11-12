@@ -27,6 +27,8 @@ class CP25Data {
 public:
 	CP25Data();
 	~CP25Data();
+	
+	CP25Data& operator=(const CP25Data& data);
 
 	bool decodeHeader(const unsigned char* data);
 	void encodeHeader(unsigned char* data);
