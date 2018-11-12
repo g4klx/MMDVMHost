@@ -28,13 +28,11 @@ public:
 	CP25Data();
 	~CP25Data();
 
-	bool decodeHeader(const unsigned char* data);
 	void encodeHeader(unsigned char* data);
 
 	bool decodeLDU1(const unsigned char* data);
 	void encodeLDU1(unsigned char* data);
 
-	bool decodeLDU2(const unsigned char* data);
 	void encodeLDU2(unsigned char* data);
 
 	bool decodeTSDU(const unsigned char* data);
@@ -84,9 +82,6 @@ private:
 
 	void decodeLDUHamming(const unsigned char* raw, unsigned char* data);
 	void encodeLDUHamming(unsigned char* data, const unsigned char* raw);
-
-	void decodeHeaderGolay(const unsigned char* raw, unsigned char* data);
-	void encodeHeaderGolay(unsigned char* data, const unsigned char* raw);
 };
 
 #endif

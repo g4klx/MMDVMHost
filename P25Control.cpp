@@ -208,24 +208,9 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		m_rssiCount++;
 	}
 
-	if (duid == P25_DUID_HEADER) {
+	if (duid == P25_DUID_LDU1) {
 		if (m_rfState == RS_RF_LISTENING) {
 			m_rfData.reset();
-			bool ret = m_rfData.decodeHeader(data + 2U);
-			if (!ret) {
-				m_lastDUID = duid;
-				return false;
-			}
-
-			LogMessage("P25, received RF header");
-
-			m_lastDUID = duid;
-			return true;
-		}
-	}
-	else if (duid == P25_DUID_LDU1) {
-		if (m_rfState == RS_RF_LISTENING) {
-			//m_rfData.reset();
 			bool ret = m_rfData.decodeLDU1(data + 2U);
 			if (!ret) {
 				m_lastDUID = duid;
@@ -277,11 +262,6 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		}
 
 		if (m_rfState == RS_RF_AUDIO) {
-			bool ret = m_rfData.decodeLDU1(data + 2U);
-			if (!ret) {
-				return false;
-			}
-
 			// Regenerate Sync
 			CSync::addP25Sync(data + 2U);
 
@@ -326,11 +306,6 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		}
 	} else if (duid == P25_DUID_LDU2) {
 		if (m_rfState == RS_RF_AUDIO) {
-			bool ret = m_rfData.decodeLDU2(data + 2U);
-			if (!ret) {
-				return false;
-			}
-
 			writeNetwork(m_rfLDU, m_lastDUID, false);
 
 			// Regenerate Sync
