@@ -65,6 +65,7 @@ private:
 	unsigned int               m_rfFrames;
 	unsigned int               m_rfBits;
 	unsigned int               m_rfErrs;
+	unsigned int               m_rfUndecodableLC;
 	unsigned int               m_netFrames;
 	unsigned int               m_netLost;
 	unsigned int               m_rfDataFrames;
@@ -72,6 +73,8 @@ private:
 	unsigned char              m_lastDUID;
 	CP25Audio                  m_audio;
 	CP25Data                   m_rfData;
+	CP25Data                   m_rfLastLDU1;
+	CP25Data                   m_rfLastLDU2;
 	CP25Data                   m_netData;
 	CP25LowSpeedData           m_rfLSD;
 	CP25LowSpeedData           m_netLSD;

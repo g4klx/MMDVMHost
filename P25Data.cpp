@@ -55,6 +55,25 @@ CP25Data::~CP25Data()
 	delete[] m_mi;
 }
 
+CP25Data& CP25Data::operator=(const CP25Data& data)
+{
+	if (this != &data) {
+		m_mfId = data.m_mfId;
+
+		m_srcId = data.m_srcId;
+		m_dstId = data.m_dstId;
+
+		m_emergency = data.m_emergency;
+
+		m_algId = data.m_algId;
+		m_kId = data.m_kId;
+
+		::memcpy(m_mi, data.m_mi, P25_MI_LENGTH_BYTES);
+	}
+
+	return *this;
+}
+
 bool CP25Data::decodeHeader(const unsigned char* data)
 {
 	assert(data != NULL);
