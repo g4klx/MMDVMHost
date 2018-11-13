@@ -352,6 +352,16 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		}
 
 		if (m_rfState == RS_RF_DATA) {
+			// Regenerate the data mode markers
+			if (m_rfFrames < 21U) {
+				if (CUtils::compare(data + 1U, DSTAR_KENWOOD_DATA_MODE_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U)
+					::memcpy(data + 1U, DSTAR_KENWOOD_DATA_MODE_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES);
+				else if (CUtils::compare(data + 1U, DSTAR_ICOM_DATA_MODE_BYTES1, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U)
+					::memcpy(data + 1U, DSTAR_ICOM_DATA_MODE_BYTES1, DSTAR_VOICE_FRAME_LENGTH_BYTES);
+				else if (CUtils::compare(data + 1U, DSTAR_ICOM_DATA_MODE_BYTES2, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U)
+					::memcpy(data + 1U, DSTAR_ICOM_DATA_MODE_BYTES2, DSTAR_VOICE_FRAME_LENGTH_BYTES);
+			}
+
 			m_rfBits += 72U;
 			m_rfErrs  = 0U;
 			m_rfFrames++;
@@ -712,6 +722,16 @@ void CDStarControl::writeNetwork()
 		}
 
 		if (m_netState == RS_NET_DATA) {
+			// Regenerate the data mode markers
+			if (m_netFrames < 21U) {
+				if (CUtils::compare(data + 2U, DSTAR_KENWOOD_DATA_MODE_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U)
+					::memcpy(data + 2U, DSTAR_KENWOOD_DATA_MODE_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES);
+				else if (CUtils::compare(data + 2U, DSTAR_ICOM_DATA_MODE_BYTES1, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U)
+					::memcpy(data + 2U, DSTAR_ICOM_DATA_MODE_BYTES1, DSTAR_VOICE_FRAME_LENGTH_BYTES);
+				else if (CUtils::compare(data + 2U, DSTAR_ICOM_DATA_MODE_BYTES2, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U)
+					::memcpy(data + 2U, DSTAR_ICOM_DATA_MODE_BYTES2, DSTAR_VOICE_FRAME_LENGTH_BYTES);
+			}
+
 			unsigned char n = data[1U];
 
 			data[1U] = TAG_DATA;
