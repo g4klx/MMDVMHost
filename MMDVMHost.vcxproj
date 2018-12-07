@@ -194,6 +194,7 @@
     <ClInclude Include="NetworkInfo.h" />
     <ClInclude Include="Nextion.h" />
     <ClInclude Include="NullDisplay.h" />
+    <ClInclude Include="NullModem.h" />
     <ClInclude Include="NXDNAudio.h" />
     <ClInclude Include="NXDNControl.h" />
     <ClInclude Include="NXDNConvolution.h" />
@@ -282,6 +283,7 @@
     <ClCompile Include="NetworkInfo.cpp" />
     <ClCompile Include="Nextion.cpp" />
     <ClCompile Include="NullDisplay.cpp" />
+    <ClCompile Include="NullModem.cpp" />
     <ClCompile Include="NXDNAudio.cpp" />
     <ClCompile Include="NXDNControl.cpp" />
     <ClCompile Include="NXDNConvolution.cpp" />

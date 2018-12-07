@@ -278,6 +278,9 @@
     <ClInclude Include="MobileGPS.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="NullModem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -518,6 +521,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MobileGPS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NullModem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
