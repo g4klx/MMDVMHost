@@ -25,6 +25,7 @@
 #include "POCSAGDefines.h"
 #include "Thread.h"
 #include "Modem.h"
+#include "NullModem.h"
 #include "Utils.h"
 #include "Log.h"
 
@@ -1825,4 +1826,11 @@ void CModem::printDebug()
 		short val4 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
 		LogMessage("Debug: %.*s %d %d %d %d", m_length - 11U, m_buffer + 3U, val1, val2, val3, val4);
 	}
+}
+
+CModem* CModem::createModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool trace, bool debug){
+	if (port == "NullModem")
+		return new CNullModem(port, duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
+	else
+		return new CModem(port, duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
 }
