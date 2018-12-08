@@ -16,6 +16,7 @@
 #include "Log.h"
 
 #include <cstring>
+#include <cassert>
 
 CDMRTA::CDMRTA() :
 m_TA(),
@@ -24,11 +25,13 @@ m_bufOffset(0)
 {
 }
 
-CDMRTA::~CDMRTA() {
+CDMRTA::~CDMRTA()
+{
 }
 
-bool CDMRTA::add(const unsigned char* data, unsigned int len) {
-    assert(data);
+bool CDMRTA::add(const unsigned char* data, unsigned int len)
+{
+    assert(data != NULL);
 
     if (m_bufOffset + len >= sizeof(m_buf)) {
         // buffer overflow
@@ -43,69 +46,75 @@ bool CDMRTA::add(const unsigned char* data, unsigned int len) {
     return true;
 }
 
-const unsigned char* CDMRTA::get() {
+const unsigned char* CDMRTA::get()
+{
     return (unsigned char*)m_TA;
 }
 
-void CDMRTA::reset() {
+void CDMRTA::reset()
+{
     ::memset(m_TA, 0, sizeof(m_TA));
     ::memset(m_buf, 0, sizeof(m_buf));
     m_bufOffset = 0;
 }
 
-void CDMRTA::decodeTA() {
+void CDMRTA::decodeTA()
+{
     unsigned char *b;
     unsigned char c;
     int j;
-    unsigned int i,t1,t2, TAsize, TAformat;
+    unsigned int i, t1, t2;
 
     unsigned char* talkerAlias = m_buf;
 
-    TAformat=(talkerAlias[0]>>6U) & 0x03U;
-    TAsize = (talkerAlias[0]>>1U) & 0x1FU;
+    unsigned int TAformat = (talkerAlias[0] >> 6U) & 0x03U;
+    unsigned int TAsize   = (talkerAlias[0] >> 1U) & 0x1FU;
     ::strncpy(m_TA, "(could not decode)", sizeof(m_TA));
 
     switch (TAformat) {
 	case 0U:		// 7 bit
 		::memset(m_TA, 0, sizeof(m_TA));
-		b=&talkerAlias[0];
-		t1=0; t2=0; c=0;
-		for (i=0; (i<32U)&&(t2<TAsize); i++) {
-		    for (j=7U;j>=0;j--) {
-			    c = (c<<1U) | (b[i] >> j);
-			    if (++t1==7U) { 
-                    if (i>0) {
-                        m_TA[t2++]=c & 0x7FU; 
-                    }
-                    t1=0;
-                    c=0; 
+		b = &talkerAlias[0];
+		t1 = 0U; t2 = 0U; c = 0U;
+		for (i = 0U; (i < 32U) && (t2 < TAsize); i++) {
+		    for (j = 7; j >= 0; j--) {
+			    c = (c << 1U) | (b[i] >> j);
+			    if (++t1 == 7U) { 
+                    if (i > 0U)
+                        m_TA[t2++] = c & 0x7FU; 
+
+					t1 = 0U;
+                    c = 0U;
                 }
 		    }
 		}
-        m_TA[TAsize]=0;
+        m_TA[TAsize] = 0;
 		break;
+
 	case 1U:		// ISO 8 bit
 	case 2U:		// UTF8
-		::strncpy(m_TA,(char*)talkerAlias+1U, sizeof(m_TA));
+		::strncpy(m_TA, (char*)talkerAlias + 1U, sizeof(m_TA));
 		break;
+
 	case 3U:		// UTF16 poor man's conversion
 		t2=0;
-		::memset (&m_TA,0,sizeof(m_TA));
-		for(i=0; (i<15)&&(t2<TAsize); i++) {
-		    if (talkerAlias[2U*i+1U]==0)
-			    m_TA[t2++] = talkerAlias[2U*i+2U];
+		::memset(&m_TA, 0, sizeof(m_TA));
+		for (i = 0U; (i < 15U) && (t2 < TAsize); i++) {
+		    if (talkerAlias[2U * i + 1U] == 0)
+			    m_TA[t2++] = talkerAlias[2U * i + 2U];
             else
                 m_TA[t2++] = '?';
 		}
-		m_TA[TAsize]=0;
+		m_TA[TAsize] = 0;
 		break;
     }
 
     LogMessage("DMR Talker Alias (Data Format %u, Received %u/%u char): '%s'", TAformat, ::strlen(m_TA), TAsize, m_TA);
-    if (::strlen(m_TA)>TAsize) { 
-        if (strlen(m_TA)<29U)
+
+	if (::strlen(m_TA) > TAsize) { 
+        if (strlen(m_TA) < 29U)
             strcat(m_TA," ?");
         else
-            strcpy(m_TA+28U," ?");
+            strcpy(m_TA + 28U," ?");
     }
 }

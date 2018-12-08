@@ -173,6 +173,7 @@
     <ClInclude Include="DMRShortLC.h" />
     <ClInclude Include="DMRSlot.h" />
     <ClInclude Include="DMRSlotType.h" />
+    <ClInclude Include="DMRTA.h" />
     <ClInclude Include="DMRTrellis.h" />
     <ClInclude Include="DStarControl.h" />
     <ClInclude Include="DStarDefines.h" />
@@ -264,6 +265,7 @@
     <ClCompile Include="DMRShortLC.cpp" />
     <ClCompile Include="DMRSlot.cpp" />
     <ClCompile Include="DMRSlotType.cpp" />
+    <ClCompile Include="DMRTA.cpp" />
     <ClCompile Include="DMRTrellis.cpp" />
     <ClCompile Include="DStarControl.cpp" />
     <ClCompile Include="DStarHeader.cpp" />
