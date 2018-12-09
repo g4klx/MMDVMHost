@@ -25,7 +25,7 @@ public:
     void reset();
 
 protected:
-    void decodeTA();
+    bool decodeTA();
 
 private:
     char            m_TA[32];
