@@ -630,7 +630,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					if (!(m_rfTalkerId & TALKER_ID_HEADER)) {
 						if (m_rfTalkerId == TALKER_ID_NONE)
 							m_rfTalkerAlias.reset();
-						m_rfTalkerAlias.add(data, 6U);
+						m_rfTalkerAlias.add(0, data, 6U);
 						m_display->writeDMRTA(m_slotNo, (unsigned char*)m_rfTalkerAlias.get(), "R");
 
 						if (m_dumpTAData) {
@@ -649,7 +649,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					if (!(m_rfTalkerId & TALKER_ID_BLOCK1)) {
 						if (m_rfTalkerId == TALKER_ID_NONE)
 							m_rfTalkerAlias.reset();
-						m_rfTalkerAlias.add(data, 7U);
+						m_rfTalkerAlias.add(1, data, 7U);
 						m_display->writeDMRTA(m_slotNo, (unsigned char*)m_rfTalkerAlias.get(), "R");
 
 						if (m_dumpTAData) {
@@ -668,7 +668,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					if (!(m_rfTalkerId & TALKER_ID_BLOCK2)) {
 						if (m_rfTalkerId == TALKER_ID_NONE)
 							m_rfTalkerAlias.reset();
-						m_rfTalkerAlias.add(data, 7U);
+						m_rfTalkerAlias.add(2, data, 7U);
 						m_display->writeDMRTA(m_slotNo, (unsigned char*)m_rfTalkerAlias.get(), "R");
 
 						if (m_dumpTAData) {
@@ -687,7 +687,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					if (!(m_rfTalkerId & TALKER_ID_BLOCK3)) {
 						if (m_rfTalkerId == TALKER_ID_NONE)
 							m_rfTalkerAlias.reset();
-						m_rfTalkerAlias.add(data, 7U);
+						m_rfTalkerAlias.add(3, data, 7U);
 						m_display->writeDMRTA(m_slotNo, (unsigned char*)m_rfTalkerAlias.get(), "R");
 
 						if (m_dumpTAData) {
@@ -1424,7 +1424,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				if (!(m_netTalkerId & TALKER_ID_HEADER)) {
 					if (!m_netTalkerId)
 						m_rfTalkerAlias.reset();
-					m_rfTalkerAlias.add(data + 2U, 7U);
+					m_rfTalkerAlias.add(0, data + 2U, 7U);
 					m_display->writeDMRTA(m_slotNo, (unsigned char*)m_rfTalkerAlias.get(), "N");
 
 					if (m_dumpTAData) {
@@ -1439,7 +1439,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				if (!(m_netTalkerId & TALKER_ID_BLOCK1)) {
 					if (!m_netTalkerId)
 						m_rfTalkerAlias.reset();
-					m_rfTalkerAlias.add(data + 2U, 7U);
+					m_rfTalkerAlias.add(1, data + 2U, 7U);
 					m_display->writeDMRTA(m_slotNo, (unsigned char*)m_rfTalkerAlias.get(), "N");
 
 					if (m_dumpTAData) {
@@ -1454,7 +1454,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				if (!(m_netTalkerId & TALKER_ID_BLOCK2)) {
 					if (!m_netTalkerId)
 						m_rfTalkerAlias.reset();
-					m_rfTalkerAlias.add(data + 2U, 7U);
+					m_rfTalkerAlias.add(2, data + 2U, 7U);
 					m_display->writeDMRTA(m_slotNo, (unsigned char*)m_rfTalkerAlias.get(), "N");
 
 					if (m_dumpTAData) {
@@ -1469,7 +1469,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				if (!(m_netTalkerId & TALKER_ID_BLOCK3)) {
 					if (!m_netTalkerId)
 						m_rfTalkerAlias.reset();
-					m_rfTalkerAlias.add(data+2U, 7U);
+					m_rfTalkerAlias.add(3, data+2U, 7U);
 					m_display->writeDMRTA(m_slotNo, (unsigned char*)m_rfTalkerAlias.get(), "N");
 
 					if (m_dumpTAData) {
