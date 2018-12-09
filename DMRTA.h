@@ -20,7 +20,7 @@ public:
     CDMRTA();
     ~CDMRTA();
 
-    bool add(const unsigned char* data, unsigned int len);
+    bool add(unsigned int blockId, const unsigned char* data, unsigned int len);
     const unsigned char* get();
     void reset();
 
@@ -30,7 +30,6 @@ protected:
 private:
     char            m_TA[32];
     unsigned char   m_buf[32];
-    unsigned int    m_bufOffset;
 };
 
 #endif

@@ -20,8 +20,7 @@
 
 CDMRTA::CDMRTA() :
 m_TA(),
-m_buf(),
-m_bufOffset(0)
+m_buf()
 {
 }
 
@@ -29,18 +28,37 @@ CDMRTA::~CDMRTA()
 {
 }
 
-bool CDMRTA::add(const unsigned char* data, unsigned int len)
+bool CDMRTA::add(unsigned int blockId, const unsigned char* data, unsigned int len)
 {
     assert(data != NULL);
 
-    if (m_bufOffset + len >= sizeof(m_buf)) {
+    unsigned int offset;
+    switch(blockId) {
+        case 0:
+            offset = 0;
+            break;
+        case 1:
+            offset = 6;
+            break;
+        case 2:
+            offset = 13;
+            break;
+        case 3:
+            offset = 20;
+            break;
+        default:
+            // invalid block id
+            reset();
+            return false;
+    }
+
+    if (offset + len >= sizeof(m_buf)) {
         // buffer overflow
         reset();
         return false;
     }
 
-    ::memcpy(m_buf + m_bufOffset, data, len);
-    m_bufOffset += len;
+    ::memcpy(m_buf + offset, data, len);
 
     decodeTA();
     return true;
@@ -55,7 +73,6 @@ void CDMRTA::reset()
 {
     ::memset(m_TA, 0, sizeof(m_TA));
     ::memset(m_buf, 0, sizeof(m_buf));
-    m_bufOffset = 0;
 }
 
 void CDMRTA::decodeTA()
