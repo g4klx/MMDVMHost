@@ -1531,16 +1531,20 @@ bool CModem::setFrequency()
 
 	unsigned char buffer[20U];
 	unsigned char len;
+	unsigned int  pocsagFrequency = 433000000U;
+
+	if (m_pocsagEnabled)
+		pocsagFrequency = m_pocsagFrequency;
 
 	if (m_hwType == HWT_DVMEGA)
 		len = 12U;
 	else {
 		buffer[12U]  = (unsigned char)(m_rfLevel * 2.55F + 0.5F);
 
-		buffer[13U] = (m_pocsagFrequency >> 0)  & 0xFFU;
-		buffer[14U] = (m_pocsagFrequency >> 8)  & 0xFFU;
-		buffer[15U] = (m_pocsagFrequency >> 16) & 0xFFU;
-		buffer[16U] = (m_pocsagFrequency >> 24) & 0xFFU;
+		buffer[13U] = (pocsagFrequency >> 0)  & 0xFFU;
+		buffer[14U] = (pocsagFrequency >> 8)  & 0xFFU;
+		buffer[15U] = (pocsagFrequency >> 16) & 0xFFU;
+		buffer[16U] = (pocsagFrequency >> 24) & 0xFFU;
 
 		len = 17U;
 	}
