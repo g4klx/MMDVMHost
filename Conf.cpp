@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2019 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -56,7 +56,8 @@ enum SECTION {
   SECTION_OLED,
   SECTION_LCDPROC,
   SECTION_LOCK_FILE,
-  SECTION_MOBILE_GPS
+  SECTION_MOBILE_GPS,
+  SECTION_REMOTE_CONTROL
 };
 
 CConf::CConf(const std::string& file) :
@@ -246,7 +247,9 @@ m_lockFileEnabled(false),
 m_lockFileName(),
 m_mobileGPSEnabled(false),
 m_mobileGPSAddress(),
-m_mobileGPSPort(0U)
+m_mobileGPSPort(0U),
+m_remoteControlEnabled(false),
+m_remoteControlPort(0U)
 {
 }
 
@@ -326,6 +329,8 @@ bool CConf::read()
 		  section = SECTION_LOCK_FILE;
 	  else if (::strncmp(buffer, "[Mobile GPS]", 12U) == 0)
 		  section = SECTION_MOBILE_GPS;
+	  else if (::strncmp(buffer, "[Remote Control]", 16U) == 0)
+		  section = SECTION_REMOTE_CONTROL;
 	  else
 		  section = SECTION_NONE;
 
@@ -813,6 +818,11 @@ bool CConf::read()
 			m_mobileGPSAddress = value;
 		else if (::strcmp(key, "Port") == 0)
 			m_mobileGPSPort = (unsigned int)::atoi(value);
+	} else if (section == SECTION_REMOTE_CONTROL) {
+		if (::strcmp(key, "Enable") == 0)
+			m_remoteControlEnabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "Port") == 0)
+			m_remoteControlPort = (unsigned int)::atoi(value);
 	}
   }
 
@@ -1756,3 +1766,12 @@ unsigned int CConf::getMobileGPSPort() const
 	return m_mobileGPSPort;
 }
 
+bool CConf::getRemoteControlEnabled() const
+{
+	return m_remoteControlEnabled;
+}
+
+unsigned int CConf::getRemoteControlPort() const
+{
+	return m_remoteControlPort;
+}
