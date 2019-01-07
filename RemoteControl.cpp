@@ -47,8 +47,20 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 	unsigned int port;
 	int ret = m_socket.read(buffer, BUFFER_LENGTH, address, port);
 	if (ret > 0) {
-		if (::memcmp(buffer, "0", 1U) == 0)
-			command = RC_FORCE_IDLE;
+		if (::memcmp(buffer, "mode idle", 9U) == 0)
+			command = RC_MODE_IDLE;
+		else if (::memcmp(buffer, "mode lockout", 12U) == 0)
+			command = RC_MODE_LOCKOUT;
+		else if (::memcmp(buffer, "mode dstar", 10U) == 0)
+			command = RC_MODE_DSTAR;
+		else if (::memcmp(buffer, "mode dmr", 8U) == 0)
+			command = RC_MODE_DMR;
+		else if (::memcmp(buffer, "mode ysf", 8U) == 0)
+			command = RC_MODE_YSF;
+		else if (::memcmp(buffer, "mode p25", 8U) == 0)
+			command = RC_MODE_P25;
+		else if (::memcmp(buffer, "mode nxdn", 9U) == 0)
+			command = RC_MODE_NXDN;
 	}
 	
 	return command;
