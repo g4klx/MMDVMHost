@@ -19,6 +19,7 @@
 #include "RemoteCommand.h"
 
 #include "UDPSocket.h"
+#include "Log.h"
 
 #include <cstdio>
 
@@ -45,10 +46,12 @@ int main(int argc, char** argv)
 CRemoteCommand::CRemoteCommand(unsigned int port) :
 m_port(port)
 {
+	::LogInitialise(".", "RemoteCommand", 2U, 2U);
 }
 
 CRemoteCommand::~CRemoteCommand()
 {
+	::LogFinalise();
 }
 
 int CRemoteCommand::send(const std::string& command)
@@ -61,7 +64,7 @@ int CRemoteCommand::send(const std::string& command)
 
 	in_addr address = CUDPSocket::lookup("localhost");
 
-	ret = socket.write((const unsigned char* )command.c_str(), command.length(), address, m_port);
+	ret = socket.write((unsigned char* )command.c_str(), command.length(), address, m_port);
 	if (!ret) {
 		socket.close();
 		return 1;
