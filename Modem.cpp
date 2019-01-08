@@ -25,6 +25,7 @@
 #include "POCSAGDefines.h"
 #include "Thread.h"
 #include "Modem.h"
+#include "NullModem.h"
 #include "Utils.h"
 #include "Log.h"
 
@@ -1531,16 +1532,20 @@ bool CModem::setFrequency()
 
 	unsigned char buffer[20U];
 	unsigned char len;
+	unsigned int  pocsagFrequency = 433000000U;
+
+	if (m_pocsagEnabled)
+		pocsagFrequency = m_pocsagFrequency;
 
 	if (m_hwType == HWT_DVMEGA)
 		len = 12U;
 	else {
 		buffer[12U]  = (unsigned char)(m_rfLevel * 2.55F + 0.5F);
 
-		buffer[13U] = (m_pocsagFrequency >> 0)  & 0xFFU;
-		buffer[14U] = (m_pocsagFrequency >> 8)  & 0xFFU;
-		buffer[15U] = (m_pocsagFrequency >> 16) & 0xFFU;
-		buffer[16U] = (m_pocsagFrequency >> 24) & 0xFFU;
+		buffer[13U] = (pocsagFrequency >> 0)  & 0xFFU;
+		buffer[14U] = (pocsagFrequency >> 8)  & 0xFFU;
+		buffer[15U] = (pocsagFrequency >> 16) & 0xFFU;
+		buffer[16U] = (pocsagFrequency >> 24) & 0xFFU;
 
 		len = 17U;
 	}
@@ -1825,4 +1830,11 @@ void CModem::printDebug()
 		short val4 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
 		LogMessage("Debug: %.*s %d %d %d %d", m_length - 11U, m_buffer + 3U, val1, val2, val3, val4);
 	}
+}
+
+CModem* CModem::createModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool trace, bool debug){
+	if (port == "NullModem")
+		return new CNullModem(port, duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
+	else
+		return new CModem(port, duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
 }
