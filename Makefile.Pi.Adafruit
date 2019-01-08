@@ -21,8 +21,8 @@ all:		MMDVMHost RemoteCommand
 MMDVMHost:	GitVersion.h $(OBJECTS) 
 		$(CXX) $(OBJECTS) $(CFLAGS) $(LIBS) -o MMDVMHost
 
-RemoteCommand:	RemoteCommand.o UDPSocket.o
-		$(CXX) RemoteCommand.o UDPSocket.o $(CFLAGS) $(LIBS) -o RemoteCommand
+RemoteCommand:	Log.o RemoteCommand.o UDPSocket.o
+		$(CXX) Log.o RemoteCommand.o UDPSocket.o $(CFLAGS) $(LIBS) -o RemoteCommand
 
 %.o: %.cpp
 		$(CXX) $(CFLAGS) -c -o $@ $<
