@@ -51,7 +51,7 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 			command = RC_MODE_IDLE;
 		else if (::memcmp(buffer, "mode lockout", 12U) == 0)
 			command = RC_MODE_LOCKOUT;
-		else if (::memcmp(buffer, "mode dstar", 10U) == 0)
+		else if (::memcmp(buffer, "mode d-star", 11U) == 0)
 			command = RC_MODE_DSTAR;
 		else if (::memcmp(buffer, "mode dmr", 8U) == 0)
 			command = RC_MODE_DMR;
