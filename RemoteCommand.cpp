@@ -21,6 +21,7 @@
 #include "UDPSocket.h"
 
 #include <cstdio>
+#include <cstring>
 
 int main(int argc, char** argv)
 {
@@ -30,16 +31,16 @@ int main(int argc, char** argv)
 	}
 	
 	unsigned int port = (unsigned int)::atoi(argv[1]);
-	std::string command = std::string(argv[2]);
+	std::string cmd = std::string(argv[2]);
 
 	if (port == 0U) {
 		::fprintf(stderr, "RemoteCommand: invalid port number - %s\n", argv[1]);
 		return 1;
 	}
 
-	CRemoteCommand command(port);
+	CRemoteCommand* command = new CRemoteCommand(port);
 	
-	return send(command);
+	return command->send(cmd);
 }
 
 CRemoteCommand::CRemoteCommand(unsigned int port) :
@@ -61,7 +62,7 @@ int CRemoteCommand::send(const std::string& command)
 
 	in_addr address = CUDPSocket::lookup("localhost");
 
-	ret = socket.write(command.c_str(), command.len(), address, m_port);
+	ret = socket.write((const unsigned char* )command.c_str(), command.length(), address, m_port);
 	if (!ret) {
 		socket.close();
 		return 1;
