@@ -1,4 +1,4 @@
-# This makefile is for all platforms, but doesn't include support for the HD44780 display on the Raspberry Pi.
+# This makefile is for all platforms, but doesn't include support for the HD44780, OLED, or PCF8574 displays on the Raspberry Pi.
 
 CC      = gcc
 CXX     = g++
@@ -15,16 +15,19 @@ OBJECTS = \
 		POCSAGControl.o POCSAGNetwork.o QR1676.o RemoteControl.o RS129.o RS241213.o RSSIInterpolator.o SerialController.o SerialPort.o SHA256.o StopWatch.o Sync.o TFTSerial.o \
 		Thread.o Timer.o UDPSocket.o UMP.o Utils.o YSFControl.o YSFConvolution.o YSFFICH.o YSFNetwork.o YSFPayload.o
 
-all:		MMDVMHost
+all:		MMDVMHost RemoteCommand
 
 MMDVMHost:	GitVersion.h $(OBJECTS) 
 		$(CXX) $(OBJECTS) $(CFLAGS) $(LIBS) -o MMDVMHost
+
+RemoteCommand:	RemoteCommand.o UDPSocket.o
+		$(CXX) RemoteCommand.o UDPSocket.o $(CFLAGS) $(LIBS) -o RemoteCommand
 
 %.o: %.cpp
 		$(CXX) $(CFLAGS) -c -o $@ $<
 
 clean:
-		$(RM) MMDVMHost *.o *.d *.bak *~ GitVersion.h
+		$(RM) MMDVMHost RemoteCommand *.o *.d *.bak *~ GitVersion.h
 
 # Export the current git version if the index file exists, else 000...
 GitVersion.h:
