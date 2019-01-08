@@ -20,6 +20,7 @@
 
 #include <cstdio>
 #include <cassert>
+#include <cstring>
 
 const unsigned int BUFFER_LENGTH = 100U;
 
