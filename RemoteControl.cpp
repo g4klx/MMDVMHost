@@ -42,7 +42,7 @@ bool CRemoteControl::open()
 
 REMOTE_COMMAND CRemoteControl::getCommand()
 {
-	REMOTE_COMMAND command = RC_NONE;
+	REMOTE_COMMAND command = RCD_NONE;
 
 	unsigned char buffer[BUFFER_LENGTH];
 	in_addr address;
@@ -50,21 +50,21 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 	int ret = m_socket.read(buffer, BUFFER_LENGTH, address, port);
 	if (ret > 0) {
 		if (::memcmp(buffer, "mode idle", 9U) == 0)
-			command = RC_MODE_IDLE;
+			command = RCD_MODE_IDLE;
 		else if (::memcmp(buffer, "mode lockout", 12U) == 0)
-			command = RC_MODE_LOCKOUT;
+			command = RCD_MODE_LOCKOUT;
 		else if (::memcmp(buffer, "mode d-star", 11U) == 0)
-			command = RC_MODE_DSTAR;
+			command = RCD_MODE_DSTAR;
 		else if (::memcmp(buffer, "mode dmr", 8U) == 0)
-			command = RC_MODE_DMR;
+			command = RCD_MODE_DMR;
 		else if (::memcmp(buffer, "mode ysf", 8U) == 0)
-			command = RC_MODE_YSF;
+			command = RCD_MODE_YSF;
 		else if (::memcmp(buffer, "mode p25", 8U) == 0)
-			command = RC_MODE_P25;
+			command = RCD_MODE_P25;
 		else if (::memcmp(buffer, "mode nxdn", 9U) == 0)
-			command = RC_MODE_NXDN;
+			command = RCD_MODE_NXDN;
 
-		if (command == RC_NONE)
+		if (command == RCD_NONE)
 			LogMessage("Invalid remote command of \"%s\" received");
 		else
 			LogMessage("Valid remote command of \"%s\" received");

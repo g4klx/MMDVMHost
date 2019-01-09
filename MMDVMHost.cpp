@@ -929,25 +929,25 @@ int CMMDVMHost::run()
 		if (remoteControl != NULL) {
 			REMOTE_COMMAND command = remoteControl->getCommand();
 			switch(command) {
-				case RC_MODE_IDLE:
+				case RCD_MODE_IDLE:
 					setMode(MODE_IDLE);
 					break;
-				case RC_MODE_LOCKOUT:
+				case RCD_MODE_LOCKOUT:
 					setMode(MODE_LOCKOUT);
 					break;
-				case RC_MODE_DSTAR:
+				case RCD_MODE_DSTAR:
 					setMode(MODE_DSTAR);
 					break;
-				case RC_MODE_DMR:
+				case RCD_MODE_DMR:
 					setMode(MODE_DMR);
 					break;
-				case RC_MODE_YSF:
+				case RCD_MODE_YSF:
 					setMode(MODE_YSF);
 					break;
-				case RC_MODE_P25:
+				case RCD_MODE_P25:
 					setMode(MODE_P25);
 					break;
-				case RC_MODE_NXDN:
+				case RCD_MODE_NXDN:
 					setMode(MODE_NXDN);
 					break;
 				default:
