@@ -17,6 +17,7 @@
  */
 
 #include "RemoteControl.h"
+#include "Log.h"
 
 #include <cstdio>
 #include <cassert>
@@ -62,6 +63,11 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 			command = RC_MODE_P25;
 		else if (::memcmp(buffer, "mode nxdn", 9U) == 0)
 			command = RC_MODE_NXDN;
+
+		if (command == RC_NONE)
+			LogMessage("Invalid remote command of \"%s\" received");
+		else
+			LogMessage("Valid remote command of \"%s\" received");
 	}
 	
 	return command;
