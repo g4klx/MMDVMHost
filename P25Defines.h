@@ -55,6 +55,8 @@ const unsigned int  P25_PDU_FEC_LENGTH_BITS          = P25_PDU_FEC_LENGTH_BYTES 
 
 const unsigned int  P25_MI_LENGTH_BYTES = 9U;
 
+const unsigned char P25_ALGO_UNENCRYPT = 0x80U;
+
 const unsigned char P25_LCF_GROUP   = 0x00U;
 const unsigned char P25_LCF_PRIVATE = 0x03U;
 

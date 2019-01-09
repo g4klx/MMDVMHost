@@ -1,5 +1,6 @@
 /*
 *   Copyright (C) 2016 by Jonathan Naylor G4KLX
+*	Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com> N2PLL
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -26,11 +27,16 @@ public:
 	~CRS241213();
 
 	bool decode(unsigned char* data);
+	bool decode24169(unsigned char* data);
+	bool decode362017(unsigned char* data);
 
 	void encode(unsigned char* data);
+	void encode24169(unsigned char* data);
+	void encode362017(unsigned char* data);
 
 private:
 	unsigned char gf6Mult(unsigned char a, unsigned char b) const;
+	bool decode(unsigned char* data, const unsigned int bitLength, const int firstData, const int roots);
 };
 
 #endif
