@@ -182,6 +182,7 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 		}
 	}
 
+#ifdef notdef
 	// Stop repeater packets coming through, unless we're acting as a remote gateway
 	if (m_remoteGateway) {
 		unsigned char mr = m_lastFICH.getMR();
@@ -192,6 +193,7 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 		if (mr == YSF_MR_BUSY)
 			return false;
 	}
+#endif
 
 	unsigned char dt = m_lastFICH.getDT();
 

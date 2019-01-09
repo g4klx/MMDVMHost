@@ -157,47 +157,8 @@ void CDisplay::writeDMRRSSI(unsigned int slotNo, unsigned char rssi)
 
 void CDisplay::writeDMRTA(unsigned int slotNo, unsigned char* talkerAlias, const char* type)
 {
-    char TA[32U];
-    unsigned char *b;
-    unsigned char c;
-    int j;
-    unsigned int i,t1,t2, TAsize, TAformat;
-
-    if (strcmp(type," ")==0) { writeDMRTAInt(slotNo, (unsigned char*)TA, type); return; }
-
-    TAformat=(talkerAlias[0]>>6U) & 0x03U;
-    TAsize = (talkerAlias[0]>>1U) & 0x1FU;
-    ::strcpy(TA,"(could not decode)");
-    switch (TAformat) {
-	case 0U:		// 7 bit
-		::memset (&TA,0,32U);
-		b=&talkerAlias[0];
-		t1=0; t2=0; c=0;
-		for (i=0;(i<32U)&&(t2<TAsize);i++) {
-		    for (j=7U;j>=0;j--) {
-			c = (c<<1U) | (b[i] >> j);
-			if (++t1==7U) { if (i>0) {TA[t2++]=c & 0x7FU; } t1=0; c=0; }
-		    }
-		}
-		break;
-	case 1U:		// ISO 8 bit
-	case 2U:		// UTF8
-		::strcpy(TA,(char*)talkerAlias+1U);
-		break;
-	case 3U:		// UTF16 poor man's conversion
-		t2=0;
-		::memset (&TA,0,32U);
-		for(i=0;(i<15)&&(t2<TAsize);i++) {
-		    if (talkerAlias[2U*i+1U]==0)
-			TA[t2++]=talkerAlias[2U*i+2U]; else TA[t2++]='?';
-		}
-		TA[TAsize]=0;
-		break;
-    }
-    LogMessage("DMR Talker Alias (Data Format %u, Received %u/%u char): '%s'", TAformat, ::strlen(TA), TAsize, TA);
-    if (::strlen(TA)>TAsize) { if (strlen(TA)<29U) strcat(TA," ?"); else strcpy(TA+28U," ?"); }
-    if (strlen((char*)TA)>=4U) writeDMRTAInt(slotNo, (unsigned char*)TA, type);
-
+    if (strcmp(type," ")==0) { writeDMRTAInt(slotNo, (unsigned char*)"", type); return; }
+    if (strlen((char*)talkerAlias)>=4U) writeDMRTAInt(slotNo, (unsigned char*)talkerAlias, type);
 }
 
 void CDisplay::writeDMRBER(unsigned int slotNo, float ber)

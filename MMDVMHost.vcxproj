@@ -173,6 +173,7 @@
     <ClInclude Include="DMRShortLC.h" />
     <ClInclude Include="DMRSlot.h" />
     <ClInclude Include="DMRSlotType.h" />
+    <ClInclude Include="DMRTA.h" />
     <ClInclude Include="DMRTrellis.h" />
     <ClInclude Include="DStarControl.h" />
     <ClInclude Include="DStarDefines.h" />
@@ -194,6 +195,7 @@
     <ClInclude Include="NetworkInfo.h" />
     <ClInclude Include="Nextion.h" />
     <ClInclude Include="NullDisplay.h" />
+    <ClInclude Include="NullModem.h" />
     <ClInclude Include="NXDNAudio.h" />
     <ClInclude Include="NXDNControl.h" />
     <ClInclude Include="NXDNConvolution.h" />
@@ -263,6 +265,7 @@
     <ClCompile Include="DMRShortLC.cpp" />
     <ClCompile Include="DMRSlot.cpp" />
     <ClCompile Include="DMRSlotType.cpp" />
+    <ClCompile Include="DMRTA.cpp" />
     <ClCompile Include="DMRTrellis.cpp" />
     <ClCompile Include="DStarControl.cpp" />
     <ClCompile Include="DStarHeader.cpp" />
@@ -282,6 +285,7 @@
     <ClCompile Include="NetworkInfo.cpp" />
     <ClCompile Include="Nextion.cpp" />
     <ClCompile Include="NullDisplay.cpp" />
+    <ClCompile Include="NullModem.cpp" />
     <ClCompile Include="NXDNAudio.cpp" />
     <ClCompile Include="NXDNControl.cpp" />
     <ClCompile Include="NXDNConvolution.cpp" />
