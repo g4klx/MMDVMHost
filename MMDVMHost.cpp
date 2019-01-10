@@ -626,7 +626,7 @@ int CMMDVMHost::run()
 		bool ret;
 
 		len = m_modem->readDStarData(data);
-		if (m_star != NULL && len > 0U) {
+		if (m_dstar != NULL && len > 0U) {
 			if (m_mode == MODE_IDLE) {
 				bool ret = m_dstar->writeModem(data, len);
 				if (ret) {
@@ -770,7 +770,7 @@ int CMMDVMHost::run()
 		if (m_modeTimer.isRunning() && m_modeTimer.hasExpired())
 			setMode(MODE_IDLE);
 
-		if (m_star != NULL) {
+		if (m_dstar != NULL) {
 			ret = m_modem->hasDStarSpace();
 			if (ret) {
 				len = m_dstar->readModem(data);
