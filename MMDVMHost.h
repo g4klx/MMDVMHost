@@ -21,6 +21,7 @@
 
 #include "RemoteControl.h"
 #include "POCSAGNetwork.h"
+#include "POCSAGControl.h"
 #include "DStarNetwork.h"
 #include "NXDNNetwork.h"
 #include "DStarControl.h"
@@ -60,6 +61,7 @@ private:
   CYSFControl*    m_ysf;
   CP25Control*    m_p25;
   CNXDNControl*   m_nxdn;
+  CPOCSAGControl* m_pocsag;
   CDStarNetwork*  m_dstarNetwork;
   CDMRNetwork*    m_dmrNetwork;
   CYSFNetwork*    m_ysfNetwork;

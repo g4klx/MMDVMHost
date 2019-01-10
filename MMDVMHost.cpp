@@ -22,7 +22,6 @@
 #include "Version.h"
 #include "StopWatch.h"
 #include "Defines.h"
-#include "POCSAGControl.h"
 #include "Thread.h"
 #include "Log.h"
 #include "GitVersion.h"
@@ -119,6 +118,7 @@ m_dmr(NULL),
 m_ysf(NULL),
 m_p25(NULL),
 m_nxdn(NULL),
+m_pocsag(NULL),
 m_dstarNetwork(NULL),
 m_dmrNetwork(NULL),
 m_ysfNetwork(NULL),
@@ -566,14 +566,13 @@ int CMMDVMHost::run()
 
 	CTimer pocsagTimer(1000U, 30U);
 
-	CPOCSAGControl* pocsag = NULL;
 	if (m_pocsagEnabled) {
 		unsigned int frequency = m_conf.getPOCSAGFrequency();
 
 		LogInfo("POCSAG RF Parameters");
 		LogInfo("    Frequency: %uHz", frequency);
 
-		pocsag = new CPOCSAGControl(m_pocsagNetwork, m_display);
+		m_pocsag = new CPOCSAGControl(m_pocsagNetwork, m_display);
 
 		pocsagTimer.start();
 	}
@@ -893,10 +892,10 @@ int CMMDVMHost::run()
 			}
 		}
 
-		if (pocsag != NULL) {
+		if (m_pocsag != NULL) {
 			ret = m_modem->hasPOCSAGSpace();
 			if (ret) {
-				len = pocsag->readModem(data);
+				len = m_pocsag->readModem(data);
 				if (len > 0U) {
 					if (m_mode == MODE_IDLE) {
 						m_modeTimer.setTimeout(m_pocsagNetModeHang);
@@ -940,8 +939,8 @@ int CMMDVMHost::run()
 			m_p25->clock(ms);
 		if (m_nxdn != NULL)
 			m_nxdn->clock(ms);
-		if (pocsag != NULL)
-			pocsag->clock(ms);
+		if (m_pocsag != NULL)
+			m_pocsag->clock(ms);
 
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->clock(ms);
@@ -1075,7 +1074,7 @@ int CMMDVMHost::run()
 	delete m_ysf;
 	delete m_p25;
 	delete m_nxdn;
-	delete pocsag;
+	delete m_pocsag;
 
 	return 0;
 }
