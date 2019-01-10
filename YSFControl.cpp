@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015,2016,2017,2018 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015-2019 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -1317,4 +1317,9 @@ void CYSFControl::processNetCallsigns(const unsigned char* data)
 			LogMessage("YSF, received network data from %10.10s to %10.10s at %10.10s", m_netSource, m_netDest, data + 4U);
 		}
 	}
+}
+
+bool CYSFControl::isBusy() const
+{
+	return m_rfState != RS_RF_LISTENING || m_netState != RS_NET_IDLE;
 }

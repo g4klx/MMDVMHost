@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016-2019 by Jonathan Naylor G4KLX
 *   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com>
 *
 *   This program is free software; you can redistribute it and/or modify
@@ -45,6 +45,8 @@ public:
 	unsigned int readModem(unsigned char* data);
 
 	void clock(unsigned int ms);
+
+	bool isBusy() const;
 
 private:
 	unsigned int               m_nac;

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2019 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,9 +19,15 @@
 #if !defined(MMDVMHOST_H)
 #define	MMDVMHOST_H
 
+#include "RemoteControl.h"
 #include "POCSAGNetwork.h"
 #include "DStarNetwork.h"
 #include "NXDNNetwork.h"
+#include "DStarControl.h"
+#include "DMRControl.h"
+#include "YSFControl.h"
+#include "P25Control.h"
+#include "NXDNControl.h"
 #include "NXDNLookup.h"
 #include "YSFNetwork.h"
 #include "P25Network.h"
@@ -49,6 +55,11 @@ public:
 private:
   CConf           m_conf;
   CModem*         m_modem;
+  CDStarControl*  m_dstar;
+  CDMRControl*    m_dmr;
+  CYSFControl*    m_ysf;
+  CP25Control*    m_p25;
+  CNXDNControl*   m_nxdn;
   CDStarNetwork*  m_dstarNetwork;
   CDMRNetwork*    m_dmrNetwork;
   CYSFNetwork*    m_ysfNetwork;
@@ -89,6 +100,7 @@ private:
   bool            m_lockFileEnabled;
   std::string     m_lockFileName;
   CMobileGPS*     m_mobileGPS;
+  CRemoteControl* m_remoteControl;
 
   void readParams();
   bool createModem();
@@ -98,6 +110,9 @@ private:
   bool createP25Network();
   bool createNXDNNetwork();
   bool createPOCSAGNetwork();
+
+  bool isBusy() const;
+  void remoteControl();
 
   void setMode(unsigned char mode);
 

@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016-2019 by Jonathan Naylor G4KLX
 *   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com>
 *
 *   This program is free software; you can redistribute it and/or modify
@@ -1154,4 +1154,9 @@ void CP25Control::closeFile()
 		::fclose(m_fp);
 		m_fp = NULL;
 	}
+}
+
+bool CP25Control::isBusy() const
+{
+	return m_rfState != RS_RF_LISTENING || m_netState != RS_NET_IDLE;
 }

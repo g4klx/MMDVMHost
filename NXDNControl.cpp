@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015,2016,2017,2018 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015-2019 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -1080,4 +1080,9 @@ void CNXDNControl::closeFile()
 		::fclose(m_fp);
 		m_fp = NULL;
 	}
+}
+
+bool CNXDNControl::isBusy() const
+{
+	return m_rfState != RS_RF_LISTENING || m_netState != RS_NET_IDLE;
 }
