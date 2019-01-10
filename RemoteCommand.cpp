@@ -33,6 +33,11 @@ int main(int argc, char** argv)
 	unsigned int port = (unsigned int)::atoi(argv[1]);
 	std::string cmd = std::string(argv[2]);
 
+	for (int i = 3; i < argc; i++) {
+		cmd += " ";
+		cmd += std::string(argv[i]);
+	}
+
 	if (port == 0U) {
 		::fprintf(stderr, "RemoteCommand: invalid port number - %s\n", argv[1]);
 		return 1;
