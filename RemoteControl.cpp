@@ -65,7 +65,7 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 			command = RCD_MODE_NXDN;
 
 		if (command == RCD_NONE)
-			LogMessage("Invalid remote command of \"%s\" received");
+			LogWarning("Invalid remote command of \"%s\" received");
 		else
 			LogMessage("Valid remote command of \"%s\" received");
 	}
