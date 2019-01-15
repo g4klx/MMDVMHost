@@ -1681,35 +1681,31 @@ void CMMDVMHost::remoteControl()
 	if (m_remoteControl == NULL)
 		return;
 
+	if (isBusy())
+		return;
+
 	REMOTE_COMMAND command = m_remoteControl->getCommand();
 	switch(command) {
 		case RCD_MODE_IDLE:
-			if (!isBusy())
-				setMode(MODE_IDLE);
+			setMode(MODE_IDLE);
 			break;
 		case RCD_MODE_LOCKOUT:
-			if (!isBusy())
-				setMode(MODE_LOCKOUT);
+			setMode(MODE_LOCKOUT);
 			break;
 		case RCD_MODE_DSTAR:
-			if (!isBusy())
-				setMode(MODE_DSTAR);
+			setMode(MODE_DSTAR);
 			break;
 		case RCD_MODE_DMR:
-			if (!isBusy())
-				setMode(MODE_DMR);
+			setMode(MODE_DMR);
 			break;
 		case RCD_MODE_YSF:
-			if (!isBusy())
-				setMode(MODE_YSF);
+			setMode(MODE_YSF);
 			break;
 		case RCD_MODE_P25:
-			if (!isBusy())
-				setMode(MODE_P25);
+			setMode(MODE_P25);
 			break;
 		case RCD_MODE_NXDN:
-			if (!isBusy())
-				setMode(MODE_NXDN);
+			setMode(MODE_NXDN);
 			break;
 		default:
 			break;
