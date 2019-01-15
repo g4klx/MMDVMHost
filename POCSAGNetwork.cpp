@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2018,2019 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -113,6 +113,8 @@ void CPOCSAGNetwork::enable(bool enabled)
 {
 	if (enabled && !m_enabled)
 		reset();
+	else if (!enabled && m_enabled)
+		m_buffer.clear();
 
 	unsigned char c = enabled ? 0x00U : 0xFFU;
 	

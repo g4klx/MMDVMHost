@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2019 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -136,6 +136,9 @@ bool CDMRNetwork::open()
 
 void CDMRNetwork::enable(bool enabled)
 {
+	if (!enabled && m_enabled)
+		m_rxData.clear();
+
 	m_enabled = enabled;
 }
 
