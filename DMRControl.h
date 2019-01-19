@@ -46,6 +46,8 @@ public:
 
 	bool isBusy() const;
 
+	void enable(bool enabled);
+
 private:
 	unsigned int m_colorCode;
 	CModem*      m_modem;

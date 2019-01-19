@@ -1,5 +1,5 @@
 /*
-*	Copyright (C) 2018 Jonathan Naylor, G4KLX
+*	Copyright (C) 2018,2019 Jonathan Naylor, G4KLX
 *
 *	This program is free software; you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -69,6 +69,7 @@ m_buffer(),
 m_ric(0U),
 m_text(),
 m_state(PS_NONE),
+m_enabled(true),
 m_fp(NULL)
 {
 	assert(display != NULL);
@@ -413,4 +414,16 @@ void CPOCSAGControl::closeFile()
 		::fclose(m_fp);
 		m_fp = NULL;
 	}
+}
+
+void CPOCSAGControl::enable(bool enabled)
+{
+	if (!enabled && m_enabled) {
+		m_queue.clear();
+		m_output.clear();
+
+		m_state = PS_NONE;
+	}
+
+	m_enabled = enabled;
 }

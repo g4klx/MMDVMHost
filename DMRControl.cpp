@@ -130,3 +130,9 @@ bool CDMRControl::isBusy() const
 
 	return m_slot2.isBusy();
 }
+
+void CDMRControl::enable(bool enabled)
+{
+	m_slot1.enable(enabled);
+	m_slot2.enable(enabled);
+}

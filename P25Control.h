@@ -48,6 +48,8 @@ public:
 
 	bool isBusy() const;
 
+	void enable(bool enabled);
+
 private:
 	unsigned int               m_nac;
 	unsigned int               m_id;
@@ -90,6 +92,7 @@ private:
 	unsigned char              m_minRSSI;
 	unsigned int               m_aveRSSI;
 	unsigned int               m_rssiCount;
+	bool                       m_enabled;
 	FILE*                      m_fp;
 
 	void writeQueueRF(const unsigned char* data, unsigned int length);

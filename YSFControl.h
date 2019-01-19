@@ -48,6 +48,8 @@ public:
 
 	bool isBusy() const;
 
+	void enable(bool enabled);
+
 private:
 	unsigned char*             m_callsign;
 	unsigned char*             m_selfCallsign;
@@ -88,6 +90,7 @@ private:
 	unsigned char              m_minRSSI;
 	unsigned int               m_aveRSSI;
 	unsigned int               m_rssiCount;
+	bool                       m_enabled;
 	FILE*                      m_fp;
 
 	bool processVWData(bool valid, unsigned char *data);

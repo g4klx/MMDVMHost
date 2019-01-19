@@ -60,6 +60,8 @@ public:
 
 	bool isBusy() const;
 
+	void enable(bool enabled);
+
 	static void init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData, unsigned int callHang, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter);
 
 private:
@@ -107,6 +109,7 @@ private:
 	unsigned char              m_minRSSI;
 	unsigned int               m_aveRSSI;
 	unsigned int               m_rssiCount;
+	bool                       m_enabled;
 	FILE*                      m_fp;
 
 	static unsigned int        m_colorCode;

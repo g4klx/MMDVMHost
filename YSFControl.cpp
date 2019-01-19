@@ -63,6 +63,7 @@ m_maxRSSI(0U),
 m_minRSSI(0U),
 m_aveRSSI(0U),
 m_rssiCount(0U),
+m_enabled(true),
 m_fp(NULL)
 {
 	assert(display != NULL);
@@ -1322,4 +1323,32 @@ void CYSFControl::processNetCallsigns(const unsigned char* data)
 bool CYSFControl::isBusy() const
 {
 	return m_rfState != RS_RF_LISTENING || m_netState != RS_NET_IDLE;
+}
+
+void CYSFControl::enable(bool enabled)
+{
+	if (!enabled && m_enabled) {
+		m_queue.clear();
+
+		// Reset the RF section
+		m_rfState = RS_RF_LISTENING;
+
+		m_rfTimeoutTimer.stop();
+		m_rfPayload.reset();
+
+		// These variables are free'd by YSFPayload
+		m_rfSource = NULL;
+		m_rfDest   = NULL;
+
+		// Reset the networking section
+		m_netState = RS_NET_IDLE;
+
+		m_netTimeoutTimer.stop();
+		m_networkWatchdog.stop();
+		m_packetTimer.stop();
+
+		m_netPayload.reset();
+	}
+
+	m_enabled = enabled;
 }

@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2018 by Jonathan Naylor G4KLX
+*   Copyright (C) 2018,2019 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -39,6 +39,8 @@ public:
 
 	void clock(unsigned int ms);
 
+	void enable(bool enabled);
+
 private:
 	CPOCSAGNetwork*            m_network;
 	CDisplay*                  m_display;
@@ -58,6 +60,7 @@ private:
 	uint32_t                   m_ric;
 	std::string                m_text;
 	POCSAG_STATE               m_state;
+	bool                       m_enabled;
 	FILE*                      m_fp;
 
 	bool processData();

@@ -115,6 +115,7 @@ m_maxRSSI(0U),
 m_minRSSI(0U),
 m_aveRSSI(0U),
 m_rssiCount(0U),
+m_enabled(true),
 m_fp(NULL)
 {
 	m_lastFrame = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
@@ -2095,4 +2096,50 @@ void CDMRSlot::insertSilence(unsigned int count)
 bool CDMRSlot::isBusy() const
 {
 	return m_rfState != RS_RF_LISTENING || m_netState != RS_NET_IDLE;
+}
+
+void CDMRSlot::enable(bool enabled)
+{
+	if (!enabled && m_enabled) {
+		m_queue.clear();
+
+		// Reset the RF section
+		m_rfState = RS_RF_LISTENING;
+
+		m_rfTimeoutTimer.stop();
+		m_rfTimeout = false;
+
+		m_rfFrames = 0U;
+		m_rfErrs = 0U;
+		m_rfBits = 1U;
+
+		m_rfSeqNo = 0U;
+		m_rfN = 0U;
+
+		delete m_rfLC;
+		m_rfLC = NULL;
+
+		// Reset the networking section
+		m_netState = RS_NET_IDLE;
+
+		m_lastFrameValid = false;
+
+		m_networkWatchdog.stop();
+		m_netTimeoutTimer.stop();
+		m_packetTimer.stop();
+		m_netTimeout = false;
+
+		m_netFrames = 0U;
+		m_netLost = 0U;
+
+		m_netErrs = 0U;
+		m_netBits = 1U;
+
+		m_netN = 0U;
+
+		delete m_netLC;
+		m_netLC = NULL;
+	}
+
+	m_enabled = enabled;
 }

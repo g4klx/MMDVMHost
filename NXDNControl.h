@@ -47,6 +47,8 @@ public:
 
 	bool isBusy() const;
 
+	void enable(bool enabled);
+
 private:
 	unsigned int               m_ran;
 	unsigned int               m_id;
@@ -79,6 +81,7 @@ private:
 	unsigned char              m_minRSSI;
 	unsigned int               m_aveRSSI;
 	unsigned int               m_rssiCount;
+	bool                       m_enabled;
 	FILE*                      m_fp;
 
 	bool processVoice(unsigned char usc, unsigned char option, unsigned char *data);

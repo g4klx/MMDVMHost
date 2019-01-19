@@ -71,6 +71,7 @@ m_maxRSSI(0U),
 m_minRSSI(0U),
 m_aveRSSI(0U),
 m_rssiCount(0U),
+m_enabled(true),
 m_fp(NULL)
 {
 	assert(display != NULL);
@@ -1085,4 +1086,31 @@ void CNXDNControl::closeFile()
 bool CNXDNControl::isBusy() const
 {
 	return m_rfState != RS_RF_LISTENING || m_netState != RS_NET_IDLE;
+}
+
+void CNXDNControl::enable(bool enabled)
+{
+	if (!enabled && m_enabled) {
+		m_queue.clear();
+
+		// Reset the RF section
+		m_rfState = RS_RF_LISTENING;
+
+		m_rfMask = 0x00U;
+		m_rfLayer3.reset();
+
+		m_rfTimeoutTimer.stop();
+
+		// Reset the networking section
+		m_netState = RS_NET_IDLE;
+
+		m_netMask = 0x00U;
+		m_netLayer3.reset();
+
+		m_netTimeoutTimer.stop();
+		m_networkWatchdog.stop();
+		m_packetTimer.stop();
+	}
+
+	m_enabled = enabled;
 }
