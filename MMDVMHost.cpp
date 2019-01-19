@@ -1447,6 +1447,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 
 	switch (mode) {
 	case MODE_DSTAR:
+		if (m_dstarNetwork != NULL)
+			m_dstarNetwork->enable(true);
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(false);
 		if (m_ysfNetwork != NULL)
@@ -1457,6 +1459,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdnNetwork->enable(false);
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
+		if (m_dstar != NULL)
+			m_dstar->enable(true);
 		if (m_dmr != NULL)
 			m_dmr->enable(false);
 		if (m_ysf != NULL)
@@ -1479,6 +1483,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 	case MODE_DMR:
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(false);
+		if (m_dmrNetwork != NULL)
+			m_dmrNetwork->enable(true);
 		if (m_ysfNetwork != NULL)
 			m_ysfNetwork->enable(false);
 		if (m_p25Network != NULL)
@@ -1489,6 +1495,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_pocsagNetwork->enable(false);
 		if (m_dstar != NULL)
 			m_dstar->enable(false);
+		if (m_dmr != NULL)
+			m_dmr->enable(true);
 		if (m_ysf != NULL)
 			m_ysf->enable(false);
 		if (m_p25 != NULL)
@@ -1515,6 +1523,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dstarNetwork->enable(false);
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(false);
+		if (m_ysfNetwork != NULL)
+			m_ysfNetwork->enable(true);
 		if (m_p25Network != NULL)
 			m_p25Network->enable(false);
 		if (m_nxdnNetwork != NULL)
@@ -1525,6 +1535,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dstar->enable(false);
 		if (m_dmr != NULL)
 			m_dmr->enable(false);
+		if (m_ysf != NULL)
+			m_ysf->enable(true);
 		if (m_p25 != NULL)
 			m_p25->enable(false);
 		if (m_nxdn != NULL)
@@ -1547,6 +1559,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dmrNetwork->enable(false);
 		if (m_ysfNetwork != NULL)
 			m_ysfNetwork->enable(false);
+		if (m_p25Network != NULL)
+			m_p25Network->enable(true);
 		if (m_nxdnNetwork != NULL)
 			m_nxdnNetwork->enable(false);
 		if (m_pocsagNetwork != NULL)
@@ -1557,6 +1571,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dmr->enable(false);
 		if (m_ysf != NULL)
 			m_ysf->enable(false);
+		if (m_p25 != NULL)
+			m_p25->enable(true);
 		if (m_nxdn != NULL)
 			m_nxdn->enable(false);
 		if (m_pocsag != NULL)
@@ -1579,6 +1595,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_ysfNetwork->enable(false);
 		if (m_p25Network != NULL)
 			m_p25Network->enable(false);
+		if (m_nxdnNetwork != NULL)
+			m_nxdnNetwork->enable(true);
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
 		if (m_dstar != NULL)
@@ -1589,6 +1607,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_ysf->enable(false);
 		if (m_p25 != NULL)
 			m_p25->enable(false);
+		if (m_nxdn != NULL)
+			m_nxdn->enable(true);
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
 		m_modem->setMode(MODE_NXDN);
@@ -1611,6 +1631,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25Network->enable(false);
 		if (m_nxdnNetwork != NULL)
 			m_nxdnNetwork->enable(false);
+		if (m_pocsagNetwork != NULL)
+			m_pocsagNetwork->enable(true);
 		if (m_dstar != NULL)
 			m_dstar->enable(false);
 		if (m_dmr != NULL)
@@ -1621,6 +1643,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25->enable(false);
 		if (m_nxdn != NULL)
 			m_nxdn->enable(false);
+		if (m_pocsag != NULL)
+			m_pocsag->enable(true);
 		m_modem->setMode(MODE_POCSAG);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_POCSAG);
@@ -1723,17 +1747,17 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(true);
 		if (m_dstar != NULL)
-			m_dstar->enable(false);
+			m_dstar->enable(true);
 		if (m_dmr != NULL)
-			m_dmr->enable(false);
+			m_dmr->enable(true);
 		if (m_ysf != NULL)
-			m_ysf->enable(false);
+			m_ysf->enable(true);
 		if (m_p25 != NULL)
-			m_p25->enable(false);
+			m_p25->enable(true);
 		if (m_nxdn != NULL)
-			m_nxdn->enable(false);
+			m_nxdn->enable(true);
 		if (m_pocsag != NULL)
-			m_pocsag->enable(false);
+			m_pocsag->enable(true);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
