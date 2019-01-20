@@ -587,9 +587,9 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 					m_rfPayload.processVDMode2Data(data + 2U, fn);
 					unsigned int errors = m_rfPayload.processVDMode2Audio(data + 2U);
 					m_rfErrs += errors;
-					m_rfBits += 135U;
-					m_display->writeFusionBER(float(errors) / 1.35F);
-					LogDebug("YSF, V/D Mode 2, seq %u, Repetition FEC %u/135 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 1.35F);
+					m_rfBits += 405U;
+					m_display->writeFusionBER(float(errors) / 4.05F);
+					LogDebug("YSF, V/D Mode 2, seq %u, Repetition FEC %u/405 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 4.05F);
 				}
 				break;
 
