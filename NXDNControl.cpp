@@ -87,6 +87,9 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 {
 	assert(data != NULL);
 
+	if (!m_enabled)
+		return false;
+
 	unsigned char type = data[0U];
 
 	if (type == TAG_LOST && m_rfState == RS_RF_AUDIO) {
@@ -725,6 +728,9 @@ void CNXDNControl::writeNetwork()
 	unsigned char netData[40U];
 	bool exists = m_network->read(netData);
 	if (!exists)
+		return;
+
+	if (!m_enabled)
 		return;
 
 	if (m_rfState != RS_RF_LISTENING && m_netState == RS_NET_IDLE)

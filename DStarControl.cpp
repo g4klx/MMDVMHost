@@ -121,6 +121,9 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 {
 	assert(data != NULL);
 
+	if (!m_enabled)
+		return false;
+
 	unsigned char type = data[0U];
 
 	if (type == TAG_LOST && (m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA)) {
@@ -620,6 +623,9 @@ void CDStarControl::writeNetwork()
 	unsigned char data[DSTAR_HEADER_LENGTH_BYTES + 2U];
 	unsigned int length = m_network->read(data, DSTAR_HEADER_LENGTH_BYTES + 2U);
 	if (length == 0U)
+		return;
+
+	if (!m_enabled)
 		return;
 
 	if ((m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA) && m_netState == RS_NET_IDLE)

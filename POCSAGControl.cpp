@@ -106,6 +106,9 @@ bool CPOCSAGControl::processData()
 	if (length == 0U)
 		return false;
 
+	if (!m_enabled)
+		return false;
+
 	m_ric = 0U;
 	m_ric |= (data[0U] << 16) & 0x00FF0000U;
 	m_ric |= (data[1U] << 8)  & 0x0000FF00U;

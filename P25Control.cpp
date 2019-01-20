@@ -116,6 +116,9 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 {
 	assert(data != NULL);
 
+	if (!m_enabled)
+		return false;
+
 	bool sync = data[1U] == 0x01U;
 
 	if (data[0U] == TAG_LOST && m_rfState == RS_RF_AUDIO) {
@@ -602,6 +605,9 @@ void CP25Control::writeNetwork()
 
 	unsigned int length = m_network->read(data, 100U);
 	if (length == 0U)
+		return;
+
+	if (!m_enabled)
 		return;
 
 	if (m_rfState != RS_RF_LISTENING && m_netState == RS_NET_IDLE)
