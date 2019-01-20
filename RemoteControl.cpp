@@ -49,25 +49,25 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 	unsigned int port;
 	int ret = m_socket.read(buffer, BUFFER_LENGTH, address, port);
 	if (ret > 0) {
-		if (::memcmp(buffer, "mode idle", 9U) == 0)
+		if (ret == 9 && ::memcmp(buffer, "mode idle", 9U) == 0)
 			command = RCD_MODE_IDLE;
-		else if (::memcmp(buffer, "mode lockout", 12U) == 0)
+		else if (ret == 12 && ::memcmp(buffer, "mode lockout", 12U) == 0)
 			command = RCD_MODE_LOCKOUT;
-		else if (::memcmp(buffer, "mode d-star", 11U) == 0)
+		else if (ret == 11 && ::memcmp(buffer, "mode d-star", 11U) == 0)
 			command = RCD_MODE_DSTAR;
-		else if (::memcmp(buffer, "mode dmr", 8U) == 0)
+		else if (ret == 8 && ::memcmp(buffer, "mode dmr", 8U) == 0)
 			command = RCD_MODE_DMR;
-		else if (::memcmp(buffer, "mode ysf", 8U) == 0)
+		else if (ret == 8 && ::memcmp(buffer, "mode ysf", 8U) == 0)
 			command = RCD_MODE_YSF;
-		else if (::memcmp(buffer, "mode p25", 8U) == 0)
+		else if (ret == 8 && ::memcmp(buffer, "mode p25", 8U) == 0)
 			command = RCD_MODE_P25;
-		else if (::memcmp(buffer, "mode nxdn", 9U) == 0)
+		else if (ret == 9 && ::memcmp(buffer, "mode nxdn", 9U) == 0)
 			command = RCD_MODE_NXDN;
 
 		if (command == RCD_NONE)
-			LogWarning("Invalid remote command of \"%s\" received");
+			LogWarning("Invalid remote command of \"%.*s\" received", ret, buffer);
 		else
-			LogMessage("Valid remote command of \"%s\" received");
+			LogMessage("Valid remote command of \"%.*s\" received", ret, buffer);
 	}
 	
 	return command;
