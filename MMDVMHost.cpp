@@ -159,8 +159,7 @@ m_cwCallsign(),
 m_lockFileEnabled(false),
 m_lockFileName(),
 m_mobileGPS(NULL),
-m_remoteControl(NULL),
-m_fixedMode(false)
+m_remoteControl(NULL)
 {
 }
 
@@ -594,26 +593,7 @@ int CMMDVMHost::run()
 		}
 	}
 
-	// If only one voice mode is enabled, fix to that mode.
-	if (m_dstar != NULL && m_dmr == NULL && m_ysf == NULL && m_p25 == NULL && m_nxdn == NULL && m_pocsag == NULL) {
-		m_fixedMode = true;
-		setMode(MODE_DSTAR);
-	} else if (m_dstar == NULL && m_dmr != NULL && m_ysf == NULL && m_p25 == NULL && m_nxdn == NULL && m_pocsag == NULL) {
-		m_fixedMode = true;
-		setMode(MODE_DMR);
-	} else if (m_dstar == NULL && m_dmr == NULL && m_ysf != NULL && m_p25 == NULL && m_nxdn == NULL && m_pocsag == NULL) {
-		m_fixedMode = true;
-		setMode(MODE_YSF);
-	} else if (m_dstar == NULL && m_dmr == NULL && m_ysf == NULL && m_p25 != NULL && m_nxdn == NULL && m_pocsag == NULL) {
-		m_fixedMode = true;
-		setMode(MODE_P25);
-	} else if (m_dstar == NULL && m_dmr == NULL && m_ysf == NULL && m_p25 == NULL && m_nxdn != NULL && m_pocsag == NULL) {
-		m_fixedMode = true;
-		setMode(MODE_NXDN);
-	} else {
-		m_fixedMode = false;
-		setMode(MODE_IDLE);
-	}
+	setMode(MODE_IDLE);
 
 	LogMessage("MMDVMHost-%s is running", VERSION);
 
@@ -787,10 +767,8 @@ int CMMDVMHost::run()
 		if (transparentSocket != NULL && len > 0U)
 			transparentSocket->write(data, len, transparentAddress, transparentPort);
 
-		if (!m_fixedMode) {
-			if (m_modeTimer.isRunning() && m_modeTimer.hasExpired())
-				setMode(MODE_IDLE);
-		}
+		if (m_modeTimer.isRunning() && m_modeTimer.hasExpired())
+			setMode(MODE_IDLE);
 
 		if (m_dstar != NULL) {
 			ret = m_modem->hasDStarSpace();
@@ -950,8 +928,7 @@ int CMMDVMHost::run()
 
 		m_modem->clock(ms);
 
-		if (!m_fixedMode)
-			m_modeTimer.clock(ms);
+		m_modeTimer.clock(ms);
 
 		if (m_dstar != NULL)
 			m_dstar->clock();
@@ -1800,26 +1777,6 @@ void  CMMDVMHost::removeLockFile() const
 		::remove(m_lockFileName.c_str());
 }
 
-bool CMMDVMHost::isBusy() const
-{
-	if (m_dstar != NULL && m_dstar->isBusy())
-		return true;
-
-	if (m_dmr != NULL && m_dmr->isBusy())
-		return true;
-
-	if (m_ysf != NULL && m_ysf->isBusy())
-		return true;
-
-	if (m_p25 != NULL && m_p25->isBusy())
-		return true;
-
-	if (m_nxdn != NULL && m_nxdn->isBusy())
-		return true;
-
-	return false;
-}
-
 void CMMDVMHost::remoteControl()
 {
 	if (m_remoteControl == NULL)
@@ -1828,46 +1785,32 @@ void CMMDVMHost::remoteControl()
 	REMOTE_COMMAND command = m_remoteControl->getCommand();
 	switch(command) {
 		case RCD_MODE_IDLE:
-			if (m_mode != MODE_IDLE) {
-				m_fixedMode = false;
+			if (m_mode != MODE_IDLE)
 				setMode(MODE_IDLE);
-			}
 			break;
 		case RCD_MODE_LOCKOUT:
-			if (m_mode != MODE_LOCKOUT) {
-				m_fixedMode = false;
+			if (m_mode != MODE_LOCKOUT)
 				setMode(MODE_LOCKOUT);
-			}
 			break;
 		case RCD_MODE_DSTAR:
-			if (m_dstar != NULL && m_mode != MODE_DSTAR) {
-				m_fixedMode = true;
+			if (m_dstar != NULL && m_mode != MODE_DSTAR)
 				setMode(MODE_DSTAR);
-			}
 			break;
 		case RCD_MODE_DMR:
-			if (m_dmr != NULL && m_mode != MODE_DMR) {
-				m_fixedMode = true;
+			if (m_dmr != NULL && m_mode != MODE_DMR)
 				setMode(MODE_DMR);
-			}
 			break;
 		case RCD_MODE_YSF:
-			if (m_ysf != NULL && m_mode != MODE_YSF) {
-				m_fixedMode = true;
+			if (m_ysf != NULL && m_mode != MODE_YSF)
 				setMode(MODE_YSF);
-			}
 			break;
 		case RCD_MODE_P25:
-			if (m_p25 != NULL && m_mode != MODE_P25) {
-				m_fixedMode = true;
+			if (m_p25 != NULL && m_mode != MODE_P25)
 				setMode(MODE_P25);
-			}
 			break;
 		case RCD_MODE_NXDN:
-			if (m_nxdn != NULL && m_mode != MODE_NXDN) {
-				m_fixedMode = true;
+			if (m_nxdn != NULL && m_mode != MODE_NXDN)
 				setMode(MODE_NXDN);
-			}
 			break;
 		default:
 			break;
