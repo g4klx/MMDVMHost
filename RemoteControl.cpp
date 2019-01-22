@@ -25,6 +25,7 @@
 #include <cstring>
 
 const unsigned int SET_MODE_ARGS = 2U;
+const unsigned int PAGE_ARGS = 3U;
 
 const unsigned int BUFFER_LENGTH = 100U;
 
@@ -85,6 +86,9 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 				m_command = RCD_MODE_P25;
 			else if (m_args.at(1U) == "nxdn")
 				m_command = RCD_MODE_NXDN;
+		} else if (m_args.at(0U) == "page" && m_args.size() >= PAGE_ARGS) {
+			// Page command is in the form of "page <ric> <message>"
+			m_command = RCD_PAGE;
 		}
 
 		if (m_command == RCD_NONE) {
@@ -109,6 +113,8 @@ unsigned int CRemoteControl::getArgCount() const
 		case RCD_MODE_P25:
 		case RCD_MODE_NXDN:
 			return m_args.size() - SET_MODE_ARGS;
+		case RCD_PAGE:
+			return m_args.size() - 1U;
 		default:
 			return 0U;
 	}
@@ -125,6 +131,9 @@ std::string CRemoteControl::getArgString(unsigned int n) const
 		case RCD_MODE_P25:
 		case RCD_MODE_NXDN:
 			n += SET_MODE_ARGS;
+			break;
+		case RCD_PAGE:
+			n += 1U;
 			break;
 		default:
 			return "";

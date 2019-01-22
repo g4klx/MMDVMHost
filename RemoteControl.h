@@ -32,7 +32,8 @@ enum REMOTE_COMMAND {
 	RCD_MODE_DMR,
 	RCD_MODE_YSF,
 	RCD_MODE_P25,
-	RCD_MODE_NXDN
+	RCD_MODE_NXDN,
+	RCD_PAGE
 };
 
 class CRemoteControl {

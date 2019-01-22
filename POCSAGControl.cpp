@@ -96,6 +96,27 @@ unsigned int CPOCSAGControl::readModem(unsigned char* data)
 	return len;
 }
 
+void CPOCSAGControl::sendPage(unsigned int ric, const std::string& text)
+{
+	if (!m_enabled)
+		return;
+
+	m_ric  = ric;
+	m_text = text;
+
+	m_buffer.clear();
+
+	addAddress(FUNCTIONAL_ALPHANUMERIC);
+
+	LogDebug("Local message to %07u, func Alphanumeric: \"%s\"", m_ric, m_text.c_str());
+
+	packASCII();
+
+	// Ensure data is an even number of words
+	if ((m_buffer.size() % 2U) == 1U)
+		m_buffer.push_back(POCSAG_IDLE_WORD);
+}
+
 bool CPOCSAGControl::processData()
 {
 	if (m_network == NULL)

@@ -35,6 +35,8 @@ public:
 	CPOCSAGControl(CPOCSAGNetwork* network, CDisplay* display);
 	~CPOCSAGControl();
 
+	void sendPage(unsigned int ric, const std::string& text);
+
 	unsigned int readModem(unsigned char* data);
 
 	void clock(unsigned int ms);
