@@ -69,8 +69,8 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 			m_args.push_back(std::string(p));
 		}
 
-		if (m_args.at(0U) == "mode" && m_args.length() >= SET_MODE_ARGS) {
-			// Mode command is in the form of "mode <mode> [timeout]"
+		if (m_args.at(0U) == "mode" && m_args.size() >= SET_MODE_ARGS) {
+			// Mode command is in the form of "mode <mode> [<timeout>|fixed]"
 			if (m_args.at(1U) == "idle")
 				m_command = RCD_MODE_IDLE;
 			else if (m_args.at(1U) == "lockout")
@@ -108,7 +108,7 @@ unsigned int CRemoteControl::getArgCount() const
 		case RCD_MODE_YSF:
 		case RCD_MODE_P25:
 		case RCD_MODE_NXDN:
-			return m_args.length() - SET_MODE_ARGS;
+			return m_args.size() - SET_MODE_ARGS;
 		default:
 			return 0U;
 	}
@@ -130,7 +130,7 @@ std::string CRemoteControl::getArgString(unsigned int n) const
 			return "";
 	}
 
-	if (n >= m_args.length())
+	if (n >= m_args.size())
 		return "";
 
 	return m_args.at(n);
