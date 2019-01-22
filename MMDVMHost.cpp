@@ -1788,30 +1788,62 @@ void CMMDVMHost::remoteControl()
 			if (m_mode != MODE_IDLE)
 				setMode(MODE_IDLE);
 			break;
+
 		case RCD_MODE_LOCKOUT:
 			if (m_mode != MODE_LOCKOUT)
 				setMode(MODE_LOCKOUT);
 			break;
+
 		case RCD_MODE_DSTAR:
-			if (m_dstar != NULL && m_mode != MODE_DSTAR)
+			if (m_dstar != NULL && m_mode != MODE_DSTAR) {
+				if (m_remoteControl->getArgCount() > 0U)
+					m_modeTimer.setTimeout(m_remoteControl->getArgUInt(0U));
+				else
+					m_modeTimer.setTimeout(m_dstarRFModeHang);
 				setMode(MODE_DSTAR);
+			}
 			break;
+
 		case RCD_MODE_DMR:
-			if (m_dmr != NULL && m_mode != MODE_DMR)
+			if (m_dmr != NULL && m_mode != MODE_DMR) {
+				if (m_remoteControl->getArgCount() > 0U)
+					m_modeTimer.setTimeout(m_remoteControl->getArgUInt(0U));
+				else
+					m_modeTimer.setTimeout(m_dmrRFModeHang);
 				setMode(MODE_DMR);
+			}
 			break;
+
 		case RCD_MODE_YSF:
-			if (m_ysf != NULL && m_mode != MODE_YSF)
+			if (m_ysf != NULL && m_mode != MODE_YSF) {
+				if (m_remoteControl->getArgCount() > 0U)
+					m_modeTimer.setTimeout(m_remoteControl->getArgUInt(0U));
+				else
+					m_modeTimer.setTimeout(m_ysfRFModeHang);
 				setMode(MODE_YSF);
+			}
 			break;
+
 		case RCD_MODE_P25:
-			if (m_p25 != NULL && m_mode != MODE_P25)
+			if (m_p25 != NULL && m_mode != MODE_P25) {
+				if (m_remoteControl->getArgCount() > 0U)
+					m_modeTimer.setTimeout(m_remoteControl->getArgUInt(0U));
+				else
+					m_modeTimer.setTimeout(m_p25RFModeHang);
 				setMode(MODE_P25);
+			}
 			break;
+
 		case RCD_MODE_NXDN:
-			if (m_nxdn != NULL && m_mode != MODE_NXDN)
+			if (m_nxdn != NULL && m_mode != MODE_NXDN) {
+				if (m_remoteControl->getArgCount() > 0U)
+					m_modeTimer.setTimeout(m_remoteControl->getArgUInt(0U));
+				else
+					m_modeTimer.setTimeout(m_nxdnRFModeHang);
 				setMode(MODE_NXDN);
+			}
 			break;
+
 		default:
 			break;
 	}

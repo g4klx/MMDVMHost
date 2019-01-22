@@ -20,13 +20,18 @@
 #include "Log.h"
 
 #include <cstdio>
+#include <cstdlib>
 #include <cassert>
 #include <cstring>
+
+const unsigned int SET_MODE_ARGS = 2U;
 
 const unsigned int BUFFER_LENGTH = 100U;
 
 CRemoteControl::CRemoteControl(unsigned int port) :
-m_socket(port)
+m_socket(port),
+m_command(RCD_NONE),
+m_args()
 {
 	assert(port > 0U);
 }
@@ -42,35 +47,103 @@ bool CRemoteControl::open()
 
 REMOTE_COMMAND CRemoteControl::getCommand()
 {
-	REMOTE_COMMAND command = RCD_NONE;
+	m_command = RCD_NONE;
+	m_args.clear();
 
-	unsigned char buffer[BUFFER_LENGTH];
+	char command[BUFFER_LENGTH];
+	char buffer[BUFFER_LENGTH];
 	in_addr address;
 	unsigned int port;
-	int ret = m_socket.read(buffer, BUFFER_LENGTH, address, port);
+	int ret = m_socket.read((unsigned char*)buffer, BUFFER_LENGTH, address, port);
 	if (ret > 0) {
-		if (ret == 9 && ::memcmp(buffer, "mode idle", 9U) == 0)
-			command = RCD_MODE_IDLE;
-		else if (ret == 12 && ::memcmp(buffer, "mode lockout", 12U) == 0)
-			command = RCD_MODE_LOCKOUT;
-		else if (ret == 11 && ::memcmp(buffer, "mode d-star", 11U) == 0)
-			command = RCD_MODE_DSTAR;
-		else if (ret == 8 && ::memcmp(buffer, "mode dmr", 8U) == 0)
-			command = RCD_MODE_DMR;
-		else if (ret == 8 && ::memcmp(buffer, "mode ysf", 8U) == 0)
-			command = RCD_MODE_YSF;
-		else if (ret == 8 && ::memcmp(buffer, "mode p25", 8U) == 0)
-			command = RCD_MODE_P25;
-		else if (ret == 9 && ::memcmp(buffer, "mode nxdn", 9U) == 0)
-			command = RCD_MODE_NXDN;
+		buffer[ret] = '\0';
 
-		if (command == RCD_NONE)
-			LogWarning("Invalid remote command of \"%.*s\" received", ret, buffer);
-		else
-			LogMessage("Valid remote command of \"%.*s\" received", ret, buffer);
+		// Make a copy of the original command for logging.
+		::strcpy(command, buffer);
+
+		// Parse the original command into a vector of strings.
+		char* b = buffer;
+		char* p = NULL;
+		while ((p = ::strtok(b, " ")) != NULL) {
+			b = NULL;
+			m_args.push_back(std::string(p));
+		}
+
+		if (m_args.at(0U) == "mode" && m_args.length() >= SET_MODE_ARGS) {
+			// Mode command is in the form of "mode <mode> [timeout]"
+			if (m_args.at(1U) == "idle")
+				m_command = RCD_MODE_IDLE;
+			else if (m_args.at(1U) == "lockout")
+				m_command = RCD_MODE_LOCKOUT;
+			else if (m_args.at(1U) == "d-star")
+				m_command = RCD_MODE_DSTAR;
+			else if (m_args.at(1U) == "dmr")
+				m_command = RCD_MODE_DMR;
+			else if (m_args.at(1U) == "ysf")
+				m_command = RCD_MODE_YSF;
+			else if (m_args.at(1U) == "p25")
+				m_command = RCD_MODE_P25;
+			else if (m_args.at(1U) == "nxdn")
+				m_command = RCD_MODE_NXDN;
+		}
+
+		if (m_command == RCD_NONE) {
+			m_args.clear();
+			LogWarning("Invalid remote command of \"%s\" received", command);
+		} else {
+			LogMessage("Valid remote command of \"%s\" received", command);
+		}
 	}
 	
-	return command;
+	return m_command;
+}
+
+unsigned int CRemoteControl::getArgCount() const
+{
+	switch (m_command) {
+		case RCD_MODE_IDLE:
+		case RCD_MODE_LOCKOUT:
+		case RCD_MODE_DSTAR:
+		case RCD_MODE_DMR:
+		case RCD_MODE_YSF:
+		case RCD_MODE_P25:
+		case RCD_MODE_NXDN:
+			return m_args.length() - SET_MODE_ARGS;
+		default:
+			return 0U;
+	}
+}
+
+std::string CRemoteControl::getArgString(unsigned int n) const
+{
+	switch (m_command) {
+		case RCD_MODE_IDLE:
+		case RCD_MODE_LOCKOUT:
+		case RCD_MODE_DSTAR:
+		case RCD_MODE_DMR:
+		case RCD_MODE_YSF:
+		case RCD_MODE_P25:
+		case RCD_MODE_NXDN:
+			n += SET_MODE_ARGS;
+			break;
+		default:
+			return "";
+	}
+
+	if (n >= m_args.length())
+		return "";
+
+	return m_args.at(n);
+}
+
+unsigned int CRemoteControl::getArgUInt(unsigned int n) const
+{
+	return (unsigned int)::atoi(getArgString(n).c_str());
+}
+
+int CRemoteControl::getArgInt(unsigned int n) const
+{
+	return ::atoi(getArgString(n).c_str());
 }
 
 void CRemoteControl::close()

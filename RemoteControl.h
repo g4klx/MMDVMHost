@@ -21,6 +21,9 @@
 
 #include "UDPSocket.h"
 
+#include <vector>
+#include <string>
+
 enum REMOTE_COMMAND {
 	RCD_NONE,
 	RCD_MODE_IDLE,
@@ -41,10 +44,18 @@ public:
 
 	REMOTE_COMMAND getCommand();
 
+	unsigned int getArgCount() const;
+
+	std::string  getArgString(unsigned int n) const;
+	unsigned int getArgUInt(unsigned int n) const;
+	signed int   getArgInt(unsigned int n) const;
+
 	void close();
 
 private:
-	CUDPSocket m_socket;
+	CUDPSocket               m_socket;
+	REMOTE_COMMAND           m_command;
+	std::vector<std::string> m_args;
 };
 
 #endif
