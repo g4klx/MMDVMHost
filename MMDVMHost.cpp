@@ -1789,7 +1789,7 @@ void CMMDVMHost::remoteControl()
 		return;
 
 	REMOTE_COMMAND command = m_remoteControl->getCommand();
-	switch(command) {
+	switch (command) {
 		case RCD_MODE_IDLE:
 			m_fixedMode = false;
 			setMode(MODE_IDLE);
@@ -1803,7 +1803,7 @@ void CMMDVMHost::remoteControl()
 				processModeCommand(MODE_DSTAR, m_dstarRFModeHang);
 			break;
 		case RCD_MODE_DMR:
-			if (m_dmr != NULL) {
+			if (m_dmr != NULL)
 				processModeCommand(MODE_DMR, m_dmrRFModeHang);
 			break;
 		case RCD_MODE_YSF:
