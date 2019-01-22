@@ -159,7 +159,8 @@ m_cwCallsign(),
 m_lockFileEnabled(false),
 m_lockFileName(),
 m_mobileGPS(NULL),
-m_remoteControl(NULL)
+m_remoteControl(NULL),
+m_fixedMode(false)
 {
 }
 
@@ -767,8 +768,10 @@ int CMMDVMHost::run()
 		if (transparentSocket != NULL && len > 0U)
 			transparentSocket->write(data, len, transparentAddress, transparentPort);
 
-		if (m_modeTimer.isRunning() && m_modeTimer.hasExpired())
-			setMode(MODE_IDLE);
+		if (!m_fixedMode) {
+			if (m_modeTimer.isRunning() && m_modeTimer.hasExpired())
+				setMode(MODE_IDLE);
+		}
 
 		if (m_dstar != NULL) {
 			ret = m_modem->hasDStarSpace();
@@ -928,7 +931,8 @@ int CMMDVMHost::run()
 
 		m_modem->clock(ms);
 
-		m_modeTimer.clock(ms);
+		if (!m_fixedMode)
+			m_modeTimer.clock(ms);
 
 		if (m_dstar != NULL)
 			m_dstar->clock();
@@ -961,7 +965,7 @@ int CMMDVMHost::run()
 
 		m_cwIdTimer.clock(ms);
 		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
-			if (m_mode == MODE_IDLE && !m_modem->hasTX()){
+			if (!m_modem->hasTX()){
 				LogDebug("sending CW ID");
 				m_display->writeCW();
 				m_modem->sendCWId(m_cwCallsign);
@@ -973,8 +977,9 @@ int CMMDVMHost::run()
 
 		dmrBeaconIntervalTimer.clock(ms);
 		if (dmrBeaconIntervalTimer.isRunning() && dmrBeaconIntervalTimer.hasExpired()) {
-			if (m_mode == MODE_IDLE && !m_modem->hasTX()) {
-				setMode(MODE_DMR);
+			if ((m_mode == MODE_IDLE || m_mode == MODE_DMR) && !m_modem->hasTX()) {
+				if (!m_fixedMode)
+					setMode(MODE_DMR);
 				dmrBeaconIntervalTimer.start();
 				dmrBeaconDurationTimer.start();
 			}
@@ -982,7 +987,8 @@ int CMMDVMHost::run()
 
 		dmrBeaconDurationTimer.clock(ms);
 		if (dmrBeaconDurationTimer.isRunning() && dmrBeaconDurationTimer.hasExpired()) {
-			setMode(MODE_IDLE);
+			if (!m_fixedMode)
+				setMode(MODE_IDLE);
 			dmrBeaconDurationTimer.stop();
 		}
 
@@ -1785,66 +1791,52 @@ void CMMDVMHost::remoteControl()
 	REMOTE_COMMAND command = m_remoteControl->getCommand();
 	switch(command) {
 		case RCD_MODE_IDLE:
-			if (m_mode != MODE_IDLE)
-				setMode(MODE_IDLE);
+			m_fixedMode = false;
+			setMode(MODE_IDLE);
 			break;
-
 		case RCD_MODE_LOCKOUT:
-			if (m_mode != MODE_LOCKOUT)
-				setMode(MODE_LOCKOUT);
+			m_fixedMode = false;
+			setMode(MODE_LOCKOUT);
 			break;
-
 		case RCD_MODE_DSTAR:
-			if (m_dstar != NULL && m_mode != MODE_DSTAR) {
-				if (m_remoteControl->getArgCount() > 0U)
-					m_modeTimer.setTimeout(m_remoteControl->getArgUInt(0U));
-				else
-					m_modeTimer.setTimeout(m_dstarRFModeHang);
-				setMode(MODE_DSTAR);
-			}
+			if (m_dstar != NULL)
+				processModeCommand(MODE_DSTAR, m_dstarRFModeHang);
 			break;
-
 		case RCD_MODE_DMR:
-			if (m_dmr != NULL && m_mode != MODE_DMR) {
-				if (m_remoteControl->getArgCount() > 0U)
-					m_modeTimer.setTimeout(m_remoteControl->getArgUInt(0U));
-				else
-					m_modeTimer.setTimeout(m_dmrRFModeHang);
-				setMode(MODE_DMR);
-			}
+			if (m_dmr != NULL) {
+				processModeCommand(MODE_DMR, m_dmrRFModeHang);
 			break;
-
 		case RCD_MODE_YSF:
-			if (m_ysf != NULL && m_mode != MODE_YSF) {
-				if (m_remoteControl->getArgCount() > 0U)
-					m_modeTimer.setTimeout(m_remoteControl->getArgUInt(0U));
-				else
-					m_modeTimer.setTimeout(m_ysfRFModeHang);
-				setMode(MODE_YSF);
-			}
+			if (m_ysf != NULL)
+				processModeCommand(MODE_YSF, m_ysfRFModeHang);
 			break;
-
 		case RCD_MODE_P25:
-			if (m_p25 != NULL && m_mode != MODE_P25) {
-				if (m_remoteControl->getArgCount() > 0U)
-					m_modeTimer.setTimeout(m_remoteControl->getArgUInt(0U));
-				else
-					m_modeTimer.setTimeout(m_p25RFModeHang);
-				setMode(MODE_P25);
-			}
+			if (m_p25 != NULL)
+				processModeCommand(MODE_P25, m_p25RFModeHang);
 			break;
-
 		case RCD_MODE_NXDN:
-			if (m_nxdn != NULL && m_mode != MODE_NXDN) {
-				if (m_remoteControl->getArgCount() > 0U)
-					m_modeTimer.setTimeout(m_remoteControl->getArgUInt(0U));
-				else
-					m_modeTimer.setTimeout(m_nxdnRFModeHang);
-				setMode(MODE_NXDN);
-			}
+			if (m_nxdn != NULL)
+				processModeCommand(MODE_NXDN, m_nxdnRFModeHang);
 			break;
-
 		default:
 			break;
 	}
+}
+
+void CMMDVMHost::processModeCommand(unsigned char mode, unsigned int timeout)
+{
+	m_fixedMode = false;
+	m_modeTimer.setTimeout(timeout);
+
+	if (m_remoteControl->getArgCount() > 0U) {
+		if (m_remoteControl->getArgString(0U) == "fixed") {
+			m_fixedMode = true;
+		} else {
+			unsigned int t = m_remoteControl->getArgUInt(0U);
+			if (t > 0U)
+				m_modeTimer.setTimeout(t);
+		}
+	}
+
+	setMode(mode);
 }

@@ -103,6 +103,7 @@ private:
   std::string     m_lockFileName;
   CMobileGPS*     m_mobileGPS;
   CRemoteControl* m_remoteControl;
+  bool            m_fixedMode;
 
   void readParams();
   bool createModem();
@@ -114,6 +115,7 @@ private:
   bool createPOCSAGNetwork();
 
   void remoteControl();
+  void processModeCommand(unsigned char mode, unsigned int timeout);
 
   void setMode(unsigned char mode);
 
