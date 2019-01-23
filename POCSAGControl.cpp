@@ -81,7 +81,7 @@ CPOCSAGControl::~CPOCSAGControl()
 	m_buffer.clear();
 
 	for (std::deque<POCSAGData*>::iterator it = m_data.begin(); it != m_data.end(); ++it)
-		delete it;
+		delete *it;
 	m_data.clear();
 }
 
@@ -475,7 +475,7 @@ void CPOCSAGControl::enable(bool enabled)
 		m_output.clear();
 
 		for (std::deque<POCSAGData*>::iterator it = m_data.begin(); it != m_data.end(); ++it)
-			delete it;
+			delete *it;
 		m_data.clear();
 
 		m_state = PS_NONE;
