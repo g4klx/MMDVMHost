@@ -30,6 +30,12 @@
 #include <string>
 #include <deque>
 
+struct POCSAGData {
+	unsigned int         m_ric;
+	std::string          m_text;
+	std::deque<uint32_t> m_buffer;
+};
+
 class CPOCSAGControl {
 public:
 	CPOCSAGControl(CPOCSAGNetwork* network, CDisplay* display);
@@ -59,17 +65,18 @@ private:
 
 	std::deque<uint32_t>       m_output;
 	std::deque<uint32_t>       m_buffer;
-	uint32_t                   m_ric;
-	std::string                m_text;
+	unsigned int               m_ric;
+	std::deque<POCSAGData*>    m_data;
 	POCSAG_STATE               m_state;
 	bool                       m_enabled;
 	FILE*                      m_fp;
 
-	bool processData();
+	bool readNetwork();
 	void writeQueue();
-	void addAddress(unsigned char functional);
-	void packASCII();
-	void packNumeric();
+	bool processData();
+	void addAddress(unsigned char functional, unsigned int ric, std::deque<uint32_t>& buffer) const;
+	void packASCII(const std::string& text, std::deque<uint32_t>& buffer) const;
+	void packNumeric(const std::string& text, std::deque<uint32_t>& buffer) const;
 	void addBCHAndParity(uint32_t& word) const;
 	bool openFile();
 	bool writeFile(const unsigned char* data);

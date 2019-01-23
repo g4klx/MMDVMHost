@@ -67,7 +67,7 @@ m_count(0U),
 m_output(),
 m_buffer(),
 m_ric(0U),
-m_text(),
+m_data(),
 m_state(PS_NONE),
 m_enabled(true),
 m_fp(NULL)
@@ -79,6 +79,10 @@ CPOCSAGControl::~CPOCSAGControl()
 {
 	m_output.clear();
 	m_buffer.clear();
+
+	for (std::deque<POCSAGData*>::iterator it = m_data.begin(); it != m_data.end(); ++it)
+		delete it;
+	m_data.clear();
 }
 
 unsigned int CPOCSAGControl::readModem(unsigned char* data)
@@ -101,72 +105,94 @@ void CPOCSAGControl::sendPage(unsigned int ric, const std::string& text)
 	if (!m_enabled)
 		return;
 
-	m_ric  = ric;
-	m_text = text;
+	POCSAGData* output = new POCSAGData;
 
-	m_buffer.clear();
+	output->m_ric  = ric;
+	output->m_text = text;
 
-	addAddress(FUNCTIONAL_ALPHANUMERIC);
+	addAddress(FUNCTIONAL_ALPHANUMERIC, ric, output->m_buffer);
 
-	LogDebug("Local message to %07u, func Alphanumeric: \"%s\"", m_ric, m_text.c_str());
+	LogDebug("Local message to %07u, func Alphanumeric: \"%s\"", ric, text.c_str());
 
-	packASCII();
+	packASCII(text, output->m_buffer);
 
 	// Ensure data is an even number of words
-	if ((m_buffer.size() % 2U) == 1U)
-		m_buffer.push_back(POCSAG_IDLE_WORD);
+	if ((output->m_buffer.size() % 2U) == 1U)
+		output->m_buffer.push_back(POCSAG_IDLE_WORD);
+
+	m_data.push_back(output);
 }
 
-bool CPOCSAGControl::processData()
+bool CPOCSAGControl::readNetwork()
 {
 	if (m_network == NULL)
-		return false;
+		return true;
 
 	unsigned char data[300U];
 	unsigned int length = m_network->read(data);
 	if (length == 0U)
-		return false;
+		return true;
 
 	if (!m_enabled)
 		return false;
 
-	m_ric = 0U;
-	m_ric |= (data[0U] << 16) & 0x00FF0000U;
-	m_ric |= (data[1U] << 8)  & 0x0000FF00U;
-	m_ric |= (data[2U] << 0)  & 0x000000FFU;
+	POCSAGData* output = new POCSAGData;
+
+	output->m_ric = 0U;
+	output->m_ric |= (data[0U] << 16) & 0x00FF0000U;
+	output->m_ric |= (data[1U] << 8)  & 0x0000FF00U;
+	output->m_ric |= (data[2U] << 0)  & 0x000000FFU;
 
 	unsigned char functional = data[3U];
 
-	m_buffer.clear();
-	addAddress(functional);
+	addAddress(functional, output->m_ric, output->m_buffer);
 
 	switch (functional) {
 		case FUNCTIONAL_ALPHANUMERIC:
-			m_text = std::string((char*)(data + 4U), length - 4U);
-			LogDebug("Message to %07u, func Alphanumeric: \"%s\"", m_ric, m_text.c_str());
-			packASCII();
+			output->m_text = std::string((char*)(data + 4U), length - 4U);
+			LogDebug("Message to %07u, func Alphanumeric: \"%s\"", output->m_ric, output->m_text.c_str());
+			packASCII(output->m_text, output->m_buffer);
 			break;
 		case FUNCTIONAL_NUMERIC:
-			m_text = std::string((char*)(data + 4U), length - 4U);
-			LogDebug("Message to %07u, func Numeric: \"%s\"", m_ric, m_text.c_str());
-			packNumeric();
+			output->m_text = std::string((char*)(data + 4U), length - 4U);
+			LogDebug("Message to %07u, func Numeric: \"%s\"", output->m_ric, output->m_text.c_str());
+			packNumeric(output->m_text, output->m_buffer);
 			break;
 		case FUNCTIONAL_ALERT1:
-			m_text.clear();
-			LogDebug("Message to %07u, func Alert 1", m_ric);
+			LogDebug("Message to %07u, func Alert 1", output->m_ric);
 			break;
 		case FUNCTIONAL_ALERT2:
-			m_text = std::string((char*)(data + 4U), length - 4U);
-			LogDebug("Message to %07u, func Alert 2: \"%s\"", m_ric, m_text.c_str());
-			packASCII();
+			output->m_text = std::string((char*)(data + 4U), length - 4U);
+			LogDebug("Message to %07u, func Alert 2: \"%s\"", output->m_ric, output->m_text.c_str());
+			packASCII(output->m_text, output->m_buffer);
 			break;
 		default:
 			break;
 	}
 
 	// Ensure data is an even number of words
-	if ((m_buffer.size() % 2U) == 1U)
-		m_buffer.push_back(POCSAG_IDLE_WORD);
+	if ((output->m_buffer.size() % 2U) == 1U)
+		output->m_buffer.push_back(POCSAG_IDLE_WORD);
+
+	m_data.push_back(output);
+
+	return true;
+}
+
+bool CPOCSAGControl::processData()
+{
+	if (m_data.empty())
+		return false;
+
+	POCSAGData* output = m_data.front();
+	m_data.pop_front();
+
+	m_display->writePOCSAG(output->m_ric, output->m_text);
+
+	m_buffer = output->m_buffer;
+	m_ric    = output->m_ric;
+
+	delete output;
 
 	return true;
 }
@@ -174,11 +200,14 @@ bool CPOCSAGControl::processData()
 void CPOCSAGControl::clock(unsigned int ms)
 {
 	if (m_state == PS_NONE) {
-		bool ret = processData();
+		bool ret = readNetwork();
 		if (!ret)
 			return;
 
-		m_display->writePOCSAG(m_ric, m_text);
+		ret = processData();
+		if (!ret)
+			return;
+
 		m_state  = PS_WAITING;
 		m_frames = 0U;
 		m_count  = 1U;
@@ -214,7 +243,6 @@ void CPOCSAGControl::clock(unsigned int ms)
 
 				bool ret = processData();
 				if (ret) {
-					m_display->writePOCSAG(m_ric, m_text);
 					m_state = PS_WAITING;
 					m_count++;
 				} else {
@@ -249,7 +277,7 @@ void CPOCSAGControl::clock(unsigned int ms)
 	}
 }
 
-void CPOCSAGControl::addAddress(unsigned char functional)
+void CPOCSAGControl::addAddress(unsigned char functional, unsigned int ric, std::deque<uint32_t>& buffer) const
 {
 	uint32_t word = 0x00000000U;
 
@@ -268,21 +296,21 @@ void CPOCSAGControl::addAddress(unsigned char functional)
 			break;
 	}
 
-	word |= (m_ric / POCSAG_FRAME_ADDRESSES) << 13;
+	word |= (ric / POCSAG_FRAME_ADDRESSES) << 13;
 
 	addBCHAndParity(word);
 
-	m_buffer.push_back(word);
+	buffer.push_back(word);
 }
 
-void CPOCSAGControl::packASCII()
+void CPOCSAGControl::packASCII(const std::string& text, std::deque<uint32_t>& buffer) const
 {
 	const unsigned char MASK = 0x01U;
 
 	uint32_t word = 0x80000000U;
 	unsigned int n = 0U;
 
-	for (std::string::const_iterator it = m_text.cbegin(); it != m_text.cend(); ++it) {
+	for (std::string::const_iterator it = text.cbegin(); it != text.cend(); ++it) {
 		unsigned char c = *it;
 		for (unsigned int j = 0U; j < 7U; j++, c >>= 1) {
 			bool b = (c & MASK) == MASK;
@@ -292,7 +320,7 @@ void CPOCSAGControl::packASCII()
 
 			if (n == 20U) {
 				addBCHAndParity(word);
-				m_buffer.push_back(word);
+				buffer.push_back(word);
 				word = 0x80000000U;
 				n = 0U;
 			}
@@ -301,16 +329,16 @@ void CPOCSAGControl::packASCII()
 
 	if (n > 0U) {
 		addBCHAndParity(word);
-		m_buffer.push_back(word);
+		buffer.push_back(word);
 	}
 }
 
-void CPOCSAGControl::packNumeric()
+void CPOCSAGControl::packNumeric(const std::string& text, std::deque<uint32_t>& buffer) const
 {
 	uint32_t word = 0x80000000U;
 	unsigned int n = 0U;
 
-	for (std::string::const_iterator it = m_text.cbegin(); it != m_text.cend(); ++it) {
+	for (std::string::const_iterator it = text.cbegin(); it != text.cend(); ++it) {
 		char c = *it;
 
 		const BCD* bcd = NULL;
@@ -326,8 +354,8 @@ void CPOCSAGControl::packNumeric()
 			n++;
 
 			if (n == 5U) {
-				addBCHAndParity(word); 
-				m_buffer.push_back(word); 
+				addBCHAndParity(word);
+				buffer.push_back(word);
 				word = 0x80000000U; 
 				n = 0U; 
 			}
@@ -339,7 +367,7 @@ void CPOCSAGControl::packNumeric()
 		word |= BCD_SPACES[n];
 
 		addBCHAndParity(word); 
-		m_buffer.push_back(word); 
+		buffer.push_back(word);
 	}
 }
 
@@ -411,7 +439,7 @@ bool CPOCSAGControl::openFile()
 	struct tm* tm = ::localtime(&t);
 
 	char name[100U];
-	::sprintf(name, "POCSAG_%04d%02d%02d_%02d%02d%02d.ambe", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+	::sprintf(name, "POCSAG_%04d%02d%02d_%02d%02d%02d.dat", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
 
 	m_fp = ::fopen(name, "wb");
 	if (m_fp == NULL)
@@ -445,6 +473,10 @@ void CPOCSAGControl::enable(bool enabled)
 	if (!enabled && m_enabled) {
 		m_queue.clear();
 		m_output.clear();
+
+		for (std::deque<POCSAGData*>::iterator it = m_data.begin(); it != m_data.end(); ++it)
+			delete it;
+		m_data.clear();
 
 		m_state = PS_NONE;
 	}
