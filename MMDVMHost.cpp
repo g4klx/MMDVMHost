@@ -583,7 +583,7 @@ int CMMDVMHost::run()
 		unsigned int port = m_conf.getRemoteControlPort();
 
 		LogInfo("Remote Control Parameters");
-		LogInfo("    Port; %u", port);
+		LogInfo("    Port: %u", port);
 
 		m_remoteControl = new CRemoteControl(port);
 
@@ -1263,7 +1263,7 @@ bool CMMDVMHost::createDMRNetwork()
 
 		LogInfo("Mobile GPS Parameters");
 		LogInfo("    Address: %s", mobileGPSAddress.c_str());
-		LogInfo("    Port; %u", mobileGPSPort);
+		LogInfo("    Port: %u", mobileGPSPort);
 
 		m_mobileGPS = new CMobileGPS(address, port, m_dmrNetwork);
 
