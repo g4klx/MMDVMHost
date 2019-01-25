@@ -36,9 +36,7 @@ const unsigned char DSTAR_NULL_SLOW_DATA_BYTES[] = { 0x16, 0x29, 0xF5 };
 const unsigned char DSTAR_NULL_FRAME_SYNC_BYTES[] = { TAG_DATA, 0x9E, 0x8D, 0x32, 0x88, 0x26, 0x1A, 0x3F, 0x61, 0xE8, 0x55, 0x2D, 0x16 };
 const unsigned char DSTAR_NULL_FRAME_DATA_BYTES[] = { TAG_DATA, 0x9E, 0x8D, 0x32, 0x88, 0x26, 0x1A, 0x3F, 0x61, 0xE8, 0x16, 0x29, 0xF5 };
 
-const unsigned char DSTAR_KENWOOD_DATA_MODE_BYTES[] = { 0xEEU, 0xC2U, 0xA1U, 0xC8U, 0x42U, 0x6EU, 0x52U, 0x51U, 0xC3U };
-const unsigned char DSTAR_ICOM_DATA_MODE_BYTES1[]   = { 0xB2U, 0x4DU, 0x22U, 0x48U, 0xC0U, 0x16U, 0x28U, 0x26U, 0xC8U };
-const unsigned char DSTAR_ICOM_DATA_MODE_BYTES2[]   = { 0x70U, 0x4FU, 0x93U, 0x40U, 0x64U, 0x74U, 0x6DU, 0x30U, 0x2BU };
+const unsigned char DSTAR_NULL_FRAME_DATA_SRAMBLED_BYTES[] = { 0xEEU, 0xC2U, 0xA1U, 0xC8U, 0x42U, 0x6EU, 0x52U, 0x51U, 0xC3U };
 
 const unsigned int  DSTAR_VOICE_FRAME_LENGTH_BYTES = 9U;
 const unsigned int  DSTAR_DATA_FRAME_LENGTH_BYTES  = 3U;
@@ -46,12 +44,14 @@ const unsigned int  DSTAR_DATA_FRAME_LENGTH_BYTES  = 3U;
 const unsigned int  DSTAR_LONG_CALLSIGN_LENGTH  = 8U;
 const unsigned int  DSTAR_SHORT_CALLSIGN_LENGTH = 4U;
 
-const unsigned char DSTAR_SLOW_DATA_TYPE_MASK    = 0xF0U;
-const unsigned char DSTAR_SLOW_DATA_TYPE_GPSDATA = 0x30U;
-const unsigned char DSTAR_SLOW_DATA_TYPE_TEXT    = 0x40U;
-const unsigned char DSTAR_SLOW_DATA_TYPE_HEADER  = 0x50U;
-const unsigned char DSTAR_SLOW_DATA_TYPE_SQUELCH = 0xC0U;
-const unsigned char DSTAR_SLOW_DATA_LENGTH_MASK  = 0x0FU;
+const unsigned char DSTAR_SLOW_DATA_TYPE_MASK       = 0xF0U;
+const unsigned char DSTAR_SLOW_DATA_TYPE_GPSDATA    = 0x30U;
+const unsigned char DSTAR_SLOW_DATA_TYPE_TEXT       = 0x40U;
+const unsigned char DSTAR_SLOW_DATA_TYPE_HEADER     = 0x50U;
+const unsigned char DSTAR_SLOW_DATA_TYPE_FAST_DATA1 = 0x80U;
+const unsigned char DSTAR_SLOW_DATA_TYPE_FAST_DATA2 = 0x90U;
+const unsigned char DSTAR_SLOW_DATA_TYPE_SQUELCH    = 0xC0U;
+const unsigned char DSTAR_SLOW_DATA_LENGTH_MASK     = 0x0FU;
 
 const unsigned char DSTAR_SCRAMBLER_BYTES[] = {0x70U, 0x4FU, 0x93U};
 

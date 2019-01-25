@@ -341,31 +341,20 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			return false;
 		}
 
-		// Data signatures only appear at the beginning of the frame
-		if (m_rfState == RS_RF_AUDIO && m_rfFrames < 21U) {
-			if (CUtils::compare(data + 1U, DSTAR_KENWOOD_DATA_MODE_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U) {
-				LogMessage("D-Star, switching to data mode (Kenwood)");
-				m_rfState = RS_RF_DATA;
-			} else if (CUtils::compare(data + 1U, DSTAR_ICOM_DATA_MODE_BYTES1, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U) {
-				LogMessage("D-Star, switching to data mode (Icom)");
-				m_rfState = RS_RF_DATA;
-			} else if (CUtils::compare(data + 1U, DSTAR_ICOM_DATA_MODE_BYTES2, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U) {
-				LogMessage("D-Star, switching to data mode (Icom)");
+		// Fix any scrambled null data frames
+		if (CUtils::compare(data + 1U, DSTAR_NULL_FRAME_DATA_SRAMBLED_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U)
+			::memcpy(data + 1U, DSTAR_NULL_FRAME_DATA_SRAMBLED_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES);
+
+		// Check for the fast data signature
+		if (m_rfState == RS_RF_AUDIO) {
+			unsigned char slowDataType = data[DSTAR_VOICE_FRAME_LENGTH_BYTES + 1U] & DSTAR_SLOW_DATA_TYPE_MASK;
+			if (slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA1 || slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA2) {
+				LogMessage("D-Star, switching to fast data mode");
 				m_rfState = RS_RF_DATA;
 			}
 		}
 
 		if (m_rfState == RS_RF_DATA) {
-			// Regenerate the data mode markers
-			if (m_rfFrames < 21U) {
-				if (CUtils::compare(data + 1U, DSTAR_KENWOOD_DATA_MODE_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U)
-					::memcpy(data + 1U, DSTAR_KENWOOD_DATA_MODE_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES);
-				else if (CUtils::compare(data + 1U, DSTAR_ICOM_DATA_MODE_BYTES1, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U)
-					::memcpy(data + 1U, DSTAR_ICOM_DATA_MODE_BYTES1, DSTAR_VOICE_FRAME_LENGTH_BYTES);
-				else if (CUtils::compare(data + 1U, DSTAR_ICOM_DATA_MODE_BYTES2, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U)
-					::memcpy(data + 1U, DSTAR_ICOM_DATA_MODE_BYTES2, DSTAR_VOICE_FRAME_LENGTH_BYTES);
-			}
-
 			m_rfBits += 72U;
 			m_rfErrs  = 0U;
 			m_rfFrames++;
@@ -714,31 +703,20 @@ void CDStarControl::writeNetwork()
 			writeEndNet();
 		}
 	} else if (type == TAG_DATA) {
-		// Data signatures only appear at the beginning of the frame
-		if (m_netState == RS_NET_AUDIO && m_netFrames < 21U) {
-			if (CUtils::compare(data + 2U, DSTAR_KENWOOD_DATA_MODE_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U) {
-				LogMessage("D-Star, switching to data mode (Kenwood)");
-				m_netState = RS_NET_DATA;
-			} else if (CUtils::compare(data + 2U, DSTAR_ICOM_DATA_MODE_BYTES1, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U) {
-				LogMessage("D-Star, switching to data mode (Icom)");
-				m_netState = RS_NET_DATA;
-			} else if (CUtils::compare(data + 2U, DSTAR_ICOM_DATA_MODE_BYTES2, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U) {
-				LogMessage("D-Star, switching to data mode (Icom)");
+		// Fix any scrambled null data frames
+		if (CUtils::compare(data + 2U, DSTAR_NULL_FRAME_DATA_SRAMBLED_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U)
+			::memcpy(data + 2U, DSTAR_NULL_FRAME_DATA_SRAMBLED_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES);
+
+		// Check for the fast data signature
+		if (m_netState == RS_NET_AUDIO) {
+			unsigned char slowDataType = data[DSTAR_VOICE_FRAME_LENGTH_BYTES + 2U] & DSTAR_SLOW_DATA_TYPE_MASK;
+			if (slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA1 || slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA2) {
+				LogMessage("D-Star, switching to fast data mode");
 				m_netState = RS_NET_DATA;
 			}
 		}
 
 		if (m_netState == RS_NET_DATA) {
-			// Regenerate the data mode markers
-			if (m_netFrames < 21U) {
-				if (CUtils::compare(data + 2U, DSTAR_KENWOOD_DATA_MODE_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U)
-					::memcpy(data + 2U, DSTAR_KENWOOD_DATA_MODE_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES);
-				else if (CUtils::compare(data + 2U, DSTAR_ICOM_DATA_MODE_BYTES1, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U)
-					::memcpy(data + 2U, DSTAR_ICOM_DATA_MODE_BYTES1, DSTAR_VOICE_FRAME_LENGTH_BYTES);
-				else if (CUtils::compare(data + 2U, DSTAR_ICOM_DATA_MODE_BYTES2, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U)
-					::memcpy(data + 2U, DSTAR_ICOM_DATA_MODE_BYTES2, DSTAR_VOICE_FRAME_LENGTH_BYTES);
-			}
-
 			unsigned char n = data[1U];
 
 			data[1U] = TAG_DATA;
