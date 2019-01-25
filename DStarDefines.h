@@ -67,6 +67,10 @@ const unsigned char DSTAR_ACK_FLAG            = 0x03U;
 const unsigned char DSTAR_NO_RESPONSE         = 0x02U;
 const unsigned char DSTAR_RELAY_UNAVAILABLE   = 0x01U;
 
+const unsigned char DSTAR_SCRAMBLER_BYTE1 = 0x70U;
+const unsigned char DSTAR_SCRAMBLER_BYTE2 = 0x4FU;
+const unsigned char DSTAR_SCRAMBLER_BYTE3 = 0x93U;
+
 const unsigned char DSTAR_SYNC_BYTES[] = {0x55U, 0x2DU, 0x16U};
 
 const unsigned char DSTAR_DTMF_MASK[] = { 0x82U, 0x08U, 0x20U, 0x82U, 0x00U, 0x00U, 0x82U, 0x00U, 0x00U };
