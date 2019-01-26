@@ -978,7 +978,7 @@ int CMMDVMHost::run()
 		dmrBeaconIntervalTimer.clock(ms);
 		if (dmrBeaconIntervalTimer.isRunning() && dmrBeaconIntervalTimer.hasExpired()) {
 			if ((m_mode == MODE_IDLE || m_mode == MODE_DMR) && !m_modem->hasTX()) {
-				if (!m_fixedMode)
+				if (!m_fixedMode && m_mode == MODE_IDLE)
 					setMode(MODE_DMR);
 				dmrBeaconIntervalTimer.start();
 				dmrBeaconDurationTimer.start();
