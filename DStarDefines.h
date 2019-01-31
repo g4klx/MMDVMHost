@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018,2019 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -66,8 +66,6 @@ const unsigned char DSTAR_RESEND_REQUESTED    = 0x04U;
 const unsigned char DSTAR_ACK_FLAG            = 0x03U;
 const unsigned char DSTAR_NO_RESPONSE         = 0x02U;
 const unsigned char DSTAR_RELAY_UNAVAILABLE   = 0x01U;
-
-const unsigned char DSTAR_FAST_DATA_GUARD_BYTE = 0x02U;
 
 const unsigned char DSTAR_SYNC_BYTES[] = {0x55U, 0x2DU, 0x16U};
 
