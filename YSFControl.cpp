@@ -664,7 +664,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			if (m_duplex) {
 				// Add the DG-ID information.
-				fich.setDGId(m_diIdEnabled ? m_dgIdValue : 0U);
+				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(buffer + 2U);
