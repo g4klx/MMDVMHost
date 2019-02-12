@@ -32,8 +32,8 @@ m_display(display),
 m_duplex(duplex),
 m_lowDeviation(lowDeviation),
 m_remoteGateway(remoteGateway),
-m_sqlEnabled(false),
-m_sqlValue(0U),
+m_dgIdEnabled(false),
+m_dgIdValue(0U),
 m_queue(5000U, "YSF Control"),
 m_rfState(RS_RF_LISTENING),
 m_netState(RS_NET_IDLE),
@@ -100,10 +100,10 @@ CYSFControl::~CYSFControl()
 	delete[] m_selfCallsign;
 }
 
-void CYSFControl::setSQL(bool on, unsigned char value)
+void CYSFControl::setDGId(bool on, unsigned char value)
 {
-	m_sqlEnabled = on;
-	m_sqlValue   = value;
+	m_dgIdEnabled = on;
+	m_dgIdValue   = value;
 }
 
 bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
@@ -167,23 +167,11 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 	if (valid)
 		m_lastFICH = fich;
 
-	// Validate the DSQ/DG-ID value if enabled
-	if (m_sqlEnabled) {
-		unsigned char cm = m_lastFICH.getCM();
-		if (cm == YSF_CM_GROUP2) {
-			// Using the DG-ID value
-			unsigned char value = m_lastFICH.getSQ();
-
-			if (value != m_sqlValue)
-				return false;
-		} else {
-			// Using the DSQ value
-			bool sql = m_lastFICH.getSQL();
-			unsigned char value = m_lastFICH.getSQ();
-
-			if (!sql || value != m_sqlValue)
-				return false;
-		}
+	// Validate the DG-ID value if enabled
+	if (m_dgIdEnabled) {
+		unsigned char value = m_lastFICH.getDGId();
+		if (value != m_dgIdValue)
+			return false;
 	}
 
 #ifdef notdef
@@ -270,9 +258,8 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DSQ/DG-ID information
-			fich.setSQL(false);
-			fich.setSQ(0U);
+			// Remove any DG-ID information
+			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -285,14 +272,8 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 #endif
 
 			if (m_duplex) {
-				// Add the DSQ/DG-ID information.
-				unsigned char cm = fich.getCM();
-				if (cm == YSF_CM_GROUP2)
-					fich.setSQL(false);
-				else
-					fich.setSQL(m_sqlEnabled);
-				fich.setSQ(m_sqlValue);
-
+				// Add the DG-ID information.
+				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -318,9 +299,8 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DSQ/DG-ID information
-			fich.setSQL(false);
-			fich.setSQ(0U);
+			// Remove any DG-ID information
+			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_EOT;
@@ -333,14 +313,8 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 #endif
 
 			if (m_duplex) {
-				// Add the DSQ/DG-ID information.
-				unsigned char cm = fich.getCM();
-				if (cm == YSF_CM_GROUP2)
-					fich.setSQL(false);
-				else
-					fich.setSQL(m_sqlEnabled);
-				fich.setSQ(m_sqlValue);
-
+				// Add the DG-ID information.
+				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -381,9 +355,8 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 				LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 7.2F);
 			}
 
-			// Remove any DSQ/DG-ID information
-			fich.setSQL(false);
-			fich.setSQ(0U);
+			// Remove any DG-ID information
+			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -392,14 +365,8 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 			writeNetwork(data, m_rfFrames % 128U);
 
 			if (m_duplex) {
-				// Add the DSQ/DG-ID information.
-				unsigned char cm = fich.getCM();
-				if (cm == YSF_CM_GROUP2)
-					fich.setSQL(false);
-				else
-					fich.setSQL(m_sqlEnabled);
-				fich.setSQ(m_sqlValue);
-
+				// Add the DG-ID information.
+				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -468,9 +435,8 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DSQ/DG-ID information
-			fich.setSQL(false);
-			fich.setSQ(0U);
+			// Remove any DG-ID information
+			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -483,14 +449,8 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 #endif
 
 			if (m_duplex) {
-				// Add the DSQ/DG-ID information.
-				unsigned char cm = fich.getCM();
-				if (cm == YSF_CM_GROUP2)
-					fich.setSQL(false);
-				else
-					fich.setSQL(m_sqlEnabled);
-				fich.setSQ(m_sqlValue);
-
+				// Add the DG-ID information.
+				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -516,9 +476,8 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DSQ/DG-ID information
-			fich.setSQL(false);
-			fich.setSQ(0U);
+			// Remove any DG-ID information
+			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_EOT;
@@ -531,14 +490,8 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 #endif
 
 			if (m_duplex) {
-				// Add the DSQ/DG-ID information.
-				unsigned char cm = fich.getCM();
-				if (cm == YSF_CM_GROUP2)
-					fich.setSQL(false);
-				else
-					fich.setSQL(m_sqlEnabled);
-				fich.setSQ(m_sqlValue);
-
+				// Add the DG-ID information.
+				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -599,9 +552,8 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DSQ/DG-ID information
-			fich.setSQL(false);
-			fich.setSQ(0U);
+			// Remove any DG-ID information
+			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -610,14 +562,8 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			writeNetwork(data, m_rfFrames % 128U);
 
 			if (m_duplex) {
-				// Add the DSQ/DG-ID information.
-				unsigned char cm = fich.getCM();
-				if (cm == YSF_CM_GROUP2)
-					fich.setSQL(false);
-				else
-					fich.setSQL(m_sqlEnabled);
-				fich.setSQ(m_sqlValue);
-
+				// Add the DG-ID information.
+				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -696,8 +642,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 			fich.setFI(YSF_FI_HEADER);
-			fich.setSQL(false);
-			fich.setSQ(0U);
+			fich.setDGId(0U);
 			fich.encode(buffer + 2U);
 
 			unsigned char csd1[20U], csd2[20U];
@@ -718,14 +663,8 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			writeNetwork(buffer, m_rfFrames % 128U);
 
 			if (m_duplex) {
-				// Add the DSQ/DG-ID information.
-				unsigned char cm = fich.getCM();
-				if (cm == YSF_CM_GROUP2)
-					fich.setSQL(false);
-				else
-					fich.setSQL(m_sqlEnabled);
-				fich.setSQ(m_sqlValue);
-
+				// Add the DG-ID information.
+				fich.setDGId(m_diIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(buffer + 2U);
@@ -743,9 +682,8 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			fich = m_lastFICH;
 
-			// Remove any DSQ/DG-ID information
-			fich.setSQL(false);
-			fich.setSQ(0U);
+			// Remove any DG-ID information
+			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -754,14 +692,8 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			writeNetwork(data, m_rfFrames % 128U);
 
 			if (m_duplex) {
-				// Add the DSQ/DG-ID information.
-				unsigned char cm = fich.getCM();
-				if (cm == YSF_CM_GROUP2)
-					fich.setSQL(false);
-				else
-					fich.setSQL(m_sqlEnabled);
-				fich.setSQ(m_sqlValue);
-
+				// Add the DG-ID information.
+				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -827,9 +759,8 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DSQ/DG-ID information
-			fich.setSQL(false);
-			fich.setSQ(0U);
+			// Remove any DG-ID information
+			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -842,14 +773,8 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 #endif
 
 			if (m_duplex) {
-				// Add the DSQ/DG-ID information.
-				unsigned char cm = fich.getCM();
-				if (cm == YSF_CM_GROUP2)
-					fich.setSQL(false);
-				else
-					fich.setSQL(m_sqlEnabled);
-				fich.setSQ(m_sqlValue);
-
+				// Add the DG-ID information.
+				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -875,9 +800,8 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DSQ/DG-ID information
-			fich.setSQL(false);
-			fich.setSQ(0U);
+			// Remove any DG-ID information
+			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_EOT;
@@ -890,14 +814,8 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 #endif
 
 			if (m_duplex) {
-				// Add the DSQ/DG-ID information.
-				unsigned char cm = fich.getCM();
-				if (cm == YSF_CM_GROUP2)
-					fich.setSQL(false);
-				else
-					fich.setSQL(m_sqlEnabled);
-				fich.setSQ(m_sqlValue);
-
+				// Add the DG-ID information.
+				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -934,9 +852,8 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DSQ/DG-ID information
-			fich.setSQL(false);
-			fich.setSQ(0U);
+			// Remove any DG-ID information
+			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -945,14 +862,8 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 			writeNetwork(data, m_rfFrames % 128U);
 
 			if (m_duplex) {
-				// Add the DSQ/DG-ID information.
-				unsigned char cm = fich.getCM();
-				if (cm == YSF_CM_GROUP2)
-					fich.setSQL(false);
-				else
-					fich.setSQL(m_sqlEnabled);
-				fich.setSQ(m_sqlValue);
-
+				// Add the DG-ID information.
+				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -1093,12 +1004,8 @@ void CYSFControl::writeNetwork()
 				::memcpy(m_netDest, "ALL       ", YSF_CALLSIGN_LENGTH);
 		}
 
-		// Add any DSQ/DG-ID information
-		if (cm == YSF_CM_GROUP2)
-			fich.setSQL(false);
-		else
-			fich.setSQL(m_sqlEnabled);
-		fich.setSQ(m_sqlValue);
+		// Add the DG-ID information.
+		fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 
 		if (m_remoteGateway) {
 			fich.setVoIP(false);

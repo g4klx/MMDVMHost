@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2019 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -214,12 +214,7 @@ bool CYSFFICH::getDev() const
 	return (m_fich[2U] & 0x40U) == 0x40U;
 }
 
-bool CYSFFICH::getSQL() const
-{
-	return (m_fich[3U] & 0x80U) == 0x80U;
-}
-
-unsigned char CYSFFICH::getSQ() const
+unsigned char CYSFFICH::getDGId() const
 {
 	return m_fich[3U] & 0x7FU;
 }
@@ -264,18 +259,10 @@ void CYSFFICH::setDev(bool on)
 		m_fich[2U] &= 0xBFU;
 }
 
-void CYSFFICH::setSQL(bool on)
-{
-	if (on)
-		m_fich[3U] |= 0x80U;
-	else
-		m_fich[3U] &= 0x7FU;
-}
-
-void CYSFFICH::setSQ(unsigned char sq)
+void CYSFFICH::setDGId(unsigned char id)
 {
 	m_fich[3U] &= 0x80U;
-	m_fich[3U] |= sq & 0x7FU;
+	m_fich[3U] |= id & 0x7FU;
 }
 
 CYSFFICH& CYSFFICH::operator=(const CYSFFICH& fich)

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2019 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -38,8 +38,7 @@ public:
 	unsigned char getDT() const;
 	unsigned char getMR() const;
 	bool getDev() const;
-	bool getSQL() const;
-	unsigned char getSQ() const;
+	unsigned char getDGId() const;
 
 	void setFI(unsigned char fi);
 	void setFN(unsigned char fn);
@@ -47,8 +46,7 @@ public:
 	void setMR(unsigned char mr);
 	void setVoIP(bool set);
 	void setDev(bool set);
-	void setSQL(bool set);
-	void setSQ(unsigned char sq);
+	void setDGId(unsigned char id);
 
 	CYSFFICH& operator=(const CYSFFICH& fich);
 

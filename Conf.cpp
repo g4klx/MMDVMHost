@@ -151,8 +151,8 @@ m_fusionLowDeviation(false),
 m_fusionRemoteGateway(false),
 m_fusionSelfOnly(false),
 m_fusionTXHang(4U),
-m_fusionSQLEnabled(false),
-m_fusionSQL(0U),
+m_fusionDGIdEnabled(false),
+m_fusionDGId(0U),
 m_fusionModeHang(10U),
 m_p25Enabled(false),
 m_p25Id(0U),
@@ -595,9 +595,9 @@ bool CConf::read()
 			m_fusionEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "LowDeviation") == 0)
 			m_fusionLowDeviation = ::atoi(value) == 1;
-		else if (::strcmp(key, "DSQ") == 0 || ::strcmp(key, "DGID") == 0) {
-			m_fusionSQLEnabled = true;
-			m_fusionSQL        = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "DGID") == 0) {
+			m_fusionDGIdEnabled = true;
+			m_fusionDGId        = (unsigned int)::atoi(value);
 		} else if (::strcmp(key, "RemoteGateway") == 0)
 			m_fusionRemoteGateway = ::atoi(value) == 1;
 		else if (::strcmp(key, "SelfOnly") == 0)
@@ -1276,14 +1276,14 @@ bool CConf::getFusionSelfOnly() const
 	return m_fusionSelfOnly;
 }
 
-bool CConf::getFusionSQLEnabled() const
+bool CConf::getFusionDGIdEnabled() const
 {
-	return m_fusionSQLEnabled;
+	return m_fusionDGIdEnabled;
 }
 
-unsigned char CConf::getFusionSQL() const
+unsigned char CConf::getFusionDGId() const
 {
-	return m_fusionSQL;
+	return m_fusionDGId;
 }
 
 unsigned int CConf::getFusionModeHang() const
