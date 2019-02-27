@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2002-2004,2007-2011,2013,2014-2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2002-2004,2007-2011,2013,2014-2017,2019 by Jonathan Naylor G4KLX
  *   Copyright (C) 1999-2001 by Thomas Sailor HB9JNX
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -242,21 +242,16 @@ bool CSerialController::open()
 	assert(m_fd == -1);
 
 #if defined(__APPLE__)
-		m_fd = ::open(m_device.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK); /*open in block mode under OSX*/
+	m_fd = ::open(m_device.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK); /*open in block mode under OSX*/
 #else
-		m_fd = ::open(m_device.c_str(), O_RDWR | O_NOCTTY | O_NDELAY, 0);
+	m_fd = ::open(m_device.c_str(), O_RDWR | O_NOCTTY | O_NDELAY, 0);
 #endif
-		if (m_fd < 0) {
-			LogError("Cannot open device - %s", m_device.c_str());
-			return false;
-		}
+	if (m_fd < 0) {
+		LogError("Cannot open device - %s", m_device.c_str());
+		return false;
+	}
 
-		if (::isatty(m_fd) == 0) {
-			LogError("%s is not a TTY device", m_device.c_str());
-			::close(m_fd);
-			return false;
-		}
-
+	if (::isatty(m_fd) == 1) {
 		termios termios;
 		if (::tcgetattr(m_fd, &termios) < 0) {
 			LogError("Cannot get the attributes for %s", m_device.c_str());
@@ -355,6 +350,7 @@ bool CSerialController::open()
 #if defined(__APPLE__)
 		setNonblock(false);
 #endif
+	}
 
 	return true;
 }
@@ -384,7 +380,6 @@ int CSerialController::read(unsigned char* buffer, unsigned int length)
 	unsigned int offset = 0U;
 
 	while (offset < length) {
-
 		fd_set fds;
 		FD_ZERO(&fds);
 		FD_SET(m_fd, &fds);
@@ -432,8 +427,8 @@ bool CSerialController::canWrite(){
 	timeo.tv_sec  = 0;
 	timeo.tv_usec = 0;
 
-	int rc = select(m_fd + 1, NULL, &wset, NULL, &timeo);
-	if (rc >0 && FD_ISSET(m_fd, &wset))
+	int rc = ::select(m_fd + 1, NULL, &wset, NULL, &timeo);
+	if (rc > 0 && FD_ISSET(m_fd, &wset))
 		return true;
 
 	return false;
@@ -478,3 +473,4 @@ void CSerialController::close()
 }
 
 #endif
+
