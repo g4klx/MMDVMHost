@@ -251,7 +251,7 @@ bool CSerialController::open()
 		return false;
 	}
 
-	if (::isatty(m_fd) == 1) {
+	if (::isatty(m_fd)) {
 		termios termios;
 		if (::tcgetattr(m_fd, &termios) < 0) {
 			LogError("Cannot get the attributes for %s", m_device.c_str());
