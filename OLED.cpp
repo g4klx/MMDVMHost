@@ -620,5 +620,5 @@ void COLED::OLED_statusbar()
         m_display.drawBitmap(0, 0, logo_glcd_bmp, 128, 16, WHITE);
 
     if (m_displayScroll)
-        m_display.startscrollright(0x00,0x02);
+        m_display.startscrollright(0x00,0x01);
 }
