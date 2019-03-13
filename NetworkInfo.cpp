@@ -28,6 +28,7 @@
 #include <sys/types.h>
 #if !defined(_WIN32) && !defined(_WIN64)
 #include <ifaddrs.h>
+#include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
