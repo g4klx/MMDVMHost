@@ -1,7 +1,7 @@
 # This makefile is for all platforms, but doesn't include support for the HD44780, OLED, or PCF8574 displays on the Raspberry Pi.
 
-CC      = gcc
-CXX     = g++
+CC      = cc
+CXX     = c++
 CFLAGS  = -g -O3 -Wall -std=c++0x -pthread
 LIBS    = -lpthread
 LDFLAGS = -g
