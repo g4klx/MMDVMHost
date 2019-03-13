@@ -35,9 +35,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <termios.h>
-#if !defined(__APPLE__)
-#include <linux/i2c-dev.h>
-#endif
 #endif
 
 
