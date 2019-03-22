@@ -647,6 +647,21 @@ bool CDMRNetwork::writePing()
 	return write(buffer, 11U);
 }
 
+bool CDMRNetwork::writeInterrupt(unsigned int slotNo)
+{
+	if (slotNo > 2U)
+		return false;
+
+	unsigned char buffer[20U];
+
+	::memcpy(buffer + 0U, "RPTINTR", 7U);
+	::memcpy(buffer + 7U, m_id, 4U);
+
+	::sprintf((char*)buffer + 11U, ":%u", slotNo);
+
+	return write(buffer, ::strlen((char*)buffer));
+}
+
 bool CDMRNetwork::wantsBeacon()
 {
 	bool beacon = m_beacon;

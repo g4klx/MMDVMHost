@@ -24,6 +24,7 @@
 #include <cassert>
 #include <cstring>
 
+const unsigned int DMR_INTERRUPT_ARGS = 2U;
 const unsigned int SET_MODE_ARGS = 2U;
 const unsigned int PAGE_ARGS = 3U;
 
@@ -89,6 +90,10 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 		} else if (m_args.at(0U) == "page" && m_args.size() >= PAGE_ARGS) {
 			// Page command is in the form of "page <ric> <message>"
 			m_command = RCD_PAGE;
+		} else if (m_args.at(0U) == "dmr" && m_args.size() >= DMR_ARGS) {
+			// DMR commands are in the form of "dmr interrupt <0|1|2>"
+			if (m_args.at(1U) == "interupt")
+				m_command = RCD_DMR_INTERRUPT;
 		}
 
 		if (m_command == RCD_NONE) {
@@ -114,6 +119,7 @@ unsigned int CRemoteControl::getArgCount() const
 		case RCD_MODE_NXDN:
 			return m_args.size() - SET_MODE_ARGS;
 		case RCD_PAGE:
+		case RCD_DMR_INTERRUPT:
 			return m_args.size() - 1U;
 		default:
 			return 0U;

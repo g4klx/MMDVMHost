@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2019 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -51,6 +51,8 @@ public:
 	bool writeTalkerAlias(unsigned int id, unsigned char type, const unsigned char* data);
 
 	bool writeHomePosition(float latitude, float longitude);
+
+	bool writeInterrupt(unsigned int slotNo);
 
 	bool wantsBeacon();
 

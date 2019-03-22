@@ -1818,6 +1818,10 @@ void CMMDVMHost::remoteControl()
 			if (m_nxdn != NULL)
 				processModeCommand(MODE_NXDN, m_nxdnRFModeHang);
 			break;
+		case RCD_DMR_INTERRUPT:
+			if (m_dmrNetwork != NULL)
+				m_dmrNetwork->writeInterrupt(m_remoteControl->getArgUInt(2U));
+			break;
 		case RCD_PAGE:
 			if (m_pocsag != NULL) {
 				unsigned int ric = m_remoteControl->getArgUInt(0U);
