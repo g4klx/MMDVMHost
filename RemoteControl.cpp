@@ -90,7 +90,7 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 		} else if (m_args.at(0U) == "page" && m_args.size() >= PAGE_ARGS) {
 			// Page command is in the form of "page <ric> <message>"
 			m_command = RCD_PAGE;
-		} else if (m_args.at(0U) == "dmr" && m_args.size() >= DMR_ARGS) {
+		} else if (m_args.at(0U) == "dmr" && m_args.size() >= DMR_INTERRUPT_ARGS) {
 			// DMR commands are in the form of "dmr interrupt <0|1|2>"
 			if (m_args.at(1U) == "interupt")
 				m_command = RCD_DMR_INTERRUPT;
@@ -109,6 +109,8 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 
 unsigned int CRemoteControl::getArgCount() const
 {
+	unsigned int argsSize = (unsigned int)m_args.size();
+
 	switch (m_command) {
 		case RCD_MODE_IDLE:
 		case RCD_MODE_LOCKOUT:
@@ -117,10 +119,10 @@ unsigned int CRemoteControl::getArgCount() const
 		case RCD_MODE_YSF:
 		case RCD_MODE_P25:
 		case RCD_MODE_NXDN:
-			return m_args.size() - SET_MODE_ARGS;
+			return argsSize - SET_MODE_ARGS;
 		case RCD_PAGE:
 		case RCD_DMR_INTERRUPT:
-			return m_args.size() - 1U;
+			return argsSize - 1U;
 		default:
 			return 0U;
 	}

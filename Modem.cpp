@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2011-2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2011-2019 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -1274,7 +1274,7 @@ bool CModem::writePOCSAGInfo(unsigned int ric, const std::string& message)
 {
 	assert(m_serial != NULL);
 
-	size_t length = message.size();
+	unsigned int length = (unsigned int)message.size();
 
 	unsigned char buffer[250U];
 
@@ -1297,7 +1297,7 @@ bool CModem::writeIPInfo(const std::string& address)
 {
 	assert(m_serial != NULL);
 
-	size_t length = address.size();
+	unsigned int length = (unsigned int)address.size();
 
 	unsigned char buffer[25U];
 
@@ -1722,7 +1722,7 @@ bool CModem::sendCWId(const std::string& callsign)
 {
 	assert(m_serial != NULL);
 
-	unsigned int length = callsign.length();
+	unsigned int length = (unsigned int)callsign.length();
 	if (length > 200U)
 		length = 200U;
 

@@ -659,7 +659,7 @@ bool CDMRNetwork::writeInterrupt(unsigned int slotNo)
 
 	::sprintf((char*)buffer + 11U, ":%u", slotNo);
 
-	return write(buffer, ::strlen((char*)buffer));
+	return write(buffer, 13U);
 }
 
 bool CDMRNetwork::wantsBeacon()
