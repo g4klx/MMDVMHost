@@ -20,13 +20,14 @@
 #define	NULLDISPLAY_H
 
 #include "Display.h"
-
+#include "Modem.h"
+#include "NetworkInfo.h"
 #include <string>
 
 class CNullDisplay : public CDisplay
 {
 public:
-  CNullDisplay();
+  CNullDisplay(CModem* modem);
   virtual ~CNullDisplay();
 
   virtual bool open();
@@ -61,6 +62,8 @@ protected:
 	virtual void clearCWInt();
 
 private:
+     CModem*       m_modem;   
+     std::string   m_ipaddress;
 };
 
 #endif

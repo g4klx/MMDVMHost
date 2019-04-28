@@ -146,6 +146,7 @@ void CDisplay::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 		m_timer2.start();
 		m_mode2 = MODE_IDLE;
 	}
+       
 	writeDMRInt(slotNo, src, group, dst, type);
 }
 
@@ -490,7 +491,8 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
 				display = new CNextion(conf.getCallsign(), dmrid, ump, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF, conf.getLocation());
                         } else {
                 		LogInfo("    NullDisplay loaded");
-                		display = new CNullDisplay;
+                                bool cast = conf.getOLEDCast();
+                		display = new CNullDisplay(cast ? modem : NULL);
                         }
 		} else {
 			SERIAL_SPEED baudrate = SERIAL_9600;
@@ -574,13 +576,15 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
 #endif
 	} else {
 		LogWarning("No valid display found, disabling");
-		display = new CNullDisplay;
+                bool cast = conf.getOLEDCast();
+		display = new CNullDisplay(cast ? modem : NULL);
 	}
 
 	bool ret = display->open();
 	if (!ret) {
 		delete display;
-		display = new CNullDisplay;
+                bool cast = conf.getOLEDCast();
+		display = new CNullDisplay(cast ? modem : NULL);
 	}
 
 	return display;

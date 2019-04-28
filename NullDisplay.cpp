@@ -24,8 +24,13 @@
 
 #define	LED_STATUS	28
 
-CNullDisplay::CNullDisplay() :
-CDisplay()
+static bool networkInfoInitialized = false;
+static unsigned char passCounter = 0;
+
+CNullDisplay::CNullDisplay(CModem* modem) :
+CDisplay(),
+m_modem(modem),
+m_ipaddress()
 {
 }
 
@@ -46,6 +51,27 @@ bool CNullDisplay::open()
 
 void CNullDisplay::setIdleInt()
 {
+    unsigned char info[100U];
+    CNetworkInfo* m_network;
+
+    passCounter ++;
+    if (passCounter > 253U)
+        networkInfoInitialized = false;
+
+    if (! networkInfoInitialized) {
+        //LogMessage("Initialize CNetworkInfo");
+        info[0]=0;
+        m_network = new CNetworkInfo;
+        m_network->getNetworkInterface(info);
+        m_ipaddress = (char*)info;
+        delete m_network;
+
+        if (m_modem != NULL)
+            m_modem->writeIPInfo(m_ipaddress);
+
+        networkInfoInitialized = true;
+        passCounter = 0;
+    }
 }
 
 void CNullDisplay::setErrorInt(const char* text)
@@ -62,6 +88,8 @@ void CNullDisplay::setQuitInt()
 
 void CNullDisplay::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
+    if (m_modem != NULL)
+        m_modem->writeDStarInfo(my1, my2, your, type, reflector);
 #if defined(RASPBERRY_PI)
 	::digitalWrite(LED_STATUS, 1);
 #endif
@@ -76,6 +104,8 @@ void CNullDisplay::clearDStarInt()
 
 void CNullDisplay::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
+     if (m_modem != NULL)
+         m_modem->writeDMRInfo(slotNo, src, group, dst, type);
 #if defined(RASPBERRY_PI)
 	::digitalWrite(LED_STATUS, 1);
 #endif
@@ -90,6 +120,8 @@ void CNullDisplay::clearDMRInt(unsigned int slotNo)
 
 void CNullDisplay::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
 {
+    if (m_modem != NULL)
+        m_modem->writeYSFInfo(source, dest, type, origin);
 #if defined(RASPBERRY_PI)
 	::digitalWrite(LED_STATUS, 1);
 #endif
@@ -104,6 +136,8 @@ void CNullDisplay::clearFusionInt()
 
 void CNullDisplay::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
 {
+    if (m_modem != NULL)
+        m_modem->writeP25Info(source, group, dest, type);
 #if defined(RASPBERRY_PI)
 	::digitalWrite(LED_STATUS, 1);
 #endif
@@ -118,6 +152,8 @@ void CNullDisplay::clearP25Int()
 
 void CNullDisplay::writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type)
 {
+   if (m_modem != NULL)
+        m_modem->writeNXDNInfo(source, group, dest, type);
 #if defined(RASPBERRY_PI)
 	::digitalWrite(LED_STATUS, 1);
 #endif
@@ -132,6 +168,8 @@ void CNullDisplay::clearNXDNInt()
 
 void CNullDisplay::writePOCSAGInt(uint32_t ric, const std::string& message)
 {
+    if (m_modem != NULL)
+        m_modem->writePOCSAGInfo(ric, message);
 #if defined(RASPBERRY_PI)
 	::digitalWrite(LED_STATUS, 1);
 #endif
