@@ -7,7 +7,7 @@ LIBS    = -lwiringPi -lwiringPiDev -lpthread
 LDFLAGS = -g -L/usr/local/lib
 
 OBJECTS = \
-		AMBEFEC.o BCH.o BPTC19696.o Conf.o CRC.o Display.o DMRControl.o DMRCSBK.o DMRData.o DMRDataHeader.o DMREMB.o DMREmbeddedData.o DMRFullLC.o \
+		AMBEFEC.o BCH.o BPTC19696.o CASTInfo.o Conf.o CRC.o Display.o DMRControl.o DMRCSBK.o DMRData.o DMRDataHeader.o DMREMB.o DMREmbeddedData.o DMRFullLC.o \
 		DMRLookup.o DMRLC.o DMRNetwork.o DMRShortLC.o DMRSlot.o DMRSlotType.o DMRAccessControl.o DMRTA.o DMRTrellis.o DStarControl.o DStarHeader.o DStarNetwork.o \
 		DStarSlowData.o Golay2087.o Golay24128.o Hamming.o I2CController.o LCDproc.o Log.o MMDVMHost.o MobileGPS.o Modem.o ModemSerialPort.o Mutex.o \
 		NetworkInfo.o Nextion.o NullDisplay.o NullModem.o NXDNAudio.o NXDNControl.o NXDNConvolution.o NXDNCRC.o NXDNFACCH1.o NXDNLayer3.o NXDNLICH.o NXDNLookup.o \

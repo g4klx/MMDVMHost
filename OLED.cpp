@@ -258,9 +258,6 @@ void COLED::setIdleInt()
         m_ipaddress = (char*)info;
         delete m_network;
 
-        if (m_modem != NULL)
-            m_modem->writeIPInfo(m_ipaddress);
-
         networkInfoInitialized = true;
         passCounter = 0;
     }
@@ -331,8 +328,6 @@ void COLED::writeDStarInt(const char* my1, const char* my2, const char* your, co
     OLED_statusbar();
     m_display.display();
 
-    if (m_modem != NULL)
-        m_modem->writeDStarInfo(my1, my2, your, type, reflector);
 }
 
 void COLED::clearDStarInt()
@@ -393,8 +388,6 @@ void COLED::writeDMRInt(unsigned int slotNo,const std::string& src,bool group,co
     OLED_statusbar();
     m_display.display();
 
-    if (m_modem != NULL)
-        m_modem->writeDMRInfo(slotNo, src, group, dst, type);
 }
 
 void COLED::clearDMRInt(unsigned int slotNo)
@@ -442,8 +435,6 @@ void COLED::writeFusionInt(const char* source, const char* dest, const char* typ
     OLED_statusbar();
     m_display.display();
 
-    if (m_modem != NULL)
-        m_modem->writeYSFInfo(source, dest, type, origin);
 }
 
 void COLED::clearFusionInt()
@@ -475,8 +466,6 @@ void COLED::writeP25Int(const char* source, bool group, unsigned int dest, const
     OLED_statusbar();
     m_display.display();
 
-    if (m_modem != NULL)
-        m_modem->writeP25Info(source, group, dest, type);
 }
 
 void COLED::clearP25Int()
@@ -508,8 +497,6 @@ void COLED::writeNXDNInt(const char* source, bool group, unsigned int dest, cons
     OLED_statusbar();
     m_display.display();
 
-    if (m_modem != NULL)
-        m_modem->writeNXDNInfo(source, group, dest, type);
 }
 
 void COLED::clearNXDNInt()
@@ -541,8 +528,6 @@ void COLED::writePOCSAGInt(uint32_t ric, const std::string& message)
     OLED_statusbar();
     m_display.display();
 
-    if (m_modem != NULL)
-        m_modem->writePOCSAGInfo(ric, message);
 }
 
 void COLED::clearPOCSAGInt()
