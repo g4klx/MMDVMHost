@@ -24,6 +24,7 @@
 #include "TFTSerial.h"
 #include "LCDproc.h"
 #include "Nextion.h"
+#include "CASTInfo.h"
 #include "Conf.h"
 #include "Modem.h"
 #include "UMP.h"
@@ -568,10 +569,11 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
 	        bool          invert     = conf.getOLEDInvert();
 	        bool          scroll     = conf.getOLEDScroll();
 		bool          rotate     = conf.getOLEDRotate();
-		bool          cast       = conf.getOLEDCast();
 
-		display = new COLED(type, brightness, invert, scroll, rotate, conf.getDMRNetworkSlot1(), conf.getDMRNetworkSlot2(), cast ? modem : NULL);
+		display = new COLED(type, brightness, invert, scroll, rotate, conf.getDMRNetworkSlot1(), conf.getDMRNetworkSlot2(), modem);
 #endif
+	} else if (type == "CAST") {
+		display = new CCASTInfo(modem);
 	} else {
 		LogWarning("No valid display found, disabling");
 		display = new CNullDisplay;

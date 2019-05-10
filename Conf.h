@@ -254,7 +254,6 @@ public:
   bool           getOLEDInvert() const;
   bool           getOLEDScroll() const;
   bool           getOLEDRotate() const;
-  bool           getOLEDCast() const;
 
   // The LCDproc section
   std::string  getLCDprocAddress() const;
