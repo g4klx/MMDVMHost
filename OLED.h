@@ -36,7 +36,6 @@
 #include "Adafruit_GFX.h"
 #include "ArduiPi_OLED.h"
 #include "NetworkInfo.h"
-#include "Modem.h"
 
 class COLED : public CDisplay 
 {
@@ -86,7 +85,6 @@ private:
   bool          m_displayRotate;
   bool          m_slot1Enabled;
   bool          m_slot2Enabled;
-  CModem*       m_modem;
   std::string   m_ipaddress;
   ArduiPi_OLED  m_display;
 

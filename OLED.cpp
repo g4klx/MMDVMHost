@@ -169,7 +169,7 @@ const unsigned char logo_POCSAG_bmp [] =
 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
 };
 
-COLED::COLED(unsigned char displayType, unsigned char displayBrightness, bool displayInvert, bool displayScroll, bool displayRotate, bool slot1Enabled, bool slot2Enabled, CModem* modem) :
+COLED::COLED(unsigned char displayType, unsigned char displayBrightness, bool displayInvert, bool displayScroll, bool displayRotate, bool slot1Enabled, bool slot2Enabled) :
 m_displayType(displayType),
 m_displayBrightness(displayBrightness),
 m_displayInvert(displayInvert),
@@ -177,7 +177,6 @@ m_displayScroll(displayScroll),
 m_displayRotate(displayRotate),
 m_slot1Enabled(slot1Enabled),
 m_slot2Enabled(slot2Enabled),
-m_modem(modem),
 m_ipaddress(),
 m_display()
 {

@@ -477,7 +477,6 @@ private:
   bool          m_oledInvert;
   bool          m_oledScroll;
   bool          m_oledRotate;
-  bool          m_oledCast;
 
   std::string  m_lcdprocAddress;
   unsigned int m_lcdprocPort;
