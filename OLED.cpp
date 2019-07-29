@@ -591,7 +591,7 @@ void COLED::close()
 
 void COLED::OLED_statusbar()
 {
-	m_display.stopscroll();
+    m_display.stopscroll();
     m_display.fillRect(0, 0, m_display.width(), 16, BLACK);
     m_display.setTextColor(WHITE);
 
