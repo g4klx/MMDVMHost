@@ -37,6 +37,32 @@
 #include "ArduiPi_OLED.h"
 #include "NetworkInfo.h"
 
+#pragma pack(1) 
+
+struct BMP_FILEHEADER{
+unsigned short  bfType;     //2Bytes, Should be "BM"，for Bitmap reserve.
+unsigned int    bfSize;     //4Bytes, Whole file size.
+unsigned short  bfReserved1;//2Bytes, Reserved should be 0.
+unsigned short  bfReserved2;//2Bytes, Reserved should be 0.
+unsigned int    bfOffBits;  //4Bytes, Pixel data  offset.
+};
+
+struct BMP_INFOHEADER{
+unsigned int    biSize;         //4Bytes, Size of INFOHEADER struct.
+unsigned int    biWidth;        //4Bytes, Width for image, in pixels.
+int             biHeight;       //4Bytes, Height for image, in pixels.
+unsigned short  biPlanes;       //2Bytes, Data planes, should be 1.
+unsigned short  biBitCount;     //2Bytes, Data bit count in colors, should be 1 in monochrome.
+unsigned int    biCompression;  //4Bytes, 0:No compress, 1:RLE8, 2:RLE4.
+unsigned int    biSizeImage;    //4Bytes, Image size in Byte.
+unsigned int    biXPelsPerMeter;//4Bytes, Horizontal resolution in pixels/meter.
+unsigned int    biYPelsPerMeter;//4Bytes, Vertical resolution in pixels/meter.
+unsigned int    biClrUsed;      //4Bytes, 
+unsigned int    biClrImportant; //4Bytes, 
+};
+
+#pragma pack() 
+
 class COLED : public CDisplay 
 {
 public:
@@ -73,6 +99,8 @@ public:
   virtual void clearCWInt();
 
   virtual void close();
+
+  virtual bool readBMPLogo(const char *filename, unsigned char *logo_array);
 
 private:
   const char*   m_slot1_state;

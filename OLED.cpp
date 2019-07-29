@@ -86,7 +86,7 @@ static unsigned char logo_dmr_bmp[] =
 };
 
 //Logo Fusion 128x16
-const unsigned char logo_fusion_bmp [] =
+static unsigned char logo_fusion_bmp [] =
 {
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0xF8, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -107,7 +107,7 @@ const unsigned char logo_fusion_bmp [] =
 };
 
 //Logo P25 128x16px
-const unsigned char logo_P25_bmp [] =
+static unsigned char logo_P25_bmp [] =
 {
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 0x01, 0xff, 0xff, 0xff, 0xf0, 0x00, 0x03, 0xff, 0xff, 0xc0, 0x01, 0xff, 0xff, 0xff, 0xf8, 0x00,
@@ -128,7 +128,7 @@ const unsigned char logo_P25_bmp [] =
 };
 
 // Logo NXDN_sm, 128x16px
-const unsigned char logo_NXDN_bmp [] =
+static unsigned char logo_NXDN_bmp [] =
 {
 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -149,7 +149,7 @@ const unsigned char logo_NXDN_bmp [] =
 };
 
 // Logo POCASG/DAPNET, 128x16px
-const unsigned char logo_POCSAG_bmp [] =
+static unsigned char logo_POCSAG_bmp [] =
 {
 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 0xff, 0xff, 0xff, 0xf8, 0x7f, 0xfe, 0x03, 0xfe, 0xfe, 0x03, 0xdf, 0xf6, 0x00, 0x00, 0x1f, 0xff,
@@ -218,6 +218,14 @@ bool COLED::open()
     // init done
     m_display.clearDisplay();   // clears the screen  buffer
     m_display.display();        // display it (clear display)
+
+    readBMPLogo("/usr/local/etc/MMDVM_oled.bmp", logo_glcd_bmp);
+    readBMPLogo("/usr/local/etc/DStar_oled.bmp", logo_dstar_bmp);
+    readBMPLogo("/usr/local/etc/DMR_oled.bmp", logo_dmr_bmp);
+    readBMPLogo("/usr/local/etc/YSF_oled.bmp", logo_fusion_bmp);
+    readBMPLogo("/usr/local/etc/P25_oled.bmp", logo_P25_bmp);
+    readBMPLogo("/usr/local/etc/NXDN_oled.bmp", logo_NXDN_bmp);
+    readBMPLogo("/usr/local/etc/POCSAG_oled.bmp", logo_POCSAG_bmp);	
 
     OLED_statusbar();
     m_display.setCursor(0,OLED_LINE3);
@@ -583,7 +591,7 @@ void COLED::close()
 
 void COLED::OLED_statusbar()
 {
-    m_display.stopscroll();
+	m_display.stopscroll();
     m_display.fillRect(0, 0, m_display.width(), 16, BLACK);
     m_display.setTextColor(WHITE);
 
@@ -606,3 +614,37 @@ void COLED::OLED_statusbar()
     if (m_displayScroll)
         m_display.startscrollright(0x00,0x01);
 }
+
+bool COLED::readBMPLogo(const char *filename, unsigned char *logo_array)
+{
+
+    FILE* m_fp;
+    BMP_FILEHEADER file_Head;
+    BMP_INFOHEADER info_Head;
+
+    m_fp = ::fopen(filename, "rb");
+    if (m_fp == NULL) {
+        LogInfo("OLED-File %s load fail. Please use right path and filename.",filename);
+        return false; 
+    }// If no file detected, return with error log.
+    
+    ::fread(&file_Head, 1U, sizeof(file_Head), m_fp); 
+    ::fread(&info_Head, 1U, sizeof(info_Head), m_fp); 
+    
+    if ((info_Head.biWidth != 128)||(info_Head.biHeight != 16)||(info_Head.biBitCount != 1)) {
+        LogInfo("OLED-File %s parse fail,Please use 128*16 mono BMP format.",filename);
+        ::fclose(m_fp);
+        return false;
+    }// If image size error, return with error log.    
+
+    for (int i = 16; i > 0; i--) {
+        ::fseek(m_fp, file_Head.bfOffBits+((i-1)*16), SEEK_SET);
+        ::fread(&logo_array[(16-i)*16], 1U, 16U, m_fp);
+    }// Read BMP file content with line order reverse.
+
+    LogInfo("OLED-File %s load success.",filename);
+    ::fclose(m_fp);
+
+    return true;
+}
+
