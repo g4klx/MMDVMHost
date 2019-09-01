@@ -259,7 +259,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 			CYSFFICH fich = m_lastFICH;
 
 			// Remove any DG-ID information
-			fich.setDGId(0U);
+			//fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -273,7 +273,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 
 			if (m_duplex) {
 				// Add the DG-ID information.
-				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
+				//fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -300,7 +300,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 			CYSFFICH fich = m_lastFICH;
 
 			// Remove any DG-ID information
-			fich.setDGId(0U);
+			//fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_EOT;
@@ -314,7 +314,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 
 			if (m_duplex) {
 				// Add the DG-ID information.
-				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
+				//fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -356,7 +356,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 			}
 
 			// Remove any DG-ID information
-			fich.setDGId(0U);
+			//fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -366,7 +366,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 
 			if (m_duplex) {
 				// Add the DG-ID information.
-				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
+				//fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -436,7 +436,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			CYSFFICH fich = m_lastFICH;
 
 			// Remove any DG-ID information
-			fich.setDGId(0U);
+			//fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -450,7 +450,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			if (m_duplex) {
 				// Add the DG-ID information.
-				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
+				//fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -477,7 +477,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			CYSFFICH fich = m_lastFICH;
 
 			// Remove any DG-ID information
-			fich.setDGId(0U);
+			//fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_EOT;
@@ -491,7 +491,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			if (m_duplex) {
 				// Add the DG-ID information.
-				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
+				//fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -553,7 +553,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			CYSFFICH fich = m_lastFICH;
 
 			// Remove any DG-ID information
-			fich.setDGId(0U);
+			//fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -563,7 +563,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			if (m_duplex) {
 				// Add the DG-ID information.
-				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
+				//fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -642,7 +642,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 			fich.setFI(YSF_FI_HEADER);
-			fich.setDGId(0U);
+			//fich.setDGId(0U);
 			fich.encode(buffer + 2U);
 
 			unsigned char csd1[20U], csd2[20U];
@@ -664,7 +664,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			if (m_duplex) {
 				// Add the DG-ID information.
-				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
+				//fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(buffer + 2U);
@@ -683,7 +683,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			fich = m_lastFICH;
 
 			// Remove any DG-ID information
-			fich.setDGId(0U);
+			//fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -693,7 +693,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			if (m_duplex) {
 				// Add the DG-ID information.
-				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
+				//fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -760,7 +760,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 			CYSFFICH fich = m_lastFICH;
 
 			// Remove any DG-ID information
-			fich.setDGId(0U);
+			//fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -774,7 +774,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 			if (m_duplex) {
 				// Add the DG-ID information.
-				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
+				//fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -801,7 +801,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 			CYSFFICH fich = m_lastFICH;
 
 			// Remove any DG-ID information
-			fich.setDGId(0U);
+			//fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_EOT;
@@ -815,7 +815,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 			if (m_duplex) {
 				// Add the DG-ID information.
-				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
+				//fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -853,7 +853,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 			CYSFFICH fich = m_lastFICH;
 
 			// Remove any DG-ID information
-			fich.setDGId(0U);
+			//fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -863,7 +863,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 			if (m_duplex) {
 				// Add the DG-ID information.
-				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
+				//fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -1005,7 +1005,7 @@ void CYSFControl::writeNetwork()
 		}
 
 		// Add the DG-ID information.
-		fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
+		//fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 
 		if (m_remoteGateway) {
 			fich.setVoIP(false);
