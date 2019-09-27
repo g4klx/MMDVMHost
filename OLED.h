@@ -83,7 +83,7 @@ private:
   bool          m_displayInvert;
   bool          m_displayScroll;
   bool          m_displayRotate;
-  bool		m_displayLogoScreensaver;
+  bool          m_displayLogoScreensaver;
   bool          m_slot1Enabled;
   bool          m_slot2Enabled;
   std::string   m_ipaddress;
