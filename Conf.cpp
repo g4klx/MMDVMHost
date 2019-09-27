@@ -237,6 +237,7 @@ m_oledBrightness(0U),
 m_oledInvert(false),
 m_oledScroll(false),
 m_oledRotate(false),
+m_oledLogoScreensaver(true),
 m_lcdprocAddress(),
 m_lcdprocPort(0U),
 m_lcdprocLocalPort(0U),
@@ -790,6 +791,8 @@ bool CConf::read()
 			m_oledScroll = ::atoi(value) == 1;
 		else if (::strcmp(key, "Rotate") == 0)
 			m_oledRotate = ::atoi(value) == 1;
+		else if (::strcmp(key, "LogoScreensaver") == 0)
+			m_oledLogoScreensaver = ::atoi(value) == 1;
 	} else if (section == SECTION_LCDPROC) {
 		if (::strcmp(key, "Address") == 0)
 			m_lcdprocAddress = value;
@@ -1696,6 +1699,11 @@ bool CConf::getOLEDScroll() const
 bool CConf::getOLEDRotate() const
 {
 	return m_oledRotate;
+}
+
+bool CConf::getOLEDLogoScreensaver() const
+{
+	return m_oledLogoScreensaver;
 }
 
 
