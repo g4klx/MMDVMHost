@@ -93,10 +93,14 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 	unsigned char type = data[0U];
 
 	if (type == TAG_LOST && m_rfState == RS_RF_AUDIO) {
+		unsigned short dstId = m_rfLayer3.getDestinationGroupId();
+		bool grp             = m_rfLayer3.getIsGroup();
+		std::string source = m_lookup->find(m_rfLayer3.getSourceUnitId());
+
 		if (m_rssi != 0U)
-			LogMessage("NXDN, transmission lost, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			LogMessage("NXDN, transmission lost from %s to %s%u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 		else
-			LogMessage("NXDN, transmission lost, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits));
+			LogMessage("NXDN, transmission lost from %s to %s%u, %.1f seconds, BER: %.1f%%", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits));
 		writeEndRF();
 		return false;
 	}
@@ -259,11 +263,15 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			writeQueueRF(data);
 
 		if (data[0U] == TAG_EOT) {
+			unsigned short dstId = m_rfLayer3.getDestinationGroupId();
+			bool grp             = m_rfLayer3.getIsGroup();
+			std::string source   = m_lookup->find(m_rfLayer3.getSourceUnitId());
+
 			m_rfFrames++;
 			if (m_rssi != 0U)
-				LogMessage("NXDN, received RF end of transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				LogMessage("NXDN, received RF end of transmission from %s to %s%u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			else
-				LogMessage("NXDN, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits));
+				LogMessage("NXDN, received RF end of transmission from %s to %s%u, %.1f seconds, BER: %.1f%%", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits));
 			writeEndRF();
 		} else {
 			m_rfFrames  = 0U;
@@ -663,7 +671,11 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 #endif
 
 	if (data[0U] == TAG_EOT) {
-		LogMessage("NXDN, ended RF data transmission");
+		unsigned short dstId = m_rfLayer3.getDestinationGroupId();
+		bool grp             = m_rfLayer3.getIsGroup();
+		std::string source   = m_lookup->find(m_rfLayer3.getSourceUnitId());
+
+		LogMessage("NXDN, ended RF data transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
 		writeEndRF();
 	}
 
@@ -786,7 +798,11 @@ void CNXDNControl::writeNetwork()
 			writeQueueNet(data);
 
 			if (type == NXDN_MESSAGE_TYPE_TX_REL) {
-				LogMessage("NXDN, ended network data transmission");
+				unsigned short dstId = m_netLayer3.getDestinationGroupId();
+				bool grp             = m_netLayer3.getIsGroup();
+				std::string source   = m_lookup->find(m_netLayer3.getSourceUnitId());
+
+				LogMessage("NXDN, ended network data transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
 				writeEndNet();
 			}
 		}
@@ -817,16 +833,15 @@ void CNXDNControl::writeNetwork()
 
 		writeQueueNet(data);
 
+		unsigned short dstId = m_netLayer3.getDestinationGroupId();
+		bool grp             = m_netLayer3.getIsGroup();
+		std::string source   = m_lookup->find(m_netLayer3.getSourceUnitId());
+
 		if (type == NXDN_MESSAGE_TYPE_TX_REL) {
 			m_netFrames++;
-			LogMessage("NXDN, received network end of transmission, %.1f seconds", float(m_netFrames) / 12.5F);
+			LogMessage("NXDN, received network end of transmission from %s to %s%u, %.1f seconds", source.c_str(), grp ? "TG " : "", dstId, float(m_netFrames) / 12.5F);
 			writeEndNet();
 		} else if (type == NXDN_MESSAGE_TYPE_VCALL) {
-			unsigned short srcId = m_netLayer3.getSourceUnitId();
-			unsigned short dstId = m_netLayer3.getDestinationGroupId();
-			bool grp             = m_netLayer3.getIsGroup();
-
-			std::string source = m_lookup->find(srcId);
 			LogMessage("NXDN, received network transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
 			m_display->writeNXDN(source.c_str(), grp, dstId, "N");
 
