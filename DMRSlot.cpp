@@ -141,10 +141,14 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 		return false;
 
 	if (data[0U] == TAG_LOST && m_rfState == RS_RF_AUDIO) {
+		std::string src = m_lookup->find(m_rfLC->getSrcId());
+		std::string dst = m_lookup->find(m_rfLC->getDstId());
+		FLCO flco       = m_rfLC->getFLCO();
+
 		if (m_rssi != 0U)
-			LogMessage("DMR Slot %u, RF voice transmission lost, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_slotNo, float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			LogMessage("DMR Slot %u, RF voice transmission lost from %s to %s%s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 		else
-			LogMessage("DMR Slot %u, RF voice transmission lost, %.1f seconds, BER: %.1f%%", m_slotNo, float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
+			LogMessage("DMR Slot %u, RF voice transmission lost from %s to %s%s, %.1f seconds, BER: %.1f%%", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
 		if (m_rfTimeout) {
 			writeEndRF();
 			return false;
@@ -155,7 +159,11 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 	}
 
 	if (data[0U] == TAG_LOST && m_rfState == RS_RF_DATA) {
-		LogMessage("DMR Slot %u, RF data transmission lost", m_slotNo);
+		std::string src = m_lookup->find(m_rfLC->getSrcId());
+		std::string dst = m_lookup->find(m_rfLC->getDstId());
+		FLCO flco       = m_rfLC->getFLCO();
+
+		LogMessage("DMR Slot %u, RF data transmission lost from %s to %s%s", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str());
 		writeEndRF();
 		return false;
 	}
@@ -336,10 +344,14 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				}
 			}
 
+			std::string src = m_lookup->find(m_rfLC->getSrcId());
+			std::string dst = m_lookup->find(m_rfLC->getDstId());
+			FLCO flco       = m_rfLC->getFLCO();
+
 			if (m_rssi != 0U)
-				LogMessage("DMR Slot %u, received RF end of voice transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_slotNo, float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				LogMessage("DMR Slot %u, received RF end of voice transmission from %s to %s%s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			else
-				LogMessage("DMR Slot %u, received RF end of voice transmission, %.1f seconds, BER: %.1f%%", m_slotNo, float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
+				LogMessage("DMR Slot %u, received RF end of voice transmission from %s to %s%s, %.1f seconds, BER: %.1f%%", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
 
 			m_display->writeDMRTA(m_slotNo, NULL, " ");
 
@@ -408,7 +420,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			LogMessage("DMR Slot %u, received RF data header from %s to %s%s, %u blocks", m_slotNo, src.c_str(), gi ? "TG ": "", dst.c_str(), m_rfFrames);
 
 			if (m_rfFrames == 0U) {
-				LogMessage("DMR Slot %u, ended RF data transmission", m_slotNo);
+				LogMessage("DMR Slot %u, ended RF data transmission from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG " : "", dst.c_str());
 				writeEndRF();
 			}
 
@@ -524,7 +536,11 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			writeNetworkRF(data, dataType);
 
 			if (m_rfFrames == 0U) {
-				LogMessage("DMR Slot %u, ended RF data transmission", m_slotNo);
+				std::string src = m_lookup->find(m_rfLC->getSrcId());
+				std::string dst = m_lookup->find(m_rfLC->getDstId());
+				FLCO flco       = m_rfLC->getFLCO();
+
+				LogMessage("DMR Slot %u, ended RF data transmission from %s to %s%s", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str());
 				writeEndRF();
 			}
 
@@ -1216,9 +1232,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		writeFile(data);
 		closeFile();
 #endif
+		std::string src = m_lookup->find(m_netLC->getSrcId());
+		std::string dst = m_lookup->find(m_netLC->getDstId());
+		FLCO flco       = m_netLC->getFLCO();
+
 		// We've received the voice header and terminator haven't we?
 		m_netFrames += 2U;
-		LogMessage("DMR Slot %u, received network end of voice transmission, %.1f seconds, %u%% packet loss, BER: %.1f%%", m_slotNo, float(m_netFrames) / 16.667F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
+		LogMessage("DMR Slot %u, received network end of voice transmission from %s to %s%s, %.1f seconds, %u%% packet loss, BER: %.1f%%", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str(), float(m_netFrames) / 16.667F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
 		m_display->writeDMRTA(m_slotNo, NULL, " ");
 		writeEndNet();
 	} else if (dataType == DT_DATA_HEADER) {
@@ -1271,7 +1291,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		LogMessage("DMR Slot %u, received network data header from %s to %s%s, %u blocks", m_slotNo, src.c_str(), gi ? "TG ": "", dst.c_str(), m_netFrames);
 
 		if (m_netFrames == 0U) {
-			LogMessage("DMR Slot %u, ended network data transmission", m_slotNo);
+			LogMessage("DMR Slot %u, ended network data transmission from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG " : "", dst.c_str());
 			writeEndNet();
 		}
 	} else if (dataType == DT_VOICE_SYNC) {
@@ -1667,7 +1687,11 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		writeQueueNet(data);
 
 		if (m_netFrames == 0U) {
-			LogMessage("DMR Slot %u, ended network data transmission", m_slotNo);
+			std::string src = m_lookup->find(m_netLC->getSrcId());
+			std::string dst = m_lookup->find(m_netLC->getDstId());
+			FLCO flco       = m_netLC->getFLCO();
+
+			LogMessage("DMR Slot %u, ended network data transmission from %s to %s%s", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str());
 			writeEndNet();
 		}
 	} else {
