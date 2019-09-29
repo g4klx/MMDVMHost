@@ -127,10 +127,17 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 	unsigned char type = data[0U];
 
 	if (type == TAG_LOST && (m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA)) {
+		unsigned char my1[DSTAR_LONG_CALLSIGN_LENGTH];
+		unsigned char my2[DSTAR_SHORT_CALLSIGN_LENGTH];
+		unsigned char your[DSTAR_LONG_CALLSIGN_LENGTH];
+		m_rfHeader.getMyCall1(my1);
+		m_rfHeader.getMyCall2(my2);
+		m_rfHeader.getYourCall(your);
+
 		if (m_rssi != 0U)
-			LogMessage("D-Star, transmission lost, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			LogMessage("D-Star, transmission lost from %8.8s/%4.4s to %8.8s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 		else
-			LogMessage("D-Star, transmission lost, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+			LogMessage("D-Star, transmission lost from %8.8s/%4.4s to %8.8s, %.1f seconds, BER: %.1f%%", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 		writeEndRF();
 		return false;
 	}
@@ -315,10 +322,17 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			if (m_duplex)
 				writeQueueEOTRF();
 
+			unsigned char my1[DSTAR_LONG_CALLSIGN_LENGTH];
+			unsigned char my2[DSTAR_SHORT_CALLSIGN_LENGTH];
+			unsigned char your[DSTAR_LONG_CALLSIGN_LENGTH];
+			m_rfHeader.getMyCall1(my1);
+			m_rfHeader.getMyCall2(my2);
+			m_rfHeader.getYourCall(your);
+
 			if (m_rssi != 0U)
-				LogMessage("D-Star, received RF end of transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				LogMessage("D-Star, received RF end of transmission from %8.8s/%4.4s to %8.8s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			else
-				LogMessage("D-Star, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+				LogMessage("D-Star, received RF end of transmission from %8.8s/%4.4s to %8.8s, %.1f seconds, BER: %.1f%%", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 
 			writeEndRF();
 		}
@@ -701,9 +715,16 @@ void CDStarControl::writeNetwork()
 			writeFile(data + 1U, length - 1U);
 			closeFile();
 #endif
+			unsigned char my1[DSTAR_LONG_CALLSIGN_LENGTH];
+			unsigned char my2[DSTAR_SHORT_CALLSIGN_LENGTH];
+			unsigned char your[DSTAR_LONG_CALLSIGN_LENGTH];
+			m_netHeader.getMyCall1(my1);
+			m_netHeader.getMyCall2(my2);
+			m_netHeader.getYourCall(your);
+
 			// We've received the header and EOT haven't we?
 			m_netFrames += 2U;
-			LogMessage("D-Star, received network end of transmission, %.1f seconds, %u%% packet loss, BER: %.1f%%", float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
+			LogMessage("D-Star, received network end of transmission from %8.8s/%4.4s to %8.8s, %.1f seconds, %u%% packet loss, BER: %.1f%%", my1, my2, your, float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
 
 			writeEndNet();
 		}
