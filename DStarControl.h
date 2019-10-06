@@ -59,7 +59,7 @@ private:
 	bool                       m_errorReply;
 	bool                       m_remoteGateway;
 	std::vector<std::string>   m_blackList;
-        std::vector<std::string>   m_whiteList;
+	std::vector<std::string>   m_whiteList;
 	CDStarNetwork*             m_network;
 	CDisplay*                  m_display;
 	bool                       m_duplex;

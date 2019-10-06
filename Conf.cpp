@@ -526,7 +526,7 @@ bool CConf::read()
                                 }
                                 p = ::strtok(NULL, ",\r\n");
                         }
-                } else if (::strcmp(key, "AckReply") == 0)
+		} else if (::strcmp(key, "AckReply") == 0)
 			m_dstarAckReply = ::atoi(value) == 1;
 		else if (::strcmp(key, "AckTime") == 0)
 			m_dstarAckTime = (unsigned int)::atoi(value);
