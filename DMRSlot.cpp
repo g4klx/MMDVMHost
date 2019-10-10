@@ -536,11 +536,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			writeNetworkRF(data, dataType);
 
 			if (m_rfFrames == 0U) {
-				std::string src = m_lookup->find(m_rfLC->getSrcId());
-				std::string dst = m_lookup->find(m_rfLC->getDstId());
-				FLCO flco       = m_rfLC->getFLCO();
-
-				LogMessage("DMR Slot %u, ended RF data transmission from %s to %s%s", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str());
+				LogMessage("DMR Slot %u, ended RF data transmission", m_slotNo);
 				writeEndRF();
 			}
 
