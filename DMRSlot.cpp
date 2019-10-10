@@ -1687,11 +1687,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		writeQueueNet(data);
 
 		if (m_netFrames == 0U) {
-			std::string src = m_lookup->find(m_netLC->getSrcId());
-			std::string dst = m_lookup->find(m_netLC->getDstId());
-			FLCO flco       = m_netLC->getFLCO();
-
-			LogMessage("DMR Slot %u, ended network data transmission from %s to %s%s", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str());
+			LogMessage("DMR Slot %u, ended network data transmission", m_slotNo);
 			writeEndNet();
 		}
 	} else {
