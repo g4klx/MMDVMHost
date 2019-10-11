@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2019 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -182,6 +182,19 @@ unsigned char CDMRLC::getFID() const
 void CDMRLC::setFID(unsigned char fid)
 {
 	m_FID = fid;
+}
+
+bool CDMRLC::getOVCM() const
+{
+	return (m_options & 0x20U) == 0x20U;
+}
+
+void CDMRLC::setOVCM(bool ovcm)
+{
+	if (ovcm)
+		m_options |= 0x20U;
+	else
+		m_options &= 0xDFU;
 }
 
 unsigned int CDMRLC::getSrcId() const
