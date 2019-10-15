@@ -186,15 +186,15 @@ void CDMRLC::setFID(unsigned char fid)
 
 bool CDMRLC::getOVCM() const
 {
-	return (m_options & 0x20U) == 0x20U;
+	return (m_options & 0x04U) == 0x04U;
 }
 
 void CDMRLC::setOVCM(bool ovcm)
 {
 	if (ovcm)
-		m_options |= 0x20U;
+		m_options |= 0x04U;
 	else
-		m_options &= 0xDFU;
+		m_options &= 0xFBU;
 }
 
 unsigned int CDMRLC::getSrcId() const
