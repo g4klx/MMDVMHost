@@ -155,7 +155,7 @@ bool CDMRCSBK::getOVCM() const
 	// Service options informations are only available in
 	// "Unit to Unit Voice Service Request CSBK" and
 	// "Unit to Unit Voice Service Answer Response CSBK"
-	if (m_CSBKO == CSBKO_UUVREQ || m_CSBKO == CSBKO_UUANSRSP)
+	if ((m_CSBKO == CSBKO_UUVREQ) || (m_CSBKO == CSBKO_UUANSRSP))
 	{
 		bOVCM = (m_data[2U] & 0x04U) == 0x04U;
 	}
@@ -165,7 +165,7 @@ bool CDMRCSBK::getOVCM() const
 void CDMRCSBK::setOVCM(bool ovcm)
 {
 	// Set OVCM only in CSBKs having the service options information
-	if (m_CSBKO == CSBKO_UUVREQ || m_CSBKO == CSBKO_UUANSRSP)
+	if ((m_CSBKO == CSBKO_UUVREQ) || (m_CSBKO == CSBKO_UUANSRSP))
 	{
 		if (ovcm)
 			m_data[2U] |= 0x04U;
