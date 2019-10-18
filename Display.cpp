@@ -569,8 +569,9 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
 	        bool          invert     = conf.getOLEDInvert();
 	        bool          scroll     = conf.getOLEDScroll();
 		bool          rotate     = conf.getOLEDRotate();
+		bool          logosaver  = conf.getOLEDLogoScreensaver();
 
-		display = new COLED(type, brightness, invert, scroll, rotate, conf.getDMRNetworkSlot1(), conf.getDMRNetworkSlot2());
+		display = new COLED(type, brightness, invert, scroll, rotate, logosaver, conf.getDMRNetworkSlot1(), conf.getDMRNetworkSlot2());
 #endif
 	} else if (type == "CAST") {
 		display = new CCASTInfo(modem);

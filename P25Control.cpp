@@ -122,10 +122,14 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 	bool sync = data[1U] == 0x01U;
 
 	if (data[0U] == TAG_LOST && m_rfState == RS_RF_AUDIO) {
+		bool           grp = m_rfData.getLCF() == P25_LCF_GROUP;
+		unsigned int dstId = m_rfData.getDstId();
+		std::string source = m_lookup->find(m_rfData.getSrcId());
+
 		if (m_rssi != 0U)
-			LogMessage("P25, transmission lost, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			LogMessage("P25, transmission lost from %s to %s%u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 		else
-			LogMessage("P25, transmission lost, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
+			LogMessage("P25, transmission lost from %s to %s%u, %.1f seconds, BER: %.1f%%", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
 
 		if (m_netState == RS_NET_IDLE)
 			m_display->clearP25();
@@ -368,14 +372,15 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			return false;
 		}
 	
-		unsigned int srcId = m_rfData.getSrcId();
+		bool           grp = m_rfData.getLCF() == P25_LCF_GROUP;
 		unsigned int dstId = m_rfData.getDstId();
-	
+		std::string source = m_lookup->find(m_rfData.getSrcId());
+
 		unsigned char data[P25_TSDU_FRAME_LENGTH_BYTES + 2U];
 	
 		switch (m_rfData.getLCF()) {
 		case P25_LCF_TSBK_CALL_ALERT:
-			LogMessage("P25, received RF TSDU transmission, CALL ALERT from %u to %u", srcId, dstId);
+			LogMessage("P25, received RF TSDU transmission, CALL ALERT from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
 			::memset(data + 2U, 0x00U, P25_TSDU_FRAME_LENGTH_BYTES);
 	
 			// Regenerate Sync
@@ -401,7 +406,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			}
 			break;
 		case P25_LCF_TSBK_ACK_RSP_FNE:
-			LogMessage("P25, received RF TSDU transmission, ACK RESPONSE FNE from %u to %u", srcId, dstId);
+			LogMessage("P25, received RF TSDU transmission, ACK RESPONSE FNE from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
 			::memset(data + 2U, 0x00U, P25_TSDU_FRAME_LENGTH_BYTES);
 
 			// Regenerate Sync
@@ -448,15 +453,19 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			// Add busy bits
 			addBusyBits(data + 2U, P25_TERM_FRAME_LENGTH_BITS, false, true);
 
+			bool           grp = m_rfData.getLCF() == P25_LCF_GROUP;
+			unsigned int dstId = m_rfData.getDstId();
+			std::string source = m_lookup->find(m_rfData.getSrcId());
+
 			m_rfState = RS_RF_LISTENING;
 			m_rfTimeout.stop();
 			m_rfData.reset();
 			m_lastDUID = duid;
 
 			if (m_rssi != 0U)
-				LogMessage("P25, received RF end of voice transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				LogMessage("P25, received RF end of voice transmission from %s to %s%u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			else
-				LogMessage("P25, received RF end of voice transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
+				LogMessage("P25, received RF end of voice transmission from %s to %s%u, %.1f seconds, BER: %.1f%%", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
 
 			m_display->clearP25();
 
@@ -1112,7 +1121,9 @@ void CP25Control::createNetTerminator()
 
 	writeQueueNet(buffer, P25_TERM_FRAME_LENGTH_BYTES + 2U);
 
-	LogMessage("P25, network end of transmission, %.1f seconds, %u%% packet loss", float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames);
+	std::string source = m_lookup->find(m_netData.getSrcId());
+
+	LogMessage("P25, network end of transmission from %s to %s%u, %.1f seconds, %u%% packet loss", source.c_str(), m_netData.getLCF() == P25_LCF_GROUP ? "TG " : "", m_netData.getDstId(), float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames);
 
 	m_display->clearP25();
 	m_netTimeout.stop();
