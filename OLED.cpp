@@ -169,12 +169,13 @@ const unsigned char logo_POCSAG_bmp [] =
 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
 };
 
-COLED::COLED(unsigned char displayType, unsigned char displayBrightness, bool displayInvert, bool displayScroll, bool displayRotate, bool slot1Enabled, bool slot2Enabled) :
+COLED::COLED(unsigned char displayType, unsigned char displayBrightness, bool displayInvert, bool displayScroll, bool displayRotate, bool displayLogoScreensaver, bool slot1Enabled, bool slot2Enabled) :
 m_displayType(displayType),
 m_displayBrightness(displayBrightness),
 m_displayInvert(displayInvert),
 m_displayScroll(displayScroll),
 m_displayRotate(displayRotate),
+m_displayLogoScreensaver(displayLogoScreensaver),
 m_slot1Enabled(slot1Enabled),
 m_slot2Enabled(slot2Enabled),
 m_ipaddress(),
@@ -600,7 +601,7 @@ void COLED::OLED_statusbar()
         m_display.drawBitmap(0, 0, logo_NXDN_bmp, 128, 16, WHITE);
     else if (m_mode == MODE_POCSAG)
         m_display.drawBitmap(0, 0, logo_POCSAG_bmp, 128, 16, WHITE);
-    else
+    else if (m_displayLogoScreensaver)
         m_display.drawBitmap(0, 0, logo_glcd_bmp, 128, 16, WHITE);
 
     if (m_displayScroll)

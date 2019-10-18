@@ -444,6 +444,7 @@ int CMMDVMHost::run()
 		unsigned int jitter         = m_conf.getDMRNetworkJitter();
 		m_dmrRFModeHang             = m_conf.getDMRModeHang();
 		bool dmrBeacons             = m_conf.getDMRBeacons();
+		bool ovcm                   = m_conf.getDMROVCM();
 
 		if (txHang > m_dmrRFModeHang)
 			txHang = m_dmrRFModeHang;
@@ -476,6 +477,7 @@ int CMMDVMHost::run()
 		LogInfo("    Call Hang: %us", callHang);
 		LogInfo("    TX Hang: %us", txHang);
 		LogInfo("    Mode Hang: %us", m_dmrRFModeHang);
+		LogInfo("    OVCM: %s", ovcm ? "on" : "off");
 
 		if (dmrBeacons) {
 			unsigned int dmrBeaconInterval = m_conf.getDMRBeaconInterval();
@@ -490,7 +492,7 @@ int CMMDVMHost::run()
 			dmrBeaconIntervalTimer.start();
 		}
 
-		m_dmr = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, dumpTAData, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, 						m_display, m_duplex, m_dmrLookup, rssi, jitter);
+		m_dmr = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, dumpTAData, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_dmrLookup, rssi, jitter, ovcm);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}
@@ -622,7 +624,7 @@ int CMMDVMHost::run()
 			m_ump->setCD(cd);
 		}
 
-		unsigned char data[200U];
+		unsigned char data[220U];
 		unsigned int len;
 		bool ret;
 

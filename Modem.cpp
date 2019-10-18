@@ -1394,6 +1394,8 @@ bool CModem::readVersion()
 					m_hwType = HWT_NANO_HOTSPOT;
 				else if (::memcmp(m_buffer + 4U, "Nano_DV", 7U) == 0)
 					m_hwType = HWT_NANO_DV;
+				else if (::memcmp(m_buffer + 4U, "D2RG_MMDVM_HS", 13U) == 0)
+					m_hwType = HWT_D2RG_MMDVM_HS;
 				else if (::memcmp(m_buffer + 4U, "MMDVM_HS-", 9U) == 0)
 					m_hwType = HWT_MMDVM_HS;
 

@@ -117,9 +117,9 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 
 	if (type == TAG_LOST && m_rfState == RS_RF_AUDIO) {
 		if (m_rssi != 0U)
-			LogMessage("YSF, transmission lost, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			LogMessage("YSF, transmission lost from %10.10s to %10.10s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_rfSource, m_rfDest, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 		else
-			LogMessage("YSF, transmission lost, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+			LogMessage("YSF, transmission lost from %10.10s to %10.10s, %.1f seconds, BER: %.1f%%", m_rfSource, m_rfDest, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 		writeEndRF();
 		return false;
 	}
@@ -324,9 +324,9 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 			m_rfFrames++;
 
 			if (m_rssi != 0U)
-				LogMessage("YSF, received RF end of transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				LogMessage("YSF, received RF end of transmission from %10.10s to %10.10s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_rfSource, m_rfDest, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			else
-				LogMessage("YSF, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+				LogMessage("YSF, received RF end of transmission from %10.10s to %10.10s, %.1f seconds, BER: %.1f%%", m_rfSource, m_rfDest, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 
 			writeEndRF();
 		}
@@ -501,9 +501,9 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			m_rfFrames++;
 
 			if (m_rssi != 0U)
-				LogMessage("YSF, received RF end of transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				LogMessage("YSF, received RF end of transmission from %10.10s to %10.10s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_rfSource, m_rfDest, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			else
-				LogMessage("YSF, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+				LogMessage("YSF, received RF end of transmission from %10.10s to %10.10s, %.1f seconds, BER: %.1f%%", m_rfSource, m_rfDest, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 
 			writeEndRF();
 		}
@@ -825,9 +825,9 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 			m_rfFrames++;
 
 			if (m_rssi != 0U)
-				LogMessage("YSF, received RF end of transmission, %.1f seconds, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 10.0F, m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				LogMessage("YSF, received RF end of transmission from %10.10s to %10.10s, %.1f seconds, RSSI: -%u/-%u/-%u dBm", m_rfSource, m_rfDest, float(m_rfFrames) / 10.0F, m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			else
-				LogMessage("YSF, received RF end of transmission, %.1f seconds", float(m_rfFrames) / 10.0F);
+				LogMessage("YSF, received RF end of transmission from %10.10s to %10.10s, %.1f seconds", m_rfSource, m_rfDest, float(m_rfFrames) / 10.0F);
 
 			writeEndRF();
 		}
@@ -1085,7 +1085,7 @@ void CYSFControl::writeNetwork()
 	m_netN = n;
 
 	if (end) {
-		LogMessage("YSF, received network end of transmission, %.1f seconds, %u%% packet loss, BER: %.1f%%", float(m_netFrames) / 10.0F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
+		LogMessage("YSF, received network end of transmission from %10.10s to %10.10s, %.1f seconds, %u%% packet loss, BER: %.1f%%", m_netSource, m_netDest, float(m_netFrames) / 10.0F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
 		writeEndNet();
 	}
 }
