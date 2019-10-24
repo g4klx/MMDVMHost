@@ -3,17 +3,17 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 2,W2FLY,Harry J Holmes,Mullica Hill,New Jersey,United States,UHF NX-800 mobile
 3,WB2OOM,CHRISTINA P HOLMES,MULLICA HILL,New Jersey,United States,UHF NX-800 Mobile
 4,W2FLY,Harry J Holmes,Mullica Hill,New Jersey,United States,UHF NX-800 Van
-5,PP5DI,Fabio Kuntze,São José,Santa Catarina,Brazil,Kenwood NX-700 VHF portable
+5,PP5DI,Fabio Kuntze,SÃ£o JosÃ©,Santa Catarina,Brazil,Kenwood NX-700 VHF portable
 6,LX1MS,Marc Storck,Diekirch,L,Luxembourg,
 7,W2MB,Mark Bond,Washington,New Jersey,United States,NX5800K2
 8,W2FLY,Harry J Holmes,Mullica Hill,New Jersey,United States,UHF NX-820 Port 2
 9,KE8BGA,Lowell M Katz,Cleveland,Ohio,United States,on the north shore, NX-800
 10,CT2BXN,ct2bxn ct2bxn,7830,,Portugal,
-11,EA3HSL,Jordi Codina Martínez ,08800 Vilanova i la Geltrú,,Spain,
+11,EA3HSL,Jordi Codina MartÃ­nez ,08800 Vilanova i la GeltrÃº,,Spain,
 12,VA3WZW,Andre Van,Peterborough,Ontario,Canada,Handheld
 13,VA3WZW,Andre Van,Peterborough,Ontario,Canada,Moblie
 14,F1ZTC, ,,,France,
-15,EA3EIZ,Manuel Díaz Jiménez,Santa Perpetua de Mogoda,,Spain,Spain
+15,EA3EIZ,Manuel DÃ­az JimÃ©nez,Santa Perpetua de Mogoda,,Spain,Spain
 16,EA3EG,Eduard ,Arenys de Munt,,Spain,Spain
 17,KC2SNI,James Hannon,West Berlin,New Jersey,United States,My Radio is an Icom IC-3161DT
 18,EA3ES,Enrique Belmonte Pozo,Almoster, Tarragona,,Spain,Spain
@@ -199,7 +199,7 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 1337,N5AMD,Ben A Fogt,San Antonio,Texas,United States,N5AMD
 1343,EA1IVQ,ANGEL OGANDO,PONTEVEDRA, ES,,Spain,SPAIN
 1364,AE4AL,WILLIAM T BOWMAN, JR.,OXFORD,Alabama,United States,
-1381,CT2HYA,João Carlos Silveira Abreu Melo,Nazare,,Portugal,MMDVM
+1381,CT2HYA,JoÃ£o Carlos Silveira Abreu Melo,Nazare,,Portugal,MMDVM
 1386,W4OA,Shelly F Mitchell,Opelika,Alabama,United States,mmdvm_hs with RPi Zero W
 1407,DL7BCU,CHRIS UNGER,47623 KEVELAER,,Germany,
 1408,KD2PNV,Bjoern C Unger,Valley Cottage,New York,United States,
@@ -354,7 +354,7 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 5077,N9EXR,Michael R.smith,North Little Rock,Arkansas,United States,Kenwood 5200
 5100,K5SRS,Michael B Smith,Fayetteville,Arkansas,United States,NX-5800 Mobile
 5101,KC5YQB,WILLIAM P BLAIR,Fayetteville,Arkansas,United States,
-5112,EA5FNU,Javier F. S.,Almenara, Castellón,,,Spain,
+5112,EA5FNU,Javier F. S.,Almenara, CastellÃ³n,,,Spain,
 5124,K5DXR,Mark Sutherland,Siloam Springs,Arkansas,United States,NX320
 5125,AE5OQ,Armstead Feland,Colorado Springs,Colorado,United States,
 5134,AE5OQ,Armstead Feland,Colorado Springs,Colorado,United States,Kenwood NX-200
@@ -375,8 +375,8 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 5308,ZL4BLF,Thomas Hardwick,Bluff,South Island,New Zealand,
 5342,VK3JMA,Mark Aitken,Hampton Park,Victoria,Australia,
 5542,KD9GUK,Rick Mcallister,Elkhart,Indiana,United States,
-5554,EA5HKZ,JOSE MARIA LOPEZ BOX,ALICANTE- ESPAÑA,,Spain,TXEMA
-5555,EA5HKZ,JOSE MARIA LOPEZ BOX,ALICANTE- ESPAÑA,,Spain,
+5554,EA5HKZ,JOSE MARIA LOPEZ BOX,ALICANTE- ESPAÃ‘A,,Spain,TXEMA
+5555,EA5HKZ,JOSE MARIA LOPEZ BOX,ALICANTE- ESPAÃ‘A,,Spain,
 5599,W1ZM,Ryan Nelson,Edgemont,Arkansas,United States,NX-5300
 5637,KO3Q,Malcom Waring,Shawnee on Delaware,Pennsylvania,United States,
 5645,KN4LUK,Marc D Segal,Port Orange,Florida,United States,
@@ -472,7 +472,7 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 8405,HB9CSR,GRUPPO CISAR Basel,Basel,,Switzerland,admin hb9tvw
 8406,HB9TVW,Gabriele Biscetti,Basel,CH,Switzerland,73 de hb9tvw gabriele Basel
 9010,KC1DX,Mauro Abrantes,MIlford,Connecticut,United States,
-9011,LA9KY,Frank Hagen,MOSJØEN,,Norway,
+9011,LA9KY,Frank Hagen,MOSJÃ˜EN,,Norway,
 9012,F4GEN,Patrice FROMHOLTZ,Villers les Nancy,,France,
 9174,N8XYM,Michael E Cremeans,Westerville,Ohio,United States,
 9230,N1ID,John Ciullo,East Haddam,Connecticut,United States,
@@ -495,9 +495,10 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 10310,CE1WMW,Ernesto Romero,Calama,Antofagasta,Chile,Base
 10370,CE1SJJ,Claudio Mauricio Araya Herrera,Calama,Antofagasta,Chile,Portable
 10379,CE8WDB,Rodrigo Lucero Valenzuela,Punta Arenas,Magallanes,Chile,
+10713,R1IK,Yakov,Danilov,Syktyvkar,Komi,Russia,nxdn.r1ik.ru
 11006,KB3CGH,Edwin Velis,Washington,DC,District of Columbia,United States,
 11021,KC3JYU,John D Thomas,Washington,District Of Columbia,United States,
-11026,CT2YUC,Amélia Almeida,Matosinhos,,Portugal,
+11026,CT2YUC,AmÃ©lia Almeida,Matosinhos,,Portugal,
 11070,WA6HXG,Ryan W Mccomb,Hemet,California,United States,Portable
 11111,BD2VK,Chen Mingzhi,An Shan,Hei Long Jiang  Ji Lin  Liao Ning,China,Portable
 11148,N3GAR,Garfield G Foster,Birdsboro,Pennsylvania,United States,Wires-X
@@ -769,12 +770,12 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 20832,F4GRL,YVES JEAN,31600 LHERM,,France,
 20833,F1ZLF,Relais MMDVM DMR, C4FM,Bordeaux,,France,
 20835,F5UII,CHRISTIAN FURST,RIXHEIM,,France,
-20836,F6MPN,Gérald TETART,PALAISEAU CEDEX,,France,
+20836,F6MPN,GÃ©rald TETART,PALAISEAU CEDEX,,France,
 20837,F5UAB,Pascal VINCENT,Verderonne,,France,JN19GH
 20844,F5ORE,Alain Mouilleron,Nantes,,France,
 20847,F4GRL,YVES JEAN,31600 LHERM,,France,
 20850,F1IZL,JEAN-YVES RICKLIN,La Tour du Crieu,,France,
-20855,F6MPN,Gérald TETART,PALAISEAU CEDEX,,France,MASSY
+20855,F6MPN,GÃ©rald TETART,PALAISEAU CEDEX,,France,MASSY
 20856,F5DAN,Daniel VERDEIL,Vitry sur seine,,France,VITRY
 20865,F5SHD,Philippe ,LOURDES,,France,IN93xc
 20875,F5UOX,FREDERIC VIRVAIRE,PARIS 75019,,France,Paris
@@ -783,11 +784,11 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 20886,F6DLE,Jean Sanchette,Carhaix - Plouguer,,France,29270
 20888,F5ZCV,sebastien Perrin,Pontarlier,,France,MMDVM rpt
 20890,F1IGY,Jacques GRARE,LIMOGES,,France,
-20894,F5LGW,Stéphane Collet,Maisons-Alfort,-,France,
+20894,F5LGW,StÃ©phane Collet,Maisons-Alfort,-,France,
 20899,F6GVE,Luc Poirier,Toulon,,France,
 21001,K4XXX,Ed Lemley,London,Kentucky,United States,NX5000 series radios
 21003,K4KTR,Kyle  Robinson,New Haven,Kentucky,United States,
-21006,LA9WKA,Rolf Dahl,Drøbak,No,Norway,
+21006,LA9WKA,Rolf Dahl,DrÃ¸bak,No,Norway,
 21007,W1RHS,Rick Swenton,South Dennis,Massachusetts,United States,Rick
 21008,IW1PPB,Andrea OLIVERO,17025 Loano (SV),,Italy,
 21012,KK4JPB,James Blue,LOUISVILLE,Kentucky,United States,MMDVM Repeater
@@ -807,12 +808,12 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 22005,CT1FUH,Paulo Cipriano Fernandes Lopes Sousa,6290 - 368 Gouveia,,Portugal,
 22007,LU8EUT,Roberto Velasco,Olivos - Buenos Aire,Buenos Aires,Argentina Republic,
 22008,N5LCP,Laurent Partimbene,Youngsville,Louisiana,United States,Cajun Country
-22027,CS7ACD,Paulo Guilherme Calçada Sousa,Gouveia,,Portugal,
-22028,CT5YWF,Graça Maria Soares Calçada,Gouveia,,Portugal,
+22027,CS7ACD,Paulo Guilherme CalÃ§ada Sousa,Gouveia,,Portugal,
+22028,CT5YWF,GraÃ§a Maria Soares CalÃ§ada,Gouveia,,Portugal,
 22039,AF5XP,Christopher W Fuselier,Sulphur,Louisiana,United States,
 22040,AG5LG,STEVE R HEALD,Arlington,Texas,United States,
 22052,K5LPD,Oren  Haydel,Carencro,Louisiana,United States,3122052 CC7
-22067,CS5GVA,CLUBE DE COMUNICAÇÕES do AGRUPAMENTO de ESCOLAS de GOUVEIA,6290-335 GOUVEIA,,Portugal,School radio station 
+22067,CS5GVA,CLUBE DE COMUNICAÃ‡Ã•ES do AGRUPAMENTO de ESCOLAS de GOUVEIA,6290-335 GOUVEIA,,Portugal,School radio station 
 22092,VE2STE,Stephane Levesque,Granby,Quebec,Canada,3022092
 22100,N5UXT,Angelo Glorioso,New Orleans,Louisiana,United States,mmdvm
 22103,KI6FQV,Randy J Leipziger,El Dorado Hills,California,United States,NXDN ID
@@ -837,7 +838,7 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 23010,CT2JTR,Pedro Filipe Costa,1900-297 Lisboa,,Portugal,
 23043,CT1EYY,MIGUEL CARVALHO,TORRES VEDRAS OESTE,,Portugal,
 23047,CT1GFQ,CARLOS FONSECA,Pinhal de Frades - Seixal,,Portugal,
-23048,CT1EPE,ANTÓNIO CARRETO,QUELUZ,,Portugal,
+23048,CT1EPE,ANTÃ“NIO CARRETO,QUELUZ,,Portugal,
 23061,CT2IUL,DANIEL MATEUS,LISBOA-AJUDA,,Portugal,
 23070,VA3GHI,Bogdan Ghitescu,Toronto,Ontario,Canada,CCS7 1023070
 23074,CT1JIB,Jorge Santos,Palmela,,Portugal,NXDN Reflector
@@ -869,17 +870,17 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 24002,KK4RER,Jennifer Stapleton,Ashland ,Virginia,United States,
 24005,OE4ENU,Ewald Nussbaum,Klingenbach,,Austria,
 24006,CT2HBO,Paulo Jose Fernandes Da Cruz,7630-569 Sao Teotonio,,Portugal,
-24007,CT2HDQ,JOÃO PAULO,CASTRO VERDE,,Portugal,
+24007,CT2HDQ,JOÃƒO PAULO,CASTRO VERDE,,Portugal,
 24018,CT2GFP,Joao Jose,Portalegre,,Portugal,
 24020,K4XXX,Ed Lemley,London,Kentucky,United States,NX5800
 24021,K4XXX,Ed Lemley,London,Kentucky,United States,NX5700
 24112,DF2ET,Florian Wolters,Bochum,,Germany,
 24200,LD2HT,Tommy Kojen,N-0971 OSLO,,Norway,MMDVM Gateway
-24201,LA9KY,Frank Hagen,MOSJØEN,,Norway,Icom F-5122D 1
-24202,LA9KY,Frank Hagen,MOSJØEN,,Norway,Icom F-5122D 02
+24201,LA9KY,Frank Hagen,MOSJÃ˜EN,,Norway,Icom F-5122D 1
+24202,LA9KY,Frank Hagen,MOSJÃ˜EN,,Norway,Icom F-5122D 02
 24313,DG9YBN,Norbert Benner,D-45657 Recklinghausen,NRW,,Germany,
 24371,DO5YAM,Marco Wittkowski,45711 Datteln,,Germany,
-24887,DO4YNH,Hans-Juergen Naujoks,37671 Hoexter,,Germany,HÃ¶xter
+24887,DO4YNH,Hans-Juergen Naujoks,37671 Hoexter,,Germany,HÃƒÂ¶xter
 25001,N5QZ,Ryan Mcafee,Searcy,Arkansas,United States,Kenwood NX-300
 25002,N5QZ,Ryan Mcafee,Searcy,Arkansas,United States,Kenwood NX-200
 25003,N5QS,Roger W Gray,Searcy,Arkansas,United States,Kenwood NX-300
@@ -983,7 +984,7 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 26243,DH4MNJ,Uwe Hohendorf,Munich,,Germany,IC-4161D
 26244,DF1VB,Jochen Althoff,44139 Dortmund,,Germany,IC-F4400DT
 26262,DL1FLW,LAWRENCE WILLIAMS,Leipzig,,Germany,
-26265,DM8ANE,Manfred Lichtenstern,81925 München,,Germany,
+26265,DM8ANE,Manfred Lichtenstern,81925 MÃ¼nchen,,Germany,
 26353,DC1ZZ,Rolf S.,44797 Bochum,,Germany,
 26379,AD4UU,Dave Livesay,Westland,Michigan,United States,
 26483,KB8IWO,Vernon  Lawson,Beulah,Michigan,United States,DMR ID 1126483
@@ -1009,8 +1010,8 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 27152,DC4AS,Andreas Scholz,Eislingen,,Germany,
 27164,IW7DVM,Giuseppe .,Talsano (Taranto),,Italy,
 27174,IZ7AUH,Francesco "FRANK" GIACOIA,Taranto,TA,Italy,
-27177,IU7IHG,Pietro Paolo Margheriti,Nardò,IT,Italy,
-27178,IU7IHG,Pietro Paolo Margheriti,Nardò,IT,Italy,JN90AE
+27177,IU7IHG,Pietro Paolo Margheriti,NardÃ²,IT,Italy,
+27178,IU7IHG,Pietro Paolo Margheriti,NardÃ²,IT,Italy,JN90AE
 27180,IZ8GUR,Fulvio Sguazzo,Potenza,PZ,Italy,JN70VP
 27200,EI2ET,MANFRED LAUTERBORN,GALWAY,,Ireland,
 27201,KI4SWB,Mark Hogan,Melbourne Beach,Florida,United States,Icom Mobile
@@ -1033,7 +1034,7 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 28050,IW8ELN,Roberto De Guglielmo,Montemiletto (AV),IT,Italy,Montemiletto (AV)
 28054,IK8UHA,ANTONIO BARBATO also K8UHA,80144 NAPOLI,,Italy,NAPOLI
 28058,DK2PZ,Manfred Lauterborn,85627 Muenchen-Grasbrunn,,Germany,
-28065,DL3NCK,Sassan ,90765 Fuerth,,Germany,
+28065,DL3NCK,Sassan ,90765Â Fuerth,,Germany,
 28077,IZ8VGJ,Ilenia Meola,Montemiletto (AV),IT,Italy,Montemiletto (AV)
 28089,I8ULU,GIACOMO PALUMBO,81016 - Piedimonte Matese (CE),CE,Italy,Loc. JN71EI
 28105,WD5FNW,EDWARD J CSASZAR, JR,Saltillo,Mississippi,United States,
@@ -1043,13 +1044,13 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 28308,DH5IS,Bernd (Ben) Goetter,Wuerzburg,,Germany,
 28318,IZ8QAD,Filomeno PERNA,Serino (AV),,Italy,Serino (AV)
 28406,IZ8UMO,DIGILAND TELEGRAM GROUP ITALIA,XLX-113,,Italy,NAPOLI
-28565,DM8ANE,Manfred Lichtenstern,81925 München,,Germany,Mane Minga
+28565,DM8ANE,Manfred Lichtenstern,81925 MÃ¼nchen,,Germany,Mane Minga
 28677,TA2IKY,Kadir Akkus,YALOVA,TR,Turkey,MMDVM Hotspot
 28742,DK3QG,Erwin Herberg,85609 Aschheim,,Germany,TG20000
 29037,IW9CLF,Giuseppe Galizia,Siracusa,IT,Italy,Jm77oc 
 29045,IW9EFE,MARCO Q. GUARNACCIA,95037 SAN GIOVANNI LA PUNTA ( CT ),,Italy,Hotspot
 29071,IT9GNJ,Rino ,Piazza Armerina (ENNA) JM77EJ,,Italy,Hotspot
-29093,IT9SWH,Alfredo Scirè,Catania,IT,Italy,Hotspot
+29093,IT9SWH,Alfredo ScirÃ¨,Catania,IT,Italy,Hotspot
 29143,DL1FLW,LAWRENCE WILLIAMS,Leipzig,,Germany,
 29170,KC9RAT,Francis Lubinski,Bayside,Wisconsin,United States,
 29192,IT9GNJ,Rino ,Piazza Armerina (ENNA) JM77EJ,,Italy,Hotspot
@@ -1159,7 +1160,7 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 37403,9Y4SH,Steve Headley,St. James,None,Trinidad and Tobago,
 37404,9Y4FIFA,FIFA WorldCup 2018 Special Call Trinidad and Tobago Amateur Radio Society,Port of Spain, Trinidad & Tobago,,Trinidad and Tobago,FIFA World Cup  2018 Special Event Station.
 37480,N5EMT,Bruce Lantz,Asheboro,North Carolina,United States,
-37595,KM4NNO,Juan Carlos PÃ©rez De Castro,Morrisville,North Carolina,United States,
+37595,KM4NNO,Juan Carlos PÃƒÂ©rez De Castro,Morrisville,North Carolina,United States,
 37643,KJ4KEU,Eric D Broyles,asheville,North Carolina,United States,
 37775,N1UJ,Ted Root,Holly Springs,North Carolina,United States,NX-320
 37857,KA4EBB,Chad L Maxwell,Concord,North Carolina,United States,
@@ -1208,10 +1209,10 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 41047,PY1USK,Fernando Souto,Rio De Janeiro,Rio De Janeiro,Brazil,
 41050,EA1IGN,Ismael Zarzoso Garrote,Salamanca,,Spain,
 41065,PH0DV,Dick Vos,Huizen,New Hampshire,Netherlands,
-41100,XE1F,Juan Carlos PÃ©rez ..,Mexico City,Mexico City,Mexico,
+41100,XE1F,Juan Carlos PÃƒÂ©rez ..,Mexico City,Mexico City,Mexico,
 41111,EA1IST,Julian Gaitero Martin,32004 Ourense,,Spain,
-41146,EA1CIU,Tomás Manuel Abeigón Vidal,Pontevedra,PO,Spain,
-41152,EA1GLE,Roberto Perez Martínez,Villariezo (Burgos),,Spain,NX 320
+41146,EA1CIU,TomÃ¡s Manuel AbeigÃ³n Vidal,Pontevedra,PO,Spain,
+41152,EA1GLE,Roberto Perez MartÃ­nez,Villariezo (Burgos),,Spain,NX 320
 41158,AC0WN,Julie A Mcgrew,Florence,Oregon,United States,
 41173,XE1ODN,Edgar Duran,Mexico City,Distrito Federal,Mexico,
 41186,KB7VIS,Kirk H Johnson,Springfield,Oregon,United States,
@@ -1220,11 +1221,11 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 41322,EA1AYL,JOSE MANUEL PEREZ ACES,33120-PRAVIA-ASTURIAS,,Spain,ANYTONE AD868UV
 41334,N7GYL,Chris E Sorensen,Florence,Oregon,United States,
 41421,PY1YB,IVAN SILVA,SAN GONZALO - RIO DE JANEIRO,,Brazil,
-41490,EA1BL,ADOLFO MONTOYA MARQUEZ,LA CORUÑA,,Spain,
+41490,EA1BL,ADOLFO MONTOYA MARQUEZ,LA CORUÃ‘A,,Spain,
 41502,EA1CUE,JOSE MARIA VALLADARES ESTREMADOURO,POBRA DE TRIVES (OURENSE),,Spain,
 42001,EA2IP,Jesus Maria ,Sestao,,Spain,
 42005,N3RPV,Chris Kelly,Allentown,Pennsylvania,United States,
-42006,EA2CQ,IÑIGO BASTARRIKA,VITORIA-GASTEIZ,,Spain,
+42006,EA2CQ,IÃ‘IGO BASTARRIKA,VITORIA-GASTEIZ,,Spain,
 42019,XE2SI,Juan Tellez Amezcua,Tijuana,Baja California Norte,Mexico,
 42025,XE2MBE,Eliud  Bueno Moreno,Durango,Durango,Mexico,
 42029,PU2PYC,Jefferson Grilo,Taboao da Serra,Sao Paulo,Brazil,
@@ -1237,7 +1238,7 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 42077,N3UJV,Paul Petruska,Hatboro,Pennsylvania,United States,
 42125,AA3XN,John Ernandez,Chalfont,Pennsylvania,United States,
 42136,KC4YOZ,Ken Johnson,Newtown Square,Pennsylvania,United States,
-42164,EA2DCR,Agustín Zubasti Madoz,Artica, Navarra,,Spain,Pamplona-Spain
+42164,EA2DCR,AgustÃ­n Zubasti Madoz,Artica, Navarra,,Spain,Pamplona-Spain
 42237,M0GLJ,Adrian Craig,NOTTINGHAM,,England,
 42261,M0VVA,Andrew G Amos,Goffs Oak, Hertfordshire,,England,
 42278,KB3KBD,Daniel S Mackelvey,Bally,Pennsylvania,United States,
@@ -1253,7 +1254,7 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 42665,M6NBP,Norman W,Brighton & Hove City,,England,
 42723,N3GBJ,Christopher D Ruhl,Collingdale,Pennsylvania,United States,
 42817,N3CNJ,David J Hahn,Delta,Pennsylvania,United States,Downtown Delta, Pa
-42902,LA9KY,Frank Hagen,MOSJØEN,,Norway,Repeater
+42902,LA9KY,Frank Hagen,MOSJÃ˜EN,,Norway,Repeater
 42950,KE8HTA,Debra A Sickles,Uniontown,Pennsylvania,United States,
 43002,PA1GF,Gerjan Faber,Amersfoort,,Netherlands,
 43003,PE1NWR,MT FABER-BAKKER,3823JD AMERSFOORT,,Netherlands,
@@ -1267,8 +1268,8 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 43051,EA3EG,Eduard ,Arenys de Munt,,Spain,Spain
 43119,EA3RDG,DIGIGRUP-EA3 ,Catalunya,,Spain,http://www.digigrup.org
 43126,EA3DGI,Texte In Protest EB3TC,Republica de CATALUNYA,,Andorra,JN01SU
-43127,EA3GZL,Javier Jané Chueca,08172 - Sant Cugat del Vallés (Barcelona),,Spain,
-43175,EA3EIZ,Manuel Díaz Jiménez,Santa Perpetua de Mogoda,,Spain,Spain
+43127,EA3GZL,Javier JanÃ© Chueca,08172 - Sant Cugat del VallÃ©s (Barcelona),,Spain,
+43175,EA3EIZ,Manuel DÃ­az JimÃ©nez,Santa Perpetua de Mogoda,,Spain,Spain
 43694,M6PZT,Rick Hankinson,Bridport,,England,
 43751,N4IRS,Steven S Zingman,Palm City,Florida,United States,
 44001,K2BUI,Eric J Nihill,East Greenwich,Rhode Island,United States,
@@ -1279,22 +1280,22 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 44012,PE1PLM,GUUS VAN DOOREN,4417BE Hansweert,,Netherlands,
 44022,KA1MXL,Kevin T Halton,Warwick,Rhode Island,United States,Nx300
 44026,N1GMB,Glenn  Butterfield,West Warwick,Rhode Island,United States,
-44035,EA4DDL,David Conde Martín,Valmojado, Toledo,,Spain,
+44035,EA4DDL,David Conde MartÃ­n,Valmojado, Toledo,,Spain,
 44037,KA1BB,Bradley S Brown,Woonsocket,Rhode Island,United States,
 44054,EA4EZW,Vicente Juan,Madrid,,Spain,SPAIN
-44077,EA4HL,Bernardo Carballo,Plasencia (Cáceres) Extremadura,,Spain,
+44077,EA4HL,Bernardo Carballo,Plasencia (CÃ¡ceres) Extremadura,,Spain,
 44116,EA4AOJ,Jose Luis V M,Madrid,ES,Spain,SPAIN
 44117,EA4GAX,Sergio ,Manzanares el Real (Madrid),,Spain,IN80BR
 44133,EA4DKA,Jose Enrique Espejo Celada,Madrid City,,,Spain,Chamberi
 44135,PD4MM,Marcel QPO,Kerkrade,,Netherlands,Netherlands
 44298,N1JBC,Jed Barton,Barrington,Rhode Island,United States,
-44329,EA4DAC,Domingo Alegre Cebrián,Madrid,,Spain,IN80DI
+44329,EA4DAC,Domingo Alegre CebriÃ¡n,Madrid,,Spain,IN80DI
 44444,W7EFS,Tony Ross,Upper Kittitas County,Washington,United States,
 44510,G7HJX,David Raybould,Burntwood, Staffordshire,,,England,IO92AQ
 44701,2E0NEQ,Jono Clarke,Wallsend,,England,
 44983,2E1GDF,SHAUN OKEEFE,Derbyshire,,England,
 45007,EA5GVK,JOAQUIN MADRID,ALGUAZAS - MURCIA,,Spain,Kenwood NX320E
-45008,EC5ZY,Juan Alfonso Agüera Ortiz,La Azohia Cartagena,,Spain,
+45008,EC5ZY,Juan Alfonso AgÃ¼era Ortiz,La Azohia Cartagena,,Spain,
 45016,EA5GVK,JOAQUIN MADRID,ALGUAZAS - MURCIA,,Spain,KENWOOD NX720E
 45017,EA5IHJ,Antonio M,Novelda,,Spain,
 45026,MM0RKN,Carrie A. Welsh,Lanarkshire,,Scotland,
@@ -1302,8 +1303,8 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 45034,EA4FVB,Pablo Hurtado,Alicante,,Spain,
 45053,PE1MSZ,Ruud Kerstens,4884AD WERNHOUT,,Netherlands,
 45065,M0GIG,David Wharlley,Broadstairs, Kent,,England,
-45072,PH3V,René Tuijtel,Roosendaal,,Netherlands,MMDVM Repeater
-45078,EA5III,Paco Romero Aceña,Dénia (Alacant),,Spain,
+45072,PH3V,RenÃ© Tuijtel,Roosendaal,,Netherlands,MMDVM Repeater
+45078,EA5III,Paco Romero AceÃ±a,DÃ©nia (Alacant),,Spain,
 45112,PD0DIB,Rob van Rheenen,Uden,,Netherlands,JO21TQ
 45170,PD1AEU,AJ SCHALKOORD,4702ES Roosendaal,,Netherlands,
 45321,DL9TD,Thomas Schoddel,Krefeld,,Germany,
@@ -1333,12 +1334,12 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 47032,K9OJ,Robbie Robinette,Chuckey,Tennessee,United States,
 47034,PE1BZF,William van Sutphen,1324MZ ALMERE,Florida,Netherlands,
 47037,EA7HNY,SANCHEZ DAVID,GRANADA,,Spain,
-47089,EA7CCQ,Gabriel Gomez Munoz,04700 El Ejido ( Almería),,Spain,ALMERIA
+47089,EA7CCQ,Gabriel Gomez Munoz,04700 El Ejido ( AlmerÃ­a),,Spain,ALMERIA
 47090,EA7ERD,Fina Cara Palmero,Almeria,,Spain,ALMERIA
 47128,EA7GWD,Jose Sanchez Marin,Sevilla,,Spain,NX320
 47152,EB7GQZ,DAVID RODRIGUEZ RIOS,14850 BAENA (CORDOBA),Colorado,Spain,Spain
 47222,EA7CTL,Manuel Martinez Reyes,San Fernando,,Spain,IM66VL
-47309,EA7GSP,RAFAEL PABLO TRUJILLO MARISCAL,CÓRDOBA,Colorado,Spain,
+47309,EA7GSP,RAFAEL PABLO TRUJILLO MARISCAL,CÃ“RDOBA,Colorado,Spain,
 47350,EA7IBT,Domingo Moron,Coria del Rio (Sevilla),,Spain,
 47415,EA7KDO,Mitchell V Savage,Nerja,Massachusetts,Spain,
 47431,KC2QLX,Aron Ezagui,Brooklyn ,New York,United States,NX5300
@@ -1346,7 +1347,7 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 47686,KG4LHC,Christopher M Sutton,Newport,Tennessee,United States,
 47900,W8BUG,Garret S Scott,Knoxville,Tennessee,United States,
 48009,WA5VYK,Joe Detiveaux Detiveaux,Odessa,Texas,United States,wa5vyk@gmail.com
-48047,EA8URE,Sección Comarcal U.R.E. CHASNA,La Camella, Arona,,Canary Islands,TENERIFE
+48047,EA8URE,SecciÃ³n Comarcal U.R.E. CHASNA,La Camella, Arona,,Canary Islands,TENERIFE
 48066,EA8RH,J. Roman Rodriguez Hernandez,Guia de Isora S/C de Tenerife,TF,Spain,
 48119,K5MFP,Michael F Payne,Frisco,Texas,United States,TYT MD-380
 48164,N5JLR,Joe Rodriguez,Los Fresnos,Texas,United States,NX-300K
@@ -1568,7 +1569,7 @@ Radio ID,Callsign,Name,City,State,Country,Remarks
 61231,N2DUP,Chuck Gysi,Aledo,Illinois,United States,
 61475,N1IRL,Rick  Fiorey,Budd Lake,New Jersey,United States,
 61702,K1ST,Steve Tolf,Dennis,Massachusetts,United States,
-61970,EA1JM,Francisco Jimenez-Martin Sanchez,Peñaranda de Bracamonte (Salamanca),,Spain,
+61970,EA1JM,Francisco Jimenez-Martin Sanchez,PeÃ±aranda de Bracamonte (Salamanca),,Spain,
 62010,KE2EMS,Matt Mcdonald,OGDENSBURG,New York,United States,
 62011,KE2EMS,Matt Mcdonald,OGDENSBURG,New York,United States,MOBILES
 62035,ON2AAV,Luc Bodson,BRASSCHAAT,,Belgium,ANTWERP
