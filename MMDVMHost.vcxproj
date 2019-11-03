@@ -186,6 +186,7 @@
     <ClInclude Include="Hamming.h" />
     <ClInclude Include="DMRLookup.h" />
     <ClInclude Include="I2CController.h" />
+    <ClInclude Include="JitterBuffer.h" />
     <ClInclude Include="LCDproc.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MMDVMHost.h" />
@@ -278,6 +279,7 @@
     <ClCompile Include="Golay24128.cpp" />
     <ClCompile Include="Hamming.cpp" />
     <ClCompile Include="I2CController.cpp" />
+    <ClCompile Include="JitterBuffer.cpp" />
     <ClCompile Include="LCDproc.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MMDVMHost.cpp" />

@@ -33,8 +33,7 @@ const unsigned int BUFFER_LENGTH = 500U;
 const unsigned int HOMEBREW_DATA_PACKET_LENGTH = 55U;
 
 
-CDMRNetwork::CDMRNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, HW_TYPE hwType) :
-m_addressStr(address),
+CDMRNetwork::CDMRNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, HW_TYPE hwType, unsigned int jitter) :
 m_address(),
 m_port(port),
 m_id(NULL),
@@ -46,6 +45,7 @@ m_socket(local),
 m_enabled(false),
 m_slot1(slot1),
 m_slot2(slot2),
+m_jitterBuffers(NULL),
 m_hwType(hwType),
 m_status(WAITING_CONNECT),
 m_retryTimer(1000U, 10U),
@@ -53,7 +53,6 @@ m_timeoutTimer(1000U, 60U),
 m_buffer(NULL),
 m_salt(NULL),
 m_streamId(NULL),
-m_rxData(1000U, "DMR Network"),
 m_options(),
 m_callsign(),
 m_rxFrequency(0U),
@@ -72,13 +71,19 @@ m_beacon(false)
 	assert(port > 0U);
 	assert(id > 1000U);
 	assert(!password.empty());
+	assert(jitter > 0U);
 
 	m_address = CUDPSocket::lookup(address);
 
-	m_buffer   = new unsigned char[BUFFER_LENGTH];
-	m_salt     = new unsigned char[sizeof(uint32_t)];
-	m_id       = new uint8_t[4U];
-	m_streamId = new uint32_t[2U];
+	m_buffer        = new unsigned char[BUFFER_LENGTH];
+	m_salt          = new unsigned char[sizeof(uint32_t)];
+	m_id            = new uint8_t[4U];
+	m_streamId      = new uint32_t[2U];
+
+	m_jitterBuffers = new CJitterBuffer*[3U];
+
+	m_jitterBuffers[1U] = new CJitterBuffer("DMR Slot 1", 60U, DMR_SLOT_TIME, jitter, 256U, debug);
+	m_jitterBuffers[2U] = new CJitterBuffer("DMR Slot 2", 60U, DMR_SLOT_TIME, jitter, 256U, debug);
 
 	m_id[0U] = id >> 24;
 	m_id[1U] = id >> 16;
@@ -94,10 +99,15 @@ m_beacon(false)
 
 CDMRNetwork::~CDMRNetwork()
 {
+	delete m_jitterBuffers[1U];
+	delete m_jitterBuffers[2U];
+
 	delete[] m_buffer;
 	delete[] m_salt;
 	delete[] m_streamId;
 	delete[] m_id;
+
+	delete[] m_jitterBuffers;
 }
 
 void CDMRNetwork::setOptions(const std::string& options)
@@ -124,9 +134,6 @@ bool CDMRNetwork::open()
 {
 	LogMessage("DMR, Opening DMR Network");
 
-	if (m_address.s_addr == INADDR_NONE)
-		m_address = CUDPSocket::lookup(m_addressStr);
-
 	m_status = WAITING_CONNECT;
 	m_timeoutTimer.stop();
 	m_retryTimer.start();
@@ -136,9 +143,6 @@ bool CDMRNetwork::open()
 
 void CDMRNetwork::enable(bool enabled)
 {
-	if (!enabled && m_enabled)
-		m_rxData.clear();
-
 	m_enabled = enabled;
 }
 
@@ -147,63 +151,52 @@ bool CDMRNetwork::read(CDMRData& data)
 	if (m_status != RUNNING)
 		return false;
 
-	if (m_rxData.isEmpty())
-		return false;
+	for (unsigned int slotNo = 1U; slotNo <= 2U; slotNo++) {
+		unsigned int length = 0U;
+		B_STATUS status = BS_NO_DATA;
 
-	unsigned char length = 0U;
-	m_rxData.getData(&length, 1U);
-	m_rxData.getData(m_buffer, length);
+		status = m_jitterBuffers[slotNo]->getData(m_buffer, length);
 
-	// Is this a data packet?
-	if (::memcmp(m_buffer, "DMRD", 4U) != 0)
-		return false;
+		if (status != BS_NO_DATA) {
+			unsigned char seqNo = m_buffer[4U];
 
-	unsigned char seqNo = m_buffer[4U];
+			unsigned int srcId = (m_buffer[5U] << 16) | (m_buffer[6U] << 8) | (m_buffer[7U] << 0);
 
-	unsigned int srcId = (m_buffer[5U] << 16) | (m_buffer[6U] << 8) | (m_buffer[7U] << 0);
+			unsigned int dstId = (m_buffer[8U] << 16) | (m_buffer[9U] << 8) | (m_buffer[10U] << 0);
 
-	unsigned int dstId = (m_buffer[8U] << 16) | (m_buffer[9U] << 8) | (m_buffer[10U] << 0);
+			FLCO flco = (m_buffer[15U] & 0x40U) == 0x40U ? FLCO_USER_USER : FLCO_GROUP;
 
-	unsigned int slotNo = (m_buffer[15U] & 0x80U) == 0x80U ? 2U : 1U;
+			data.setSeqNo(seqNo);
+			data.setSlotNo(slotNo);
+			data.setSrcId(srcId);
+			data.setDstId(dstId);
+			data.setFLCO(flco);
+			data.setMissing(status == BS_MISSING);
 
-	// DMO mode slot disabling
-	if (slotNo == 1U && !m_duplex)
-		return false;
+			bool dataSync = (m_buffer[15U] & 0x20U) == 0x20U;
+			bool voiceSync = (m_buffer[15U] & 0x10U) == 0x10U;
 
-	// Individual slot disabling
-	if (slotNo == 1U && !m_slot1)
-		return false;
-	if (slotNo == 2U && !m_slot2)
-		return false;
+			if (dataSync) {
+				unsigned char dataType = m_buffer[15U] & 0x0FU;
+				data.setData(m_buffer + 20U);
+				data.setDataType(dataType);
+				data.setN(0U);
+			} else if (voiceSync) {
+				data.setData(m_buffer + 20U);
+				data.setDataType(DT_VOICE_SYNC);
+				data.setN(0U);
+			} else {
+				unsigned char n = m_buffer[15U] & 0x0FU;
+				data.setData(m_buffer + 20U);
+				data.setDataType(DT_VOICE);
+				data.setN(n);
+			}
 
-	FLCO flco = (m_buffer[15U] & 0x40U) == 0x40U ? FLCO_USER_USER : FLCO_GROUP;
-
-	data.setSeqNo(seqNo);
-	data.setSlotNo(slotNo);
-	data.setSrcId(srcId);
-	data.setDstId(dstId);
-	data.setFLCO(flco);
-
-	bool dataSync = (m_buffer[15U] & 0x20U) == 0x20U;
-	bool voiceSync = (m_buffer[15U] & 0x10U) == 0x10U;
-
-	if (dataSync) {
-		unsigned char dataType = m_buffer[15U] & 0x0FU;
-		data.setData(m_buffer + 20U);
-		data.setDataType(dataType);
-		data.setN(0U);
-	} else if (voiceSync) {
-		data.setData(m_buffer + 20U);
-		data.setDataType(DT_VOICE_SYNC);
-		data.setN(0U);
-	} else {
-		unsigned char n = m_buffer[15U] & 0x0FU;
-		data.setData(m_buffer + 20U);
-		data.setDataType(DT_VOICE);
-		data.setN(n);
+			return true;
+		}
 	}
 
-	return true;
+	return false;
 }
 
 bool CDMRNetwork::write(const CDMRData& data)
@@ -254,15 +247,8 @@ bool CDMRNetwork::write(const CDMRData& data)
 	} else if (dataType == DT_VOICE) {
 		buffer[15U] |= data.getN();
 	} else {
-		if (dataType == DT_VOICE_LC_HEADER) {
-			m_streamId[slotIndex] = ::rand() + 1U;
+		if (dataType == DT_VOICE_LC_HEADER)
 			count = 2U;
-		}
-
-		if (dataType == DT_CSBK || dataType == DT_DATA_HEADER) {
-			m_streamId[slotIndex] = ::rand() + 1U;
-			count = 1U;
-		}
 
 		buffer[15U] |= (0x20U | dataType);
 	}
@@ -365,6 +351,9 @@ void CDMRNetwork::close()
 
 void CDMRNetwork::clock(unsigned int ms)
 {
+	m_jitterBuffers[1U]->clock(ms);
+	m_jitterBuffers[2U]->clock(ms);
+
 	if (m_status == WAITING_CONNECT) {
 		m_retryTimer.clock(ms);
 		if (m_retryTimer.isRunning() && m_retryTimer.hasExpired()) {
@@ -402,10 +391,7 @@ void CDMRNetwork::clock(unsigned int ms)
 			if (m_enabled) {
 				if (m_debug)
 					CUtils::dump(1U, "Network Received", m_buffer, length);
-
-				unsigned char len = length;
-				m_rxData.addData(&len, 1U);
-				m_rxData.addData(m_buffer, len);
+				receiveData(m_buffer, length);
 			}
 		} else if (::memcmp(m_buffer, "MSTNAK",  6U) == 0) {
 			if (m_status == RUNNING) {
@@ -503,6 +489,51 @@ void CDMRNetwork::clock(unsigned int ms)
 		LogError("DMR, Connection to the master has timed out, retrying connection");
 		close();
 		open();
+	}
+}
+
+void CDMRNetwork::reset(unsigned int slotNo)
+{
+	assert(slotNo == 1U || slotNo == 2U);
+
+	if (slotNo == 1U) {
+		m_jitterBuffers[1U]->reset();
+		m_streamId[0U] = ::rand() + 1U;
+	} else {
+		m_jitterBuffers[2U]->reset();
+		m_streamId[1U] = ::rand() + 1U;
+	}
+}
+
+void CDMRNetwork::receiveData(const unsigned char* data, unsigned int length)
+{
+	assert(data != NULL);
+	assert(length > 0U);
+
+	unsigned int slotNo = (data[15U] & 0x80U) == 0x80U ? 2U : 1U;
+
+	// DMO mode slot disabling
+	if (slotNo == 1U && !m_duplex)
+		return;
+
+	// Individual slot disabling
+	if (slotNo == 1U && !m_slot1)
+		return;
+	if (slotNo == 2U && !m_slot2)
+		return;
+
+	unsigned char dataType = data[15U] & 0x3FU;
+	if (dataType == (0x20U | DT_CSBK) ||
+		dataType == (0x20U | DT_DATA_HEADER) ||
+		dataType == (0x20U | DT_RATE_1_DATA) ||
+		dataType == (0x20U | DT_RATE_34_DATA) ||
+		dataType == (0x20U | DT_RATE_12_DATA)) {
+		// Data & CSBK frames
+		m_jitterBuffers[slotNo]->appendData(data, length);
+	} else {
+		// Voice frames
+		unsigned char seqNo = data[4U];
+		m_jitterBuffers[slotNo]->addData(data, length, seqNo);
 	}
 }
 

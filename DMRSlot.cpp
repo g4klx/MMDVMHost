@@ -936,6 +936,9 @@ void CDMRSlot::writeEndRF(bool writeEnd)
 		}
 	}
 
+	if (m_network != NULL)
+		m_network->reset(m_slotNo);
+
 	m_rfTimeoutTimer.stop();
 	m_rfTimeout = false;
 
@@ -985,6 +988,9 @@ void CDMRSlot::writeEndNet(bool writeEnd)
 				writeQueueNet(data);
 		}
 	}
+
+	if (m_network != NULL)
+		m_network->reset(m_slotNo);
 
 	m_networkWatchdog.stop();
 	m_netTimeoutTimer.stop();
