@@ -425,6 +425,7 @@ int CMMDVMHost::run()
 		m_dstar = new CDStarControl(m_callsign, module, selfOnly, ackReply, ackTime, ackMessage, errorReply, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex, remoteGateway, rssi);
 	}
 
+	DMR_BEACONS dmrBeacons = DMR_BEACONS_OFF;
 	CTimer dmrBeaconIntervalTimer(1000U);
 	CTimer dmrBeaconDurationTimer(1000U);
 
@@ -443,7 +444,7 @@ int CMMDVMHost::run()
 		unsigned int txHang         = m_conf.getDMRTXHang();
 		unsigned int jitter         = m_conf.getDMRNetworkJitter();
 		m_dmrRFModeHang             = m_conf.getDMRModeHang();
-		DMR_BEACONS dmrBeacons      = m_conf.getDMRBeacons();
+		dmrBeacons                  = m_conf.getDMRBeacons();
 		bool ovcm                   = m_conf.getDMROVCM();
 
 		if (txHang > m_dmrRFModeHang)
