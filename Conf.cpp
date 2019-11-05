@@ -130,7 +130,7 @@ m_dstarErrorReply(true),
 m_dstarRemoteGateway(false),
 m_dstarModeHang(10U),
 m_dmrEnabled(false),
-m_dmrBeacons(false),
+m_dmrBeacons(DMR_BEACONS_OFF),
 m_dmrBeaconInterval(60U),
 m_dmrBeaconDuration(3U),
 m_dmrId(0U),
@@ -530,10 +530,11 @@ bool CConf::read()
 		if (::strcmp(key, "Enable") == 0)
 			m_dmrEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "Beacons") == 0)
-			m_dmrBeacons = ::atoi(value) == 1;
-		else if (::strcmp(key, "BeaconInterval") == 0)
+			m_dmrBeacons = ::atoi(value) == 1 ? DMR_BEACONS_NETWORK : DMR_BEACONS_OFF;
+		else if (::strcmp(key, "BeaconInterval") == 0) {
+			m_dmrBeacons = m_dmrBeacons != DMR_BEACONS_OFF ? DMR_BEACONS_TIMED : DMR_BEACONS_OFF;
 			m_dmrBeaconInterval = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "BeaconDuration") == 0)
+		} else if (::strcmp(key, "BeaconDuration") == 0)
 			m_dmrBeaconDuration = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Id") == 0)
 			m_dmrId = (unsigned int)::atoi(value);
@@ -1174,7 +1175,7 @@ bool CConf::getDMREnabled() const
 	return m_dmrEnabled;
 }
 
-bool CConf::getDMRBeacons() const
+DMR_BEACONS CConf::getDMRBeacons() const
 {
 	return m_dmrBeacons;
 }

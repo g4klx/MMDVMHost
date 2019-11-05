@@ -443,7 +443,7 @@ int CMMDVMHost::run()
 		unsigned int txHang         = m_conf.getDMRTXHang();
 		unsigned int jitter         = m_conf.getDMRNetworkJitter();
 		m_dmrRFModeHang             = m_conf.getDMRModeHang();
-		bool dmrBeacons             = m_conf.getDMRBeacons();
+		DMR_BEACONS dmrBeacons      = m_conf.getDMRBeacons();
 		bool ovcm                   = m_conf.getDMROVCM();
 
 		if (txHang > m_dmrRFModeHang)
@@ -479,17 +479,33 @@ int CMMDVMHost::run()
 		LogInfo("    Mode Hang: %us", m_dmrRFModeHang);
 		LogInfo("    OVCM: %s", ovcm ? "on" : "off");
 
-		if (dmrBeacons) {
-			unsigned int dmrBeaconInterval = m_conf.getDMRBeaconInterval();
-			unsigned int dmrBeaconDuration = m_conf.getDMRBeaconDuration();
+		switch (dmrBeacons) {
+			case DMR_BEACONS_NETWORK: {
+					unsigned int dmrBeaconDuration = m_conf.getDMRBeaconDuration();
 
-			LogInfo("    DMR Roaming Beacon Interval: %us", dmrBeaconInterval);
-			LogInfo("    DMR Roaming Beacon Duration: %us", dmrBeaconDuration);
+					LogInfo("    DMR Roaming Beacons Type: network");
+					LogInfo("    DMR Roaming Beacons Duration: %us", dmrBeaconDuration);
 
-			dmrBeaconDurationTimer.setTimeout(dmrBeaconDuration);
+					dmrBeaconDurationTimer.setTimeout(dmrBeaconDuration);
+				}
+				break;
+			case DMR_BEACONS_TIMED: {
+					unsigned int dmrBeaconInterval = m_conf.getDMRBeaconInterval();
+					unsigned int dmrBeaconDuration = m_conf.getDMRBeaconDuration();
 
-			dmrBeaconIntervalTimer.setTimeout(dmrBeaconInterval);
-			dmrBeaconIntervalTimer.start();
+					LogInfo("    DMR Roaming Beacons Type: timed");
+					LogInfo("    DMR Roaming Beacons Interval: %us", dmrBeaconInterval);
+					LogInfo("    DMR Roaming Beacons Duration: %us", dmrBeaconDuration);
+
+					dmrBeaconDurationTimer.setTimeout(dmrBeaconDuration);
+
+					dmrBeaconIntervalTimer.setTimeout(dmrBeaconInterval);
+					dmrBeaconIntervalTimer.start();
+				}
+				break;
+			default:
+				LogInfo("    DMR Roaming Beacons Type: off");
+				break;
 		}
 
 		m_dmr = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, dumpTAData, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_dmrLookup, rssi, jitter, ovcm);
@@ -977,14 +993,32 @@ int CMMDVMHost::run()
 			}
 		}
 
-		dmrBeaconIntervalTimer.clock(ms);
-		if (dmrBeaconIntervalTimer.isRunning() && dmrBeaconIntervalTimer.hasExpired()) {
-			if ((m_mode == MODE_IDLE || m_mode == MODE_DMR) && !m_modem->hasTX()) {
-				if (!m_fixedMode && m_mode == MODE_IDLE)
-					setMode(MODE_DMR);
-				dmrBeaconIntervalTimer.start();
-				dmrBeaconDurationTimer.start();
-			}
+		switch (dmrBeacons) {
+			case DMR_BEACONS_TIMED:
+				dmrBeaconIntervalTimer.clock(ms);
+				if (dmrBeaconIntervalTimer.isRunning() && dmrBeaconIntervalTimer.hasExpired()) {
+					if ((m_mode == MODE_IDLE || m_mode == MODE_DMR) && !m_modem->hasTX()) {
+						if (!m_fixedMode && m_mode == MODE_IDLE)
+							setMode(MODE_DMR);
+						dmrBeaconIntervalTimer.start();
+						dmrBeaconDurationTimer.start();
+					}
+				}
+				break;
+			case DMR_BEACONS_NETWORK:
+				if (m_dmrNetwork != NULL) {
+					bool beacon = m_dmrNetwork->wantsBeacon();
+					if (beacon) {
+						if ((m_mode == MODE_IDLE || m_mode == MODE_DMR) && !m_modem->hasTX()) {
+							if (!m_fixedMode && m_mode == MODE_IDLE)
+								setMode(MODE_DMR);
+							dmrBeaconDurationTimer.start();
+						}
+					}
+				}
+				break;
+			default:
+				break;
 		}
 
 		dmrBeaconDurationTimer.clock(ms);

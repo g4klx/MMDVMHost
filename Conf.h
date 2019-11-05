@@ -119,7 +119,7 @@ public:
 
   // The DMR section
   bool         getDMREnabled() const;
-  bool         getDMRBeacons() const;
+  DMR_BEACONS  getDMRBeacons() const;
   unsigned int getDMRBeaconInterval() const;
   unsigned int getDMRBeaconDuration() const;
   unsigned int getDMRId() const;
