@@ -72,7 +72,7 @@ bool CDMRTA::decodeTA()
 
     unsigned int TAformat = (talkerAlias[0] >> 6U) & 0x03U;
     unsigned int TAsize   = (talkerAlias[0] >> 1U) & 0x1FU;
-    ::strncpy(m_TA, "(could not decode)", sizeof(m_TA));
+    ::memcpy(m_TA, "(could not decode)", sizeof(m_TA));
 
     switch (TAformat) {
 	case 0U:		// 7 bit
@@ -96,7 +96,7 @@ bool CDMRTA::decodeTA()
 
 	case 1U:		// ISO 8 bit
 	case 2U:		// UTF8
-		::strncpy(m_TA, (char*)talkerAlias + 1U, sizeof(m_TA));
+		::memcpy(m_TA, talkerAlias + 1U, sizeof(m_TA));
 		break;
 
 	case 3U:		// UTF16 poor man's conversion
@@ -117,9 +117,9 @@ bool CDMRTA::decodeTA()
 
 	if (TAlen > TAsize) {
         if (TAlen < 29U)
-            strcat(m_TA," ?");
+            strcat(m_TA, " ?");
         else
-            strcpy(m_TA + 28U," ?");
+            strcpy(m_TA + 28U, " ?");
     }
 
     return TAlen >= TAsize;
