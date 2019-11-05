@@ -43,7 +43,7 @@ CDisplay*      CDMRSlot::m_display = NULL;
 bool           CDMRSlot::m_duplex = true;
 CDMRLookup*    CDMRSlot::m_lookup = NULL;
 unsigned int   CDMRSlot::m_hangCount = 3U * 17U;
-bool           CDMRSlot::m_ovcm = true;
+bool           CDMRSlot::m_ovcm = false;
 
 CRSSIInterpolator* CDMRSlot::m_rssiMapper = NULL;
 
