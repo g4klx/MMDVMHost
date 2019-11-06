@@ -45,6 +45,10 @@ public:
 	CSBKO         getCSBKO() const;
 	unsigned char getFID() const;
 
+	// Set/Get the OVCM bit in the supported CSBKs
+	bool getOVCM() const;
+	void setOVCM(bool ovcm);
+
 	// For BS Dwn Act
 	unsigned int  getBSId() const;
 

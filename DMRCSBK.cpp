@@ -149,6 +149,31 @@ unsigned char CDMRCSBK::getFID() const
 	return m_FID;
 }
 
+bool CDMRCSBK::getOVCM() const
+{
+	bool bOVCM = false;
+	// Service options informations are only available in
+	// "Unit to Unit Voice Service Request CSBK" and
+	// "Unit to Unit Voice Service Answer Response CSBK"
+	if ((m_CSBKO == CSBKO_UUVREQ) || (m_CSBKO == CSBKO_UUANSRSP))
+	{
+		bOVCM = (m_data[2U] & 0x04U) == 0x04U;
+	}
+	return bOVCM;
+}
+
+void CDMRCSBK::setOVCM(bool ovcm)
+{
+	// Set OVCM only in CSBKs having the service options information
+	if ((m_CSBKO == CSBKO_UUVREQ) || (m_CSBKO == CSBKO_UUANSRSP))
+	{
+		if (ovcm)
+			m_data[2U] |= 0x04U;
+		else
+			m_data[2U] &= 0xFBU;
+	}
+}
+
 bool CDMRCSBK::getGI() const
 {
 	return m_GI;
