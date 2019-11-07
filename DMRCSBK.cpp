@@ -1,5 +1,6 @@
 /*
  *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2019 by Patrick Maier DK5MP
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -156,17 +157,15 @@ bool CDMRCSBK::getOVCM() const
 	// "Unit to Unit Voice Service Request CSBK" and
 	// "Unit to Unit Voice Service Answer Response CSBK"
 	if ((m_CSBKO == CSBKO_UUVREQ) || (m_CSBKO == CSBKO_UUANSRSP))
-	{
 		bOVCM = (m_data[2U] & 0x04U) == 0x04U;
-	}
+
 	return bOVCM;
 }
 
 void CDMRCSBK::setOVCM(bool ovcm)
 {
 	// Set OVCM only in CSBKs having the service options information
-	if ((m_CSBKO == CSBKO_UUVREQ) || (m_CSBKO == CSBKO_UUANSRSP))
-	{
+	if ((m_CSBKO == CSBKO_UUVREQ) || (m_CSBKO == CSBKO_UUANSRSP)) {
 		if (ovcm)
 			m_data[2U] |= 0x04U;
 		else
