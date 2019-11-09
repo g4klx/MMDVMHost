@@ -62,7 +62,7 @@ public:
 
 	void enable(bool enabled);
 
-	static void init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData, unsigned int callHang, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter, bool ovcm);
+	static void init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData, unsigned int callHang, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter, bool ovcm, bool ovcmRX);
 
 private:
 	unsigned int               m_slotNo;
@@ -124,6 +124,7 @@ private:
 	static CDMRLookup*         m_lookup;
 	static unsigned int        m_hangCount;
 	static bool                m_ovcm;
+    static bool                m_ovcmRX;
 
 	static CRSSIInterpolator*  m_rssiMapper;
 
