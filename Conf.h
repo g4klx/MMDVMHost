@@ -135,8 +135,7 @@ public:
   unsigned int getDMRCallHang() const;
   unsigned int getDMRTXHang() const;
   unsigned int getDMRModeHang() const;
-  bool         getDMROVCM() const;
-  bool         getDMROVCMRX() const;
+  int         getDMROVCM() const;
 
   // The System Fusion section
   bool          getFusionEnabled() const;
@@ -375,8 +374,7 @@ private:
   unsigned int m_dmrCallHang;
   unsigned int m_dmrTXHang;
   unsigned int m_dmrModeHang;
-  bool         m_dmrOVCM;
-  bool         m_dmrOVCMRX;
+  int          m_dmrOVCM;
 
   bool          m_fusionEnabled;
   bool          m_fusionLowDeviation;
