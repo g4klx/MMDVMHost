@@ -43,7 +43,7 @@ CDisplay*      CDMRSlot::m_display = NULL;
 bool           CDMRSlot::m_duplex = true;
 CDMRLookup*    CDMRSlot::m_lookup = NULL;
 unsigned int   CDMRSlot::m_hangCount = 3U * 17U;
-int            CDMRSlot::m_ovcm = 0;
+DMR_OVCM_TYPES CDMRSlot::m_ovcm = DMR_OVCM_OFF;
 
 CRSSIInterpolator* CDMRSlot::m_rssiMapper = NULL;
 
@@ -233,7 +233,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				return false;
 			}
 
-			lc->setOVCM(m_ovcm & 0x02);
+			lc->setOVCM(m_ovcm & DMR_OVCM_TX_ON);
 			m_rfLC = lc;
 
 			// The standby LC data
@@ -438,7 +438,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				return false;
 
 			// set the OVCM bit for the supported csbk
-			csbk.setOVCM(m_ovcm & 0x02);
+			csbk.setOVCM(m_ovcm & DMR_OVCM_TX_ON);
 
 			bool gi = csbk.getGI();
 			unsigned int srcId = csbk.getSrcId();
@@ -789,7 +789,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					return false;
 				}
 
-				lc->setOVCM(m_ovcm & 0x02);
+				lc->setOVCM(m_ovcm & DMR_OVCM_TX_ON);
 				m_rfLC = lc;
 
 				// The standby LC data
@@ -1045,7 +1045,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				dmrData.getSrcId(), dmrData.getFLCO() == FLCO_GROUP ? "TG" : "", dmrData.getDstId(),
 				srcId, flco == FLCO_GROUP ? "TG" : "", dstId);
 
-		lc->setOVCM(m_ovcm & 0x01);
+		lc->setOVCM(m_ovcm & DMR_OVCM_RX_ON);
 		m_netLC = lc;
 
 		// The standby LC data
@@ -1119,7 +1119,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			unsigned int dstId = lc->getDstId();
 			unsigned int srcId = lc->getSrcId();
 
-			lc->setOVCM(m_ovcm & 0x01);
+			lc->setOVCM(m_ovcm & DMR_OVCM_RX_ON);
 			m_netLC = lc;
 
 			m_lastFrameValid = false;
@@ -1305,7 +1305,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			unsigned int dstId = lc->getDstId();
 			unsigned int srcId = lc->getSrcId();
 
-			lc->setOVCM(m_ovcm & 0x01);
+			lc->setOVCM(m_ovcm & DMR_OVCM_RX_ON);
 			m_netLC = lc;
 
 			// The standby LC data
@@ -1575,7 +1575,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			return;
 
 		// set the OVCM bit for the supported csbk
-		csbk.setOVCM(m_ovcm & 0x01);
+		csbk.setOVCM(m_ovcm & DMR_OVCM_RX_ON);
 
 		bool gi = csbk.getGI();
 		unsigned int srcId = csbk.getSrcId();
@@ -1881,7 +1881,7 @@ void CDMRSlot::writeQueueNet(const unsigned char *data)
 	m_queue.addData(data, len);
 }
 
-void CDMRSlot::init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData, unsigned int callHang, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter, int ovcm)
+void CDMRSlot::init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData, unsigned int callHang, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter, DMR_OVCM_TYPES ovcm)
 {
 	assert(modem != NULL);
 	assert(display != NULL);

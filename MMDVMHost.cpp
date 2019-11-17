@@ -445,7 +445,7 @@ int CMMDVMHost::run()
 		unsigned int jitter         = m_conf.getDMRNetworkJitter();
 		m_dmrRFModeHang             = m_conf.getDMRModeHang();
 		dmrBeacons                  = m_conf.getDMRBeacons();
-		int ovcm                   = m_conf.getDMROVCM();
+		DMR_OVCM_TYPES ovcm         = m_conf.getDMROVCM();
 
 		if (txHang > m_dmrRFModeHang)
 			txHang = m_dmrRFModeHang;
@@ -478,12 +478,15 @@ int CMMDVMHost::run()
 		LogInfo("    Call Hang: %us", callHang);
 		LogInfo("    TX Hang: %us", txHang);
 		LogInfo("    Mode Hang: %us", m_dmrRFModeHang);
-		if (ovcm == 0)
+		if (ovcm == DMR_OVCM_OFF)
 			LogInfo("    OVCM: off");
-		else if (ovcm == 1)
-			LogInfo("    OVCM: on(rx)");
-		else
+		else if (ovcm == DMR_OVCM_RX_ON)
+			LogInfo("    OVCM: on(rx only)");
+		else if (ovcm == DMR_OVCM_TX_ON)
+			LogInfo("    OVCM: on(tx only)");
+		else if (ovcm == DMR_OVCM_ON)
 			LogInfo("    OVCM: on");
+
 
 		switch (dmrBeacons) {
 			case DMR_BEACONS_NETWORK: {

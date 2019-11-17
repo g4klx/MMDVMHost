@@ -146,7 +146,7 @@ m_dmrSlot2TGWhiteList(),
 m_dmrCallHang(10U),
 m_dmrTXHang(4U),
 m_dmrModeHang(10U),
-m_dmrOVCM(0),
+m_dmrOVCM(DMR_OVCM_OFF),
 m_fusionEnabled(false),
 m_fusionLowDeviation(false),
 m_fusionRemoteGateway(false),
@@ -593,7 +593,20 @@ bool CConf::read()
 		else if (::strcmp(key, "ModeHang") == 0)
 			m_dmrModeHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "OVCM") == 0)
-			m_dmrOVCM = ::atoi(value);
+			switch(::atoi(value)) {
+				case 1:
+					m_dmrOVCM = DMR_OVCM_RX_ON;
+					break;
+				case 2:
+					m_dmrOVCM = DMR_OVCM_TX_ON;
+					break;
+				case 3:
+					m_dmrOVCM = DMR_OVCM_ON;
+					break;
+				default:
+					m_dmrOVCM = DMR_OVCM_OFF;
+					break;
+			}
     } else if (section == SECTION_FUSION) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fusionEnabled = ::atoi(value) == 1;
@@ -1255,7 +1268,7 @@ unsigned int CConf::getDMRModeHang() const
 	return m_dmrModeHang;
 }
 
-int CConf::getDMROVCM() const
+DMR_OVCM_TYPES CConf::getDMROVCM() const
 {
 	return m_dmrOVCM;
 }
