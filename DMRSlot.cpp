@@ -338,7 +338,6 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				data[1U] = 0x00U;
 
 				writeNetworkRF(data, DT_TERMINATOR_WITH_LC);
-				writeNetworkRF(data, DT_TERMINATOR_WITH_LC);
 
 				if (m_duplex) {
 					for (unsigned int i = 0U; i < m_hangCount; i++)
