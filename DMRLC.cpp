@@ -193,8 +193,6 @@ void CDMRLC::setOVCM(bool ovcm)
 {
 	if (ovcm)
 		m_options |= 0x04U;
-	else
-		m_options &= 0xFBU;
 }
 
 unsigned int CDMRLC::getSrcId() const

@@ -168,8 +168,6 @@ void CDMRCSBK::setOVCM(bool ovcm)
 	if ((m_CSBKO == CSBKO_UUVREQ) || (m_CSBKO == CSBKO_UUANSRSP)) {
 		if (ovcm)
 			m_data[2U] |= 0x04U;
-		else
-			m_data[2U] &= 0xFBU;
 	}
 }
 
