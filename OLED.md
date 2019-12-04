@@ -12,7 +12,7 @@ As I don’t use monitor or TV connected to Pi, I decreased dedicated video memo
 To be able to compile you will need the compiler and some others tools, issue a :
 
 ```
-sudo apt-get install build-essential git-core libi2c-dev i2c-tools lm-sensors
+sudo apt-get install build-essential git-core libi2c-dev i2c-tools lm-sensors wiringpi
 ```
 *italic* Sometimes I2C and SPI modules are not started and thus he cannot start the sample code. The solution to start the modules at startup by adding the two following lines into the file /etc/modules
 
