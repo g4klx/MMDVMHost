@@ -44,7 +44,7 @@ void CDMREMB::putData(const unsigned char* data)
 	DMREMB[1U]  = (data[18U] << 4) & 0xF0U;
 	DMREMB[1U] |= (data[19U] >> 4) & 0x0FU;
 
-	char code = CQR1676::decode(DMREMB);
+	unsigned char code = CQR1676::decode(DMREMB);
 
 	m_colorCode = (code >> 4) & 0x0FU;
 	m_PI        = (code & 0x08U) == 0x08U;
