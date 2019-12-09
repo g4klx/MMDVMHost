@@ -46,6 +46,7 @@ protected:
 	virtual void clearDStarInt();
 
 	virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
+	virtual void writeDMRUserInt(unsigned int slotNo, const std::string& name, std::string& city, std::string &state, std::string &country);
 	virtual void clearDMRInt(unsigned int slotNo);
 
 	virtual void writeFusionInt(const char* source, const char* dest, const char* type, const char* origin);

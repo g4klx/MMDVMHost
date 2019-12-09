@@ -151,6 +151,11 @@ void CDisplay::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 	writeDMRInt(slotNo, src, group, dst, type);
 }
 
+void CDisplay::writeDMRUser(unsigned int slotNo, const std::string& name, std::string& city, std::string &state, std::string &country)
+{
+	writeDMRUserInt(slotNo, name, city, state, country);
+}
+
 void CDisplay::writeDMRRSSI(unsigned int slotNo, unsigned char rssi)
 {
 	if (rssi != 0U)
@@ -383,6 +388,10 @@ void CDisplay::writeDStarRSSIInt(unsigned char rssi)
 }
 
 void CDisplay::writeDStarBERInt(float ber)
+{
+}
+
+void CDisplay::writeDMRUserInt(unsigned int slotNo, const std::string& name, std::string& city, std::string &state, std::string &country)
 {
 }
 

@@ -36,6 +36,7 @@ public:
 
 	std::string find(unsigned int id);
 	std::string findWithName(unsigned int id);
+	void findUserInfo(unsigned int id, std::string& name, std::string& city, std::string& state, std::string& country);
 
 	bool exists(unsigned int id);
 
@@ -45,10 +46,16 @@ private:
 	std::string                                   m_filename;
 	unsigned int                                  m_reloadTime;
 	std::unordered_map<unsigned int, std::string> m_table;
+	std::unordered_map<unsigned int, std::string> m_tableName;
+	std::unordered_map<unsigned int, std::string> m_tableCity;
+	std::unordered_map<unsigned int, std::string> m_tableState;
+	std::unordered_map<unsigned int, std::string> m_tableCountry;
 	CMutex                                        m_mutex;
 	bool                                          m_stop;
 
 	bool load();
+	bool loadcsv();
+	char* tokenize(char *str, char **next);
 };
 
 #endif

@@ -1103,7 +1103,10 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		std::string src = m_lookup->find(srcId);
 		std::string dst = m_lookup->find(dstId);
 		std::string cn = m_lookup->findWithName(srcId);
+		std::string dst_name, dst_city, dst_state, dst_country;
+		m_lookup->findUserInfo(srcId, dst_name, dst_city, dst_state, dst_country);
 		m_display->writeDMR(m_slotNo, cn, flco == FLCO_GROUP, dst, "N");
+		m_display->writeDMRUser(m_slotNo, dst_name, dst_city, dst_state, dst_country);
 
 #if defined(DUMP_DMR)
 		openFile();

@@ -41,7 +41,8 @@ CDMRLookup::~CDMRLookup()
 
 bool CDMRLookup::read()
 {
-	bool ret = load();
+	bool ret = (m_filename.rfind(".csv") == std::string::npos) ?
+		load() : loadcsv();
 
 	if (m_reloadTime > 0U)
 		run();
@@ -83,7 +84,7 @@ void CDMRLookup::stop()
 
 std::string CDMRLookup::findWithName(unsigned int id)
 {
-	std::string callsign;
+	std::string callsign, name;
 
 	if (id == 0xFFFFFFU)
 		return std::string("ALL");
@@ -100,9 +101,15 @@ std::string CDMRLookup::findWithName(unsigned int id)
 		callsign = std::string(text);
 	}
 
+	try {
+		name = " " + m_tableName.at(id);
+	} catch (...) {
+		name = "";
+	}
+
 	m_mutex.unlock();
 
-	return callsign;
+	return callsign + name;
 }
 std::string CDMRLookup::find(unsigned int id)
 {
@@ -137,6 +144,37 @@ std::string CDMRLookup::find(unsigned int id)
 	return callsign;
 }
 
+void CDMRLookup::findUserInfo(unsigned int id, std::string& name, std::string& city, std::string& state, std::string& country)
+{
+	m_mutex.lock();
+
+	try {
+		name = m_tableName.at(id);
+	} catch (...) {
+		name = "";
+	}
+
+	try {
+		city = m_tableCity.at(id);
+	} catch (...) {
+		city = "";
+	}
+
+	try {
+		state = m_tableState.at(id);
+	} catch (...) {
+		state = "";
+	}
+
+	try {
+		country = m_tableCountry.at(id);
+	} catch (...) {
+		country = "";
+	}
+
+	m_mutex.unlock();
+}
+
 bool CDMRLookup::exists(unsigned int id)
 {
 	m_mutex.lock();
@@ -160,6 +198,10 @@ bool CDMRLookup::load()
 
 	// Remove the old entries
 	m_table.clear();
+	m_tableName.clear();
+	m_tableCity.clear();
+	m_tableState.clear();
+	m_tableCountry.clear();
 
 	char buffer[100U];
 	while (::fgets(buffer, 100U, fp) != NULL) {
@@ -195,4 +237,99 @@ bool CDMRLookup::load()
 	LogInfo("Loaded %u Ids to the DMR callsign lookup table", size);
 
 	return true;
+}
+
+bool CDMRLookup::loadcsv()
+{
+	FILE* fp = ::fopen(m_filename.c_str(), "r");
+	if (fp == NULL) {
+		LogWarning("Cannot open the DMR Id lookup file - %s", m_filename.c_str());
+		return false;
+	}
+
+	m_mutex.lock();
+
+	// Remove the old entries
+	m_table.clear();
+	m_tableName.clear();
+	m_tableCity.clear();
+	m_tableState.clear();
+	m_tableCountry.clear();
+
+	char buffer[256U];
+
+	// set index for entries
+	if (::fgets(buffer, sizeof(buffer), fp) == NULL) {
+		LogWarning("DMR Id lookup file has no entry - %s", m_filename.c_str());
+		m_mutex.unlock();
+		::fclose(fp);
+		return false;
+	}
+
+	char *p1, *p2;
+	int n, ixId, ixCall, ixFName, ixLName, ixCity, ixState, ixCountry;
+	ixId = ixCall = ixFName = ixLName = ixCity = ixState = ixCountry = -1;
+	for (n = 0, p1 = tokenize(buffer, &p2); p1 != NULL;
+	     n++, p1 = tokenize(p2, &p2)) {
+		if (!::strcmp("RADIO_ID", p1)) ixId = n;
+		else if (!::strcmp("CALLSIGN", p1)) ixCall = n;
+		else if (!::strcmp("FIRST_NAME", p1)) ixFName = n;
+		else if (!::strcmp("LAST_NAME", p1)) ixLName = n;
+		else if (!::strcmp("CITY", p1)) ixCity = n;
+		else if (!::strcmp("STATE", p1)) ixState = n;
+		else if (!::strcmp("COUNTRY", p1)) ixCountry = n;
+	}
+
+	// register entries
+	char *pId, *pCall, *pFName, *pLName, *pCity, *pState, *pCountry;
+	while (::fgets(buffer, sizeof(buffer), fp) != NULL) {
+		pId = pCall = pFName = pLName = pCity = pState = pCountry = NULL;
+		for (n = 0, p1 = tokenize(buffer, &p2); p1 != NULL;
+		     n++, p1 = tokenize(p2, &p2)) {
+			if (n == ixId) pId = p1;
+			else if (n == ixCall) pCall = p1;
+			else if (n == ixFName) pFName = p1;
+			else if (n == ixLName) pLName = p1;
+			else if (n == ixCity) pCity = p1;
+			else if (n == ixState) pState = p1;
+			else if (n == ixCountry) pCountry = p1;
+		}
+
+		if (pId != NULL && pCall != NULL) {
+			unsigned int id = (unsigned int)::atoi(pId);
+			for (char *p = pCall; *p; p++) *p = ::toupper(*p);
+			m_table[id] = std::string(pCall);
+			if (pFName != NULL && pLName != NULL) m_tableName[id] = std::string(pFName) + " " + std::string(pLName);
+			if (pCity != NULL) m_tableCity[id] = std::string(pCity);
+			if (pState != NULL) m_tableState[id] = std::string(pState);
+			if (pCountry != NULL) m_tableCountry[id] = std::string(pCountry);
+		}
+	}
+
+	m_mutex.unlock();
+
+	::fclose(fp);
+
+	size_t size = m_table.size();
+	if (size == 0U)
+		return false;
+
+	LogInfo("Loaded %u Ids to the DMR callsign lookup table", size);
+
+	return true;
+}
+
+char* CDMRLookup::tokenize(char *str, char **next)
+{
+	if (*str == '\0') return NULL;
+
+	char* p = ::strpbrk(str, ",\t\r\n");
+	if (p == NULL) {
+		*next = str + ::strlen(str);
+	} else {
+		*p = '\0';
+		*next = p + 1;
+	}
+
+	return str;
 }
