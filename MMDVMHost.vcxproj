@@ -233,6 +233,7 @@
     <ClInclude Include="StopWatch.h" />
     <ClInclude Include="Sync.h" />
     <ClInclude Include="TFTSerial.h" />
+    <ClInclude Include="TFTSurenoo.h" />
     <ClInclude Include="Thread.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="UDPSocket.h" />
@@ -321,6 +322,7 @@
     <ClCompile Include="StopWatch.cpp" />
     <ClCompile Include="Sync.cpp" />
     <ClCompile Include="TFTSerial.cpp" />
+    <ClCompile Include="TFTSurenoo.cpp" />
     <ClCompile Include="Thread.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="UDPSocket.cpp" />
