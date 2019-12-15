@@ -246,23 +246,17 @@ bool CDMRNetwork::write(const CDMRData& data)
 
 	unsigned int slotIndex = slotNo - 1U;
 
-	unsigned int count = 1U;
-
 	unsigned char dataType = data.getDataType();
 	if (dataType == DT_VOICE_SYNC) {
 		buffer[15U] |= 0x10U;
 	} else if (dataType == DT_VOICE) {
 		buffer[15U] |= data.getN();
 	} else {
-		if (dataType == DT_VOICE_LC_HEADER) {
+		if (dataType == DT_VOICE_LC_HEADER)
 			m_streamId[slotIndex] = ::rand() + 1U;
-			count = 2U;
-		}
 
-		if (dataType == DT_CSBK || dataType == DT_DATA_HEADER) {
+		if (dataType == DT_CSBK || dataType == DT_DATA_HEADER)
 			m_streamId[slotIndex] = ::rand() + 1U;
-			count = 1U;
-		}
 
 		buffer[15U] |= (0x20U | dataType);
 	}
@@ -280,8 +274,7 @@ bool CDMRNetwork::write(const CDMRData& data)
 	if (m_debug)
 		CUtils::dump(1U, "Network Transmitted", buffer, HOMEBREW_DATA_PACKET_LENGTH);
 
-	for (unsigned int i = 0U; i < count; i++)
-		write(buffer, HOMEBREW_DATA_PACKET_LENGTH);
+	write(buffer, HOMEBREW_DATA_PACKET_LENGTH);
 
 	return true;
 }
