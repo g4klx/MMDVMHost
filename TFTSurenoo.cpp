@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2019 by SASANO Takayoshi JG1UAA
- *   Copyright (C) 2015,2016,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018,2019 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -188,7 +188,7 @@ void CTFTSurenoo::writeDStarInt(const char* my1, const char* my2, const char* yo
 	if (::strcmp(reflector, "        ") != 0)
 		::snprintf(m_temp, sizeof(m_temp), "via %.8s", reflector);
 	else
-		::snprintf(m_temp, sizeof(m_temp), "");
+		::strcpy(m_temp, "");
 	setStatusLine(4, m_temp);
 
 	m_mode = MODE_DSTAR;
@@ -251,7 +251,7 @@ void CTFTSurenoo::writeFusionInt(const char* source, const char* dest, const cha
 	if (::strcmp(origin, "          ") != 0)
 		::snprintf(m_temp, sizeof(m_temp), "at %.10s", origin);
 	else
-		::snprintf(m_temp, sizeof(m_temp), "");
+		::strcpy(m_temp, "");
 	setStatusLine(4, m_temp);
 
 	m_mode = MODE_YSF;
@@ -350,8 +350,10 @@ void CTFTSurenoo::setLineBuffer(char *buf, const char *text, int maxchar)
 {
 	int i;
 
-	for (i = 0; i < maxchar && text[i]; i++) buf[i] = text[i];
-	for (; i < maxchar; i++) buf[i] = ' ';
+	for (i = 0; i < maxchar && text[i] != '\0'; i++)
+		buf[i] = text[i];
+	for (; i < maxchar; i++)
+		buf[i] = ' ';
 	buf[i] = '\0';
 
 	m_refresh = true;
