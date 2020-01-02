@@ -547,8 +547,8 @@ void COLED::writeCWInt()
 {
     m_display.clearDisplay();
 
-    m_display.setCursor(0,30);
-    m_display.setTextSize(3);
+    m_display.setCursor(10,30);
+    m_display.setTextSize(1);
     m_display.print("CW TX");
 
     m_display.setTextSize(1);
@@ -560,13 +560,16 @@ void COLED::clearCWInt()
 {
     m_display.clearDisplay();
 
-    m_display.setCursor(0,30);
-    m_display.setTextSize(3);
-    m_display.print("Idle");
+    //m_display.setCursor(0,30);
+    //m_display.setTextSize(3);
+    //m_display.print("Idle");
 
-    m_display.setTextSize(1);
+    //m_display.setTextSize(1);
+    //m_display.display();
+    //m_display.startscrollleft(0x02,0x0f);
+
+    OLED_statusbar();
     m_display.display();
-    m_display.startscrollleft(0x02,0x0f);
 }
 
 void COLED::close()
