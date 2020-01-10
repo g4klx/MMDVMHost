@@ -601,6 +601,9 @@ bool CDMRNetwork::writeConfig()
 		case HWT_MMDVM_HS:
 			software = "MMDVM_MMDVM_HS";
 			break;
+		case HWT_OPENGD77_HS:
+			software = "MMDVM_OpenGD77_HS";
+			break;
 		default:
 			software = "MMDVM_Unknown";
 			break;
