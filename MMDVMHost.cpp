@@ -442,7 +442,6 @@ int CMMDVMHost::run()
 		std::vector<unsigned int> slot2TGWhiteList = m_conf.getDMRSlot2TGWhiteList();
 		unsigned int callHang       = m_conf.getDMRCallHang();
 		unsigned int txHang         = m_conf.getDMRTXHang();
-		unsigned int jitter         = m_conf.getDMRNetworkJitter();
 		m_dmrRFModeHang             = m_conf.getDMRModeHang();
 		dmrBeacons                  = m_conf.getDMRBeacons();
 		DMR_OVCM_TYPES ovcm         = m_conf.getDMROVCM();
@@ -517,7 +516,7 @@ int CMMDVMHost::run()
 				break;
 		}
 
-		m_dmr = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, dumpTAData, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_dmrLookup, rssi, jitter, ovcm);
+		m_dmr = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, dumpTAData, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_dmrLookup, rssi, ovcm);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}
@@ -1243,7 +1242,6 @@ bool CMMDVMHost::createDMRNetwork()
 	unsigned int id      = m_conf.getDMRId();
 	std::string password = m_conf.getDMRNetworkPassword();
 	bool debug           = m_conf.getDMRNetworkDebug();
-	unsigned int jitter  = m_conf.getDMRNetworkJitter();
 	bool slot1           = m_conf.getDMRNetworkSlot1();
 	bool slot2           = m_conf.getDMRNetworkSlot2();
 	HW_TYPE hwType       = m_modem->getHWType();
@@ -1256,7 +1254,6 @@ bool CMMDVMHost::createDMRNetwork()
 		LogInfo("    Local: %u", local);
 	else
 		LogInfo("    Local: random");
-	LogInfo("    Jitter: %ums", jitter);
 	LogInfo("    Slot 1: %s", slot1 ? "enabled" : "disabled");
 	LogInfo("    Slot 2: %s", slot2 ? "enabled" : "disabled");
 	LogInfo("    Mode Hang: %us", m_dmrNetModeHang);
