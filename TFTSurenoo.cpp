@@ -67,7 +67,7 @@ enum LcdColour {
 
 // This module sometimes ignores display command (too busy?),
 // so supress display refresh
-#define REFRESH_PERIOD		250	// msec
+#define REFRESH_PERIOD		600	// msec
 
 #define STR_CRLF		"\x0D\x0A"
 #define STR_DMR			"DMR"
@@ -352,8 +352,6 @@ void CTFTSurenoo::setLineBuffer(char *buf, const char *text, int maxchar)
 
 	for (i = 0; i < maxchar && text[i] != '\0'; i++)
 		buf[i] = text[i];
-	for (; i < maxchar; i++)
-		buf[i] = ' ';
 	buf[i] = '\0';
 
 	m_refresh = true;
@@ -376,6 +374,11 @@ void CTFTSurenoo::refreshDisplay(void)
 {
 	if (!m_refresh) return;
 
+	// clear display
+	::snprintf(m_temp, sizeof(m_temp), "BOXF(%d,%d,%d,%d,%d);",
+		   0, 0, X_WIDTH - 1, Y_WIDTH - 1, BG_COLOUR);
+	m_serial->write((unsigned char*)m_temp, ::strlen(m_temp));
+
 	// mode line
 	::snprintf(m_temp, sizeof(m_temp), "DCV%d(%d,%d,'%s',%d);",
 		   MODE_FONT_SIZE, 0, 0, m_lineBuf, MODE_COLOUR);
@@ -383,10 +386,13 @@ void CTFTSurenoo::refreshDisplay(void)
 
 	// status line
 	for (int i = 0; i < STATUS_LINES; i++) {
+		char *p = m_lineBuf + statusLine_offset(i);
+		if (!::strlen(p)) continue;
+
 		::snprintf(m_temp, sizeof(m_temp), "DCV%d(%d,%d,'%s',%d);",
 			   STATUS_FONT_SIZE, 0,
 			   STATUS_MARGIN + STATUS_FONT_SIZE * i,
-			   m_lineBuf + statusLine_offset(i), FG_COLOUR);
+			   p, FG_COLOUR);
 		m_serial->write((unsigned char*)m_temp, (unsigned int)::strlen(m_temp));
 	}
 
