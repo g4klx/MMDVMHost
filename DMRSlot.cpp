@@ -1367,8 +1367,9 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 	
 			std::string src = m_lookup->find(srcId);
 			std::string dst = m_lookup->find(dstId);
+			std::string cn  = m_lookup->findWithName(srcId);
 
-			m_display->writeDMR(m_slotNo, src, m_netLC->getFLCO() == FLCO_GROUP, dst, "N");
+			m_display->writeDMR(m_slotNo, cn, m_netLC->getFLCO() == FLCO_GROUP, dst, "N");
 
 			LogMessage("DMR Slot %u, received network late entry from %s to %s%s", m_slotNo, src.c_str(), m_netLC->getFLCO() == FLCO_GROUP ? "TG " : "", dst.c_str());
 		}
