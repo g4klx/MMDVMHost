@@ -63,7 +63,7 @@ enum LcdColour {
 #define MODE_CHARS		(X_WIDTH / (MODE_FONT_SIZE / 2))
 #define STATUS_CHARS		(X_WIDTH / (STATUS_FONT_SIZE / 2))
 #define STATUS_LINES		((Y_WIDTH - STATUS_MARGIN) / STATUS_FONT_SIZE)
-#define	statusLine_offset(x)	((STATUS_CHARS + 1) * ((x) + 1))
+#define statusLine_offset(x)	((STATUS_CHARS + 1) * ((x) + 1))
 
 // This module sometimes ignores display command (too busy?),
 // so supress display refresh
@@ -373,6 +373,10 @@ void CTFTSurenoo::setStatusLine(unsigned int line, const char *text)
 void CTFTSurenoo::refreshDisplay(void)
 {
 	if (!m_refresh) return;
+
+	// send CR+LF to avoid first command is not processed
+	::snprintf(m_temp, sizeof(m_temp), STR_CRLF);
+	m_serial->write((unsigned char*)m_temp, (unsigned int)::strlen(m_temp));
 
 	// clear display
 	::snprintf(m_temp, sizeof(m_temp), "BOXF(%d,%d,%d,%d,%d);",
