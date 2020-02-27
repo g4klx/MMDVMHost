@@ -49,7 +49,8 @@ enum LcdColour {
 #define FONT_MEDIUM		24	// 12x24
 #define FONT_LARGE		32	// 16x32
 
-#define FG_COLOUR		COLOUR_CYAN
+#define INFO_COLOUR		COLOUR_CYAN
+#define EXT_COLOUR		COLOUR_DARK_GREEN
 #define BG_COLOUR		COLOUR_BLACK
 #define ERROR_COLOUR		COLOUR_DARK_RED
 #define MODE_COLOUR   		COLOUR_YELLOW
@@ -63,7 +64,9 @@ enum LcdColour {
 #define MODE_CHARS		(X_WIDTH / (MODE_FONT_SIZE / 2))
 #define STATUS_CHARS		(X_WIDTH / (STATUS_FONT_SIZE / 2))
 #define STATUS_LINES		((Y_WIDTH - STATUS_MARGIN) / STATUS_FONT_SIZE)
-#define statusLine_offset(x)	((STATUS_CHARS + 1) * ((x) + 1))
+#define statusLineOffset(x)	((STATUS_CHARS + 1) * ((x) + 1))
+#define statusLineNo(x)		((x) * 2)
+#define INFO_LINES		statusLineNo(2)
 
 // This module sometimes ignores display command (too busy?),
 // so supress display refresh
@@ -105,7 +108,7 @@ bool CTFTSurenoo::open()
 		return false;
 	}
 
-	m_lineBuf = new char[statusLine_offset(STATUS_LINES)];
+	m_lineBuf = new char[statusLineOffset(STATUS_LINES)];
 	if (m_lineBuf == NULL) {
 		LogError("Cannot allocate line buffer");
 		m_serial->close();
@@ -131,8 +134,8 @@ void CTFTSurenoo::setIdleInt()
 	setModeLine(STR_MMDVM);
 
 	::snprintf(m_temp, sizeof(m_temp), "%-6s / %u", m_callsign.c_str(), m_dmrid);
-	setStatusLine(0, m_temp);
-	setStatusLine(2, "IDLE");
+	setStatusLine(statusLineNo(0), m_temp);
+	setStatusLine(statusLineNo(1), "IDLE");
 
 	m_mode = MODE_IDLE;
 }
@@ -142,8 +145,8 @@ void CTFTSurenoo::setErrorInt(const char* text)
 	assert(text != NULL);
 
 	setModeLine(STR_MMDVM);
-	setStatusLine(0, text);
-	setStatusLine(2, "ERROR");
+	setStatusLine(statusLineNo(0), text);
+	setStatusLine(statusLineNo(1), "ERROR");
 
 	m_mode = MODE_ERROR;
 }
@@ -151,7 +154,7 @@ void CTFTSurenoo::setErrorInt(const char* text)
 void CTFTSurenoo::setLockoutInt()
 {
 	setModeLine(STR_MMDVM);
-	setStatusLine(2, "LOCKOUT");
+	setStatusLine(statusLineNo(1), "LOCKOUT");
 
 	m_mode = MODE_LOCKOUT;
 }
@@ -162,7 +165,7 @@ void CTFTSurenoo::setQuitInt()
 	CThread::sleep(REFRESH_PERIOD);
 
 	setModeLine(STR_MMDVM);
-	setStatusLine(2, "STOPPED");
+	setStatusLine(statusLineNo(1), "STOPPED");
 
 	refreshDisplay();
 
@@ -180,57 +183,46 @@ void CTFTSurenoo::writeDStarInt(const char* my1, const char* my2, const char* yo
 	setModeLine(STR_MMDVM);
 
 	::snprintf(m_temp, sizeof(m_temp), "%s %.8s/%4.4s", type, my1, my2);
-	setStatusLine(0, m_temp);
+	setStatusLine(statusLineNo(0), m_temp);
 
 	::snprintf(m_temp, sizeof(m_temp), "%.8s", your);
-	setStatusLine(2, m_temp);
+	setStatusLine(statusLineNo(1), m_temp);
 
 	if (::strcmp(reflector, "        ") != 0)
 		::snprintf(m_temp, sizeof(m_temp), "via %.8s", reflector);
 	else
 		::strcpy(m_temp, "");
-	setStatusLine(4, m_temp);
+	setStatusLine(statusLineNo(2), m_temp);
 
 	m_mode = MODE_DSTAR;
 }
 
 void CTFTSurenoo::clearDStarInt()
 {
-	setStatusLine(0, "Listening");
-	setStatusLine(2, "");
-	setStatusLine(4, "");
+	setStatusLine(statusLineNo(0), "Listening");
+	setStatusLine(statusLineNo(1), "");
+	setStatusLine(statusLineNo(2), "");
 }
 
 void CTFTSurenoo::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
 	assert(type != NULL);
 
-	// slotNo comes 1 or 2, convert 0 or 1
-	slotNo--;
-
 	setModeLine(STR_DMR);
 
-	::snprintf(m_temp, sizeof(m_temp), "%d Listening", 2 - slotNo);
-	setStatusLine((1 - slotNo) * 2, m_temp);
+	::snprintf(m_temp, sizeof(m_temp), "%s %s", type, src.c_str());
+	setStatusLine(statusLineNo(0), m_temp);
 
-	::snprintf(m_temp, sizeof(m_temp), "%d %s %s", slotNo + 1, type, src.c_str());
-	setStatusLine(slotNo * 2, m_temp);
-
-	::snprintf(m_temp, sizeof(m_temp), "%s%s", group ? "TG" : "", dst.c_str());
-	setStatusLine(slotNo * 2 + 1, m_temp);
+	::snprintf(m_temp, sizeof(m_temp), "TS%d %s%s", slotNo, group ? "TG" : "", dst.c_str());
+	setStatusLine(statusLineNo(1), m_temp);
 
 	m_mode = MODE_DMR;
 }
 
 void CTFTSurenoo::clearDMRInt(unsigned int slotNo)
 {
-	// slotNo comes 1 or 2, convert 0 or 1
-	slotNo--;
-
-	::snprintf(m_temp, sizeof(m_temp), "%d Listening", slotNo + 1);
-	setStatusLine(slotNo * 2, m_temp);
-
-	setStatusLine(slotNo * 2 + 1, "");
+	setStatusLine(statusLineNo(0), "Listening");
+	setStatusLine(statusLineNo(1), "");
 }
 
 void CTFTSurenoo::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
@@ -243,16 +235,16 @@ void CTFTSurenoo::writeFusionInt(const char* source, const char* dest, const cha
 	setModeLine(STR_YSF);
 
 	::snprintf(m_temp, sizeof(m_temp), "%s %.10s", type, source);
-	setStatusLine(0, m_temp);
+	setStatusLine(statusLineNo(0), m_temp);
 
 	::snprintf(m_temp, sizeof(m_temp), "  %.10s", dest);
-	setStatusLine(2, m_temp);
+	setStatusLine(statusLineNo(1), m_temp);
 
 	if (::strcmp(origin, "          ") != 0)
 		::snprintf(m_temp, sizeof(m_temp), "at %.10s", origin);
 	else
 		::strcpy(m_temp, "");
-	setStatusLine(4, m_temp);
+	setStatusLine(statusLineNo(2), m_temp);
 
 	m_mode = MODE_YSF;
 }
@@ -270,10 +262,10 @@ void CTFTSurenoo::writeP25Int(const char* source, bool group, unsigned int dest,
 	setModeLine(STR_P25);
 
 	::snprintf(m_temp, sizeof(m_temp), "%s %.10s", type, source);
-	setStatusLine(0, m_temp);
+	setStatusLine(statusLineNo(0), m_temp);
 
 	::snprintf(m_temp, sizeof(m_temp), "  %s%u", group ? "TG" : "", dest);
-	setStatusLine(2, m_temp);
+	setStatusLine(statusLineNo(1), m_temp);
 
 	m_mode = MODE_P25;
 }
@@ -291,10 +283,10 @@ void CTFTSurenoo::writeNXDNInt(const char* source, bool group, unsigned int dest
 	setModeLine(STR_NXDN);
 
 	::snprintf(m_temp, sizeof(m_temp), "%s %.10s", type, source);
-	setStatusLine(0, m_temp);
+	setStatusLine(statusLineNo(0), m_temp);
 
 	::snprintf(m_temp, sizeof(m_temp), "  %s%u", group ? "TG" : "", dest);
-	setStatusLine(2, m_temp);
+	setStatusLine(statusLineNo(1), m_temp);
 
 	m_mode = MODE_NXDN;
 }
@@ -306,26 +298,26 @@ void CTFTSurenoo::clearNXDNInt()
 
 void CTFTSurenoo::writePOCSAGInt(uint32_t ric, const std::string& message)
 {
-	setStatusLine(2, "POCSAG TX");
+	setStatusLine(statusLineNo(1), "POCSAG TX");
 
 	m_mode = MODE_POCSAG;
 }
 
 void CTFTSurenoo::clearPOCSAGInt()
 {
-	setStatusLine(2, "IDLE");
+	setStatusLine(statusLineNo(1), "IDLE");
 }
 
 void CTFTSurenoo::writeCWInt()
 {
-	setStatusLine(2, "CW TX");
+	setStatusLine(statusLineNo(1), "CW TX");
 
 	m_mode = MODE_CW;
 }
 
 void CTFTSurenoo::clearCWInt()
 {
-	setStatusLine(2, "IDLE");
+	setStatusLine(statusLineNo(1), "IDLE");
 }
 
 void CTFTSurenoo::close()
@@ -367,7 +359,7 @@ void CTFTSurenoo::setModeLine(const char *text)
 
 void CTFTSurenoo::setStatusLine(unsigned int line, const char *text)
 {
-	setLineBuffer(m_lineBuf + statusLine_offset(line), text, STATUS_CHARS);
+	setLineBuffer(m_lineBuf + statusLineOffset(line), text, STATUS_CHARS);
 }  
 
 void CTFTSurenoo::refreshDisplay(void)
@@ -390,13 +382,13 @@ void CTFTSurenoo::refreshDisplay(void)
 
 	// status line
 	for (int i = 0; i < STATUS_LINES; i++) {
-		char *p = m_lineBuf + statusLine_offset(i);
+		char *p = m_lineBuf + statusLineOffset(i);
 		if (!::strlen(p)) continue;
 
 		::snprintf(m_temp, sizeof(m_temp), "DCV%d(%d,%d,'%s',%d);",
 			   STATUS_FONT_SIZE, 0,
-			   STATUS_MARGIN + STATUS_FONT_SIZE * i,
-			   p, FG_COLOUR);
+			   STATUS_MARGIN + STATUS_FONT_SIZE * i, p,
+			   (i < INFO_LINES) ? INFO_COLOUR : EXT_COLOUR);
 		m_serial->write((unsigned char*)m_temp, (unsigned int)::strlen(m_temp));
 	}
 
