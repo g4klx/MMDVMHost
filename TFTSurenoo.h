@@ -29,7 +29,7 @@
 class CTFTSurenoo : public CDisplay
 {
 public:
-  CTFTSurenoo(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness);
+  CTFTSurenoo(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool duplex);
   virtual ~CTFTSurenoo();
 
   virtual bool open();
@@ -71,6 +71,7 @@ private:
    ISerialPort*  m_serial;
    unsigned int  m_brightness;
    unsigned char m_mode;
+   bool          m_duplex;
    bool          m_refresh;
    CTimer        m_refreshTimer;
    char*         m_lineBuf;

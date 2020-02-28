@@ -447,7 +447,7 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
 			serial = new CSerialController(port, (type == "TFT Serial") ? SERIAL_9600 : SERIAL_115200);
 
 		if (type == "TFT Surenoo")
-			display = new CTFTSurenoo(conf.getCallsign(), dmrid, serial, brightness);
+			display = new CTFTSurenoo(conf.getCallsign(), dmrid, serial, brightness, conf.getDuplex());
 		else
 			display = new CTFTSerial(conf.getCallsign(), dmrid, serial, brightness);
 	} else if (type == "Nextion") {

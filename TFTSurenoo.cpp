@@ -65,7 +65,7 @@ enum LcdColour {
 #define STATUS_CHARS		(X_WIDTH / (STATUS_FONT_SIZE / 2))
 #define STATUS_LINES		((Y_WIDTH - STATUS_MARGIN) / STATUS_FONT_SIZE)
 #define statusLineOffset(x)	((STATUS_CHARS + 1) * ((x) + 1))
-#define statusLineNo(x)		((x) * 2)
+#define statusLineNo(x)		(x)
 #define INFO_LINES		statusLineNo(2)
 
 // This module sometimes ignores display command (too busy?),
@@ -80,13 +80,15 @@ enum LcdColour {
 #define STR_P25			"P25"
 #define STR_YSF			"SystemFusion"
 
-CTFTSurenoo::CTFTSurenoo(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness) :
+CTFTSurenoo::CTFTSurenoo(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool duplex) :
 CDisplay(),
 m_callsign(callsign),
 m_dmrid(dmrid),
 m_serial(serial),
 m_brightness(brightness),
 m_mode(MODE_IDLE),
+m_duplex(duplex),
+//m_duplex(true),                      // uncomment to force duplex display for testing!
 m_refresh(false),
 m_refreshTimer(1000U, 0U, REFRESH_PERIOD),
 m_lineBuf(NULL)
@@ -208,21 +210,37 @@ void CTFTSurenoo::writeDMRInt(unsigned int slotNo, const std::string& src, bool 
 {
 	assert(type != NULL);
 
-	setModeLine(STR_DMR);
+	if (m_mode != MODE_DMR) {
+		setModeLine(STR_DMR);
+		if (m_duplex) {
+			setStatusLine(statusLineNo(0), "Listening");
+			setStatusLine(statusLineNo(1), "TS1");
+			setStatusLine(statusLineNo(2), "Listening");
+			setStatusLine(statusLineNo(3), "TS2");
+		}
+	}		
 
+	int pos = m_duplex ? (slotNo - 1) : 0;
 	::snprintf(m_temp, sizeof(m_temp), "%s %s", type, src.c_str());
-	setStatusLine(statusLineNo(0), m_temp);
+	setStatusLine(statusLineNo(pos * 2), m_temp);
 
 	::snprintf(m_temp, sizeof(m_temp), "TS%d %s%s", slotNo, group ? "TG" : "", dst.c_str());
-	setStatusLine(statusLineNo(1), m_temp);
+	setStatusLine(statusLineNo(pos * 2 + 1), m_temp);
 
 	m_mode = MODE_DMR;
 }
 
 void CTFTSurenoo::clearDMRInt(unsigned int slotNo)
 {
-	setStatusLine(statusLineNo(0), "Listening");
-	setStatusLine(statusLineNo(1), "");
+	int pos = m_duplex ? (slotNo - 1) : 0;
+	setStatusLine(statusLineNo(pos * 2), "Listening");
+
+	if (m_duplex) {
+		::snprintf(m_temp, sizeof(m_temp), "TS%d", slotNo);
+		setStatusLine(statusLineNo(pos * 2 + 1), m_temp);
+	} else {
+		setStatusLine(statusLineNo(1), "");
+	}
 }
 
 void CTFTSurenoo::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
@@ -388,7 +406,7 @@ void CTFTSurenoo::refreshDisplay(void)
 		::snprintf(m_temp, sizeof(m_temp), "DCV%d(%d,%d,'%s',%d);",
 			   STATUS_FONT_SIZE, 0,
 			   STATUS_MARGIN + STATUS_FONT_SIZE * i, p,
-			   (i < INFO_LINES) ? INFO_COLOUR : EXT_COLOUR);
+			   (!m_duplex && i >= INFO_LINES) ? EXT_COLOUR : INFO_COLOUR);
 		m_serial->write((unsigned char*)m_temp, (unsigned int)::strlen(m_temp));
 	}
 
