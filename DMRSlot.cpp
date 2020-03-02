@@ -488,6 +488,12 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			case CSBKO_PRECCSBK:
 				LogMessage("DMR Slot %u, received RF %s Preamble CSBK (%u to follow) from %s to %s%s", m_slotNo, csbk.getDataContent() ? "Data" : "CSBK", csbk.getCBF(), src.c_str(), gi ? "TG ": "", dst.c_str());
 				break;
+			case CSBKO_CALL_ALERT:
+				LogMessage("DMR Slot %u, received RF Call Alert CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG " : "", dst.c_str());
+				break;
+			case CSBKO_CALL_ALERT_ACK:
+				LogMessage("DMR Slot %u, received RF Call Alert Ack CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG " : "", dst.c_str());
+				break;
 			default:
 				LogWarning("DMR Slot %u, unhandled RF CSBK type - 0x%02X", m_slotNo, csbko);
 				break;
@@ -1640,6 +1646,12 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			break;
 		case CSBKO_PRECCSBK:
 			LogMessage("DMR Slot %u, received network %s Preamble CSBK (%u to follow) from %s to %s%s", m_slotNo, csbk.getDataContent() ? "Data" : "CSBK", csbk.getCBF(), src.c_str(), gi ? "TG " : "", dst.c_str());
+			break;
+		case CSBKO_CALL_ALERT:
+			LogMessage("DMR Slot %u, received network Call Alert CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG " : "", dst.c_str());
+			break;
+		case CSBKO_CALL_ALERT_ACK:
+			LogMessage("DMR Slot %u, received network Call Alert Ack CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG " : "", dst.c_str());
 			break;
 		default:
 			LogWarning("DMR Slot %u, unhandled network CSBK type - 0x%02X", m_slotNo, csbko);
