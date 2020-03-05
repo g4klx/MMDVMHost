@@ -58,7 +58,7 @@ bool CUserDB::load(std::string const& filename)
 {
 	FILE* fp = ::fopen(filename.c_str(), "r");
 	if (fp == NULL) {
-		LogWarning("Cannot open ID lookup table - %s", filename.c_str());
+		LogWarning("Cannot open ID lookup file - %s", filename.c_str());
 		return false;
 	}
 
@@ -79,7 +79,7 @@ bool CUserDB::load(std::string const& filename)
 	// no index - set default
 	std::unordered_map<std::string, int> index;
 	if (!makeindex(buffer, index)) {
-		::strncpy(buffer, "RADIO_ID,CALLSIGN,FIRST_NAME", sizeof(buffer));
+		::strncpy(buffer, keyRADIO_ID "," keyCALLSIGN "," keyFIRST_NAME, sizeof(buffer));
 		makeindex(buffer, index);
 		::rewind(fp);
 	}
@@ -96,7 +96,7 @@ bool CUserDB::load(std::string const& filename)
 
 	LogInfo("Loaded %u IDs to lookup table - %s", size, filename.c_str());
 
-	return (size != 0U);
+	return size != 0U;
 }
 
 bool CUserDB::makeindex(char* buf, std::unordered_map<std::string, int>& index)
