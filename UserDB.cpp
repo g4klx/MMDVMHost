@@ -104,6 +104,9 @@ bool CUserDB::makeindex(char* buf, std::unordered_map<std::string, int>& index)
 	int i;
 	char *p1, *p2;
 
+	// Remove the old index
+	index.clear();
+
 	for (i = 0, p1 = tokenize(buf, &p2); p1 != NULL;
 	     i++, p1 = tokenize(p2, &p2)) {
 
