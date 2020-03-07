@@ -23,6 +23,7 @@
 #include "Display.h"
 #include "Defines.h"
 #include "SerialPort.h"
+#include "UserDBentry.h"
 
 #include <string>
 
@@ -46,6 +47,7 @@ protected:
 	virtual void clearDStarInt();
 
 	virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
+	virtual int writeDMRIntEx(unsigned int slotNo, const class CUserDBentry& src, bool group, const std::string& dst, const char* type);
 	virtual void clearDMRInt(unsigned int slotNo);
 
 	virtual void writeFusionInt(const char* source, const char* dest, const char* type, const char* origin);

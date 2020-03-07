@@ -230,6 +230,28 @@ void CTFTSurenoo::writeDMRInt(unsigned int slotNo, const std::string& src, bool 
 	m_mode = MODE_DMR;
 }
 
+int CTFTSurenoo::writeDMRIntEx(unsigned int slotNo, const class CUserDBentry& src, bool group, const std::string& dst, const char* type)
+{
+	assert(type != NULL);
+
+	// duplex mode is not supported
+	if (m_duplex)
+		return -1;
+
+	setModeLine(STR_DMR);
+	setStatusLine(statusLineNo(0), src.get(keyCALLSIGN).c_str());
+	::snprintf(m_temp, sizeof(m_temp), "TS%d %s%s", slotNo, group ? "TG" : "", dst.c_str());
+	setStatusLine(statusLineNo(1), m_temp);
+	setStatusLine(statusLineNo(2), (src.get(keyFIRST_NAME) + " " + src.get(keyLAST_NAME)).c_str());
+	setStatusLine(statusLineNo(3), src.get(keyCITY).c_str());
+	setStatusLine(statusLineNo(4), src.get(keySTATE).c_str());
+	setStatusLine(statusLineNo(5), src.get(keyCOUNTRY).c_str());
+
+	m_mode = MODE_DMR;
+
+	return 0;
+}
+
 void CTFTSurenoo::clearDMRInt(unsigned int slotNo)
 {
 	int pos = m_duplex ? (slotNo - 1) : 0;
@@ -239,7 +261,8 @@ void CTFTSurenoo::clearDMRInt(unsigned int slotNo)
 		::snprintf(m_temp, sizeof(m_temp), "TS%d", slotNo);
 		setStatusLine(statusLineNo(pos * 2 + 1), m_temp);
 	} else {
-		setStatusLine(statusLineNo(1), "");
+		for (int i = 1; i < STATUS_LINES; i++)
+			setStatusLine(statusLineNo(i), "");
 	}
 }
 
