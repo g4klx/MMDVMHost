@@ -20,6 +20,7 @@
 #define	DISPLAY_H
 
 #include "Timer.h"
+#include "UserDBentry.h"
 
 #include <string>
 
@@ -48,6 +49,7 @@ public:
 	void clearDStar();
 
 	void writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
+	void writeDMR(unsigned int slotNo, const class CUserDBentry& src, bool group, const std::string& dst, const char* type);
 	void writeDMRRSSI(unsigned int slotNo, unsigned char rssi);
 	void writeDMRBER(unsigned int slotNo, float ber);
 	void writeDMRTA(unsigned int slotNo, unsigned char* talkerAlias, const char* type);
@@ -91,6 +93,7 @@ protected:
 	virtual void clearDStarInt() = 0;
 
 	virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type) = 0;
+	virtual int writeDMRIntEx(unsigned int slotNo, const class CUserDBentry& src, bool group, const std::string& dst, const char* type);
 	virtual void writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi);
 	virtual void writeDMRTAInt(unsigned int slotNo, unsigned char* talkerAlias, const char* type);
 	virtual void writeDMRBERInt(unsigned int slotNo, float ber);

@@ -151,6 +151,28 @@ void CDisplay::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 	writeDMRInt(slotNo, src, group, dst, type);
 }
 
+void CDisplay::writeDMR(unsigned int slotNo, const class CUserDBentry& src, bool group, const std::string& dst, const char* type)
+{
+	assert(type != NULL);
+
+	if (slotNo == 1U) {
+		m_timer1.start();
+		m_mode1 = MODE_IDLE;
+	} else {
+		m_timer2.start();
+		m_mode2 = MODE_IDLE;
+	}
+
+	if (writeDMRIntEx(slotNo, src, group, dst, type) < 0) {
+		std::string src_str;
+
+		src_str = src.get(keyCALLSIGN);
+		if (!src.get(keyFIRST_NAME).empty())
+			src_str += " " + src.get(keyFIRST_NAME);
+		writeDMRInt(slotNo, src_str, group, dst, type);
+	}
+}
+
 void CDisplay::writeDMRRSSI(unsigned int slotNo, unsigned char rssi)
 {
 	if (rssi != 0U)
@@ -384,6 +406,11 @@ void CDisplay::writeDStarRSSIInt(unsigned char rssi)
 
 void CDisplay::writeDStarBERInt(float ber)
 {
+}
+
+int CDisplay::writeDMRIntEx(unsigned int slotNo, const class CUserDBentry& src, bool group, const std::string& dst, const char* type)
+{
+	return -1;	// not supported
 }
 
 void CDisplay::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
