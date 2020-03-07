@@ -44,11 +44,16 @@ void CUserDBentry::set(const std::string key, const std::string value)
 		m_db[key] = value;
 }
 
-std::string CUserDBentry::get(const std::string key)
+const std::string CUserDBentry::get(const std::string key) const
 {
 	try {
 		return m_db.at(key);
 	} catch (...) {
 		return "";
 	}
+}
+
+void CUserDBentry::clear(void)
+{
+	m_db.clear();
 }

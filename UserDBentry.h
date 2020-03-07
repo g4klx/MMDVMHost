@@ -40,7 +40,8 @@ public:
 	static bool isValidKey(const std::string key);
 
 	void set(const std::string key, const std::string value);
-	std::string get(const std::string key);
+	const std::string get(const std::string key) const;
+	void clear(void);
 
 private:
 	std::unordered_map<std::string, std::string>    m_db;
