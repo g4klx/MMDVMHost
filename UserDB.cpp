@@ -158,7 +158,7 @@ void CUserDB::parse(char* buf, std::unordered_map<std::string, int>& index)
 		if (it->first == keyRADIO_ID)
 			continue;
 
-		m_table[id].set(it->first, std::string(it->second));
+		m_table[id].set(it->first, it->second);
 	}
 }
 
