@@ -100,6 +100,7 @@ void CDMRLookup::findWithName(unsigned int id, class CUserDBentry *entry)
 
 	return;
 }
+
 std::string CDMRLookup::find(unsigned int id)
 {
 	std::string callsign;
