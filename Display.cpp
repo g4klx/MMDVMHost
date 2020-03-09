@@ -410,6 +410,13 @@ void CDisplay::writeDStarBERInt(float ber)
 
 int CDisplay::writeDMRIntEx(unsigned int slotNo, const class CUserDBentry& src, bool group, const std::string& dst, const char* type)
 {
+	/*
+	 * return value:
+	 *	< 0	error condition (i.e. not supported)
+	 *		-> call writeDMRInt() to display
+	 *	= 0	no error, writeDMRIntEx() displayed whole status
+	 *	> 0	reserved for future use
+	 */
 	return -1;	// not supported
 }
 
