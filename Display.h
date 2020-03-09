@@ -66,6 +66,7 @@ public:
 	void clearP25();
 
 	void writeNXDN(const char* source, bool group, unsigned int dest, const char* type);
+	void writeNXDN(const class CUserDBentry& source, bool group, unsigned int dest, const char* type);
 	void writeNXDNRSSI(unsigned char rssi);
 	void writeNXDNBER(float ber);
 	void clearNXDN();
@@ -110,6 +111,7 @@ protected:
 	virtual void clearP25Int() = 0;
 
 	virtual void writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type) = 0;
+	virtual int writeNXDNIntEx(const class CUserDBentry& source, bool group, unsigned int dest, const char* type);
 	virtual void writeNXDNRSSIInt(unsigned char rssi);
 	virtual void writeNXDNBERInt(float ber);
 	virtual void clearNXDNInt() = 0;
