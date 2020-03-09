@@ -82,8 +82,6 @@ void CDMRLookup::stop()
 
 void CDMRLookup::findWithName(unsigned int id, class CUserDBentry *entry)
 {
-	std::string callsign;
-
 	if (id == 0xFFFFFFU) {
 		entry->clear();
 		entry->set(keyCALLSIGN, "ALL");
@@ -105,8 +103,7 @@ void CDMRLookup::findWithName(unsigned int id, class CUserDBentry *entry)
 std::string CDMRLookup::find(unsigned int id)
 {
 	std::string callsign;
-	std::string b;
-	
+
 	if (id == 0xFFFFFFU)
 		return std::string("ALL");
 
