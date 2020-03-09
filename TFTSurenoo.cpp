@@ -202,8 +202,8 @@ void CTFTSurenoo::writeDStarInt(const char* my1, const char* my2, const char* yo
 void CTFTSurenoo::clearDStarInt()
 {
 	setStatusLine(statusLineNo(0), "Listening");
-	setStatusLine(statusLineNo(1), "");
-	setStatusLine(statusLineNo(2), "");
+	for (int i = 1; i < STATUS_LINES; i++)
+		setStatusLine(statusLineNo(i), "");
 }
 
 void CTFTSurenoo::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
@@ -239,9 +239,6 @@ int CTFTSurenoo::writeDMRIntEx(unsigned int slotNo, const class CUserDBentry& sr
 		return -1;
 
 	setModeLine(STR_DMR);
-	setStatusLine(statusLineNo(0), src.get(keyCALLSIGN).c_str());
-	::snprintf(m_temp, sizeof(m_temp), "TS%d %s%s", slotNo, group ? "TG" : "", dst.c_str());
-	setStatusLine(statusLineNo(1), m_temp);
 	setStatusLine(statusLineNo(2), (src.get(keyFIRST_NAME) + " " + src.get(keyLAST_NAME)).c_str());
 	setStatusLine(statusLineNo(3), src.get(keyCITY).c_str());
 	setStatusLine(statusLineNo(4), src.get(keySTATE).c_str());
@@ -249,7 +246,7 @@ int CTFTSurenoo::writeDMRIntEx(unsigned int slotNo, const class CUserDBentry& sr
 
 	m_mode = MODE_DMR;
 
-	return 0;
+	return 1;
 }
 
 void CTFTSurenoo::clearDMRInt(unsigned int slotNo)
@@ -321,7 +318,8 @@ void CTFTSurenoo::writeNXDNInt(const char* source, bool group, unsigned int dest
 	assert(source != NULL);
 	assert(type != NULL);
 
-	setModeLine(STR_NXDN);
+	if (m_mode != MODE_NXDN)
+		setModeLine(STR_NXDN);
 
 	::snprintf(m_temp, sizeof(m_temp), "%s %.10s", type, source);
 	setStatusLine(statusLineNo(0), m_temp);
@@ -330,6 +328,21 @@ void CTFTSurenoo::writeNXDNInt(const char* source, bool group, unsigned int dest
 	setStatusLine(statusLineNo(1), m_temp);
 
 	m_mode = MODE_NXDN;
+}
+
+int CTFTSurenoo::writeNXDNIntEx(const class CUserDBentry& source, bool group, unsigned int dest, const char* type)
+{
+	assert(type != NULL);
+
+	setModeLine(STR_NXDN);
+	setStatusLine(statusLineNo(2), (source.get(keyFIRST_NAME) + " " + source.get(keyLAST_NAME)).c_str());
+	setStatusLine(statusLineNo(3), source.get(keyCITY).c_str());
+	setStatusLine(statusLineNo(4), source.get(keySTATE).c_str());
+	setStatusLine(statusLineNo(5), source.get(keyCOUNTRY).c_str());
+
+	m_mode = MODE_NXDN;
+
+	return 1;
 }
 
 void CTFTSurenoo::clearNXDNInt()
