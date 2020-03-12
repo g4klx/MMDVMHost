@@ -135,7 +135,7 @@ void CTFTSurenoo::setIdleInt()
 {
 	setModeLine(STR_MMDVM);
 
-	::snprintf(m_temp, sizeof(m_temp), "%-6s / %u", m_callsign.c_str(), m_dmrid);
+	::snprintf(m_temp, sizeof(m_temp), "%s / %u", m_callsign.c_str(), m_dmrid);
 	setStatusLine(statusLineNo(0), m_temp);
 	setStatusLine(statusLineNo(1), "IDLE");
 
@@ -184,14 +184,14 @@ void CTFTSurenoo::writeDStarInt(const char* my1, const char* my2, const char* yo
 
 	setModeLine(STR_MMDVM);
 
-	::snprintf(m_temp, sizeof(m_temp), "%s %.8s/%4.4s", type, my1, my2);
+	::snprintf(m_temp, sizeof(m_temp), "%s %s/%s", type, my1, my2);
 	setStatusLine(statusLineNo(0), m_temp);
 
-	::snprintf(m_temp, sizeof(m_temp), "%.8s", your);
+	::snprintf(m_temp, sizeof(m_temp), "%s", your);
 	setStatusLine(statusLineNo(1), m_temp);
 
 	if (::strcmp(reflector, "        ") != 0)
-		::snprintf(m_temp, sizeof(m_temp), "via %.8s", reflector);
+		::snprintf(m_temp, sizeof(m_temp), "via %s", reflector);
 	else
 		::strcpy(m_temp, "");
 	setStatusLine(statusLineNo(2), m_temp);
@@ -272,14 +272,14 @@ void CTFTSurenoo::writeFusionInt(const char* source, const char* dest, const cha
 
 	setModeLine(STR_YSF);
 
-	::snprintf(m_temp, sizeof(m_temp), "%s %.10s", type, source);
+	::snprintf(m_temp, sizeof(m_temp), "%s %s", type, source);
 	setStatusLine(statusLineNo(0), m_temp);
 
-	::snprintf(m_temp, sizeof(m_temp), "  %.10s", dest);
+	::snprintf(m_temp, sizeof(m_temp), "%s", dest);
 	setStatusLine(statusLineNo(1), m_temp);
 
 	if (::strcmp(origin, "          ") != 0)
-		::snprintf(m_temp, sizeof(m_temp), "at %.10s", origin);
+		::snprintf(m_temp, sizeof(m_temp), "at %s", origin);
 	else
 		::strcpy(m_temp, "");
 	setStatusLine(statusLineNo(2), m_temp);
@@ -299,10 +299,10 @@ void CTFTSurenoo::writeP25Int(const char* source, bool group, unsigned int dest,
 
 	setModeLine(STR_P25);
 
-	::snprintf(m_temp, sizeof(m_temp), "%s %.10s", type, source);
+	::snprintf(m_temp, sizeof(m_temp), "%s %s", type, source);
 	setStatusLine(statusLineNo(0), m_temp);
 
-	::snprintf(m_temp, sizeof(m_temp), "  %s%u", group ? "TG" : "", dest);
+	::snprintf(m_temp, sizeof(m_temp), "%s%u", group ? "TG" : "", dest);
 	setStatusLine(statusLineNo(1), m_temp);
 
 	m_mode = MODE_P25;
@@ -321,10 +321,10 @@ void CTFTSurenoo::writeNXDNInt(const char* source, bool group, unsigned int dest
 	if (m_mode != MODE_NXDN)
 		setModeLine(STR_NXDN);
 
-	::snprintf(m_temp, sizeof(m_temp), "%s %.10s", type, source);
+	::snprintf(m_temp, sizeof(m_temp), "%s %s", type, source);
 	setStatusLine(statusLineNo(0), m_temp);
 
-	::snprintf(m_temp, sizeof(m_temp), "  %s%u", group ? "TG" : "", dest);
+	::snprintf(m_temp, sizeof(m_temp), "%s%u", group ? "TG" : "", dest);
 	setStatusLine(statusLineNo(1), m_temp);
 
 	m_mode = MODE_NXDN;
