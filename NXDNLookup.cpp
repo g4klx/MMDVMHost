@@ -30,7 +30,6 @@ CThread(),
 m_filename(filename),
 m_reloadTime(reloadTime),
 m_table(),
-m_mutex(),
 m_stop(false)
 {
 }
@@ -41,7 +40,7 @@ CNXDNLookup::~CNXDNLookup()
 
 bool CNXDNLookup::read()
 {
-	bool ret = load();
+	bool ret = m_table.load(m_filename);
 
 	if (m_reloadTime > 0U)
 		run();
@@ -61,7 +60,7 @@ void CNXDNLookup::entry()
 
 		timer.clock();
 		if (timer.hasExpired()) {
-			load();
+			m_table.load(m_filename);
 			timer.start();
 		}
 	}
@@ -81,6 +80,27 @@ void CNXDNLookup::stop()
 	wait();
 }
 
+void CNXDNLookup::findWithName(unsigned int id, class CUserDBentry *entry)
+{
+	if (id == 0xFFFFU) {
+		entry->clear();
+		entry->set(keyCALLSIGN, "ALL");
+		return;
+	}
+
+	if (m_table.lookup(id, entry)) {
+		LogDebug("FindWithName =%s %s", entry->get(keyCALLSIGN).c_str(), entry->get(keyFIRST_NAME).c_str());
+	} else {
+		entry->clear();
+
+		char text[10U];
+		::snprintf(text, sizeof(text), "%u", id);
+		entry->set(keyCALLSIGN, text);
+	}
+
+	return;
+}
+
 std::string CNXDNLookup::find(unsigned int id)
 {
 	std::string callsign;
@@ -88,73 +108,19 @@ std::string CNXDNLookup::find(unsigned int id)
 	if (id == 0xFFFFU)
 		return std::string("ALL");
 
-	m_mutex.lock();
-
-	try {
-		callsign = m_table.at(id);
-	} catch (...) {
+	class CUserDBentry entry;
+	if (m_table.lookup(id, &entry)) {
+		callsign = entry.get(keyCALLSIGN);
+	} else {
 		char text[10U];
-		::sprintf(text, "%u", id);
+		::snprintf(text, sizeof(text), "%u", id);
 		callsign = std::string(text);
 	}
-
-	m_mutex.unlock();
 
 	return callsign;
 }
 
 bool CNXDNLookup::exists(unsigned int id)
 {
-	m_mutex.lock();
-
-	bool found = m_table.count(id) == 1U;
-
-	m_mutex.unlock();
-
-	return found;
-}
-
-bool CNXDNLookup::load()
-{
-	FILE* fp = ::fopen(m_filename.c_str(), "rt");
-	if (fp == NULL) {
-		LogWarning("Cannot open the NXDN Id lookup file - %s", m_filename.c_str());
-		return false;
-	}
-
-	m_mutex.lock();
-
-	// Remove the old entries
-	m_table.clear();
-
-	char buffer[100U];
-	while (::fgets(buffer, 100U, fp) != NULL) {
-		if (buffer[0U] == '#')
-			continue;
-
-		char* p1 = ::strtok(buffer, ",\t\r\n");
-		char* p2 = ::strtok(NULL, ",\t\r\n");
-
-		if (p1 != NULL && p2 != NULL) {
-			unsigned int id = (unsigned int)::atoi(p1);
-			if (id > 0U) {
-				for (char* p = p2; *p != 0x00U; p++)
-					*p = ::toupper(*p);
-
-				m_table[id] = std::string(p2);
-			}
-		}
-	}
-
-	m_mutex.unlock();
-
-	::fclose(fp);
-
-	size_t size = m_table.size();
-	if (size == 0U)
-		return false;
-
-	LogInfo("Loaded %u Ids to the NXDN callsign lookup table", size);
-
-	return true;
+	return m_table.lookup(id, NULL);
 }

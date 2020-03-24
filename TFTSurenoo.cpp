@@ -135,7 +135,7 @@ void CTFTSurenoo::setIdleInt()
 {
 	setModeLine(STR_MMDVM);
 
-	::snprintf(m_temp, sizeof(m_temp), "%-6s / %u", m_callsign.c_str(), m_dmrid);
+	::snprintf(m_temp, sizeof(m_temp), "%s / %u", m_callsign.c_str(), m_dmrid);
 	setStatusLine(statusLineNo(0), m_temp);
 	setStatusLine(statusLineNo(1), "IDLE");
 
@@ -184,14 +184,14 @@ void CTFTSurenoo::writeDStarInt(const char* my1, const char* my2, const char* yo
 
 	setModeLine(STR_MMDVM);
 
-	::snprintf(m_temp, sizeof(m_temp), "%s %.8s/%4.4s", type, my1, my2);
+	::snprintf(m_temp, sizeof(m_temp), "%s %s/%s", type, my1, my2);
 	setStatusLine(statusLineNo(0), m_temp);
 
-	::snprintf(m_temp, sizeof(m_temp), "%.8s", your);
+	::snprintf(m_temp, sizeof(m_temp), "%s", your);
 	setStatusLine(statusLineNo(1), m_temp);
 
 	if (::strcmp(reflector, "        ") != 0)
-		::snprintf(m_temp, sizeof(m_temp), "via %.8s", reflector);
+		::snprintf(m_temp, sizeof(m_temp), "via %s", reflector);
 	else
 		::strcpy(m_temp, "");
 	setStatusLine(statusLineNo(2), m_temp);
@@ -202,8 +202,8 @@ void CTFTSurenoo::writeDStarInt(const char* my1, const char* my2, const char* yo
 void CTFTSurenoo::clearDStarInt()
 {
 	setStatusLine(statusLineNo(0), "Listening");
-	setStatusLine(statusLineNo(1), "");
-	setStatusLine(statusLineNo(2), "");
+	for (int i = 1; i < STATUS_LINES; i++)
+		setStatusLine(statusLineNo(i), "");
 }
 
 void CTFTSurenoo::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
@@ -230,6 +230,25 @@ void CTFTSurenoo::writeDMRInt(unsigned int slotNo, const std::string& src, bool 
 	m_mode = MODE_DMR;
 }
 
+int CTFTSurenoo::writeDMRIntEx(unsigned int slotNo, const class CUserDBentry& src, bool group, const std::string& dst, const char* type)
+{
+	assert(type != NULL);
+
+	// duplex mode is not supported
+	if (m_duplex)
+		return -1;
+
+	setModeLine(STR_DMR);
+	setStatusLine(statusLineNo(2), (src.get(keyFIRST_NAME) + " " + src.get(keyLAST_NAME)).c_str());
+	setStatusLine(statusLineNo(3), src.get(keyCITY).c_str());
+	setStatusLine(statusLineNo(4), src.get(keySTATE).c_str());
+	setStatusLine(statusLineNo(5), src.get(keyCOUNTRY).c_str());
+
+	m_mode = MODE_DMR;
+
+	return 1;
+}
+
 void CTFTSurenoo::clearDMRInt(unsigned int slotNo)
 {
 	int pos = m_duplex ? (slotNo - 1) : 0;
@@ -239,7 +258,8 @@ void CTFTSurenoo::clearDMRInt(unsigned int slotNo)
 		::snprintf(m_temp, sizeof(m_temp), "TS%d", slotNo);
 		setStatusLine(statusLineNo(pos * 2 + 1), m_temp);
 	} else {
-		setStatusLine(statusLineNo(1), "");
+		for (int i = 1; i < STATUS_LINES; i++)
+			setStatusLine(statusLineNo(i), "");
 	}
 }
 
@@ -252,14 +272,14 @@ void CTFTSurenoo::writeFusionInt(const char* source, const char* dest, const cha
 
 	setModeLine(STR_YSF);
 
-	::snprintf(m_temp, sizeof(m_temp), "%s %.10s", type, source);
+	::snprintf(m_temp, sizeof(m_temp), "%s %s", type, source);
 	setStatusLine(statusLineNo(0), m_temp);
 
-	::snprintf(m_temp, sizeof(m_temp), "  %.10s", dest);
+	::snprintf(m_temp, sizeof(m_temp), "%s", dest);
 	setStatusLine(statusLineNo(1), m_temp);
 
 	if (::strcmp(origin, "          ") != 0)
-		::snprintf(m_temp, sizeof(m_temp), "at %.10s", origin);
+		::snprintf(m_temp, sizeof(m_temp), "at %s", origin);
 	else
 		::strcpy(m_temp, "");
 	setStatusLine(statusLineNo(2), m_temp);
@@ -279,10 +299,10 @@ void CTFTSurenoo::writeP25Int(const char* source, bool group, unsigned int dest,
 
 	setModeLine(STR_P25);
 
-	::snprintf(m_temp, sizeof(m_temp), "%s %.10s", type, source);
+	::snprintf(m_temp, sizeof(m_temp), "%s %s", type, source);
 	setStatusLine(statusLineNo(0), m_temp);
 
-	::snprintf(m_temp, sizeof(m_temp), "  %s%u", group ? "TG" : "", dest);
+	::snprintf(m_temp, sizeof(m_temp), "%s%u", group ? "TG" : "", dest);
 	setStatusLine(statusLineNo(1), m_temp);
 
 	m_mode = MODE_P25;
@@ -298,15 +318,31 @@ void CTFTSurenoo::writeNXDNInt(const char* source, bool group, unsigned int dest
 	assert(source != NULL);
 	assert(type != NULL);
 
-	setModeLine(STR_NXDN);
+	if (m_mode != MODE_NXDN)
+		setModeLine(STR_NXDN);
 
-	::snprintf(m_temp, sizeof(m_temp), "%s %.10s", type, source);
+	::snprintf(m_temp, sizeof(m_temp), "%s %s", type, source);
 	setStatusLine(statusLineNo(0), m_temp);
 
-	::snprintf(m_temp, sizeof(m_temp), "  %s%u", group ? "TG" : "", dest);
+	::snprintf(m_temp, sizeof(m_temp), "%s%u", group ? "TG" : "", dest);
 	setStatusLine(statusLineNo(1), m_temp);
 
 	m_mode = MODE_NXDN;
+}
+
+int CTFTSurenoo::writeNXDNIntEx(const class CUserDBentry& source, bool group, unsigned int dest, const char* type)
+{
+	assert(type != NULL);
+
+	setModeLine(STR_NXDN);
+	setStatusLine(statusLineNo(2), (source.get(keyFIRST_NAME) + " " + source.get(keyLAST_NAME)).c_str());
+	setStatusLine(statusLineNo(3), source.get(keyCITY).c_str());
+	setStatusLine(statusLineNo(4), source.get(keySTATE).c_str());
+	setStatusLine(statusLineNo(5), source.get(keyCOUNTRY).c_str());
+
+	m_mode = MODE_NXDN;
+
+	return 1;
 }
 
 void CTFTSurenoo::clearNXDNInt()

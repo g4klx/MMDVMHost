@@ -835,15 +835,16 @@ void CNXDNControl::writeNetwork()
 
 		unsigned short dstId = m_netLayer3.getDestinationGroupId();
 		bool grp             = m_netLayer3.getIsGroup();
-		std::string source   = m_lookup->find(m_netLayer3.getSourceUnitId());
+		class CUserDBentry source;
+		m_lookup->findWithName(m_netLayer3.getSourceUnitId(), &source);
 
 		if (type == NXDN_MESSAGE_TYPE_TX_REL) {
 			m_netFrames++;
-			LogMessage("NXDN, received network end of transmission from %s to %s%u, %.1f seconds", source.c_str(), grp ? "TG " : "", dstId, float(m_netFrames) / 12.5F);
+			LogMessage("NXDN, received network end of transmission from %s to %s%u, %.1f seconds", source.get(keyCALLSIGN).c_str(), grp ? "TG " : "", dstId, float(m_netFrames) / 12.5F);
 			writeEndNet();
 		} else if (type == NXDN_MESSAGE_TYPE_VCALL) {
-			LogMessage("NXDN, received network transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
-			m_display->writeNXDN(source.c_str(), grp, dstId, "N");
+			LogMessage("NXDN, received network transmission from %s to %s%u", source.get(keyCALLSIGN).c_str(), grp ? "TG " : "", dstId);
+			m_display->writeNXDN(source, grp, dstId, "N");
 
 			m_netTimeoutTimer.start();
 			m_packetTimer.start();
@@ -892,9 +893,10 @@ void CNXDNControl::writeNetwork()
 			unsigned short dstId = m_netLayer3.getDestinationGroupId();
 			bool grp             = m_netLayer3.getIsGroup();
 
-			std::string source = m_lookup->find(srcId);
-			LogMessage("NXDN, received network transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
-			m_display->writeNXDN(source.c_str(), grp, dstId, "N");
+			class CUserDBentry source;
+			m_lookup->findWithName(srcId, &source);
+			LogMessage("NXDN, received network transmission from %s to %s%u", source.get(keyCALLSIGN).c_str(), grp ? "TG " : "", dstId);
+			m_display->writeNXDN(source, grp, dstId, "N");
 
 			m_netTimeoutTimer.start();
 			m_packetTimer.start();

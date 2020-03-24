@@ -151,6 +151,29 @@ void CDisplay::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 	writeDMRInt(slotNo, src, group, dst, type);
 }
 
+void CDisplay::writeDMR(unsigned int slotNo, const class CUserDBentry& src, bool group, const std::string& dst, const char* type)
+{
+	assert(type != NULL);
+
+	if (slotNo == 1U) {
+		m_timer1.start();
+		m_mode1 = MODE_IDLE;
+	} else {
+		m_timer2.start();
+		m_mode2 = MODE_IDLE;
+	}
+
+	if (int err = writeDMRIntEx(slotNo, src, group, dst, type)) {
+		std::string src_str = src.get(keyCALLSIGN);
+		if (err < 0 && !src.get(keyFIRST_NAME).empty()) {
+		  	// emulate the result of old CDMRLookup::findWithName()
+			//  (it returned callsign and firstname)
+			src_str += " " + src.get(keyFIRST_NAME);
+		}
+		writeDMRInt(slotNo, src_str, group, dst, type);
+	}
+}
+
 void CDisplay::writeDMRRSSI(unsigned int slotNo, unsigned char rssi)
 {
 	if (rssi != 0U)
@@ -265,6 +288,17 @@ void CDisplay::writeNXDN(const char* source, bool group, unsigned int dest, cons
 	m_mode1 = MODE_IDLE;
 
 	writeNXDNInt(source, group, dest, type);
+}
+
+void CDisplay::writeNXDN(const class CUserDBentry& source, bool group, unsigned int dest, const char* type)
+{
+	assert(type != NULL);
+
+	m_timer1.start();
+	m_mode1 = MODE_IDLE;
+
+	if (writeNXDNIntEx(source, group, dest, type))
+		writeNXDNInt(source.get(keyCALLSIGN).c_str(), group, dest, type);
 }
 
 void CDisplay::writeNXDNRSSI(unsigned char rssi)
@@ -386,6 +420,20 @@ void CDisplay::writeDStarBERInt(float ber)
 {
 }
 
+int CDisplay::writeDMRIntEx(unsigned int slotNo, const class CUserDBentry& src, bool group, const std::string& dst, const char* type)
+{
+	/*
+	 * return value:
+	 *	< 0	error condition (i.e. not supported)
+	 *		-> call writeXXXXInt() to display
+	 *	= 0	no error, writeXXXXIntEx() displayed whole status
+	 *	= 1	no error, writeXXXXIntEx() displayed partial status
+	 *		-> call writeXXXXInt() to display remain part
+	 *	> 1	reserved for future use
+	 */
+	return -1;	// not supported
+}
+
 void CDisplay::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
 {
 }
@@ -421,6 +469,13 @@ void CDisplay::writeNXDNRSSIInt(unsigned char rssi)
 void CDisplay::writeNXDNBERInt(float ber)
 {
 }
+
+int CDisplay::writeNXDNIntEx(const class CUserDBentry& source, bool group, unsigned int dest, const char* type)
+{
+	/* return value definition is same as writeDMRIntEx() */
+	return -1;	// not supported
+}
+
 	
 /* Factory method extracted from MMDVMHost.cpp - BG5HHP */
 CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
