@@ -256,28 +256,18 @@ bool CSerialController::open()
 			return false;
 		}
 
+		termios.c_iflag &= ~(IGNBRK | BRKINT | IGNPAR | PARMRK | INPCK);
+		termios.c_iflag &= ~(ISTRIP | INLCR | IGNCR | ICRNL);
+		termios.c_iflag &= ~(IXON | IXOFF | IXANY);
+		termios.c_oflag &= ~(OPOST);
+		termios.c_cflag &= ~(CSIZE | CSTOPB | PARENB | CRTSCTS);
+		termios.c_cflag |=  (CS8 | CLOCAL | CREAD);
+		termios.c_lflag &= ~(ISIG | ICANON | IEXTEN);
+		termios.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL);
 #if defined(__APPLE__)
-		termios.c_cflag |= (CLOCAL | CREAD);    /* ignore modem controls */
-		termios.c_cflag &= ~CSIZE;
-		termios.c_cflag |= CS8;         /* 8-bit characters */
-		termios.c_cflag &= ~PARENB;     /* no parity bit */
-		termios.c_cflag &= ~CSTOPB;     /* only need 1 stop bit */
-		termios.c_cflag &= ~CRTSCTS;    /* no hardware flowcontrol */
-
-		/* setup for non-canonical mode */
-		termios.c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP | INLCR | IGNCR | ICRNL | IXON);
-		termios.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
-		termios.c_oflag &= ~OPOST;
-
-		/* fetch bytes as they become available */
 		termios.c_cc[VMIN] = 1;
 		termios.c_cc[VTIME] = 1;
 #else
-		termios.c_lflag    &= ~(ECHO | ECHOE | ICANON | IEXTEN | ISIG);
-		termios.c_iflag    &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON | IXOFF | IXANY);
-		termios.c_cflag    &= ~(CSIZE | CSTOPB | PARENB | CRTSCTS);
-		termios.c_cflag    |= CS8;
-		termios.c_oflag    &= ~(OPOST);
 		termios.c_cc[VMIN]  = 0;
 		termios.c_cc[VTIME] = 10;
 #endif
