@@ -31,7 +31,8 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #else
-#include <winsock.h>
+#include <winsock2.h>
+#include <ws2tcpip.h>
 #endif
 
 class CUDPSocket {
@@ -42,12 +43,12 @@ public:
 
 	bool open();
 
-	int  read(unsigned char* buffer, unsigned int length, in_addr& address, unsigned int& port);
-	bool write(const unsigned char* buffer, unsigned int length, const in_addr& address, unsigned int port);
+	int  read(unsigned char* buffer, unsigned int length, sockaddr_storage& address, unsigned int &address_length);
+	bool write(const unsigned char* buffer, unsigned int length, const sockaddr_storage& address, unsigned int address_length);
 
 	void close();
 
-	static in_addr lookup(const std::string& hostName);
+	static int lookup(const std::string& hostName, unsigned int port, sockaddr_storage &address, unsigned int &address_length);
 
 private:
 	std::string    m_address;

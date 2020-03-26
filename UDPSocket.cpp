@@ -60,49 +60,46 @@ CUDPSocket::~CUDPSocket()
 #endif
 }
 
-in_addr CUDPSocket::lookup(const std::string& hostname)
+int CUDPSocket::lookup(const std::string& hostname, unsigned int port, sockaddr_storage &addr, unsigned int &address_length)
 {
-	in_addr addr;
-#if defined(_WIN32) || defined(_WIN64)
-	unsigned long address = ::inet_addr(hostname.c_str());
-	if (address != INADDR_NONE && address != INADDR_ANY) {
-		addr.s_addr = address;
-		return addr;
+	int err;
+	std::string portstr = std::to_string(port);
+	struct addrinfo hints, *res;
+
+	::memset(&hints, 0, sizeof(struct addrinfo));
+	hints.ai_flags = AI_NUMERICSERV;
+
+	err = getaddrinfo(hostname.c_str(), portstr.c_str(), &hints, &res);
+	if (err) {
+		sockaddr_in *paddr = (sockaddr_in *)&addr;
+		::memset(paddr, 0, address_length = sizeof(sockaddr_in));
+		paddr->sin_family = AF_INET;
+		paddr->sin_port = htons(port);
+		paddr->sin_addr.s_addr = htonl(INADDR_NONE);
+		LogError("Cannot find address for host %s", hostname.c_str());
+		return err;
 	}
 
-	struct hostent* hp = ::gethostbyname(hostname.c_str());
-	if (hp != NULL) {
-		::memcpy(&addr, hp->h_addr_list[0], sizeof(struct in_addr));
-		return addr;
-	}
+	::memcpy(&addr, res->ai_addr, address_length = res->ai_addrlen);
 
-	LogError("Cannot find address for host %s", hostname.c_str());
-
-	addr.s_addr = INADDR_NONE;
-	return addr;
-#else
-	in_addr_t address = ::inet_addr(hostname.c_str());
-	if (address != in_addr_t(-1)) {
-		addr.s_addr = address;
-		return addr;
-	}
-
-	struct hostent* hp = ::gethostbyname(hostname.c_str());
-	if (hp != NULL) {
-		::memcpy(&addr, hp->h_addr_list[0], sizeof(struct in_addr));
-		return addr;
-	}
-
-	LogError("Cannot find address for host %s", hostname.c_str());
-
-	addr.s_addr = INADDR_NONE;
-	return addr;
-#endif
+	freeaddrinfo(res);
+	return 0;
 }
 
 bool CUDPSocket::open()
 {
-	m_fd = ::socket(PF_INET, SOCK_DGRAM, 0);
+	int err;
+	sockaddr_storage addr;
+	unsigned int addrlen;
+
+	/* to determine protocol family, call lookup() first. */
+	err = lookup(m_address.empty() ? "0.0.0.0" : m_address.c_str(), m_port, addr, addrlen);
+	if (err) {
+		LogError("The local address is invalid - %s", m_address.c_str());
+		return false;
+	}
+
+	m_fd = ::socket(addr.ss_family, SOCK_DGRAM, 0);
 	if (m_fd < 0) {
 #if defined(_WIN32) || defined(_WIN64)
 		LogError("Cannot create the UDP socket, err: %lu", ::GetLastError());
@@ -113,24 +110,6 @@ bool CUDPSocket::open()
 	}
 
 	if (m_port > 0U) {
-		sockaddr_in addr;
-		::memset(&addr, 0x00, sizeof(sockaddr_in));
-		addr.sin_family      = AF_INET;
-		addr.sin_port        = htons(m_port);
-		addr.sin_addr.s_addr = htonl(INADDR_ANY);
-
-		if (!m_address.empty()) {
-#if defined(_WIN32) || defined(_WIN64)
-			addr.sin_addr.s_addr = ::inet_addr(m_address.c_str());
-#else
-			addr.sin_addr.s_addr = ::inet_addr(m_address.c_str());
-#endif
-			if (addr.sin_addr.s_addr == INADDR_NONE) {
-				LogError("The local address is invalid - %s", m_address.c_str());
-				return false;
-			}
-		}
-
 		int reuse = 1;
 		if (::setsockopt(m_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) == -1) {
 #if defined(_WIN32) || defined(_WIN64)
@@ -141,7 +120,7 @@ bool CUDPSocket::open()
 			return false;
 		}
 
-		if (::bind(m_fd, (sockaddr*)&addr, sizeof(sockaddr_in)) == -1) {
+		if (::bind(m_fd, (sockaddr*)&addr, addrlen) == -1) {
 #if defined(_WIN32) || defined(_WIN64)
 			LogError("Cannot bind the UDP address, err: %lu", ::GetLastError());
 #else
@@ -154,7 +133,7 @@ bool CUDPSocket::open()
 	return true;
 }
 
-int CUDPSocket::read(unsigned char* buffer, unsigned int length, in_addr& address, unsigned int& port)
+int CUDPSocket::read(unsigned char* buffer, unsigned int length, sockaddr_storage& address, unsigned int &address_length)
 {
 	assert(buffer != NULL);
 	assert(length > 0U);
@@ -186,17 +165,16 @@ int CUDPSocket::read(unsigned char* buffer, unsigned int length, in_addr& addres
 	if (ret == 0)
 		return 0;
 
-	sockaddr_in addr;
 #if defined(_WIN32) || defined(_WIN64)
-	int size = sizeof(sockaddr_in);
+	int size = sizeof(sockaddr_storage);
 #else
-	socklen_t size = sizeof(sockaddr_in);
+	socklen_t size = sizeof(sockaddr_storage);
 #endif
 
 #if defined(_WIN32) || defined(_WIN64)
-	int len = ::recvfrom(m_fd, (char*)buffer, length, 0, (sockaddr *)&addr, &size);
+	int len = ::recvfrom(m_fd, (char*)buffer, length, 0, (sockaddr *)&address, &size);
 #else
-	ssize_t len = ::recvfrom(m_fd, (char*)buffer, length, 0, (sockaddr *)&addr, &size);
+	ssize_t len = ::recvfrom(m_fd, (char*)buffer, length, 0, (sockaddr *)&address, &size);
 #endif
 	if (len <= 0) {
 #if defined(_WIN32) || defined(_WIN64)
@@ -207,28 +185,19 @@ int CUDPSocket::read(unsigned char* buffer, unsigned int length, in_addr& addres
 		return -1;
 	}
 
-	address = addr.sin_addr;
-	port    = ntohs(addr.sin_port);
-
+	address_length = size;
 	return len;
 }
 
-bool CUDPSocket::write(const unsigned char* buffer, unsigned int length, const in_addr& address, unsigned int port)
+bool CUDPSocket::write(const unsigned char* buffer, unsigned int length, const sockaddr_storage& address, unsigned int address_length)
 {
 	assert(buffer != NULL);
 	assert(length > 0U);
 
-	sockaddr_in addr;
-	::memset(&addr, 0x00, sizeof(sockaddr_in));
-
-	addr.sin_family = AF_INET;
-	addr.sin_addr   = address;
-	addr.sin_port   = htons(port);
-
 #if defined(_WIN32) || defined(_WIN64)
-	int ret = ::sendto(m_fd, (char *)buffer, length, 0, (sockaddr *)&addr, sizeof(sockaddr_in));
+	int ret = ::sendto(m_fd, (char *)buffer, length, 0, (sockaddr *)&address, address_length);
 #else
-	ssize_t ret = ::sendto(m_fd, (char *)buffer, length, 0, (sockaddr *)&addr, sizeof(sockaddr_in));
+	ssize_t ret = ::sendto(m_fd, (char *)buffer, length, 0, (sockaddr *)&address, address_length);
 #endif
 	if (ret < 0) {
 #if defined(_WIN32) || defined(_WIN64)
