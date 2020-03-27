@@ -67,9 +67,11 @@ int CRemoteCommand::send(const std::string& command)
 	if (!ret)
 		return 1;
 
-	in_addr address = CUDPSocket::lookup("localhost");
+	sockaddr_storage address;
+	unsigned int addrlen;
+	CUDPSocket::lookup("localhost", m_port, address, addrlen);
 
-	ret = socket.write((unsigned char*)command.c_str(), command.length(), address, m_port);
+	ret = socket.write((unsigned char*)command.c_str(), command.length(), address, addrlen);
 	if (!ret) {
 		socket.close();
 		return 1;

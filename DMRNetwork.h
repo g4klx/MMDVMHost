@@ -60,7 +60,8 @@ public:
 
 private: 
 	std::string     m_addressStr;
-	in_addr         m_address;
+	sockaddr_storage m_address;
+	unsigned int    m_addrlen;
 	unsigned int    m_port;
 	uint8_t*        m_id;
 	std::string     m_password;

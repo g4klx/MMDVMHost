@@ -36,6 +36,7 @@ const unsigned int HOMEBREW_DATA_PACKET_LENGTH = 55U;
 CDMRNetwork::CDMRNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, HW_TYPE hwType) :
 m_addressStr(address),
 m_address(),
+m_addrlen(),
 m_port(port),
 m_id(NULL),
 m_password(password),
@@ -73,7 +74,7 @@ m_beacon(false)
 	assert(id > 1000U);
 	assert(!password.empty());
 
-	m_address = CUDPSocket::lookup(address);
+	CUDPSocket::lookup(m_addressStr, m_port, m_address, m_addrlen);
 
 	m_buffer   = new unsigned char[BUFFER_LENGTH];
 	m_salt     = new unsigned char[sizeof(uint32_t)];
@@ -124,8 +125,8 @@ bool CDMRNetwork::open()
 {
 	LogMessage("DMR, Opening DMR Network");
 
-	if (m_address.s_addr == INADDR_NONE)
-		m_address = CUDPSocket::lookup(m_addressStr);
+	if (CUDPSocket::isnone(m_address))
+		CUDPSocket::lookup(m_addressStr, m_port, m_address, m_addrlen);
 
 	m_status = WAITING_CONNECT;
 	m_timeoutTimer.stop();
@@ -377,9 +378,9 @@ void CDMRNetwork::clock(unsigned int ms)
 		return;
 	}
 
-	in_addr address;
-	unsigned int port;
-	int length = m_socket.read(m_buffer, BUFFER_LENGTH, address, port);
+	sockaddr_storage address;
+	unsigned int addrlen;
+	int length = m_socket.read(m_buffer, BUFFER_LENGTH, address, addrlen);
 	if (length < 0) {
 		LogError("DMR, Socket has failed, retrying connection to the master");
 		close();
@@ -390,7 +391,7 @@ void CDMRNetwork::clock(unsigned int ms)
 	// if (m_debug && length > 0)
 	//	CUtils::dump(1U, "Network Received", m_buffer, length);
 
-	if (length > 0 && m_address.s_addr == address.s_addr && m_port == port) {
+	if (length > 0 && CUDPSocket::match(m_address, address)) {
 		if (::memcmp(m_buffer, "DMRD", 4U) == 0) {
 			if (m_enabled) {
 				if (m_debug)
@@ -663,7 +664,7 @@ bool CDMRNetwork::write(const unsigned char* data, unsigned int length)
 	// if (m_debug)
 	//	CUtils::dump(1U, "Network Transmitted", data, length);
 
-	bool ret = m_socket.write(data, length, m_address, m_port);
+	bool ret = m_socket.write(data, length, m_address, m_addrlen);
 	if (!ret) {
 		LogError("DMR, Socket has failed when writing data to the master, retrying connection");
 		m_socket.close();

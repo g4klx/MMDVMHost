@@ -48,8 +48,8 @@ public:
 
 private:
 	CUDPSocket     m_socket;
-	in_addr        m_address;
-	unsigned int   m_port;
+	sockaddr_storage m_address;
+	unsigned int   m_addrlen;
 	std::string    m_callsign;
 	bool           m_debug;
 	bool           m_enabled;

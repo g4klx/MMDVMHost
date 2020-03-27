@@ -316,8 +316,8 @@ int CMMDVMHost::run()
 			return 1;
 	}
 
-	in_addr transparentAddress;
-	unsigned int transparentPort = 0U;
+	sockaddr_storage transparentAddress;
+	unsigned int transparentAddrLen;
 	CUDPSocket* transparentSocket = NULL;
 
 	unsigned int sendFrameType = 0U;
@@ -333,8 +333,7 @@ int CMMDVMHost::run()
 		LogInfo("    Local Port: %u", localPort);
 		LogInfo("    Send Frame Type: %u", sendFrameType);
 
-		transparentAddress = CUDPSocket::lookup(remoteAddress);
-		transparentPort    = remotePort;
+		CUDPSocket::lookup(remoteAddress, remotePort, transparentAddress, transparentAddrLen);
 
 		transparentSocket = new CUDPSocket(localPort);
 		ret = transparentSocket->open();
@@ -793,7 +792,7 @@ int CMMDVMHost::run()
 
 		len = m_modem->readTransparentData(data);
 		if (transparentSocket != NULL && len > 0U)
-			transparentSocket->write(data, len, transparentAddress, transparentPort);
+			transparentSocket->write(data, len, transparentAddress, transparentAddrLen);
 
 		if (!m_fixedMode) {
 			if (m_modeTimer.isRunning() && m_modeTimer.hasExpired())
@@ -942,9 +941,9 @@ int CMMDVMHost::run()
 		}
 
 		if (transparentSocket != NULL) {
-			in_addr address;
-			unsigned int port = 0U;
-			len = transparentSocket->read(data, 200U, address, port);
+			sockaddr_storage address;
+			unsigned int addrlen;
+			len = transparentSocket->read(data, 200U, address, addrlen);
 			if (len > 0U)
 				m_modem->writeTransparentData(data, len);
 		}

@@ -31,7 +31,7 @@ const unsigned int BUFFER_LENGTH = 200U;
 CNXDNNetwork::CNXDNNetwork(const std::string& localAddress, unsigned int localPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug) :
 m_socket(localAddress, localPort),
 m_address(),
-m_port(gatewayPort),
+m_addrlen(),
 m_debug(debug),
 m_enabled(false),
 m_buffer(1000U, "NXDN Network")
@@ -39,7 +39,7 @@ m_buffer(1000U, "NXDN Network")
 	assert(gatewayPort > 0U);
 	assert(!gatewayAddress.empty());
 
-	m_address = CUDPSocket::lookup(gatewayAddress);
+	CUDPSocket::lookup(gatewayAddress, gatewayPort, m_address, m_addrlen);
 }
 
 CNXDNNetwork::~CNXDNNetwork()
@@ -50,7 +50,7 @@ bool CNXDNNetwork::open()
 {
 	LogMessage("Opening NXDN network connection");
 
-	if (m_address.s_addr == INADDR_NONE)
+	if (CUDPSocket::isnone(m_address))
 		return false;
 
 	return m_socket.open();
@@ -100,24 +100,18 @@ bool CNXDNNetwork::write(const unsigned char* data, NXDN_NETWORK_MESSAGE_TYPE ty
 	if (m_debug)
 		CUtils::dump(1U, "NXDN Network Data Sent", buffer, 102U);
 
-	return m_socket.write(buffer, 102U, m_address, m_port);
+	return m_socket.write(buffer, 102U, m_address, m_addrlen);
 }
 
 void CNXDNNetwork::clock(unsigned int ms)
 {
 	unsigned char buffer[BUFFER_LENGTH];
 
-	in_addr address;
-	unsigned int port;
-	int length = m_socket.read(buffer, BUFFER_LENGTH, address, port);
-	if (length <= 0)
+	sockaddr_storage address;
+	unsigned int addrlen;
+	int length = m_socket.read(buffer, BUFFER_LENGTH, address, addrlen);
+	if (length <= 0 || !CUDPSocket::match(m_address, address))
 		return;
-
-	// Check if the data is for us
-	if (m_address.s_addr != address.s_addr || port != m_port) {
-		LogMessage("NXDN packet received from an invalid source, %08X != %08X and/or %u != %u", m_address.s_addr, address.s_addr, m_port, port);
-		return;
-	}
 
 	// Invalid packet type?
 	if (::memcmp(buffer, "ICOM", 4U) != 0)

@@ -53,9 +53,9 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 
 	char command[BUFFER_LENGTH];
 	char buffer[BUFFER_LENGTH];
-	in_addr address;
-	unsigned int port;
-	int ret = m_socket.read((unsigned char*)buffer, BUFFER_LENGTH, address, port);
+	sockaddr_storage address;
+	unsigned int addrlen;
+	int ret = m_socket.read((unsigned char*)buffer, BUFFER_LENGTH, address, addrlen);
 	if (ret > 0) {
 		buffer[ret] = '\0';
 

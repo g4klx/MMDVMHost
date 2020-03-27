@@ -51,8 +51,8 @@ public:
 
 private:
 	CTimer       m_idTimer;
-	in_addr      m_address;
-	unsigned int m_port;
+	sockaddr_storage m_address;
+	unsigned int m_addrlen;
 	CUDPSocket   m_socket;
 	CDMRNetwork* m_network;
 
