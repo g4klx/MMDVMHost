@@ -86,6 +86,37 @@ int CUDPSocket::lookup(const std::string& hostname, unsigned int port, sockaddr_
 	return 0;
 }
 
+bool CUDPSocket::match(const sockaddr_storage &addr1, const sockaddr_storage &addr2)
+{
+	if (addr1.ss_family != addr2.ss_family)
+		return false;
+
+	switch (addr1.ss_family) {
+	case AF_INET:
+		struct sockaddr_in *in_1, *in_2;
+		in_1 = (struct sockaddr_in *)&addr1;
+		in_2 = (struct sockaddr_in *)&addr2;
+		return ( (in_1->sin_addr.s_addr == in_2->sin_addr.s_addr) &&
+			 (in_1->sin_port == in_2->sin_port) );
+	case AF_INET6:
+		struct sockaddr_in6 *in6_1, *in6_2;
+		in6_1 = (struct sockaddr_in6 *)&addr1;
+		in6_2 = (struct sockaddr_in6 *)&addr2;
+		return ( IN6_ARE_ADDR_EQUAL(&in6_1->sin6_addr, &in6_2->sin6_addr) &&
+			 (in6_1->sin6_port == in6_2->sin6_port) );
+	default:
+		return false;
+	}
+}
+
+bool CUDPSocket::isnone(const sockaddr_storage &addr)
+{
+	struct sockaddr_in *in = (struct sockaddr_in *)&addr;
+
+	return ( (addr.ss_family == AF_INET) &&
+		 (in->sin_addr.s_addr == htonl(INADDR_NONE)) );
+}
+
 bool CUDPSocket::open()
 {
 	int err;
