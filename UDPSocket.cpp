@@ -117,14 +117,37 @@ bool CUDPSocket::isnone(const sockaddr_storage &addr)
 		 (in->sin_addr.s_addr == htonl(INADDR_NONE)) );
 }
 
+bool CUDPSocket::open(const unsigned int af)
+{
+	switch (af) {
+	case AF_INET6:
+		m_address = "::";
+		break;
+	case AF_INET:
+		m_address = "0.0.0.0";
+		break;
+	default:
+		LogWarning("unknown address family - %d", af);
+		break;
+	}
+
+	return open();
+}
+
 bool CUDPSocket::open()
 {
 	int err;
 	sockaddr_storage addr;
 	unsigned int addrlen;
 
+	/* m_address should be defined */
+	if (m_address.empty()) {
+		LogError("The local address is undefined");
+		return false;
+	}
+
 	/* to determine protocol family, call lookup() first. */
-	err = lookup(m_address.empty() ? "0.0.0.0" : m_address.c_str(), m_port, addr, addrlen);
+	err = lookup(m_address.c_str(), m_port, addr, addrlen);
 	if (err) {
 		LogError("The local address is invalid - %s", m_address.c_str());
 		return false;

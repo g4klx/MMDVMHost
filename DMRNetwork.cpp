@@ -362,7 +362,7 @@ void CDMRNetwork::clock(unsigned int ms)
 	if (m_status == WAITING_CONNECT) {
 		m_retryTimer.clock(ms);
 		if (m_retryTimer.isRunning() && m_retryTimer.hasExpired()) {
-			bool ret = m_socket.open();
+			bool ret = m_socket.open(m_address.ss_family);
 			if (ret) {
 				ret = writeLogin();
 				if (!ret)

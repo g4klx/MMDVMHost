@@ -110,7 +110,7 @@ bool CP25Network::open()
 	if (CUDPSocket::isnone(m_address))
 		return false;
 
-	return m_socket.open();
+	return m_socket.open(m_address.ss_family);
 }
 
 bool CP25Network::writeLDU1(const unsigned char* ldu1, const CP25Data& control, const CP25LowSpeedData& lsd, bool end)

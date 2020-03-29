@@ -43,7 +43,7 @@ CRemoteControl::~CRemoteControl()
 
 bool CRemoteControl::open()
 {
-	return m_socket.open();
+	return m_socket.open(AF_INET);	/* XXX IPv4 only */
 }
 
 REMOTE_COMMAND CRemoteControl::getCommand()

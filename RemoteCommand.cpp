@@ -61,15 +61,15 @@ CRemoteCommand::~CRemoteCommand()
 
 int CRemoteCommand::send(const std::string& command)
 {
-	CUDPSocket socket(0U);
-	
-	bool ret = socket.open();
-	if (!ret)
-		return 1;
-
 	sockaddr_storage address;
 	unsigned int addrlen;
-	CUDPSocket::lookup("localhost", m_port, address, addrlen);
+	CUDPSocket::lookup("127.0.0.1", m_port, address, addrlen);
+
+	CUDPSocket socket(0U);
+	
+	bool ret = socket.open(address.ss_family);
+	if (!ret)
+		return 1;
 
 	ret = socket.write((unsigned char*)command.c_str(), command.length(), address, addrlen);
 	if (!ret) {

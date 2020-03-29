@@ -42,6 +42,7 @@ public:
 	~CUDPSocket();
 
 	bool open();
+	bool open(const unsigned int af);
 
 	int  read(unsigned char* buffer, unsigned int length, sockaddr_storage& address, unsigned int &address_length);
 	bool write(const unsigned char* buffer, unsigned int length, const sockaddr_storage& address, unsigned int address_length);

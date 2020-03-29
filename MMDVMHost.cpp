@@ -336,7 +336,7 @@ int CMMDVMHost::run()
 		CUDPSocket::lookup(remoteAddress, remotePort, transparentAddress, transparentAddrLen);
 
 		transparentSocket = new CUDPSocket(localPort);
-		ret = transparentSocket->open();
+		ret = transparentSocket->open(transparentAddress.ss_family);
 		if (!ret) {
 			LogWarning("Could not open the Transparent data socket, disabling");
 			delete transparentSocket;

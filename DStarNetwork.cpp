@@ -68,7 +68,7 @@ bool CDStarNetwork::open()
 
 	m_pollTimer.start();
 
-	return m_socket.open();
+	return m_socket.open(m_address.ss_family);
 }
 
 bool CDStarNetwork::writeHeader(const unsigned char* header, unsigned int length, bool busy)

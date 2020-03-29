@@ -43,7 +43,7 @@ CMobileGPS::~CMobileGPS()
 
 bool CMobileGPS::open()
 {
-	bool ret = m_socket.open();
+	bool ret = m_socket.open(m_address.ss_family);
 	if (!ret)
 		return false;
 
