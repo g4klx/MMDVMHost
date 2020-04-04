@@ -62,14 +62,23 @@ CUDPSocket::~CUDPSocket()
 
 int CUDPSocket::lookup(const std::string& hostname, unsigned int port, sockaddr_storage &addr, unsigned int &address_length)
 {
+	struct addrinfo hints;
+
+	::memset(&hints, 0, sizeof(hints));
+
+	return lookup(hostname, port, addr, address_length, hints);
+}
+
+int CUDPSocket::lookup(const std::string& hostname, unsigned int port, sockaddr_storage &addr, unsigned int &address_length, struct addrinfo &hints)
+{
 	int err;
 	std::string portstr = std::to_string(port);
-	struct addrinfo hints, *res;
+	struct addrinfo *res;
 
-	::memset(&hints, 0, sizeof(struct addrinfo));
-	hints.ai_flags = AI_NUMERICSERV;
+	/* port is always digits, no needs to lookup service */
+	hints.ai_flags |= AI_NUMERICSERV;
 
-	err = getaddrinfo(hostname.c_str(), portstr.c_str(), &hints, &res);
+	err = getaddrinfo(hostname.empty() ? NULL : hostname.c_str(), portstr.c_str(), &hints, &res);
 	if (err) {
 		sockaddr_in *paddr = (sockaddr_in *)&addr;
 		::memset(paddr, 0, address_length = sizeof(sockaddr_in));
@@ -117,37 +126,24 @@ bool CUDPSocket::isnone(const sockaddr_storage &addr)
 		 (in->sin_addr.s_addr == htonl(INADDR_NONE)) );
 }
 
-bool CUDPSocket::open(const unsigned int af)
+bool CUDPSocket::open()
 {
-	switch (af) {
-	case AF_INET6:
-		m_address = "::";
-		break;
-	case AF_INET:
-		m_address = "0.0.0.0";
-		break;
-	default:
-		LogWarning("unknown address family - %d", af);
-		break;
-	}
-
-	return open();
+	return open(AF_UNSPEC);
 }
 
-bool CUDPSocket::open()
+bool CUDPSocket::open(const unsigned int af)
 {
 	int err;
 	sockaddr_storage addr;
 	unsigned int addrlen;
+	struct addrinfo hints;
 
-	/* m_address should be defined */
-	if (m_address.empty()) {
-		LogError("The local address is undefined");
-		return false;
-	}
+	::memset(&hints, 0, sizeof(hints));
+	hints.ai_flags = AI_PASSIVE;
+	hints.ai_family = af;
 
 	/* to determine protocol family, call lookup() first. */
-	err = lookup(m_address.c_str(), m_port, addr, addrlen);
+	err = lookup(m_address, m_port, addr, addrlen, hints);
 	if (err) {
 		LogError("The local address is invalid - %s", m_address.c_str());
 		return false;
