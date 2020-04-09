@@ -150,6 +150,7 @@ m_ysfEnabled(false),
 m_p25Enabled(false),
 m_nxdnEnabled(false),
 m_pocsagEnabled(false),
+m_fmEnabled(false),
 m_cwIdTime(0U),
 m_dmrLookup(NULL),
 m_nxdnLookup(NULL),
@@ -603,6 +604,63 @@ int CMMDVMHost::run()
 		m_pocsag = new CPOCSAGControl(m_pocsagNetwork, m_display);
 
 		pocsagTimer.start();
+	}
+
+	if (m_fmEnabled) {
+		std::string  callsign          = m_conf.getFMCallsign();
+		unsigned int callsignSpeed     = m_conf.getFMCallsignSpeed();
+		unsigned int callsignFrequency = m_conf.getFMCallsignFrequency();
+		unsigned int callsignTime      = m_conf.getFMCallsignTime();
+		unsigned int callsignHoldoff   = m_conf.getFMCallsignHoldoff();
+		unsigned int callsignHighLevel = m_conf.getFMCallsignHighLevel();
+		unsigned int callsignLowLevel  = m_conf.getFMCallsignLowLevel();
+		bool         callsignAtStart   = m_conf.getFMCallsignAtStart();
+		bool         callsignAtEnd     = m_conf.getFMCallsignAtEnd();
+		std::string  ack               = m_conf.getFMCallsign();
+		unsigned int ackSpeed          = m_conf.getFMAckSpeed();
+		unsigned int ackFrequency      = m_conf.getFMAckFrequency();
+		unsigned int ackDelay          = m_conf.getFMAckDelay();
+		unsigned int ackLevel          = m_conf.getFMAckLevel();
+		unsigned int timeout           = m_conf.getTimeout();
+		unsigned int timeoutLevel      = m_conf.getFMTimeoutLevel();
+		float        ctcssFrequency    = m_conf.getFMCTCSSFrequency();
+		unsigned int ctcssThreshold    = m_conf.getFMCTCSSThreshold();
+		unsigned int ctcssLevel        = m_conf.getFMCTCSSLevel();
+		unsigned int inputLevel        = m_conf.getFMInputLevel();
+		unsigned int outputLevel       = m_conf.getFMOutputLevel();
+		unsigned int kerchunkTime      = m_conf.getFMKerchunkTime();
+		unsigned int hangTime          = m_conf.getFMHangTime();
+
+		LogInfo("FM RF Parameters");
+		LogInfo("    Callsign: %s", callsign.c_str());
+		LogInfo("    Callsign Speed: %uWPM", callsignSpeed);
+		LogInfo("    Callsign Frequency: %uHz", callsignFrequency);
+		LogInfo("    Callsign Time: %umins", callsignTime);
+		LogInfo("    Callsign Holdoff: 1/%u", callsignHoldoff);
+		LogInfo("    Callsign High Level: %u%%", callsignHighLevel);
+		LogInfo("    Callsign Low Level: %u%%", callsignLowLevel);
+		LogInfo("    Callsign At Start: %s", callsignAtStart ? "yes" : "no");
+		LogInfo("    Callsign At End: %s", callsignAtEnd ? "yes" : "no");
+		LogInfo("    Ack: %s", ack.c_str());
+		LogInfo("    Ack Speed: %uWPM", ackSpeed);
+		LogInfo("    Ack Frequency: %uHz", ackFrequency);
+		LogInfo("    Ack Delay: %ums", ackDelay);
+		LogInfo("    Ack Level: %u%%", ackLevel);
+		LogInfo("    Timeout: %us", timeout);
+		LogInfo("    Timeout Level: %u%%", timeoutLevel);
+		LogInfo("    CTCSS Frequency: %.1fHz", ctcssFrequency);
+		LogInfo("    CTCSS Threshold: %u%%", ctcssThreshold);
+		LogInfo("    CTCSS Level: %u%%", ctcssLevel);
+		LogInfo("    Input Level: %u%%", inputLevel);
+		LogInfo("    Output Level: %u%%", outputLevel);
+		LogInfo("    Kerchunk Time: %us", kerchunkTime);
+		LogInfo("    Hang Time: %us", hangTime);
+
+		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd);
+		m_modem->setFMAckParams(ack, ackSpeed, ackFrequency, ackDelay, ackLevel);
+		m_modem->setFMTimeout(timeout, timeoutLevel);
+		m_modem->setFMCTCSS(ctcssFrequency, ctcssThreshold, ctcssLevel);
+		m_modem->setFMMisc(inputLevel, outputLevel, kerchunkTime, hangTime);
 	}
 
 	bool remoteControlEnabled = m_conf.getRemoteControlEnabled();
@@ -1450,6 +1508,7 @@ void CMMDVMHost::readParams()
 	m_p25Enabled    = m_conf.getP25Enabled();
 	m_nxdnEnabled   = m_conf.getNXDNEnabled();
 	m_pocsagEnabled = m_conf.getPOCSAGEnabled();
+	m_fmEnabled     = m_conf.getFMEnabled();
 	m_duplex        = m_conf.getDuplex();
 	m_callsign      = m_conf.getCallsign();
 	m_id            = m_conf.getId();
@@ -1466,6 +1525,7 @@ void CMMDVMHost::readParams()
 	LogInfo("    P25: %s", m_p25Enabled ? "enabled" : "disabled");
 	LogInfo("    NXDN: %s", m_nxdnEnabled ? "enabled" : "disabled");
 	LogInfo("    POCSAG: %s", m_pocsagEnabled ? "enabled" : "disabled");
+	LogInfo("    FM: %s", m_fmEnabled ? "enabled" : "disabled");
 }
 
 void CMMDVMHost::setMode(unsigned char mode)

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -167,6 +167,31 @@ public:
   // The POCSAG section
   bool         getPOCSAGEnabled() const;
   unsigned int getPOCSAGFrequency() const;
+
+  // The FM Section
+  bool         getFMEnabled() const;
+  std::string  getFMCallsign() const;
+  unsigned int getFMCallsignSpeed() const;
+  unsigned int getFMCallsignFrequency() const;
+  unsigned int getFMCallsignTime() const;
+  unsigned int getFMCallsignHoldoff() const;
+  unsigned int getFMCallsignHighLevel() const;
+  unsigned int getFMCallsignLowLevel() const;
+  bool         getFMCallsignAtStart() const;
+  bool         getFMCallsignAtEnd() const;
+  std::string  getFMAck() const;
+  unsigned int getFMAckSpeed() const;
+  unsigned int getFMAckFrequency() const;
+  unsigned int getFMAckDelay() const;
+  unsigned int getFMAckLevel() const;
+  unsigned int getFMTimeoutLevel() const;
+  float        getFMCTCSSFrequency() const;
+  unsigned int getFMCTCSSThreshold() const;
+  unsigned int getFMCTCSSLevel() const;
+  unsigned int getFMInputLevel() const;
+  unsigned int getFMOutputLevel() const;
+  unsigned int getFMKerchunkTime() const;
+  unsigned int getFMHangTime() const;
 
   // The D-Star Network section
   bool         getDStarNetworkEnabled() const;
@@ -402,6 +427,30 @@ private:
 
   bool         m_pocsagEnabled;
   unsigned int m_pocsagFrequency;
+
+  bool         m_fmEnabled;
+  std::string  m_fmCallsign;
+  unsigned int m_fmCallsignSpeed;
+  unsigned int m_fmCallsignFrequency;
+  unsigned int m_fmCallsignTime;
+  unsigned int m_fmCallsignHoldoff;
+  unsigned int m_fmCallsignHighLevel;
+  unsigned int m_fmCallsignLowLevel;
+  bool         m_fmCallsignAtStart;
+  bool         m_fmCallsignAtEnd;
+  std::string  m_fmAck;
+  unsigned int m_fmAckSpeed;
+  unsigned int m_fmAckFrequency;
+  unsigned int m_fmAckDelay;
+  unsigned int m_fmAckLevel;
+  unsigned int m_fmTimeoutLevel;
+  float        m_fmCTCSSFrequency;
+  unsigned int m_fmCTCSSThreshold;
+  unsigned int m_fmCTCSSLevel;
+  unsigned int m_fmInputLevel;
+  unsigned int m_fmOutputLevel;
+  unsigned int m_fmKerchunkTime;
+  unsigned int m_fmHangTime;
 
   bool         m_dstarNetworkEnabled;
   std::string  m_dstarGatewayAddress;
