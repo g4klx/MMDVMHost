@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2011-2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2011-2018,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -44,6 +44,13 @@ public:
 	virtual void setDMRParams(unsigned int colorCode);
 	virtual void setYSFParams(bool loDev, unsigned int txHang);
 	virtual void setTransparentDataParams(unsigned int sendFrameType);
+
+	virtual bool setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, unsigned int callsignHighLevel, unsigned int callsignLowLevel, bool callsignAtStart, bool callsignAtEnd);
+	virtual bool setFMAckParams(const std::string& ack, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackDelay, unsigned int ackLevel);
+	virtual bool setFMTimeoutParams(unsigned int timeout, unsigned int timeoutLevel);
+	virtual bool setFMCTCSSParams(float ctcssFrequency, unsigned int ctcssThreshold, unsigned int ctcssLevel);
+	virtual bool setFMMiscParams(unsigned int inputLevel, unsigned int outputLevel, unsigned int kerchunkTime, unsigned int hangTime);
+	virtual bool setFMStart();
 
 	virtual bool open();
 
