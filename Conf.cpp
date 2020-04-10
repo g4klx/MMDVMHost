@@ -683,30 +683,37 @@ bool CConf::read()
 		  m_pocsagEnabled = ::atoi(value) == 1;
 	  else if (::strcmp(key, "Frequency") == 0)
 		  m_pocsagFrequency = (unsigned int)::atoi(value);
-	} else if (section == SECTION_FM) {
+	}
+	else if (section == SECTION_FM) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fmEnabled = ::atoi(value) == 1;
-		else if (::strcmp(key, "Callsign") == 0)
+		else if (::strcmp(key, "Callsign") == 0) {
+			// Convert the callsign to upper case
+			for (unsigned int i = 0U; value[i] != 0; i++)
+				value[i] = ::toupper(value[i]);
 			m_fmCallsign = value;
-		else if (::strcmp(key, "CallsignSpeed") == 0)
-			m_fmCallsignSpeed = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "CallsignFrequency") == 0)
-			m_fmCallsignFrequency = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "CallsignTime") == 0)
-			m_fmCallsignTime = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "CallsignHoldoff") == 0)
-			m_fmCallsignHoldoff = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "CallsignHighLevel") == 0)
-			m_fmCallsignHighLevel = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "CallsignLowLevel") == 0)
-			m_fmCallsignLowLevel = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "CallsignAtStart") == 0)
-			m_fmCallsignAtStart = ::atoi(value) == 1;
-		else if (::strcmp(key, "CallsignAtEnd") == 0)
-			m_fmCallsignAtEnd = ::atoi(value) == 1;
-		else if (::strcmp(key, "Ack") == 0)
-			m_fmAck = value;
-		else if (::strcmp(key, "AckSpeed") == 0)
+		} else if (::strcmp(key, "CallsignSpeed") == 0)
+		  m_fmCallsignSpeed = (unsigned int)::atoi(value);
+	  else if (::strcmp(key, "CallsignFrequency") == 0)
+		  m_fmCallsignFrequency = (unsigned int)::atoi(value);
+	  else if (::strcmp(key, "CallsignTime") == 0)
+		  m_fmCallsignTime = (unsigned int)::atoi(value);
+	  else if (::strcmp(key, "CallsignHoldoff") == 0)
+		  m_fmCallsignHoldoff = (unsigned int)::atoi(value);
+	  else if (::strcmp(key, "CallsignHighLevel") == 0)
+		  m_fmCallsignHighLevel = (unsigned int)::atoi(value);
+	  else if (::strcmp(key, "CallsignLowLevel") == 0)
+		  m_fmCallsignLowLevel = (unsigned int)::atoi(value);
+	  else if (::strcmp(key, "CallsignAtStart") == 0)
+		  m_fmCallsignAtStart = ::atoi(value) == 1;
+	  else if (::strcmp(key, "CallsignAtEnd") == 0)
+		  m_fmCallsignAtEnd = ::atoi(value) == 1;
+	  else if (::strcmp(key, "Ack") == 0) {
+		  // Convert the ack to upper case
+		  for (unsigned int i = 0U; value[i] != 0; i++)
+			  value[i] = ::toupper(value[i]);
+		  m_fmAck = value;
+	  }	else if (::strcmp(key, "AckSpeed") == 0)
 			m_fmAckSpeed = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "AckFrequency") == 0)
 			m_fmAckFrequency = (unsigned int)::atoi(value);
