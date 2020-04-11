@@ -276,6 +276,7 @@ public:
 
   // The Remote Control section
   bool         getRemoteControlEnabled() const;
+  std::string  getRemoteControlAddress() const;
   unsigned int getRemoteControlPort() const;
 
 private:
@@ -497,6 +498,7 @@ private:
   unsigned int m_mobileGPSPort;
 
   bool         m_remoteControlEnabled;
+  std::string  m_remoteControlAddress;
   unsigned int m_remoteControlPort;
 };
 

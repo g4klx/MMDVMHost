@@ -606,12 +606,14 @@ int CMMDVMHost::run()
 
 	bool remoteControlEnabled = m_conf.getRemoteControlEnabled();
 	if (remoteControlEnabled) {
+		std::string address = m_conf.getRemoteControlAddress();
 		unsigned int port = m_conf.getRemoteControlPort();
 
 		LogInfo("Remote Control Parameters");
+		LogInfo("    Address: %s", address.c_str());
 		LogInfo("    Port: %u", port);
 
-		m_remoteControl = new CRemoteControl(port);
+		m_remoteControl = new CRemoteControl(address, port);
 
 		ret = m_remoteControl->open();
 		if (!ret) {

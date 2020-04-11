@@ -250,6 +250,7 @@ m_mobileGPSEnabled(false),
 m_mobileGPSAddress(),
 m_mobileGPSPort(0U),
 m_remoteControlEnabled(false),
+m_remoteControlAddress("127.0.0.1"),
 m_remoteControlPort(0U)
 {
 }
@@ -838,6 +839,8 @@ bool CConf::read()
 	} else if (section == SECTION_REMOTE_CONTROL) {
 		if (::strcmp(key, "Enable") == 0)
 			m_remoteControlEnabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "Address") == 0)
+			m_remoteControlAddress = value;
 		else if (::strcmp(key, "Port") == 0)
 			m_remoteControlPort = (unsigned int)::atoi(value);
 	}
@@ -1792,6 +1795,11 @@ unsigned int CConf::getMobileGPSPort() const
 bool CConf::getRemoteControlEnabled() const
 {
 	return m_remoteControlEnabled;
+}
+
+std::string CConf::getRemoteControlAddress() const
+{
+	return m_remoteControlAddress;
 }
 
 unsigned int CConf::getRemoteControlPort() const

@@ -29,8 +29,8 @@ const unsigned int PAGE_ARGS = 3U;
 
 const unsigned int BUFFER_LENGTH = 100U;
 
-CRemoteControl::CRemoteControl(unsigned int port) :
-m_socket(port),
+CRemoteControl::CRemoteControl(const std::string address, unsigned int port) :
+m_socket(address, port),
 m_command(RCD_NONE),
 m_args()
 {
@@ -43,7 +43,7 @@ CRemoteControl::~CRemoteControl()
 
 bool CRemoteControl::open()
 {
-	return m_socket.open(AF_INET);	/* XXX IPv4 only */
+	return m_socket.open();
 }
 
 REMOTE_COMMAND CRemoteControl::getCommand()
