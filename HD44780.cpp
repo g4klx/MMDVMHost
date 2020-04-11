@@ -399,6 +399,37 @@ void CHD44780::setQuitInt()
 	m_dmr = false;
 }
 
+void CHD44780::setIdleInt()
+{
+	m_clockDisplayTimer.stop();
+	::lcdClear(m_fd);
+	
+#ifdef ADAFRUIT_DISPLAY
+  adafruitLCDColour(AC_WHITE);
+#endif
+
+	if (m_pwm) {
+		if (m_pwmPin != 1U)
+			::softPwmWrite(m_pwmPin, m_pwmDim);
+		else
+			::pwmWrite(m_pwmPin, (m_pwmDim / 100) * 1024);
+	}
+
+	// Print callsign and ID at on top row for all screen sizes
+	::lcdPosition(m_fd, 0, 0);
+	::lcdPrintf(m_fd, "%-6s", m_callsign.c_str());
+	::lcdPosition(m_fd, m_cols - 7, 0);
+	::lcdPrintf(m_fd, "%7u", m_dmrid);
+
+	// Print MMDVM and Idle on bottom row for all screen sizes
+	::lcdPosition(m_fd, 0, m_rows - 1);
+	::lcdPuts(m_fd, "MMDVM");
+	::lcdPosition(m_fd, m_cols - 4, m_rows - 1);
+	::lcdPuts(m_fd, "FM");              // Gets overwritten by clock on 2 line screen
+
+	m_dmr = false;
+}
+
 void CHD44780::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
 	assert(my1 != NULL);

@@ -658,10 +658,7 @@ int CMMDVMHost::run()
 
 		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd);
 		m_modem->setFMAckParams(ack, ackSpeed, ackFrequency, ackDelay, ackLevel);
-		m_modem->setFMTimeoutParams(timeout, timeoutLevel);
-		m_modem->setFMCTCSSParams(ctcssFrequency, ctcssThreshold, ctcssLevel);
-		m_modem->setFMMiscParams(inputLevel, outputLevel, kerchunkTime, hangTime);
-		m_modem->setFMStart();
+		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssThreshold, ctcssLevel, inputLevel, outputLevel, kerchunkTime, hangTime);
 	}
 
 	bool remoteControlEnabled = m_conf.getRemoteControlEnabled();
@@ -700,6 +697,12 @@ int CMMDVMHost::run()
 			setMode(MODE_ERROR);
 		else if (!error && m_mode == MODE_ERROR)
 			setMode(MODE_IDLE);
+
+		unsigned char mode = m_modem->getMode();
+		if (mode == MODE_FM && m_mode != MODE_FM)
+			setMode(mode);
+		else if (mode != MODE_FM && m_mode == MODE_FM)
+			setMode(mode);
 
 		if (m_ump != NULL) {
 			bool tx = m_modem->hasTX();
@@ -1741,6 +1744,45 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
 		createLockFile("POCSAG");
+		break;
+
+	case MODE_FM:
+		LogMessage("Mode set to FM");
+		if (m_dstarNetwork != NULL)
+			m_dstarNetwork->enable(false);
+		if (m_dmrNetwork != NULL)
+			m_dmrNetwork->enable(false);
+		if (m_ysfNetwork != NULL)
+			m_ysfNetwork->enable(false);
+		if (m_p25Network != NULL)
+			m_p25Network->enable(false);
+		if (m_nxdnNetwork != NULL)
+			m_nxdnNetwork->enable(false);
+		if (m_pocsagNetwork != NULL)
+			m_pocsagNetwork->enable(false);
+		if (m_dstar != NULL)
+			m_dstar->enable(false);
+		if (m_dmr != NULL)
+			m_dmr->enable(false);
+		if (m_ysf != NULL)
+			m_ysf->enable(false);
+		if (m_p25 != NULL)
+			m_p25->enable(false);
+		if (m_nxdn != NULL)
+			m_nxdn->enable(false);
+		if (m_pocsag != NULL)
+			m_pocsag->enable(false);
+		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
+			m_modem->writeDMRStart(false);
+			m_dmrTXTimer.stop();
+		}
+		if (m_ump != NULL)
+			m_ump->setMode(MODE_FM);
+		m_display->setFM();
+		m_mode = MODE_FM;
+		m_modeTimer.stop();
+		m_cwIdTimer.stop();
+		createLockFile("FM");
 		break;
 
 	case MODE_LOCKOUT:

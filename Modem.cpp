@@ -79,9 +79,6 @@ const unsigned char MMDVM_POCSAG_DATA = 0x50U;
 const unsigned char MMDVM_FM_PARAMS1  = 0x60U;
 const unsigned char MMDVM_FM_PARAMS2  = 0x61U;
 const unsigned char MMDVM_FM_PARAMS3  = 0x62U;
-const unsigned char MMDVM_FM_PARAMS4  = 0x63U;
-const unsigned char MMDVM_FM_PARAMS5  = 0x64U;
-const unsigned char MMDVM_FM_START    = 0x65U;
 
 const unsigned char MMDVM_ACK         = 0x70U;
 const unsigned char MMDVM_NAK         = 0x7FU;
@@ -168,11 +165,12 @@ m_tx(false),
 m_cd(false),
 m_lockout(false),
 m_error(false),
+m_mode(MODE_IDLE),
 m_hwType(HWT_UNKNOWN)
 {
-	assert(!port.empty());
-
 	m_buffer = new unsigned char[BUFFER_LENGTH];
+
+	assert(!port.empty());
 }
 
 CModem::~CModem()
@@ -524,6 +522,8 @@ void CModem::clock(unsigned int ms)
 					m_p25Space    = 0U;
 					m_nxdnSpace   = 0U;
 					m_pocsagSpace = 0U;
+
+					m_mode = m_buffer[4U];
 
 					m_tx = (m_buffer[5U] & 0x01U) == 0x01U;
 
@@ -1713,6 +1713,11 @@ HW_TYPE CModem::getHWType() const
 	return m_hwType;
 }
 
+unsigned char CModem::getMode() const
+{
+	return m_mode;
+}
+
 bool CModem::setMode(unsigned char mode)
 {
 	assert(m_serial != NULL);
@@ -1926,23 +1931,32 @@ bool CModem::setFMAckParams(const std::string& ack, unsigned int ackSpeed, unsig
 	return true;
 }
 
-bool CModem::setFMTimeoutParams(unsigned int timeout, unsigned int timeoutLevel)
+bool CModem::setFMMiscParams(unsigned int timeout, unsigned int timeoutLevel, float ctcssFrequency, unsigned int ctcssThreshold, unsigned int ctcssLevel, unsigned int inputLevel, unsigned int outputLevel, unsigned int kerchunkTime, unsigned int hangTime)
 {
 	assert(m_serial != NULL);
 
-	unsigned char buffer[10U];
+	unsigned char buffer[20U];
 
 	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = 5U;
+	buffer[1U] = 12U;
 	buffer[2U] = MMDVM_FM_PARAMS3;
 
 	buffer[3U] = timeout / 5U;
 	buffer[4U] = timeoutLevel;
 
-	// CUtils::dump(1U, "Written", buffer, 5U);
+	buffer[5U] = (unsigned char)ctcssFrequency;
+	buffer[6U] = ctcssThreshold;
+	buffer[7U] = ctcssLevel;
 
-	int ret = m_serial->write(buffer, 5U);
-	if (ret != 5)
+	buffer[8U]  = inputLevel;
+	buffer[9U]  = outputLevel;
+	buffer[10U] = kerchunkTime;
+	buffer[11U] = hangTime;
+
+	// CUtils::dump(1U, "Written", buffer, 12U);
+
+	int ret = m_serial->write(buffer, 12U);
+	if (ret != 12)
 		return false;
 
 	unsigned int count = 0U;
@@ -1968,112 +1982,6 @@ bool CModem::setFMTimeoutParams(unsigned int timeout, unsigned int timeoutLevel)
 	}
 
 	return true;
-}
-
-bool CModem::setFMCTCSSParams(float ctcssFrequency, unsigned int ctcssThreshold, unsigned int ctcssLevel)
-{
-	assert(m_serial != NULL);
-
-	unsigned char buffer[10U];
-
-	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = 6U;
-	buffer[2U] = MMDVM_FM_PARAMS4;
-
-	buffer[3U] = ctcssFrequency;		// XXX
-	buffer[4U] = ctcssThreshold;
-	buffer[5U] = ctcssLevel;
-
-	// CUtils::dump(1U, "Written", buffer, 6U);
-
-	int ret = m_serial->write(buffer, 6U);
-	if (ret != 6)
-		return false;
-
-	unsigned int count = 0U;
-	RESP_TYPE_MMDVM resp;
-	do {
-		CThread::sleep(10U);
-
-		resp = getResponse();
-		if (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK) {
-			count++;
-			if (count >= MAX_RESPONSES) {
-				LogError("The MMDVM is not responding to the SET_FM_PARAMS4 command");
-				return false;
-			}
-		}
-	} while (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK);
-
-	// CUtils::dump(1U, "Response", m_buffer, m_length);
-
-	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
-		LogError("Received a NAK to the SET_FM_PARAMS4 command from the modem");
-		return false;
-	}
-
-	return true;
-}
-
-bool CModem::setFMMiscParams(unsigned int inputLevel, unsigned int outputLevel, unsigned int kerchunkTime, unsigned int hangTime)
-{
-	assert(m_serial != NULL);
-
-	unsigned char buffer[10U];
-
-	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = 7U;
-	buffer[2U] = MMDVM_FM_PARAMS5;
-
-	buffer[3U] = inputLevel;
-	buffer[4U] = outputLevel;
-	buffer[5U] = kerchunkTime;
-	buffer[6U] = hangTime;
-
-	// CUtils::dump(1U, "Written", buffer, 7U);
-
-	int ret = m_serial->write(buffer, 7U);
-	if (ret != 7)
-		return false;
-
-	unsigned int count = 0U;
-	RESP_TYPE_MMDVM resp;
-	do {
-		CThread::sleep(10U);
-
-		resp = getResponse();
-		if (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK) {
-			count++;
-			if (count >= MAX_RESPONSES) {
-				LogError("The MMDVM is not responding to the SET_FM_PARAMS5 command");
-				return false;
-			}
-		}
-	} while (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK);
-
-	// CUtils::dump(1U, "Response", m_buffer, m_length);
-
-	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
-		LogError("Received a NAK to the SET_FM_PARAMS5 command from the modem");
-		return false;
-	}
-
-	return true;
-}
-
-bool CModem::setFMStart()
-{
-	assert(m_serial != NULL);
-
-	unsigned char buffer[10U];
-
-	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = 3U;
-	buffer[2U] = MMDVM_FM_START;
-
-	// CUtils::dump(1U, "Written", buffer, 3U);
-
-	return m_serial->write(buffer, 3U) == 3;
 }
 
 void CModem::printDebug()

@@ -47,10 +47,7 @@ public:
 
 	virtual bool setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, unsigned int callsignHighLevel, unsigned int callsignLowLevel, bool callsignAtStart, bool callsignAtEnd);
 	virtual bool setFMAckParams(const std::string& ack, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackDelay, unsigned int ackLevel);
-	virtual bool setFMTimeoutParams(unsigned int timeout, unsigned int timeoutLevel);
-	virtual bool setFMCTCSSParams(float ctcssFrequency, unsigned int ctcssThreshold, unsigned int ctcssLevel);
-	virtual bool setFMMiscParams(unsigned int inputLevel, unsigned int outputLevel, unsigned int kerchunkTime, unsigned int hangTime);
-	virtual bool setFMStart();
+	virtual bool setFMMiscParams(unsigned int timeout, unsigned int timeoutLevel, float ctcssFrequency, unsigned int ctcssThreshold, unsigned int ctcssLevel, unsigned int inputLevel, unsigned int outputLevel, unsigned int kerchunkTime, unsigned int hangTime);
 
 	virtual bool open();
 
@@ -102,6 +99,7 @@ public:
 
 	virtual bool writeSerial(const unsigned char* data, unsigned int length);
 
+	virtual unsigned char getMode() const;
 	virtual bool setMode(unsigned char mode);
 
 	virtual bool sendCWId(const std::string& callsign);
@@ -181,6 +179,7 @@ private:
 	bool                       m_cd;
 	bool                       m_lockout;
 	bool                       m_error;
+	unsigned char              m_mode;
 	HW_TYPE                    m_hwType;
 
 	bool readVersion();

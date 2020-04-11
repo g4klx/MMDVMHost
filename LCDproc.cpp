@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2016,2017,2018 by Tony Corbett G0WFV
- *   Copyright (C) 2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2018,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -235,6 +235,23 @@ void CLCDproc::setQuitInt()
 		socketPrintf(m_socketfd, "screen_set P25 -priority hidden");
 		socketPrintf(m_socketfd, "screen_set NXDN -priority hidden");
 		socketPrintf(m_socketfd, "widget_set Status Status %u %u Stopped", m_cols - 6, m_rows);
+		socketPrintf(m_socketfd, "output 0");   // Clear all LEDs
+	}
+
+	m_dmr = false;
+}
+
+void CLCDproc::setFMInt()
+{
+	m_clockDisplayTimer.stop();           // Stop the clock display
+
+	if (m_screensDefined) {
+		socketPrintf(m_socketfd, "screen_set DStar -priority hidden");
+		socketPrintf(m_socketfd, "screen_set DMR -priority hidden");
+		socketPrintf(m_socketfd, "screen_set YSF -priority hidden");
+		socketPrintf(m_socketfd, "screen_set P25 -priority hidden");
+		socketPrintf(m_socketfd, "screen_set NXDN -priority hidden");
+		socketPrintf(m_socketfd, "widget_set Status Status %u %u FM", m_cols - 6, m_rows);
 		socketPrintf(m_socketfd, "output 0");   // Clear all LEDs
 	}
 
