@@ -1834,7 +1834,7 @@ bool CModem::writeDMRShortLC(const unsigned char* lc)
 	return m_serial->write(buffer, 12U) == 12;
 }
 
-bool CModem::setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, unsigned int callsignHighLevel, unsigned int callsignLowLevel, bool callsignAtStart, bool callsignAtEnd)
+bool CModem::setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd)
 {
 	assert(m_serial != NULL);
 
@@ -1849,8 +1849,9 @@ bool CModem::setFMCallsignParams(const std::string& callsign, unsigned int calls
 	buffer[4U] = callsignFrequency / 10U;
 	buffer[5U] = callsignTime;
 	buffer[6U] = callsignHoldoff;
-	buffer[7U] = callsignHighLevel;
-	buffer[8U] = callsignLowLevel;
+
+	buffer[7U] = (unsigned char)(callsignHighLevel * 2.55F + 0.5F);
+	buffer[8U] = (unsigned char)(callsignLowLevel * 2.55F + 0.5F);
 
 	buffer[9U] = 0x00U;
 	if (callsignAtStart)
@@ -1892,7 +1893,7 @@ bool CModem::setFMCallsignParams(const std::string& callsign, unsigned int calls
 	return true;
 }
 
-bool CModem::setFMAckParams(const std::string& ack, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackDelay, unsigned int ackLevel)
+bool CModem::setFMAckParams(const std::string& ack, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackDelay, float ackLevel)
 {
 	assert(m_serial != NULL);
 
@@ -1906,7 +1907,8 @@ bool CModem::setFMAckParams(const std::string& ack, unsigned int ackSpeed, unsig
 	buffer[3U] = ackSpeed;
 	buffer[4U] = ackFrequency / 10U;
 	buffer[5U] = ackDelay / 10U;
-	buffer[6U] = ackLevel;
+
+	buffer[6U] = (unsigned char)(ackLevel * 2.55F + 0.5F);
 
 	for (unsigned int i = 0U; i < ack.size(); i++)
 		buffer[7U + i] = ack.at(i);
@@ -1942,7 +1944,7 @@ bool CModem::setFMAckParams(const std::string& ack, unsigned int ackSpeed, unsig
 	return true;
 }
 
-bool CModem::setFMMiscParams(unsigned int timeout, unsigned int timeoutLevel, float ctcssFrequency, unsigned int ctcssThreshold, unsigned int ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime)
+bool CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, float ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime)
 {
 	assert(m_serial != NULL);
 
@@ -1953,11 +1955,11 @@ bool CModem::setFMMiscParams(unsigned int timeout, unsigned int timeoutLevel, fl
 	buffer[2U] = MMDVM_FM_PARAMS3;
 
 	buffer[3U] = timeout / 5U;
-	buffer[4U] = timeoutLevel;
+	buffer[4U] = (unsigned char)(timeoutLevel * 2.55F + 0.5F);
 
 	buffer[5U] = (unsigned char)ctcssFrequency;
-	buffer[6U] = ctcssThreshold;
-	buffer[7U] = ctcssLevel;
+	buffer[6U] = (unsigned char)(ctcssThreshold * 2.55F + 0.5F);
+	buffer[7U] = (unsigned char)(ctcssLevel * 2.55F + 0.5F);
 
 	buffer[8U] = kerchunkTime;
 	buffer[9U] = hangTime;

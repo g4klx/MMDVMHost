@@ -179,19 +179,19 @@ m_fmCallsignSpeed(20U),
 m_fmCallsignFrequency(1000U),
 m_fmCallsignTime(10U),
 m_fmCallsignHoldoff(1U),
-m_fmCallsignHighLevel(80U),
-m_fmCallsignLowLevel(40U),
+m_fmCallsignHighLevel(80.0F),
+m_fmCallsignLowLevel(40.0F),
 m_fmCallsignAtStart(true),
 m_fmCallsignAtEnd(true),
 m_fmAck("K"),
 m_fmAckSpeed(20U),
 m_fmAckFrequency(1750U),
 m_fmAckDelay(1000U),
-m_fmAckLevel(80U),
-m_fmTimeoutLevel(80U),
+m_fmAckLevel(80.0F),
+m_fmTimeoutLevel(80.0F),
 m_fmCTCSSFrequency(88.6F),
-m_fmCTCSSThreshold(100U),
-m_fmCTCSSLevel(5U),
+m_fmCTCSSThreshold(10.0F),
+m_fmCTCSSLevel(5.0F),
 m_fmKerchunkTime(0U),
 m_fmHangTime(7U),
 m_dstarNetworkEnabled(false),
@@ -705,9 +705,9 @@ bool CConf::read()
 	  else if (::strcmp(key, "CallsignHoldoff") == 0)
 		  m_fmCallsignHoldoff = (unsigned int)::atoi(value);
 	  else if (::strcmp(key, "CallsignHighLevel") == 0)
-		  m_fmCallsignHighLevel = (unsigned int)::atoi(value);
+		  m_fmCallsignHighLevel = float(::atof(value));
 	  else if (::strcmp(key, "CallsignLowLevel") == 0)
-		  m_fmCallsignLowLevel = (unsigned int)::atoi(value);
+		  m_fmCallsignLowLevel = float(::atof(value));
 	  else if (::strcmp(key, "CallsignAtStart") == 0)
 		  m_fmCallsignAtStart = ::atoi(value) == 1;
 	  else if (::strcmp(key, "CallsignAtEnd") == 0)
@@ -724,15 +724,15 @@ bool CConf::read()
 		else if (::strcmp(key, "AckDelay") == 0)
 			m_fmAckDelay = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "AckLevel") == 0)
-			m_fmAckLevel = (unsigned int)::atoi(value);
+			m_fmAckLevel = float(::atof(value));
 		else if (::strcmp(key, "TimeoutLevel") == 0)
-			m_fmTimeoutLevel = (unsigned int)::atoi(value);
+			m_fmTimeoutLevel = float(::atof(value));
 		else if (::strcmp(key, "CTCSSFrequency") == 0)
 			m_fmCTCSSFrequency = float(::atof(value));
 		else if (::strcmp(key, "CTCSSThreshold") == 0)
-			m_fmCTCSSThreshold = (unsigned int)::atoi(value);
+			m_fmCTCSSThreshold = float(::atoi(value));
 		else if (::strcmp(key, "CTCSSLevel") == 0)
-			m_fmCTCSSLevel = (unsigned int)::atoi(value);
+			m_fmCTCSSLevel = float(::atof(value));
 		else if (::strcmp(key, "KerchunkTime") == 0)
 			m_fmKerchunkTime = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "HangTime") == 0)
@@ -1509,12 +1509,12 @@ unsigned int CConf::getFMCallsignHoldoff() const
 	return m_fmCallsignHoldoff;
 }
 
-unsigned int CConf::getFMCallsignHighLevel() const
+float CConf::getFMCallsignHighLevel() const
 {
 	return m_fmCallsignHighLevel;
 }
 
-unsigned int CConf::getFMCallsignLowLevel() const
+float CConf::getFMCallsignLowLevel() const
 {
 	return m_fmCallsignLowLevel;
 }
@@ -1549,12 +1549,12 @@ unsigned int CConf::getFMAckDelay() const
 	return m_fmAckDelay;
 }
 
-unsigned int CConf::getFMAckLevel() const
+float CConf::getFMAckLevel() const
 {
 	return m_fmAckLevel;
 }
 
-unsigned int CConf::getFMTimeoutLevel() const
+float CConf::getFMTimeoutLevel() const
 {
 	return m_fmTimeoutLevel;
 }
@@ -1564,12 +1564,12 @@ float CConf::getFMCTCSSFrequency() const
 	return m_fmCTCSSFrequency;
 }
 
-unsigned int CConf::getFMCTCSSThreshold() const
+float CConf::getFMCTCSSThreshold() const
 {
 	return m_fmCTCSSThreshold;
 }
 
-unsigned int CConf::getFMCTCSSLevel() const
+float CConf::getFMCTCSSLevel() const
 {
 	return m_fmCTCSSLevel;
 }
