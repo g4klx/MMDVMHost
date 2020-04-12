@@ -118,6 +118,8 @@ m_ysfTXLevel(0U),
 m_p25TXLevel(0U),
 m_nxdnTXLevel(0U),
 m_pocsagTXLevel(0U),
+m_fmTXLevel(0U),
+m_fmRXLevel(0U),
 m_trace(trace),
 m_debug(debug),
 m_rxFrequency(0U),
@@ -129,6 +131,7 @@ m_ysfEnabled(false),
 m_p25Enabled(false),
 m_nxdnEnabled(false),
 m_pocsagEnabled(false),
+m_fmEnabled(false),
 m_rxDCOffset(0),
 m_txDCOffset(0),
 m_serial(NULL),
@@ -198,7 +201,7 @@ void CModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int tx
 	m_pocsagFrequency = pocsagFrequency + txOffset;
 }
 
-void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool pocsagEnabled)
+void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool pocsagEnabled, bool fmEnabled)
 {
 	m_dstarEnabled  = dstarEnabled;
 	m_dmrEnabled    = dmrEnabled;
@@ -206,9 +209,10 @@ void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, 
 	m_p25Enabled    = p25Enabled;
 	m_nxdnEnabled   = nxdnEnabled;
 	m_pocsagEnabled = pocsagEnabled;
+	m_fmEnabled     = fmEnabled;
 }
 
-void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagTXLevel)
+void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagTXLevel, float fmTXLevel, float fmRXLevel)
 {
 	m_rxLevel       = rxLevel;
 	m_cwIdTXLevel   = cwIdTXLevel;
@@ -218,6 +222,8 @@ void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, flo
 	m_p25TXLevel    = p25TXLevel;
 	m_nxdnTXLevel   = nxdnTXLevel;
 	m_pocsagTXLevel = pocsagTXLevel;
+	m_fmTXLevel     = fmTXLevel;
+	m_fmRXLevel     = fmRXLevel;
 }
 
 void CModem::setDMRParams(unsigned int colorCode)
@@ -1444,7 +1450,7 @@ bool CModem::setConfig()
 
 	buffer[0U] = MMDVM_FRAME_START;
 
-	buffer[1U] = 21U;
+	buffer[1U] = 23U;
 
 	buffer[2U] = MMDVM_SET_CONFIG;
 
@@ -1475,6 +1481,8 @@ bool CModem::setConfig()
 		buffer[4U] |= 0x10U;
 	if (m_pocsagEnabled)
 		buffer[4U] |= 0x20U;
+	if (m_fmEnabled)
+		buffer[4U] |= 0x40U;
 
 	buffer[5U] = m_txDelay / 10U;		// In 10ms units
 
@@ -1504,10 +1512,13 @@ bool CModem::setConfig()
 
 	buffer[20U] = (unsigned char)(m_pocsagTXLevel * 2.55F + 0.5F);
 
-	// CUtils::dump(1U, "Written", buffer, 21U);
+	buffer[21U] = (unsigned char)(m_fmTXLevel * 2.55F + 0.5F);
+	buffer[22U] = (unsigned char)(m_fmRXLevel * 2.55F + 0.5F);
 
-	int ret = m_serial->write(buffer, 21U);
-	if (ret != 21)
+	// CUtils::dump(1U, "Written", buffer, 23U);
+
+	int ret = m_serial->write(buffer, 23U);
+	if (ret != 23)
 		return false;
 
 	unsigned int count = 0U;
@@ -1931,14 +1942,14 @@ bool CModem::setFMAckParams(const std::string& ack, unsigned int ackSpeed, unsig
 	return true;
 }
 
-bool CModem::setFMMiscParams(unsigned int timeout, unsigned int timeoutLevel, float ctcssFrequency, unsigned int ctcssThreshold, unsigned int ctcssLevel, unsigned int inputLevel, unsigned int outputLevel, unsigned int kerchunkTime, unsigned int hangTime)
+bool CModem::setFMMiscParams(unsigned int timeout, unsigned int timeoutLevel, float ctcssFrequency, unsigned int ctcssThreshold, unsigned int ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime)
 {
 	assert(m_serial != NULL);
 
 	unsigned char buffer[20U];
 
 	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = 12U;
+	buffer[1U] = 10U;
 	buffer[2U] = MMDVM_FM_PARAMS3;
 
 	buffer[3U] = timeout / 5U;
@@ -1948,15 +1959,13 @@ bool CModem::setFMMiscParams(unsigned int timeout, unsigned int timeoutLevel, fl
 	buffer[6U] = ctcssThreshold;
 	buffer[7U] = ctcssLevel;
 
-	buffer[8U]  = inputLevel;
-	buffer[9U]  = outputLevel;
-	buffer[10U] = kerchunkTime;
-	buffer[11U] = hangTime;
+	buffer[8U] = kerchunkTime;
+	buffer[9U] = hangTime;
 
-	// CUtils::dump(1U, "Written", buffer, 12U);
+	// CUtils::dump(1U, "Written", buffer, 10U);
 
-	int ret = m_serial->write(buffer, 12U);
-	if (ret != 12)
+	int ret = m_serial->write(buffer, 10U);
+	if (ret != 10)
 		return false;
 
 	unsigned int count = 0U;

@@ -90,6 +90,8 @@ public:
   float        getModemP25TXLevel() const;
   float        getModemNXDNTXLevel() const;
   float        getModemPOCSAGTXLevel() const;
+  float        getModemFMTXLevel() const;
+  float        getModemFMRXLevel() const;
   std::string  getModemRSSIMappingFile() const;
   bool         getModemTrace() const;
   bool         getModemDebug() const;
@@ -188,8 +190,6 @@ public:
   float        getFMCTCSSFrequency() const;
   unsigned int getFMCTCSSThreshold() const;
   unsigned int getFMCTCSSLevel() const;
-  unsigned int getFMInputLevel() const;
-  unsigned int getFMOutputLevel() const;
   unsigned int getFMKerchunkTime() const;
   unsigned int getFMHangTime() const;
 
@@ -358,6 +358,8 @@ private:
   float        m_modemP25TXLevel;
   float        m_modemNXDNTXLevel;
   float        m_modemPOCSAGTXLevel;
+  float        m_modemFMTXLevel;
+  float        m_modemFMRXLevel;
   std::string  m_modemRSSIMappingFile;
   bool         m_modemTrace;
   bool         m_modemDebug;
@@ -447,8 +449,6 @@ private:
   float        m_fmCTCSSFrequency;
   unsigned int m_fmCTCSSThreshold;
   unsigned int m_fmCTCSSLevel;
-  unsigned int m_fmInputLevel;
-  unsigned int m_fmOutputLevel;
   unsigned int m_fmKerchunkTime;
   unsigned int m_fmHangTime;
 

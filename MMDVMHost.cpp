@@ -626,8 +626,6 @@ int CMMDVMHost::run()
 		float        ctcssFrequency    = m_conf.getFMCTCSSFrequency();
 		unsigned int ctcssThreshold    = m_conf.getFMCTCSSThreshold();
 		unsigned int ctcssLevel        = m_conf.getFMCTCSSLevel();
-		unsigned int inputLevel        = m_conf.getFMInputLevel();
-		unsigned int outputLevel       = m_conf.getFMOutputLevel();
 		unsigned int kerchunkTime      = m_conf.getFMKerchunkTime();
 		unsigned int hangTime          = m_conf.getFMHangTime();
 
@@ -651,14 +649,12 @@ int CMMDVMHost::run()
 		LogInfo("    CTCSS Frequency: %.1fHz", ctcssFrequency);
 		LogInfo("    CTCSS Threshold: %u%%", ctcssThreshold);
 		LogInfo("    CTCSS Level: %u%%", ctcssLevel);
-		LogInfo("    Input Level: %u%%", inputLevel);
-		LogInfo("    Output Level: %u%%", outputLevel);
 		LogInfo("    Kerchunk Time: %us", kerchunkTime);
 		LogInfo("    Hang Time: %us", hangTime);
 
 		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd);
 		m_modem->setFMAckParams(ack, ackSpeed, ackFrequency, ackDelay, ackLevel);
-		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssThreshold, ctcssLevel, inputLevel, outputLevel, kerchunkTime, hangTime);
+		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssThreshold, ctcssLevel, kerchunkTime, hangTime);
 	}
 
 	bool remoteControlEnabled = m_conf.getRemoteControlEnabled();
@@ -1211,6 +1207,8 @@ bool CMMDVMHost::createModem()
 	float p25TXLevel             = m_conf.getModemP25TXLevel();
 	float nxdnTXLevel            = m_conf.getModemNXDNTXLevel();
 	float pocsagTXLevel          = m_conf.getModemPOCSAGTXLevel();
+	float fmTXLevel              = m_conf.getModemFMTXLevel();
+	float fmRXLevel              = m_conf.getModemFMRXLevel();
 	bool trace                   = m_conf.getModemTrace();
 	bool debug                   = m_conf.getModemDebug();
 	unsigned int colorCode       = m_conf.getDMRColorCode();
@@ -1248,13 +1246,14 @@ bool CMMDVMHost::createModem()
 	LogInfo("    P25 TX Level: %.1f%%", p25TXLevel);
 	LogInfo("    NXDN TX Level: %.1f%%", nxdnTXLevel);
 	LogInfo("    POCSAG TX Level: %.1f%%", pocsagTXLevel);
-	LogInfo("    RX Frequency: %uHz (%uHz)", rxFrequency, rxFrequency + rxOffset);
+	LogInfo("    FM TX Level: %.1f%%", fmTXLevel);
+	LogInfo("    FM RX Level: %.1f%%", fmRXLevel);
 	LogInfo("    TX Frequency: %uHz (%uHz)", txFrequency, txFrequency + txOffset);
 
 	m_modem = CModem::createModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
 	m_modem->setSerialParams(protocol,address);
-	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_pocsagEnabled);
-	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel);
+	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_pocsagEnabled, m_fmEnabled);
+	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, fmTXLevel, fmRXLevel);
 	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel, pocsagFrequency);
 	m_modem->setDMRParams(colorCode);
 	m_modem->setYSFParams(lowDeviation, txHang);

@@ -39,15 +39,15 @@ public:
 
 	virtual void setSerialParams(const std::string& protocol, unsigned int address);
 	virtual void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency);
-	virtual void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool pocsagEnabled);
-	virtual void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagLevel);
+	virtual void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool pocsagEnabled, bool fmEnabled);
+	virtual void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagLevel, float fmTXLevel, float fmRXLevel);
 	virtual void setDMRParams(unsigned int colorCode);
 	virtual void setYSFParams(bool loDev, unsigned int txHang);
 	virtual void setTransparentDataParams(unsigned int sendFrameType);
 
 	virtual bool setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, unsigned int callsignHighLevel, unsigned int callsignLowLevel, bool callsignAtStart, bool callsignAtEnd);
 	virtual bool setFMAckParams(const std::string& ack, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackDelay, unsigned int ackLevel);
-	virtual bool setFMMiscParams(unsigned int timeout, unsigned int timeoutLevel, float ctcssFrequency, unsigned int ctcssThreshold, unsigned int ctcssLevel, unsigned int inputLevel, unsigned int outputLevel, unsigned int kerchunkTime, unsigned int hangTime);
+	virtual bool setFMMiscParams(unsigned int timeout, unsigned int timeoutLevel, float ctcssFrequency, unsigned int ctcssThreshold, unsigned int ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime);
 
 	virtual bool open();
 
@@ -131,6 +131,8 @@ private:
 	float                      m_p25TXLevel;
 	float                      m_nxdnTXLevel;
 	float                      m_pocsagTXLevel;
+	float                      m_fmTXLevel;
+	float                      m_fmRXLevel;
 	float                      m_rfLevel;
 	bool                       m_trace;
 	bool                       m_debug;
@@ -143,6 +145,7 @@ private:
 	bool                       m_p25Enabled;
 	bool                       m_nxdnEnabled;
 	bool                       m_pocsagEnabled;
+	bool                       m_fmEnabled;
 	int                        m_rxDCOffset;
 	int                        m_txDCOffset;
 	CSerialController*         m_serial;

@@ -110,6 +110,8 @@ m_modemYSFTXLevel(50.0F),
 m_modemP25TXLevel(50.0F),
 m_modemNXDNTXLevel(50.0F),
 m_modemPOCSAGTXLevel(50.0F),
+m_modemFMTXLevel(50.0F),
+m_modemFMRXLevel(50.0F),
 m_modemRSSIMappingFile(),
 m_modemTrace(false),
 m_modemDebug(false),
@@ -190,8 +192,6 @@ m_fmTimeoutLevel(80U),
 m_fmCTCSSFrequency(88.6F),
 m_fmCTCSSThreshold(100U),
 m_fmCTCSSLevel(5U),
-m_fmInputLevel(50U),
-m_fmOutputLevel(50U),
 m_fmKerchunkTime(0U),
 m_fmHangTime(7U),
 m_dstarNetworkEnabled(false),
@@ -480,9 +480,9 @@ bool CConf::read()
 		else if (::strcmp(key, "RFLevel") == 0)
 			m_modemRFLevel = float(::atof(value));
 		else if (::strcmp(key, "RXLevel") == 0)
-			m_modemRXLevel = float(::atof(value));
+			m_modemFMRXLevel = m_modemRXLevel = float(::atof(value));
 		else if (::strcmp(key, "TXLevel") == 0)
-			m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = m_modemNXDNTXLevel = float(::atof(value));
+			m_modemFMTXLevel = m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = m_modemNXDNTXLevel = float(::atof(value));
 		else if (::strcmp(key, "CWIdTXLevel") == 0)
 			m_modemCWIdTXLevel = float(::atof(value));
 		else if (::strcmp(key, "D-StarTXLevel") == 0)
@@ -497,6 +497,10 @@ bool CConf::read()
 			m_modemNXDNTXLevel = float(::atof(value));
 		else if (::strcmp(key, "POCSAGTXLevel") == 0)
 			m_modemPOCSAGTXLevel = float(::atof(value));
+		else if (::strcmp(key, "FMTXLevel") == 0)
+			m_modemFMTXLevel = float(::atof(value));
+		else if (::strcmp(key, "FMRXLevel") == 0)
+			m_modemFMRXLevel = float(::atof(value));
 		else if (::strcmp(key, "RSSIMappingFile") == 0)
 			m_modemRSSIMappingFile = value;
 		else if (::strcmp(key, "Trace") == 0)
@@ -729,10 +733,6 @@ bool CConf::read()
 			m_fmCTCSSThreshold = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "CTCSSLevel") == 0)
 			m_fmCTCSSLevel = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "InputLevel") == 0)
-			m_fmInputLevel = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "OutputLevel") == 0)
-			m_fmOutputLevel = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "KerchunkTime") == 0)
 			m_fmKerchunkTime = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "HangTime") == 0)
@@ -1164,6 +1164,16 @@ float CConf::getModemPOCSAGTXLevel() const
 	return m_modemPOCSAGTXLevel;
 }
 
+float CConf::getModemFMTXLevel() const
+{
+	return m_modemFMTXLevel;
+}
+
+float CConf::getModemFMRXLevel() const
+{
+	return m_modemFMRXLevel;
+}
+
 std::string CConf::getModemRSSIMappingFile () const
 {
 	return m_modemRSSIMappingFile;
@@ -1562,16 +1572,6 @@ unsigned int CConf::getFMCTCSSThreshold() const
 unsigned int CConf::getFMCTCSSLevel() const
 {
 	return m_fmCTCSSLevel;
-}
-
-unsigned int CConf::getFMInputLevel() const
-{
-	return m_fmInputLevel;
-}
-
-unsigned int CConf::getFMOutputLevel() const
-{
-	return m_fmOutputLevel;
 }
 
 unsigned int CConf::getFMKerchunkTime() const
