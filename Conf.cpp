@@ -183,7 +183,8 @@ m_fmCallsignHighLevel(80.0F),
 m_fmCallsignLowLevel(40.0F),
 m_fmCallsignAtStart(true),
 m_fmCallsignAtEnd(true),
-m_fmAck("K"),
+m_fmRFAck("K"),
+m_fmNetAck("N"),
 m_fmAckSpeed(20U),
 m_fmAckFrequency(1750U),
 m_fmAckDelay(1000U),
@@ -712,12 +713,17 @@ bool CConf::read()
 		  m_fmCallsignAtStart = ::atoi(value) == 1;
 	  else if (::strcmp(key, "CallsignAtEnd") == 0)
 		  m_fmCallsignAtEnd = ::atoi(value) == 1;
-	  else if (::strcmp(key, "Ack") == 0) {
-		  // Convert the ack to upper case
-		  for (unsigned int i = 0U; value[i] != 0; i++)
-			  value[i] = ::toupper(value[i]);
-		  m_fmAck = value;
-	  }	else if (::strcmp(key, "AckSpeed") == 0)
+	  else if (::strcmp(key, "RFAck") == 0) {
+			// Convert the ack to upper case
+			for (unsigned int i = 0U; value[i] != 0; i++)
+				value[i] = ::toupper(value[i]);
+			m_fmRFAck = value;
+	  } else if (::strcmp(key, "NetAck") == 0) {
+			// Convert the ack to upper case
+			for (unsigned int i = 0U; value[i] != 0; i++)
+				value[i] = ::toupper(value[i]);
+			m_fmNetAck = value;
+		}	else if (::strcmp(key, "AckSpeed") == 0)
 			m_fmAckSpeed = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "AckFrequency") == 0)
 			m_fmAckFrequency = (unsigned int)::atoi(value);
@@ -1529,9 +1535,14 @@ bool CConf::getFMCallsignAtEnd() const
 	return m_fmCallsignAtEnd;
 }
 
-std::string CConf::getFMAck() const
+std::string CConf::getFMRFAck() const
 {
-	return m_fmAck;
+	return m_fmRFAck;
+}
+
+std::string CConf::getFMNetAck() const
+{
+	return m_fmNetAck;
 }
 
 unsigned int CConf::getFMAckSpeed() const

@@ -616,7 +616,8 @@ int CMMDVMHost::run()
 		float        callsignLowLevel  = m_conf.getFMCallsignLowLevel();
 		bool         callsignAtStart   = m_conf.getFMCallsignAtStart();
 		bool         callsignAtEnd     = m_conf.getFMCallsignAtEnd();
-		std::string  ack               = m_conf.getFMCallsign();
+		std::string  rfAck             = m_conf.getFMRFAck();
+		std::string  netAck            = m_conf.getFMNetAck();
 		unsigned int ackSpeed          = m_conf.getFMAckSpeed();
 		unsigned int ackFrequency      = m_conf.getFMAckFrequency();
 		unsigned int ackDelay          = m_conf.getFMAckDelay();
@@ -639,7 +640,8 @@ int CMMDVMHost::run()
 		LogInfo("    Callsign Low Level: %.1f%%", callsignLowLevel);
 		LogInfo("    Callsign At Start: %s", callsignAtStart ? "yes" : "no");
 		LogInfo("    Callsign At End: %s", callsignAtEnd ? "yes" : "no");
-		LogInfo("    Ack: %s", ack.c_str());
+		LogInfo("    RF Ack: %s", rfAck.c_str());
+		LogInfo("    Net Ack: %s", netAck.c_str());
 		LogInfo("    Ack Speed: %uWPM", ackSpeed);
 		LogInfo("    Ack Frequency: %uHz", ackFrequency);
 		LogInfo("    Ack Delay: %ums", ackDelay);
@@ -653,7 +655,7 @@ int CMMDVMHost::run()
 		LogInfo("    Hang Time: %us", hangTime);
 
 		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd);
-		m_modem->setFMAckParams(ack, ackSpeed, ackFrequency, ackDelay, ackLevel);
+		m_modem->setFMAckParams(rfAck, ackSpeed, ackFrequency, ackDelay, ackLevel);
 		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssThreshold, ctcssLevel, kerchunkTime, hangTime);
 	}
 

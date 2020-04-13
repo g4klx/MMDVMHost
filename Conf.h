@@ -181,7 +181,8 @@ public:
   float        getFMCallsignLowLevel() const;
   bool         getFMCallsignAtStart() const;
   bool         getFMCallsignAtEnd() const;
-  std::string  getFMAck() const;
+  std::string  getFMRFAck() const;
+  std::string  getFMNetAck() const;
   unsigned int getFMAckSpeed() const;
   unsigned int getFMAckFrequency() const;
   unsigned int getFMAckDelay() const;
@@ -440,7 +441,8 @@ private:
   float        m_fmCallsignLowLevel;
   bool         m_fmCallsignAtStart;
   bool         m_fmCallsignAtEnd;
-  std::string  m_fmAck;
+  std::string  m_fmRFAck;
+  std::string  m_fmNetAck;
   unsigned int m_fmAckSpeed;
   unsigned int m_fmAckFrequency;
   unsigned int m_fmAckDelay;
