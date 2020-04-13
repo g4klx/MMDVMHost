@@ -185,6 +185,7 @@ public:
   std::string  getFMNetAck() const;
   unsigned int getFMAckSpeed() const;
   unsigned int getFMAckFrequency() const;
+  unsigned int getFMAckMinTime() const;
   unsigned int getFMAckDelay() const;
   float        getFMAckLevel() const;
   float        getFMTimeoutLevel() const;
@@ -445,6 +446,7 @@ private:
   std::string  m_fmNetAck;
   unsigned int m_fmAckSpeed;
   unsigned int m_fmAckFrequency;
+  unsigned int m_fmAckMinTime;
   unsigned int m_fmAckDelay;
   float        m_fmAckLevel;
   float        m_fmTimeoutLevel;

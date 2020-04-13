@@ -1893,12 +1893,12 @@ bool CModem::setFMCallsignParams(const std::string& callsign, unsigned int calls
 	return true;
 }
 
-bool CModem::setFMAckParams(const std::string& ack, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackDelay, float ackLevel)
+bool CModem::setFMAckParams(const std::string& ack, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackMinTime, unsigned int ackDelay, float ackLevel)
 {
 	assert(m_serial != NULL);
 
 	unsigned char buffer[80U];
-	unsigned char len = 7U + ack.size();
+	unsigned char len = 8U + ack.size();
 
 	buffer[0U] = MMDVM_FRAME_START;
 	buffer[1U] = len;
@@ -1906,12 +1906,13 @@ bool CModem::setFMAckParams(const std::string& ack, unsigned int ackSpeed, unsig
 
 	buffer[3U] = ackSpeed;
 	buffer[4U] = ackFrequency / 10U;
-	buffer[5U] = ackDelay / 10U;
+	buffer[5U] = ackMinTime;
+	buffer[6U] = ackDelay / 10U;
 
-	buffer[6U] = (unsigned char)(ackLevel * 2.55F + 0.5F);
+	buffer[7U] = (unsigned char)(ackLevel * 2.55F + 0.5F);
 
 	for (unsigned int i = 0U; i < ack.size(); i++)
-		buffer[7U + i] = ack.at(i);
+		buffer[8U + i] = ack.at(i);
 
 	// CUtils::dump(1U, "Written", buffer, len);
 

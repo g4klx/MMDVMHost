@@ -187,6 +187,7 @@ m_fmRFAck("K"),
 m_fmNetAck("N"),
 m_fmAckSpeed(20U),
 m_fmAckFrequency(1750U),
+m_fmAckMinTime(5U),
 m_fmAckDelay(1000U),
 m_fmAckLevel(80.0F),
 m_fmTimeoutLevel(80.0F),
@@ -727,6 +728,8 @@ bool CConf::read()
 			m_fmAckSpeed = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "AckFrequency") == 0)
 			m_fmAckFrequency = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "AckMinTime") == 0)
+			m_fmAckMinTime = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "AckDelay") == 0)
 			m_fmAckDelay = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "AckLevel") == 0)
@@ -1553,6 +1556,11 @@ unsigned int CConf::getFMAckSpeed() const
 unsigned int CConf::getFMAckFrequency() const
 {
 	return m_fmAckFrequency;
+}
+
+unsigned int CConf::getFMAckMinTime() const
+{
+	return m_fmAckMinTime;
 }
 
 unsigned int CConf::getFMAckDelay() const

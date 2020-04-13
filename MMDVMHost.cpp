@@ -620,6 +620,7 @@ int CMMDVMHost::run()
 		std::string  netAck            = m_conf.getFMNetAck();
 		unsigned int ackSpeed          = m_conf.getFMAckSpeed();
 		unsigned int ackFrequency      = m_conf.getFMAckFrequency();
+		unsigned int ackMinTime        = m_conf.getFMAckMinTime();
 		unsigned int ackDelay          = m_conf.getFMAckDelay();
 		float        ackLevel          = m_conf.getFMAckLevel();
 		unsigned int timeout           = m_conf.getTimeout();
@@ -644,6 +645,7 @@ int CMMDVMHost::run()
 		LogInfo("    Net Ack: %s", netAck.c_str());
 		LogInfo("    Ack Speed: %uWPM", ackSpeed);
 		LogInfo("    Ack Frequency: %uHz", ackFrequency);
+		LogInfo("    Ack Min Time: %us", ackMinTime);
 		LogInfo("    Ack Delay: %ums", ackDelay);
 		LogInfo("    Ack Level: %.1f%%", ackLevel);
 		LogInfo("    Timeout: %us", timeout);
@@ -655,7 +657,7 @@ int CMMDVMHost::run()
 		LogInfo("    Hang Time: %us", hangTime);
 
 		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd);
-		m_modem->setFMAckParams(rfAck, ackSpeed, ackFrequency, ackDelay, ackLevel);
+		m_modem->setFMAckParams(rfAck, ackSpeed, ackFrequency, ackMinTime, ackDelay, ackLevel);
 		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssThreshold, ctcssLevel, kerchunkTime, hangTime);
 	}
 
