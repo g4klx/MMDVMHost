@@ -46,8 +46,8 @@ public:
 	virtual void setTransparentDataParams(unsigned int sendFrameType);
 
 	virtual bool setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd);
-	virtual bool setFMAckParams(const std::string& ack, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int minTime, unsigned int ackDelay, float ackLevel);
-	virtual bool setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, float ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime);
+	virtual bool setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int minTime, unsigned int ackDelay, float ackLevel);
+	virtual bool setFMMiscParams(const std::string& netAck, unsigned int timeout, float timeoutLevel, float ctcssFrequency, float ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime);
 
 	virtual bool open();
 

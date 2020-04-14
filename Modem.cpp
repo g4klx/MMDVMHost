@@ -1893,12 +1893,12 @@ bool CModem::setFMCallsignParams(const std::string& callsign, unsigned int calls
 	return true;
 }
 
-bool CModem::setFMAckParams(const std::string& ack, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackMinTime, unsigned int ackDelay, float ackLevel)
+bool CModem::setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackMinTime, unsigned int ackDelay, float ackLevel)
 {
 	assert(m_serial != NULL);
 
 	unsigned char buffer[80U];
-	unsigned char len = 8U + ack.size();
+	unsigned char len = 8U + rfAck.size();
 
 	buffer[0U] = MMDVM_FRAME_START;
 	buffer[1U] = len;
@@ -1911,8 +1911,8 @@ bool CModem::setFMAckParams(const std::string& ack, unsigned int ackSpeed, unsig
 
 	buffer[7U] = (unsigned char)(ackLevel * 2.55F + 0.5F);
 
-	for (unsigned int i = 0U; i < ack.size(); i++)
-		buffer[8U + i] = ack.at(i);
+	for (unsigned int i = 0U; i < rfAck.size(); i++)
+		buffer[8U + i] = rfAck.at(i);
 
 	// CUtils::dump(1U, "Written", buffer, len);
 
@@ -1945,14 +1945,15 @@ bool CModem::setFMAckParams(const std::string& ack, unsigned int ackSpeed, unsig
 	return true;
 }
 
-bool CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, float ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime)
+bool CModem::setFMMiscParams(const std::string& netAck, unsigned int timeout, float timeoutLevel, float ctcssFrequency, float ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime)
 {
 	assert(m_serial != NULL);
 
 	unsigned char buffer[20U];
+	unsigned char len = 10U + netAck.size();
 
 	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = 10U;
+	buffer[1U] = len;
 	buffer[2U] = MMDVM_FM_PARAMS3;
 
 	buffer[3U] = timeout / 5U;
@@ -1965,10 +1966,13 @@ bool CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctc
 	buffer[8U] = kerchunkTime;
 	buffer[9U] = hangTime;
 
-	// CUtils::dump(1U, "Written", buffer, 10U);
+	for (unsigned int i = 0U; i < netAck.size(); i++)
+		buffer[10U + i] = netAck.at(i);
 
-	int ret = m_serial->write(buffer, 10U);
-	if (ret != 10)
+	// CUtils::dump(1U, "Written", buffer, len);
+
+	int ret = m_serial->write(buffer, len);
+	if (ret != len)
 		return false;
 
 	unsigned int count = 0U;

@@ -658,7 +658,7 @@ int CMMDVMHost::run()
 
 		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd);
 		m_modem->setFMAckParams(rfAck, ackSpeed, ackFrequency, ackMinTime, ackDelay, ackLevel);
-		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssThreshold, ctcssLevel, kerchunkTime, hangTime);
+		m_modem->setFMMiscParams(netAck, timeout, timeoutLevel, ctcssFrequency, ctcssThreshold, ctcssLevel, kerchunkTime, hangTime);
 	}
 
 	bool remoteControlEnabled = m_conf.getRemoteControlEnabled();
