@@ -188,6 +188,7 @@ public:
   unsigned int getFMAckMinTime() const;
   unsigned int getFMAckDelay() const;
   float        getFMAckLevel() const;
+  unsigned int getFMTimeout() const;
   float        getFMTimeoutLevel() const;
   float        getFMCTCSSFrequency() const;
   float        getFMCTCSSThreshold() const;
@@ -449,6 +450,7 @@ private:
   unsigned int m_fmAckMinTime;
   unsigned int m_fmAckDelay;
   float        m_fmAckLevel;
+  unsigned int m_fmTimeout;
   float        m_fmTimeoutLevel;
   float        m_fmCTCSSFrequency;
   float        m_fmCTCSSThreshold;

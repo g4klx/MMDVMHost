@@ -623,7 +623,7 @@ int CMMDVMHost::run()
 		unsigned int ackMinTime        = m_conf.getFMAckMinTime();
 		unsigned int ackDelay          = m_conf.getFMAckDelay();
 		float        ackLevel          = m_conf.getFMAckLevel();
-		unsigned int timeout           = m_conf.getTimeout();
+		unsigned int timeout           = m_conf.getFMTimeout();
 		float        timeoutLevel      = m_conf.getFMTimeoutLevel();
 		float        ctcssFrequency    = m_conf.getFMCTCSSFrequency();
 		float        ctcssThreshold    = m_conf.getFMCTCSSThreshold();

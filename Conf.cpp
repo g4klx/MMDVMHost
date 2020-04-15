@@ -190,6 +190,7 @@ m_fmAckFrequency(1750U),
 m_fmAckMinTime(5U),
 m_fmAckDelay(1000U),
 m_fmAckLevel(80.0F),
+m_fmTimeout(180U),
 m_fmTimeoutLevel(80.0F),
 m_fmCTCSSFrequency(88.6F),
 m_fmCTCSSThreshold(10.0F),
@@ -391,7 +392,7 @@ bool CConf::read()
 		} else if (::strcmp(key, "Id") == 0)
 			m_id = m_p25Id = m_dmrId = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Timeout") == 0)
-			m_timeout = (unsigned int)::atoi(value);
+			m_fmTimeout = m_timeout = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Duplex") == 0)
 			m_duplex = ::atoi(value) == 1;
 		else if (::strcmp(key, "ModeHang") == 0)
@@ -734,6 +735,8 @@ bool CConf::read()
 			m_fmAckDelay = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "AckLevel") == 0)
 			m_fmAckLevel = float(::atof(value));
+		else if (::strcmp(key, "Timeout") == 0)
+			m_fmTimeout = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "TimeoutLevel") == 0)
 			m_fmTimeoutLevel = float(::atof(value));
 		else if (::strcmp(key, "CTCSSFrequency") == 0)
@@ -1571,6 +1574,11 @@ unsigned int CConf::getFMAckDelay() const
 float CConf::getFMAckLevel() const
 {
 	return m_fmAckLevel;
+}
+
+unsigned int CConf::getFMTimeout() const
+{
+	return m_fmTimeout;
 }
 
 float CConf::getFMTimeoutLevel() const
