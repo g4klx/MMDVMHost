@@ -1834,12 +1834,12 @@ bool CModem::writeDMRShortLC(const unsigned char* lc)
 	return m_serial->write(buffer, 12U) == 12;
 }
 
-bool CModem::setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd)
+bool CModem::setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignLevel, bool callsignAtStart, bool callsignAtEnd)
 {
 	assert(m_serial != NULL);
 
 	unsigned char buffer[80U];
-	unsigned char len = 10U + callsign.size();
+	unsigned char len = 9U + callsign.size();
 
 	buffer[0U] = MMDVM_FRAME_START;
 	buffer[1U] = len;
@@ -1850,17 +1850,16 @@ bool CModem::setFMCallsignParams(const std::string& callsign, unsigned int calls
 	buffer[5U] = callsignTime;
 	buffer[6U] = callsignHoldoff;
 
-	buffer[7U] = (unsigned char)(callsignHighLevel * 2.55F + 0.5F);
-	buffer[8U] = (unsigned char)(callsignLowLevel * 2.55F + 0.5F);
+	buffer[7U] = (unsigned char)(callsignLevel * 2.55F + 0.5F);
 
-	buffer[9U] = 0x00U;
+	buffer[8U] = 0x00U;
 	if (callsignAtStart)
-		buffer[9U] |= 0x01U;
+		buffer[8U] |= 0x01U;
 	if (callsignAtEnd)
-		buffer[9U] |= 0x02U;
+		buffer[8U] |= 0x02U;
 
 	for (unsigned int i = 0U; i < callsign.size(); i++)
-		buffer[10U + i] = callsign.at(i);
+		buffer[9U + i] = callsign.at(i);
 
 	// CUtils::dump(1U, "Written", buffer, len);
 
@@ -1945,15 +1944,14 @@ bool CModem::setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, uns
 	return true;
 }
 
-bool CModem::setFMMiscParams(const std::string& netAck, unsigned int timeout, float timeoutLevel, float ctcssFrequency, float ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime)
+bool CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, float ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime)
 {
 	assert(m_serial != NULL);
 
 	unsigned char buffer[20U];
-	unsigned char len = 10U + netAck.size();
 
 	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = len;
+	buffer[1U] = 10U;
 	buffer[2U] = MMDVM_FM_PARAMS3;
 
 	buffer[3U] = timeout / 5U;
@@ -1966,13 +1964,10 @@ bool CModem::setFMMiscParams(const std::string& netAck, unsigned int timeout, fl
 	buffer[8U] = kerchunkTime;
 	buffer[9U] = hangTime;
 
-	for (unsigned int i = 0U; i < netAck.size(); i++)
-		buffer[10U + i] = netAck.at(i);
+	// CUtils::dump(1U, "Written", buffer, 10U);
 
-	// CUtils::dump(1U, "Written", buffer, len);
-
-	int ret = m_serial->write(buffer, len);
-	if (ret != len)
+	int ret = m_serial->write(buffer, 10U);
+	if (ret != 10)
 		return false;
 
 	unsigned int count = 0U;

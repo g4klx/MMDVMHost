@@ -612,8 +612,7 @@ int CMMDVMHost::run()
 		unsigned int callsignFrequency = m_conf.getFMCallsignFrequency();
 		unsigned int callsignTime      = m_conf.getFMCallsignTime();
 		unsigned int callsignHoldoff   = m_conf.getFMCallsignHoldoff();
-		float        callsignHighLevel = m_conf.getFMCallsignHighLevel();
-		float        callsignLowLevel  = m_conf.getFMCallsignLowLevel();
+		float        callsignLevel     = m_conf.getFMCallsignLevel();
 		bool         callsignAtStart   = m_conf.getFMCallsignAtStart();
 		bool         callsignAtEnd     = m_conf.getFMCallsignAtEnd();
 		std::string  rfAck             = m_conf.getFMRFAck();
@@ -637,12 +636,11 @@ int CMMDVMHost::run()
 		LogInfo("    Callsign Frequency: %uHz", callsignFrequency);
 		LogInfo("    Callsign Time: %umins", callsignTime);
 		LogInfo("    Callsign Holdoff: 1/%u", callsignHoldoff);
-		LogInfo("    Callsign High Level: %.1f%%", callsignHighLevel);
-		LogInfo("    Callsign Low Level: %.1f%%", callsignLowLevel);
+		LogInfo("    Callsign Level: %.1f%%", callsignLevel);
 		LogInfo("    Callsign At Start: %s", callsignAtStart ? "yes" : "no");
 		LogInfo("    Callsign At End: %s", callsignAtEnd ? "yes" : "no");
 		LogInfo("    RF Ack: %s", rfAck.c_str());
-		LogInfo("    Net Ack: %s", netAck.c_str());
+		// LogInfo("    Net Ack: %s", netAck.c_str());
 		LogInfo("    Ack Speed: %uWPM", ackSpeed);
 		LogInfo("    Ack Frequency: %uHz", ackFrequency);
 		LogInfo("    Ack Min Time: %us", ackMinTime);
@@ -656,9 +654,9 @@ int CMMDVMHost::run()
 		LogInfo("    Kerchunk Time: %us", kerchunkTime);
 		LogInfo("    Hang Time: %us", hangTime);
 
-		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd);
+		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignLevel, callsignAtStart, callsignAtEnd);
 		m_modem->setFMAckParams(rfAck, ackSpeed, ackFrequency, ackMinTime, ackDelay, ackLevel);
-		m_modem->setFMMiscParams(netAck, timeout, timeoutLevel, ctcssFrequency, ctcssThreshold, ctcssLevel, kerchunkTime, hangTime);
+		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssThreshold, ctcssLevel, kerchunkTime, hangTime);
 	}
 
 	bool remoteControlEnabled = m_conf.getRemoteControlEnabled();

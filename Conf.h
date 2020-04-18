@@ -177,8 +177,7 @@ public:
   unsigned int getFMCallsignFrequency() const;
   unsigned int getFMCallsignTime() const;
   unsigned int getFMCallsignHoldoff() const;
-  float        getFMCallsignHighLevel() const;
-  float        getFMCallsignLowLevel() const;
+  float        getFMCallsignLevel() const;
   bool         getFMCallsignAtStart() const;
   bool         getFMCallsignAtEnd() const;
   std::string  getFMRFAck() const;
@@ -439,8 +438,7 @@ private:
   unsigned int m_fmCallsignFrequency;
   unsigned int m_fmCallsignTime;
   unsigned int m_fmCallsignHoldoff;
-  float        m_fmCallsignHighLevel;
-  float        m_fmCallsignLowLevel;
+  float        m_fmCallsignLevel;
   bool         m_fmCallsignAtStart;
   bool         m_fmCallsignAtEnd;
   std::string  m_fmRFAck;
