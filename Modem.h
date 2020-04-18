@@ -45,9 +45,9 @@ public:
 	virtual void setYSFParams(bool loDev, unsigned int txHang);
 	virtual void setTransparentDataParams(unsigned int sendFrameType);
 
-	virtual bool setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignLevel, bool callsignAtStart, bool callsignAtEnd);
-	virtual bool setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int minTime, unsigned int ackDelay, float ackLevel);
-	virtual bool setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, float ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime);
+	virtual void setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignLevel, bool callsignAtStart, bool callsignAtEnd);
+	virtual void setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackMinTime, unsigned int ackDelay, float ackLevel);
+	virtual void setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, float ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime);
 
 	virtual bool open();
 
@@ -185,10 +185,35 @@ private:
 	unsigned char              m_mode;
 	HW_TYPE                    m_hwType;
 
+	std::string                m_fmCallsign;
+	unsigned int               m_fmCallsignSpeed;
+	unsigned int               m_fmCallsignFrequency;
+	unsigned int               m_fmCallsignTime;
+	unsigned int               m_fmCallsignHoldoff;
+	float                      m_fmCallsignLevel;
+	bool                       m_fmCallsignAtStart;
+	bool                       m_fmCallsignAtEnd;
+	std::string                m_fmRfAck;
+	unsigned int               m_fmAckSpeed;
+	unsigned int               m_fmAckFrequency;
+	unsigned int               m_fmAckMinTime;
+	unsigned int               m_fmAckDelay;
+	float                      m_fmAckLevel;
+	unsigned int               m_fmTimeout;
+	float                      m_fmTimeoutLevel;
+	float                      m_fmCtcssFrequency;
+	float                      m_fmCtcssThreshold;
+	float                      m_fmCtcssLevel;
+	unsigned int               m_fmKerchunkTime;
+	unsigned int               m_fmHangTime;
+
 	bool readVersion();
 	bool readStatus();
 	bool setConfig();
 	bool setFrequency();
+	bool setFMCallsignParams();
+	bool setFMAckParams();
+	bool setFMMiscParams();
 
 	void printDebug();
 

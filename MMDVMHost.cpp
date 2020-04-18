@@ -606,59 +606,6 @@ int CMMDVMHost::run()
 		pocsagTimer.start();
 	}
 
-	if (m_fmEnabled) {
-		std::string  callsign          = m_conf.getFMCallsign();
-		unsigned int callsignSpeed     = m_conf.getFMCallsignSpeed();
-		unsigned int callsignFrequency = m_conf.getFMCallsignFrequency();
-		unsigned int callsignTime      = m_conf.getFMCallsignTime();
-		unsigned int callsignHoldoff   = m_conf.getFMCallsignHoldoff();
-		float        callsignLevel     = m_conf.getFMCallsignLevel();
-		bool         callsignAtStart   = m_conf.getFMCallsignAtStart();
-		bool         callsignAtEnd     = m_conf.getFMCallsignAtEnd();
-		std::string  rfAck             = m_conf.getFMRFAck();
-		std::string  netAck            = m_conf.getFMNetAck();
-		unsigned int ackSpeed          = m_conf.getFMAckSpeed();
-		unsigned int ackFrequency      = m_conf.getFMAckFrequency();
-		unsigned int ackMinTime        = m_conf.getFMAckMinTime();
-		unsigned int ackDelay          = m_conf.getFMAckDelay();
-		float        ackLevel          = m_conf.getFMAckLevel();
-		unsigned int timeout           = m_conf.getFMTimeout();
-		float        timeoutLevel      = m_conf.getFMTimeoutLevel();
-		float        ctcssFrequency    = m_conf.getFMCTCSSFrequency();
-		float        ctcssThreshold    = m_conf.getFMCTCSSThreshold();
-		float        ctcssLevel        = m_conf.getFMCTCSSLevel();
-		unsigned int kerchunkTime      = m_conf.getFMKerchunkTime();
-		unsigned int hangTime          = m_conf.getFMHangTime();
-
-		LogInfo("FM RF Parameters");
-		LogInfo("    Callsign: %s", callsign.c_str());
-		LogInfo("    Callsign Speed: %uWPM", callsignSpeed);
-		LogInfo("    Callsign Frequency: %uHz", callsignFrequency);
-		LogInfo("    Callsign Time: %umins", callsignTime);
-		LogInfo("    Callsign Holdoff: 1/%u", callsignHoldoff);
-		LogInfo("    Callsign Level: %.1f%%", callsignLevel);
-		LogInfo("    Callsign At Start: %s", callsignAtStart ? "yes" : "no");
-		LogInfo("    Callsign At End: %s", callsignAtEnd ? "yes" : "no");
-		LogInfo("    RF Ack: %s", rfAck.c_str());
-		// LogInfo("    Net Ack: %s", netAck.c_str());
-		LogInfo("    Ack Speed: %uWPM", ackSpeed);
-		LogInfo("    Ack Frequency: %uHz", ackFrequency);
-		LogInfo("    Ack Min Time: %us", ackMinTime);
-		LogInfo("    Ack Delay: %ums", ackDelay);
-		LogInfo("    Ack Level: %.1f%%", ackLevel);
-		LogInfo("    Timeout: %us", timeout);
-		LogInfo("    Timeout Level: %.1f%%", timeoutLevel);
-		LogInfo("    CTCSS Frequency: %.1fHz", ctcssFrequency);
-		LogInfo("    CTCSS Threshold: %.1f%%", ctcssThreshold);
-		LogInfo("    CTCSS Level: %.1f%%", ctcssLevel);
-		LogInfo("    Kerchunk Time: %us", kerchunkTime);
-		LogInfo("    Hang Time: %us", hangTime);
-
-		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignLevel, callsignAtStart, callsignAtEnd);
-		m_modem->setFMAckParams(rfAck, ackSpeed, ackFrequency, ackMinTime, ackDelay, ackLevel);
-		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssThreshold, ctcssLevel, kerchunkTime, hangTime);
-	}
-
 	bool remoteControlEnabled = m_conf.getRemoteControlEnabled();
 	if (remoteControlEnabled) {
 		unsigned int port = m_conf.getRemoteControlPort();
@@ -1251,6 +1198,59 @@ bool CMMDVMHost::createModem()
 	LogInfo("    FM TX Level: %.1f%%", fmTXLevel);
 	LogInfo("    FM RX Level: %.1f%%", fmRXLevel);
 	LogInfo("    TX Frequency: %uHz (%uHz)", txFrequency, txFrequency + txOffset);
+
+	if (m_fmEnabled) {
+		std::string  callsign          = m_conf.getFMCallsign();
+		unsigned int callsignSpeed     = m_conf.getFMCallsignSpeed();
+		unsigned int callsignFrequency = m_conf.getFMCallsignFrequency();
+		unsigned int callsignTime      = m_conf.getFMCallsignTime();
+		unsigned int callsignHoldoff   = m_conf.getFMCallsignHoldoff();
+		float        callsignLevel     = m_conf.getFMCallsignLevel();
+		bool         callsignAtStart   = m_conf.getFMCallsignAtStart();
+		bool         callsignAtEnd     = m_conf.getFMCallsignAtEnd();
+		std::string  rfAck             = m_conf.getFMRFAck();
+		std::string  netAck            = m_conf.getFMNetAck();
+		unsigned int ackSpeed          = m_conf.getFMAckSpeed();
+		unsigned int ackFrequency      = m_conf.getFMAckFrequency();
+		unsigned int ackMinTime        = m_conf.getFMAckMinTime();
+		unsigned int ackDelay          = m_conf.getFMAckDelay();
+		float        ackLevel          = m_conf.getFMAckLevel();
+		unsigned int timeout           = m_conf.getFMTimeout();
+		float        timeoutLevel      = m_conf.getFMTimeoutLevel();
+		float        ctcssFrequency    = m_conf.getFMCTCSSFrequency();
+		float        ctcssThreshold    = m_conf.getFMCTCSSThreshold();
+		float        ctcssLevel        = m_conf.getFMCTCSSLevel();
+		unsigned int kerchunkTime      = m_conf.getFMKerchunkTime();
+		unsigned int hangTime          = m_conf.getFMHangTime();
+
+		LogInfo("FM Parameters");
+		LogInfo("    Callsign: %s", callsign.c_str());
+		LogInfo("    Callsign Speed: %uWPM", callsignSpeed);
+		LogInfo("    Callsign Frequency: %uHz", callsignFrequency);
+		LogInfo("    Callsign Time: %umins", callsignTime);
+		LogInfo("    Callsign Holdoff: 1/%u", callsignHoldoff);
+		LogInfo("    Callsign Level: %.1f%%", callsignLevel);
+		LogInfo("    Callsign At Start: %s", callsignAtStart ? "yes" : "no");
+		LogInfo("    Callsign At End: %s", callsignAtEnd ? "yes" : "no");
+		LogInfo("    RF Ack: %s", rfAck.c_str());
+		// LogInfo("    Net Ack: %s", netAck.c_str());
+		LogInfo("    Ack Speed: %uWPM", ackSpeed);
+		LogInfo("    Ack Frequency: %uHz", ackFrequency);
+		LogInfo("    Ack Min Time: %us", ackMinTime);
+		LogInfo("    Ack Delay: %ums", ackDelay);
+		LogInfo("    Ack Level: %.1f%%", ackLevel);
+		LogInfo("    Timeout: %us", timeout);
+		LogInfo("    Timeout Level: %.1f%%", timeoutLevel);
+		LogInfo("    CTCSS Frequency: %.1fHz", ctcssFrequency);
+		LogInfo("    CTCSS Threshold: %.1f%%", ctcssThreshold);
+		LogInfo("    CTCSS Level: %.1f%%", ctcssLevel);
+		LogInfo("    Kerchunk Time: %us", kerchunkTime);
+		LogInfo("    Hang Time: %us", hangTime);
+
+		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignLevel, callsignAtStart, callsignAtEnd);
+		m_modem->setFMAckParams(rfAck, ackSpeed, ackFrequency, ackMinTime, ackDelay, ackLevel);
+		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssThreshold, ctcssLevel, kerchunkTime, hangTime);
+	}
 
 	m_modem = CModem::createModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
 	m_modem->setSerialParams(protocol,address);

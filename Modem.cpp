@@ -169,7 +169,28 @@ m_cd(false),
 m_lockout(false),
 m_error(false),
 m_mode(MODE_IDLE),
-m_hwType(HWT_UNKNOWN)
+m_hwType(HWT_UNKNOWN),
+m_fmCallsign(),
+m_fmCallsignSpeed(20U),
+m_fmCallsignFrequency(1000U),
+m_fmCallsignTime(600U),
+m_fmCallsignHoldoff(0U),
+m_fmCallsignLevel(40.0F),
+m_fmCallsignAtStart(true),
+m_fmCallsignAtEnd(true),
+m_fmRfAck("K"),
+m_fmAckSpeed(20U),
+m_fmAckFrequency(1750U),
+m_fmAckMinTime(4U),
+m_fmAckDelay(1000U),
+m_fmAckLevel(80.0F),
+m_fmTimeout(120U),
+m_fmTimeoutLevel(80.0F),
+m_fmCtcssFrequency(88.4F),
+m_fmCtcssThreshold(10.0F),
+m_fmCtcssLevel(10.0F),
+m_fmKerchunkTime(0U),
+m_fmHangTime(5U)
 {
 	m_buffer = new unsigned char[BUFFER_LENGTH];
 
@@ -278,6 +299,32 @@ bool CModem::open()
 		delete m_serial;
 		m_serial = NULL;
 		return false;
+	}
+
+	if (m_fmEnabled) {
+		ret = setFMCallsignParams();
+		if (!ret) {
+			m_serial->close();
+			delete m_serial;
+			m_serial = NULL;
+			return false;
+		}
+
+		ret = setFMAckParams();
+		if (!ret) {
+			m_serial->close();
+			delete m_serial;
+			m_serial = NULL;
+			return false;
+		}
+
+		ret = setFMMiscParams();
+		if (!ret) {
+			m_serial->close();
+			delete m_serial;
+			m_serial = NULL;
+			return false;
+		}
 	}
 
 	m_statusTimer.start();
@@ -1834,32 +1881,67 @@ bool CModem::writeDMRShortLC(const unsigned char* lc)
 	return m_serial->write(buffer, 12U) == 12;
 }
 
-bool CModem::setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignLevel, bool callsignAtStart, bool callsignAtEnd)
+void CModem::setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignLevel, bool callsignAtStart, bool callsignAtEnd)
+{
+	m_fmCallsign          = callsign;
+	m_fmCallsignSpeed     = callsignSpeed;
+	m_fmCallsignFrequency = callsignFrequency;
+	m_fmCallsignTime      = callsignTime;
+	m_fmCallsignHoldoff   = callsignHoldoff;
+	m_fmCallsignLevel     = callsignLevel;
+	m_fmCallsignAtStart   = callsignAtStart;
+	m_fmCallsignAtEnd     = callsignAtEnd;
+}
+
+void CModem::setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackMinTime, unsigned int ackDelay, float ackLevel)
+{
+	m_fmRfAck        = rfAck;
+	m_fmAckSpeed     = ackSpeed;
+	m_fmAckFrequency = ackFrequency;
+	m_fmAckMinTime   = ackMinTime;
+	m_fmAckDelay     = ackDelay;
+	m_fmAckLevel     = ackLevel;
+}
+
+void CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, float ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime)
+{
+	m_fmTimeout      = timeout;
+	m_fmTimeoutLevel = timeoutLevel;
+
+	m_fmCtcssFrequency = ctcssFrequency;
+	m_fmCtcssThreshold = ctcssThreshold;
+	m_fmCtcssLevel     = ctcssLevel;
+
+	m_fmKerchunkTime = kerchunkTime;
+	m_fmHangTime     = hangTime;
+}
+
+bool CModem::setFMCallsignParams()
 {
 	assert(m_serial != NULL);
 
 	unsigned char buffer[80U];
-	unsigned char len = 9U + callsign.size();
+	unsigned char len = 9U + m_fmCallsign.size();
 
 	buffer[0U] = MMDVM_FRAME_START;
 	buffer[1U] = len;
 	buffer[2U] = MMDVM_FM_PARAMS1;
 
-	buffer[3U] = callsignSpeed;
-	buffer[4U] = callsignFrequency / 10U;
-	buffer[5U] = callsignTime;
-	buffer[6U] = callsignHoldoff;
+	buffer[3U] = m_fmCallsignSpeed;
+	buffer[4U] = m_fmCallsignFrequency / 10U;
+	buffer[5U] = m_fmCallsignTime;
+	buffer[6U] = m_fmCallsignHoldoff;
 
-	buffer[7U] = (unsigned char)(callsignLevel * 2.55F + 0.5F);
+	buffer[7U] = (unsigned char)(m_fmCallsignLevel * 2.55F + 0.5F);
 
 	buffer[8U] = 0x00U;
-	if (callsignAtStart)
+	if (m_fmCallsignAtStart)
 		buffer[8U] |= 0x01U;
-	if (callsignAtEnd)
+	if (m_fmCallsignAtEnd)
 		buffer[8U] |= 0x02U;
 
-	for (unsigned int i = 0U; i < callsign.size(); i++)
-		buffer[9U + i] = callsign.at(i);
+	for (unsigned int i = 0U; i < m_fmCallsign.size(); i++)
+		buffer[9U + i] = m_fmCallsign.at(i);
 
 	// CUtils::dump(1U, "Written", buffer, len);
 
@@ -1892,26 +1974,26 @@ bool CModem::setFMCallsignParams(const std::string& callsign, unsigned int calls
 	return true;
 }
 
-bool CModem::setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackMinTime, unsigned int ackDelay, float ackLevel)
+bool CModem::setFMAckParams()
 {
 	assert(m_serial != NULL);
 
 	unsigned char buffer[80U];
-	unsigned char len = 8U + rfAck.size();
+	unsigned char len = 8U + m_fmRfAck.size();
 
 	buffer[0U] = MMDVM_FRAME_START;
 	buffer[1U] = len;
 	buffer[2U] = MMDVM_FM_PARAMS2;
 
-	buffer[3U] = ackSpeed;
-	buffer[4U] = ackFrequency / 10U;
-	buffer[5U] = ackMinTime;
-	buffer[6U] = ackDelay / 10U;
+	buffer[3U] = m_fmAckSpeed;
+	buffer[4U] = m_fmAckFrequency / 10U;
+	buffer[5U] = m_fmAckMinTime;
+	buffer[6U] = m_fmAckDelay / 10U;
 
-	buffer[7U] = (unsigned char)(ackLevel * 2.55F + 0.5F);
+	buffer[7U] = (unsigned char)(m_fmAckLevel * 2.55F + 0.5F);
 
-	for (unsigned int i = 0U; i < rfAck.size(); i++)
-		buffer[8U + i] = rfAck.at(i);
+	for (unsigned int i = 0U; i < m_fmRfAck.size(); i++)
+		buffer[8U + i] = m_fmRfAck.at(i);
 
 	// CUtils::dump(1U, "Written", buffer, len);
 
@@ -1944,7 +2026,7 @@ bool CModem::setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, uns
 	return true;
 }
 
-bool CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, float ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime)
+bool CModem::setFMMiscParams()
 {
 	assert(m_serial != NULL);
 
@@ -1954,15 +2036,15 @@ bool CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctc
 	buffer[1U] = 10U;
 	buffer[2U] = MMDVM_FM_PARAMS3;
 
-	buffer[3U] = timeout / 5U;
-	buffer[4U] = (unsigned char)(timeoutLevel * 2.55F + 0.5F);
+	buffer[3U] = m_fmTimeout / 5U;
+	buffer[4U] = (unsigned char)(m_fmTimeoutLevel * 2.55F + 0.5F);
 
-	buffer[5U] = (unsigned char)ctcssFrequency;
-	buffer[6U] = (unsigned char)(ctcssThreshold * 2.55F + 0.5F);
-	buffer[7U] = (unsigned char)(ctcssLevel * 2.55F + 0.5F);
+	buffer[5U] = (unsigned char)m_fmCtcssFrequency;
+	buffer[6U] = (unsigned char)(m_fmCtcssThreshold * 2.55F + 0.5F);
+	buffer[7U] = (unsigned char)(m_fmCtcssLevel * 2.55F + 0.5F);
 
-	buffer[8U] = kerchunkTime;
-	buffer[9U] = hangTime;
+	buffer[8U] = m_fmKerchunkTime;
+	buffer[9U] = m_fmHangTime;
 
 	// CUtils::dump(1U, "Written", buffer, 10U);
 
