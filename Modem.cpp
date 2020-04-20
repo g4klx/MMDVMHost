@@ -187,7 +187,7 @@ m_fmAckLevel(80.0F),
 m_fmTimeout(120U),
 m_fmTimeoutLevel(80.0F),
 m_fmCtcssFrequency(88.4F),
-m_fmCtcssThreshold(10.0F),
+m_fmCtcssThreshold(25U),
 m_fmCtcssLevel(10.0F),
 m_fmKerchunkTime(0U),
 m_fmHangTime(5U)
@@ -1903,7 +1903,7 @@ void CModem::setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, uns
 	m_fmAckLevel     = ackLevel;
 }
 
-void CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, float ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime)
+void CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime)
 {
 	m_fmTimeout      = timeout;
 	m_fmTimeoutLevel = timeoutLevel;
@@ -2040,7 +2040,7 @@ bool CModem::setFMMiscParams()
 	buffer[4U] = (unsigned char)(m_fmTimeoutLevel * 2.55F + 0.5F);
 
 	buffer[5U] = (unsigned char)m_fmCtcssFrequency;
-	buffer[6U] = (unsigned char)(m_fmCtcssThreshold * 2.55F + 0.5F);
+	buffer[6U] = m_fmCtcssThreshold;
 	buffer[7U] = (unsigned char)(m_fmCtcssLevel * 2.55F + 0.5F);
 
 	buffer[8U] = m_fmKerchunkTime;

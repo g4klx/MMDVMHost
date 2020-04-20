@@ -1226,7 +1226,7 @@ bool CMMDVMHost::createModem()
 		unsigned int timeout           = m_conf.getFMTimeout();
 		float        timeoutLevel      = m_conf.getFMTimeoutLevel();
 		float        ctcssFrequency    = m_conf.getFMCTCSSFrequency();
-		float        ctcssThreshold    = m_conf.getFMCTCSSThreshold();
+		unsigned int ctcssThreshold    = m_conf.getFMCTCSSThreshold();
 		float        ctcssLevel        = m_conf.getFMCTCSSLevel();
 		unsigned int kerchunkTime      = m_conf.getFMKerchunkTime();
 		unsigned int hangTime          = m_conf.getFMHangTime();
@@ -1250,7 +1250,7 @@ bool CMMDVMHost::createModem()
 		LogInfo("    Timeout: %us", timeout);
 		LogInfo("    Timeout Level: %.1f%%", timeoutLevel);
 		LogInfo("    CTCSS Frequency: %.1fHz", ctcssFrequency);
-		LogInfo("    CTCSS Threshold: %.1f%%", ctcssThreshold);
+		LogInfo("    CTCSS Threshold: %u", ctcssThreshold);
 		LogInfo("    CTCSS Level: %.1f%%", ctcssLevel);
 		LogInfo("    Kerchunk Time: %us", kerchunkTime);
 		LogInfo("    Hang Time: %us", hangTime);

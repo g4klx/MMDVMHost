@@ -47,7 +47,7 @@ public:
 
 	virtual void setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignLevel, bool callsignAtStart, bool callsignAtEnd);
 	virtual void setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackMinTime, unsigned int ackDelay, float ackLevel);
-	virtual void setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, float ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime);
+	virtual void setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime);
 
 	virtual bool open();
 
@@ -202,7 +202,7 @@ private:
 	unsigned int               m_fmTimeout;
 	float                      m_fmTimeoutLevel;
 	float                      m_fmCtcssFrequency;
-	float                      m_fmCtcssThreshold;
+	unsigned int               m_fmCtcssThreshold;
 	float                      m_fmCtcssLevel;
 	unsigned int               m_fmKerchunkTime;
 	unsigned int               m_fmHangTime;
