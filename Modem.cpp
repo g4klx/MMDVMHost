@@ -175,7 +175,8 @@ m_fmCallsignSpeed(20U),
 m_fmCallsignFrequency(1000U),
 m_fmCallsignTime(600U),
 m_fmCallsignHoldoff(0U),
-m_fmCallsignLevel(40.0F),
+m_fmCallsignHighLevel(35.0F),
+m_fmCallsignLowLevel(15.0F),
 m_fmCallsignAtStart(true),
 m_fmCallsignAtEnd(true),
 m_fmRfAck("K"),
@@ -1881,14 +1882,15 @@ bool CModem::writeDMRShortLC(const unsigned char* lc)
 	return m_serial->write(buffer, 12U) == 12;
 }
 
-void CModem::setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignLevel, bool callsignAtStart, bool callsignAtEnd)
+void CModem::setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd)
 {
 	m_fmCallsign          = callsign;
 	m_fmCallsignSpeed     = callsignSpeed;
 	m_fmCallsignFrequency = callsignFrequency;
 	m_fmCallsignTime      = callsignTime;
 	m_fmCallsignHoldoff   = callsignHoldoff;
-	m_fmCallsignLevel     = callsignLevel;
+	m_fmCallsignHighLevel = callsignHighLevel;
+	m_fmCallsignLowLevel  = callsignLowLevel;
 	m_fmCallsignAtStart   = callsignAtStart;
 	m_fmCallsignAtEnd     = callsignAtEnd;
 }
@@ -1921,7 +1923,7 @@ bool CModem::setFMCallsignParams()
 	assert(m_serial != NULL);
 
 	unsigned char buffer[80U];
-	unsigned char len = 9U + m_fmCallsign.size();
+	unsigned char len = 10U + m_fmCallsign.size();
 
 	buffer[0U] = MMDVM_FRAME_START;
 	buffer[1U] = len;
@@ -1932,16 +1934,17 @@ bool CModem::setFMCallsignParams()
 	buffer[5U] = m_fmCallsignTime;
 	buffer[6U] = m_fmCallsignHoldoff;
 
-	buffer[7U] = (unsigned char)(m_fmCallsignLevel * 2.55F + 0.5F);
+	buffer[7U] = (unsigned char)(m_fmCallsignHighLevel * 2.55F + 0.5F);
+	buffer[8U] = (unsigned char)(m_fmCallsignLowLevel * 2.55F + 0.5F);
 
-	buffer[8U] = 0x00U;
+	buffer[9U] = 0x00U;
 	if (m_fmCallsignAtStart)
-		buffer[8U] |= 0x01U;
+		buffer[9U] |= 0x01U;
 	if (m_fmCallsignAtEnd)
-		buffer[8U] |= 0x02U;
+		buffer[9U] |= 0x02U;
 
 	for (unsigned int i = 0U; i < m_fmCallsign.size(); i++)
-		buffer[9U + i] = m_fmCallsign.at(i);
+		buffer[10U + i] = m_fmCallsign.at(i);
 
 	// CUtils::dump(1U, "Written", buffer, len);
 
