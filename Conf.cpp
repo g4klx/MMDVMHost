@@ -111,7 +111,6 @@ m_modemP25TXLevel(50.0F),
 m_modemNXDNTXLevel(50.0F),
 m_modemPOCSAGTXLevel(50.0F),
 m_modemFMTXLevel(50.0F),
-m_modemFMRXLevel(50.0F),
 m_modemRSSIMappingFile(),
 m_modemTrace(false),
 m_modemDebug(false),
@@ -483,7 +482,7 @@ bool CConf::read()
 		else if (::strcmp(key, "RFLevel") == 0)
 			m_modemRFLevel = float(::atof(value));
 		else if (::strcmp(key, "RXLevel") == 0)
-			m_modemFMRXLevel = m_modemRXLevel = float(::atof(value));
+			m_modemRXLevel = float(::atof(value));
 		else if (::strcmp(key, "TXLevel") == 0)
 			m_modemFMTXLevel = m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = m_modemNXDNTXLevel = float(::atof(value));
 		else if (::strcmp(key, "CWIdTXLevel") == 0)
@@ -502,8 +501,6 @@ bool CConf::read()
 			m_modemPOCSAGTXLevel = float(::atof(value));
 		else if (::strcmp(key, "FMTXLevel") == 0)
 			m_modemFMTXLevel = float(::atof(value));
-		else if (::strcmp(key, "FMRXLevel") == 0)
-			m_modemFMRXLevel = float(::atof(value));
 		else if (::strcmp(key, "RSSIMappingFile") == 0)
 			m_modemRSSIMappingFile = value;
 		else if (::strcmp(key, "Trace") == 0)
@@ -1179,11 +1176,6 @@ float CConf::getModemPOCSAGTXLevel() const
 float CConf::getModemFMTXLevel() const
 {
 	return m_modemFMTXLevel;
-}
-
-float CConf::getModemFMRXLevel() const
-{
-	return m_modemFMRXLevel;
 }
 
 std::string CConf::getModemRSSIMappingFile () const

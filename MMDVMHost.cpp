@@ -1157,7 +1157,6 @@ bool CMMDVMHost::createModem()
 	float nxdnTXLevel            = m_conf.getModemNXDNTXLevel();
 	float pocsagTXLevel          = m_conf.getModemPOCSAGTXLevel();
 	float fmTXLevel              = m_conf.getModemFMTXLevel();
-	float fmRXLevel              = m_conf.getModemFMRXLevel();
 	bool trace                   = m_conf.getModemTrace();
 	bool debug                   = m_conf.getModemDebug();
 	unsigned int colorCode       = m_conf.getDMRColorCode();
@@ -1196,13 +1195,12 @@ bool CMMDVMHost::createModem()
 	LogInfo("    NXDN TX Level: %.1f%%", nxdnTXLevel);
 	LogInfo("    POCSAG TX Level: %.1f%%", pocsagTXLevel);
 	LogInfo("    FM TX Level: %.1f%%", fmTXLevel);
-	LogInfo("    FM RX Level: %.1f%%", fmRXLevel);
 	LogInfo("    TX Frequency: %uHz (%uHz)", txFrequency, txFrequency + txOffset);
 
 	m_modem = CModem::createModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
 	m_modem->setSerialParams(protocol,address);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_pocsagEnabled, m_fmEnabled);
-	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, fmTXLevel, fmRXLevel);
+	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, fmTXLevel);
 	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel, pocsagFrequency);
 	m_modem->setDMRParams(colorCode);
 	m_modem->setYSFParams(lowDeviation, txHang);

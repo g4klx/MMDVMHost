@@ -91,7 +91,6 @@ public:
   float        getModemNXDNTXLevel() const;
   float        getModemPOCSAGTXLevel() const;
   float        getModemFMTXLevel() const;
-  float        getModemFMRXLevel() const;
   std::string  getModemRSSIMappingFile() const;
   bool         getModemTrace() const;
   bool         getModemDebug() const;
@@ -362,7 +361,6 @@ private:
   float        m_modemNXDNTXLevel;
   float        m_modemPOCSAGTXLevel;
   float        m_modemFMTXLevel;
-  float        m_modemFMRXLevel;
   std::string  m_modemRSSIMappingFile;
   bool         m_modemTrace;
   bool         m_modemDebug;

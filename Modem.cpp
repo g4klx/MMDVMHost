@@ -119,7 +119,6 @@ m_p25TXLevel(0U),
 m_nxdnTXLevel(0U),
 m_pocsagTXLevel(0U),
 m_fmTXLevel(0U),
-m_fmRXLevel(0U),
 m_trace(trace),
 m_debug(debug),
 m_rxFrequency(0U),
@@ -234,7 +233,7 @@ void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, 
 	m_fmEnabled     = fmEnabled;
 }
 
-void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagTXLevel, float fmTXLevel, float fmRXLevel)
+void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagTXLevel, float fmTXLevel)
 {
 	m_rxLevel       = rxLevel;
 	m_cwIdTXLevel   = cwIdTXLevel;
@@ -245,7 +244,6 @@ void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, flo
 	m_nxdnTXLevel   = nxdnTXLevel;
 	m_pocsagTXLevel = pocsagTXLevel;
 	m_fmTXLevel     = fmTXLevel;
-	m_fmRXLevel     = fmRXLevel;
 }
 
 void CModem::setDMRParams(unsigned int colorCode)
@@ -1498,7 +1496,7 @@ bool CModem::setConfig()
 
 	buffer[0U] = MMDVM_FRAME_START;
 
-	buffer[1U] = 23U;
+	buffer[1U] = 22U;
 
 	buffer[2U] = MMDVM_SET_CONFIG;
 
@@ -1561,12 +1559,11 @@ bool CModem::setConfig()
 	buffer[20U] = (unsigned char)(m_pocsagTXLevel * 2.55F + 0.5F);
 
 	buffer[21U] = (unsigned char)(m_fmTXLevel * 2.55F + 0.5F);
-	buffer[22U] = (unsigned char)(m_fmRXLevel * 2.55F + 0.5F);
 
-	// CUtils::dump(1U, "Written", buffer, 23U);
+	// CUtils::dump(1U, "Written", buffer, 22U);
 
-	int ret = m_serial->write(buffer, 23U);
-	if (ret != 23)
+	int ret = m_serial->write(buffer, 22U);
+	if (ret != 22)
 		return false;
 
 	unsigned int count = 0U;
