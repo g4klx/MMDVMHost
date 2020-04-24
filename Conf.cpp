@@ -387,7 +387,7 @@ bool CConf::read()
 			// Convert the callsign to upper case
 			for (unsigned int i = 0U; value[i] != 0; i++)
 				value[i] = ::toupper(value[i]);
-			m_cwIdCallsign = m_callsign = value;
+			m_fmCallsign = m_cwIdCallsign = m_callsign = value;
 		} else if (::strcmp(key, "Id") == 0)
 			m_id = m_p25Id = m_dmrId = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Timeout") == 0)
