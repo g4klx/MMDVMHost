@@ -194,6 +194,8 @@ public:
   float        getFMCTCSSLevel() const;
   unsigned int getFMKerchunkTime() const;
   unsigned int getFMHangTime() const;
+  bool         getFMUseCOS() const;
+  unsigned int getFMRXBoost() const;
 
   // The D-Star Network section
   bool         getDStarNetworkEnabled() const;
@@ -455,6 +457,8 @@ private:
   float        m_fmCTCSSLevel;
   unsigned int m_fmKerchunkTime;
   unsigned int m_fmHangTime;
+  bool         m_fmUseCOS;
+  unsigned int m_fmRXBoost;
 
   bool         m_dstarNetworkEnabled;
   std::string  m_dstarGatewayAddress;

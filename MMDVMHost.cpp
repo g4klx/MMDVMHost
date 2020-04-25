@@ -1229,6 +1229,8 @@ bool CMMDVMHost::createModem()
 		float        ctcssLevel        = m_conf.getFMCTCSSLevel();
 		unsigned int kerchunkTime      = m_conf.getFMKerchunkTime();
 		unsigned int hangTime          = m_conf.getFMHangTime();
+		bool         useCOS            = m_conf.getFMUseCOS();
+		unsigned int rxBoost           = m_conf.getFMRXBoost();
 
 		LogInfo("FM Parameters");
 		LogInfo("    Callsign: %s", callsign.c_str());
@@ -1254,10 +1256,12 @@ bool CMMDVMHost::createModem()
 		LogInfo("    CTCSS Level: %.1f%%", ctcssLevel);
 		LogInfo("    Kerchunk Time: %us", kerchunkTime);
 		LogInfo("    Hang Time: %us", hangTime);
+		LogInfo("    Use COS: %s", useCOS ? "yes" : "no");
+		LogInfo("    RX Boost: x%u", rxBoost);
 
 		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd);
 		m_modem->setFMAckParams(rfAck, ackSpeed, ackFrequency, ackMinTime, ackDelay, ackLevel);
-		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssThreshold, ctcssLevel, kerchunkTime, hangTime);
+		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssThreshold, ctcssLevel, kerchunkTime, hangTime, useCOS, rxBoost);
 	}
 
 	bool ret = m_modem->open();

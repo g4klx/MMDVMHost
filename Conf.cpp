@@ -196,6 +196,8 @@ m_fmCTCSSThreshold(40U),
 m_fmCTCSSLevel(2.0F),
 m_fmKerchunkTime(0U),
 m_fmHangTime(7U),
+m_fmUseCOS(true),
+m_fmRXBoost(1U),
 m_dstarNetworkEnabled(false),
 m_dstarGatewayAddress(),
 m_dstarGatewayPort(0U),
@@ -746,6 +748,10 @@ bool CConf::read()
 			m_fmKerchunkTime = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "HangTime") == 0)
 			m_fmHangTime = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "UseCOS") == 0)
+			m_fmUseCOS = ::atoi(value) == 1;
+		else if (::strcmp(key, "RXBoost") == 0)
+			m_fmRXBoost = (unsigned int)::atoi(value);
 	} else if (section == SECTION_DSTAR_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dstarNetworkEnabled = ::atoi(value) == 1;
@@ -1601,6 +1607,16 @@ unsigned int CConf::getFMKerchunkTime() const
 unsigned int CConf::getFMHangTime() const
 {
 	return m_fmHangTime;
+}
+
+bool CConf::getFMUseCOS() const
+{
+	return m_fmUseCOS;
+}
+
+unsigned int CConf::getFMRXBoost() const
+{
+	return m_fmRXBoost;
 }
 
 bool CConf::getDStarNetworkEnabled() const
