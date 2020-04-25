@@ -1231,6 +1231,7 @@ bool CMMDVMHost::createModem()
 		unsigned int hangTime          = m_conf.getFMHangTime();
 		bool         useCOS            = m_conf.getFMUseCOS();
 		unsigned int rxBoost           = m_conf.getFMRXBoost();
+		float        maxDevLevel       = m_conf.getFMMaxDevLevel();
 
 		LogInfo("FM Parameters");
 		LogInfo("    Callsign: %s", callsign.c_str());
@@ -1258,10 +1259,11 @@ bool CMMDVMHost::createModem()
 		LogInfo("    Hang Time: %us", hangTime);
 		LogInfo("    Use COS: %s", useCOS ? "yes" : "no");
 		LogInfo("    RX Boost: x%u", rxBoost);
+		LogInfo("    Max. Deviation Level: %.1f%%", maxDevLevel);
 
 		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd);
 		m_modem->setFMAckParams(rfAck, ackSpeed, ackFrequency, ackMinTime, ackDelay, ackLevel);
-		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssThreshold, ctcssLevel, kerchunkTime, hangTime, useCOS, rxBoost);
+		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssThreshold, ctcssLevel, kerchunkTime, hangTime, useCOS, rxBoost, maxDevLevel);
 	}
 
 	bool ret = m_modem->open();

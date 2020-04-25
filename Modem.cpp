@@ -192,7 +192,8 @@ m_fmCtcssLevel(10.0F),
 m_fmKerchunkTime(0U),
 m_fmHangTime(5U),
 m_fmUseCOS(true),
-m_fmRXBoost(1U)
+m_fmRXBoost(1U),
+m_fmMaxDevLevel(90.0F)
 {
 	m_buffer = new unsigned char[BUFFER_LENGTH];
 
@@ -1904,7 +1905,7 @@ void CModem::setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, uns
 	m_fmAckLevel     = ackLevel;
 }
 
-void CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, bool useCOS, unsigned int rxBoost)
+void CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, bool useCOS, unsigned int rxBoost, float maxDevLevel)
 {
 	m_fmTimeout      = timeout;
 	m_fmTimeoutLevel = timeoutLevel;
@@ -1918,6 +1919,7 @@ void CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctc
 
 	m_fmUseCOS       = useCOS;
 	m_fmRXBoost      = rxBoost;
+	m_fmMaxDevLevel  = maxDevLevel;
 }
 
 bool CModem::setFMCallsignParams()
@@ -2038,7 +2040,7 @@ bool CModem::setFMMiscParams()
 	unsigned char buffer[20U];
 
 	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = 12U;
+	buffer[1U] = 13U;
 	buffer[2U] = MMDVM_FM_PARAMS3;
 
 	buffer[3U] = m_fmTimeout / 5U;
@@ -2057,10 +2059,12 @@ bool CModem::setFMMiscParams()
 
 	buffer[11U] = m_fmRXBoost;
 
-	// CUtils::dump(1U, "Written", buffer, 12U);
+	buffer[12U] = (unsigned char)(m_fmMaxDevLevel * 2.55F + 0.5F);
 
-	int ret = m_serial->write(buffer, 12U);
-	if (ret != 12)
+	// CUtils::dump(1U, "Written", buffer, 13U);
+
+	int ret = m_serial->write(buffer, 13U);
+	if (ret != 13)
 		return false;
 
 	unsigned int count = 0U;
