@@ -2040,7 +2040,7 @@ bool CModem::setFMMiscParams()
 	unsigned char buffer[20U];
 
 	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = 13U;
+	buffer[1U] = 14U;
 	buffer[2U] = MMDVM_FM_PARAMS3;
 
 	buffer[3U] = m_fmTimeout / 5U;
@@ -2061,10 +2061,12 @@ bool CModem::setFMMiscParams()
 
 	buffer[12U] = (unsigned char)(m_fmMaxDevLevel * 2.55F + 0.5F);
 
-	// CUtils::dump(1U, "Written", buffer, 13U);
+	buffer[13U] = (unsigned char)(m_rxLevel * 2.55F + 0.5F);
 
-	int ret = m_serial->write(buffer, 13U);
-	if (ret != 13)
+	// CUtils::dump(1U, "Written", buffer, 14U);
+
+	int ret = m_serial->write(buffer, 14U);
+	if (ret != 14)
 		return false;
 
 	unsigned int count = 0U;
