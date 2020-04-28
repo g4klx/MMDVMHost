@@ -181,7 +181,7 @@ public:
   bool         getFMCallsignAtStart() const;
   bool         getFMCallsignAtEnd() const;
   std::string  getFMRFAck() const;
-  std::string  getFMNetAck() const;
+  std::string  getFMExtAck() const;
   unsigned int getFMAckSpeed() const;
   unsigned int getFMAckFrequency() const;
   unsigned int getFMAckMinTime() const;
@@ -195,8 +195,9 @@ public:
   unsigned int getFMKerchunkTime() const;
   unsigned int getFMHangTime() const;
   bool         getFMUseCOS() const;
-  unsigned int getFMRXBoost() const;
+  unsigned int getFMRFAudioBoost() const;
   float        getFMMaxDevLevel() const;
+  unsigned int getFMExtAudioBoost() const;
 
   // The D-Star Network section
   bool         getDStarNetworkEnabled() const;
@@ -445,7 +446,7 @@ private:
   bool         m_fmCallsignAtStart;
   bool         m_fmCallsignAtEnd;
   std::string  m_fmRFAck;
-  std::string  m_fmNetAck;
+  std::string  m_fmExtAck;
   unsigned int m_fmAckSpeed;
   unsigned int m_fmAckFrequency;
   unsigned int m_fmAckMinTime;
@@ -459,8 +460,9 @@ private:
   unsigned int m_fmKerchunkTime;
   unsigned int m_fmHangTime;
   bool         m_fmUseCOS;
-  unsigned int m_fmRXBoost;
+  unsigned int m_fmRFAudioBoost;
   float        m_fmMaxDevLevel;
+  unsigned int m_fmExtAudioBoost;
 
   bool         m_dstarNetworkEnabled;
   std::string  m_dstarGatewayAddress;

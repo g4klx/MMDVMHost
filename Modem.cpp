@@ -192,7 +192,7 @@ m_fmCtcssLevel(10.0F),
 m_fmKerchunkTime(0U),
 m_fmHangTime(5U),
 m_fmUseCOS(true),
-m_fmRXBoost(1U),
+m_fmRFAudioBoost(1U),
 m_fmMaxDevLevel(90.0F)
 {
 	m_buffer = new unsigned char[BUFFER_LENGTH];
@@ -1905,7 +1905,7 @@ void CModem::setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, uns
 	m_fmAckLevel     = ackLevel;
 }
 
-void CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, bool useCOS, unsigned int rxBoost, float maxDevLevel)
+void CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, bool useCOS, unsigned int rfAudioBoost, float maxDevLevel)
 {
 	m_fmTimeout      = timeout;
 	m_fmTimeoutLevel = timeoutLevel;
@@ -1918,7 +1918,7 @@ void CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctc
 	m_fmHangTime     = hangTime;
 
 	m_fmUseCOS       = useCOS;
-	m_fmRXBoost      = rxBoost;
+	m_fmRFAudioBoost = rfAudioBoost;
 	m_fmMaxDevLevel  = maxDevLevel;
 }
 
@@ -2057,7 +2057,7 @@ bool CModem::setFMMiscParams()
 	if (m_fmUseCOS)
 		buffer[10U] |= 0x01U;
 
-	buffer[11U] = m_fmRXBoost;
+	buffer[11U] = m_fmRFAudioBoost;
 
 	buffer[12U] = (unsigned char)(m_fmMaxDevLevel * 2.55F + 0.5F);
 

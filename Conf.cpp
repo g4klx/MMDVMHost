@@ -183,7 +183,7 @@ m_fmCallsignLowLevel(15.0F),
 m_fmCallsignAtStart(true),
 m_fmCallsignAtEnd(true),
 m_fmRFAck("K"),
-m_fmNetAck("N"),
+m_fmExtAck("N"),
 m_fmAckSpeed(20U),
 m_fmAckFrequency(1750U),
 m_fmAckMinTime(5U),
@@ -197,8 +197,9 @@ m_fmCTCSSLevel(2.0F),
 m_fmKerchunkTime(0U),
 m_fmHangTime(7U),
 m_fmUseCOS(true),
-m_fmRXBoost(1U),
+m_fmRFAudioBoost(1U),
 m_fmMaxDevLevel(90.0F),
+m_fmExtAudioBoost(1U),
 m_dstarNetworkEnabled(false),
 m_dstarGatewayAddress(),
 m_dstarGatewayPort(0U),
@@ -720,11 +721,11 @@ bool CConf::read()
 			for (unsigned int i = 0U; value[i] != 0; i++)
 				value[i] = ::toupper(value[i]);
 			m_fmRFAck = value;
-	  } else if (::strcmp(key, "NetAck") == 0) {
+	  } else if (::strcmp(key, "ExtAck") == 0) {
 			// Convert the ack to upper case
 			for (unsigned int i = 0U; value[i] != 0; i++)
 				value[i] = ::toupper(value[i]);
-			m_fmNetAck = value;
+			m_fmExtAck = value;
 		}	else if (::strcmp(key, "AckSpeed") == 0)
 			m_fmAckSpeed = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "AckFrequency") == 0)
@@ -751,10 +752,12 @@ bool CConf::read()
 			m_fmHangTime = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "UseCOS") == 0)
 			m_fmUseCOS = ::atoi(value) == 1;
-		else if (::strcmp(key, "RXBoost") == 0)
-			m_fmRXBoost = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "RFAudioBoost") == 0)
+			m_fmRFAudioBoost = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "MaxDevLevel") == 0)
 			m_fmMaxDevLevel = float(::atof(value));
+		else if (::strcmp(key, "ExtAudioBoost") == 0)
+			m_fmExtAudioBoost = (unsigned int)::atoi(value);
 	} else if (section == SECTION_DSTAR_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dstarNetworkEnabled = ::atoi(value) == 1;
@@ -1547,9 +1550,9 @@ std::string CConf::getFMRFAck() const
 	return m_fmRFAck;
 }
 
-std::string CConf::getFMNetAck() const
+std::string CConf::getFMExtAck() const
 {
-	return m_fmNetAck;
+	return m_fmExtAck;
 }
 
 unsigned int CConf::getFMAckSpeed() const
@@ -1617,14 +1620,19 @@ bool CConf::getFMUseCOS() const
 	return m_fmUseCOS;
 }
 
-unsigned int CConf::getFMRXBoost() const
+unsigned int CConf::getFMRFAudioBoost() const
 {
-	return m_fmRXBoost;
+	return m_fmRFAudioBoost;
 }
 
 float CConf::getFMMaxDevLevel() const
 {
 	return m_fmMaxDevLevel;
+}
+
+unsigned int CConf::getFMExtAudioBoost() const
+{
+	return m_fmExtAudioBoost;
 }
 
 bool CConf::getDStarNetworkEnabled() const
