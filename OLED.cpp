@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -301,6 +301,21 @@ void COLED::setQuitInt()
     m_display.setCursor(0,30);
     m_display.setTextSize(3);
     m_display.print("Stopped");
+
+    m_display.setTextSize(1);
+    m_display.display();
+}
+
+void COLED::setFMInt()
+{
+    m_mode = MODE_FM;
+
+    m_display.clearDisplay();
+    OLED_statusbar();
+
+    m_display.setCursor(0,30);
+    m_display.setTextSize(3);
+    m_display.print("FM");
 
     m_display.setTextSize(1);
     m_display.display();
