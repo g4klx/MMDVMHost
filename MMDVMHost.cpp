@@ -1975,6 +1975,58 @@ void CMMDVMHost::remoteControl()
 			if (m_nxdn != NULL)
 				processModeCommand(MODE_NXDN, m_nxdnRFModeHang);
 			break;
+		case RCD_MODE_FM:
+			if (m_fmEnabled != false)
+				processModeCommand(MODE_FM, 0);
+			break;
+		case RCD_ENABLE_DSTAR:
+			if (m_dstar != NULL && m_dstarEnabled==false)
+				processEnableCommand(m_dstarEnabled, true);
+			break;
+		case RCD_ENABLE_DMR:
+			if (m_dmr != NULL && m_dmrEnabled==false)
+				processEnableCommand(m_dmrEnabled, true);
+			break;
+		case RCD_ENABLE_YSF:
+			if (m_ysf != NULL && m_ysfEnabled==false)
+				processEnableCommand(m_ysfEnabled, true);
+			break;
+		case RCD_ENABLE_P25:
+			if (m_p25 != NULL && m_p25Enabled==false)
+				processEnableCommand(m_p25Enabled, true);
+			break;
+		case RCD_ENABLE_NXDN:
+			if (m_nxdn != NULL && m_nxdnEnabled==false)
+				processEnableCommand(m_nxdnEnabled, true);
+			break;
+		case RCD_ENABLE_FM:
+			if (m_fmEnabled==false)
+				processEnableCommand(m_fmEnabled, true);
+			break;
+		case RCD_DISABLE_DSTAR:
+			if (m_dstar != NULL && m_dstarEnabled==true)
+				processEnableCommand(m_dstarEnabled, false);
+			break;
+		case RCD_DISABLE_DMR:
+			if (m_dmr != NULL && m_dmrEnabled==true)
+				processEnableCommand(m_dmrEnabled, false);
+			break;
+		case RCD_DISABLE_YSF:
+			if (m_ysf != NULL && m_ysfEnabled==true)
+				processEnableCommand(m_ysfEnabled, false);
+			break;
+		case RCD_DISABLE_P25:
+			if (m_p25 != NULL && m_p25Enabled==true)
+				processEnableCommand(m_p25Enabled, false);
+			break;
+		case RCD_DISABLE_NXDN:
+			if (m_nxdn != NULL && m_nxdnEnabled==true)
+				processEnableCommand(m_nxdnEnabled, false);
+			break;
+		case RCD_DISABLE_FM:
+			if (m_fmEnabled == true)
+				processEnableCommand(m_fmEnabled, false);
+			break;
 		case RCD_PAGE:
 			if (m_pocsag != NULL) {
 				unsigned int ric = m_remoteControl->getArgUInt(0U);
@@ -2007,4 +2059,13 @@ void CMMDVMHost::processModeCommand(unsigned char mode, unsigned int timeout)
 	}
 
 	setMode(mode);
+}
+
+void CMMDVMHost::processEnableCommand(bool& mode, bool enabled)
+{
+	LogDebug("Setting mode current=%s new=%s",mode ? "true" : "false",enabled ? "true" : "false");
+	mode=enabled;
+	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_pocsagEnabled, m_fmEnabled);
+	if (!m_modem->writeConfig())
+		LogError("Cannot write Config to MMDVM");
 }

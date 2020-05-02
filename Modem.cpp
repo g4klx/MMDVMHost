@@ -1491,6 +1491,11 @@ bool CModem::readStatus()
 	return m_serial->write(buffer, 3U) == 3;
 }
 
+bool CModem::writeConfig()
+{
+	return setConfig();
+}
+
 bool CModem::setConfig()
 {
 	assert(m_serial != NULL);
