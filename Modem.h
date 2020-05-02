@@ -75,6 +75,7 @@ public:
 	virtual bool hasLockout() const;
 	virtual bool hasError() const;
 
+	virtual bool writeConfig();
 	virtual bool writeDStarData(const unsigned char* data, unsigned int length);
 	virtual bool writeDMRData1(const unsigned char* data, unsigned int length);
 	virtual bool writeDMRData2(const unsigned char* data, unsigned int length);

@@ -117,6 +117,7 @@ private:
 
   void remoteControl();
   void processModeCommand(unsigned char mode, unsigned int timeout);
+  void processEnableCommand(bool& mode, bool enabled);
 
   void setMode(unsigned char mode);
 
