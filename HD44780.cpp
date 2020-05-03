@@ -399,7 +399,7 @@ void CHD44780::setQuitInt()
 	m_dmr = false;
 }
 
-void CHD44780::setIdleInt()
+void CHD44780::setFMInt()
 {
 	m_clockDisplayTimer.stop();
 	::lcdClear(m_fd);
