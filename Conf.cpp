@@ -182,6 +182,7 @@ m_fmCallsignHighLevel(35.0F),
 m_fmCallsignLowLevel(15.0F),
 m_fmCallsignAtStart(true),
 m_fmCallsignAtEnd(true),
+m_fmCallsignAtLatch(true),
 m_fmRFAck("K"),
 m_fmExtAck("N"),
 m_fmAckSpeed(20U),
@@ -716,6 +717,8 @@ bool CConf::read()
 		  m_fmCallsignAtStart = ::atoi(value) == 1;
 	  else if (::strcmp(key, "CallsignAtEnd") == 0)
 		  m_fmCallsignAtEnd = ::atoi(value) == 1;
+	  else if (::strcmp(key, "CallsignAtLatch") == 0)
+		  m_fmCallsignAtLatch = ::atoi(value) == 1;
 	  else if (::strcmp(key, "RFAck") == 0) {
 			// Convert the ack to upper case
 			for (unsigned int i = 0U; value[i] != 0; i++)
@@ -1543,6 +1546,11 @@ bool CConf::getFMCallsignAtStart() const
 bool CConf::getFMCallsignAtEnd() const
 {
 	return m_fmCallsignAtEnd;
+}
+
+bool CConf::getFMCallsignAtLatch() const
+{
+	return m_fmCallsignAtLatch;
 }
 
 std::string CConf::getFMRFAck() const

@@ -45,7 +45,7 @@ public:
 	virtual void setYSFParams(bool loDev, unsigned int txHang);
 	virtual void setTransparentDataParams(unsigned int sendFrameType);
 
-	virtual void setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd);
+	virtual void setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch);
 	virtual void setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackMinTime, unsigned int ackDelay, float ackLevel);
 	virtual void setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, bool useCOS, unsigned int rfAudioBoost, float maxDevLevel);
 
@@ -194,6 +194,7 @@ private:
 	float                      m_fmCallsignLowLevel;
 	bool                       m_fmCallsignAtStart;
 	bool                       m_fmCallsignAtEnd;
+	bool                       m_fmCallsignAtLatch;
 	std::string                m_fmRfAck;
 	unsigned int               m_fmAckSpeed;
 	unsigned int               m_fmAckFrequency;

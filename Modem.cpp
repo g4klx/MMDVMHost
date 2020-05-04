@@ -178,6 +178,7 @@ m_fmCallsignHighLevel(35.0F),
 m_fmCallsignLowLevel(15.0F),
 m_fmCallsignAtStart(true),
 m_fmCallsignAtEnd(true),
+m_fmCallsignAtLatch(true),
 m_fmRfAck("K"),
 m_fmAckSpeed(20U),
 m_fmAckFrequency(1750U),
@@ -1887,7 +1888,7 @@ bool CModem::writeDMRShortLC(const unsigned char* lc)
 	return m_serial->write(buffer, 12U) == 12;
 }
 
-void CModem::setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd)
+void CModem::setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch)
 {
 	m_fmCallsign          = callsign;
 	m_fmCallsignSpeed     = callsignSpeed;
@@ -1898,6 +1899,7 @@ void CModem::setFMCallsignParams(const std::string& callsign, unsigned int calls
 	m_fmCallsignLowLevel  = callsignLowLevel;
 	m_fmCallsignAtStart   = callsignAtStart;
 	m_fmCallsignAtEnd     = callsignAtEnd;
+	m_fmCallsignAtLatch   = callsignAtLatch;
 }
 
 void CModem::setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackMinTime, unsigned int ackDelay, float ackLevel)
@@ -1951,6 +1953,8 @@ bool CModem::setFMCallsignParams()
 		buffer[9U] |= 0x01U;
 	if (m_fmCallsignAtEnd)
 		buffer[9U] |= 0x02U;
+	if (m_fmCallsignAtLatch)
+		buffer[9U] |= 0x04U;
 
 	for (unsigned int i = 0U; i < m_fmCallsign.size(); i++)
 		buffer[10U + i] = m_fmCallsign.at(i);

@@ -1215,6 +1215,7 @@ bool CMMDVMHost::createModem()
 		float        callsignLowLevel  = m_conf.getFMCallsignLowLevel();
 		bool         callsignAtStart   = m_conf.getFMCallsignAtStart();
 		bool         callsignAtEnd     = m_conf.getFMCallsignAtEnd();
+		bool         callsignAtLatch   = m_conf.getFMCallsignAtLatch();
 		std::string  rfAck             = m_conf.getFMRFAck();
 		std::string  extAck            = m_conf.getFMExtAck();
 		unsigned int ackSpeed          = m_conf.getFMAckSpeed();
@@ -1244,6 +1245,7 @@ bool CMMDVMHost::createModem()
 		LogInfo("    Callsign Low Level: %.1f%%", callsignLowLevel);
 		LogInfo("    Callsign At Start: %s", callsignAtStart ? "yes" : "no");
 		LogInfo("    Callsign At End: %s", callsignAtEnd ? "yes" : "no");
+		LogInfo("    Callsign At Latch: %s", callsignAtLatch ? "yes" : "no");
 		LogInfo("    RF Ack: %s", rfAck.c_str());
 		// LogInfo("    Ext. Ack: %s", extAck.c_str());
 		LogInfo("    Ack Speed: %uWPM", ackSpeed);
@@ -1263,7 +1265,7 @@ bool CMMDVMHost::createModem()
 		LogInfo("    Max. Deviation Level: %.1f%%", maxDevLevel);
 		// LogInfo("    Ext. Audio Boost: x%u", extAudioBoost);
 
-		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd);
+		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd, callsignAtLatch);
 		m_modem->setFMAckParams(rfAck, ackSpeed, ackFrequency, ackMinTime, ackDelay, ackLevel);
 		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssThreshold, ctcssLevel, kerchunkTime, hangTime, useCOS, rfAudioBoost, maxDevLevel);
 	}
