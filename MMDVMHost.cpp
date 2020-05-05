@@ -2040,6 +2040,18 @@ void CMMDVMHost::remoteControl()
 				}
 				m_pocsag->sendPage(ric, text);
 			}
+		case RCD_CW:
+			setMode(MODE_IDLE); // Force the modem to go idle so that we can send the CW text.
+                        if (!m_modem->hasTX()){
+                                std::string cwtext;
+                                for (unsigned int i = 0U; i < m_remoteControl->getArgCount(); i++) {
+                                        if (i > 0U)
+                                                cwtext += " ";
+                                        cwtext += m_remoteControl->getArgString(i);
+                                }
+                                m_display->writeCW();
+                                m_modem->sendCWId(cwtext);
+                        }
 		default:
 			break;
 	}
