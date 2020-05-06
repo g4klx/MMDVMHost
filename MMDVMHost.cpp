@@ -1231,6 +1231,7 @@ bool CMMDVMHost::createModem()
 		unsigned int kerchunkTime      = m_conf.getFMKerchunkTime();
 		unsigned int hangTime          = m_conf.getFMHangTime();
 		bool         useCOS            = m_conf.getFMUseCOS();
+		bool         cosInvert         = m_conf.getFMCOSInvert();
 		unsigned int rfAudioBoost      = m_conf.getFMRFAudioBoost();
 		float        maxDevLevel       = m_conf.getFMMaxDevLevel();
 		unsigned int extAudioBoost     = m_conf.getFMExtAudioBoost();
@@ -1261,13 +1262,14 @@ bool CMMDVMHost::createModem()
 		LogInfo("    Kerchunk Time: %us", kerchunkTime);
 		LogInfo("    Hang Time: %us", hangTime);
 		LogInfo("    Use COS: %s", useCOS ? "yes" : "no");
+		LogInfo("    COS Invert: %s", cosInvert ? "yes" : "no");
 		LogInfo("    RF Audio Boost: x%u", rfAudioBoost);
 		LogInfo("    Max. Deviation Level: %.1f%%", maxDevLevel);
 		// LogInfo("    Ext. Audio Boost: x%u", extAudioBoost);
 
 		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd, callsignAtLatch);
 		m_modem->setFMAckParams(rfAck, ackSpeed, ackFrequency, ackMinTime, ackDelay, ackLevel);
-		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssThreshold, ctcssLevel, kerchunkTime, hangTime, useCOS, rfAudioBoost, maxDevLevel);
+		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssThreshold, ctcssLevel, kerchunkTime, hangTime, useCOS, cosInvert, rfAudioBoost, maxDevLevel);
 	}
 
 	bool ret = m_modem->open();

@@ -196,6 +196,7 @@ public:
   unsigned int getFMKerchunkTime() const;
   unsigned int getFMHangTime() const;
   bool         getFMUseCOS() const;
+  bool         getFMCOSInvert() const;
   unsigned int getFMRFAudioBoost() const;
   float        getFMMaxDevLevel() const;
   unsigned int getFMExtAudioBoost() const;
@@ -462,6 +463,7 @@ private:
   unsigned int m_fmKerchunkTime;
   unsigned int m_fmHangTime;
   bool         m_fmUseCOS;
+  bool         m_fmCOSInvert;
   unsigned int m_fmRFAudioBoost;
   float        m_fmMaxDevLevel;
   unsigned int m_fmExtAudioBoost;

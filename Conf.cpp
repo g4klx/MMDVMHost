@@ -198,6 +198,7 @@ m_fmCTCSSLevel(2.0F),
 m_fmKerchunkTime(0U),
 m_fmHangTime(7U),
 m_fmUseCOS(true),
+m_fmCOSInvert(false),
 m_fmRFAudioBoost(1U),
 m_fmMaxDevLevel(90.0F),
 m_fmExtAudioBoost(1U),
@@ -755,6 +756,8 @@ bool CConf::read()
 			m_fmHangTime = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "UseCOS") == 0)
 			m_fmUseCOS = ::atoi(value) == 1;
+		else if (::strcmp(key, "COSInvert") == 0)
+			m_fmCOSInvert = ::atoi(value) == 1;
 		else if (::strcmp(key, "RFAudioBoost") == 0)
 			m_fmRFAudioBoost = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "MaxDevLevel") == 0)
@@ -1626,6 +1629,11 @@ unsigned int CConf::getFMHangTime() const
 bool CConf::getFMUseCOS() const
 {
 	return m_fmUseCOS;
+}
+
+bool CConf::getFMCOSInvert() const
+{
+	return m_fmCOSInvert;
 }
 
 unsigned int CConf::getFMRFAudioBoost() const
