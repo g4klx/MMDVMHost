@@ -547,12 +547,13 @@ int CMMDVMHost::run()
 	}
 
 	if (m_p25Enabled) {
-		unsigned int id    = m_conf.getP25Id();
-		unsigned int nac   = m_conf.getP25NAC();
-		bool uidOverride   = m_conf.getP25OverrideUID();
-		bool selfOnly      = m_conf.getP25SelfOnly();
-		bool remoteGateway = m_conf.getP25RemoteGateway();
-		m_p25RFModeHang    = m_conf.getP25ModeHang();
+		unsigned int id     = m_conf.getP25Id();
+		unsigned int nac    = m_conf.getP25NAC();
+		unsigned int txHang = m_conf.getP25TXHang();
+		bool uidOverride    = m_conf.getP25OverrideUID();
+		bool selfOnly       = m_conf.getP25SelfOnly();
+		bool remoteGateway  = m_conf.getP25RemoteGateway();
+		m_p25RFModeHang     = m_conf.getP25ModeHang();
 
 		LogInfo("P25 RF Parameters");
 		LogInfo("    Id: %u", id);
@@ -560,6 +561,7 @@ int CMMDVMHost::run()
 		LogInfo("    UID Override: %s", uidOverride ? "yes" : "no");
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
 		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
+		LogInfo("    TX Hang: %us", txHang);
 		LogInfo("    Mode Hang: %us", m_p25RFModeHang);
 
 		m_p25 = new CP25Control(nac, id, selfOnly, uidOverride, m_p25Network, m_display, m_timeout, m_duplex, m_dmrLookup, remoteGateway, rssi);
@@ -577,17 +579,19 @@ int CMMDVMHost::run()
 		m_nxdnLookup = new CNXDNLookup(lookupFile, reloadTime);
 		m_nxdnLookup->read();
 
-		unsigned int id    = m_conf.getNXDNId();
-		unsigned int ran   = m_conf.getNXDNRAN();
-		bool selfOnly      = m_conf.getNXDNSelfOnly();
-		bool remoteGateway = m_conf.getNXDNRemoteGateway();
-		m_nxdnRFModeHang   = m_conf.getNXDNModeHang();
+		unsigned int id     = m_conf.getNXDNId();
+		unsigned int ran    = m_conf.getNXDNRAN();
+		bool selfOnly       = m_conf.getNXDNSelfOnly();
+		bool remoteGateway  = m_conf.getNXDNRemoteGateway();
+		unsigned int txHang = m_conf.getNXDNTXHang();
+		m_nxdnRFModeHang    = m_conf.getNXDNModeHang();
 
 		LogInfo("NXDN RF Parameters");
 		LogInfo("    Id: %u", id);
 		LogInfo("    RAN: %u", ran);
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
 		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
+		LogInfo("    TX Hang: %us", txHang);
 		LogInfo("    Mode Hang: %us", m_nxdnRFModeHang);
 
 		m_nxdn = new CNXDNControl(ran, id, selfOnly, m_nxdnNetwork, m_display, m_timeout, m_duplex, remoteGateway, m_nxdnLookup, rssi);
@@ -1161,7 +1165,9 @@ bool CMMDVMHost::createModem()
 	bool debug                   = m_conf.getModemDebug();
 	unsigned int colorCode       = m_conf.getDMRColorCode();
 	bool lowDeviation            = m_conf.getFusionLowDeviation();
-	unsigned int txHang          = m_conf.getFusionTXHang();
+	unsigned int ysfTXHang       = m_conf.getFusionTXHang();
+	unsigned int p25TXHang       = m_conf.getP25TXHang();
+	unsigned int nxdnTXHang      = m_conf.getNXDNTXHang();
 	unsigned int rxFrequency     = m_conf.getRXFrequency();
 	unsigned int txFrequency     = m_conf.getTXFrequency();
 	unsigned int pocsagFrequency = m_conf.getPOCSAGFrequency();
@@ -1203,7 +1209,9 @@ bool CMMDVMHost::createModem()
 	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, fmTXLevel);
 	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel, pocsagFrequency);
 	m_modem->setDMRParams(colorCode);
-	m_modem->setYSFParams(lowDeviation, txHang);
+	m_modem->setYSFParams(lowDeviation, ysfTXHang);
+	m_modem->setP25Params(p25TXHang);
+	m_modem->setNXDNParams(nxdnTXHang);
 
 	if (m_fmEnabled) {
 		std::string  callsign          = m_conf.getFMCallsign();
