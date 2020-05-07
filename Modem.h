@@ -48,6 +48,7 @@ public:
 	virtual void setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch);
 	virtual void setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackMinTime, unsigned int ackDelay, float ackLevel);
 	virtual void setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, bool useCOS, bool cosInvert, unsigned int rfAudioBoost, float maxDevLevel);
+	virtual void setFMExtParams(const std::string& ack, unsigned int audioBoost);
 
 	virtual bool open();
 
@@ -202,6 +203,7 @@ private:
 	bool                       m_fmCallsignAtEnd;
 	bool                       m_fmCallsignAtLatch;
 	std::string                m_fmRfAck;
+	std::string                m_fmExtAck;
 	unsigned int               m_fmAckSpeed;
 	unsigned int               m_fmAckFrequency;
 	unsigned int               m_fmAckMinTime;
@@ -217,7 +219,9 @@ private:
 	bool                       m_fmUseCOS;
 	bool                       m_fmCOSInvert;
 	unsigned int               m_fmRFAudioBoost;
+	unsigned int               m_fmExtAudioBoost;
 	float                      m_fmMaxDevLevel;
+	bool                       m_fmExtEnable;
 
 	bool readVersion();
 	bool readStatus();
@@ -226,6 +230,7 @@ private:
 	bool setFMCallsignParams();
 	bool setFMAckParams();
 	bool setFMMiscParams();
+	bool setFMExtParams();
 
 	void printDebug();
 

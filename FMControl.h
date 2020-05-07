@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -33,7 +33,7 @@ public:
 	CFMControl(CFMNetwork* network);
 	~CFMControl();
 
-	bool writeModem(unsigned char* data, unsigned int len);
+	bool writeModem(unsigned char* data, unsigned int length);
 
 	unsigned int readModem(unsigned char* data, unsigned int space);
 
@@ -42,13 +42,13 @@ public:
 	void enable(bool enabled);
 
 private:
-	CFMNetwork*                m_network;
-	CRingBuffer<unsigned char> m_queue;
-	bool                       m_enabled;
-	FILE*                      m_fp;
+	CFMNetwork*                 m_network;
+	CRingBuffer<unsigned short> m_queue;
+	bool                        m_enabled;
+	FILE*                       m_fp;
 
 	bool openFile();
-	bool writeFile(const unsigned char* data);
+	bool writeFile(const unsigned char* data, unsigned int length);
 	void closeFile();
 };
 

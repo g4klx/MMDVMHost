@@ -35,7 +35,9 @@ public:
 
 	void enable(bool enabled);
 
-	unsigned int read(unsigned char* data);
+    bool write(const unsigned char* data, unsigned int length);
+
+    unsigned int read(unsigned char* data, unsigned int space);
 
 	void reset();
 

@@ -279,6 +279,8 @@
     <ClCompile Include="DStarHeader.cpp" />
     <ClCompile Include="DStarNetwork.cpp" />
     <ClCompile Include="DStarSlowData.cpp" />
+    <ClCompile Include="FMControl.cpp" />
+    <ClCompile Include="FMNetwork.cpp" />
     <ClCompile Include="Golay2087.cpp" />
     <ClCompile Include="Golay24128.cpp" />
     <ClCompile Include="Hamming.cpp" />

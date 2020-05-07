@@ -1274,7 +1274,6 @@ bool CMMDVMHost::createModem()
 		bool         callsignAtEnd     = m_conf.getFMCallsignAtEnd();
 		bool         callsignAtLatch   = m_conf.getFMCallsignAtLatch();
 		std::string  rfAck             = m_conf.getFMRFAck();
-		std::string  extAck            = m_conf.getFMExtAck();
 		unsigned int ackSpeed          = m_conf.getFMAckSpeed();
 		unsigned int ackFrequency      = m_conf.getFMAckFrequency();
 		unsigned int ackMinTime        = m_conf.getFMAckMinTime();
@@ -1291,7 +1290,6 @@ bool CMMDVMHost::createModem()
 		bool         cosInvert         = m_conf.getFMCOSInvert();
 		unsigned int rfAudioBoost      = m_conf.getFMRFAudioBoost();
 		float        maxDevLevel       = m_conf.getFMMaxDevLevel();
-		unsigned int extAudioBoost     = m_conf.getFMExtAudioBoost();
 
 		LogInfo("FM Parameters");
 		LogInfo("    Callsign: %s", callsign.c_str());
@@ -1305,7 +1303,6 @@ bool CMMDVMHost::createModem()
 		LogInfo("    Callsign At End: %s", callsignAtEnd ? "yes" : "no");
 		LogInfo("    Callsign At Latch: %s", callsignAtLatch ? "yes" : "no");
 		LogInfo("    RF Ack: %s", rfAck.c_str());
-		// LogInfo("    Ext. Ack: %s", extAck.c_str());
 		LogInfo("    Ack Speed: %uWPM", ackSpeed);
 		LogInfo("    Ack Frequency: %uHz", ackFrequency);
 		LogInfo("    Ack Min Time: %us", ackMinTime);
@@ -1322,11 +1319,20 @@ bool CMMDVMHost::createModem()
 		LogInfo("    COS Invert: %s", cosInvert ? "yes" : "no");
 		LogInfo("    RF Audio Boost: x%u", rfAudioBoost);
 		LogInfo("    Max. Deviation Level: %.1f%%", maxDevLevel);
-		// LogInfo("    Ext. Audio Boost: x%u", extAudioBoost);
 
 		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd, callsignAtLatch);
 		m_modem->setFMAckParams(rfAck, ackSpeed, ackFrequency, ackMinTime, ackDelay, ackLevel);
 		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssThreshold, ctcssLevel, kerchunkTime, hangTime, useCOS, cosInvert, rfAudioBoost, maxDevLevel);
+
+		if (m_conf.getFMNetworkEnabled()) {
+			std::string  extAck        = m_conf.getFMExtAck();
+			unsigned int extAudioBoost = m_conf.getFMExtAudioBoost();
+
+			LogInfo("    Ext. Ack: %s", extAck.c_str());
+			LogInfo("    Ext. Audio Boost: x%u", extAudioBoost);
+
+			m_modem->setFMExtParams(extAck, extAudioBoost);
+		}
 	}
 
 	bool ret = m_modem->open();
@@ -1665,6 +1671,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+		if (m_fm != NULL)
+			m_fm->enable(false);
 		m_modem->setMode(MODE_DSTAR);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_DSTAR);
@@ -1701,6 +1709,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+		if (m_fm != NULL)
+			m_fm->enable(false);
 		m_modem->setMode(MODE_DMR);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_DMR);
@@ -1741,6 +1751,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+		if (m_fm != NULL)
+			m_fm->enable(false);
 		m_modem->setMode(MODE_YSF);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_YSF);
@@ -1777,6 +1789,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+		if (m_fm != NULL)
+			m_fm->enable(false);
 		m_modem->setMode(MODE_P25);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_P25);
@@ -1813,6 +1827,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(true);
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+		if (m_fm != NULL)
+			m_fm->enable(false);
 		m_modem->setMode(MODE_NXDN);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_NXDN);
@@ -1849,6 +1865,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_pocsag != NULL)
 			m_pocsag->enable(true);
+		if (m_fm != NULL)
+			m_fm->enable(false);
 		m_modem->setMode(MODE_POCSAG);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_POCSAG);
@@ -1872,6 +1890,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdnNetwork->enable(false);
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
+		if (m_fmNetwork != NULL)
+			m_fmNetwork->enable(false);
 		if (m_dstar != NULL)
 			m_dstar->enable(false);
 		if (m_dmr != NULL)
@@ -1884,6 +1904,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+		if (m_fm != NULL)
+			m_fm->enable(true);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
@@ -1925,6 +1947,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+		if (m_fm != NULL)
+			m_fm->enable(false);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
@@ -1967,6 +1991,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+		if (m_fm != NULL)
+			m_fm->enable(false);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
@@ -2007,6 +2033,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(true);
 		if (m_pocsag != NULL)
 			m_pocsag->enable(true);
+		if (m_fm != NULL)
+			m_fm->enable(true);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();

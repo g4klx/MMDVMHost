@@ -79,6 +79,7 @@ const unsigned char MMDVM_POCSAG_DATA = 0x50U;
 const unsigned char MMDVM_FM_PARAMS1  = 0x60U;
 const unsigned char MMDVM_FM_PARAMS2  = 0x61U;
 const unsigned char MMDVM_FM_PARAMS3  = 0x62U;
+const unsigned char MMDVM_FM_PARAMS4  = 0x63U;
 const unsigned char MMDVM_FM_DATA     = 0x65U;
 
 const unsigned char MMDVM_ACK         = 0x70U;
@@ -184,6 +185,7 @@ m_fmCallsignAtStart(true),
 m_fmCallsignAtEnd(true),
 m_fmCallsignAtLatch(true),
 m_fmRfAck("K"),
+m_fmExtAck("N"),
 m_fmAckSpeed(20U),
 m_fmAckFrequency(1750U),
 m_fmAckMinTime(4U),
@@ -199,7 +201,9 @@ m_fmHangTime(5U),
 m_fmUseCOS(true),
 m_fmCOSInvert(false),
 m_fmRFAudioBoost(1U),
-m_fmMaxDevLevel(90.0F)
+m_fmExtAudioBoost(1U),
+m_fmMaxDevLevel(90.0F),
+m_fmExtEnable(false)
 {
 	m_buffer = new unsigned char[BUFFER_LENGTH];
 
@@ -332,6 +336,16 @@ bool CModem::open()
 			delete m_serial;
 			m_serial = NULL;
 			return false;
+		}
+
+		if (m_fmExtEnable) {
+			ret = setFMExtParams();
+			if (!ret) {
+				m_serial->close();
+				delete m_serial;
+				m_serial = NULL;
+				return false;
+			}
 		}
 	}
 
@@ -2013,6 +2027,13 @@ void CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctc
 	m_fmMaxDevLevel  = maxDevLevel;
 }
 
+void CModem::setFMExtParams(const std::string& ack, unsigned int audioBoost)
+{
+	m_fmExtAck        = ack;
+	m_fmExtAudioBoost = audioBoost;
+	m_fmExtEnable     = true;
+}
+
 bool CModem::setFMCallsignParams()
 {
 	assert(m_serial != NULL);
@@ -2183,6 +2204,53 @@ bool CModem::setFMMiscParams()
 
 	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
 		LogError("Received a NAK to the SET_FM_PARAMS3 command from the modem");
+		return false;
+	}
+
+	return true;
+}
+
+bool CModem::setFMExtParams()
+{
+	assert(m_serial != NULL);
+
+	unsigned char buffer[80U];
+	unsigned char len = 4U + m_fmExtAck.size();
+
+	buffer[0U] = MMDVM_FRAME_START;
+	buffer[1U] = len;
+	buffer[2U] = MMDVM_FM_PARAMS4;
+
+	buffer[3U] = m_fmExtAudioBoost;
+
+	for (unsigned int i = 0U; i < m_fmExtAck.size(); i++)
+		buffer[4U + i] = m_fmExtAck.at(i);
+
+	// CUtils::dump(1U, "Written", buffer, len);
+
+	int ret = m_serial->write(buffer, len);
+	if (ret != len)
+		return false;
+
+	unsigned int count = 0U;
+	RESP_TYPE_MMDVM resp;
+	do {
+		CThread::sleep(10U);
+
+		resp = getResponse();
+		if (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK) {
+			count++;
+			if (count >= MAX_RESPONSES) {
+				LogError("The MMDVM is not responding to the SET_FM_PARAMS4 command");
+				return false;
+			}
+		}
+	} while (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK);
+
+	// CUtils::dump(1U, "Response", m_buffer, m_length);
+
+	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
+		LogError("Received a NAK to the SET_FM_PARAMS4 command from the modem");
 		return false;
 	}
 

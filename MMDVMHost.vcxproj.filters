@@ -568,5 +568,11 @@
     <ClCompile Include="UserDBentry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FMNetwork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FMControl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
