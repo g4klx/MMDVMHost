@@ -79,6 +79,7 @@ const unsigned char MMDVM_POCSAG_DATA = 0x50U;
 const unsigned char MMDVM_FM_PARAMS1  = 0x60U;
 const unsigned char MMDVM_FM_PARAMS2  = 0x61U;
 const unsigned char MMDVM_FM_PARAMS3  = 0x62U;
+const unsigned char MMDVM_FM_DATA     = 0x65U;
 
 const unsigned char MMDVM_ACK         = 0x70U;
 const unsigned char MMDVM_NAK         = 0x7FU;
@@ -150,6 +151,8 @@ m_txP25Data(1000U, "Modem TX P25"),
 m_rxNXDNData(1000U, "Modem RX NXDN"),
 m_txNXDNData(1000U, "Modem TX NXDN"),
 m_txPOCSAGData(1000U, "Modem TX POCSAG"),
+m_rxFMData(1000U, "Modem RX FM"),
+m_txFMData(1000U, "Modem TX FM"),
 m_rxTransparentData(1000U, "Modem RX Transparent"),
 m_txTransparentData(1000U, "Modem TX Transparent"),
 m_sendTransparentDataFrameType(0U),
@@ -163,6 +166,7 @@ m_ysfSpace(0U),
 m_p25Space(0U),
 m_nxdnSpace(0U),
 m_pocsagSpace(0U),
+m_fmSpace(0U),
 m_tx(false),
 m_cd(false),
 m_lockout(false),
@@ -572,6 +576,20 @@ void CModem::clock(unsigned int ms)
 			}
 			break;
 
+			case MMDVM_FM_DATA: {
+				if (m_trace)
+					CUtils::dump(1U, "RX FM Data", m_buffer, m_length);
+
+				unsigned char data = m_length - 2U;
+				m_rxFMData.addData(&data, 1U);
+
+				data = TAG_DATA;
+				m_rxFMData.addData(&data, 1U);
+
+				m_rxFMData.addData(m_buffer + 3U, m_length - 3U);
+			}
+			break;
+
 			case MMDVM_GET_STATUS: {
 					// if (m_trace)
 					//	CUtils::dump(1U, "GET_STATUS", m_buffer, m_length);
@@ -615,9 +633,11 @@ void CModem::clock(unsigned int ms)
 						m_nxdnSpace   = m_buffer[11U];
 					if (m_length > 12U)
 						m_pocsagSpace = m_buffer[12U];
+					if (m_length > 13U)
+						m_fmSpace     = m_buffer[13U];
 
 					m_inactivityTimer.start();
-					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u,%u,%u lockout=%d, cd=%d", m_buffer[5U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, m_nxdnSpace, m_pocsagSpace, int(m_lockout), int(m_cd));
+					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u,%u,%u,%u lockout=%d, cd=%d", m_buffer[5U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, m_nxdnSpace, m_pocsagSpace, m_fmSpace, int(m_lockout), int(m_cd));
 				}
 				break;
 
@@ -821,6 +841,23 @@ void CModem::clock(unsigned int ms)
 		m_pocsagSpace--;
 	}
 
+	if (m_fmSpace > 1U && !m_txFMData.isEmpty()) {
+		unsigned char len = 0U;
+		m_txFMData.getData(&len, 1U);
+		m_txFMData.getData(m_buffer, len);
+
+		if (m_trace)
+			CUtils::dump(1U, "TX FM Data", m_buffer, len);
+
+		int ret = m_serial->write(m_buffer, len);
+		if (ret != int(len))
+			LogWarning("Error when writing FM data to the MMDVM");
+
+		m_playoutTimer.start();
+
+		m_fmSpace--;
+	}
+
 	if (!m_txTransparentData.isEmpty()) {
 		unsigned char len = 0U;
 		m_txTransparentData.getData(&len, 1U);
@@ -924,6 +961,20 @@ unsigned int CModem::readNXDNData(unsigned char* data)
 	unsigned char len = 0U;
 	m_rxNXDNData.getData(&len, 1U);
 	m_rxNXDNData.getData(data, len);
+
+	return len;
+}
+
+unsigned int CModem::readFMData(unsigned char* data)
+{
+	assert(data != NULL);
+
+	if (m_rxFMData.isEmpty())
+		return 0U;
+
+	unsigned char len = 0U;
+	m_rxFMData.getData(&len, 1U);
+	m_rxFMData.getData(data, len);
 
 	return len;
 }
@@ -1165,6 +1216,36 @@ bool CModem::writePOCSAGData(const unsigned char* data, unsigned int length)
 	unsigned char len = length + 3U;
 	m_txPOCSAGData.addData(&len, 1U);
 	m_txPOCSAGData.addData(buffer, len);
+
+	return true;
+}
+
+unsigned int CModem::getFMSpace() const
+{
+	return (m_txFMData.freeSpace() * 2U) / 3U;
+}
+
+bool CModem::writeFMData(const unsigned char* data, unsigned int length)
+{
+	assert(data != NULL);
+	assert(length > 0U);
+
+	length = (length * 2U) / 3U;
+
+	if (length > 252U)
+		return false;
+
+	unsigned char buffer[255U];
+
+	buffer[0U] = MMDVM_FRAME_START;
+	buffer[1U] = length + 3U;
+	buffer[2U] = MMDVM_FM_DATA;
+
+	::memcpy(buffer + 3U, data, length);
+
+	unsigned char len = length + 3U;
+	m_txFMData.addData(&len, 1U);
+	m_txFMData.addData(buffer, len);
 
 	return true;
 }

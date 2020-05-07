@@ -51,6 +51,7 @@ enum SECTION {
   SECTION_P25_NETWORK,
   SECTION_NXDN_NETWORK,
   SECTION_POCSAG_NETWORK,
+  SECTION_FM_NETWORK,
   SECTION_TFTSERIAL,
   SECTION_HD44780,
   SECTION_NEXTION,
@@ -246,6 +247,13 @@ m_pocsagLocalAddress(),
 m_pocsagLocalPort(0U),
 m_pocsagNetworkModeHang(3U),
 m_pocsagNetworkDebug(false),
+m_fmNetworkEnabled(false),
+m_fmGatewayAddress(),
+m_fmGatewayPort(0U),
+m_fmLocalAddress(),
+m_fmLocalPort(0U),
+m_fmNetworkModeHang(3U),
+m_fmNetworkDebug(false),
 m_tftSerialPort("/dev/ttyAMA0"),
 m_tftSerialBrightness(50U),
 m_hd44780Rows(2U),
@@ -351,6 +359,8 @@ bool CConf::read()
 		  section = SECTION_NXDN_NETWORK;
 	  else if (::strncmp(buffer, "[POCSAG Network]", 16U) == 0)
 		  section = SECTION_POCSAG_NETWORK;
+	  else if (::strncmp(buffer, "[FM Network]", 12U) == 0)
+		  section = SECTION_FM_NETWORK;
 	  else if (::strncmp(buffer, "[TFT Serial]", 12U) == 0)
 		  section = SECTION_TFTSERIAL;
 	  else if (::strncmp(buffer, "[HD44780]", 9U) == 0)
@@ -858,6 +868,21 @@ bool CConf::read()
 			m_pocsagNetworkModeHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Debug") == 0)
 			m_pocsagNetworkDebug = ::atoi(value) == 1;
+	} else if (section == SECTION_POCSAG_NETWORK) {
+		if (::strcmp(key, "Enable") == 0)
+			m_fmNetworkEnabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "LocalAddress") == 0)
+			m_fmLocalAddress = value;
+		else if (::strcmp(key, "LocalPort") == 0)
+			m_fmLocalPort = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "GatewayAddress") == 0)
+			m_fmGatewayAddress = value;
+		else if (::strcmp(key, "GatewayPort") == 0)
+			m_fmGatewayPort = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "ModeHang") == 0)
+			m_fmNetworkModeHang = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "Debug") == 0)
+			m_fmNetworkDebug = ::atoi(value) == 1;
 	} else if (section == SECTION_TFTSERIAL) {
 		if (::strcmp(key, "Port") == 0)
 			m_tftSerialPort = value;
@@ -1869,6 +1894,41 @@ unsigned int CConf::getPOCSAGNetworkModeHang() const
 bool CConf::getPOCSAGNetworkDebug() const
 {
 	return m_pocsagNetworkDebug;
+}
+
+bool CConf::getFMNetworkEnabled() const
+{
+	return m_fmNetworkEnabled;
+}
+
+std::string CConf::getFMGatewayAddress() const
+{
+	return m_fmGatewayAddress;
+}
+
+unsigned int CConf::getFMGatewayPort() const
+{
+	return m_fmGatewayPort;
+}
+
+std::string CConf::getFMLocalAddress() const
+{
+	return m_fmLocalAddress;
+}
+
+unsigned int CConf::getFMLocalPort() const
+{
+	return m_fmLocalPort;
+}
+
+unsigned int CConf::getFMNetworkModeHang() const
+{
+	return m_fmNetworkModeHang;
+}
+
+bool CConf::getFMNetworkDebug() const
+{
+	return m_fmNetworkDebug;
 }
 
 std::string CConf::getTFTSerialPort() const

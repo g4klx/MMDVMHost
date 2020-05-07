@@ -299,6 +299,12 @@
     <ClInclude Include="UserDBentry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FMNetwork.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FMControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">

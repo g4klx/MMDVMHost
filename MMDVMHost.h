@@ -33,8 +33,10 @@
 #include "YSFNetwork.h"
 #include "P25Network.h"
 #include "DMRNetwork.h"
+#include "FMNetwork.h"
 #include "DMRLookup.h"
 #include "MobileGPS.h"
+#include "FMControl.h"
 #include "Display.h"
 #include "Timer.h"
 #include "Modem.h"
@@ -62,12 +64,14 @@ private:
   CP25Control*    m_p25;
   CNXDNControl*   m_nxdn;
   CPOCSAGControl* m_pocsag;
+  CFMControl*     m_fm;
   CDStarNetwork*  m_dstarNetwork;
   CDMRNetwork*    m_dmrNetwork;
   CYSFNetwork*    m_ysfNetwork;
   CP25Network*    m_p25Network;
   CNXDNNetwork*   m_nxdnNetwork;
   CPOCSAGNetwork* m_pocsagNetwork;
+  CFMNetwork*     m_fmNetwork;
   CDisplay*       m_display;
   CUMP*           m_ump;
   unsigned char   m_mode;
@@ -82,6 +86,7 @@ private:
   unsigned int    m_p25NetModeHang;
   unsigned int    m_nxdnNetModeHang;
   unsigned int    m_pocsagNetModeHang;
+  unsigned int    m_fmNetModeHang;
   CTimer          m_modeTimer;
   CTimer          m_dmrTXTimer;
   CTimer          m_cwIdTimer;
@@ -114,6 +119,7 @@ private:
   bool createP25Network();
   bool createNXDNNetwork();
   bool createPOCSAGNetwork();
+  bool createFMNetwork();
 
   void remoteControl();
   void processModeCommand(unsigned char mode, unsigned int timeout);

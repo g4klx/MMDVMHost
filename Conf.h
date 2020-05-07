@@ -257,6 +257,15 @@ public:
   unsigned int getPOCSAGNetworkModeHang() const;
   bool         getPOCSAGNetworkDebug() const;
 
+  // The FM Network section
+  bool         getFMNetworkEnabled() const;
+  std::string  getFMGatewayAddress() const;
+  unsigned int getFMGatewayPort() const;
+  std::string  getFMLocalAddress() const;
+  unsigned int getFMLocalPort() const;
+  unsigned int getFMNetworkModeHang() const;
+  bool         getFMNetworkDebug() const;
+
   // The TFTSERIAL section
   std::string  getTFTSerialPort() const;
   unsigned int getTFTSerialBrightness() const;
@@ -517,6 +526,14 @@ private:
   unsigned int m_pocsagLocalPort;
   unsigned int m_pocsagNetworkModeHang;
   bool         m_pocsagNetworkDebug;
+
+  bool         m_fmNetworkEnabled;
+  std::string  m_fmGatewayAddress;
+  unsigned int m_fmGatewayPort;
+  std::string  m_fmLocalAddress;
+  unsigned int m_fmLocalPort;
+  unsigned int m_fmNetworkModeHang;
+  bool         m_fmNetworkDebug;
 
   std::string  m_tftSerialPort;
   unsigned int m_tftSerialBrightness;

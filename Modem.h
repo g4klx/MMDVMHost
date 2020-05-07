@@ -57,6 +57,7 @@ public:
 	virtual unsigned int readYSFData(unsigned char* data);
 	virtual unsigned int readP25Data(unsigned char* data);
 	virtual unsigned int readNXDNData(unsigned char* data);
+	virtual unsigned int readFMData(unsigned char* data);
 	virtual unsigned int readTransparentData(unsigned char* data);
 
 	virtual unsigned int readSerial(unsigned char* data, unsigned int length);
@@ -68,6 +69,7 @@ public:
 	virtual bool hasP25Space() const;
 	virtual bool hasNXDNSpace() const;
 	virtual bool hasPOCSAGSpace() const;
+	virtual unsigned int getFMSpace() const;
 
 	virtual bool hasTX() const;
 	virtual bool hasCD() const;
@@ -83,6 +85,7 @@ public:
 	virtual bool writeP25Data(const unsigned char* data, unsigned int length);
 	virtual bool writeNXDNData(const unsigned char* data, unsigned int length);
 	virtual bool writePOCSAGData(const unsigned char* data, unsigned int length);
+	virtual bool writeFMData(const unsigned char* data, unsigned int length);
 
 	virtual bool writeTransparentData(const unsigned char* data, unsigned int length);
 
@@ -165,6 +168,8 @@ private:
 	CRingBuffer<unsigned char> m_rxNXDNData;
 	CRingBuffer<unsigned char> m_txNXDNData;
 	CRingBuffer<unsigned char> m_txPOCSAGData;
+	CRingBuffer<unsigned char> m_rxFMData;
+	CRingBuffer<unsigned char> m_txFMData;
 	CRingBuffer<unsigned char> m_rxTransparentData;
 	CRingBuffer<unsigned char> m_txTransparentData;
 	unsigned int               m_sendTransparentDataFrameType;
@@ -178,6 +183,7 @@ private:
 	unsigned int               m_p25Space;
 	unsigned int               m_nxdnSpace;
 	unsigned int               m_pocsagSpace;
+	unsigned int               m_fmSpace;
 	bool                       m_tx;
 	bool                       m_cd;
 	bool                       m_lockout;
