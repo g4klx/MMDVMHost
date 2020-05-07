@@ -2215,16 +2215,20 @@ bool CModem::setFMExtParams()
 	assert(m_serial != NULL);
 
 	unsigned char buffer[80U];
-	unsigned char len = 4U + m_fmExtAck.size();
+	unsigned char len = 7U + m_fmExtAck.size();
 
 	buffer[0U] = MMDVM_FRAME_START;
 	buffer[1U] = len;
 	buffer[2U] = MMDVM_FM_PARAMS4;
 
 	buffer[3U] = m_fmExtAudioBoost;
+	buffer[4U] = m_fmAckSpeed;
+	buffer[5U] = m_fmAckFrequency / 10U;
+
+	buffer[6U] = (unsigned char)(m_fmAckLevel * 2.55F + 0.5F);
 
 	for (unsigned int i = 0U; i < m_fmExtAck.size(); i++)
-		buffer[4U + i] = m_fmExtAck.at(i);
+		buffer[7U + i] = m_fmExtAck.at(i);
 
 	// CUtils::dump(1U, "Written", buffer, len);
 
