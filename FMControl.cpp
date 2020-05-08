@@ -49,14 +49,14 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
     for (unsigned int i = 0U; i < length; i += 3U) {
         unsigned short sample1 = 0U;
         unsigned short sample2 = 0U;
-        unsigned short MASK = ~(0xFFFFF000);
+        unsigned int MASK = 0x00000FFFU;
 
-        int pack = 0;
-        char* packPointer = (char*)&pack;
+        unsigned int pack = 0U;
+        unsigned char* packPointer = (unsigned char*)&pack;
 
-        packPointer[1] = data[i];
-        packPointer[2] = data[i + 1];
-        packPointer[3] = data[i + 2];
+        packPointer[1U] = data[i];
+        packPointer[2U] = data[i + 1U];
+        packPointer[3U] = data[i + 2U];
 
         sample2 = (short)(pack & MASK);
         sample1 = (short)(pack >> 12);
@@ -104,21 +104,21 @@ unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
     // Pre-emphasise the data and other stuff.
 
     // Pack the floating point data (+1.0 to -1.0) to packed 12-bit samples (+2047 - -2048)
-    int pack = 0;
-    char* packPointer = (char*)&pack;
+    unsigned int pack = 0U;
+    unsigned char* packPointer = (unsigned char*)&pack;
     unsigned int j = 0U;
     unsigned int i = 0U;
-    for (; i < nSamples && j < space; i += 2, j += 3) {
+    for (; i < nSamples && j < space; i += 2U, j += 3U) {
         unsigned short sample1 = (unsigned short)((samples[i] + 1.0F) * 2048.0F + 0.5F);
         unsigned short sample2 = (unsigned short)((samples[i + 1] + 1.0F) * 2048.0F + 0.5F);
 
         pack = 0;
-        pack = ((int)sample1) << 12;
+        pack = ((unsigned int)sample1) << 12;
         pack |= sample2;
 
-        data[j] = packPointer[1];
-        data[j + 1] = packPointer[2];
-        data[j + 2] = packPointer[3];
+        data[j] = packPointer[1U];
+        data[j + 1U] = packPointer[2U];
+        data[j + 2U] = packPointer[3U];
     }
 
     return j;//return the number of bytes written
