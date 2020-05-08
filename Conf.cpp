@@ -868,7 +868,7 @@ bool CConf::read()
 			m_pocsagNetworkModeHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Debug") == 0)
 			m_pocsagNetworkDebug = ::atoi(value) == 1;
-	} else if (section == SECTION_POCSAG_NETWORK) {
+	} else if (section == SECTION_FM_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fmNetworkEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "LocalAddress") == 0)

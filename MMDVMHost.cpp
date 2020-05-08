@@ -811,11 +811,11 @@ int CMMDVMHost::run()
 		}
 
 		len = m_modem->readFMData(data);
-		if (m_nxdn != NULL && len > 0U) {
+		if (m_fm != NULL && len > 0U) {
 			if (m_mode == MODE_IDLE) {
 				bool ret = m_fm->writeModem(data, len);
 				if (ret) {
-					m_modeTimer.setTimeout(m_nxdnRFModeHang);
+					m_modeTimer.setTimeout(m_nxdnRFModeHang);		// XXX
 					setMode(MODE_FM);
 				}
 			} else if (m_mode == MODE_FM) {

@@ -19,13 +19,15 @@
 #include "FMControl.h"
 
 #include <string>
-#include <ctime>
+
+const uint8_t BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
+
+#define WRITE_BIT(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
+#define READ_BIT(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
 CFMControl::CFMControl(CFMNetwork* network) :
 m_network(network),
-m_queue(3000U, "FM Control"),
-m_enabled(false),
-m_fp(NULL)
+m_enabled(false)
 {
     assert(network != NULL);
 }
@@ -34,32 +36,90 @@ CFMControl::~CFMControl()
 {
 }
 
-bool CFMControl::writeModem(unsigned char* data, unsigned int len)
+bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
 {
     assert(data != NULL);
-    assert(len > 0U);
+    assert(length > 0U);
+    assert(m_network != NULL);
 
-    // Unpack serial data (12-bit unsigned values)
+    float samples[170U];
+    unsigned int nSamples = 0U;
 
-    // De-emphasise the data
+    // Unpack the serial data into float values.
+    for (unsigned int i = 0U; i < length; i += 3U) {
+        unsigned short sample1 = 0U;
+        unsigned short sample2 = 0U;
+        unsigned short MASK = 0x0001U;
 
-    // Repack the data (16-bit unsigned values)
+        const unsigned char* base = data + i;
+        for (unsigned int j = 0U; j < 12U; j++, MASK <<= 1) {
+            unsigned int pos1 = j;
+            unsigned int pos2 = j + 12U;
 
-    return true;
+            bool b1 = READ_BIT(base, pos1) != 0U;
+            bool b2 = READ_BIT(base, pos2) != 0U;
+
+            if (b1)
+                sample1 |= MASK;
+            if (b2)
+                sample2 |= MASK;
+        }
+
+        // Convert from unsigned short (0 - +4095) to float (-1.0 - +1.0)
+        samples[nSamples++] = (float(sample1) - 2048.0F) / 2048.0F;
+        samples[nSamples++] = (float(sample2) - 2048.0F) / 2048.0F;
+    }
+
+    // De-emphasise the data and any other processing needed (maybe a low-pass filter to remove the CTCSS)
+
+    unsigned char out[350U];
+    unsigned int nOut = 0U;
+
+    // Repack the data (8-bit unsigned values containing unsigned 16-bit data)
+    for (unsigned int i = 0U; i < nSamples; i++) {
+        unsigned short sample = (unsigned short)((samples[i] + 1.0F) * 32767.0F + 0.5F);
+        out[nOut++] = (sample >> 8) & 0xFFU;
+        out[nOut++] = (sample >> 0) & 0xFFU;
+    }
+
+    return m_network->write(out, nOut);
 }
 
 unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
 {
     assert(data != NULL);
     assert(space > 0U);
+    assert(m_network != NULL);
 
-    // Unpack serial data (16-bit unsigned values)
+    unsigned char netData[300U];
+    unsigned int length = m_network->read(netData, 270U);
+    if (length == 0U)
+        return 0U;
 
-    // Pre-emphasise the data
+    float samples[170U];
+    unsigned int nSamples = 0U;
 
-    // Repack the data (12-bit unsigned values)
+    // Convert the unsigned 16-bit data (+65535 - 0) to float (+1.0 - -1.0)
+    for (unsigned int i = 0U; i < length; i += 2U) {
+        unsigned short sample = (netData[i + 0U] << 8) | netData[i + 1U];
+        samples[nSamples++] = (float(sample) / 32767.0F) - 1.0F;
+    }
 
-    return 0U;
+    // Pre-emphasise the data and other stuff.
+
+    // Pack the floating point data (+1.0 to -1.0) to packed 12-bit samples (+2047 - -2048)
+    unsigned int offset = 0U;
+    for (unsigned int i = 0U; i < nSamples; i++) {
+        unsigned short sample = (unsigned short)((samples[i] + 1.0F) * 2048.0F + 0.5F);
+        unsigned short MASK = 0x0001U;
+        for (unsigned int j = 0U; j < 12U; j++, MASK <<= 1) {
+            bool b = (sample & MASK) != 0U;
+            WRITE_BIT(data, offset, b);
+            offset++;
+        }
+    }
+
+    return nSamples;
 }
 
 void CFMControl::clock(unsigned int ms)
@@ -70,44 +130,4 @@ void CFMControl::clock(unsigned int ms)
 void CFMControl::enable(bool enabled)
 {
     // May not be needed
-}
-
-bool CFMControl::openFile()
-{
-    if (m_fp != NULL)
-        return true;
-
-    time_t t;
-    ::time(&t);
-
-    struct tm* tm = ::localtime(&t);
-
-    char name[100U];
-    ::sprintf(name, "FM_%04d%02d%02d_%02d%02d%02d.ambe", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
-
-    m_fp = ::fopen(name, "wb");
-    if (m_fp == NULL)
-        return false;
-
-    ::fwrite("FM", 1U, 2U, m_fp);
-
-    return true;
-}
-
-bool CFMControl::writeFile(const unsigned char* data, unsigned int length)
-{
-    if (m_fp == NULL)
-        return false;
-
-    ::fwrite(data, 1U, length, m_fp);
-
-    return true;
-}
-
-void CFMControl::closeFile()
-{
-    if (m_fp != NULL) {
-        ::fclose(m_fp);
-        m_fp = NULL;
-    }
 }

@@ -20,20 +20,14 @@
 #define	FMControl_H
 
 #include "FMNetwork.h"
-#include "RingBuffer.h"
-#include "StopWatch.h"
 #include "Defines.h"
-#include "Timer.h"
-#include "Modem.h"
-
-#include <string>
 
 class CFMControl {
 public:
 	CFMControl(CFMNetwork* network);
 	~CFMControl();
 
-	bool writeModem(unsigned char* data, unsigned int length);
+	bool writeModem(const unsigned char* data, unsigned int length);
 
 	unsigned int readModem(unsigned char* data, unsigned int space);
 
@@ -42,14 +36,8 @@ public:
 	void enable(bool enabled);
 
 private:
-	CFMNetwork*                 m_network;
-	CRingBuffer<unsigned short> m_queue;
-	bool                        m_enabled;
-	FILE*                       m_fp;
-
-	bool openFile();
-	bool writeFile(const unsigned char* data, unsigned int length);
-	void closeFile();
+	CFMNetwork* m_network;
+    bool        m_enabled;
 };
 
 #endif
