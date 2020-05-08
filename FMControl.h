@@ -21,6 +21,7 @@
 
 #include "FMNetwork.h"
 #include "Defines.h"
+#include "IIRDirectForm1Filter.h"
 
 class CFMControl {
 public:
@@ -38,6 +39,8 @@ public:
 private:
 	CFMNetwork* m_network;
     bool        m_enabled;
+	CIIRDirectForm1Filter m_preemphasis;
+	CIIRDirectForm1Filter m_deemphasis;
 };
 
 #endif

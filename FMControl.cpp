@@ -20,14 +20,13 @@
 
 #include <string>
 
-const uint8_t BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
-
-#define WRITE_BIT(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
-#define READ_BIT(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
+#define EMPHASIS_GAIN_DB 0 //Gain needs to be the same for pre an deeemphasis
 
 CFMControl::CFMControl(CFMNetwork* network) :
 m_network(network),
-m_enabled(false)
+m_enabled(false),
+m_preemphasis(0.3889703087993727F, -0.3290005228984741F, 0.0F, 1.0F, 0.282029168302153F, 0.0F, EMPHASIS_GAIN_DB),
+m_deemphasis(1.0F, 0.282029168302153F, 0.0F, 0.3889703087993727F, -0.3290005228984741F, 0.0F, EMPHASIS_GAIN_DB)
 {
     assert(network != NULL);
 }
@@ -67,6 +66,9 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
     }
 
     // De-emphasise the data and any other processing needed (maybe a low-pass filter to remove the CTCSS)
+    for(unsigned int i = 0U; i < nSamples; i++) {
+        samples[i] = m_deemphasis.filter(samples[i]);
+    }
 
     unsigned char out[350U];
     unsigned int nOut = 0U;
@@ -102,6 +104,9 @@ unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
     }
 
     // Pre-emphasise the data and other stuff.
+    for(unsigned int i = 0U; i < nSamples; i++) {
+        samples[i] = m_preemphasis.filter(samples[i]);
+    }
 
     // Pack the floating point data (+1.0 to -1.0) to packed 12-bit samples (+2047 - -2048)
     unsigned int pack = 0U;
