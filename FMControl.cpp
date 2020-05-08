@@ -49,21 +49,17 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
     for (unsigned int i = 0U; i < length; i += 3U) {
         unsigned short sample1 = 0U;
         unsigned short sample2 = 0U;
-        unsigned short MASK = 0x0001U;
+        unsigned short MASK = ~(0xFFFFF000);
 
-        const unsigned char* base = data + i;
-        for (unsigned int j = 0U; j < 12U; j++, MASK <<= 1) {
-            unsigned int pos1 = j;
-            unsigned int pos2 = j + 12U;
+        int pack = 0;
+        char* packPointer = (char*)&pack;
 
-            bool b1 = READ_BIT(base, pos1) != 0U;
-            bool b2 = READ_BIT(base, pos2) != 0U;
+        packPointer[1] = data[i];
+        packPointer[2] = data[i + 1];
+        packPointer[3] = data[i + 2];
 
-            if (b1)
-                sample1 |= MASK;
-            if (b2)
-                sample2 |= MASK;
-        }
+        sample2 = (short)(pack & MASK);
+        sample1 = (short)(pack >> 12);
 
         // Convert from unsigned short (0 - +4095) to float (-1.0 - +1.0)
         samples[nSamples++] = (float(sample1) - 2048.0F) / 2048.0F;
@@ -108,18 +104,24 @@ unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
     // Pre-emphasise the data and other stuff.
 
     // Pack the floating point data (+1.0 to -1.0) to packed 12-bit samples (+2047 - -2048)
-    unsigned int offset = 0U;
-    for (unsigned int i = 0U; i < nSamples; i++) {
-        unsigned short sample = (unsigned short)((samples[i] + 1.0F) * 2048.0F + 0.5F);
-        unsigned short MASK = 0x0001U;
-        for (unsigned int j = 0U; j < 12U; j++, MASK <<= 1) {
-            bool b = (sample & MASK) != 0U;
-            WRITE_BIT(data, offset, b);
-            offset++;
-        }
+    int pack = 0;
+    char* packPointer = (char*)&pack;
+    unsigned int j = 0U;
+    unsigned int i = 0U;
+    for (; i < nSamples && j < space; i += 2, j += 3) {
+        unsigned short sample1 = (unsigned short)((samples[i] + 1.0F) * 2048.0F + 0.5F);
+        unsigned short sample2 = (unsigned short)((samples[i + 1] + 1.0F) * 2048.0F + 0.5F);
+
+        pack = 0;
+        pack = ((int)sample1) << 12;
+        pack |= sample2;
+
+        data[j] = packPointer[1];
+        data[j + 1] = packPointer[2];
+        data[j + 2] = packPointer[3];
     }
 
-    return nSamples;
+    return j;//return the number of bytes written
 }
 
 void CFMControl::clock(unsigned int ms)

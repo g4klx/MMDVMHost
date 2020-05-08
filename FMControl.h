@@ -22,6 +22,17 @@
 #include "FMNetwork.h"
 #include "Defines.h"
 
+typedef struct 
+{
+	union
+	{
+		int pack;
+		char packBytes[4];
+	};
+	
+} SamplePack;
+
+
 class CFMControl {
 public:
 	CFMControl(CFMNetwork* network);
