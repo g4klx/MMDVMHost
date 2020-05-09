@@ -22,6 +22,7 @@
 #include <Windows.h>
 #else
 #include <sys/time.h>
+#include <unistd.h>
 #endif
 
 #include <cstdio>
@@ -36,6 +37,7 @@ static std::string m_filePath;
 static std::string m_fileRoot;
 
 static FILE* m_fpLog = NULL;
+static bool m_daemon = false;
 
 static unsigned int m_displayLevel = 2U;
 
@@ -45,6 +47,8 @@ static char LEVELS[] = " DMIWEF";
 
 static bool LogOpen()
 {
+	bool status = false;
+	
 	if (m_fileLevel == 0U)
 		return true;
 
@@ -68,18 +72,28 @@ static bool LogOpen()
 	::sprintf(filename, "%s/%s-%04d-%02d-%02d.log", m_filePath.c_str(), m_fileRoot.c_str(), tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
 #endif
 
-	m_fpLog = ::fopen(filename, "a+t");
+	if ((m_fpLog = ::fopen(filename, "a+t")) != NULL)
+	{
+		status = true;
+
+#if !defined(_WIN32) && !defined(_WIN64)
+		if (m_daemon)
+			dup2(fileno(m_fpLog), fileno(stderr));
+#endif
+	}
+	
 	m_tm = *tm;
 
-    return m_fpLog != NULL;
+    return status;
 }
 
-bool LogInitialise(const std::string& filePath, const std::string& fileRoot, unsigned int fileLevel, unsigned int displayLevel)
+bool LogInitialise(bool daemon, const std::string& filePath, const std::string& fileRoot, unsigned int fileLevel, unsigned int displayLevel)
 {
 	m_filePath     = filePath;
 	m_fileRoot     = fileRoot;
 	m_fileLevel    = fileLevel;
 	m_displayLevel = displayLevel;
+	m_daemon       = daemon;
     return ::LogOpen();
 }
 
