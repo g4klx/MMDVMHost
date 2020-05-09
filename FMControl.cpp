@@ -66,9 +66,8 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
     }
 
     // De-emphasise the data and any other processing needed (maybe a low-pass filter to remove the CTCSS)
-    for(unsigned int i = 0U; i < nSamples; i++) {
+    for (unsigned int i = 0U; i < nSamples; i++)
         samples[i] = m_deemphasis.filter(samples[i]);
-    }
 
     unsigned char out[350U];
     unsigned int nOut = 0U;
@@ -104,9 +103,8 @@ unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
     }
 
     // Pre-emphasise the data and other stuff.
-    for(unsigned int i = 0U; i < nSamples; i++) {
+    for (unsigned int i = 0U; i < nSamples; i++)
         samples[i] = m_preemphasis.filter(samples[i]);
-    }
 
     // Pack the floating point data (+1.0 to -1.0) to packed 12-bit samples (+2047 - -2048)
     unsigned int pack = 0U;
