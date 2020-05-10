@@ -57,7 +57,7 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
         m_incomingRFAudio.getData(bufferData, bufferLength);
 
         // Unpack the serial data into float values.
-        for (unsigned int i = 0U; i < length; i += 3U) {
+        for (unsigned int i = 0U; i < bufferLength; i += 3U) {
             unsigned short sample1 = 0U;
             unsigned short sample2 = 0U;
             unsigned int MASK = 0x00000FFFU;
