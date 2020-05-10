@@ -28,7 +28,6 @@ m_enabled(false),
 m_preemphasis(0.3889703087993727F, -0.3290005228984741F, 0.0F, 1.0F, 0.282029168302153F, 0.0F, EMPHASIS_GAIN_DB),
 m_deemphasis(1.0F, 0.282029168302153F, 0.0F, 0.3889703087993727F, -0.3290005228984741F, 0.0F, EMPHASIS_GAIN_DB)
 {
-    assert(network != NULL);
 }
 
 CFMControl::~CFMControl()
@@ -39,7 +38,9 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
 {
     assert(data != NULL);
     assert(length > 0U);
-    assert(m_network != NULL);
+
+    if(m_network == NULL)
+        return false;
 
     float samples[170U];
     unsigned int nSamples = 0U;
@@ -86,7 +87,8 @@ unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
 {
     assert(data != NULL);
     assert(space > 0U);
-    assert(m_network != NULL);
+    if(m_network == NULL)
+        return 0;
 
     unsigned char netData[300U];
     unsigned int length = m_network->read(netData, 270U);
