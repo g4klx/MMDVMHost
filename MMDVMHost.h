@@ -80,6 +80,7 @@ private:
   unsigned int    m_ysfRFModeHang;
   unsigned int    m_p25RFModeHang;
   unsigned int    m_nxdnRFModeHang;
+  unsigned int    m_fmRFModeHang;
   unsigned int    m_dstarNetModeHang;
   unsigned int    m_dmrNetModeHang;
   unsigned int    m_ysfNetModeHang;

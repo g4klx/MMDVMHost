@@ -81,6 +81,7 @@ const unsigned char MMDVM_FM_PARAMS2  = 0x61U;
 const unsigned char MMDVM_FM_PARAMS3  = 0x62U;
 const unsigned char MMDVM_FM_PARAMS4  = 0x63U;
 const unsigned char MMDVM_FM_DATA     = 0x65U;
+const unsigned char MMDVM_FM_CONTROL  = 0x66U;
 
 const unsigned char MMDVM_ACK         = 0x70U;
 const unsigned char MMDVM_NAK         = 0x7FU;
@@ -598,6 +599,20 @@ void CModem::clock(unsigned int ms)
 				m_rxFMData.addData(&data, 1U);
 
 				data = TAG_DATA;
+				m_rxFMData.addData(&data, 1U);
+
+				m_rxFMData.addData(m_buffer + 3U, m_length - 3U);
+			}
+			break;
+
+			case MMDVM_FM_CONTROL: {
+				if (m_trace)
+					CUtils::dump(1U, "RX FM Control", m_buffer, m_length);
+
+				unsigned char data = m_length - 2U;
+				m_rxFMData.addData(&data, 1U);
+
+				data = TAG_HEADER;
 				m_rxFMData.addData(&data, 1U);
 
 				m_rxFMData.addData(m_buffer + 3U, m_length - 3U);
@@ -1236,15 +1251,13 @@ bool CModem::writePOCSAGData(const unsigned char* data, unsigned int length)
 
 unsigned int CModem::getFMSpace() const
 {
-	return (m_txFMData.freeSpace() * 2U) / 3U;
+	return m_txFMData.freeSpace();
 }
 
 bool CModem::writeFMData(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
 	assert(length > 0U);
-
-	length = (length * 2U) / 3U;
 
 	if (length > 252U)
 		return false;

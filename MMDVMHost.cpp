@@ -135,6 +135,7 @@ m_dmrRFModeHang(10U),
 m_ysfRFModeHang(10U),
 m_p25RFModeHang(10U),
 m_nxdnRFModeHang(10U),
+m_fmRFModeHang(10U),
 m_dstarNetModeHang(3U),
 m_dmrNetModeHang(3U),
 m_ysfNetModeHang(3U),
@@ -618,8 +619,11 @@ int CMMDVMHost::run()
 		pocsagTimer.start();
 	}
 
-	if (m_fmEnabled)
+	if (m_fmEnabled) {
+		m_fmRFModeHang = m_conf.getFMModeHang();
+
 		m_fm = new CFMControl(m_fmNetwork);
+	}
 
 	bool remoteControlEnabled = m_conf.getRemoteControlEnabled();
 	if (remoteControlEnabled) {
@@ -657,12 +661,6 @@ int CMMDVMHost::run()
 			setMode(MODE_ERROR);
 		else if (!error && m_mode == MODE_ERROR)
 			setMode(MODE_IDLE);
-
-		unsigned char mode = m_modem->getMode();
-		if (mode == MODE_FM && m_mode != MODE_FM)
-			setMode(mode);
-		else if (mode != MODE_FM && m_mode == MODE_FM)
-			setMode(mode);
 
 		if (m_ump != NULL) {
 			bool tx = m_modem->hasTX();
@@ -818,7 +816,7 @@ int CMMDVMHost::run()
 			if (m_mode == MODE_IDLE) {
 				bool ret = m_fm->writeModem(data, len);
 				if (ret) {
-					m_modeTimer.setTimeout(m_nxdnRFModeHang);		// XXX
+					m_modeTimer.setTimeout(m_fmRFModeHang);
 					setMode(MODE_FM);
 				}
 			} else if (m_mode == MODE_FM) {
@@ -1293,6 +1291,7 @@ bool CMMDVMHost::createModem()
 		bool         cosInvert         = m_conf.getFMCOSInvert();
 		unsigned int rfAudioBoost      = m_conf.getFMRFAudioBoost();
 		float        maxDevLevel       = m_conf.getFMMaxDevLevel();
+		unsigned int modeHangTime      = m_conf.getFMModeHang();
 
 		LogInfo("FM Parameters");
 		LogInfo("    Callsign: %s", callsign.c_str());
@@ -1322,6 +1321,7 @@ bool CMMDVMHost::createModem()
 		LogInfo("    COS Invert: %s", cosInvert ? "yes" : "no");
 		LogInfo("    RF Audio Boost: x%u", rfAudioBoost);
 		LogInfo("    Max. Deviation Level: %.1f%%", maxDevLevel);
+		LogInfo("    Mode Hang: %us", modeHangTime);
 
 		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd, callsignAtLatch);
 		m_modem->setFMAckParams(rfAck, ackSpeed, ackFrequency, ackMinTime, ackDelay, ackLevel);

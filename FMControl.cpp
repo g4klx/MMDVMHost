@@ -41,18 +41,23 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
     assert(data != NULL);
     assert(length > 0U);
 
-    if(m_network == NULL)
+    if (data[0U] == TAG_HEADER)
+        return true;
+
+    if (data[0U] != TAG_DATA)
         return false;
+
+    if (m_network == NULL)
+        return true;
 
     float samples[170U];
     unsigned int nSamples = 0U;
-
     
-    m_incomingRFAudio.addData(data, length);
+    m_incomingRFAudio.addData(data + 1U, length - 1U);
     unsigned int bufferLength = m_incomingRFAudio.dataSize();
 
-    if(bufferLength >= 3) {
-        bufferLength = bufferLength - bufferLength % 3; //round down to nearest multiple of 3
+    if (bufferLength >= 3U) {
+        bufferLength = bufferLength - bufferLength % 3U; //round down to nearest multiple of 3
         unsigned char bufferData[bufferLength];
         m_incomingRFAudio.getData(bufferData, bufferLength);
 
@@ -69,8 +74,8 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
             packPointer[2U] = bufferData[i + 1U];
             packPointer[3U] = bufferData[i + 2U];
 
-            sample2 = (short)(pack & MASK);
-            sample1 = (short)(pack >> 12);
+            sample2 = short(pack & MASK);
+            sample1 = short(pack >> 12);
 
             // Convert from unsigned short (0 - +4095) to float (-1.0 - +1.0)
             samples[nSamples++] = (float(sample1) - 2048.0F) / 2048.0F;
@@ -94,15 +99,16 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
         return m_network->write(out, nOut);
     }
 
-    return 0U;
+    return true;
 }
 
 unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
 {
     assert(data != NULL);
     assert(space > 0U);
-    if(m_network == NULL)
-        return 0;
+
+    if (m_network == NULL)
+        return 0U;
 
     unsigned char netData[300U];
     unsigned int length = m_network->read(netData, 270U);

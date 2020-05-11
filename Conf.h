@@ -200,6 +200,7 @@ public:
   unsigned int getFMRFAudioBoost() const;
   float        getFMMaxDevLevel() const;
   unsigned int getFMExtAudioBoost() const;
+  unsigned int getFMModeHang() const;
 
   // The D-Star Network section
   bool         getDStarNetworkEnabled() const;
@@ -476,6 +477,7 @@ private:
   unsigned int m_fmRFAudioBoost;
   float        m_fmMaxDevLevel;
   unsigned int m_fmExtAudioBoost;
+  unsigned int m_fmModeHang;
 
   bool         m_dstarNetworkEnabled;
   std::string  m_dstarGatewayAddress;

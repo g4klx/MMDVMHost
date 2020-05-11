@@ -203,6 +203,7 @@ m_fmCOSInvert(false),
 m_fmRFAudioBoost(1U),
 m_fmMaxDevLevel(90.0F),
 m_fmExtAudioBoost(1U),
+m_fmModeHang(10U),
 m_dstarNetworkEnabled(false),
 m_dstarGatewayAddress(),
 m_dstarGatewayPort(0U),
@@ -411,12 +412,12 @@ bool CConf::read()
 		else if (::strcmp(key, "Duplex") == 0)
 			m_duplex = ::atoi(value) == 1;
 		else if (::strcmp(key, "ModeHang") == 0)
-			m_dstarNetworkModeHang = m_dmrNetworkModeHang = m_fusionNetworkModeHang = m_p25NetworkModeHang =
-			m_dstarModeHang        = m_dmrModeHang        = m_fusionModeHang        = m_p25ModeHang        = (unsigned int)::atoi(value);
+			m_dstarNetworkModeHang = m_dmrNetworkModeHang = m_fusionNetworkModeHang = m_p25NetworkModeHang = m_nxdnNetworkModeHang = m_pocsagNetworkModeHang = m_fmNetworkModeHang =
+			m_dstarModeHang        = m_dmrModeHang        = m_fusionModeHang        = m_p25ModeHang        = m_nxdnModeHang = m_fmModeHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "RFModeHang") == 0)
-			m_dstarModeHang = m_dmrModeHang = m_fusionModeHang = m_p25ModeHang = (unsigned int)::atoi(value);
+			m_dstarModeHang = m_dmrModeHang = m_fusionModeHang = m_p25ModeHang = m_nxdnModeHang = m_fmModeHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "NetModeHang") == 0)
-			m_dstarNetworkModeHang = m_dmrNetworkModeHang = m_fusionNetworkModeHang = m_p25NetworkModeHang = (unsigned int)::atoi(value);
+			m_dstarNetworkModeHang = m_dmrNetworkModeHang = m_fusionNetworkModeHang = m_p25NetworkModeHang = m_nxdnNetworkModeHang = m_pocsagNetworkModeHang = m_fmNetworkModeHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Display") == 0)
 			m_display = value;
 		else if (::strcmp(key, "Daemon") == 0)
@@ -774,6 +775,8 @@ bool CConf::read()
 			m_fmMaxDevLevel = float(::atof(value));
 		else if (::strcmp(key, "ExtAudioBoost") == 0)
 			m_fmExtAudioBoost = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "ModeHang") == 0)
+			m_fmModeHang = (unsigned int)::atoi(value);
 	} else if (section == SECTION_DSTAR_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dstarNetworkEnabled = ::atoi(value) == 1;
@@ -1674,6 +1677,11 @@ float CConf::getFMMaxDevLevel() const
 unsigned int CConf::getFMExtAudioBoost() const
 {
 	return m_fmExtAudioBoost;
+}
+
+unsigned int CConf::getFMModeHang() const
+{
+	return m_fmModeHang;
 }
 
 bool CConf::getDStarNetworkEnabled() const
