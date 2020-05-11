@@ -22,6 +22,7 @@
 
 #define EMPHASIS_GAIN_DB 0 //Gain needs to be the same for pre an deeemphasis
 #define RF_AUDIO_SAMP_RATE 8000
+#define FM_AUDIO_BLOCK_SIZE 240
 
 CFMControl::CFMControl(CFMNetwork* network) :
 m_network(network),
@@ -55,10 +56,12 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
     
     m_incomingRFAudio.addData(data + 1U, length - 1U);
     unsigned int bufferLength = m_incomingRFAudio.dataSize();
+    if(bufferLength > 255U)
+        bufferLength = 255U;
 
     if (bufferLength >= 3U) {
         bufferLength = bufferLength - bufferLength % 3U; //round down to nearest multiple of 3
-        unsigned char bufferData[bufferLength];
+        unsigned char bufferData[255];
         m_incomingRFAudio.getData(bufferData, bufferLength);
 
         // Unpack the serial data into float values.
