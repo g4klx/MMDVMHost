@@ -1894,7 +1894,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
 		if (m_fmNetwork != NULL)
-			m_fmNetwork->enable(false);
+			m_fmNetwork->enable(true);
 		if (m_dstar != NULL)
 			m_dstar->enable(false);
 		if (m_dmr != NULL)
@@ -1909,15 +1909,12 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_pocsag->enable(false);
 		if (m_fm != NULL)
 			m_fm->enable(true);
-		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
-			m_modem->writeDMRStart(false);
-			m_dmrTXTimer.stop();
-		}
+		m_modem->setMode(MODE_FM);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_FM);
 		m_display->setFM();
 		m_mode = MODE_FM;
-		m_modeTimer.stop();
+		m_modeTimer.start();
 		m_cwIdTimer.stop();
 		createLockFile("FM");
 		break;
