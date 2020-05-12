@@ -194,7 +194,8 @@ m_fmAckLevel(80.0F),
 m_fmTimeout(180U),
 m_fmTimeoutLevel(80.0F),
 m_fmCTCSSFrequency(88.6F),
-m_fmCTCSSThreshold(40U),
+m_fmCTCSSHighThreshold(30U),
+m_fmCTCSSLowThreshold(20U),
 m_fmCTCSSLevel(2.0F),
 m_fmKerchunkTime(0U),
 m_fmHangTime(7U),
@@ -758,7 +759,11 @@ bool CConf::read()
 		else if (::strcmp(key, "CTCSSFrequency") == 0)
 			m_fmCTCSSFrequency = float(::atof(value));
 		else if (::strcmp(key, "CTCSSThreshold") == 0)
-			m_fmCTCSSThreshold = (unsigned int)::atoi(value);
+			m_fmCTCSSHighThreshold = m_fmCTCSSLowThreshold = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "CTCSSHighThreshold") == 0)
+			m_fmCTCSSHighThreshold = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "CTCSSLowThreshold") == 0)
+			m_fmCTCSSLowThreshold = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "CTCSSLevel") == 0)
 			m_fmCTCSSLevel = float(::atof(value));
 		else if (::strcmp(key, "KerchunkTime") == 0)
@@ -1634,9 +1639,14 @@ float CConf::getFMCTCSSFrequency() const
 	return m_fmCTCSSFrequency;
 }
 
-unsigned int CConf::getFMCTCSSThreshold() const
+unsigned int CConf::getFMCTCSSHighThreshold() const
 {
-	return m_fmCTCSSThreshold;
+	return m_fmCTCSSHighThreshold;
+}
+
+unsigned int CConf::getFMCTCSSLowThreshold() const
+{
+	return m_fmCTCSSLowThreshold;
 }
 
 float CConf::getFMCTCSSLevel() const

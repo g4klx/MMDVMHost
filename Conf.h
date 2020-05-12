@@ -191,7 +191,8 @@ public:
   unsigned int getFMTimeout() const;
   float        getFMTimeoutLevel() const;
   float        getFMCTCSSFrequency() const;
-  unsigned int getFMCTCSSThreshold() const;
+  unsigned int getFMCTCSSHighThreshold() const;
+  unsigned int getFMCTCSSLowThreshold() const;
   float        getFMCTCSSLevel() const;
   unsigned int getFMKerchunkTime() const;
   unsigned int getFMHangTime() const;
@@ -468,7 +469,8 @@ private:
   unsigned int m_fmTimeout;
   float        m_fmTimeoutLevel;
   float        m_fmCTCSSFrequency;
-  unsigned int m_fmCTCSSThreshold;
+  unsigned int m_fmCTCSSHighThreshold;
+  unsigned int m_fmCTCSSLowThreshold;
   float        m_fmCTCSSLevel;
   unsigned int m_fmKerchunkTime;
   unsigned int m_fmHangTime;
