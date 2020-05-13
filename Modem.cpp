@@ -107,6 +107,8 @@ m_port(port),
 m_dmrColorCode(0U),
 m_ysfLoDev(false),
 m_ysfTXHang(4U),
+m_p25TXHang(5U),
+m_nxdnTXHang(5U),
 m_duplex(duplex),
 m_rxInvert(rxInvert),
 m_txInvert(txInvert),
@@ -272,6 +274,16 @@ void CModem::setYSFParams(bool loDev, unsigned int txHang)
 {
 	m_ysfLoDev  = loDev;
 	m_ysfTXHang = txHang;
+}
+
+void CModem::setP25Params(unsigned int txHang)
+{
+	m_p25TXHang = txHang;
+}
+
+void CModem::setNXDNParams(unsigned int txHang)
+{
+	m_nxdnTXHang = txHang;
 }
 
 void CModem::setTransparentDataParams(unsigned int sendFrameType)
@@ -1615,7 +1627,7 @@ bool CModem::setConfig()
 
 	buffer[0U] = MMDVM_FRAME_START;
 
-	buffer[1U] = 22U;
+	buffer[1U] = 24U;
 
 	buffer[2U] = MMDVM_SET_CONFIG;
 
@@ -1679,10 +1691,14 @@ bool CModem::setConfig()
 
 	buffer[21U] = (unsigned char)(m_fmTXLevel * 2.55F + 0.5F);
 
-	// CUtils::dump(1U, "Written", buffer, 22U);
+	buffer[22U] = (unsigned char)m_p25TXHang;
 
-	int ret = m_serial->write(buffer, 22U);
-	if (ret != 22)
+	buffer[23U] = (unsigned char)m_nxdnTXHang;
+
+	// CUtils::dump(1U, "Written", buffer, 24U);
+
+	int ret = m_serial->write(buffer, 24U);
+	if (ret != 24)
 		return false;
 
 	unsigned int count = 0U;

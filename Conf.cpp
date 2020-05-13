@@ -164,12 +164,14 @@ m_p25NAC(0x293U),
 m_p25SelfOnly(false),
 m_p25OverrideUID(false),
 m_p25RemoteGateway(false),
+m_p25TXHang(5U),
 m_p25ModeHang(10U),
 m_nxdnEnabled(false),
 m_nxdnId(0U),
 m_nxdnRAN(1U),
 m_nxdnSelfOnly(false),
 m_nxdnRemoteGateway(false),
+m_nxdnTXHang(5U),
 m_nxdnModeHang(10U),
 m_pocsagEnabled(false),
 m_pocsagFrequency(0U),
@@ -685,6 +687,8 @@ bool CConf::read()
 			m_p25SelfOnly = ::atoi(value) == 1;
 		else if (::strcmp(key, "RemoteGateway") == 0)
 			m_p25RemoteGateway = ::atoi(value) == 1;
+		else if (::strcmp(key, "TXHang") == 0)
+			m_p25TXHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "ModeHang") == 0)
 			m_p25ModeHang = (unsigned int)::atoi(value);
 	} else if (section == SECTION_NXDN) {
@@ -698,6 +702,8 @@ bool CConf::read()
 			m_nxdnSelfOnly = ::atoi(value) == 1;
 		else if (::strcmp(key, "RemoteGateway") == 0)
 			m_nxdnRemoteGateway = ::atoi(value) == 1;
+		else if (::strcmp(key, "TXHang") == 0)
+			m_nxdnTXHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "ModeHang") == 0)
 			m_nxdnModeHang = (unsigned int)::atoi(value);
 	} else if (section == SECTION_POCSAG) {
@@ -1489,6 +1495,11 @@ bool CConf::getP25RemoteGateway() const
 	return m_p25RemoteGateway;
 }
 
+unsigned int CConf::getP25TXHang() const
+{
+	return m_p25TXHang;
+}
+
 unsigned int CConf::getP25ModeHang() const
 {
 	return m_p25ModeHang;
@@ -1517,6 +1528,11 @@ bool CConf::getNXDNSelfOnly() const
 bool CConf::getNXDNRemoteGateway() const
 {
 	return m_nxdnRemoteGateway;
+}
+
+unsigned int CConf::getNXDNTXHang() const
+{
+	return m_nxdnTXHang;
 }
 
 unsigned int CConf::getNXDNModeHang() const
