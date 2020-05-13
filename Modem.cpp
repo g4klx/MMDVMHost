@@ -180,6 +180,7 @@ m_fmCallsignHighLevel(35.0F),
 m_fmCallsignLowLevel(15.0F),
 m_fmCallsignAtStart(true),
 m_fmCallsignAtEnd(true),
+m_fmCallsignAtLatch(true),
 m_fmRfAck("K"),
 m_fmAckSpeed(20U),
 m_fmAckFrequency(1750U),
@@ -194,6 +195,7 @@ m_fmCtcssLevel(10.0F),
 m_fmKerchunkTime(0U),
 m_fmHangTime(5U),
 m_fmUseCOS(true),
+m_fmCOSInvert(false),
 m_fmRFAudioBoost(1U),
 m_fmMaxDevLevel(90.0F)
 {
@@ -1503,6 +1505,11 @@ bool CModem::readStatus()
 	return m_serial->write(buffer, 3U) == 3;
 }
 
+bool CModem::writeConfig()
+{
+	return setConfig();
+}
+
 bool CModem::setConfig()
 {
 	assert(m_serial != NULL);
@@ -1898,7 +1905,7 @@ bool CModem::writeDMRShortLC(const unsigned char* lc)
 	return m_serial->write(buffer, 12U) == 12;
 }
 
-void CModem::setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd)
+void CModem::setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch)
 {
 	m_fmCallsign          = callsign;
 	m_fmCallsignSpeed     = callsignSpeed;
@@ -1909,6 +1916,7 @@ void CModem::setFMCallsignParams(const std::string& callsign, unsigned int calls
 	m_fmCallsignLowLevel  = callsignLowLevel;
 	m_fmCallsignAtStart   = callsignAtStart;
 	m_fmCallsignAtEnd     = callsignAtEnd;
+	m_fmCallsignAtLatch   = callsignAtLatch;
 }
 
 void CModem::setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackMinTime, unsigned int ackDelay, float ackLevel)
@@ -1921,7 +1929,7 @@ void CModem::setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, uns
 	m_fmAckLevel     = ackLevel;
 }
 
-void CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, bool useCOS, unsigned int rfAudioBoost, float maxDevLevel)
+void CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, bool useCOS, bool cosInvert, unsigned int rfAudioBoost, float maxDevLevel)
 {
 	m_fmTimeout      = timeout;
 	m_fmTimeoutLevel = timeoutLevel;
@@ -1934,6 +1942,8 @@ void CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctc
 	m_fmHangTime     = hangTime;
 
 	m_fmUseCOS       = useCOS;
+	m_fmCOSInvert    = cosInvert;
+
 	m_fmRFAudioBoost = rfAudioBoost;
 	m_fmMaxDevLevel  = maxDevLevel;
 }
@@ -1962,6 +1972,8 @@ bool CModem::setFMCallsignParams()
 		buffer[9U] |= 0x01U;
 	if (m_fmCallsignAtEnd)
 		buffer[9U] |= 0x02U;
+	if (m_fmCallsignAtLatch)
+		buffer[9U] |= 0x04U;
 
 	for (unsigned int i = 0U; i < m_fmCallsign.size(); i++)
 		buffer[10U + i] = m_fmCallsign.at(i);
@@ -2072,6 +2084,8 @@ bool CModem::setFMMiscParams()
 	buffer[10U] = 0x00U;
 	if (m_fmUseCOS)
 		buffer[10U] |= 0x01U;
+	if (m_fmCOSInvert)
+		buffer[10U] |= 0x02U;
 
 	buffer[11U] = m_fmRFAudioBoost;
 

@@ -184,6 +184,7 @@ m_fmCallsignHighLevel(35.0F),
 m_fmCallsignLowLevel(15.0F),
 m_fmCallsignAtStart(true),
 m_fmCallsignAtEnd(true),
+m_fmCallsignAtLatch(true),
 m_fmRFAck("K"),
 m_fmExtAck("N"),
 m_fmAckSpeed(20U),
@@ -199,6 +200,7 @@ m_fmCTCSSLevel(2.0F),
 m_fmKerchunkTime(0U),
 m_fmHangTime(7U),
 m_fmUseCOS(true),
+m_fmCOSInvert(false),
 m_fmRFAudioBoost(1U),
 m_fmMaxDevLevel(90.0F),
 m_fmExtAudioBoost(1U),
@@ -722,6 +724,8 @@ bool CConf::read()
 		  m_fmCallsignAtStart = ::atoi(value) == 1;
 	  else if (::strcmp(key, "CallsignAtEnd") == 0)
 		  m_fmCallsignAtEnd = ::atoi(value) == 1;
+	  else if (::strcmp(key, "CallsignAtLatch") == 0)
+		  m_fmCallsignAtLatch = ::atoi(value) == 1;
 	  else if (::strcmp(key, "RFAck") == 0) {
 			// Convert the ack to upper case
 			for (unsigned int i = 0U; value[i] != 0; i++)
@@ -758,6 +762,8 @@ bool CConf::read()
 			m_fmHangTime = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "UseCOS") == 0)
 			m_fmUseCOS = ::atoi(value) == 1;
+		else if (::strcmp(key, "COSInvert") == 0)
+			m_fmCOSInvert = ::atoi(value) == 1;
 		else if (::strcmp(key, "RFAudioBoost") == 0)
 			m_fmRFAudioBoost = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "MaxDevLevel") == 0)
@@ -1561,6 +1567,11 @@ bool CConf::getFMCallsignAtEnd() const
 	return m_fmCallsignAtEnd;
 }
 
+bool CConf::getFMCallsignAtLatch() const
+{
+	return m_fmCallsignAtLatch;
+}
+
 std::string CConf::getFMRFAck() const
 {
 	return m_fmRFAck;
@@ -1634,6 +1645,11 @@ unsigned int CConf::getFMHangTime() const
 bool CConf::getFMUseCOS() const
 {
 	return m_fmUseCOS;
+}
+
+bool CConf::getFMCOSInvert() const
+{
+	return m_fmCOSInvert;
 }
 
 unsigned int CConf::getFMRFAudioBoost() const

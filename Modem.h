@@ -47,9 +47,9 @@ public:
 	virtual void setNXDNParams(unsigned int txHang);
 	virtual void setTransparentDataParams(unsigned int sendFrameType);
 
-	virtual void setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd);
+	virtual void setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch);
 	virtual void setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackMinTime, unsigned int ackDelay, float ackLevel);
-	virtual void setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, bool useCOS, unsigned int rfAudioBoost, float maxDevLevel);
+	virtual void setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, bool useCOS, bool cosInvert, unsigned int rfAudioBoost, float maxDevLevel);
 
 	virtual bool open();
 
@@ -77,6 +77,7 @@ public:
 	virtual bool hasLockout() const;
 	virtual bool hasError() const;
 
+	virtual bool writeConfig();
 	virtual bool writeDStarData(const unsigned char* data, unsigned int length);
 	virtual bool writeDMRData1(const unsigned char* data, unsigned int length);
 	virtual bool writeDMRData2(const unsigned char* data, unsigned int length);
@@ -197,6 +198,7 @@ private:
 	float                      m_fmCallsignLowLevel;
 	bool                       m_fmCallsignAtStart;
 	bool                       m_fmCallsignAtEnd;
+	bool                       m_fmCallsignAtLatch;
 	std::string                m_fmRfAck;
 	unsigned int               m_fmAckSpeed;
 	unsigned int               m_fmAckFrequency;
@@ -211,6 +213,7 @@ private:
 	unsigned int               m_fmKerchunkTime;
 	unsigned int               m_fmHangTime;
 	bool                       m_fmUseCOS;
+	bool                       m_fmCOSInvert;
 	unsigned int               m_fmRFAudioBoost;
 	float                      m_fmMaxDevLevel;
 

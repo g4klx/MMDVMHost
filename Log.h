@@ -30,7 +30,7 @@
 
 extern void Log(unsigned int level, const char* fmt, ...);
 
-extern bool LogInitialise(const std::string& filePath, const std::string& fileRoot, unsigned int fileLevel, unsigned int displayLevel);
+extern bool LogInitialise(bool daemon, const std::string& filePath, const std::string& fileRoot, unsigned int fileLevel, unsigned int displayLevel);
 extern void LogFinalise();
 
 #endif

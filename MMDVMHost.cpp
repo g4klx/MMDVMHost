@@ -237,7 +237,11 @@ int CMMDVMHost::run()
 #endif
 #endif
 
-	ret = ::LogInitialise(m_conf.getLogFilePath(), m_conf.getLogFileRoot(), m_conf.getLogFileLevel(), m_conf.getLogDisplayLevel());
+#if !defined(_WIN32) && !defined(_WIN64)
+	ret = ::LogInitialise(m_daemon, m_conf.getLogFilePath(), m_conf.getLogFileRoot(), m_conf.getLogFileLevel(), m_conf.getLogDisplayLevel());
+#else
+	ret = ::LogInitialise(false, m_conf.getLogFilePath(), m_conf.getLogFileRoot(), m_conf.getLogFileLevel(), m_conf.getLogDisplayLevel());
+#endif
 	if (!ret) {
 		::fprintf(stderr, "MMDVMHost: unable to open the log file\n");
 		return 1;
@@ -247,7 +251,6 @@ int CMMDVMHost::run()
 	if (m_daemon) {
 		::close(STDIN_FILENO);
 		::close(STDOUT_FILENO);
-		::close(STDERR_FILENO);
 	}
 #endif
 
@@ -1223,6 +1226,7 @@ bool CMMDVMHost::createModem()
 		float        callsignLowLevel  = m_conf.getFMCallsignLowLevel();
 		bool         callsignAtStart   = m_conf.getFMCallsignAtStart();
 		bool         callsignAtEnd     = m_conf.getFMCallsignAtEnd();
+		bool         callsignAtLatch   = m_conf.getFMCallsignAtLatch();
 		std::string  rfAck             = m_conf.getFMRFAck();
 		std::string  extAck            = m_conf.getFMExtAck();
 		unsigned int ackSpeed          = m_conf.getFMAckSpeed();
@@ -1238,6 +1242,7 @@ bool CMMDVMHost::createModem()
 		unsigned int kerchunkTime      = m_conf.getFMKerchunkTime();
 		unsigned int hangTime          = m_conf.getFMHangTime();
 		bool         useCOS            = m_conf.getFMUseCOS();
+		bool         cosInvert         = m_conf.getFMCOSInvert();
 		unsigned int rfAudioBoost      = m_conf.getFMRFAudioBoost();
 		float        maxDevLevel       = m_conf.getFMMaxDevLevel();
 		unsigned int extAudioBoost     = m_conf.getFMExtAudioBoost();
@@ -1252,6 +1257,7 @@ bool CMMDVMHost::createModem()
 		LogInfo("    Callsign Low Level: %.1f%%", callsignLowLevel);
 		LogInfo("    Callsign At Start: %s", callsignAtStart ? "yes" : "no");
 		LogInfo("    Callsign At End: %s", callsignAtEnd ? "yes" : "no");
+		LogInfo("    Callsign At Latch: %s", callsignAtLatch ? "yes" : "no");
 		LogInfo("    RF Ack: %s", rfAck.c_str());
 		// LogInfo("    Ext. Ack: %s", extAck.c_str());
 		LogInfo("    Ack Speed: %uWPM", ackSpeed);
@@ -1267,13 +1273,14 @@ bool CMMDVMHost::createModem()
 		LogInfo("    Kerchunk Time: %us", kerchunkTime);
 		LogInfo("    Hang Time: %us", hangTime);
 		LogInfo("    Use COS: %s", useCOS ? "yes" : "no");
+		LogInfo("    COS Invert: %s", cosInvert ? "yes" : "no");
 		LogInfo("    RF Audio Boost: x%u", rfAudioBoost);
 		LogInfo("    Max. Deviation Level: %.1f%%", maxDevLevel);
 		// LogInfo("    Ext. Audio Boost: x%u", extAudioBoost);
 
-		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd);
+		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd, callsignAtLatch);
 		m_modem->setFMAckParams(rfAck, ackSpeed, ackFrequency, ackMinTime, ackDelay, ackLevel);
-		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssThreshold, ctcssLevel, kerchunkTime, hangTime, useCOS, rfAudioBoost, maxDevLevel);
+		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssThreshold, ctcssLevel, kerchunkTime, hangTime, useCOS, cosInvert, rfAudioBoost, maxDevLevel);
 	}
 
 	bool ret = m_modem->open();
@@ -1983,6 +1990,58 @@ void CMMDVMHost::remoteControl()
 			if (m_nxdn != NULL)
 				processModeCommand(MODE_NXDN, m_nxdnRFModeHang);
 			break;
+		case RCD_MODE_FM:
+			if (m_fmEnabled != false)
+				processModeCommand(MODE_FM, 0);
+			break;
+		case RCD_ENABLE_DSTAR:
+			if (m_dstar != NULL && m_dstarEnabled==false)
+				processEnableCommand(m_dstarEnabled, true);
+			break;
+		case RCD_ENABLE_DMR:
+			if (m_dmr != NULL && m_dmrEnabled==false)
+				processEnableCommand(m_dmrEnabled, true);
+			break;
+		case RCD_ENABLE_YSF:
+			if (m_ysf != NULL && m_ysfEnabled==false)
+				processEnableCommand(m_ysfEnabled, true);
+			break;
+		case RCD_ENABLE_P25:
+			if (m_p25 != NULL && m_p25Enabled==false)
+				processEnableCommand(m_p25Enabled, true);
+			break;
+		case RCD_ENABLE_NXDN:
+			if (m_nxdn != NULL && m_nxdnEnabled==false)
+				processEnableCommand(m_nxdnEnabled, true);
+			break;
+		case RCD_ENABLE_FM:
+			if (m_fmEnabled==false)
+				processEnableCommand(m_fmEnabled, true);
+			break;
+		case RCD_DISABLE_DSTAR:
+			if (m_dstar != NULL && m_dstarEnabled==true)
+				processEnableCommand(m_dstarEnabled, false);
+			break;
+		case RCD_DISABLE_DMR:
+			if (m_dmr != NULL && m_dmrEnabled==true)
+				processEnableCommand(m_dmrEnabled, false);
+			break;
+		case RCD_DISABLE_YSF:
+			if (m_ysf != NULL && m_ysfEnabled==true)
+				processEnableCommand(m_ysfEnabled, false);
+			break;
+		case RCD_DISABLE_P25:
+			if (m_p25 != NULL && m_p25Enabled==true)
+				processEnableCommand(m_p25Enabled, false);
+			break;
+		case RCD_DISABLE_NXDN:
+			if (m_nxdn != NULL && m_nxdnEnabled==true)
+				processEnableCommand(m_nxdnEnabled, false);
+			break;
+		case RCD_DISABLE_FM:
+			if (m_fmEnabled == true)
+				processEnableCommand(m_fmEnabled, false);
+			break;
 		case RCD_PAGE:
 			if (m_pocsag != NULL) {
 				unsigned int ric = m_remoteControl->getArgUInt(0U);
@@ -2027,4 +2086,13 @@ void CMMDVMHost::processModeCommand(unsigned char mode, unsigned int timeout)
 	}
 
 	setMode(mode);
+}
+
+void CMMDVMHost::processEnableCommand(bool& mode, bool enabled)
+{
+	LogDebug("Setting mode current=%s new=%s",mode ? "true" : "false",enabled ? "true" : "false");
+	mode=enabled;
+	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_pocsagEnabled, m_fmEnabled);
+	if (!m_modem->writeConfig())
+		LogError("Cannot write Config to MMDVM");
 }
