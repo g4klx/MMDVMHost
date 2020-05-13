@@ -43,6 +43,8 @@ public:
 	virtual void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagLevel, float fmTXLevel);
 	virtual void setDMRParams(unsigned int colorCode);
 	virtual void setYSFParams(bool loDev, unsigned int txHang);
+	virtual void setP25Params(unsigned int txHang);
+	virtual void setNXDNParams(unsigned int txHang);
 	virtual void setTransparentDataParams(unsigned int sendFrameType);
 
 	virtual void setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch);
@@ -118,6 +120,8 @@ private:
 	unsigned int               m_dmrColorCode;
 	bool                       m_ysfLoDev;
 	unsigned int               m_ysfTXHang;
+	unsigned int               m_p25TXHang;
+	unsigned int               m_nxdnTXHang;
 	bool                       m_duplex;
 	bool                       m_rxInvert;
 	bool                       m_txInvert;

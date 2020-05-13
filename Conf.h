@@ -155,6 +155,7 @@ public:
   bool         getP25SelfOnly() const;
   bool         getP25OverrideUID() const;
   bool         getP25RemoteGateway() const;
+  unsigned int getP25TXHang() const;
   unsigned int getP25ModeHang() const;
 
   // The NXDN section
@@ -163,6 +164,7 @@ public:
   unsigned int getNXDNRAN() const;
   bool         getNXDNSelfOnly() const;
   bool         getNXDNRemoteGateway() const;
+  unsigned int getNXDNTXHang() const;
   unsigned int getNXDNModeHang() const;
 
   // The POCSAG section
@@ -426,6 +428,7 @@ private:
   bool         m_p25SelfOnly;
   bool         m_p25OverrideUID;
   bool         m_p25RemoteGateway;
+  unsigned int m_p25TXHang;
   unsigned int m_p25ModeHang;
 
   bool         m_nxdnEnabled;
@@ -433,6 +436,7 @@ private:
   unsigned int m_nxdnRAN;
   bool         m_nxdnSelfOnly;
   bool         m_nxdnRemoteGateway;
+  unsigned int m_nxdnTXHang;
   unsigned int m_nxdnModeHang;
 
   bool         m_pocsagEnabled;
