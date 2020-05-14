@@ -107,12 +107,17 @@ unsigned int CFMNetwork::read(unsigned char* data, unsigned int space)
 {
 	assert(data != NULL);
 
+
 	unsigned int bytes = m_buffer.dataSize();
 	if (bytes == 0U)
 		return 0U;
 
 	if (bytes < space)
 		space = bytes;
+
+	//we store usignedshorts, therefore ensure we always return and even number of data
+	if(space > 0 && space % 2 != 0)
+		space--;//round down to multiple of 2
 
 	m_buffer.getData(data, space);
 

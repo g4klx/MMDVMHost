@@ -20,16 +20,15 @@
 
 #include <string>
 
-#define EMPHASIS_GAIN_DB 0 //Gain needs to be the same for pre an deeemphasis
-#define RF_AUDIO_SAMP_RATE 8000
-#define FM_AUDIO_BLOCK_SIZE 240
+const float         EMPHASIS_GAIN_DB = 0.0F; //Gain needs to be the same for pre an deeemphasis
+const unsigned int  FM_MASK = 0x00000FFFU;
 
 CFMControl::CFMControl(CFMNetwork* network) :
 m_network(network),
 m_enabled(false),
-// m_preemphasis(0.3889703087993727F, -0.3290005228984741F, 0.0F, 1.0F, 0.282029168302153F, 0.0F, EMPHASIS_GAIN_DB),
-// m_deemphasis(1.0F, 0.282029168302153F, 0.0F, 0.3889703087993727F, -0.3290005228984741F, 0.0F, EMPHASIS_GAIN_DB),
-m_incomingRFAudio(1000U, "Incoming RF FM Audio")
+m_incomingRFAudio(1600U, "Incoming RF FM Audio"),
+m_preemphasis(0.3889703155F, -0.32900055326F, 0.0F, 1.0F, 0.2820291817F, 0.0F, EMPHASIS_GAIN_DB),
+m_deemphasis(1.0F, 0.2820291817F, 0.0F, 0.3889703155F, -0.32900055326F, 0.0F, EMPHASIS_GAIN_DB)
 {
 }
 
@@ -50,9 +49,6 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
 
     if (m_network == NULL)
         return true;
-
-    float samples[170U];
-    unsigned int nSamples = 0U;
     
     m_incomingRFAudio.addData(data + 1U, length - 1U);
     unsigned int bufferLength = m_incomingRFAudio.dataSize();
@@ -61,14 +57,16 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
 
     if (bufferLength >= 3U) {
         bufferLength = bufferLength - bufferLength % 3U; //round down to nearest multiple of 3
-        unsigned char bufferData[255];
+        unsigned char bufferData[255U];        
         m_incomingRFAudio.getData(bufferData, bufferLength);
+    
+        unsigned int nSamples = 0;
+        float samples[85U]; // 255 / 3;
 
         // Unpack the serial data into float values.
         for (unsigned int i = 0U; i < bufferLength; i += 3U) {
             unsigned short sample1 = 0U;
             unsigned short sample2 = 0U;
-            unsigned int MASK = 0x00000FFFU;
 
             unsigned int pack = 0U;
             unsigned char* packPointer = (unsigned char*)&pack;
@@ -77,7 +75,7 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
             packPointer[2U] = bufferData[i + 1U];
             packPointer[3U] = bufferData[i + 2U];
 
-            sample2 = short(pack & MASK);
+            sample2 = short(pack & FM_MASK);
             sample1 = short(pack >> 12);
 
             // Convert from unsigned short (0 - +4095) to float (-1.0 - +1.0)
@@ -85,11 +83,11 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
             samples[nSamples++] = (float(sample2) - 2048.0F) / 2048.0F;
         }
 
-        // De-emphasise the data and any other processing needed (maybe a low-pass filter to remove the CTCSS)
-        // for (unsigned int i = 0U; i < nSamples; i++)
-        //     samples[i] = m_deemphasis.filter(samples[i]);
+        //De-emphasise the data and any other processing needed (maybe a low-pass filter to remove the CTCSS)
+        for (unsigned int i = 0U; i < nSamples; i++)
+            samples[i] = m_deemphasis.filter(samples[i]);
 
-        unsigned char out[350U];
+        unsigned short out[170U]; // 85 * 2
         unsigned int nOut = 0U;
 
         // Repack the data (8-bit unsigned values containing unsigned 16-bit data)
@@ -99,7 +97,7 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
             out[nOut++] = (sample >> 0) & 0xFFU;
         }
 
-        return m_network->write(out, nOut);
+        return m_network->write((unsigned char*)out, nOut);
     }
 
     return true;
@@ -113,23 +111,25 @@ unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
     if (m_network == NULL)
         return 0U;
 
-    unsigned char netData[300U];
-    unsigned int length = m_network->read(netData, 270U);
+    if(space > 252U)
+        space = 252U;
+
+    unsigned char netData[168U];//84 * 2 modem can handle up to 84 samples (252 bytes) at a time
+    unsigned int length = m_network->read(netData, 168U);
     if (length == 0U)
         return 0U;
 
-    float samples[170U];
+    float samples[84U];
     unsigned int nSamples = 0U;
-
     // Convert the unsigned 16-bit data (+65535 - 0) to float (+1.0 - -1.0)
     for (unsigned int i = 0U; i < length; i += 2U) {
         unsigned short sample = (netData[i + 0U] << 8) | netData[i + 1U];
         samples[nSamples++] = (float(sample) / 32767.0F) - 1.0F;
     }
 
-    // Pre-emphasise the data and other stuff.
-    // for (unsigned int i = 0U; i < nSamples; i++)
-    //     samples[i] = m_preemphasis.filter(samples[i]);
+    //Pre-emphasise the data and other stuff.
+    for (unsigned int i = 0U; i < nSamples; i++)
+        samples[i] = m_preemphasis.filter(samples[i]);
 
     // Pack the floating point data (+1.0 to -1.0) to packed 12-bit samples (+2047 - -2048)
     unsigned int pack = 0U;
