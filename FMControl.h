@@ -39,9 +39,9 @@ public:
 private:
 	CFMNetwork* m_network;
     bool        m_enabled;
-	// CIIRDirectForm1Filter m_preemphasis;
-	// CIIRDirectForm1Filter m_deemphasis;
 	CRingBuffer<unsigned char> m_incomingRFAudio;
+	CIIRDirectForm1Filter m_preemphasis;
+	CIIRDirectForm1Filter m_deemphasis;
 };
 
 #endif
