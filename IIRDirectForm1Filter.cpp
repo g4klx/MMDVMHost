@@ -21,14 +21,18 @@
 #include "math.h"
 
 CIIRDirectForm1Filter::CIIRDirectForm1Filter(float b0, float b1, float b2, float , float a1, float a2, float addtionalGaindB) :
+m_x2(0.0F),
+m_y2(0.0F),
+m_x1(0.0F),
+m_y1(0.0F),
 m_b0(b0),
 m_b1(b1),
 m_b2(b2),
 m_a1(a1),
 m_a2(a2),
-m_additionalGainLin(::powf(10.0F, addtionalGaindB / 20.0F))
+m_additionalGainLin(0.0F)
 {
-
+  m_additionalGainLin = ::powf(10.0F, addtionalGaindB / 20.0F);
 }
 
 float CIIRDirectForm1Filter::filter(float sample)
