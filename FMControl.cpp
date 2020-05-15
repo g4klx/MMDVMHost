@@ -44,6 +44,9 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
     if (data[0U] == TAG_HEADER)
         return true;
 
+    if (data[0U] == TAG_EOT)
+        return m_network->write(data, 1U);
+
     if (data[0U] != TAG_DATA)
         return false;
 
