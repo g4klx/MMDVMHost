@@ -114,6 +114,10 @@ void CFMNetwork::clock(unsigned int ms)
 		return;
 	}
 
+	// Ignore incoming polls
+	if (::memcmp(buffer, "FMP", 3U) == 0)
+		return;
+
 	// Invalid packet type?
 	if (::memcmp(buffer, "FMD", 3U) != 0)
 		return;
