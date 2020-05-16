@@ -84,7 +84,7 @@ bool CFMNetwork::writeEOT()
 	buffer[2U] = 'E';
 
 	if (m_debug)
-		CUtils::dump(1U, "FM Network Data Sent", buffer, 3U);
+		CUtils::dump(1U, "FM Network End of Transmission Sent", buffer, 3U);
 
 	return m_socket.write(buffer, 3U, m_address, m_port);
 }
