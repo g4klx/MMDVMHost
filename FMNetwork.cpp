@@ -55,7 +55,7 @@ bool CFMNetwork::open()
 	return m_socket.open();
 }
 
-bool CFMNetwork::write(const unsigned char* data, unsigned int length)
+bool CFMNetwork::writeData(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
 
@@ -72,6 +72,21 @@ bool CFMNetwork::write(const unsigned char* data, unsigned int length)
 		CUtils::dump(1U, "FM Network Data Sent", buffer, length + 3U);
 
 	return m_socket.write(buffer, length + 3U, m_address, m_port);
+}
+
+bool CFMNetwork::writeEOT()
+{
+	unsigned char buffer[10U];
+	::memset(buffer, 0x00U, 10U);
+
+	buffer[0U] = 'F';
+	buffer[1U] = 'M';
+	buffer[2U] = 'E';
+
+	if (m_debug)
+		CUtils::dump(1U, "FM Network Data Sent", buffer, 3U);
+
+	return m_socket.write(buffer, 3U, m_address, m_port);
 }
 
 void CFMNetwork::clock(unsigned int ms)

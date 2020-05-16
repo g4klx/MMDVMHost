@@ -45,7 +45,7 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
         return true;
 
     if (data[0U] == TAG_EOT)
-        return m_network->write(data, 1U);
+        return m_network->writeEOT();
 
     if (data[0U] != TAG_DATA)
         return false;
@@ -55,7 +55,7 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
     
     m_incomingRFAudio.addData(data + 1U, length - 1U);
     unsigned int bufferLength = m_incomingRFAudio.dataSize();
-    if(bufferLength > 255U)
+    if (bufferLength > 255U)
         bufferLength = 255U;
 
     if (bufferLength >= 3U) {
@@ -100,7 +100,7 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
             out[nOut++] = (sample >> 0) & 0xFFU;
         }
 
-        return m_network->write((unsigned char*)out, nOut);
+        return m_network->writeData((unsigned char*)out, nOut);
     }
 
     return true;
