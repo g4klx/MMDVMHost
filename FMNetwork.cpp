@@ -33,7 +33,8 @@ m_address(),
 m_port(gatewayPort),
 m_debug(debug),
 m_enabled(false),
-m_buffer(2000U, "FM Network")
+m_buffer(2000U, "FM Network"),
+m_pollTimer(1000U, 5U)
 {
 	assert(gatewayPort > 0U);
 	assert(!gatewayAddress.empty());
@@ -51,6 +52,8 @@ bool CFMNetwork::open()
 
 	if (m_address.s_addr == INADDR_NONE)
 		return false;
+
+	m_pollTimer.start();
 
 	return m_socket.open();
 }
@@ -91,6 +94,12 @@ bool CFMNetwork::writeEOT()
 
 void CFMNetwork::clock(unsigned int ms)
 {
+	m_pollTimer.clock(ms);
+	if (m_pollTimer.hasExpired()) {
+		writePoll();
+		m_pollTimer.start();
+	}
+
 	unsigned char buffer[BUFFER_LENGTH];
 
 	in_addr address;
@@ -158,4 +167,18 @@ void CFMNetwork::enable(bool enabled)
 		m_buffer.clear();
 
 	m_enabled = enabled;
+}
+
+bool CFMNetwork::writePoll()
+{
+	unsigned char buffer[3U];
+
+	buffer[0U] = 'F';
+	buffer[1U] = 'M';
+	buffer[2U] = 'P';
+
+	if (m_debug)
+		CUtils::dump(1U, "FM Network Poll Sent", buffer, 3U);
+
+	return m_socket.write(buffer, 3U, m_address, m_port);
 }
