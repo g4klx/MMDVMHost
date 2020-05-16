@@ -82,6 +82,7 @@ const unsigned char MMDVM_FM_PARAMS3  = 0x62U;
 const unsigned char MMDVM_FM_PARAMS4  = 0x63U;
 const unsigned char MMDVM_FM_DATA     = 0x65U;
 const unsigned char MMDVM_FM_CONTROL  = 0x66U;
+const unsigned char MMDVM_FM_EOT      = 0x67U;
 
 const unsigned char MMDVM_ACK         = 0x70U;
 const unsigned char MMDVM_NAK         = 0x7FU;
@@ -631,6 +632,19 @@ void CModem::clock(unsigned int ms)
 				m_rxFMData.addData(m_buffer + 3U, m_length - 3U);
 			}
 			break;
+
+			case MMDVM_FM_EOT: {
+				if(m_trace)
+					CUtils::dump(1U, "RX FM End of transmission", m_buffer, m_length);
+
+				unsigned char data = m_length - 2U;
+				m_rxFMData.addData(&data, 1U);
+
+				data = TAG_EOT;
+				m_rxFMData.addData(&data, 1U);
+
+				m_rxFMData.addData(m_buffer + 3U, m_length - 3U);
+			}
 
 			case MMDVM_GET_STATUS: {
 					// if (m_trace)
