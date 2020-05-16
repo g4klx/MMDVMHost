@@ -33,7 +33,8 @@ m_address(),
 m_port(gatewayPort),
 m_debug(debug),
 m_enabled(false),
-m_buffer(2000U, "FM Network")
+m_buffer(2000U, "FM Network"),
+m_pollTimer(1000U, 5U)
 {
 	assert(gatewayPort > 0U);
 	assert(!gatewayAddress.empty());
@@ -51,6 +52,8 @@ bool CFMNetwork::open()
 
 	if (m_address.s_addr == INADDR_NONE)
 		return false;
+
+	m_pollTimer.start();
 
 	return m_socket.open();
 }
@@ -84,13 +87,19 @@ bool CFMNetwork::writeEOT()
 	buffer[2U] = 'E';
 
 	if (m_debug)
-		CUtils::dump(1U, "FM Network Data Sent", buffer, 3U);
+		CUtils::dump(1U, "FM Network End of Transmission Sent", buffer, 3U);
 
 	return m_socket.write(buffer, 3U, m_address, m_port);
 }
 
 void CFMNetwork::clock(unsigned int ms)
 {
+	m_pollTimer.clock(ms);
+	if (m_pollTimer.hasExpired()) {
+		writePoll();
+		m_pollTimer.start();
+	}
+
 	unsigned char buffer[BUFFER_LENGTH];
 
 	in_addr address;
@@ -104,6 +113,10 @@ void CFMNetwork::clock(unsigned int ms)
 		LogMessage("FM packet received from an invalid source, %08X != %08X and/or %u != %u", m_address.s_addr, address.s_addr, m_port, port);
 		return;
 	}
+
+	// Ignore incoming polls
+	if (::memcmp(buffer, "FMP", 3U) == 0)
+		return;
 
 	// Invalid packet type?
 	if (::memcmp(buffer, "FMD", 3U) != 0)
@@ -158,4 +171,18 @@ void CFMNetwork::enable(bool enabled)
 		m_buffer.clear();
 
 	m_enabled = enabled;
+}
+
+bool CFMNetwork::writePoll()
+{
+	unsigned char buffer[3U];
+
+	buffer[0U] = 'F';
+	buffer[1U] = 'M';
+	buffer[2U] = 'P';
+
+	if (m_debug)
+		CUtils::dump(1U, "FM Network Poll Sent", buffer, 3U);
+
+	return m_socket.write(buffer, 3U, m_address, m_port);
 }

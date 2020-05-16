@@ -54,6 +54,9 @@ private:
 	bool           m_debug;
 	bool           m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
+	CTimer         m_pollTimer;
+
+	bool writePoll();
 };
 
 #endif
