@@ -1773,7 +1773,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 		break;
 
 	case MODE_FM:
-		LogMessage("Mode set to FM");
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(false);
 		if (m_dmrNetwork != NULL)
@@ -1812,7 +1811,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 		break;
 
 	case MODE_LOCKOUT:
-		LogMessage("Mode set to Lockout");
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(false);
 		if (m_dmrNetwork != NULL)
