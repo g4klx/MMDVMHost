@@ -41,6 +41,9 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
     assert(data != NULL);
     assert(length > 0U);
 
+    if (m_network == NULL)
+        return true;
+        
     if (data[0U] == TAG_HEADER)
         return true;
 
@@ -50,8 +53,6 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
     if (data[0U] != TAG_DATA)
         return false;
 
-    if (m_network == NULL)
-        return true;
     
     m_incomingRFAudio.addData(data + 1U, length - 1U);
     unsigned int bufferLength = m_incomingRFAudio.dataSize();
