@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2002-2004,2007-2011,2013,2014-2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2002-2004,2007-2011,2013,2014-2017,2020 by Jonathan Naylor G4KLX
  *   Copyright (C) 1999-2001 by Thomas Sailor HB9JNX
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -30,7 +30,7 @@
 #include <setupapi.h>
 #include <winioctl.h>
 
-CI2CController::CI2CController(const std::string& device, SERIAL_SPEED speed, unsigned int address, bool assertRTS) :
+CI2CController::CI2CController(const std::string& device, unsigned int speed, unsigned int address, bool assertRTS) :
 CSerialController(device, speed, assertRTS),
 m_address(address)
 {
@@ -67,7 +67,7 @@ int CI2CController::write(const unsigned char* buffer, unsigned int length)
 #include <linux/i2c-dev.h>
 #endif
 
-CI2CController::CI2CController(const std::string& device, SERIAL_SPEED speed, unsigned int address, bool assertRTS) :
+CI2CController::CI2CController(const std::string& device, unsigned int speed, unsigned int address, bool assertRTS) :
 CSerialController(device, speed, assertRTS),
 m_address(address)
 {
@@ -89,13 +89,13 @@ bool CI2CController::open()
 	}
 
 	if (::ioctl(m_fd, I2C_TENBIT, 0) < 0) {
-		LogError("CI2C: failed to set 7bitaddress");
+		LogError("I2C: failed to set 7bitaddress");
 		::close(m_fd);
 		return false;
 	}
 
 	if (::ioctl(m_fd, I2C_SLAVE, m_address) < 0) {
-		LogError("CI2C: Failed to acquire bus access/talk to slave 0x%02X", m_address);
+		LogError("I2C: Failed to acquire bus access/talk to slave 0x%02X", m_address);
 		::close(m_fd);
 		return false;
 	}

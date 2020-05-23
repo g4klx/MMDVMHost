@@ -1204,6 +1204,7 @@ bool CMMDVMHost::createModem()
 {
 	std::string port             = m_conf.getModemPort();
 	std::string protocol	     = m_conf.getModemProtocol();
+	unsigned int speed           = m_conf.getModemSpeed();
 	unsigned int address	     = m_conf.getModemAddress();
 	bool rxInvert                = m_conf.getModemRXInvert();
 	bool txInvert                = m_conf.getModemTXInvert();
@@ -1239,7 +1240,8 @@ bool CMMDVMHost::createModem()
 	LogInfo("    Port: %s", port.c_str());
 	LogInfo("    Protocol: %s", protocol.c_str());
 	if (protocol == "i2c")
-		LogInfo("    i2c Address: %02X", address);
+		LogInfo("    I2C Address: %02X", address);
+	LogInfo("    Speed: %u", speed);
 	LogInfo("    RX Invert: %s", rxInvert ? "yes" : "no");
 	LogInfo("    TX Invert: %s", txInvert ? "yes" : "no");
 	LogInfo("    PTT Invert: %s", pttInvert ? "yes" : "no");
@@ -1262,7 +1264,7 @@ bool CMMDVMHost::createModem()
 	LogInfo("    TX Frequency: %uHz (%uHz)", txFrequency, txFrequency + txOffset);
 
 	m_modem = CModem::createModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
-	m_modem->setSerialParams(protocol,address);
+	m_modem->setSerialParams(protocol, address, speed);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_pocsagEnabled, m_fmEnabled);
 	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, fmTXLevel);
 	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel, pocsagFrequency);

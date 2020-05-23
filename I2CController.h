@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2002-2004,2007-2009,2011-2013,2015-2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2002-2004,2007-2009,2011-2013,2015-2017,2020 by Jonathan Naylor G4KLX
  *   Copyright (C) 1999-2001 by Thomas Sailor HB9JNX
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -24,7 +24,7 @@
 
 class CI2CController : public CSerialController {
 public:
-	CI2CController(const std::string& device, SERIAL_SPEED speed, unsigned int address = 0x22U, bool assertRTS = false);
+	CI2CController(const std::string& device, unsigned int speed, unsigned int address = 0x22U, bool assertRTS = false);
 	virtual ~CI2CController();
 
 	virtual bool open();

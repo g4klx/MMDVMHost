@@ -71,6 +71,7 @@ public:
   // The Modem section
   std::string  getModemPort() const;
   std::string  getModemProtocol() const;
+  unsigned int getModemSpeed() const;
   unsigned int getModemAddress() const;
   bool         getModemRXInvert() const;
   bool         getModemTXInvert() const;
@@ -360,6 +361,7 @@ private:
 
   std::string  m_modemPort;
   std::string  m_modemProtocol;
+  unsigned int m_modemSpeed;
   unsigned int m_modemAddress;
   bool         m_modemRXInvert;
   bool         m_modemTXInvert;

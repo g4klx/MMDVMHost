@@ -221,13 +221,13 @@ CModem::~CModem()
 	delete[] m_buffer;
 }
 
-void CModem::setSerialParams(const std::string& protocol, unsigned int address)
+void CModem::setSerialParams(const std::string& protocol, unsigned int address, unsigned int speed)
 {
 	// Create the serial controller instance according the protocol specified in conf.
 	if (protocol == "i2c")
-		m_serial = new CI2CController(m_port, SERIAL_115200, address, true);
+		m_serial = new CI2CController(m_port, speed, address, true);
 	else
-		m_serial = new CSerialController(m_port, SERIAL_115200, true);
+		m_serial = new CSerialController(m_port, speed, true);
 }
 
 void CModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency)
