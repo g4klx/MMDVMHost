@@ -275,9 +275,6 @@
     <ClInclude Include="POCSAGDefines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="I2CController.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MobileGPS.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -545,9 +542,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="POCSAGControl.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="I2CController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MobileGPS.cpp">

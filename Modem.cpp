@@ -16,7 +16,10 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include "SerialController.h"
+#if defined(__linux__)
 #include "I2CController.h"
+#endif
 #include "DStarDefines.h"
 #include "DMRDefines.h"
 #include "YSFDefines.h"
@@ -224,9 +227,11 @@ CModem::~CModem()
 void CModem::setSerialParams(const std::string& protocol, unsigned int address, unsigned int speed)
 {
 	// Create the serial controller instance according the protocol specified in conf.
+#if defined(__linux__)
 	if (protocol == "i2c")
-		m_serial = new CI2CController(m_port, speed, address, true);
+		m_serial = new CI2CController(m_port, address);
 	else
+#endif
 		m_serial = new CSerialController(m_port, speed, true);
 }
 

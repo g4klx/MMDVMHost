@@ -19,7 +19,7 @@
 #ifndef	MODEM_H
 #define	MODEM_H
 
-#include "SerialController.h"
+#include "SerialPort.h"
 #include "RingBuffer.h"
 #include "Defines.h"
 #include "Timer.h"
@@ -156,7 +156,7 @@ private:
 	bool                       m_fmEnabled;
 	int                        m_rxDCOffset;
 	int                        m_txDCOffset;
-	CSerialController*         m_serial;
+	ISerialPort*               m_serial;
 	unsigned char*             m_buffer;
 	unsigned int               m_length;
 	unsigned int               m_offset;

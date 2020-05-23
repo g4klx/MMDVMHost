@@ -1238,10 +1238,13 @@ bool CMMDVMHost::createModem()
 
 	LogInfo("Modem Parameters");
 	LogInfo("    Port: %s", port.c_str());
+#if defined(__linux__)
 	LogInfo("    Protocol: %s", protocol.c_str());
 	if (protocol == "i2c")
 		LogInfo("    I2C Address: %02X", address);
-	LogInfo("    Speed: %u", speed);
+	else
+#endif
+		LogInfo("    Speed: %u", speed);
 	LogInfo("    RX Invert: %s", rxInvert ? "yes" : "no");
 	LogInfo("    TX Invert: %s", txInvert ? "yes" : "no");
 	LogInfo("    PTT Invert: %s", pttInvert ? "yes" : "no");

@@ -20,11 +20,13 @@
 #ifndef I2CController_H
 #define I2CController_H
 
-#include "SerialController.h"
+#if defined(__linux__)
 
-class CI2CController : public CSerialController {
+#include "SerialPort.h"
+
+class CI2CController : public ISerialPort {
 public:
-	CI2CController(const std::string& device, unsigned int speed, unsigned int address = 0x22U, bool assertRTS = false);
+	CI2CController(const std::string& device, unsigned int address = 0x22U);
 	virtual ~CI2CController();
 
 	virtual bool open();
@@ -33,8 +35,14 @@ public:
 
 	virtual int write(const unsigned char* buffer, unsigned int length);
 
+	virtual void close();
+
 private:
+	std::string  m_device;
 	unsigned int m_address;
+	int          m_fd;
 };
+
+#endif
 
 #endif
