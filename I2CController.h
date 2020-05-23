@@ -24,6 +24,8 @@
 
 #include "SerialPort.h"
 
+#include <string>
+
 class CI2CController : public ISerialPort {
 public:
 	CI2CController(const std::string& device, unsigned int address = 0x22U);
