@@ -20,6 +20,11 @@
 
 #include <string>
 
+#if defined(DUMP_RF_AUDIO)
+#include <iostream>
+#include <fstream>
+#endif
+
 const float         EMPHASIS_GAIN_DB = 0.0F; //Gain needs to be the same for pre an deeemphasis
 const unsigned int  FM_MASK = 0x00000FFFU;
 
@@ -38,6 +43,11 @@ CFMControl::~CFMControl()
 
 bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
 {
+#if defined(DUMP_RF_AUDIO)
+    std::ofstream audiofile;
+    audiofile.open("audiodump.bin", std::ios::out | std::ios::app | std::ios::binary);
+#endif
+
     assert(data != NULL);
     assert(length > 0U);
 
@@ -69,27 +79,32 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
 
         // Unpack the serial data into float values.
         for (unsigned int i = 0U; i < bufferLength; i += 3U) {
-            unsigned short sample1 = 0U;
-            unsigned short sample2 = 0U;
+            short sample1 = 0U;
+            short sample2 = 0U;
 
             unsigned int pack = 0U;
             unsigned char* packPointer = (unsigned char*)&pack;
 
-            packPointer[1U] = bufferData[i];
-            packPointer[2U] = bufferData[i + 1U];
-            packPointer[3U] = bufferData[i + 2U];
+            packPointer[0U] = bufferData[i];
+            packPointer[1U] = bufferData[i + 1U];
+            packPointer[2U] = bufferData[i + 2U];
 
-            sample2 = short(pack & FM_MASK);
-            sample1 = short(pack >> 12);
+            //extract unsigned 12 bit samples to 16 bit signed
+            sample2 = short(int(pack & FM_MASK) - 2048);
+            sample1 = short(int(pack >> 12) - 2048);
 
             // Convert from unsigned short (0 - +4095) to float (-1.0 - +1.0)
-            samples[nSamples++] = (float(sample1) - 2048.0F) / 2048.0F;
-            samples[nSamples++] = (float(sample2) - 2048.0F) / 2048.0F;
+            samples[nSamples++] = float(sample1) / 2048.0F;
+            samples[nSamples++] = float(sample2) / 2048.0F;
         }
 
         //De-emphasise the data and any other processing needed (maybe a low-pass filter to remove the CTCSS)
         for (unsigned int i = 0U; i < nSamples; i++)
             samples[i] = m_deemphasis.filter(samples[i]);
+
+#if defined(DUMP_RF_AUDIO) 
+        audiofile.write((char*)(void*)samples, nSamples * sizeof(float));
+#endif
 
         unsigned short out[170U]; // 85 * 2
         unsigned int nOut = 0U;
@@ -103,6 +118,10 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
 
         return m_network->writeData((unsigned char*)out, nOut);
     }
+
+#if defined(DUMP_RF_AUDIO)
+    audiofile.close();
+#endif
 
     return true;
 }
