@@ -24,20 +24,36 @@
 #include <stdio.h>
 #endif
 
-const float         EMPHASIS_GAIN_DB = 0.0F; //Gain needs to be the same for pre an deeemphasis
-const unsigned int  FM_MASK = 0x00000FFFU;
+const float        EMPHASIS_GAIN_DB = 0.0F; //Gain needs to be the same for pre an deeemphasis
+const float        FILTER_GAIN_DB   = 0.0F;
+const unsigned int FM_MASK          = 0x00000FFFU;
 
 CFMControl::CFMControl(CFMNetwork* network) :
 m_network(network),
 m_enabled(false),
 m_incomingRFAudio(1600U, "Incoming RF FM Audio"),
-m_preemphasis(0.3889703155F, -0.32900055326F, 0.0F, 1.0F, 0.2820291817F, 0.0F, EMPHASIS_GAIN_DB),
-m_deemphasis(1.0F, 0.2820291817F, 0.0F, 0.3889703155F, -0.32900055326F, 0.0F, EMPHASIS_GAIN_DB)
+m_preemphasis (NULL),
+m_deemphasis  (NULL),
+m_filterStage1(NULL),
+m_filterStage2(NULL),
+m_filterStage3(NULL)
 {
+    m_preemphasis  = new CIIRDirectForm1Filter(0.38897032f, -0.32900053f, 0.0f, 1.0f, 0.28202918f, 0.0f, EMPHASIS_GAIN_DB);
+    m_deemphasis   = new CIIRDirectForm1Filter(1.0f,0.28202918f, 0.0f, 0.38897032f, -0.32900053f, 0.0f, EMPHASIS_GAIN_DB);
+
+    m_filterStage1 = new CIIRDirectForm1Filter(0.29495028f, 0.0f, -0.29495028f, 1.0f, -0.61384624f, -0.057158668f, FILTER_GAIN_DB);
+    m_filterStage2 = new CIIRDirectForm1Filter(1.0f, 2.0f, 1.0f, 1.0f, 0.9946123f, 0.6050482f, FILTER_GAIN_DB);
+    m_filterStage3 = new CIIRDirectForm1Filter(1.0f, -2.0f, 1.0f, 1.0f, -1.8414584f, 0.8804949f, FILTER_GAIN_DB);
 }
 
 CFMControl::~CFMControl()
 {
+    delete m_preemphasis ;
+    delete m_deemphasis  ;
+
+    delete m_filterStage1;
+    delete m_filterStage2;
+    delete m_filterStage3;
 }
 
 bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
@@ -57,7 +73,6 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
     if (data[0U] != TAG_DATA)
         return false;
 
-    
     m_incomingRFAudio.addData(data + 1U, length - 1U);
     unsigned int bufferLength = m_incomingRFAudio.dataSize();
     if (bufferLength > 255U)
@@ -97,8 +112,10 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
         }
 
         //De-emphasise the data and any other processing needed (maybe a low-pass filter to remove the CTCSS)
-        for (unsigned int i = 0U; i < nSamples; i++)
-            samples[i] = m_deemphasis.filter(samples[i]);
+        for (unsigned int i = 0U; i < nSamples; i++) {
+            samples[i] = m_deemphasis->filter(samples[i]);
+            samples[i] = m_filterStage3->filter(m_filterStage2->filter(m_filterStage1->filter(samples[i])));
+        }
 
 #if defined(DUMP_RF_AUDIO) 
         if(audiofile != NULL)
@@ -152,7 +169,7 @@ unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
 
     //Pre-emphasise the data and other stuff.
     for (unsigned int i = 0U; i < nSamples; i++)
-        samples[i] = m_preemphasis.filter(samples[i]);
+        samples[i] = m_preemphasis->filter(samples[i]);
 
     // Pack the floating point data (+1.0 to -1.0) to packed 12-bit samples (+2047 - -2048)
     unsigned int pack = 0U;

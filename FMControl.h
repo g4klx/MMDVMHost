@@ -26,7 +26,7 @@
 // Uncomment this to dump audio to a raw audio file
 // The file will be written in same folder as executable
 // Toplay the file : aplay -f FLOAT_LE -c1 -r8000 -t raw audiodump.bin
-//#define DUMP_RF_AUDIO
+// #define DUMP_RF_AUDIO
 
 class CFMControl {
 public:
@@ -45,8 +45,11 @@ private:
 	CFMNetwork* m_network;
     bool        m_enabled;
 	CRingBuffer<unsigned char> m_incomingRFAudio;
-	CIIRDirectForm1Filter m_preemphasis;
-	CIIRDirectForm1Filter m_deemphasis;
+	CIIRDirectForm1Filter * m_preemphasis;
+	CIIRDirectForm1Filter * m_deemphasis;
+	CIIRDirectForm1Filter * m_filterStage1;
+	CIIRDirectForm1Filter * m_filterStage2;
+	CIIRDirectForm1Filter * m_filterStage3;
 };
 
 #endif
