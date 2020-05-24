@@ -21,8 +21,7 @@
 #include <string>
 
 #if defined(DUMP_RF_AUDIO)
-#include <iostream>
-#include <fstream>
+#include <stdio.h>
 #endif
 
 const float         EMPHASIS_GAIN_DB = 0.0F; //Gain needs to be the same for pre an deeemphasis
@@ -43,11 +42,6 @@ CFMControl::~CFMControl()
 
 bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
 {
-#if defined(DUMP_RF_AUDIO)
-    std::ofstream audiofile;
-    audiofile.open("audiodump.bin", std::ios::out | std::ios::app | std::ios::binary);
-#endif
-
     assert(data != NULL);
     assert(length > 0U);
 
@@ -70,6 +64,10 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
         bufferLength = 255U;
 
     if (bufferLength >= 3U) {
+#if defined(DUMP_RF_AUDIO)
+    FILE * audiofile = fopen("./audiodump.bin", "ab");
+#endif
+
         bufferLength = bufferLength - bufferLength % 3U; //round down to nearest multiple of 3
         unsigned char bufferData[255U];        
         m_incomingRFAudio.getData(bufferData, bufferLength);
@@ -103,7 +101,8 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
             samples[i] = m_deemphasis.filter(samples[i]);
 
 #if defined(DUMP_RF_AUDIO) 
-        audiofile.write((char*)(void*)samples, nSamples * sizeof(float));
+        if(audiofile != NULL)
+            fwrite(samples, sizeof(float), nSamples, audiofile);
 #endif
 
         unsigned short out[170U]; // 85 * 2
@@ -116,12 +115,13 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
             out[nOut++] = (sample >> 0) & 0xFFU;
         }
 
+#if defined(DUMP_RF_AUDIO)
+    if(audiofile != NULL)
+        fclose(audiofile);
+#endif
+
         return m_network->writeData((unsigned char*)out, nOut);
     }
-
-#if defined(DUMP_RF_AUDIO)
-    audiofile.close();
-#endif
 
     return true;
 }
