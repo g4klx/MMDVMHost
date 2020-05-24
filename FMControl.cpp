@@ -21,7 +21,7 @@
 #include <string>
 
 #if defined(DUMP_RF_AUDIO)
-#include <stdio.h>
+#include <cstdio>
 #endif
 
 const float         EMPHASIS_GAIN_DB = 0.0F; //Gain needs to be the same for pre an deeemphasis
@@ -47,7 +47,7 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
 
     if (m_network == NULL)
         return true;
-        
+
     if (data[0U] == TAG_HEADER)
         return true;
 
@@ -57,7 +57,6 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
     if (data[0U] != TAG_DATA)
         return false;
 
-    
     m_incomingRFAudio.addData(data + 1U, length - 1U);
     unsigned int bufferLength = m_incomingRFAudio.dataSize();
     if (bufferLength > 255U)
@@ -65,9 +64,8 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
 
     if (bufferLength >= 3U) {
 #if defined(DUMP_RF_AUDIO)
-    FILE * audiofile = fopen("./audiodump.bin", "ab");
+        FILE* audiofile = ::fopen("./audiodump.bin", "ab");
 #endif
-
         bufferLength = bufferLength - bufferLength % 3U; //round down to nearest multiple of 3
         unsigned char bufferData[255U];        
         m_incomingRFAudio.getData(bufferData, bufferLength);
@@ -101,10 +99,9 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
             samples[i] = m_deemphasis.filter(samples[i]);
 
 #if defined(DUMP_RF_AUDIO) 
-        if(audiofile != NULL)
-            fwrite(samples, sizeof(float), nSamples, audiofile);
+        if (audiofile != NULL)
+            ::fwrite(samples, sizeof(float), nSamples, audiofile);
 #endif
-
         unsigned short out[170U]; // 85 * 2
         unsigned int nOut = 0U;
 
@@ -116,10 +113,11 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
         }
 
 #if defined(DUMP_RF_AUDIO)
-    if(audiofile != NULL)
-        fclose(audiofile);
+        if (audiofile != NULL) {
+            ::fclose(audiofile);
+            audiofile = NULL;
+        }
 #endif
-
         return m_network->writeData((unsigned char*)out, nOut);
     }
 
@@ -134,7 +132,7 @@ unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
     if (m_network == NULL)
         return 0U;
 
-    if(space > 252U)
+    if (space > 252U)
         space = 252U;
 
     unsigned char netData[168U];//84 * 2 modem can handle up to 84 samples (252 bytes) at a time
@@ -150,7 +148,7 @@ unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
         samples[nSamples++] = (float(sample) / 32767.0F) - 1.0F;
     }
 
-    //Pre-emphasise the data and other stuff.
+    // Pre-emphasise the data and other stuff.
     for (unsigned int i = 0U; i < nSamples; i++)
         samples[i] = m_preemphasis.filter(samples[i]);
 
