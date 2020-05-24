@@ -167,9 +167,9 @@ unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
         pack = ((unsigned int)sample1) << 12;
         pack |= sample2;
 
-        data[j] = packPointer[1U];
-        data[j + 1U] = packPointer[2U];
-        data[j + 2U] = packPointer[3U];
+        data[j] = packPointer[0U];
+        data[j + 1U] = packPointer[1U];
+        data[j + 2U] = packPointer[2U];
     }
 
     return j;//return the number of bytes written
