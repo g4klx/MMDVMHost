@@ -16,28 +16,32 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef	KenwoodNetwork_H
-#define	KenwoodNetwork_H
+#ifndef	NXDNKenwoodNetwork_H
+#define	NXDNKenwoodNetwork_H
 
-#include "RptNetwork.h"
+#include "NXDNNetwork.h"
 #include "UDPSocket.h"
 #include "Timer.h"
 
 #include <cstdint>
 #include <string>
 
-class CKenwoodNetwork : public IRptNetwork {
+class CNXDNKenwoodNetwork : public INXDNNetwork {
 public:
-	CKenwoodNetwork(unsigned int localPort, const std::string& rptAddress, unsigned int rptPort, bool debug);
-	virtual ~CKenwoodNetwork();
+	CNXDNKenwoodNetwork(const std::string& localAddress, unsigned int localPort, const std::string& gwyAddress, unsigned int gwyPort, bool debug);
+	virtual ~CNXDNKenwoodNetwork();
 
 	virtual bool open();
 
-	virtual bool write(const unsigned char* data, unsigned int length);
+    virtual void enable(bool enabled);
 
-	virtual unsigned int read(unsigned char* data);
+    virtual bool write(const unsigned char* data, NXDN_NETWORK_MESSAGE_TYPE type);
 
-	virtual void close();
+	virtual bool read(unsigned char* data);
+
+    virtual void reset();
+
+    virtual void close();
 
     virtual void clock(unsigned int ms);
 
@@ -67,10 +71,12 @@ private:
 
     bool processIcomVoiceHeader(const unsigned char* data);
     bool processIcomVoiceData(const unsigned char* data);
-    unsigned int processKenwoodVoiceHeader(unsigned char* data);
-    unsigned int processKenwoodVoiceData(unsigned char* data);
-    unsigned int processKenwoodVoiceLateEntry(unsigned char* data);
-    unsigned int processKenwoodData(unsigned char* data);
+    bool processIcomDataHeader(const unsigned char* data);
+    bool processIcomDataData(const unsigned char* data);
+    bool processKenwoodVoiceHeader(unsigned char* data);
+    bool processKenwoodVoiceData(unsigned char* data);
+    bool processKenwoodVoiceLateEntry(unsigned char* data);
+    bool processKenwoodData(unsigned char* data);
     bool writeRTPVoiceHeader(const unsigned char* data);
     bool writeRTPVoiceData(const unsigned char* data);
     bool writeRTPVoiceTrailer(const unsigned char* data);

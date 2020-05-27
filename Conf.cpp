@@ -236,6 +236,7 @@ m_p25LocalPort(0U),
 m_p25NetworkModeHang(3U),
 m_p25NetworkDebug(false),
 m_nxdnNetworkEnabled(false),
+m_nxdnNetworkProtocol("Icom"),
 m_nxdnGatewayAddress(),
 m_nxdnGatewayPort(0U),
 m_nxdnLocalAddress(),
@@ -842,6 +843,8 @@ bool CConf::read()
 	} else if (section == SECTION_NXDN_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_nxdnNetworkEnabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "Protocol") == 0)
+			m_nxdnNetworkProtocol = value;
 		else if (::strcmp(key, "LocalAddress") == 0)
 			m_nxdnLocalAddress = value;
 		else if (::strcmp(key, "LocalPort") == 0)
@@ -1830,6 +1833,11 @@ bool CConf::getP25NetworkDebug() const
 bool CConf::getNXDNNetworkEnabled() const
 {
 	return m_nxdnNetworkEnabled;
+}
+
+std::string CConf::getNXDNNetworkProtocol() const
+{
+	return m_nxdnNetworkProtocol;
 }
 
 std::string CConf::getNXDNGatewayAddress() const

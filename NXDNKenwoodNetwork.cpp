@@ -16,7 +16,7 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "KenwoodNetwork.h"
+#include "NXDNKenwoodNetwork.h"
 #include "NXDNCRC.h"
 #include "Utils.h"
 #include "Log.h"
@@ -33,12 +33,12 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 
 const unsigned int BUFFER_LENGTH = 200U;
 
-CKenwoodNetwork::CKenwoodNetwork(unsigned int localPort, const std::string& rptAddress, unsigned int rptPort, bool debug) :
-m_rtpSocket(localPort + 0U),
-m_rtcpSocket(localPort + 1U),
+CNXDNKenwoodNetwork::CNXDNKenwoodNetwork(const std::string& localAddress, unsigned int localPort, const std::string& gwyAddress, unsigned int gwyPort, bool debug) :
+m_rtpSocket(localAddress, localPort + 0U),
+m_rtcpSocket(localAddress, localPort + 1U),
 m_address(),
-m_rtcpPort(rptPort + 1U),
-m_rtpPort(rptPort + 0U),
+m_rtcpPort(gwyPort + 1U),
+m_rtpPort(gwyPort + 0U),
 m_headerSeen(false),
 m_seen1(false),
 m_seen2(false),
@@ -58,20 +58,20 @@ m_hangSrc(0U),
 m_hangDst(0U)
 {
 	assert(localPort > 0U);
-	assert(!rptAddress.empty());
-	assert(rptPort > 0U);
+	assert(!gwyAddress.empty());
+	assert(gwyPort > 0U);
 
 	m_sacch = new unsigned char[10U];
 
-	m_address = CUDPSocket::lookup(rptAddress);
+	m_address = CUDPSocket::lookup(gwyAddress);
 }
 
-CKenwoodNetwork::~CKenwoodNetwork()
+CNXDNKenwoodNetwork::~CNXDNKenwoodNetwork()
 {
 	delete[] m_sacch;
 }
 
-bool CKenwoodNetwork::open()
+bool CNXDNKenwoodNetwork::open()
 {
 	LogMessage("Opening Kenwood connection");
 
@@ -91,23 +91,27 @@ bool CKenwoodNetwork::open()
 	return true;
 }
 
-bool CKenwoodNetwork::write(const unsigned char* data, unsigned int length)
+bool CNXDNKenwoodNetwork::write(const unsigned char* data, NXDN_NETWORK_MESSAGE_TYPE type)
 {
 	assert(data != NULL);
 
-	switch (data[0U]) {
-	case 0x81U:	// Voice header or trailer
-	case 0x83U:
+	switch (type) {
+	case NNMT_VOICE_HEADER:	// Voice header or trailer
+	case NNMT_VOICE_TRAILER:
+	case NNMT_DATA_TRAILER:	// Data trailer
 		return processIcomVoiceHeader(data);
-	case 0xACU:	// Voice data
-	case 0xAEU:
+	case NNMT_VOICE_BODY:	// Voice data
 		return processIcomVoiceData(data);
+	case NNMT_DATA_HEADER:	// Voice header or trailer
+		return processIcomDataHeader(data);
+	case NNMT_DATA_BODY:	// Voice data
+		return processIcomDataData(data);
 	default:
 		return false;
 	}
 }
 
-bool CKenwoodNetwork::processIcomVoiceHeader(const unsigned char* inData)
+bool CNXDNKenwoodNetwork::processIcomVoiceHeader(const unsigned char* inData)
 {
 	assert(inData != NULL);
 
@@ -151,7 +155,7 @@ bool CKenwoodNetwork::processIcomVoiceHeader(const unsigned char* inData)
 	}
 }
 
-bool CKenwoodNetwork::processIcomVoiceData(const unsigned char* inData)
+bool CNXDNKenwoodNetwork::processIcomVoiceData(const unsigned char* inData)
 {
 	assert(inData != NULL);
 
@@ -231,7 +235,7 @@ bool CKenwoodNetwork::processIcomVoiceData(const unsigned char* inData)
 	return writeRTPVoiceData(outData);
 }
 
-bool CKenwoodNetwork::writeRTPVoiceHeader(const unsigned char* data)
+bool CNXDNKenwoodNetwork::writeRTPVoiceHeader(const unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -278,7 +282,7 @@ bool CKenwoodNetwork::writeRTPVoiceHeader(const unsigned char* data)
 	return m_rtpSocket.write(buffer, 47U, m_address, m_rtpPort);
 }
 
-bool CKenwoodNetwork::writeRTPVoiceTrailer(const unsigned char* data)
+bool CNXDNKenwoodNetwork::writeRTPVoiceTrailer(const unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -324,7 +328,7 @@ bool CKenwoodNetwork::writeRTPVoiceTrailer(const unsigned char* data)
 	return m_rtpSocket.write(buffer, 47U, m_address, m_rtpPort);
 }
 
-bool CKenwoodNetwork::writeRTPVoiceData(const unsigned char* data)
+bool CNXDNKenwoodNetwork::writeRTPVoiceData(const unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -370,7 +374,7 @@ bool CKenwoodNetwork::writeRTPVoiceData(const unsigned char* data)
 	return m_rtpSocket.write(buffer, 59U, m_address, m_rtpPort);
 }
 
-bool CKenwoodNetwork::writeRTCPStart()
+bool CNXDNKenwoodNetwork::writeRTCPStart()
 {
 #if defined(_WIN32) || defined(_WIN64)
 	time_t now;
@@ -430,7 +434,7 @@ bool CKenwoodNetwork::writeRTCPStart()
 	return m_rtcpSocket.write(buffer, 28U, m_address, m_rtcpPort);
 }
 
-bool CKenwoodNetwork::writeRTCPPing()
+bool CNXDNKenwoodNetwork::writeRTCPPing()
 {
 	unsigned char buffer[30U];
 	::memset(buffer, 0x00U, 30U);
@@ -472,7 +476,7 @@ bool CKenwoodNetwork::writeRTCPPing()
 	return m_rtcpSocket.write(buffer, 28U, m_address, m_rtcpPort);
 }
 
-bool CKenwoodNetwork::writeRTCPHang(unsigned char type, unsigned short src, unsigned short dst)
+bool CNXDNKenwoodNetwork::writeRTCPHang(unsigned char type, unsigned short src, unsigned short dst)
 {
 	m_hangType = type;
 	m_hangSrc  = src;
@@ -481,7 +485,7 @@ bool CKenwoodNetwork::writeRTCPHang(unsigned char type, unsigned short src, unsi
 	return writeRTCPHang();
 }
 
-bool CKenwoodNetwork::writeRTCPHang()
+bool CNXDNKenwoodNetwork::writeRTCPHang()
 {
 	unsigned char buffer[30U];
 	::memset(buffer, 0x00U, 30U);
@@ -515,7 +519,7 @@ bool CKenwoodNetwork::writeRTCPHang()
 	return m_rtcpSocket.write(buffer, 20U, m_address, m_rtcpPort);
 }
 
-unsigned int CKenwoodNetwork::read(unsigned char* data)
+bool CNXDNKenwoodNetwork::read(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -525,7 +529,7 @@ unsigned int CKenwoodNetwork::read(unsigned char* data)
 	unsigned int len = readRTP(data);
 	switch (len) {
 	case 0U:	// Nothing received
-		return 0U;
+		return false;
 	case 35U:	// Voice header or trailer
 		return processKenwoodVoiceHeader(data);
 	case 47U:	// Voice data
@@ -537,11 +541,11 @@ unsigned int CKenwoodNetwork::read(unsigned char* data)
 		return processKenwoodData(data);
 	default:
 		CUtils::dump(5U, "Unknown data received from the Kenwood network", data, len);
-		return 0U;
+		return false;
 	}
 }
 
-unsigned int CKenwoodNetwork::readRTP(unsigned char* data)
+unsigned int CNXDNKenwoodNetwork::readRTP(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -567,7 +571,7 @@ unsigned int CKenwoodNetwork::readRTP(unsigned char* data)
 	return length - 12U;
 }
 
-unsigned int CKenwoodNetwork::readRTCP(unsigned char* data)
+unsigned int CNXDNKenwoodNetwork::readRTCP(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -598,7 +602,11 @@ unsigned int CKenwoodNetwork::readRTCP(unsigned char* data)
 	return length - 12U;
 }
 
-void CKenwoodNetwork::close()
+void CNXDNKenwoodNetwork::reset()
+{
+}
+
+void CNXDNKenwoodNetwork::close()
 {
 	m_rtcpSocket.close();
 	m_rtpSocket.close();
@@ -606,7 +614,7 @@ void CKenwoodNetwork::close()
 	LogMessage("Closing Kenwood connection");
 }
 
-void CKenwoodNetwork::clock(unsigned int ms)
+void CNXDNKenwoodNetwork::clock(unsigned int ms)
 {
 	m_rtcpTimer.clock(ms);
 	if (m_rtcpTimer.isRunning() && m_rtcpTimer.hasExpired()) {
@@ -624,7 +632,7 @@ void CKenwoodNetwork::clock(unsigned int ms)
 	}
 }
 
-unsigned int CKenwoodNetwork::processKenwoodVoiceHeader(unsigned char* inData)
+bool CNXDNKenwoodNetwork::processKenwoodVoiceHeader(unsigned char* inData)
 {
 	assert(inData != NULL);
 
@@ -667,7 +675,7 @@ unsigned int CKenwoodNetwork::processKenwoodVoiceHeader(unsigned char* inData)
 		m_seen2 = false;
 		m_seen3 = false;
 		m_seen4 = false;
-		return 33U;
+		return true;
 	case 0x08U:
 		::memcpy(inData, outData, 33U);
 		m_headerSeen = false;
@@ -675,13 +683,13 @@ unsigned int CKenwoodNetwork::processKenwoodVoiceHeader(unsigned char* inData)
 		m_seen2 = false;
 		m_seen3 = false;
 		m_seen4 = false;
-		return 33U;
+		return true;
 	default:
-		return 0U;
+		return false;
 	}
 }
 
-unsigned int CKenwoodNetwork::processKenwoodVoiceData(unsigned char* inData)
+bool CNXDNKenwoodNetwork::processKenwoodVoiceData(unsigned char* inData)
 {
 	assert(inData != NULL);
 
@@ -764,17 +772,18 @@ unsigned int CKenwoodNetwork::processKenwoodVoiceData(unsigned char* inData)
 
 	::memcpy(inData, outData, 33U);
 
-	return 33U;
+	return true;
 }
 
-unsigned int CKenwoodNetwork::processKenwoodData(unsigned char* inData)
+bool CNXDNKenwoodNetwork::processKenwoodData(unsigned char* inData)
 {
 	if (inData[7U] != 0x09U && inData[7U] != 0x0BU && inData[7U] != 0x08U)
-		return 0U;
+		return false;
 
 	unsigned char outData[50U];
 
 	if (inData[7U] == 0x09U || inData[7U] == 0x08U) {
+		// XXX
 		outData[0U] = 0x90U;
 		outData[1U] = inData[8U];
 		outData[2U] = inData[7U];
@@ -783,7 +792,7 @@ unsigned int CKenwoodNetwork::processKenwoodData(unsigned char* inData)
 		outData[5U] = inData[12U];
 		outData[6U] = inData[11U];
 		::memcpy(inData, outData, 7U);
-		return 7U;
+		return true;
 	} else {
 		outData[0U]  = 0x90U;
 		outData[1U]  = inData[8U];
@@ -810,11 +819,11 @@ unsigned int CKenwoodNetwork::processKenwoodData(unsigned char* inData)
 		outData[22U] = inData[27U];
 		outData[23U] = inData[29U];
 		::memcpy(inData, outData, 24U);
-		return 24U;
+		return true;
 	}
 }
 
-unsigned long CKenwoodNetwork::getTimeStamp() const
+unsigned long CNXDNKenwoodNetwork::getTimeStamp() const
 {
 	unsigned long timeStamp = 0UL;
 
@@ -845,7 +854,7 @@ unsigned long CKenwoodNetwork::getTimeStamp() const
 	return timeStamp;
 }
 
-unsigned int CKenwoodNetwork::processKenwoodVoiceLateEntry(unsigned char* inData)
+bool CNXDNKenwoodNetwork::processKenwoodVoiceLateEntry(unsigned char* inData)
 {
 	assert(inData != NULL);
 
@@ -899,7 +908,7 @@ unsigned int CKenwoodNetwork::processKenwoodVoiceLateEntry(unsigned char* inData
 	}
 
 	if (!m_seen1 || !m_seen2 || !m_seen3 || !m_seen4)
-		return 0U;
+		return false;
 
 	// Create a dummy header
 	// Header SACCH

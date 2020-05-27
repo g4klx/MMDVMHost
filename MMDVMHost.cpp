@@ -17,6 +17,8 @@
  */
 
 #include "MMDVMHost.h"
+#include "NXDNKenwoodNetwork.h"
+#include "NXDNIcomNetwork.h"
 #include "RSSIInterpolator.h"
 #include "SerialController.h"
 #include "Version.h"
@@ -1472,6 +1474,7 @@ bool CMMDVMHost::createP25Network()
 
 bool CMMDVMHost::createNXDNNetwork()
 {
+	std::string protocol       = m_conf.getNXDNNetworkProtocol();
 	std::string gatewayAddress = m_conf.getNXDNGatewayAddress();
 	unsigned int gatewayPort   = m_conf.getNXDNGatewayPort();
 	std::string localAddress   = m_conf.getNXDNLocalAddress();
@@ -1480,13 +1483,17 @@ bool CMMDVMHost::createNXDNNetwork()
 	bool debug                 = m_conf.getNXDNNetworkDebug();
 
 	LogInfo("NXDN Network Parameters");
+	LogInfo("    Protocol: %s", protocol.c_str());
 	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
 	LogInfo("    Gateway Port: %u", gatewayPort);
 	LogInfo("    Local Address: %s", localAddress.c_str());
 	LogInfo("    Local Port: %u", localPort);
 	LogInfo("    Mode Hang: %us", m_nxdnNetModeHang);
 
-	m_nxdnNetwork = new CNXDNNetwork(localAddress, localPort, gatewayAddress, gatewayPort, debug);
+	if (protocol == "Kenwood")
+		m_nxdnNetwork = new CNXDNKenwoodNetwork(localAddress, localPort, gatewayAddress, gatewayPort, debug);
+	else
+		m_nxdnNetwork = new CNXDNIcomNetwork(localAddress, localPort, gatewayAddress, gatewayPort, debug);
 
 	bool ret = m_nxdnNetwork->open();
 	if (!ret) {
