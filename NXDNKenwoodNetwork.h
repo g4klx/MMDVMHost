@@ -51,6 +51,7 @@ private:
     in_addr        m_address;
 	unsigned int   m_rtcpPort;
     unsigned int   m_rtpPort;
+    bool           m_enabled;
     bool           m_headerSeen;
     bool           m_seen1;
     bool           m_seen2;
@@ -73,6 +74,7 @@ private:
     bool processIcomVoiceData(const unsigned char* data);
     bool processIcomDataHeader(const unsigned char* data);
     bool processIcomDataData(const unsigned char* data);
+    bool processIcomDataTrailer(const unsigned char* data);
     bool processKenwoodVoiceHeader(unsigned char* data);
     bool processKenwoodVoiceData(unsigned char* data);
     bool processKenwoodVoiceLateEntry(unsigned char* data);
@@ -80,6 +82,9 @@ private:
     bool writeRTPVoiceHeader(const unsigned char* data);
     bool writeRTPVoiceData(const unsigned char* data);
     bool writeRTPVoiceTrailer(const unsigned char* data);
+    bool writeRTPDataHeader(const unsigned char* data);
+    bool writeRTPDataData(const unsigned char* data);
+    bool writeRTPDataTrailer(const unsigned char* data);
     bool writeRTCPStart();
     bool writeRTCPPing();
     bool writeRTCPHang(unsigned char type, unsigned short src, unsigned short dst);
