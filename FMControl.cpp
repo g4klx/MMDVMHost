@@ -118,20 +118,19 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
             samples[i] = m_filterStage3->filter(m_filterStage2->filter(m_filterStage1->filter(samples[i])));
         }
 
-#if defined(DUMP_RF_AUDIO) 
-        if(audiofile != NULL)
-            fwrite(samples, sizeof(float), nSamples, audiofile);
-#endif
-
         unsigned short out[170U]; // 85 * 2
         unsigned int nOut = 0U;
 
         // Repack the data (8-bit unsigned values containing unsigned 16-bit data)
         for (unsigned int i = 0U; i < nSamples; i++) {
             unsigned short sample = (unsigned short)((samples[i] + 1.0F) * 32767.0F + 0.5F);
-            out[nOut++] = (sample >> 8) & 0xFFU;
-            out[nOut++] = (sample >> 0) & 0xFFU;
+            out[nOut++] = ((sample >> 8) & 0x00FFU) | ((sample << 8) & 0xFF00U);//change endianess to network order, transmit MSB first
         }
+
+#if defined(DUMP_RF_AUDIO) 
+        if(audiofile != NULL)
+            fwrite(out, sizeof(unsigned short), nOut, audiofile);
+#endif
 
 #if defined(DUMP_RF_AUDIO)
     if(audiofile != NULL)

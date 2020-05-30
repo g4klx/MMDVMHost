@@ -25,7 +25,7 @@
 
 // Uncomment this to dump audio to a raw audio file
 // The file will be written in same folder as executable
-// Toplay the file : aplay -f FLOAT_LE -c1 -r8000 -t raw audiodump.bin
+// Toplay the file : ffplay -autoexit -f u16be -ar 8000 audiodump.bin
 // #define DUMP_RF_AUDIO
 
 class CFMControl {
