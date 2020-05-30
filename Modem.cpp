@@ -160,7 +160,7 @@ m_rxNXDNData(1000U, "Modem RX NXDN"),
 m_txNXDNData(1000U, "Modem TX NXDN"),
 m_txPOCSAGData(1000U, "Modem TX POCSAG"),
 m_rxFMData(1000U, "Modem RX FM"),
-m_txFMData(1000U, "Modem TX FM"),
+m_txFMData(5000U, "Modem TX FM"),
 m_rxTransparentData(1000U, "Modem RX Transparent"),
 m_txTransparentData(1000U, "Modem TX Transparent"),
 m_sendTransparentDataFrameType(0U),
@@ -232,7 +232,7 @@ void CModem::setSerialParams(const std::string& protocol, unsigned int address, 
 		m_serial = new CI2CController(m_port, address);
 	else
 #endif
-		m_serial = new CSerialController(m_port, speed, true);
+		m_serial = new CSerialController(m_port, speed, false);
 }
 
 void CModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency)
