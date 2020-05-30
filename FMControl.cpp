@@ -41,6 +41,7 @@ m_filterStage3(NULL)
     m_preemphasis  = new CIIRDirectForm1Filter(0.38897032f, -0.32900053f, 0.0f, 1.0f, 0.28202918f, 0.0f, EMPHASIS_GAIN_DB);
     m_deemphasis   = new CIIRDirectForm1Filter(1.0f,0.28202918f, 0.0f, 0.38897032f, -0.32900053f, 0.0f, EMPHASIS_GAIN_DB);
 
+    //cheby type 1 0.2dB cheby type 1 3rd order 300-2700Hz fs=8000
     m_filterStage1 = new CIIRDirectForm1Filter(0.29495028f, 0.0f, -0.29495028f, 1.0f, -0.61384624f, -0.057158668f, FILTER_GAIN_DB);
     m_filterStage2 = new CIIRDirectForm1Filter(1.0f, 2.0f, 1.0f, 1.0f, 0.9946123f, 0.6050482f, FILTER_GAIN_DB);
     m_filterStage3 = new CIIRDirectForm1Filter(1.0f, -2.0f, 1.0f, 1.0f, -1.8414584f, 0.8804949f, FILTER_GAIN_DB);
@@ -111,7 +112,7 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
             samples[nSamples++] = float(sample2) / 2048.0F;
         }
 
-        //De-emphasise the data and any other processing needed (maybe a low-pass filter to remove the CTCSS)
+        //De-emphasise the data and remove CTCSS
         for (unsigned int i = 0U; i < nSamples; i++) {
             samples[i] = m_deemphasis->filter(samples[i]);
             samples[i] = m_filterStage3->filter(m_filterStage2->filter(m_filterStage1->filter(samples[i])));
@@ -164,12 +165,12 @@ unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
     // Convert the unsigned 16-bit data (+65535 - 0) to float (+1.0 - -1.0)
     for (unsigned int i = 0U; i < length; i += 2U) {
         unsigned short sample = (netData[i + 0U] << 8) | netData[i + 1U];
-        samples[nSamples++] = (float(sample) / 32767.0F) - 1.0F;
+        samples[nSamples++] = (float(sample) / 32768.0F) - 1.0F;
     }
 
     //Pre-emphasise the data and other stuff.
-    for (unsigned int i = 0U; i < nSamples; i++)
-        samples[i] = m_preemphasis->filter(samples[i]);
+    //for (unsigned int i = 0U; i < nSamples; i++)
+    //    samples[i] = m_preemphasis->filter(samples[i]);
 
     // Pack the floating point data (+1.0 to -1.0) to packed 12-bit samples (+2047 - -2048)
     unsigned int pack = 0U;
@@ -180,7 +181,7 @@ unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
         unsigned short sample1 = (unsigned short)((samples[i] + 1.0F) * 2048.0F + 0.5F);
         unsigned short sample2 = (unsigned short)((samples[i + 1] + 1.0F) * 2048.0F + 0.5F);
 
-        pack = 0;
+        pack = 0U;
         pack = ((unsigned int)sample1) << 12;
         pack |= sample2;
 
