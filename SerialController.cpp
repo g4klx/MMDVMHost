@@ -304,6 +304,10 @@ bool CSerialController::open()
 				::cfsetospeed(&termios, B230400);
 				::cfsetispeed(&termios, B230400);
 				break;
+			case 460800U:
+				::cfsetospeed(&termios, B460800);
+				::cfsetispeed(&termios, B460800);
+				break;
 			default:
 				LogError("Unsupported serial port speed - %u", m_speed);
 				::close(m_fd);
