@@ -137,7 +137,7 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
         fclose(audiofile);
 #endif
 
-        return m_network->writeData((unsigned char*)out, nOut);
+        return m_network->writeData((unsigned char*)out, nOut * sizeof(unsigned short));
     }
 
     return true;
