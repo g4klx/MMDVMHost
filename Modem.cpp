@@ -1853,12 +1853,6 @@ RESP_TYPE_MMDVM CModem::getResponse()
 		if (ret == 0)
 			return RTM_TIMEOUT;
 
-		if (m_buffer[1U] >= 250U) {
-			LogError("Invalid length received from the modem - %u", m_buffer[1U]);
-			m_offset = 0U;
-			return RTM_ERROR;
-		}
-
 		m_length = m_buffer[1U];
 		m_offset = 2U;
 	}
