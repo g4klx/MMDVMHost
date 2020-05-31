@@ -83,63 +83,46 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
         bufferLength = 255U;
 
     if (bufferLength >= 3U) {
-#if defined(DUMP_RF_AUDIO)
-    FILE * audiofile = fopen("./audiodump.bin", "ab");
-#endif
-
         bufferLength = bufferLength - bufferLength % 3U; //round down to nearest multiple of 3
         unsigned char bufferData[255U];        
         m_incomingRFAudio.getData(bufferData, bufferLength);
-    
-        unsigned int nSamples = 0;
-        float samples[85U]; // 255 / 3;
 
-        // Unpack the serial data into float values.
+        unsigned int pack = 0U;
+        unsigned char* packPointer = (unsigned char*)&pack;
+        unsigned short out[168U]; // 84 * 2
+        unsigned int nOut = 0U;
+        short unpackedSamples[2U];
+
         for (unsigned int i = 0U; i < bufferLength; i += 3U) {
-            short sample1 = 0U;
-            short sample2 = 0U;
-
-            unsigned int pack = 0U;
-            unsigned char* packPointer = (unsigned char*)&pack;
-
+            //extract unsigned 12 bit unsigned sample pairs pack into 3 bytes to 16 bit signed
             packPointer[0U] = bufferData[i];
             packPointer[1U] = bufferData[i + 1U];
             packPointer[2U] = bufferData[i + 2U];
+            unpackedSamples[1U] = short(int(pack & FM_MASK) - 2048);
+            unpackedSamples[0U] = short(int(pack >> 12) - 2048);
 
-            //extract unsigned 12 bit samples to 16 bit signed
-            sample2 = short(int(pack & FM_MASK) - 2048);
-            sample1 = short(int(pack >> 12) - 2048);
+            //process unpacked sample pair
+            for(unsigned char j = 0U; j < 2U; j++) {
+                //Convert to float (-1.0 to +1.0)
+                float sampleFloat = float(unpackedSamples[j]) / 2048.0F;
 
-            // Convert from unsigned short (0 - +4095) to float (-1.0 - +1.0)
-            samples[nSamples++] = float(sample1) / 2048.0F;
-            samples[nSamples++] = float(sample2) / 2048.0F;
+                //De-emphasise and remove CTCSS
+                sampleFloat = m_deemphasis->filter(sampleFloat);
+                sampleFloat = m_filterStage3->filter(m_filterStage2->filter(m_filterStage1->filter(sampleFloat)));
+
+                // Repack the float data to 16 bit unsigned
+                unsigned short sampleUShort = (unsigned short)((sampleFloat + 1.0F) * 32767.0F + 0.5F);
+                out[nOut++] = SWAP_BYTES_16(sampleUShort);
+            }
         }
-
-        //De-emphasise the data and remove CTCSS
-        for (unsigned int i = 0U; i < nSamples; i++) {
-            samples[i] = m_deemphasis->filter(samples[i]);
-            samples[i] = m_filterStage3->filter(m_filterStage2->filter(m_filterStage1->filter(samples[i])));
-        }
-
-        unsigned short out[170U]; // 85 * 2
-        unsigned int nOut = 0U;
-
-        // Repack the data (8-bit unsigned values containing unsigned 16-bit data)
-        for (unsigned int i = 0U; i < nSamples; i++) {
-            unsigned short sample = (unsigned short)((samples[i] + 1.0F) * 32767.0F + 0.5F);
-            out[nOut++] = SWAP_BYTES_16(sample);//change endianess to network order, transmit MSB first
-        }
-
-#if defined(DUMP_RF_AUDIO) 
-        if(audiofile != NULL)
-            fwrite(out, sizeof(unsigned short), nOut, audiofile);
-#endif
 
 #if defined(DUMP_RF_AUDIO)
-    if(audiofile != NULL)
-        fclose(audiofile);
+        FILE * audiofile = fopen("./audiodump.bin", "ab");
+        if(audiofile != NULL) {
+            fwrite(out, sizeof(unsigned short), nOut, audiofile);
+            fclose(audiofile);
+        }
 #endif
-
         return m_network->writeData((unsigned char*)out, nOut * sizeof(unsigned short));
     }
 
