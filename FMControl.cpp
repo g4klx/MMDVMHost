@@ -79,17 +79,17 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
 
     m_incomingRFAudio.addData(data + 1U, length - 1U);
     unsigned int bufferLength = m_incomingRFAudio.dataSize();
-    if (bufferLength > 255U)
-        bufferLength = 255U;
+    if (bufferLength > 252U)//168 samples 12-bit
+        bufferLength = 252U;
 
     if (bufferLength >= 3U) {
         bufferLength = bufferLength - bufferLength % 3U; //round down to nearest multiple of 3
-        unsigned char bufferData[255U];        
+        unsigned char bufferData[252U];        
         m_incomingRFAudio.getData(bufferData, bufferLength);
 
         unsigned int pack = 0U;
         unsigned char* packPointer = (unsigned char*)&pack;
-        unsigned short out[168U]; // 84 * 2
+        unsigned short out[168U];
         unsigned int nOut = 0U;
         short unpackedSamples[2U];
 
@@ -140,8 +140,8 @@ unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
     if (space > 252U)
         space = 252U;
 
-    unsigned short netData[84U];//modem can handle up to 84 samples (252 bytes) at a time
-    unsigned int length = m_network->read((unsigned char*)netData, 84U * sizeof(unsigned short));
+    unsigned short netData[168U];//modem can handle up to 168 samples at a time
+    unsigned int length = m_network->read((unsigned char*)netData, 168U * sizeof(unsigned short));
     length /= sizeof(unsigned short);
     if (length == 0U)
         return 0U;
@@ -151,7 +151,8 @@ unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
     unsigned int nData = 0U;
 
     for(unsigned int i = 0; i < length; i++) {
-        unsigned short netSample = SWAP_BYTES_16(netData[i]);//((netData[i] << 8) & 0xFF00U)| ((netData[i] >> 8) & 0x00FFU);
+        unsigned short netSample = SWAP_BYTES_16(netData[i]);
+        
         // Convert the unsigned 16-bit data (+65535 - 0) to float (+1.0 - -1.0)
         float sampleFloat = (float(netSample) / 32768.0F) - 1.0F;
 
