@@ -232,7 +232,7 @@ void CModem::setSerialParams(const std::string& protocol, unsigned int address, 
 		m_serial = new CI2CController(m_port, address);
 	else
 #endif
-		m_serial = new CSerialController(m_port, speed, false);
+		m_serial = new CSerialController(m_port, speed, true);
 }
 
 void CModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency)
