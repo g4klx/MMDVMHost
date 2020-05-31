@@ -27,7 +27,7 @@
 #define SWAP_BYTES_16(a) (((a >> 8) & 0x00FFU) | ((a << 8) & 0xFF00U))
 
 const float        DEEMPHASIS_GAIN_DB  = 0.0F;
-const float        PREEMPHASIS_GAIN_DB = 0.0F;
+const float        PREEMPHASIS_GAIN_DB = 13.0F;
 const float        FILTER_GAIN_DB      = 0.0F;
 const unsigned int FM_MASK             = 0x00000FFFU;
 
