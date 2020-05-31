@@ -24,9 +24,10 @@
 #include <stdio.h>
 #endif
 
-const float        EMPHASIS_GAIN_DB = 0.0F; //Gain needs to be the same for pre an deeemphasis
-const float        FILTER_GAIN_DB   = 0.0F;
-const unsigned int FM_MASK          = 0x00000FFFU;
+const float        DEEMPHASIS_GAIN_DB  = 0.0F;
+const float        PREEMPHASIS_GAIN_DB = 30.0F;
+const float        FILTER_GAIN_DB      = 0.0F;
+const unsigned int FM_MASK             = 0x00000FFFU;
 
 CFMControl::CFMControl(CFMNetwork* network) :
 m_network(network),
@@ -38,8 +39,8 @@ m_filterStage1(NULL),
 m_filterStage2(NULL),
 m_filterStage3(NULL)
 {
-    m_preemphasis  = new CIIRDirectForm1Filter(0.38897032f, -0.32900053f, 0.0f, 1.0f, 0.28202918f, 0.0f, EMPHASIS_GAIN_DB);
-    m_deemphasis   = new CIIRDirectForm1Filter(1.0f,0.28202918f, 0.0f, 0.38897032f, -0.32900053f, 0.0f, EMPHASIS_GAIN_DB);
+    m_preemphasis  = new CIIRDirectForm1Filter(0.38897032f, -0.32900053f, 0.0f, 1.0f, 0.28202918f, 0.0f, PREEMPHASIS_GAIN_DB);
+    m_deemphasis   = new CIIRDirectForm1Filter(1.0f,0.28202918f, 0.0f, 0.38897032f, -0.32900053f, 0.0f, DEEMPHASIS_GAIN_DB);
 
     //cheby type 1 0.2dB cheby type 1 3rd order 300-2700Hz fs=8000
     m_filterStage1 = new CIIRDirectForm1Filter(0.29495028f, 0.0f, -0.29495028f, 1.0f, -0.61384624f, -0.057158668f, FILTER_GAIN_DB);
@@ -168,8 +169,8 @@ unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
     }
 
     //Pre-emphasise the data and other stuff.
-    //for (unsigned int i = 0U; i < nSamples; i++)
-    //    samples[i] = m_preemphasis->filter(samples[i]);
+    for (unsigned int i = 0U; i < nSamples; i++)
+       samples[i] = m_preemphasis->filter(samples[i]);
 
     // Pack the floating point data (+1.0 to -1.0) to packed 12-bit samples (+2047 - -2048)
     unsigned int pack = 0U;
