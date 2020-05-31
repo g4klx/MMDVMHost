@@ -25,7 +25,7 @@
 #endif
 
 const float        DEEMPHASIS_GAIN_DB  = 0.0F;
-const float        PREEMPHASIS_GAIN_DB = 30.0F;
+const float        PREEMPHASIS_GAIN_DB = 0.0F;
 const float        FILTER_GAIN_DB      = 0.0F;
 const unsigned int FM_MASK             = 0x00000FFFU;
 
@@ -39,8 +39,8 @@ m_filterStage1(NULL),
 m_filterStage2(NULL),
 m_filterStage3(NULL)
 {
-    m_preemphasis  = new CIIRDirectForm1Filter(0.38897032f, -0.32900053f, 0.0f, 1.0f, 0.28202918f, 0.0f, PREEMPHASIS_GAIN_DB);
-    m_deemphasis   = new CIIRDirectForm1Filter(1.0f,0.28202918f, 0.0f, 0.38897032f, -0.32900053f, 0.0f, DEEMPHASIS_GAIN_DB);
+    m_preemphasis  = new CIIRDirectForm1Filter(8.315375384336983F,-7.03334621603483F,0.0F,1.0F,0.282029168302153F,0.0F, PREEMPHASIS_GAIN_DB);
+    m_deemphasis   = new CIIRDirectForm1Filter(0.07708787090460224F,0.07708787090460224F,0.0F,1.0F,-0.8458242581907955F,0.0F, DEEMPHASIS_GAIN_DB);
 
     //cheby type 1 0.2dB cheby type 1 3rd order 300-2700Hz fs=8000
     m_filterStage1 = new CIIRDirectForm1Filter(0.29495028f, 0.0f, -0.29495028f, 1.0f, -0.61384624f, -0.057158668f, FILTER_GAIN_DB);
