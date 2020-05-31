@@ -175,39 +175,6 @@ unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
     }
 
     return nData;
-
-
-    // float samples[84U];
-    // unsigned int nSamples = 0U;
-    // // Convert the unsigned 16-bit data (+65535 - 0) to float (+1.0 - -1.0)
-    // for (unsigned int i = 0U; i < length; i += 2U) {
-    //     unsigned short sample = (netData[i + 0U] << 8) | netData[i + 1U];
-    //     samples[nSamples++] = (float(sample) / 32768.0F) - 1.0F;
-    // }
-
-    // //Pre-emphasise the data and other stuff.
-    // for (unsigned int i = 0U; i < nSamples; i++)
-    //    samples[i] = m_preemphasis->filter(samples[i]);
-
-    // // Pack the floating point data (+1.0 to -1.0) to packed 12-bit samples (+2047 - -2048)
-    // unsigned int pack = 0U;
-    // unsigned char* packPointer = (unsigned char*)&pack;
-    // unsigned int j = 0U;
-    // unsigned int i = 0U;
-    // for (; i < nSamples && j < space; i += 2U, j += 3U) {
-    //     unsigned short sample1 = (unsigned short)((samples[i] + 1.0F) * 2048.0F + 0.5F);
-    //     unsigned short sample2 = (unsigned short)((samples[i + 1] + 1.0F) * 2048.0F + 0.5F);
-
-    //     pack = 0U;
-    //     pack = ((unsigned int)sample1) << 12;
-    //     pack |= sample2;
-
-    //     data[j] = packPointer[0U];
-    //     data[j + 1U] = packPointer[1U];
-    //     data[j + 2U] = packPointer[2U];
-    // }
-
-    // return j;//return the number of bytes written
 }
 
 void CFMControl::clock(unsigned int ms)
