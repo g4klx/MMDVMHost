@@ -94,7 +94,7 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
         short unpackedSamples[2U];
 
         for (unsigned int i = 0U; i < bufferLength; i += 3U) {
-            //extract unsigned 12 bit unsigned sample pairs pack into 3 bytes to 16 bit signed
+            //extract unsigned 12 bit unsigned sample pairs packed into 3 bytes to 16 bit signed
             packPointer[0U] = bufferData[i];
             packPointer[1U] = bufferData[i + 1U];
             packPointer[2U] = bufferData[i + 2U];
