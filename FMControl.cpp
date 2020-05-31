@@ -21,7 +21,7 @@
 #include <string>
 
 #if defined(DUMP_RF_AUDIO)
-#include <stdio.h>
+#include <cstdio>
 #endif
 
 #define SWAP_BYTES_16(a) (((a >> 8) & 0x00FFU) | ((a << 8) & 0xFF00U))
@@ -67,7 +67,7 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
 
     if (m_network == NULL)
         return true;
-        
+
     if (data[0U] == TAG_HEADER)
         return true;
 
@@ -137,7 +137,7 @@ unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
     if (m_network == NULL)
         return 0U;
 
-    if(space > 252U)
+    if (space > 252U)
         space = 252U;
 
     unsigned short netData[84U];//modem can handle up to 84 samples (252 bytes) at a time
