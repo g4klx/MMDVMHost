@@ -610,7 +610,8 @@ int CMMDVMHost::run()
 
 		m_pocsag = new CPOCSAGControl(m_pocsagNetwork, m_display);
 
-		pocsagTimer.start();
+		if (m_pocsagNetwork != NULL)
+			pocsagTimer.start();
 	}
 
 	bool remoteControlEnabled = m_conf.getRemoteControlEnabled();
