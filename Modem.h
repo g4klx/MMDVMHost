@@ -39,7 +39,7 @@ public:
 
 	virtual void setSerialParams(const std::string& protocol, unsigned int address);
 	virtual void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency);
-	virtual void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool pocsagEnabled, bool fmEnabled);
+	virtual void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool pocsagEnabled, bool fmEnabled, bool ax25Enabled);
 	virtual void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagLevel, float fmTXLevel);
 	virtual void setDMRParams(unsigned int colorCode);
 	virtual void setYSFParams(bool loDev, unsigned int txHang);
@@ -59,6 +59,7 @@ public:
 	virtual unsigned int readYSFData(unsigned char* data);
 	virtual unsigned int readP25Data(unsigned char* data);
 	virtual unsigned int readNXDNData(unsigned char* data);
+	virtual unsigned int readAX25Data(unsigned char* data);
 	virtual unsigned int readTransparentData(unsigned char* data);
 
 	virtual unsigned int readSerial(unsigned char* data, unsigned int length);
@@ -150,6 +151,7 @@ private:
 	bool                       m_nxdnEnabled;
 	bool                       m_pocsagEnabled;
 	bool                       m_fmEnabled;
+	bool                       m_ax25Enabled;
 	int                        m_rxDCOffset;
 	int                        m_txDCOffset;
 	CSerialController*         m_serial;
@@ -169,6 +171,7 @@ private:
 	CRingBuffer<unsigned char> m_rxNXDNData;
 	CRingBuffer<unsigned char> m_txNXDNData;
 	CRingBuffer<unsigned char> m_txPOCSAGData;
+	CRingBuffer<unsigned char> m_rxAX25Data;
 	CRingBuffer<unsigned char> m_rxTransparentData;
 	CRingBuffer<unsigned char> m_txTransparentData;
 	unsigned int               m_sendTransparentDataFrameType;

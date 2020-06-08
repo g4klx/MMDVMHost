@@ -76,6 +76,8 @@ const unsigned char MMDVM_NXDN_LOST   = 0x41U;
 
 const unsigned char MMDVM_POCSAG_DATA = 0x50U;
 
+const unsigned char MMDVM_AX25_DATA   = 0x55U;
+
 const unsigned char MMDVM_FM_PARAMS1  = 0x60U;
 const unsigned char MMDVM_FM_PARAMS2  = 0x61U;
 const unsigned char MMDVM_FM_PARAMS3  = 0x62U;
@@ -133,6 +135,7 @@ m_p25Enabled(false),
 m_nxdnEnabled(false),
 m_pocsagEnabled(false),
 m_fmEnabled(false),
+m_ax25Enabled(false),
 m_rxDCOffset(0),
 m_txDCOffset(0),
 m_serial(NULL),
@@ -152,6 +155,7 @@ m_txP25Data(1000U, "Modem TX P25"),
 m_rxNXDNData(1000U, "Modem RX NXDN"),
 m_txNXDNData(1000U, "Modem TX NXDN"),
 m_txPOCSAGData(1000U, "Modem TX POCSAG"),
+m_rxAX25Data(1000U, "Modem RX AX.25"),
 m_rxTransparentData(1000U, "Modem RX Transparent"),
 m_txTransparentData(1000U, "Modem TX Transparent"),
 m_sendTransparentDataFrameType(0U),
@@ -230,7 +234,7 @@ void CModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int tx
 	m_pocsagFrequency = pocsagFrequency + txOffset;
 }
 
-void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool pocsagEnabled, bool fmEnabled)
+void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool pocsagEnabled, bool fmEnabled, bool ax25Enabled)
 {
 	m_dstarEnabled  = dstarEnabled;
 	m_dmrEnabled    = dmrEnabled;
@@ -239,6 +243,7 @@ void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, 
 	m_nxdnEnabled   = nxdnEnabled;
 	m_pocsagEnabled = pocsagEnabled;
 	m_fmEnabled     = fmEnabled;
+	m_ax25Enabled   = ax25Enabled;
 }
 
 void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagTXLevel, float fmTXLevel)
@@ -582,6 +587,20 @@ void CModem::clock(unsigned int ms)
 
 				data = TAG_LOST;
 				m_rxNXDNData.addData(&data, 1U);
+			}
+			break;
+
+			case MMDVM_AX25_DATA: {
+				if (m_trace)
+					CUtils::dump(1U, "RX AX.25 Data", m_buffer, m_length);
+
+				unsigned char data = m_length - 2U;
+				m_rxAX25Data.addData(&data, 1U);
+
+				data = TAG_DATA;
+				m_rxAX25Data.addData(&data, 1U);
+
+				m_rxAX25Data.addData(m_buffer + 3U, m_length - 3U);
 			}
 			break;
 
@@ -937,6 +956,20 @@ unsigned int CModem::readNXDNData(unsigned char* data)
 	unsigned char len = 0U;
 	m_rxNXDNData.getData(&len, 1U);
 	m_rxNXDNData.getData(data, len);
+
+	return len;
+}
+
+unsigned int CModem::readAX25Data(unsigned char* data)
+{
+	assert(data != NULL);
+
+	if (m_rxAX25Data.isEmpty())
+		return 0U;
+
+	unsigned char len = 0U;
+	m_rxAX25Data.getData(&len, 1U);
+	m_rxAX25Data.getData(data, len);
 
 	return len;
 }
@@ -1552,6 +1585,8 @@ bool CModem::setConfig()
 		buffer[4U] |= 0x20U;
 	if (m_fmEnabled && m_duplex)
 		buffer[4U] |= 0x40U;
+	if (m_ax25Enabled)
+		buffer[4U] |= 0x80U;
 
 	buffer[5U] = m_txDelay / 10U;		// In 10ms units
 

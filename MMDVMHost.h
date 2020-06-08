@@ -23,8 +23,10 @@
 #include "POCSAGNetwork.h"
 #include "POCSAGControl.h"
 #include "DStarNetwork.h"
+#include "AX25Network.h"
 #include "NXDNNetwork.h"
 #include "DStarControl.h"
+#include "AX25Control.h"
 #include "DMRControl.h"
 #include "YSFControl.h"
 #include "P25Control.h"
@@ -62,12 +64,14 @@ private:
   CP25Control*    m_p25;
   CNXDNControl*   m_nxdn;
   CPOCSAGControl* m_pocsag;
+  CAX25Control*   m_ax25;
   CDStarNetwork*  m_dstarNetwork;
   CDMRNetwork*    m_dmrNetwork;
   CYSFNetwork*    m_ysfNetwork;
   CP25Network*    m_p25Network;
   CNXDNNetwork*   m_nxdnNetwork;
   CPOCSAGNetwork* m_pocsagNetwork;
+  CAX25Network*   m_ax25Network;
   CDisplay*       m_display;
   CUMP*           m_ump;
   unsigned char   m_mode;
@@ -94,6 +98,7 @@ private:
   bool            m_nxdnEnabled;
   bool            m_pocsagEnabled;
   bool            m_fmEnabled;
+  bool            m_ax25Enabled;
   unsigned int    m_cwIdTime;
   CDMRLookup*     m_dmrLookup;
   CNXDNLookup*    m_nxdnLookup;
@@ -114,6 +119,7 @@ private:
   bool createP25Network();
   bool createNXDNNetwork();
   bool createPOCSAGNetwork();
+  bool createAX25Network();
 
   void remoteControl();
   void processModeCommand(unsigned char mode, unsigned int timeout);

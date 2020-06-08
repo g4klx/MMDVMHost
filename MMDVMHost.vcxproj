@@ -153,6 +153,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AMBEFEC.h" />
+    <ClInclude Include="AX25Control.h" />
+    <ClInclude Include="AX25Network.h" />
     <ClInclude Include="BCH.h" />
     <ClInclude Include="BPTC19696.h" />
     <ClInclude Include="CASTInfo.h" />
@@ -251,6 +253,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AMBEFEC.cpp" />
+    <ClCompile Include="AX25Control.cpp" />
+    <ClCompile Include="AX25Network.cpp" />
     <ClCompile Include="BCH.cpp" />
     <ClCompile Include="BPTC19696.cpp" />
     <ClCompile Include="CASTInfo.cpp" />

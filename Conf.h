@@ -171,6 +171,9 @@ public:
   bool         getPOCSAGEnabled() const;
   unsigned int getPOCSAGFrequency() const;
 
+  // The AX.25 section
+  bool         getAX25Enabled() const;
+
   // The FM Section
   bool         getFMEnabled() const;
   std::string  getFMCallsign() const;
@@ -259,6 +262,14 @@ public:
   unsigned int getPOCSAGLocalPort() const;
   unsigned int getPOCSAGNetworkModeHang() const;
   bool         getPOCSAGNetworkDebug() const;
+
+  // The AX.25 Network section
+  bool         getAX25NetworkEnabled() const;
+  std::string  getAX25GatewayAddress() const;
+  unsigned int getAX25GatewayPort() const;
+  std::string  getAX25LocalAddress() const;
+  unsigned int getAX25LocalPort() const;
+  bool         getAX25NetworkDebug() const;
 
   // The TFTSERIAL section
   std::string  getTFTSerialPort() const;
@@ -442,6 +453,8 @@ private:
   bool         m_pocsagEnabled;
   unsigned int m_pocsagFrequency;
 
+  bool         m_ax25Enabled;
+
   bool         m_fmEnabled;
   std::string  m_fmCallsign;
   unsigned int m_fmCallsignSpeed;
@@ -523,6 +536,13 @@ private:
   unsigned int m_pocsagLocalPort;
   unsigned int m_pocsagNetworkModeHang;
   bool         m_pocsagNetworkDebug;
+
+  bool         m_ax25NetworkEnabled;
+  std::string  m_ax25GatewayAddress;
+  unsigned int m_ax25GatewayPort;
+  std::string  m_ax25LocalAddress;
+  unsigned int m_ax25LocalPort;
+  bool         m_ax25NetworkDebug;
 
   std::string  m_tftSerialPort;
   unsigned int m_tftSerialBrightness;

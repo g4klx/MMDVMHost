@@ -45,12 +45,14 @@ enum SECTION {
   SECTION_NXDN,
   SECTION_POCSAG,
   SECTION_FM,
+  SECTION_AX25,
   SECTION_DSTAR_NETWORK,
   SECTION_DMR_NETWORK,
   SECTION_FUSION_NETWORK,
   SECTION_P25_NETWORK,
   SECTION_NXDN_NETWORK,
   SECTION_POCSAG_NETWORK,
+  SECTION_AX25_NETWORK,
   SECTION_TFTSERIAL,
   SECTION_HD44780,
   SECTION_NEXTION,
@@ -205,6 +207,7 @@ m_fmCOSInvert(false),
 m_fmRFAudioBoost(1U),
 m_fmMaxDevLevel(90.0F),
 m_fmExtAudioBoost(1U),
+m_ax25Enabled(false),
 m_dstarNetworkEnabled(false),
 m_dstarGatewayAddress(),
 m_dstarGatewayPort(0U),
@@ -249,6 +252,12 @@ m_pocsagLocalAddress(),
 m_pocsagLocalPort(0U),
 m_pocsagNetworkModeHang(3U),
 m_pocsagNetworkDebug(false),
+m_ax25NetworkEnabled(false),
+m_ax25GatewayAddress(),
+m_ax25GatewayPort(0U),
+m_ax25LocalAddress(),
+m_ax25LocalPort(0U),
+m_ax25NetworkDebug(false),
 m_tftSerialPort("/dev/ttyAMA0"),
 m_tftSerialBrightness(50U),
 m_hd44780Rows(2U),
@@ -342,6 +351,8 @@ bool CConf::read()
 		  section = SECTION_POCSAG;
 	  else if (::strncmp(buffer, "[FM]", 4U) == 0)
 		  section = SECTION_FM;
+	  else if (::strncmp(buffer, "[AX.25]", 7U) == 0)
+		  section = SECTION_AX25;
 	  else if (::strncmp(buffer, "[D-Star Network]", 16U) == 0)
 		  section = SECTION_DSTAR_NETWORK;
 	  else if (::strncmp(buffer, "[DMR Network]", 13U) == 0)
@@ -354,6 +365,8 @@ bool CConf::read()
 		  section = SECTION_NXDN_NETWORK;
 	  else if (::strncmp(buffer, "[POCSAG Network]", 16U) == 0)
 		  section = SECTION_POCSAG_NETWORK;
+	  else if (::strncmp(buffer, "[AX.25 Network]", 15U) == 0)
+		  section = SECTION_AX25_NETWORK;
 	  else if (::strncmp(buffer, "[TFT Serial]", 12U) == 0)
 		  section = SECTION_TFTSERIAL;
 	  else if (::strncmp(buffer, "[HD44780]", 9U) == 0)
@@ -700,8 +713,7 @@ bool CConf::read()
 		  m_pocsagEnabled = ::atoi(value) == 1;
 	  else if (::strcmp(key, "Frequency") == 0)
 		  m_pocsagFrequency = (unsigned int)::atoi(value);
-	}
-	else if (section == SECTION_FM) {
+	} else if (section == SECTION_FM) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fmEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "Callsign") == 0) {
@@ -775,6 +787,9 @@ bool CConf::read()
 			m_fmMaxDevLevel = float(::atof(value));
 		else if (::strcmp(key, "ExtAudioBoost") == 0)
 			m_fmExtAudioBoost = (unsigned int)::atoi(value);
+	} else if (section == SECTION_AX25) {
+	  if (::strcmp(key, "Enable") == 0)
+		m_ax25Enabled = ::atoi(value) == 1;
 	} else if (section == SECTION_DSTAR_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dstarNetworkEnabled = ::atoi(value) == 1;
@@ -869,6 +884,19 @@ bool CConf::read()
 			m_pocsagNetworkModeHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Debug") == 0)
 			m_pocsagNetworkDebug = ::atoi(value) == 1;
+	} else if (section == SECTION_AX25_NETWORK) {
+ 	  if (::strcmp(key, "Enable") == 0)
+		m_ax25NetworkEnabled = ::atoi(value) == 1;
+	  else if (::strcmp(key, "LocalAddress") == 0)
+		m_ax25LocalAddress = value;
+	  else if (::strcmp(key, "LocalPort") == 0)
+		m_ax25LocalPort = (unsigned int)::atoi(value);
+	  else if (::strcmp(key, "GatewayAddress") == 0)
+		m_ax25GatewayAddress = value;
+	  else if (::strcmp(key, "GatewayPort") == 0)
+		m_ax25GatewayPort = (unsigned int)::atoi(value);
+	  else if (::strcmp(key, "Debug") == 0)
+		m_ax25NetworkDebug = ::atoi(value) == 1;
 	} else if (section == SECTION_TFTSERIAL) {
 		if (::strcmp(key, "Port") == 0)
 			m_tftSerialPort = value;
@@ -1677,6 +1705,11 @@ unsigned int CConf::getFMExtAudioBoost() const
 	return m_fmExtAudioBoost;
 }
 
+bool CConf::getAX25Enabled() const
+{
+	return m_ax25Enabled;
+}
+
 bool CConf::getDStarNetworkEnabled() const
 {
 	return m_dstarNetworkEnabled;
@@ -1895,6 +1928,36 @@ unsigned int CConf::getPOCSAGNetworkModeHang() const
 bool CConf::getPOCSAGNetworkDebug() const
 {
 	return m_pocsagNetworkDebug;
+}
+
+bool CConf::getAX25NetworkEnabled() const
+{
+	return m_ax25NetworkEnabled;
+}
+
+std::string CConf::getAX25GatewayAddress() const
+{
+	return m_ax25GatewayAddress;
+}
+
+unsigned int CConf::getAX25GatewayPort() const
+{
+	return m_ax25GatewayPort;
+}
+
+std::string CConf::getAX25LocalAddress() const
+{
+	return m_ax25LocalAddress;
+}
+
+unsigned int CConf::getAX25LocalPort() const
+{
+	return m_ax25LocalPort;
+}
+
+bool CConf::getAX25NetworkDebug() const
+{
+	return m_ax25NetworkDebug;
 }
 
 std::string CConf::getTFTSerialPort() const

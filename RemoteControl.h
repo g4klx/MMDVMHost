@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2019,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -40,12 +40,14 @@ enum REMOTE_COMMAND {
 	RCD_ENABLE_P25,
 	RCD_ENABLE_NXDN,
 	RCD_ENABLE_FM,
+	RCD_ENABLE_AX25,
 	RCD_DISABLE_DSTAR,
 	RCD_DISABLE_DMR,
 	RCD_DISABLE_YSF,
 	RCD_DISABLE_P25,
 	RCD_DISABLE_NXDN,
 	RCD_DISABLE_FM,
+	RCD_DISABLE_AX25,
 	RCD_PAGE,
 	RCD_CW
 };

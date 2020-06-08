@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2019,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -102,6 +102,8 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 				m_command = RCD_ENABLE_NXDN;
 			else if (m_args.at(1U) == "fm")
 				m_command = RCD_ENABLE_FM;
+			else if (m_args.at(1U) == "ax25")
+				m_command = RCD_ENABLE_AX25;
 		} else if (m_args.at(0U) == "disable" && m_args.size() >= DISABLE_ARGS) {
 			if (m_args.at(1U) == "dstar")
 				m_command = RCD_DISABLE_DSTAR;
@@ -115,6 +117,8 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 				m_command = RCD_DISABLE_NXDN;
 			else if (m_args.at(1U) == "fm")
 				m_command = RCD_DISABLE_FM;
+			else if (m_args.at(1U) == "ax25")
+				m_command = RCD_DISABLE_AX25;
 		} else if (m_args.at(0U) == "page" && m_args.size() >= PAGE_ARGS) {
 			// Page command is in the form of "page <ric> <message>"
 			m_command = RCD_PAGE;

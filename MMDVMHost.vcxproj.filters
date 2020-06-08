@@ -299,6 +299,12 @@
     <ClInclude Include="UserDBentry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AX25Control.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AX25Network.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -560,6 +566,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="UserDBentry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AX25Control.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AX25Network.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
