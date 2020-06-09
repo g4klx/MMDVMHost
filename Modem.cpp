@@ -594,10 +594,7 @@ void CModem::clock(unsigned int ms)
 				if (m_trace)
 					CUtils::dump(1U, "RX AX.25 Data", m_buffer, m_length);
 
-				unsigned char data = m_length - 2U;
-				m_rxAX25Data.addData(&data, 1U);
-
-				data = TAG_DATA;
+				unsigned char data = m_length - 3U;
 				m_rxAX25Data.addData(&data, 1U);
 
 				m_rxAX25Data.addData(m_buffer + 3U, m_length - 3U);

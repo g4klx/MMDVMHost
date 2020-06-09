@@ -623,8 +623,12 @@ int CMMDVMHost::run()
 			pocsagTimer.start();
 	}
 
-	if (m_ax25Enabled)
+	if (m_ax25Enabled) {
+		LogInfo("AX.25 RF Parameters");
+		LogInfo("    RXOnly: yes");
+
 		m_ax25 = new CAX25Control(m_ax25Network);
+	}
 
 	bool remoteControlEnabled = m_conf.getRemoteControlEnabled();
 	if (remoteControlEnabled) {
@@ -1616,7 +1620,6 @@ void CMMDVMHost::readParams()
 	LogInfo("    AX.25: %s", m_ax25Enabled ? "enabled" : "disabled");
 }
 
-// XXX AX.25 enabled/disabled
 void CMMDVMHost::setMode(unsigned char mode)
 {
 	assert(m_modem != NULL);
@@ -1636,6 +1639,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdnNetwork->enable(false);
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
+		if (m_ax25Network != NULL)
+			m_ax25Network->enable(false);
 		if (m_dstar != NULL)
 			m_dstar->enable(true);
 		if (m_dmr != NULL)
@@ -1648,6 +1653,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+		if (m_ax25 != NULL)
+			m_ax25->enable(false);
 		m_modem->setMode(MODE_DSTAR);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_DSTAR);
@@ -1670,6 +1677,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdnNetwork->enable(false);
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
+		if (m_ax25Network != NULL)
+			m_ax25Network->enable(false);
 		if (m_dstar != NULL)
 			m_dstar->enable(false);
 		if (m_dmr != NULL)
@@ -1682,6 +1691,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+		if (m_ax25 != NULL)
+			m_ax25->enable(false);
 		m_modem->setMode(MODE_DMR);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_DMR);
@@ -1708,6 +1719,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdnNetwork->enable(false);
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
+		if (m_ax25Network != NULL)
+			m_ax25Network->enable(false);
 		if (m_dstar != NULL)
 			m_dstar->enable(false);
 		if (m_dmr != NULL)
@@ -1720,6 +1733,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+		if (m_ax25 != NULL)
+			m_ax25->enable(false);
 		m_modem->setMode(MODE_YSF);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_YSF);
@@ -1742,6 +1757,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdnNetwork->enable(false);
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
+		if (m_ax25Network != NULL)
+			m_ax25Network->enable(false);
 		if (m_dstar != NULL)
 			m_dstar->enable(false);
 		if (m_dmr != NULL)
@@ -1754,6 +1771,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+		if (m_ax25 != NULL)
+			m_ax25->enable(false);
 		m_modem->setMode(MODE_P25);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_P25);
@@ -1776,6 +1795,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdnNetwork->enable(true);
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
+		if (m_ax25Network != NULL)
+			m_ax25Network->enable(false);
 		if (m_dstar != NULL)
 			m_dstar->enable(false);
 		if (m_dmr != NULL)
@@ -1788,6 +1809,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(true);
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+		if (m_ax25 != NULL)
+			m_ax25->enable(false);
 		m_modem->setMode(MODE_NXDN);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_NXDN);
@@ -1810,6 +1833,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdnNetwork->enable(false);
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(true);
+		if (m_ax25Network != NULL)
+			m_ax25Network->enable(false);
 		if (m_dstar != NULL)
 			m_dstar->enable(false);
 		if (m_dmr != NULL)
@@ -1822,6 +1847,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_pocsag != NULL)
 			m_pocsag->enable(true);
+		if (m_ax25 != NULL)
+			m_ax25->enable(false);
 		m_modem->setMode(MODE_POCSAG);
 		if (m_ump != NULL)
 			m_ump->setMode(MODE_POCSAG);
@@ -1844,6 +1871,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdnNetwork->enable(false);
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
+		if (m_ax25Network != NULL)
+			m_ax25Network->enable(true);
 		if (m_dstar != NULL)
 			m_dstar->enable(false);
 		if (m_dmr != NULL)
@@ -1856,6 +1885,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+		if (m_ax25 != NULL)
+			m_ax25->enable(true);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
@@ -1882,6 +1913,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdnNetwork->enable(false);
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
+		if (m_ax25Network != NULL)
+			m_ax25Network->enable(false);
 		if (m_dstar != NULL)
 			m_dstar->enable(false);
 		if (m_dmr != NULL)
@@ -1894,6 +1927,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+		if (m_ax25 != NULL)
+			m_ax25->enable(false);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
@@ -1922,6 +1957,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdnNetwork->enable(false);
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
+		if (m_ax25Network != NULL)
+			m_ax25Network->enable(false);
 		if (m_dstar != NULL)
 			m_dstar->enable(false);
 		if (m_dmr != NULL)
@@ -1934,6 +1971,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+		if (m_ax25 != NULL)
+			m_ax25->enable(false);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
@@ -1960,6 +1999,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdnNetwork->enable(true);
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(true);
+		if (m_ax25Network != NULL)
+			m_ax25Network->enable(true);
 		if (m_dstar != NULL)
 			m_dstar->enable(true);
 		if (m_dmr != NULL)
@@ -1972,6 +2013,8 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(true);
 		if (m_pocsag != NULL)
 			m_pocsag->enable(true);
+		if (m_ax25 != NULL)
+			m_ax25->enable(true);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
@@ -2120,18 +2163,20 @@ void CMMDVMHost::remoteControl()
 				}
 				m_pocsag->sendPage(ric, text);
 			}
+			break;
 		case RCD_CW:
 			setMode(MODE_IDLE); // Force the modem to go idle so that we can send the CW text.
-                        if (!m_modem->hasTX()){
-                                std::string cwtext;
-                                for (unsigned int i = 0U; i < m_remoteControl->getArgCount(); i++) {
-                                        if (i > 0U)
-                                                cwtext += " ";
-                                        cwtext += m_remoteControl->getArgString(i);
-                                }
-                                m_display->writeCW();
-                                m_modem->sendCWId(cwtext);
-                        }
+			if (!m_modem->hasTX()) {
+				std::string cwtext;
+				for (unsigned int i = 0U; i < m_remoteControl->getArgCount(); i++) {
+					if (i > 0U)
+						cwtext += " ";
+					cwtext += m_remoteControl->getArgString(i);
+				}
+				m_display->writeCW();
+				m_modem->sendCWId(cwtext);
+			}
+			break;
 		default:
 			break;
 	}

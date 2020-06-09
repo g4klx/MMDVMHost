@@ -45,7 +45,7 @@ bool CAX25Control::writeModem(unsigned char *data, unsigned int len)
 	if (!m_enabled)
 		return false;
 
-	unsigned char type = data[0U];
+	CUtils::dump(1U, "AX.25 raw packet", data, len);
 
 	return true;
 }
