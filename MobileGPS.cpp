@@ -26,7 +26,7 @@
 CMobileGPS::CMobileGPS(const std::string& address, unsigned int port, CDMRNetwork* network) :
 m_idTimer(1000U, 60U),
 m_address(),
-m_port(port),
+m_addrlen(),
 m_socket(),
 m_network(network)
 {
@@ -34,7 +34,7 @@ m_network(network)
 	assert(port > 0U);
 	assert(network != NULL);
 
-	m_address = CUDPSocket::lookup(address);
+	CUDPSocket::lookup(address, port, m_address, m_addrlen);
 }
 
 CMobileGPS::~CMobileGPS()
@@ -43,7 +43,7 @@ CMobileGPS::~CMobileGPS()
 
 bool CMobileGPS::open()
 {
-	bool ret = m_socket.open();
+	bool ret = m_socket.open(m_address.ss_family);
 	if (!ret)
 		return false;
 
@@ -71,16 +71,16 @@ void CMobileGPS::close()
 
 bool CMobileGPS::pollGPS()
 {
-	return m_socket.write((unsigned char*)"MMDVMHost", 9U, m_address, m_port);
+	return m_socket.write((unsigned char*)"MMDVMHost", 9U, m_address, m_addrlen);
 }
 
 void CMobileGPS::sendReport()
 {
 	// Grab GPS data if it's available
 	unsigned char buffer[200U];
-	in_addr address;
-	unsigned int port;
-	int ret = m_socket.read(buffer, 200U, address, port);
+	sockaddr_storage address;
+	unsigned int addrlen;
+	int ret = m_socket.read(buffer, 200U, address, addrlen);
 	if (ret <= 0)
 		return;
 

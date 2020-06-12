@@ -33,7 +33,7 @@ const unsigned int BUFFER_LENGTH = 100U;
 CDStarNetwork::CDStarNetwork(const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int localPort, bool duplex, const char* version, bool debug) :
 m_socket(localPort),
 m_address(),
-m_port(gatewayPort),
+m_addrlen(),
 m_duplex(duplex),
 m_version(version),
 m_debug(debug),
@@ -46,7 +46,7 @@ m_pollTimer(1000U, 60U),
 m_linkStatus(LS_NONE),
 m_linkReflector(NULL)
 {
-	m_address = CUDPSocket::lookup(gatewayAddress);
+	CUDPSocket::lookup(gatewayAddress, gatewayPort, m_address, m_addrlen);
 
 	m_linkReflector = new unsigned char[DSTAR_LONG_CALLSIGN_LENGTH];
 
@@ -63,12 +63,12 @@ bool CDStarNetwork::open()
 {
 	LogMessage("Opening D-Star network connection");
 
-	if (m_address.s_addr == INADDR_NONE)
+	if (CUDPSocket::isnone(m_address))
 		return false;
 
 	m_pollTimer.start();
 
-	return m_socket.open();
+	return m_socket.open(m_address.ss_family);
 }
 
 bool CDStarNetwork::writeHeader(const unsigned char* header, unsigned int length, bool busy)
@@ -100,7 +100,7 @@ bool CDStarNetwork::writeHeader(const unsigned char* header, unsigned int length
 		CUtils::dump(1U, "D-Star Network Header Sent", buffer, 49U);
 
 	for (unsigned int i = 0U; i < 2U; i++) {
-		bool ret = m_socket.write(buffer, 49U, m_address, m_port);
+		bool ret = m_socket.write(buffer, 49U, m_address, m_addrlen);
 		if (!ret)
 			return false;
 	}
@@ -143,7 +143,7 @@ bool CDStarNetwork::writeData(const unsigned char* data, unsigned int length, un
 	if (m_debug)
 		CUtils::dump(1U, "D-Star Network Data Sent", buffer, length + 9U);
 
-	return m_socket.write(buffer, length + 9U, m_address, m_port);
+	return m_socket.write(buffer, length + 9U, m_address, m_addrlen);
 }
 
 bool CDStarNetwork::writePoll(const char* text)
@@ -167,7 +167,7 @@ bool CDStarNetwork::writePoll(const char* text)
 	// if (m_debug)
 	//	CUtils::dump(1U, "D-Star Network Poll Sent", buffer, 6U + length);
 
-	return m_socket.write(buffer, 6U + length, m_address, m_port);
+	return m_socket.write(buffer, 6U + length, m_address, m_addrlen);
 }
 
 void CDStarNetwork::clock(unsigned int ms)
@@ -192,17 +192,11 @@ void CDStarNetwork::clock(unsigned int ms)
 
 	unsigned char buffer[BUFFER_LENGTH];
 
-	in_addr address;
-	unsigned int port;
-	int length = m_socket.read(buffer, BUFFER_LENGTH, address, port);
-	if (length <= 0)
+	sockaddr_storage address;
+	unsigned int addrlen;
+	int length = m_socket.read(buffer, BUFFER_LENGTH, address, addrlen);
+	if (length <= 0 || !CUDPSocket::match(m_address, address))
 		return;
-
-	// Check if the data is for us
-	if (m_address.s_addr != address.s_addr || m_port != port) {
-		LogMessage("D-Star packet received from an invalid source, %08X != %08X and/or %u != %u", m_address.s_addr, address.s_addr, m_port, port);
-		return;
-	}
 
 	// Invalid packet type?
 	if (::memcmp(buffer, "DSRP", 4U) != 0)

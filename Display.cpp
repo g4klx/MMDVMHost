@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -101,6 +101,17 @@ void CDisplay::setQuit()
 	setQuitInt();
 }
 
+void CDisplay::setFM()
+{
+	m_timer1.stop();
+	m_timer2.stop();
+
+	m_mode1 = MODE_FM;
+	m_mode2 = MODE_FM;
+
+	setFMInt();
+}
+
 void CDisplay::writeDStar(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
 	assert(my1 != NULL);
@@ -190,6 +201,7 @@ void CDisplay::writeDMRBER(unsigned int slotNo, float ber)
 {
 	writeDMRBERInt(slotNo, ber);
 }
+
 void CDisplay::clearDMR(unsigned int slotNo)
 {
 	if (slotNo == 1U) {

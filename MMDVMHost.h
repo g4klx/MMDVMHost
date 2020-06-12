@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -93,6 +93,7 @@ private:
   bool            m_p25Enabled;
   bool            m_nxdnEnabled;
   bool            m_pocsagEnabled;
+  bool            m_fmEnabled;
   unsigned int    m_cwIdTime;
   CDMRLookup*     m_dmrLookup;
   CNXDNLookup*    m_nxdnLookup;
@@ -116,6 +117,7 @@ private:
 
   void remoteControl();
   void processModeCommand(unsigned char mode, unsigned int timeout);
+  void processEnableCommand(bool& mode, bool enabled);
 
   void setMode(unsigned char mode);
 

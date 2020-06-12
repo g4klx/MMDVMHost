@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2019 by SASANO Takayoshi JG1UAA
- *   Copyright (C) 2015,2016,2018,2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018,2019,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -172,6 +172,14 @@ void CTFTSurenoo::setQuitInt()
 	refreshDisplay();
 
 	m_mode = MODE_QUIT;
+}
+
+void CTFTSurenoo::setFMInt()
+{
+	setModeLine(STR_MMDVM);
+	setStatusLine(statusLineNo(1), "FM");
+
+	m_mode = MODE_FM;
 }
 
 void CTFTSurenoo::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
