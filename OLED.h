@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -50,6 +50,7 @@ public:
   virtual void setErrorInt(const char* text);
   virtual void setLockoutInt();
   virtual void setQuitInt();
+  virtual void setFMInt();
   
   virtual void writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
   virtual void clearDStarInt();

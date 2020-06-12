@@ -42,7 +42,7 @@ bool CUserDB::lookup(unsigned int id, class CUserDBentry *entry)
 		if (entry != NULL)
 			*entry = m_table.at(id);
 		else
-			m_table.at(id);
+			(void)m_table.at(id);
 
 		rv = true;
 	} catch (...) {
@@ -116,8 +116,8 @@ bool CUserDB::makeindex(char* buf, std::unordered_map<std::string, int>& index)
 	}
 
 	try {
-		index.at(keyRADIO_ID);
-		index.at(keyCALLSIGN);
+		(void)index.at(keyRADIO_ID);
+		(void)index.at(keyCALLSIGN);
 		return true;
 	} catch (...) {
 		return false;
@@ -144,8 +144,8 @@ void CUserDB::parse(char* buf, std::unordered_map<std::string, int>& index)
 	}
 
 	try {
-		ptr.at(keyRADIO_ID);
-		ptr.at(keyCALLSIGN);
+		(void)ptr.at(keyRADIO_ID);
+		(void)ptr.at(keyCALLSIGN);
 	} catch (...) {
 		return;
 	}

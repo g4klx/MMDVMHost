@@ -238,6 +238,8 @@
     <ClInclude Include="Timer.h" />
     <ClInclude Include="UDPSocket.h" />
     <ClInclude Include="UMP.h" />
+    <ClInclude Include="UserDB.h" />
+    <ClInclude Include="UserDBentry.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Version.h" />
     <ClInclude Include="YSFControl.h" />
@@ -327,6 +329,8 @@
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="UDPSocket.cpp" />
     <ClCompile Include="UMP.cpp" />
+    <ClCompile Include="UserDB.cpp" />
+    <ClCompile Include="UserDBentry.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="YSFNetwork.cpp" />
     <ClCompile Include="YSFPayload.cpp" />

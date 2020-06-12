@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -44,6 +44,7 @@ enum SECTION {
   SECTION_P25,
   SECTION_NXDN,
   SECTION_POCSAG,
+  SECTION_FM,
   SECTION_DSTAR_NETWORK,
   SECTION_DMR_NETWORK,
   SECTION_FUSION_NETWORK,
@@ -109,6 +110,7 @@ m_modemYSFTXLevel(50.0F),
 m_modemP25TXLevel(50.0F),
 m_modemNXDNTXLevel(50.0F),
 m_modemPOCSAGTXLevel(50.0F),
+m_modemFMTXLevel(50.0F),
 m_modemRSSIMappingFile(),
 m_modemTrace(false),
 m_modemDebug(false),
@@ -161,15 +163,48 @@ m_p25NAC(0x293U),
 m_p25SelfOnly(false),
 m_p25OverrideUID(false),
 m_p25RemoteGateway(false),
+m_p25TXHang(5U),
 m_p25ModeHang(10U),
 m_nxdnEnabled(false),
 m_nxdnId(0U),
 m_nxdnRAN(1U),
 m_nxdnSelfOnly(false),
 m_nxdnRemoteGateway(false),
+m_nxdnTXHang(5U),
 m_nxdnModeHang(10U),
 m_pocsagEnabled(false),
 m_pocsagFrequency(0U),
+m_fmEnabled(false),
+m_fmCallsign(),
+m_fmCallsignSpeed(20U),
+m_fmCallsignFrequency(1000U),
+m_fmCallsignTime(10U),
+m_fmCallsignHoldoff(1U),
+m_fmCallsignHighLevel(35.0F),
+m_fmCallsignLowLevel(15.0F),
+m_fmCallsignAtStart(true),
+m_fmCallsignAtEnd(true),
+m_fmCallsignAtLatch(true),
+m_fmRFAck("K"),
+m_fmExtAck("N"),
+m_fmAckSpeed(20U),
+m_fmAckFrequency(1750U),
+m_fmAckMinTime(5U),
+m_fmAckDelay(1000U),
+m_fmAckLevel(80.0F),
+m_fmTimeout(180U),
+m_fmTimeoutLevel(80.0F),
+m_fmCTCSSFrequency(88.6F),
+m_fmCTCSSHighThreshold(30U),
+m_fmCTCSSLowThreshold(20U),
+m_fmCTCSSLevel(2.0F),
+m_fmKerchunkTime(0U),
+m_fmHangTime(7U),
+m_fmUseCOS(true),
+m_fmCOSInvert(false),
+m_fmRFAudioBoost(1U),
+m_fmMaxDevLevel(90.0F),
+m_fmExtAudioBoost(1U),
 m_dstarNetworkEnabled(false),
 m_dstarGatewayAddress(),
 m_dstarGatewayPort(0U),
@@ -244,6 +279,7 @@ m_lcdprocPort(0U),
 m_lcdprocLocalPort(0U),
 m_lcdprocDisplayClock(false),
 m_lcdprocUTC(false),
+m_lcdprocDimOnIdle(false),
 m_lockFileEnabled(false),
 m_lockFileName(),
 m_mobileGPSEnabled(false),
@@ -305,6 +341,8 @@ bool CConf::read()
 		  section = SECTION_NXDN;
 	  else if (::strncmp(buffer, "[POCSAG]", 8U) == 0)
 		  section = SECTION_POCSAG;
+	  else if (::strncmp(buffer, "[FM]", 4U) == 0)
+		  section = SECTION_FM;
 	  else if (::strncmp(buffer, "[D-Star Network]", 16U) == 0)
 		  section = SECTION_DSTAR_NETWORK;
 	  else if (::strncmp(buffer, "[DMR Network]", 13U) == 0)
@@ -359,11 +397,11 @@ bool CConf::read()
 			// Convert the callsign to upper case
 			for (unsigned int i = 0U; value[i] != 0; i++)
 				value[i] = ::toupper(value[i]);
-			m_cwIdCallsign = m_callsign = value;
+			m_fmCallsign = m_cwIdCallsign = m_callsign = value;
 		} else if (::strcmp(key, "Id") == 0)
 			m_id = m_p25Id = m_dmrId = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Timeout") == 0)
-			m_timeout = (unsigned int)::atoi(value);
+			m_fmTimeout = m_timeout = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Duplex") == 0)
 			m_duplex = ::atoi(value) == 1;
 		else if (::strcmp(key, "ModeHang") == 0)
@@ -456,7 +494,7 @@ bool CConf::read()
 		else if (::strcmp(key, "RXLevel") == 0)
 			m_modemRXLevel = float(::atof(value));
 		else if (::strcmp(key, "TXLevel") == 0)
-			m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = m_modemNXDNTXLevel = float(::atof(value));
+			m_modemFMTXLevel = m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = m_modemNXDNTXLevel = float(::atof(value));
 		else if (::strcmp(key, "CWIdTXLevel") == 0)
 			m_modemCWIdTXLevel = float(::atof(value));
 		else if (::strcmp(key, "D-StarTXLevel") == 0)
@@ -471,6 +509,8 @@ bool CConf::read()
 			m_modemNXDNTXLevel = float(::atof(value));
 		else if (::strcmp(key, "POCSAGTXLevel") == 0)
 			m_modemPOCSAGTXLevel = float(::atof(value));
+		else if (::strcmp(key, "FMTXLevel") == 0)
+			m_modemFMTXLevel = float(::atof(value));
 		else if (::strcmp(key, "RSSIMappingFile") == 0)
 			m_modemRSSIMappingFile = value;
 		else if (::strcmp(key, "Trace") == 0)
@@ -637,6 +677,8 @@ bool CConf::read()
 			m_p25SelfOnly = ::atoi(value) == 1;
 		else if (::strcmp(key, "RemoteGateway") == 0)
 			m_p25RemoteGateway = ::atoi(value) == 1;
+		else if (::strcmp(key, "TXHang") == 0)
+			m_p25TXHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "ModeHang") == 0)
 			m_p25ModeHang = (unsigned int)::atoi(value);
 	} else if (section == SECTION_NXDN) {
@@ -650,13 +692,90 @@ bool CConf::read()
 			m_nxdnSelfOnly = ::atoi(value) == 1;
 		else if (::strcmp(key, "RemoteGateway") == 0)
 			m_nxdnRemoteGateway = ::atoi(value) == 1;
+		else if (::strcmp(key, "TXHang") == 0)
+			m_nxdnTXHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "ModeHang") == 0)
 			m_nxdnModeHang = (unsigned int)::atoi(value);
 	} else if (section == SECTION_POCSAG) {
+	  if (::strcmp(key, "Enable") == 0)
+		  m_pocsagEnabled = ::atoi(value) == 1;
+	  else if (::strcmp(key, "Frequency") == 0)
+		  m_pocsagFrequency = (unsigned int)::atoi(value);
+	}
+	else if (section == SECTION_FM) {
 		if (::strcmp(key, "Enable") == 0)
-			m_pocsagEnabled = ::atoi(value) == 1;
-		else if (::strcmp(key, "Frequency") == 0)
-			m_pocsagFrequency = (unsigned int)::atoi(value);
+			m_fmEnabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "Callsign") == 0) {
+			// Convert the callsign to upper case
+			for (unsigned int i = 0U; value[i] != 0; i++)
+				value[i] = ::toupper(value[i]);
+			m_fmCallsign = value;
+		} else if (::strcmp(key, "CallsignSpeed") == 0)
+		  m_fmCallsignSpeed = (unsigned int)::atoi(value);
+	  else if (::strcmp(key, "CallsignFrequency") == 0)
+		  m_fmCallsignFrequency = (unsigned int)::atoi(value);
+	  else if (::strcmp(key, "CallsignTime") == 0)
+		  m_fmCallsignTime = (unsigned int)::atoi(value);
+	  else if (::strcmp(key, "CallsignHoldoff") == 0)
+		  m_fmCallsignHoldoff = (unsigned int)::atoi(value);
+	  else if (::strcmp(key, "CallsignHighLevel") == 0)
+		  m_fmCallsignHighLevel = float(::atof(value));
+	  else if (::strcmp(key, "CallsignLowLevel") == 0)
+		  m_fmCallsignLowLevel = float(::atof(value));
+	  else if (::strcmp(key, "CallsignAtStart") == 0)
+		  m_fmCallsignAtStart = ::atoi(value) == 1;
+	  else if (::strcmp(key, "CallsignAtEnd") == 0)
+		  m_fmCallsignAtEnd = ::atoi(value) == 1;
+	  else if (::strcmp(key, "CallsignAtLatch") == 0)
+		  m_fmCallsignAtLatch = ::atoi(value) == 1;
+	  else if (::strcmp(key, "RFAck") == 0) {
+			// Convert the ack to upper case
+			for (unsigned int i = 0U; value[i] != 0; i++)
+				value[i] = ::toupper(value[i]);
+			m_fmRFAck = value;
+	  } else if (::strcmp(key, "ExtAck") == 0) {
+			// Convert the ack to upper case
+			for (unsigned int i = 0U; value[i] != 0; i++)
+				value[i] = ::toupper(value[i]);
+			m_fmExtAck = value;
+		}	else if (::strcmp(key, "AckSpeed") == 0)
+			m_fmAckSpeed = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "AckFrequency") == 0)
+			m_fmAckFrequency = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "AckMinTime") == 0)
+			m_fmAckMinTime = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "AckDelay") == 0)
+			m_fmAckDelay = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "AckLevel") == 0)
+			m_fmAckLevel = float(::atof(value));
+		else if (::strcmp(key, "Timeout") == 0)
+			m_fmTimeout = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "TimeoutLevel") == 0)
+			m_fmTimeoutLevel = float(::atof(value));
+		else if (::strcmp(key, "CTCSSFrequency") == 0)
+			m_fmCTCSSFrequency = float(::atof(value));
+		else if (::strcmp(key, "CTCSSThreshold") == 0)
+			m_fmCTCSSHighThreshold = m_fmCTCSSLowThreshold = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "CTCSSHighThreshold") == 0)
+			m_fmCTCSSHighThreshold = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "CTCSSLowThreshold") == 0)
+			m_fmCTCSSLowThreshold = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "CTCSSLevel") == 0)
+			m_fmCTCSSLevel = float(::atof(value));
+		else if (::strcmp(key, "KerchunkTime") == 0)
+			m_fmKerchunkTime = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "HangTime") == 0)
+			m_fmHangTime = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "UseCOS") == 0)
+			m_fmUseCOS = ::atoi(value) == 1;
+		else if (::strcmp(key, "COSInvert") == 0)
+			m_fmCOSInvert = ::atoi(value) == 1;
+		else if (::strcmp(key, "RFAudioBoost") == 0)
+			m_fmRFAudioBoost = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "MaxDevLevel") == 0)
+			m_fmMaxDevLevel = float(::atof(value));
+		else if (::strcmp(key, "ExtAudioBoost") == 0)
+			m_fmExtAudioBoost = (unsigned int)::atoi(value);
 	} else if (section == SECTION_DSTAR_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dstarNetworkEnabled = ::atoi(value) == 1;
@@ -1086,6 +1205,11 @@ float CConf::getModemPOCSAGTXLevel() const
 	return m_modemPOCSAGTXLevel;
 }
 
+float CConf::getModemFMTXLevel() const
+{
+	return m_modemFMTXLevel;
+}
+
 std::string CConf::getModemRSSIMappingFile () const
 {
 	return m_modemRSSIMappingFile;
@@ -1346,6 +1470,11 @@ bool CConf::getP25RemoteGateway() const
 	return m_p25RemoteGateway;
 }
 
+unsigned int CConf::getP25TXHang() const
+{
+	return m_p25TXHang;
+}
+
 unsigned int CConf::getP25ModeHang() const
 {
 	return m_p25ModeHang;
@@ -1376,6 +1505,11 @@ bool CConf::getNXDNRemoteGateway() const
 	return m_nxdnRemoteGateway;
 }
 
+unsigned int CConf::getNXDNTXHang() const
+{
+	return m_nxdnTXHang;
+}
+
 unsigned int CConf::getNXDNModeHang() const
 {
 	return m_nxdnModeHang;
@@ -1389,6 +1523,161 @@ bool CConf::getPOCSAGEnabled() const
 unsigned int CConf::getPOCSAGFrequency() const
 {
 	return m_pocsagFrequency;
+}
+
+bool CConf::getFMEnabled() const
+{
+	return m_fmEnabled;
+}
+
+std::string CConf::getFMCallsign() const
+{
+	return m_fmCallsign;
+}
+
+unsigned int CConf::getFMCallsignSpeed() const
+{
+	return m_fmCallsignSpeed;
+}
+
+unsigned int CConf::getFMCallsignFrequency() const
+{
+	return m_fmCallsignFrequency;
+}
+
+unsigned int CConf::getFMCallsignTime() const
+{
+	return m_fmCallsignTime;
+}
+
+unsigned int CConf::getFMCallsignHoldoff() const
+{
+	return m_fmCallsignHoldoff;
+}
+
+float CConf::getFMCallsignHighLevel() const
+{
+	return m_fmCallsignHighLevel;
+}
+
+float CConf::getFMCallsignLowLevel() const
+{
+	return m_fmCallsignLowLevel;
+}
+
+bool CConf::getFMCallsignAtStart() const
+{
+	return m_fmCallsignAtStart;
+}
+
+bool CConf::getFMCallsignAtEnd() const
+{
+	return m_fmCallsignAtEnd;
+}
+
+bool CConf::getFMCallsignAtLatch() const
+{
+	return m_fmCallsignAtLatch;
+}
+
+std::string CConf::getFMRFAck() const
+{
+	return m_fmRFAck;
+}
+
+std::string CConf::getFMExtAck() const
+{
+	return m_fmExtAck;
+}
+
+unsigned int CConf::getFMAckSpeed() const
+{
+	return m_fmAckSpeed;
+}
+
+unsigned int CConf::getFMAckFrequency() const
+{
+	return m_fmAckFrequency;
+}
+
+unsigned int CConf::getFMAckMinTime() const
+{
+	return m_fmAckMinTime;
+}
+
+unsigned int CConf::getFMAckDelay() const
+{
+	return m_fmAckDelay;
+}
+
+float CConf::getFMAckLevel() const
+{
+	return m_fmAckLevel;
+}
+
+unsigned int CConf::getFMTimeout() const
+{
+	return m_fmTimeout;
+}
+
+float CConf::getFMTimeoutLevel() const
+{
+	return m_fmTimeoutLevel;
+}
+
+float CConf::getFMCTCSSFrequency() const
+{
+	return m_fmCTCSSFrequency;
+}
+
+unsigned int CConf::getFMCTCSSHighThreshold() const
+{
+	return m_fmCTCSSHighThreshold;
+}
+
+unsigned int CConf::getFMCTCSSLowThreshold() const
+{
+	return m_fmCTCSSLowThreshold;
+}
+
+float CConf::getFMCTCSSLevel() const
+{
+	return m_fmCTCSSLevel;
+}
+
+unsigned int CConf::getFMKerchunkTime() const
+{
+	return m_fmKerchunkTime;
+}
+
+unsigned int CConf::getFMHangTime() const
+{
+	return m_fmHangTime;
+}
+
+bool CConf::getFMUseCOS() const
+{
+	return m_fmUseCOS;
+}
+
+bool CConf::getFMCOSInvert() const
+{
+	return m_fmCOSInvert;
+}
+
+unsigned int CConf::getFMRFAudioBoost() const
+{
+	return m_fmRFAudioBoost;
+}
+
+float CConf::getFMMaxDevLevel() const
+{
+	return m_fmMaxDevLevel;
+}
+
+unsigned int CConf::getFMExtAudioBoost() const
+{
+	return m_fmExtAudioBoost;
 }
 
 bool CConf::getDStarNetworkEnabled() const
