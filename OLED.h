@@ -37,6 +37,12 @@
 #include "ArduiPi_OLED.h"
 #include "NetworkInfo.h"
 
+// Display Scroll Modes
+#define SCROLL_NONE 0
+#define SCROLL_STATUS_BAR 1
+#define SCROLL_FULL_DISPLAY 2
+#define SCROLL_BOTTOM_DISPLAY 3
+
 class COLED : public CDisplay 
 {
 public:
@@ -70,8 +76,11 @@ public:
   virtual void writePOCSAGInt(uint32_t ric, const std::string& message);
   virtual void clearPOCSAGInt();
 
+  virtual void drawStatusBar();
+
   virtual void writeCWInt();
   virtual void clearCWInt();
+  virtual void drawDisplay();
 
   virtual void close();
 
@@ -81,6 +90,7 @@ private:
   unsigned char m_mode;
   unsigned char m_displayType;
   unsigned char m_displayBrightness;
+  unsigned char m_displayScrollMode;
   bool          m_displayInvert;
   bool          m_displayScroll;
   bool          m_displayRotate;
@@ -89,8 +99,6 @@ private:
   bool          m_slot2Enabled;
   std::string   m_ipaddress;
   ArduiPi_OLED  m_display;
-
-  void OLED_statusbar();
 };
 
 #endif

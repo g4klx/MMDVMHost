@@ -220,10 +220,10 @@ bool COLED::open()
     m_display.clearDisplay();   // clears the screen  buffer
     m_display.display();        // display it (clear display)
 
-    OLED_statusbar();
+    drawStatusBar();
     m_display.setCursor(0,OLED_LINE3);
     m_display.print("Startup");
-    m_display.display();
+    drawDisplay();
 
     return true;
 }
@@ -231,17 +231,17 @@ bool COLED::open()
 void COLED::setIdleInt()
 {
     m_mode = MODE_IDLE;
-
+    m_display.stopscroll();
     m_display.clearDisplay();
-    OLED_statusbar();
+    drawStatusBar();
+    m_displayScrollMode = SCROLL_FULL_DISPLAY;
 
 //    m_display.setCursor(0,30);
 //    m_display.setTextSize(3);
 //    m_display.print("Idle");
-
 //    m_display.setTextSize(1);
-    m_display.startscrolldiagright(0x00,0x0f);  //the MMDVM logo scrolls the whole screen
-    m_display.display();
+
+    drawDisplay();
 
     unsigned char info[100U];
     CNetworkInfo* m_network;
@@ -267,43 +267,47 @@ void COLED::setErrorInt(const char* text)
 {
     m_mode = MODE_ERROR;
 
+    m_display.stopscroll();
     m_display.clearDisplay();
-    OLED_statusbar();
+    drawStatusBar();
 
     m_display.setCursor(0,OLED_LINE1);
     m_display.printf("%s\n",text);
 
-    m_display.display();
+    drawDisplay();
 }
 
 void COLED::setLockoutInt()
 {
     m_mode = MODE_LOCKOUT;
 
+    m_display.stopscroll();
     m_display.clearDisplay();
-    OLED_statusbar();
+    drawStatusBar();
 
     m_display.setCursor(0,30);
     m_display.setTextSize(3);
     m_display.print("Lockout");
 
     m_display.setTextSize(1);
-    m_display.display();
+    
+    drawDisplay();
 }
 
 void COLED::setQuitInt()
 {
     m_mode = MODE_QUIT;
 
+    m_display.stopscroll();
     m_display.clearDisplay();
-    OLED_statusbar();
+    drawStatusBar();
 
     m_display.setCursor(0,30);
     m_display.setTextSize(3);
     m_display.print("Stopped");
 
     m_display.setTextSize(1);
-    m_display.display();
+    drawDisplay();
 }
 
 void COLED::setFMInt()
@@ -325,7 +329,10 @@ void COLED::writeDStarInt(const char* my1, const char* my2, const char* your, co
 {
     m_mode = MODE_DSTAR;
 
+    m_display.stopscroll();
     m_display.clearDisplay();
+    drawStatusBar();
+
     m_display.fillRect(0,OLED_LINE3,m_display.width(),m_display.height(),BLACK); //clear everything beneath logo
 
     m_display.setCursor(0,OLED_LINE3);
@@ -340,13 +347,13 @@ void COLED::writeDStarInt(const char* my1, const char* my2, const char* your, co
     m_display.setCursor(0,OLED_LINE6);
     m_display.printf("%s",m_ipaddress.c_str());
 
-    OLED_statusbar();
-    m_display.display();
+    drawDisplay();
 
 }
 
 void COLED::clearDStarInt()
 {
+    m_display.stopscroll();
     m_display.fillRect(0,OLED_LINE3, m_display.width(),m_display.height(),BLACK); //clear everything beneath the logo
 
     m_display.setCursor(40,OLED_LINE3);
@@ -355,17 +362,20 @@ void COLED::clearDStarInt()
     m_display.setCursor(0,OLED_LINE5);
     m_display.printf("%s",m_ipaddress.c_str());
 
-    m_display.display();
+    drawDisplay();
 }
 
 void COLED::writeDMRInt(unsigned int slotNo,const std::string& src,bool group,const std::string& dst,const char* type)
 {
+    m_display.stopscroll();
 
     if (m_mode != MODE_DMR) {
         m_display.clearDisplay();
         m_mode = MODE_DMR;
         clearDMRInt(slotNo);
+        drawStatusBar();
     }
+
     // if both slots, use lines 2-3 for slot 1, lines 4-5 for slot 2
     // if single slot, use lines 3-4
     if ( m_slot1Enabled && m_slot2Enabled ) {
@@ -400,8 +410,7 @@ void COLED::writeDMRInt(unsigned int slotNo,const std::string& src,bool group,co
     m_display.setCursor(0,OLED_LINE6);
     m_display.printf("%s",m_ipaddress.c_str());
 
-    OLED_statusbar();
-    m_display.display();
+    drawDisplay();
 
 }
 
@@ -430,15 +439,16 @@ void COLED::clearDMRInt(unsigned int slotNo)
     m_display.fillRect(0, OLED_LINE6, m_display.width(), 20, BLACK);
     m_display.setCursor(0,OLED_LINE6);
     m_display.printf("%s",m_ipaddress.c_str());
-    m_display.display();
 }
 
 void COLED::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
 {
-
     m_mode = MODE_YSF;
-
+    
+    m_display.stopscroll();
     m_display.clearDisplay();
+    drawStatusBar();
+
     m_display.fillRect(0,OLED_LINE2,m_display.width(),m_display.height(),BLACK);
 
     m_display.setCursor(0,OLED_LINE4);
@@ -447,13 +457,14 @@ void COLED::writeFusionInt(const char* source, const char* dest, const char* typ
     m_display.setCursor(0,OLED_LINE5);
     m_display.printf("  %.10s", dest);
 
-    OLED_statusbar();
-    m_display.display();
+    
+    drawDisplay();
 
 }
 
 void COLED::clearFusionInt()
 {
+    m_display.stopscroll();
     m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
     m_display.setCursor(40,OLED_LINE4);
@@ -462,15 +473,17 @@ void COLED::clearFusionInt()
     m_display.setCursor(0,OLED_LINE6);
     m_display.printf("%s",m_ipaddress.c_str());
 
-    m_display.display();
+    drawDisplay();
 }
 
 void COLED::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
 {
     m_mode = MODE_P25;
 
+    m_display.stopscroll();
     m_display.clearDisplay();
     m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
+    drawStatusBar();
 
     m_display.setCursor(0,OLED_LINE3);
     m_display.printf("%s %.10s", type, source);
@@ -478,13 +491,14 @@ void COLED::writeP25Int(const char* source, bool group, unsigned int dest, const
     m_display.setCursor(0,OLED_LINE4);
     m_display.printf("  %s%u", group ? "TG" : "", dest);
 
-    OLED_statusbar();
-    m_display.display();
+    
+    drawDisplay();
 
 }
 
 void COLED::clearP25Int()
 {
+    m_display.stopscroll();
     m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
     m_display.setCursor(40,OLED_LINE4);
@@ -493,14 +507,17 @@ void COLED::clearP25Int()
     m_display.setCursor(0,OLED_LINE6);
     m_display.printf("%s",m_ipaddress.c_str());
 
-    m_display.display();
+    drawDisplay();
 }
 
 void COLED::writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type)
 {
     m_mode = MODE_NXDN;
 
+    m_display.stopscroll();
     m_display.clearDisplay();
+    drawStatusBar();
+
     m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
     m_display.setCursor(0,OLED_LINE3);
@@ -509,13 +526,14 @@ void COLED::writeNXDNInt(const char* source, bool group, unsigned int dest, cons
     m_display.setCursor(0,OLED_LINE5);
     m_display.printf("  %s%u", group ? "TG" : "", dest);
 
-    OLED_statusbar();
-    m_display.display();
+    drawDisplay();
 
 }
 
 void COLED::clearNXDNInt()
 {
+    m_display.stopscroll();
+
     m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
     m_display.setCursor(40,OLED_LINE4);
@@ -524,14 +542,16 @@ void COLED::clearNXDNInt()
     m_display.setCursor(0,OLED_LINE6);
     m_display.printf("%s",m_ipaddress.c_str());
 
-    m_display.display();
+    drawDisplay();
 }
 
 void COLED::writePOCSAGInt(uint32_t ric, const std::string& message)
 {
     m_mode = MODE_POCSAG;
-
+    
+    m_display.stopscroll();
     m_display.clearDisplay();
+    drawStatusBar();
     m_display.fillRect(0, OLED_LINE1, m_display.width(), m_display.height(), BLACK);
 
     m_display.setCursor(0,OLED_LINE3);
@@ -540,13 +560,15 @@ void COLED::writePOCSAGInt(uint32_t ric, const std::string& message)
     m_display.setCursor(0,OLED_LINE5);
     m_display.printf("MSG: %s", message.c_str());
 
-    OLED_statusbar();
-    m_display.display();
+    
+    drawDisplay();
 
 }
 
 void COLED::clearPOCSAGInt()
 {
+    m_display.stopscroll();
+
     m_display.fillRect(0, OLED_LINE1, m_display.width(), m_display.height(), BLACK);
 
     m_display.setCursor(40,OLED_LINE4);
@@ -555,11 +577,12 @@ void COLED::clearPOCSAGInt()
     m_display.setCursor(0,OLED_LINE6);
     m_display.printf("%s",m_ipaddress.c_str());
 
-    m_display.display();
+    drawDisplay();
 }
 
 void COLED::writeCWInt()
 {
+    m_display.stopscroll();
     m_display.clearDisplay();
 
     m_display.setCursor(0,30);
@@ -567,12 +590,14 @@ void COLED::writeCWInt()
     m_display.print("CW TX");
 
     m_display.setTextSize(1);
-    m_display.display();
-    m_display.startscrollright(0x02,0x0f);
+    
+    m_displayScrollMode = SCROLL_BOTTOM_DISPLAY;
+    drawDisplay();
 }
 
 void COLED::clearCWInt()
 {
+    m_display.stopscroll();
     m_display.clearDisplay();
 
     m_display.setCursor(0,30);
@@ -580,26 +605,27 @@ void COLED::clearCWInt()
     m_display.print("Idle");
 
     m_display.setTextSize(1);
-    m_display.display();
-    m_display.startscrollleft(0x02,0x0f);
+    
+    m_displayScrollMode = SCROLL_BOTTOM_DISPLAY;
+    drawDisplay();
 }
 
 void COLED::close()
 {
+    m_display.stopscroll();
     m_display.clearDisplay();
     m_display.fillRect(0, 0, m_display.width(), 16, BLACK);
-    m_display.startscrollright(0x00,0x01);
     m_display.setCursor(0,00);
     m_display.setTextSize(2);
     m_display.print("-CLOSE-");
-    m_display.display();
+    m_displayScrollMode = SCROLL_STATUS_BAR;
+    drawDisplay();
 
     m_display.close();
 }
 
-void COLED::OLED_statusbar()
+void COLED::drawStatusBar()
 {
-    m_display.stopscroll();
     m_display.fillRect(0, 0, m_display.width(), 16, BLACK);
     m_display.setTextColor(WHITE);
 
@@ -619,6 +645,16 @@ void COLED::OLED_statusbar()
     else if (m_displayLogoScreensaver)
         m_display.drawBitmap(0, 0, logo_glcd_bmp, 128, 16, WHITE);
 
-    if (m_displayScroll)
-        m_display.startscrollright(0x00,0x01);
+    m_displayScrollMode = SCROLL_STATUS_BAR;
+}
+
+void COLED::drawDisplay() 
+{
+    m_display.display();
+    if (m_displayScrollMode == SCROLL_STATUS_BAR)
+        m_display.startscrollright(0x00,0x01);   // Just the title bar scrolls.
+    else if (m_displayScrollMode == SCROLL_FULL_DISPLAY)
+        m_display.startscrolldiagright(0x00,0x0f);  //the MMDVM logo scrolls the whole screen
+    else if (m_displayScrollMode == SCROLL_BOTTOM_DISPLAY)
+        m_display.startscrollright(0x02,0x0f);
 }
