@@ -566,7 +566,7 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
                         }
 		} else {
 			SERIAL_SPEED baudrate = SERIAL_9600;
-			if (screenLayout==4U)
+			if (screenLayout&0x0cU)
 				baudrate = SERIAL_115200;
 			
 			LogInfo("    Display baudrate: %u ",baudrate);

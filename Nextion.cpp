@@ -38,6 +38,16 @@ const unsigned int P25_BER_COUNT    = 7U;		  // 7 * 180ms = 1260ms
 const unsigned int NXDN_RSSI_COUNT  = 28U;		  // 28 * 40ms = 1120ms
 const unsigned int NXDN_BER_COUNT   = 28U;		  // 28 * 40ms = 1120ms
 
+#define LAYOUT_COMPAT_MASK	(7 << 0) // compatibility for old setting
+#define LAYOUT_TA_ENABLE	(1 << 4) // enable Talker Alias (TA) display
+#define LAYOUT_TA_COLOUR	(1 << 5) // TA display with font colour change
+#define LAYOUT_TA_FONTSIZE	(1 << 6) // TA display with font size change
+#define LAYOUT_DIY		(1 << 7) // use ON7LDS-DIY layout
+
+// bit[3:2] is used in Display.cpp to set connection speed for LCD panel.
+// 00:low, others:high-speed. bit[2] is overlapped with LAYOUT_COMPAT_MASK.
+#define LAYOUT_HIGHSPEED	(3 << 2)
+
 CNextion::CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness, unsigned int screenLayout, unsigned int txFrequency, unsigned int rxFrequency, bool displayTempInF, const std::string& location) :
 CDisplay(),
 m_callsign(callsign),
@@ -49,7 +59,7 @@ m_mode(MODE_IDLE),
 m_displayClock(displayClock),
 m_utc(utc),
 m_idleBrightness(idleBrightness),
-m_screenLayout(screenLayout),
+m_screenLayout(0),
 m_clockDisplayTimer(1000U, 0U, 400U),
 m_rssiAccum1(0U),
 m_rssiAccum2(0U),
@@ -68,6 +78,23 @@ m_location(location)
 {
 	assert(serial != NULL);
 	assert(brightness >= 0U && brightness <= 100U);
+
+	static const unsigned int feature_set[] = {
+		0,				// 0: G4KLX
+		0,				// 1: (reserved, low speed)
+						// 2: ON7LDS
+		LAYOUT_TA_ENABLE | LAYOUT_TA_COLOUR | LAYOUT_TA_FONTSIZE,
+		LAYOUT_TA_ENABLE | LAYOUT_DIY,	// 3: ON7LDS-DIY
+		LAYOUT_TA_ENABLE | LAYOUT_DIY,	// 4: ON7LDS-DIY (high speed)
+		0,				// 5: (reserved, high speed)
+		0,				// 6: (reserved, high speed)
+		0,				// 7: (reserved, high speed)
+	};
+
+	if (screenLayout & ~LAYOUT_COMPAT_MASK)
+		m_screenLayout = screenLayout & ~LAYOUT_COMPAT_MASK;
+	else
+		m_screenLayout = feature_set[screenLayout];
 }
 
 CNextion::~CNextion()
@@ -118,7 +145,7 @@ void CNextion::setIdleInt()
 	::sprintf(command, "t0.txt=\"%s/%u\"", m_callsign.c_str(), m_dmrid);
 	sendCommand(command);
 
-	if (m_screenLayout > 2U) {
+	if (m_screenLayout & LAYOUT_DIY) {
 		::sprintf(command, "t4.txt=\"%s\"", m_callsign.c_str());
 		sendCommand(command);
 		::sprintf(command, "t5.txt=\"%u\"", m_dmrid);
@@ -350,17 +377,21 @@ void CNextion::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 
 
 		if (slotNo == 1U) {
-			if (m_screenLayout == 2U) {
-			    sendCommand("t2.pco=0");
-			    sendCommand("t2.font=4");
+			if (m_screenLayout & LAYOUT_TA_ENABLE) {
+				if (m_screenLayout & LAYOUT_TA_COLOUR)
+					sendCommand("t2.pco=0");
+				if (m_screenLayout & LAYOUT_TA_FONTSIZE)
+					sendCommand("t2.font=4");
 			}
 
 			sendCommand("t2.txt=\"2 Listening\"");
 			sendCommandAction(69U);
 		} else {
-			if (m_screenLayout == 2U) {
-			    sendCommand("t0.pco=0");
-			    sendCommand("t0.font=4");
+			if (m_screenLayout & LAYOUT_TA_ENABLE) {
+				if (m_screenLayout & LAYOUT_TA_COLOUR)
+					sendCommand("t0.pco=0");
+				if (m_screenLayout & LAYOUT_TA_FONTSIZE)
+					sendCommand("t0.font=4");
 			}
 
 			sendCommand("t0.txt=\"1 Listening\"");
@@ -377,9 +408,11 @@ void CNextion::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 	if (slotNo == 1U) {
 		::sprintf(text, "t0.txt=\"1 %s %s\"", type, src.c_str());
 
-		if (m_screenLayout == 2U) {
-		    sendCommand("t0.pco=0");
-		    sendCommand("t0.font=4");
+		if (m_screenLayout & LAYOUT_TA_ENABLE) {
+			if (m_screenLayout & LAYOUT_TA_COLOUR)
+				sendCommand("t0.pco=0");
+			if (m_screenLayout & LAYOUT_TA_FONTSIZE)
+				sendCommand("t0.font=4");
 		}
 
 		sendCommand(text);
@@ -391,9 +424,11 @@ void CNextion::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 	} else {
 		::sprintf(text, "t2.txt=\"2 %s %s\"", type, src.c_str());
 
-		if (m_screenLayout == 2U) {
-		    sendCommand("t2.pco=0");
-		    sendCommand("t2.font=4");
+		if (m_screenLayout & LAYOUT_TA_ENABLE) {
+			if (m_screenLayout & LAYOUT_TA_COLOUR)
+				sendCommand("t2.pco=0");
+			if (m_screenLayout & LAYOUT_TA_FONTSIZE)
+				sendCommand("t2.font=4");
 		}
 
 		sendCommand(text);
@@ -448,15 +483,17 @@ void CNextion::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
 
 void CNextion::writeDMRTAInt(unsigned int slotNo, unsigned char* talkerAlias, const char* type)
 {
-	if (m_screenLayout < 2U)
+	if (!(m_screenLayout & LAYOUT_TA_ENABLE))
 		return;
 
 	if (type[0] == ' ') {
 		if (slotNo == 1U) {
-			if (m_screenLayout == 2U) sendCommand("t0.pco=33808");
+			if (m_screenLayout & LAYOUT_TA_COLOUR)
+				 sendCommand("t0.pco=33808");
 			sendCommandAction(64U);
 		} else {
-			if (m_screenLayout == 2U) sendCommand("t2.pco=33808");
+			if (m_screenLayout & LAYOUT_TA_COLOUR)
+				 sendCommand("t2.pco=33808");
 			sendCommandAction(72U);
 		}
 
@@ -467,16 +504,17 @@ void CNextion::writeDMRTAInt(unsigned int slotNo, unsigned char* talkerAlias, co
 		char text[50U];
 		::sprintf(text, "t0.txt=\"1 %s %s\"", type, talkerAlias);
 
-		if (m_screenLayout == 2U) {
+		if (m_screenLayout & LAYOUT_TA_FONTSIZE) {
 			if (::strlen((char*)talkerAlias) > (16U-4U))
 				sendCommand("t0.font=3");
 			if (::strlen((char*)talkerAlias) > (20U-4U))
 				sendCommand("t0.font=2");
 			if (::strlen((char*)talkerAlias) > (24U-4U))
 				sendCommand("t0.font=1");
-
-			sendCommand("t0.pco=1024");
 		}
+
+		if (m_screenLayout & LAYOUT_TA_COLOUR)
+			sendCommand("t0.pco=1024");
 
 		sendCommand(text);
 		sendCommandAction(63U);
@@ -484,16 +522,18 @@ void CNextion::writeDMRTAInt(unsigned int slotNo, unsigned char* talkerAlias, co
 		char text[50U];
 		::sprintf(text, "t2.txt=\"2 %s %s\"", type, talkerAlias);
 
-		if (m_screenLayout == 2U) {
+		if (m_screenLayout & LAYOUT_TA_FONTSIZE) {
 			if (::strlen((char*)talkerAlias) > (16U-4U))
 				sendCommand("t2.font=3");
 			if (::strlen((char*)talkerAlias) > (20U-4U))
 				sendCommand("t2.font=2");
 			if (::strlen((char*)talkerAlias) > (24U-4U))
 				sendCommand("t2.font=1");
-
-			sendCommand("t2.pco=1024");
 		}
+
+		if (m_screenLayout & LAYOUT_TA_COLOUR)
+			sendCommand("t2.pco=1024");
+
 		sendCommand(text);
 		sendCommandAction(71U);
 	}
@@ -535,9 +575,11 @@ void CNextion::clearDMRInt(unsigned int slotNo)
 		sendCommand("t0.txt=\"1 Listening\"");
 		sendCommandAction(61U);
 
-		if (m_screenLayout == 2U) {
-		    sendCommand("t0.pco=0");
-		    sendCommand("t0.font=4");
+		if (m_screenLayout & LAYOUT_TA_ENABLE) {
+			if (m_screenLayout & LAYOUT_TA_COLOUR)
+				sendCommand("t0.pco=0");
+			if (m_screenLayout & LAYOUT_TA_FONTSIZE)
+				sendCommand("t0.font=4");
 		}
 
 		sendCommand("t1.txt=\"\"");
@@ -547,9 +589,11 @@ void CNextion::clearDMRInt(unsigned int slotNo)
 		sendCommand("t2.txt=\"2 Listening\"");
 		sendCommandAction(69U);
 
-		if (m_screenLayout == 2U) {
-		    sendCommand("t2.pco=0");
-		    sendCommand("t2.font=4");
+		if (m_screenLayout & LAYOUT_TA_ENABLE) {
+			if (m_screenLayout & LAYOUT_TA_COLOUR)
+				sendCommand("t2.pco=0");
+			if (m_screenLayout & LAYOUT_TA_FONTSIZE)
+				sendCommand("t2.font=4");
 		}
 
 		sendCommand("t3.txt=\"\"");
@@ -862,7 +906,7 @@ void CNextion::close()
 
 void CNextion::sendCommandAction(unsigned int status)
 {
-    if (m_screenLayout<3U)
+    if (!(m_screenLayout & LAYOUT_DIY))
 		return;
 
     char text[30U];
@@ -881,4 +925,4 @@ void CNextion::sendCommand(const char* command)
 	// we must add a bit of a delay to allow the display to process the commands, else some are getting mangled.
 	// 10 ms is just a guess, but seems to be sufficient.
     CThread::sleep(10U);
-	}
+}
