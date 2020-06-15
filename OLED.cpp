@@ -240,7 +240,8 @@ void COLED::setIdleInt()
 //    m_display.print("Idle");
 
 //    m_display.setTextSize(1);
-    m_display.startscrolldiagright(0x00,0x0f);  //the MMDVM logo scrolls the whole screen
+    if (m_displayScroll && m_displayLogoScreensaver)
+        m_display.startscrolldiagright(0x00,0x0f);  //the MMDVM logo scrolls the whole screen
     m_display.display();
 
     unsigned char info[100U];
@@ -568,7 +569,8 @@ void COLED::writeCWInt()
 
     m_display.setTextSize(1);
     m_display.display();
-    m_display.startscrollright(0x02,0x0f);
+    if (m_displayScroll)
+        m_display.startscrollright(0x02,0x0f);
 }
 
 void COLED::clearCWInt()
@@ -581,14 +583,16 @@ void COLED::clearCWInt()
 
     m_display.setTextSize(1);
     m_display.display();
-    m_display.startscrollleft(0x02,0x0f);
+    if (m_displayScroll)
+        m_display.startscrollleft(0x02,0x0f);
 }
 
 void COLED::close()
 {
     m_display.clearDisplay();
     m_display.fillRect(0, 0, m_display.width(), 16, BLACK);
-    m_display.startscrollright(0x00,0x01);
+    if (m_displayScroll)
+        m_display.startscrollright(0x00,0x01);
     m_display.setCursor(0,00);
     m_display.setTextSize(2);
     m_display.print("-CLOSE-");
