@@ -69,7 +69,7 @@ private:
   CDMRNetwork*    m_dmrNetwork;
   CYSFNetwork*    m_ysfNetwork;
   CP25Network*    m_p25Network;
-  CNXDNNetwork*   m_nxdnNetwork;
+  INXDNNetwork*   m_nxdnNetwork;
   CPOCSAGNetwork* m_pocsagNetwork;
   CAX25Network*   m_ax25Network;
   CDisplay*       m_display;

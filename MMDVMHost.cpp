@@ -17,6 +17,8 @@
  */
 
 #include "MMDVMHost.h"
+#include "NXDNKenwoodNetwork.h"
+#include "NXDNIcomNetwork.h"
 #include "RSSIInterpolator.h"
 #include "SerialController.h"
 #include "Version.h"
@@ -1504,6 +1506,7 @@ bool CMMDVMHost::createP25Network()
 
 bool CMMDVMHost::createNXDNNetwork()
 {
+	std::string protocol       = m_conf.getNXDNNetworkProtocol();
 	std::string gatewayAddress = m_conf.getNXDNGatewayAddress();
 	unsigned int gatewayPort   = m_conf.getNXDNGatewayPort();
 	std::string localAddress   = m_conf.getNXDNLocalAddress();
@@ -1512,13 +1515,17 @@ bool CMMDVMHost::createNXDNNetwork()
 	bool debug                 = m_conf.getNXDNNetworkDebug();
 
 	LogInfo("NXDN Network Parameters");
+	LogInfo("    Protocol: %s", protocol.c_str());
 	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
 	LogInfo("    Gateway Port: %u", gatewayPort);
 	LogInfo("    Local Address: %s", localAddress.c_str());
 	LogInfo("    Local Port: %u", localPort);
 	LogInfo("    Mode Hang: %us", m_nxdnNetModeHang);
 
-	m_nxdnNetwork = new CNXDNNetwork(localAddress, localPort, gatewayAddress, gatewayPort, debug);
+	if (protocol == "Kenwood")
+		m_nxdnNetwork = new CNXDNKenwoodNetwork(localAddress, localPort, gatewayAddress, gatewayPort, debug);
+	else
+		m_nxdnNetwork = new CNXDNIcomNetwork(localAddress, localPort, gatewayAddress, gatewayPort, debug);
 
 	bool ret = m_nxdnNetwork->open();
 	if (!ret) {
@@ -2099,22 +2106,32 @@ void CMMDVMHost::remoteControl()
 		case RCD_ENABLE_DSTAR:
 			if (m_dstar != NULL && m_dstarEnabled==false)
 				processEnableCommand(m_dstarEnabled, true);
+                        if (m_dstarNetwork != NULL)
+                                m_dstarNetwork->enable(true);
 			break;
 		case RCD_ENABLE_DMR:
 			if (m_dmr != NULL && m_dmrEnabled==false)
 				processEnableCommand(m_dmrEnabled, true);
+                        if (m_dmrNetwork != NULL)
+                                m_dmrNetwork->enable(true);
 			break;
 		case RCD_ENABLE_YSF:
 			if (m_ysf != NULL && m_ysfEnabled==false)
 				processEnableCommand(m_ysfEnabled, true);
+                        if (m_ysfNetwork != NULL)
+                                m_ysfNetwork->enable(true);
 			break;
 		case RCD_ENABLE_P25:
 			if (m_p25 != NULL && m_p25Enabled==false)
 				processEnableCommand(m_p25Enabled, true);
+                       if (m_p25Network != NULL)
+                                m_p25Network->enable(true);
 			break;
 		case RCD_ENABLE_NXDN:
 			if (m_nxdn != NULL && m_nxdnEnabled==false)
 				processEnableCommand(m_nxdnEnabled, true);
+                        if (m_nxdnNetwork != NULL)
+                                m_nxdnNetwork->enable(true);
 			break;
 		case RCD_ENABLE_FM:
 			if (!m_fmEnabled)
@@ -2127,22 +2144,32 @@ void CMMDVMHost::remoteControl()
 		case RCD_DISABLE_DSTAR:
 			if (m_dstar != NULL && m_dstarEnabled==true)
 				processEnableCommand(m_dstarEnabled, false);
+                        if (m_dstarNetwork != NULL)
+                                m_dstarNetwork->enable(false);
 			break;
 		case RCD_DISABLE_DMR:
 			if (m_dmr != NULL && m_dmrEnabled==true)
 				processEnableCommand(m_dmrEnabled, false);
+                        if (m_dmrNetwork != NULL)
+                                m_dmrNetwork->enable(false);
 			break;
 		case RCD_DISABLE_YSF:
 			if (m_ysf != NULL && m_ysfEnabled==true)
 				processEnableCommand(m_ysfEnabled, false);
+                        if (m_ysfNetwork != NULL)
+                                m_ysfNetwork->enable(false);
 			break;
 		case RCD_DISABLE_P25:
 			if (m_p25 != NULL && m_p25Enabled==true)
 				processEnableCommand(m_p25Enabled, false);
+                        if (m_p25Network != NULL)
+                                m_p25Network->enable(false);
 			break;
 		case RCD_DISABLE_NXDN:
 			if (m_nxdn != NULL && m_nxdnEnabled==true)
 				processEnableCommand(m_nxdnEnabled, false);
+                        if (m_nxdnNetwork != NULL)
+                                m_nxdnNetwork->enable(false);
 			break;
 		case RCD_DISABLE_FM:
 			if (m_fmEnabled == true)

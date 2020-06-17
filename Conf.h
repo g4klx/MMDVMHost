@@ -247,6 +247,7 @@ public:
 
   // The NXDN Network section
   bool         getNXDNNetworkEnabled() const;
+  std::string  getNXDNNetworkProtocol() const;
   std::string  getNXDNGatewayAddress() const;
   unsigned int getNXDNGatewayPort() const;
   std::string  getNXDNLocalAddress() const;
@@ -522,6 +523,7 @@ private:
   bool         m_p25NetworkDebug;
 
   bool         m_nxdnNetworkEnabled;
+  std::string  m_nxdnNetworkProtocol;
   std::string  m_nxdnGatewayAddress;
   unsigned int m_nxdnGatewayPort;
   std::string  m_nxdnLocalAddress;

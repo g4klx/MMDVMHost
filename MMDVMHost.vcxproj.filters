@@ -305,6 +305,12 @@
     <ClInclude Include="AX25Network.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="NXDNIcomNetwork.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NXDNKenwoodNetwork.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -572,6 +578,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="AX25Network.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NXDNIcomNetwork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NXDNKenwoodNetwork.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

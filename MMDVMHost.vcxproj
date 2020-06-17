@@ -205,6 +205,8 @@
     <ClInclude Include="NXDNCRC.h" />
     <ClInclude Include="NXDNDefines.h" />
     <ClInclude Include="NXDNFACCH1.h" />
+    <ClInclude Include="NXDNIcomNetwork.h" />
+    <ClInclude Include="NXDNKenwoodNetwork.h" />
     <ClInclude Include="NXDNLayer3.h" />
     <ClInclude Include="NXDNLICH.h" />
     <ClInclude Include="NXDNLookup.h" />
@@ -301,6 +303,8 @@
     <ClCompile Include="NXDNConvolution.cpp" />
     <ClCompile Include="NXDNCRC.cpp" />
     <ClCompile Include="NXDNFACCH1.cpp" />
+    <ClCompile Include="NXDNIcomNetwork.cpp" />
+    <ClCompile Include="NXDNKenwoodNetwork.cpp" />
     <ClCompile Include="NXDNLayer3.cpp" />
     <ClCompile Include="NXDNLICH.cpp" />
     <ClCompile Include="NXDNLookup.cpp" />
