@@ -27,8 +27,9 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 #define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
-CAX25Control::CAX25Control(CAX25Network* network) :
+CAX25Control::CAX25Control(CAX25Network* network, bool trace) :
 m_network(network),
+m_trace(trace),
 m_enabled(true),
 m_fp(NULL)
 {
@@ -45,7 +46,15 @@ bool CAX25Control::writeModem(unsigned char *data, unsigned int len)
 	if (!m_enabled)
 		return false;
 
-	CUtils::dump(1U, "AX.25 raw packet", data, len);
+    if (m_trace)
+        decode(data, len);
+
+    CUtils::dump(1U, "AX.25 raw packet", data, len);
+
+    if (m_network != NULL) {
+        if (isUI(data, len))
+            m_network->writeAX25(data, len);
+    }
 
 	return true;
 }
@@ -94,4 +103,145 @@ void CAX25Control::closeFile()
 void CAX25Control::enable(bool enabled)
 {
 	m_enabled = enabled;
+}
+
+void CAX25Control::decode(const unsigned char* data, unsigned int length)
+{
+    assert(data != NULL);
+    assert(length >= 15U);
+
+    std::string text;
+
+    bool more = decodeAddress(data + 7U, text);
+
+    text += '>';
+
+    decodeAddress(data + 0U, text);
+
+    unsigned int n = 14U;
+    while (more && n < length) {
+        text += ',';
+        more = decodeAddress(data + n, text, true);
+        n += 7U;
+    }
+
+    text += ' ';
+
+    if ((data[n] & 0x01U) == 0x00U) {
+        // I frame
+        char t[20U];
+        ::sprintf(t, "<I S%u R%u>", (data[n] >> 1) & 0x07U, (data[n] >> 5) & 0x07U);
+        text += t;
+    } else {
+        if ((data[n] & 0x02U) == 0x00U) {
+            // S frame
+            char t[20U];
+            switch (data[n] & 0x0FU) {
+            case 0x01U:
+                sprintf(t, "<RR R%u>", (data[n] >> 5) & 0x07U);
+                break;
+            case 0x05U:
+                sprintf(t, "<RNR R%u>", (data[n] >> 5) & 0x07U);
+                break;
+            case 0x09U:
+                sprintf(t, "<REJ R%u>", (data[n] >> 5) & 0x07U);
+                break;
+            case 0x0DU:
+                sprintf(t, "<SREJ R%u>", (data[n] >> 5) & 0x07U);
+                break;
+            default:
+                sprintf(t, "<Unknown R%u>", (data[n] >> 5) & 0x07U);
+                break;
+            }
+
+            text += t;
+            LogMessage("AX.25, %s", text.c_str());
+            return;
+        } else {
+            // U frame
+            switch (data[n] & 0xEFU) {
+            case 0x6FU:
+                text += "<SABME>";
+                break;
+            case 0x2FU:
+                text += "<SABM>";
+                break;
+            case 0x43U:
+                text += "<DISC>";
+                break;
+            case 0x0FU:
+                text += "<DM>";
+                break;
+            case 0x63U:
+                text += "<UA>";
+                break;
+            case 0x87U:
+                text += "<FRMR>";
+                break;
+            case 0x03U:
+                text += "<UI>";
+                break;
+            case 0xAFU:
+                text += "<XID>";
+                break;
+            case 0xE3U:
+                text += "<TEST>";
+                break;
+            default:
+                text += "<Unknown>";
+                break;
+            }
+
+            if ((data[n] & 0xEFU) != 0x03U) {
+                LogMessage("AX.25, %s", text.c_str());
+                return;
+            }
+        }
+    }
+
+    n += 2U;
+
+    LogMessage("AX.25, %s %.*s", text.c_str(), length - n, data + n);
+}
+
+bool CAX25Control::decodeAddress(const unsigned char* data, std::string& text, bool isDigi) const
+{
+	assert(data != NULL);
+
+	for (unsigned int i = 0U; i < 6U; i++) {
+		char c = data[i] >> 1;
+		if (c != ' ')
+			text += c;
+	}
+
+	unsigned char ssid = (data[6U] >> 1) & 0x0FU;
+	if (ssid > 0U) {
+		text += '-';
+		if (ssid >= 10U) {
+			text += '1';
+			text += '0' + ssid - 10U;
+		}
+		else {
+			text += '0' + ssid;
+		}
+	}
+
+	if (isDigi) {
+		if ((data[6U] & 0x80U) == 0x80U)
+			text += '*';
+	}
+
+	return (data[6U] & 0x01U) == 0x00U;
+}
+
+bool CAX25Control::isUI(const unsigned char* data, unsigned int length) const
+{
+    assert(data != NULL);
+    assert(length >= 15U);
+
+    unsigned int n = 13U;
+    while ((data[n] & 0x01U) == 0x00U && n < length)
+        n += 7U;
+
+    return (data[n + 1U] & 0xEFU) == 0x03U;
 }

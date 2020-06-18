@@ -173,6 +173,7 @@ public:
 
   // The AX.25 section
   bool         getAX25Enabled() const;
+  bool         getAX25Trace() const;
 
   // The FM Section
   bool         getFMEnabled() const;
@@ -455,6 +456,7 @@ private:
   unsigned int m_pocsagFrequency;
 
   bool         m_ax25Enabled;
+  bool         m_ax25Trace;
 
   bool         m_fmEnabled;
   std::string  m_fmCallsign;

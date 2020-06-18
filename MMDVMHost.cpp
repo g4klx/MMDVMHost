@@ -626,10 +626,13 @@ int CMMDVMHost::run()
 	}
 
 	if (m_ax25Enabled) {
+		bool trace = m_conf.getAX25Trace();
+
 		LogInfo("AX.25 RF Parameters");
 		LogInfo("    RXOnly: yes");
+		LogInfo("    Trace: %s", trace ? "yes" : "no");
 
-		m_ax25 = new CAX25Control(m_ax25Network);
+		m_ax25 = new CAX25Control(m_ax25Network, trace);
 	}
 
 	bool remoteControlEnabled = m_conf.getRemoteControlEnabled();

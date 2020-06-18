@@ -208,6 +208,7 @@ m_fmRFAudioBoost(1U),
 m_fmMaxDevLevel(90.0F),
 m_fmExtAudioBoost(1U),
 m_ax25Enabled(false),
+m_ax25Trace(false),
 m_dstarNetworkEnabled(false),
 m_dstarGatewayAddress(),
 m_dstarGatewayPort(0U),
@@ -789,8 +790,10 @@ bool CConf::read()
 		else if (::strcmp(key, "ExtAudioBoost") == 0)
 			m_fmExtAudioBoost = (unsigned int)::atoi(value);
 	} else if (section == SECTION_AX25) {
-	  if (::strcmp(key, "Enable") == 0)
-		m_ax25Enabled = ::atoi(value) == 1;
+		if (::strcmp(key, "Enable") == 0)
+			m_ax25Enabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "Trace") == 0)
+			m_ax25Trace = ::atoi(value) == 1;
 	} else if (section == SECTION_DSTAR_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dstarNetworkEnabled = ::atoi(value) == 1;
@@ -1711,6 +1714,11 @@ unsigned int CConf::getFMExtAudioBoost() const
 bool CConf::getAX25Enabled() const
 {
 	return m_ax25Enabled;
+}
+
+bool CConf::getAX25Trace() const
+{
+	return m_ax25Trace;
 }
 
 bool CConf::getDStarNetworkEnabled() const

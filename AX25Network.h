@@ -34,7 +34,6 @@ public:
 	void enable(bool enabled);
 
 	bool writeAX25(const unsigned char* data, unsigned int length);
-	bool writeMICE(const unsigned char* data, unsigned int length);
 
 	void reset();
 

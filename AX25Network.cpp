@@ -74,26 +74,6 @@ bool CAX25Network::writeAX25(const unsigned char* data, unsigned int length)
 	return m_socket.write(buffer, length + 4U, m_address, m_port);
 }
 
-bool CAX25Network::writeMICE(const unsigned char* data, unsigned int length)
-{
-	assert(data != NULL);
-
-	unsigned char buffer[110U];
-	::memset(buffer, 0x00U, 110U);
-
-	buffer[0U] = 'M';
-	buffer[1U] = 'I';
-	buffer[2U] = 'C';
-	buffer[3U] = 'E';
-
-	::memcpy(buffer + 4U, data, length);
-
-	if (m_debug)
-		CUtils::dump(1U, "AX25 Network Data Sent", buffer, length + 4U);
-
-	return m_socket.write(buffer, length + 4U, m_address, m_port);
-}
-
 void CAX25Network::reset()
 {
 }
