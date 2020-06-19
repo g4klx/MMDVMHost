@@ -142,6 +142,8 @@ m_serial(NULL),
 m_buffer(NULL),
 m_length(0U),
 m_offset(0U),
+m_state(SS_START),
+m_type(0U),
 m_rxDStarData(1000U, "Modem RX D-Star"),
 m_txDStarData(1000U, "Modem TX D-Star"),
 m_rxDMRData1(1000U, "Modem RX DMR1"),
@@ -387,7 +389,7 @@ void CModem::clock(unsigned int ms)
 		// Nothing to do
 	} else {
 		// type == RTM_OK
-		switch (m_buffer[2U]) {
+		switch (m_type) {
 			case MMDVM_DSTAR_HEADER: {
 					if (m_trace)
 						CUtils::dump(1U, "RX D-Star Header", m_buffer, m_length);
@@ -398,7 +400,7 @@ void CModem::clock(unsigned int ms)
 					data = TAG_HEADER;
 					m_rxDStarData.addData(&data, 1U);
 
-					m_rxDStarData.addData(m_buffer + 3U, m_length - 3U);
+					m_rxDStarData.addData(m_buffer + m_offset, m_length - m_offset);
 				}
 				break;
 
@@ -412,7 +414,7 @@ void CModem::clock(unsigned int ms)
 					data = TAG_DATA;
 					m_rxDStarData.addData(&data, 1U);
 
-					m_rxDStarData.addData(m_buffer + 3U, m_length - 3U);
+					m_rxDStarData.addData(m_buffer + m_offset, m_length - m_offset);
 				}
 				break;
 
@@ -453,7 +455,7 @@ void CModem::clock(unsigned int ms)
 						data = TAG_DATA;
 					m_rxDMRData1.addData(&data, 1U);
 
-					m_rxDMRData1.addData(m_buffer + 3U, m_length - 3U);
+					m_rxDMRData1.addData(m_buffer + m_offset, m_length - m_offset);
 				}
 				break;
 
@@ -470,7 +472,7 @@ void CModem::clock(unsigned int ms)
 						data = TAG_DATA;
 					m_rxDMRData2.addData(&data, 1U);
 
-					m_rxDMRData2.addData(m_buffer + 3U, m_length - 3U);
+					m_rxDMRData2.addData(m_buffer + m_offset, m_length - m_offset);
 				}
 				break;
 
@@ -508,7 +510,7 @@ void CModem::clock(unsigned int ms)
 					data = TAG_DATA;
 					m_rxYSFData.addData(&data, 1U);
 
-					m_rxYSFData.addData(m_buffer + 3U, m_length - 3U);
+					m_rxYSFData.addData(m_buffer + m_offset, m_length - m_offset);
 				}
 				break;
 
@@ -534,7 +536,7 @@ void CModem::clock(unsigned int ms)
 				data = TAG_HEADER;
 				m_rxP25Data.addData(&data, 1U);
 
-				m_rxP25Data.addData(m_buffer + 3U, m_length - 3U);
+				m_rxP25Data.addData(m_buffer + m_offset, m_length - m_offset);
 			}
 			break;
 
@@ -548,7 +550,7 @@ void CModem::clock(unsigned int ms)
 				data = TAG_DATA;
 				m_rxP25Data.addData(&data, 1U);
 
-				m_rxP25Data.addData(m_buffer + 3U, m_length - 3U);
+				m_rxP25Data.addData(m_buffer + m_offset, m_length - m_offset);
 			}
 			break;
 
@@ -574,7 +576,7 @@ void CModem::clock(unsigned int ms)
 				data = TAG_DATA;
 				m_rxNXDNData.addData(&data, 1U);
 
-				m_rxNXDNData.addData(m_buffer + 3U, m_length - 3U);
+				m_rxNXDNData.addData(m_buffer + m_offset, m_length - m_offset);
 			}
 			break;
 
@@ -597,7 +599,7 @@ void CModem::clock(unsigned int ms)
 				unsigned char data = m_length - 3U;
 				m_rxAX25Data.addData(&data, 1U);
 
-				m_rxAX25Data.addData(m_buffer + 3U, m_length - 3U);
+				m_rxAX25Data.addData(m_buffer + m_offset, m_length - m_offset);
 			}
 			break;
 
@@ -609,44 +611,44 @@ void CModem::clock(unsigned int ms)
 					m_nxdnSpace   = 0U;
 					m_pocsagSpace = 0U;
 
-					m_mode = m_buffer[4U];
+					m_mode = m_buffer[m_offset + 1U];
 
-					m_tx = (m_buffer[5U] & 0x01U) == 0x01U;
+					m_tx = (m_buffer[m_offset + 2U] & 0x01U) == 0x01U;
 
-					bool adcOverflow = (m_buffer[5U] & 0x02U) == 0x02U;
+					bool adcOverflow = (m_buffer[m_offset + 2U] & 0x02U) == 0x02U;
 					if (adcOverflow)
 						LogError("MMDVM ADC levels have overflowed");
 
-					bool rxOverflow = (m_buffer[5U] & 0x04U) == 0x04U;
+					bool rxOverflow = (m_buffer[m_offset + 2U] & 0x04U) == 0x04U;
 					if (rxOverflow)
 						LogError("MMDVM RX buffer has overflowed");
 
-					bool txOverflow = (m_buffer[5U] & 0x08U) == 0x08U;
+					bool txOverflow = (m_buffer[m_offset + 2U] & 0x08U) == 0x08U;
 					if (txOverflow)
 						LogError("MMDVM TX buffer has overflowed");
 
-					m_lockout = (m_buffer[5U] & 0x10U) == 0x10U;
+					m_lockout = (m_buffer[m_offset + 2U] & 0x10U) == 0x10U;
 
-					bool dacOverflow = (m_buffer[5U] & 0x20U) == 0x20U;
+					bool dacOverflow = (m_buffer[m_offset + 2U] & 0x20U) == 0x20U;
 					if (dacOverflow)
 						LogError("MMDVM DAC levels have overflowed");
 
-					m_cd = (m_buffer[5U] & 0x40U) == 0x40U;
+					m_cd = (m_buffer[m_offset + 2U] & 0x40U) == 0x40U;
 
-					m_dstarSpace  = m_buffer[6U];
-					m_dmrSpace1   = m_buffer[7U];
-					m_dmrSpace2   = m_buffer[8U];
-					m_ysfSpace    = m_buffer[9U];
+					m_dstarSpace  = m_buffer[m_offset + 3U];
+					m_dmrSpace1   = m_buffer[m_offset + 4U];
+					m_dmrSpace2   = m_buffer[m_offset + 5U];
+					m_ysfSpace    = m_buffer[m_offset + 6U];
 
-					if (m_length > 10U)
-						m_p25Space    = m_buffer[10U];
-					if (m_length > 11U)
-						m_nxdnSpace   = m_buffer[11U];
-					if (m_length > 12U)
-						m_pocsagSpace = m_buffer[12U];
+					if (m_length > (m_offset + 7U))
+						m_p25Space    = m_buffer[m_offset + 7U];
+					if (m_length > (m_offset + 8U))
+						m_nxdnSpace   = m_buffer[m_offset + 8U];
+					if (m_length > (m_offset + 9U))
+						m_pocsagSpace = m_buffer[m_offset + 9U];
 
 					m_inactivityTimer.start();
-					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u,%u,%u lockout=%d, cd=%d", m_buffer[5U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, m_nxdnSpace, m_pocsagSpace, int(m_lockout), int(m_cd));
+					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u,%u,%u lockout=%d, cd=%d", m_buffer[m_offset + 2U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, m_nxdnSpace, m_pocsagSpace, int(m_lockout), int(m_cd));
 				}
 				break;
 
@@ -656,10 +658,10 @@ void CModem::clock(unsigned int ms)
 
 					unsigned char offset = m_sendTransparentDataFrameType;
 					if (offset > 1U) offset = 1U;
-					unsigned char data = m_length - 3U + offset;
+					unsigned char data = m_length - m_offset + offset;
 					m_rxTransparentData.addData(&data, 1U);
 
-					m_rxTransparentData.addData(m_buffer + 3U - offset, m_length - 3U + offset);
+					m_rxTransparentData.addData(m_buffer + m_offset - offset, m_length - m_offset + offset);
 				}
 				break;
 
@@ -669,7 +671,7 @@ void CModem::clock(unsigned int ms)
 				break;
 
 			case MMDVM_NAK:
-				LogWarning("Received a NAK from the MMDVM, command = 0x%02X, reason = %u", m_buffer[3U], m_buffer[4U]);
+				LogWarning("Received a NAK from the MMDVM, command = 0x%02X, reason = %u", m_buffer[m_offset], m_buffer[m_offset + 1U]);
 				break;
 
 			case MMDVM_DEBUG1:
@@ -689,14 +691,14 @@ void CModem::clock(unsigned int ms)
 
 					unsigned char offset = m_sendTransparentDataFrameType;
 					if (offset > 1U) offset = 1U;
-					unsigned char data = m_length - 3U + offset;
+					unsigned char data = m_length - m_offset + offset;
 					m_rxTransparentData.addData(&data, 1U);
 
-					m_rxTransparentData.addData(m_buffer + 3U - offset, m_length - 3U + offset);
+					m_rxTransparentData.addData(m_buffer + m_offset - offset, m_length - m_offset + offset);
 					break; //only break when sendFrameType>0, else message is unknown
 				}
 			default:
-				LogMessage("Unknown message, type: %02X", m_buffer[2U]);
+				LogMessage("Unknown message, type: %02X", m_type);
 				CUtils::dump("Buffer dump", m_buffer, m_length);
 				break;
 		}
@@ -1729,7 +1731,7 @@ RESP_TYPE_MMDVM CModem::getResponse()
 {
 	assert(m_serial != NULL);
 
-	if (m_offset == 0U) {
+	if (m_state == SS_START) {
 		// Get the start of the frame or nothing at all
 		int ret = m_serial->read(m_buffer + 0U, 1U);
 		if (ret < 0) {
@@ -1743,68 +1745,71 @@ RESP_TYPE_MMDVM CModem::getResponse()
 		if (m_buffer[0U] != MMDVM_FRAME_START)
 			return RTM_TIMEOUT;
 
-		m_offset = 1U;
+		m_state  = SS_LENGTH1;
+		m_length = 1U;
 	}
 
-	if (m_offset == 1U) {
-		// Get the length of the frame
+	if (m_state == SS_LENGTH1) {
+		// Get the length of the frame, 1/2
 		int ret = m_serial->read(m_buffer + 1U, 1U);
 		if (ret < 0) {
 			LogError("Error when reading from the modem");
-			m_offset = 0U;
+			m_state = SS_START;
 			return RTM_ERROR;
 		}
 
 		if (ret == 0)
 			return RTM_TIMEOUT;
-
-		if (m_buffer[1U] >= 250U) {
-			LogError("Invalid length received from the modem - %u", m_buffer[1U]);
-			m_offset = 0U;
-			return RTM_ERROR;
-		}
 
 		m_length = m_buffer[1U];
 		m_offset = 2U;
+
+		if (m_length == 0U)
+			m_state = SS_LENGTH2;
+		else
+			m_state = SS_TYPE;
 	}
 
-	if (m_offset == 2U) {
-		// Get the frame type
+	if (m_state == SS_LENGTH2) {
+		// Get the length of the frane, 2/2
 		int ret = m_serial->read(m_buffer + 2U, 1U);
 		if (ret < 0) {
 			LogError("Error when reading from the modem");
-			m_offset = 0U;
+			m_state = SS_START;
 			return RTM_ERROR;
 		}
 
 		if (ret == 0)
 			return RTM_TIMEOUT;
 
+		m_length = m_buffer[2U] + 255U;
 		m_offset = 3U;
+		m_state  = SS_TYPE;
 	}
 
-	if (m_offset >= 3U) {
-		// Use later two byte length field
-		if (m_length == 0U) {
-			int ret = m_serial->read(m_buffer + 3U, 2U);
-			if (ret < 0) {
-				LogError("Error when reading from the modem");
-				m_offset = 0U;
-				return RTM_ERROR;
-			}
-
-			if (ret == 0)
-				return RTM_TIMEOUT;
-
-			m_length = (m_buffer[3U] << 8) | m_buffer[4U];
-			m_offset = 5U;
+	if (m_state == SS_TYPE) {
+		// Get the frame type
+		int ret = m_serial->read(&m_type, 1U);
+		if (ret < 0) {
+			LogError("Error when reading from the modem");
+			m_state = SS_START;
+			return RTM_ERROR;
 		}
 
+		if (ret == 0)
+			return RTM_TIMEOUT;
+
+		m_buffer[m_offset++] = m_type;
+
+		m_state = SS_DATA;
+	}
+
+	if (m_state == SS_DATA) {
 		while (m_offset < m_length) {
 			int ret = m_serial->read(m_buffer + m_offset, m_length - m_offset);
 			if (ret < 0) {
 				LogError("Error when reading from the modem");
-				m_offset = 0U;
+				m_state = SS_START;
 				return RTM_ERROR;
 			}
 
@@ -1816,9 +1821,10 @@ RESP_TYPE_MMDVM CModem::getResponse()
 		}
 	}
 
-	m_offset = 0U;
-
 	// CUtils::dump(1U, "Received", m_buffer, m_length);
+
+	m_offset = m_length > 255U ? 4U : 3U;
+	m_state  = SS_START;
 
 	return RTM_OK;
 }
@@ -2162,25 +2168,25 @@ bool CModem::setFMMiscParams()
 void CModem::printDebug()
 {
 	if (m_buffer[2U] == MMDVM_DEBUG1) {
-		LogMessage("Debug: %.*s", m_length - 3U, m_buffer + 3U);
+		LogMessage("Debug: %.*s", m_length - m_offset - 0U, m_buffer + m_offset);
 	} else if (m_buffer[2U] == MMDVM_DEBUG2) {
 		short val1 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
-		LogMessage("Debug: %.*s %d", m_length - 5U, m_buffer + 3U, val1);
+		LogMessage("Debug: %.*s %d", m_length - m_offset - 2U, m_buffer + m_offset, val1);
 	} else if (m_buffer[2U] == MMDVM_DEBUG3) {
 		short val1 = (m_buffer[m_length - 4U] << 8) | m_buffer[m_length - 3U];
 		short val2 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
-		LogMessage("Debug: %.*s %d %d", m_length - 7U, m_buffer + 3U, val1, val2);
+		LogMessage("Debug: %.*s %d %d", m_length - m_offset - 4U, m_buffer + m_offset, val1, val2);
 	} else if (m_buffer[2U] == MMDVM_DEBUG4) {
 		short val1 = (m_buffer[m_length - 6U] << 8) | m_buffer[m_length - 5U];
 		short val2 = (m_buffer[m_length - 4U] << 8) | m_buffer[m_length - 3U];
 		short val3 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
-		LogMessage("Debug: %.*s %d %d %d", m_length - 9U, m_buffer + 3U, val1, val2, val3);
+		LogMessage("Debug: %.*s %d %d %d", m_length - m_offset - 6U, m_buffer + m_offset, val1, val2, val3);
 	} else if (m_buffer[2U] == MMDVM_DEBUG5) {
 		short val1 = (m_buffer[m_length - 8U] << 8) | m_buffer[m_length - 7U];
 		short val2 = (m_buffer[m_length - 6U] << 8) | m_buffer[m_length - 5U];
 		short val3 = (m_buffer[m_length - 4U] << 8) | m_buffer[m_length - 3U];
 		short val4 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
-		LogMessage("Debug: %.*s %d %d %d %d", m_length - 11U, m_buffer + 3U, val1, val2, val3, val4);
+		LogMessage("Debug: %.*s %d %d %d %d", m_length - m_offset - 8U, m_buffer + m_offset, val1, val2, val3, val4);
 	}
 }
 

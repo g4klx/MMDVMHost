@@ -32,6 +32,14 @@ enum RESP_TYPE_MMDVM {
 	RTM_ERROR
 };
 
+enum SERIAL_STATE {
+	SS_START,
+	SS_LENGTH1,
+	SS_LENGTH2,
+	SS_TYPE,
+	SS_DATA
+};
+
 class CModem {
 public:
 	CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool trace, bool debug);
@@ -158,6 +166,8 @@ private:
 	unsigned char*             m_buffer;
 	unsigned int               m_length;
 	unsigned int               m_offset;
+	SERIAL_STATE               m_state;
+	unsigned char              m_type;
 	CRingBuffer<unsigned char> m_rxDStarData;
 	CRingBuffer<unsigned char> m_txDStarData;
 	CRingBuffer<unsigned char> m_rxDMRData1;
