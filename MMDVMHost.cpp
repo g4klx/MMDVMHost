@@ -1300,6 +1300,7 @@ bool CMMDVMHost::createModem()
 		unsigned int ctcssLowThreshold  = m_conf.getFMCTCSSLowThreshold();
 		float        ctcssLevel         = m_conf.getFMCTCSSLevel();
 		unsigned int kerchunkTime       = m_conf.getFMKerchunkTime();
+		bool         kerchunkTX         = m_conf.getFMKerchunkTX();
 		unsigned int hangTime           = m_conf.getFMHangTime();
 		bool         useCOS             = m_conf.getFMUseCOS();
 		bool         cosInvert          = m_conf.getFMCOSInvert();
@@ -1331,6 +1332,7 @@ bool CMMDVMHost::createModem()
 		LogInfo("    CTCSS Low Threshold: %u", ctcssLowThreshold);
 		LogInfo("    CTCSS Level: %.1f%%", ctcssLevel);
 		LogInfo("    Kerchunk Time: %us", kerchunkTime);
+		LogInfo("    Kerchunk TX: %s", kerchunkTX ? "yes" : "no");
 		LogInfo("    Hang Time: %us", hangTime);
 		LogInfo("    Use COS: %s", useCOS ? "yes" : "no");
 		LogInfo("    COS Invert: %s", cosInvert ? "yes" : "no");
@@ -1340,7 +1342,7 @@ bool CMMDVMHost::createModem()
 
 		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd, callsignAtLatch);
 		m_modem->setFMAckParams(rfAck, ackSpeed, ackFrequency, ackMinTime, ackDelay, ackLevel);
-		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssHighThreshold, ctcssLowThreshold, ctcssLevel, kerchunkTime, hangTime, useCOS, cosInvert, rfAudioBoost, maxDevLevel);
+		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssHighThreshold, ctcssLowThreshold, ctcssLevel, kerchunkTime, kerchunkTX, hangTime, useCOS, cosInvert, rfAudioBoost, maxDevLevel);
 
 		if (m_conf.getFMNetworkEnabled()) {
 			std::string  extAck        = m_conf.getFMExtAck();
