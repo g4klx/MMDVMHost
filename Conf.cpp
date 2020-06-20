@@ -199,6 +199,7 @@ m_fmCTCSSHighThreshold(30U),
 m_fmCTCSSLowThreshold(20U),
 m_fmCTCSSLevel(2.0F),
 m_fmKerchunkTime(0U),
+m_fmKerchunkTX(true),
 m_fmHangTime(7U),
 m_fmUseCOS(true),
 m_fmCOSInvert(false),
@@ -764,6 +765,8 @@ bool CConf::read()
 			m_fmCTCSSLevel = float(::atof(value));
 		else if (::strcmp(key, "KerchunkTime") == 0)
 			m_fmKerchunkTime = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "KerchunkTX") == 0)
+			m_fmKerchunkTX = ::atoi(value) == 1;
 		else if (::strcmp(key, "HangTime") == 0)
 			m_fmHangTime = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "UseCOS") == 0)
@@ -1648,6 +1651,11 @@ float CConf::getFMCTCSSLevel() const
 unsigned int CConf::getFMKerchunkTime() const
 {
 	return m_fmKerchunkTime;
+}
+
+bool CConf::getFMKerchunkTX() const
+{
+	return m_fmKerchunkTX;
 }
 
 unsigned int CConf::getFMHangTime() const
