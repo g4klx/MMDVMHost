@@ -91,6 +91,7 @@ public:
   float        getModemNXDNTXLevel() const;
   float        getModemPOCSAGTXLevel() const;
   float        getModemFMTXLevel() const;
+  float        getModemAX25TXLevel() const;
   std::string  getModemRSSIMappingFile() const;
   bool         getModemTrace() const;
   bool         getModemDebug() const;
@@ -173,6 +174,9 @@ public:
 
   // The AX.25 section
   bool         getAX25Enabled() const;
+  int          getAX25RXTwist() const;
+  int          getAX25TXTwist() const;
+  bool         getAX25Digipeat() const;
   bool         getAX25Trace() const;
 
   // The FM Section
@@ -383,6 +387,7 @@ private:
   float        m_modemNXDNTXLevel;
   float        m_modemPOCSAGTXLevel;
   float        m_modemFMTXLevel;
+  float        m_modemAX25TXLevel;
   std::string  m_modemRSSIMappingFile;
   bool         m_modemTrace;
   bool         m_modemDebug;
@@ -456,6 +461,9 @@ private:
   unsigned int m_pocsagFrequency;
 
   bool         m_ax25Enabled;
+  int          m_ax25RXTwist;
+  int          m_ax25TXTwist;
+  bool         m_ax25Digipeat;
   bool         m_ax25Trace;
 
   bool         m_fmEnabled;

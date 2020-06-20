@@ -113,6 +113,7 @@ m_modemP25TXLevel(50.0F),
 m_modemNXDNTXLevel(50.0F),
 m_modemPOCSAGTXLevel(50.0F),
 m_modemFMTXLevel(50.0F),
+m_modemAX25TXLevel(50.0F),
 m_modemRSSIMappingFile(),
 m_modemTrace(false),
 m_modemDebug(false),
@@ -208,6 +209,9 @@ m_fmRFAudioBoost(1U),
 m_fmMaxDevLevel(90.0F),
 m_fmExtAudioBoost(1U),
 m_ax25Enabled(false),
+m_ax25RXTwist(6),
+m_ax25TXTwist(6),
+m_ax25Digipeat(true),
 m_ax25Trace(false),
 m_dstarNetworkEnabled(false),
 m_dstarGatewayAddress(),
@@ -508,7 +512,7 @@ bool CConf::read()
 		else if (::strcmp(key, "RXLevel") == 0)
 			m_modemRXLevel = float(::atof(value));
 		else if (::strcmp(key, "TXLevel") == 0)
-			m_modemFMTXLevel = m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = m_modemNXDNTXLevel = float(::atof(value));
+			m_modemAX25TXLevel = m_modemFMTXLevel = m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = m_modemNXDNTXLevel = float(::atof(value));
 		else if (::strcmp(key, "CWIdTXLevel") == 0)
 			m_modemCWIdTXLevel = float(::atof(value));
 		else if (::strcmp(key, "D-StarTXLevel") == 0)
@@ -525,6 +529,8 @@ bool CConf::read()
 			m_modemPOCSAGTXLevel = float(::atof(value));
 		else if (::strcmp(key, "FMTXLevel") == 0)
 			m_modemFMTXLevel = float(::atof(value));
+		else if (::strcmp(key, "AX25TXLevel") == 0)
+			m_modemAX25TXLevel = float(::atof(value));
 		else if (::strcmp(key, "RSSIMappingFile") == 0)
 			m_modemRSSIMappingFile = value;
 		else if (::strcmp(key, "Trace") == 0)
@@ -792,6 +798,12 @@ bool CConf::read()
 	} else if (section == SECTION_AX25) {
 		if (::strcmp(key, "Enable") == 0)
 			m_ax25Enabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "RXTwist") == 0)
+			m_ax25RXTwist = ::atoi(value);
+		else if (::strcmp(key, "TXTwist") == 0)
+			m_ax25TXTwist = ::atoi(value);
+		else if (::strcmp(key, "Digipeat") == 0)
+			m_ax25Digipeat = ::atoi(value) == 1;
 		else if (::strcmp(key, "Trace") == 0)
 			m_ax25Trace = ::atoi(value) == 1;
 	} else if (section == SECTION_DSTAR_NETWORK) {
@@ -1239,6 +1251,11 @@ float CConf::getModemPOCSAGTXLevel() const
 float CConf::getModemFMTXLevel() const
 {
 	return m_modemFMTXLevel;
+}
+
+float CConf::getModemAX25TXLevel() const
+{
+	return m_modemAX25TXLevel;
 }
 
 std::string CConf::getModemRSSIMappingFile () const
@@ -1714,6 +1731,21 @@ unsigned int CConf::getFMExtAudioBoost() const
 bool CConf::getAX25Enabled() const
 {
 	return m_ax25Enabled;
+}
+
+int CConf::getAX25RXTwist() const
+{
+	return m_ax25RXTwist;
+}
+
+int CConf::getAX25TXTwist() const
+{
+	return m_ax25TXTwist;
+}
+
+bool CConf::getAX25Digipeat() const
+{
+	return m_ax25Digipeat;
 }
 
 bool CConf::getAX25Trace() const

@@ -626,13 +626,18 @@ int CMMDVMHost::run()
 	}
 
 	if (m_ax25Enabled) {
-		bool trace = m_conf.getAX25Trace();
+		int  rxTwist  = m_conf.getAX25RXTwist();
+		int  txTwist  = m_conf.getAX25TXTwist();
+		bool digipeat = m_conf.getAX25Digipeat();
+		bool trace    = m_conf.getAX25Trace();
 
 		LogInfo("AX.25 RF Parameters");
-		LogInfo("    RXOnly: yes");
+		LogInfo("    RXTwist: %d", rxTwist);
+		LogInfo("    TXTwist: %d", txTwist);
+		LogInfo("    Digipeat: %s", digipeat ? "yes" : "no");
 		LogInfo("    Trace: %s", trace ? "yes" : "no");
 
-		m_ax25 = new CAX25Control(m_ax25Network, trace);
+		m_ax25 = new CAX25Control(m_ax25Network, digipeat, trace);
 	}
 
 	bool remoteControlEnabled = m_conf.getRemoteControlEnabled();
@@ -1201,6 +1206,7 @@ bool CMMDVMHost::createModem()
 	float nxdnTXLevel            = m_conf.getModemNXDNTXLevel();
 	float pocsagTXLevel          = m_conf.getModemPOCSAGTXLevel();
 	float fmTXLevel              = m_conf.getModemFMTXLevel();
+	float ax25TXLevel            = m_conf.getModemAX25TXLevel();
 	bool trace                   = m_conf.getModemTrace();
 	bool debug                   = m_conf.getModemDebug();
 	unsigned int colorCode       = m_conf.getDMRColorCode();
@@ -1216,6 +1222,8 @@ bool CMMDVMHost::createModem()
 	int rxDCOffset               = m_conf.getModemRXDCOffset();
 	int txDCOffset               = m_conf.getModemTXDCOffset();
 	float rfLevel                = m_conf.getModemRFLevel();
+	int rxTwist                  = m_conf.getAX25RXTwist();
+	int txTwist                  = m_conf.getAX25TXTwist();
 
 	LogInfo("Modem Parameters");
 	LogInfo("    Port: %s", port.c_str());
@@ -1241,17 +1249,19 @@ bool CMMDVMHost::createModem()
 	LogInfo("    NXDN TX Level: %.1f%%", nxdnTXLevel);
 	LogInfo("    POCSAG TX Level: %.1f%%", pocsagTXLevel);
 	LogInfo("    FM TX Level: %.1f%%", fmTXLevel);
+	LogInfo("    AX.25 TX Level: %.1f%%", ax25TXLevel);
 	LogInfo("    TX Frequency: %uHz (%uHz)", txFrequency, txFrequency + txOffset);
 
 	m_modem = CModem::createModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
 	m_modem->setSerialParams(protocol,address);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_pocsagEnabled, m_fmEnabled, m_ax25Enabled);
-	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, fmTXLevel);
+	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, fmTXLevel, ax25TXLevel);
 	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel, pocsagFrequency);
 	m_modem->setDMRParams(colorCode);
 	m_modem->setYSFParams(lowDeviation, ysfTXHang);
 	m_modem->setP25Params(p25TXHang);
 	m_modem->setNXDNParams(nxdnTXHang);
+	m_modem->setAX25Params(rxTwist, txTwist);
 
 	if (m_fmEnabled) {
 		std::string  callsign           = m_conf.getFMCallsign();
