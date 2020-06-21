@@ -44,11 +44,9 @@ public:
 private:
 	CSerialController m_serial;
 	unsigned char*    m_txData;
-	unsigned int      m_txLength;
-	unsigned int      m_txOffset;
 	unsigned char*    m_rxData;
 	unsigned int      m_rxLength;
-	bool              m_rxComplete;
+	unsigned char     m_rxLastChar;
 	bool              m_debug;
 	bool              m_enabled;
 };

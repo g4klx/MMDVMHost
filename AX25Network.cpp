@@ -37,11 +37,9 @@ const unsigned char AX25_TFESC = 0xDDU;
 CAX25Network::CAX25Network(const std::string& port, unsigned int speed, bool debug) :
 m_serial(port, SERIAL_SPEED(speed), false),		// XXX
 m_txData(NULL),
-m_txLength(0U),
-m_txOffset(0U),
 m_rxData(NULL),
 m_rxLength(0U),
-m_rxComplete(false),
+m_rxLastChar(0U),
 m_debug(debug),
 m_enabled(false)
 {
@@ -69,36 +67,103 @@ bool CAX25Network::write(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
 
-	m_txLength = 0U;
-	m_txOffset = 0U;
+	if (!m_enabled)
+		return true;
 
-	m_txData[m_txLength++] = AX25_FEND;
-	m_txData[m_txLength++] = AX25_KISS_DATA;
+	unsigned int txLength = 0U;
+
+	m_txData[txLength++] = AX25_FEND;
+	m_txData[txLength++] = AX25_KISS_DATA;
 
 	for (unsigned int i = 0U; i < length; i++) {
 		unsigned char c = data[i];
 
 		switch (c) {
 		case AX25_FEND:
-			m_txData[m_txLength++] = AX25_FESC;
-			m_txData[m_txLength++] = AX25_TFEND;
+			m_txData[txLength++] = AX25_FESC;
+			m_txData[txLength++] = AX25_TFEND;
 			break;
 		case AX25_FESC:
-			m_txData[m_txLength++] = AX25_FESC;
-			m_txData[m_txLength++] = AX25_TFESC;
+			m_txData[txLength++] = AX25_FESC;
+			m_txData[txLength++] = AX25_TFESC;
 			break;
 		default:
-			m_txData[m_txLength++] = c;
+			m_txData[txLength++] = c;
 			break;
 		}
 	}
 
-	m_txData[m_txLength++] = AX25_FEND;
+	m_txData[txLength++] = AX25_FEND;
 
 	if (m_debug)
-		CUtils::dump(1U, "AX25 Network Data Sent", m_txData, m_txLength);
+		CUtils::dump(1U, "AX25 Network Data Sent", m_txData, txLength);
 
-	return m_serial.write(m_txData, m_txLength);
+	return m_serial.write(m_txData, txLength);
+}
+
+unsigned int CAX25Network::read(unsigned char* data, unsigned int length)
+{
+	assert(data != NULL);
+
+	bool complete = false;
+
+	unsigned char c;
+	while (m_serial.read(&c, 1U) > 0U) {
+		if (m_rxLength == 0U && c == AX25_FEND)
+			m_rxData[m_rxLength++] = c;
+		else if (m_rxLength > 0U)
+			m_rxData[m_rxLength++] = c;
+
+		if (m_rxLength > 1U && c == AX25_FEND) {
+			complete = true;
+			break;
+		}
+	}
+
+	if (!m_enabled)
+		return 0U;
+
+	if (!complete)
+		return 0U;
+
+	if (m_rxLength == 0U)
+		return 0U;
+
+	if (m_rxData[1U] != AX25_KISS_DATA) {
+		m_rxLength = 0U;
+		return 0U;
+	}
+
+	complete = false;
+
+	unsigned int dataLen = 0U;
+	for (unsigned int i = 2U; i < m_rxLength; i++) {
+		unsigned char c = m_rxData[i];
+
+		if (c == AX25_FEND) {
+			complete = true;
+			break;
+		} else if (c == AX25_TFEND && m_rxLastChar == AX25_FESC) {
+			data[dataLen++] = AX25_FEND;
+		} else if (c == AX25_TFESC && m_rxLastChar == AX25_FESC) {
+			data[dataLen++] = AX25_FESC;
+		} else if (c != AX25_FESC) {
+			data[dataLen++] = c;
+		}
+
+		m_rxLastChar = c;
+	}
+
+	if (!complete)
+		return 0U;
+
+	if (m_debug)
+		CUtils::dump(1U, "AX25 Network Data Received", m_rxData, m_rxLength);
+
+	m_rxLength   = 0U;
+	m_rxLastChar = 0U;
+
+	return dataLen;
 }
 
 void CAX25Network::reset()
@@ -115,4 +180,9 @@ void CAX25Network::close()
 void CAX25Network::enable(bool enabled)
 {
 	m_enabled = enabled;
+
+	if (enabled && !m_enabled) {
+		m_rxLastChar = 0U;
+		m_rxLength   = 0U;
+	}
 }
