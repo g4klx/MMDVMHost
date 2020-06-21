@@ -176,7 +176,6 @@ public:
   bool         getAX25Enabled() const;
   int          getAX25RXTwist() const;
   int          getAX25TXTwist() const;
-  bool         getAX25Digipeat() const;
   bool         getAX25Trace() const;
 
   // The FM Section
@@ -271,10 +270,8 @@ public:
 
   // The AX.25 Network section
   bool         getAX25NetworkEnabled() const;
-  std::string  getAX25GatewayAddress() const;
-  unsigned int getAX25GatewayPort() const;
-  std::string  getAX25LocalAddress() const;
-  unsigned int getAX25LocalPort() const;
+  std::string  getAX25NetworkPort() const;
+  unsigned int getAX25NetworkSpeed() const;
   bool         getAX25NetworkDebug() const;
 
   // The TFTSERIAL section
@@ -463,7 +460,6 @@ private:
   bool         m_ax25Enabled;
   int          m_ax25RXTwist;
   int          m_ax25TXTwist;
-  bool         m_ax25Digipeat;
   bool         m_ax25Trace;
 
   bool         m_fmEnabled;
@@ -550,10 +546,8 @@ private:
   bool         m_pocsagNetworkDebug;
 
   bool         m_ax25NetworkEnabled;
-  std::string  m_ax25GatewayAddress;
-  unsigned int m_ax25GatewayPort;
-  std::string  m_ax25LocalAddress;
-  unsigned int m_ax25LocalPort;
+  std::string  m_ax25NetworkPort;
+  unsigned int m_ax25NetworkSpeed;
   bool         m_ax25NetworkDebug;
 
   std::string  m_tftSerialPort;

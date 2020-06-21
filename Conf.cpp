@@ -211,7 +211,6 @@ m_fmExtAudioBoost(1U),
 m_ax25Enabled(false),
 m_ax25RXTwist(6),
 m_ax25TXTwist(6),
-m_ax25Digipeat(true),
 m_ax25Trace(false),
 m_dstarNetworkEnabled(false),
 m_dstarGatewayAddress(),
@@ -259,10 +258,8 @@ m_pocsagLocalPort(0U),
 m_pocsagNetworkModeHang(3U),
 m_pocsagNetworkDebug(false),
 m_ax25NetworkEnabled(false),
-m_ax25GatewayAddress(),
-m_ax25GatewayPort(0U),
-m_ax25LocalAddress(),
-m_ax25LocalPort(0U),
+m_ax25NetworkPort(),
+m_ax25NetworkSpeed(9600U),
 m_ax25NetworkDebug(false),
 m_tftSerialPort("/dev/ttyAMA0"),
 m_tftSerialBrightness(50U),
@@ -802,8 +799,6 @@ bool CConf::read()
 			m_ax25RXTwist = ::atoi(value);
 		else if (::strcmp(key, "TXTwist") == 0)
 			m_ax25TXTwist = ::atoi(value);
-		else if (::strcmp(key, "Digipeat") == 0)
-			m_ax25Digipeat = ::atoi(value) == 1;
 		else if (::strcmp(key, "Trace") == 0)
 			m_ax25Trace = ::atoi(value) == 1;
 	} else if (section == SECTION_DSTAR_NETWORK) {
@@ -903,18 +898,14 @@ bool CConf::read()
 		else if (::strcmp(key, "Debug") == 0)
 			m_pocsagNetworkDebug = ::atoi(value) == 1;
 	} else if (section == SECTION_AX25_NETWORK) {
- 	  if (::strcmp(key, "Enable") == 0)
-		m_ax25NetworkEnabled = ::atoi(value) == 1;
-	  else if (::strcmp(key, "LocalAddress") == 0)
-		m_ax25LocalAddress = value;
-	  else if (::strcmp(key, "LocalPort") == 0)
-		m_ax25LocalPort = (unsigned int)::atoi(value);
-	  else if (::strcmp(key, "GatewayAddress") == 0)
-		m_ax25GatewayAddress = value;
-	  else if (::strcmp(key, "GatewayPort") == 0)
-		m_ax25GatewayPort = (unsigned int)::atoi(value);
-	  else if (::strcmp(key, "Debug") == 0)
-		m_ax25NetworkDebug = ::atoi(value) == 1;
+		if (::strcmp(key, "Enable") == 0)
+			m_ax25NetworkEnabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "Port") == 0)
+			m_ax25NetworkPort = value;
+		else if (::strcmp(key, "Speed") == 0)
+			m_ax25NetworkSpeed = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "Debug") == 0)
+			m_ax25NetworkDebug = ::atoi(value) == 1;
 	} else if (section == SECTION_TFTSERIAL) {
 		if (::strcmp(key, "Port") == 0)
 			m_tftSerialPort = value;
@@ -1743,11 +1734,6 @@ int CConf::getAX25TXTwist() const
 	return m_ax25TXTwist;
 }
 
-bool CConf::getAX25Digipeat() const
-{
-	return m_ax25Digipeat;
-}
-
 bool CConf::getAX25Trace() const
 {
 	return m_ax25Trace;
@@ -1983,24 +1969,14 @@ bool CConf::getAX25NetworkEnabled() const
 	return m_ax25NetworkEnabled;
 }
 
-std::string CConf::getAX25GatewayAddress() const
+std::string CConf::getAX25NetworkPort() const
 {
-	return m_ax25GatewayAddress;
+	return m_ax25NetworkPort;
 }
 
-unsigned int CConf::getAX25GatewayPort() const
+unsigned int CConf::getAX25NetworkSpeed() const
 {
-	return m_ax25GatewayPort;
-}
-
-std::string CConf::getAX25LocalAddress() const
-{
-	return m_ax25LocalAddress;
-}
-
-unsigned int CConf::getAX25LocalPort() const
-{
-	return m_ax25LocalPort;
+	return m_ax25NetworkSpeed;
 }
 
 bool CConf::getAX25NetworkDebug() const

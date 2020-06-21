@@ -38,7 +38,6 @@ private:
 	bool          m_enabled;
 	FILE*         m_fp;
 
-	bool isUI(const unsigned char* data, unsigned int length) const;
 	void decode(const unsigned char* data, unsigned int length);
 	bool decodeAddress(const unsigned char* data, std::string& text, bool isDigi = false) const;
 	bool openFile();

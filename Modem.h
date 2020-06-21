@@ -48,11 +48,12 @@ public:
 	virtual void setSerialParams(const std::string& protocol, unsigned int address);
 	virtual void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency);
 	virtual void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool pocsagEnabled, bool fmEnabled, bool ax25Enabled);
-	virtual void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagLevel, float fmTXLevel);
+	virtual void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagLevel, float fmTXLevel, float ax25TXLevel);
 	virtual void setDMRParams(unsigned int colorCode);
 	virtual void setYSFParams(bool loDev, unsigned int txHang);
 	virtual void setP25Params(unsigned int txHang);
 	virtual void setNXDNParams(unsigned int txHang);
+	virtual void setAX25Params(int rxTwist, int txTwist);
 	virtual void setTransparentDataParams(unsigned int sendFrameType);
 
 	virtual void setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch);
@@ -146,6 +147,7 @@ private:
 	float                      m_nxdnTXLevel;
 	float                      m_pocsagTXLevel;
 	float                      m_fmTXLevel;
+	float                      m_ax25TXLevel;
 	float                      m_rfLevel;
 	bool                       m_trace;
 	bool                       m_debug;
@@ -201,6 +203,8 @@ private:
 	bool                       m_error;
 	unsigned char              m_mode;
 	HW_TYPE                    m_hwType;
+	int                        m_ax25RXTwist;
+	int                        m_ax25TXTwist;
 
 	std::string                m_fmCallsign;
 	unsigned int               m_fmCallsignSpeed;

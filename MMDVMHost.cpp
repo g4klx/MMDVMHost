@@ -626,18 +626,16 @@ int CMMDVMHost::run()
 	}
 
 	if (m_ax25Enabled) {
-		int  rxTwist  = m_conf.getAX25RXTwist();
-		int  txTwist  = m_conf.getAX25TXTwist();
-		bool digipeat = m_conf.getAX25Digipeat();
-		bool trace    = m_conf.getAX25Trace();
+		int  rxTwist = m_conf.getAX25RXTwist();
+		int  txTwist = m_conf.getAX25TXTwist();
+		bool trace   = m_conf.getAX25Trace();
 
 		LogInfo("AX.25 RF Parameters");
 		LogInfo("    RXTwist: %d", rxTwist);
 		LogInfo("    TXTwist: %d", txTwist);
-		LogInfo("    Digipeat: %s", digipeat ? "yes" : "no");
 		LogInfo("    Trace: %s", trace ? "yes" : "no");
 
-		m_ax25 = new CAX25Control(m_ax25Network, digipeat, trace);
+		m_ax25 = new CAX25Control(m_ax25Network, trace);
 	}
 
 	bool remoteControlEnabled = m_conf.getRemoteControlEnabled();
@@ -1584,19 +1582,15 @@ bool CMMDVMHost::createPOCSAGNetwork()
 
 bool CMMDVMHost::createAX25Network()
 {
-	std::string gatewayAddress = m_conf.getAX25GatewayAddress();
-	unsigned int gatewayPort   = m_conf.getAX25GatewayPort();
-	std::string localAddress   = m_conf.getAX25LocalAddress();
-	unsigned int localPort     = m_conf.getAX25LocalPort();
-	bool debug                 = m_conf.getAX25NetworkDebug();
+	std::string  port  = m_conf.getAX25NetworkPort();
+	unsigned int speed = m_conf.getAX25NetworkSpeed();
+	bool debug         = m_conf.getAX25NetworkDebug();
 
 	LogInfo("AX.25 Network Parameters");
-	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
-	LogInfo("    Gateway Port: %u", gatewayPort);
-	LogInfo("    Local Address: %s", localAddress.c_str());
-	LogInfo("    Local Port: %u", localPort);
+	LogInfo("    Port: %s", port.c_str());
+	LogInfo("    Speed: %u", speed);
 
-	m_ax25Network = new CAX25Network(localAddress, localPort, gatewayAddress, gatewayPort, debug);
+	m_ax25Network = new CAX25Network(port, speed, debug);
 
 	bool ret = m_ax25Network->open();
 	if (!ret) {

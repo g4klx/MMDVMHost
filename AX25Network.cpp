@@ -27,34 +27,38 @@
 
 const unsigned int BUFFER_LENGTH = 200U;
 
-CAX25Network::CAX25Network(const std::string& localAddress, unsigned int localPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug) :
-m_socket(localAddress, localPort),
-m_address(),
-m_port(gatewayPort),
+CAX25Network::CAX25Network(const std::string& port, unsigned int speed, bool debug) :
+m_serial(port, SERIAL_SPEED(speed), false),		// XXX
+m_txData(NULL),
+m_txLength(0U),
+m_txOffset(0U),
+m_rxData(NULL),
+m_rxLength(0U),
+m_rxComplete(false),
 m_debug(debug),
 m_enabled(false)
 {
-	assert(gatewayPort > 0U);
-	assert(!gatewayAddress.empty());
+	assert(!port.empty());
+	assert(speed > 0U);
 
-	m_address = CUDPSocket::lookup(gatewayAddress);
+	m_txData = new unsigned char[BUFFER_LENGTH];
+	m_rxData = new unsigned char[BUFFER_LENGTH];
 }
 
 CAX25Network::~CAX25Network()
 {
+	delete[] m_txData;
+	delete[] m_rxData;
 }
 
 bool CAX25Network::open()
 {
 	LogMessage("Opening AX25 network connection");
 
-	if (m_address.s_addr == INADDR_NONE)
-		return false;
-
-	return m_socket.open();
+	return m_serial.open();
 }
 
-bool CAX25Network::writeAX25(const unsigned char* data, unsigned int length)
+bool CAX25Network::write(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
 
@@ -80,7 +84,7 @@ void CAX25Network::reset()
 
 void CAX25Network::close()
 {
-	m_socket.close();
+	m_serial.close();
 
 	LogMessage("Closing AX25 network connection");
 }

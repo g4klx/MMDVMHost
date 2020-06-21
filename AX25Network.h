@@ -19,32 +19,38 @@
 #ifndef	AX25Network_H
 #define	AX25Network_H
 
-#include "UDPSocket.h"
+#include "SerialController.h"
 
 #include <cstdint>
 #include <string>
 
 class CAX25Network {
 public:
-	CAX25Network(const std::string& localAddress, unsigned int localPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug);
+	CAX25Network(const std::string& port, unsigned int speed, bool debug);
 	~CAX25Network();
 
 	bool open();
 
 	void enable(bool enabled);
 
-	bool writeAX25(const unsigned char* data, unsigned int length);
+	bool write(const unsigned char* data, unsigned int length);
+
+	unsigned int read(unsigned char* data, unsigned int length);
 
 	void reset();
 
 	void close();
 
 private:
-	CUDPSocket   m_socket;
-	in_addr      m_address;
-	unsigned int m_port;
-	bool         m_debug;
-	bool         m_enabled;
+	CSerialController m_serial;
+	unsigned char*    m_txData;
+	unsigned int      m_txLength;
+	unsigned int      m_txOffset;
+	unsigned char*    m_rxData;
+	unsigned int      m_rxLength;
+	bool              m_rxComplete;
+	bool              m_debug;
+	bool              m_enabled;
 };
 
 #endif

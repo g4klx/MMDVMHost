@@ -114,15 +114,17 @@ m_txInvert(txInvert),
 m_pttInvert(pttInvert),
 m_txDelay(txDelay),
 m_dmrDelay(dmrDelay),
-m_rxLevel(0U),
-m_cwIdTXLevel(0U),
-m_dstarTXLevel(0U),
-m_dmrTXLevel(0U),
-m_ysfTXLevel(0U),
-m_p25TXLevel(0U),
-m_nxdnTXLevel(0U),
-m_pocsagTXLevel(0U),
-m_fmTXLevel(0U),
+m_rxLevel(0.0F),
+m_cwIdTXLevel(0.0F),
+m_dstarTXLevel(0.0F),
+m_dmrTXLevel(0.0F),
+m_ysfTXLevel(0.0F),
+m_p25TXLevel(0.0F),
+m_nxdnTXLevel(0.0F),
+m_pocsagTXLevel(0.0F),
+m_fmTXLevel(0.0F),
+m_ax25TXLevel(0.0F),
+m_rfLevel(0.0F),
 m_trace(trace),
 m_debug(debug),
 m_rxFrequency(0U),
@@ -177,6 +179,8 @@ m_lockout(false),
 m_error(false),
 m_mode(MODE_IDLE),
 m_hwType(HWT_UNKNOWN),
+m_ax25RXTwist(0),
+m_ax25TXTwist(0),
 m_fmCallsign(),
 m_fmCallsignSpeed(20U),
 m_fmCallsignFrequency(1000U),
@@ -248,7 +252,7 @@ void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, 
 	m_ax25Enabled   = ax25Enabled;
 }
 
-void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagTXLevel, float fmTXLevel)
+void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagTXLevel, float fmTXLevel, float ax25TXLevel)
 {
 	m_rxLevel       = rxLevel;
 	m_cwIdTXLevel   = cwIdTXLevel;
@@ -259,6 +263,7 @@ void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, flo
 	m_nxdnTXLevel   = nxdnTXLevel;
 	m_pocsagTXLevel = pocsagTXLevel;
 	m_fmTXLevel     = fmTXLevel;
+	m_ax25TXLevel   = ax25TXLevel;
 }
 
 void CModem::setDMRParams(unsigned int colorCode)
@@ -282,6 +287,12 @@ void CModem::setP25Params(unsigned int txHang)
 void CModem::setNXDNParams(unsigned int txHang)
 {
 	m_nxdnTXHang = txHang;
+}
+
+void CModem::setAX25Params(int rxTwist, int txTwist)
+{
+	m_ax25RXTwist = rxTwist;
+	m_ax25TXTwist = txTwist;
 }
 
 void CModem::setTransparentDataParams(unsigned int sendFrameType)
@@ -1551,7 +1562,7 @@ bool CModem::setConfig()
 
 	buffer[0U] = MMDVM_FRAME_START;
 
-	buffer[1U] = 24U;
+	buffer[1U] = 27U;
 
 	buffer[2U] = MMDVM_SET_CONFIG;
 
@@ -1621,10 +1632,16 @@ bool CModem::setConfig()
 
 	buffer[23U] = (unsigned char)m_nxdnTXHang;
 
-	// CUtils::dump(1U, "Written", buffer, 24U);
+	buffer[24U] = (unsigned char)(m_ax25TXLevel * 2.55F + 0.5F);
 
-	int ret = m_serial->write(buffer, 24U);
-	if (ret != 24)
+	buffer[25U] = (unsigned char)(m_ax25RXTwist + 128);
+
+	buffer[26U] = (unsigned char)(m_ax25TXTwist + 128);
+
+	// CUtils::dump(1U, "Written", buffer, 27U);
+
+	int ret = m_serial->write(buffer, 27U);
+	if (ret != 27)
 		return false;
 
 	unsigned int count = 0U;

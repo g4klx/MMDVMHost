@@ -51,12 +51,10 @@ bool CAX25Control::writeModem(unsigned char *data, unsigned int len)
 
     CUtils::dump(1U, "AX.25 raw packet", data, len);
 
-    if (m_network != NULL) {
-        if (isUI(data, len))
-            m_network->writeAX25(data, len);
-    }
+    if (m_network == NULL)
+        return true;
 
-	return true;
+    return m_network->write(data, len);
 }
 
 bool CAX25Control::openFile()
@@ -232,16 +230,4 @@ bool CAX25Control::decodeAddress(const unsigned char* data, std::string& text, b
 	}
 
 	return (data[6U] & 0x01U) == 0x00U;
-}
-
-bool CAX25Control::isUI(const unsigned char* data, unsigned int length) const
-{
-    assert(data != NULL);
-    assert(length >= 15U);
-
-    unsigned int n = 13U;
-    while ((data[n] & 0x01U) == 0x00U && n < length)
-        n += 7U;
-
-    return (data[n + 1U] & 0xEFU) == 0x03U;
 }
