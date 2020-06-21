@@ -25,7 +25,14 @@
 #include <cassert>
 #include <cstring>
 
-const unsigned int BUFFER_LENGTH = 200U;
+const unsigned int BUFFER_LENGTH = 500U;
+
+const unsigned char AX25_KISS_DATA = 0x00U;
+
+const unsigned char AX25_FEND  = 0xC0U;
+const unsigned char AX25_FESC  = 0xDBU;
+const unsigned char AX25_TFEND = 0xDCU;
+const unsigned char AX25_TFESC = 0xDDU;
 
 CAX25Network::CAX25Network(const std::string& port, unsigned int speed, bool debug) :
 m_serial(port, SERIAL_SPEED(speed), false),		// XXX
@@ -62,20 +69,36 @@ bool CAX25Network::write(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
 
-	unsigned char buffer[110U];
-	::memset(buffer, 0x00U, 110U);
+	m_txLength = 0U;
+	m_txOffset = 0U;
 
-	buffer[0U] = 'A';
-	buffer[1U] = 'X';
-	buffer[2U] = '2';
-	buffer[3U] = '5';
+	m_txData[m_txLength++] = AX25_FEND;
+	m_txData[m_txLength++] = AX25_KISS_DATA;
 
-	::memcpy(buffer + 4U, data, length);
+	for (unsigned int i = 0U; i < length; i++) {
+		unsigned char c = data[i];
+
+		switch (c) {
+		case AX25_FEND:
+			m_txData[m_txLength++] = AX25_FESC;
+			m_txData[m_txLength++] = AX25_TFEND;
+			break;
+		case AX25_FESC:
+			m_txData[m_txLength++] = AX25_FESC;
+			m_txData[m_txLength++] = AX25_TFESC;
+			break;
+		default:
+			m_txData[m_txLength++] = c;
+			break;
+		}
+	}
+
+	m_txData[m_txLength++] = AX25_FEND;
 
 	if (m_debug)
-		CUtils::dump(1U, "AX25 Network Data Sent", buffer, length + 4U);
+		CUtils::dump(1U, "AX25 Network Data Sent", m_txData, m_txLength);
 
-	return m_socket.write(buffer, length + 4U, m_address, m_port);
+	return m_serial.write(m_txData, m_txLength);
 }
 
 void CAX25Network::reset()
