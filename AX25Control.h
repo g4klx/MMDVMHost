@@ -30,6 +30,8 @@ public:
 
 	bool writeModem(unsigned char* data, unsigned int len);
 
+	unsigned int readModem(unsigned char* data);
+
 	void enable(bool enabled);
 
 private:

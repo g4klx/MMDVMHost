@@ -80,6 +80,7 @@ public:
 	virtual bool hasP25Space() const;
 	virtual bool hasNXDNSpace() const;
 	virtual bool hasPOCSAGSpace() const;
+	virtual bool hasAX25Space() const;
 
 	virtual bool hasTX() const;
 	virtual bool hasCD() const;
@@ -95,6 +96,7 @@ public:
 	virtual bool writeP25Data(const unsigned char* data, unsigned int length);
 	virtual bool writeNXDNData(const unsigned char* data, unsigned int length);
 	virtual bool writePOCSAGData(const unsigned char* data, unsigned int length);
+	virtual bool writeAX25Data(const unsigned char* data, unsigned int length);
 
 	virtual bool writeTransparentData(const unsigned char* data, unsigned int length);
 

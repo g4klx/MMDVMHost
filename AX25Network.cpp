@@ -181,7 +181,7 @@ void CAX25Network::enable(bool enabled)
 {
 	m_enabled = enabled;
 
-	if (enabled && !m_enabled) {
+	if (enabled != m_enabled) {
 		m_rxLastChar = 0U;
 		m_rxLength   = 0U;
 	}

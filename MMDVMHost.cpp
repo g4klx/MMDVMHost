@@ -688,7 +688,7 @@ int CMMDVMHost::run()
 			m_ump->setCD(cd);
 		}
 
-		unsigned char data[220U];
+		unsigned char data[500U];
 		unsigned int len;
 		bool ret;
 
@@ -984,6 +984,20 @@ int CMMDVMHost::run()
 						m_modeTimer.start();
 					} else if (m_mode != MODE_LOCKOUT) {
 						LogWarning("POCSAG data received when in mode %u", m_mode);
+					}
+				}
+			}
+		}
+
+		if (m_ax25 != NULL) {
+			ret = m_modem->hasAX25Space();
+			if (ret) {
+				len = m_ax25->readModem(data);
+				if (len > 0U) {
+					if (m_mode == MODE_IDLE || m_mode == MODE_FM) {
+						m_modem->writeAX25Data(data, len);
+					} else if (m_mode != MODE_LOCKOUT) {
+						LogWarning("AX.25 data received when in mode %u", m_mode);
 					}
 				}
 			}

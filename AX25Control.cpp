@@ -49,12 +49,30 @@ bool CAX25Control::writeModem(unsigned char *data, unsigned int len)
     if (m_trace)
         decode(data, len);
 
-    CUtils::dump(1U, "AX.25 raw packet", data, len);
+    CUtils::dump(1U, "AX.25 received packet", data, len);
 
     if (m_network == NULL)
         return true;
 
     return m_network->write(data, len);
+}
+
+unsigned int CAX25Control::readModem(unsigned char* data)
+{
+    assert(data != NULL);
+
+    if (m_network == NULL)
+        return 0U;
+
+    if (!m_enabled)
+        return 0U;
+
+    unsigned int length = m_network->read(data, 500U);
+
+    if (length > 0U)
+        CUtils::dump(1U, "AX.25 transmitted packet", data, length);
+
+    return length;
 }
 
 bool CAX25Control::openFile()
