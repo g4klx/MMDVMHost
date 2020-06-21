@@ -12,6 +12,7 @@
  */
 
 #include "AX25Control.h"
+#include "AX25Defines.h"
 #include "Utils.h"
 #include "Log.h"
 

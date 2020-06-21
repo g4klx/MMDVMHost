@@ -186,6 +186,7 @@ private:
 	CRingBuffer<unsigned char> m_txNXDNData;
 	CRingBuffer<unsigned char> m_txPOCSAGData;
 	CRingBuffer<unsigned char> m_rxAX25Data;
+	CRingBuffer<unsigned char> m_txAX25Data;
 	CRingBuffer<unsigned char> m_rxTransparentData;
 	CRingBuffer<unsigned char> m_txTransparentData;
 	unsigned int               m_sendTransparentDataFrameType;
@@ -199,6 +200,7 @@ private:
 	unsigned int               m_p25Space;
 	unsigned int               m_nxdnSpace;
 	unsigned int               m_pocsagSpace;
+	unsigned int               m_ax25Space;
 	bool                       m_tx;
 	bool                       m_cd;
 	bool                       m_lockout;

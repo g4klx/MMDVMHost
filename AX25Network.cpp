@@ -17,6 +17,7 @@
  */
 
 #include "AX25Network.h"
+#include "AX25Defines.h"
 #include "Defines.h"
 #include "Utils.h"
 #include "Log.h"
@@ -27,12 +28,6 @@
 
 const unsigned int BUFFER_LENGTH = 500U;
 
-const unsigned char AX25_KISS_DATA = 0x00U;
-
-const unsigned char AX25_FEND  = 0xC0U;
-const unsigned char AX25_FESC  = 0xDBU;
-const unsigned char AX25_TFEND = 0xDCU;
-const unsigned char AX25_TFESC = 0xDDU;
 
 CAX25Network::CAX25Network(const std::string& port, unsigned int speed, bool debug) :
 m_serial(port, SERIAL_SPEED(speed), false),		// XXX

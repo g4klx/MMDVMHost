@@ -22,6 +22,7 @@
 #include "YSFDefines.h"
 #include "P25Defines.h"
 #include "NXDNDefines.h"
+#include "AX25Defines.h"
 #include "POCSAGDefines.h"
 #include "Thread.h"
 #include "Modem.h"
@@ -160,6 +161,7 @@ m_rxNXDNData(1000U, "Modem RX NXDN"),
 m_txNXDNData(1000U, "Modem TX NXDN"),
 m_txPOCSAGData(1000U, "Modem TX POCSAG"),
 m_rxAX25Data(1000U, "Modem RX AX.25"),
+m_txAX25Data(1000U, "Modem TX AX.25"),
 m_rxTransparentData(1000U, "Modem RX Transparent"),
 m_txTransparentData(1000U, "Modem TX Transparent"),
 m_sendTransparentDataFrameType(0U),
@@ -173,6 +175,7 @@ m_ysfSpace(0U),
 m_p25Space(0U),
 m_nxdnSpace(0U),
 m_pocsagSpace(0U),
+m_ax25Space(0U),
 m_tx(false),
 m_cd(false),
 m_lockout(false),
@@ -621,6 +624,7 @@ void CModem::clock(unsigned int ms)
 					m_p25Space    = 0U;
 					m_nxdnSpace   = 0U;
 					m_pocsagSpace = 0U;
+					m_ax25Space   = 0U;
 
 					m_mode = m_buffer[m_offset + 1U];
 
@@ -657,9 +661,11 @@ void CModem::clock(unsigned int ms)
 						m_nxdnSpace   = m_buffer[m_offset + 8U];
 					if (m_length > (m_offset + 9U))
 						m_pocsagSpace = m_buffer[m_offset + 9U];
+					if (m_length > (m_offset + 10U))
+						m_ax25Space   = m_buffer[m_offset + 10U] * 8U;
 
 					m_inactivityTimer.start();
-					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u,%u,%u lockout=%d, cd=%d", m_buffer[m_offset + 2U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, m_nxdnSpace, m_pocsagSpace, int(m_lockout), int(m_cd));
+					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u,%u,%u,%u lockout=%d, cd=%d", m_buffer[m_offset + 2U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, m_nxdnSpace, m_pocsagSpace, m_ax25Space, int(m_lockout), int(m_cd));
 				}
 				break;
 
@@ -861,6 +867,23 @@ void CModem::clock(unsigned int ms)
 		m_playoutTimer.start();
 
 		m_pocsagSpace--;
+	}
+
+	if (m_ax25Space > 1U && !m_txAX25Data.isEmpty()) {
+		unsigned char len = 0U;
+		m_txAX25Data.getData((unsigned char*)&len, sizeof(unsigned int));
+		m_txAX25Data.getData(m_buffer, len);
+
+		if (m_trace)
+			CUtils::dump(1U, "TX AX.25 Data", m_buffer, len);
+
+		int ret = m_serial->write(m_buffer, len);
+		if (ret != int(len))
+			LogWarning("Error when writing AX.25 data to the MMDVM");
+
+		m_playoutTimer.start();
+
+		m_ax25Space -= len;
 	}
 
 	if (!m_txTransparentData.isEmpty()) {
@@ -1221,6 +1244,42 @@ bool CModem::writePOCSAGData(const unsigned char* data, unsigned int length)
 	unsigned char len = length + 3U;
 	m_txPOCSAGData.addData(&len, 1U);
 	m_txPOCSAGData.addData(buffer, len);
+
+	return true;
+}
+
+bool CModem::hasAX25Space() const
+{
+	unsigned int space = m_txAX25Data.freeSpace() / (AX25_MAX_FRAME_LENGTH_BYTES + 5U);
+
+	return space > 1U;
+}
+
+bool CModem::writeAX25Data(const unsigned char* data, unsigned int length)
+{
+	assert(data != NULL);
+	assert(length > 0U);
+
+	unsigned char buffer[500U];
+
+	unsigned int len;
+	if (length > 252U) {
+		buffer[0U] = MMDVM_FRAME_START;
+		buffer[1U] = 0U;
+		buffer[2U] = (length + 4U) - 255U;
+		buffer[3U] = MMDVM_AX25_DATA;
+		::memcpy(buffer + 4U, data, length);
+		len = length + 4U;
+	} else {
+		buffer[0U] = MMDVM_FRAME_START;
+		buffer[1U] = length + 3U;
+		buffer[2U] = MMDVM_AX25_DATA;
+		::memcpy(buffer + 3U, data, length);
+		len = length + 3U;
+	}
+
+	m_txAX25Data.addData((unsigned char*)&len, sizeof(unsigned int));
+	m_txAX25Data.addData(buffer, len);
 
 	return true;
 }
