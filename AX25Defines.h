@@ -27,8 +27,8 @@ const unsigned int AX25_MAX_DIGIPEATERS = 6U;
 
 const unsigned char AX25_PID_NOL3       = 0xF0U;
 
-const unsigned int  AX25_MAX_FRAME_LENGTH_BYTES = 300U;
-
+const unsigned int  AX25_MAX_FRAME_LENGTH_BYTES = 330U;     // Callsign (7) + Callsign (7) + 8 Digipeaters (56) +
+															// Control (1) + PID (1) + Data (256) + Checksum (2)
 const unsigned char AX25_KISS_DATA = 0x00U;
 
 const unsigned char AX25_FEND  = 0xC0U;
