@@ -869,7 +869,7 @@ void CModem::clock(unsigned int ms)
 		m_pocsagSpace--;
 	}
 
-	if (m_ax25Space > 1U && !m_txAX25Data.isEmpty()) {
+	if (m_ax25Space > 0U && !m_txAX25Data.isEmpty()) {
 		unsigned char len = 0U;
 		m_txAX25Data.getData((unsigned char*)&len, sizeof(unsigned int));
 		m_txAX25Data.getData(m_buffer, len);
@@ -883,7 +883,7 @@ void CModem::clock(unsigned int ms)
 
 		m_playoutTimer.start();
 
-		m_ax25Space -= len;
+		m_ax25Space = 0U;
 	}
 
 	if (!m_txTransparentData.isEmpty()) {
