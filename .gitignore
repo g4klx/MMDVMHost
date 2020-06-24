@@ -1,6 +1,9 @@
 Debug
 Release
 x64
+MMDVMHost
+RemoteCommand
+*.o
 *.opendb
 *.bak
 *.obj
@@ -10,4 +13,7 @@ x64
 *.zip
 *.exe
 *.user
+*.VC.db
 .vs
+*.ambe
+GitVersion.h

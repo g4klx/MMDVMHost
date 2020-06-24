@@ -1,5 +1,6 @@
 /*
- *   Copyright (C) 2010,2014,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2010,2014,2016,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016 Mathias Weyland, HB9FRV
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,21 +17,17 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include "Golay24128.h"
+#include "Hamming.h"
 #include "AMBEFEC.h"
 
-#include "Log.h"		// XXX
-
-
+#include <cstdio>
 #include <cassert>
 
 const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U};
 
 #define WRITE_BIT(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
-
-const unsigned int PRNG_TABLE_DMR[] = {
-	0x00
-};
 
 const unsigned int PRNG_TABLE[] = {
 	0x42CC47U, 0x19D6FEU, 0x304729U, 0x6B2CD0U, 0x60BF47U, 0x39650EU, 0x7354F1U, 0xEACF60U, 0x819C9FU, 0xDE25CEU, 
@@ -444,9 +441,12 @@ const unsigned int PRNG_TABLE[] = {
 	0xECDB0FU, 0xB542DAU, 0x9E5131U, 0xC7ABA5U, 0x8C38FEU, 0x97010BU, 0xDED290U, 0xA4CC7DU, 0xAD3D2EU, 0xF6B6B3U, 
 	0xF9A540U, 0x205ED9U, 0x634EB6U, 0x5A9567U, 0x11A6D8U, 0x0B3F09U};
 
-const unsigned int DMR_A_TABLE[] = {0U};
-const unsigned int DMR_B_TABLE[] = { 0U };
-const unsigned int DMR_C_TABLE[] = { 0U };
+const unsigned int DMR_A_TABLE[] = { 0U,  4U,  8U, 12U, 16U, 20U, 24U, 28U, 32U, 36U, 40U, 44U,
+									48U, 52U, 56U, 60U, 64U, 68U,  1U,  5U,  9U, 13U, 17U, 21U};
+const unsigned int DMR_B_TABLE[] = {25U, 29U, 33U, 37U, 41U, 45U, 49U, 53U, 57U, 61U, 65U, 69U,
+									 2U,  6U, 10U, 14U, 18U, 22U, 26U, 30U, 34U, 38U, 42U};
+const unsigned int DMR_C_TABLE[] = {46U, 50U, 54U, 58U, 62U, 66U, 70U,  3U,  7U, 11U, 15U, 19U,
+									23U, 27U, 31U, 35U, 39U, 43U, 47U, 51U, 55U, 59U, 63U, 67U, 71U};
 
 const unsigned int DSTAR_A_TABLE[] = {0U,  6U, 12U, 18U, 24U, 30U, 36U, 42U, 48U, 54U, 60U, 66U,
 									  1U,  7U, 13U, 19U, 25U, 31U, 37U, 43U, 49U, 55U, 61U, 67U};
@@ -454,6 +454,15 @@ const unsigned int DSTAR_B_TABLE[] = {2U,  8U, 14U, 20U, 26U, 32U, 38U, 44U, 50U
 									  3U,  9U, 15U, 21U, 27U, 33U, 39U, 45U, 51U, 57U, 63U, 69U};
 const unsigned int DSTAR_C_TABLE[] = {4U, 10U, 16U, 22U, 28U, 34U, 40U, 46U, 52U, 58U, 64U, 70U,
 									  5U, 11U, 17U, 23U, 29U, 35U, 41U, 47U, 53U, 59U, 65U, 71U};
+
+const unsigned int IMBE_INTERLEAVE[] = {
+	0,  7, 12, 19, 24, 31, 36, 43, 48, 55, 60, 67, 72, 79, 84, 91,  96, 103, 108, 115, 120, 127, 132, 139,
+	1,  6, 13, 18, 25, 30, 37, 42, 49, 54, 61, 66, 73, 78, 85, 90,  97, 102, 109, 114, 121, 126, 133, 138,
+	2,  9, 14, 21, 26, 33, 38, 45, 50, 57, 62, 69, 74, 81, 86, 93,  98, 105, 110, 117, 122, 129, 134, 141,
+	3,  8, 15, 20, 27, 32, 39, 44, 51, 56, 63, 68, 75, 80, 87, 92,  99, 104, 111, 116, 123, 128, 135, 140,
+	4, 11, 16, 23, 28, 35, 40, 47, 52, 59, 64, 71, 76, 83, 88, 95, 100, 107, 112, 119, 124, 131, 136, 143,
+	5, 10, 17, 22, 29, 34, 41, 46, 53, 58, 65, 70, 77, 82, 89, 94, 101, 106, 113, 118, 125, 130, 137, 142
+};
 
 CAMBEFEC::CAMBEFEC()
 {
@@ -467,31 +476,14 @@ unsigned int CAMBEFEC::regenerateDMR(unsigned char* bytes) const
 {
 	assert(bytes != NULL);
 
-	return 0U;
-
 	unsigned int a1 = 0U, a2 = 0U, a3 = 0U;
-	unsigned int b1 = 0U, b2 = 0U, b3 = 0U;
-	unsigned int c1 = 0U, c2 = 0U, c3 = 0U;
-
 	unsigned int MASK = 0x800000U;
-	for (unsigned int i = 0U; i < 24U; i++) {
+	for (unsigned int i = 0U; i < 24U; i++, MASK >>= 1) {
 		unsigned int a1Pos = DMR_A_TABLE[i];
-		unsigned int b1Pos = DMR_B_TABLE[i];
-		unsigned int c1Pos = DMR_C_TABLE[i];
-
 		unsigned int a2Pos = a1Pos + 72U;
 		if (a2Pos >= 108U)
 			a2Pos += 48U;
-		unsigned int b2Pos = b1Pos + 72U;
-		if (b2Pos >= 108U)
-			b2Pos += 48U;
-		unsigned int c2Pos = c1Pos + 72U;
-		if (c2Pos >= 108U)
-			c2Pos += 48U;
-
 		unsigned int a3Pos = a1Pos + 192U;
-		unsigned int b3Pos = b1Pos + 192U;
-		unsigned int c3Pos = c1Pos + 192U;
 
 		if (READ_BIT(bytes, a1Pos))
 			a1 |= MASK;
@@ -499,71 +491,83 @@ unsigned int CAMBEFEC::regenerateDMR(unsigned char* bytes) const
 			a2 |= MASK;
 		if (READ_BIT(bytes, a3Pos))
 			a3 |= MASK;
+	}
+
+	unsigned int b1 = 0U, b2 = 0U, b3 = 0U;
+	MASK = 0x400000U;
+	for (unsigned int i = 0U; i < 23U; i++, MASK >>= 1) {
+		unsigned int b1Pos = DMR_B_TABLE[i];
+		unsigned int b2Pos = b1Pos + 72U;
+		if (b2Pos >= 108U)
+			b2Pos += 48U;
+		unsigned int b3Pos = b1Pos + 192U;
+
 		if (READ_BIT(bytes, b1Pos))
 			b1 |= MASK;
 		if (READ_BIT(bytes, b2Pos))
 			b2 |= MASK;
 		if (READ_BIT(bytes, b3Pos))
 			b3 |= MASK;
+	}
+
+	unsigned int c1 = 0U, c2 = 0U, c3 = 0U;
+	MASK = 0x1000000U;
+	for (unsigned int i = 0U; i < 25U; i++, MASK >>= 1) {
+		unsigned int c1Pos = DMR_C_TABLE[i];
+		unsigned int c2Pos = c1Pos + 72U;
+		if (c2Pos >= 108U)
+			c2Pos += 48U;
+		unsigned int c3Pos = c1Pos + 192U;
+
 		if (READ_BIT(bytes, c1Pos))
 			c1 |= MASK;
 		if (READ_BIT(bytes, c2Pos))
 			c2 |= MASK;
 		if (READ_BIT(bytes, c3Pos))
 			c3 |= MASK;
-
-		MASK >>= 1;
 	}
 
-	unsigned int old_a1 = a1;
-	unsigned int data = CGolay24128::decode24128(a1);
-
-	unsigned int new_a1 = CGolay24128::encode24128(data);
-
-	unsigned int errors = 0U;
-	unsigned int mask = 0x01;
-	for (unsigned int i = 0U; i < 24U; i++, mask <<= 1) {
-		if ((old_a1 & mask) != (new_a1 & mask))
-			errors++;
-	}
-
-	LogMessage("FEC: Old/New: %06X %06X Diff: %06X, errs: %u", old_a1, new_a1, old_a1 ^ new_a1, errors);
-
-//	unsigned int errors = regenerate(a1, b1, c1);
-//	errors += regenerate(a2, b2, c2);
-//	errors += regenerate(a3, b3, c3);
+	unsigned int errors = regenerateDMR(a1, b1, c1);
+	errors += regenerateDMR(a2, b2, c2);
+	errors += regenerateDMR(a3, b3, c3);
 
 	MASK = 0x800000U;
-	for (unsigned int i = 0U; i < 24U; i++) {
+	for (unsigned int i = 0U; i < 24U; i++, MASK >>= 1) {
 		unsigned int a1Pos = DMR_A_TABLE[i];
-		unsigned int b1Pos = DMR_B_TABLE[i];
-		unsigned int c1Pos = DMR_C_TABLE[i];
-
 		unsigned int a2Pos = a1Pos + 72U;
 		if (a2Pos >= 108U)
 			a2Pos += 48U;
-		unsigned int b2Pos = b1Pos + 72U;
-		if (b2Pos >= 108U)
-			b2Pos += 48U;
-		unsigned int c2Pos = c1Pos + 72U;
-		if (c2Pos >= 108U)
-			c2Pos += 48U;
-
 		unsigned int a3Pos = a1Pos + 192U;
-		unsigned int b3Pos = b1Pos + 192U;
-		unsigned int c3Pos = c1Pos + 192U;
 
 		WRITE_BIT(bytes, a1Pos, a1 & MASK);
 		WRITE_BIT(bytes, a2Pos, a2 & MASK);
 		WRITE_BIT(bytes, a3Pos, a3 & MASK);
+	}
+
+	MASK = 0x400000U;
+	for (unsigned int i = 0U; i < 23U; i++, MASK >>= 1) {
+		unsigned int b1Pos = DMR_B_TABLE[i];
+		unsigned int b2Pos = b1Pos + 72U;
+		if (b2Pos >= 108U)
+			b2Pos += 48U;
+		unsigned int b3Pos = b1Pos + 192U;
+
 		WRITE_BIT(bytes, b1Pos, b1 & MASK);
 		WRITE_BIT(bytes, b2Pos, b2 & MASK);
 		WRITE_BIT(bytes, b3Pos, b3 & MASK);
+	}
+
+	MASK = 0x1000000U;
+	for (unsigned int i = 0U; i < 25U; i++, MASK >>= 1) {
+		unsigned int c1Pos = DMR_C_TABLE[i];
+		unsigned int c2Pos = c1Pos + 72U;
+		if (c2Pos >= 108U)
+			c2Pos += 48U;
+		unsigned int c3Pos = c1Pos + 192U;
+
 		WRITE_BIT(bytes, c1Pos, c1 & MASK);
 		WRITE_BIT(bytes, c2Pos, c2 & MASK);
 		WRITE_BIT(bytes, c3Pos, c3 & MASK);
-
-		MASK >>= 1;
 	}
 
 	return errors;
@@ -588,7 +592,7 @@ unsigned int CAMBEFEC::regenerateDStar(unsigned char* bytes) const
 		MASK >>= 1;
 	}
 
-	unsigned int errors = regenerate(a, b, c);
+	unsigned int errors = regenerateDStar(a, b);
 
 	MASK = 0x800000U;
 	for (unsigned int i = 0U; i < 24U; i++) {
@@ -601,14 +605,199 @@ unsigned int CAMBEFEC::regenerateDStar(unsigned char* bytes) const
 	return errors;
 }
 
-unsigned int CAMBEFEC::regenerate(unsigned int& a, unsigned int& b, unsigned int& c) const
+unsigned int CAMBEFEC::regenerateYSFDN(unsigned char* bytes) const
 {
-	unsigned int old_a = a;
-	unsigned int old_b = b;
+	assert(bytes != NULL);
+
+	unsigned int a = 0U;
+	unsigned int MASK = 0x800000U;
+	for (unsigned int i = 0U; i < 24U; i++, MASK >>= 1) {
+		unsigned int aPos = DMR_A_TABLE[i];
+		if (READ_BIT(bytes, aPos))
+			a |= MASK;
+	}
+
+	unsigned int b = 0U;
+	MASK = 0x400000U;
+	for (unsigned int i = 0U; i < 23U; i++, MASK >>= 1) {
+		unsigned int bPos = DMR_B_TABLE[i];
+		if (READ_BIT(bytes, bPos))
+			b |= MASK;
+	}
+
+	unsigned int c = 0U;
+	MASK = 0x1000000U;
+	for (unsigned int i = 0U; i < 25U; i++, MASK >>= 1) {
+		unsigned int cPos = DMR_C_TABLE[i];
+		if (READ_BIT(bytes, cPos))
+			c |= MASK;
+	}
+
+	unsigned int errors = regenerateDMR(a, b, c);
+
+	MASK = 0x800000U;
+	for (unsigned int i = 0U; i < 24U; i++, MASK >>= 1) {
+		unsigned int aPos = DMR_A_TABLE[i];
+		WRITE_BIT(bytes, aPos, a & MASK);
+	}
+
+	MASK = 0x400000U;
+	for (unsigned int i = 0U; i < 23U; i++, MASK >>= 1) {
+		unsigned int bPos = DMR_B_TABLE[i];
+		WRITE_BIT(bytes, bPos, b & MASK);
+	}
+
+	MASK = 0x1000000U;
+	for (unsigned int i = 0U; i < 25U; i++, MASK >>= 1) {
+		unsigned int cPos = DMR_C_TABLE[i];
+		WRITE_BIT(bytes, cPos, c & MASK);
+	}
+
+	return errors;
+}
+
+unsigned int CAMBEFEC::regenerateIMBE(unsigned char* bytes) const
+{
+	assert(bytes != NULL);
+
+	bool orig[144U];
+	bool temp[144U];
+
+	// De-interleave
+	for (unsigned int i = 0U; i < 144U; i++) {
+		unsigned int n = IMBE_INTERLEAVE[i];
+		orig[i] = temp[i] = READ_BIT(bytes, n);
+	}
+
+	// now ..
+
+	// 12 voice bits     0
+	// 11 golay bits     12
+	//
+	// 12 voice bits     23
+	// 11 golay bits     35
+	//
+	// 12 voice bits     46
+	// 11 golay bits     58
+	//
+	// 12 voice bits     69
+	// 11 golay bits     81
+	//
+	// 11 voice bits     92
+	//  4 hamming bits   103
+	//
+	// 11 voice bits     107
+	//  4 hamming bits   118
+	//
+	// 11 voice bits     122
+	//  4 hamming bits   133
+	//
+	//  7 voice bits     137
+
+	// Process the c0 section first to allow the de-whitening to be accurate
+
+	// Check/Fix FEC
+	bool* bit = temp;
+
+	// c0
+	unsigned int g1 = 0U;
+	for (unsigned int i = 0U; i < 23U; i++)
+		g1 = (g1 << 1) | (bit[i] ? 0x01U : 0x00U);
+	unsigned int c0data = CGolay24128::decode23127(g1);
+	unsigned int g2 = CGolay24128::encode23127(c0data);
+	for (int i = 23; i >= 0; i--) {
+		bit[i] = (g2 & 0x01U) == 0x01U;
+		g2 >>= 1;
+	}
+	bit += 23U;
+
+	bool prn[114U];
+
+	// Create the whitening vector and save it for future use
+	unsigned int p = 16U * c0data;
+	for (unsigned int i = 0U; i < 114U; i++) {
+		p = (173U * p + 13849U) % 65536U;
+		prn[i] = p >= 32768U;
+	}
+
+	// De-whiten some bits
+	for (unsigned int i = 0U; i < 114U; i++)
+		temp[i + 23U] ^= prn[i];
+
+	// c1
+	g1 = 0U;
+	for (unsigned int i = 0U; i < 23U; i++)
+		g1 = (g1 << 1) | (bit[i] ? 0x01U : 0x00U);
+	unsigned int c1data = CGolay24128::decode23127(g1);
+	g2 = CGolay24128::encode23127(c1data);
+	for (int i = 23; i >= 0; i--) {
+		bit[i] = (g2 & 0x01U) == 0x01U;
+		g2 >>= 1;
+	}
+	bit += 23U;
+
+	// c2
+	g1 = 0;
+	for (unsigned int i = 0U; i < 23U; i++)
+		g1 = (g1 << 1) | (bit[i] ? 0x01U : 0x00U);
+	unsigned int c2data = CGolay24128::decode23127(g1);
+	g2 = CGolay24128::encode23127(c2data);
+	for (int i = 23; i >= 0; i--) {
+		bit[i] = (g2 & 0x01U) == 0x01U;
+		g2 >>= 1;
+	}
+	bit += 23U;
+
+	// c3
+	g1 = 0U;
+	for (unsigned int i = 0U; i < 23U; i++)
+		g1 = (g1 << 1) | (bit[i] ? 0x01U : 0x00U);
+	unsigned int c3data = CGolay24128::decode23127(g1);
+	g2 = CGolay24128::encode23127(c3data);
+	for (int i = 23; i >= 0; i--) {
+		bit[i] = (g2 & 0x01U) == 0x01U;
+		g2 >>= 1;
+	}
+	bit += 23U;
+
+	// c4
+	CHamming::decode15113_1(bit);
+	bit += 15U;
+
+	// c5
+	CHamming::decode15113_1(bit);
+	bit += 15U;
+
+	// c6
+	CHamming::decode15113_1(bit);
+
+	// Whiten some bits
+	for (unsigned int i = 0U; i < 114U; i++)
+		temp[i + 23U] ^= prn[i];
+
+	unsigned int errors = 0U;
+	for (unsigned int i = 0U; i < 144U; i++) {
+		if (orig[i] != temp[i])
+			errors++;
+	}
+
+	// Interleave
+	for (unsigned int i = 0U; i < 144U; i++) {
+		unsigned int n = IMBE_INTERLEAVE[i];
+		WRITE_BIT(bytes, n, temp[i]);
+	}
+
+	return errors;
+}
+
+unsigned int CAMBEFEC::regenerateDStar(unsigned int& a, unsigned int& b) const
+{
+	unsigned int orig_a = a;
+	unsigned int orig_b = b;
 
 	unsigned int data = CGolay24128::decode24128(a);
 
-	unsigned int new_a = CGolay24128::encode24128(data);
+	a = CGolay24128::encode24128(data);
 
 	// The PRNG
 	unsigned int p = PRNG_TABLE[data];
@@ -617,21 +806,66 @@ unsigned int CAMBEFEC::regenerate(unsigned int& a, unsigned int& b, unsigned int
 
 	unsigned int datb = CGolay24128::decode24128(b);
 
-	unsigned int new_b = CGolay24128::encode24128(datb);
+	b = CGolay24128::encode24128(datb);
 
-	new_b ^= p;
+	b ^= p;
 
-	unsigned int errors = 0U;
-	unsigned int mask = 0x01;
-	for (unsigned int i = 0U; i < 24U; i++, mask <<= 1) {
-		if ((old_a & mask) != (new_a & mask))
-			errors++;
-		if ((old_b & mask) != (new_b & mask))
-			errors++;
+	unsigned int errsA = 0U, errsB = 0U;
+
+	unsigned int v = a ^ orig_a;
+	while (v != 0U) {
+		v &= v - 1U;
+		errsA++;
 	}
 
-	a = new_a;
-	b = new_b;
+	v = b ^ orig_b;
+	while (v != 0U) {
+		v &= v - 1U;
+		errsB++;
+	}
 
-	return errors;
+	return errsA + errsB;
+}
+
+unsigned int CAMBEFEC::regenerateDMR(unsigned int& a, unsigned int& b, unsigned int& c) const
+{
+	unsigned int orig_a = a;
+	unsigned int orig_b = b;
+
+	unsigned int data = CGolay24128::decode24128(a);
+
+	a = CGolay24128::encode24128(data);
+
+	// The PRNG
+	unsigned int p = PRNG_TABLE[data] >> 1;
+
+	b ^= p;
+
+	unsigned int datb = CGolay24128::decode23127(b);
+
+	b = CGolay24128::encode23127(datb) >> 1;
+
+	b ^= p;
+
+	unsigned int errsA = 0U, errsB = 0U;
+
+	unsigned int v = a ^ orig_a;
+	while (v != 0U) {
+		v &= v - 1U;
+		errsA++;
+	}
+
+	v = b ^ orig_b;
+	while (v != 0U) {
+		v &= v - 1U;
+		errsB++;
+	}
+
+	if (errsA >= 4U || ((errsA + errsB) >= 6U && errsA >= 2U)) {
+		a = 0xF00292U;
+		b = 0x0E0B20U;
+		c = 0x000000U;
+	}
+
+	return errsA + errsB;
 }

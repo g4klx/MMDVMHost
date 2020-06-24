@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2010,2014,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2010,2014,2016,2018 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,10 +16,8 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef	AMBEFEC_H
+#if !defined(AMBEFEC_H)
 #define	AMBEFEC_H
-
-#include "Golay24128.h"
 
 class CAMBEFEC {
 public:
@@ -27,10 +25,16 @@ public:
 	~CAMBEFEC();
 
 	unsigned int regenerateDMR(unsigned char* bytes) const;
+
 	unsigned int regenerateDStar(unsigned char* bytes) const;
 
+	unsigned int regenerateYSFDN(unsigned char* bytes) const;
+
+	unsigned int regenerateIMBE(unsigned char* bytes) const;
+
 private:
-	unsigned int regenerate(unsigned int& a, unsigned int& b, unsigned int& c) const;
+	unsigned int regenerateDStar(unsigned int& a, unsigned int& b) const;
+	unsigned int regenerateDMR(unsigned int& a, unsigned int& b,unsigned int& c) const;
 };
 
 #endif

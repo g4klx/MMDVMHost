@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -22,12 +22,32 @@
 const unsigned int YSF_FRAME_LENGTH_BYTES = 120U;
 
 const unsigned char YSF_SYNC_BYTES[] = {0xD4U, 0x71U, 0xC9U, 0x63U, 0x4DU};
+const unsigned int YSF_SYNC_LENGTH_BYTES  = 5U;
 
-const unsigned char YSF_FI_MASK = 0xC0U;
-const unsigned char YSF_DT_MASK = 0x30U;
+const unsigned int YSF_FICH_LENGTH_BYTES  = 25U;
 
-const unsigned char YSF_DT_TERMINATOR_CHANNEL = 0x80U;
+const unsigned char YSF_SYNC_OK           = 0x01U;
 
-const unsigned char YSF_CKSUM_OK = 0x01U;
+const unsigned int  YSF_CALLSIGN_LENGTH   = 10U;
+
+const unsigned int  YSF_FRAME_TIME        = 100U;
+
+const unsigned char YSF_FI_HEADER         = 0x00U;
+const unsigned char YSF_FI_COMMUNICATIONS = 0x01U;
+const unsigned char YSF_FI_TERMINATOR     = 0x02U;
+const unsigned char YSF_FI_TEST           = 0x03U;
+
+const unsigned char YSF_DT_VD_MODE1      = 0x00U;
+const unsigned char YSF_DT_DATA_FR_MODE  = 0x01U;
+const unsigned char YSF_DT_VD_MODE2      = 0x02U;
+const unsigned char YSF_DT_VOICE_FR_MODE = 0x03U;
+
+const unsigned char YSF_CM_GROUP1     = 0x00U;
+const unsigned char YSF_CM_GROUP2     = 0x01U;
+const unsigned char YSF_CM_INDIVIDUAL = 0x03U;
+
+const unsigned char YSF_MR_DIRECT   = 0x00U;
+const unsigned char YSF_MR_NOT_BUSY = 0x01U;
+const unsigned char YSF_MR_BUSY     = 0x02U;
 
 #endif

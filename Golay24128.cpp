@@ -5,7 +5,10 @@
 
 #include "Golay24128.h"
 
-static const unsigned int ENCODING_TABLE_23127[] = {
+#include <cstdio>
+#include <cassert>
+
+const unsigned int ENCODING_TABLE_23127[] = {
 	0x000000U, 0x0018EAU, 0x00293EU, 0x0031D4U, 0x004A96U, 0x00527CU, 0x0063A8U, 0x007B42U, 0x008DC6U, 0x00952CU, 
 	0x00A4F8U, 0x00BC12U, 0x00C750U, 0x00DFBAU, 0x00EE6EU, 0x00F684U, 0x010366U, 0x011B8CU, 0x012A58U, 0x0132B2U, 
 	0x0149F0U, 0x01511AU, 0x0160CEU, 0x017824U, 0x018EA0U, 0x01964AU, 0x01A79EU, 0x01BF74U, 0x01C436U, 0x01DCDCU, 
@@ -1088,5 +1091,18 @@ unsigned int CGolay24128::decode23127(unsigned int code)
 
 unsigned int CGolay24128::decode24128(unsigned int code)
 {
+	return decode23127(code >> 1);
+}
+
+unsigned int CGolay24128::decode24128(unsigned char* bytes)
+{
+	assert(bytes != NULL);
+
+	unsigned int code = bytes[0U];
+	code <<= 8;
+	code |= bytes[1U];
+	code <<= 8;
+	code |= bytes[2U];
+
 	return decode23127(code >> 1);
 }

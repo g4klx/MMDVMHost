@@ -162,7 +162,7 @@ void CBPTC19696::decodeErrorCheck()
 		// Run through each of the 9 rows containing data
 		for (unsigned int r = 0U; r < 9U; r++) {
 			unsigned int pos = (r * 15U) + 1U;
-			if (CHamming::decode15113(m_deInterData + pos))
+			if (CHamming::decode15113_2(m_deInterData + pos))
 				fixing = true;
 		}
 
@@ -268,6 +268,13 @@ void CBPTC19696::encodeExtractData(const unsigned char* in) const
 // Check each row with a Hamming (15,11,3) code and each column with a Hamming (13,9,3) code
 void CBPTC19696::encodeErrorCheck()
 {
+	
+	// Run through each of the 9 rows containing data
+	for (unsigned int r = 0U; r < 9U; r++) {
+		unsigned int pos = (r * 15U) + 1U;
+		CHamming::encode15113_2(m_deInterData + pos);
+	}
+	
 	// Run through each of the 15 columns
 	bool col[13U];
 	for (unsigned int c = 0U; c < 15U; c++) {
@@ -284,12 +291,6 @@ void CBPTC19696::encodeErrorCheck()
 			m_deInterData[pos] = col[a];
 			pos = pos + 15U;
 		}
-	}
-
-	// Run through each of the 9 rows containing data
-	for (unsigned int r = 0U; r < 9U; r++) {
-		unsigned int pos = (r * 15U) + 1U;
-		CHamming::encode15113(m_deInterData + pos);
 	}
 }
 
@@ -328,9 +329,9 @@ void CBPTC19696::encodeExtractBinary(unsigned char* data)
 	unsigned char byte;
 	CUtils::bitsToByteBE(m_rawData + 96U, byte);
 	data[12U] = (data[12U] & 0x3FU) | ((byte >> 0) & 0xC0U);
-	data[13U] = (data[13U] & 0xFCU) | ((byte >> 4) & 0x03U);
+	data[20U] = (data[20U] & 0xFCU) | ((byte >> 4) & 0x03U);
 
-// Second block
+	// Second block
 	CUtils::bitsToByteBE(m_rawData + 100U,  data[21U]);
 	CUtils::bitsToByteBE(m_rawData + 108U,  data[22U]);
 	CUtils::bitsToByteBE(m_rawData + 116U,  data[23U]);

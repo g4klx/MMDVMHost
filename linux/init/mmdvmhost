@@ -1,0 +1,98 @@
+#!/bin/sh
+
+### BEGIN INIT INFO
+# Provides:          mmdvmhost
+# Required-Start:    $local_fs $remote_fs $network $syslog
+# Required-Stop:     $local_fs $remote_fs $network $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: starts the mmdvmhost server
+# Description:       starts mmdvmhost using start-stop-daemon
+### END INIT INFO
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=/usr/local/bin/MMDVMHost
+CONFIG=/etc/mmdvmhost
+NAME=mmdvmhost
+DESC=MMDVMHost
+USER=mmdvm
+GROUP=mmdvm
+LOGDIR=/var/log/mmdvmhost
+ipVar=`hostname -I | cut -d' ' -f1`
+
+test -x $DAEMON || exit 0
+test -r $CONFIG || exit 0
+
+# Verify the logging directory exists, if not create it and setup the ownership / permissions
+if [ ! -d $LOGDIR ]; then
+        mkdir -p $LOGDIR
+        chown root:$GROUP $LOGDIR
+        chmod 775 $LOGDIR
+fi
+
+set -e
+
+. /lib/lsb/init-functions
+
+case "$1" in
+        start)
+            # Wait for an IP address
+            until [ "$ipVar" != " " ]; do
+                sleep 10
+                ipVar=`hostname -I`
+            done
+
+            if ! pgrep "MMDVMHost" > /dev/null 2>&1; then
+                log_daemon_msg "Starting Repeater services" "$NAME" || true
+                if start-stop-daemon --start --quiet --background --oknodo --pidfile /var/run/$NAME.pid \
+                        --exec $DAEMON $CONFIG -- $DAEMON_OPTS; then
+                        log_end_msg 0 || true
+                else
+                        log_end_msg 1 || true
+                fi
+            if pgrep "MMDVMHost" > /dev/null 2>&1; then
+                pgrep "MMDVMHost" > /var/run/$NAME.pid
+            fi
+
+            fi
+            ;;
+
+
+        stop)
+                log_daemon_msg "Stopping Repeater services" "$NAME" || true
+                if start-stop-daemon --stop --quiet --oknodo --pidfile /var/run/$NAME.pid \
+                    --exec $DAEMON $CONFIG; then
+                        log_end_msg 0 || true
+                else
+                        log_end_msg 1 || true
+                fi
+                ;;
+
+        restart|force-reload|reload)
+                log_daemon_msg "Restarting Repeater services" "$NAME" || true
+                start-stop-daemon --stop --quiet --oknodo --pidfile \
+                    /var/run/$NAME.pid --exec $DAEMON $CONFIG
+                sleep 1
+                if start-stop-daemon --start --quiet --background --oknodo --pidfile \
+                    /var/run/$NAME.pid --exec $DAEMON $CONFIG -- $DAEMON_OPTS; then
+                        log_end_msg 0 || true
+                else
+                        log_end_msg 1 || true
+                fi
+
+                if pgrep "MMDVMHost" > /dev/null 2>&1; then
+                    pgrep "MMDVMHost" > /var/run/$NAME.pid
+                fi
+
+                ;;
+
+        status)
+                status_of_proc -p /var/run/$NAME.pid "$DAEMON" "$NAME" && exit 0 || exit $?
+                ;;
+        *)
+                echo "Usage: $NAME {start|stop|restart|reload|force-reload|status}" >&2
+                exit 1
+                ;;
+esac
+
+exit 0

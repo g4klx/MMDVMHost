@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2018,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -18,7 +18,14 @@
 
 #include "NullDisplay.h"
 
-CNullDisplay::CNullDisplay()
+#if defined(RASPBERRY_PI)
+#include <wiringPi.h>
+#endif
+
+#define	LED_STATUS	28
+
+CNullDisplay::CNullDisplay() :
+CDisplay()
 {
 }
 
@@ -28,46 +35,124 @@ CNullDisplay::~CNullDisplay()
 
 bool CNullDisplay::open()
 {
+#if defined(RASPBERRY_PI)
+	::wiringPiSetup();
+
+	::pinMode(LED_STATUS, OUTPUT);
+	::digitalWrite(LED_STATUS, 0);
+#endif
 	return true;
 }
 
-void CNullDisplay::setIdle()
+void CNullDisplay::setIdleInt()
 {
 }
 
-void CNullDisplay::setDStar()
+void CNullDisplay::setErrorInt(const char* text)
 {
 }
 
-void CNullDisplay::writeDStar(const std::string& call1, const std::string& call2)
+void CNullDisplay::setLockoutInt()
 {
 }
 
-void CNullDisplay::clearDStar()
+void CNullDisplay::setQuitInt()
 {
 }
 
-void CNullDisplay::setDMR()
+void CNullDisplay::setFMInt()
 {
 }
 
-void CNullDisplay::writeDMR(unsigned int slotNo, unsigned int srcId, bool group, unsigned int dstId)
+void CNullDisplay::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
+{
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 1);
+#endif
+}
+
+void CNullDisplay::clearDStarInt()
+{
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 0);
+#endif
+}
+
+void CNullDisplay::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
+{
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 1);
+#endif
+}
+
+void CNullDisplay::clearDMRInt(unsigned int slotNo)
+{
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 0);
+#endif
+}
+
+void CNullDisplay::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
+{
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 1);
+#endif
+}
+
+void CNullDisplay::clearFusionInt()
+{
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 0);
+#endif
+}
+
+void CNullDisplay::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
+{
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 1);
+#endif
+}
+
+void CNullDisplay::clearP25Int()
+{
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 0);
+#endif
+}
+
+void CNullDisplay::writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type)
+{
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 1);
+#endif
+}
+
+void CNullDisplay::clearNXDNInt()
+{
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 0);
+#endif
+}
+
+void CNullDisplay::writePOCSAGInt(uint32_t ric, const std::string& message)
+{
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 1);
+#endif
+}
+
+void CNullDisplay::clearPOCSAGInt()
+{
+#if defined(RASPBERRY_PI)
+	::digitalWrite(LED_STATUS, 0);
+#endif
+}
+
+void CNullDisplay::writeCWInt()
 {
 }
 
-void CNullDisplay::clearDMR(unsigned int slotNo)
-{
-}
-
-void CNullDisplay::setFusion()
-{
-}
-
-void CNullDisplay::writeFusion(const std::string& callsign)
-{
-}
-
-void CNullDisplay::clearFusion()
+void CNullDisplay::clearCWInt()
 {
 }
 

@@ -1,123 +1,39 @@
-CC      = g++
-CFLAGS  = -O2 -Wall -std=c++11
-LIBS    =
-LDFLAGS = 
+# This makefile is for all platforms, but doesn't include support for the HD44780, OLED, or PCF8574 displays on the Raspberry Pi.
 
-all:		MMDVMHost
+CC      = cc
+CXX     = c++
+CFLAGS  = -g -O3 -Wall -std=c++0x -pthread
+LIBS    = -lpthread
+LDFLAGS = -g
 
-MMDVMHost:	AMBEFEC.o BPTC19696.o Conf.o CRC.o CSBK.o Display.o DMRControl.o DMRData.o DMRSlot.o DMRSync.o DStarEcho.o EMB.o EmbeddedLC.o FullLC.o Golay2087.o \
-						Golay24128.o Hamming.o HomebrewDMRIPSC.o LC.o Log.o MMDVMHost.o Modem.o NullDisplay.o QR1676.o RS129.o SerialController.o SHA256.o ShortLC.o SlotType.o \
-						StopWatch.o TFTSerial.o Timer.o UDPSocket.o Utils.o YSFEcho.o
-		$(CC) $(LDFLAGS) -o MMDVMHost AMBEFEC.o BPTC19696.o Conf.o CRC.o CSBK.o Display.o DMRControl.o DMRData.o DMRSlot.o DMRSync.o DStarEcho.o EMB.o EmbeddedLC.o \
-						FullLC.o Golay2087.o Golay24128.o  Hamming.o HomebrewDMRIPSC.o LC.o Log.o MMDVMHost.o Modem.o NullDisplay.o  QR1676.o RS129.o SerialController.o SHA256.o \
-						ShortLC.o SlotType.o StopWatch.o TFTSerial.o Timer.o UDPSocket.o Utils.o YSFEcho.o $(LIBS)
+OBJECTS = \
+		AMBEFEC.o BCH.o BPTC19696.o CASTInfo.o Conf.o CRC.o Display.o DMRControl.o DMRCSBK.o DMRData.o DMRDataHeader.o DMREMB.o DMREmbeddedData.o DMRFullLC.o \
+		DMRLookup.o DMRLC.o DMRNetwork.o DMRShortLC.o DMRSlot.o DMRSlotType.o DMRAccessControl.o DMRTA.o DMRTrellis.o DStarControl.o DStarHeader.o DStarNetwork.o \
+		DStarSlowData.o Golay2087.o Golay24128.o Hamming.o I2CController.o LCDproc.o Log.o MMDVMHost.o MobileGPS.o Modem.o ModemSerialPort.o Mutex.o \
+		NetworkInfo.o Nextion.o NullDisplay.o NullModem.o NXDNAudio.o NXDNControl.o NXDNConvolution.o NXDNCRC.o NXDNFACCH1.o  NXDNIcomNetwork.o \
+		NXDNKenwoodNetwork.o NXDNLayer3.o NXDNLICH.o NXDNLookup.o NXDNNetwork.o NXDNSACCH.o NXDNUDCH.o P25Audio.o P25Control.o P25Data.o P25LowSpeedData.o \
+		P25Network.o P25NID.o P25Trellis.o P25Utils.o POCSAGControl.o POCSAGNetwork.o QR1676.o RemoteControl.o RS129.o RS241213.o RSSIInterpolator.o \
+		SerialController.o SerialPort.o SHA256.o StopWatch.o Sync.o TFTSerial.o TFTSurenoo.o Thread.o Timer.o UDPSocket.o UMP.o UserDB.o UserDBentry.o Utils.o \
+		YSFControl.o YSFConvolution.o YSFFICH.o YSFNetwork.o YSFPayload.o
 
-AMBEFEC.o:	AMBEFEC.cpp AMBEFEC.h Golay24128.h
-		$(CC) $(CFLAGS) -c AMBEFEC.cpp
+all:		MMDVMHost RemoteCommand
 
-BPTC19696.o:	BPTC19696.cpp BPTC19696.h Utils.h Hamming.h
-		$(CC) $(CFLAGS) -c BPTC19696.cpp
+MMDVMHost:	GitVersion.h $(OBJECTS) 
+		$(CXX) $(OBJECTS) $(CFLAGS) $(LIBS) -o MMDVMHost
 
-Conf.o:	Conf.cpp Conf.h Log.h
-		$(CC) $(CFLAGS) -c Conf.cpp
+RemoteCommand:	Log.o RemoteCommand.o UDPSocket.o
+		$(CXX) Log.o RemoteCommand.o UDPSocket.o $(CFLAGS) $(LIBS) -o RemoteCommand
 
-CRC.o:	CRC.cpp CRC.h Utils.h
-		$(CC) $(CFLAGS) -c CRC.cpp
-
-CSBK.o:	CSBK.cpp CSBK.h Utils.h DMRDefines.h BPTC19696.h CRC.h Log.h
-		$(CC) $(CFLAGS) -c CSBK.cpp
-
-Display.o:	Display.cpp Display.h
-		$(CC) $(CFLAGS) -c Display.cpp
-
-DMRControl.o:	DMRControl.cpp DMRControl.h DMRSlot.h DMRData.h Modem.h HomebrewDMRIPSC.h Defines.h CSBK.h Log.h Display.h
-		$(CC) $(CFLAGS) -c DMRControl.cpp
-
-DMRData.o:	DMRData.cpp DMRData.h DMRDefines.h Utils.h Log.h
-		$(CC) $(CFLAGS) -c DMRData.cpp
-	
-DMRSlot.o:	DMRSlot.cpp DMRSlot.h DMRData.h Modem.h HomebrewDMRIPSC.h Defines.h Log.h EmbeddedLC.h RingBuffer.h Timer.h LC.h SlotType.h DMRSync.h FullLC.h \
-						EMB.h CRC.h CSBK.h ShortLC.h Utils.h Display.h StopWatch.h AMBEFEC.h
-		$(CC) $(CFLAGS) -c DMRSlot.cpp
-
-DMRSync.o:	DMRSync.cpp DMRSync.h DMRDefines.h
-		$(CC) $(CFLAGS) -c DMRSync.cpp
-
-DStarEcho.o:	DStarEcho.cpp DStarEcho.h RingBuffer.h Timer.h
-		$(CC) $(CFLAGS) -c DStarEcho.cpp
-
-EMB.o:		EMB.cpp EMB.h
-		$(CC) $(CFLAGS) -c EMB.cpp
-
-EmbeddedLC.o:	EmbeddedLC.cpp EmbeddedLC.h CRC.h Utils.h LC.h Hamming.h Log.h
-		$(CC) $(CFLAGS) -c EmbeddedLC.cpp
-
-FullLC.o:	FullLC.cpp FullLC.h BPTC19696.h LC.h SlotType.h Log.h DMRDefines.h RS129.h
-		$(CC) $(CFLAGS) -c FullLC.cpp
-
-Golay2087.o:	Golay2087.cpp Golay2087.h
-		$(CC) $(CFLAGS) -c Golay2087.cpp
-
-Golay24128.o:	Golay24128.cpp Golay24128.h
-		$(CC) $(CFLAGS) -c Golay24128.cpp
-
-Hamming.o:	Hamming.cpp Hamming.h
-		$(CC) $(CFLAGS) -c Hamming.cpp
-
-HomebrewDMRIPSC.o:	HomebrewDMRIPSC.cpp HomebrewDMRIPSC.h Log.h UDPSocket.h Timer.h DMRData.h RingBuffer.h Utils.h SHA256.h StopWatch.h
-		$(CC) $(CFLAGS) -c HomebrewDMRIPSC.cpp
-
-LC.o:	LC.cpp LC.h Utils.h DMRDefines.h
-		$(CC) $(CFLAGS) -c LC.cpp
-	
-Log.o:	Log.cpp Log.h
-		$(CC) $(CFLAGS) -c Log.cpp
-
-MMDVMHost.o:	MMDVMHost.cpp MMDVMHost.h Conf.h Log.h Version.h Modem.h StopWatch.h Defines.h DMRSync.h DStarEcho.h YSFEcho.h DMRControl.h HomebrewDMRIPSC.h \
-							Display.h TFTSerial.h NullDisplay.h
-		$(CC) $(CFLAGS) -c MMDVMHost.cpp
-
-Modem.o:	Modem.cpp Modem.h Log.h SerialController.h Timer.h RingBuffer.h Utils.o DMRDefines.h DStarDefines.h YSFDefines.h Defines.h
-		$(CC) $(CFLAGS) -c Modem.cpp
-
-NullDisplay.o:	NullDisplay.cpp NullDisplay.h Display.h
-		$(CC) $(CFLAGS) -c NullDisplay.cpp
-
-QR1676.o:	QR1676.cpp QR1676.h Log.h
-		$(CC) $(CFLAGS) -c QR1676.cpp
-
-RS129.o:	RS129.cpp RS129.h
-		$(CC) $(CFLAGS) -c RS129.cpp
-
-SerialController.o:	SerialController.cpp SerialController.h Log.h
-		$(CC) $(CFLAGS) -c SerialController.cpp
-
-SHA256.o:	SHA256.cpp SHA256.h
-		$(CC) $(CFLAGS) -c SHA256.cpp
-
-ShortLC.o:	ShortLC.cpp ShortLC.h Utils.h Hamming.h
-		$(CC) $(CFLAGS) -c ShortLC.cpp
-
-SlotType.o:	SlotType.cpp SlotType.h Golay2087.h
-		$(CC) $(CFLAGS) -c SlotType.cpp
-
-StopWatch.o:	StopWatch.cpp StopWatch.h
-		$(CC) $(CFLAGS) -c StopWatch.cpp
-
-TFTSerial.o:	TFTSerial.cpp TFTSerial.h Display.h SerialController.h Log.h
-		$(CC) $(CFLAGS) -c TFTSerial.cpp
-
-Timer.o:	Timer.cpp Timer.h
-		$(CC) $(CFLAGS) -c Timer.cpp
-
-UDPSocket.o:	UDPSocket.cpp UDPSocket.h Log.h
-		$(CC) $(CFLAGS) -c UDPSocket.cpp
-
-Utils.o:	Utils.cpp Utils.h Log.h
-		$(CC) $(CFLAGS) -c Utils.cpp
-
-YSFEcho.o:	YSFEcho.cpp YSFEcho.h YSFDefines.h RingBuffer.h Timer.h
-		$(CC) $(CFLAGS) -c YSFEcho.cpp
+%.o: %.cpp
+		$(CXX) $(CFLAGS) -c -o $@ $<
 
 clean:
-		$(RM) MMDVMHost *.o *.bak *~
+		$(RM) MMDVMHost RemoteCommand *.o *.d *.bak *~ GitVersion.h
+
+# Export the current git version if the index file exists, else 000...
+GitVersion.h:
+ifneq ("$(wildcard .git/index)","")
+	echo "const char *gitversion = \"$(shell git rev-parse HEAD)\";" > $@
+else
+	echo "const char *gitversion = \"0000000000000000000000000000000000000000\";" > $@
+endif

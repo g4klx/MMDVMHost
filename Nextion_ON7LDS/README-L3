@@ -1,0 +1,229 @@
+Nextion Display Layouts by ON7LDS (for MMDVMHost)
+=================================================
+
+		####################################
+		#                                  #
+		#  screenLayout 3 & 4 files (-L3)  #
+		#                                  #
+		#       ON7LDS DIY layouts         #
+		#                                  #
+		####################################
+
+The screenlayout has to be selected with the parameter ScreenLayout in the
+MMDVM.ini file under the Nextion section. This way, the extra functions
+are activated.
+    0 = auto (future use, for now it's G4KLX layout)
+    1 = G4KLX layout
+    2 = ON7LDS layout                (see README-L2)
+    3 = ON7LDS DIY layout            (this README file)
+    4 = ON7LDS DIY layout High Speed (this README file)
+
+screenLayout 3 and 4 are the same, but selecting 3, MMDVMHost will communicate
+at 9600bps with the display and selecting 4 will set the baudrate to 115200.  
+If you select 4 (115200bps) *you* have to program your Nextion to default to
+that baudrate.
+
+How to set the default Nextion Display baudrate ?
+You could use the Nextion editor, connect to your display with the debug 
+ tool (do not forget to select your display and not the simulator) and
+ give the command 'bauds=115200'.
+Another option is to set the command above in the Preinitialization Event
+ of the first page. Nextion recommends to do the latter in any case,
+ because 'on rare occasions bauds has become lost'
+
+
+ON7LDS DIY layouts
+------------------
+When selecting this layout, all processing can and should be done in the 
+Nextion display itself.
+Whenever MMDVMHost sends new data to the screen, it also sends information
+about what was sent as a number in global variable MMDVM.status.
+(see further in this document for a table of numbers and their events)
+
+Then MMDVMHost activates the Touch Press Event of object 'S0' of the 
+active page.
+In this event procedure, all processing can be done.
+
+Check the Touch Press Event of object 'S0' of the DMR page of the example
+HMI file. As a straightforward example, the code there will show you how
+to do some tasks when receiving data from MMDVMHost or NextionDriver:
+- change colors and fonts of the TA on the DMR page when it arrives.
+  (TA length calculation is done in the display itself !)
+- remove the slot number from t2.txt (since it's always 2)
+- in the middle of the DMR screen, the previous user is displayed
+  for each slot (S1 at the left, S2 at the right)
+  This is done by copying the data from the ID/TA field to these
+   fields at call end.
+
+The examples are there to give you an idea of what can be done.
+It is up to your imagination to go even further.
+When, for example, you want to change the text 'listening' to some
+other text, like 'RX', you just have to monitor the event status and 
+take action in the Touch Event of S0 of the corresponding page.
+Or you could hide/show pictures, switch to other pages, etc.
+   
+Check the NextionDriver program and the display layouts there to see
+ some other examples of what can be done by programming in the 
+ display. (https://github.com/on7lds/NextionDriver)
+
+
+NOTE: it might be good to *not* remove fields from the display when you do not
+ need them, but make them small (i.e. 10 x 10 pixels) and put them aside:
+ Give them the same font colour and background colour as where you put them
+ OR
+ Put them behind some picture: put them on top of the picture, then select the 
+ picture and click the 'Bring Top' button to put it on top of all those fields
+ OR
+ set them invisible when the page is selected (with the 'vis' command) in the 
+ preinitialize event of the page
+
+ This way, you can use the data from the fields to process them 
+ as is done with the GPS data in the example.
+
+
+ 
+
+Status codes that will be sent:
+-------------------------------
+The status code gives more information about what was sent in the 
+changed field.
+
+ 1 : page MMDVM
+ 2 : page D-Star
+ 3 : page DMR
+ 4 : page YSF
+ 5 : page P25 
+ 6 : page NXDN
+ 7 : page POCSAG
+ 
+11 : IDLE
+12 : CW
+13 : ERROR text
+14 : ERROR
+15 : LOCKOUT
+16 : IPaddress
+17 : ID/Call (t0 and t4,t5 are sent)
+19 : END
+20 : RX Frequency
+21 : TX Frequency
+22 : Temperature
+23 : Location
+
+41 : D-Star listening
+42 : type/my1/my2
+45 : your
+46 : reflector
+47 : RSSI
+48 : ber
+
+61 : DMR listening1
+62 : ID1
+63 : TA1
+64 : Call end1
+65 : TG1
+66 : RSSI1
+67 : ber1
+69 : DMR listening2
+70 : ID2
+71 : TA2
+72 : Call end2
+73 : TG2
+74 : RSSI2
+75 : ber2
+76 : GPS1 (t8,t9,t12)
+77 : GPS2 (t10,t11,t13)
+
+81 : YSF listening
+82 : src
+83 : dest
+84 : origin
+85 : RSSI
+86 : ber
+
+101 : P25 listening
+102 : source
+103 : dest
+104 : RSSI
+105 : ber
+
+121 : NXDN listening
+122 : source
+123 : dest
+124 : RSSI
+125 : ber
+
+132 : RIC
+133 : message text
+134 : waiting
+
+
+Fields (and their numbers) on the pages, used by MMDVMHost
+----------------------------------------------------------
+
+MMDVM
+t0 : owner call & ID / errortext  LOCKOUT
+t1 : status / ERROR
+t2 : date & time
+
+
+screenLayout >2 :
+t3 : ip address
+t4 : owner call
+t5 : owner ID
+t20 : CPU Temperature in C.   ( Can be changed to F in mmdmvhost config setting: [NEXTION] Section, Setting=DisplayTempInFahrenheit=1)
+t30 : RX Frequency
+t31 : Location
+t32 : TX Frequency
+
+
+D-Star
+t0 : type my1 my2
+t1 : your
+t2 : reflector
+t3 : rssi
+t4 : ber
+
+
+DMR
+t0 : src1 id / call / TA
+t1 : dst
+t2 : src2 id / call / TA
+t3 : dst
+t4 : rssi1
+t5 : rssi2
+t6 : ber1
+t7 : ber2
+
+screenLayout >2 :
+t8 : GPS1 dec
+t9 : GPS1 DMS
+t10: GPS2 dec
+t11: GPS2 DMS
+t12: GPS1 err
+t13: GPS2 err
+
+
+YSF
+t0 : type,source
+t1 : dst
+t2 : src
+t3 : rssi
+t4 : ber
+
+
+P25
+t0 : type,source
+t1 : dst
+t2 : rssi
+t3 : ber
+
+
+NXDN
+t0 : type,source
+t1 : dst
+t2 : rssi
+t3 : ber
+
+POCSAG
+t0 : waiting / RIC
+t1 : message

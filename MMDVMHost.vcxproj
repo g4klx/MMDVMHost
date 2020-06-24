@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
       <Configuration>Debug</Configuration>
@@ -22,32 +22,32 @@
     <ProjectGuid>{1D34E8C1-CFA5-4D60-B509-9DB58DC4AE92}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>MMDVMHost</RootNamespace>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -108,6 +108,12 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <PreBuildEvent>
+      <Command>"$(ProjectDir)prebuild.cmd" $(ProjectDir)</Command>
+    </PreBuildEvent>
+    <PreBuildEvent>
+      <Message>prebuild.cmd generates GitVersion.h from git refs heads master</Message>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -147,83 +153,194 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AMBEFEC.h" />
+    <ClInclude Include="BCH.h" />
     <ClInclude Include="BPTC19696.h" />
+    <ClInclude Include="CASTInfo.h" />
     <ClInclude Include="Conf.h" />
     <ClInclude Include="CRC.h" />
-    <ClInclude Include="CSBK.h" />
     <ClInclude Include="Defines.h" />
     <ClInclude Include="Display.h" />
+    <ClInclude Include="DMRAccessControl.h" />
     <ClInclude Include="DMRControl.h" />
+    <ClInclude Include="DMRCSBK.h" />
     <ClInclude Include="DMRData.h" />
+    <ClInclude Include="DMRDataHeader.h" />
     <ClInclude Include="DMRDefines.h" />
+    <ClInclude Include="DMREMB.h" />
+    <ClInclude Include="DMREmbeddedData.h" />
+    <ClInclude Include="DMRFullLC.h" />
+    <ClInclude Include="DMRLC.h" />
+    <ClInclude Include="DMRNetwork.h" />
+    <ClInclude Include="DMRShortLC.h" />
     <ClInclude Include="DMRSlot.h" />
-    <ClInclude Include="DMRSync.h" />
+    <ClInclude Include="DMRSlotType.h" />
+    <ClInclude Include="DMRTA.h" />
+    <ClInclude Include="DMRTrellis.h" />
+    <ClInclude Include="DStarControl.h" />
     <ClInclude Include="DStarDefines.h" />
-    <ClInclude Include="DStarEcho.h" />
-    <ClInclude Include="EMB.h" />
-    <ClInclude Include="EmbeddedLC.h" />
-    <ClInclude Include="FullLC.h" />
+    <ClInclude Include="DStarHeader.h" />
+    <ClInclude Include="DStarNetwork.h" />
+    <ClInclude Include="DStarSlowData.h" />
     <ClInclude Include="Golay2087.h" />
     <ClInclude Include="Golay24128.h" />
     <ClInclude Include="Hamming.h" />
-    <ClInclude Include="HomebrewDMRIPSC.h" />
-    <ClInclude Include="LC.h" />
+    <ClInclude Include="DMRLookup.h" />
+    <ClInclude Include="I2CController.h" />
+    <ClInclude Include="LCDproc.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MMDVMHost.h" />
+    <ClInclude Include="MobileGPS.h" />
     <ClInclude Include="Modem.h" />
+    <ClInclude Include="ModemSerialPort.h" />
+    <ClInclude Include="Mutex.h" />
+    <ClInclude Include="NetworkInfo.h" />
+    <ClInclude Include="Nextion.h" />
     <ClInclude Include="NullDisplay.h" />
+    <ClInclude Include="NullModem.h" />
+    <ClInclude Include="NXDNAudio.h" />
+    <ClInclude Include="NXDNControl.h" />
+    <ClInclude Include="NXDNConvolution.h" />
+    <ClInclude Include="NXDNCRC.h" />
+    <ClInclude Include="NXDNDefines.h" />
+    <ClInclude Include="NXDNFACCH1.h" />
+    <ClInclude Include="NXDNIcomNetwork.h" />
+    <ClInclude Include="NXDNKenwoodNetwork.h" />
+    <ClInclude Include="NXDNLayer3.h" />
+    <ClInclude Include="NXDNLICH.h" />
+    <ClInclude Include="NXDNLookup.h" />
+    <ClInclude Include="NXDNNetwork.h" />
+    <ClInclude Include="NXDNUDCH.h" />
+    <ClInclude Include="P25Audio.h" />
+    <ClInclude Include="P25Control.h" />
+    <ClInclude Include="P25Defines.h" />
+    <ClInclude Include="P25Data.h" />
+    <ClInclude Include="P25LowSpeedData.h" />
+    <ClInclude Include="P25Network.h" />
+    <ClInclude Include="P25NID.h" />
+    <ClInclude Include="P25Trellis.h" />
+    <ClInclude Include="P25Utils.h" />
+    <ClInclude Include="POCSAGControl.h" />
+    <ClInclude Include="POCSAGDefines.h" />
+    <ClInclude Include="POCSAGNetwork.h" />
     <ClInclude Include="QR1676.h" />
+    <ClInclude Include="RemoteControl.h" />
     <ClInclude Include="RingBuffer.h" />
     <ClInclude Include="RS129.h" />
+    <ClInclude Include="RS241213.h" />
+    <ClInclude Include="RSSIInterpolator.h" />
+    <ClInclude Include="NXDNSACCH.h" />
     <ClInclude Include="SerialController.h" />
+    <ClInclude Include="SerialPort.h" />
     <ClInclude Include="SHA256.h" />
-    <ClInclude Include="ShortLC.h" />
-    <ClInclude Include="SlotType.h" />
     <ClInclude Include="StopWatch.h" />
+    <ClInclude Include="Sync.h" />
     <ClInclude Include="TFTSerial.h" />
+    <ClInclude Include="TFTSurenoo.h" />
+    <ClInclude Include="Thread.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="UDPSocket.h" />
+    <ClInclude Include="UMP.h" />
+    <ClInclude Include="UserDB.h" />
+    <ClInclude Include="UserDBentry.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Version.h" />
+    <ClInclude Include="YSFControl.h" />
+    <ClInclude Include="YSFConvolution.h" />
     <ClInclude Include="YSFDefines.h" />
-    <ClInclude Include="YSFEcho.h" />
+    <ClInclude Include="YSFFICH.h" />
+    <ClInclude Include="YSFNetwork.h" />
+    <ClInclude Include="YSFPayload.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AMBEFEC.cpp" />
+    <ClCompile Include="BCH.cpp" />
     <ClCompile Include="BPTC19696.cpp" />
+    <ClCompile Include="CASTInfo.cpp" />
     <ClCompile Include="Conf.cpp" />
     <ClCompile Include="CRC.cpp" />
-    <ClCompile Include="CSBK.cpp" />
     <ClCompile Include="Display.cpp" />
+    <ClCompile Include="DMRAccessControl.cpp" />
     <ClCompile Include="DMRControl.cpp" />
+    <ClCompile Include="DMRCSBK.cpp" />
     <ClCompile Include="DMRData.cpp" />
+    <ClCompile Include="DMRDataHeader.cpp" />
+    <ClCompile Include="DMREMB.cpp" />
+    <ClCompile Include="DMREmbeddedData.cpp" />
+    <ClCompile Include="DMRFullLC.cpp" />
+    <ClCompile Include="DMRLC.cpp" />
+    <ClCompile Include="DMRLookup.cpp" />
+    <ClCompile Include="DMRNetwork.cpp" />
+    <ClCompile Include="DMRShortLC.cpp" />
     <ClCompile Include="DMRSlot.cpp" />
-    <ClCompile Include="DMRSync.cpp" />
-    <ClCompile Include="DStarEcho.cpp" />
-    <ClCompile Include="EMB.cpp" />
-    <ClCompile Include="EmbeddedLC.cpp" />
-    <ClCompile Include="FullLC.cpp" />
+    <ClCompile Include="DMRSlotType.cpp" />
+    <ClCompile Include="DMRTA.cpp" />
+    <ClCompile Include="DMRTrellis.cpp" />
+    <ClCompile Include="DStarControl.cpp" />
+    <ClCompile Include="DStarHeader.cpp" />
+    <ClCompile Include="DStarNetwork.cpp" />
+    <ClCompile Include="DStarSlowData.cpp" />
     <ClCompile Include="Golay2087.cpp" />
     <ClCompile Include="Golay24128.cpp" />
     <ClCompile Include="Hamming.cpp" />
-    <ClCompile Include="HomebrewDMRIPSC.cpp" />
-    <ClCompile Include="LC.cpp" />
+    <ClCompile Include="I2CController.cpp" />
+    <ClCompile Include="LCDproc.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MMDVMHost.cpp" />
+    <ClCompile Include="MobileGPS.cpp" />
     <ClCompile Include="Modem.cpp" />
+    <ClCompile Include="ModemSerialPort.cpp" />
+    <ClCompile Include="Mutex.cpp" />
+    <ClCompile Include="NetworkInfo.cpp" />
+    <ClCompile Include="Nextion.cpp" />
     <ClCompile Include="NullDisplay.cpp" />
+    <ClCompile Include="NullModem.cpp" />
+    <ClCompile Include="NXDNAudio.cpp" />
+    <ClCompile Include="NXDNControl.cpp" />
+    <ClCompile Include="NXDNConvolution.cpp" />
+    <ClCompile Include="NXDNCRC.cpp" />
+    <ClCompile Include="NXDNFACCH1.cpp" />
+    <ClCompile Include="NXDNIcomNetwork.cpp" />
+    <ClCompile Include="NXDNKenwoodNetwork.cpp" />
+    <ClCompile Include="NXDNLayer3.cpp" />
+    <ClCompile Include="NXDNLICH.cpp" />
+    <ClCompile Include="NXDNLookup.cpp" />
+    <ClCompile Include="NXDNNetwork.cpp" />
+    <ClCompile Include="NXDNSACCH.cpp" />
+    <ClCompile Include="NXDNUDCH.cpp" />
+    <ClCompile Include="P25Audio.cpp" />
+    <ClCompile Include="P25Control.cpp" />
+    <ClCompile Include="P25Data.cpp" />
+    <ClCompile Include="P25LowSpeedData.cpp" />
+    <ClCompile Include="P25Network.cpp" />
+    <ClCompile Include="P25NID.cpp" />
+    <ClCompile Include="P25Trellis.cpp" />
+    <ClCompile Include="P25Utils.cpp" />
+    <ClCompile Include="POCSAGControl.cpp" />
+    <ClCompile Include="POCSAGNetwork.cpp" />
     <ClCompile Include="QR1676.cpp" />
+    <ClCompile Include="RemoteControl.cpp" />
     <ClCompile Include="RS129.cpp" />
+    <ClCompile Include="RS241213.cpp" />
+    <ClCompile Include="RSSIInterpolator.cpp" />
     <ClCompile Include="SerialController.cpp" />
+    <ClCompile Include="SerialPort.cpp" />
     <ClCompile Include="SHA256.cpp" />
-    <ClCompile Include="ShortLC.cpp" />
-    <ClCompile Include="SlotType.cpp" />
     <ClCompile Include="StopWatch.cpp" />
+    <ClCompile Include="Sync.cpp" />
     <ClCompile Include="TFTSerial.cpp" />
+    <ClCompile Include="TFTSurenoo.cpp" />
+    <ClCompile Include="Thread.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="UDPSocket.cpp" />
+    <ClCompile Include="UMP.cpp" />
+    <ClCompile Include="UserDB.cpp" />
+    <ClCompile Include="UserDBentry.cpp" />
     <ClCompile Include="Utils.cpp" />
-    <ClCompile Include="YSFEcho.cpp" />
+    <ClCompile Include="YSFNetwork.cpp" />
+    <ClCompile Include="YSFPayload.cpp" />
+    <ClCompile Include="YSFControl.cpp" />
+    <ClCompile Include="YSFConvolution.cpp" />
+    <ClCompile Include="YSFFICH.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2002-2004,2007-2011,2013,2014-2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2002-2004,2007-2011,2013,2014-2017,2019 by Jonathan Naylor G4KLX
  *   Copyright (C) 1999-2001 by Thomas Sailor HB9JNX
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 #include "SerialController.h"
 #include "Log.h"
 
+#include <cstring>
 #include <cassert>
 
 #include <sys/types.h>
@@ -39,27 +40,17 @@
 
 #if defined(_WIN32) || defined(_WIN64)
 
-const unsigned int BUFFER_LENGTH = 1000U;
-
 CSerialController::CSerialController(const std::string& device, SERIAL_SPEED speed, bool assertRTS) :
 m_device(device),
 m_speed(speed),
 m_assertRTS(assertRTS),
-m_handle(INVALID_HANDLE_VALUE),
-m_readOverlapped(),
-m_writeOverlapped(),
-m_readBuffer(NULL),
-m_readLength(0U),
-m_readPending(false)
+m_handle(INVALID_HANDLE_VALUE)
 {
 	assert(!device.empty());
-
-	m_readBuffer = new unsigned char[BUFFER_LENGTH];
 }
 
 CSerialController::~CSerialController()
 {
-	delete[] m_readBuffer;
 }
 
 bool CSerialController::open()
@@ -70,7 +61,7 @@ bool CSerialController::open()
 
 	std::string baseName = m_device.substr(4U);		// Convert "\\.\COM10" to "COM10"
 
-	m_handle = ::CreateFileA(m_device.c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, NULL);
+	m_handle = ::CreateFileA(m_device.c_str(), GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (m_handle == INVALID_HANDLE_VALUE) {
 		LogError("Cannot open device - %s, err=%04lx", m_device.c_str(), ::GetLastError());
 		return false;
@@ -84,17 +75,18 @@ bool CSerialController::open()
 		return false;
 	}
 
-	dcb.BaudRate     = DWORD(m_speed);
-	dcb.ByteSize     = 8;
-	dcb.Parity       = NOPARITY;
-	dcb.fParity      = FALSE;
-	dcb.StopBits     = ONESTOPBIT;
-	dcb.fInX         = FALSE;
-	dcb.fOutX        = FALSE;
-	dcb.fOutxCtsFlow = FALSE;
-	dcb.fOutxDsrFlow = FALSE;
-	dcb.fDtrControl  = DTR_CONTROL_DISABLE;
-	dcb.fRtsControl  = RTS_CONTROL_DISABLE;
+	dcb.BaudRate        = DWORD(m_speed);
+	dcb.ByteSize        = 8;
+	dcb.Parity          = NOPARITY;
+	dcb.fParity         = FALSE;
+	dcb.StopBits        = ONESTOPBIT;
+	dcb.fInX            = FALSE;
+	dcb.fOutX           = FALSE;
+	dcb.fOutxCtsFlow    = FALSE;
+	dcb.fOutxDsrFlow    = FALSE;
+	dcb.fDsrSensitivity = FALSE;
+	dcb.fDtrControl     = DTR_CONTROL_DISABLE;
+	dcb.fRtsControl     = RTS_CONTROL_DISABLE;
 
 	if (::SetCommState(m_handle, &dcb) == 0) {
 		LogError("Cannot set the attributes for %s, err=%04lx", m_device.c_str(), ::GetLastError());
@@ -138,16 +130,6 @@ bool CSerialController::open()
 
 	::ClearCommError(m_handle, &errCode, NULL);
 
-	::memset(&m_readOverlapped, 0x00U, sizeof(OVERLAPPED));
-	::memset(&m_writeOverlapped, 0x00U, sizeof(OVERLAPPED));
-
-	m_readOverlapped.hEvent  = ::CreateEvent(NULL, TRUE, FALSE, NULL);
-	m_writeOverlapped.hEvent = ::CreateEvent(NULL, TRUE, FALSE, NULL);
-
-	m_readLength  = 0U;
-	m_readPending = false;
-	::memset(m_readBuffer, 0x00U, BUFFER_LENGTH);
-
 	return true;
 }
 
@@ -178,49 +160,29 @@ int CSerialController::readNonblock(unsigned char* buffer, unsigned int length)
 	assert(m_handle != INVALID_HANDLE_VALUE);
 	assert(buffer != NULL);
 
-	if (length > BUFFER_LENGTH)
-		length = BUFFER_LENGTH;
-
-	if (m_readPending && length != m_readLength) {
-		::CancelIo(m_handle);
-		m_readPending = false;
-	}
-
-	m_readLength = length;
-
 	if (length == 0U)
 		return 0;
 
-	if (!m_readPending) {
-		DWORD bytes = 0UL;
-		BOOL res = ::ReadFile(m_handle, m_readBuffer, m_readLength, &bytes, &m_readOverlapped);
-		if (res) {
-			::memcpy(buffer, m_readBuffer, bytes);
-			return int(bytes);
-		}
-
-		DWORD error = ::GetLastError();
-		if (error != ERROR_IO_PENDING) {
-			LogError("Error from ReadFile: %04lx", error);
-			return -1;
-		}
-
-		m_readPending = true;
-	}
-
-	BOOL res = HasOverlappedIoCompleted(&m_readOverlapped);
-	if (!res)
-		return 0;
-
-	DWORD bytes = 0UL;
-	res = ::GetOverlappedResult(m_handle, &m_readOverlapped, &bytes, TRUE);
-	if (!res) {
-		LogError("Error from GetOverlappedResult (ReadFile): %04lx", ::GetLastError());
+	DWORD errors;
+	COMSTAT status;
+	if (::ClearCommError(m_handle, &errors, &status) == 0) {
+		LogError("Error from ClearCommError for %s, err=%04lx", m_device.c_str(), ::GetLastError());
 		return -1;
 	}
 
-	::memcpy(buffer, m_readBuffer, bytes);
-	m_readPending = false;
+	if (status.cbInQue == 0UL)
+		return 0;
+
+	DWORD readLength = status.cbInQue;
+	if (length < readLength)
+		readLength = length;
+
+	DWORD bytes = 0UL;
+	BOOL ret = ::ReadFile(m_handle, buffer, readLength, &bytes, NULL);
+	if (!ret) {
+		LogError("Error from ReadFile for %s: %04lx", m_device.c_str(), ::GetLastError());
+		return -1;
+	}
 
 	return int(bytes);
 }
@@ -237,19 +199,10 @@ int CSerialController::write(const unsigned char* buffer, unsigned int length)
 
 	while (ptr < length) {
 		DWORD bytes = 0UL;
-		BOOL res = ::WriteFile(m_handle, buffer + ptr, length - ptr, &bytes, &m_writeOverlapped);
-		if (!res) {
-			DWORD error = ::GetLastError();
-			if (error != ERROR_IO_PENDING) {
-				LogError("Error from WriteFile: %04lx", error);
-				return -1;
-			}
-
-			res = ::GetOverlappedResult(m_handle, &m_writeOverlapped, &bytes, TRUE);
-			if (!res) {
-				LogError("Error from GetOverlappedResult (WriteFile): %04lx", ::GetLastError());
-				return -1;
-			}
+		BOOL ret = ::WriteFile(m_handle, buffer + ptr, length - ptr, &bytes, NULL);
+		if (!ret) {
+			LogError("Error from WriteFile for %s: %04lx", m_device.c_str(), ::GetLastError());
+			return -1;
 		}
 
 		ptr += bytes;
@@ -264,9 +217,6 @@ void CSerialController::close()
 
 	::CloseHandle(m_handle);
 	m_handle = INVALID_HANDLE_VALUE;
-
-	::CloseHandle(m_readOverlapped.hEvent);
-	::CloseHandle(m_writeOverlapped.hEvent);
 }
 
 #else
@@ -288,97 +238,123 @@ bool CSerialController::open()
 {
 	assert(m_fd == -1);
 
+#if defined(__APPLE__)
+	m_fd = ::open(m_device.c_str(), O_RDWR | O_NOCTTY | O_NONBLOCK); /*open in block mode under OSX*/
+#else
 	m_fd = ::open(m_device.c_str(), O_RDWR | O_NOCTTY | O_NDELAY, 0);
+#endif
 	if (m_fd < 0) {
 		LogError("Cannot open device - %s", m_device.c_str());
 		return false;
 	}
 
-	if (::isatty(m_fd) == 0) {
-		LogError("%s is not a TTY device", m_device.c_str());
-		::close(m_fd);
-		return false;
-	}
-
-	termios termios;
-	if (::tcgetattr(m_fd, &termios) < 0) {
-		LogError("Cannot get the attributes for %s", m_device.c_str());
-		::close(m_fd);
-		return false;
-	}
-
-	termios.c_lflag    &= ~(ECHO | ECHOE | ICANON | IEXTEN | ISIG);
-	termios.c_iflag    &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON | IXOFF | IXANY);
-	termios.c_cflag    &= ~(CSIZE | CSTOPB | PARENB | CRTSCTS);
-	termios.c_cflag    |= CS8;
-	termios.c_oflag    &= ~(OPOST);
-	termios.c_cc[VMIN]  = 0;
-	termios.c_cc[VTIME] = 10;
-
-	switch (m_speed) {
-		case SERIAL_1200:
-			::cfsetospeed(&termios, B1200);
-			::cfsetispeed(&termios, B1200);
-			break;
-		case SERIAL_2400:
-			::cfsetospeed(&termios, B2400);
-			::cfsetispeed(&termios, B2400);
-			break;
-		case SERIAL_4800:
-			::cfsetospeed(&termios, B4800);
-			::cfsetispeed(&termios, B4800);
-			break;
-		case SERIAL_9600:
-			::cfsetospeed(&termios, B9600);
-			::cfsetispeed(&termios, B9600);
-			break;
-		case SERIAL_19200:
-			::cfsetospeed(&termios, B19200);
-			::cfsetispeed(&termios, B19200);
-			break;
-		case SERIAL_38400:
-			::cfsetospeed(&termios, B38400);
-			::cfsetispeed(&termios, B38400);
-			break;
-		case SERIAL_115200:
-			::cfsetospeed(&termios, B115200);
-			::cfsetispeed(&termios, B115200);
-			break;
-		case SERIAL_230400:
-			::cfsetospeed(&termios, B230400);
-			::cfsetispeed(&termios, B230400);
-			break;
-		default:
-			LogError("Unsupported serial port speed - %d", int(m_speed));
-			::close(m_fd);
-			return false;
-	}
-
-	if (::tcsetattr(m_fd, TCSANOW, &termios) < 0) {
-		LogError("Cannot set the attributes for %s", m_device.c_str());
-		::close(m_fd);
-		return false;
-	}
-
-	if (m_assertRTS) {
-		unsigned int y;
-		if (::ioctl(m_fd, TIOCMGET, &y) < 0) {
-			LogError("Cannot get the control attributes for %s", m_device.c_str());
+	if (::isatty(m_fd)) {
+		termios termios;
+		if (::tcgetattr(m_fd, &termios) < 0) {
+			LogError("Cannot get the attributes for %s", m_device.c_str());
 			::close(m_fd);
 			return false;
 		}
 
-		y |= TIOCM_RTS;
-                                                                                
-		if (::ioctl(m_fd, TIOCMSET, &y) < 0) {
-			LogError("Cannot set the control attributes for %s", m_device.c_str());
+		termios.c_iflag &= ~(IGNBRK | BRKINT | IGNPAR | PARMRK | INPCK);
+		termios.c_iflag &= ~(ISTRIP | INLCR | IGNCR | ICRNL);
+		termios.c_iflag &= ~(IXON | IXOFF | IXANY);
+		termios.c_oflag &= ~(OPOST);
+		termios.c_cflag &= ~(CSIZE | CSTOPB | PARENB | CRTSCTS);
+		termios.c_cflag |=  (CS8 | CLOCAL | CREAD);
+		termios.c_lflag &= ~(ISIG | ICANON | IEXTEN);
+		termios.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL);
+#if defined(__APPLE__)
+		termios.c_cc[VMIN] = 1;
+		termios.c_cc[VTIME] = 1;
+#else
+		termios.c_cc[VMIN]  = 0;
+		termios.c_cc[VTIME] = 10;
+#endif
+
+		switch (m_speed) {
+			case SERIAL_1200:
+				::cfsetospeed(&termios, B1200);
+				::cfsetispeed(&termios, B1200);
+				break;
+			case SERIAL_2400:
+				::cfsetospeed(&termios, B2400);
+				::cfsetispeed(&termios, B2400);
+				break;
+			case SERIAL_4800:
+				::cfsetospeed(&termios, B4800);
+				::cfsetispeed(&termios, B4800);
+				break;
+			case SERIAL_9600:
+				::cfsetospeed(&termios, B9600);
+				::cfsetispeed(&termios, B9600);
+				break;
+			case SERIAL_19200:
+				::cfsetospeed(&termios, B19200);
+				::cfsetispeed(&termios, B19200);
+				break;
+			case SERIAL_38400:
+				::cfsetospeed(&termios, B38400);
+				::cfsetispeed(&termios, B38400);
+				break;
+			case SERIAL_115200:
+				::cfsetospeed(&termios, B115200);
+				::cfsetispeed(&termios, B115200);
+				break;
+			case SERIAL_230400:
+				::cfsetospeed(&termios, B230400);
+				::cfsetispeed(&termios, B230400);
+				break;
+			default:
+				LogError("Unsupported serial port speed - %d", int(m_speed));
+				::close(m_fd);
+				return false;
+		}
+
+		if (::tcsetattr(m_fd, TCSANOW, &termios) < 0) {
+			LogError("Cannot set the attributes for %s", m_device.c_str());
 			::close(m_fd);
 			return false;
 		}
+
+		if (m_assertRTS) {
+			unsigned int y;
+			if (::ioctl(m_fd, TIOCMGET, &y) < 0) {
+				LogError("Cannot get the control attributes for %s", m_device.c_str());
+				::close(m_fd);
+				return false;
+			}
+
+			y |= TIOCM_RTS;
+
+			if (::ioctl(m_fd, TIOCMSET, &y) < 0) {
+				LogError("Cannot set the control attributes for %s", m_device.c_str());
+				::close(m_fd);
+				return false;
+			}
+		}
+
+#if defined(__APPLE__)
+		setNonblock(false);
+#endif
 	}
 
 	return true;
 }
+
+#if defined(__APPLE__)
+int CSerialController::setNonblock(bool nonblock)
+{
+	int flag = ::fcntl(m_fd, F_GETFD, 0);
+
+	if (nonblock)
+		flag |= O_NONBLOCK;
+	else
+		flag &= ~O_NONBLOCK;
+
+	return ::fcntl(m_fd, F_SETFL, flag);
+}
+#endif
 
 int CSerialController::read(unsigned char* buffer, unsigned int length)
 {
@@ -394,13 +370,11 @@ int CSerialController::read(unsigned char* buffer, unsigned int length)
 		fd_set fds;
 		FD_ZERO(&fds);
 		FD_SET(m_fd, &fds);
-
 		int n;
 		if (offset == 0U) {
 			struct timeval tv;
 			tv.tv_sec  = 0;
 			tv.tv_usec = 0;
-
 			n = ::select(m_fd + 1, &fds, NULL, NULL, &tv);
 			if (n == 0)
 				return 0;
@@ -430,6 +404,26 @@ int CSerialController::read(unsigned char* buffer, unsigned int length)
 	return length;
 }
 
+bool CSerialController::canWrite(){
+#if defined(__APPLE__)
+	fd_set wset;
+	FD_ZERO(&wset);
+	FD_SET(m_fd, &wset);
+
+	struct timeval timeo;
+	timeo.tv_sec  = 0;
+	timeo.tv_usec = 0;
+
+	int rc = ::select(m_fd + 1, NULL, &wset, NULL, &timeo);
+	if (rc > 0 && FD_ISSET(m_fd, &wset))
+		return true;
+
+	return false;
+#else
+	return true;
+#endif
+}
+
 int CSerialController::write(const unsigned char* buffer, unsigned int length)
 {
 	assert(buffer != NULL);
@@ -439,9 +433,10 @@ int CSerialController::write(const unsigned char* buffer, unsigned int length)
 		return 0;
 
 	unsigned int ptr = 0U;
-
 	while (ptr < length) {
-		ssize_t n = ::write(m_fd, buffer + ptr, length - ptr);
+		ssize_t n = 0U;
+		if (canWrite())
+			n = ::write(m_fd, buffer + ptr, length - ptr);
 		if (n < 0) {
 			if (errno != EAGAIN) {
 				LogError("Error returned from write(), errno=%d", errno);
@@ -465,3 +460,4 @@ void CSerialController::close()
 }
 
 #endif
+

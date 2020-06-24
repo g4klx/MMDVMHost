@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015,2016 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015-2019 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -12,24 +12,33 @@
  */
 
 #include "DMRControl.h"
+#include "DMRAccessControl.h"
 #include "Defines.h"
-#include "CSBK.h"
+#include "DMRCSBK.h"
 #include "Log.h"
 
+#include <cstdio>
 #include <cassert>
+#include <algorithm>
 
-CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, unsigned int timeout, CModem* modem, CHomebrewDMRIPSC* network, IDisplay* display) :
-m_id(id),
+CDMRControl::CDMRControl(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, bool embeddedLCOnly, bool dumpTAData, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& whitelist, const std::vector<unsigned int>& slot1TGWhitelist, const std::vector<unsigned int>& slot2TGWhitelist, unsigned int timeout, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssi, unsigned int jitter, DMR_OVCM_TYPES ovcm) :
 m_colorCode(colorCode),
 m_modem(modem),
 m_network(network),
 m_slot1(1U, timeout),
-m_slot2(2U, timeout)
+m_slot2(2U, timeout),
+m_lookup(lookup)
 {
+	assert(id != 0U);
 	assert(modem != NULL);
 	assert(display != NULL);
+	assert(lookup != NULL);
+	assert(rssi != NULL);
 
-	CDMRSlot::init(colorCode, modem, network, display);
+	// Load black and white lists to DMRAccessControl
+	CDMRAccessControl::init(blacklist, whitelist, slot1TGWhitelist, slot2TGWhitelist, selfOnly, prefixes, id);
+
+	CDMRSlot::init(colorCode, embeddedLCOnly, dumpTAData, callHang, modem, network, display, duplex, m_lookup, rssi, jitter, ovcm);
 }
 
 CDMRControl::~CDMRControl()
@@ -38,49 +47,64 @@ CDMRControl::~CDMRControl()
 
 bool CDMRControl::processWakeup(const unsigned char* data)
 {
+	assert(data != NULL);
+
 	// Wakeups always come in on slot 1
 	if (data[0U] != TAG_DATA || data[1U] != (DMR_IDLE_RX | DMR_SYNC_DATA | DT_CSBK))
 		return false;
 
-	CCSBK csbk(data + 2U);
+	CDMRCSBK csbk;
+	bool valid = csbk.put(data + 2U);
+	if (!valid)
+		return false;
 
 	CSBKO csbko = csbk.getCSBKO();
 	if (csbko != CSBKO_BSDWNACT)
 		return false;
 
-	unsigned int bsId = csbk.getBSId();
-	if (bsId == 0xFFFFFFU) {
-		LogMessage("CSBK BS_Dwn_Act for any received from %u", csbk.getSrcId());
-		return true;
-	} else if (bsId == m_id) {
-		LogMessage("CSBK BS_Dwn_Act for %u received from %u", bsId, csbk.getSrcId());
-		return true;
+	unsigned int srcId = csbk.getSrcId();
+	std::string src = m_lookup->find(srcId);
+
+	bool ret = CDMRAccessControl::validateSrcId(srcId);
+	if (!ret) {
+		LogMessage("Invalid Downlink Activate received from %s", src.c_str());
+		return false;
 	}
 
-	return false;
+	LogMessage("Downlink Activate received from %s", src.c_str());
+
+	return true;
 }
 
-void CDMRControl::writeModemSlot1(unsigned char *data)
+bool CDMRControl::writeModemSlot1(unsigned char *data, unsigned int len)
 {
-	m_slot1.writeModem(data);
+	assert(data != NULL);
+
+	return m_slot1.writeModem(data, len);
 }
 
-void CDMRControl::writeModemSlot2(unsigned char *data)
+bool CDMRControl::writeModemSlot2(unsigned char *data, unsigned int len)
 {
-	m_slot2.writeModem(data);
+	assert(data != NULL);
+
+	return m_slot2.writeModem(data, len);
 }
 
 unsigned int CDMRControl::readModemSlot1(unsigned char *data)
 {
+	assert(data != NULL);
+
 	return m_slot1.readModem(data);
 }
 
 unsigned int CDMRControl::readModemSlot2(unsigned char *data)
 {
+	assert(data != NULL);
+
 	return m_slot2.readModem(data);
 }
 
-void CDMRControl::clock(unsigned int ms)
+void CDMRControl::clock()
 {
 	if (m_network != NULL) {
 		CDMRData data;
@@ -93,10 +117,22 @@ void CDMRControl::clock(unsigned int ms)
 				default: LogError("Invalid slot no %u", slotNo); break;
 			}
 		}
-
-		m_network->clock(ms);
 	}
 
-	m_slot1.clock(ms);
-	m_slot2.clock(ms);
+	m_slot1.clock();
+	m_slot2.clock();
+}
+
+bool CDMRControl::isBusy() const
+{
+	if (m_slot1.isBusy())
+		return true;
+
+	return m_slot2.isBusy();
+}
+
+void CDMRControl::enable(bool enabled)
+{
+	m_slot1.enable(enabled);
+	m_slot2.enable(enabled);
 }

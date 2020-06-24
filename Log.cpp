@@ -18,20 +18,28 @@
 
 #include "Log.h"
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <Windows.h>
+#else
+#include <sys/time.h>
+#include <unistd.h>
+#endif
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstdarg>
 #include <ctime>
 #include <cassert>
+#include <cstring>
 
-static std::string m_path;
-static std::string m_root;
+static unsigned int m_fileLevel = 2U;
+static std::string m_filePath;
+static std::string m_fileRoot;
 
 static FILE* m_fpLog = NULL;
+static bool m_daemon = false;
 
-static bool m_display = true;
-
-static unsigned int m_level = 2U;
+static unsigned int m_displayLevel = 2U;
 
 static struct tm m_tm;
 
@@ -39,6 +47,11 @@ static char LEVELS[] = " DMIWEF";
 
 static bool LogOpen()
 {
+	bool status = false;
+	
+	if (m_fileLevel == 0U)
+		return true;
+
 	time_t now;
 	::time(&now);
 
@@ -52,24 +65,35 @@ static bool LogOpen()
 			::fclose(m_fpLog);
 	}
 
-	char filename[50U];
+	char filename[100U];
 #if defined(_WIN32) || defined(_WIN64)
-	::sprintf(filename, "%s\\%s-%04d-%02d-%02d.log", m_path.c_str(), m_root.c_str(), tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
+	::sprintf(filename, "%s\\%s-%04d-%02d-%02d.log", m_filePath.c_str(), m_fileRoot.c_str(), tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
 #else
-	::sprintf(filename, "%s/%s-%04d-%02d-%02d.log", m_path.c_str(), m_root.c_str(), tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
+	::sprintf(filename, "%s/%s-%04d-%02d-%02d.log", m_filePath.c_str(), m_fileRoot.c_str(), tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
 #endif
 
-	m_fpLog = ::fopen(filename, "a+t");
+	if ((m_fpLog = ::fopen(filename, "a+t")) != NULL)
+	{
+		status = true;
+
+#if !defined(_WIN32) && !defined(_WIN64)
+		if (m_daemon)
+			dup2(fileno(m_fpLog), fileno(stderr));
+#endif
+	}
+	
 	m_tm = *tm;
 
-    return m_fpLog != NULL;
+    return status;
 }
 
-bool LogInitialise(const std::string& path, const std::string& root, bool display)
+bool LogInitialise(bool daemon, const std::string& filePath, const std::string& fileRoot, unsigned int fileLevel, unsigned int displayLevel)
 {
-	m_path    = path;
-	m_root    = root;
-	m_display = display;
+	m_filePath     = filePath;
+	m_fileRoot     = fileRoot;
+	m_fileLevel    = fileLevel;
+	m_displayLevel = displayLevel;
+	m_daemon       = daemon;
     return ::LogOpen();
 }
 
@@ -79,48 +103,47 @@ void LogFinalise()
         ::fclose(m_fpLog);
 }
 
-void LogSetLevel(unsigned int level)
-{
-    m_level = level;
-}
-
 void Log(unsigned int level, const char* fmt, ...)
 {
-    assert(level < 7U);
     assert(fmt != NULL);
 
-    if (level < m_level)
-        return;
+	char buffer[300U];
+#if defined(_WIN32) || defined(_WIN64)
+	SYSTEMTIME st;
+	::GetSystemTime(&st);
 
-    bool ret = ::LogOpen();
-    if (!ret)
-        return;
+	::sprintf(buffer, "%c: %04u-%02u-%02u %02u:%02u:%02u.%03u ", LEVELS[level], st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+#else
+	struct timeval now;
+	::gettimeofday(&now, NULL);
 
-    time_t now;
-    ::time(&now);
+	struct tm* tm = ::gmtime(&now.tv_sec);
 
-    struct tm* tm = ::gmtime(&now);
+	::sprintf(buffer, "%c: %04d-%02d-%02d %02d:%02d:%02d.%03lu ", LEVELS[level], tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, now.tv_usec / 1000U);
+#endif
 
-    ::fprintf(m_fpLog, "%c: %04d-%02d-%02d %02d:%02d:%02d ", LEVELS[level], tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
-	if (m_display)
-	    ::fprintf(stdout, "%c: %04d-%02d-%02d %02d:%02d:%02d ", LEVELS[level], tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+	va_list vl;
+	va_start(vl, fmt);
 
-    va_list vl;
-    va_start(vl, fmt);
-    vfprintf(m_fpLog, fmt, vl);
-	if (m_display)
-	    vfprintf(stdout, fmt, vl);
-    va_end(vl);
+	::vsprintf(buffer + ::strlen(buffer), fmt, vl);
 
-    ::fprintf(m_fpLog, "\n");
-    ::fflush(m_fpLog);
+	va_end(vl);
 
-	if (m_display) {
-	    ::fprintf(stdout, "\n");
+	if (level >= m_fileLevel && m_fileLevel != 0U) {
+		bool ret = ::LogOpen();
+		if (!ret)
+			return;
+
+		::fprintf(m_fpLog, "%s\n", buffer);
+		::fflush(m_fpLog);
+	}
+
+	if (level >= m_displayLevel && m_displayLevel != 0U) {
+		::fprintf(stdout, "%s\n", buffer);
 		::fflush(stdout);
 	}
 
-    if (level == 6U) {		// Fatal
+	if (level == 6U) {		// Fatal
         ::fclose(m_fpLog);
         exit(1);
     }

@@ -1,0 +1,18 @@
+version: '3'
+services:
+  mmdvmhost:
+    build: https://github.com/g4klx/MMDVMHost.git   # Make your image Docker
+#   image: f4hlv/mmdvmhost                          # Download MMDVMHost image on Dockerhub
+    container_name: mmdvmhost
+    restart: unless-stopped
+    volumes:
+      - ./MMDVM.ini:/MMDVMHost/MMDVM.ini:ro         # Path to the MMDVM.ini File
+      - ./RSSI.dat:/MMDVMHost/RSSI.dat:ro           # Path to the RSSI.dat File (Optional)
+      - ./DMRIds.dat:/MMDVMHost/DMRIds.dat:ro       # Path to the DMRIds.dat File (Optional)
+      - mmdvmhost:/MMDVMHost
+    devices:
+      - /dev/ttyACM0:/dev/ttyACM0                   # Specify the mmdvm "/dev/tty***" interface
+volumes:
+  mmdvmhost:
+
+

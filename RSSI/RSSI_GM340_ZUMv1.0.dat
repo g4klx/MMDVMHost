@@ -1,0 +1,43 @@
+# This file maps the raw RSSI values to dBm values to send to the DMR network. A number of data
+# points should be entered and the software will use those to work out the in-between values.
+#
+# The format of the file is:
+# Raw RSSI Value		dBm Value
+#
+# Measured with a Marconi 2955 Test set and Motorola GM340 UHF (430.6125 MHz) using Arduino DUE with ZUM v1.0.
+# No resistor divider, 100nF decoupling capacitor from ADC to ground.
+# Both S-meter (6dB) and decade (10dB) steps are included between the noise floor and saturation.
+# George M1GEO / GB7KH - 01/01/2017
+#
+2858		-20
+2857		-30
+2856		-40
+2855		-43
+2854		-48
+2853		-50
+2845		-53
+2780		-58
+2732		-60
+2647		-63
+2484		-68
+2422		-70
+2356		-73
+2234		-78
+2183		-80
+2103		-83
+1978		-88
+1931		-90
+1875		-93
+1710		-99
+1686		-100
+1545		-105
+1416		-110
+1398		-111
+1238		-117
+1166		-120
+1106		-123
+1018		-129
+1006		-130
+985		-135
+976		-140
+971		-150

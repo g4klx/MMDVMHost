@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2002-2004,2007-2009,2011-2013,2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2002-2004,2007-2009,2011-2013,2015-2017 by Jonathan Naylor G4KLX
  *   Copyright (C) 1999-2001 by Thomas Sailor HB9JNX
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,8 @@
 #ifndef SerialController_H
 #define SerialController_H
 
+#include "SerialPort.h"
+
 #include <string>
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -38,35 +40,37 @@ enum SERIAL_SPEED {
 	SERIAL_230400 = 230400
 };
 
-class CSerialController {
+class CSerialController : public ISerialPort {
 public:
 	CSerialController(const std::string& device, SERIAL_SPEED speed, bool assertRTS = false);
-	~CSerialController();
+	virtual ~CSerialController();
 
-	bool open();
+	virtual bool open();
 
-	int  read(unsigned char* buffer, unsigned int length);
-	int  write(const unsigned char* buffer, unsigned int length);
+	virtual int read(unsigned char* buffer, unsigned int length);
 
-	void close();
+	virtual int write(const unsigned char* buffer, unsigned int length);
 
-private:
+	virtual void close();
+
+#if defined(__APPLE__)
+	virtual int setNonblock(bool nonblock);
+#endif
+
+protected:
 	std::string    m_device;
 	SERIAL_SPEED   m_speed;
 	bool           m_assertRTS;
 #if defined(_WIN32) || defined(_WIN64)
 	HANDLE         m_handle;
-	OVERLAPPED     m_readOverlapped;
-	OVERLAPPED     m_writeOverlapped;
-	unsigned char* m_readBuffer;
-	unsigned int   m_readLength;
-	bool           m_readPending;
 #else
 	int            m_fd;
 #endif
 
 #if defined(_WIN32) || defined(_WIN64)
 	int readNonblock(unsigned char* buffer, unsigned int length);
+#else
+	bool canWrite();
 #endif
 };
 

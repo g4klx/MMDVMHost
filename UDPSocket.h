@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2011,2013,2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2011,2013,2015,2016,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -36,8 +36,8 @@
 
 class CUDPSocket {
 public:
-	CUDPSocket(const std::string& address, unsigned int port);
-	CUDPSocket();
+	CUDPSocket(const std::string& address, unsigned int port = 0U);
+	CUDPSocket(unsigned int port = 0U);
 	~CUDPSocket();
 
 	bool open();
@@ -47,7 +47,9 @@ public:
 
 	void close();
 
-	static in_addr lookup(const std::string& hostName);
+    unsigned long getLocalAddress() const;
+
+    static in_addr lookup(const std::string& hostName);
 
 private:
 	std::string    m_address;

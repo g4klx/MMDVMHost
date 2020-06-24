@@ -1,0 +1,41 @@
+Nextion Display Layouts by ON7LDS (for MMDVMHost)
+=================================================
+
+		################################
+		#                              #
+		#  screenLayout 2 files (-L2)  #
+		#                              #
+		################################
+
+The -L2 files in this directory are Nextion screen layouts with better
+ fonts than the (rather ugly) standard Nextion fonts
+
+There are some other changes:
+
+* On the main screen there is a field to display the active ip address of the
+  device. On Linux it is preceded with the network interface name.
+* DMR: if received, the Talker Alias is decoded and displayed. The TA will be
+  in green, so the user knows it is a decoded TA displaying.
+  This happens on-the-fly: as the parts of the TA arrive, they will immediately
+  be shown.
+* If you want to change my screen layout, the only thing to keep in mind is
+  that the MMDVMHost program will select following font numbers:
+        default font for the TA field : font 4
+        TA >16 characters             : font 3
+        TA >20 characters             : font 2
+        TA >24 characters             : font 1
+  There always have to be at least 5 fonts, of which font 1-4 are used for the
+  TA. If your display is wide enough to show all characters in one font, you
+  must copy this font to the lesser ('smaller') fonts.
+  i.e. : the 3.2" the display can show more than 31 characters (the maximum
+  TA length) in font 2, so this font is also copied to font 1.
+* If you want more control about what and how it is displayed, you better
+  select Layout 3 or 4 (see README-L3)
+* The screenlayout has to be selected with the parameter ScreenLayout in the
+  MMDVM.ini file under the Nextion section. This way, the extra function
+  to automatically change the font size, is activated.
+    0 = auto (future use, for now it's G4KLX layout)
+    1 = G4KLX layout
+    2 = ON7LDS layout                (this README file)
+    3 = ON7LDS DIY layout            (see README-L3)
+    4 = ON7LDS DIY layout High Speed (see README-L3)

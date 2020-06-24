@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 #if defined(_WIN32) || defined(_WIN64)
 #include <windows.h>
 #else
-#include <ctime>
+#include <sys/time.h>
 #endif
 
 class CStopWatch
@@ -31,15 +31,18 @@ public:
 	CStopWatch();
 	~CStopWatch();
 
-	unsigned long start();
-	unsigned int  elapsed();
+	unsigned long long time() const;
+
+	unsigned long long start();
+	unsigned int       elapsed();
 
 private:
 #if defined(_WIN32) || defined(_WIN64)
-	LARGE_INTEGER m_frequency;
-	LARGE_INTEGER m_start;
+	LARGE_INTEGER  m_frequencyS;
+	LARGE_INTEGER  m_frequencyMS;
+	LARGE_INTEGER  m_start;
 #else
-	timespec      m_start;
+	unsigned long long m_startMS;
 #endif
 };
 

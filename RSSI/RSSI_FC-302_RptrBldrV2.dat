@@ -1,0 +1,41 @@
+# This file maps the raw RSSI values to dBm values to send to the DMR network. A number of data
+# points should be entered and the software will use those to work out the in-between values.
+#
+# The format of the file is:
+# Raw RSSI Value		dBm Value
+#
+# The following values were taken with a Schlumberger Stabilock 4040 radio tester as transmitter
+# Radio is a Friendcom FC-302 UHF, 12.5 KHz BW, RSSI PIN 7 directly connected to board
+# Setup is MMDVM on a Pi3 with modem "Repeater-Builder STM32-DVM V2", RSSI POT at maximum
+# Ralph, dk5ras, 20180204
+
+1626	-46
+1622	-49
+1611	-52
+1591	-55
+1547	-58
+1486	-61
+1409	-64
+1344	-67
+1292	-70
+1235	-73
+1155	-76
+1068	-79
+1000	-82
+950	-85
+895	-88
+847	-91
+783	-94
+715	-97
+660	-100
+600	-103
+525	-106
+438	-109
+363	-112
+305	-115
+246	-118
+188	-121
+135	-124
+100	-127
+77	-130
+64	-133

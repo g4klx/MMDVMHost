@@ -1,0 +1,9 @@
+D-Star: On some radios, the header is not decoded correctly. It looks like frequency drift at the beginning of the transmission.
+
+DMR: DMO mode doesn't wake up older radios like other radios do.
+
+YSF: No known issues.
+
+P25: Upgrade the filters, processing power in the Due permiting.
+
+NXDN: No known issues.
