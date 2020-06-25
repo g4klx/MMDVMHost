@@ -1,6 +1,6 @@
 /*
- *   Copyright (C) 2002-2004,2007-2009,2011-2013,2015-2017,2020 by Jonathan Naylor G4KLX
- *   Copyright (C) 1999-2001 by Thomas Sailor HB9JNX
+ *   Copyright (C) 2015-2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020 by Geoffrey Merck - F4FXL KC3FRA
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,34 +17,34 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef I2CController_H
-#define I2CController_H
+#if !defined(IIRDIRECTFORM1FILTER_H)
+#define	IIRDIRECTFORM1FILTER_H
 
-#if defined(__linux__)
-
-#include "SerialPort.h"
-
-#include <string>
-
-class CI2CController : public ISerialPort {
+class CIIRDirectForm1Filter
+{
 public:
-	CI2CController(const std::string& device, unsigned int address = 0x22U);
-	virtual ~CI2CController();
-
-	virtual bool open();
-
-	virtual int read(unsigned char* buffer, unsigned int length);
-
-	virtual int write(const unsigned char* buffer, unsigned int length);
-
-	virtual void close();
+  CIIRDirectForm1Filter(float b0, float b1, float b2, float, float a1, float a2, float additionalGaindB);
+  float filter(float sample);
+  void reset();
 
 private:
-	std::string  m_device;
-	unsigned int m_address;
-	int          m_fd;
+// delay line
+  float m_x2; // x[n-2]
+  float m_y2; // y[n-2]
+  float m_x1; // x[n-1]
+  float m_y1; // y[n-1]
+  
+  // coefficients
+  // FIR
+  float m_b0;
+  float m_b1;
+  float m_b2;
+  // IIR
+  float m_a1;
+  float m_a2;
+
+  float m_additionalGainLin;
 };
 
-#endif
 
 #endif

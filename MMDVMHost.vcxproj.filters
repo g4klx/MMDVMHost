@@ -275,9 +275,6 @@
     <ClInclude Include="POCSAGDefines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="I2CController.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="MobileGPS.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -312,6 +309,15 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="AX25Defines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FMNetwork.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FMControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IIRDirectForm1Filter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -553,9 +559,6 @@
     <ClCompile Include="POCSAGControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="I2CController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="MobileGPS.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -587,6 +590,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NXDNKenwoodNetwork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FMNetwork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FMControl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IIRDirectForm1Filter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -511,7 +511,7 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
 		if (port == "modem")
 			serial = new CModemSerialPort(modem);
 		else
-			serial = new CSerialController(port, (type == "TFT Serial") ? SERIAL_9600 : SERIAL_115200);
+			serial = new CSerialController(port, (type == "TFT Serial") ? 9600U : 115200U);
 
 		if (type == "TFT Surenoo")
 			display = new CTFTSurenoo(conf.getCallsign(), dmrid, serial, brightness, conf.getDuplex());
@@ -565,11 +565,11 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
                 		display = new CNullDisplay;
                         }
 		} else {
-			SERIAL_SPEED baudrate = SERIAL_9600;
-			if (screenLayout&0x0cU)
-				baudrate = SERIAL_115200;
+			unsigned int baudrate = 9600U;
+			if (screenLayout == 4U)
+				baudrate = 115200U;
 			
-			LogInfo("    Display baudrate: %u ",baudrate);
+			LogInfo("    Display baudrate: %u ", baudrate);
 			ISerialPort* serial = new CSerialController(port, baudrate);
 			display = new CNextion(conf.getCallsign(), dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF, conf.getLocation());
 		}

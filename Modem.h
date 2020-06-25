@@ -19,7 +19,7 @@
 #ifndef	MODEM_H
 #define	MODEM_H
 
-#include "SerialController.h"
+#include "SerialPort.h"
 #include "RingBuffer.h"
 #include "Defines.h"
 #include "Timer.h"
@@ -45,7 +45,7 @@ public:
 	CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool trace, bool debug);
 	virtual ~CModem();
 
-	virtual void setSerialParams(const std::string& protocol, unsigned int address);
+	virtual void setSerialParams(const std::string& protocol, unsigned int address, unsigned int speed);
 	virtual void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency);
 	virtual void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool pocsagEnabled, bool fmEnabled, bool ax25Enabled);
 	virtual void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagLevel, float fmTXLevel, float ax25TXLevel);
@@ -58,7 +58,8 @@ public:
 
 	virtual void setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch);
 	virtual void setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackMinTime, unsigned int ackDelay, float ackLevel);
-	virtual void setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, bool useCOS, bool cosInvert, unsigned int rfAudioBoost, float maxDevLevel);
+	virtual void setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, bool kerchunkTX, unsigned int hangTime, bool useCOS, bool cosInvert, unsigned int rfAudioBoost, float maxDevLevel);
+	virtual void setFMExtParams(const std::string& ack, unsigned int audioBoost);
 
 	virtual bool open();
 
@@ -68,6 +69,7 @@ public:
 	virtual unsigned int readYSFData(unsigned char* data);
 	virtual unsigned int readP25Data(unsigned char* data);
 	virtual unsigned int readNXDNData(unsigned char* data);
+	virtual unsigned int readFMData(unsigned char* data);
 	virtual unsigned int readAX25Data(unsigned char* data);
 	virtual unsigned int readTransparentData(unsigned char* data);
 
@@ -80,6 +82,7 @@ public:
 	virtual bool hasP25Space() const;
 	virtual bool hasNXDNSpace() const;
 	virtual bool hasPOCSAGSpace() const;
+	virtual unsigned int getFMSpace() const;
 	virtual bool hasAX25Space() const;
 
 	virtual bool hasTX() const;
@@ -96,6 +99,7 @@ public:
 	virtual bool writeP25Data(const unsigned char* data, unsigned int length);
 	virtual bool writeNXDNData(const unsigned char* data, unsigned int length);
 	virtual bool writePOCSAGData(const unsigned char* data, unsigned int length);
+	virtual bool writeFMData(const unsigned char* data, unsigned int length);
 	virtual bool writeAX25Data(const unsigned char* data, unsigned int length);
 
 	virtual bool writeTransparentData(const unsigned char* data, unsigned int length);
@@ -166,7 +170,7 @@ private:
 	bool                       m_ax25Enabled;
 	int                        m_rxDCOffset;
 	int                        m_txDCOffset;
-	CSerialController*         m_serial;
+	ISerialPort*               m_serial;
 	unsigned char*             m_buffer;
 	unsigned int               m_length;
 	unsigned int               m_offset;
@@ -185,6 +189,8 @@ private:
 	CRingBuffer<unsigned char> m_rxNXDNData;
 	CRingBuffer<unsigned char> m_txNXDNData;
 	CRingBuffer<unsigned char> m_txPOCSAGData;
+	CRingBuffer<unsigned char> m_rxFMData;
+	CRingBuffer<unsigned char> m_txFMData;
 	CRingBuffer<unsigned char> m_rxAX25Data;
 	CRingBuffer<unsigned char> m_txAX25Data;
 	CRingBuffer<unsigned char> m_rxTransparentData;
@@ -200,6 +206,7 @@ private:
 	unsigned int               m_p25Space;
 	unsigned int               m_nxdnSpace;
 	unsigned int               m_pocsagSpace;
+	unsigned int               m_fmSpace;
 	unsigned int               m_ax25Space;
 	bool                       m_tx;
 	bool                       m_cd;
@@ -221,6 +228,7 @@ private:
 	bool                       m_fmCallsignAtEnd;
 	bool                       m_fmCallsignAtLatch;
 	std::string                m_fmRfAck;
+	std::string                m_fmExtAck;
 	unsigned int               m_fmAckSpeed;
 	unsigned int               m_fmAckFrequency;
 	unsigned int               m_fmAckMinTime;
@@ -233,11 +241,14 @@ private:
 	unsigned int               m_fmCtcssLowThreshold;
 	float                      m_fmCtcssLevel;
 	unsigned int               m_fmKerchunkTime;
+	bool                       m_fmKerchunkTX;
 	unsigned int               m_fmHangTime;
 	bool                       m_fmUseCOS;
 	bool                       m_fmCOSInvert;
 	unsigned int               m_fmRFAudioBoost;
+	unsigned int               m_fmExtAudioBoost;
 	float                      m_fmMaxDevLevel;
+	bool                       m_fmExtEnable;
 
 	bool readVersion();
 	bool readStatus();
@@ -246,6 +257,7 @@ private:
 	bool setFMCallsignParams();
 	bool setFMAckParams();
 	bool setFMMiscParams();
+	bool setFMExtParams();
 
 	void printDebug();
 

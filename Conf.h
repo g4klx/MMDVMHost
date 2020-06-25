@@ -71,6 +71,7 @@ public:
   // The Modem section
   std::string  getModemPort() const;
   std::string  getModemProtocol() const;
+  unsigned int getModemSpeed() const;
   unsigned int getModemAddress() const;
   bool         getModemRXInvert() const;
   bool         getModemTXInvert() const;
@@ -204,12 +205,14 @@ public:
   unsigned int getFMCTCSSLowThreshold() const;
   float        getFMCTCSSLevel() const;
   unsigned int getFMKerchunkTime() const;
+  bool         getFMKerchunkTX() const;
   unsigned int getFMHangTime() const;
   bool         getFMUseCOS() const;
   bool         getFMCOSInvert() const;
   unsigned int getFMRFAudioBoost() const;
   float        getFMMaxDevLevel() const;
   unsigned int getFMExtAudioBoost() const;
+  unsigned int getFMModeHang() const;
 
   // The D-Star Network section
   bool         getDStarNetworkEnabled() const;
@@ -267,6 +270,15 @@ public:
   unsigned int getPOCSAGLocalPort() const;
   unsigned int getPOCSAGNetworkModeHang() const;
   bool         getPOCSAGNetworkDebug() const;
+
+  // The FM Network section
+  bool         getFMNetworkEnabled() const;
+  std::string  getFMGatewayAddress() const;
+  unsigned int getFMGatewayPort() const;
+  std::string  getFMLocalAddress() const;
+  unsigned int getFMLocalPort() const;
+  unsigned int getFMNetworkModeHang() const;
+  bool         getFMNetworkDebug() const;
 
   // The AX.25 Network section
   bool         getAX25NetworkEnabled() const;
@@ -364,6 +376,7 @@ private:
 
   std::string  m_modemPort;
   std::string  m_modemProtocol;
+  unsigned int m_modemSpeed;
   unsigned int m_modemAddress;
   bool         m_modemRXInvert;
   bool         m_modemTXInvert;
@@ -487,12 +500,14 @@ private:
   unsigned int m_fmCTCSSLowThreshold;
   float        m_fmCTCSSLevel;
   unsigned int m_fmKerchunkTime;
+  bool         m_fmKerchunkTX;
   unsigned int m_fmHangTime;
   bool         m_fmUseCOS;
   bool         m_fmCOSInvert;
   unsigned int m_fmRFAudioBoost;
   float        m_fmMaxDevLevel;
   unsigned int m_fmExtAudioBoost;
+  unsigned int m_fmModeHang;
 
   bool         m_dstarNetworkEnabled;
   std::string  m_dstarGatewayAddress;
@@ -544,6 +559,14 @@ private:
   unsigned int m_pocsagLocalPort;
   unsigned int m_pocsagNetworkModeHang;
   bool         m_pocsagNetworkDebug;
+
+  bool         m_fmNetworkEnabled;
+  std::string  m_fmGatewayAddress;
+  unsigned int m_fmGatewayPort;
+  std::string  m_fmLocalAddress;
+  unsigned int m_fmLocalPort;
+  unsigned int m_fmNetworkModeHang;
+  bool         m_fmNetworkDebug;
 
   bool         m_ax25NetworkEnabled;
   std::string  m_ax25NetworkPort;

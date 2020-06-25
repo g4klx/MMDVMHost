@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2002-2004,2007-2011,2013,2014-2017,2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2002-2004,2007-2011,2013,2014-2017,2019,2020 by Jonathan Naylor G4KLX
  *   Copyright (C) 1999-2001 by Thomas Sailor HB9JNX
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -23,12 +23,11 @@
 #include <cstring>
 #include <cassert>
 
-#include <sys/types.h>
-
 #if defined(_WIN32) || defined(_WIN64)
 #include <setupapi.h>
 #include <winioctl.h>
 #else
+#include <sys/types.h>
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <cerrno>
@@ -40,7 +39,7 @@
 
 #if defined(_WIN32) || defined(_WIN64)
 
-CSerialController::CSerialController(const std::string& device, SERIAL_SPEED speed, bool assertRTS) :
+CSerialController::CSerialController(const std::string& device, unsigned int speed, bool assertRTS) :
 m_device(device),
 m_speed(speed),
 m_assertRTS(assertRTS),
@@ -221,7 +220,7 @@ void CSerialController::close()
 
 #else
 
-CSerialController::CSerialController(const std::string& device, SERIAL_SPEED speed, bool assertRTS) :
+CSerialController::CSerialController(const std::string& device, unsigned int speed, bool assertRTS) :
 m_device(device),
 m_speed(speed),
 m_assertRTS(assertRTS),
@@ -273,40 +272,44 @@ bool CSerialController::open()
 #endif
 
 		switch (m_speed) {
-			case SERIAL_1200:
+			case 1200U:
 				::cfsetospeed(&termios, B1200);
 				::cfsetispeed(&termios, B1200);
 				break;
-			case SERIAL_2400:
+			case 2400U:
 				::cfsetospeed(&termios, B2400);
 				::cfsetispeed(&termios, B2400);
 				break;
-			case SERIAL_4800:
+			case 4800U:
 				::cfsetospeed(&termios, B4800);
 				::cfsetispeed(&termios, B4800);
 				break;
-			case SERIAL_9600:
+			case 9600U:
 				::cfsetospeed(&termios, B9600);
 				::cfsetispeed(&termios, B9600);
 				break;
-			case SERIAL_19200:
+			case 19200U:
 				::cfsetospeed(&termios, B19200);
 				::cfsetispeed(&termios, B19200);
 				break;
-			case SERIAL_38400:
+			case 38400U:
 				::cfsetospeed(&termios, B38400);
 				::cfsetispeed(&termios, B38400);
 				break;
-			case SERIAL_115200:
+			case 115200U:
 				::cfsetospeed(&termios, B115200);
 				::cfsetispeed(&termios, B115200);
 				break;
-			case SERIAL_230400:
+			case 230400U:
 				::cfsetospeed(&termios, B230400);
 				::cfsetispeed(&termios, B230400);
 				break;
+			case 460800U:
+				::cfsetospeed(&termios, B460800);
+				::cfsetispeed(&termios, B460800);
+				break;
 			default:
-				LogError("Unsupported serial port speed - %d", int(m_speed));
+				LogError("Unsupported serial port speed - %u", m_speed);
 				::close(m_fd);
 				return false;
 		}

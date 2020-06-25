@@ -16,7 +16,10 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include "SerialController.h"
+#if defined(__linux__)
 #include "I2CController.h"
+#endif
 #include "DStarDefines.h"
 #include "DMRDefines.h"
 #include "YSFDefines.h"
@@ -82,6 +85,10 @@ const unsigned char MMDVM_AX25_DATA   = 0x55U;
 const unsigned char MMDVM_FM_PARAMS1  = 0x60U;
 const unsigned char MMDVM_FM_PARAMS2  = 0x61U;
 const unsigned char MMDVM_FM_PARAMS3  = 0x62U;
+const unsigned char MMDVM_FM_PARAMS4  = 0x63U;
+const unsigned char MMDVM_FM_DATA     = 0x65U;
+const unsigned char MMDVM_FM_CONTROL  = 0x66U;
+const unsigned char MMDVM_FM_EOT      = 0x67U;
 
 const unsigned char MMDVM_ACK         = 0x70U;
 const unsigned char MMDVM_NAK         = 0x7FU;
@@ -160,6 +167,8 @@ m_txP25Data(1000U, "Modem TX P25"),
 m_rxNXDNData(1000U, "Modem RX NXDN"),
 m_txNXDNData(1000U, "Modem TX NXDN"),
 m_txPOCSAGData(1000U, "Modem TX POCSAG"),
+m_rxFMData(5000U, "Modem RX FM"),
+m_txFMData(5000U, "Modem TX FM"),
 m_rxAX25Data(1000U, "Modem RX AX.25"),
 m_txAX25Data(1000U, "Modem TX AX.25"),
 m_rxTransparentData(1000U, "Modem RX Transparent"),
@@ -175,6 +184,7 @@ m_ysfSpace(0U),
 m_p25Space(0U),
 m_nxdnSpace(0U),
 m_pocsagSpace(0U),
+m_fmSpace(0U),
 m_ax25Space(0U),
 m_tx(false),
 m_cd(false),
@@ -195,6 +205,7 @@ m_fmCallsignAtStart(true),
 m_fmCallsignAtEnd(true),
 m_fmCallsignAtLatch(true),
 m_fmRfAck("K"),
+m_fmExtAck("N"),
 m_fmAckSpeed(20U),
 m_fmAckFrequency(1750U),
 m_fmAckMinTime(4U),
@@ -207,11 +218,14 @@ m_fmCtcssHighThreshold(30U),
 m_fmCtcssLowThreshold(20U),
 m_fmCtcssLevel(10.0F),
 m_fmKerchunkTime(0U),
+m_fmKerchunkTX(true),
 m_fmHangTime(5U),
 m_fmUseCOS(true),
 m_fmCOSInvert(false),
 m_fmRFAudioBoost(1U),
-m_fmMaxDevLevel(90.0F)
+m_fmExtAudioBoost(1U),
+m_fmMaxDevLevel(90.0F),
+m_fmExtEnable(false)
 {
 	m_buffer = new unsigned char[BUFFER_LENGTH];
 
@@ -224,13 +238,15 @@ CModem::~CModem()
 	delete[] m_buffer;
 }
 
-void CModem::setSerialParams(const std::string& protocol, unsigned int address)
+void CModem::setSerialParams(const std::string& protocol, unsigned int address, unsigned int speed)
 {
 	// Create the serial controller instance according the protocol specified in conf.
+#if defined(__linux__)
 	if (protocol == "i2c")
-		m_serial = new CI2CController(m_port, SERIAL_115200, address, true);
+		m_serial = new CI2CController(m_port, address);
 	else
-		m_serial = new CSerialController(m_port, SERIAL_115200, true);
+#endif
+		m_serial = new CSerialController(m_port, speed, true);
 }
 
 void CModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency)
@@ -363,6 +379,16 @@ bool CModem::open()
 			m_serial = NULL;
 			return false;
 		}
+
+		if (m_fmExtEnable) {
+			ret = setFMExtParams();
+			if (!ret) {
+				m_serial->close();
+				delete m_serial;
+				m_serial = NULL;
+				return false;
+			}
+		}
 	}
 
 	m_statusTimer.start();
@@ -408,7 +434,7 @@ void CModem::clock(unsigned int ms)
 					if (m_trace)
 						CUtils::dump(1U, "RX D-Star Header", m_buffer, m_length);
 
-					unsigned char data = m_length - 2U;
+					unsigned char data = m_length - m_offset + 1U;
 					m_rxDStarData.addData(&data, 1U);
 
 					data = TAG_HEADER;
@@ -422,7 +448,7 @@ void CModem::clock(unsigned int ms)
 					if (m_trace)
 						CUtils::dump(1U, "RX D-Star Data", m_buffer, m_length);
 
-					unsigned char data = m_length - 2U;
+					unsigned char data = m_length - m_offset + 1U;
 					m_rxDStarData.addData(&data, 1U);
 
 					data = TAG_DATA;
@@ -460,7 +486,7 @@ void CModem::clock(unsigned int ms)
 					if (m_trace)
 						CUtils::dump(1U, "RX DMR Data 1", m_buffer, m_length);
 
-					unsigned char data = m_length - 2U;
+					unsigned char data = m_length - m_offset + 1U;
 					m_rxDMRData1.addData(&data, 1U);
 
 					if (m_buffer[3U] == (DMR_SYNC_DATA | DT_TERMINATOR_WITH_LC))
@@ -477,7 +503,7 @@ void CModem::clock(unsigned int ms)
 					if (m_trace)
 						CUtils::dump(1U, "RX DMR Data 2", m_buffer, m_length);
 
-					unsigned char data = m_length - 2U;
+					unsigned char data = m_length - m_offset + 1U;
 					m_rxDMRData2.addData(&data, 1U);
 
 					if (m_buffer[3U] == (DMR_SYNC_DATA | DT_TERMINATOR_WITH_LC))
@@ -518,7 +544,7 @@ void CModem::clock(unsigned int ms)
 					if (m_trace)
 						CUtils::dump(1U, "RX YSF Data", m_buffer, m_length);
 
-					unsigned char data = m_length - 2U;
+					unsigned char data = m_length - m_offset + 1U;
 					m_rxYSFData.addData(&data, 1U);
 
 					data = TAG_DATA;
@@ -544,7 +570,7 @@ void CModem::clock(unsigned int ms)
 				if (m_trace)
 					CUtils::dump(1U, "RX P25 Header", m_buffer, m_length);
 
-				unsigned char data = m_length - 2U;
+				unsigned char data = m_length - m_offset + 1U;
 				m_rxP25Data.addData(&data, 1U);
 
 				data = TAG_HEADER;
@@ -558,7 +584,7 @@ void CModem::clock(unsigned int ms)
 				if (m_trace)
 					CUtils::dump(1U, "RX P25 LDU", m_buffer, m_length);
 
-				unsigned char data = m_length - 2U;
+				unsigned char data = m_length - m_offset + 1U;
 				m_rxP25Data.addData(&data, 1U);
 
 				data = TAG_DATA;
@@ -584,7 +610,7 @@ void CModem::clock(unsigned int ms)
 				if (m_trace)
 					CUtils::dump(1U, "RX NXDN Data", m_buffer, m_length);
 
-				unsigned char data = m_length - 2U;
+				unsigned char data = m_length - m_offset + 1U;
 				m_rxNXDNData.addData(&data, 1U);
 
 				data = TAG_DATA;
@@ -606,12 +632,54 @@ void CModem::clock(unsigned int ms)
 			}
 			break;
 
+			case MMDVM_FM_DATA: {
+				if (m_trace)
+					CUtils::dump(1U, "RX FM Data", m_buffer, m_length);
+
+				unsigned int data1 = m_length - m_offset + 1U;
+				m_rxFMData.addData((unsigned char*)&data1, sizeof(unsigned int));
+
+				unsigned char data2 = TAG_DATA;
+				m_rxFMData.addData(&data2, 1U);
+
+				m_rxFMData.addData(m_buffer + m_offset, m_length - m_offset);
+			}
+			break;
+
+			case MMDVM_FM_CONTROL: {
+				if (m_trace)
+					CUtils::dump(1U, "RX FM Control", m_buffer, m_length);
+
+				unsigned char data = m_length - m_offset + 1U;
+				m_rxFMData.addData(&data, 1U);
+
+				data = TAG_HEADER;
+				m_rxFMData.addData(&data, 1U);
+
+				m_rxFMData.addData(m_buffer + m_offset, m_length - m_offset);
+			}
+			break;
+
+			case MMDVM_FM_EOT: {
+				if(m_trace)
+					CUtils::dump(1U, "RX FM End of transmission", m_buffer, m_length);
+
+				unsigned char data = m_length - m_offset + 1U;
+				m_rxFMData.addData(&data, 1U);
+
+				data = TAG_EOT;
+				m_rxFMData.addData(&data, 1U);
+
+				m_rxFMData.addData(m_buffer + m_offset, m_length - m_offset);
+			}
+			break;
+
 			case MMDVM_AX25_DATA: {
 				if (m_trace)
 					CUtils::dump(1U, "RX AX.25 Data", m_buffer, m_length);
 
-				unsigned char data = m_length - 3U;
-				m_rxAX25Data.addData(&data, 1U);
+				unsigned int data = m_length - m_offset;
+				m_rxAX25Data.addData((unsigned char*)&data, sizeof(unsigned int));
 
 				m_rxAX25Data.addData(m_buffer + m_offset, m_length - m_offset);
 			}
@@ -624,6 +692,7 @@ void CModem::clock(unsigned int ms)
 					m_p25Space    = 0U;
 					m_nxdnSpace   = 0U;
 					m_pocsagSpace = 0U;
+					m_fmSpace     = 0U;
 					m_ax25Space   = 0U;
 
 					m_mode = m_buffer[m_offset + 1U];
@@ -662,10 +731,12 @@ void CModem::clock(unsigned int ms)
 					if (m_length > (m_offset + 9U))
 						m_pocsagSpace = m_buffer[m_offset + 9U];
 					if (m_length > (m_offset + 10U))
-						m_ax25Space   = m_buffer[m_offset + 10U] * 8U;
+						m_fmSpace     = m_buffer[m_offset + 10U];
+					if (m_length > (m_offset + 11U))
+						m_ax25Space   = m_buffer[m_offset + 11U];
 
 					m_inactivityTimer.start();
-					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u,%u,%u,%u lockout=%d, cd=%d", m_buffer[m_offset + 2U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, m_nxdnSpace, m_pocsagSpace, m_ax25Space, int(m_lockout), int(m_cd));
+					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u,%u,%u,%u,%u lockout=%d, cd=%d", m_buffer[m_offset + 2U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, m_nxdnSpace, m_pocsagSpace, m_fmSpace, m_ax25Space, int(m_lockout), int(m_cd));
 				}
 				break;
 
@@ -869,6 +940,23 @@ void CModem::clock(unsigned int ms)
 		m_pocsagSpace--;
 	}
 
+	if (m_fmSpace > 1U && !m_txFMData.isEmpty()) {
+		unsigned char len = 0U;
+		m_txFMData.getData(&len, 1U);
+		m_txFMData.getData(m_buffer, len);
+
+		if (m_trace)
+			CUtils::dump(1U, "TX FM Data", m_buffer, len);
+
+		int ret = m_serial->write(m_buffer, len);
+		if (ret != int(len))
+			LogWarning("Error when writing FM data to the MMDVM");
+
+		m_playoutTimer.start();
+
+		m_fmSpace--;
+	}
+
 	if (m_ax25Space > 0U && !m_txAX25Data.isEmpty()) {
 		unsigned char len = 0U;
 		m_txAX25Data.getData((unsigned char*)&len, sizeof(unsigned int));
@@ -993,6 +1081,20 @@ unsigned int CModem::readNXDNData(unsigned char* data)
 	return len;
 }
 
+unsigned int CModem::readFMData(unsigned char* data)
+{
+	assert(data != NULL);
+
+	if (m_rxFMData.isEmpty())
+		return 0U;
+
+	unsigned int len = 0U;
+	m_rxFMData.getData((unsigned char*)&len, sizeof(unsigned int));
+	m_rxFMData.getData(data, len);
+
+	return len;
+}
+
 unsigned int CModem::readAX25Data(unsigned char* data)
 {
 	assert(data != NULL);
@@ -1000,8 +1102,8 @@ unsigned int CModem::readAX25Data(unsigned char* data)
 	if (m_rxAX25Data.isEmpty())
 		return 0U;
 
-	unsigned char len = 0U;
-	m_rxAX25Data.getData(&len, 1U);
+	unsigned int len = 0U;
+	m_rxAX25Data.getData((unsigned char*)&len, sizeof(unsigned int));
 	m_rxAX25Data.getData(data, len);
 
 	return len;
@@ -1244,6 +1346,40 @@ bool CModem::writePOCSAGData(const unsigned char* data, unsigned int length)
 	unsigned char len = length + 3U;
 	m_txPOCSAGData.addData(&len, 1U);
 	m_txPOCSAGData.addData(buffer, len);
+
+	return true;
+}
+
+unsigned int CModem::getFMSpace() const
+{
+	return m_txFMData.freeSpace();
+}
+
+bool CModem::writeFMData(const unsigned char* data, unsigned int length)
+{
+	assert(data != NULL);
+	assert(length > 0U);
+
+	unsigned char buffer[500U];
+
+	unsigned int len;
+	if (length > 252U) {
+		buffer[0U] = MMDVM_FRAME_START;
+		buffer[1U] = 0U;
+		buffer[2U] = (length + 4U) - 255U;
+		buffer[3U] = MMDVM_FM_DATA;
+		::memcpy(buffer + 4U, data, length);
+		len = length + 4U;
+	} else {
+		buffer[0U] = MMDVM_FRAME_START;
+		buffer[1U] = length + 3U;
+		buffer[2U] = MMDVM_FM_DATA;
+		::memcpy(buffer + 3U, data, length);
+		len = length + 3U;
+	}
+
+	m_txFMData.addData((unsigned char*)&len, sizeof(unsigned int));
+	m_txFMData.addData(buffer, len);
 
 	return true;
 }
@@ -2044,7 +2180,7 @@ void CModem::setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, uns
 	m_fmAckLevel     = ackLevel;
 }
 
-void CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, bool useCOS, bool cosInvert, unsigned int rfAudioBoost, float maxDevLevel)
+void CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, bool kerchunkTX, unsigned int hangTime, bool useCOS, bool cosInvert, unsigned int rfAudioBoost, float maxDevLevel)
 {
 	m_fmTimeout      = timeout;
 	m_fmTimeoutLevel = timeoutLevel;
@@ -2055,6 +2191,8 @@ void CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctc
 	m_fmCtcssLevel         = ctcssLevel;
 
 	m_fmKerchunkTime = kerchunkTime;
+	m_fmKerchunkTX   = kerchunkTX;
+
 	m_fmHangTime     = hangTime;
 
 	m_fmUseCOS       = useCOS;
@@ -2062,6 +2200,13 @@ void CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctc
 
 	m_fmRFAudioBoost = rfAudioBoost;
 	m_fmMaxDevLevel  = maxDevLevel;
+}
+
+void CModem::setFMExtParams(const std::string& ack, unsigned int audioBoost)
+{
+	m_fmExtAck        = ack;
+	m_fmExtAudioBoost = audioBoost;
+	m_fmExtEnable     = true;
 }
 
 bool CModem::setFMCallsignParams()
@@ -2203,6 +2348,8 @@ bool CModem::setFMMiscParams()
 		buffer[11U] |= 0x01U;
 	if (m_fmCOSInvert)
 		buffer[11U] |= 0x02U;
+	if (m_fmKerchunkTX)
+		buffer[11U] |= 0x04U;
 
 	buffer[12U] = m_fmRFAudioBoost;
 
@@ -2235,6 +2382,57 @@ bool CModem::setFMMiscParams()
 
 	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
 		LogError("Received a NAK to the SET_FM_PARAMS3 command from the modem");
+		return false;
+	}
+
+	return true;
+}
+
+bool CModem::setFMExtParams()
+{
+	assert(m_serial != NULL);
+
+	unsigned char buffer[80U];
+	unsigned char len = 7U + m_fmExtAck.size();
+
+	buffer[0U] = MMDVM_FRAME_START;
+	buffer[1U] = len;
+	buffer[2U] = MMDVM_FM_PARAMS4;
+
+	buffer[3U] = m_fmExtAudioBoost;
+	buffer[4U] = m_fmAckSpeed;
+	buffer[5U] = m_fmAckFrequency / 10U;
+
+	buffer[6U] = (unsigned char)(m_fmAckLevel * 2.55F + 0.5F);
+
+	for (unsigned int i = 0U; i < m_fmExtAck.size(); i++)
+		buffer[7U + i] = m_fmExtAck.at(i);
+
+	// CUtils::dump(1U, "Written", buffer, len);
+
+	int ret = m_serial->write(buffer, len);
+	if (ret != len)
+		return false;
+
+	unsigned int count = 0U;
+	RESP_TYPE_MMDVM resp;
+	do {
+		CThread::sleep(10U);
+
+		resp = getResponse();
+		if (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK) {
+			count++;
+			if (count >= MAX_RESPONSES) {
+				LogError("The MMDVM is not responding to the SET_FM_PARAMS4 command");
+				return false;
+			}
+		}
+	} while (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK);
+
+	// CUtils::dump(1U, "Response", m_buffer, m_length);
+
+	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
+		LogError("Received a NAK to the SET_FM_PARAMS4 command from the modem");
 		return false;
 	}
 

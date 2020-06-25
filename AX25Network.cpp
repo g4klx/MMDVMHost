@@ -30,7 +30,7 @@ const unsigned int BUFFER_LENGTH = 500U;
 
 
 CAX25Network::CAX25Network(const std::string& port, unsigned int speed, bool debug) :
-m_serial(port, SERIAL_SPEED(speed), false),		// XXX
+m_serial(port, speed, false),
 m_txData(NULL),
 m_rxData(NULL),
 m_rxLength(0U),

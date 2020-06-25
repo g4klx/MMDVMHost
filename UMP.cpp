@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2020 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -41,7 +41,7 @@ const unsigned char UMP_STATUS       = 0x50U;
 const unsigned int BUFFER_LENGTH = 255U;
 
 CUMP::CUMP(const std::string& port) :
-m_serial(port, SERIAL_115200),
+m_serial(port, 115200U),
 m_open(false),
 m_buffer(NULL),
 m_length(0U),
