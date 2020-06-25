@@ -28,6 +28,10 @@ RemoteCommand:	Log.o RemoteCommand.o UDPSocket.o
 %.o: %.cpp
 		$(CXX) $(CFLAGS) -c -o $@ $<
 
+install:
+		install -m 755 MMDVMHost /usr/local/bin/
+		install -m 755 RemoteCommand /usr/local/bin/
+
 clean:
 		$(RM) MMDVMHost RemoteCommand *.o *.d *.bak *~ GitVersion.h
 
