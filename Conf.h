@@ -470,11 +470,6 @@ private:
   bool         m_pocsagEnabled;
   unsigned int m_pocsagFrequency;
 
-  bool         m_ax25Enabled;
-  int          m_ax25RXTwist;
-  int          m_ax25TXTwist;
-  bool         m_ax25Trace;
-
   bool         m_fmEnabled;
   std::string  m_fmCallsign;
   unsigned int m_fmCallsignSpeed;
@@ -508,6 +503,11 @@ private:
   float        m_fmMaxDevLevel;
   unsigned int m_fmExtAudioBoost;
   unsigned int m_fmModeHang;
+
+  bool         m_ax25Enabled;
+  int          m_ax25RXTwist;
+  int          m_ax25TXTwist;
+  bool         m_ax25Trace;
 
   bool         m_dstarNetworkEnabled;
   std::string  m_dstarGatewayAddress;

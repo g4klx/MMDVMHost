@@ -19,7 +19,7 @@
 
 #if !defined(_WIN32) && !defined(_WIN64)
 
-#include "SerialController.h"
+#include "PseudoTTYController.h"
 #include "Log.h"
 
 #include <cstring>

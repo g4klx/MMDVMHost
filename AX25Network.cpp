@@ -103,7 +103,7 @@ unsigned int CAX25Network::read(unsigned char* data, unsigned int length)
 	bool complete = false;
 
 	unsigned char c;
-	while (m_serial.read(&c, 1U) > 0U) {
+	while (m_serial.read(&c, 1U) > 0) {
 		if (m_rxLength == 0U && c == AX25_FEND)
 			m_rxData[m_rxLength++] = c;
 		else if (m_rxLength > 0U)
