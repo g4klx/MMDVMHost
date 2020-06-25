@@ -16,39 +16,25 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef	AX25Network_H
-#define	AX25Network_H
+#ifndef PseudoTTYController_H
+#define PseudoTTYController_H
 
-#include "PseudoTTYController.h"
+#if !defined(_WIN32) && !defined(_WIN64)
 
-#include <cstdint>
-#include <string>
+#include <cstring>
 
-class CAX25Network {
+#include "SerialController.h"
+
+class CPseudoTTYController : public CSerialController {
 public:
-	CAX25Network(const std::string& port, unsigned int speed, bool debug);
-	~CAX25Network();
+	CPseudoTTYController(const std::string& device, unsigned int speed, bool assertRTS = false);
+	virtual ~CPseudoTTYController();
 
-	bool open();
+	virtual bool open();
 
-	void enable(bool enabled);
-
-	bool write(const unsigned char* data, unsigned int length);
-
-	unsigned int read(unsigned char* data, unsigned int length);
-
-	void reset();
-
-	void close();
-
-private:
-	CPseudoTTYController m_serial;
-	unsigned char*       m_txData;
-	unsigned char*       m_rxData;
-	unsigned int         m_rxLength;
-	unsigned char        m_rxLastChar;
-	bool                 m_debug;
-	bool                 m_enabled;
+protected:
 };
+
+#endif
 
 #endif

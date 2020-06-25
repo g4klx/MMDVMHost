@@ -227,6 +227,7 @@
     <ClInclude Include="POCSAGControl.h" />
     <ClInclude Include="POCSAGDefines.h" />
     <ClInclude Include="POCSAGNetwork.h" />
+    <ClInclude Include="PseudoTTYController.h" />
     <ClInclude Include="QR1676.h" />
     <ClInclude Include="RemoteControl.h" />
     <ClInclude Include="RingBuffer.h" />
@@ -326,6 +327,7 @@
     <ClCompile Include="P25Utils.cpp" />
     <ClCompile Include="POCSAGControl.cpp" />
     <ClCompile Include="POCSAGNetwork.cpp" />
+    <ClCompile Include="PseudoTTYController.cpp" />
     <ClCompile Include="QR1676.cpp" />
     <ClCompile Include="RemoteControl.cpp" />
     <ClCompile Include="RS129.cpp" />
