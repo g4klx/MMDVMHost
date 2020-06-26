@@ -33,6 +33,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <termios.h>
+#include <pty.h>
 
 
 CPseudoTTYController::CPseudoTTYController(const std::string& device, unsigned int speed, bool assertRTS) :
@@ -48,9 +49,11 @@ bool CPseudoTTYController::open()
 {
 	assert(m_fd == -1);
 
-	m_fd = ::posix_openpt(O_RDWR | O_NOCTTY | O_NDELAY);
-	if (m_fd < 0) {
-		LogError("Cannot open device - %s", m_device.c_str());
+	int slavefd;
+	char buf[300];
+	int result = ::openpty(&m_fd, &slavefd, buf, NULL,NULL);
+	if (result < 0) {
+		LogError("Cannot open device - %s - Errno : %d", m_device.c_str(), errno);
 		return false;
 	}
 
