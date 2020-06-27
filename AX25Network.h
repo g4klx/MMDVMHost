@@ -19,7 +19,11 @@
 #ifndef	AX25Network_H
 #define	AX25Network_H
 
+#if defined(_WIN32) || defined(_WIN64)
+#include "SerialController.h"
+#else
 #include "PseudoTTYController.h"
+#endif
 
 #include <cstdint>
 #include <string>
@@ -42,7 +46,11 @@ public:
 	void close();
 
 private:
+#if defined(_WIN32) || defined(_WIN64)
+	CSerialController    m_serial;
+#else
 	CPseudoTTYController m_serial;
+#endif
 	unsigned char*       m_txData;
 	unsigned char*       m_rxData;
 	unsigned int         m_rxLength;
