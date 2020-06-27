@@ -193,7 +193,7 @@ m_error(false),
 m_mode(MODE_IDLE),
 m_hwType(HWT_UNKNOWN),
 m_ax25RXTwist(0),
-m_ax25TXTwist(0),
+m_ax25TXDelay(300U),
 m_fmCallsign(),
 m_fmCallsignSpeed(20U),
 m_fmCallsignFrequency(1000U),
@@ -308,10 +308,10 @@ void CModem::setNXDNParams(unsigned int txHang)
 	m_nxdnTXHang = txHang;
 }
 
-void CModem::setAX25Params(int rxTwist, int txTwist)
+void CModem::setAX25Params(int rxTwist, unsigned int txDelay)
 {
 	m_ax25RXTwist = rxTwist;
-	m_ax25TXTwist = txTwist;
+	m_ax25TXDelay = txDelay;
 }
 
 void CModem::setTransparentDataParams(unsigned int sendFrameType)
@@ -1831,7 +1831,7 @@ bool CModem::setConfig()
 
 	buffer[25U] = (unsigned char)(m_ax25RXTwist + 128);
 
-	buffer[26U] = (unsigned char)(m_ax25TXTwist + 128);
+	buffer[26U] = m_ax25TXDelay / 10U;		// In 10ms units
 
 	// CUtils::dump(1U, "Written", buffer, 27U);
 

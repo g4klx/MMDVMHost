@@ -36,6 +36,7 @@ public:
 	virtual void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagLevel, float fmTXLevel){};
 	virtual void setDMRParams(unsigned int colorCode){};
 	virtual void setYSFParams(bool loDev, unsigned int txHang){};
+	virtual void setAX25Params(int rxTwist, unsigned int txDelay){};
 	virtual void setTransparentDataParams(unsigned int sendFrameType){};
 
 	virtual bool open();

@@ -53,7 +53,7 @@ public:
 	virtual void setYSFParams(bool loDev, unsigned int txHang);
 	virtual void setP25Params(unsigned int txHang);
 	virtual void setNXDNParams(unsigned int txHang);
-	virtual void setAX25Params(int rxTwist, int txTwist);
+	virtual void setAX25Params(int rxTwist, unsigned int txDelay);
 	virtual void setTransparentDataParams(unsigned int sendFrameType);
 
 	virtual void setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch);
@@ -215,7 +215,7 @@ private:
 	unsigned char              m_mode;
 	HW_TYPE                    m_hwType;
 	int                        m_ax25RXTwist;
-	int                        m_ax25TXTwist;
+	unsigned int               m_ax25TXDelay;
 
 	std::string                m_fmCallsign;
 	unsigned int               m_fmCallsignSpeed;

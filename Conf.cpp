@@ -214,7 +214,7 @@ m_fmExtAudioBoost(1U),
 m_fmModeHang(10U),
 m_ax25Enabled(false),
 m_ax25RXTwist(6),
-m_ax25TXTwist(6),
+m_ax25TXDelay(300U),
 m_ax25Trace(false),
 m_dstarNetworkEnabled(false),
 m_dstarGatewayAddress(),
@@ -508,7 +508,7 @@ bool CConf::read()
 			else if (::strcmp(key, "PTTInvert") == 0)
 				m_modemPTTInvert = ::atoi(value) == 1;
 			else if (::strcmp(key, "TXDelay") == 0)
-				m_modemTXDelay = (unsigned int)::atoi(value);
+				m_ax25TXDelay = m_modemTXDelay = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "DMRDelay") == 0)
 				m_modemDMRDelay = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "RXOffset") == 0)
@@ -817,8 +817,8 @@ bool CConf::read()
 				m_ax25Enabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "RXTwist") == 0)
 				m_ax25RXTwist = ::atoi(value);
-			else if (::strcmp(key, "TXTwist") == 0)
-				m_ax25TXTwist = ::atoi(value);
+			else if (::strcmp(key, "TXDelay") == 0)
+				m_ax25TXDelay = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Trace") == 0)
 				m_ax25Trace = ::atoi(value) == 1;
 		} else if (section == SECTION_DSTAR_NETWORK) {
@@ -1777,9 +1777,9 @@ int CConf::getAX25RXTwist() const
 	return m_ax25RXTwist;
 }
 
-int CConf::getAX25TXTwist() const
+unsigned int CConf::getAX25TXDelay() const
 {
-	return m_ax25TXTwist;
+	return m_ax25TXDelay;
 }
 
 bool CConf::getAX25Trace() const
