@@ -36,8 +36,9 @@
 #include <pty.h>
 
 
-CPseudoTTYController::CPseudoTTYController(const std::string& device, unsigned int speed, bool assertRTS) :
-CSerialController(device, speed, assertRTS)
+CPseudoTTYController::CPseudoTTYController(const std::string& symlink, unsigned int speed, bool assertRTS) :
+CSerialController("", speed, assertRTS),
+m_symlink(symlink)
 {
 }
 
@@ -50,114 +51,35 @@ bool CPseudoTTYController::open()
 	assert(m_fd == -1);
 
 	int slavefd;
-	char buf[300];
-	int result = ::openpty(&m_fd, &slavefd, buf, NULL,NULL);
+	char slave[300];
+	int result = ::openpty(&m_fd, &slavefd, slave, NULL, NULL);
 	if (result < 0) {
-		LogError("Cannot open device - %s - Errno : %d", m_device.c_str(), errno);
+		LogError("Cannot open the pseudo tty - errno : %d", errno);
 		return false;
 	}
 
-	std::string slave = std::string(::ptsname(m_fd));
-
 	// Remove any previous stale symlink
-	::unlink(m_device.c_str());
+	::unlink(m_symlink.c_str());
 
-	int ret = ::symlink(slave.c_str(), m_device.c_str());
+	int ret = ::symlink(slave, m_symlink.c_str());
 	if (ret != 0) {
-		LogError("Cannot make symlink to %s with %s", slave.c_str(), m_device.c_str());
+		LogError("Cannot make symlink to %s with %s", slave, m_symlink.c_str());
 		close();
 		return false;
 	}
 
+	LogMessage("Made symbolic link from %s to %s", slave, m_symlink.c_str());
+
 	m_device = std::string(::ttyname(m_fd));
 
-	if (::isatty(m_fd)) {
-		termios termios;
-		if (::tcgetattr(m_fd, &termios) < 0) {
-			LogError("Cannot get the attributes for %s", m_device.c_str());
-			::close(m_fd);
-			return false;
-		}
+	return setRaw();
+}
 
-		termios.c_iflag &= ~(IGNBRK | BRKINT | IGNPAR | PARMRK | INPCK);
-		termios.c_iflag &= ~(ISTRIP | INLCR | IGNCR | ICRNL);
-		termios.c_iflag &= ~(IXON | IXOFF | IXANY);
-		termios.c_oflag &= ~(OPOST);
-		termios.c_cflag &= ~(CSIZE | CSTOPB | PARENB | CRTSCTS);
-		termios.c_cflag |= (CS8 | CLOCAL | CREAD);
-		termios.c_lflag &= ~(ISIG | ICANON | IEXTEN);
-		termios.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL);
-		termios.c_cc[VMIN] = 0;
-		termios.c_cc[VTIME] = 10;
+void CPseudoTTYController::close()
+{
+	CSerialController::close();
 
-		switch (m_speed) {
-		case 1200U:
-			::cfsetospeed(&termios, B1200);
-			::cfsetispeed(&termios, B1200);
-			break;
-		case 2400U:
-			::cfsetospeed(&termios, B2400);
-			::cfsetispeed(&termios, B2400);
-			break;
-		case 4800U:
-			::cfsetospeed(&termios, B4800);
-			::cfsetispeed(&termios, B4800);
-			break;
-		case 9600U:
-			::cfsetospeed(&termios, B9600);
-			::cfsetispeed(&termios, B9600);
-			break;
-		case 19200U:
-			::cfsetospeed(&termios, B19200);
-			::cfsetispeed(&termios, B19200);
-			break;
-		case 38400U:
-			::cfsetospeed(&termios, B38400);
-			::cfsetispeed(&termios, B38400);
-			break;
-		case 115200U:
-			::cfsetospeed(&termios, B115200);
-			::cfsetispeed(&termios, B115200);
-			break;
-		case 230400U:
-			::cfsetospeed(&termios, B230400);
-			::cfsetispeed(&termios, B230400);
-			break;
-		case 460800U:
-			::cfsetospeed(&termios, B460800);
-			::cfsetispeed(&termios, B460800);
-			break;
-		default:
-			LogError("Unsupported serial port speed - %u", m_speed);
-			::close(m_fd);
-			return false;
-		}
-
-		if (::tcsetattr(m_fd, TCSANOW, &termios) < 0) {
-			LogError("Cannot set the attributes for %s", m_device.c_str());
-			::close(m_fd);
-			return false;
-		}
-
-		if (m_assertRTS) {
-			unsigned int y;
-			if (::ioctl(m_fd, TIOCMGET, &y) < 0) {
-				LogError("Cannot get the control attributes for %s", m_device.c_str());
-				::close(m_fd);
-				return false;
-			}
-
-			y |= TIOCM_RTS;
-
-			if (::ioctl(m_fd, TIOCMSET, &y) < 0) {
-				LogError("Cannot set the control attributes for %s", m_device.c_str());
-				::close(m_fd);
-				return false;
-			}
-		}
-	}
-
-	return true;
+	::unlink(m_symlink.c_str());
 }
 
 #endif

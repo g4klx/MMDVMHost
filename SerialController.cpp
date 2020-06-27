@@ -247,100 +247,106 @@ bool CSerialController::open()
 		return false;
 	}
 
-	if (::isatty(m_fd)) {
-		termios termios;
-		if (::tcgetattr(m_fd, &termios) < 0) {
-			LogError("Cannot get the attributes for %s", m_device.c_str());
-			::close(m_fd);
-			return false;
-		}
+	if (::isatty(m_fd))
+		return setRaw();
+		
+	return true;
+}
 
-		termios.c_iflag &= ~(IGNBRK | BRKINT | IGNPAR | PARMRK | INPCK);
-		termios.c_iflag &= ~(ISTRIP | INLCR | IGNCR | ICRNL);
-		termios.c_iflag &= ~(IXON | IXOFF | IXANY);
-		termios.c_oflag &= ~(OPOST);
-		termios.c_cflag &= ~(CSIZE | CSTOPB | PARENB | CRTSCTS);
-		termios.c_cflag |=  (CS8 | CLOCAL | CREAD);
-		termios.c_lflag &= ~(ISIG | ICANON | IEXTEN);
-		termios.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL);
-#if defined(__APPLE__)
-		termios.c_cc[VMIN] = 1;
-		termios.c_cc[VTIME] = 1;
-#else
-		termios.c_cc[VMIN]  = 0;
-		termios.c_cc[VTIME] = 10;
-#endif
-
-		switch (m_speed) {
-			case 1200U:
-				::cfsetospeed(&termios, B1200);
-				::cfsetispeed(&termios, B1200);
-				break;
-			case 2400U:
-				::cfsetospeed(&termios, B2400);
-				::cfsetispeed(&termios, B2400);
-				break;
-			case 4800U:
-				::cfsetospeed(&termios, B4800);
-				::cfsetispeed(&termios, B4800);
-				break;
-			case 9600U:
-				::cfsetospeed(&termios, B9600);
-				::cfsetispeed(&termios, B9600);
-				break;
-			case 19200U:
-				::cfsetospeed(&termios, B19200);
-				::cfsetispeed(&termios, B19200);
-				break;
-			case 38400U:
-				::cfsetospeed(&termios, B38400);
-				::cfsetispeed(&termios, B38400);
-				break;
-			case 115200U:
-				::cfsetospeed(&termios, B115200);
-				::cfsetispeed(&termios, B115200);
-				break;
-			case 230400U:
-				::cfsetospeed(&termios, B230400);
-				::cfsetispeed(&termios, B230400);
-				break;
-			case 460800U:
-				::cfsetospeed(&termios, B460800);
-				::cfsetispeed(&termios, B460800);
-				break;
-			default:
-				LogError("Unsupported serial port speed - %u", m_speed);
-				::close(m_fd);
-				return false;
-		}
-
-		if (::tcsetattr(m_fd, TCSANOW, &termios) < 0) {
-			LogError("Cannot set the attributes for %s", m_device.c_str());
-			::close(m_fd);
-			return false;
-		}
-
-		if (m_assertRTS) {
-			unsigned int y;
-			if (::ioctl(m_fd, TIOCMGET, &y) < 0) {
-				LogError("Cannot get the control attributes for %s", m_device.c_str());
-				::close(m_fd);
-				return false;
-			}
-
-			y |= TIOCM_RTS;
-
-			if (::ioctl(m_fd, TIOCMSET, &y) < 0) {
-				LogError("Cannot set the control attributes for %s", m_device.c_str());
-				::close(m_fd);
-				return false;
-			}
-		}
-
-#if defined(__APPLE__)
-		setNonblock(false);
-#endif
+bool CSerialController::setRaw()
+{
+	termios termios;
+	if (::tcgetattr(m_fd, &termios) < 0) {
+		LogError("Cannot get the attributes for %s", m_device.c_str());
+		::close(m_fd);
+		return false;
 	}
+
+	termios.c_iflag &= ~(IGNBRK | BRKINT | IGNPAR | PARMRK | INPCK);
+	termios.c_iflag &= ~(ISTRIP | INLCR | IGNCR | ICRNL);
+	termios.c_iflag &= ~(IXON | IXOFF | IXANY);
+	termios.c_oflag &= ~(OPOST);
+	termios.c_cflag &= ~(CSIZE | CSTOPB | PARENB | CRTSCTS);
+	termios.c_cflag |=  (CS8 | CLOCAL | CREAD);
+	termios.c_lflag &= ~(ISIG | ICANON | IEXTEN);
+	termios.c_lflag &= ~(ECHO | ECHOE | ECHOK | ECHONL);
+#if defined(__APPLE__)
+	termios.c_cc[VMIN] = 1;
+	termios.c_cc[VTIME] = 1;
+#else
+	termios.c_cc[VMIN]  = 0;
+	termios.c_cc[VTIME] = 10;
+#endif
+
+	switch (m_speed) {
+		case 1200U:
+			::cfsetospeed(&termios, B1200);
+			::cfsetispeed(&termios, B1200);
+			break;
+		case 2400U:
+			::cfsetospeed(&termios, B2400);
+			::cfsetispeed(&termios, B2400);
+			break;
+		case 4800U:
+			::cfsetospeed(&termios, B4800);
+			::cfsetispeed(&termios, B4800);
+			break;
+		case 9600U:
+			::cfsetospeed(&termios, B9600);
+			::cfsetispeed(&termios, B9600);
+			break;
+		case 19200U:
+			::cfsetospeed(&termios, B19200);
+			::cfsetispeed(&termios, B19200);
+			break;
+		case 38400U:
+			::cfsetospeed(&termios, B38400);
+			::cfsetispeed(&termios, B38400);
+			break;
+		case 115200U:
+			::cfsetospeed(&termios, B115200);
+			::cfsetispeed(&termios, B115200);
+			break;
+		case 230400U:
+			::cfsetospeed(&termios, B230400);
+			::cfsetispeed(&termios, B230400);
+			break;
+		case 460800U:
+			::cfsetospeed(&termios, B460800);
+			::cfsetispeed(&termios, B460800);
+			break;
+		default:
+			LogError("Unsupported serial port speed - %u", m_speed);
+			::close(m_fd);
+			return false;
+	}
+
+	if (::tcsetattr(m_fd, TCSANOW, &termios) < 0) {
+		LogError("Cannot set the attributes for %s", m_device.c_str());
+		::close(m_fd);
+		return false;
+	}
+
+	if (m_assertRTS) {
+		unsigned int y;
+		if (::ioctl(m_fd, TIOCMGET, &y) < 0) {
+			LogError("Cannot get the control attributes for %s", m_device.c_str());
+			::close(m_fd);
+			return false;
+		}
+
+		y |= TIOCM_RTS;
+
+		if (::ioctl(m_fd, TIOCMSET, &y) < 0) {
+			LogError("Cannot set the control attributes for %s", m_device.c_str());
+			::close(m_fd);
+			return false;
+		}
+	}
+
+#if defined(__APPLE__)
+	setNonblock(false);
+#endif
 
 	return true;
 }

@@ -27,12 +27,15 @@
 
 class CPseudoTTYController : public CSerialController {
 public:
-	CPseudoTTYController(const std::string& device, unsigned int speed, bool assertRTS = false);
+	CPseudoTTYController(const std::string& symlink, unsigned int speed, bool assertRTS = false);
 	virtual ~CPseudoTTYController();
 
 	virtual bool open();
 
+	virtual void close();
+
 protected:
+	std::string m_symlink;
 };
 
 #endif

@@ -59,6 +59,7 @@ protected:
 	int readNonblock(unsigned char* buffer, unsigned int length);
 #else
 	bool canWrite();
+	bool setRaw();
 #endif
 };
 
