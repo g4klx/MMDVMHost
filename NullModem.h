@@ -30,48 +30,56 @@ public:
 	CNullModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool trace, bool debug);
 	virtual ~CNullModem();
 
-	virtual void setSerialParams(const std::string& protocol, unsigned int address){};
-	virtual void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency){};
-	virtual void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool pocsagEnabled, bool fmEnabled){};
-	virtual void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagLevel, float fmTXLevel){};
-	virtual void setDMRParams(unsigned int colorCode){};
-	virtual void setYSFParams(bool loDev, unsigned int txHang){};
-	virtual void setAX25Params(int rxTwist, unsigned int txDelay){};
-	virtual void setTransparentDataParams(unsigned int sendFrameType){};
+	virtual void setSerialParams(const std::string& protocol, unsigned int address) {};
+	virtual void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency) {};
+	virtual void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool pocsagEnabled, bool fmEnabled) {};
+	virtual void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagLevel, float fmTXLevel) {};
+	virtual void setDMRParams(unsigned int colorCode) {};
+	virtual void setYSFParams(bool loDev, unsigned int txHang) {};
+	virtual void setP25Params(unsigned int txHang) {};
+	virtual void setNXDNParams(unsigned int txHang) {};
+	virtual void setAX25Params(int rxTwist, unsigned int txDelay) {};
+	virtual void setTransparentDataParams(unsigned int sendFrameType) {};
 
 	virtual bool open();
 
-	virtual unsigned int readDStarData(unsigned char* data){return 0;};
-	virtual unsigned int readDMRData1(unsigned char* data){return 0;};
-	virtual unsigned int readDMRData2(unsigned char* data){return 0;};
-	virtual unsigned int readYSFData(unsigned char* data){return 0;};
-	virtual unsigned int readP25Data(unsigned char* data){return 0;};
-	virtual unsigned int readNXDNData(unsigned char* data){return 0;};
-	virtual unsigned int readTransparentData(unsigned char* data){return 0;};
+	virtual unsigned int readDStarData(unsigned char* data) { return 0U; };
+	virtual unsigned int readDMRData1(unsigned char* data) { return 0U; };
+	virtual unsigned int readDMRData2(unsigned char* data) { return 0U; };
+	virtual unsigned int readYSFData(unsigned char* data) { return 0U; };
+	virtual unsigned int readP25Data(unsigned char* data) { return 0U; };
+	virtual unsigned int readNXDNData(unsigned char* data) { return 0U; };
+	virtual unsigned int readFMData(unsigned char* data) { return 0U; };
+	virtual unsigned int readAX25Data(unsigned char* data) { return 0U; };
+	virtual unsigned int readTransparentData(unsigned char* data) { return 0U; };
 
 	virtual unsigned int readSerial(unsigned char* data, unsigned int length){return 0;};
 
-	virtual bool hasDStarSpace()const {return true;};
-	virtual bool hasDMRSpace1() const {return true;};
-	virtual bool hasDMRSpace2() const {return true;};
-	virtual bool hasYSFSpace() const  {return true;};
-	virtual bool hasP25Space() const  {return true;};
-	virtual bool hasNXDNSpace() const {return true;};
-	virtual bool hasPOCSAGSpace() const{return true;}; 
+	virtual bool hasDStarSpace()const { return true; };
+	virtual bool hasDMRSpace1() const { return true; };
+	virtual bool hasDMRSpace2() const { return true; };
+	virtual bool hasYSFSpace() const  { return true; };
+	virtual bool hasP25Space() const  { return true; };
+	virtual bool hasNXDNSpace() const { return true; };
+	virtual bool hasPOCSAGSpace() const { return true; }; 
+	virtual unsigned int getFMSpace() const { return true; };
+	virtual bool hasAX25Space() const { return true; };
 
-	virtual bool hasTX() const {return false;};
-	virtual bool hasCD() const {return false;};
+	virtual bool hasTX() const { return false; };
+	virtual bool hasCD() const { return false; };
 
-	virtual bool hasLockout() const {return false;};
-	virtual bool hasError() const   {return false;};
+	virtual bool hasLockout() const { return false; };
+	virtual bool hasError() const   { return false; };
 
-	virtual bool writeDStarData(const unsigned char* data, unsigned int length){return true;};
-	virtual bool writeDMRData1(const unsigned char* data, unsigned int length){return true;};
-	virtual bool writeDMRData2(const unsigned char* data, unsigned int length){return true;};
-	virtual bool writeYSFData(const unsigned char* data, unsigned int length){return true;};
-	virtual bool writeP25Data(const unsigned char* data, unsigned int length){return true;};
-	virtual bool writeNXDNData(const unsigned char* data, unsigned int length){return true;};
-	virtual bool writePOCSAGData(const unsigned char* data, unsigned int length){return true;};
+	virtual bool writeDStarData(const unsigned char* data, unsigned int length) { return true; };
+	virtual bool writeDMRData1(const unsigned char* data, unsigned int length) { return true; };
+	virtual bool writeDMRData2(const unsigned char* data, unsigned int length) { return true; };
+	virtual bool writeYSFData(const unsigned char* data, unsigned int length) {return true; };
+	virtual bool writeP25Data(const unsigned char* data, unsigned int length) { return true; };
+	virtual bool writeNXDNData(const unsigned char* data, unsigned int length) { return true; };
+	virtual bool writePOCSAGData(const unsigned char* data, unsigned int length) { return true; };
+	virtual bool writeFMData(const unsigned char* data, unsigned int length) { return true; };
+	virtual bool writeAX25Data(const unsigned char* data, unsigned int length) { return true; };
 
 	virtual bool writeTransparentData(const unsigned char* data, unsigned int length){return true;};
 
