@@ -2,14 +2,21 @@
 
 CC      = cc
 CXX     = c++
+
+# Use the following CFLAGS and LIBS if you don't want to use gpsd.
 CFLAGS  = -g -O3 -Wall -std=c++0x -pthread
 LIBS    = -lpthread -lutil
+
+# Use the following CFLAGS and LIBS if you do want to use gpsd.
+#CFLAGS  = -g -O3 -Wall -DUSE_GPS -std=c++0x -pthread
+#LIBS    = -lpthread -lutil -lgps -lutil
+
 LDFLAGS = -g
 
 OBJECTS = AX25Control.o AX25Network.o \
 		AMBEFEC.o BCH.o BPTC19696.o CASTInfo.o Conf.o CRC.o Display.o DMRControl.o DMRCSBK.o DMRData.o DMRDataHeader.o DMREMB.o DMREmbeddedData.o DMRFullLC.o \
 		DMRLookup.o DMRLC.o DMRNetwork.o DMRShortLC.o DMRSlot.o DMRSlotType.o DMRAccessControl.o DMRTA.o DMRTrellis.o DStarControl.o DStarHeader.o DStarNetwork.o \
-		DStarSlowData.o FMControl.o FMNetwork.o Golay2087.o Golay24128.o Hamming.o I2CController.o IIRDirectForm1Filter.o LCDproc.o Log.o MMDVMHost.o MobileGPS.o Modem.o \
+		DStarSlowData.o FMControl.o FMNetwork.o Golay2087.o Golay24128.o GPSD.o Hamming.o I2CController.o IIRDirectForm1Filter.o LCDproc.o Log.o MMDVMHost.o Modem.o \
 		ModemSerialPort.o Mutex.o NetworkInfo.o Nextion.o NullDisplay.o NullModem.o NXDNAudio.o NXDNControl.o NXDNConvolution.o NXDNCRC.o NXDNFACCH1.o NXDNIcomNetwork.o \
 		NXDNKenwoodNetwork.o NXDNLayer3.o NXDNLICH.o NXDNLookup.o NXDNNetwork.o NXDNSACCH.o NXDNUDCH.o P25Audio.o P25Control.o P25Data.o P25LowSpeedData.o P25Network.o \
 		P25NID.o P25Trellis.o P25Utils.o PseudoTTYController.o POCSAGControl.o POCSAGNetwork.o QR1676.o RemoteControl.o RS129.o RS241213.o RSSIInterpolator.o SerialController.o SerialPort.o \
