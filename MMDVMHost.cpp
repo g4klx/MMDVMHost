@@ -161,7 +161,9 @@ m_id(0U),
 m_cwCallsign(),
 m_lockFileEnabled(false),
 m_lockFileName(),
-m_mobileGPS(NULL),
+#if defined(USE_GPS)
+m_gpsd(NULL),
+#endif
 m_remoteControl(NULL),
 m_fixedMode(false)
 {
@@ -1004,8 +1006,10 @@ int CMMDVMHost::run()
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->clock(ms);
 
-		if (m_mobileGPS != NULL)
-			m_mobileGPS->clock(ms);
+#if defined(USE_GPS)
+		if (m_gpsd != NULL)
+			m_gpsd->clock(ms);
+#endif
 
 		m_cwIdTimer.clock(ms);
 		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
@@ -1082,10 +1086,12 @@ int CMMDVMHost::run()
 	m_display->close();
 	delete m_display;
 
-	if (m_mobileGPS != NULL) {
-		m_mobileGPS->close();
-		delete m_mobileGPS;
+#if defined(USE_GPS)
+	if (m_gpsd != NULL) {
+		m_gpsd->close();
+		delete m_gpsd;
 	}
+#endif
 
 	if (m_ump != NULL) {
 		m_ump->close();
@@ -1392,23 +1398,25 @@ bool CMMDVMHost::createDMRNetwork()
 		return false;
 	}
 
-	bool mobileGPSEnabled = m_conf.getMobileGPSEnabled();
-	if (mobileGPSEnabled) {
-		std::string mobileGPSAddress = m_conf.getMobileGPSAddress();
-		unsigned int mobileGPSPort   = m_conf.getMobileGPSPort();
+#if defined(USE_GPS)
+	bool gpsdEnabled = m_conf.getGPSDEnabled();
+	if (gpsdEnabled) {
+		std::string gpsdAddress = m_conf.getGPSDAddress();
+		std::string gpsdPort    = m_conf.getGPSDPort();
 
-		LogInfo("Mobile GPS Parameters");
-		LogInfo("    Address: %s", mobileGPSAddress.c_str());
-		LogInfo("    Port: %u", mobileGPSPort);
+		LogInfo("GPSD Parameters");
+		LogInfo("    Address: %s", gpsdAddress.c_str());
+		LogInfo("    Port: %s", gpsdPort.c_str());
 
-		m_mobileGPS = new CMobileGPS(address, port, m_dmrNetwork);
+		m_gpsd = new CGPSD(gpsdAddress, gpsdPort, m_dmrNetwork);
 
-		ret = m_mobileGPS->open();
+		ret = m_gpsd->open();
 		if (!ret) {
-			delete m_mobileGPS;
-			m_mobileGPS = NULL;
+			delete m_gpsd;
+			m_gpsd = NULL;
 		}
 	}
+#endif
 
 	m_dmrNetwork->enable(true);
 
