@@ -59,7 +59,7 @@ enum SECTION {
   SECTION_OLED,
   SECTION_LCDPROC,
   SECTION_LOCK_FILE,
-  SECTION_MOBILE_GPS,
+  SECTION_GPSD,
   SECTION_REMOTE_CONTROL
 };
 
@@ -294,9 +294,9 @@ m_lcdprocUTC(false),
 m_lcdprocDimOnIdle(false),
 m_lockFileEnabled(false),
 m_lockFileName(),
-m_mobileGPSEnabled(false),
-m_mobileGPSAddress(),
-m_mobileGPSPort(0U),
+m_gpsdEnabled(false),
+m_gpsdAddress(),
+m_gpsdPort(),
 m_remoteControlEnabled(false),
 m_remoteControlPort(0U)
 {
@@ -382,8 +382,8 @@ bool CConf::read()
 		  section = SECTION_LCDPROC;
 	  else if (::strncmp(buffer, "[Lock File]", 11U) == 0)
 		  section = SECTION_LOCK_FILE;
-	  else if (::strncmp(buffer, "[Mobile GPS]", 12U) == 0)
-		  section = SECTION_MOBILE_GPS;
+	  else if (::strncmp(buffer, "[GPSD]", 6U) == 0)
+		  section = SECTION_GPSD;
 	  else if (::strncmp(buffer, "[Remote Control]", 16U) == 0)
 		  section = SECTION_REMOTE_CONTROL;
 	  else
@@ -984,13 +984,13 @@ bool CConf::read()
 			m_lockFileEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "File") == 0)
 			m_lockFileName = value;
-	} else if (section == SECTION_MOBILE_GPS) {
+	} else if (section == SECTION_GPSD) {
 		if (::strcmp(key, "Enable") == 0)
-			m_mobileGPSEnabled = ::atoi(value) == 1;
+			m_gpsdEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "Address") == 0)
-			m_mobileGPSAddress = value;
+			m_gpsdAddress = value;
 		else if (::strcmp(key, "Port") == 0)
-			m_mobileGPSPort = (unsigned int)::atoi(value);
+			m_gpsdPort = value;
 	} else if (section == SECTION_REMOTE_CONTROL) {
 		if (::strcmp(key, "Enable") == 0)
 			m_remoteControlEnabled = ::atoi(value) == 1;
@@ -2150,19 +2150,19 @@ std::string CConf::getLockFileName() const
 	return m_lockFileName;
 }
 
-bool CConf::getMobileGPSEnabled() const
+bool CConf::getGPSDEnabled() const
 {
-	return m_mobileGPSEnabled;
+	return m_gpsdEnabled;
 }
 
-std::string CConf::getMobileGPSAddress() const
+std::string CConf::getGPSDAddress() const
 {
-	return m_mobileGPSAddress;
+	return m_gpsdAddress;
 }
 
-unsigned int CConf::getMobileGPSPort() const
+std::string CConf::getGPSDPort() const
 {
-	return m_mobileGPSPort;
+	return m_gpsdPort;
 }
 
 bool CConf::getRemoteControlEnabled() const

@@ -36,11 +36,11 @@
 #include "P25Network.h"
 #include "DMRNetwork.h"
 #include "DMRLookup.h"
-#include "MobileGPS.h"
 #include "Display.h"
 #include "Timer.h"
 #include "Modem.h"
 #include "Conf.h"
+#include "GPSD.h"
 #include "UMP.h"
 
 #include <string>
@@ -107,7 +107,9 @@ private:
   std::string     m_cwCallsign;
   bool            m_lockFileEnabled;
   std::string     m_lockFileName;
-  CMobileGPS*     m_mobileGPS;
+#if defined(USE_GPS)
+  CGPSD*          m_gpsd;
+#endif
   CRemoteControl* m_remoteControl;
   bool            m_fixedMode;
 
