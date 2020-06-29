@@ -41,6 +41,11 @@ public:
 	virtual void setAX25Params(int rxTwist, unsigned int txDelay) {};
 	virtual void setTransparentDataParams(unsigned int sendFrameType) {};
 
+	virtual void setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch) {};
+	virtual void setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackMinTime, unsigned int ackDelay, float ackLevel) {};
+	virtual void setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, bool kerchunkTX, unsigned int hangTime, bool useCOS, bool cosInvert, unsigned int rfAudioBoost, float maxDevLevel) {};
+	virtual void setFMExtParams(const std::string& ack, unsigned int audioBoost) {};
+
 	virtual bool open();
 
 	virtual unsigned int readDStarData(unsigned char* data) { return 0U; };
