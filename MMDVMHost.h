@@ -59,7 +59,7 @@ public:
 
 private:
   CConf           m_conf;
-  CModem*         m_modem;
+  IModem*         m_modem;
   CDStarControl*  m_dstar;
   CDMRControl*    m_dmr;
   CYSFControl*    m_ysf;

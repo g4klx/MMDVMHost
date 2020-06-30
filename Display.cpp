@@ -490,7 +490,7 @@ int CDisplay::writeNXDNIntEx(const class CUserDBentry& source, bool group, unsig
 
 	
 /* Factory method extracted from MMDVMHost.cpp - BG5HHP */
-CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
+CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, IModem* modem)
 {
         CDisplay *display = NULL;
 
@@ -509,7 +509,7 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
 
 		ISerialPort* serial = NULL;
 		if (port == "modem")
-			serial = new CModemSerialPort(modem);
+			serial = new IModemSerialPort(modem);
 		else
 			serial = new CSerialController(port, (type == "TFT Serial") ? 9600U : 115200U);
 
@@ -555,7 +555,7 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
 		}
 
 		if (port == "modem") {
-			ISerialPort* serial = new CModemSerialPort(modem);
+			ISerialPort* serial = new IModemSerialPort(modem);
 			display = new CNextion(conf.getCallsign(), dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF, conf.getLocation());
 		} else if (port == "ump") {
 			if (ump != NULL) {

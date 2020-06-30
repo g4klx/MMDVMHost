@@ -21,7 +21,7 @@
 static bool networkInfoInitialized = false;
 static unsigned char passCounter = 0;
 
-CCASTInfo::CCASTInfo(CModem* modem) :
+CCASTInfo::CCASTInfo(IModem* modem) :
 CDisplay(),
 m_modem(modem),
 m_ipaddress()

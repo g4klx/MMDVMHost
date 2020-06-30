@@ -21,13 +21,14 @@
 
 #include "Timer.h"
 #include "UserDBentry.h"
+#include "Modem.h"
 
 #include <string>
 
 #include <cstdint>
 
 class CConf;
-class CModem;
+class IModem;
 class CUMP;
 
 class CDisplay
@@ -81,7 +82,7 @@ public:
 
 	void clock(unsigned int ms);
 
-	static CDisplay* createDisplay(const CConf& conf, CUMP* ump, CModem* modem);
+	static CDisplay* createDisplay(const CConf& conf, CUMP* ump, IModem* modem);
 
 protected:
 	virtual void setIdleInt() = 0;

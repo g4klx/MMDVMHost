@@ -21,6 +21,8 @@
 #include "NXDNIcomNetwork.h"
 #include "RSSIInterpolator.h"
 #include "SerialController.h"
+#include "SerialModem.h"
+#include "NullModem.h"
 #include "Version.h"
 #include "StopWatch.h"
 #include "Defines.h"
@@ -513,7 +515,6 @@ int CMMDVMHost::run()
 			LogInfo("    OVCM: on(tx only)");
 		else if (ovcm == DMR_OVCM_ON)
 			LogInfo("    OVCM: on");
-
 
 		switch (dmrBeacons) {
 			case DMR_BEACONS_NETWORK: {
@@ -1332,7 +1333,10 @@ bool CMMDVMHost::createModem()
 	LogInfo("    AX.25 TX Level: %.1f%%", ax25TXLevel);
 	LogInfo("    TX Frequency: %uHz (%uHz)", txFrequency, txFrequency + txOffset);
 
-	m_modem = CModem::createModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
+	if (port == "NullModem")
+		m_modem = new CNullModem;
+	else
+		m_modem = new CSerialModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
 	m_modem->setSerialParams(protocol, address, speed);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_pocsagEnabled, m_fmEnabled, m_ax25Enabled);
 	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, fmTXLevel, ax25TXLevel);
