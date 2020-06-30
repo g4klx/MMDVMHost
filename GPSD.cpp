@@ -18,7 +18,7 @@
 
 #include "GPSD.h"
 
-#if defined(USE_GPS)
+#if defined(USE_GPSD)
 
 #include <cstdio>
 #include <cassert>
@@ -101,4 +101,3 @@ void CGPSD::sendReport()
 }
 
 #endif
-

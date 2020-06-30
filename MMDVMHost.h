@@ -102,7 +102,7 @@ private:
   std::string     m_cwCallsign;
   bool            m_lockFileEnabled;
   std::string     m_lockFileName;
-#if defined(USE_GPS)
+#if defined(USE_GPSD)
   CGPSD*          m_gpsd;
 #endif
   CRemoteControl* m_remoteControl;
