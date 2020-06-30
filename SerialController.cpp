@@ -234,6 +234,7 @@ m_speed(speed),
 m_assertRTS(assertRTS),
 m_fd(-1)
 {
+	assert(!device.empty());
 }
 
 CSerialController::CSerialController(unsigned int speed, bool assertRTS) :
@@ -250,7 +251,6 @@ CSerialController::~CSerialController()
 
 bool CSerialController::open()
 {
-	assert(!m_device.empty());
 	assert(m_fd == -1);
 
 #if defined(__APPLE__)
