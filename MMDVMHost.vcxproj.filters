@@ -275,9 +275,6 @@
     <ClInclude Include="POCSAGDefines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MobileGPS.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="NullModem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -321,6 +318,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PseudoTTYController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="GPSD.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SerialModem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -562,9 +565,6 @@
     <ClCompile Include="POCSAGControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MobileGPS.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="NullModem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -605,6 +605,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PseudoTTYController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GPSD.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SerialModem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

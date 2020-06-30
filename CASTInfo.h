@@ -28,7 +28,7 @@
 class CCASTInfo : public CDisplay
 {
 public:
-  CCASTInfo(CModem* modem);
+  CCASTInfo(IModem* modem);
   virtual ~CCASTInfo();
 
   virtual bool open();
@@ -64,7 +64,7 @@ protected:
 	virtual void clearCWInt();
 
 private:
-  	CModem*		m_modem;
+  	IModem*		m_modem;
 	std::string	m_ipaddress;
 };
 

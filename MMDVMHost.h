@@ -37,12 +37,12 @@
 #include "DMRNetwork.h"
 #include "FMNetwork.h"
 #include "DMRLookup.h"
-#include "MobileGPS.h"
 #include "FMControl.h"
 #include "Display.h"
 #include "Timer.h"
 #include "Modem.h"
 #include "Conf.h"
+#include "GPSD.h"
 #include "UMP.h"
 
 #include <string>
@@ -59,7 +59,7 @@ public:
 
 private:
   CConf           m_conf;
-  CModem*         m_modem;
+  IModem*         m_modem;
   CDStarControl*  m_dstar;
   CDMRControl*    m_dmr;
   CYSFControl*    m_ysf;
@@ -113,7 +113,9 @@ private:
   std::string     m_cwCallsign;
   bool            m_lockFileEnabled;
   std::string     m_lockFileName;
-  CMobileGPS*     m_mobileGPS;
+#if defined(USE_GPSD)
+  CGPSD*          m_gpsd;
+#endif
   CRemoteControl* m_remoteControl;
   bool            m_fixedMode;
 

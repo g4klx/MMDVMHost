@@ -46,6 +46,8 @@ public:
 #endif
 
 protected:
+	CSerialController(unsigned int speed, bool assertRTS = false);
+
 	std::string    m_device;
 	unsigned int   m_speed;
 	bool           m_assertRTS;

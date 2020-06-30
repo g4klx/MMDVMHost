@@ -21,6 +21,8 @@
 #include "NXDNIcomNetwork.h"
 #include "RSSIInterpolator.h"
 #include "SerialController.h"
+#include "SerialModem.h"
+#include "NullModem.h"
 #include "Version.h"
 #include "StopWatch.h"
 #include "Defines.h"
@@ -168,7 +170,9 @@ m_id(0U),
 m_cwCallsign(),
 m_lockFileEnabled(false),
 m_lockFileName(),
-m_mobileGPS(NULL),
+#if defined(USE_GPSD)
+m_gpsd(NULL),
+#endif
 m_remoteControl(NULL),
 m_fixedMode(false)
 {
@@ -511,7 +515,6 @@ int CMMDVMHost::run()
 			LogInfo("    OVCM: on(tx only)");
 		else if (ovcm == DMR_OVCM_ON)
 			LogInfo("    OVCM: on");
-
 
 		switch (dmrBeacons) {
 			case DMR_BEACONS_NETWORK: {
@@ -1100,8 +1103,10 @@ int CMMDVMHost::run()
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->clock(ms);
 
-		if (m_mobileGPS != NULL)
-			m_mobileGPS->clock(ms);
+#if defined(USE_GPSD)
+		if (m_gpsd != NULL)
+			m_gpsd->clock(ms);
+#endif
 
 		m_cwIdTimer.clock(ms);
 		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
@@ -1178,10 +1183,12 @@ int CMMDVMHost::run()
 	m_display->close();
 	delete m_display;
 
-	if (m_mobileGPS != NULL) {
-		m_mobileGPS->close();
-		delete m_mobileGPS;
+#if defined(USE_GPSD)
+	if (m_gpsd != NULL) {
+		m_gpsd->close();
+		delete m_gpsd;
 	}
+#endif
 
 	if (m_ump != NULL) {
 		m_ump->close();
@@ -1326,7 +1333,10 @@ bool CMMDVMHost::createModem()
 	LogInfo("    AX.25 TX Level: %.1f%%", ax25TXLevel);
 	LogInfo("    TX Frequency: %uHz (%uHz)", txFrequency, txFrequency + txOffset);
 
-	m_modem = CModem::createModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
+	if (port == "NullModem")
+		m_modem = new CNullModem;
+	else
+		m_modem = new CSerialModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
 	m_modem->setSerialParams(protocol, address, speed);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_pocsagEnabled, m_fmEnabled, m_ax25Enabled);
 	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, fmTXLevel, ax25TXLevel);
@@ -1520,23 +1530,25 @@ bool CMMDVMHost::createDMRNetwork()
 		return false;
 	}
 
-	bool mobileGPSEnabled = m_conf.getMobileGPSEnabled();
-	if (mobileGPSEnabled) {
-		std::string mobileGPSAddress = m_conf.getMobileGPSAddress();
-		unsigned int mobileGPSPort   = m_conf.getMobileGPSPort();
+#if defined(USE_GPSD)
+	bool gpsdEnabled = m_conf.getGPSDEnabled();
+	if (gpsdEnabled) {
+		std::string gpsdAddress = m_conf.getGPSDAddress();
+		std::string gpsdPort    = m_conf.getGPSDPort();
 
-		LogInfo("Mobile GPS Parameters");
-		LogInfo("    Address: %s", mobileGPSAddress.c_str());
-		LogInfo("    Port: %u", mobileGPSPort);
+		LogInfo("GPSD Parameters");
+		LogInfo("    Address: %s", gpsdAddress.c_str());
+		LogInfo("    Port: %s", gpsdPort.c_str());
 
-		m_mobileGPS = new CMobileGPS(address, port, m_dmrNetwork);
+		m_gpsd = new CGPSD(gpsdAddress, gpsdPort, m_dmrNetwork);
 
-		ret = m_mobileGPS->open();
+		ret = m_gpsd->open();
 		if (!ret) {
-			delete m_mobileGPS;
-			m_mobileGPS = NULL;
+			delete m_gpsd;
+			m_gpsd = NULL;
 		}
 	}
+#endif
 
 	m_dmrNetwork->enable(true);
 

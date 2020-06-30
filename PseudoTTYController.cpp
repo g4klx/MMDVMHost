@@ -37,7 +37,7 @@
 
 
 CPseudoTTYController::CPseudoTTYController(const std::string& symlink, unsigned int speed, bool assertRTS) :
-CSerialController("", speed, assertRTS),
+CSerialController(speed, assertRTS),
 m_symlink(symlink)
 {
 }

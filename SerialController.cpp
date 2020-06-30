@@ -48,6 +48,14 @@ m_handle(INVALID_HANDLE_VALUE)
 	assert(!device.empty());
 }
 
+CSerialController::CSerialController(unsigned int speed, bool assertRTS) :
+m_device(),
+m_speed(speed),
+m_assertRTS(assertRTS),
+m_handle(INVALID_HANDLE_VALUE)
+{
+}
+
 CSerialController::~CSerialController()
 {
 }
@@ -222,6 +230,14 @@ void CSerialController::close()
 
 CSerialController::CSerialController(const std::string& device, unsigned int speed, bool assertRTS) :
 m_device(device),
+m_speed(speed),
+m_assertRTS(assertRTS),
+m_fd(-1)
+{
+}
+
+CSerialController::CSerialController(unsigned int speed, bool assertRTS) :
+m_device(),
 m_speed(speed),
 m_assertRTS(assertRTS),
 m_fd(-1)

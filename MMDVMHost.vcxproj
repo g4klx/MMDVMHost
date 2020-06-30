@@ -188,13 +188,13 @@
     <ClInclude Include="FMNetwork.h" />
     <ClInclude Include="Golay2087.h" />
     <ClInclude Include="Golay24128.h" />
+    <ClInclude Include="GPSD.h" />
     <ClInclude Include="Hamming.h" />
     <ClInclude Include="DMRLookup.h" />
     <ClInclude Include="IIRDirectForm1Filter.h" />
     <ClInclude Include="LCDproc.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MMDVMHost.h" />
-    <ClInclude Include="MobileGPS.h" />
     <ClInclude Include="Modem.h" />
     <ClInclude Include="ModemSerialPort.h" />
     <ClInclude Include="Mutex.h" />
@@ -236,6 +236,7 @@
     <ClInclude Include="RSSIInterpolator.h" />
     <ClInclude Include="NXDNSACCH.h" />
     <ClInclude Include="SerialController.h" />
+    <ClInclude Include="SerialModem.h" />
     <ClInclude Include="SerialPort.h" />
     <ClInclude Include="SHA256.h" />
     <ClInclude Include="StopWatch.h" />
@@ -291,12 +292,12 @@
     <ClCompile Include="FMNetwork.cpp" />
     <ClCompile Include="Golay2087.cpp" />
     <ClCompile Include="Golay24128.cpp" />
+    <ClCompile Include="GPSD.cpp" />
     <ClCompile Include="Hamming.cpp" />
     <ClCompile Include="IIRDirectForm1Filter.cpp" />
     <ClCompile Include="LCDproc.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MMDVMHost.cpp" />
-    <ClCompile Include="MobileGPS.cpp" />
     <ClCompile Include="Modem.cpp" />
     <ClCompile Include="ModemSerialPort.cpp" />
     <ClCompile Include="Mutex.cpp" />
@@ -334,6 +335,7 @@
     <ClCompile Include="RS241213.cpp" />
     <ClCompile Include="RSSIInterpolator.cpp" />
     <ClCompile Include="SerialController.cpp" />
+    <ClCompile Include="SerialModem.cpp" />
     <ClCompile Include="SerialPort.cpp" />
     <ClCompile Include="SHA256.cpp" />
     <ClCompile Include="StopWatch.cpp" />
