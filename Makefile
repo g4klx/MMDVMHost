@@ -8,8 +8,8 @@ CFLAGS  = -g -O3 -Wall -std=c++0x -pthread
 LIBS    = -lpthread -lutil
 
 # Use the following CFLAGS and LIBS if you do want to use gpsd.
-#CFLAGS  = -g -O3 -Wall -DUSE_GPS -std=c++0x -pthread
-#LIBS    = -lpthread -lutil -lgps -lutil
+#CFLAGS  = -g -O3 -Wall -DUSE_GPSD -std=c++0x -pthread
+#LIBS    = -lpthread -lgps -lutil
 
 LDFLAGS = -g
 

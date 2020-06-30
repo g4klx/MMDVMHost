@@ -168,7 +168,7 @@ m_id(0U),
 m_cwCallsign(),
 m_lockFileEnabled(false),
 m_lockFileName(),
-#if defined(USE_GPS)
+#if defined(USE_GPSD)
 m_gpsd(NULL),
 #endif
 m_remoteControl(NULL),
@@ -1102,7 +1102,7 @@ int CMMDVMHost::run()
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->clock(ms);
 
-#if defined(USE_GPS)
+#if defined(USE_GPSD)
 		if (m_gpsd != NULL)
 			m_gpsd->clock(ms);
 #endif
@@ -1182,7 +1182,7 @@ int CMMDVMHost::run()
 	m_display->close();
 	delete m_display;
 
-#if defined(USE_GPS)
+#if defined(USE_GPSD)
 	if (m_gpsd != NULL) {
 		m_gpsd->close();
 		delete m_gpsd;
@@ -1526,7 +1526,7 @@ bool CMMDVMHost::createDMRNetwork()
 		return false;
 	}
 
-#if defined(USE_GPS)
+#if defined(USE_GPSD)
 	bool gpsdEnabled = m_conf.getGPSDEnabled();
 	if (gpsdEnabled) {
 		std::string gpsdAddress = m_conf.getGPSDAddress();

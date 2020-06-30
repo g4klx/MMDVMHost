@@ -9,7 +9,7 @@ CFLAGS  = -g -O3 -Wall -std=c++0x -pthread -DHD44780 -DPCF8574_DISPLAY -I/usr/lo
 LIBS    = -lwiringPi -lwiringPiDev -lpthread -lutil
 
 # Use the following CFLAGS and LIBS if you do want to use gpsd.
-#CFLAGS  = -g -O3 -Wall -DUSE_GPS -std=c++0x -pthread -DHD44780 -DPCF8574_DISPLAY -I/usr/local/include
+#CFLAGS  = -g -O3 -Wall -DUSE_GPSD -std=c++0x -pthread -DHD44780 -DPCF8574_DISPLAY -I/usr/local/include
 #LIBS    = -lwiringPi -lwiringPiDev -lpthread -lgps -lutil
 
 LDFLAGS = -g -L/usr/local/lib

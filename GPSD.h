@@ -19,7 +19,7 @@
 #ifndef	GPSD_H
 #define	GPSD_H
 
-#if defined(USE_GPS)
+#if defined(USE_GPSD)
 
 #include "DMRNetwork.h"
 #include "Timer.h"
@@ -52,4 +52,3 @@ private:
 #endif
 
 #endif
-
