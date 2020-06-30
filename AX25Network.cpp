@@ -142,7 +142,7 @@ unsigned int CAX25Network::read(unsigned char* data, unsigned int length)
 			data[dataLen++] = AX25_FEND;
 		} else if (c == AX25_TFESC && m_rxLastChar == AX25_FESC) {
 			data[dataLen++] = AX25_FESC;
-		} else if (c != AX25_FESC) {
+		} else {
 			data[dataLen++] = c;
 		}
 
