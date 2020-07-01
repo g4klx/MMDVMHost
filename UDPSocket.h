@@ -47,8 +47,6 @@ public:
 
 	void close();
 
-    unsigned long getLocalAddress() const;
-
     static in_addr lookup(const std::string& hostName);
 
 private:
