@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2006-2016,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2006-2016 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -257,32 +257,4 @@ void CUDPSocket::close()
 #else
 	::close(m_fd);
 #endif
-}
-
-unsigned long CUDPSocket::getLocalAddress() const
-{
-	unsigned long address = 0UL;
-
-	char hostname[80U];
-	int ret = ::gethostname(hostname, 80);
-	if (ret == -1)
-		return 0UL;
-
-	struct hostent* phe = ::gethostbyname(hostname);
-	if (phe == NULL)
-		return 0UL;
-
-	if (phe->h_addrtype != AF_INET)
-		return 0UL;
-
-	for (unsigned int i = 0U; phe->h_addr_list[i] != NULL; i++) {
-		struct in_addr addr;
-		::memcpy(&addr, phe->h_addr_list[i], sizeof(struct in_addr));
-		if (addr.s_addr != INADDR_LOOPBACK) {
-			address = addr.s_addr;
-			break;
-		}
-	}
-
-	return address;
 }
