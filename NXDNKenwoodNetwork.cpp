@@ -56,7 +56,8 @@ m_rtcpTimer(1000U, 0U, 200U),
 m_hangTimer(1000U, 5U),
 m_hangType(0U),
 m_hangSrc(0U),
-m_hangDst(0U)
+m_hangDst(0U),
+m_random()
 {
 	assert(localPort > 0U);
 	assert(!gwyAddress.empty());
@@ -65,6 +66,10 @@ m_hangDst(0U)
 	m_sacch = new unsigned char[10U];
 
 	m_address = CUDPSocket::lookup(gwyAddress);
+
+	std::random_device rd;
+	std::mt19937 mt(rd());
+	m_random = mt;
 }
 
 CNXDNKenwoodNetwork::~CNXDNKenwoodNetwork()
@@ -87,7 +92,8 @@ bool CNXDNKenwoodNetwork::open()
 		return false;
 	}
 
-	m_ssrc = m_rtpSocket.getLocalAddress();
+	std::uniform_int_distribution<unsigned int> dist(0x00000001, 0xfffffffe);
+	m_ssrc = dist(m_random);
 
 	return true;
 }
