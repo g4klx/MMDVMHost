@@ -26,6 +26,7 @@
 
 #include <cstdint>
 #include <string>
+#include <random>
 
 class CDStarNetwork {
 public:
@@ -64,6 +65,7 @@ private:
 	CTimer         m_pollTimer;
 	LINK_STATUS    m_linkStatus;
 	unsigned char* m_linkReflector;
+	std::mt19937   m_random;
 
 	bool writePoll(const char* text);
 };
