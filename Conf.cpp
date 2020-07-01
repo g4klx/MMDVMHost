@@ -213,8 +213,10 @@ m_fmMaxDevLevel(90.0F),
 m_fmExtAudioBoost(1U),
 m_fmModeHang(10U),
 m_ax25Enabled(false),
-m_ax25RXTwist(6),
 m_ax25TXDelay(300U),
+m_ax25RXTwist(6),
+m_ax25SlotTime(30U),
+m_ax25PPersist(128U),
 m_ax25Trace(false),
 m_dstarNetworkEnabled(false),
 m_dstarGatewayAddress(),
@@ -815,10 +817,14 @@ bool CConf::read()
 		} else if (section == SECTION_AX25) {
 			if (::strcmp(key, "Enable") == 0)
 				m_ax25Enabled = ::atoi(value) == 1;
-			else if (::strcmp(key, "RXTwist") == 0)
-				m_ax25RXTwist = ::atoi(value);
 			else if (::strcmp(key, "TXDelay") == 0)
 				m_ax25TXDelay = (unsigned int)::atoi(value);
+			else if (::strcmp(key, "RXTwist") == 0)
+				m_ax25RXTwist = ::atoi(value);
+			else if (::strcmp(key, "SlotTime") == 0)
+				m_ax25SlotTime = (unsigned int)::atoi(value);
+			else if (::strcmp(key, "PPersist") == 0)
+				m_ax25PPersist = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Trace") == 0)
 				m_ax25Trace = ::atoi(value) == 1;
 		} else if (section == SECTION_DSTAR_NETWORK) {
@@ -1772,14 +1778,24 @@ bool CConf::getAX25Enabled() const
 	return m_ax25Enabled;
 }
 
+unsigned int CConf::getAX25TXDelay() const
+{
+	return m_ax25TXDelay;
+}
+
 int CConf::getAX25RXTwist() const
 {
 	return m_ax25RXTwist;
 }
 
-unsigned int CConf::getAX25TXDelay() const
+unsigned int CConf::getAX25SlotTime() const
 {
-	return m_ax25TXDelay;
+	return m_ax25SlotTime;
+}
+
+unsigned int CConf::getAX25PPersist() const
+{
+	return m_ax25PPersist;
 }
 
 bool CConf::getAX25Trace() const

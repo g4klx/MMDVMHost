@@ -175,8 +175,10 @@ public:
 
   // The AX.25 section
   bool         getAX25Enabled() const;
-  int          getAX25RXTwist() const;
   unsigned int getAX25TXDelay() const;
+  int          getAX25RXTwist() const;
+  unsigned int getAX25SlotTime() const;
+  unsigned int getAX25PPersist() const;
   bool         getAX25Trace() const;
 
   // The FM Section
@@ -505,8 +507,10 @@ private:
   unsigned int m_fmModeHang;
 
   bool         m_ax25Enabled;
-  int          m_ax25RXTwist;
   unsigned int m_ax25TXDelay;
+  int          m_ax25RXTwist;
+  unsigned int m_ax25SlotTime;
+  unsigned int m_ax25PPersist;
   bool         m_ax25Trace;
 
   bool         m_dstarNetworkEnabled;

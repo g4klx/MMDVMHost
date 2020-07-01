@@ -194,6 +194,8 @@ m_mode(MODE_IDLE),
 m_hwType(HWT_UNKNOWN),
 m_ax25RXTwist(0),
 m_ax25TXDelay(300U),
+m_ax25SlotTime(30U),
+m_ax25PPersist(128U),
 m_fmCallsign(),
 m_fmCallsignSpeed(20U),
 m_fmCallsignFrequency(1000U),
@@ -308,10 +310,12 @@ void CSerialModem::setNXDNParams(unsigned int txHang)
 	m_nxdnTXHang = txHang;
 }
 
-void CSerialModem::setAX25Params(int rxTwist, unsigned int txDelay)
+void CSerialModem::setAX25Params(int rxTwist, unsigned int txDelay, unsigned int slotTime, unsigned int pPersist)
 {
-	m_ax25RXTwist = rxTwist;
-	m_ax25TXDelay = txDelay;
+	m_ax25RXTwist  = rxTwist;
+	m_ax25TXDelay  = txDelay;
+	m_ax25SlotTime = slotTime;
+	m_ax25PPersist = pPersist;
 }
 
 void CSerialModem::setTransparentDataParams(unsigned int sendFrameType)
@@ -1757,7 +1761,7 @@ bool CSerialModem::setConfig()
 
 	buffer[0U] = MMDVM_FRAME_START;
 
-	buffer[1U] = 27U;
+	buffer[1U] = 29U;
 
 	buffer[2U] = MMDVM_SET_CONFIG;
 
@@ -1788,7 +1792,7 @@ bool CSerialModem::setConfig()
 		buffer[4U] |= 0x10U;
 	if (m_pocsagEnabled)
 		buffer[4U] |= 0x20U;
-	if (m_fmEnabled && m_duplex)
+	if (m_fmEnabled)
 		buffer[4U] |= 0x40U;
 	if (m_ax25Enabled)
 		buffer[4U] |= 0x80U;
@@ -1828,15 +1832,15 @@ bool CSerialModem::setConfig()
 	buffer[23U] = (unsigned char)m_nxdnTXHang;
 
 	buffer[24U] = (unsigned char)(m_ax25TXLevel * 2.55F + 0.5F);
-
 	buffer[25U] = (unsigned char)(m_ax25RXTwist + 128);
-
 	buffer[26U] = m_ax25TXDelay / 10U;		// In 10ms units
+	buffer[27U] = m_ax25SlotTime / 10U;		// In 10ms units
+	buffer[28U] = m_ax25PPersist;
 
-	// CUtils::dump(1U, "Written", buffer, 27U);
+	// CUtils::dump(1U, "Written", buffer, 29U);
 
-	int ret = m_serial->write(buffer, 27U);
-	if (ret != 27)
+	int ret = m_serial->write(buffer, 29U);
+	if (ret != 29)
 		return false;
 
 	unsigned int count = 0U;

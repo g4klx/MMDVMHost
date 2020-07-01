@@ -639,13 +639,17 @@ int CMMDVMHost::run()
 	}
 
 	if (m_ax25Enabled) {
-		int  rxTwist         = m_conf.getAX25RXTwist();
-		unsigned int txDelay = m_conf.getAX25TXDelay();
-		bool trace           = m_conf.getAX25Trace();
+		unsigned int txDelay  = m_conf.getAX25TXDelay();
+		int  rxTwist          = m_conf.getAX25RXTwist();
+		unsigned int slotTime = m_conf.getAX25SlotTime();
+		unsigned int pPersist = m_conf.getAX25PPersist();
+		bool trace            = m_conf.getAX25Trace();
 
 		LogInfo("AX.25 RF Parameters");
-		LogInfo("    RX Twist: %d", rxTwist);
 		LogInfo("    TX Delay: %ums", txDelay);
+		LogInfo("    RX Twist: %d", rxTwist);
+		LogInfo("    Slot Time: %ums", slotTime);
+		LogInfo("    P-Persist: %u", pPersist);
 		LogInfo("    Trace: %s", trace ? "yes" : "no");
 
 		m_ax25 = new CAX25Control(m_ax25Network, trace);
@@ -1301,6 +1305,8 @@ bool CMMDVMHost::createModem()
 	float rfLevel                = m_conf.getModemRFLevel();
 	int rxTwist                  = m_conf.getAX25RXTwist();
 	unsigned int ax25TXDelay     = m_conf.getAX25TXDelay();
+	unsigned int ax25SlotTime    = m_conf.getAX25SlotTime();
+	unsigned int ax25PPersist    = m_conf.getAX25PPersist();
 
 	LogInfo("Modem Parameters");
 	LogInfo("    Port: %s", port.c_str());
@@ -1345,7 +1351,7 @@ bool CMMDVMHost::createModem()
 	m_modem->setYSFParams(lowDeviation, ysfTXHang);
 	m_modem->setP25Params(p25TXHang);
 	m_modem->setNXDNParams(nxdnTXHang);
-	m_modem->setAX25Params(rxTwist, ax25TXDelay);
+	m_modem->setAX25Params(rxTwist, ax25TXDelay, ax25SlotTime, ax25PPersist);
 
 	if (m_fmEnabled) {
 		std::string  callsign           = m_conf.getFMCallsign();
