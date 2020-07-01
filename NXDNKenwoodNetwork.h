@@ -25,6 +25,7 @@
 
 #include <cstdint>
 #include <string>
+#include <random>
 
 class CNXDNKenwoodNetwork : public INXDNNetwork {
 public:
@@ -69,6 +70,7 @@ private:
     unsigned char  m_hangType;
     unsigned short m_hangSrc;
     unsigned short m_hangDst;
+    std::mt19937   m_random;
 
     bool processIcomVoiceHeader(const unsigned char* data);
     bool processIcomVoiceData(const unsigned char* data);
