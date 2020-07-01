@@ -92,7 +92,8 @@ bool CNXDNKenwoodNetwork::open()
 		return false;
 	}
 
-	m_ssrc = m_random();
+	std::uniform_int_distribution<unsigned int> dist(0x00000001, 0xfffffffe);
+	m_ssrc = dist(m_random);
 
 	return true;
 }
