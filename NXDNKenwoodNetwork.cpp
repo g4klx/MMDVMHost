@@ -36,9 +36,9 @@ const unsigned int BUFFER_LENGTH = 200U;
 CNXDNKenwoodNetwork::CNXDNKenwoodNetwork(const std::string& localAddress, unsigned int localPort, const std::string& gwyAddress, unsigned int gwyPort, bool debug) :
 m_rtpSocket(localAddress, localPort + 0U),
 m_rtcpSocket(localAddress, localPort + 1U),
-m_address(),
-m_rtcpPort(gwyPort + 1U),
-m_rtpPort(gwyPort + 0U),
+m_rtcpaddress(),
+m_rtpaddress(),
+m_addrlen(),
 m_enabled(false),
 m_headerSeen(false),
 m_seen1(false),
@@ -65,7 +65,8 @@ m_random()
 
 	m_sacch = new unsigned char[10U];
 
-	m_address = CUDPSocket::lookup(gwyAddress);
+	CUDPSocket::lookup(gwyAddress, gwyPort + 1, m_rtcpaddress, m_addrlen);
+	CUDPSocket::lookup(gwyAddress, gwyPort, m_rtpaddress, m_addrlen);
 
 	std::random_device rd;
 	std::mt19937 mt(rd());
@@ -81,7 +82,8 @@ bool CNXDNKenwoodNetwork::open()
 {
 	LogMessage("Opening Kenwood connection");
 
-	if (m_address.s_addr == INADDR_NONE)
+	if (CUDPSocket::isnone(m_rtpaddress) ||
+	    CUDPSocket::isnone(m_rtcpaddress))
 		return false;
 
 	if (!m_rtcpSocket.open())
@@ -363,7 +365,7 @@ bool CNXDNKenwoodNetwork::writeRTPVoiceHeader(const unsigned char* data)
 	if (m_debug)
 		CUtils::dump(1U, "Kenwood Network RTP Data Sent", buffer, 47U);
 
-	return m_rtpSocket.write(buffer, 47U, m_address, m_rtpPort);
+	return m_rtpSocket.write(buffer, 47U, m_rtpaddress, m_addrlen);
 }
 
 bool CNXDNKenwoodNetwork::writeRTPVoiceTrailer(const unsigned char* data)
@@ -409,7 +411,7 @@ bool CNXDNKenwoodNetwork::writeRTPVoiceTrailer(const unsigned char* data)
 	if (m_debug)
 		CUtils::dump(1U, "Kenwood Network RTP Data Sent", buffer, 47U);
 
-	return m_rtpSocket.write(buffer, 47U, m_address, m_rtpPort);
+	return m_rtpSocket.write(buffer, 47U, m_rtpaddress, m_addrlen);
 }
 
 bool CNXDNKenwoodNetwork::writeRTPVoiceData(const unsigned char* data)
@@ -455,7 +457,7 @@ bool CNXDNKenwoodNetwork::writeRTPVoiceData(const unsigned char* data)
 	if (m_debug)
 		CUtils::dump(1U, "Kenwood Network RTP Data Sent", buffer, 59U);
 
-	return m_rtpSocket.write(buffer, 59U, m_address, m_rtpPort);
+	return m_rtpSocket.write(buffer, 59U, m_rtpaddress, m_addrlen);
 }
 
 bool CNXDNKenwoodNetwork::writeRTPDataHeader(const unsigned char* data)
@@ -497,7 +499,7 @@ bool CNXDNKenwoodNetwork::writeRTPDataHeader(const unsigned char* data)
 	if (m_debug)
 		CUtils::dump(1U, "Kenwood Network RTP Data Sent", buffer, 42U);
 
-	return m_rtpSocket.write(buffer, 42U, m_address, m_rtpPort);
+	return m_rtpSocket.write(buffer, 42U, m_rtpaddress, m_addrlen);
 }
 
 bool CNXDNKenwoodNetwork::writeRTPDataTrailer(const unsigned char* data)
@@ -539,7 +541,7 @@ bool CNXDNKenwoodNetwork::writeRTPDataTrailer(const unsigned char* data)
 	if (m_debug)
 		CUtils::dump(1U, "Kenwood Network RTP Data Sent", buffer, 42U);
 
-	return m_rtpSocket.write(buffer, 42U, m_address, m_rtpPort);
+	return m_rtpSocket.write(buffer, 42U, m_rtpaddress, m_addrlen);
 }
 
 bool CNXDNKenwoodNetwork::writeRTPDataData(const unsigned char* data)
@@ -581,7 +583,7 @@ bool CNXDNKenwoodNetwork::writeRTPDataData(const unsigned char* data)
 	if (m_debug)
 		CUtils::dump(1U, "Kenwood Network RTP Data Sent", buffer, 42U);
 
-	return m_rtpSocket.write(buffer, 42U, m_address, m_rtpPort);
+	return m_rtpSocket.write(buffer, 42U, m_rtpaddress, m_addrlen);
 }
 
 bool CNXDNKenwoodNetwork::writeRTCPStart()
@@ -641,7 +643,7 @@ bool CNXDNKenwoodNetwork::writeRTCPStart()
 	if (m_debug)
 		CUtils::dump(1U, "Kenwood Network RTCP Data Sent", buffer, 28U);
 
-	return m_rtcpSocket.write(buffer, 28U, m_address, m_rtcpPort);
+	return m_rtcpSocket.write(buffer, 28U, m_rtcpaddress, m_addrlen);
 }
 
 bool CNXDNKenwoodNetwork::writeRTCPPing()
@@ -683,7 +685,7 @@ bool CNXDNKenwoodNetwork::writeRTCPPing()
 	if (m_debug)
 		CUtils::dump(1U, "Kenwood Network RTCP Data Sent", buffer, 28U);
 
-	return m_rtcpSocket.write(buffer, 28U, m_address, m_rtcpPort);
+	return m_rtcpSocket.write(buffer, 28U, m_rtcpaddress, m_addrlen);
 }
 
 bool CNXDNKenwoodNetwork::writeRTCPHang(unsigned char type, unsigned short src, unsigned short dst)
@@ -726,7 +728,7 @@ bool CNXDNKenwoodNetwork::writeRTCPHang()
 	if (m_debug)
 		CUtils::dump(1U, "Kenwood Network RTCP Data Sent", buffer, 20U);
 
-	return m_rtcpSocket.write(buffer, 20U, m_address, m_rtcpPort);
+	return m_rtcpSocket.write(buffer, 20U, m_rtcpaddress, m_addrlen);
 }
 
 bool CNXDNKenwoodNetwork::read(unsigned char* data)
@@ -761,17 +763,11 @@ unsigned int CNXDNKenwoodNetwork::readRTP(unsigned char* data)
 
 	unsigned char buffer[BUFFER_LENGTH];
 
-	in_addr address;
-	unsigned int port;
-	int length = m_rtpSocket.read(buffer, BUFFER_LENGTH, address, port);
-	if (length <= 0)
+	sockaddr_storage address;
+	unsigned int addrlen;
+	int length = m_rtpSocket.read(buffer, BUFFER_LENGTH, address, addrlen);
+	if (length <= 0 || !CUDPSocket::match_addr(m_rtpaddress, address))
 		return 0U;
-
-	// Check if the data is for us
-	if (m_address.s_addr != address.s_addr) {
-		LogMessage("Kenwood RTP packet received from an invalid source, %08X != %08X", m_address.s_addr, address.s_addr);
-		return 0U;
-	}
 
 	if (!m_enabled)
 		return 0U;
@@ -790,17 +786,11 @@ unsigned int CNXDNKenwoodNetwork::readRTCP(unsigned char* data)
 
 	unsigned char buffer[BUFFER_LENGTH];
 
-	in_addr address;
-	unsigned int port;
-	int length = m_rtcpSocket.read(buffer, BUFFER_LENGTH, address, port);
-	if (length <= 0)
+	sockaddr_storage address;
+	unsigned int addrlen;
+	int length = m_rtcpSocket.read(buffer, BUFFER_LENGTH, address, addrlen);
+	if (length <= 0 || !CUDPSocket::match_addr(m_rtcpaddress, address))
 		return 0U;
-
-	// Check if the data is for us
-	if (m_address.s_addr != address.s_addr) {
-		LogMessage("Kenwood RTCP packet received from an invalid source, %08X != %08X", m_address.s_addr, address.s_addr);
-		return 0U;
-	}
 
 	if (!m_enabled)
 		return 0U;
