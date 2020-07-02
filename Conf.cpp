@@ -420,6 +420,9 @@ bool CConf::read()
 		if (len > 1U && *value == '"' && value[len - 1U] == '"') {
 			value[len - 1U] = '\0';
 			value++;
+		} else {
+			// if value is not quoted, remove after # (to make comment)
+			::strtok(value, "#");
 		}
 
 		if (section == SECTION_GENERAL) {
@@ -989,7 +992,7 @@ bool CConf::read()
 			else if (::strcmp(key, "IdleBrightness") == 0)
 				m_nextionIdleBrightness = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "ScreenLayout") == 0)
-				m_nextionScreenLayout = (unsigned int)::atoi(value);
+				m_nextionScreenLayout = (unsigned int)::strtoul(value, NULL, 0);
 			else if (::strcmp(key, "DisplayTempInFahrenheit") == 0)
 				m_nextionTempInFahrenheit = ::atoi(value) == 1;
 		} else if (section == SECTION_OLED) {

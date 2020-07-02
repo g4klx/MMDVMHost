@@ -66,7 +66,8 @@ m_height(0),
 m_location(),
 m_description(),
 m_url(),
-m_beacon(false)
+m_beacon(false),
+m_random()
 {
 	assert(!address.empty());
 	assert(port > 0U);
@@ -85,11 +86,13 @@ m_beacon(false)
 	m_id[2U] = id >> 8;
 	m_id[3U] = id >> 0;
 
-	CStopWatch stopWatch;
-	::srand(stopWatch.start());
+	std::random_device rd;
+	std::mt19937 mt(rd());
+	m_random = mt;
 
-	m_streamId[0U] = ::rand() + 1U;
-	m_streamId[1U] = ::rand() + 1U;
+	std::uniform_int_distribution<uint32_t> dist(0x00000001, 0xfffffffe);
+	m_streamId[0U] = dist(m_random);
+	m_streamId[1U] = dist(m_random);
 }
 
 CDMRNetwork::~CDMRNetwork()
@@ -246,6 +249,7 @@ bool CDMRNetwork::write(const CDMRData& data)
 
 	unsigned int slotIndex = slotNo - 1U;
 
+	std::uniform_int_distribution<uint32_t> dist(0x00000001, 0xfffffffe);
 	unsigned char dataType = data.getDataType();
 	if (dataType == DT_VOICE_SYNC) {
 		buffer[15U] |= 0x10U;
@@ -253,10 +257,10 @@ bool CDMRNetwork::write(const CDMRData& data)
 		buffer[15U] |= data.getN();
 	} else {
 		if (dataType == DT_VOICE_LC_HEADER)
-			m_streamId[slotIndex] = ::rand() + 1U;
+			m_streamId[slotIndex] = dist(m_random);
 
 		if (dataType == DT_CSBK || dataType == DT_DATA_HEADER)
-			m_streamId[slotIndex] = ::rand() + 1U;
+			m_streamId[slotIndex] = dist(m_random);
 
 		buffer[15U] |= (0x20U | dataType);
 	}
