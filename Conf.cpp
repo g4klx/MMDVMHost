@@ -57,7 +57,7 @@ enum SECTION {
   SECTION_OLED,
   SECTION_LCDPROC,
   SECTION_LOCK_FILE,
-  SECTION_MOBILE_GPS,
+  SECTION_GPSD,
   SECTION_REMOTE_CONTROL
 };
 
@@ -236,6 +236,7 @@ m_p25LocalPort(0U),
 m_p25NetworkModeHang(3U),
 m_p25NetworkDebug(false),
 m_nxdnNetworkEnabled(false),
+m_nxdnNetworkProtocol("Icom"),
 m_nxdnGatewayAddress(),
 m_nxdnGatewayPort(0U),
 m_nxdnLocalAddress(),
@@ -282,9 +283,9 @@ m_lcdprocUTC(false),
 m_lcdprocDimOnIdle(false),
 m_lockFileEnabled(false),
 m_lockFileName(),
-m_mobileGPSEnabled(false),
-m_mobileGPSAddress(),
-m_mobileGPSPort(0U),
+m_gpsdEnabled(false),
+m_gpsdAddress(),
+m_gpsdPort(),
 m_remoteControlEnabled(false),
 m_remoteControlAddress("127.0.0.1"),
 m_remoteControlPort(0U)
@@ -367,8 +368,8 @@ bool CConf::read()
 		  section = SECTION_LCDPROC;
 	  else if (::strncmp(buffer, "[Lock File]", 11U) == 0)
 		  section = SECTION_LOCK_FILE;
-	  else if (::strncmp(buffer, "[Mobile GPS]", 12U) == 0)
-		  section = SECTION_MOBILE_GPS;
+	  else if (::strncmp(buffer, "[GPSD]", 6U) == 0)
+		  section = SECTION_GPSD;
 	  else if (::strncmp(buffer, "[Remote Control]", 16U) == 0)
 		  section = SECTION_REMOTE_CONTROL;
 	  else
@@ -390,6 +391,9 @@ bool CConf::read()
   if (len > 1U && *value == '"' && value[len - 1U] == '"') {
 	  value[len - 1U] = '\0';
 	  value++;
+  } else {
+	  // if value is not quoted, remove after # (to make comment)
+	  strtok(value, "#");
   }
 
   if (section == SECTION_GENERAL) {
@@ -843,6 +847,8 @@ bool CConf::read()
 	} else if (section == SECTION_NXDN_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_nxdnNetworkEnabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "Protocol") == 0)
+			m_nxdnNetworkProtocol = value;
 		else if (::strcmp(key, "LocalAddress") == 0)
 			m_nxdnLocalAddress = value;
 		else if (::strcmp(key, "LocalPort") == 0)
@@ -914,7 +920,7 @@ bool CConf::read()
 		else if (::strcmp(key, "IdleBrightness") == 0)
 			m_nextionIdleBrightness = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "ScreenLayout") == 0)
-			m_nextionScreenLayout = (unsigned int)::atoi(value);
+			m_nextionScreenLayout = (unsigned int)::strtoul(value, NULL, 0);
 		else if (::strcmp(key, "DisplayTempInFahrenheit") == 0)
 			m_nextionTempInFahrenheit = ::atoi(value) == 1;
 	} else if (section == SECTION_OLED) {
@@ -948,13 +954,13 @@ bool CConf::read()
 			m_lockFileEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "File") == 0)
 			m_lockFileName = value;
-	} else if (section == SECTION_MOBILE_GPS) {
+	} else if (section == SECTION_GPSD) {
 		if (::strcmp(key, "Enable") == 0)
-			m_mobileGPSEnabled = ::atoi(value) == 1;
+			m_gpsdEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "Address") == 0)
-			m_mobileGPSAddress = value;
+			m_gpsdAddress = value;
 		else if (::strcmp(key, "Port") == 0)
-			m_mobileGPSPort = (unsigned int)::atoi(value);
+			m_gpsdPort = value;
 	} else if (section == SECTION_REMOTE_CONTROL) {
 		if (::strcmp(key, "Enable") == 0)
 			m_remoteControlEnabled = ::atoi(value) == 1;
@@ -1835,6 +1841,11 @@ bool CConf::getNXDNNetworkEnabled() const
 	return m_nxdnNetworkEnabled;
 }
 
+std::string CConf::getNXDNNetworkProtocol() const
+{
+	return m_nxdnNetworkProtocol;
+}
+
 std::string CConf::getNXDNGatewayAddress() const
 {
 	return m_nxdnGatewayAddress;
@@ -2066,19 +2077,19 @@ std::string CConf::getLockFileName() const
 	return m_lockFileName;
 }
 
-bool CConf::getMobileGPSEnabled() const
+bool CConf::getGPSDEnabled() const
 {
-	return m_mobileGPSEnabled;
+	return m_gpsdEnabled;
 }
 
-std::string CConf::getMobileGPSAddress() const
+std::string CConf::getGPSDAddress() const
 {
-	return m_mobileGPSAddress;
+	return m_gpsdAddress;
 }
 
-unsigned int CConf::getMobileGPSPort() const
+std::string CConf::getGPSDPort() const
 {
-	return m_mobileGPSPort;
+	return m_gpsdPort;
 }
 
 bool CConf::getRemoteControlEnabled() const

@@ -27,6 +27,7 @@
 
 #include <string>
 #include <cstdint>
+#include <random>
 
 class CDMRNetwork
 {
@@ -107,6 +108,7 @@ private:
 	std::string    m_url;
 
 	bool           m_beacon;
+	std::mt19937   m_random;
 
 	bool writeLogin();
 	bool writeAuthorisation();

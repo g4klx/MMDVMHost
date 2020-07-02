@@ -17,6 +17,8 @@
  */
 
 #include "MMDVMHost.h"
+#include "NXDNKenwoodNetwork.h"
+#include "NXDNIcomNetwork.h"
 #include "RSSIInterpolator.h"
 #include "SerialController.h"
 #include "Version.h"
@@ -159,7 +161,9 @@ m_id(0U),
 m_cwCallsign(),
 m_lockFileEnabled(false),
 m_lockFileName(),
-m_mobileGPS(NULL),
+#if defined(USE_GPSD)
+m_gpsd(NULL),
+#endif
 m_remoteControl(NULL),
 m_fixedMode(false)
 {
@@ -1003,8 +1007,10 @@ int CMMDVMHost::run()
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->clock(ms);
 
-		if (m_mobileGPS != NULL)
-			m_mobileGPS->clock(ms);
+#if defined(USE_GPSD)
+		if (m_gpsd != NULL)
+			m_gpsd->clock(ms);
+#endif
 
 		m_cwIdTimer.clock(ms);
 		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
@@ -1081,10 +1087,12 @@ int CMMDVMHost::run()
 	m_display->close();
 	delete m_display;
 
-	if (m_mobileGPS != NULL) {
-		m_mobileGPS->close();
-		delete m_mobileGPS;
+#if defined(USE_GPSD)
+	if (m_gpsd != NULL) {
+		m_gpsd->close();
+		delete m_gpsd;
 	}
+#endif
 
 	if (m_ump != NULL) {
 		m_ump->close();
@@ -1391,23 +1399,25 @@ bool CMMDVMHost::createDMRNetwork()
 		return false;
 	}
 
-	bool mobileGPSEnabled = m_conf.getMobileGPSEnabled();
-	if (mobileGPSEnabled) {
-		std::string mobileGPSAddress = m_conf.getMobileGPSAddress();
-		unsigned int mobileGPSPort   = m_conf.getMobileGPSPort();
+#if defined(USE_GPSD)
+	bool gpsdEnabled = m_conf.getGPSDEnabled();
+	if (gpsdEnabled) {
+		std::string gpsdAddress = m_conf.getGPSDAddress();
+		std::string gpsdPort    = m_conf.getGPSDPort();
 
-		LogInfo("Mobile GPS Parameters");
-		LogInfo("    Address: %s", mobileGPSAddress.c_str());
-		LogInfo("    Port: %u", mobileGPSPort);
+		LogInfo("GPSD Parameters");
+		LogInfo("    Address: %s", gpsdAddress.c_str());
+		LogInfo("    Port: %s", gpsdPort.c_str());
 
-		m_mobileGPS = new CMobileGPS(address, port, m_dmrNetwork);
+		m_gpsd = new CGPSD(gpsdAddress, gpsdPort, m_dmrNetwork);
 
-		ret = m_mobileGPS->open();
+		ret = m_gpsd->open();
 		if (!ret) {
-			delete m_mobileGPS;
-			m_mobileGPS = NULL;
+			delete m_gpsd;
+			m_gpsd = NULL;
 		}
 	}
+#endif
 
 	m_dmrNetwork->enable(true);
 
@@ -1474,6 +1484,7 @@ bool CMMDVMHost::createP25Network()
 
 bool CMMDVMHost::createNXDNNetwork()
 {
+	std::string protocol       = m_conf.getNXDNNetworkProtocol();
 	std::string gatewayAddress = m_conf.getNXDNGatewayAddress();
 	unsigned int gatewayPort   = m_conf.getNXDNGatewayPort();
 	std::string localAddress   = m_conf.getNXDNLocalAddress();
@@ -1482,13 +1493,17 @@ bool CMMDVMHost::createNXDNNetwork()
 	bool debug                 = m_conf.getNXDNNetworkDebug();
 
 	LogInfo("NXDN Network Parameters");
+	LogInfo("    Protocol: %s", protocol.c_str());
 	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
 	LogInfo("    Gateway Port: %u", gatewayPort);
 	LogInfo("    Local Address: %s", localAddress.c_str());
 	LogInfo("    Local Port: %u", localPort);
 	LogInfo("    Mode Hang: %us", m_nxdnNetModeHang);
 
-	m_nxdnNetwork = new CNXDNNetwork(localAddress, localPort, gatewayAddress, gatewayPort, debug);
+	if (protocol == "Kenwood")
+		m_nxdnNetwork = new CNXDNKenwoodNetwork(localAddress, localPort, gatewayAddress, gatewayPort, debug);
+	else
+		m_nxdnNetwork = new CNXDNIcomNetwork(localAddress, localPort, gatewayAddress, gatewayPort, debug);
 
 	bool ret = m_nxdnNetwork->open();
 	if (!ret) {
@@ -1999,22 +2014,32 @@ void CMMDVMHost::remoteControl()
 		case RCD_ENABLE_DSTAR:
 			if (m_dstar != NULL && m_dstarEnabled==false)
 				processEnableCommand(m_dstarEnabled, true);
+                        if (m_dstarNetwork != NULL)
+                                m_dstarNetwork->enable(true);
 			break;
 		case RCD_ENABLE_DMR:
 			if (m_dmr != NULL && m_dmrEnabled==false)
 				processEnableCommand(m_dmrEnabled, true);
+                        if (m_dmrNetwork != NULL)
+                                m_dmrNetwork->enable(true);
 			break;
 		case RCD_ENABLE_YSF:
 			if (m_ysf != NULL && m_ysfEnabled==false)
 				processEnableCommand(m_ysfEnabled, true);
+                        if (m_ysfNetwork != NULL)
+                                m_ysfNetwork->enable(true);
 			break;
 		case RCD_ENABLE_P25:
 			if (m_p25 != NULL && m_p25Enabled==false)
 				processEnableCommand(m_p25Enabled, true);
+                       if (m_p25Network != NULL)
+                                m_p25Network->enable(true);
 			break;
 		case RCD_ENABLE_NXDN:
 			if (m_nxdn != NULL && m_nxdnEnabled==false)
 				processEnableCommand(m_nxdnEnabled, true);
+                        if (m_nxdnNetwork != NULL)
+                                m_nxdnNetwork->enable(true);
 			break;
 		case RCD_ENABLE_FM:
 			if (m_fmEnabled==false)
@@ -2023,22 +2048,32 @@ void CMMDVMHost::remoteControl()
 		case RCD_DISABLE_DSTAR:
 			if (m_dstar != NULL && m_dstarEnabled==true)
 				processEnableCommand(m_dstarEnabled, false);
+                        if (m_dstarNetwork != NULL)
+                                m_dstarNetwork->enable(false);
 			break;
 		case RCD_DISABLE_DMR:
 			if (m_dmr != NULL && m_dmrEnabled==true)
 				processEnableCommand(m_dmrEnabled, false);
+                        if (m_dmrNetwork != NULL)
+                                m_dmrNetwork->enable(false);
 			break;
 		case RCD_DISABLE_YSF:
 			if (m_ysf != NULL && m_ysfEnabled==true)
 				processEnableCommand(m_ysfEnabled, false);
+                        if (m_ysfNetwork != NULL)
+                                m_ysfNetwork->enable(false);
 			break;
 		case RCD_DISABLE_P25:
 			if (m_p25 != NULL && m_p25Enabled==true)
 				processEnableCommand(m_p25Enabled, false);
+                        if (m_p25Network != NULL)
+                                m_p25Network->enable(false);
 			break;
 		case RCD_DISABLE_NXDN:
 			if (m_nxdn != NULL && m_nxdnEnabled==true)
 				processEnableCommand(m_nxdnEnabled, false);
+                        if (m_nxdnNetwork != NULL)
+                                m_nxdnNetwork->enable(false);
 			break;
 		case RCD_DISABLE_FM:
 			if (m_fmEnabled == true)
