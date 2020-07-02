@@ -52,6 +52,7 @@ public:
 	static int lookup(const std::string& hostName, unsigned int port, sockaddr_storage &address, unsigned int &address_length);
 	static int lookup(const std::string& hostName, unsigned int port, sockaddr_storage &address, unsigned int &address_length, struct addrinfo &hints);
 	static bool match(const sockaddr_storage &addr1, const sockaddr_storage &addr2);
+	static bool match_addr(const sockaddr_storage &addr1, const sockaddr_storage &addr2);
 	static bool isnone(const sockaddr_storage &addr);
 
 private:
