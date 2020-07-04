@@ -392,8 +392,16 @@ bool CConf::read()
 	  value[len - 1U] = '\0';
 	  value++;
   } else {
+	  char *p;
+
 	  // if value is not quoted, remove after # (to make comment)
-	  strtok(value, "#");
+	  if ((p = strchr(value, '#')) != NULL)
+		*p = '\0';
+
+	  // remove trailing tab/space
+	  for (p = value + strlen(value) - 1;
+	       p >= value && (*p == '\t' || *p == ' '); p--)
+		*p = '\0';
   }
 
   if (section == SECTION_GENERAL) {
