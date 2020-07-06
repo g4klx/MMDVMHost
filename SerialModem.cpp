@@ -654,11 +654,11 @@ void CSerialModem::clock(unsigned int ms)
 				if (m_trace)
 					CUtils::dump(1U, "RX FM Control", m_buffer, m_length);
 
-				unsigned char data = m_length - m_offset + 1U;
-				m_rxFMData.addData(&data, 1U);
+				unsigned int data1 = m_length - m_offset + 1U;
+				m_rxFMData.addData((unsigned char*)&data1, sizeof(unsigned int));
 
-				data = TAG_HEADER;
-				m_rxFMData.addData(&data, 1U);
+				unsigned char data2= TAG_HEADER;
+				m_rxFMData.addData(&data2, 1U);
 
 				m_rxFMData.addData(m_buffer + m_offset, m_length - m_offset);
 			}
@@ -668,11 +668,11 @@ void CSerialModem::clock(unsigned int ms)
 				if(m_trace)
 					CUtils::dump(1U, "RX FM End of transmission", m_buffer, m_length);
 
-				unsigned char data = m_length - m_offset + 1U;
-				m_rxFMData.addData(&data, 1U);
+				unsigned int data1 = m_length - m_offset + 1U;
+				m_rxFMData.addData((unsigned char*)&data1, sizeof(unsigned int));
 
-				data = TAG_EOT;
-				m_rxFMData.addData(&data, 1U);
+				unsigned char data2 = TAG_EOT;
+				m_rxFMData.addData(&data2, 1U);
 
 				m_rxFMData.addData(m_buffer + m_offset, m_length - m_offset);
 			}
