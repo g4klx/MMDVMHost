@@ -946,7 +946,7 @@ void CSerialModem::clock(unsigned int ms)
 
 	if (m_fmSpace > 1U && !m_txFMData.isEmpty()) {
 		unsigned int len = 0U;
-		m_txFMData.getData(&len, 1U);
+		m_txFMData.getData((unsigned char*)&len, sizeof(unsigned int));
 		m_txFMData.getData(m_buffer, len);
 
 		if (m_trace)
