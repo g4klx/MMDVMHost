@@ -945,7 +945,7 @@ void CSerialModem::clock(unsigned int ms)
 	}
 
 	if (m_fmSpace > 1U && !m_txFMData.isEmpty()) {
-		unsigned char len = 0U;
+		unsigned int len = 0U;
 		m_txFMData.getData(&len, 1U);
 		m_txFMData.getData(m_buffer, len);
 
@@ -962,7 +962,7 @@ void CSerialModem::clock(unsigned int ms)
 	}
 
 	if (m_ax25Space > 0U && !m_txAX25Data.isEmpty()) {
-		unsigned char len = 0U;
+		unsigned int len = 0U;
 		m_txAX25Data.getData((unsigned char*)&len, sizeof(unsigned int));
 		m_txAX25Data.getData(m_buffer, len);
 
