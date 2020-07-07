@@ -207,7 +207,6 @@ public:
   unsigned int getFMCTCSSLowThreshold() const;
   float        getFMCTCSSLevel() const;
   unsigned int getFMKerchunkTime() const;
-  bool         getFMKerchunkTX() const;
   unsigned int getFMHangTime() const;
   bool         getFMUseCOS() const;
   bool         getFMCOSInvert() const;
@@ -497,7 +496,6 @@ private:
   unsigned int m_fmCTCSSLowThreshold;
   float        m_fmCTCSSLevel;
   unsigned int m_fmKerchunkTime;
-  bool         m_fmKerchunkTX;
   unsigned int m_fmHangTime;
   bool         m_fmUseCOS;
   bool         m_fmCOSInvert;

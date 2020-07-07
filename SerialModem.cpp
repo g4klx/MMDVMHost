@@ -220,7 +220,6 @@ m_fmCtcssHighThreshold(30U),
 m_fmCtcssLowThreshold(20U),
 m_fmCtcssLevel(10.0F),
 m_fmKerchunkTime(0U),
-m_fmKerchunkTX(true),
 m_fmHangTime(5U),
 m_fmUseCOS(true),
 m_fmCOSInvert(false),
@@ -2184,7 +2183,7 @@ void CSerialModem::setFMAckParams(const std::string& rfAck, unsigned int ackSpee
 	m_fmAckLevel     = ackLevel;
 }
 
-void CSerialModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, bool kerchunkTX, unsigned int hangTime, bool useCOS, bool cosInvert, unsigned int rfAudioBoost, float maxDevLevel)
+void CSerialModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, bool useCOS, bool cosInvert, unsigned int rfAudioBoost, float maxDevLevel)
 {
 	m_fmTimeout      = timeout;
 	m_fmTimeoutLevel = timeoutLevel;
@@ -2195,7 +2194,6 @@ void CSerialModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, flo
 	m_fmCtcssLevel         = ctcssLevel;
 
 	m_fmKerchunkTime = kerchunkTime;
-	m_fmKerchunkTX   = kerchunkTX;
 
 	m_fmHangTime     = hangTime;
 
@@ -2352,8 +2350,6 @@ bool CSerialModem::setFMMiscParams()
 		buffer[11U] |= 0x01U;
 	if (m_fmCOSInvert)
 		buffer[11U] |= 0x02U;
-	if (m_fmKerchunkTX)
-		buffer[11U] |= 0x04U;
 
 	buffer[12U] = m_fmRFAudioBoost;
 
