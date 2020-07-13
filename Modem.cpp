@@ -99,7 +99,7 @@ const unsigned int MAX_RESPONSES = 30U;
 const unsigned int BUFFER_LENGTH = 2000U;
 
 
-CModem::CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool trace, bool debug) :
+CModem::CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug) :
 m_port(port),
 m_dmrColorCode(0U),
 m_ysfLoDev(false),
@@ -112,15 +112,17 @@ m_txInvert(txInvert),
 m_pttInvert(pttInvert),
 m_txDelay(txDelay),
 m_dmrDelay(dmrDelay),
-m_rxLevel(0U),
-m_cwIdTXLevel(0U),
-m_dstarTXLevel(0U),
-m_dmrTXLevel(0U),
-m_ysfTXLevel(0U),
-m_p25TXLevel(0U),
-m_nxdnTXLevel(0U),
-m_pocsagTXLevel(0U),
-m_fmTXLevel(0U),
+m_rxLevel(0.0F),
+m_cwIdTXLevel(0.0F),
+m_dstarTXLevel(0.0F),
+m_dmrTXLevel(0.0F),
+m_ysfTXLevel(0.0F),
+m_p25TXLevel(0.0F),
+m_nxdnTXLevel(0.0F),
+m_pocsagTXLevel(0.0F),
+m_fmTXLevel(0.0F),
+m_rfLevel(0.0F),
+m_useCOSAsLockout(useCOSAsLockout),
 m_trace(trace),
 m_debug(debug),
 m_rxFrequency(0U),
@@ -195,7 +197,7 @@ m_fmCtcssLowThreshold(20U),
 m_fmCtcssLevel(10.0F),
 m_fmKerchunkTime(0U),
 m_fmHangTime(5U),
-m_fmUseCOS(true),
+m_fmAccessMode(1U),
 m_fmCOSInvert(false),
 m_fmRFAudioBoost(1U),
 m_fmMaxDevLevel(90.0F)
@@ -1534,6 +1536,8 @@ bool CModem::setConfig()
 		buffer[3U] |= 0x08U;
 	if (m_debug)
 		buffer[3U] |= 0x10U;
+	if (m_useCOSAsLockout)
+		buffer[3U] |= 0x20U;
 	if (!m_duplex)
 		buffer[3U] |= 0x80U;
 
@@ -1930,7 +1934,7 @@ void CModem::setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, uns
 	m_fmAckLevel     = ackLevel;
 }
 
-void CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, bool useCOS, bool cosInvert, unsigned int rfAudioBoost, float maxDevLevel)
+void CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, unsigned int accessMode, bool cosInvert, unsigned int rfAudioBoost, float maxDevLevel)
 {
 	m_fmTimeout      = timeout;
 	m_fmTimeoutLevel = timeoutLevel;
@@ -1943,7 +1947,7 @@ void CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctc
 	m_fmKerchunkTime = kerchunkTime;
 	m_fmHangTime     = hangTime;
 
-	m_fmUseCOS       = useCOS;
+	m_fmAccessMode   = accessMode;
 	m_fmCOSInvert    = cosInvert;
 
 	m_fmRFAudioBoost = rfAudioBoost;
@@ -2084,11 +2088,9 @@ bool CModem::setFMMiscParams()
 	buffer[9U]  = m_fmKerchunkTime;
 	buffer[10U] = m_fmHangTime;
 
-	buffer[11U] = 0x00U;
-	if (m_fmUseCOS)
-		buffer[11U] |= 0x01U;
+	buffer[11U] = m_fmAccessMode;
 	if (m_fmCOSInvert)
-		buffer[11U] |= 0x02U;
+		buffer[11U] |= 0x80U;
 
 	buffer[12U] = m_fmRFAudioBoost;
 
@@ -2152,9 +2154,9 @@ void CModem::printDebug()
 	}
 }
 
-CModem* CModem::createModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool trace, bool debug){
+CModem* CModem::createModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug){
 	if (port == "NullModem")
-		return new CNullModem(port, duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
+		return new CNullModem(port, duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, useCOSAsLockout, trace, debug);
 	else
-		return new CModem(port, duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
+		return new CModem(port, duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, useCOSAsLockout, trace, debug);
 }
