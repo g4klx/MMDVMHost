@@ -244,6 +244,7 @@ public:
 
   // The NXDN Network section
   bool         getNXDNNetworkEnabled() const;
+  std::string  getNXDNNetworkProtocol() const;
   std::string  getNXDNGatewayAddress() const;
   unsigned int getNXDNGatewayPort() const;
   std::string  getNXDNLocalAddress() const;
@@ -305,10 +306,10 @@ public:
   bool         getLockFileEnabled() const;
   std::string  getLockFileName() const;
 
-  // The Mobile GPS section
-  bool         getMobileGPSEnabled() const;
-  std::string  getMobileGPSAddress() const;
-  unsigned int getMobileGPSPort() const;
+  // The GPSD section
+  bool           getGPSDEnabled() const;
+  std::string    getGPSDAddress() const;
+  std::string    getGPSDPort() const;
 
   // The Remote Control section
   bool         getRemoteControlEnabled() const;
@@ -510,6 +511,7 @@ private:
   bool         m_p25NetworkDebug;
 
   bool         m_nxdnNetworkEnabled;
+  std::string  m_nxdnNetworkProtocol;
   std::string  m_nxdnGatewayAddress;
   unsigned int m_nxdnGatewayPort;
   std::string  m_nxdnLocalAddress;
@@ -564,9 +566,9 @@ private:
   bool         m_lockFileEnabled;
   std::string  m_lockFileName;
 
-  bool         m_mobileGPSEnabled;
-  std::string  m_mobileGPSAddress;
-  unsigned int m_mobileGPSPort;
+  bool         m_gpsdEnabled;
+  std::string  m_gpsdAddress;
+  std::string  m_gpsdPort;
 
   bool         m_remoteControlEnabled;
   std::string  m_remoteControlAddress;

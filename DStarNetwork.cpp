@@ -44,14 +44,16 @@ m_inId(0U),
 m_buffer(1000U, "D-Star Network"),
 m_pollTimer(1000U, 60U),
 m_linkStatus(LS_NONE),
-m_linkReflector(NULL)
+m_linkReflector(NULL),
+m_random()
 {
 	CUDPSocket::lookup(gatewayAddress, gatewayPort, m_address, m_addrlen);
 
 	m_linkReflector = new unsigned char[DSTAR_LONG_CALLSIGN_LENGTH];
 
-	CStopWatch stopWatch;
-	::srand(stopWatch.start());
+	std::random_device rd;
+	std::mt19937 mt(rd());
+	m_random = mt;
 }
 
 CDStarNetwork::~CDStarNetwork()
@@ -85,7 +87,8 @@ bool CDStarNetwork::writeHeader(const unsigned char* header, unsigned int length
 	buffer[4] = busy ? 0x22U : 0x20U;
 
 	// Create a random id for this transmission
-	m_outId = (::rand() % 65535U) + 1U;
+	std::uniform_int_distribution<uint16_t> dist(0x0001, 0xfffe);
+	m_outId = dist(m_random);
 
 	buffer[5] = m_outId / 256U;	// Unique session id
 	buffer[6] = m_outId % 256U;

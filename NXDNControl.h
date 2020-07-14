@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@
 
 class CNXDNControl {
 public:
-	CNXDNControl(unsigned int ran, unsigned int id, bool selfOnly, CNXDNNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CNXDNLookup* lookup, CRSSIInterpolator* rssiMapper);
+	CNXDNControl(unsigned int ran, unsigned int id, bool selfOnly, INXDNNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CNXDNLookup* lookup, CRSSIInterpolator* rssiMapper);
 	~CNXDNControl();
 
 	bool writeModem(unsigned char* data, unsigned int len);
@@ -53,7 +53,7 @@ private:
 	unsigned int               m_ran;
 	unsigned int               m_id;
 	bool                       m_selfOnly;
-	CNXDNNetwork*              m_network;
+	INXDNNetwork*              m_network;
 	CDisplay*                  m_display;
 	bool                       m_duplex;
 	bool                       m_remoteGateway;

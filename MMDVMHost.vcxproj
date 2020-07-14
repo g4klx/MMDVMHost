@@ -183,13 +183,13 @@
     <ClInclude Include="DStarSlowData.h" />
     <ClInclude Include="Golay2087.h" />
     <ClInclude Include="Golay24128.h" />
+    <ClInclude Include="GPSD.h" />
     <ClInclude Include="Hamming.h" />
     <ClInclude Include="DMRLookup.h" />
     <ClInclude Include="I2CController.h" />
     <ClInclude Include="LCDproc.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="MMDVMHost.h" />
-    <ClInclude Include="MobileGPS.h" />
     <ClInclude Include="Modem.h" />
     <ClInclude Include="ModemSerialPort.h" />
     <ClInclude Include="Mutex.h" />
@@ -203,6 +203,8 @@
     <ClInclude Include="NXDNCRC.h" />
     <ClInclude Include="NXDNDefines.h" />
     <ClInclude Include="NXDNFACCH1.h" />
+    <ClInclude Include="NXDNIcomNetwork.h" />
+    <ClInclude Include="NXDNKenwoodNetwork.h" />
     <ClInclude Include="NXDNLayer3.h" />
     <ClInclude Include="NXDNLICH.h" />
     <ClInclude Include="NXDNLookup.h" />
@@ -279,12 +281,12 @@
     <ClCompile Include="DStarSlowData.cpp" />
     <ClCompile Include="Golay2087.cpp" />
     <ClCompile Include="Golay24128.cpp" />
+    <ClCompile Include="GPSD.cpp" />
     <ClCompile Include="Hamming.cpp" />
     <ClCompile Include="I2CController.cpp" />
     <ClCompile Include="LCDproc.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="MMDVMHost.cpp" />
-    <ClCompile Include="MobileGPS.cpp" />
     <ClCompile Include="Modem.cpp" />
     <ClCompile Include="ModemSerialPort.cpp" />
     <ClCompile Include="Mutex.cpp" />
@@ -297,6 +299,8 @@
     <ClCompile Include="NXDNConvolution.cpp" />
     <ClCompile Include="NXDNCRC.cpp" />
     <ClCompile Include="NXDNFACCH1.cpp" />
+    <ClCompile Include="NXDNIcomNetwork.cpp" />
+    <ClCompile Include="NXDNKenwoodNetwork.cpp" />
     <ClCompile Include="NXDNLayer3.cpp" />
     <ClCompile Include="NXDNLICH.cpp" />
     <ClCompile Include="NXDNLookup.cpp" />

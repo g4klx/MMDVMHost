@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2018,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,32 +16,22 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef	MobileGPS_H
-#define	MobileGPS_H
+#ifndef	GPSD_H
+#define	GPSD_H
+
+#if defined(USE_GPSD)
 
 #include "DMRNetwork.h"
-#include "UDPSocket.h"
 #include "Timer.h"
 
 #include <string>
 
-#if !defined(_WIN32) && !defined(_WIN64)
-#include <netdb.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <errno.h>
-#else
-#include <winsock.h>
-#endif
+#include <gps.h>
 
-class CMobileGPS {
+class CGPSD {
 public:
-	CMobileGPS(const std::string& address, unsigned int port, CDMRNetwork* network);
-	~CMobileGPS();
+	CGPSD(const std::string& address, const std::string& port, CDMRNetwork* network);
+	~CGPSD();
 
 	bool open();
 
@@ -50,14 +40,15 @@ public:
 	void close();
 
 private:
-	CTimer       m_idTimer;
-	sockaddr_storage m_address;
-	unsigned int m_addrlen;
-	CUDPSocket   m_socket;
-	CDMRNetwork* m_network;
+	std::string       m_gpsdAddress;
+	std::string       m_gpsdPort;
+	CDMRNetwork*      m_network;
+	struct gps_data_t m_gpsdData;
+	CTimer            m_idTimer;
 
-	bool pollGPS();
 	void sendReport();
 };
+
+#endif
 
 #endif
