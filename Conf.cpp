@@ -57,7 +57,7 @@ enum SECTION {
   SECTION_OLED,
   SECTION_LCDPROC,
   SECTION_LOCK_FILE,
-  SECTION_MOBILE_GPS,
+  SECTION_GPSD,
   SECTION_REMOTE_CONTROL
 };
 
@@ -112,6 +112,7 @@ m_modemNXDNTXLevel(50.0F),
 m_modemPOCSAGTXLevel(50.0F),
 m_modemFMTXLevel(50.0F),
 m_modemRSSIMappingFile(),
+m_modemUseCOSAsLockout(false),
 m_modemTrace(false),
 m_modemDebug(false),
 m_transparentEnabled(false),
@@ -199,9 +200,8 @@ m_fmCTCSSHighThreshold(30U),
 m_fmCTCSSLowThreshold(20U),
 m_fmCTCSSLevel(2.0F),
 m_fmKerchunkTime(0U),
-m_fmKerchunkTX(true),
 m_fmHangTime(7U),
-m_fmUseCOS(true),
+m_fmAccessMode(1U),
 m_fmCOSInvert(false),
 m_fmRFAudioBoost(1U),
 m_fmMaxDevLevel(90.0F),
@@ -284,9 +284,9 @@ m_lcdprocUTC(false),
 m_lcdprocDimOnIdle(false),
 m_lockFileEnabled(false),
 m_lockFileName(),
-m_mobileGPSEnabled(false),
-m_mobileGPSAddress(),
-m_mobileGPSPort(0U),
+m_gpsdEnabled(false),
+m_gpsdAddress(),
+m_gpsdPort(),
 m_remoteControlEnabled(false),
 m_remoteControlPort(0U)
 {
@@ -368,8 +368,8 @@ bool CConf::read()
 		  section = SECTION_LCDPROC;
 	  else if (::strncmp(buffer, "[Lock File]", 11U) == 0)
 		  section = SECTION_LOCK_FILE;
-	  else if (::strncmp(buffer, "[Mobile GPS]", 12U) == 0)
-		  section = SECTION_MOBILE_GPS;
+	  else if (::strncmp(buffer, "[GPSD]", 6U) == 0)
+		  section = SECTION_GPSD;
 	  else if (::strncmp(buffer, "[Remote Control]", 16U) == 0)
 		  section = SECTION_REMOTE_CONTROL;
 	  else
@@ -391,6 +391,17 @@ bool CConf::read()
   if (len > 1U && *value == '"' && value[len - 1U] == '"') {
 	  value[len - 1U] = '\0';
 	  value++;
+  } else {
+	  char *p;
+
+	  // if value is not quoted, remove after # (to make comment)
+	  if ((p = strchr(value, '#')) != NULL)
+		*p = '\0';
+
+	  // remove trailing tab/space
+	  for (p = value + strlen(value) - 1;
+	       p >= value && (*p == '\t' || *p == ' '); p--)
+		*p = '\0';
   }
 
   if (section == SECTION_GENERAL) {
@@ -514,6 +525,8 @@ bool CConf::read()
 			m_modemFMTXLevel = float(::atof(value));
 		else if (::strcmp(key, "RSSIMappingFile") == 0)
 			m_modemRSSIMappingFile = value;
+		else if (::strcmp(key, "UseCOSAsLockout") == 0)
+			m_modemUseCOSAsLockout = ::atoi(value) == 1;
 		else if (::strcmp(key, "Trace") == 0)
 			m_modemTrace = ::atoi(value) == 1;
 		else if (::strcmp(key, "Debug") == 0)
@@ -765,12 +778,10 @@ bool CConf::read()
 			m_fmCTCSSLevel = float(::atof(value));
 		else if (::strcmp(key, "KerchunkTime") == 0)
 			m_fmKerchunkTime = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "KerchunkTX") == 0)
-			m_fmKerchunkTX = ::atoi(value) == 1;
 		else if (::strcmp(key, "HangTime") == 0)
 			m_fmHangTime = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "UseCOS") == 0)
-			m_fmUseCOS = ::atoi(value) == 1;
+		else if (::strcmp(key, "AccessMode") == 0)
+			m_fmAccessMode = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "COSInvert") == 0)
 			m_fmCOSInvert = ::atoi(value) == 1;
 		else if (::strcmp(key, "RFAudioBoost") == 0)
@@ -919,7 +930,7 @@ bool CConf::read()
 		else if (::strcmp(key, "IdleBrightness") == 0)
 			m_nextionIdleBrightness = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "ScreenLayout") == 0)
-			m_nextionScreenLayout = (unsigned int)::atoi(value);
+			m_nextionScreenLayout = (unsigned int)::strtoul(value, NULL, 0);
 		else if (::strcmp(key, "DisplayTempInFahrenheit") == 0)
 			m_nextionTempInFahrenheit = ::atoi(value) == 1;
 	} else if (section == SECTION_OLED) {
@@ -953,13 +964,13 @@ bool CConf::read()
 			m_lockFileEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "File") == 0)
 			m_lockFileName = value;
-	} else if (section == SECTION_MOBILE_GPS) {
+	} else if (section == SECTION_GPSD) {
 		if (::strcmp(key, "Enable") == 0)
-			m_mobileGPSEnabled = ::atoi(value) == 1;
+			m_gpsdEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "Address") == 0)
-			m_mobileGPSAddress = value;
+			m_gpsdAddress = value;
 		else if (::strcmp(key, "Port") == 0)
-			m_mobileGPSPort = (unsigned int)::atoi(value);
+			m_gpsdPort = value;
 	} else if (section == SECTION_REMOTE_CONTROL) {
 		if (::strcmp(key, "Enable") == 0)
 			m_remoteControlEnabled = ::atoi(value) == 1;
@@ -1216,6 +1227,11 @@ float CConf::getModemFMTXLevel() const
 std::string CConf::getModemRSSIMappingFile () const
 {
 	return m_modemRSSIMappingFile;
+}
+
+bool CConf::getModemUseCOSAsLockout() const
+{
+	return m_modemUseCOSAsLockout;
 }
 
 bool CConf::getModemTrace() const
@@ -1653,19 +1669,14 @@ unsigned int CConf::getFMKerchunkTime() const
 	return m_fmKerchunkTime;
 }
 
-bool CConf::getFMKerchunkTX() const
-{
-	return m_fmKerchunkTX;
-}
-
 unsigned int CConf::getFMHangTime() const
 {
 	return m_fmHangTime;
 }
 
-bool CConf::getFMUseCOS() const
+unsigned int CConf::getFMAccessMode() const
 {
-	return m_fmUseCOS;
+	return m_fmAccessMode;
 }
 
 bool CConf::getFMCOSInvert() const
@@ -2079,19 +2090,19 @@ std::string CConf::getLockFileName() const
 	return m_lockFileName;
 }
 
-bool CConf::getMobileGPSEnabled() const
+bool CConf::getGPSDEnabled() const
 {
-	return m_mobileGPSEnabled;
+	return m_gpsdEnabled;
 }
 
-std::string CConf::getMobileGPSAddress() const
+std::string CConf::getGPSDAddress() const
 {
-	return m_mobileGPSAddress;
+	return m_gpsdAddress;
 }
 
-unsigned int CConf::getMobileGPSPort() const
+std::string CConf::getGPSDPort() const
 {
-	return m_mobileGPSPort;
+	return m_gpsdPort;
 }
 
 bool CConf::getRemoteControlEnabled() const

@@ -92,6 +92,7 @@ public:
   float        getModemPOCSAGTXLevel() const;
   float        getModemFMTXLevel() const;
   std::string  getModemRSSIMappingFile() const;
+  bool         getModemUseCOSAsLockout() const;
   bool         getModemTrace() const;
   bool         getModemDebug() const;
 
@@ -197,9 +198,8 @@ public:
   unsigned int getFMCTCSSLowThreshold() const;
   float        getFMCTCSSLevel() const;
   unsigned int getFMKerchunkTime() const;
-  bool         getFMKerchunkTX() const;
   unsigned int getFMHangTime() const;
-  bool         getFMUseCOS() const;
+  unsigned int getFMAccessMode() const;
   bool         getFMCOSInvert() const;
   unsigned int getFMRFAudioBoost() const;
   float        getFMMaxDevLevel() const;
@@ -307,10 +307,10 @@ public:
   bool         getLockFileEnabled() const;
   std::string  getLockFileName() const;
 
-  // The Mobile GPS section
-  bool         getMobileGPSEnabled() const;
-  std::string  getMobileGPSAddress() const;
-  unsigned int getMobileGPSPort() const;
+  // The GPSD section
+  bool           getGPSDEnabled() const;
+  std::string    getGPSDAddress() const;
+  std::string    getGPSDPort() const;
 
   // The Remote Control section
   bool         getRemoteControlEnabled() const;
@@ -373,6 +373,7 @@ private:
   float        m_modemPOCSAGTXLevel;
   float        m_modemFMTXLevel;
   std::string  m_modemRSSIMappingFile;
+  bool         m_modemUseCOSAsLockout;
   bool         m_modemTrace;
   bool         m_modemDebug;
 
@@ -469,9 +470,8 @@ private:
   unsigned int m_fmCTCSSLowThreshold;
   float        m_fmCTCSSLevel;
   unsigned int m_fmKerchunkTime;
-  bool         m_fmKerchunkTX;
   unsigned int m_fmHangTime;
-  bool         m_fmUseCOS;
+  unsigned int m_fmAccessMode;
   bool         m_fmCOSInvert;
   unsigned int m_fmRFAudioBoost;
   float        m_fmMaxDevLevel;
@@ -567,9 +567,9 @@ private:
   bool         m_lockFileEnabled;
   std::string  m_lockFileName;
 
-  bool         m_mobileGPSEnabled;
-  std::string  m_mobileGPSAddress;
-  unsigned int m_mobileGPSPort;
+  bool         m_gpsdEnabled;
+  std::string  m_gpsdAddress;
+  std::string  m_gpsdPort;
 
   bool         m_remoteControlEnabled;
   unsigned int m_remoteControlPort;

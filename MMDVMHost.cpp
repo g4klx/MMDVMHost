@@ -161,7 +161,9 @@ m_id(0U),
 m_cwCallsign(),
 m_lockFileEnabled(false),
 m_lockFileName(),
-m_mobileGPS(NULL),
+#if defined(USE_GPSD)
+m_gpsd(NULL),
+#endif
 m_remoteControl(NULL),
 m_fixedMode(false)
 {
@@ -1004,8 +1006,10 @@ int CMMDVMHost::run()
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->clock(ms);
 
-		if (m_mobileGPS != NULL)
-			m_mobileGPS->clock(ms);
+#if defined(USE_GPSD)
+		if (m_gpsd != NULL)
+			m_gpsd->clock(ms);
+#endif
 
 		m_cwIdTimer.clock(ms);
 		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
@@ -1082,10 +1086,12 @@ int CMMDVMHost::run()
 	m_display->close();
 	delete m_display;
 
-	if (m_mobileGPS != NULL) {
-		m_mobileGPS->close();
-		delete m_mobileGPS;
+#if defined(USE_GPSD)
+	if (m_gpsd != NULL) {
+		m_gpsd->close();
+		delete m_gpsd;
 	}
+#endif
 
 	if (m_ump != NULL) {
 		m_ump->close();
@@ -1182,6 +1188,7 @@ bool CMMDVMHost::createModem()
 	int rxDCOffset               = m_conf.getModemRXDCOffset();
 	int txDCOffset               = m_conf.getModemTXDCOffset();
 	float rfLevel                = m_conf.getModemRFLevel();
+	bool useCOSAsLockout         = m_conf.getModemUseCOSAsLockout();
 
 	LogInfo("Modem Parameters");
 	LogInfo("    Port: %s", port.c_str());
@@ -1208,9 +1215,10 @@ bool CMMDVMHost::createModem()
 	LogInfo("    POCSAG TX Level: %.1f%%", pocsagTXLevel);
 	LogInfo("    FM TX Level: %.1f%%", fmTXLevel);
 	LogInfo("    TX Frequency: %uHz (%uHz)", txFrequency, txFrequency + txOffset);
+	LogInfo("    Use COS as Lockout: %s", useCOSAsLockout ? "yes" : "no");
 
-	m_modem = CModem::createModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
-	m_modem->setSerialParams(protocol,address);
+	m_modem = CModem::createModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, useCOSAsLockout, trace, debug);
+	m_modem->setSerialParams(protocol, address);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_pocsagEnabled, m_fmEnabled);
 	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, fmTXLevel);
 	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel, pocsagFrequency);
@@ -1244,9 +1252,8 @@ bool CMMDVMHost::createModem()
 		unsigned int ctcssLowThreshold  = m_conf.getFMCTCSSLowThreshold();
 		float        ctcssLevel         = m_conf.getFMCTCSSLevel();
 		unsigned int kerchunkTime       = m_conf.getFMKerchunkTime();
-		bool         kerchunkTX         = m_conf.getFMKerchunkTX();
 		unsigned int hangTime           = m_conf.getFMHangTime();
-		bool         useCOS             = m_conf.getFMUseCOS();
+		unsigned int accessMode         = m_conf.getFMAccessMode();
 		bool         cosInvert          = m_conf.getFMCOSInvert();
 		unsigned int rfAudioBoost       = m_conf.getFMRFAudioBoost();
 		float        maxDevLevel        = m_conf.getFMMaxDevLevel();
@@ -1277,9 +1284,8 @@ bool CMMDVMHost::createModem()
 		LogInfo("    CTCSS Low Threshold: %u", ctcssLowThreshold);
 		LogInfo("    CTCSS Level: %.1f%%", ctcssLevel);
 		LogInfo("    Kerchunk Time: %us", kerchunkTime);
-		LogInfo("    Kerchunk TX: %s", kerchunkTX ? "yes" : "no");
 		LogInfo("    Hang Time: %us", hangTime);
-		LogInfo("    Use COS: %s", useCOS ? "yes" : "no");
+		LogInfo("    Access Mode: %u", accessMode);
 		LogInfo("    COS Invert: %s", cosInvert ? "yes" : "no");
 		LogInfo("    RF Audio Boost: x%u", rfAudioBoost);
 		LogInfo("    Max. Deviation Level: %.1f%%", maxDevLevel);
@@ -1287,7 +1293,7 @@ bool CMMDVMHost::createModem()
 
 		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd, callsignAtLatch);
 		m_modem->setFMAckParams(rfAck, ackSpeed, ackFrequency, ackMinTime, ackDelay, ackLevel);
-		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssHighThreshold, ctcssLowThreshold, ctcssLevel, kerchunkTime, kerchunkTX, hangTime, useCOS, cosInvert, rfAudioBoost, maxDevLevel);
+		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssHighThreshold, ctcssLowThreshold, ctcssLevel, kerchunkTime, hangTime, accessMode, cosInvert, rfAudioBoost, maxDevLevel);
 	}
 
 	bool ret = m_modem->open();
@@ -1394,23 +1400,25 @@ bool CMMDVMHost::createDMRNetwork()
 		return false;
 	}
 
-	bool mobileGPSEnabled = m_conf.getMobileGPSEnabled();
-	if (mobileGPSEnabled) {
-		std::string mobileGPSAddress = m_conf.getMobileGPSAddress();
-		unsigned int mobileGPSPort   = m_conf.getMobileGPSPort();
+#if defined(USE_GPSD)
+	bool gpsdEnabled = m_conf.getGPSDEnabled();
+	if (gpsdEnabled) {
+		std::string gpsdAddress = m_conf.getGPSDAddress();
+		std::string gpsdPort    = m_conf.getGPSDPort();
 
-		LogInfo("Mobile GPS Parameters");
-		LogInfo("    Address: %s", mobileGPSAddress.c_str());
-		LogInfo("    Port: %u", mobileGPSPort);
+		LogInfo("GPSD Parameters");
+		LogInfo("    Address: %s", gpsdAddress.c_str());
+		LogInfo("    Port: %s", gpsdPort.c_str());
 
-		m_mobileGPS = new CMobileGPS(address, port, m_dmrNetwork);
+		m_gpsd = new CGPSD(gpsdAddress, gpsdPort, m_dmrNetwork);
 
-		ret = m_mobileGPS->open();
+		ret = m_gpsd->open();
 		if (!ret) {
-			delete m_mobileGPS;
-			m_mobileGPS = NULL;
+			delete m_gpsd;
+			m_gpsd = NULL;
 		}
 	}
+#endif
 
 	m_dmrNetwork->enable(true);
 
