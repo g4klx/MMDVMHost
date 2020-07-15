@@ -109,7 +109,7 @@ const unsigned int MAX_RESPONSES = 30U;
 const unsigned int BUFFER_LENGTH = 2000U;
 
 
-CSerialModem::CSerialModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool trace, bool debug) :
+CSerialModem::CSerialModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug) :
 m_port(port),
 m_dmrColorCode(0U),
 m_ysfLoDev(false),
@@ -133,6 +133,7 @@ m_pocsagTXLevel(0.0F),
 m_fmTXLevel(0.0F),
 m_ax25TXLevel(0.0F),
 m_rfLevel(0.0F),
+m_useCOSAsLockout(useCOSAsLockout),
 m_trace(trace),
 m_debug(debug),
 m_rxFrequency(0U),
@@ -221,7 +222,7 @@ m_fmCtcssLowThreshold(20U),
 m_fmCtcssLevel(10.0F),
 m_fmKerchunkTime(0U),
 m_fmHangTime(5U),
-m_fmUseCOS(true),
+m_fmAccessMode(1U),
 m_fmCOSInvert(false),
 m_fmRFAudioBoost(1U),
 m_fmExtAudioBoost(1U),
@@ -1775,6 +1776,8 @@ bool CSerialModem::setConfig()
 		buffer[3U] |= 0x08U;
 	if (m_debug)
 		buffer[3U] |= 0x10U;
+	if (m_useCOSAsLockout)
+		buffer[3U] |= 0x20U;
 	if (!m_duplex)
 		buffer[3U] |= 0x80U;
 
@@ -2183,7 +2186,7 @@ void CSerialModem::setFMAckParams(const std::string& rfAck, unsigned int ackSpee
 	m_fmAckLevel     = ackLevel;
 }
 
-void CSerialModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, bool useCOS, bool cosInvert, unsigned int rfAudioBoost, float maxDevLevel)
+void CSerialModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, unsigned int accessMode, bool cosInvert, unsigned int rfAudioBoost, float maxDevLevel)
 {
 	m_fmTimeout      = timeout;
 	m_fmTimeoutLevel = timeoutLevel;
@@ -2197,7 +2200,7 @@ void CSerialModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, flo
 
 	m_fmHangTime     = hangTime;
 
-	m_fmUseCOS       = useCOS;
+	m_fmAccessMode   = accessMode;
 	m_fmCOSInvert    = cosInvert;
 
 	m_fmRFAudioBoost = rfAudioBoost;
@@ -2345,11 +2348,9 @@ bool CSerialModem::setFMMiscParams()
 	buffer[9U]  = m_fmKerchunkTime;
 	buffer[10U] = m_fmHangTime;
 
-	buffer[11U] = 0x00U;
-	if (m_fmUseCOS)
-		buffer[11U] |= 0x01U;
+	buffer[11U] = m_fmAccessMode;
 	if (m_fmCOSInvert)
-		buffer[11U] |= 0x02U;
+		buffer[11U] |= 0x80U;
 
 	buffer[12U] = m_fmRFAudioBoost;
 

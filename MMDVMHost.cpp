@@ -1307,6 +1307,7 @@ bool CMMDVMHost::createModem()
 	unsigned int ax25TXDelay     = m_conf.getAX25TXDelay();
 	unsigned int ax25SlotTime    = m_conf.getAX25SlotTime();
 	unsigned int ax25PPersist    = m_conf.getAX25PPersist();
+	bool useCOSAsLockout         = m_conf.getModemUseCOSAsLockout();
 
 	LogInfo("Modem Parameters");
 	LogInfo("    Port: %s", port.c_str());
@@ -1338,11 +1339,12 @@ bool CMMDVMHost::createModem()
 	LogInfo("    FM TX Level: %.1f%%", fmTXLevel);
 	LogInfo("    AX.25 TX Level: %.1f%%", ax25TXLevel);
 	LogInfo("    TX Frequency: %uHz (%uHz)", txFrequency, txFrequency + txOffset);
+	LogInfo("    Use COS as Lockout: %s", useCOSAsLockout ? "yes" : "no");
 
 	if (port == "NullModem")
 		m_modem = new CNullModem;
 	else
-		m_modem = new CSerialModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
+		m_modem = new CSerialModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, useCOSAsLockout, trace, debug);
 	m_modem->setSerialParams(protocol, address, speed);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_pocsagEnabled, m_fmEnabled, m_ax25Enabled);
 	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, fmTXLevel, ax25TXLevel);
@@ -1378,7 +1380,7 @@ bool CMMDVMHost::createModem()
 		float        ctcssLevel         = m_conf.getFMCTCSSLevel();
 		unsigned int kerchunkTime       = m_conf.getFMKerchunkTime();
 		unsigned int hangTime           = m_conf.getFMHangTime();
-		bool         useCOS             = m_conf.getFMUseCOS();
+		unsigned int accessMode         = m_conf.getFMAccessMode();
 		bool         cosInvert          = m_conf.getFMCOSInvert();
 		unsigned int rfAudioBoost       = m_conf.getFMRFAudioBoost();
 		float        maxDevLevel        = m_conf.getFMMaxDevLevel();
@@ -1409,7 +1411,7 @@ bool CMMDVMHost::createModem()
 		LogInfo("    CTCSS Level: %.1f%%", ctcssLevel);
 		LogInfo("    Kerchunk Time: %us", kerchunkTime);
 		LogInfo("    Hang Time: %us", hangTime);
-		LogInfo("    Use COS: %s", useCOS ? "yes" : "no");
+		LogInfo("    Access Mode: %u", accessMode);
 		LogInfo("    COS Invert: %s", cosInvert ? "yes" : "no");
 		LogInfo("    RF Audio Boost: x%u", rfAudioBoost);
 		LogInfo("    Max. Deviation Level: %.1f%%", maxDevLevel);
@@ -1417,7 +1419,7 @@ bool CMMDVMHost::createModem()
 
 		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd, callsignAtLatch);
 		m_modem->setFMAckParams(rfAck, ackSpeed, ackFrequency, ackMinTime, ackDelay, ackLevel);
-		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssHighThreshold, ctcssLowThreshold, ctcssLevel, kerchunkTime, hangTime, useCOS, cosInvert, rfAudioBoost, maxDevLevel);
+		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssHighThreshold, ctcssLowThreshold, ctcssLevel, kerchunkTime, hangTime, accessMode, cosInvert, rfAudioBoost, maxDevLevel);
 
 		if (m_conf.getFMNetworkEnabled()) {
 			std::string  extAck        = m_conf.getFMExtAck();

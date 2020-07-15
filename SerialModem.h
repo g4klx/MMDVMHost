@@ -44,7 +44,7 @@ enum SERIAL_STATE {
 
 class CSerialModem : public IModem {
 public:
-	CSerialModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool trace, bool debug);
+	CSerialModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug);
 	virtual ~CSerialModem();
 
 	virtual void setSerialParams(const std::string& protocol, unsigned int address, unsigned int speed);
@@ -60,7 +60,7 @@ public:
 
 	virtual void setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch);
 	virtual void setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackMinTime, unsigned int ackDelay, float ackLevel);
-	virtual void setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, bool useCOS, bool cosInvert, unsigned int rfAudioBoost, float maxDevLevel);
+	virtual void setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, unsigned int accessMode, bool cosInvert, unsigned int rfAudioBoost, float maxDevLevel);
 	virtual void setFMExtParams(const std::string& ack, unsigned int audioBoost);
 
 	virtual bool open();
@@ -155,6 +155,7 @@ private:
 	float                      m_fmTXLevel;
 	float                      m_ax25TXLevel;
 	float                      m_rfLevel;
+	bool                       m_useCOSAsLockout;
 	bool                       m_trace;
 	bool                       m_debug;
 	unsigned int               m_rxFrequency;
@@ -244,7 +245,7 @@ private:
 	float                      m_fmCtcssLevel;
 	unsigned int               m_fmKerchunkTime;
 	unsigned int               m_fmHangTime;
-	bool                       m_fmUseCOS;
+	unsigned int               m_fmAccessMode;
 	bool                       m_fmCOSInvert;
 	unsigned int               m_fmRFAudioBoost;
 	unsigned int               m_fmExtAudioBoost;

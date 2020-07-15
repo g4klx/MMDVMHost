@@ -94,6 +94,7 @@ public:
   float        getModemFMTXLevel() const;
   float        getModemAX25TXLevel() const;
   std::string  getModemRSSIMappingFile() const;
+  bool         getModemUseCOSAsLockout() const;
   bool         getModemTrace() const;
   bool         getModemDebug() const;
 
@@ -208,7 +209,7 @@ public:
   float        getFMCTCSSLevel() const;
   unsigned int getFMKerchunkTime() const;
   unsigned int getFMHangTime() const;
-  bool         getFMUseCOS() const;
+  unsigned int getFMAccessMode() const;
   bool         getFMCOSInvert() const;
   unsigned int getFMRFAudioBoost() const;
   float        getFMMaxDevLevel() const;
@@ -400,6 +401,7 @@ private:
   float        m_modemFMTXLevel;
   float        m_modemAX25TXLevel;
   std::string  m_modemRSSIMappingFile;
+  bool         m_modemUseCOSAsLockout;
   bool         m_modemTrace;
   bool         m_modemDebug;
 
@@ -497,7 +499,7 @@ private:
   float        m_fmCTCSSLevel;
   unsigned int m_fmKerchunkTime;
   unsigned int m_fmHangTime;
-  bool         m_fmUseCOS;
+  unsigned int m_fmAccessMode;
   bool         m_fmCOSInvert;
   unsigned int m_fmRFAudioBoost;
   float        m_fmMaxDevLevel;
