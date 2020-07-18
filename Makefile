@@ -35,9 +35,30 @@ RemoteCommand:	Log.o RemoteCommand.o UDPSocket.o
 %.o: %.cpp
 		$(CXX) $(CFLAGS) -c -o $@ $<
 
-install:
+.PHONY install:
+install: all
 		install -m 755 MMDVMHost /usr/local/bin/
 		install -m 755 RemoteCommand /usr/local/bin/
+
+.PHONY install-service:
+install-service: install /etc/MMDVM.ini
+		@useradd --user-group -M --system mmdvm --shell /bin/false || true
+		@usermod --groups dialout --append mmdvm || true
+		@mkdir /var/log/mmdvm || true
+		@chown mmdvm:mmdvm /var/log/mmdvm
+		@cp ./linux/systemd/mmdvmhost.service /lib/systemd/system/
+		@systemctl enable mmdvmhost.service
+
+/etc/MMDVM.ini:
+		@cp -n MMDVM.ini /etc/MMDVM.ini
+		@sed -i 's/FilePath=./FilePath=\/var\/log\/mmdvm\//' /etc/MMDVM.ini
+		@sed -i 's/Daemon=0/Daemon=1/' /etc/MMDVM.ini
+		@chown mmdvm:mmdvm /etc/MMDVM.ini
+
+uninstall-service:
+		@systemctl stop mmdvmhost.service || true
+		@systemctl disable mmdvmhost.service || true
+		@rm -f /usr/local/bin/MMDVMHost || true
 
 clean:
 		$(RM) MMDVMHost RemoteCommand *.o *.d *.bak *~ GitVersion.h
