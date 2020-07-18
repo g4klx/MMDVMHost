@@ -1,0 +1,12 @@
+[Unit]
+Description=MMDVMHost Radio Servce
+After=syslog.target network.target
+
+[Service]
+User=mmdvm
+Type=forking
+ExecStart=/usr/bin/local/MMDVMHost
+Restart=on-abnormal
+
+[Install]
+WantedBy=multi-user.target
