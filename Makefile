@@ -55,10 +55,12 @@ install-service: install /etc/MMDVM.ini
 		@sed -i 's/Daemon=0/Daemon=1/' /etc/MMDVM.ini
 		@chown mmdvm:mmdvm /etc/MMDVM.ini
 
+.PHONY uninstall-service:
 uninstall-service:
 		@systemctl stop mmdvmhost.service || true
 		@systemctl disable mmdvmhost.service || true
 		@rm -f /usr/local/bin/MMDVMHost || true
+		@rm -f /lib/systemd/system/mmdvmhost.service || true
 
 clean:
 		$(RM) MMDVMHost RemoteCommand *.o *.d *.bak *~ GitVersion.h
