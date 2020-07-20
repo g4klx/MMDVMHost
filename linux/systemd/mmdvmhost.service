@@ -5,7 +5,7 @@ After=syslog.target network.target
 [Service]
 User=mmdvm
 Type=forking
-ExecStart=/usr/bin/local/MMDVMHost
+ExecStart=/usr/local/bin/MMDVMHost
 Restart=on-abnormal
 
 [Install]
