@@ -45,11 +45,11 @@ private:
 	CFMNetwork* m_network;
     bool        m_enabled;
 	CRingBuffer<unsigned char> m_incomingRFAudio;
-	CIIRDirectForm1Filter * m_preemphasis;
-	CIIRDirectForm1Filter * m_deemphasis;
-	CIIRDirectForm1Filter * m_filterStage1;
-	CIIRDirectForm1Filter * m_filterStage2;
-	CIIRDirectForm1Filter * m_filterStage3;
+	CIIRDirectForm1Filter* m_preemphasis;
+	CIIRDirectForm1Filter* m_deemphasis;
+	CIIRDirectForm1Filter* m_filterStage1;
+	CIIRDirectForm1Filter* m_filterStage2;
+	CIIRDirectForm1Filter* m_filterStage3;
 };
 
 #endif

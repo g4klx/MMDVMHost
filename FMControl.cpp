@@ -89,7 +89,7 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
 
         unsigned int pack = 0U;
         unsigned char* packPointer = (unsigned char*)&pack;
-        unsigned short out[168U];
+        float out[168U];
         unsigned int nOut = 0U;
         short unpackedSamples[2U];
 
@@ -102,28 +102,24 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
             unpackedSamples[0U] = short(int(pack >> 12) - 2048);
 
             //process unpacked sample pair
-            for(unsigned char j = 0U; j < 2U; j++) {
-                //Convert to float (-1.0 to +1.0)
+            for (unsigned char j = 0U; j < 2U; j++) {
+                // Convert to float (-1.0 to +1.0)
                 float sampleFloat = float(unpackedSamples[j]) / 2048.0F;
 
-                //De-emphasise and remove CTCSS
+                // De-emphasise and remove CTCSS
                 sampleFloat = m_deemphasis->filter(sampleFloat);
-                sampleFloat = m_filterStage3->filter(m_filterStage2->filter(m_filterStage1->filter(sampleFloat)));
-
-                // Repack the float data to 16 bit unsigned
-                unsigned short sampleUShort = (unsigned short)((sampleFloat + 1.0F) * 32767.0F + 0.5F);
-                out[nOut++] = SWAP_BYTES_16(sampleUShort);
+                out[nOut++] = m_filterStage3->filter(m_filterStage2->filter(m_filterStage1->filter(sampleFloat)));
             }
         }
 
 #if defined(DUMP_RF_AUDIO)
         FILE * audiofile = fopen("./audiodump.bin", "ab");
         if(audiofile != NULL) {
-            fwrite(out, sizeof(unsigned short), nOut, audiofile);
+            fwrite(out, sizeof(float), nOut, audiofile);
             fclose(audiofile);
         }
 #endif
-        return m_network->writeData((unsigned char*)out, nOut * sizeof(unsigned short));
+        return m_network->writeData(out, nOut);
     }
 
     return true;
@@ -140,7 +136,7 @@ unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
     if (space > 252U)
         space = 252U;
 
-    unsigned short netData[168U];//modem can handle up to 168 samples at a time
+    unsigned short netData[168U]; // Modem can handle up to 168 samples at a time
     unsigned int length = m_network->read((unsigned char*)netData, 168U * sizeof(unsigned short));
     length /= sizeof(unsigned short);
     if (length == 0U)
@@ -150,7 +146,7 @@ unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
     unsigned char* packPointer = (unsigned char*)&pack;
     unsigned int nData = 0U;
 
-    for(unsigned int i = 0; i < length; i++) {
+    for (unsigned int i = 0; i < length; i++) {
         unsigned short netSample = SWAP_BYTES_16(netData[i]);
         
         // Convert the unsigned 16-bit data (+65535 - 0) to float (+1.0 - -1.0)

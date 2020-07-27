@@ -27,10 +27,11 @@
 
 const unsigned int BUFFER_LENGTH = 500U;
 
-CFMNetwork::CFMNetwork(const std::string& localAddress, unsigned int localPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug) :
+CFMNetwork::CFMNetwork(const std::string& localAddress, unsigned int localPort, const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int sampleRate, bool debug) :
 m_socket(localAddress, localPort),
 m_address(),
 m_port(gatewayPort),
+m_sampleRate(sampleRate),
 m_debug(debug),
 m_enabled(false),
 m_buffer(2000U, "FM Network"),
@@ -38,12 +39,22 @@ m_pollTimer(1000U, 5U)
 {
 	assert(gatewayPort > 0U);
 	assert(!gatewayAddress.empty());
+	assert(sampleRate > 0U);
 
 	m_address = CUDPSocket::lookup(gatewayAddress);
+
+	int error;
+	m_incoming = ::src_new(SRC_SINC_FASTEST, 1, &error);
+	m_outgoing = ::src_new(SRC_SINC_FASTEST, 1, &error);
+
+	assert(m_incoming != NULL);
+	assert(m_outgoing != NULL);
 }
 
 CFMNetwork::~CFMNetwork()
 {
+	::src_delete(m_incoming);
+	::src_delete(m_outgoing);
 }
 
 bool CFMNetwork::open()
@@ -58,23 +69,53 @@ bool CFMNetwork::open()
 	return m_socket.open();
 }
 
-bool CFMNetwork::writeData(const unsigned char* data, unsigned int length)
+bool CFMNetwork::writeData(const float* data, unsigned int nSamples)
 {
+	assert(m_outgoing != NULL);
 	assert(data != NULL);
+	assert(nSamples > 0U);
 
-	unsigned char buffer[500U];
-	::memset(buffer, 0x00U, 500U);
+	float out[1000U];
+	SRC_DATA src;
+
+	if (m_sampleRate != 8000U) {
+		src.data_in = data;
+		src.data_out = out;
+		src.input_frames = nSamples;
+		src.output_frames = 1000;
+		src.end_of_input = 0;
+		src.src_ratio = double(m_sampleRate) / 8000.0;
+
+		int ret = ::src_process(m_outgoing, &src);
+		if (ret != 0) {
+			LogError("Error up/downsampling of the output audio has an error - %s", src_strerror(ret));
+			return false;
+		}
+	} else {
+		src.data_out = data;
+		src.output_frames_gen = nSamples;
+	}
+
+	unsigned int length = 3U;
+
+	unsigned char buffer[1500U];
+	::memset(buffer, 0x00U, 1500U);
 
 	buffer[0U] = 'F';
 	buffer[1U] = 'M';
 	buffer[2U] = 'D';
 
-	::memcpy(buffer + 3U, data, length);
+	for (long i = 0L; i < src.output_frames_gen; i++) {
+		unsigned short val = (unsigned short)((src.data_out[i] + 1.0F) * 32767.0F + 0.5F);
+
+		buffer[length++] = (val >> 8) & 0xFFU;
+		buffer[length++] = (val >> 0) & 0xFFU;
+	}
 
 	if (m_debug)
-		CUtils::dump(1U, "FM Network Data Sent", buffer, length + 3U);
+		CUtils::dump(1U, "FM Network Data Sent", buffer, length);
 
-	return m_socket.write(buffer, length + 3U, m_address, m_port);
+	return m_socket.write(buffer, length, m_address, m_port);
 }
 
 bool CFMNetwork::writeEOT()
@@ -131,29 +172,67 @@ void CFMNetwork::clock(unsigned int ms)
 	m_buffer.addData(buffer + 3U, length - 3U);
 }
 
-unsigned int CFMNetwork::read(unsigned char* data, unsigned int space)
+unsigned int CFMNetwork::read(float* data, unsigned int nSamples)
 {
+	assert(m_incoming != NULL);
 	assert(data != NULL);
+	assert(nSamples > 0U);
 
-
-	unsigned int bytes = m_buffer.dataSize();
+	unsigned int bytes = m_buffer.dataSize() / sizeof(unsigned short);
 	if (bytes == 0U)
 		return 0U;
 
-	if (bytes < space)
-		space = bytes;
+	if (bytes < nSamples)
+		nSamples = bytes;
 
-	//we store usignedshorts, therefore ensure we always return and even number of data
-	if(space > 0 && space % 2 != 0)
-		space--;//round down to multiple of 2
+	unsigned char buffer[1500U];
+	m_buffer.getData(buffer, nSamples * sizeof(unsigned short));
 
-	m_buffer.getData(data, space);
+	SRC_DATA src;
 
-	return space;
+	if (m_sampleRate != 8000U) {
+		float in[750U];
+
+		unsigned int j = 0U;
+		for (unsigned int i = 0U; i < nSamples; i++) {
+			unsigned short val = ((buffer[j++] & 0xFFU) << 8) + ((buffer[j++] & 0xFFU) << 0);
+			in[i] = (float(val) - 32768.0F) / 32768.0F;
+		}
+
+		src.data_in = in;
+		src.data_out = data;
+		src.input_frames = nSamples;
+		src.output_frames = 750;
+		src.end_of_input = 0;
+		src.src_ratio = 8000.0 / double(m_sampleRate);
+
+		int ret = ::src_process(m_incoming, &src);
+		if (ret != 0) {
+			LogError("Error up/downsampling of the input audio has an error - %s", src_strerror(ret));
+			return 0U;
+		}
+
+		return src.output_frames_gen;
+	} else {
+		unsigned int j = 0U;
+		for (unsigned int i = 0U; i < nSamples; i++) {
+			unsigned short val = ((buffer[j++] & 0xFFU) << 8) + ((buffer[j++] & 0xFFU) << 0);
+			data[i] = (float(val) - 32768.0F) / 32768.0F;
+		}
+
+		return nSamples;
+	}
 }
 
 void CFMNetwork::reset()
 {
+	assert(m_incoming != NULL);
+	assert(m_outgoing != NULL);
+
+	m_buffer.clear();
+
+	::src_reset(m_incoming);
+	::src_reset(m_outgoing);
 }
 
 void CFMNetwork::close()
@@ -168,7 +247,7 @@ void CFMNetwork::enable(bool enabled)
 	if (enabled && !m_enabled)
 		reset();
 	else if (!enabled && m_enabled)
-		m_buffer.clear();
+		reset();
 
 	m_enabled = enabled;
 }

@@ -1690,6 +1690,7 @@ bool CMMDVMHost::createFMNetwork()
 	unsigned int gatewayPort   = m_conf.getFMGatewayPort();
 	std::string localAddress   = m_conf.getFMLocalAddress();
 	unsigned int localPort     = m_conf.getFMLocalPort();
+	unsigned int sampleRate    = m_conf.getFMSampleRate();
 	m_fmNetModeHang            = m_conf.getFMNetworkModeHang();
 	bool debug                 = m_conf.getFMNetworkDebug();
 
@@ -1698,9 +1699,10 @@ bool CMMDVMHost::createFMNetwork()
 	LogInfo("    Gateway Port: %u", gatewayPort);
 	LogInfo("    Local Address: %s", localAddress.c_str());
 	LogInfo("    Local Port: %u", localPort);
+	LogInfo("    Sample Rate: %u", sampleRate);
 	LogInfo("    Mode Hang: %us", m_fmNetModeHang);
 
-	m_fmNetwork = new CFMNetwork(localAddress, localPort, gatewayAddress, gatewayPort, debug);
+	m_fmNetwork = new CFMNetwork(localAddress, localPort, gatewayAddress, gatewayPort, sampleRate, debug);
 
 	bool ret = m_fmNetwork->open();
 	if (!ret) {
