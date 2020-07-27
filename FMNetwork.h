@@ -23,23 +23,25 @@
 #include "UDPSocket.h"
 #include "Timer.h"
 
+#include <samplerate.h>
+
 #include <cstdint>
 #include <string>
 
 class CFMNetwork {
 public:
-	CFMNetwork(const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug);
+	CFMNetwork(const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int sampleRate, bool debug);
 	~CFMNetwork();
 
 	bool open();
 
 	void enable(bool enabled);
 
-    bool writeData(const unsigned char* data, unsigned int length);
+    bool writeData(const float* data, unsigned int nSamples);
 
     bool writeEOT();
 
-    unsigned int read(unsigned char* data, unsigned int space);
+    unsigned int read(float* data, unsigned int nSamples);
 
 	void reset();
 
@@ -51,10 +53,13 @@ private:
 	CUDPSocket     m_socket;
 	in_addr        m_address;
 	unsigned int   m_port;
+	unsigned int   m_sampleRate;
 	bool           m_debug;
 	bool           m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
 	CTimer         m_pollTimer;
+	SRC_STATE*     m_incoming;
+	SRC_STATE*     m_outgoing;
 
 	bool writePoll();
 };

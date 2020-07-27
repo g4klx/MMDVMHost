@@ -279,6 +279,7 @@ public:
   unsigned int getFMGatewayPort() const;
   std::string  getFMLocalAddress() const;
   unsigned int getFMLocalPort() const;
+  unsigned int getFMSampleRate() const;
   unsigned int getFMNetworkModeHang() const;
   bool         getFMNetworkDebug() const;
 
@@ -569,6 +570,7 @@ private:
   unsigned int m_fmGatewayPort;
   std::string  m_fmLocalAddress;
   unsigned int m_fmLocalPort;
+  unsigned int m_fmSampleRate;
   unsigned int m_fmNetworkModeHang;
   bool         m_fmNetworkDebug;
 
