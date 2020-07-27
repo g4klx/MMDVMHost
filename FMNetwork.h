@@ -37,11 +37,11 @@ public:
 
 	void enable(bool enabled);
 
-    bool writeData(const float* data, unsigned int nSamples);
+	bool writeData(float* data, unsigned int nSamples);
 
-    bool writeEOT();
+	bool writeEOT();
 
-    unsigned int read(float* data, unsigned int nSamples);
+	unsigned int read(float* data, unsigned int nSamples);
 
 	void reset();
 

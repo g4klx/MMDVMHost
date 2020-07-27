@@ -5,11 +5,11 @@ CXX     = c++
 
 # Use the following CFLAGS and LIBS if you don't want to use gpsd.
 CFLAGS  = -g -O3 -Wall -std=c++0x -pthread
-LIBS    = -lpthread -lutil
+LIBS    = -lpthread -lutil -lsamplerate
 
 # Use the following CFLAGS and LIBS if you do want to use gpsd.
 #CFLAGS  = -g -O3 -Wall -DUSE_GPSD -std=c++0x -pthread
-#LIBS    = -lpthread -lgps -lutil
+#LIBS    = -lpthread -lgps -lutil -lsamplerate
 
 LDFLAGS = -g
 

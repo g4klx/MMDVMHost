@@ -5,11 +5,11 @@ CC      = gcc
 CXX     = g++
 # Use the following CFLAGS and LIBS if you don't want to use gpsd.
 CFLAGS  = -g -O3 -Wall -std=c++0x -pthread -DHD44780 -DADAFRUIT_DISPLAY -I/usr/local/include
-LIBS    = -lwiringPi -lwiringPiDev -lpthread -lutil
+LIBS    = -lwiringPi -lwiringPiDev -lpthread -lutil -lsamplerate
 
 # Use the following CFLAGS and LIBS if you do want to use gpsd.
 #CFLAGS  = -g -O3 -Wall -DUSE_GPSD -std=c++0x -pthread -DHD44780 -DADAFRUIT_DISPLAY -I/usr/local/include
-#LIBS    = -lwiringPi -lwiringPiDev -lpthread -lgps -lutil
+#LIBS    = -lwiringPi -lwiringPiDev -lpthread -lgps -lutil -lsamplerate
 
 LDFLAGS = -g -L/usr/local/lib
 

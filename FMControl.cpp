@@ -136,9 +136,8 @@ unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
     if (space > 252U)
         space = 252U;
 
-    unsigned short netData[168U]; // Modem can handle up to 168 samples at a time
-    unsigned int length = m_network->read((unsigned char*)netData, 168U * sizeof(unsigned short));
-    length /= sizeof(unsigned short);
+    float netData[168U]; // Modem can handle up to 168 samples at a time
+    unsigned int length = m_network->read(netData, 168U);
     if (length == 0U)
         return 0U;
 
@@ -147,13 +146,8 @@ unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
     unsigned int nData = 0U;
 
     for (unsigned int i = 0; i < length; i++) {
-        unsigned short netSample = SWAP_BYTES_16(netData[i]);
-        
-        // Convert the unsigned 16-bit data (+65535 - 0) to float (+1.0 - -1.0)
-        float sampleFloat = (float(netSample) / 32768.0F) - 1.0F;
-
-        //preemphasis
-        sampleFloat = m_preemphasis->filter(sampleFloat);
+        // Pre-emphasis
+        float sampleFloat = m_preemphasis->filter(netData[i]);
 
         // Convert float to 12-bit samples (0 to 4095)
         unsigned int sample12bit = (unsigned int)((sampleFloat + 1.0F) * 2048.0F + 0.5F);

@@ -69,7 +69,7 @@ bool CFMNetwork::open()
 	return m_socket.open();
 }
 
-bool CFMNetwork::writeData(const float* data, unsigned int nSamples)
+bool CFMNetwork::writeData(float* data, unsigned int nSamples)
 {
 	assert(m_outgoing != NULL);
 	assert(data != NULL);
@@ -193,9 +193,9 @@ unsigned int CFMNetwork::read(float* data, unsigned int nSamples)
 	if (m_sampleRate != 8000U) {
 		float in[750U];
 
-		unsigned int j = 0U;
 		for (unsigned int i = 0U; i < nSamples; i++) {
-			unsigned short val = ((buffer[j++] & 0xFFU) << 8) + ((buffer[j++] & 0xFFU) << 0);
+			unsigned short val = ((buffer[i * 2U + 0U] & 0xFFU) << 8) +
+			                     ((buffer[i * 2U + 1U] & 0xFFU) << 0);
 			in[i] = (float(val) - 32768.0F) / 32768.0F;
 		}
 
@@ -214,9 +214,9 @@ unsigned int CFMNetwork::read(float* data, unsigned int nSamples)
 
 		return src.output_frames_gen;
 	} else {
-		unsigned int j = 0U;
 		for (unsigned int i = 0U; i < nSamples; i++) {
-			unsigned short val = ((buffer[j++] & 0xFFU) << 8) + ((buffer[j++] & 0xFFU) << 0);
+			unsigned short val = ((buffer[i * 2U + 0U] & 0xFFU) << 8) +
+			                     ((buffer[i * 2U + 1U] & 0xFFU) << 0);
 			data[i] = (float(val) - 32768.0F) / 32768.0F;
 		}
 

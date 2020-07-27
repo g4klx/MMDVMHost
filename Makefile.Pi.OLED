@@ -5,11 +5,11 @@ CXX     = g++
 
 # Use the following CFLAGS and LIBS if you don't want to use gpsd.
 CFLAGS  = -g -O3 -Wall -std=c++0x -pthread -DOLED -I/usr/local/include
-LIBS    = -lArduiPi_OLED -lwiringPi -lpthread -lutil
+LIBS    = -lArduiPi_OLED -lwiringPi -lpthread -lutil -lsamplerate
 
 # Use the following CFLAGS and LIBS if you do want to use gpsd.
 #CFLAGS  = -g -O3 -Wall -DUSE_GPS -std=c++0x -pthread -DOLED -I/usr/local/include
-#LIBS    = -lArduiPi_OLED -lwiringPi -lpthread -lgps -lutil
+#LIBS    = -lArduiPi_OLED -lwiringPi -lpthread -lgps -lutil -lsamplerate
 
 LDFLAGS = -g -L/usr/local/lib
 
