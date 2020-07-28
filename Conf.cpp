@@ -208,6 +208,9 @@ m_fmKerchunkTime(0U),
 m_fmHangTime(7U),
 m_fmAccessMode(1U),
 m_fmCOSInvert(false),
+m_fmNoiseSquelch(false),
+m_fmSquelchHighThreshold(30U),
+m_fmSquelchLowThreshold(20U),
 m_fmRFAudioBoost(1U),
 m_fmMaxDevLevel(90.0F),
 m_fmExtAudioBoost(1U),
@@ -808,6 +811,14 @@ bool CConf::read()
 				m_fmAccessMode = ::atoi(value);
 			else if (::strcmp(key, "COSInvert") == 0)
 				m_fmCOSInvert = ::atoi(value) == 1;
+			else if (::strcmp(key, "NoiseSquelch") == 0)
+				m_fmNoiseSquelch = ::atoi(value) == 1;
+			else if (::strcmp(key, "SquelchThreshold") == 0)
+				m_fmSquelchHighThreshold = m_fmSquelchLowThreshold = (unsigned int)::atoi(value);
+			else if (::strcmp(key, "SquelchHighThreshold") == 0)
+				m_fmSquelchHighThreshold = (unsigned int)::atoi(value);
+			else if (::strcmp(key, "SquelchLowThreshold") == 0)
+				m_fmSquelchLowThreshold = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "RFAudioBoost") == 0)
 				m_fmRFAudioBoost = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "MaxDevLevel") == 0)
@@ -1755,6 +1766,21 @@ unsigned int CConf::getFMAccessMode() const
 bool CConf::getFMCOSInvert() const
 {
 	return m_fmCOSInvert;
+}
+
+bool CConf::getFMNoiseSquelch() const
+{
+	return m_fmNoiseSquelch;
+}
+
+unsigned int CConf::getFMSquelchHighThreshold() const
+{
+	return m_fmSquelchHighThreshold;
+}
+
+unsigned int CConf::getFMSquelchLowThreshold() const
+{
+	return m_fmSquelchLowThreshold;
 }
 
 unsigned int CConf::getFMRFAudioBoost() const

@@ -211,6 +211,9 @@ public:
   unsigned int getFMHangTime() const;
   unsigned int getFMAccessMode() const;
   bool         getFMCOSInvert() const;
+  bool         getFMNoiseSquelch() const;
+  unsigned int getFMSquelchHighThreshold() const;
+  unsigned int getFMSquelchLowThreshold() const;
   unsigned int getFMRFAudioBoost() const;
   float        getFMMaxDevLevel() const;
   unsigned int getFMExtAudioBoost() const;
@@ -502,6 +505,9 @@ private:
   unsigned int m_fmHangTime;
   unsigned int m_fmAccessMode;
   bool         m_fmCOSInvert;
+  bool         m_fmNoiseSquelch;
+  unsigned int m_fmSquelchHighThreshold;
+  unsigned int m_fmSquelchLowThreshold;
   unsigned int m_fmRFAudioBoost;
   float        m_fmMaxDevLevel;
   unsigned int m_fmExtAudioBoost;

@@ -1356,35 +1356,38 @@ bool CMMDVMHost::createModem()
 	m_modem->setAX25Params(rxTwist, ax25TXDelay, ax25SlotTime, ax25PPersist);
 
 	if (m_fmEnabled) {
-		std::string  callsign           = m_conf.getFMCallsign();
-		unsigned int callsignSpeed      = m_conf.getFMCallsignSpeed();
-		unsigned int callsignFrequency  = m_conf.getFMCallsignFrequency();
-		unsigned int callsignTime       = m_conf.getFMCallsignTime();
-		unsigned int callsignHoldoff    = m_conf.getFMCallsignHoldoff();
-		float        callsignHighLevel  = m_conf.getFMCallsignHighLevel();
-		float        callsignLowLevel   = m_conf.getFMCallsignLowLevel();
-		bool         callsignAtStart    = m_conf.getFMCallsignAtStart();
-		bool         callsignAtEnd      = m_conf.getFMCallsignAtEnd();
-		bool         callsignAtLatch    = m_conf.getFMCallsignAtLatch();
-		std::string  rfAck              = m_conf.getFMRFAck();
-		unsigned int ackSpeed           = m_conf.getFMAckSpeed();
-		unsigned int ackFrequency       = m_conf.getFMAckFrequency();
-		unsigned int ackMinTime         = m_conf.getFMAckMinTime();
-		unsigned int ackDelay           = m_conf.getFMAckDelay();
-		float        ackLevel           = m_conf.getFMAckLevel();
-		unsigned int timeout            = m_conf.getFMTimeout();
-		float        timeoutLevel       = m_conf.getFMTimeoutLevel();
-		float        ctcssFrequency     = m_conf.getFMCTCSSFrequency();
-		unsigned int ctcssHighThreshold = m_conf.getFMCTCSSHighThreshold();
-		unsigned int ctcssLowThreshold  = m_conf.getFMCTCSSLowThreshold();
-		float        ctcssLevel         = m_conf.getFMCTCSSLevel();
-		unsigned int kerchunkTime       = m_conf.getFMKerchunkTime();
-		unsigned int hangTime           = m_conf.getFMHangTime();
-		unsigned int accessMode         = m_conf.getFMAccessMode();
-		bool         cosInvert          = m_conf.getFMCOSInvert();
-		unsigned int rfAudioBoost       = m_conf.getFMRFAudioBoost();
-		float        maxDevLevel        = m_conf.getFMMaxDevLevel();
-		unsigned int modeHangTime       = m_conf.getFMModeHang();
+		std::string  callsign             = m_conf.getFMCallsign();
+		unsigned int callsignSpeed        = m_conf.getFMCallsignSpeed();
+		unsigned int callsignFrequency    = m_conf.getFMCallsignFrequency();
+		unsigned int callsignTime         = m_conf.getFMCallsignTime();
+		unsigned int callsignHoldoff      = m_conf.getFMCallsignHoldoff();
+		float        callsignHighLevel    = m_conf.getFMCallsignHighLevel();
+		float        callsignLowLevel     = m_conf.getFMCallsignLowLevel();
+		bool         callsignAtStart      = m_conf.getFMCallsignAtStart();
+		bool         callsignAtEnd        = m_conf.getFMCallsignAtEnd();
+		bool         callsignAtLatch      = m_conf.getFMCallsignAtLatch();
+		std::string  rfAck                = m_conf.getFMRFAck();
+		unsigned int ackSpeed             = m_conf.getFMAckSpeed();
+		unsigned int ackFrequency         = m_conf.getFMAckFrequency();
+		unsigned int ackMinTime           = m_conf.getFMAckMinTime();
+		unsigned int ackDelay             = m_conf.getFMAckDelay();
+		float        ackLevel             = m_conf.getFMAckLevel();
+		unsigned int timeout              = m_conf.getFMTimeout();
+		float        timeoutLevel         = m_conf.getFMTimeoutLevel();
+		float        ctcssFrequency       = m_conf.getFMCTCSSFrequency();
+		unsigned int ctcssHighThreshold   = m_conf.getFMCTCSSHighThreshold();
+		unsigned int ctcssLowThreshold    = m_conf.getFMCTCSSLowThreshold();
+		float        ctcssLevel           = m_conf.getFMCTCSSLevel();
+		unsigned int kerchunkTime         = m_conf.getFMKerchunkTime();
+		unsigned int hangTime             = m_conf.getFMHangTime();
+		unsigned int accessMode           = m_conf.getFMAccessMode();
+		bool         cosInvert            = m_conf.getFMCOSInvert();
+		bool         noiseSquelch         = m_conf.getFMNoiseSquelch();
+		unsigned int squelchHighThreshold = m_conf.getFMSquelchHighThreshold();
+		unsigned int squelchLowThreshold  = m_conf.getFMSquelchLowThreshold();
+		unsigned int rfAudioBoost         = m_conf.getFMRFAudioBoost();
+		float        maxDevLevel          = m_conf.getFMMaxDevLevel();
+		unsigned int modeHangTime         = m_conf.getFMModeHang();
 
 		LogInfo("FM Parameters");
 		LogInfo("    Callsign: %s", callsign.c_str());
@@ -1413,13 +1416,20 @@ bool CMMDVMHost::createModem()
 		LogInfo("    Hang Time: %us", hangTime);
 		LogInfo("    Access Mode: %u", accessMode);
 		LogInfo("    COS Invert: %s", cosInvert ? "yes" : "no");
+
+		LogInfo("    Noise Squelch: %s", noiseSquelch ? "yes" : "no");
+		if (noiseSquelch) {
+			LogInfo("    Squelch High Threshold: %u", squelchHighThreshold);
+			LogInfo("    Squelch Low Threshold: %u", squelchLowThreshold);
+		}
+
 		LogInfo("    RF Audio Boost: x%u", rfAudioBoost);
 		LogInfo("    Max. Deviation Level: %.1f%%", maxDevLevel);
 		LogInfo("    Mode Hang: %us", modeHangTime);
 
 		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd, callsignAtLatch);
 		m_modem->setFMAckParams(rfAck, ackSpeed, ackFrequency, ackMinTime, ackDelay, ackLevel);
-		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssHighThreshold, ctcssLowThreshold, ctcssLevel, kerchunkTime, hangTime, accessMode, cosInvert, rfAudioBoost, maxDevLevel);
+		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssHighThreshold, ctcssLowThreshold, ctcssLevel, kerchunkTime, hangTime, accessMode, cosInvert, noiseSquelch, squelchHighThreshold, squelchLowThreshold, rfAudioBoost, maxDevLevel);
 
 		if (m_conf.getFMNetworkEnabled()) {
 			std::string  extAck        = m_conf.getFMExtAck();

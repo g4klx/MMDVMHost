@@ -224,6 +224,9 @@ m_fmKerchunkTime(0U),
 m_fmHangTime(5U),
 m_fmAccessMode(1U),
 m_fmCOSInvert(false),
+m_fmNoiseSquelch(false),
+m_fmSquelchHighThreshold(30U),
+m_fmSquelchLowThreshold(20U),
 m_fmRFAudioBoost(1U),
 m_fmExtAudioBoost(1U),
 m_fmMaxDevLevel(90.0F),
@@ -2186,7 +2189,7 @@ void CSerialModem::setFMAckParams(const std::string& rfAck, unsigned int ackSpee
 	m_fmAckLevel     = ackLevel;
 }
 
-void CSerialModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, unsigned int accessMode, bool cosInvert, unsigned int rfAudioBoost, float maxDevLevel)
+void CSerialModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, unsigned int accessMode, bool cosInvert, bool noiseSquelch, unsigned int squelchHighThreshold, unsigned int squelchLowThreshold, unsigned int rfAudioBoost, float maxDevLevel)
 {
 	m_fmTimeout      = timeout;
 	m_fmTimeoutLevel = timeoutLevel;
@@ -2202,6 +2205,10 @@ void CSerialModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, flo
 
 	m_fmAccessMode   = accessMode;
 	m_fmCOSInvert    = cosInvert;
+
+	m_fmNoiseSquelch         = noiseSquelch;
+	m_fmSquelchHighThreshold = squelchHighThreshold;
+	m_fmSquelchLowThreshold  = squelchLowThreshold;
 
 	m_fmRFAudioBoost = rfAudioBoost;
 	m_fmMaxDevLevel  = maxDevLevel;
@@ -2334,7 +2341,7 @@ bool CSerialModem::setFMMiscParams()
 	unsigned char buffer[20U];
 
 	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = 15U;
+	buffer[1U] = 17U;
 	buffer[2U] = MMDVM_FM_PARAMS3;
 
 	buffer[3U] = m_fmTimeout / 5U;
@@ -2348,7 +2355,9 @@ bool CSerialModem::setFMMiscParams()
 	buffer[9U]  = m_fmKerchunkTime;
 	buffer[10U] = m_fmHangTime;
 
-	buffer[11U] = m_fmAccessMode;
+	buffer[11U] = m_fmAccessMode & 0x0FU;
+	if (m_fmNoiseSquelch)
+		buffer[11U] |= 0x40U;
 	if (m_fmCOSInvert)
 		buffer[11U] |= 0x80U;
 
@@ -2358,10 +2367,13 @@ bool CSerialModem::setFMMiscParams()
 
 	buffer[14U] = (unsigned char)(m_rxLevel * 2.55F + 0.5F);
 
-	// CUtils::dump(1U, "Written", buffer, 15U);
+	buffer[15U] = m_fmSquelchHighThreshold;
+	buffer[16U] = m_fmSquelchLowThreshold;
 
-	int ret = m_serial->write(buffer, 15U);
-	if (ret != 15)
+	// CUtils::dump(1U, "Written", buffer, 17U);
+
+	int ret = m_serial->write(buffer, 17U);
+	if (ret != 17)
 		return false;
 
 	unsigned int count = 0U;
