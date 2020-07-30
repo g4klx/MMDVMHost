@@ -60,7 +60,7 @@ public:
 
 	virtual void setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch);
 	virtual void setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackMinTime, unsigned int ackDelay, float ackLevel);
-	virtual void setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, unsigned int accessMode, bool cosInvert, unsigned int rfAudioBoost, float maxDevLevel);
+	virtual void setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, unsigned int accessMode, bool cosInvert, bool noiseSquelch, unsigned int squelchHighThreshold, unsigned int squelchLowThreshold, unsigned int rfAudioBoost, float maxDevLevel);
 	virtual void setFMExtParams(const std::string& ack, unsigned int audioBoost);
 
 	virtual bool open();
@@ -247,6 +247,9 @@ private:
 	unsigned int               m_fmHangTime;
 	unsigned int               m_fmAccessMode;
 	bool                       m_fmCOSInvert;
+	bool                       m_fmNoiseSquelch;
+	unsigned int               m_fmSquelchHighThreshold;
+	unsigned int               m_fmSquelchLowThreshold;
 	unsigned int               m_fmRFAudioBoost;
 	unsigned int               m_fmExtAudioBoost;
 	float                      m_fmMaxDevLevel;
