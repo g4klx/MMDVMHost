@@ -535,8 +535,6 @@ int CMMDVMHost::run()
 		bool remoteGateway  = m_conf.getFusionRemoteGateway();
 		unsigned int txHang = m_conf.getFusionTXHang();
 		bool selfOnly       = m_conf.getFusionSelfOnly();
-		bool dgIdEnabled    = m_conf.getFusionDGIdEnabled();
-		unsigned char dgId  = m_conf.getFusionDGId();
 		m_ysfRFModeHang     = m_conf.getFusionModeHang();
 
 		LogInfo("YSF RF Parameters");
@@ -544,13 +542,9 @@ int CMMDVMHost::run()
 		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
 		LogInfo("    TX Hang: %us", txHang);
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
-		LogInfo("    DG-ID: %s", dgIdEnabled ? "yes" : "no");
-		if (dgIdEnabled)
-			LogInfo("    DG-ID Value: %u", dgId);
 		LogInfo("    Mode Hang: %us", m_ysfRFModeHang);
 
 		m_ysf = new CYSFControl(m_callsign, selfOnly, m_ysfNetwork, m_display, m_timeout, m_duplex, lowDeviation, remoteGateway, rssi);
-		m_ysf->setDGId(dgIdEnabled, dgId);
 	}
 
 	if (m_p25Enabled) {
