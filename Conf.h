@@ -147,8 +147,6 @@ public:
   bool          getFusionRemoteGateway() const;
   bool          getFusionSelfOnly() const;
   unsigned int  getFusionTXHang() const;
-  bool          getFusionDGIdEnabled() const;
-  unsigned char getFusionDGId() const;
   unsigned int  getFusionModeHang() const;
 
   // The P25 section
@@ -453,8 +451,6 @@ private:
   bool          m_fusionRemoteGateway;
   bool          m_fusionSelfOnly;
   unsigned int  m_fusionTXHang;
-  bool          m_fusionDGIdEnabled;
-  unsigned char m_fusionDGId;
   unsigned int  m_fusionModeHang;
 
   bool         m_p25Enabled;

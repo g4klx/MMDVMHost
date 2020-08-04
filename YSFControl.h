@@ -38,8 +38,6 @@ public:
 	CYSFControl(const std::string& callsign, bool selfOnly, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool lowDeviation, bool remoteGateway, CRSSIInterpolator* rssiMapper);
 	~CYSFControl();
 
-	void setDGId(bool on, unsigned char value);
-
 	bool writeModem(unsigned char* data, unsigned int len);
 
 	unsigned int readModem(unsigned char* data);
@@ -59,8 +57,6 @@ private:
 	bool                       m_duplex;
 	bool                       m_lowDeviation;
 	bool                       m_remoteGateway;
-	bool                       m_dgIdEnabled;
-	unsigned char              m_dgIdValue;
 	CRingBuffer<unsigned char> m_queue;
 	RPT_RF_STATE               m_rfState;
 	RPT_NET_STATE              m_netState;
