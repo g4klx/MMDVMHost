@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015-2019 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015-2020 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -243,6 +243,8 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
+			// Remove any DG-ID information
+			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -253,7 +255,6 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			writeFile(data + 2U);
 #endif
-
 			if (m_duplex) {
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
@@ -280,6 +281,8 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
+			// Remove any DG-ID information
+			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_EOT;
@@ -290,7 +293,6 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			writeFile(data + 2U);
 #endif
-
 			if (m_duplex) {
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
@@ -332,6 +334,8 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 				LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 7.2F);
 			}
 
+			// Remove any DG-ID information
+			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -349,7 +353,6 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			writeFile(data + 2U);
 #endif
-
 			m_rfFrames++;
 
 			m_display->writeFusionRSSI(m_rssi);
@@ -408,6 +411,8 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
+			// Remove any DG-ID information
+			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -418,7 +423,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			writeFile(data + 2U);
 #endif
-
 			if (m_duplex) {
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
@@ -445,6 +449,8 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
+			// Remove any DG-ID information
+			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_EOT;
@@ -455,7 +461,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			writeFile(data + 2U);
 #endif
-
 			if (m_duplex) {
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
@@ -517,6 +522,8 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
+			// Remove any DG-ID information
+			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -534,7 +541,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			writeFile(data + 2U);
 #endif
-
 			m_rfFrames++;
 
 			m_display->writeFusionRSSI(m_rssi);
@@ -603,6 +609,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 			fich.setFI(YSF_FI_HEADER);
+			fich.setDGId(0U);
 			fich.encode(buffer + 2U);
 
 			unsigned char csd1[20U], csd2[20U];
@@ -632,7 +639,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			writeFile(buffer + 2U);
 #endif
-
 			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, "R", "          ");
 			LogMessage("YSF, received RF late entry from %10.10s to %10.10s", m_rfSource, m_rfDest);
 
@@ -640,6 +646,8 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			fich = m_lastFICH;
 
+			// Remove any DG-ID information
+			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -657,7 +665,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			writeFile(data + 2U);
 #endif
-
 			m_rfFrames++;
 
 			m_display->writeFusionRSSI(m_rssi);
@@ -713,6 +720,8 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
+			// Remove any DG-ID information
+			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -723,7 +732,6 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			writeFile(data + 2U);
 #endif
-
 			if (m_duplex) {
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
@@ -750,6 +758,8 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
+			// Remove any DG-ID information
+			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_EOT;
@@ -760,7 +770,6 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			writeFile(data + 2U);
 #endif
-
 			if (m_duplex) {
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
@@ -798,6 +807,8 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
+			// Remove any DG-ID information
+			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
