@@ -243,8 +243,6 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DG-ID information
-			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -281,8 +279,6 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DG-ID information
-			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_EOT;
@@ -334,8 +330,6 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 				LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 7.2F);
 			}
 
-			// Remove any DG-ID information
-			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -411,8 +405,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DG-ID information
-			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -449,8 +441,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DG-ID information
-			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_EOT;
@@ -522,8 +512,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DG-ID information
-			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -609,7 +597,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 			fich.setFI(YSF_FI_HEADER);
-			fich.setDGId(0U);
 			fich.encode(buffer + 2U);
 
 			unsigned char csd1[20U], csd2[20U];
@@ -646,8 +633,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			fich = m_lastFICH;
 
-			// Remove any DG-ID information
-			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -720,8 +705,6 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DG-ID information
-			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -758,8 +741,6 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DG-ID information
-			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_EOT;
@@ -807,8 +788,6 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DG-ID information
-			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
