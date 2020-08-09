@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX & Tony Corbett G0WFV
+ *   Copyright (C) 2016,2017,2018,2020 by Jonathan Naylor G4KLX & Tony Corbett G0WFV
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -737,7 +737,7 @@ void CHD44780::clearDMRInt(unsigned int slotNo)
 	}
 }
 
-void CHD44780::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
+void CHD44780::writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
 	assert(source != NULL);
 	assert(dest != NULL);

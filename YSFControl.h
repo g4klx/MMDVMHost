@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -106,7 +106,7 @@ private:
 	void closeFile();
 
 	bool checkCallsign(const unsigned char* callsign) const;
-	void processNetCallsigns(const unsigned char* data);
+	void processNetCallsigns(const unsigned char* data, unsigned char dgid);
 };
 
 #endif

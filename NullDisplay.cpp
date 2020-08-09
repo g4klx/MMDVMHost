@@ -92,7 +92,7 @@ void CNullDisplay::clearDMRInt(unsigned int slotNo)
 #endif
 }
 
-void CNullDisplay::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
+void CNullDisplay::writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
 #if defined(RASPBERRY_PI)
 	::digitalWrite(LED_STATUS, 1);

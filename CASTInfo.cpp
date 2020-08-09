@@ -100,7 +100,7 @@ void CCASTInfo::clearDMRInt(unsigned int slotNo)
 {
 }
 
-void CCASTInfo::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
+void CCASTInfo::writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
     if (m_modem != NULL)
         m_modem->writeYSFInfo(source, dest, type, origin);

@@ -56,7 +56,7 @@ public:
 	void writeDMRTA(unsigned int slotNo, unsigned char* talkerAlias, const char* type);
 	void clearDMR(unsigned int slotNo);
 
-	void writeFusion(const char* source, const char* dest, const char* type, const char* origin);
+	void writeFusion(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
 	void writeFusionRSSI(unsigned char rssi);
 	void writeFusionBER(float ber);
 	void clearFusion();
@@ -96,13 +96,13 @@ protected:
 	virtual void clearDStarInt() = 0;
 
 	virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type) = 0;
-	virtual int writeDMRIntEx(unsigned int slotNo, const class CUserDBentry& src, bool group, const std::string& dst, const char* type);
+	virtual int  writeDMRIntEx(unsigned int slotNo, const class CUserDBentry& src, bool group, const std::string& dst, const char* type);
 	virtual void writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi);
 	virtual void writeDMRTAInt(unsigned int slotNo, unsigned char* talkerAlias, const char* type);
 	virtual void writeDMRBERInt(unsigned int slotNo, float ber);
 	virtual void clearDMRInt(unsigned int slotNo) = 0;
 
-	virtual void writeFusionInt(const char* source, const char* dest, const char* type, const char* origin) = 0;
+	virtual void writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin) = 0;
 	virtual void writeFusionRSSIInt(unsigned char rssi);
 	virtual void writeFusionBERInt(float ber);
 	virtual void clearFusionInt() = 0;
@@ -112,8 +112,8 @@ protected:
 	virtual void writeP25BERInt(float ber);
 	virtual void clearP25Int() = 0;
 
-	virtual void writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type) = 0;
-	virtual int writeNXDNIntEx(const class CUserDBentry& source, bool group, unsigned int dest, const char* type);
+  	virtual void writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type) = 0;
+	virtual int  writeNXDNIntEx(const class CUserDBentry& source, bool group, unsigned int dest, const char* type);
 	virtual void writeNXDNRSSIInt(unsigned char rssi);
 	virtual void writeNXDNBERInt(float ber);
 	virtual void clearNXDNInt() = 0;
