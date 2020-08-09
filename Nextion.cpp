@@ -625,9 +625,10 @@ void CNextion::writeFusionInt(const char* source, const char* dest, unsigned cha
 	sendCommand(text);
 	sendCommandAction(82U);
 
-	::sprintf(text, "t1.txt=\"%.10s\"", dest);
+	::sprintf(text, "t1.txt=\"DG-ID %u\"", dgid);
 	sendCommand(text);
 	sendCommandAction(83U);
+
 	if (::strcmp(origin, "          ") != 0) {
 		::sprintf(text, "t2.txt=\"at %.10s\"", origin);
 		sendCommand(text);

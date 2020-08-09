@@ -772,7 +772,7 @@ void CHD44780::writeFusionInt(const char* source, const char* dest, unsigned cha
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 
-		::sprintf(m_buffer1, "%.10s", dest);
+		::sprintf(m_buffer1, "DG-ID %u", dgid);
 		::lcdPosition(m_fd, 0, 2);
 		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 	} else if (m_rows == 4U && m_cols == 20U) {
@@ -781,31 +781,31 @@ void CHD44780::writeFusionInt(const char* source, const char* dest, unsigned cha
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 
-		::sprintf(m_buffer1, "%.10s", dest);
+		::sprintf(m_buffer1, "DG-ID %u", dgid);
 		::lcdPosition(m_fd, 0, 2);
 		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 	} else if (m_rows == 2 && m_cols == 40U) {
 		char m_buffer1[40U];
-		::sprintf(m_buffer1, "%.10s > %.10s", source, dest);
+		::sprintf(m_buffer1, "%.10s > DG-ID %u", source, dgid);
 
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 	}
 
 	m_dmr = false;
-  m_rssiCount1 = 0U; 
+	m_rssiCount1 = 0U; 
 } 
  
 void CHD44780::writeFusionRSSIInt(unsigned char rssi) 
 { 
-  if (m_rssiCount1 == 0U && m_rows > 2) { 
+	if (m_rssiCount1 == 0U && m_rows > 2) { 
 		::lcdPosition(m_fd, 0, 3);
 		::lcdPrintf(m_fd, "-%3udBm", rssi);
-  } 
+	} 
  
-  m_rssiCount1++; 
-  if (m_rssiCount1 >= YSF_RSSI_COUNT) 
-    m_rssiCount1 = 0U; 
+	m_rssiCount1++; 
+	if (m_rssiCount1 >= YSF_RSSI_COUNT) 
+		m_rssiCount1 = 0U; 
 }
 
 void CHD44780::clearFusionInt()
@@ -813,7 +813,6 @@ void CHD44780::clearFusionInt()
 #ifdef ADAFRUIT_DISPLAY
 	adafruitLCDColour(AC_PURPLE);
 #endif
-
 	m_clockDisplayTimer.stop();           // Stop the clock display
 
 	if (m_rows == 2U && m_cols == 16U) {

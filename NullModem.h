@@ -90,7 +90,7 @@ public:
 	virtual bool writeConfig() { return true; };
 	virtual bool writeDStarInfo(const char* my1, const char* my2, const char* your, const char* type, const char* reflector) { return true; };
 	virtual bool writeDMRInfo(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type) { return true; };
-	virtual bool writeYSFInfo(const char* source, const char* dest, const char* type, const char* origin) { return true; };
+	virtual bool writeYSFInfo(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin) { return true; };
 	virtual bool writeP25Info(const char* source, bool group, unsigned int dest, const char* type) { return true; };
 	virtual bool writeNXDNInfo(const char* source, bool group, unsigned int dest, const char* type) { return true; };
 	virtual bool writePOCSAGInfo(unsigned int ric, const std::string& message) { return true; };

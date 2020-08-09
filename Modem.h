@@ -88,7 +88,7 @@ public:
 
 	virtual bool writeDStarInfo(const char* my1, const char* my2, const char* your, const char* type, const char* reflector) = 0;
 	virtual bool writeDMRInfo(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type) = 0;
-	virtual bool writeYSFInfo(const char* source, const char* dest, const char* type, const char* origin) = 0;
+	virtual bool writeYSFInfo(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin) = 0;
 	virtual bool writeP25Info(const char* source, bool group, unsigned int dest, const char* type) = 0;
 	virtual bool writeNXDNInfo(const char* source, bool group, unsigned int dest, const char* type) = 0;
 	virtual bool writePOCSAGInfo(unsigned int ric, const std::string& message) = 0;
