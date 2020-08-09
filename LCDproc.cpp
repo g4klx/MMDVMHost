@@ -426,10 +426,10 @@ void CLCDproc::writeFusionInt(const char* source, const char* dest, unsigned cha
 	socketPrintf(m_socketfd, "widget_set YSF Mode 1 1 \"System Fusion\"");
 
 	if (m_rows == 2U) {
-		socketPrintf(m_socketfd, "widget_set YSF Line2 1 2 15 2 h 3 \"%.10s > %s%u\"", source, dest);
+		socketPrintf(m_socketfd, "widget_set YSF Line2 1 2 15 2 h 3 \"%.10s > DG-ID %u\"", source, dgid);
 	} else {
 		socketPrintf(m_socketfd, "widget_set YSF Line2 1 2 15 2 h 3 \"%.10s >\"", source);
-		socketPrintf(m_socketfd, "widget_set YSF Line3 1 3 15 3 h 3 \"%s%u\"", dest);
+		socketPrintf(m_socketfd, "widget_set YSF Line3 1 3 15 3 h 3 \"DG-ID %u\"", dgid);
 		socketPrintf(m_socketfd, "output 64"); // Set LED3 color red
 	}
 
@@ -439,13 +439,12 @@ void CLCDproc::writeFusionInt(const char* source, const char* dest, unsigned cha
 
 void CLCDproc::writeFusionRSSIInt(unsigned char rssi)
 {
-	if (m_rssiCount1 == 0U) {
+	if (m_rssiCount1 == 0U)
 		socketPrintf(m_socketfd, "widget_set YSF Line4 1 4 %u 4 h 3 \"-%3udBm\"", m_cols - 1, rssi);
-	}
  
 	m_rssiCount1++;
- 	if (m_rssiCount1 >= YSF_RSSI_COUNT)
- 		m_rssiCount1 = 0U;
+	if (m_rssiCount1 >= YSF_RSSI_COUNT)
+		m_rssiCount1 = 0U;
 }
 
 void CLCDproc::clearFusionInt()

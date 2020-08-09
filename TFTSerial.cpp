@@ -316,7 +316,7 @@ void CTFTSerial::writeFusionInt(const char* source, const char* dest, unsigned c
 	gotoPosPixel(5U, 70U);
 	displayText(text);
 
-	::sprintf(text, "  %.10s", dest);
+	::sprintf(text, "  DG-ID %u", dgid);
 
 	gotoPosPixel(5U, 90U);
 	displayText(text);

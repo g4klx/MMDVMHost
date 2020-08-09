@@ -212,7 +212,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 			if (m_selfOnly) {
 				bool ret = checkCallsign(m_rfSource);
 				if (!ret) {
-					LogMessage("YSF, invalid access attempt from %10.10s (DG-ID: %u)", m_rfSource, dgid);
+					LogMessage("YSF, invalid access attempt from %10.10s to DG-ID %u", m_rfSource, dgid);
 					m_rfState = RS_RF_REJECTED;
 					return false;
 				}
@@ -238,7 +238,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 			openFile();
 #endif
 			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, dgid, "R", "          ");
-			LogMessage("YSF, received RF header from %10.10s to %10.10s (DG-ID: %u)", m_rfSource, m_rfDest, dgid);
+			LogMessage("YSF, received RF header from %10.10s to DG-ID %u", m_rfSource, dgid);
 
 			CSync::addYSFSync(data + 2U);
 
@@ -299,9 +299,9 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 			m_rfFrames++;
 
 			if (m_rssi != 0U)
-				LogMessage("YSF, received RF end of transmission from %10.10s to %10.10s (DG-ID: %u), %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_rfSource, m_rfDest, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			else
-				LogMessage("YSF, received RF end of transmission from %10.10s to %10.10s (DG-ID: %u), %.1f seconds, BER: %.1f%%", m_rfSource, m_rfDest, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds, BER: %.1f%%", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 
 			writeEndRF();
 		}
@@ -374,7 +374,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			if (m_selfOnly) {
 				bool ret = checkCallsign(m_rfSource);
 				if (!ret) {
-					LogMessage("YSF, invalid access attempt from %10.10s (DG-ID: %u)", m_rfSource, dgid);
+					LogMessage("YSF, invalid access attempt from %10.10s to DG-ID %u", m_rfSource, dgid);
 					m_rfState = RS_RF_REJECTED;
 					return false;
 				}
@@ -400,7 +400,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			openFile();
 #endif
 			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, dgid, "R", "          ");
-			LogMessage("YSF, received RF header from %10.10s to %10.10s (DG-ID: %u)", m_rfSource, m_rfDest, dgid);
+			LogMessage("YSF, received RF header from %10.10s to DG-ID %u", m_rfSource, dgid);
 
 			CSync::addYSFSync(data + 2U);
 
@@ -461,9 +461,9 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			m_rfFrames++;
 
 			if (m_rssi != 0U)
-				LogMessage("YSF, received RF end of transmission from %10.10s to %10.10s (DG-ID: %u), %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_rfSource, m_rfDest, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			else
-				LogMessage("YSF, received RF end of transmission from %10.10s to %10.10s (DG-ID: %u), %.1f seconds, BER: %.1f%%", m_rfSource, m_rfDest, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds, BER: %.1f%%", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 
 			writeEndRF();
 		}
@@ -570,7 +570,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			if (m_selfOnly) {
 				bool ret = checkCallsign(m_rfSource);
 				if (!ret) {
-					LogMessage("YSF, invalid access attempt from %10.10s (DG-ID: %u)", m_rfSource, dgid);
+					LogMessage("YSF, invalid access attempt from %10.10s to DG-ID %u", m_rfSource, dgid);
 					m_rfState = RS_RF_REJECTED;
 					return false;
 				}
@@ -626,7 +626,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			writeFile(buffer + 2U);
 #endif
 			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, dgid, "R", "          ");
-			LogMessage("YSF, received RF late entry from %10.10s to %10.10s (DG-ID: %u)", m_rfSource, m_rfDest, dgid);
+			LogMessage("YSF, received RF late entry from %10.10s to DG-ID %u", m_rfSource, dgid);
 
 			CSync::addYSFSync(data + 2U);
 
@@ -676,7 +676,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 			if (m_selfOnly) {
 				bool ret = checkCallsign(m_rfSource);
 				if (!ret) {
-					LogMessage("YSF, invalid access attempt from %10.10s (DG-ID: %u)", m_rfSource, dgid);
+					LogMessage("YSF, invalid access attempt from %10.10s to DG-ID %u", m_rfSource, dgid);
 					m_rfState = RS_RF_REJECTED;
 					return false;
 				}
@@ -699,7 +699,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 			openFile();
 #endif
 			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, dgid, "R", "          ");
-			LogMessage("YSF, received RF header from %10.10s to %10.10s (DG-ID: %u)", m_rfSource, m_rfDest, dgid);
+			LogMessage("YSF, received RF header from %10.10s to DG-ID %u", m_rfSource, dgid);
 
 			CSync::addYSFSync(data + 2U);
 
@@ -759,9 +759,9 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 			m_rfFrames++;
 
 			if (m_rssi != 0U)
-				LogMessage("YSF, received RF end of transmission from %10.10s to %10.10s (DG-ID: %u), %.1f seconds, RSSI: -%u/-%u/-%u dBm", m_rfSource, m_rfDest, dgid, float(m_rfFrames) / 10.0F, m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds, RSSI: -%u/-%u/-%u dBm", m_rfSource, dgid, float(m_rfFrames) / 10.0F, m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			else
-				LogMessage("YSF, received RF end of transmission from %10.10s to %10.10s (DG-ID: %u), %.1f seconds", m_rfSource, m_rfDest, dgid, float(m_rfFrames) / 10.0F);
+				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds", m_rfSource, dgid, float(m_rfFrames) / 10.0F);
 
 			writeEndRF();
 		}
@@ -904,7 +904,7 @@ void CYSFControl::writeNetwork()
 
 		if (::memcmp(m_netSource, "          ", 10U) != 0 && ::memcmp(m_netDest, "          ", 10U) != 0) {
 			m_display->writeFusion((char*)m_netSource, (char*)m_netDest, dgid, "N", (char*)(data + 4U));
-			LogMessage("YSF, received network data from %10.10s to %10.10s (DG-ID: %u) at %10.10s", m_netSource, m_netDest, dgid, data + 4U);
+			LogMessage("YSF, received network data from %10.10s to DG-ID %u at %10.10s", m_netSource, dgid, data + 4U);
 		}
 
 		m_netTimeoutTimer.start();
@@ -1016,7 +1016,7 @@ void CYSFControl::writeNetwork()
 	m_netN = n;
 
 	if (end) {
-		LogMessage("YSF, received network end of transmission from %10.10s to %10.10s (DG-ID: %u), %.1f seconds, %u%% packet loss, BER: %.1f%%", m_netSource, m_netDest, dgid, float(m_netFrames) / 10.0F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
+		LogMessage("YSF, received network end of transmission from %10.10s to DG-ID %u, %.1f seconds, %u%% packet loss, BER: %.1f%%", m_netSource, dgid, float(m_netFrames) / 10.0F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
 		writeEndNet();
 	}
 }
@@ -1159,7 +1159,7 @@ void CYSFControl::processNetCallsigns(const unsigned char* data, unsigned char d
 
 		if (::memcmp(m_netSource, "          ", 10U) != 0 && ::memcmp(m_netDest, "          ", 10U) != 0) {
 			m_display->writeFusion((char*)m_netSource, (char*)m_netDest, dgid, "N", (char*)(data + 4U));
-			LogMessage("YSF, received network data from %10.10s to %10.10s (DG-ID: %u) at %10.10s", m_netSource, m_netDest, dgid, data + 4U);
+			LogMessage("YSF, received network data from %10.10s to DG-ID %u at %10.10s", m_netSource, dgid, data + 4U);
 		}
 	}
 }

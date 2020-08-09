@@ -283,7 +283,7 @@ void CTFTSurenoo::writeFusionInt(const char* source, const char* dest, unsigned 
 	::snprintf(m_temp, sizeof(m_temp), "%s %s", type, source);
 	setStatusLine(statusLineNo(0), m_temp);
 
-	::snprintf(m_temp, sizeof(m_temp), "%s", dest);
+	::snprintf(m_temp, sizeof(m_temp), "DG-ID %u", dgid);
 	setStatusLine(statusLineNo(1), m_temp);
 
 	if (::strcmp(origin, "          ") != 0)

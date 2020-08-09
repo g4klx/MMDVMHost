@@ -1273,7 +1273,7 @@ bool CModem::writeDMRInfo(unsigned int slotNo, const std::string& src, bool grou
 	return m_serial->write(buffer, 47U) != 47;
 }
 
-bool CModem::writeYSFInfo(const char* source, const char* dest, const char* type, const char* origin)
+bool CModem::writeYSFInfo(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
 	assert(m_serial != NULL);
 	assert(source != NULL);
@@ -1281,10 +1281,10 @@ bool CModem::writeYSFInfo(const char* source, const char* dest, const char* type
 	assert(type != NULL);
 	assert(origin != NULL);
 
-	unsigned char buffer[50U];
+	unsigned char buffer[40U];
 
 	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = 35U;
+	buffer[1U] = 36U;
 	buffer[2U] = MMDVM_QSO_INFO;
 
 	buffer[3U] = MODE_YSF;
@@ -1296,7 +1296,9 @@ bool CModem::writeYSFInfo(const char* source, const char* dest, const char* type
 
 	::memcpy(buffer + 25U, origin, YSF_CALLSIGN_LENGTH);
 
-	return m_serial->write(buffer, 35U) != 35;
+	buffer[35U] = dgid;
+
+	return m_serial->write(buffer, 36U) != 36;
 }
 
 bool CModem::writeP25Info(const char* source, bool group, unsigned int dest, const char* type)
