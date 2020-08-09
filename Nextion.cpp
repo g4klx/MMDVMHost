@@ -602,7 +602,7 @@ void CNextion::clearDMRInt(unsigned int slotNo)
 	}
 }
 
-void CNextion::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
+void CNextion::writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
 	assert(source != NULL);
 	assert(dest != NULL);

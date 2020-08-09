@@ -413,7 +413,7 @@ void CLCDproc::clearDMRInt(unsigned int slotNo)
 
 // LED 3 Green 4 Red 64 Yellow 68
 
-void CLCDproc::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
+void CLCDproc::writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
 	assert(source != NULL);
 	assert(dest != NULL);

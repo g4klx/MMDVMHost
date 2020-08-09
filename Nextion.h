@@ -55,7 +55,7 @@ protected:
   virtual void writeDMRBERInt(unsigned int slotNo, float ber);
   virtual void clearDMRInt(unsigned int slotNo);
 
-  virtual void writeFusionInt(const char* source, const char* dest, const char* type, const char* origin);
+  virtual void writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
   virtual void writeFusionRSSIInt(unsigned char rssi);
   virtual void writeFusionBERInt(float ber);
   virtual void clearFusionInt();
