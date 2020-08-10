@@ -58,7 +58,7 @@ public:
   virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
   virtual void clearDMRInt(unsigned int slotNo);
 
-  virtual void writeFusionInt(const char* source, const char* dest, const char* type, const char* origin);
+  virtual void writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
   virtual void clearFusionInt();
 
   virtual void writeP25Int(const char* source, bool group, unsigned int dest, const char* type);
