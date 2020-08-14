@@ -121,8 +121,8 @@ bool CNextion::open()
 	sendCommand("bkcmd=0");
 	sendCommandAction(0U);
 	
-	m_fl_txFrequency = float(m_txFrequency) / 1000000.0F;
-	m_fl_rxFrequency = float(m_rxFrequency) / 1000000.0F;
+	m_fl_txFrequency = double(m_txFrequency) / 1000000.0F;
+	m_fl_rxFrequency = double(m_rxFrequency) / 1000000.0F;
 	
 	setIdle();
 
@@ -152,11 +152,11 @@ void CNextion::setIdleInt()
 		sendCommand(command);
 		sendCommandAction(17U);
 
-		::sprintf(command, "t30.txt=\"%3.4f\"",m_fl_rxFrequency);  // RX freq
+		::sprintf(command, "t30.txt=\"%3.6f\"",m_fl_rxFrequency);  // RX freq
 		sendCommand(command);
 		sendCommandAction(20U);
 		
-		::sprintf(command, "t32.txt=\"%3.4f\"",m_fl_txFrequency);  // TX freq
+		::sprintf(command, "t32.txt=\"%3.6f\"",m_fl_txFrequency);  // TX freq
 		sendCommand(command);
 		sendCommandAction(21U);
 	
