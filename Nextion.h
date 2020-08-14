@@ -100,8 +100,8 @@ private:
   unsigned int  m_berCount2;
   unsigned int  m_txFrequency;
   unsigned int  m_rxFrequency;
-  float         m_fl_txFrequency;
-  float         m_fl_rxFrequency;
+  double        m_fl_txFrequency;
+  double        m_fl_rxFrequency;
   bool          m_displayTempInF;
   std::string   m_location;
   
