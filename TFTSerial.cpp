@@ -293,7 +293,7 @@ void CTFTSerial::clearDMRInt(unsigned int slotNo)
 	}
 }
 
-void CTFTSerial::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
+void CTFTSerial::writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
 	assert(source != NULL);
 	assert(dest != NULL);
@@ -316,7 +316,7 @@ void CTFTSerial::writeFusionInt(const char* source, const char* dest, const char
 	gotoPosPixel(5U, 70U);
 	displayText(text);
 
-	::sprintf(text, "  %.10s", dest);
+	::sprintf(text, "  DG-ID %u", dgid);
 
 	gotoPosPixel(5U, 90U);
 	displayText(text);

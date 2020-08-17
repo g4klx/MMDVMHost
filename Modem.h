@@ -34,7 +34,7 @@ enum RESP_TYPE_MMDVM {
 
 class CModem {
 public:
-	CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool trace, bool debug);
+	CModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug);
 	virtual ~CModem();
 
 	virtual void setSerialParams(const std::string& protocol, unsigned int address);
@@ -49,7 +49,7 @@ public:
 
 	virtual void setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch);
 	virtual void setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackMinTime, unsigned int ackDelay, float ackLevel);
-	virtual void setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, bool useCOS, bool cosInvert, unsigned int rfAudioBoost, float maxDevLevel);
+	virtual void setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, unsigned int accessMode, bool cosInvert, unsigned int rfAudioBoost, float maxDevLevel);
 
 	virtual bool open();
 
@@ -90,7 +90,7 @@ public:
 
 	virtual bool writeDStarInfo(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
 	virtual bool writeDMRInfo(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
-	virtual bool writeYSFInfo(const char* source, const char* dest, const char* type, const char* origin);
+	virtual bool writeYSFInfo(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
 	virtual bool writeP25Info(const char* source, bool group, unsigned int dest, const char* type);
 	virtual bool writeNXDNInfo(const char* source, bool group, unsigned int dest, const char* type);
 	virtual bool writePOCSAGInfo(unsigned int ric, const std::string& message);
@@ -113,7 +113,7 @@ public:
 
 	virtual void close();
 
-	static CModem* createModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool trace, bool debug);
+	static CModem* createModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug);
 
 private:
 	std::string                m_port;
@@ -138,6 +138,7 @@ private:
 	float                      m_pocsagTXLevel;
 	float                      m_fmTXLevel;
 	float                      m_rfLevel;
+	bool                       m_useCOSAsLockout;
 	bool                       m_trace;
 	bool                       m_debug;
 	unsigned int               m_rxFrequency;
@@ -213,7 +214,7 @@ private:
 	float                      m_fmCtcssLevel;
 	unsigned int               m_fmKerchunkTime;
 	unsigned int               m_fmHangTime;
-	bool                       m_fmUseCOS;
+	unsigned int               m_fmAccessMode;
 	bool                       m_fmCOSInvert;
 	unsigned int               m_fmRFAudioBoost;
 	float                      m_fmMaxDevLevel;

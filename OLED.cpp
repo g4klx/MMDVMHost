@@ -434,9 +434,8 @@ void COLED::clearDMRInt(unsigned int slotNo)
     m_display.display();
 }
 
-void COLED::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
+void COLED::writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
-
     m_mode = MODE_YSF;
 
     m_display.clearDisplay();
@@ -446,11 +445,11 @@ void COLED::writeFusionInt(const char* source, const char* dest, const char* typ
     m_display.printf("%s %.10s", type, source);
 
     m_display.setCursor(0,OLED_LINE5);
-    m_display.printf("  %.10s", dest);
+    m_display.printf("  DG-ID %u", dgid);
 
     OLED_statusbar();
-    m_display.display();
 
+    m_display.display();
 }
 
 void COLED::clearFusionInt()

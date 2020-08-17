@@ -121,8 +121,8 @@ bool CNextion::open()
 	sendCommand("bkcmd=0");
 	sendCommandAction(0U);
 	
-	m_fl_txFrequency = float(m_txFrequency) / 1000000.0F;
-	m_fl_rxFrequency = float(m_rxFrequency) / 1000000.0F;
+	m_fl_txFrequency = double(m_txFrequency) / 1000000.0F;
+	m_fl_rxFrequency = double(m_rxFrequency) / 1000000.0F;
 	
 	setIdle();
 
@@ -152,11 +152,11 @@ void CNextion::setIdleInt()
 		sendCommand(command);
 		sendCommandAction(17U);
 
-		::sprintf(command, "t30.txt=\"%3.4f\"",m_fl_rxFrequency);  // RX freq
+		::sprintf(command, "t30.txt=\"%3.6f\"",m_fl_rxFrequency);  // RX freq
 		sendCommand(command);
 		sendCommandAction(20U);
 		
-		::sprintf(command, "t32.txt=\"%3.4f\"",m_fl_txFrequency);  // TX freq
+		::sprintf(command, "t32.txt=\"%3.6f\"",m_fl_txFrequency);  // TX freq
 		sendCommand(command);
 		sendCommandAction(21U);
 	
@@ -602,7 +602,7 @@ void CNextion::clearDMRInt(unsigned int slotNo)
 	}
 }
 
-void CNextion::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
+void CNextion::writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
 	assert(source != NULL);
 	assert(dest != NULL);
@@ -625,9 +625,10 @@ void CNextion::writeFusionInt(const char* source, const char* dest, const char* 
 	sendCommand(text);
 	sendCommandAction(82U);
 
-	::sprintf(text, "t1.txt=\"%.10s\"", dest);
+	::sprintf(text, "t1.txt=\"DG-ID %u\"", dgid);
 	sendCommand(text);
 	sendCommandAction(83U);
+
 	if (::strcmp(origin, "          ") != 0) {
 		::sprintf(text, "t2.txt=\"at %.10s\"", origin);
 		sendCommand(text);

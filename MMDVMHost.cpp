@@ -534,8 +534,6 @@ int CMMDVMHost::run()
 		bool remoteGateway  = m_conf.getFusionRemoteGateway();
 		unsigned int txHang = m_conf.getFusionTXHang();
 		bool selfOnly       = m_conf.getFusionSelfOnly();
-		bool dgIdEnabled    = m_conf.getFusionDGIdEnabled();
-		unsigned char dgId  = m_conf.getFusionDGId();
 		m_ysfRFModeHang     = m_conf.getFusionModeHang();
 
 		LogInfo("YSF RF Parameters");
@@ -543,13 +541,9 @@ int CMMDVMHost::run()
 		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
 		LogInfo("    TX Hang: %us", txHang);
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
-		LogInfo("    DG-ID: %s", dgIdEnabled ? "yes" : "no");
-		if (dgIdEnabled)
-			LogInfo("    DG-ID Value: %u", dgId);
 		LogInfo("    Mode Hang: %us", m_ysfRFModeHang);
 
 		m_ysf = new CYSFControl(m_callsign, selfOnly, m_ysfNetwork, m_display, m_timeout, m_duplex, lowDeviation, remoteGateway, rssi);
-		m_ysf->setDGId(dgIdEnabled, dgId);
 	}
 
 	if (m_p25Enabled) {
@@ -1189,6 +1183,7 @@ bool CMMDVMHost::createModem()
 	int rxDCOffset               = m_conf.getModemRXDCOffset();
 	int txDCOffset               = m_conf.getModemTXDCOffset();
 	float rfLevel                = m_conf.getModemRFLevel();
+	bool useCOSAsLockout         = m_conf.getModemUseCOSAsLockout();
 
 	LogInfo("Modem Parameters");
 	LogInfo("    Port: %s", port.c_str());
@@ -1215,9 +1210,10 @@ bool CMMDVMHost::createModem()
 	LogInfo("    POCSAG TX Level: %.1f%%", pocsagTXLevel);
 	LogInfo("    FM TX Level: %.1f%%", fmTXLevel);
 	LogInfo("    TX Frequency: %uHz (%uHz)", txFrequency, txFrequency + txOffset);
+	LogInfo("    Use COS as Lockout: %s", useCOSAsLockout ? "yes" : "no");
 
-	m_modem = CModem::createModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
-	m_modem->setSerialParams(protocol,address);
+	m_modem = CModem::createModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, useCOSAsLockout, trace, debug);
+	m_modem->setSerialParams(protocol, address);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_pocsagEnabled, m_fmEnabled);
 	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, fmTXLevel);
 	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel, pocsagFrequency);
@@ -1252,7 +1248,7 @@ bool CMMDVMHost::createModem()
 		float        ctcssLevel         = m_conf.getFMCTCSSLevel();
 		unsigned int kerchunkTime       = m_conf.getFMKerchunkTime();
 		unsigned int hangTime           = m_conf.getFMHangTime();
-		bool         useCOS             = m_conf.getFMUseCOS();
+		unsigned int accessMode         = m_conf.getFMAccessMode();
 		bool         cosInvert          = m_conf.getFMCOSInvert();
 		unsigned int rfAudioBoost       = m_conf.getFMRFAudioBoost();
 		float        maxDevLevel        = m_conf.getFMMaxDevLevel();
@@ -1284,7 +1280,7 @@ bool CMMDVMHost::createModem()
 		LogInfo("    CTCSS Level: %.1f%%", ctcssLevel);
 		LogInfo("    Kerchunk Time: %us", kerchunkTime);
 		LogInfo("    Hang Time: %us", hangTime);
-		LogInfo("    Use COS: %s", useCOS ? "yes" : "no");
+		LogInfo("    Access Mode: %u", accessMode);
 		LogInfo("    COS Invert: %s", cosInvert ? "yes" : "no");
 		LogInfo("    RF Audio Boost: x%u", rfAudioBoost);
 		LogInfo("    Max. Deviation Level: %.1f%%", maxDevLevel);
@@ -1292,7 +1288,7 @@ bool CMMDVMHost::createModem()
 
 		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd, callsignAtLatch);
 		m_modem->setFMAckParams(rfAck, ackSpeed, ackFrequency, ackMinTime, ackDelay, ackLevel);
-		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssHighThreshold, ctcssLowThreshold, ctcssLevel, kerchunkTime, hangTime, useCOS, cosInvert, rfAudioBoost, maxDevLevel);
+		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssHighThreshold, ctcssLowThreshold, ctcssLevel, kerchunkTime, hangTime, accessMode, cosInvert, rfAudioBoost, maxDevLevel);
 	}
 
 	bool ret = m_modem->open();

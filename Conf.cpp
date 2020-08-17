@@ -112,6 +112,7 @@ m_modemNXDNTXLevel(50.0F),
 m_modemPOCSAGTXLevel(50.0F),
 m_modemFMTXLevel(50.0F),
 m_modemRSSIMappingFile(),
+m_modemUseCOSAsLockout(false),
 m_modemTrace(false),
 m_modemDebug(false),
 m_transparentEnabled(false),
@@ -154,8 +155,6 @@ m_fusionLowDeviation(false),
 m_fusionRemoteGateway(false),
 m_fusionSelfOnly(false),
 m_fusionTXHang(4U),
-m_fusionDGIdEnabled(false),
-m_fusionDGId(0U),
 m_fusionModeHang(10U),
 m_p25Enabled(false),
 m_p25Id(0U),
@@ -200,7 +199,7 @@ m_fmCTCSSLowThreshold(20U),
 m_fmCTCSSLevel(2.0F),
 m_fmKerchunkTime(0U),
 m_fmHangTime(7U),
-m_fmUseCOS(true),
+m_fmAccessMode(1U),
 m_fmCOSInvert(false),
 m_fmRFAudioBoost(1U),
 m_fmMaxDevLevel(90.0F),
@@ -525,6 +524,8 @@ bool CConf::read()
 			m_modemFMTXLevel = float(::atof(value));
 		else if (::strcmp(key, "RSSIMappingFile") == 0)
 			m_modemRSSIMappingFile = value;
+		else if (::strcmp(key, "UseCOSAsLockout") == 0)
+			m_modemUseCOSAsLockout = ::atoi(value) == 1;
 		else if (::strcmp(key, "Trace") == 0)
 			m_modemTrace = ::atoi(value) == 1;
 		else if (::strcmp(key, "Debug") == 0)
@@ -665,10 +666,7 @@ bool CConf::read()
 			m_fusionEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "LowDeviation") == 0)
 			m_fusionLowDeviation = ::atoi(value) == 1;
-		else if (::strcmp(key, "DGID") == 0) {
-			m_fusionDGIdEnabled = true;
-			m_fusionDGId        = (unsigned int)::atoi(value);
-		} else if (::strcmp(key, "RemoteGateway") == 0)
+		else if (::strcmp(key, "RemoteGateway") == 0)
 			m_fusionRemoteGateway = ::atoi(value) == 1;
 		else if (::strcmp(key, "SelfOnly") == 0)
 			m_fusionSelfOnly = ::atoi(value) == 1;
@@ -778,8 +776,8 @@ bool CConf::read()
 			m_fmKerchunkTime = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "HangTime") == 0)
 			m_fmHangTime = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "UseCOS") == 0)
-			m_fmUseCOS = ::atoi(value) == 1;
+		else if (::strcmp(key, "AccessMode") == 0)
+			m_fmAccessMode = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "COSInvert") == 0)
 			m_fmCOSInvert = ::atoi(value) == 1;
 		else if (::strcmp(key, "RFAudioBoost") == 0)
@@ -1229,6 +1227,11 @@ std::string CConf::getModemRSSIMappingFile () const
 	return m_modemRSSIMappingFile;
 }
 
+bool CConf::getModemUseCOSAsLockout() const
+{
+	return m_modemUseCOSAsLockout;
+}
+
 bool CConf::getModemTrace() const
 {
 	return m_modemTrace;
@@ -1437,16 +1440,6 @@ unsigned int CConf::getFusionTXHang() const
 bool CConf::getFusionSelfOnly() const
 {
 	return m_fusionSelfOnly;
-}
-
-bool CConf::getFusionDGIdEnabled() const
-{
-	return m_fusionDGIdEnabled;
-}
-
-unsigned char CConf::getFusionDGId() const
-{
-	return m_fusionDGId;
 }
 
 unsigned int CConf::getFusionModeHang() const
@@ -1669,9 +1662,9 @@ unsigned int CConf::getFMHangTime() const
 	return m_fmHangTime;
 }
 
-bool CConf::getFMUseCOS() const
+unsigned int CConf::getFMAccessMode() const
 {
-	return m_fmUseCOS;
+	return m_fmAccessMode;
 }
 
 bool CConf::getFMCOSInvert() const

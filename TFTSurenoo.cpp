@@ -271,7 +271,7 @@ void CTFTSurenoo::clearDMRInt(unsigned int slotNo)
 	}
 }
 
-void CTFTSurenoo::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
+void CTFTSurenoo::writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
 	assert(source != NULL);
 	assert(dest != NULL);
@@ -283,7 +283,7 @@ void CTFTSurenoo::writeFusionInt(const char* source, const char* dest, const cha
 	::snprintf(m_temp, sizeof(m_temp), "%s %s", type, source);
 	setStatusLine(statusLineNo(0), m_temp);
 
-	::snprintf(m_temp, sizeof(m_temp), "%s", dest);
+	::snprintf(m_temp, sizeof(m_temp), "DG-ID %u", dgid);
 	setStatusLine(statusLineNo(1), m_temp);
 
 	if (::strcmp(origin, "          ") != 0)

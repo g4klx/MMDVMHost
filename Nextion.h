@@ -55,7 +55,7 @@ protected:
   virtual void writeDMRBERInt(unsigned int slotNo, float ber);
   virtual void clearDMRInt(unsigned int slotNo);
 
-  virtual void writeFusionInt(const char* source, const char* dest, const char* type, const char* origin);
+  virtual void writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
   virtual void writeFusionRSSIInt(unsigned char rssi);
   virtual void writeFusionBERInt(float ber);
   virtual void clearFusionInt();
@@ -100,8 +100,8 @@ private:
   unsigned int  m_berCount2;
   unsigned int  m_txFrequency;
   unsigned int  m_rxFrequency;
-  float         m_fl_txFrequency;
-  float         m_fl_rxFrequency;
+  double        m_fl_txFrequency;
+  double        m_fl_rxFrequency;
   bool          m_displayTempInF;
   std::string   m_location;
   

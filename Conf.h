@@ -92,6 +92,7 @@ public:
   float        getModemPOCSAGTXLevel() const;
   float        getModemFMTXLevel() const;
   std::string  getModemRSSIMappingFile() const;
+  bool         getModemUseCOSAsLockout() const;
   bool         getModemTrace() const;
   bool         getModemDebug() const;
 
@@ -144,8 +145,6 @@ public:
   bool          getFusionRemoteGateway() const;
   bool          getFusionSelfOnly() const;
   unsigned int  getFusionTXHang() const;
-  bool          getFusionDGIdEnabled() const;
-  unsigned char getFusionDGId() const;
   unsigned int  getFusionModeHang() const;
 
   // The P25 section
@@ -198,7 +197,7 @@ public:
   float        getFMCTCSSLevel() const;
   unsigned int getFMKerchunkTime() const;
   unsigned int getFMHangTime() const;
-  bool         getFMUseCOS() const;
+  unsigned int getFMAccessMode() const;
   bool         getFMCOSInvert() const;
   unsigned int getFMRFAudioBoost() const;
   float        getFMMaxDevLevel() const;
@@ -373,6 +372,7 @@ private:
   float        m_modemPOCSAGTXLevel;
   float        m_modemFMTXLevel;
   std::string  m_modemRSSIMappingFile;
+  bool         m_modemUseCOSAsLockout;
   bool         m_modemTrace;
   bool         m_modemDebug;
 
@@ -420,8 +420,6 @@ private:
   bool          m_fusionRemoteGateway;
   bool          m_fusionSelfOnly;
   unsigned int  m_fusionTXHang;
-  bool          m_fusionDGIdEnabled;
-  unsigned char m_fusionDGId;
   unsigned int  m_fusionModeHang;
 
   bool         m_p25Enabled;
@@ -470,7 +468,7 @@ private:
   float        m_fmCTCSSLevel;
   unsigned int m_fmKerchunkTime;
   unsigned int m_fmHangTime;
-  bool         m_fmUseCOS;
+  unsigned int m_fmAccessMode;
   bool         m_fmCOSInvert;
   unsigned int m_fmRFAudioBoost;
   float        m_fmMaxDevLevel;

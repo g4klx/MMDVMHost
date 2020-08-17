@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015-2019 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015-2020 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -32,8 +32,6 @@ m_display(display),
 m_duplex(duplex),
 m_lowDeviation(lowDeviation),
 m_remoteGateway(remoteGateway),
-m_dgIdEnabled(false),
-m_dgIdValue(0U),
 m_queue(5000U, "YSF Control"),
 m_rfState(RS_RF_LISTENING),
 m_netState(RS_NET_IDLE),
@@ -100,12 +98,6 @@ CYSFControl::~CYSFControl()
 	delete[] m_selfCallsign;
 }
 
-void CYSFControl::setDGId(bool on, unsigned char value)
-{
-	m_dgIdEnabled = on;
-	m_dgIdValue   = value;
-}
-
 bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 {
 	assert(data != NULL);
@@ -167,13 +159,6 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 	if (valid)
 		m_lastFICH = fich;
 
-	// Validate the DG-ID value if enabled
-	if (m_dgIdEnabled) {
-		unsigned char value = m_lastFICH.getDGId();
-		if (value != m_dgIdValue)
-			return false;
-	}
-
 #ifdef notdef
 	// Stop repeater packets coming through, unless we're acting as a remote gateway
 	if (m_remoteGateway) {
@@ -213,7 +198,9 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 
 bool CYSFControl::processVWData(bool valid, unsigned char *data)
 {
-	unsigned char fi = m_lastFICH.getFI();
+	unsigned char fi   = m_lastFICH.getFI();
+	unsigned char dgid = m_lastFICH.getDGId();
+
 	if (valid && fi == YSF_FI_HEADER) {
 		if (m_rfState == RS_RF_LISTENING) {
 			bool valid = m_rfPayload.processHeaderData(data + 2U);
@@ -225,7 +212,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 			if (m_selfOnly) {
 				bool ret = checkCallsign(m_rfSource);
 				if (!ret) {
-					LogMessage("YSF, invalid access attempt from %10.10s", m_rfSource);
+					LogMessage("YSF, invalid access attempt from %10.10s to DG-ID %u", m_rfSource, dgid);
 					m_rfState = RS_RF_REJECTED;
 					return false;
 				}
@@ -250,16 +237,13 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			openFile();
 #endif
-
-			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, "R", "          ");
-			LogMessage("YSF, received RF header from %10.10s to %10.10s", m_rfSource, m_rfDest);
+			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, dgid, "R", "          ");
+			LogMessage("YSF, received RF header from %10.10s to DG-ID %u", m_rfSource, dgid);
 
 			CSync::addYSFSync(data + 2U);
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DG-ID information
-			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -270,10 +254,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			writeFile(data + 2U);
 #endif
-
 			if (m_duplex) {
-				// Add the DG-ID information.
-				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -299,22 +280,16 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DG-ID information
-			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_EOT;
 			data[1U] = 0x00U;
 
 			writeNetwork(data, m_rfFrames % 128U);
-
 #if defined(DUMP_YSF)
 			writeFile(data + 2U);
 #endif
-
 			if (m_duplex) {
-				// Add the DG-ID information.
-				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -324,9 +299,9 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 			m_rfFrames++;
 
 			if (m_rssi != 0U)
-				LogMessage("YSF, received RF end of transmission from %10.10s to %10.10s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_rfSource, m_rfDest, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			else
-				LogMessage("YSF, received RF end of transmission from %10.10s to %10.10s, %.1f seconds, BER: %.1f%%", m_rfSource, m_rfDest, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds, BER: %.1f%%", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 
 			writeEndRF();
 		}
@@ -355,8 +330,6 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 				LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 7.2F);
 			}
 
-			// Remove any DG-ID information
-			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -365,8 +338,6 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 			writeNetwork(data, m_rfFrames % 128U);
 
 			if (m_duplex) {
-				// Add the DG-ID information.
-				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -376,7 +347,6 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			writeFile(data + 2U);
 #endif
-
 			m_rfFrames++;
 
 			m_display->writeFusionRSSI(m_rssi);
@@ -390,7 +360,9 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 
 bool CYSFControl::processDNData(bool valid, unsigned char *data)
 {
-	unsigned char fi = m_lastFICH.getFI();
+	unsigned char fi   = m_lastFICH.getFI();
+	unsigned char dgid = m_lastFICH.getDGId();
+
 	if (valid && fi == YSF_FI_HEADER) {
 		if (m_rfState == RS_RF_LISTENING) {
 			bool valid = m_rfPayload.processHeaderData(data + 2U);
@@ -402,7 +374,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			if (m_selfOnly) {
 				bool ret = checkCallsign(m_rfSource);
 				if (!ret) {
-					LogMessage("YSF, invalid access attempt from %10.10s", m_rfSource);
+					LogMessage("YSF, invalid access attempt from %10.10s to DG-ID %u", m_rfSource, dgid);
 					m_rfState = RS_RF_REJECTED;
 					return false;
 				}
@@ -427,16 +399,13 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			openFile();
 #endif
-
-			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, "R", "          ");
-			LogMessage("YSF, received RF header from %10.10s to %10.10s", m_rfSource, m_rfDest);
+			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, dgid, "R", "          ");
+			LogMessage("YSF, received RF header from %10.10s to DG-ID %u", m_rfSource, dgid);
 
 			CSync::addYSFSync(data + 2U);
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DG-ID information
-			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -447,10 +416,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			writeFile(data + 2U);
 #endif
-
 			if (m_duplex) {
-				// Add the DG-ID information.
-				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -476,22 +442,16 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DG-ID information
-			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_EOT;
 			data[1U] = 0x00U;
 
 			writeNetwork(data, m_rfFrames % 128U);
-
 #if defined(DUMP_YSF)
 			writeFile(data + 2U);
 #endif
-
 			if (m_duplex) {
-				// Add the DG-ID information.
-				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -501,9 +461,9 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			m_rfFrames++;
 
 			if (m_rssi != 0U)
-				LogMessage("YSF, received RF end of transmission from %10.10s to %10.10s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_rfSource, m_rfDest, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			else
-				LogMessage("YSF, received RF end of transmission from %10.10s to %10.10s, %.1f seconds, BER: %.1f%%", m_rfSource, m_rfDest, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds, BER: %.1f%%", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 
 			writeEndRF();
 		}
@@ -552,8 +512,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DG-ID information
-			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -562,8 +520,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			writeNetwork(data, m_rfFrames % 128U);
 
 			if (m_duplex) {
-				// Add the DG-ID information.
-				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -573,7 +529,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			writeFile(data + 2U);
 #endif
-
 			m_rfFrames++;
 
 			m_display->writeFusionRSSI(m_rssi);
@@ -615,7 +570,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			if (m_selfOnly) {
 				bool ret = checkCallsign(m_rfSource);
 				if (!ret) {
-					LogMessage("YSF, invalid access attempt from %10.10s", m_rfSource);
+					LogMessage("YSF, invalid access attempt from %10.10s to DG-ID %u", m_rfSource, dgid);
 					m_rfState = RS_RF_REJECTED;
 					return false;
 				}
@@ -634,7 +589,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			openFile();
 #endif
-
 			// Build a new header and transmit it
 			unsigned char buffer[YSF_FRAME_LENGTH_BYTES + 2U];
 
@@ -642,7 +596,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 			fich.setFI(YSF_FI_HEADER);
-			fich.setDGId(0U);
 			fich.encode(buffer + 2U);
 
 			unsigned char csd1[20U], csd2[20U];
@@ -663,8 +616,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			writeNetwork(buffer, m_rfFrames % 128U);
 
 			if (m_duplex) {
-				// Add the DG-ID information.
-				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(buffer + 2U);
@@ -674,16 +625,13 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			writeFile(buffer + 2U);
 #endif
-
-			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, "R", "          ");
-			LogMessage("YSF, received RF late entry from %10.10s to %10.10s", m_rfSource, m_rfDest);
+			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, dgid, "R", "          ");
+			LogMessage("YSF, received RF late entry from %10.10s to DG-ID %u", m_rfSource, dgid);
 
 			CSync::addYSFSync(data + 2U);
 
 			fich = m_lastFICH;
 
-			// Remove any DG-ID information
-			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -692,8 +640,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			writeNetwork(data, m_rfFrames % 128U);
 
 			if (m_duplex) {
-				// Add the DG-ID information.
-				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -703,7 +649,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			writeFile(data + 2U);
 #endif
-
 			m_rfFrames++;
 
 			m_display->writeFusionRSSI(m_rssi);
@@ -717,7 +662,9 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 bool CYSFControl::processFRData(bool valid, unsigned char *data)
 {
-	unsigned char fi = m_lastFICH.getFI();
+	unsigned char fi   = m_lastFICH.getFI();
+	unsigned char dgid = m_lastFICH.getDGId();
+
 	if (valid && fi == YSF_FI_HEADER) {
 		if (m_rfState == RS_RF_LISTENING) {
 			valid = m_rfPayload.processHeaderData(data + 2U);
@@ -729,7 +676,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 			if (m_selfOnly) {
 				bool ret = checkCallsign(m_rfSource);
 				if (!ret) {
-					LogMessage("YSF, invalid access attempt from %10.10s", m_rfSource);
+					LogMessage("YSF, invalid access attempt from %10.10s to DG-ID %u", m_rfSource, dgid);
 					m_rfState = RS_RF_REJECTED;
 					return false;
 				}
@@ -751,30 +698,23 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			openFile();
 #endif
-
-			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, "R", "          ");
-			LogMessage("YSF, received RF header from %10.10s to %10.10s", m_rfSource, m_rfDest);
+			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, dgid, "R", "          ");
+			LogMessage("YSF, received RF header from %10.10s to DG-ID %u", m_rfSource, dgid);
 
 			CSync::addYSFSync(data + 2U);
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DG-ID information
-			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
 
 			writeNetwork(data, m_rfFrames % 128U);
-
 #if defined(DUMP_YSF)
 			writeFile(data + 2U);
 #endif
-
 			if (m_duplex) {
-				// Add the DG-ID information.
-				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -800,22 +740,16 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DG-ID information
-			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_EOT;
 			data[1U] = 0x00U;
 
 			writeNetwork(data, m_rfFrames % 128U);
-
 #if defined(DUMP_YSF)
 			writeFile(data + 2U);
 #endif
-
 			if (m_duplex) {
-				// Add the DG-ID information.
-				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -825,9 +759,9 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 			m_rfFrames++;
 
 			if (m_rssi != 0U)
-				LogMessage("YSF, received RF end of transmission from %10.10s to %10.10s, %.1f seconds, RSSI: -%u/-%u/-%u dBm", m_rfSource, m_rfDest, float(m_rfFrames) / 10.0F, m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds, RSSI: -%u/-%u/-%u dBm", m_rfSource, dgid, float(m_rfFrames) / 10.0F, m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			else
-				LogMessage("YSF, received RF end of transmission from %10.10s to %10.10s, %.1f seconds", m_rfSource, m_rfDest, float(m_rfFrames) / 10.0F);
+				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds", m_rfSource, dgid, float(m_rfFrames) / 10.0F);
 
 			writeEndRF();
 		}
@@ -852,8 +786,6 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 			CYSFFICH fich = m_lastFICH;
 
-			// Remove any DG-ID information
-			fich.setDGId(0U);
 			fich.encode(data + 2U);
 
 			data[0U] = TAG_DATA;
@@ -862,8 +794,6 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 			writeNetwork(data, m_rfFrames % 128U);
 
 			if (m_duplex) {
-				// Add the DG-ID information.
-				fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
 				fich.encode(data + 2U);
@@ -873,7 +803,6 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			writeFile(data + 2U);
 #endif
-
 			m_rfFrames++;
 
 			m_display->writeFusionRSSI(m_rssi);
@@ -959,6 +888,13 @@ void CYSFControl::writeNetwork()
 	unsigned char n = (data[34U] & 0xFEU) >> 1;
 	bool end = (data[34U] & 0x01U) == 0x01U;
 
+	CYSFFICH fich;
+	bool valid = fich.decode(data + 35U);
+
+	unsigned char dgid = 0U;
+	if (valid)
+		dgid = fich.getDGId();
+
 	if (!m_netTimeoutTimer.isRunning()) {
 		if (end)
 			return;
@@ -967,8 +903,8 @@ void CYSFControl::writeNetwork()
 		::memcpy(m_netDest,   data + 24U, YSF_CALLSIGN_LENGTH);
 
 		if (::memcmp(m_netSource, "          ", 10U) != 0 && ::memcmp(m_netDest, "          ", 10U) != 0) {
-			m_display->writeFusion((char*)m_netSource, (char*)m_netDest, "N", (char*)(data + 4U));
-			LogMessage("YSF, received network data from %10.10s to %10.10s at %10.10s", m_netSource, m_netDest, data + 4U);
+			m_display->writeFusion((char*)m_netSource, (char*)m_netDest, dgid, "N", (char*)(data + 4U));
+			LogMessage("YSF, received network data from %10.10s to DG-ID %u at %10.10s", m_netSource, dgid, data + 4U);
 		}
 
 		m_netTimeoutTimer.start();
@@ -990,8 +926,6 @@ void CYSFControl::writeNetwork()
 	data[33U] = end ? TAG_EOT : TAG_DATA;
 	data[34U] = 0x00U;
 
-	CYSFFICH fich;
-	bool valid = fich.decode(data + 35U);
 	if (valid) {
 		unsigned char dt = fich.getDT();
 		unsigned char fn = fich.getFN();
@@ -1003,9 +937,6 @@ void CYSFControl::writeNetwork()
 			if (cm == YSF_CM_GROUP1 || cm == YSF_CM_GROUP2)
 				::memcpy(m_netDest, "ALL       ", YSF_CALLSIGN_LENGTH);
 		}
-
-		// Add the DG-ID information.
-		fich.setDGId(m_dgIdEnabled ? m_dgIdValue : 0U);
 
 		if (m_remoteGateway) {
 			fich.setVoIP(false);
@@ -1023,7 +954,7 @@ void CYSFControl::writeNetwork()
 		case YSF_FI_HEADER: {
 				bool ok = m_netPayload.processHeaderData(data + 35U);
 				if (ok)
-					processNetCallsigns(data);
+					processNetCallsigns(data, dgid);
 			}
 			break;
 
@@ -1036,7 +967,7 @@ void CYSFControl::writeNetwork()
 			case YSF_DT_VD_MODE1: {
 					bool ok = m_netPayload.processVDMode1Data(data + 35U, fn, gateway);
 					if (ok)
-						processNetCallsigns(data);
+						processNetCallsigns(data, dgid);
 
 					unsigned int errors = m_netPayload.processVDMode1Audio(data + 35U);
 					m_netErrs += errors;
@@ -1047,7 +978,7 @@ void CYSFControl::writeNetwork()
 			case YSF_DT_VD_MODE2: {
 					bool ok = m_netPayload.processVDMode2Data(data + 35U, fn, gateway);
 					if (ok)
-						processNetCallsigns(data);
+						processNetCallsigns(data, dgid);
 
 					unsigned int errors = m_netPayload.processVDMode2Audio(data + 35U);
 					m_netErrs += errors;
@@ -1085,7 +1016,7 @@ void CYSFControl::writeNetwork()
 	m_netN = n;
 
 	if (end) {
-		LogMessage("YSF, received network end of transmission from %10.10s to %10.10s, %.1f seconds, %u%% packet loss, BER: %.1f%%", m_netSource, m_netDest, float(m_netFrames) / 10.0F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
+		LogMessage("YSF, received network end of transmission from %10.10s to DG-ID %u, %.1f seconds, %u%% packet loss, BER: %.1f%%", m_netSource, dgid, float(m_netFrames) / 10.0F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
 		writeEndNet();
 	}
 }
@@ -1209,7 +1140,7 @@ bool CYSFControl::checkCallsign(const unsigned char* callsign) const
 	return ::memcmp(callsign, m_selfCallsign, ::strlen((char*)m_selfCallsign)) == 0;
 }
 
-void CYSFControl::processNetCallsigns(const unsigned char* data)
+void CYSFControl::processNetCallsigns(const unsigned char* data, unsigned char dgid)
 {
 	assert(data != NULL);
 
@@ -1227,8 +1158,8 @@ void CYSFControl::processNetCallsigns(const unsigned char* data)
 		}
 
 		if (::memcmp(m_netSource, "          ", 10U) != 0 && ::memcmp(m_netDest, "          ", 10U) != 0) {
-			m_display->writeFusion((char*)m_netSource, (char*)m_netDest, "N", (char*)(data + 4U));
-			LogMessage("YSF, received network data from %10.10s to %10.10s at %10.10s", m_netSource, m_netDest, data + 4U);
+			m_display->writeFusion((char*)m_netSource, (char*)m_netDest, dgid, "N", (char*)(data + 4U));
+			LogMessage("YSF, received network data from %10.10s to DG-ID %u at %10.10s", m_netSource, dgid, data + 4U);
 		}
 	}
 }
