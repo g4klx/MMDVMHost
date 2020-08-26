@@ -556,14 +556,14 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
 
 		if (port == "modem") {
 			ISerialPort* serial = new CModemSerialPort(modem);
-			display = new CNextion(conf.getCallsign(), dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF);
+			display = new CNextion(conf.getCallsign(), dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF, conf.getLocation());
 		} else if (port == "ump") {
 			if (ump != NULL) {
-				display = new CNextion(conf.getCallsign(), dmrid, ump, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF);
-                        } else {
-                		LogInfo("    NullDisplay loaded");
-                		display = new CNullDisplay;
-                        }
+				display = new CNextion(conf.getCallsign(), dmrid, ump, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF, conf.getLocation());
+			} else {
+				LogInfo("    NullDisplay loaded");
+				display = new CNullDisplay;
+			}
 		} else {
 			SERIAL_SPEED baudrate = SERIAL_9600;
 			if (screenLayout&0x0cU)
@@ -571,7 +571,7 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
 			
 			LogInfo("    Display baudrate: %u ",baudrate);
 			ISerialPort* serial = new CSerialController(port, baudrate);
-			display = new CNextion(conf.getCallsign(), dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF);
+			display = new CNextion(conf.getCallsign(), dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF, conf.getLocation());
 		}
 	} else if (type == "LCDproc") {
 		std::string address       = conf.getLCDprocAddress();

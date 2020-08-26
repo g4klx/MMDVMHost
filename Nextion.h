@@ -29,7 +29,7 @@
 class CNextion : public CDisplay
 {
 public:
-  CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness, unsigned int screenLayout, unsigned int txFrequency, unsigned int rxFrequency, bool displayTempInF);
+  CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness, unsigned int screenLayout, unsigned int txFrequency, unsigned int rxFrequency, bool displayTempInF, const std::string& location);
   virtual ~CNextion();
 
   virtual bool open();
@@ -103,6 +103,7 @@ private:
   double        m_fl_txFrequency;
   double        m_fl_rxFrequency;
   bool          m_displayTempInF;
+  std::string   m_location;
   
   void sendCommand(const char* command);
   void sendCommandAction(unsigned int status);

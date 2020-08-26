@@ -55,6 +55,7 @@ m_rxFrequency(0U),
 m_txFrequency(0U),
 m_power(0U),
 m_colorCode(0U),
+m_location(),
 m_pingTimer(1000U, 10U)
 {
 	assert(!address.empty());
@@ -88,13 +89,14 @@ CDMRNetwork::~CDMRNetwork()
 	delete[] m_id;
 }
 
-void CDMRNetwork::setConfig(const std::string & callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode)
+void CDMRNetwork::setConfig(const std::string & callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, const std::string& location)
 {
 	m_callsign    = callsign;
 	m_rxFrequency = rxFrequency;
 	m_txFrequency = txFrequency;
 	m_power       = power;
 	m_colorCode   = colorCode;
+	m_location    = location;
 }
 
 bool CDMRNetwork::open()
@@ -403,9 +405,11 @@ bool CDMRNetwork::writeConfig()
 
 	::memcpy(buffer + 0U, "DMRC", 4U);
 	::memcpy(buffer + 4U, m_id, 4U);
-	::sprintf(buffer + 8U, "%-8.8s%09u%09u%02u%02u%c%-40.40s%-40.40s", m_callsign.c_str(), m_rxFrequency, m_txFrequency, power, m_colorCode, slots, m_version, software);
+	::sprintf(buffer + 8U, "%-8.8s%09u%09u%02u%02u%-20.20s%c%-40.40s%-40.40s",
+		m_callsign.c_str(), m_rxFrequency, m_txFrequency, power, m_colorCode, m_location.c_str(), slots, m_version,
+		software);
 
-	return write((unsigned char*)buffer, 119U);
+	return write((unsigned char*)buffer, 139U);
 }
 
 bool CDMRNetwork::wantsBeacon()

@@ -35,7 +35,7 @@ public:
 	CDMRNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, bool duplex, const char* version, bool debug, bool slot1, bool slot2, HW_TYPE hwType);
 	~CDMRNetwork();
 
-	void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode);
+	void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, const std::string& location);
 
 	bool open();
 
@@ -78,6 +78,7 @@ private:
 	unsigned int    m_txFrequency;
 	unsigned int    m_power;
 	unsigned int    m_colorCode;
+	std::string     m_location;
 	CTimer          m_pingTimer;
 
 	bool writeConfig();

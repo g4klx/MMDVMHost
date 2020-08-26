@@ -42,6 +42,7 @@ public:
   unsigned int getRXFrequency() const;
   unsigned int getTXFrequency() const;
   unsigned int getPower() const;
+  std::string  getLocation() const;
 
   // The Log section
   unsigned int getLogDisplayLevel() const;
@@ -315,6 +316,7 @@ private:
   unsigned int m_rxFrequency;
   unsigned int m_txFrequency;
   unsigned int m_power;
+  std::string  m_location;
 
   unsigned int m_logDisplayLevel;
   unsigned int m_logFileLevel;
