@@ -395,13 +395,17 @@ bool CDMRNetwork::writeConfig()
 		}
 	}
 
-	char buffer[100U];
+	unsigned int power = m_power;
+	if (power > 99U)
+		power = 99U;
+
+	char buffer[200U];
 
 	::memcpy(buffer + 0U, "DMRC", 4U);
 	::memcpy(buffer + 4U, m_id, 4U);
-	::sprintf(buffer + 8U, "%02u%c%-40.40s%-40.40s", m_colorCode, slots, m_version, software);
+	::sprintf(buffer + 8U, "%-8.8s%09u%09u%02u%02u%c%-40.40s%-40.40s", m_callsign.c_str(), m_rxFrequency, m_txFrequency, power, m_colorCode, slots, m_version, software);
 
-	return write((unsigned char*)buffer, 91U);
+	return write((unsigned char*)buffer, 119U);
 }
 
 bool CDMRNetwork::wantsBeacon()
@@ -423,7 +427,7 @@ bool CDMRNetwork::write(const unsigned char* data, unsigned int length)
 
 	bool ret = m_socket.write(data, length, m_address, m_port);
 	if (!ret) {
-		LogError("DMR, Socket has failed when writing data to the master, retrying connection");
+		LogError("DMR, socket error when writing to the DMR Gateway");
 		return false;
 	}
 
