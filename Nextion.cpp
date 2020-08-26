@@ -25,7 +25,6 @@
 #include <cstring>
 #include <ctime>
 #include <clocale>
-//#include <unistd.h>
 
 const unsigned int DSTAR_RSSI_COUNT = 3U;		  // 3 * 420ms = 1260ms
 const unsigned int DSTAR_BER_COUNT  = 63U;		// 63 * 20ms = 1260ms
@@ -48,7 +47,7 @@ const unsigned int NXDN_BER_COUNT   = 28U;		  // 28 * 40ms = 1120ms
 // 00:low, others:high-speed. bit[2] is overlapped with LAYOUT_COMPAT_MASK.
 #define LAYOUT_HIGHSPEED	(3 << 2)
 
-CNextion::CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness, unsigned int screenLayout, unsigned int txFrequency, unsigned int rxFrequency, bool displayTempInF, const std::string& location) :
+CNextion::CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness, unsigned int screenLayout, unsigned int txFrequency, unsigned int rxFrequency, bool displayTempInF) :
 CDisplay(),
 m_callsign(callsign),
 m_ipaddress("(ip unknown)"),
@@ -73,8 +72,7 @@ m_txFrequency(txFrequency),
 m_rxFrequency(rxFrequency),
 m_fl_txFrequency(0.0F),
 m_fl_rxFrequency(0.0F),
-m_displayTempInF(displayTempInF),
-m_location(location)
+m_displayTempInF(displayTempInF)
 {
 	assert(serial != NULL);
 	assert(brightness >= 0U && brightness <= 100U);
@@ -179,10 +177,6 @@ void CNextion::setIdleInt()
 				sendCommandAction(22U);
 			}
 		}
-		
-		::sprintf(command, "t31.txt=\"%s\"", m_location.c_str());  // location
-		sendCommand(command);
-		sendCommandAction(23U);
 	} else {
 		sendCommandAction(17U);
 	}

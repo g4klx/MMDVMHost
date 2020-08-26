@@ -57,7 +57,6 @@ enum SECTION {
   SECTION_OLED,
   SECTION_LCDPROC,
   SECTION_LOCK_FILE,
-  SECTION_GPSD,
   SECTION_REMOTE_CONTROL
 };
 
@@ -72,12 +71,6 @@ m_daemon(false),
 m_rxFrequency(0U),
 m_txFrequency(0U),
 m_power(0U),
-m_latitude(0.0F),
-m_longitude(0.0F),
-m_height(0),
-m_location(),
-m_description(),
-m_url(),
 m_logDisplayLevel(0U),
 m_logFileLevel(0U),
 m_logFilePath(),
@@ -282,9 +275,6 @@ m_lcdprocUTC(false),
 m_lcdprocDimOnIdle(false),
 m_lockFileEnabled(false),
 m_lockFileName(),
-m_gpsdEnabled(false),
-m_gpsdAddress(),
-m_gpsdPort(),
 m_remoteControlEnabled(false),
 m_remoteControlPort(0U)
 {
@@ -366,8 +356,6 @@ bool CConf::read()
 		  section = SECTION_LCDPROC;
 	  else if (::strncmp(buffer, "[Lock File]", 11U) == 0)
 		  section = SECTION_LOCK_FILE;
-	  else if (::strncmp(buffer, "[GPSD]", 6U) == 0)
-		  section = SECTION_GPSD;
 	  else if (::strncmp(buffer, "[Remote Control]", 16U) == 0)
 		  section = SECTION_REMOTE_CONTROL;
 	  else
@@ -432,18 +420,6 @@ bool CConf::read()
 			m_rxFrequency = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Power") == 0)
 			m_power = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "Latitude") == 0)
-			m_latitude = float(::atof(value));
-		else if (::strcmp(key, "Longitude") == 0)
-			m_longitude = float(::atof(value));
-		else if (::strcmp(key, "Height") == 0)
-			m_height = ::atoi(value);
-		else if (::strcmp(key, "Location") == 0)
-			m_location = value;
-		else if (::strcmp(key, "Description") == 0)
-			m_description = value;
-		else if (::strcmp(key, "URL") == 0)
-			m_url = value;
 	} else if (section == SECTION_LOG) {
 		if (::strcmp(key, "FilePath") == 0)
 			m_logFilePath = value;
@@ -959,13 +935,6 @@ bool CConf::read()
 			m_lockFileEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "File") == 0)
 			m_lockFileName = value;
-	} else if (section == SECTION_GPSD) {
-		if (::strcmp(key, "Enable") == 0)
-			m_gpsdEnabled = ::atoi(value) == 1;
-		else if (::strcmp(key, "Address") == 0)
-			m_gpsdAddress = value;
-		else if (::strcmp(key, "Port") == 0)
-			m_gpsdPort = value;
 	} else if (section == SECTION_REMOTE_CONTROL) {
 		if (::strcmp(key, "Enable") == 0)
 			m_remoteControlEnabled = ::atoi(value) == 1;
@@ -1022,36 +991,6 @@ unsigned int CConf::getTXFrequency() const
 unsigned int CConf::getPower() const
 {
 	return m_power;
-}
-
-float CConf::getLatitude() const
-{
-	return m_latitude;
-}
-
-float CConf::getLongitude() const
-{
-	return m_longitude;
-}
-
-int CConf::getHeight() const
-{
-	return m_height;
-}
-
-std::string CConf::getLocation() const
-{
-	return m_location;
-}
-
-std::string CConf::getDescription() const
-{
-	return m_description;
-}
-
-std::string CConf::getURL() const
-{
-	return m_url;
 }
 
 unsigned int CConf::getLogDisplayLevel() const
@@ -2073,21 +2012,6 @@ bool CConf::getLockFileEnabled() const
 std::string CConf::getLockFileName() const
 {
 	return m_lockFileName;
-}
-
-bool CConf::getGPSDEnabled() const
-{
-	return m_gpsdEnabled;
-}
-
-std::string CConf::getGPSDAddress() const
-{
-	return m_gpsdAddress;
-}
-
-std::string CConf::getGPSDPort() const
-{
-	return m_gpsdPort;
 }
 
 bool CConf::getRemoteControlEnabled() const

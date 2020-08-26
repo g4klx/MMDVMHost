@@ -183,7 +183,6 @@
     <ClInclude Include="DStarSlowData.h" />
     <ClInclude Include="Golay2087.h" />
     <ClInclude Include="Golay24128.h" />
-    <ClInclude Include="GPSD.h" />
     <ClInclude Include="Hamming.h" />
     <ClInclude Include="DMRLookup.h" />
     <ClInclude Include="I2CController.h" />
@@ -281,7 +280,6 @@
     <ClCompile Include="DStarSlowData.cpp" />
     <ClCompile Include="Golay2087.cpp" />
     <ClCompile Include="Golay24128.cpp" />
-    <ClCompile Include="GPSD.cpp" />
     <ClCompile Include="Hamming.cpp" />
     <ClCompile Include="I2CController.cpp" />
     <ClCompile Include="LCDproc.cpp" />

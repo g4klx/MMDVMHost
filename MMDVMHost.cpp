@@ -161,9 +161,6 @@ m_id(0U),
 m_cwCallsign(),
 m_lockFileEnabled(false),
 m_lockFileName(),
-#if defined(USE_GPSD)
-m_gpsd(NULL),
-#endif
 m_remoteControl(NULL),
 m_fixedMode(false)
 {
@@ -1000,11 +997,6 @@ int CMMDVMHost::run()
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->clock(ms);
 
-#if defined(USE_GPSD)
-		if (m_gpsd != NULL)
-			m_gpsd->clock(ms);
-#endif
-
 		m_cwIdTimer.clock(ms);
 		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
 			if (!m_modem->hasTX()){
@@ -1079,13 +1071,6 @@ int CMMDVMHost::run()
 
 	m_display->close();
 	delete m_display;
-
-#if defined(USE_GPSD)
-	if (m_gpsd != NULL) {
-		m_gpsd->close();
-		delete m_gpsd;
-	}
-#endif
 
 	if (m_ump != NULL) {
 		m_ump->close();
@@ -1354,38 +1339,20 @@ bool CMMDVMHost::createDMRNetwork()
 	LogInfo("    Slot 2: %s", slot2 ? "enabled" : "disabled");
 	LogInfo("    Mode Hang: %us", m_dmrNetModeHang);
 
-	m_dmrNetwork = new CDMRNetwork(address, port, local, id, password, m_duplex, VERSION, debug, slot1, slot2, hwType);
-
-	std::string options = m_conf.getDMRNetworkOptions();
-	if (!options.empty()) {
-		LogInfo("    Options: %s", options.c_str());
-		m_dmrNetwork->setOptions(options);
-	}
+	m_dmrNetwork = new CDMRNetwork(address, port, local, id, m_duplex, VERSION, debug, slot1, slot2, hwType);
 
 	unsigned int rxFrequency = m_conf.getRXFrequency();
 	unsigned int txFrequency = m_conf.getTXFrequency();
 	unsigned int power       = m_conf.getPower();
 	unsigned int colorCode   = m_conf.getDMRColorCode();
-	float latitude           = m_conf.getLatitude();
-	float longitude          = m_conf.getLongitude();
-	int height               = m_conf.getHeight();
-	std::string location     = m_conf.getLocation();
-	std::string description  = m_conf.getDescription();
-	std::string url          = m_conf.getURL();
 
-	LogInfo("Info Parameters");
+	LogInfo("RF Parameters");
 	LogInfo("    Callsign: %s", m_callsign.c_str());
 	LogInfo("    RX Frequency: %uHz", rxFrequency);
 	LogInfo("    TX Frequency: %uHz", txFrequency);
 	LogInfo("    Power: %uW", power);
-	LogInfo("    Latitude: %fdeg N", latitude);
-	LogInfo("    Longitude: %fdeg E", longitude);
-	LogInfo("    Height: %um", height);
-	LogInfo("    Location: \"%s\"", location.c_str());
-	LogInfo("    Description: \"%s\"", description.c_str());
-	LogInfo("    URL: \"%s\"", url.c_str());
 
-	m_dmrNetwork->setConfig(m_callsign, rxFrequency, txFrequency, power, colorCode, latitude, longitude, height, location, description, url);
+	m_dmrNetwork->setConfig(m_callsign, rxFrequency, txFrequency, power, colorCode);
 
 	bool ret = m_dmrNetwork->open();
 	if (!ret) {
@@ -1394,26 +1361,6 @@ bool CMMDVMHost::createDMRNetwork()
 		return false;
 	}
 
-#if defined(USE_GPSD)
-	bool gpsdEnabled = m_conf.getGPSDEnabled();
-	if (gpsdEnabled) {
-		std::string gpsdAddress = m_conf.getGPSDAddress();
-		std::string gpsdPort    = m_conf.getGPSDPort();
-
-		LogInfo("GPSD Parameters");
-		LogInfo("    Address: %s", gpsdAddress.c_str());
-		LogInfo("    Port: %s", gpsdPort.c_str());
-
-		m_gpsd = new CGPSD(gpsdAddress, gpsdPort, m_dmrNetwork);
-
-		ret = m_gpsd->open();
-		if (!ret) {
-			delete m_gpsd;
-			m_gpsd = NULL;
-		}
-	}
-#endif
-
 	m_dmrNetwork->enable(true);
 
 	return true;
@@ -1421,12 +1368,12 @@ bool CMMDVMHost::createDMRNetwork()
 
 bool CMMDVMHost::createYSFNetwork()
 {
-	std::string myAddress  = m_conf.getFusionNetworkMyAddress();
-	unsigned int myPort    = m_conf.getFusionNetworkMyPort();
+	std::string myAddress      = m_conf.getFusionNetworkMyAddress();
+	unsigned int myPort        = m_conf.getFusionNetworkMyPort();
 	std::string gatewayAddress = m_conf.getFusionNetworkGatewayAddress();
 	unsigned int gatewayPort   = m_conf.getFusionNetworkGatewayPort();
-	m_ysfNetModeHang       = m_conf.getFusionNetworkModeHang();
-	bool debug             = m_conf.getFusionNetworkDebug();
+	m_ysfNetModeHang           = m_conf.getFusionNetworkModeHang();
+	bool debug                 = m_conf.getFusionNetworkDebug();
 
 	LogInfo("System Fusion Network Parameters");
 	LogInfo("    Local Address: %s", myAddress.c_str());

@@ -302,9 +302,6 @@
     <ClInclude Include="NXDNKenwoodNetwork.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="GPSD.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -569,9 +566,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NXDNKenwoodNetwork.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GPSD.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -42,12 +42,6 @@ public:
   unsigned int getRXFrequency() const;
   unsigned int getTXFrequency() const;
   unsigned int getPower() const;
-  float        getLatitude() const;
-  float        getLongitude() const;
-  int          getHeight() const;
-  std::string  getLocation() const;
-  std::string  getDescription() const;
-  std::string  getURL() const;
 
   // The Log section
   unsigned int getLogDisplayLevel() const;
@@ -305,11 +299,6 @@ public:
   bool         getLockFileEnabled() const;
   std::string  getLockFileName() const;
 
-  // The GPSD section
-  bool           getGPSDEnabled() const;
-  std::string    getGPSDAddress() const;
-  std::string    getGPSDPort() const;
-
   // The Remote Control section
   bool         getRemoteControlEnabled() const;
   unsigned int getRemoteControlPort() const;
@@ -326,12 +315,6 @@ private:
   unsigned int m_rxFrequency;
   unsigned int m_txFrequency;
   unsigned int m_power;
-  float        m_latitude;
-  float        m_longitude;
-  int          m_height;
-  std::string  m_location;
-  std::string  m_description;
-  std::string  m_url;
 
   unsigned int m_logDisplayLevel;
   unsigned int m_logFileLevel;
@@ -562,10 +545,6 @@ private:
 
   bool         m_lockFileEnabled;
   std::string  m_lockFileName;
-
-  bool         m_gpsdEnabled;
-  std::string  m_gpsdAddress;
-  std::string  m_gpsdPort;
 
   bool         m_remoteControlEnabled;
   unsigned int m_remoteControlPort;
