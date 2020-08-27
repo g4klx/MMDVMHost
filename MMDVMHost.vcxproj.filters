@@ -77,9 +77,6 @@
     <ClInclude Include="SerialController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SHA256.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="StopWatch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -356,9 +353,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SerialController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SHA256.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StopWatch.cpp">
