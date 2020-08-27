@@ -1345,16 +1345,14 @@ bool CMMDVMHost::createDMRNetwork()
 	unsigned int txFrequency = m_conf.getTXFrequency();
 	unsigned int power       = m_conf.getPower();
 	unsigned int colorCode   = m_conf.getDMRColorCode();
-	std::string location     = m_conf.getLocation();
 
 	LogInfo("Info Parameters");
 	LogInfo("    Callsign: %s", m_callsign.c_str());
 	LogInfo("    RX Frequency: %uHz", rxFrequency);
 	LogInfo("    TX Frequency: %uHz", txFrequency);
 	LogInfo("    Power: %uW", power);
-	LogInfo("    Location: \"%s\"", location.c_str());
 
-	m_dmrNetwork->setConfig(m_callsign, rxFrequency, txFrequency, power, colorCode, location);
+	m_dmrNetwork->setConfig(m_callsign, rxFrequency, txFrequency, power, colorCode);
 
 	bool ret = m_dmrNetwork->open();
 	if (!ret) {

@@ -71,7 +71,6 @@ m_daemon(false),
 m_rxFrequency(0U),
 m_txFrequency(0U),
 m_power(0U),
-m_location(),
 m_logDisplayLevel(0U),
 m_logFileLevel(0U),
 m_logFilePath(),
@@ -421,8 +420,6 @@ bool CConf::read()
 			m_rxFrequency = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Power") == 0)
 			m_power = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "Location") == 0)
-			m_location = value;
 	} else if (section == SECTION_LOG) {
 		if (::strcmp(key, "FilePath") == 0)
 			m_logFilePath = value;
@@ -994,11 +991,6 @@ unsigned int CConf::getTXFrequency() const
 unsigned int CConf::getPower() const
 {
 	return m_power;
-}
-
-std::string CConf::getLocation() const
-{
-	return m_location;
 }
 
 unsigned int CConf::getLogDisplayLevel() const
