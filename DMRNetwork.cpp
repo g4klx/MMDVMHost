@@ -241,9 +241,6 @@ bool CDMRNetwork::write(const CDMRData& data)
 
 	buffer[54U] = data.getRSSI();
 
-	if (m_debug)
-		CUtils::dump(1U, "Network Transmitted", buffer, HOMEBREW_DATA_PACKET_LENGTH);
-
 	write(buffer, HOMEBREW_DATA_PACKET_LENGTH);
 
 	return true;
