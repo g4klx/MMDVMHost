@@ -301,6 +301,7 @@ public:
 
   // The Remote Control section
   bool         getRemoteControlEnabled() const;
+  std::string  getRemoteControlAddress() const;
   unsigned int getRemoteControlPort() const;
 
 private:
@@ -547,6 +548,7 @@ private:
   std::string  m_lockFileName;
 
   bool         m_remoteControlEnabled;
+  std::string  m_remoteControlAddress;
   unsigned int m_remoteControlPort;
 };
 

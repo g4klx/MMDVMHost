@@ -49,8 +49,8 @@ public:
 
 private:
 	CUDPSocket     m_socket;
-	in_addr        m_address;
-	unsigned int   m_port;
+	sockaddr_storage m_address;
+	unsigned int   m_addrlen;
 	bool           m_debug;
 	bool           m_enabled;
 	CRingBuffer<unsigned char> m_buffer;

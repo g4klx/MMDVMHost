@@ -32,8 +32,8 @@ const unsigned int CW_ARGS = 2U;
 
 const unsigned int BUFFER_LENGTH = 100U;
 
-CRemoteControl::CRemoteControl(unsigned int port) :
-m_socket(port),
+CRemoteControl::CRemoteControl(const std::string address, unsigned int port) :
+m_socket(address, port),
 m_command(RCD_NONE),
 m_args()
 {
@@ -56,9 +56,9 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 
 	char command[BUFFER_LENGTH];
 	char buffer[BUFFER_LENGTH];
-	in_addr address;
-	unsigned int port;
-	int ret = m_socket.read((unsigned char*)buffer, BUFFER_LENGTH, address, port);
+	sockaddr_storage address;
+	unsigned int addrlen;
+	int ret = m_socket.read((unsigned char*)buffer, BUFFER_LENGTH, address, addrlen);
 	if (ret > 0) {
 		buffer[ret] = '\0';
 
