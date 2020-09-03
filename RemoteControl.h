@@ -54,7 +54,7 @@ enum REMOTE_COMMAND {
 
 class CRemoteControl {
 public:
-	CRemoteControl(unsigned int port);
+	CRemoteControl(const std::string address, unsigned int port);
 	~CRemoteControl();
 
 	bool open();

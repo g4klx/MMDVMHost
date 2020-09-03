@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017,2018,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -32,12 +32,10 @@
 class CDMRNetwork
 {
 public:
-	CDMRNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, HW_TYPE hwType);
+	CDMRNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, bool duplex, const char* version, bool debug, bool slot1, bool slot2, HW_TYPE hwType);
 	~CDMRNetwork();
 
-	void setOptions(const std::string& options);
-
-	void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url);
+	void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode);
 
 	bool open();
 
@@ -51,8 +49,6 @@ public:
 
 	bool writeTalkerAlias(unsigned int id, unsigned char type, const unsigned char* data);
 
-	bool writeHomePosition(float latitude, float longitude);
-
 	bool wantsBeacon();
 
 	void clock(unsigned int ms);
@@ -61,10 +57,10 @@ public:
 
 private: 
 	std::string     m_addressStr;
-	in_addr         m_address;
+	sockaddr_storage m_address;
+	unsigned int    m_addrlen;
 	unsigned int    m_port;
 	uint8_t*        m_id;
-	std::string     m_password;
 	bool            m_duplex;
 	const char*     m_version;
 	bool            m_debug;
@@ -73,47 +69,19 @@ private:
 	bool            m_slot1;
 	bool            m_slot2;
 	HW_TYPE         m_hwType;
-
-	enum STATUS {
-		WAITING_CONNECT,
-		WAITING_LOGIN,
-		WAITING_AUTHORISATION,
-		WAITING_CONFIG,
-		WAITING_OPTIONS,
-		RUNNING
-	};
-
-	STATUS         m_status;
-	CTimer         m_retryTimer;
-	CTimer         m_timeoutTimer;
-	unsigned char* m_buffer;
-	unsigned char* m_salt;
-	uint32_t*      m_streamId;
-
+	unsigned char*  m_buffer;
+	uint32_t*       m_streamId;
 	CRingBuffer<unsigned char> m_rxData;
+	bool            m_beacon;
+	std::mt19937    m_random;
+	std::string     m_callsign;
+	unsigned int    m_rxFrequency;
+	unsigned int    m_txFrequency;
+	unsigned int    m_power;
+	unsigned int    m_colorCode;
+	CTimer          m_pingTimer;
 
-	std::string    m_options;
-
-	std::string    m_callsign;
-	unsigned int   m_rxFrequency;
-	unsigned int   m_txFrequency;
-	unsigned int   m_power;
-	unsigned int   m_colorCode;
-	float          m_latitude;
-	float          m_longitude;
-	int            m_height;
-	std::string    m_location;
-	std::string    m_description;
-	std::string    m_url;
-
-	bool           m_beacon;
-	std::mt19937   m_random;
-
-	bool writeLogin();
-	bool writeAuthorisation();
-	bool writeOptions();
 	bool writeConfig();
-	bool writePing();
 
 	bool write(const unsigned char* data, unsigned int length);
 };

@@ -50,16 +50,16 @@ public:
 	void clock(unsigned int ms);
 
 private:
-	CUDPSocket     m_socket;
-	in_addr        m_address;
-	unsigned int   m_port;
-	unsigned int   m_sampleRate;
-	bool           m_debug;
-	bool           m_enabled;
+	CUDPSocket       m_socket;
+	sockaddr_storage m_addr;
+	unsigned int     m_addrLen;
+	unsigned int     m_sampleRate;
+	bool             m_debug;
+	bool             m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
-	CTimer         m_pollTimer;
-	SRC_STATE*     m_incoming;
-	SRC_STATE*     m_outgoing;
+	CTimer           m_pollTimer;
+	SRC_STATE*       m_incoming;
+	SRC_STATE*       m_outgoing;
 
 	bool writePoll();
 };

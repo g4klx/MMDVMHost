@@ -188,7 +188,6 @@
     <ClInclude Include="FMNetwork.h" />
     <ClInclude Include="Golay2087.h" />
     <ClInclude Include="Golay24128.h" />
-    <ClInclude Include="GPSD.h" />
     <ClInclude Include="Hamming.h" />
     <ClInclude Include="DMRLookup.h" />
     <ClInclude Include="IIRDirectForm1Filter.h" />
@@ -238,7 +237,6 @@
     <ClInclude Include="SerialController.h" />
     <ClInclude Include="SerialModem.h" />
     <ClInclude Include="SerialPort.h" />
-    <ClInclude Include="SHA256.h" />
     <ClInclude Include="StopWatch.h" />
     <ClInclude Include="Sync.h" />
     <ClInclude Include="TFTSerial.h" />
@@ -292,7 +290,6 @@
     <ClCompile Include="FMNetwork.cpp" />
     <ClCompile Include="Golay2087.cpp" />
     <ClCompile Include="Golay24128.cpp" />
-    <ClCompile Include="GPSD.cpp" />
     <ClCompile Include="Hamming.cpp" />
     <ClCompile Include="IIRDirectForm1Filter.cpp" />
     <ClCompile Include="LCDproc.cpp" />
@@ -337,7 +334,6 @@
     <ClCompile Include="SerialController.cpp" />
     <ClCompile Include="SerialModem.cpp" />
     <ClCompile Include="SerialPort.cpp" />
-    <ClCompile Include="SHA256.cpp" />
     <ClCompile Include="StopWatch.cpp" />
     <ClCompile Include="Sync.cpp" />
     <ClCompile Include="TFTSerial.cpp" />

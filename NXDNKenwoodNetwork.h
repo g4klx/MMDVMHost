@@ -49,9 +49,9 @@ public:
 private:
 	CUDPSocket     m_rtpSocket;
     CUDPSocket     m_rtcpSocket;
-    in_addr        m_address;
-	unsigned int   m_rtcpPort;
-    unsigned int   m_rtpPort;
+    sockaddr_storage m_rtcpaddress;
+    sockaddr_storage m_rtpaddress;
+    unsigned int   m_addrlen;
     bool           m_enabled;
     bool           m_headerSeen;
     bool           m_seen1;

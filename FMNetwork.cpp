@@ -29,8 +29,8 @@ const unsigned int BUFFER_LENGTH = 500U;
 
 CFMNetwork::CFMNetwork(const std::string& localAddress, unsigned int localPort, const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int sampleRate, bool debug) :
 m_socket(localAddress, localPort),
-m_address(),
-m_port(gatewayPort),
+m_addr(),
+m_addrLen(),
 m_sampleRate(sampleRate),
 m_debug(debug),
 m_enabled(false),
@@ -41,7 +41,7 @@ m_pollTimer(1000U, 5U)
 	assert(!gatewayAddress.empty());
 	assert(sampleRate > 0U);
 
-	m_address = CUDPSocket::lookup(gatewayAddress);
+	CUDPSocket::lookup(gatewayAddress, gatewayPort, m_addr, m_addrLen);
 
 	int error;
 	m_incoming = ::src_new(SRC_SINC_FASTEST, 1, &error);
@@ -60,9 +60,6 @@ CFMNetwork::~CFMNetwork()
 bool CFMNetwork::open()
 {
 	LogMessage("Opening FM network connection");
-
-	if (m_address.s_addr == INADDR_NONE)
-		return false;
 
 	m_pollTimer.start();
 
@@ -115,7 +112,7 @@ bool CFMNetwork::writeData(float* data, unsigned int nSamples)
 	if (m_debug)
 		CUtils::dump(1U, "FM Network Data Sent", buffer, length);
 
-	return m_socket.write(buffer, length, m_address, m_port);
+	return m_socket.write(buffer, length, m_addr, m_addrLen);
 }
 
 bool CFMNetwork::writeEOT()
@@ -130,7 +127,7 @@ bool CFMNetwork::writeEOT()
 	if (m_debug)
 		CUtils::dump(1U, "FM Network End of Transmission Sent", buffer, 3U);
 
-	return m_socket.write(buffer, 3U, m_address, m_port);
+	return m_socket.write(buffer, 3U, m_addr, m_addrLen);
 }
 
 void CFMNetwork::clock(unsigned int ms)
@@ -143,15 +140,15 @@ void CFMNetwork::clock(unsigned int ms)
 
 	unsigned char buffer[BUFFER_LENGTH];
 
-	in_addr address;
-	unsigned int port;
-	int length = m_socket.read(buffer, BUFFER_LENGTH, address, port);
+	sockaddr_storage addr;
+	unsigned int addrlen;
+	int length = m_socket.read(buffer, BUFFER_LENGTH, addr, addrlen);
 	if (length <= 0)
 		return;
 
 	// Check if the data is for us
-	if (m_address.s_addr != address.s_addr || port != m_port) {
-		LogMessage("FM packet received from an invalid source, %08X != %08X and/or %u != %u", m_address.s_addr, address.s_addr, m_port, port);
+	if (!CUDPSocket::match(addr, m_addr)) {
+		LogMessage("FM packet received from an invalid source");
 		return;
 	}
 
@@ -263,5 +260,6 @@ bool CFMNetwork::writePoll()
 	if (m_debug)
 		CUtils::dump(1U, "FM Network Poll Sent", buffer, 3U);
 
-	return m_socket.write(buffer, 3U, m_address, m_port);
+	return m_socket.write(buffer, 3U, m_addr, m_addrLen);
 }
+

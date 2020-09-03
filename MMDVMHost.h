@@ -42,11 +42,9 @@
 #include "Timer.h"
 #include "Modem.h"
 #include "Conf.h"
-#include "GPSD.h"
 #include "UMP.h"
 
 #include <string>
-
 
 
 class CMMDVMHost
@@ -113,9 +111,6 @@ private:
   std::string     m_cwCallsign;
   bool            m_lockFileEnabled;
   std::string     m_lockFileName;
-#if defined(USE_GPSD)
-  CGPSD*          m_gpsd;
-#endif
   CRemoteControl* m_remoteControl;
   bool            m_fixedMode;
 

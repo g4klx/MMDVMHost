@@ -121,44 +121,53 @@ CLCDproc::~CLCDproc()
 
 bool CLCDproc::open()
 {
-	const char *server;
-	unsigned int port, localPort;
-	struct sockaddr_in serverAddress, clientAddress;
-	struct hostent *h;
+	int err;
+	unsigned int addrlen;
+	std::string port, localPort;
+	struct sockaddr_storage serverAddress, clientAddress;
+	struct addrinfo hints, *res;
 
-	server    = m_address.c_str();
-	port      = m_port;
-	localPort = m_localPort;
+	port      = std::to_string(m_port);
+	localPort = std::to_string(m_localPort);
+	memset(&hints, 0, sizeof(hints));
 
+	/* Lookup the hostname address */
+	hints.ai_flags = AI_NUMERICSERV;
+	hints.ai_socktype = SOCK_STREAM;
+	err = getaddrinfo(m_address.c_str(), port.c_str(), &hints, &res);
+	if (err) {
+		LogError("LCDproc, cannot lookup server");
+		return false;
+	}
+	memcpy(&serverAddress, res->ai_addr, addrlen = res->ai_addrlen);
+	freeaddrinfo(res);
+
+	/* Lookup the client address (random port - need to specify manual port from ini file) */
+	hints.ai_flags = AI_NUMERICSERV | AI_PASSIVE;
+	hints.ai_family = serverAddress.ss_family;
+	err = getaddrinfo(NULL, localPort.c_str(), &hints, &res);
+	if (err) {
+		LogError("LCDproc, cannot lookup client");
+		return false;
+	}
+	memcpy(&clientAddress, res->ai_addr, res->ai_addrlen);
+	freeaddrinfo(res);
 
 	/* Create TCP socket */
-	m_socketfd = socket(AF_INET, SOCK_STREAM, 0);
+	m_socketfd = socket(clientAddress.ss_family, SOCK_STREAM, 0);
 	if (m_socketfd == -1) {
 		LogError("LCDproc, failed to create socket");
 		return false;
 	}
 
-	/* Sets client address (random port - need to specify manual port from ini file?) */
-	clientAddress.sin_family      = AF_INET;
-	clientAddress.sin_addr.s_addr = htonl(INADDR_ANY);
-	//clientAddress.sin_port        = htons(0);
-	clientAddress.sin_port        = htons(localPort);
-
 	/* Bind the address to the socket */
-	if (bind(m_socketfd, (struct sockaddr *)&clientAddress, sizeof(clientAddress)) == -1) {
+	if (bind(m_socketfd, (struct sockaddr *)&clientAddress, addrlen) == -1) {
 		LogError("LCDproc, error whilst binding address");
 		return false;
 	}
 
-	/* Lookup the hostname address */
-	h = gethostbyname(server);
-
-	/* Sets server address */
-	serverAddress.sin_family = h->h_addrtype;
-	memcpy((char*)&serverAddress.sin_addr.s_addr, h->h_addr_list[0], h->h_length);
-	serverAddress.sin_port = htons(port);
-
-	if (connect(m_socketfd, (struct sockaddr * )&serverAddress, sizeof(serverAddress))==-1) {
+	/* Connect to server */
+	if (connect(m_socketfd, (struct sockaddr *)&serverAddress, addrlen) == -1) {
 		LogError("LCDproc, cannot connect to server");
 		return false;
 	}
