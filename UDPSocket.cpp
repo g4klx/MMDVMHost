@@ -17,7 +17,6 @@
  */
 
 #include "UDPSocket.h"
-#include "Log.h"
 
 #include <cassert>
 
@@ -26,12 +25,20 @@
 #include <cstring>
 #endif
 
+#if defined(HAVE_LOG_H)
+#include "Log.h"
+#else
+#define LogError(fmt, ...)	::fprintf(stderr, fmt "\n", ## __VA_ARGS__)
+#define LogInfo(fmt, ...)	::fprintf(stderr, fmt "\n", ## __VA_ARGS__)
+#endif
 
 CUDPSocket::CUDPSocket(const std::string& address, unsigned int port) :
 m_address(address),
 m_port(port),
 m_fd(-1)
 {
+	assert(!address.empty());
+
 #if defined(_WIN32) || defined(_WIN64)
 	WSAData data;
 	int wsaRet = ::WSAStartup(MAKEWORD(2, 2), &data);
@@ -199,6 +206,8 @@ bool CUDPSocket::open(const unsigned int af)
 #endif
 			return false;
 		}
+
+		LogInfo("Opening UDP port on %u", m_port);
 	}
 
 	return true;
