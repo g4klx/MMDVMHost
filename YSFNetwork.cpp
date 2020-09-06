@@ -57,7 +57,7 @@ bool CYSFNetwork::open()
 {
 	LogMessage("Opening YSF network connection");
 
-	if (CUDPSocket::isnone(m_address))
+	if (CUDPSocket::isNone(m_address))
 		return false;
 
 	m_pollTimer.start();

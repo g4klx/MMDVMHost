@@ -65,7 +65,7 @@ bool CDStarNetwork::open()
 {
 	LogMessage("Opening D-Star network connection");
 
-	if (CUDPSocket::isnone(m_address))
+	if (CUDPSocket::isNone(m_address))
 		return false;
 
 	m_pollTimer.start();

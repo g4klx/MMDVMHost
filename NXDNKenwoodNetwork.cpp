@@ -82,8 +82,8 @@ bool CNXDNKenwoodNetwork::open()
 {
 	LogMessage("Opening Kenwood connection");
 
-	if (CUDPSocket::isnone(m_rtpaddress) ||
-	    CUDPSocket::isnone(m_rtcpaddress))
+	if (CUDPSocket::isNone(m_rtpaddress) ||
+	    CUDPSocket::isNone(m_rtcpaddress))
 		return false;
 
 	if (!m_rtcpSocket.open())
@@ -766,7 +766,7 @@ unsigned int CNXDNKenwoodNetwork::readRTP(unsigned char* data)
 	sockaddr_storage address;
 	unsigned int addrlen;
 	int length = m_rtpSocket.read(buffer, BUFFER_LENGTH, address, addrlen);
-	if (length <= 0 || !CUDPSocket::match_addr(m_rtpaddress, address))
+	if (length <= 0 || !CUDPSocket::match(m_rtpaddress, address, IMT_ADDRESS_ONLY))
 		return 0U;
 
 	if (!m_enabled)
@@ -789,7 +789,7 @@ unsigned int CNXDNKenwoodNetwork::readRTCP(unsigned char* data)
 	sockaddr_storage address;
 	unsigned int addrlen;
 	int length = m_rtcpSocket.read(buffer, BUFFER_LENGTH, address, addrlen);
-	if (length <= 0 || !CUDPSocket::match_addr(m_rtcpaddress, address))
+	if (length <= 0 || !CUDPSocket::match(m_rtcpaddress, address, IMT_ADDRESS_ONLY))
 		return 0U;
 
 	if (!m_enabled)

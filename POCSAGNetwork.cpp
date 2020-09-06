@@ -47,7 +47,7 @@ bool CPOCSAGNetwork::open()
 {
 	LogMessage("Opening POCSAG network connection");
 
-	if (CUDPSocket::isnone(m_address))
+	if (CUDPSocket::isNone(m_address))
 		return false;
 
 	return m_socket.open();
