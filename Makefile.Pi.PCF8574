@@ -4,7 +4,7 @@
 CC      = cc
 CXX     = c++
 CFLAGS  = -g -O3 -Wall -std=c++0x -pthread -DHAVE_LOG_H -DHD44780 -DPCF8574_DISPLAY -I/usr/local/include
-LIBS    = -lwiringPi -lwiringPiDev -lpthread
+LIBS    = -lwiringPi -lwiringPiDev -lpthread -lsamplerate -lutil
 LDFLAGS = -g -L/usr/local/lib
 
 OBJECTS = AMBEFEC.o AX25Control.o AX25Network.o BCH.o BPTC19696.o CASTInfo.o Conf.o CRC.o Display.o DMRControl.o DMRCSBK.o DMRData.o \

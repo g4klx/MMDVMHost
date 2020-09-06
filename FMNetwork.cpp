@@ -30,7 +30,7 @@ const unsigned int BUFFER_LENGTH = 500U;
 CFMNetwork::CFMNetwork(const std::string& localAddress, unsigned int localPort, const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int sampleRate, bool debug) :
 m_socket(localAddress, localPort),
 m_addr(),
-m_addrLen(),
+m_addrLen(0U),
 m_sampleRate(sampleRate),
 m_debug(debug),
 m_enabled(false),
@@ -41,7 +41,8 @@ m_pollTimer(1000U, 5U)
 	assert(!gatewayAddress.empty());
 	assert(sampleRate > 0U);
 
-	CUDPSocket::lookup(gatewayAddress, gatewayPort, m_addr, m_addrLen);
+	if (CUDPSocket::lookup(gatewayAddress, gatewayPort, m_addr, m_addrLen) != 0)
+		m_addrLen = 0U;
 
 	int error;
 	m_incoming = ::src_new(SRC_SINC_FASTEST, 1, &error);
@@ -59,11 +60,16 @@ CFMNetwork::~CFMNetwork()
 
 bool CFMNetwork::open()
 {
+	if (m_addrLen == 0U) {
+		LogError("Unable to resolve the address of the FM Gateway");
+		return false;
+	}
+
 	LogMessage("Opening FM network connection");
 
 	m_pollTimer.start();
 
-	return m_socket.open();
+	return m_socket.open(m_addr);
 }
 
 bool CFMNetwork::writeData(float* data, unsigned int nSamples)

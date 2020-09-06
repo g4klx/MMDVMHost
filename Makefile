@@ -2,9 +2,9 @@
 
 CC      = cc
 CXX     = c++
-CFLAGS  = -g -O3 -Wall -std=c++0x -pthread -DHAVE_LOG_H
-LIBS    = -lpthread
-LDFLAGS = -g
+CFLAGS  = -g -O3 -Wall -std=c++0x -pthread -DHAVE_LOG_H -I/usr/local/include
+LIBS    = -lpthread -lsamplerate -lutil
+LDFLAGS = -g -L/usr/local/lib
 
 OBJECTS = AMBEFEC.o AX25Control.o AX25Network.o BCH.o BPTC19696.o CASTInfo.o Conf.o CRC.o Display.o DMRControl.o DMRCSBK.o DMRData.o \
 	DMRDataHeader.o DMREMB.o DMREmbeddedData.o DMRFullLC.o DMRLookup.o DMRLC.o DMRNetwork.o DMRShortLC.o DMRSlot.o DMRSlotType.o \
