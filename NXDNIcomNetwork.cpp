@@ -30,8 +30,8 @@ const unsigned int BUFFER_LENGTH = 200U;
 
 CNXDNIcomNetwork::CNXDNIcomNetwork(const std::string& localAddress, unsigned int localPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug) :
 m_socket(localAddress, localPort),
-m_address(),
-m_addrlen(),
+m_addr(),
+m_addrLen(0U),
 m_debug(debug),
 m_enabled(false),
 m_buffer(1000U, "NXDN Network")
@@ -39,7 +39,8 @@ m_buffer(1000U, "NXDN Network")
 	assert(gatewayPort > 0U);
 	assert(!gatewayAddress.empty());
 
-	CUDPSocket::lookup(gatewayAddress, gatewayPort, m_address, m_addrlen);
+	if (CUDPSocket::lookup(gatewayAddress, gatewayPort, m_addr, m_addrLen) != 0)
+		m_addrLen = 0U;
 }
 
 CNXDNIcomNetwork::~CNXDNIcomNetwork()
@@ -48,12 +49,14 @@ CNXDNIcomNetwork::~CNXDNIcomNetwork()
 
 bool CNXDNIcomNetwork::open()
 {
+	if (m_addrLen == 0U) {
+		LogError("Unable to resolve the address of the NXDN Gateway");
+		return false;
+	}
+
 	LogMessage("Opening NXDN network connection");
 
-	if (CUDPSocket::isnone(m_address))
-		return false;
-
-	return m_socket.open();
+	return m_socket.open(m_addr);
 }
 
 bool CNXDNIcomNetwork::write(const unsigned char* data, NXDN_NETWORK_MESSAGE_TYPE type)
@@ -100,7 +103,7 @@ bool CNXDNIcomNetwork::write(const unsigned char* data, NXDN_NETWORK_MESSAGE_TYP
 	if (m_debug)
 		CUtils::dump(1U, "NXDN Network Data Sent", buffer, 102U);
 
-	return m_socket.write(buffer, 102U, m_address, m_addrlen);
+	return m_socket.write(buffer, 102U, m_addr, m_addrLen);
 }
 
 void CNXDNIcomNetwork::clock(unsigned int ms)
@@ -108,10 +111,18 @@ void CNXDNIcomNetwork::clock(unsigned int ms)
 	unsigned char buffer[BUFFER_LENGTH];
 
 	sockaddr_storage address;
-	unsigned int addrlen;
-	int length = m_socket.read(buffer, BUFFER_LENGTH, address, addrlen);
-	if (length <= 0 || !CUDPSocket::match(m_address, address))
+	unsigned int addrLen;
+	int length = m_socket.read(buffer, BUFFER_LENGTH, address, addrLen);
+	if (length <= 0)
 		return;
+
+	if (!CUDPSocket::match(m_addr, address)) {
+		LogMessage("NXDN, packet received from an invalid source");
+		return;
+	}
+
+	if (m_debug)
+		CUtils::dump(1U, "NXDN Network Data Received", buffer, length);
 
 	// Invalid packet type?
 	if (::memcmp(buffer, "ICOM", 4U) != 0)
@@ -122,9 +133,6 @@ void CNXDNIcomNetwork::clock(unsigned int ms)
 
 	if (!m_enabled)
 		return;
-
-	if (m_debug)
-		CUtils::dump(1U, "NXDN Network Data Received", buffer, length);
 
 	m_buffer.addData(buffer + 40U, 33U);
 }

@@ -34,66 +34,67 @@ public:
 
 	virtual bool open();
 
-    virtual void enable(bool enabled);
+	virtual void enable(bool enabled);
 
-    virtual bool write(const unsigned char* data, NXDN_NETWORK_MESSAGE_TYPE type);
+	virtual bool write(const unsigned char* data, NXDN_NETWORK_MESSAGE_TYPE type);
 
 	virtual bool read(unsigned char* data);
 
-    virtual void reset();
+	virtual void reset();
 
-    virtual void close();
+	virtual void close();
 
-    virtual void clock(unsigned int ms);
+	virtual void clock(unsigned int ms);
 
 private:
-	CUDPSocket     m_rtpSocket;
-    CUDPSocket     m_rtcpSocket;
-    sockaddr_storage m_rtcpaddress;
-    sockaddr_storage m_rtpaddress;
-    unsigned int   m_addrlen;
-    bool           m_enabled;
-    bool           m_headerSeen;
-    bool           m_seen1;
-    bool           m_seen2;
-    bool           m_seen3;
-    bool           m_seen4;
-    unsigned char* m_sacch;
-    uint8_t        m_sessionId;
-    uint16_t       m_seqNo;
-    unsigned int   m_ssrc;
-    bool           m_debug;
-    uint32_t       m_startSecs;
-    uint32_t       m_startUSecs;
-    CTimer         m_rtcpTimer;
-    CTimer         m_hangTimer;
-    unsigned char  m_hangType;
-    unsigned short m_hangSrc;
-    unsigned short m_hangDst;
-    std::mt19937   m_random;
+	CUDPSocket       m_rtpSocket;
+	CUDPSocket       m_rtcpSocket;
+	sockaddr_storage m_rtcpAddr;
+	sockaddr_storage m_rtpAddr;
+	unsigned int     m_rtcpAddrLen;
+	unsigned int     m_rtpAddrLen;
+	bool             m_enabled;
+	bool             m_headerSeen;
+	bool             m_seen1;
+	bool             m_seen2;
+	bool             m_seen3;
+	bool             m_seen4;
+	unsigned char*   m_sacch;
+	uint8_t          m_sessionId;
+	uint16_t         m_seqNo;
+	unsigned int     m_ssrc;
+	bool             m_debug;
+	uint32_t         m_startSecs;
+	uint32_t         m_startUSecs;
+	CTimer           m_rtcpTimer;
+	CTimer           m_hangTimer;
+	unsigned char    m_hangType;
+	unsigned short   m_hangSrc;
+	unsigned short   m_hangDst;
+	std::mt19937     m_random;
 
-    bool processIcomVoiceHeader(const unsigned char* data);
-    bool processIcomVoiceData(const unsigned char* data);
-    bool processIcomDataHeader(const unsigned char* data);
-    bool processIcomDataData(const unsigned char* data);
-    bool processIcomDataTrailer(const unsigned char* data);
-    bool processKenwoodVoiceHeader(unsigned char* data);
-    bool processKenwoodVoiceData(unsigned char* data);
-    bool processKenwoodVoiceLateEntry(unsigned char* data);
-    bool processKenwoodData(unsigned char* data);
-    bool writeRTPVoiceHeader(const unsigned char* data);
-    bool writeRTPVoiceData(const unsigned char* data);
-    bool writeRTPVoiceTrailer(const unsigned char* data);
-    bool writeRTPDataHeader(const unsigned char* data);
-    bool writeRTPDataData(const unsigned char* data);
-    bool writeRTPDataTrailer(const unsigned char* data);
-    bool writeRTCPStart();
-    bool writeRTCPPing();
-    bool writeRTCPHang(unsigned char type, unsigned short src, unsigned short dst);
-    bool writeRTCPHang();
-    unsigned int readRTP(unsigned char* data);
-    unsigned int readRTCP(unsigned char* data);
-    unsigned long getTimeStamp() const;
+	bool processIcomVoiceHeader(const unsigned char* data);
+	bool processIcomVoiceData(const unsigned char* data);
+	bool processIcomDataHeader(const unsigned char* data);
+	bool processIcomDataData(const unsigned char* data);
+	bool processIcomDataTrailer(const unsigned char* data);
+	bool processKenwoodVoiceHeader(unsigned char* data);
+	bool processKenwoodVoiceData(unsigned char* data);
+	bool processKenwoodVoiceLateEntry(unsigned char* data);
+	bool processKenwoodData(unsigned char* data);
+	bool writeRTPVoiceHeader(const unsigned char* data);
+	bool writeRTPVoiceData(const unsigned char* data);
+	bool writeRTPVoiceTrailer(const unsigned char* data);
+	bool writeRTPDataHeader(const unsigned char* data);
+	bool writeRTPDataData(const unsigned char* data);
+	bool writeRTPDataTrailer(const unsigned char* data);
+	bool writeRTCPStart();
+	bool writeRTCPPing();
+	bool writeRTCPHang(unsigned char type, unsigned short src, unsigned short dst);
+	bool writeRTCPHang();
+	unsigned int readRTP(unsigned char* data);
+	unsigned int readRTCP(unsigned char* data);
+	unsigned long getTimeStamp() const;
 };
 
 #endif

@@ -2,8 +2,8 @@
 
 CC      = cc
 CXX     = c++
-CFLAGS  = -g -O3 -Wall -std=c++0x -pthread
-LIBS    = -lpthread -lutil -lsamplerate
+CFLAGS  = -g -O3 -Wall -std=c++0x -pthread -DHAVE_LOG_H
+LIBS    = -lpthread
 LDFLAGS = -g
 
 OBJECTS = AMBEFEC.o AX25Control.o AX25Network.o BCH.o BPTC19696.o CASTInfo.o Conf.o CRC.o Display.o DMRControl.o DMRCSBK.o DMRData.o \

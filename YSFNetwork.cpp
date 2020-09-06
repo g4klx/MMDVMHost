@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2014,2016,2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2014,2016,2019,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -30,8 +30,8 @@ const unsigned int BUFFER_LENGTH = 200U;
 
 CYSFNetwork::CYSFNetwork(const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, const std::string& callsign, bool debug) :
 m_socket(myAddress, myPort),
-m_address(),
-m_addrlen(),
+m_addr(),
+m_addrLen(0U),
 m_callsign(),
 m_debug(debug),
 m_enabled(false),
@@ -42,7 +42,8 @@ m_tag(NULL)
 	m_callsign = callsign;
 	m_callsign.resize(YSF_CALLSIGN_LENGTH, ' ');
 
-	CUDPSocket::lookup(gatewayAddress, gatewayPort, m_address, m_addrlen);
+	if (CUDPSocket::lookup(gatewayAddress, gatewayPort, m_addr, m_addrLen) != 0)
+		m_addrLen = 0U;
 
 	m_tag = new unsigned char[YSF_CALLSIGN_LENGTH];
 	::memset(m_tag, ' ', YSF_CALLSIGN_LENGTH);
@@ -55,14 +56,16 @@ CYSFNetwork::~CYSFNetwork()
 
 bool CYSFNetwork::open()
 {
-	LogMessage("Opening YSF network connection");
-
-	if (CUDPSocket::isnone(m_address))
+	if (m_addrLen == 0U) {
+		LogError("Unable to resolve the address of the YSF Gateway");
 		return false;
+	}
+
+	LogMessage("Opening YSF network connection");
 
 	m_pollTimer.start();
 
-	return m_socket.open();
+	return m_socket.open(m_addr);
 }
 
 bool CYSFNetwork::write(const unsigned char* src, const unsigned char* dest, const unsigned char* data, unsigned int count, bool end)
@@ -97,7 +100,7 @@ bool CYSFNetwork::write(const unsigned char* src, const unsigned char* dest, con
 	if (m_debug)
 		CUtils::dump(1U, "YSF Network Data Sent", buffer, 155U);
 
-	return m_socket.write(buffer, 155U, m_address, m_addrlen);
+	return m_socket.write(buffer, 155U, m_addr, m_addrLen);
 }
 
 bool CYSFNetwork::writePoll()
@@ -115,7 +118,7 @@ bool CYSFNetwork::writePoll()
 	if (m_debug)
 		CUtils::dump(1U, "YSF Network Poll Sent", buffer, 14U);
 
-	return m_socket.write(buffer, 14U, m_address, m_addrlen);
+	return m_socket.write(buffer, 14U, m_addr, m_addrLen);
 }
 
 void CYSFNetwork::clock(unsigned int ms)
@@ -129,10 +132,15 @@ void CYSFNetwork::clock(unsigned int ms)
 	unsigned char buffer[BUFFER_LENGTH];
 
 	sockaddr_storage address;
-	unsigned int addrlen;
-	int length = m_socket.read(buffer, BUFFER_LENGTH, address, addrlen);
-	if (length <= 0 || !CUDPSocket::match(m_address, address))
+	unsigned int addrLen;
+	int length = m_socket.read(buffer, BUFFER_LENGTH, address, addrLen);
+	if (length <= 0)
 		return;
+
+	if (!CUDPSocket::match(m_addr, address)) {
+		LogMessage("YSF, packet received from an invalid source");
+		return;
+	}
 
 	// Ignore incoming polls
 	if (::memcmp(buffer, "YSFP", 4U) == 0)

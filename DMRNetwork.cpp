@@ -34,8 +34,8 @@ const unsigned int HOMEBREW_DATA_PACKET_LENGTH = 55U;
 
 CDMRNetwork::CDMRNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, bool duplex, const char* version, bool debug, bool slot1, bool slot2, HW_TYPE hwType) :
 m_addressStr(address),
-m_address(),
-m_addrlen(),
+m_addr(),
+m_addrLen(0U),
 m_port(port),
 m_id(NULL),
 m_duplex(duplex),
@@ -62,7 +62,8 @@ m_pingTimer(1000U, 10U)
 	assert(port > 0U);
 	assert(id > 1000U);
 
-	CUDPSocket::lookup(m_addressStr, m_port, m_address, m_addrlen);
+	if (CUDPSocket::lookup(m_addressStr, m_port, m_addr, m_addrLen) != 0)
+		m_addrLen = 0U;
 
 	m_buffer   = new unsigned char[BUFFER_LENGTH];
 	m_id       = new uint8_t[4U];
@@ -100,12 +101,14 @@ void CDMRNetwork::setConfig(const std::string & callsign, unsigned int rxFrequen
 
 bool CDMRNetwork::open()
 {
+	if (m_addrLen == 0U) {
+		LogError("Unable to resolve the address of the DMR Gateway");
+		return false;
+	}
+
 	LogMessage("DMR, Opening DMR Network");
 
-	if (CUDPSocket::isnone(m_address))
-		CUDPSocket::lookup(m_addressStr, m_port, m_address, m_addrlen);
-
-	bool ret = m_socket.open();
+	bool ret = m_socket.open(m_addr);
 	if (ret)
 		m_pingTimer.start();
 
@@ -297,26 +300,25 @@ void CDMRNetwork::clock(unsigned int ms)
 	}
 
 	sockaddr_storage address;
-	unsigned int addrlen;
-	int length = m_socket.read(m_buffer, BUFFER_LENGTH, address, addrlen);
+	unsigned int addrLen;
+	int length = m_socket.read(m_buffer, BUFFER_LENGTH, address, addrLen);
 	if (length <= 0)
 		return;
 
-	if (!CUDPSocket::match(m_address, address)) {
+	if (!CUDPSocket::match(m_addr, address)) {
 		LogMessage("DMR, packet received from an invalid source");
 		return;
 	}
-
-	if (!m_enabled)
-		return;
 
 	if (m_debug)
 		CUtils::dump(1U, "Network Received", m_buffer, length);
 
 	if (::memcmp(m_buffer, "DMRD", 4U) == 0) {
-		unsigned char len = length;
-		m_rxData.addData(&len, 1U);
-		m_rxData.addData(m_buffer, len);
+		if (m_enabled) {
+			unsigned char len = length;
+			m_rxData.addData(&len, 1U);
+			m_rxData.addData(m_buffer, len);
+		}
 	} else if (::memcmp(m_buffer, "DMRP", 4U) == 0) {
 		;
 	} else if (::memcmp(m_buffer, "DMRB", 4U) == 0) {
@@ -427,7 +429,7 @@ bool CDMRNetwork::write(const unsigned char* data, unsigned int length)
 	if (m_debug)
 		CUtils::dump(1U, "Network Transmitted", data, length);
 
-	bool ret = m_socket.write(data, length, m_address, m_addrlen);
+	bool ret = m_socket.write(data, length, m_addr, m_addrLen);
 	if (!ret) {
 		LogError("DMR, socket error when writing to the DMR Gateway");
 		return false;
