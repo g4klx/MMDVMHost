@@ -107,7 +107,7 @@ bool CP25Network::open()
 {
 	LogMessage("Opening P25 network connection");
 
-	if (CUDPSocket::isnone(m_address))
+	if (CUDPSocket::isNone(m_address))
 		return false;
 
 	return m_socket.open(m_address.ss_family);

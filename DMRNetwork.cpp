@@ -128,7 +128,7 @@ bool CDMRNetwork::open()
 {
 	LogMessage("DMR, Opening DMR Network");
 
-	if (CUDPSocket::isnone(m_address))
+	if (CUDPSocket::isNone(m_address))
 		CUDPSocket::lookup(m_addressStr, m_port, m_address, m_addrlen);
 
 	m_status = WAITING_CONNECT;
