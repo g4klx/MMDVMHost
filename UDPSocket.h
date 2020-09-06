@@ -68,6 +68,8 @@ public:
 	static bool isNone(const sockaddr_storage& addr);
 
 private:
+	std::string    m_address_save;
+	unsigned short m_port_save;
 	std::string    m_address[UDP_SOCKET_MAX];
 	unsigned short m_port[UDP_SOCKET_MAX];
 	unsigned int   m_af[UDP_SOCKET_MAX];

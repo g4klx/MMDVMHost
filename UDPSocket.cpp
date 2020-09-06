@@ -32,7 +32,10 @@
 #define LogInfo(fmt, ...)	::fprintf(stderr, fmt "\n", ## __VA_ARGS__)
 #endif
 
-CUDPSocket::CUDPSocket(const std::string& address, unsigned int port)
+CUDPSocket::CUDPSocket(const std::string& address, unsigned int port) :
+m_address_save(address),
+m_port_save(port),
+m_counter(0U)
 {
 #if defined(_WIN32) || defined(_WIN64)
 	WSAData data;
@@ -46,15 +49,25 @@ CUDPSocket::CUDPSocket(const std::string& address, unsigned int port)
 		m_af[i] = 0U;
 		m_fd[i] = -1;
 	}
-
-	m_address[0] = address;
-	m_port[0] = port;
-	m_counter = 0U;
 }
 
-CUDPSocket::CUDPSocket(unsigned int port)
+CUDPSocket::CUDPSocket(unsigned int port) :
+m_address_save(),
+m_port_save(port),
+m_counter(0U)
 {
-	CUDPSocket("", port);
+#if defined(_WIN32) || defined(_WIN64)
+	WSAData data;
+	int wsaRet = ::WSAStartup(MAKEWORD(2, 2), &data);
+	if (wsaRet != 0)
+		LogError("Error from WSAStartup");
+#endif
+	for (int i = 0; i < UDP_SOCKET_MAX; i++) {
+		m_address[i] = "";
+		m_port[i] = 0U;
+		m_af[i] = 0U;
+		m_fd[i] = -1;
+	}
 }
 
 CUDPSocket::~CUDPSocket()
@@ -152,7 +165,7 @@ bool CUDPSocket::open(const sockaddr_storage& address)
 
 bool CUDPSocket::open(unsigned int af)
 {
-	return open(0, af, m_address[0], m_port[0]);
+	return open(0, af, m_address_save, m_port_save);
 }
 
 bool CUDPSocket::open(const unsigned int index, const unsigned int af, const std::string& address, const unsigned int port)
