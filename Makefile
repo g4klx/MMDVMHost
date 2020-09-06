@@ -11,6 +11,7 @@ LIBS    = -lpthread
 #CFLAGS  = -g -O3 -Wall -DUSE_GPSD -std=c++0x -pthread
 #LIBS    = -lpthread -lgps
 
+CFLAGS += -DHAVE_LOG_H
 LDFLAGS = -g
 
 OBJECTS = \

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2011,2013,2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2011,2013,2015,2016,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <poll.h>
 #include <unistd.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -35,19 +36,26 @@
 #include <ws2tcpip.h>
 #endif
 
+#if !defined(UDP_SOCKET_MAX)
+#define UDP_SOCKET_MAX	1
+#endif
+
 class CUDPSocket {
 public:
 	CUDPSocket(const std::string& address, unsigned int port = 0U);
 	CUDPSocket(unsigned int port = 0U);
+	CUDPSocket();
 	~CUDPSocket();
 
 	bool open();
 	bool open(const unsigned int af);
+	bool open(const unsigned int index, const unsigned int af, const std::string& address, const unsigned int port);
 
 	int  read(unsigned char* buffer, unsigned int length, sockaddr_storage& address, unsigned int &address_length);
 	bool write(const unsigned char* buffer, unsigned int length, const sockaddr_storage& address, unsigned int address_length);
 
 	void close();
+	void close(const unsigned int index);
 
 	static int lookup(const std::string& hostName, unsigned int port, sockaddr_storage &address, unsigned int &address_length);
 	static int lookup(const std::string& hostName, unsigned int port, sockaddr_storage &address, unsigned int &address_length, struct addrinfo &hints);
@@ -56,9 +64,11 @@ public:
 	static bool isnone(const sockaddr_storage &addr);
 
 private:
-	std::string    m_address;
-	unsigned short m_port;
-	int            m_fd;
+	std::string    m_address[UDP_SOCKET_MAX];
+	unsigned short m_port[UDP_SOCKET_MAX];
+	unsigned int   m_af[UDP_SOCKET_MAX];
+	int            m_fd[UDP_SOCKET_MAX];
+	unsigned int   m_counter;
 };
 
 #endif
