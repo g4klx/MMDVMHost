@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2006-2016,2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2006-2016,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -57,11 +57,6 @@ CUDPSocket::CUDPSocket(unsigned int port)
 	CUDPSocket("", port);
 }
 
-CUDPSocket::CUDPSocket()
-{
-	CUDPSocket("", 0U);
-}
-
 CUDPSocket::~CUDPSocket()
 {
 #if defined(_WIN32) || defined(_WIN64)
@@ -69,28 +64,26 @@ CUDPSocket::~CUDPSocket()
 #endif
 }
 
-int CUDPSocket::lookup(const std::string& hostname, unsigned int port, sockaddr_storage &addr, unsigned int &address_length)
+int CUDPSocket::lookup(const std::string& hostname, unsigned int port, sockaddr_storage& addr, unsigned int& address_length)
 {
 	struct addrinfo hints;
-
 	::memset(&hints, 0, sizeof(hints));
 
 	return lookup(hostname, port, addr, address_length, hints);
 }
 
-int CUDPSocket::lookup(const std::string& hostname, unsigned int port, sockaddr_storage &addr, unsigned int &address_length, struct addrinfo &hints)
+int CUDPSocket::lookup(const std::string& hostname, unsigned int port, sockaddr_storage& addr, unsigned int& address_length, struct addrinfo& hints)
 {
-	int err;
 	std::string portstr = std::to_string(port);
 	struct addrinfo *res;
 
 	/* port is always digits, no needs to lookup service */
 	hints.ai_flags |= AI_NUMERICSERV;
 
-	err = getaddrinfo(hostname.empty() ? NULL : hostname.c_str(), portstr.c_str(), &hints, &res);
-	if (err) {
-		sockaddr_in *paddr = (sockaddr_in *)&addr;
-		::memset(paddr, 0, address_length = sizeof(sockaddr_in));
+	int err = getaddrinfo(hostname.empty() ? NULL : hostname.c_str(), portstr.c_str(), &hints, &res);
+	if (err != 0) {
+		sockaddr_in* paddr = (sockaddr_in*)&addr;
+		::memset(paddr, 0x00U, address_length = sizeof(sockaddr_in));
 		paddr->sin_family = AF_INET;
 		paddr->sin_port = htons(port);
 		paddr->sin_addr.s_addr = htonl(INADDR_NONE);
@@ -101,90 +94,85 @@ int CUDPSocket::lookup(const std::string& hostname, unsigned int port, sockaddr_
 	::memcpy(&addr, res->ai_addr, address_length = res->ai_addrlen);
 
 	freeaddrinfo(res);
+
 	return 0;
 }
 
-bool CUDPSocket::match(const sockaddr_storage &addr1, const sockaddr_storage &addr2)
+bool CUDPSocket::match(const sockaddr_storage& addr1, const sockaddr_storage& addr2, IPMATCHTYPE type)
 {
 	if (addr1.ss_family != addr2.ss_family)
 		return false;
 
-	switch (addr1.ss_family) {
-	case AF_INET:
-		struct sockaddr_in *in_1, *in_2;
-		in_1 = (struct sockaddr_in *)&addr1;
-		in_2 = (struct sockaddr_in *)&addr2;
-		return ( (in_1->sin_addr.s_addr == in_2->sin_addr.s_addr) &&
-			 (in_1->sin_port == in_2->sin_port) );
-	case AF_INET6:
-		struct sockaddr_in6 *in6_1, *in6_2;
-		in6_1 = (struct sockaddr_in6 *)&addr1;
-		in6_2 = (struct sockaddr_in6 *)&addr2;
-		return ( IN6_ARE_ADDR_EQUAL(&in6_1->sin6_addr, &in6_2->sin6_addr) &&
-			 (in6_1->sin6_port == in6_2->sin6_port) );
-	default:
+	if (type == IMT_ADDRESS_AND_PORT) {
+		switch (addr1.ss_family) {
+		case AF_INET:
+			struct sockaddr_in *in_1, *in_2;
+			in_1 = (struct sockaddr_in*)&addr1;
+			in_2 = (struct sockaddr_in*)&addr2;
+			return (in_1->sin_addr.s_addr == in_2->sin_addr.s_addr) && (in_1->sin_port == in_2->sin_port);
+		case AF_INET6:
+			struct sockaddr_in6 *in6_1, *in6_2;
+			in6_1 = (struct sockaddr_in6*)&addr1;
+			in6_2 = (struct sockaddr_in6*)&addr2;
+			return IN6_ARE_ADDR_EQUAL(&in6_1->sin6_addr, &in6_2->sin6_addr) && (in6_1->sin6_port == in6_2->sin6_port);
+		default:
+			return false;
+		}
+	} else if (type == IMT_ADDRESS_ONLY) {
+		switch (addr1.ss_family) {
+		case AF_INET:
+			struct sockaddr_in *in_1, *in_2;
+			in_1 = (struct sockaddr_in*)&addr1;
+			in_2 = (struct sockaddr_in*)&addr2;
+			return in_1->sin_addr.s_addr == in_2->sin_addr.s_addr;
+		case AF_INET6:
+			struct sockaddr_in6 *in6_1, *in6_2;
+			in6_1 = (struct sockaddr_in6*)&addr1;
+			in6_2 = (struct sockaddr_in6*)&addr2;
+			return IN6_ARE_ADDR_EQUAL(&in6_1->sin6_addr, &in6_2->sin6_addr);
+		default:
+			return false;
+		}
+	} else {
 		return false;
 	}
 }
 
-bool CUDPSocket::match_addr(const sockaddr_storage &addr1, const sockaddr_storage &addr2)
-{
-	if (addr1.ss_family != addr2.ss_family)
-		return false;
-
-	switch (addr1.ss_family) {
-	case AF_INET:
-		struct sockaddr_in *in_1, *in_2;
-		in_1 = (struct sockaddr_in *)&addr1;
-		in_2 = (struct sockaddr_in *)&addr2;
-		return (in_1->sin_addr.s_addr == in_2->sin_addr.s_addr);
-	case AF_INET6:
-		struct sockaddr_in6 *in6_1, *in6_2;
-		in6_1 = (struct sockaddr_in6 *)&addr1;
-		in6_2 = (struct sockaddr_in6 *)&addr2;
-		return IN6_ARE_ADDR_EQUAL(&in6_1->sin6_addr, &in6_2->sin6_addr);
-	default:
-		return false;
-	}
-}
-
-bool CUDPSocket::isnone(const sockaddr_storage &addr)
+bool CUDPSocket::isNone(const sockaddr_storage& addr)
 {
 	struct sockaddr_in *in = (struct sockaddr_in *)&addr;
 
-	return ( (addr.ss_family == AF_INET) &&
-		 (in->sin_addr.s_addr == htonl(INADDR_NONE)) );
+	return ((addr.ss_family == AF_INET) && (in->sin_addr.s_addr == htonl(INADDR_NONE)));
 }
 
-bool CUDPSocket::open()
+bool CUDPSocket::open(const sockaddr_storage& address)
 {
-	return open(0, AF_UNSPEC, m_address[0], m_port[0]);
+	return open(address.ss_family);
 }
 
-bool CUDPSocket::open(const unsigned int af)
+bool CUDPSocket::open(unsigned int af)
 {
 	return open(0, af, m_address[0], m_port[0]);
 }
 
 bool CUDPSocket::open(const unsigned int index, const unsigned int af, const std::string& address, const unsigned int port)
 {
-	int err, fd;
 	sockaddr_storage addr;
 	unsigned int addrlen;
 	struct addrinfo hints;
 
 	::memset(&hints, 0, sizeof(hints));
-	hints.ai_flags = AI_PASSIVE;
+	hints.ai_flags  = AI_PASSIVE;
 	hints.ai_family = af;
 
 	/* to determine protocol family, call lookup() first. */
-	err = lookup(address, port, addr, addrlen, hints);
-	if (err) {
+	int err = lookup(address, port, addr, addrlen, hints);
+	if (err != 0) {
 		LogError("The local address is invalid - %s", address.c_str());
 		return false;
 	}
 
-	fd = ::socket(addr.ss_family, SOCK_DGRAM, 0);
+	int fd = ::socket(addr.ss_family, SOCK_DGRAM, 0);
 	if (fd < 0) {
 #if defined(_WIN32) || defined(_WIN64)
 		LogError("Cannot create the UDP socket, err: %lu", ::GetLastError());
