@@ -56,30 +56,30 @@ public:
 	void close();
 
 private: 
-	std::string     m_addressStr;
-	sockaddr_storage m_address;
-	unsigned int    m_addrlen;
-	unsigned int    m_port;
-	uint8_t*        m_id;
-	bool            m_duplex;
-	const char*     m_version;
-	bool            m_debug;
-	CUDPSocket      m_socket;
-	bool            m_enabled;
-	bool            m_slot1;
-	bool            m_slot2;
-	HW_TYPE         m_hwType;
-	unsigned char*  m_buffer;
-	uint32_t*       m_streamId;
+	std::string      m_addressStr;
+	sockaddr_storage m_addr;
+	unsigned int     m_addrLen;
+	unsigned int     m_port;
+	uint8_t*         m_id;
+	bool             m_duplex;
+	const char*      m_version;
+	bool             m_debug;
+	CUDPSocket       m_socket;
+	bool             m_enabled;
+	bool             m_slot1;
+	bool             m_slot2;
+	HW_TYPE          m_hwType;
+	unsigned char*   m_buffer;
+	uint32_t*        m_streamId;
 	CRingBuffer<unsigned char> m_rxData;
-	bool            m_beacon;
-	std::mt19937    m_random;
-	std::string     m_callsign;
-	unsigned int    m_rxFrequency;
-	unsigned int    m_txFrequency;
-	unsigned int    m_power;
-	unsigned int    m_colorCode;
-	CTimer          m_pingTimer;
+	bool             m_beacon;
+	std::mt19937     m_random;
+	std::string      m_callsign;
+	unsigned int     m_rxFrequency;
+	unsigned int     m_txFrequency;
+	unsigned int     m_power;
+	unsigned int     m_colorCode;
+	CTimer           m_pingTimer;
 
 	bool writeConfig();
 

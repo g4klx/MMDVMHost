@@ -338,10 +338,13 @@ int CMMDVMHost::run()
 		LogInfo("    Local Port: %u", localPort);
 		LogInfo("    Send Frame Type: %u", sendFrameType);
 
-		CUDPSocket::lookup(remoteAddress, remotePort, transparentAddress, transparentAddrLen);
+		if (CUDPSocket::lookup(remoteAddress, remotePort, transparentAddress, transparentAddrLen) != 0) {
+			LogError("Unable to resolve the address of the Transparent Data source");
+			return 1;
+		}
 
 		transparentSocket = new CUDPSocket(localPort);
-		ret = transparentSocket->open(transparentAddress.ss_family);
+		ret = transparentSocket->open(transparentAddress);
 		if (!ret) {
 			LogWarning("Could not open the Transparent data socket, disabling");
 			delete transparentSocket;

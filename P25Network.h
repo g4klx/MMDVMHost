@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2014,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2014,2016,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -48,13 +48,13 @@ public:
 	void clock(unsigned int ms);
 
 private:
-	CUDPSocket     m_socket;
-	sockaddr_storage m_address;
-	unsigned int   m_addrlen;
-	bool           m_debug;
-	bool           m_enabled;
+	CUDPSocket       m_socket;
+	sockaddr_storage m_addr;
+	unsigned int     m_addrLen;
+	bool             m_debug;
+	bool             m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
-	CP25Audio      m_audio;
+	CP25Audio        m_audio;
 };
 
 #endif

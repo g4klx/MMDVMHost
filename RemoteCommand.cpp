@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2019,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -61,17 +61,20 @@ CRemoteCommand::~CRemoteCommand()
 
 int CRemoteCommand::send(const std::string& command)
 {
-	sockaddr_storage address;
-	unsigned int addrlen;
-	CUDPSocket::lookup("127.0.0.1", m_port, address, addrlen);
+	sockaddr_storage addr;
+	unsigned int addrLen;
+	if (CUDPSocket::lookup("127.0.0.1", m_port, addr, addrLen) != 0) {
+		LogError("Unable to resolve the address of the host");
+		return 1;
+	}
 
 	CUDPSocket socket(0U);
 	
-	bool ret = socket.open(address.ss_family);
+	bool ret = socket.open(addr);
 	if (!ret)
 		return 1;
 
-	ret = socket.write((unsigned char*)command.c_str(), command.length(), address, addrlen);
+	ret = socket.write((unsigned char*)command.c_str(), command.length(), addr, addrLen);
 	if (!ret) {
 		socket.close();
 		return 1;

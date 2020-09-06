@@ -33,26 +33,26 @@ public:
 	CNXDNIcomNetwork(const std::string& localAddress, unsigned int localPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug);
 	virtual ~CNXDNIcomNetwork();
 
-    virtual bool open();
+	virtual bool open();
 
-    virtual void enable(bool enabled);
+	virtual void enable(bool enabled);
 
-    virtual bool write(const unsigned char* data, NXDN_NETWORK_MESSAGE_TYPE type);
+	virtual bool write(const unsigned char* data, NXDN_NETWORK_MESSAGE_TYPE type);
 
-    virtual bool read(unsigned char* data);
+	virtual bool read(unsigned char* data);
 
-    virtual void reset();
+	virtual void reset();
 
-    virtual void close();
+	virtual void close();
 
-    virtual void clock(unsigned int ms);
+	virtual void clock(unsigned int ms);
 
 private:
-	CUDPSocket                 m_socket;
-	sockaddr_storage           m_address;
-	unsigned int               m_addrlen;
-	bool                       m_debug;
-	bool                       m_enabled;
+	CUDPSocket       m_socket;
+	sockaddr_storage m_addr;
+	unsigned int     m_addrLen;
+	bool             m_debug;
+	bool             m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
 };
 
