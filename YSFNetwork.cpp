@@ -142,9 +142,8 @@ void CYSFNetwork::clock(unsigned int ms)
 		return;
 	}
 
-	// Ignore incoming polls
-	if (::memcmp(buffer, "YSFP", 4U) == 0)
-		return;
+	if (m_debug)
+		CUtils::dump(1U, "YSF Network Data Received", buffer, length);
 
 	// Invalid packet type?
 	if (::memcmp(buffer, "YSFD", 4U) != 0)
@@ -152,9 +151,6 @@ void CYSFNetwork::clock(unsigned int ms)
 
 	if (!m_enabled)
 		return;
-
-	if (m_debug)
-		CUtils::dump(1U, "YSF Network Data Received", buffer, length);
 
 	if (::memcmp(m_tag, "          ", YSF_CALLSIGN_LENGTH) == 0) {
 		::memcpy(m_tag, buffer + 4U, YSF_CALLSIGN_LENGTH);
