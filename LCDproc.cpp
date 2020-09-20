@@ -72,7 +72,7 @@
 #include <unistd.h>
 #include <stdarg.h>
 #else
-#include <winsock.h>
+#include <ws2tcpip.h>
 #endif
 
 #define BUFFER_MAX_LEN 128
