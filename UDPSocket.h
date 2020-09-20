@@ -32,7 +32,6 @@
 #include <arpa/inet.h>
 #include <errno.h>
 #else
-#include <winsock2.h>
 #include <ws2tcpip.h>
 #endif
 
@@ -61,8 +60,12 @@ public:
 	void close();
 	void close(const unsigned int index);
 
+	static void startup();
+	static void shutdown();
+
 	static int lookup(const std::string& hostName, unsigned int port, sockaddr_storage& address, unsigned int& address_length);
 	static int lookup(const std::string& hostName, unsigned int port, sockaddr_storage& address, unsigned int& address_length, struct addrinfo& hints);
+
 	static bool match(const sockaddr_storage& addr1, const sockaddr_storage& addr2, IPMATCHTYPE type = IMT_ADDRESS_AND_PORT);
 
 	static bool isNone(const sockaddr_storage& addr);

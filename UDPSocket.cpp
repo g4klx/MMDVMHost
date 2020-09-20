@@ -37,12 +37,6 @@ m_address_save(address),
 m_port_save(port),
 m_counter(0U)
 {
-#if defined(_WIN32) || defined(_WIN64)
-	WSAData data;
-	int wsaRet = ::WSAStartup(MAKEWORD(2, 2), &data);
-	if (wsaRet != 0)
-		LogError("Error from WSAStartup");
-#endif
 	for (int i = 0; i < UDP_SOCKET_MAX; i++) {
 		m_address[i] = "";
 		m_port[i] = 0U;
@@ -56,12 +50,6 @@ m_address_save(),
 m_port_save(port),
 m_counter(0U)
 {
-#if defined(_WIN32) || defined(_WIN64)
-	WSAData data;
-	int wsaRet = ::WSAStartup(MAKEWORD(2, 2), &data);
-	if (wsaRet != 0)
-		LogError("Error from WSAStartup");
-#endif
 	for (int i = 0; i < UDP_SOCKET_MAX; i++) {
 		m_address[i] = "";
 		m_port[i] = 0U;
@@ -71,6 +59,20 @@ m_counter(0U)
 }
 
 CUDPSocket::~CUDPSocket()
+{
+}
+
+void CUDPSocket::startup()
+{
+#if defined(_WIN32) || defined(_WIN64)
+	WSAData data;
+	int wsaRet = ::WSAStartup(MAKEWORD(2, 2), &data);
+	if (wsaRet != 0)
+		LogError("Error from WSAStartup");
+#endif
+}
+
+void CUDPSocket::shutdown()
 {
 #if defined(_WIN32) || defined(_WIN64)
 	::WSACleanup();

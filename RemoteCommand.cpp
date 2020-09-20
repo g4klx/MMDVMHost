@@ -51,12 +51,16 @@ int main(int argc, char** argv)
 CRemoteCommand::CRemoteCommand(unsigned int port) :
 m_port(port)
 {
+	CUDPSocket::startup();
+
 	::LogInitialise(false, ".", "RemoteCommand", 2U, 2U);
 }
 
 CRemoteCommand::~CRemoteCommand()
 {
 	::LogFinalise();
+
+	CUDPSocket::shutdown();
 }
 
 int CRemoteCommand::send(const std::string& command)
