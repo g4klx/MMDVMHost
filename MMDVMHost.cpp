@@ -164,10 +164,12 @@ m_lockFileName(),
 m_remoteControl(NULL),
 m_fixedMode(false)
 {
+	CUDPSocket::startup();
 }
 
 CMMDVMHost::~CMMDVMHost()
 {
+	CUDPSocket::shutdown();
 }
 
 int CMMDVMHost::run()
