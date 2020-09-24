@@ -1,4 +1,4 @@
-# This makefile is for use with the Raspberry Pi when using an OLED display. The wiringpi library is needed.
+# This makefile is for use with the Raspberry Pi when using an OLED display. The wiringpi library is not needed.
 
 CC      = cc
 CXX     = c++

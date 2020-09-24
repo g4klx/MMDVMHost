@@ -321,9 +321,16 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 			unsigned char fn = fich.getFN();
 			unsigned char ft = fich.getFT();
 
-			if (fn != 0U || ft != 1U) {
-				// The first packet after the header is odd, don't try and regenerate it
-				unsigned int errors = m_rfPayload.processVoiceFRModeAudio(data + 2U);
+			if (fn == 0U && ft == 1U) {
+				// The first packet after the header is odd
+				m_rfPayload.processVoiceFRModeData(data + 2U);
+				unsigned int errors = m_rfPayload.processVoiceFRModeAudio2(data + 2U);
+				m_rfErrs += errors;
+				m_rfBits += 288U;
+				m_display->writeFusionBER(float(errors) / 2.88F);
+				LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/288 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 2.88F);
+			} else {
+				unsigned int errors = m_rfPayload.processVoiceFRModeAudio5(data + 2U);
 				m_rfErrs += errors;
 				m_rfBits += 720U;
 				m_display->writeFusionBER(float(errors) / 7.2F);
@@ -991,9 +998,14 @@ void CYSFControl::writeNetwork()
 				break;
 
 			case YSF_DT_VOICE_FR_MODE:
-				if (fn != 0U || ft != 1U) {
-					// The first packet after the header is odd, don't try and regenerate it
-					unsigned int errors = m_netPayload.processVoiceFRModeAudio(data + 35U);
+				if (fn == 0U && ft == 1U) {
+					// The first packet after the header is odd
+					m_netPayload.processVoiceFRModeData(data + 35U);
+					unsigned int errors = m_netPayload.processVoiceFRModeAudio2(data + 35U);
+					m_netErrs += errors;
+					m_netBits += 288U;
+				} else {
+					unsigned int errors = m_netPayload.processVoiceFRModeAudio5(data + 35U);
 					m_netErrs += errors;
 					m_netBits += 720U;
 				}
