@@ -1,5 +1,5 @@
 /*
-*	Copyright (C) 2016,2017 Jonathan Naylor, G4KLX
+*	Copyright (C) 2016,2017,2020 Jonathan Naylor, G4KLX
 *	Copyright (C) 2016 Mathias Weyland, HB9FRV
 *
 *	This program is free software; you can redistribute it and/or modify
@@ -799,7 +799,21 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn, b
 	return ret1 && (fn == 0U);
 }
 
-unsigned int CYSFPayload::processVoiceFRModeAudio(unsigned char* data)
+unsigned int CYSFPayload::processVoiceFRModeAudio2(unsigned char* data)
+{
+	assert(data != NULL);
+
+	data += YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES;
+
+	// Regenerate the IMBE FEC
+	unsigned int errors = 0U;
+	errors += m_fec.regenerateIMBE(data + 54U);
+	errors += m_fec.regenerateIMBE(data + 72U);
+
+	return errors;
+}
+
+unsigned int CYSFPayload::processVoiceFRModeAudio5(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -814,6 +828,62 @@ unsigned int CYSFPayload::processVoiceFRModeAudio(unsigned char* data)
 	errors += m_fec.regenerateIMBE(data + 72U);
 
 	return errors;
+}
+
+bool CYSFPayload::processVoiceFRModeData(unsigned char* data)
+{
+	assert(data != NULL);
+
+	data += YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES;
+
+	unsigned char dch[45U];
+	::memcpy(dch, data, 45U);
+
+	CYSFConvolution conv;
+	conv.start();
+
+	for (unsigned int i = 0U; i < 180U; i++) {
+		unsigned int n = INTERLEAVE_TABLE_9_20[i];
+		uint8_t s0 = READ_BIT1(dch, n) ? 1U : 0U;
+
+		n++;
+		uint8_t s1 = READ_BIT1(dch, n) ? 1U : 0U;
+
+		conv.decode(s0, s1);
+	}
+
+	unsigned char output[23U];
+	conv.chainback(output, 176U);
+
+	bool ret = CCRC::checkCCITT162(output, 22U);
+	if (ret) {
+		CCRC::addCCITT162(output, 22U);
+		output[22U] = 0x00U;
+
+		unsigned char convolved[45U];
+		conv.encode(output, convolved, 180U);
+
+		unsigned char bytes[45U];
+		unsigned int j = 0U;
+		for (unsigned int i = 0U; i < 180U; i++) {
+			unsigned int n = INTERLEAVE_TABLE_9_20[i];
+
+			bool s0 = READ_BIT1(convolved, j) != 0U;
+			j++;
+
+			bool s1 = READ_BIT1(convolved, j) != 0U;
+			j++;
+
+			WRITE_BIT1(bytes, n, s0);
+
+			n++;
+			WRITE_BIT1(bytes, n, s1);
+		}
+
+		::memcpy(data, bytes, 45U);
+	}
+
+	return ret;
 }
 
 void CYSFPayload::writeHeader(unsigned char* data, const unsigned char* csd1, const unsigned char* csd2)
