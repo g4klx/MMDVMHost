@@ -95,7 +95,14 @@ void* CThread::helper(void* arg)
 
 void CThread::sleep(unsigned int ms)
 {
-	::usleep(ms * 1000);
+  unsigned int s = ms / 1000;
+  useconds_t us = ms * 1000;
+
+  /* value for usleep() should be less than 1,000,000 */
+  if (s)
+    ::sleep(s);
+  if (us)
+    ::usleep(us);
 }
 
 #endif
