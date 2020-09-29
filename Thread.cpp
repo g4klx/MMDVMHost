@@ -95,6 +95,7 @@ void* CThread::helper(void* arg)
 
 void CThread::sleep(unsigned int ms)
 {
+#if defined(__NetBSD__)
   unsigned int s = ms / 1000;
   useconds_t us = ms * 1000;
 
@@ -103,6 +104,12 @@ void CThread::sleep(unsigned int ms)
     ::sleep(s);
   if (us)
     ::usleep(us);
+#else
+
+  /* other systems can accept larger value */
+  ::usleep(ms * 1000);
+
+#endif
 }
 
 #endif
