@@ -95,21 +95,12 @@ void* CThread::helper(void* arg)
 
 void CThread::sleep(unsigned int ms)
 {
-#if defined(__NetBSD__)
-  unsigned int s = ms / 1000;
-  useconds_t us = ms * 1000;
+  struct timespec ts;
 
-  /* value for usleep() should be less than 1,000,000 */
-  if (s)
-    ::sleep(s);
-  if (us)
-    ::usleep(us);
-#else
+  ts.tv_sec = ms / 1000;
+  ts.tv_nsec = (ms % 1000) * 1000000;
 
-  /* other systems can accept larger value */
-  ::usleep(ms * 1000);
-
-#endif
+  ::nanosleep(&ts, NULL);
 }
 
 #endif
