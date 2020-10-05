@@ -4,6 +4,10 @@ CC      = cc
 CXX     = c++
 CFLAGS  = -g -O3 -Wall -std=c++0x -pthread -DHAVE_LOG_H -DOLED -I/usr/local/include
 LIBS    = -lArduiPi_OLED -lpthread
+
+# If you use NetBSD, add following CFLAGS
+#CFLAGS += -L/usr/local/lib -Wl,-rpath=/usr/local/lib
+
 LDFLAGS = -g -L/usr/local/lib
 
 OBJECTS = \
@@ -41,3 +45,4 @@ ifneq ("$(wildcard .git/index)","")
 else
 	echo "const char *gitversion = \"0000000000000000000000000000000000000000\";" > $@
 endif
+

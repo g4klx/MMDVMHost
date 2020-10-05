@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -31,27 +31,27 @@ CThread::~CThread()
 
 bool CThread::run()
 {
-  m_handle = ::CreateThread(NULL, 0, &helper, this, 0, NULL);
+	m_handle = ::CreateThread(NULL, 0, &helper, this, 0, NULL);
 
-  return m_handle != NULL;
+	return m_handle != NULL;
 }
 
 
 void CThread::wait()
 {
-  ::WaitForSingleObject(m_handle, INFINITE);
+	::WaitForSingleObject(m_handle, INFINITE);
 
-  ::CloseHandle(m_handle);
+	::CloseHandle(m_handle);
 }
 
 
 DWORD CThread::helper(LPVOID arg)
 {
-  CThread* p = (CThread*)arg;
+	CThread* p = (CThread*)arg;
 
-  p->entry();
+	p->entry();
 
-  return 0UL;
+	return 0UL;
 }
 
 void CThread::sleep(unsigned int ms)
@@ -74,28 +74,34 @@ CThread::~CThread()
 
 bool CThread::run()
 {
-  return ::pthread_create(&m_thread, NULL, helper, this) == 0;
+	return ::pthread_create(&m_thread, NULL, helper, this) == 0;
 }
 
 
 void CThread::wait()
 {
-  ::pthread_join(m_thread, NULL);
+	::pthread_join(m_thread, NULL);
 }
 
 
 void* CThread::helper(void* arg)
 {
-  CThread* p = (CThread*)arg;
+	CThread* p = (CThread*)arg;
 
-  p->entry();
+	p->entry();
 
-  return NULL;
+	return NULL;
 }
 
 void CThread::sleep(unsigned int ms)
 {
-	::usleep(ms * 1000);
+	struct timespec ts;
+
+	ts.tv_sec  = ms / 1000U;
+	ts.tv_nsec = (ms % 1000U) * 1000000U;
+
+	::nanosleep(&ts, NULL);
 }
 
 #endif
+
