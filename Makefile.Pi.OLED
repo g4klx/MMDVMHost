@@ -11,6 +11,9 @@ LIBS    = -lArduiPi_OLED -lpthread
 #CFLAGS  = -g -O3 -Wall -DUSE_GPSD -std=c++0x -pthread -DOLED -I/usr/local/include
 #LIBS    = -lArduiPi_OLED -lpthread -lgps
 
+# If you use NetBSD, add following CFLAGS
+#CFLAGS += -L/usr/local/lib -Wl,-rpath=/usr/local/lib
+
 LDFLAGS = -g -L/usr/local/lib
 
 OBJECTS = \
