@@ -172,12 +172,13 @@ void CNetworkInfo::getNetworkInterface(unsigned char* info)
 			if (family == AF_INET) {
 				::sprintf(interfacelist[ifnr], "%s:%s", ifa->ifa_name, host);
 				LogInfo("    IPv4: %s", interfacelist[ifnr]);
+				ifnr++;
 			} else {
 				::sprintf(interfacelist[ifnr], "%s:%s", ifa->ifa_name, host);
 				LogInfo("    IPv6: %s", interfacelist[ifnr]);
+				// due to default routing is for IPv4, other
+				// protocols are not candidate to display.
 			}
-
-			ifnr++;
 		}
 	}
 
