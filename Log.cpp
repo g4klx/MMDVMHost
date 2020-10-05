@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -84,7 +84,7 @@ static bool LogOpen()
 	
 	m_tm = *tm;
 
-    return status;
+	return status;
 }
 
 bool LogInitialise(bool daemon, const std::string& filePath, const std::string& fileRoot, unsigned int fileLevel, unsigned int displayLevel)
@@ -94,18 +94,19 @@ bool LogInitialise(bool daemon, const std::string& filePath, const std::string& 
 	m_fileLevel    = fileLevel;
 	m_displayLevel = displayLevel;
 	m_daemon       = daemon;
-    return ::LogOpen();
+
+	return ::LogOpen();
 }
 
 void LogFinalise()
 {
-    if (m_fpLog != NULL)
-        ::fclose(m_fpLog);
+	if (m_fpLog != NULL)
+		::fclose(m_fpLog);
 }
 
 void Log(unsigned int level, const char* fmt, ...)
 {
-    assert(fmt != NULL);
+	assert(fmt != NULL);
 
 	char buffer[300U];
 #if defined(_WIN32) || defined(_WIN64)
@@ -119,7 +120,7 @@ void Log(unsigned int level, const char* fmt, ...)
 
 	struct tm* tm = ::gmtime(&now.tv_sec);
 
-	::sprintf(buffer, "%c: %04d-%02d-%02d %02d:%02d:%02d.%03lu ", LEVELS[level], tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, now.tv_usec / 1000U);
+	::sprintf(buffer, "%c: %04d-%02d-%02d %02d:%02d:%02d.%03ld ", LEVELS[level], tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, now.tv_usec / 1000L);
 #endif
 
 	va_list vl;
@@ -144,7 +145,8 @@ void Log(unsigned int level, const char* fmt, ...)
 	}
 
 	if (level == 6U) {		// Fatal
-        ::fclose(m_fpLog);
-        exit(1);
-    }
+		::fclose(m_fpLog);
+		exit(1);
+	}
 }
+
