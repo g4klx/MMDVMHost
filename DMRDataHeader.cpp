@@ -29,7 +29,7 @@
 #include <cassert>
 #include <cstring>
 
-const unsigned char UDTF_NMEA = 0x05U;
+// const unsigned char UDTF_NMEA = 0x05U;
 
 CDMRDataHeader::CDMRDataHeader() :
 m_data(NULL),

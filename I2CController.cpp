@@ -19,6 +19,7 @@
 
 #include "I2CController.h"
 #include "Log.h"
+#include "Defines.h"
 
 #include <cstring>
 #include <cassert>
@@ -101,6 +102,7 @@ bool CI2CController::open()
 	}
 #else
 	#warning "I2C controller supports Linux only"
+	(UNUSED)m_address;
 #endif
 
 	return true;

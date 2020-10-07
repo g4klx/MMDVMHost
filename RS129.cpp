@@ -25,7 +25,7 @@
 const unsigned int NPAR = 3U;
 
 /* Maximum degree of various polynomials. */
-const unsigned int MAXDEG = NPAR * 2U;
+// const unsigned int MAXDEG = NPAR * 2U;
 
 /* Generator Polynomial */
 const unsigned char POLY[] = {64U, 56U, 14U, 1U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U};
