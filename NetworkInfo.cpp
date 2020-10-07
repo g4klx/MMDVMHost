@@ -64,6 +64,22 @@ void CNetworkInfo::getNetworkInterface(unsigned char* info)
 {
 	LogInfo("Interfaces Info");
 
+#if defined(__APPLE__)
+	const char cmd[] = "ifconfig en0 |grep \"inet \" | head -n 1 | awk \'{print $2}\'";
+	char buffer[128];
+	std::string result = "";
+	FILE* pipe = ::popen(cmd, "r");
+	if (pipe) {
+		while(::fgets(buffer, sizeof(buffer), pipe) != NULL) {
+			result += buffer;
+		}
+		::pclose(pipe);
+	}
+	::sprintf((char*)info, "en0: %s", result.c_str());
+	LogInfo("    IP to show: %s", info);
+	return;
+#endif
+
 	::strcpy((char*)info, "(address unknown)");
 
 #if defined(__linux__) || defined(__NetBSD__) || defined(__OpenBSD__)
