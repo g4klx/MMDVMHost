@@ -65,15 +65,14 @@ static bool LogOpen()
 			::fclose(m_fpLog);
 	}
 
-	char filename[100U];
+	char filename[200U];
 #if defined(_WIN32) || defined(_WIN64)
 	::sprintf(filename, "%s\\%s-%04d-%02d-%02d.log", m_filePath.c_str(), m_fileRoot.c_str(), tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
 #else
 	::sprintf(filename, "%s/%s-%04d-%02d-%02d.log", m_filePath.c_str(), m_fileRoot.c_str(), tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
 #endif
 
-	if ((m_fpLog = ::fopen(filename, "a+t")) != NULL)
-	{
+	if ((m_fpLog = ::fopen(filename, "a+t")) != NULL) {
 		status = true;
 
 #if !defined(_WIN32) && !defined(_WIN64)
@@ -95,6 +94,9 @@ bool LogInitialise(bool daemon, const std::string& filePath, const std::string& 
 	m_displayLevel = displayLevel;
 	m_daemon       = daemon;
 
+	if (m_daemon)
+		m_displayLevel = 0U;
+
 	return ::LogOpen();
 }
 
@@ -108,7 +110,7 @@ void Log(unsigned int level, const char* fmt, ...)
 {
 	assert(fmt != NULL);
 
-	char buffer[300U];
+	char buffer[501U];
 #if defined(_WIN32) || defined(_WIN64)
 	SYSTEMTIME st;
 	::GetSystemTime(&st);
@@ -126,7 +128,7 @@ void Log(unsigned int level, const char* fmt, ...)
 	va_list vl;
 	va_start(vl, fmt);
 
-	::vsprintf(buffer + ::strlen(buffer), fmt, vl);
+	::vsnprintf(buffer + ::strlen(buffer), 500, fmt, vl);
 
 	va_end(vl);
 
@@ -149,4 +151,3 @@ void Log(unsigned int level, const char* fmt, ...)
 		exit(1);
 	}
 }
-
