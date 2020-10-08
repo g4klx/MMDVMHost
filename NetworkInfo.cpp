@@ -26,13 +26,13 @@
 #include <clocale>
 
 #include <sys/types.h>
-#if defined(__linux__) || defined(__OpenBSD__) || defined(__NetBSD__)
+#if defined(__linux__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__APPLE__)
 #include <ifaddrs.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#if defined(__OpenBSD__) || defined(__NetBSD__)
+#if defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__APPLE__)
 #include <sys/sysctl.h>
 #include <net/if.h>
 #include <net/route.h>
@@ -62,27 +62,11 @@ CNetworkInfo::~CNetworkInfo()
 
 void CNetworkInfo::getNetworkInterface(unsigned char* info)
 {
+	::strcpy((char*)info, "");
+
 	LogInfo("Interfaces Info");
 
-#if defined(__APPLE__)
-	const char cmd[] = "ifconfig en0 |grep \"inet \" | head -n 1 | awk \'{print $2}\'";
-	char buffer[128];
-	std::string result = "";
-	FILE* pipe = ::popen(cmd, "r");
-	if (pipe) {
-		while(::fgets(buffer, sizeof(buffer), pipe) != NULL) {
-			result += buffer;
-		}
-		::pclose(pipe);
-	}
-	::sprintf((char*)info, "en0: %s", result.c_str());
-	LogInfo("    IP to show: %s", info);
-	return;
-#endif
-
-	::strcpy((char*)info, "(address unknown)");
-
-#if defined(__linux__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#if defined(__linux__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__) || defined(__APPLE__)
 	char* dflt = NULL;
 
 #if defined(__linux__)
@@ -107,15 +91,15 @@ void CNetworkInfo::getNetworkInterface(unsigned char* info)
 
 	::fclose(fp);
 
-#elif defined(__OpenBSD__) || defined(__NetBSD__)
-	const int mib[] = {
+#elif defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__APPLE__)
+	int mib[] = {
 		CTL_NET,
 		PF_ROUTE,
 		0,		// protocol
 		AF_INET,	// IPv4 routing
 		NET_RT_DUMP,
 		0,		// show all routes
-#if defined(__OpenBSD__)
+#if defined(__OpenBSD__) || defined(__FreeBSD__)
 		0,		// table id
 #endif
 	};
@@ -142,7 +126,7 @@ void CNetworkInfo::getNetworkInterface(unsigned char* info)
 			continue;
 #if defined(__OpenBSD__)
 		struct sockaddr_in *sa = (struct sockaddr_in *)(p + rtm->rtm_hdrlen);
-#elif defined(__NetBSD__)
+#elif defined(__NetBSD__) || defined(__FreeBSD__) || defined(__APPLE__)
 		struct sockaddr_in *sa = (struct sockaddr_in *)(rtm + 1);
 #endif
 		if (sa->sin_addr.s_addr == INADDR_ANY) {
@@ -155,6 +139,7 @@ void CNetworkInfo::getNetworkInterface(unsigned char* info)
 	if (::strlen(ifname))
 		dflt = ifname;
 #endif
+
 	if (dflt == NULL) {
 		LogError("Unable to find the default route");
 		return;
