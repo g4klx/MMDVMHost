@@ -125,6 +125,7 @@ m_umpPort(),
 m_dstarEnabled(false),
 m_dstarModule("C"),
 m_dstarSelfOnly(false),
+m_dstarRadioMode(false),
 m_dstarBlackList(),
 m_dstarAckReply(true),
 m_dstarAckTime(750U),
@@ -555,6 +556,8 @@ bool CConf::read()
 			m_dstarModule = value;
 		} else if (::strcmp(key, "SelfOnly") == 0)
 			m_dstarSelfOnly = ::atoi(value) == 1;
+		  else if (::strcmp(key, "RadioMode") == 0)
+			m_dstarRadioMode = ::atoi(value) == 1;
 		else if (::strcmp(key, "BlackList") == 0) {
 			char* p = ::strtok(value, ",\r\n");
 			while (p != NULL) {
@@ -1287,6 +1290,11 @@ std::string CConf::getDStarModule() const
 bool CConf::getDStarSelfOnly() const
 {
 	return m_dstarSelfOnly;
+}
+
+bool CConf::getDStarRadioMode() const
+{
+	return m_dstarRadioMode;
 }
 
 std::vector<std::string> CConf::getDStarBlackList() const

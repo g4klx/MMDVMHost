@@ -111,6 +111,7 @@ public:
   bool         getDStarEnabled() const;
   std::string  getDStarModule() const;
   bool         getDStarSelfOnly() const;
+  bool		   getDStarRadioMode() const;
   std::vector<std::string> getDStarBlackList() const;
   bool         getDStarAckReply() const;
   unsigned int getDStarAckTime() const;
@@ -387,6 +388,7 @@ private:
   bool         m_dstarEnabled;
   std::string  m_dstarModule;
   bool         m_dstarSelfOnly;
+  bool		   m_dstarRadioMode;
   std::vector<std::string> m_dstarBlackList;
   bool         m_dstarAckReply;
   unsigned int m_dstarAckTime;

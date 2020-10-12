@@ -36,10 +36,11 @@ bool CallsignCompare(const std::string& arg, const unsigned char* my)
 
 // #define	DUMP_DSTAR
 
-CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool ackReply, unsigned int ackTime, bool ackMessage, bool errorReply, const std::vector<std::string>& blackList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
+CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool dstarRadioMode, bool ackReply, unsigned int ackTime, bool ackMessage, bool errorReply, const std::vector<std::string>& blackList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
 m_callsign(NULL),
 m_gateway(NULL),
 m_selfOnly(selfOnly),
+m_dstarRadioMode(dstarRadioMode),
 m_ackReply(ackReply),
 m_ackMessage(ackMessage),
 m_errorReply(errorReply),
@@ -214,8 +215,8 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		unsigned char my1[DSTAR_LONG_CALLSIGN_LENGTH];
 		header.getMyCall1(my1);
 
-		// Is this a transmission destined for a repeater?
-		if (!header.isRepeater()) {
+		// Is this a transmission destined for a repeater?  If we are in radio mode we want it anyway
+		if (!header.isRepeater() && !m_dstarRadioMode) {
 			LogMessage("D-Star, non repeater RF header received from %8.8s", my1);
 			m_rfState = RS_RF_INVALID;
 			return false;
@@ -224,8 +225,8 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		unsigned char callsign[DSTAR_LONG_CALLSIGN_LENGTH];
 		header.getRPTCall1(callsign);
 
-		// Is it for us?
-		if (::memcmp(callsign, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH) != 0) {
+		// Is it for us? If we are in radio mode, then its all for us!
+		if ((::memcmp(callsign, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH) != 0) && !m_dstarRadioMode) {
 			LogMessage("D-Star, received RF header for wrong repeater (%8.8s) from %8.8s", callsign, my1);
 			m_rfState = RS_RF_INVALID;
 			return false;
@@ -252,7 +253,13 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		unsigned char your[DSTAR_LONG_CALLSIGN_LENGTH];
 		header.getYourCall(your);
 
-		m_net = ::memcmp(gateway, m_gateway, DSTAR_LONG_CALLSIGN_LENGTH) == 0;
+		if((::memcmp(gateway, m_gateway, DSTAR_LONG_CALLSIGN_LENGTH) == 0) || m_dstarRadioMode){
+			m_net = true;
+		}
+		else{
+			m_net = false;
+		}
+		//m_net = ::memcmp(gateway, m_gateway, DSTAR_LONG_CALLSIGN_LENGTH) == 0;
 
 		// Only start the timeout if not already running
 		if (!m_rfTimeoutTimer.isRunning())
@@ -675,6 +682,11 @@ void CDStarControl::writeNetwork()
 		m_netBits   = 1U;
 		m_netErrs   = 0U;
 
+		if (m_dstarRadioMode) {
+			header.setRepeater(true);
+			header.get(data + 1U);
+		}
+		
 		if (m_remoteGateway) {
 			header.setRepeater(true);
 			header.setRPTCall1(m_callsign);
