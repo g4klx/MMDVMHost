@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2019,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -223,6 +223,18 @@ void CYSFFICH::setFI(unsigned char fi)
 {
 	m_fich[0U] &= 0x3FU;
 	m_fich[0U] |= (fi << 6) & 0xC0U;
+}
+
+void CYSFFICH::setBN(unsigned char bn)
+{
+	m_fich[0U] &= 0xFCU;
+	m_fich[0U] |= bn & 0x03U;
+}
+
+void CYSFFICH::setBT(unsigned char bt)
+{
+	m_fich[1U] &= 0x3FU;
+	m_fich[1U] |= (bt << 6) & 0xC0U;
 }
 
 void CYSFFICH::setFN(unsigned char fn)

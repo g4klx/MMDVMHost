@@ -155,9 +155,30 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 
 	CYSFFICH fich;
 	bool valid = fich.decode(data + 2U);
+	if (!valid) {
+		unsigned char fi = m_lastFICH.getFI();
+		unsigned char ft = m_lastFICH.getFT();
+		unsigned char fn = m_lastFICH.getFN();
+		unsigned char bt = m_lastFICH.getBT();
+		unsigned char bn = m_lastFICH.getBN();
 
-	if (valid)
-		m_lastFICH = fich;
+		if (fi == YSF_FI_COMMUNICATIONS && ft > 0U) {
+			fn++;
+			if (fn > ft) {
+				fn = 0U;
+				if (bt > 0U)
+					bn++;
+			}
+		}
+
+		fich.setFI(YSF_FI_COMMUNICATIONS);
+		fich.setFN(fn);
+		fich.setFT(ft);
+		fich.setBN(bn);
+		fich.setBT(bt);
+	}
+
+	m_lastFICH = fich;
 
 #ifdef notdef
 	// Stop repeater packets coming through, unless we're acting as a remote gateway
