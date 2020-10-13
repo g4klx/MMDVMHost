@@ -171,14 +171,12 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 			}
 		}
 
-		fich.setFI(YSF_FI_COMMUNICATIONS);
-		fich.setFN(fn);
-		fich.setFT(ft);
-		fich.setBN(bn);
-		fich.setBT(bt);
+		m_lastFICH.setFI(YSF_FI_COMMUNICATIONS);
+		m_lastFICH.setFN(fn);
+		m_lastFICH.setBN(bn);
+	} else {
+		m_lastFICH = fich;
 	}
-
-	m_lastFICH = fich;
 
 #ifdef notdef
 	// Stop repeater packets coming through, unless we're acting as a remote gateway
