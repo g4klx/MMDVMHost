@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2014,2016,2018,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,26 +16,41 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(SYNC_H)
-#define	SYNC_H
+#ifndef	M17Network_H
+#define	M17Network_H
 
-class CSync
-{
+#include "M17Defines.h"
+#include "RingBuffer.h"
+#include "UDPSocket.h"
+
+#include <cstdint>
+
+class CM17Network {
 public:
-	static void addDStarSync(unsigned char* data);
+	CM17Network(unsigned int localPort, const std::string& gwyAddress, unsigned int gwyPort, bool debug);
+	~CM17Network();
 
-	static void addDMRDataSync(unsigned char* data, bool duplex);
-	static void addDMRAudioSync(unsigned char* data, bool duplex);
+	bool open();
 
-	static void addYSFSync(unsigned char* data);
+	void enable(bool enabled);
 
-	static void addP25Sync(unsigned char* data);
+	bool write(const unsigned char* data);
 
-	static void addNXDNSync(unsigned char* data);
+	bool read(unsigned char* data);
 
-	static void addM17Sync(unsigned char* data);
+	void reset();
+
+	void close();
+
+	void clock(unsigned int ms);
 
 private:
+	CUDPSocket       m_socket;
+	sockaddr_storage m_addr;
+	unsigned int     m_addrLen;
+	bool             m_debug;
+	bool             m_enabled;
+	CRingBuffer<unsigned char> m_buffer;
 };
 
 #endif

@@ -39,12 +39,13 @@ public:
 
 	virtual void setSerialParams(const std::string& protocol, unsigned int address);
 	virtual void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency);
-	virtual void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool pocsagEnabled, bool fmEnabled);
-	virtual void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagLevel, float fmTXLevel);
+	virtual void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool m17Enabled, bool pocsagEnabled, bool fmEnabled);
+	virtual void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float m17TXLevel, float pocsagLevel, float fmTXLevel);
 	virtual void setDMRParams(unsigned int colorCode);
 	virtual void setYSFParams(bool loDev, unsigned int txHang);
 	virtual void setP25Params(unsigned int txHang);
 	virtual void setNXDNParams(unsigned int txHang);
+	virtual void setM17Params(unsigned int txHang);
 	virtual void setTransparentDataParams(unsigned int sendFrameType);
 
 	virtual void setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch);
@@ -59,6 +60,7 @@ public:
 	virtual unsigned int readYSFData(unsigned char* data);
 	virtual unsigned int readP25Data(unsigned char* data);
 	virtual unsigned int readNXDNData(unsigned char* data);
+	virtual unsigned int readM17Data(unsigned char* data);
 	virtual unsigned int readTransparentData(unsigned char* data);
 
 	virtual unsigned int readSerial(unsigned char* data, unsigned int length);
@@ -69,6 +71,7 @@ public:
 	virtual bool hasYSFSpace() const;
 	virtual bool hasP25Space() const;
 	virtual bool hasNXDNSpace() const;
+	virtual bool hasM17Space() const;
 	virtual bool hasPOCSAGSpace() const;
 
 	virtual bool hasTX() const;
@@ -84,6 +87,7 @@ public:
 	virtual bool writeYSFData(const unsigned char* data, unsigned int length);
 	virtual bool writeP25Data(const unsigned char* data, unsigned int length);
 	virtual bool writeNXDNData(const unsigned char* data, unsigned int length);
+	virtual bool writeM17Data(const unsigned char* data, unsigned int length);
 	virtual bool writePOCSAGData(const unsigned char* data, unsigned int length);
 
 	virtual bool writeTransparentData(const unsigned char* data, unsigned int length);
@@ -93,6 +97,7 @@ public:
 	virtual bool writeYSFInfo(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
 	virtual bool writeP25Info(const char* source, bool group, unsigned int dest, const char* type);
 	virtual bool writeNXDNInfo(const char* source, bool group, unsigned int dest, const char* type);
+	virtual bool writeM17Info(const char* source, const char* dest, const char* type);
 	virtual bool writePOCSAGInfo(unsigned int ric, const std::string& message);
 	virtual bool writeIPInfo(const std::string& address);
 
@@ -122,6 +127,7 @@ private:
 	unsigned int               m_ysfTXHang;
 	unsigned int               m_p25TXHang;
 	unsigned int               m_nxdnTXHang;
+	unsigned int               m_m17TXHang;
 	bool                       m_duplex;
 	bool                       m_rxInvert;
 	bool                       m_txInvert;
@@ -135,6 +141,7 @@ private:
 	float                      m_ysfTXLevel;
 	float                      m_p25TXLevel;
 	float                      m_nxdnTXLevel;
+	float                      m_m17TXLevel;
 	float                      m_pocsagTXLevel;
 	float                      m_fmTXLevel;
 	float                      m_rfLevel;
@@ -149,6 +156,7 @@ private:
 	bool                       m_ysfEnabled;
 	bool                       m_p25Enabled;
 	bool                       m_nxdnEnabled;
+	bool                       m_m17Enabled;
 	bool                       m_pocsagEnabled;
 	bool                       m_fmEnabled;
 	int                        m_rxDCOffset;
@@ -169,6 +177,8 @@ private:
 	CRingBuffer<unsigned char> m_txP25Data;
 	CRingBuffer<unsigned char> m_rxNXDNData;
 	CRingBuffer<unsigned char> m_txNXDNData;
+	CRingBuffer<unsigned char> m_rxM17Data;
+	CRingBuffer<unsigned char> m_txM17Data;
 	CRingBuffer<unsigned char> m_txPOCSAGData;
 	CRingBuffer<unsigned char> m_rxTransparentData;
 	CRingBuffer<unsigned char> m_txTransparentData;
@@ -182,6 +192,7 @@ private:
 	unsigned int               m_ysfSpace;
 	unsigned int               m_p25Space;
 	unsigned int               m_nxdnSpace;
+	unsigned int               m_m17Space;
 	unsigned int               m_pocsagSpace;
 	bool                       m_tx;
 	bool                       m_cd;

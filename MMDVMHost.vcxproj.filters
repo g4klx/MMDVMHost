@@ -299,6 +299,15 @@
     <ClInclude Include="NXDNKenwoodNetwork.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="M17Defines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M17Control.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M17Network.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -560,6 +569,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NXDNKenwoodNetwork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M17Control.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M17Network.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

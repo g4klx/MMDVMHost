@@ -188,6 +188,9 @@
     <ClInclude Include="I2CController.h" />
     <ClInclude Include="LCDproc.h" />
     <ClInclude Include="Log.h" />
+    <ClInclude Include="M17Control.h" />
+    <ClInclude Include="M17Defines.h" />
+    <ClInclude Include="M17Network.h" />
     <ClInclude Include="MMDVMHost.h" />
     <ClInclude Include="Modem.h" />
     <ClInclude Include="ModemSerialPort.h" />
@@ -283,6 +286,8 @@
     <ClCompile Include="I2CController.cpp" />
     <ClCompile Include="LCDproc.cpp" />
     <ClCompile Include="Log.cpp" />
+    <ClCompile Include="M17Control.cpp" />
+    <ClCompile Include="M17Network.cpp" />
     <ClCompile Include="MMDVMHost.cpp" />
     <ClCompile Include="Modem.cpp" />
     <ClCompile Include="ModemSerialPort.cpp" />

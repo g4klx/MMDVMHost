@@ -43,6 +43,7 @@ enum SECTION {
   SECTION_FUSION,
   SECTION_P25,
   SECTION_NXDN,
+  SECTION_M17,
   SECTION_POCSAG,
   SECTION_FM,
   SECTION_DSTAR_NETWORK,
@@ -50,6 +51,7 @@ enum SECTION {
   SECTION_FUSION_NETWORK,
   SECTION_P25_NETWORK,
   SECTION_NXDN_NETWORK,
+  SECTION_M17_NETWORK,
   SECTION_POCSAG_NETWORK,
   SECTION_TFTSERIAL,
   SECTION_HD44780,
@@ -102,6 +104,7 @@ m_modemDMRTXLevel(50.0F),
 m_modemYSFTXLevel(50.0F),
 m_modemP25TXLevel(50.0F),
 m_modemNXDNTXLevel(50.0F),
+m_modemM17TXLevel(50.0F),
 m_modemPOCSAGTXLevel(50.0F),
 m_modemFMTXLevel(50.0F),
 m_modemRSSIMappingFile(),
@@ -164,6 +167,10 @@ m_nxdnSelfOnly(false),
 m_nxdnRemoteGateway(false),
 m_nxdnTXHang(5U),
 m_nxdnModeHang(10U),
+m_m17Enabled(false),
+m_m17SelfOnly(false),
+m_m17TXHang(5U),
+m_m17ModeHang(10U),
 m_pocsagEnabled(false),
 m_pocsagFrequency(0U),
 m_fmEnabled(false),
@@ -235,6 +242,12 @@ m_nxdnLocalAddress(),
 m_nxdnLocalPort(0U),
 m_nxdnNetworkModeHang(3U),
 m_nxdnNetworkDebug(false),
+m_m17NetworkEnabled(false),
+m_m17GatewayAddress(),
+m_m17GatewayPort(0U),
+m_m17LocalPort(0U),
+m_m17NetworkModeHang(3U),
+m_m17NetworkDebug(false),
 m_pocsagNetworkEnabled(false),
 m_pocsagGatewayAddress(),
 m_pocsagGatewayPort(0U),
@@ -329,6 +342,8 @@ bool CConf::read()
 		  section = SECTION_P25;
 	  else if (::strncmp(buffer, "[NXDN]", 6U) == 0)
 		  section = SECTION_NXDN;
+	  else if (::strncmp(buffer, "[M17]", 5U) == 0)
+		  section = SECTION_M17;
 	  else if (::strncmp(buffer, "[POCSAG]", 8U) == 0)
 		  section = SECTION_POCSAG;
 	  else if (::strncmp(buffer, "[FM]", 4U) == 0)
@@ -343,6 +358,8 @@ bool CConf::read()
 		  section = SECTION_P25_NETWORK;
 	  else if (::strncmp(buffer, "[NXDN Network]", 14U) == 0)
 		  section = SECTION_NXDN_NETWORK;
+	  else if (::strncmp(buffer, "[M17 Network]", 13U) == 0)
+		  section = SECTION_M17_NETWORK;
 	  else if (::strncmp(buffer, "[POCSAG Network]", 16U) == 0)
 		  section = SECTION_POCSAG_NETWORK;
 	  else if (::strncmp(buffer, "[TFT Serial]", 12U) == 0)
@@ -404,12 +421,12 @@ bool CConf::read()
 		else if (::strcmp(key, "Duplex") == 0)
 			m_duplex = ::atoi(value) == 1;
 		else if (::strcmp(key, "ModeHang") == 0)
-			m_dstarNetworkModeHang = m_dmrNetworkModeHang = m_fusionNetworkModeHang = m_p25NetworkModeHang =
-			m_dstarModeHang        = m_dmrModeHang        = m_fusionModeHang        = m_p25ModeHang        = (unsigned int)::atoi(value);
+			m_dstarNetworkModeHang = m_dmrNetworkModeHang = m_fusionNetworkModeHang = m_p25NetworkModeHang = m_nxdnNetworkModeHang = m_m17NetworkModeHang =
+			m_dstarModeHang        = m_dmrModeHang        = m_fusionModeHang        = m_p25ModeHang        = m_nxdnModeHang        = m_m17ModeHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "RFModeHang") == 0)
-			m_dstarModeHang = m_dmrModeHang = m_fusionModeHang = m_p25ModeHang = (unsigned int)::atoi(value);
+			m_dstarModeHang = m_dmrModeHang = m_fusionModeHang = m_p25ModeHang = m_nxdnModeHang = m_m17ModeHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "NetModeHang") == 0)
-			m_dstarNetworkModeHang = m_dmrNetworkModeHang = m_fusionNetworkModeHang = m_p25NetworkModeHang = (unsigned int)::atoi(value);
+			m_dstarNetworkModeHang = m_dmrNetworkModeHang = m_fusionNetworkModeHang = m_p25NetworkModeHang = m_nxdnNetworkModeHang = m_m17NetworkModeHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Display") == 0)
 			m_display = value;
 		else if (::strcmp(key, "Daemon") == 0)
@@ -481,7 +498,7 @@ bool CConf::read()
 		else if (::strcmp(key, "RXLevel") == 0)
 			m_modemRXLevel = float(::atof(value));
 		else if (::strcmp(key, "TXLevel") == 0)
-			m_modemFMTXLevel = m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = m_modemNXDNTXLevel = float(::atof(value));
+			m_modemFMTXLevel = m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = m_modemNXDNTXLevel = m_modemM17TXLevel = float(::atof(value));
 		else if (::strcmp(key, "CWIdTXLevel") == 0)
 			m_modemCWIdTXLevel = float(::atof(value));
 		else if (::strcmp(key, "D-StarTXLevel") == 0)
@@ -494,6 +511,8 @@ bool CConf::read()
 			m_modemP25TXLevel = float(::atof(value));
 		else if (::strcmp(key, "NXDNTXLevel") == 0)
 			m_modemNXDNTXLevel = float(::atof(value));
+		else if (::strcmp(key, "M17TXLevel") == 0)
+			m_modemM17TXLevel = float(::atof(value));
 		else if (::strcmp(key, "POCSAGTXLevel") == 0)
 			m_modemPOCSAGTXLevel = float(::atof(value));
 		else if (::strcmp(key, "FMTXLevel") == 0)
@@ -682,13 +701,21 @@ bool CConf::read()
 			m_nxdnTXHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "ModeHang") == 0)
 			m_nxdnModeHang = (unsigned int)::atoi(value);
+	} else if (section == SECTION_M17) {
+		if (::strcmp(key, "Enable") == 0)
+			m_m17Enabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "SelfOnly") == 0)
+			m_m17SelfOnly = ::atoi(value) == 1;
+		else if (::strcmp(key, "TXHang") == 0)
+			m_m17TXHang = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "ModeHang") == 0)
+			m_m17ModeHang = (unsigned int)::atoi(value);
 	} else if (section == SECTION_POCSAG) {
-	  if (::strcmp(key, "Enable") == 0)
-		  m_pocsagEnabled = ::atoi(value) == 1;
-	  else if (::strcmp(key, "Frequency") == 0)
-		  m_pocsagFrequency = (unsigned int)::atoi(value);
-	}
-	else if (section == SECTION_FM) {
+		if (::strcmp(key, "Enable") == 0)
+			m_pocsagEnabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "Frequency") == 0)
+			m_pocsagFrequency = (unsigned int)::atoi(value);
+	} else if (section == SECTION_FM) {
 		if (::strcmp(key, "Enable") == 0)
 			m_fmEnabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "Callsign") == 0) {
@@ -843,6 +870,19 @@ bool CConf::read()
 			m_nxdnNetworkModeHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Debug") == 0)
 			m_nxdnNetworkDebug = ::atoi(value) == 1;
+	} else if (section == SECTION_M17_NETWORK) {
+		if (::strcmp(key, "Enable") == 0)
+			m_m17NetworkEnabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "LocalPort") == 0)
+			m_m17LocalPort = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "GatewayAddress") == 0)
+			m_m17GatewayAddress = value;
+		else if (::strcmp(key, "GatewayPort") == 0)
+			m_m17GatewayPort = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "ModeHang") == 0)
+			m_m17NetworkModeHang = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "Debug") == 0)
+			m_m17NetworkDebug = ::atoi(value) == 1;
 	} else if (section == SECTION_POCSAG_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_pocsagNetworkEnabled = ::atoi(value) == 1;
@@ -1149,6 +1189,11 @@ float CConf::getModemP25TXLevel() const
 float CConf::getModemNXDNTXLevel() const
 {
 	return m_modemNXDNTXLevel;
+}
+
+float CConf::getModemM17TXLevel() const
+{
+	return m_modemM17TXLevel;
 }
 
 float CConf::getModemPOCSAGTXLevel() const
@@ -1459,6 +1504,26 @@ unsigned int CConf::getNXDNTXHang() const
 unsigned int CConf::getNXDNModeHang() const
 {
 	return m_nxdnModeHang;
+}
+
+bool CConf::getM17Enabled() const
+{
+	return m_m17Enabled;
+}
+
+bool CConf::getM17SelfOnly() const
+{
+	return m_m17SelfOnly;
+}
+
+unsigned int CConf::getM17TXHang() const
+{
+	return m_m17TXHang;
+}
+
+unsigned int CConf::getM17ModeHang() const
+{
+	return m_m17ModeHang;
 }
 
 bool CConf::getPOCSAGEnabled() const
@@ -1814,6 +1879,36 @@ unsigned int CConf::getNXDNNetworkModeHang() const
 bool CConf::getNXDNNetworkDebug() const
 {
 	return m_nxdnNetworkDebug;
+}
+
+bool CConf::getM17NetworkEnabled() const
+{
+	return m_m17NetworkEnabled;
+}
+
+std::string CConf::getM17GatewayAddress() const
+{
+	return m_m17GatewayAddress;
+}
+
+unsigned int CConf::getM17GatewayPort() const
+{
+	return m_m17GatewayPort;
+}
+
+unsigned int CConf::getM17LocalPort() const
+{
+	return m_m17LocalPort;
+}
+
+unsigned int CConf::getM17NetworkModeHang() const
+{
+	return m_m17NetworkModeHang;
+}
+
+bool CConf::getM17NetworkDebug() const
+{
+	return m_m17NetworkDebug;
 }
 
 bool CConf::getPOCSAGNetworkEnabled() const

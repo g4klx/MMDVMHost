@@ -83,6 +83,7 @@ public:
   float        getModemYSFTXLevel() const;
   float        getModemP25TXLevel() const;
   float        getModemNXDNTXLevel() const;
+  float        getModemM17TXLevel() const;
   float        getModemPOCSAGTXLevel() const;
   float        getModemFMTXLevel() const;
   std::string  getModemRSSIMappingFile() const;
@@ -159,6 +160,12 @@ public:
   bool         getNXDNRemoteGateway() const;
   unsigned int getNXDNTXHang() const;
   unsigned int getNXDNModeHang() const;
+
+  // The M17 section
+  bool         getM17Enabled() const;
+  bool         getM17SelfOnly() const;
+  unsigned int getM17TXHang() const;
+  unsigned int getM17ModeHang() const;
 
   // The POCSAG section
   bool         getPOCSAGEnabled() const;
@@ -244,6 +251,14 @@ public:
   unsigned int getNXDNLocalPort() const;
   unsigned int getNXDNNetworkModeHang() const;
   bool         getNXDNNetworkDebug() const;
+
+  // The M17 Network section
+  bool         getM17NetworkEnabled() const;
+  std::string  getM17GatewayAddress() const;
+  unsigned int getM17GatewayPort() const;
+  unsigned int getM17LocalPort() const;
+  unsigned int getM17NetworkModeHang() const;
+  bool         getM17NetworkDebug() const;
 
   // The POCSAG Network section
   bool         getPOCSAGNetworkEnabled() const;
@@ -352,6 +367,7 @@ private:
   float        m_modemYSFTXLevel;
   float        m_modemP25TXLevel;
   float        m_modemNXDNTXLevel;
+  float        m_modemM17TXLevel;
   float        m_modemPOCSAGTXLevel;
   float        m_modemFMTXLevel;
   std::string  m_modemRSSIMappingFile;
@@ -421,6 +437,11 @@ private:
   bool         m_nxdnRemoteGateway;
   unsigned int m_nxdnTXHang;
   unsigned int m_nxdnModeHang;
+
+  bool         m_m17Enabled;
+  bool         m_m17SelfOnly;
+  unsigned int m_m17TXHang;
+  unsigned int m_m17ModeHang;
 
   bool         m_pocsagEnabled;
   unsigned int m_pocsagFrequency;
@@ -499,6 +520,13 @@ private:
   unsigned int m_nxdnLocalPort;
   unsigned int m_nxdnNetworkModeHang;
   bool         m_nxdnNetworkDebug;
+
+  bool         m_m17NetworkEnabled;
+  std::string  m_m17GatewayAddress;
+  unsigned int m_m17GatewayPort;
+  unsigned int m_m17LocalPort;
+  unsigned int m_m17NetworkModeHang;
+  bool         m_m17NetworkDebug;
 
   bool         m_pocsagNetworkEnabled;
   std::string  m_pocsagGatewayAddress;

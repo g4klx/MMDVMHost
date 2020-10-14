@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,26 +16,19 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(SYNC_H)
-#define	SYNC_H
+#if !defined(M17DEFINES_H)
+#define  M17DEFINES_H
 
-class CSync
-{
-public:
-	static void addDStarSync(unsigned char* data);
+const unsigned int M17_RADIO_SYMBOL_LENGTH = 5U;      // At 24 kHz sample rate
 
-	static void addDMRDataSync(unsigned char* data, bool duplex);
-	static void addDMRAudioSync(unsigned char* data, bool duplex);
+const unsigned int M17_FRAME_LENGTH_BITS    = 384U;
+const unsigned int M17_FRAME_LENGTH_BYTES   = M17_FRAME_LENGTH_BITS / 8U;
+const unsigned int M17_FRAME_LENGTH_SYMBOLS = M17_FRAME_LENGTH_BITS / 2U;
 
-	static void addYSFSync(unsigned char* data);
+const unsigned int M17_SYNC_LENGTH_BITS    = 16U;
+const unsigned int M17_SYNC_LENGTH_SYMBOLS = M17_SYNC_LENGTH_BITS / 2U;
 
-	static void addP25Sync(unsigned char* data);
-
-	static void addNXDNSync(unsigned char* data);
-
-	static void addM17Sync(unsigned char* data);
-
-private:
-};
+const unsigned char M17_SYNC_BYTES[] = {0x32U, 0x43U};
+const unsigned int  M17_SYNC_BYTES_LENGTH = 2U;
 
 #endif
