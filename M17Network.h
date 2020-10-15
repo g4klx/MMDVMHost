@@ -23,6 +23,7 @@
 #include "RingBuffer.h"
 #include "UDPSocket.h"
 
+#include <random>
 #include <cstdint>
 
 class CM17Network {
@@ -50,7 +51,10 @@ private:
 	unsigned int     m_addrLen;
 	bool             m_debug;
 	bool             m_enabled;
+	uint16_t         m_outId;
+	uint16_t         m_inId;
 	CRingBuffer<unsigned char> m_buffer;
+	std::mt19937     m_random;
 };
 
 #endif

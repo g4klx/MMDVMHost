@@ -34,8 +34,15 @@ m_addr(),
 m_addrLen(0U),
 m_debug(debug),
 m_enabled(false),
-m_buffer(1000U, "M17 Network")
+m_outId(0U),
+m_inId(0U),
+m_buffer(1000U, "M17 Network"),
+m_random()
 {
+	std::random_device rd;
+	std::mt19937 mt(rd());
+	m_random = mt;
+
 	if (CUDPSocket::lookup(gatewayAddress, gatewayPort, m_addr, m_addrLen) != 0)
 		m_addrLen = 0U;
 }
@@ -65,6 +72,16 @@ bool CM17Network::write(const unsigned char* data)
 	buffer[0U] = 'M';
 	buffer[1U] = '1';
 	buffer[2U] = '7';
+	buffer[3U] = ' ';
+
+	// Create a random id for this transmission if needed
+	if (m_outId == 0U) {
+		std::uniform_int_distribution<uint16_t> dist(0x0001, 0xFFFE);
+		m_outId = dist(m_random);
+	}
+
+	buffer[4U] = m_outId / 256U;	// Unique session id
+	buffer[5U] = m_outId % 256U;
 
 	if (m_debug)
 		CUtils::dump(1U, "M17 data transmitted", buffer, 36U);
@@ -93,8 +110,21 @@ void CM17Network::clock(unsigned int ms)
 	if (m_debug)
 		CUtils::dump(1U, "M17 Network Data Received", buffer, length);
 
-	if (::memcmp(buffer + 0U, "M17", 3U) != 0)
+	if (::memcmp(buffer + 0U, "M17 ", 4U) != 0)
 		return;
+
+	uint16_t id = (buffer[4U] << 8) + (buffer[5U] << 0);
+	if (m_inId == 0U) {
+		m_inId = id;
+	} else {
+		if (id != m_inId)
+			return;
+	}
+
+	// EOT?
+	uint16_t fn = (buffer[38U] << 8) + (buffer[39U] << 0);
+	if ((fn & 0x8000U) == 0x8000U)
+		m_inId = 0U;
 
 	unsigned char c = length;
 	m_buffer.addData(&c, 1U);
@@ -122,6 +152,12 @@ void CM17Network::close()
 	m_socket.close();
 
 	LogMessage("Closing M17 network connection");
+}
+
+void CM17Network::reset()
+{
+	m_outId = 0U;
+	m_inId  = 0U;
 }
 
 void CM17Network::enable(bool enabled)

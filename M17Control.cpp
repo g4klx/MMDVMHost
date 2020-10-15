@@ -89,9 +89,9 @@ bool CM17Control::writeModem(unsigned char *data, unsigned int len)
 		std::string source = m_lookup->find(m_rfLayer3.getSourceUnitId());
 
 		if (m_rssi != 0U)
-			LogMessage("M17, transmission lost from %s to %s%u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			LogMessage("M17, transmission lost from %s to %s%u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 		else
-			LogMessage("M17, transmission lost from %s to %s%u, %.1f seconds, BER: %.1f%%", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits));
+			LogMessage("M17, transmission lost from %s to %s%u, %.1f seconds, BER: %.1f%%", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 		writeEndRF();
 		return false;
 	}
@@ -139,31 +139,9 @@ bool CM17Control::writeModem(unsigned char *data, unsigned int len)
 	if (valid)
 		m_rfLastLICH = lich;
 
-	// Stop repeater packets coming through, unless we're acting as a remote gateway
-	if (m_remoteGateway) {
-		unsigned char direction = m_rfLastLICH.getDirection();
-		if (direction == M17_LICH_DIRECTION_INBOUND)
-			return false;
-	} else {
-		unsigned char direction = m_rfLastLICH.getDirection();
-		if (direction == M17_LICH_DIRECTION_OUTBOUND)
-			return false;
-	}
-
 	unsigned char usc    = m_rfLastLICH.getFCT();
 	unsigned char option = m_rfLastLICH.getOption();
 
-	bool ret;
-	if (usc == M17_LICH_USC_UDCH)
-		ret = processData(option, data);
-	else
-		ret = processVoice(usc, option, data);
-
-	return ret;
-}
-
-bool CM17Control::processVoice(unsigned char usc, unsigned char option, unsigned char *data)
-{
 	CM17SACCH sacch;
 	bool valid = sacch.decode(data + 2U);
 	if (valid) {
@@ -260,9 +238,9 @@ bool CM17Control::processVoice(unsigned char usc, unsigned char option, unsigned
 
 			m_rfFrames++;
 			if (m_rssi != 0U)
-				LogMessage("M17, received RF end of transmission from %s to %s%u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				LogMessage("M17, received RF end of transmission from %s to %s%u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			else
-				LogMessage("M17, received RF end of transmission from %s to %s%u, %.1f seconds, BER: %.1f%%", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits));
+				LogMessage("M17, received RF end of transmission from %s to %s%u, %.1f seconds, BER: %.1f%%", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 			writeEndRF();
 		} else {
 			m_rfFrames  = 0U;
@@ -552,127 +530,6 @@ bool CM17Control::processVoice(unsigned char usc, unsigned char option, unsigned
 	return true;
 }
 
-bool CM17Control::processData(unsigned char option, unsigned char *data)
-{
-	CM17UDCH udch;
-	bool validUDCH = udch.decode(data + 2U);
-	if (m_rfState == RS_RF_LISTENING && !validUDCH)
-		return false;
-
-	if (validUDCH) {
-		unsigned char ran = udch.getRAN();
-		if (ran != m_ran && ran != 0U)
-			return false;
-	}
-
-	unsigned char netData[40U];
-	::memset(netData, 0x00U, 40U);
-
-	// The layer3 data will only be correct if valid is true
-	unsigned char buffer[23U];
-	udch.getData(buffer);
-
-	CM17Layer3 layer3;
-	layer3.decode(buffer, 184U);
-
-	if (m_rfState == RS_RF_LISTENING) {
-		unsigned char type = layer3.getMessageType();
-		if (type != M17_MESSAGE_TYPE_DCALL_HDR)
-			return false;
-
-		unsigned short srcId = layer3.getSourceUnitId();
-		unsigned short dstId = layer3.getDestinationGroupId();
-		bool grp             = layer3.getIsGroup();
-
-		if (m_selfOnly) {
-			if (srcId != m_id)
-				return false;
-		}
-
-		unsigned char frames = layer3.getDataBlocks();
-
-		std::string source = m_lookup->find(srcId);
-
-		m_display->writeM17(source.c_str(), grp, dstId, "R");
-		m_display->writeM17RSSI(m_rssi);
-
-		LogMessage("M17, received RF data header from %s to %s%u, %u blocks", source.c_str(), grp ? "TG " : "", dstId, frames);
-
-		m_rfLayer3 = layer3;
-		m_rfFrames = 0U;
-
-		m_rfState = RS_RF_DATA;
-
-#if defined(DUMP_M17)
-		openFile();
-#endif
-	}
-
-	if (m_rfState != RS_RF_DATA)
-		return false;
-
-	CSync::addM17Sync(data + 2U);
-
-	CM17LICH lich;
-	lich.setRFCT(M17_LICH_RFCT_RDCH);
-	lich.setFCT(M17_LICH_USC_UDCH);
-	lich.setOption(option);
-	lich.setDirection(m_remoteGateway || !m_duplex ? M17_LICH_DIRECTION_INBOUND : M17_LICH_DIRECTION_OUTBOUND);
-	lich.encode(data + 2U);
-
-	lich.setDirection(M17_LICH_DIRECTION_INBOUND);
-	netData[0U] = lich.getRaw();
-
-	udch.getRaw(netData + 1U);
-
-	unsigned char type = M17_MESSAGE_TYPE_DCALL_DATA;
-
-	if (validUDCH) {
-		type = layer3.getMessageType();
-		data[0U] = type == M17_MESSAGE_TYPE_TX_REL ? TAG_EOT : TAG_DATA;
-
-		udch.setRAN(m_ran);
-		udch.encode(data + 2U);
-	} else {
-		data[0U] = TAG_DATA;
-		data[1U] = 0x00U;
-	}
-
-	scrambler(data + 2U);
-
-	switch (type) {
-	case M17_MESSAGE_TYPE_DCALL_HDR:
-		writeNetwork(netData, NNMT_DATA_HEADER);
-		break;
-	case M17_MESSAGE_TYPE_TX_REL:
-		writeNetwork(netData, NNMT_DATA_TRAILER);
-		break;
-	default:
-		writeNetwork(netData, NNMT_DATA_BODY);
-		break;
-	}
-
-	if (m_duplex)
-		writeQueueRF(data);
-
-	m_rfFrames++;
-
-#if defined(DUMP_M17)
-	writeFile(data + 2U);
-#endif
-
-	if (data[0U] == TAG_EOT) {
-		unsigned short dstId = m_rfLayer3.getDestinationGroupId();
-		bool grp             = m_rfLayer3.getIsGroup();
-		std::string source   = m_lookup->find(m_rfLayer3.getSourceUnitId());
-
-		LogMessage("M17, ended RF data transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
-		writeEndRF();
-	}
-
-	return true;
-}
-
 unsigned int CM17Control::readModem(unsigned char* data)
 {
 	assert(data != NULL);
@@ -728,7 +585,7 @@ void CM17Control::writeEndNet()
 
 void CM17Control::writeNetwork()
 {
-	unsigned char netData[40U];
+	unsigned char netData[100U];
 	bool exists = m_network->read(netData);
 	if (!exists)
 		return;
@@ -749,7 +606,6 @@ void CM17Control::writeNetwork()
 	lich.setRaw(netData[0U]);
 	unsigned char usc    = lich.getFCT();
 	unsigned char option = lich.getOption();
-	lich.setDirection(m_remoteGateway || !m_duplex ? M17_LICH_DIRECTION_INBOUND : M17_LICH_DIRECTION_OUTBOUND);
 	lich.encode(data + 2U);
 
 	if (usc == M17_LICH_USC_UDCH) {
@@ -831,7 +687,7 @@ void CM17Control::writeNetwork()
 
 		if (type == M17_MESSAGE_TYPE_TX_REL) {
 			m_netFrames++;
-			LogMessage("M17, received network end of transmission from %s to %s%u, %.1f seconds", source.get(keyCALLSIGN).c_str(), grp ? "TG " : "", dstId, float(m_netFrames) / 12.5F);
+			LogMessage("M17, received network end of transmission from %s to %s%u, %.1f seconds", source.get(keyCALLSIGN).c_str(), grp ? "TG " : "", dstId, float(m_netFrames) / 25.0F);
 			writeEndNet();
 		} else if (type == M17_MESSAGE_TYPE_VCALL) {
 			LogMessage("M17, received network transmission from %s to %s%u", source.get(keyCALLSIGN).c_str(), grp ? "TG " : "", dstId);
@@ -987,7 +843,7 @@ void CM17Control::clock(unsigned int ms)
 		m_networkWatchdog.clock(ms);
 
 		if (m_networkWatchdog.hasExpired()) {
-			LogMessage("M17, network watchdog has expired, %.1f seconds", float(m_netFrames) / 12.5F);
+			LogMessage("M17, network watchdog has expired, %.1f seconds", float(m_netFrames) / 25.0F);
 			writeEndNet();
 		}
 	}

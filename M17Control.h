@@ -78,11 +78,8 @@ private:
 	bool                       m_enabled;
 	FILE*                      m_fp;
 
-	bool processVoice(unsigned char usc, unsigned char option, unsigned char* data);
-
 	void writeQueueRF(const unsigned char* data);
 	void writeQueueNet(const unsigned char* data);
-	void writeNetwork(const unsigned char* data);
 	void writeNetwork();
 
 	void scrambler(unsigned char* data) const;
