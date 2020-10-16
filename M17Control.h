@@ -24,6 +24,7 @@
 #include "M17Defines.h"
 #include "RingBuffer.h"
 #include "StopWatch.h"
+#include "M17LICH.h"
 #include "Display.h"
 #include "Defines.h"
 #include "Timer.h"
@@ -64,12 +65,10 @@ private:
 	unsigned int               m_netFrames;
 	unsigned int               m_rfErrs;
 	unsigned int               m_rfBits;
-	CNXDNLICH                  m_rfLastLICH;
-	CNXDNLayer3                m_rfLayer3;
-	CNXDNLayer3                m_netLayer3;
+	CM17LICH                   m_rfLICH;
 	unsigned char              m_rfMask;
-	unsigned char              m_netMask;
-	CRSSIInterpolator* m_rssiMapper;
+	CM17LICH                   m_netLICH;
+	CRSSIInterpolator*         m_rssiMapper;
 	unsigned char              m_rssi;
 	unsigned char              m_maxRSSI;
 	unsigned char              m_minRSSI;
@@ -80,9 +79,11 @@ private:
 
 	void writeQueueRF(const unsigned char* data);
 	void writeQueueNet(const unsigned char* data);
+	void writeNetwork(const unsigned char* data);
 	void writeNetwork();
 
-	void scrambler(unsigned char* data) const;
+	void interleaver(const unsigned char* in, unsigned char* out) const;
+	void decorrelator(const unsigned char* in, unsigned char* out) const;
 
 	void writeEndRF();
 	void writeEndNet();

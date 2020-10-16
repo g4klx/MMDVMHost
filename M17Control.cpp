@@ -21,18 +21,37 @@
 #include <cstring>
 #include <ctime>
 
+const unsigned int INTERLEAVER[] = {
+	0U, 137U, 90U, 227U, 180U, 317U, 270U, 39U, 360U, 129U, 82U, 219U, 172U, 309U, 262U, 31U, 352U, 121U, 74U, 211U, 164U,
+	301U, 254U, 23U, 344U, 113U, 66U, 203U, 156U, 293U, 246U, 15U, 336U, 105U, 58U, 195U, 148U, 285U, 238U, 7U, 328U, 97U,
+	50U, 187U, 140U, 277U, 230U, 367U, 320U, 89U, 42U, 179U, 132U, 269U, 222U, 359U, 312U, 81U, 34U, 171U, 124U, 261U, 214U,
+	351U, 304U, 73U, 26U, 163U, 116U, 253U, 206U, 343U, 296U, 65U, 18U, 155U, 108U, 245U, 198U, 335U, 288U, 57U, 10U, 147U,
+	100U, 237U, 190U, 327U, 280U, 49U, 2U, 139U, 92U, 229U, 182U, 319U, 272U, 41U, 362U, 131U, 84U, 221U, 174U, 311U, 264U,
+	33U, 354U, 123U, 76U, 213U, 166U, 303U, 256U, 25U, 346U, 115U, 68U, 205U, 158U, 295U, 248U, 17U, 338U, 107U, 60U, 197U,
+	150U, 287U, 240U, 9U, 330U, 99U, 52U, 189U, 142U, 279U, 232U, 1U, 322U, 91U, 44U, 181U, 134U, 271U, 224U, 361U, 314U, 83U,
+	36U, 173U, 126U, 263U, 216U, 353U, 306U, 75U, 28U, 165U, 118U, 255U, 208U, 345U, 298U, 67U, 20U, 157U, 110U, 247U, 200U,
+	337U, 290U, 59U, 12U, 149U, 102U, 239U, 192U, 329U, 282U, 51U, 4U, 141U, 94U, 231U, 184U, 321U, 274U, 43U, 364U, 133U, 86U,
+	223U, 176U, 313U, 266U, 35U, 356U, 125U, 78U, 215U, 168U, 305U, 258U, 27U, 348U, 117U, 70U, 207U, 160U, 297U, 250U, 19U,
+	340U, 109U, 62U, 199U, 152U, 289U, 242U, 11U, 332U, 101U, 54U, 191U, 144U, 281U, 234U, 3U, 324U, 93U, 46U, 183U, 136U, 273U,
+	226U, 363U, 316U, 85U, 38U, 175U, 128U, 265U, 218U, 355U, 308U, 77U, 30U, 167U, 120U, 257U, 210U, 347U, 300U, 69U, 22U,
+	159U, 112U, 249U, 202U, 339U, 292U, 61U, 14U, 151U, 104U, 241U, 194U, 331U, 284U, 53U, 6U, 143U, 96U, 233U, 186U, 323U,
+	276U, 45U, 366U, 135U, 88U, 225U, 178U, 315U, 268U, 37U, 358U, 127U, 80U, 217U, 170U, 307U, 260U, 29U, 350U, 119U, 72U,
+	209U, 162U, 299U, 252U, 21U, 342U, 111U, 64U, 201U, 154U, 291U, 244U, 13U, 334U, 103U, 56U, 193U, 146U, 283U, 236U, 5U,
+	326U, 95U, 48U, 185U, 138U, 275U, 228U, 365U, 318U, 87U, 40U, 177U, 130U, 267U, 220U, 357U, 310U, 79U, 32U, 169U, 122U,
+	259U, 212U, 349U, 302U, 71U, 24U, 161U, 114U, 251U, 204U, 341U, 294U, 63U, 16U, 153U, 106U, 243U, 196U, 333U, 286U, 55U,
+	8U, 145U, 98U, 235U, 188U, 325U, 278U, 47U};
+
 const unsigned char SCRAMBLER[] = {
-	0x00U, 0x00U, 0x00U, 0x82U, 0xA0U, 0x88U, 0x8AU, 0x00U, 0xA2U, 0xA8U, 0x82U, 0x8AU, 0x82U, 0x02U,
-	0x20U, 0x08U, 0x8AU, 0x20U, 0xAAU, 0xA2U, 0x82U, 0x08U, 0x22U, 0x8AU, 0xAAU, 0x08U, 0x28U, 0x88U,
-	0x28U, 0x28U, 0x00U, 0x0AU, 0x02U, 0x82U, 0x20U, 0x28U, 0x82U, 0x2AU, 0xAAU, 0x20U, 0x22U, 0x80U,
-	0xA8U, 0x8AU, 0x08U, 0xA0U, 0xAAU, 0x02U };
+	0xD6U, 0xB5U, 0xE2U, 0x30U, 0x82U, 0xFFU, 0x84U, 0x62U, 0xBAU, 0x4EU, 0x96U, 0x90U, 0xD8U, 0x98U, 0xDDU, 0x5DU, 0x0CU,
+	0xC8U, 0x52U, 0x43U, 0x91U, 0x1DU, 0xF8U, 0x6EU, 0x68U, 0x2FU, 0x35U, 0xDAU, 0x14U, 0xEAU, 0xCDU, 0x76U, 0x19U, 0x8DU,
+	0xD5U, 0x80U, 0xD1U, 0x33U, 0x87U, 0x13U, 0x57U, 0x18U, 0x2DU, 0x29U, 0x78U, 0xC3U};
 
 // #define	DUMP_M17
 
 const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
 
-#define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
-#define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
+#define WRITE_BIT(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
+#define READ_BIT(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
 CM17Control::CM17Control(const std::string& callsign, bool selfOnly, CM17Network* network, CDisplay* display, unsigned int timeout, bool duplex, CRSSIInterpolator* rssiMapper) :
 m_callsign(callsign),
@@ -52,11 +71,9 @@ m_rfFrames(0U),
 m_netFrames(0U),
 m_rfErrs(0U),
 m_rfBits(1U),
-m_rfLastLICH(),
-m_rfLayer3(),
-m_netLayer3(),
+m_rfLICH(),
 m_rfMask(0x00U),
-m_netMask(0x00U),
+m_netLICH(),
 m_rssiMapper(rssiMapper),
 m_rssi(0U),
 m_maxRSSI(0U),
@@ -84,14 +101,13 @@ bool CM17Control::writeModem(unsigned char *data, unsigned int len)
 	unsigned char type = data[0U];
 
 	if (type == TAG_LOST && m_rfState == RS_RF_AUDIO) {
-		unsigned short dstId = m_rfLayer3.getDestinationGroupId();
-		bool grp             = m_rfLayer3.getIsGroup();
-		std::string source = m_lookup->find(m_rfLayer3.getSourceUnitId());
+		std::string source = m_rfLICH.getSource();
+		std::string dest   = m_rfLICH.getDest();
 
 		if (m_rssi != 0U)
-			LogMessage("M17, transmission lost from %s to %s%u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			LogMessage("M17, transmission lost from %s to %s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 		else
-			LogMessage("M17, transmission lost from %s to %s%u, %.1f seconds, BER: %.1f%%", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+			LogMessage("M17, transmission lost from %s to %s, %.1f seconds, BER: %.1f%%", source.c_str(), dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 		writeEndRF();
 		return false;
 	}
@@ -131,7 +147,9 @@ bool CM17Control::writeModem(unsigned char *data, unsigned int len)
 		m_rssiCount++;
 	}
 
-	scrambler(data + 2U);
+	unsigned char temp[M17_FRAME_LENGTH_BYTES];
+	decorrelator(data + 2U, temp);
+	interleaver(temp, data + 2U);
 
 	CM17LICH lich;
 	bool valid = lich.decode(data + 2U);
@@ -405,9 +423,10 @@ bool CM17Control::writeModem(unsigned char *data, unsigned int len)
 			facch.getRaw(netData + 5U + 0U);
 			facch.getRaw(netData + 5U + 14U);
 
-			scrambler(start + 2U);
+			interleaver(start + 2U);
+			decorrelator(start + 2U);
 
-			writeNetwork(netData, NNMT_VOICE_HEADER);
+			writeNetwork(netData);
 
 #if defined(DUMP_M17)
 			writeFile(start + 2U);
@@ -511,9 +530,11 @@ bool CM17Control::writeModem(unsigned char *data, unsigned int len)
 		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
 
-		scrambler(data + 2U);
+		unsigned char temp[M17_FRAME_LENGTH_BYTES];
+		interleaver(data + 2U, temp);
+		decorrelator(temp, data + 2U);
 
-		writeNetwork(netData, NNMT_VOICE_BODY);
+		writeNetwork(netData);
 
 #if defined(DUMP_M17)
 		writeFile(data + 2U);
@@ -570,7 +591,6 @@ void CM17Control::writeEndNet()
 {
 	m_netState = RS_NET_IDLE;
 
-	m_netMask = 0x00U;
 	m_netLayer3.reset();
 
 	m_netTimeoutTimer.stop();
@@ -598,236 +618,87 @@ void CM17Control::writeNetwork()
 
 	m_networkWatchdog.start();
 
+	if (m_netState == RS_NET_IDLE) {
+		m_netLICH.setNetworkData(netData);
+
+		std::string source = m_netLICH.getSource();
+		std::string dest   = m_netLICH.getDest();
+
+		unsigned char dataType = m_netLICH.getDataType();
+		switch (dataType) {
+		case 1U:
+			LogMessage("M17, received network data transmission from %s to %s", source.c_str(), dest.c_str());
+			m_netState = RS_NET_DATA;
+			break;
+		case 2U:
+			LogMessage("M17, received network voice transmission from %s to %s", source.c_str(), dest.c_str());
+			m_netState = RS_NET_AUDIO;
+			break;
+		case 3U:
+			LogMessage("M17, received network voice + data transmission from %s to %s", source.c_str(), dest.c_str());
+			m_netState = RS_NET_AUDIO;
+			break;
+		default:
+			LogMessage("M17, received network unknown transmission from %s to %s", source.c_str(), dest.c_str());
+			m_netState = RS_NET_DATA;
+			break;
+		}
+
+		m_display->writeM17(source.c_str(), dest.c_str(), "N");
+
+		m_netTimeoutTimer.start();
+		m_packetTimer.start();
+		m_elapsed.start();
+		m_netFrames = 1U;
+
+		// Create a dummy start message
+		unsigned char start[M17_FRAME_LENGTH_BYTES + 2U];
+
+		start[0U] = TAG_DATA;
+		start[1U] = 0x00U;
+
+		// Generate the sync
+		CSync::addM17Sync(start + 2U);
+
+		m_netLICH.getLinkSetup(start + 2U);
+
+		unsigned char temp[M17_FRAME_LENGTH_BYTES];
+		interleaver(start + 2U, temp);
+		decorrelator(temp, start + 2U);
+
+		writeQueueNet(start);
+	}
+
 	unsigned char data[M17_FRAME_LENGTH_BYTES + 2U];
 
+	data[0U] = TAG_DATA;
+	data[1U] = 0x00U;
+
+	// Generate the sync
 	CSync::addM17Sync(data + 2U);
 
-	CM17LICH lich;
-	lich.setRaw(netData[0U]);
-	unsigned char usc    = lich.getFCT();
-	unsigned char option = lich.getOption();
-	lich.encode(data + 2U);
+	m_netFrames++;
 
-	if (usc == M17_LICH_USC_UDCH) {
-		CM17Layer3 layer3;
-		layer3.setData(netData + 2U, 23U);
-		unsigned char type = layer3.getMessageType();
+	// Add the fragment LICH
+	uint16_t fn = (netData[38U] << 8) + (netData[39U] << 0);
+	m_netLICH.getFragment(data + 2U, fn & 0x7FFFU);
 
-		if (m_netState == RS_NET_IDLE) {
-			if (type == M17_MESSAGE_TYPE_DCALL_HDR) {
-				unsigned short srcId = layer3.getSourceUnitId();
-				unsigned short dstId = layer3.getDestinationGroupId();
-				bool grp             = layer3.getIsGroup();
+	// Add the data/audio
 
-				unsigned char frames = layer3.getDataBlocks();
+	// Add the FEC
 
-				std::string source = m_lookup->find(srcId);
-				m_display->writeM17(source.c_str(), grp, dstId, "N");
-				LogMessage("M17, received network data header from %s to %s%u, %u blocks", source.c_str(), grp ? "TG " : "", dstId, frames);
+	unsigned char temp[M17_FRAME_LENGTH_BYTES];
+	interleaver(data + 2U, temp);
+	decorrelator(temp, data + 2U);
 
-				m_netState = RS_NET_DATA;
-			} else {
-				return;
-			}
-		}
+	writeQueueNet(data);
 
-		if (m_netState == RS_NET_DATA) {
-			data[0U] = type == M17_MESSAGE_TYPE_TX_REL ? TAG_EOT : TAG_DATA;
-			data[1U] = 0x00U;
-
-			CM17UDCH udch;
-			udch.setRAN(m_ran);
-			udch.setData(netData + 2U);
-			udch.encode(data + 2U);
-
-			scrambler(data + 2U);
-
-			writeQueueNet(data);
-
-			if (type == M17_MESSAGE_TYPE_TX_REL) {
-				unsigned short dstId = m_netLayer3.getDestinationGroupId();
-				bool grp             = m_netLayer3.getIsGroup();
-				std::string source   = m_lookup->find(m_netLayer3.getSourceUnitId());
-
-				LogMessage("M17, ended network data transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
-				writeEndNet();
-			}
-		}
-	} else if (usc == M17_LICH_USC_SACCH_NS) {
-		m_netLayer3.setData(netData + 5U + 0U, 10U);
-
-		unsigned char type = m_netLayer3.getMessageType();
-		if (type == M17_MESSAGE_TYPE_TX_REL && m_netState == RS_NET_IDLE)
-			return;
-		if (type == M17_MESSAGE_TYPE_VCALL && m_netState != RS_NET_IDLE)
-			return;
-
-		CM17SACCH sacch;
-		sacch.setRAN(m_ran);
-		sacch.setStructure(M17_SR_SINGLE);
-		sacch.setData(SACCH_IDLE);
-		sacch.encode(data + 2U);
-
-		CM17FACCH1 facch;
-		facch.setRaw(netData + 5U + 0U);
-		facch.encode(data + 2U, M17_FSW_LENGTH_BITS + M17_LICH_LENGTH_BITS + M17_SACCH_LENGTH_BITS);
-		facch.encode(data + 2U, M17_FSW_LENGTH_BITS + M17_LICH_LENGTH_BITS + M17_SACCH_LENGTH_BITS + M17_FACCH1_LENGTH_BITS);
-
-		data[0U] = type == M17_MESSAGE_TYPE_TX_REL ? TAG_EOT : TAG_DATA;
-		data[1U] = 0x00U;
-
-		scrambler(data + 2U);
-
-		writeQueueNet(data);
-
-		unsigned short dstId = m_netLayer3.getDestinationGroupId();
-		bool grp             = m_netLayer3.getIsGroup();
-		class CUserDBentry source;
-		m_lookup->findWithName(m_netLayer3.getSourceUnitId(), &source);
-
-		if (type == M17_MESSAGE_TYPE_TX_REL) {
-			m_netFrames++;
-			LogMessage("M17, received network end of transmission from %s to %s%u, %.1f seconds", source.get(keyCALLSIGN).c_str(), grp ? "TG " : "", dstId, float(m_netFrames) / 25.0F);
-			writeEndNet();
-		} else if (type == M17_MESSAGE_TYPE_VCALL) {
-			LogMessage("M17, received network transmission from %s to %s%u", source.get(keyCALLSIGN).c_str(), grp ? "TG " : "", dstId);
-			m_display->writeM17(source, grp, dstId, "N");
-
-			m_netTimeoutTimer.start();
-			m_packetTimer.start();
-			m_elapsed.start();
-			m_netState  = RS_NET_AUDIO;
-			m_netFrames = 1U;
-		} else {
-			CUtils::dump(2U, "M17, interesting non superblock network frame", netData, 33U);
-			return;
-		}
-	} else {
-		if (m_netState == RS_NET_IDLE) {
-			unsigned char structure = (netData[1U] >> 6) & 0x03U;
-			switch (structure) {
-			case M17_SR_1_4:
-				m_netLayer3.decode(netData + 2U, 18U, 0U);
-				if (m_netLayer3.getMessageType() == M17_MESSAGE_TYPE_VCALL)
-					m_netMask = 0x01U;
-				else
-					m_netMask = 0x00U;
-				break;
-			case M17_SR_2_4:
-				m_netMask |= 0x02U;
-				m_netLayer3.decode(netData + 2U, 18U, 18U);
-				break;
-			case M17_SR_3_4:
-				m_netMask |= 0x04U;
-				m_netLayer3.decode(netData + 2U, 18U, 36U);
-				break;
-			case M17_SR_4_4:
-				m_netMask |= 0x08U;
-				m_netLayer3.decode(netData + 2U, 18U, 54U);
-				break;
-			default:
-				break;
-			}
-
-			if (m_netMask != 0x0FU)
-				return;
-
-			unsigned char type = m_netLayer3.getMessageType();
-			if (type != M17_MESSAGE_TYPE_VCALL)
-				return;
-
-			unsigned short srcId = m_netLayer3.getSourceUnitId();
-			unsigned short dstId = m_netLayer3.getDestinationGroupId();
-			bool grp             = m_netLayer3.getIsGroup();
-
-			class CUserDBentry source;
-			m_lookup->findWithName(srcId, &source);
-			LogMessage("M17, received network transmission from %s to %s%u", source.get(keyCALLSIGN).c_str(), grp ? "TG " : "", dstId);
-			m_display->writeM17(source, grp, dstId, "N");
-
-			m_netTimeoutTimer.start();
-			m_packetTimer.start();
-			m_elapsed.start();
-			m_netState  = RS_NET_AUDIO;
-			m_netFrames = 1U;
-
-			// Create a dummy start message
-			unsigned char start[M17_FRAME_LENGTH_BYTES + 2U];
-
-			start[0U] = TAG_DATA;
-			start[1U] = 0x00U;
-
-			// Generate the sync
-			CSync::addM17Sync(start + 2U);
-
-			// Generate the LICH
-			CM17LICH lich;
-			lich.setRFCT(M17_LICH_RFCT_RDCH);
-			lich.setFCT(M17_LICH_USC_SACCH_NS);
-			lich.setOption(M17_LICH_STEAL_FACCH);
-			lich.setDirection(m_remoteGateway || !m_duplex ? M17_LICH_DIRECTION_INBOUND : M17_LICH_DIRECTION_OUTBOUND);
-			lich.encode(start + 2U);
-
-			CM17SACCH sacch;
-			sacch.setRAN(m_ran);
-			sacch.setStructure(M17_SR_SINGLE);
-			sacch.setData(SACCH_IDLE);
-			sacch.encode(start + 2U);
-
-			unsigned char message[22U];
-			m_netLayer3.getData(message);
-
-			CM17FACCH1 facch;
-			facch.setData(message);
-			facch.encode(start + 2U, M17_FSW_LENGTH_BITS + M17_LICH_LENGTH_BITS + M17_SACCH_LENGTH_BITS);
-			facch.encode(start + 2U, M17_FSW_LENGTH_BITS + M17_LICH_LENGTH_BITS + M17_SACCH_LENGTH_BITS + M17_FACCH1_LENGTH_BITS);
-
-			scrambler(start + 2U);
-
-			writeQueueNet(start);
-		}
-
-		m_netFrames++;
-
-		data[0U] = TAG_DATA;
-		data[1U] = 0x00U;
-
-		CM17SACCH sacch;
-		sacch.setRaw(netData + 1U);
-		sacch.setRAN(m_ran);
-		sacch.encode(data + 2U);
-
-		if (option == M17_LICH_STEAL_NONE) {
-			CM17Audio audio;
-			audio.encode(netData + 5U + 0U,  data + 2U + M17_FSW_LICH_SACCH_LENGTH_BYTES + 0U);
-			audio.encode(netData + 5U + 14U, data + 2U + M17_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
-		} else if (option == M17_LICH_STEAL_FACCH1_1) {
-			CM17FACCH1 facch1;
-			facch1.setRaw(netData + 5U + 0U);
-			facch1.encode(data + 2U, M17_FSW_LENGTH_BITS + M17_LICH_LENGTH_BITS + M17_SACCH_LENGTH_BITS);
-
-			CM17Audio audio;
-			audio.encode(netData + 5U + 14U, data + 2U + M17_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
-		} else if (option == M17_LICH_STEAL_FACCH1_2) {
-			CM17Audio audio;
-			audio.encode(netData + 5U + 0U, data + 2U + M17_FSW_LICH_SACCH_LENGTH_BYTES + 0U);
-
-			CM17FACCH1 facch1;
-			facch1.setRaw(netData + 5U + 14U);
-			facch1.encode(data + 2U, M17_FSW_LENGTH_BITS + M17_LICH_LENGTH_BITS + M17_SACCH_LENGTH_BITS + M17_FACCH1_LENGTH_BITS);
-		} else {
-			CM17FACCH1 facch11;
-			facch11.setRaw(netData + 5U + 0U);
-			facch11.encode(data + 2U, M17_FSW_LENGTH_BITS + M17_LICH_LENGTH_BITS + M17_SACCH_LENGTH_BITS);
-
-			CM17FACCH1 facch12;
-			facch12.setRaw(netData + 5U + 14U);
-			facch12.encode(data + 2U, M17_FSW_LENGTH_BITS + M17_LICH_LENGTH_BITS + M17_SACCH_LENGTH_BITS + M17_FACCH1_LENGTH_BITS);
-		}
-
-		scrambler(data + 2U);
-
-		writeQueueNet(data);
+	// EOT handling
+	if ((fn & 0x8000U) == 0x8000U) {
+		std::string source = m_netLICH.getSource();
+		std::string dest   = m_netLICH.getDest();
+		LogMessage("M17, received network end of transmission from %s to %s, %.1f seconds", source.c_str(), dest.c_str(), float(m_netFrames) / 25.0F);
+		writeEndNet();
 	}
 }
 
@@ -892,7 +763,7 @@ void CM17Control::writeQueueNet(const unsigned char *data)
 	m_queue.addData(data, len);
 }
 
-void CM17Control::writeNetwork(const unsigned char *data, M17_NETWORK_MESSAGE_TYPE type)
+void CM17Control::writeNetwork(const unsigned char *data)
 {
 	assert(data != NULL);
 
@@ -902,15 +773,29 @@ void CM17Control::writeNetwork(const unsigned char *data, M17_NETWORK_MESSAGE_TY
 	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired())
 		return;
 
-	m_network->write(data, type);
+	m_network->write(data);
 }
 
-void CM17Control::scrambler(unsigned char* data) const
+void CM17Control::interleaver(const unsigned char* in, unsigned char* out) const
 {
-	assert(data != NULL);
+	assert(in != NULL);
+	assert(out != NULL);
 
-	for (unsigned int i = 0U; i < M17_FRAME_LENGTH_BYTES; i++)
-		data[i] ^= SCRAMBLER[i];
+	for (unsigned int i = 0U; i < (M17_FRAME_LENGTH_BITS - M17_SYNC_LENGTH_BITS); i++) {
+		unsigned int n1 = i + M17_SYNC_LENGTH_BITS;
+		bool b = READ_BIT(in, n1) != 0U;
+		unsigned int n2 = INTERLEAVER[i] + M17_SYNC_LENGTH_BITS;
+		WRITE_BIT(out, n2, b);
+	}
+}
+
+void CM17Control::decorrelator(const unsigned char* in, unsigned char* out) const
+{
+	assert(in != NULL);
+	assert(out != NULL);
+
+	for (unsigned int i = M17_SYNC_BYTES_LENGTH; i < M17_FRAME_LENGTH_BYTES; i++)
+		out[i] = in[i] ^ SCRAMBLER[i];
 }
 
 bool CM17Control::openFile()
@@ -974,7 +859,6 @@ void CM17Control::enable(bool enabled)
 		// Reset the networking section
 		m_netState = RS_NET_IDLE;
 
-		m_netMask = 0x00U;
 		m_netLayer3.reset();
 
 		m_netTimeoutTimer.stop();

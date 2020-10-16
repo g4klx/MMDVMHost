@@ -190,6 +190,7 @@
     <ClInclude Include="Log.h" />
     <ClInclude Include="M17Control.h" />
     <ClInclude Include="M17Defines.h" />
+    <ClInclude Include="M17LICH.h" />
     <ClInclude Include="M17Network.h" />
     <ClInclude Include="MMDVMHost.h" />
     <ClInclude Include="Modem.h" />

@@ -308,6 +308,9 @@
     <ClInclude Include="M17Network.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="M17LICH.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
