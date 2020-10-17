@@ -72,7 +72,7 @@ m_networkWatchdog(1000U, 0U, 1500U),
 m_elapsed(),
 m_rfFrames(0U),
 m_netFrames(0U),
-m_rfLastFN(0U),
+m_rfFN(0U),
 m_rfErrs(0U),
 m_rfBits(1U),
 m_rfLICH(),
@@ -179,7 +179,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_maxRSSI = m_rssi;
 			m_aveRSSI = m_rssi;
 			m_rssiCount = 1U;
-			m_rfLastFN = 0U;
+			m_rfFN = 0U;
 
 #if defined(DUMP_M17)
 			openFile();
@@ -259,7 +259,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 		bool valid = CM17CRC::checkCRC(frame, M17_FN_LENGTH_BITS + M17_PAYLOAD_LENGTH_BITS + M17_CRC_LENGTH_BITS);
 		if (valid) {
-			m_rfLastFN = (frame[0U] << 8) + (frame[1U] << 0);
+			m_rfFN = (frame[0U] << 8) + (frame[1U] << 0);
 
 			unsigned int frag1, frag2, frag3, frag4;
 
@@ -270,7 +270,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			unsigned int lich3 = CGolay24128::decode24128(frag3);
 			unsigned int lich4 = CGolay24128::decode24128(frag4);
 
-			m_rfLICH.setFragment(data + 2U + M17_SYNC_LENGTH_BYTES, m_rfLastFN & 0x7FFFU);
+			m_rfLICH.setFragment(data + 2U + M17_SYNC_LENGTH_BYTES, m_rfFN & 0x7FFFU);
 
 			valid = m_rfLICH.isValid();
 			if (valid) {
@@ -343,12 +343,11 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 #if defined(DUMP_M17)
 		writeFile(data + 2U);
 #endif
-
 		CM17Convolution conv;
 		conv.start();
 
 		unsigned int n = 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_LENGTH_BYTES;
-		for (unsigned int i = 0U; i < (M17_LICH_LENGTH_BYTES / 2U); i++) {
+		for (unsigned int i = 0U; i < ((M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES) / 2U); i++) {
 			uint8_t s0 = data[n++];
 			uint8_t s1 = data[n++];
 
@@ -360,19 +359,77 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 		bool valid = CM17CRC::checkCRC(frame, M17_FN_LENGTH_BITS + M17_PAYLOAD_LENGTH_BITS + M17_CRC_LENGTH_BITS);
 		if (valid) {
-			m_rfLastFN = (frame[0U] << 8) + (frame[1U] << 0);
-
+			m_rfFN = (frame[0U] << 8) + (frame[1U] << 0);
 		} else {
-			m_rfLastFN++;
+			// Create a silence frame
+			m_rfFN++;
+
+			// The new FN
+			frame[0U] = m_rfFN >> 8;
+			frame[1U] = m_rfFN >> 0;
+
+			// Add silent audio
+			unsigned char dataType = m_rfLICH.getDataType();
+			switch (dataType) {
+			case 2U:
+				::memcpy(frame + M17_FN_LENGTH_BYTES + 0U, M17_3200_SILENCE, 8U);
+				::memcpy(frame + M17_FN_LENGTH_BYTES + 8U, M17_3200_SILENCE, 8U);
+				break;
+			case 3U:
+				::memcpy(frame + M17_FN_LENGTH_BYTES + 0U, M17_1600_SILENCE, 8U);
+				break;
+			default:
+				break;
+			}
+
+			// Add the CRC
+			CM17CRC::encodeCRC(frame, M17_FN_LENGTH_BITS + M17_PAYLOAD_LENGTH_BITS + M17_CRC_LENGTH_BITS);
+		}
+
+		unsigned char rfData[2U + M17_FRAME_LENGTH_BYTES];
+
+		rfData[0U] = TAG_DATA;
+		rfData[1U] = 0x00U;
+
+		CSync::addM17Sync(rfData + 2U);
+
+		// Re-encode the LICH fragment
+		m_rfLICH.getFragment(rfData + 2U + M17_SYNC_LENGTH_BYTES, m_rfFN & 0x7FFFU);
+
+		// XXX TODO Golay on LICH fragment
+
+		// Re-encode the payload
+		conv.encode(frame, rfData + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_LENGTH_BYTES, M17_FN_LENGTH_BITS + M17_PAYLOAD_LENGTH_BITS + M17_CRC_LENGTH_BITS);
+
+		// Calculate the BER
+		if (valid) {
+			for (unsigned int i = 2U; i < 50U; i++)
+				m_rfErrs += countBits(rfData[i] ^ data[i]);
+
+			m_rfBits += 272U;
+
+			float ber = float(m_rfErrs) / float(m_rfBits);
+			m_display->writeM17BER(ber);
 		}
 
 		if (m_duplex)
-			writeQueueRF(data);
+			writeQueueRF(rfData);
+
+		unsigned char netData[M17_LICH_LENGTH_BYTES + M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
+
+		m_rfLICH.getNetworkData(netData + 0U);
+
+		// Copy the FN and payload from the frame
+		::memcpy(netData + M17_LICH_LENGTH_BYTES, frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
+
+		CM17CRC::encodeCRC(netData, M17_LICH_LENGTH_BITS + M17_FN_LENGTH_BITS + M17_PAYLOAD_LENGTH_BITS + M17_CRC_LENGTH_BITS);
+
+		writeNetwork(netData);
 
 		m_rfFrames++;
 
 		// EOT?
-		if ((m_rfLastFN & 0x8000U) == 0x8000U) {
+		if ((m_rfFN & 0x8000U) == 0x8000U) {
 			std::string source = m_rfLICH.getSource();
 			std::string dest   = m_rfLICH.getDest();
 
@@ -736,4 +793,18 @@ void CM17Control::enable(bool enabled)
 	}
 
 	m_enabled = enabled;
+}
+
+unsigned int CM17Control::countBits(unsigned char byte)
+{
+	unsigned int count = 0U;
+
+	const unsigned char* p = &byte;
+
+	for (unsigned int i = 0U; i < 8U; i++) {
+		if (READ_BIT(p, i) != 0U)
+			count++;
+	}
+
+	return count;
 }

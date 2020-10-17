@@ -36,12 +36,12 @@ enum M17NET_STATUS {
 
 class CM17Network {
 public:
-	CM17Network(unsigned int port, bool debug);
+	CM17Network(const std::string& callsign, unsigned int port, bool debug);
 	~CM17Network();
 
 	bool open();
 
-	bool link(const std::string& address, unsigned int port, const std::string& reflector, char module);
+	bool link(const std::string& address, unsigned int port, char module);
 
 	void unlink();
 
@@ -58,6 +58,7 @@ public:
 	void clock(unsigned int ms);
 
 private:
+	std::string      m_callsign;
 	CUDPSocket       m_socket;
 	sockaddr_storage m_addr;
 	unsigned int     m_addrLen;
@@ -68,7 +69,6 @@ private:
 	CRingBuffer<unsigned char> m_buffer;
 	std::mt19937     m_random;
 	M17NET_STATUS    m_state;
-	std::string      m_reflector;
 	unsigned char*   m_encoded;
 	char             m_module;
 	CTimer           m_timer;

@@ -31,8 +31,13 @@ public:
 	void setNetworkData(const unsigned char* data);
 
 	std::string getSource() const;
+	void setSource(const std::string& callsign);
+
 	std::string getDest() const;
+	void setDest(const std::string& callsign);
+
 	unsigned char getDataType() const;
+	void setDataType(unsigned char type);
 
 	void reset();
 	bool isValid() const;

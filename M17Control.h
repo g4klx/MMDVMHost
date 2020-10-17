@@ -63,7 +63,7 @@ private:
 	CStopWatch                 m_elapsed;
 	unsigned int               m_rfFrames;
 	unsigned int               m_netFrames;
-	unsigned int               m_rfLastFN;
+	unsigned int               m_rfFN;
 	unsigned int               m_rfErrs;
 	unsigned int               m_rfBits;
 	CM17LICH                   m_rfLICH;
@@ -84,6 +84,8 @@ private:
 
 	void interleaver(const unsigned char* in, unsigned char* out) const;
 	void decorrelator(const unsigned char* in, unsigned char* out) const;
+
+	unsigned int countBits(unsigned char byte);
 
 	void writeEndRF();
 	void writeEndNet();

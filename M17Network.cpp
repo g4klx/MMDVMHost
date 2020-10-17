@@ -29,7 +29,8 @@
 
 const unsigned int BUFFER_LENGTH = 200U;
 
-CM17Network::CM17Network(unsigned int port, bool debug) :
+CM17Network::CM17Network(const std::string& callsign, unsigned int port, bool debug) :
+m_callsign(callsign),
 m_socket(port),
 m_addr(),
 m_addrLen(0U),
@@ -40,7 +41,7 @@ m_inId(0U),
 m_buffer(1000U, "M17 Network"),
 m_random(),
 m_state(M17N_NOTLINKED),
-m_reflector(NULL),
+m_encoded(NULL),
 m_module(' '),
 m_timer(1000U, 5U)
 {
@@ -49,6 +50,8 @@ m_timer(1000U, 5U)
 	m_random = mt;
 
 	m_encoded = new unsigned char[6U];
+
+	CM17Utils::encodeCallsign(m_callsign, m_encoded);
 }
 
 CM17Network::~CM17Network()
@@ -63,17 +66,14 @@ bool CM17Network::open()
 	return m_socket.open(m_addr);
 }
 
-bool CM17Network::link(const std::string& address, unsigned int port, const std::string& reflector, char module)
+bool CM17Network::link(const std::string& address, unsigned int port, char module)
 {
 	if (CUDPSocket::lookup(address, port, m_addr, m_addrLen) != 0) {
 		m_state = M17N_NOTLINKED;
 		return false;
 	}
 
-	m_reflector = reflector;
-	m_module    = module;
-
-	CM17Utils::encodeCallsign(m_reflector, m_encoded);
+	m_module = module;
 
 	m_state = M17N_LINKING;
 
@@ -119,10 +119,12 @@ bool CM17Network::write(const unsigned char* data)
 	buffer[4U] = m_outId / 256U;	// Unique session id
 	buffer[5U] = m_outId % 256U;
 
-	if (m_debug)
-		CUtils::dump(1U, "M17 data transmitted", buffer, 36U);
+	::memcpy(buffer + 6U, data, 48U);
 
-	return m_socket.write(buffer, 36U, m_addr, m_addrLen);
+	if (m_debug)
+		CUtils::dump(1U, "M17 data transmitted", buffer, 54U);
+
+	return m_socket.write(buffer, 54U, m_addr, m_addrLen);
 }
 
 void CM17Network::clock(unsigned int ms)
@@ -163,21 +165,21 @@ void CM17Network::clock(unsigned int ms)
 	if (::memcmp(buffer + 0U, "ACKN", 4U) == 0) {
 		m_timer.stop();
 		m_state = M17N_LINKED;
-		LogMessage("M17, linked to %s", m_reflector.c_str());
+		LogMessage("M17, linked to reflector");
 		return;
 	}
 
 	if (::memcmp(buffer + 0U, "NACK", 4U) == 0) {
 		m_timer.stop();
 		m_state = M17N_NOTLINKED;
-		LogMessage("M17, link refused by %s", m_reflector.c_str());
+		LogMessage("M17, link refused by reflector");
 		return;
 	}
 
 	if (::memcmp(buffer + 0U, "DISC", 4U) == 0) {
 		m_timer.stop();
 		m_state = M17N_NOTLINKED;
-		LogMessage("M17, unlinked from %s", m_reflector.c_str());
+		LogMessage("M17, unlinked from reflector");
 		return;
 	}
 
@@ -208,10 +210,10 @@ void CM17Network::clock(unsigned int ms)
 	if ((fn & 0x8000U) == 0x8000U)
 		m_inId = 0U;
 
-	unsigned char c = length;
+	unsigned char c = length - 6U;
 	m_buffer.addData(&c, 1U);
 
-	m_buffer.addData(buffer, length);
+	m_buffer.addData(buffer + 6U, length - 6U);
 }
 
 bool CM17Network::read(unsigned char* data)
