@@ -1551,13 +1551,15 @@ bool CMMDVMHost::createM17Network()
 	LogInfo("    Local Port: %u", localPort);
 	LogInfo("    Mode Hang: %us", m_m17NetModeHang);
 
-	m_m17Network = new CM17Network(localPort, gatewayAddress, gatewayPort, debug);
+	m_m17Network = new CM17Network(localPort, debug);
 	bool ret = m_m17Network->open();
 	if (!ret) {
 		delete m_m17Network;
 		m_m17Network = NULL;
 		return false;
 	}
+
+	m_m17Network->link(gatewayAddress, gatewayPort, "M17-USA", 'A');
 
 	m_m17Network->enable(true);
 

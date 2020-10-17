@@ -34,6 +34,7 @@ public:
 	std::string getDest() const;
 	unsigned char getDataType() const;
 
+	void reset();
 	bool isValid() const;
 
 	void getLinkSetup(unsigned char* data) const;

@@ -72,10 +72,10 @@ m_networkWatchdog(1000U, 0U, 1500U),
 m_elapsed(),
 m_rfFrames(0U),
 m_netFrames(0U),
+m_rfLastFN(0U),
 m_rfErrs(0U),
 m_rfBits(1U),
 m_rfLICH(),
-m_rfMask(0x00U),
 m_netLICH(),
 m_rssiMapper(rssiMapper),
 m_rssi(0U),
@@ -122,7 +122,6 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 	if (type == TAG_LOST) {
 		m_rfState = RS_RF_LISTENING;
-		m_rfMask = 0x00U;
 		return false;
 	}
 
@@ -154,7 +153,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 	interleaver(temp, data + 2U);
 
 	if (m_rfState == RS_RF_LISTENING) {
-		m_rfMask = 0x00U;
+		m_rfLICH.reset();
 
 		CM17Convolution conv;
 		conv.start();
@@ -180,6 +179,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_maxRSSI = m_rssi;
 			m_aveRSSI = m_rssi;
 			m_rssiCount = 1U;
+			m_rfLastFN = 0U;
 
 #if defined(DUMP_M17)
 			openFile();
@@ -259,7 +259,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 		bool valid = CM17CRC::checkCRC(frame, M17_FN_LENGTH_BITS + M17_PAYLOAD_LENGTH_BITS + M17_CRC_LENGTH_BITS);
 		if (valid) {
-			unsigned int fn = (frame[0U] << 8) + (frame[1U] << 0);
+			m_rfLastFN = (frame[0U] << 8) + (frame[1U] << 0);
 
 			unsigned int frag1, frag2, frag3, frag4;
 
@@ -270,7 +270,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			unsigned int lich3 = CGolay24128::decode24128(frag3);
 			unsigned int lich4 = CGolay24128::decode24128(frag4);
 
-			m_rfLICH.setFragment(data + 2U + M17_SYNC_LENGTH_BYTES, fn & 0x7FFFU);
+			m_rfLICH.setFragment(data + 2U + M17_SYNC_LENGTH_BYTES, m_rfLastFN & 0x7FFFU);
 
 			valid = m_rfLICH.isValid();
 			if (valid) {
@@ -343,321 +343,45 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 #if defined(DUMP_M17)
 		writeFile(data + 2U);
 #endif
-		if (m_duplex)
-			writeQueueRF(data);
 
-		if (data[0U] == TAG_EOT) {
-			std::string source = m_rfLICH.getSource();
-			std::string dest = m_rfLICH.getDest();
+		CM17Convolution conv;
+		conv.start();
 
-			m_rfFrames++;
-			if (m_rssi != 0U)
-				LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-			else
-				LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%", source.c_str(), dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
-			writeEndRF();
-		}
-		else {
-			m_rfFrames = 0U;
-			m_rfErrs = 0U;
-			m_rfBits = 1U;
-			m_rfTimeoutTimer.start();
-			m_rfState = RS_RF_AUDIO;
-			m_minRSSI = m_rssi;
-			m_maxRSSI = m_rssi;
-			m_aveRSSI = m_rssi;
-			m_rssiCount = 1U;
-#if defined(DUMP_M17)
-			openFile();
-#endif
-			unsigned short srcId = m_rfLayer3.getSourceUnitId();
-			unsigned short dstId = m_rfLayer3.getDestinationGroupId();
-			bool grp = m_rfLayer3.getIsGroup();
+		unsigned int n = 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_LENGTH_BYTES;
+		for (unsigned int i = 0U; i < (M17_LICH_LENGTH_BYTES / 2U); i++) {
+			uint8_t s0 = data[n++];
+			uint8_t s1 = data[n++];
 
-			std::string source = m_lookup->find(srcId);
-			LogMessage("M17, received RF header from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
-			m_display->writeM17(source.c_str(), grp, dstId, "R");
+			conv.decode(s0, s1);
 		}
 
-		return true;
-	}
-	else {
-		if (m_rfState == RS_RF_LISTENING) {
-			CM17FACCH1 facch;
-			bool valid = false;
-			switch (option) {
-			case M17_LICH_STEAL_FACCH:
-				valid = facch.decode(data + 2U, M17_FSW_LENGTH_BITS + M17_LICH_LENGTH_BITS + M17_SACCH_LENGTH_BITS);
-				if (!valid)
-					valid = facch.decode(data + 2U, M17_FSW_LENGTH_BITS + M17_LICH_LENGTH_BITS + M17_SACCH_LENGTH_BITS + M17_FACCH1_LENGTH_BITS);
-				break;
-			case M17_LICH_STEAL_FACCH1_1:
-				valid = facch.decode(data + 2U, M17_FSW_LENGTH_BITS + M17_LICH_LENGTH_BITS + M17_SACCH_LENGTH_BITS);
-				break;
-			case M17_LICH_STEAL_FACCH1_2:
-				valid = facch.decode(data + 2U, M17_FSW_LENGTH_BITS + M17_LICH_LENGTH_BITS + M17_SACCH_LENGTH_BITS + M17_FACCH1_LENGTH_BITS);
-				break;
-			default:
-				break;
-			}
+		unsigned char frame[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
+		conv.chainback(frame, M17_FN_LENGTH_BITS + M17_PAYLOAD_LENGTH_BITS + M17_CRC_LENGTH_BITS);
 
-			bool hasInfo = false;
-			if (valid) {
-				unsigned char buffer[10U];
-				facch.getData(buffer);
+		bool valid = CM17CRC::checkCRC(frame, M17_FN_LENGTH_BITS + M17_PAYLOAD_LENGTH_BITS + M17_CRC_LENGTH_BITS);
+		if (valid) {
+			m_rfLastFN = (frame[0U] << 8) + (frame[1U] << 0);
 
-				CM17Layer3 layer3;
-				layer3.decode(buffer, M17_FACCH1_LENGTH_BITS);
-
-				hasInfo = layer3.getMessageType() == M17_MESSAGE_TYPE_VCALL;
-				if (!hasInfo)
-					return false;
-
-				m_rfLayer3 = layer3;
-			}
-
-			if (!hasInfo) {
-				unsigned char message[3U];
-				sacch.getData(message);
-
-				unsigned char structure = sacch.getStructure();
-				switch (structure) {
-				case M17_SR_1_4:
-					m_rfLayer3.decode(message, 18U, 0U);
-					if (m_rfLayer3.getMessageType() == M17_MESSAGE_TYPE_VCALL)
-						m_rfMask = 0x01U;
-					else
-						m_rfMask = 0x00U;
-					break;
-				case M17_SR_2_4:
-					m_rfMask |= 0x02U;
-					m_rfLayer3.decode(message, 18U, 18U);
-					break;
-				case M17_SR_3_4:
-					m_rfMask |= 0x04U;
-					m_rfLayer3.decode(message, 18U, 36U);
-					break;
-				case M17_SR_4_4:
-					m_rfMask |= 0x08U;
-					m_rfLayer3.decode(message, 18U, 54U);
-					break;
-				default:
-					break;
-				}
-
-				if (m_rfMask != 0x0FU)
-					return false;
-
-				unsigned char type = m_rfLayer3.getMessageType();
-				if (type != M17_MESSAGE_TYPE_VCALL)
-					return false;
-			}
-
-			unsigned short srcId = m_rfLayer3.getSourceUnitId();
-			unsigned short dstId = m_rfLayer3.getDestinationGroupId();
-			bool grp = m_rfLayer3.getIsGroup();
-
-			if (m_selfOnly) {
-				if (srcId != m_id) {
-					m_rfState = RS_RF_REJECTED;
-					return false;
-				}
-			}
-
-			m_rfFrames = 0U;
-			m_rfErrs = 0U;
-			m_rfBits = 1U;
-			m_rfTimeoutTimer.start();
-			m_rfState = RS_RF_AUDIO;
-
-			m_minRSSI = m_rssi;
-			m_maxRSSI = m_rssi;
-			m_aveRSSI = m_rssi;
-			m_rssiCount = 1U;
-#if defined(DUMP_M17)
-			openFile();
-#endif
-			std::string source = m_lookup->find(srcId);
-			LogMessage("M17, received RF late entry from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
-			m_display->writeM17(source.c_str(), grp, dstId, "R");
-
-			m_rfState = RS_RF_AUDIO;
-
-			// Create a dummy start message
-			unsigned char start[M17_FRAME_LENGTH_BYTES + 2U];
-
-			start[0U] = TAG_DATA;
-			start[1U] = 0x00U;
-
-			// Generate the sync
-			CSync::addM17Sync(start + 2U);
-
-			// Generate the LICH
-			CM17LICH lich;
-			lich.setRFCT(M17_LICH_RFCT_RDCH);
-			lich.setFCT(M17_LICH_USC_SACCH_NS);
-			lich.setOption(M17_LICH_STEAL_FACCH);
-			lich.setDirection(m_remoteGateway || !m_duplex ? M17_LICH_DIRECTION_INBOUND : M17_LICH_DIRECTION_OUTBOUND);
-			lich.encode(start + 2U);
-
-			lich.setDirection(M17_LICH_DIRECTION_INBOUND);
-			netData[0U] = lich.getRaw();
-
-			CM17SACCH sacch;
-			sacch.setRAN(m_ran);
-			sacch.setStructure(M17_SR_SINGLE);
-			sacch.setData(SACCH_IDLE);
-			sacch.encode(start + 2U);
-
-			sacch.getRaw(netData + 1U);
-
-			unsigned char message[22U];
-			m_rfLayer3.getData(message);
-
-			facch.setData(message);
-			facch.encode(start + 2U, M17_FSW_LENGTH_BITS + M17_LICH_LENGTH_BITS + M17_SACCH_LENGTH_BITS);
-			facch.encode(start + 2U, M17_FSW_LENGTH_BITS + M17_LICH_LENGTH_BITS + M17_SACCH_LENGTH_BITS + M17_FACCH1_LENGTH_BITS);
-
-			facch.getRaw(netData + 5U + 0U);
-			facch.getRaw(netData + 5U + 14U);
-
-			interleaver(start + 2U);
-			decorrelator(start + 2U);
-
-			writeNetwork(netData);
-
-#if defined(DUMP_M17)
-			writeFile(start + 2U);
-#endif
-			if (m_duplex)
-				writeQueueRF(start);
+		} else {
+			m_rfLastFN++;
 		}
-	}
-
-	if (m_rfState == RS_RF_AUDIO) {
-		// Regenerate the sync
-		CSync::addM17Sync(data + 2U);
-
-		// Regenerate the LICH
-		CM17LICH lich;
-		lich.setRFCT(M17_LICH_RFCT_RDCH);
-		lich.setFCT(M17_LICH_USC_SACCH_SS);
-		lich.setOption(option);
-		lich.setDirection(m_remoteGateway || !m_duplex ? M17_LICH_DIRECTION_INBOUND : M17_LICH_DIRECTION_OUTBOUND);
-		lich.encode(data + 2U);
-
-		lich.setDirection(M17_LICH_DIRECTION_INBOUND);
-		netData[0U] = lich.getRaw();
-
-		// Regenerate SACCH if it's valid
-		CM17SACCH sacch;
-		bool validSACCH = sacch.decode(data + 2U);
-		if (validSACCH) {
-			sacch.setRAN(m_ran);
-			sacch.encode(data + 2U);
-		}
-
-		sacch.getRaw(netData + 1U);
-
-		// Regenerate the audio and interpret the FACCH1 data
-		if (option == M17_LICH_STEAL_NONE) {
-			CAMBEFEC ambe;
-			unsigned int errors = 0U;
-			errors += ambe.regenerateYSFDN(data + 2U + M17_FSW_LICH_SACCH_LENGTH_BYTES + 0U);
-			errors += ambe.regenerateYSFDN(data + 2U + M17_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
-			errors += ambe.regenerateYSFDN(data + 2U + M17_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
-			errors += ambe.regenerateYSFDN(data + 2U + M17_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
-			m_rfErrs += errors;
-			m_rfBits += 188U;
-			m_display->writeM17BER(float(errors) / 1.88F);
-			LogDebug("M17, AMBE FEC %u/188 (%.1f%%)", errors, float(errors) / 1.88F);
-
-			CM17Audio audio;
-			audio.decode(data + 2U + M17_FSW_LICH_SACCH_LENGTH_BYTES + 0U, netData + 5U + 0U);
-			audio.decode(data + 2U + M17_FSW_LICH_SACCH_LENGTH_BYTES + 18U, netData + 5U + 14U);
-		}
-		else if (option == M17_LICH_STEAL_FACCH1_1) {
-			CM17FACCH1 facch1;
-			bool valid = facch1.decode(data + 2U, M17_FSW_LENGTH_BITS + M17_LICH_LENGTH_BITS + M17_SACCH_LENGTH_BITS);
-			if (valid)
-				facch1.encode(data + 2U, M17_FSW_LENGTH_BITS + M17_LICH_LENGTH_BITS + M17_SACCH_LENGTH_BITS);
-			facch1.getRaw(netData + 5U + 0U);
-
-			CAMBEFEC ambe;
-			unsigned int errors = 0U;
-			errors += ambe.regenerateYSFDN(data + 2U + M17_FSW_LICH_SACCH_LENGTH_BYTES + 18U);
-			errors += ambe.regenerateYSFDN(data + 2U + M17_FSW_LICH_SACCH_LENGTH_BYTES + 27U);
-			m_rfErrs += errors;
-			m_rfBits += 94U;
-			m_display->writeM17BER(float(errors) / 0.94F);
-			LogDebug("M17, AMBE FEC %u/94 (%.1f%%)", errors, float(errors) / 0.94F);
-
-			CM17Audio audio;
-			audio.decode(data + 2U + M17_FSW_LICH_SACCH_LENGTH_BYTES + 18U, netData + 5U + 14U);
-		}
-		else if (option == M17_LICH_STEAL_FACCH1_2) {
-			CAMBEFEC ambe;
-			unsigned int errors = 0U;
-			errors += ambe.regenerateYSFDN(data + 2U + M17_FSW_LICH_SACCH_LENGTH_BYTES);
-			errors += ambe.regenerateYSFDN(data + 2U + M17_FSW_LICH_SACCH_LENGTH_BYTES + 9U);
-			m_rfErrs += errors;
-			m_rfBits += 94U;
-			m_display->writeM17BER(float(errors) / 0.94F);
-			LogDebug("M17, AMBE FEC %u/94 (%.1f%%)", errors, float(errors) / 0.94F);
-
-			CM17Audio audio;
-			audio.decode(data + 2U + M17_FSW_LICH_SACCH_LENGTH_BYTES + 0U, netData + 5U + 0U);
-
-			CM17FACCH1 facch1;
-			bool valid = facch1.decode(data + 2U, M17_FSW_LENGTH_BITS + M17_LICH_LENGTH_BITS + M17_SACCH_LENGTH_BITS + M17_FACCH1_LENGTH_BITS);
-			if (valid)
-				facch1.encode(data + 2U, M17_FSW_LENGTH_BITS + M17_LICH_LENGTH_BITS + M17_SACCH_LENGTH_BITS + M17_FACCH1_LENGTH_BITS);
-			facch1.getRaw(netData + 5U + 14U);
-		}
-		else {
-			CM17FACCH1 facch11;
-			bool valid1 = facch11.decode(data + 2U, M17_FSW_LENGTH_BITS + M17_LICH_LENGTH_BITS + M17_SACCH_LENGTH_BITS);
-			if (valid1)
-				facch11.encode(data + 2U, M17_FSW_LENGTH_BITS + M17_LICH_LENGTH_BITS + M17_SACCH_LENGTH_BITS);
-			facch11.getRaw(netData + 5U + 0U);
-
-			CM17FACCH1 facch12;
-			bool valid2 = facch12.decode(data + 2U, M17_FSW_LENGTH_BITS + M17_LICH_LENGTH_BITS + M17_SACCH_LENGTH_BITS + M17_FACCH1_LENGTH_BITS);
-			if (valid2)
-				facch12.encode(data + 2U, M17_FSW_LENGTH_BITS + M17_LICH_LENGTH_BITS + M17_SACCH_LENGTH_BITS + M17_FACCH1_LENGTH_BITS);
-			facch12.getRaw(netData + 5U + 14U);
-		}
-
-		data[0U] = TAG_DATA;
-		data[1U] = 0x00U;
-
-		unsigned char temp[M17_FRAME_LENGTH_BYTES];
-		interleaver(data + 2U, temp);
-		decorrelator(temp, data + 2U);
-
-		writeNetwork(netData);
-
-#if defined(DUMP_M17)
-		writeFile(data + 2U);
-#endif
 
 		if (m_duplex)
 			writeQueueRF(data);
 
 		m_rfFrames++;
 
-		m_display->writeM17RSSI(m_rssi);
-	}
+		// EOT?
+		if ((m_rfLastFN & 0x8000U) == 0x8000U) {
+			std::string source = m_rfLICH.getSource();
+			std::string dest   = m_rfLICH.getDest();
 
-	m_rfFrames++;
-
-	// EOT?
-	if ((fn & 0x8000U) == 0x8000U) {
-		if (m_rssi != 0U)
-			LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-		else
-			LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%", source.c_str(), dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
-		writeEndRF();
+			if (m_rssi != 0U)
+				LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			else
+				LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%", source.c_str(), dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+			writeEndRF();
+		}
 	}
 
 	return true;
@@ -681,8 +405,6 @@ unsigned int CM17Control::readModem(unsigned char* data)
 void CM17Control::writeEndRF()
 {
 	m_rfState = RS_RF_LISTENING;
-
-	m_rfMask = 0x00U;
 
 	m_rfTimeoutTimer.stop();
 
@@ -1002,8 +724,6 @@ void CM17Control::enable(bool enabled)
 
 		// Reset the RF section
 		m_rfState = RS_RF_LISTENING;
-
-		m_rfMask = 0x00U;
 
 		m_rfTimeoutTimer.stop();
 

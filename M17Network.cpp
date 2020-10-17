@@ -174,15 +174,16 @@ void CM17Network::clock(unsigned int ms)
 		return;
 	}
 
-	if (::memcmp(buffer + 0U, "PING", 4U) == 0) {
-		sendPong();
-		return;
-	}
-
 	if (::memcmp(buffer + 0U, "DISC", 4U) == 0) {
 		m_timer.stop();
 		m_state = M17N_NOTLINKED;
 		LogMessage("M17, unlinked from %s", m_reflector.c_str());
+		return;
+	}
+
+	if (::memcmp(buffer + 0U, "PING", 4U) == 0) {
+		if (m_state == M17N_LINKED)
+			sendPong();
 		return;
 	}
 

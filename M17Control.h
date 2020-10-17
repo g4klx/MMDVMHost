@@ -63,10 +63,10 @@ private:
 	CStopWatch                 m_elapsed;
 	unsigned int               m_rfFrames;
 	unsigned int               m_netFrames;
+	unsigned int               m_rfLastFN;
 	unsigned int               m_rfErrs;
 	unsigned int               m_rfBits;
 	CM17LICH                   m_rfLICH;
-	unsigned char              m_rfMask;
 	CM17LICH                   m_netLICH;
 	CRSSIInterpolator*         m_rssiMapper;
 	unsigned char              m_rssi;

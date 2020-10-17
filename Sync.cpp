@@ -89,5 +89,5 @@ void CSync::addM17Sync(unsigned char* data)
 {
 	assert(data != NULL);
 
-	::memcpy(data, M17_SYNC_BYTES, M17_SYNC_BYTES_LENGTH);
+	::memcpy(data, M17_SYNC_BYTES, M17_SYNC_LENGTH_BYTES);
 }
