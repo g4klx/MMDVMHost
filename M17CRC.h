@@ -16,36 +16,19 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(M17LICH_H)
-#define  M17LICH_H
+#if !defined(M17CRC_H)
+#define	M17CRC_H
 
-#include <string>
+#include <cstdint>
 
-class CM17LICH {
+class CM17CRC
+{
 public:
-	CM17LICH(const CM17LICH& lich);
-	CM17LICH();
-	~CM17LICH();
-
-	void getNetworkData(unsigned char* data);
-	void setNetworkData(const unsigned char* data);
-
-	std::string getSource() const;
-	std::string getDest() const;
-	unsigned char getDataType() const;
-
-	bool isValid() const;
-
-	void getLinkSetup(unsigned char* data) const;
-	void setLinkSetup(const unsigned char* data) const;
-
-	void getFragment(unsigned char* data, unsigned short fn);
-	void setFragment(const unsigned char* data, unsigned short fn);
-
-	CM17LICH& operator=(const CM17LICH& lich);
+	static bool checkCRC(const unsigned char* in, unsigned int length);
+	static void encodeCRC(unsigned char* in, unsigned int length);
 
 private:
-	unsigned char* m_lich;
+	static uint16_t createCRC(const unsigned char* in, unsigned int length);
 };
 
 #endif

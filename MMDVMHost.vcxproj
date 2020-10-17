@@ -189,9 +189,12 @@
     <ClInclude Include="LCDproc.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="M17Control.h" />
+    <ClInclude Include="M17Convolution.h" />
+    <ClInclude Include="M17CRC.h" />
     <ClInclude Include="M17Defines.h" />
     <ClInclude Include="M17LICH.h" />
     <ClInclude Include="M17Network.h" />
+    <ClInclude Include="M17Utils.h" />
     <ClInclude Include="MMDVMHost.h" />
     <ClInclude Include="Modem.h" />
     <ClInclude Include="ModemSerialPort.h" />

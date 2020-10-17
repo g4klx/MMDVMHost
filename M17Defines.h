@@ -23,12 +23,24 @@ const unsigned int M17_RADIO_SYMBOL_LENGTH = 5U;      // At 24 kHz sample rate
 
 const unsigned int M17_FRAME_LENGTH_BITS    = 384U;
 const unsigned int M17_FRAME_LENGTH_BYTES   = M17_FRAME_LENGTH_BITS / 8U;
-const unsigned int M17_FRAME_LENGTH_SYMBOLS = M17_FRAME_LENGTH_BITS / 2U;
-
-const unsigned int M17_SYNC_LENGTH_BITS    = 16U;
-const unsigned int M17_SYNC_LENGTH_SYMBOLS = M17_SYNC_LENGTH_BITS / 2U;
 
 const unsigned char M17_SYNC_BYTES[] = {0x32U, 0x43U};
-const unsigned int  M17_SYNC_BYTES_LENGTH = 2U;
+const unsigned int  M17_SYNC_LENGTH_BITS  = 16U;
+const unsigned int  M17_SYNC_LENGTH_BYTES = M17_SYNC_LENGTH_BITS / 8U;
+
+const unsigned int M17_LICH_LENGTH_BITS  = 244U;
+const unsigned int M17_LICH_LENGTH_BYTES = 31U;
+
+const unsigned int M17_LICH_FRAGMENT_LENGTH_BITS  = 96U;
+const unsigned int M17_LICH_FRAGMENT_LENGTH_BYTES = M17_LICH_FRAGMENT_LENGTH_BITS / 8U;
+
+const unsigned int M17_PAYLOAD_LENGTH_BITS  = 128U;
+const unsigned int M17_PAYLOAD_LENGTH_BYTES = M17_PAYLOAD_LENGTH_BITS / 8U;
+
+const unsigned int M17_FN_LENGTH_BITS  = 16U;
+const unsigned int M17_FN_LENGTH_BYTES = M17_FN_LENGTH_BITS / 8U;
+
+const unsigned int M17_CRC_LENGTH_BITS  = 16U;
+const unsigned int M17_CRC_LENGTH_BYTES = M17_CRC_LENGTH_BITS / 8U;
 
 #endif

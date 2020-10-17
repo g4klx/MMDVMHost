@@ -16,36 +16,21 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(M17LICH_H)
-#define  M17LICH_H
+#if !defined(M17Utils_H)
+#define  M17Utils_H
 
 #include <string>
 
-class CM17LICH {
+class CM17Utils {
 public:
-	CM17LICH(const CM17LICH& lich);
-	CM17LICH();
-	~CM17LICH();
+	CM17Utils();
+	~CM17Utils();
 
-	void getNetworkData(unsigned char* data);
-	void setNetworkData(const unsigned char* data);
+	static void encodeCallsign(const std::string& callsign, unsigned char* data);
 
-	std::string getSource() const;
-	std::string getDest() const;
-	unsigned char getDataType() const;
-
-	bool isValid() const;
-
-	void getLinkSetup(unsigned char* data) const;
-	void setLinkSetup(const unsigned char* data) const;
-
-	void getFragment(unsigned char* data, unsigned short fn);
-	void setFragment(const unsigned char* data, unsigned short fn);
-
-	CM17LICH& operator=(const CM17LICH& lich);
+	static void decodeCallsign(const unsigned char* data, std::string& callsign);
 
 private:
-	unsigned char* m_lich;
 };
 
 #endif

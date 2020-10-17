@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,36 +16,29 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(M17LICH_H)
-#define  M17LICH_H
+#if !defined(M17Convolution_H)
+#define  M17Convolution_H
 
-#include <string>
+#include <cstdint>
 
-class CM17LICH {
+class CM17Convolution {
 public:
-	CM17LICH(const CM17LICH& lich);
-	CM17LICH();
-	~CM17LICH();
+	CM17Convolution();
+	~CM17Convolution();
 
-	void getNetworkData(unsigned char* data);
-	void setNetworkData(const unsigned char* data);
+	void start();
+	void decode(uint8_t s0, uint8_t s1);
+	void chainback(unsigned char* out, unsigned int nBits);
 
-	std::string getSource() const;
-	std::string getDest() const;
-	unsigned char getDataType() const;
-
-	bool isValid() const;
-
-	void getLinkSetup(unsigned char* data) const;
-	void setLinkSetup(const unsigned char* data) const;
-
-	void getFragment(unsigned char* data, unsigned short fn);
-	void setFragment(const unsigned char* data, unsigned short fn);
-
-	CM17LICH& operator=(const CM17LICH& lich);
+	void encode(const unsigned char* in, unsigned char* out, unsigned int nBits) const;
 
 private:
-	unsigned char* m_lich;
+	uint16_t* m_metrics1;
+	uint16_t* m_metrics2;
+	uint16_t* m_oldMetrics;
+	uint16_t* m_newMetrics;
+	uint64_t* m_decisions;
+	uint64_t* m_dp;
 };
 
 #endif

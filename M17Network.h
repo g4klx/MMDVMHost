@@ -22,16 +22,28 @@
 #include "M17Defines.h"
 #include "RingBuffer.h"
 #include "UDPSocket.h"
+#include "Timer.h"
 
 #include <random>
 #include <cstdint>
 
+enum M17NET_STATUS {
+	M17N_NOTLINKED,
+	M17N_LINKING,
+	M17N_LINKED,
+	M17N_UNLINKING
+};
+
 class CM17Network {
 public:
-	CM17Network(unsigned int localPort, const std::string& gwyAddress, unsigned int gwyPort, bool debug);
+	CM17Network(unsigned int port, bool debug);
 	~CM17Network();
 
 	bool open();
+
+	bool link(const std::string& address, unsigned int port, const std::string& reflector, char module);
+
+	void unlink();
 
 	void enable(bool enabled);
 
@@ -55,6 +67,15 @@ private:
 	uint16_t         m_inId;
 	CRingBuffer<unsigned char> m_buffer;
 	std::mt19937     m_random;
+	M17NET_STATUS    m_state;
+	std::string      m_reflector;
+	unsigned char*   m_encoded;
+	char             m_module;
+	CTimer           m_timer;
+
+	void sendConnect();
+	void sendDisconnect();
+	void sendPong();
 };
 
 #endif
