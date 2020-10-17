@@ -26,13 +26,13 @@
 #include <clocale>
 
 #include <sys/types.h>
-#if defined(__linux__) || defined(__OpenBSD__) || defined(__NetBSD__)
+#if defined(__linux__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__APPLE__)
 #include <ifaddrs.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#if defined(__OpenBSD__) || defined(__NetBSD__)
+#if defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__APPLE__)
 #include <sys/sysctl.h>
 #include <net/if.h>
 #include <net/route.h>
@@ -66,7 +66,7 @@ void CNetworkInfo::getNetworkInterface(unsigned char* info)
 
 	::strcpy((char*)info, "(address unknown)");
 
-#if defined(__linux__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#if defined(__linux__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__) || defined(__APPLE__)
 	char* dflt = NULL;
 
 #if defined(__linux__)
@@ -91,7 +91,7 @@ void CNetworkInfo::getNetworkInterface(unsigned char* info)
 
 	::fclose(fp);
 
-#elif defined(__OpenBSD__) || defined(__NetBSD__)
+#elif defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__APPLE__)
 	const int mib[] = {
 		CTL_NET,
 		PF_ROUTE,
@@ -99,7 +99,7 @@ void CNetworkInfo::getNetworkInterface(unsigned char* info)
 		AF_INET,	// IPv4 routing
 		NET_RT_DUMP,
 		0,		// show all routes
-#if defined(__OpenBSD__)
+#if defined(__OpenBSD__) || defined(__FreeBSD__)
 		0,		// table id
 #endif
 	};
@@ -126,7 +126,7 @@ void CNetworkInfo::getNetworkInterface(unsigned char* info)
 			continue;
 #if defined(__OpenBSD__)
 		struct sockaddr_in *sa = (struct sockaddr_in *)(p + rtm->rtm_hdrlen);
-#elif defined(__NetBSD__)
+#elif defined(__NetBSD__) || defined(__FreeBSD__) || defined(__APPLE__)
 		struct sockaddr_in *sa = (struct sockaddr_in *)(rtm + 1);
 #endif
 		if (sa->sin_addr.s_addr == INADDR_ANY) {
