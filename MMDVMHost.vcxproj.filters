@@ -589,5 +589,11 @@
     <ClCompile Include="M17Network.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="M17CRC.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M17Utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

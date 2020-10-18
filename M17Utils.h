@@ -26,9 +26,9 @@ public:
 	CM17Utils();
 	~CM17Utils();
 
-	static void encodeCallsign(const std::string& callsign, unsigned char* data);
+	static void encodeCallsign(const std::string& callsign, unsigned char* encoded);
 
-	static void decodeCallsign(const unsigned char* data, std::string& callsign);
+	static void decodeCallsign(const unsigned char* encoded, std::string& callsign);
 
 private:
 };

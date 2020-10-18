@@ -169,7 +169,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		unsigned char frame[M17_LICH_LENGTH_BYTES];
 		conv.chainback(frame, M17_LICH_LENGTH_BITS);
 
-		bool valid = CM17CRC::checkCRC(frame, M17_LICH_LENGTH_BITS);
+		bool valid = CM17CRC::checkCRC(frame, M17_LICH_LENGTH_BYTES);
 		if (valid) {
 			m_rfFrames = 0U;
 			m_rfErrs = 0U;
@@ -225,7 +225,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 				m_rfLICH.getLinkSetup(data + 2U);
 
 				// Add the CRC
-				CM17CRC::encodeCRC(data + 2U + M17_SYNC_LENGTH_BYTES, M17_LICH_LENGTH_BITS + M17_CRC_LENGTH_BITS);
+				CM17CRC::encodeCRC(data + 2U + M17_SYNC_LENGTH_BYTES, M17_LICH_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
 
 				// Add the convolution FEC
 				CM17Convolution conv;
@@ -257,7 +257,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		unsigned char frame[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
 		conv.chainback(frame, M17_FN_LENGTH_BITS + M17_PAYLOAD_LENGTH_BITS + M17_CRC_LENGTH_BITS);
 
-		bool valid = CM17CRC::checkCRC(frame, M17_FN_LENGTH_BITS + M17_PAYLOAD_LENGTH_BITS + M17_CRC_LENGTH_BITS);
+		bool valid = CM17CRC::checkCRC(frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
 		if (valid) {
 			m_rfFN = (frame[0U] << 8) + (frame[1U] << 0);
 
@@ -323,7 +323,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 					m_rfLICH.getLinkSetup(data + 2U);
 
 					// Add the CRC
-					CM17CRC::encodeCRC(data + 2U + M17_SYNC_LENGTH_BYTES, M17_LICH_LENGTH_BITS + M17_CRC_LENGTH_BITS);
+					CM17CRC::encodeCRC(data + 2U + M17_SYNC_LENGTH_BYTES, M17_LICH_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
 
 					// Add the convolution FEC
 					CM17Convolution conv;
@@ -357,7 +357,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		unsigned char frame[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
 		conv.chainback(frame, M17_FN_LENGTH_BITS + M17_PAYLOAD_LENGTH_BITS + M17_CRC_LENGTH_BITS);
 
-		bool valid = CM17CRC::checkCRC(frame, M17_FN_LENGTH_BITS + M17_PAYLOAD_LENGTH_BITS + M17_CRC_LENGTH_BITS);
+		bool valid = CM17CRC::checkCRC(frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
 		if (valid) {
 			m_rfFN = (frame[0U] << 8) + (frame[1U] << 0);
 		} else {
@@ -383,7 +383,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			}
 
 			// Add the CRC
-			CM17CRC::encodeCRC(frame, M17_FN_LENGTH_BITS + M17_PAYLOAD_LENGTH_BITS + M17_CRC_LENGTH_BITS);
+			CM17CRC::encodeCRC(frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
 		}
 
 		unsigned char rfData[2U + M17_FRAME_LENGTH_BYTES];
@@ -422,7 +422,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		// Copy the FN and payload from the frame
 		::memcpy(netData + M17_LICH_LENGTH_BYTES, frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
 
-		CM17CRC::encodeCRC(netData, M17_LICH_LENGTH_BITS + M17_FN_LENGTH_BITS + M17_PAYLOAD_LENGTH_BITS + M17_CRC_LENGTH_BITS);
+		// The CRC is added in the networking code
 
 		writeNetwork(netData);
 
@@ -552,7 +552,7 @@ void CM17Control::writeNetwork()
 		m_netLICH.getLinkSetup(start + 2U);
 
 		// Add the CRC
-		CM17CRC::encodeCRC(start + 2U + M17_SYNC_LENGTH_BYTES, M17_LICH_LENGTH_BITS + M17_CRC_LENGTH_BITS);
+		CM17CRC::encodeCRC(start + 2U + M17_SYNC_LENGTH_BYTES, M17_LICH_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
 
 		// Add the convolution FEC
 		CM17Convolution conv;
@@ -612,7 +612,7 @@ void CM17Control::writeNetwork()
 	::memcpy(payload, netData + 38U, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
 
 	// Add the CRC
-	CM17CRC::encodeCRC(payload, M17_FN_LENGTH_BITS + M17_PAYLOAD_LENGTH_BITS + M17_CRC_LENGTH_BITS);
+	CM17CRC::encodeCRC(payload, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
 
 	// Add the Convolution FEC
 	CM17Convolution conv;
@@ -726,7 +726,7 @@ void CM17Control::decorrelator(const unsigned char* in, unsigned char* out) cons
 	assert(out != NULL);
 
 	for (unsigned int i = M17_SYNC_LENGTH_BYTES; i < M17_FRAME_LENGTH_BYTES; i++)
-		out[i] = in[i] ^ SCRAMBLER[i];
+		out[i] = in[i] ^ SCRAMBLER[i - M17_SYNC_LENGTH_BYTES];
 }
 
 bool CM17Control::openFile()

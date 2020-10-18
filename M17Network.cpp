@@ -20,6 +20,7 @@
 #include "M17Defines.h"
 #include "M17Utils.h"
 #include "Defines.h"
+#include "M17CRC.h"
 #include "Utils.h"
 #include "Log.h"
 
@@ -119,7 +120,10 @@ bool CM17Network::write(const unsigned char* data)
 	buffer[4U] = m_outId / 256U;	// Unique session id
 	buffer[5U] = m_outId % 256U;
 
-	::memcpy(buffer + 6U, data, 48U);
+	::memcpy(buffer + 6U, data, 46U);
+
+	// Add the CRC
+	CM17CRC::encodeCRC(buffer + 6U, M17_LICH_LENGTH_BYTES + M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
 
 	if (m_debug)
 		CUtils::dump(1U, "M17 data transmitted", buffer, 54U);
@@ -203,6 +207,13 @@ void CM17Network::clock(unsigned int ms)
 	} else {
 		if (id != m_inId)
 			return;
+	}
+
+	// Check the CRC
+	bool valid = CM17CRC::checkCRC(buffer + 6U, M17_LICH_LENGTH_BYTES + M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
+	if (!valid) {
+		LogMessage("M17, network packet received with an invalid CRC");
+		return;
 	}
 
 	// EOT?

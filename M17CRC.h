@@ -24,11 +24,11 @@
 class CM17CRC
 {
 public:
-	static bool checkCRC(const unsigned char* in, unsigned int length);
-	static void encodeCRC(unsigned char* in, unsigned int length);
+	static bool checkCRC(const unsigned char* in, unsigned int nBytes);
+	static void encodeCRC(unsigned char* in, unsigned int nBytes);
 
 private:
-	static uint16_t createCRC(const unsigned char* in, unsigned int length);
+	static uint16_t createCRC(const unsigned char* in, unsigned int nBytes);
 };
 
 #endif

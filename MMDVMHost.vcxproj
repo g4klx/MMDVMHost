@@ -291,6 +291,7 @@
     <ClCompile Include="LCDproc.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="M17Control.cpp" />
+    <ClCompile Include="M17CRC.cpp" />
     <ClCompile Include="M17Network.cpp" />
     <ClCompile Include="MMDVMHost.cpp" />
     <ClCompile Include="Modem.cpp" />
@@ -330,6 +331,7 @@
     <ClCompile Include="RSSIInterpolator.cpp" />
     <ClCompile Include="SerialController.cpp" />
     <ClCompile Include="SerialPort.cpp" />
+    <ClCompile Include="M17Utils.cpp" />
     <ClCompile Include="StopWatch.cpp" />
     <ClCompile Include="Sync.cpp" />
     <ClCompile Include="TFTSerial.cpp" />
