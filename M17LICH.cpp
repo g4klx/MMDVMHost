@@ -21,6 +21,7 @@
 #include "M17CRC.h"
 
 #include <cassert>
+#include <cstring>
 
 CM17LICH::CM17LICH() :
 m_lich(NULL),
