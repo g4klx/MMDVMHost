@@ -27,8 +27,8 @@ public:
 	CM17LICH();
 	~CM17LICH();
 
-	void getNetworkData(unsigned char* data);
-	void setNetworkData(const unsigned char* data);
+	void getNetwork(unsigned char* data) const;
+	void setNetwork(const unsigned char* data);
 
 	std::string getSource() const;
 	void setSource(const std::string& callsign);
@@ -43,15 +43,16 @@ public:
 	bool isValid() const;
 
 	void getLinkSetup(unsigned char* data) const;
-	void setLinkSetup(const unsigned char* data) const;
+	void setLinkSetup(const unsigned char* data);
 
-	void getFragment(unsigned char* data, unsigned short fn);
+	void getFragment(unsigned char* data, unsigned short fn) const;
 	void setFragment(const unsigned char* data, unsigned short fn);
 
 	CM17LICH& operator=(const CM17LICH& lich);
 
 private:
 	unsigned char* m_lich;
+	bool           m_valid;
 };
 
 #endif

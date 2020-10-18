@@ -31,7 +31,6 @@
 const unsigned int BUFFER_LENGTH = 200U;
 
 CM17Network::CM17Network(const std::string& callsign, unsigned int port, bool debug) :
-m_callsign(callsign),
 m_socket(port),
 m_addr(),
 m_addrLen(0U),
@@ -52,7 +51,11 @@ m_timer(1000U, 5U)
 
 	m_encoded = new unsigned char[6U];
 
-	CM17Utils::encodeCallsign(m_callsign, m_encoded);
+	std::string call = callsign;
+	call.resize(8U, ' ');
+	call += "D";
+
+	CM17Utils::encodeCallsign(call, m_encoded);
 }
 
 CM17Network::~CM17Network()

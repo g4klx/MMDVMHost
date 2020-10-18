@@ -58,7 +58,6 @@ public:
 	void clock(unsigned int ms);
 
 private:
-	std::string      m_callsign;
 	CUDPSocket       m_socket;
 	sockaddr_storage m_addr;
 	unsigned int     m_addrLen;

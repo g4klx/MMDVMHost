@@ -45,9 +45,9 @@ const unsigned int INTERLEAVER[] = {
 	8U, 145U, 98U, 235U, 188U, 325U, 278U, 47U};
 
 const unsigned char SCRAMBLER[] = {
-	0xD6U, 0xB5U, 0xE2U, 0x30U, 0x82U, 0xFFU, 0x84U, 0x62U, 0xBAU, 0x4EU, 0x96U, 0x90U, 0xD8U, 0x98U, 0xDDU, 0x5DU, 0x0CU,
-	0xC8U, 0x52U, 0x43U, 0x91U, 0x1DU, 0xF8U, 0x6EU, 0x68U, 0x2FU, 0x35U, 0xDAU, 0x14U, 0xEAU, 0xCDU, 0x76U, 0x19U, 0x8DU,
-	0xD5U, 0x80U, 0xD1U, 0x33U, 0x87U, 0x13U, 0x57U, 0x18U, 0x2DU, 0x29U, 0x78U, 0xC3U};
+	0x00U, 0x00U, 0xD6U, 0xB5U, 0xE2U, 0x30U, 0x82U, 0xFFU, 0x84U, 0x62U, 0xBAU, 0x4EU, 0x96U, 0x90U, 0xD8U, 0x98U, 0xDDU,
+	0x5DU, 0x0CU, 0xC8U, 0x52U, 0x43U, 0x91U, 0x1DU, 0xF8U, 0x6EU, 0x68U, 0x2FU, 0x35U, 0xDAU, 0x14U, 0xEAU, 0xCDU, 0x76U,
+	0x19U, 0x8DU, 0xD5U, 0x80U, 0xD1U, 0x33U, 0x87U, 0x13U, 0x57U, 0x18U, 0x2DU, 0x29U, 0x78U, 0xC3U};
 
 // #define	DUMP_M17
 
@@ -417,7 +417,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 		unsigned char netData[M17_LICH_LENGTH_BYTES + M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
 
-		m_rfLICH.getNetworkData(netData + 0U);
+		m_rfLICH.getNetwork(netData + 0U);
 
 		// Copy the FN and payload from the frame
 		::memcpy(netData + M17_LICH_LENGTH_BYTES, frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
@@ -507,7 +507,7 @@ void CM17Control::writeNetwork()
 	m_networkWatchdog.start();
 
 	if (m_netState == RS_NET_IDLE) {
-		m_netLICH.setNetworkData(netData);
+		m_netLICH.setNetwork(netData);
 
 		std::string source = m_netLICH.getSource();
 		std::string dest   = m_netLICH.getDest();
@@ -725,8 +725,9 @@ void CM17Control::decorrelator(const unsigned char* in, unsigned char* out) cons
 	assert(in != NULL);
 	assert(out != NULL);
 
-	for (unsigned int i = M17_SYNC_LENGTH_BYTES; i < M17_FRAME_LENGTH_BYTES; i++)
-		out[i] = in[i] ^ SCRAMBLER[i - M17_SYNC_LENGTH_BYTES];
+	for (unsigned int i = M17_SYNC_LENGTH_BYTES; i < M17_FRAME_LENGTH_BYTES; i++) {
+		out[i] = in[i] ^ SCRAMBLER[i];
+	}
 }
 
 bool CM17Control::openFile()
