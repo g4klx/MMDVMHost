@@ -20,64 +20,53 @@
 
 #include <cassert>
 
+const std::string M17_CHARS = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-/.";
+
 void CM17Utils::encodeCallsign(const std::string& callsign, unsigned char* encoded)
 {
 	assert(encoded != NULL);
 
-    std::string call = callsign;
-    call.resize(8U, ' ');
+	unsigned int len = callsign.size();
+	if (len > 9U)
+		len = 9U;
 
-    uint64_t enc = 0ULL;
-    for (int i = 7U; i >= 0; i--) {
-        char c = call.at(i);
+	uint64_t enc = 0ULL;
+	for (int i = len - 1; i >= 0; i--) {
+		size_t pos = M17_CHARS.find(callsign[i]);
+		if (pos == std::string::npos)
+			pos = 0ULL;
 
-        enc *= 40ULL;
+		enc *= 40ULL;
+		enc += pos;
+	}
 
-        // If speed is more important than code space, you can replace this with a lookup into a 256 byte array.
-        if (c >= 'A' && c <= 'Z') // 1-26
-            enc += c - 'A' + 1ULL;
-        else if (c >= '0' && c <= '9') // 27-36
-            enc += c - '0' + 27ULL;
-        else if (c == '-') // 37
-            enc += 37ULL;
-
-        // These are just place holders. If other characters make more sense, change these.
-        // Be sure to change them in the decode array below too.
-        else if (c == '/') // 38
-            enc += 38ULL;
-        else if (c == '.') // 39
-            enc += 39ULL;
-        else
-            // Invalid character or space, represented by 0, decoded as a space.
-            enc += 0ULL;
-    }
-
-    encoded[0U] = enc >> 40;
-    encoded[1U] = enc >> 32;
-    encoded[2U] = enc >> 24;
-    encoded[3U] = enc >> 16;
-    encoded[4U] = enc >> 8;
-    encoded[5U] = enc >> 0;
+	encoded[0U] = enc >> 40;
+	encoded[1U] = enc >> 32;
+	encoded[2U] = enc >> 24;
+	encoded[3U] = enc >> 16;
+	encoded[4U] = enc >> 8;
+	encoded[5U] = enc >> 0;
 }
 
 void CM17Utils::decodeCallsign(const unsigned char* encoded, std::string& callsign)
 {
-    assert(encoded != NULL);
+	assert(encoded != NULL);
 
-    callsign.empty();
+	callsign.empty();
 
-    uint64_t enc = (uint64_t(encoded[5U]) << 40) +
-                   (uint64_t(encoded[4U]) << 32) +
-                   (uint64_t(encoded[3U]) << 24) +
-                   (uint64_t(encoded[2U]) << 16) +
-                   (uint64_t(encoded[1U]) << 8)  +
-                   (uint64_t(encoded[0U]) << 0);
+	uint64_t enc = (uint64_t(encoded[0U]) << 40) +
+		       (uint64_t(encoded[1U]) << 32) +
+		       (uint64_t(encoded[2U]) << 24) +
+		       (uint64_t(encoded[3U]) << 16) +
+		       (uint64_t(encoded[4U]) << 8)  +
+		       (uint64_t(encoded[5U]) << 0);
 
-    if (enc >= 262144000000000ULL) // 40^9
-        return;
+	if (enc >= 262144000000000ULL)	// 40^9
+		return;
 
-    while (enc > 0ULL) {
-        callsign += " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-/."[enc % 40ULL];
-        enc /= 40ULL;
-    }
+	while (enc > 0ULL) {
+		callsign += " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-/."[enc % 40ULL];
+		enc /= 40ULL;
+	}
 }
+
