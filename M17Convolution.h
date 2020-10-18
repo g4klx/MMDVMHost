@@ -26,11 +26,11 @@ public:
 	CM17Convolution();
 	~CM17Convolution();
 
-	void start();
-	void decode(uint8_t s0, uint8_t s1);
-	void chainback(unsigned char* out, unsigned int nBits);
+	void decodeLinkSetup(const unsigned char* in, unsigned char* out);
+	void decodeData(const unsigned char* in, unsigned char* out);
 
-	void encode(const unsigned char* in, unsigned char* out, unsigned int nBits) const;
+	void encodeLinkSetup(const unsigned char* in, unsigned char* out) const;
+	void encodeData(const unsigned char* in, unsigned char* out) const;
 
 private:
 	uint16_t* m_metrics1;
@@ -39,6 +39,12 @@ private:
 	uint16_t* m_newMetrics;
 	uint64_t* m_decisions;
 	uint64_t* m_dp;
+
+	void start();
+	void decode(uint8_t s0, uint8_t s1);
+	void chainback(unsigned char* out, unsigned int nBits);
+
+	void encode(const unsigned char* in, unsigned char* out, unsigned int nBits) const;
 };
 
 #endif

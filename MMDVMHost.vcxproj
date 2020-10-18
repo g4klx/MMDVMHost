@@ -291,6 +291,7 @@
     <ClCompile Include="LCDproc.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="M17Control.cpp" />
+    <ClCompile Include="M17Convolution.cpp" />
     <ClCompile Include="M17CRC.cpp" />
     <ClCompile Include="M17LICH.cpp" />
     <ClCompile Include="M17Network.cpp" />

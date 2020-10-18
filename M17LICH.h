@@ -23,7 +23,6 @@
 
 class CM17LICH {
 public:
-	CM17LICH(const CM17LICH& lich);
 	CM17LICH();
 	~CM17LICH();
 
@@ -47,8 +46,6 @@ public:
 
 	void getFragment(unsigned char* data, unsigned short fn) const;
 	void setFragment(const unsigned char* data, unsigned short fn);
-
-	CM17LICH& operator=(const CM17LICH& lich);
 
 private:
 	unsigned char* m_lich;

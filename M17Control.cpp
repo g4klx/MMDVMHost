@@ -156,18 +156,8 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		m_rfLICH.reset();
 
 		CM17Convolution conv;
-		conv.start();
-
-		unsigned int n = 2U + M17_SYNC_LENGTH_BYTES;
-		for (unsigned int i = 0U; i < (M17_LICH_LENGTH_BYTES / 2U); i++) {
-			uint8_t s0 = data[n++];
-			uint8_t s1 = data[n++];
-
-			conv.decode(s0, s1);
-		}
-
 		unsigned char frame[M17_LICH_LENGTH_BYTES];
-		conv.chainback(frame, M17_LICH_LENGTH_BITS);
+		conv.decodeLinkSetup(data, frame);
 
 		bool valid = CM17CRC::checkCRC(frame, M17_LICH_LENGTH_BYTES);
 		if (valid) {
@@ -224,12 +214,9 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 				unsigned char setup[M17_LICH_LENGTH_BYTES];
 				m_rfLICH.getLinkSetup(data + 2U);
 
-				// Add the CRC
-				CM17CRC::encodeCRC(data + 2U + M17_SYNC_LENGTH_BYTES, M17_LICH_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
-
 				// Add the convolution FEC
 				CM17Convolution conv;
-				conv.encode(setup, data + 2U + M17_SYNC_LENGTH_BYTES, M17_LICH_LENGTH_BITS + M17_CRC_LENGTH_BITS);
+				conv.encodeLinkSetup(setup, data + 2U + M17_SYNC_LENGTH_BYTES);
 
 				unsigned char temp[M17_FRAME_LENGTH_BYTES];
 				interleaver(data + 2U, temp);
@@ -244,18 +231,8 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 	if (m_rfState == RS_RF_LATE_ENTRY) {
 		CM17Convolution conv;
-		conv.start();
-
-		unsigned int n = 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_LENGTH_BYTES;
-		for (unsigned int i = 0U; i < (M17_LICH_LENGTH_BYTES / 2U); i++) {
-			uint8_t s0 = data[n++];
-			uint8_t s1 = data[n++];
-
-			conv.decode(s0, s1);
-		}
-
 		unsigned char frame[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
-		conv.chainback(frame, M17_FN_LENGTH_BITS + M17_PAYLOAD_LENGTH_BITS + M17_CRC_LENGTH_BITS);
+		conv.decodeData(data, frame);
 
 		bool valid = CM17CRC::checkCRC(frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
 		if (valid) {
@@ -322,12 +299,9 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 					unsigned char setup[M17_LICH_LENGTH_BYTES];
 					m_rfLICH.getLinkSetup(data + 2U);
 
-					// Add the CRC
-					CM17CRC::encodeCRC(data + 2U + M17_SYNC_LENGTH_BYTES, M17_LICH_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
-
 					// Add the convolution FEC
 					CM17Convolution conv;
-					conv.encode(setup, data + 2U + M17_SYNC_LENGTH_BYTES, M17_LICH_LENGTH_BITS + M17_CRC_LENGTH_BITS);
+					conv.encodeLinkSetup(setup, data + 2U + M17_SYNC_LENGTH_BYTES);
 
 					unsigned char temp[M17_FRAME_LENGTH_BYTES];
 					interleaver(data + 2U, temp);
@@ -344,18 +318,8 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		writeFile(data + 2U);
 #endif
 		CM17Convolution conv;
-		conv.start();
-
-		unsigned int n = 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_LENGTH_BYTES;
-		for (unsigned int i = 0U; i < ((M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES) / 2U); i++) {
-			uint8_t s0 = data[n++];
-			uint8_t s1 = data[n++];
-
-			conv.decode(s0, s1);
-		}
-
 		unsigned char frame[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
-		conv.chainback(frame, M17_FN_LENGTH_BITS + M17_PAYLOAD_LENGTH_BITS + M17_CRC_LENGTH_BITS);
+		conv.decodeData(data, frame);
 
 		bool valid = CM17CRC::checkCRC(frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
 		if (valid) {
@@ -399,7 +363,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		// XXX TODO Golay on LICH fragment
 
 		// Re-encode the payload
-		conv.encode(frame, rfData + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_LENGTH_BYTES, M17_FN_LENGTH_BITS + M17_PAYLOAD_LENGTH_BITS + M17_CRC_LENGTH_BITS);
+		conv.encodeData(frame, rfData + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_LENGTH_BYTES);
 
 		// Calculate the BER
 		if (valid) {
@@ -551,12 +515,9 @@ void CM17Control::writeNetwork()
 		unsigned char setup[M17_LICH_LENGTH_BYTES];
 		m_netLICH.getLinkSetup(start + 2U);
 
-		// Add the CRC
-		CM17CRC::encodeCRC(start + 2U + M17_SYNC_LENGTH_BYTES, M17_LICH_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
-
 		// Add the convolution FEC
 		CM17Convolution conv;
-		conv.encode(setup, start + 2U + M17_SYNC_LENGTH_BYTES, M17_LICH_LENGTH_BITS + M17_CRC_LENGTH_BITS);
+		conv.encodeLinkSetup(setup, start + 2U + M17_SYNC_LENGTH_BYTES);
 
 		unsigned char temp[M17_FRAME_LENGTH_BYTES];
 		interleaver(start + 2U, temp);
@@ -616,7 +577,7 @@ void CM17Control::writeNetwork()
 
 	// Add the Convolution FEC
 	CM17Convolution conv;
-	conv.encode(payload, p, M17_FN_LENGTH_BITS + M17_PAYLOAD_LENGTH_BITS + M17_CRC_LENGTH_BITS);
+	conv.encodeData(payload, p);
 
 	unsigned char temp[M17_FRAME_LENGTH_BYTES];
 	interleaver(data + 2U, temp);

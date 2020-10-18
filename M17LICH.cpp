@@ -22,17 +22,6 @@
 
 #include <cassert>
 
-CM17LICH::CM17LICH(const CM17LICH& lich) :
-m_lich(NULL),
-m_valid(false)
-{
-	m_lich = new unsigned char[30U];
-
-	::memcpy(m_lich, lich.m_lich, 30U);
-
-	m_valid = lich.m_valid;
-}
-
 CM17LICH::CM17LICH() :
 m_lich(NULL),
 m_valid(false)
