@@ -18,6 +18,7 @@
 
 #include "M17LICH.h"
 #include "M17Utils.h"
+#include "M17Defines.h"
 #include "M17CRC.h"
 
 #include <cassert>
@@ -27,7 +28,7 @@ CM17LICH::CM17LICH() :
 m_lich(NULL),
 m_valid(false)
 {
-	m_lich = new unsigned char[30U];
+	m_lich = new unsigned char[M17_LICH_LENGTH_BYTES];
 }
 
 CM17LICH::~CM17LICH()
@@ -39,23 +40,20 @@ void CM17LICH::getNetwork(unsigned char* data) const
 {
 	assert(data != NULL);
 
-	::memcpy(data, m_lich, 28U);
+	::memcpy(data, m_lich, M17_LICH_LENGTH_BYTES);
 }
 
 void CM17LICH::setNetwork(const unsigned char* data)
 {
 	assert(data != NULL);
 
-	::memcpy(m_lich, data, 28U);
+	::memcpy(m_lich, data, M17_LICH_LENGTH_BYTES);
 
 	m_valid = true;
 }
 
 std::string CM17LICH::getSource() const
 {
-	if (!m_valid)
-		return "";
-
 	std::string callsign;
 	CM17Utils::decodeCallsign(m_lich + 6U, callsign);
 
@@ -69,9 +67,6 @@ void CM17LICH::setSource(const std::string& callsign)
 
 std::string CM17LICH::getDest() const
 {
-	if (!m_valid)
-		return "";
-
 	std::string callsign;
 	CM17Utils::decodeCallsign(m_lich + 0U, callsign);
 
@@ -85,9 +80,6 @@ void CM17LICH::setDest(const std::string& callsign)
 
 unsigned char CM17LICH::getDataType() const
 {
-	if (!m_valid)
-		return 0U;
-
 	return (m_lich[12U] >> 1) & 0x03U;
 }
 
@@ -113,29 +105,29 @@ void CM17LICH::getLinkSetup(unsigned char* data) const
 {
 	assert(data != NULL);
 
-	::memcpy(data, m_lich, 30U);
+	::memcpy(data, m_lich, M17_LICH_LENGTH_BYTES);
 
-	CM17CRC::encodeCRC(data, 30U);
+	CM17CRC::encodeCRC(data, M17_LICH_LENGTH_BYTES);
 }
 
 void CM17LICH::setLinkSetup(const unsigned char* data)
 {
 	assert(data != NULL);
 
-	::memcpy(m_lich, data, 30U);
+	::memcpy(m_lich, data, M17_LICH_LENGTH_BYTES);
 
-	m_valid = CM17CRC::checkCRC(m_lich, 30U);
+	m_valid = CM17CRC::checkCRC(m_lich, M17_LICH_LENGTH_BYTES);
 }
 
 void CM17LICH::getFragment(unsigned char* data, unsigned short fn) const
 {
 	assert(data != NULL);
 
-	CM17CRC::encodeCRC(m_lich, 30U);
+	CM17CRC::encodeCRC(m_lich, M17_LICH_LENGTH_BYTES);
 
 	unsigned int n = (fn & 0x7FFFU) % 5U;
 
-	::memcpy(data, m_lich + (n * 6U), 6U);
+	::memcpy(data, m_lich + (n * M17_LICH_FRAGMENT_LENGTH_BYTES), M17_LICH_FRAGMENT_LENGTH_BYTES);
 }
 
 void CM17LICH::setFragment(const unsigned char* data, unsigned short fn)
@@ -144,7 +136,7 @@ void CM17LICH::setFragment(const unsigned char* data, unsigned short fn)
 
 	unsigned int n = (fn & 0x7FFFU) % 5U;
 
-	::memcpy(m_lich + (n * 6U), data, 6U);
+	::memcpy(m_lich + (n * M17_LICH_FRAGMENT_LENGTH_BYTES), data, M17_LICH_FRAGMENT_LENGTH_BYTES);
 
-	m_valid = CM17CRC::checkCRC(m_lich, 30U);
+	m_valid = CM17CRC::checkCRC(m_lich, M17_LICH_LENGTH_BYTES);
 }
