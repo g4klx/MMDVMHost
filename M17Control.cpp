@@ -13,6 +13,7 @@
 
 #include "M17Control.h"
 #include "M17Convolution.h"
+#include "M17Utils.h"
 #include "M17CRC.h"
 #include "Golay24128.h"
 #include "Utils.h"
@@ -157,7 +158,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 		CM17Convolution conv;
 		unsigned char frame[M17_LICH_LENGTH_BYTES];
-		conv.decodeLinkSetup(data, frame);
+		conv.decodeLinkSetup(data + 2U + M17_SYNC_LENGTH_BYTES, frame);
 
 		bool valid = CM17CRC::checkCRC(frame, M17_LICH_LENGTH_BYTES);
 		if (valid) {
@@ -212,7 +213,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 				CSync::addM17Sync(data + 2U);
 
 				unsigned char setup[M17_LICH_LENGTH_BYTES];
-				m_rfLICH.getLinkSetup(data + 2U);
+				m_rfLICH.getLinkSetup(setup);
 
 				// Add the convolution FEC
 				CM17Convolution conv;
@@ -232,22 +233,24 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 	if (m_rfState == RS_RF_LATE_ENTRY) {
 		CM17Convolution conv;
 		unsigned char frame[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
-		conv.decodeData(data, frame);
+		conv.decodeData(data + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES, frame);
 
 		bool valid = CM17CRC::checkCRC(frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
 		if (valid) {
 			m_rfFN = (frame[0U] << 8) + (frame[1U] << 0);
 
 			unsigned int frag1, frag2, frag3, frag4;
-
-			// XXX TODO populate frag1-4
+			CM17Utils::splitFragmentLICHFEC(data + 2U + M17_SYNC_LENGTH_BYTES, frag1, frag2, frag3, frag4);
 
 			unsigned int lich1 = CGolay24128::decode24128(frag1);
 			unsigned int lich2 = CGolay24128::decode24128(frag2);
 			unsigned int lich3 = CGolay24128::decode24128(frag3);
 			unsigned int lich4 = CGolay24128::decode24128(frag4);
 
-			m_rfLICH.setFragment(data + 2U + M17_SYNC_LENGTH_BYTES, m_rfFN & 0x7FFFU);
+			unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
+			CM17Utils::combineFragmentLICH(lich1, lich2, lich3, lich4, lich);
+
+			m_rfLICH.setFragment(lich, m_rfFN);
 
 			valid = m_rfLICH.isValid();
 			if (valid) {
@@ -297,7 +300,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 					CSync::addM17Sync(data + 2U);
 
 					unsigned char setup[M17_LICH_LENGTH_BYTES];
-					m_rfLICH.getLinkSetup(data + 2U);
+					m_rfLICH.getLinkSetup(setup);
 
 					// Add the convolution FEC
 					CM17Convolution conv;
@@ -319,7 +322,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 #endif
 		CM17Convolution conv;
 		unsigned char frame[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
-		conv.decodeData(data, frame);
+		conv.decodeData(data + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES, frame);
 
 		bool valid = CM17CRC::checkCRC(frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
 		if (valid) {
@@ -355,22 +358,36 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		rfData[0U] = TAG_DATA;
 		rfData[1U] = 0x00U;
 
+		// Generate the sync
 		CSync::addM17Sync(rfData + 2U);
 
-		// Re-encode the LICH fragment
-		m_rfLICH.getFragment(rfData + 2U + M17_SYNC_LENGTH_BYTES, m_rfFN & 0x7FFFU);
+		unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
+		m_netLICH.getFragment(lich, m_rfFN);
 
-		// XXX TODO Golay on LICH fragment
+		unsigned int lich1, lich2, lich3, lich4;
+		CM17Utils::splitFragmentLICH(lich, lich1, lich2, lich3, lich4);
 
-		// Re-encode the payload
-		conv.encodeData(frame, rfData + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_LENGTH_BYTES);
+		// Add Golay to the LICH fragment here
+		CGolay24128::encode24128(lich1);
+		CGolay24128::encode24128(lich2);
+		CGolay24128::encode24128(lich3);
+		CGolay24128::encode24128(lich4);
+
+		CM17Utils::combineFragmentLICHFEC(lich1, lich2, lich3, lich4, rfData + 2U + M17_SYNC_LENGTH_BYTES);
+
+		// Add the Convolution FEC
+		conv.encodeData(frame, rfData + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES);
+
+		unsigned char temp[M17_FRAME_LENGTH_BYTES];
+		interleaver(rfData + 2U, temp);
+		decorrelator(rfData, data + 2U);
 
 		// Calculate the BER
 		if (valid) {
-			for (unsigned int i = 2U; i < 50U; i++)
+			for (unsigned int i = 2U; i < (M17_FRAME_LENGTH_BYTES + 2U); i++)
 				m_rfErrs += countBits(rfData[i] ^ data[i]);
 
-			m_rfBits += 272U;
+			m_rfBits += M17_FRAME_LENGTH_BITS;
 
 			float ber = float(m_rfErrs) / float(m_rfBits);
 			m_display->writeM17BER(ber);
@@ -501,7 +518,7 @@ void CM17Control::writeNetwork()
 		m_netTimeoutTimer.start();
 		m_packetTimer.start();
 		m_elapsed.start();
-		m_netFrames = 1U;
+		m_netFrames = 0U;
 
 		// Create a dummy start message
 		unsigned char start[M17_FRAME_LENGTH_BYTES + 2U];
@@ -513,7 +530,7 @@ void CM17Control::writeNetwork()
 		CSync::addM17Sync(start + 2U);
 
 		unsigned char setup[M17_LICH_LENGTH_BYTES];
-		m_netLICH.getLinkSetup(start + 2U);
+		m_netLICH.getLinkSetup(setup);
 
 		// Add the convolution FEC
 		CM17Convolution conv;
@@ -531,23 +548,19 @@ void CM17Control::writeNetwork()
 	data[0U] = TAG_DATA;
 	data[1U] = 0x00U;
 
-	unsigned char* p = data + 2U;
-
 	// Generate the sync
-	CSync::addM17Sync(p);
-	p += M17_SYNC_LENGTH_BYTES;
+	CSync::addM17Sync(data + 2U);
 
 	m_netFrames++;
 
 	// Add the fragment LICH
 	uint16_t fn = (netData[38U] << 8) + (netData[39U] << 0);
 
-	unsigned char lich[6U];
-	m_netLICH.getFragment(lich, fn & 0x7FFFU);
+	unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
+	m_netLICH.getFragment(lich, fn);
 
 	unsigned int lich1, lich2, lich3, lich4;
-
-	// XXX TODO
+	CM17Utils::splitFragmentLICH(lich, lich1, lich2, lich3, lich4);
 
 	// Add Golay to the LICH fragment here
 	CGolay24128::encode24128(lich1);
@@ -555,21 +568,10 @@ void CM17Control::writeNetwork()
 	CGolay24128::encode24128(lich3);
 	CGolay24128::encode24128(lich4);
 
-	::memcpy(p, &lich1, M17_LICH_FRAGMENT_LENGTH_BYTES / 4U);
-	p += M17_LICH_FRAGMENT_LENGTH_BYTES / 4U;
-
-	::memcpy(p, &lich2, M17_LICH_FRAGMENT_LENGTH_BYTES / 4U);
-	p += M17_LICH_FRAGMENT_LENGTH_BYTES / 4U;
-
-	::memcpy(p, &lich3, M17_LICH_FRAGMENT_LENGTH_BYTES / 4U);
-	p += M17_LICH_FRAGMENT_LENGTH_BYTES / 4U;
-
-	::memcpy(p, &lich4, M17_LICH_FRAGMENT_LENGTH_BYTES / 4U);
-	p += M17_LICH_FRAGMENT_LENGTH_BYTES / 4U;
-
-	unsigned char payload[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
+	CM17Utils::combineFragmentLICHFEC(lich1, lich2, lich3, lich4, data + 2U + M17_SYNC_LENGTH_BYTES);
 
 	// Add the FN and the data/audio
+	unsigned char payload[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
 	::memcpy(payload, netData + 38U, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
 
 	// Add the CRC
@@ -577,7 +579,7 @@ void CM17Control::writeNetwork()
 
 	// Add the Convolution FEC
 	CM17Convolution conv;
-	conv.encodeData(payload, p);
+	conv.encodeData(payload, data + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES);
 
 	unsigned char temp[M17_FRAME_LENGTH_BYTES];
 	interleaver(data + 2U, temp);

@@ -219,11 +219,6 @@ void CM17Network::clock(unsigned int ms)
 		return;
 	}
 
-	// EOT?
-	uint16_t fn = (buffer[38U] << 8) + (buffer[39U] << 0);
-	if ((fn & 0x8000U) == 0x8000U)
-		m_inId = 0U;
-
 	unsigned char c = length - 6U;
 	m_buffer.addData(&c, 1U);
 

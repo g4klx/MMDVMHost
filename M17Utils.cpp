@@ -17,10 +17,16 @@
  */
 
 #include "M17Utils.h"
+#include "M17Defines.h"
 
 #include <cassert>
 
 const std::string M17_CHARS = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-/.";
+
+const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
+
+#define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
+#define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
 void CM17Utils::encodeCallsign(const std::string& callsign, unsigned char* encoded)
 {
@@ -40,19 +46,19 @@ void CM17Utils::encodeCallsign(const std::string& callsign, unsigned char* encod
 		enc += pos;
 	}
 
-	encoded[0U] = enc >> 40;
-	encoded[1U] = enc >> 32;
-	encoded[2U] = enc >> 24;
-	encoded[3U] = enc >> 16;
-	encoded[4U] = enc >> 8;
-	encoded[5U] = enc >> 0;
+	encoded[0U] = (enc >> 40) & 0xFFU;
+	encoded[1U] = (enc >> 32) & 0xFFU;
+	encoded[2U] = (enc >> 24) & 0xFFU;
+	encoded[3U] = (enc >> 16) & 0xFFU;
+	encoded[4U] = (enc >> 8)  & 0xFFU;
+	encoded[5U] = (enc >> 0)  & 0xFFU;
 }
 
 void CM17Utils::decodeCallsign(const unsigned char* encoded, std::string& callsign)
 {
 	assert(encoded != NULL);
 
-	callsign.empty();
+	callsign.clear();
 
 	uint64_t enc = (uint64_t(encoded[0U]) << 40) +
 		       (uint64_t(encoded[1U]) << 32) +
@@ -70,3 +76,134 @@ void CM17Utils::decodeCallsign(const unsigned char* encoded, std::string& callsi
 	}
 }
 
+void CM17Utils::splitFragmentLICH(const unsigned char* data, unsigned int& frag1, unsigned int& frag2, unsigned int& frag3, unsigned int& frag4)
+{
+	assert(data != NULL);
+
+	frag1 = frag2 = frag3 = frag4 = 0x00U;
+
+	unsigned int offset = 0U;
+	unsigned int MASK = 0x800U;
+	for (unsigned int i = 0U; i < (M17_LICH_FRAGMENT_LENGTH_BITS / 4U); i++, offset++, MASK >>= 1) {
+		bool b = READ_BIT1(data, offset) != 0x00U;
+		if (b)
+			frag1 |= MASK;
+	}
+
+	MASK = 0x800U;
+	for (unsigned int i = 0U; i < (M17_LICH_FRAGMENT_LENGTH_BITS / 4U); i++, offset++, MASK >>= 1) {
+		bool b = READ_BIT1(data, offset) != 0x00U;
+		if (b)
+			frag2 |= MASK;
+	}
+
+	MASK = 0x800U;
+	for (unsigned int i = 0U; i < (M17_LICH_FRAGMENT_LENGTH_BITS / 4U); i++, offset++, MASK >>= 1) {
+		bool b = READ_BIT1(data, offset) != 0x00U;
+		if (b)
+			frag3 |= MASK;
+	}
+
+	MASK = 0x800U;
+	for (unsigned int i = 0U; i < (M17_LICH_FRAGMENT_LENGTH_BITS / 4U); i++, offset++, MASK >>= 1) {
+		bool b = READ_BIT1(data, offset) != 0x00U;
+		if (b)
+			frag4 |= MASK;
+	}
+}
+
+void CM17Utils::splitFragmentLICHFEC(const unsigned char* data, unsigned int& frag1, unsigned int& frag2, unsigned int& frag3, unsigned int& frag4)
+{
+	assert(data != NULL);
+
+	frag1 = frag2 = frag3 = frag4 = 0x00U;
+
+	unsigned int offset = 0U;
+	unsigned int MASK = 0x800000U;
+	for (unsigned int i = 0U; i < (M17_LICH_FRAGMENT_FEC_LENGTH_BITS / 4U); i++, offset++, MASK >>= 1) {
+		bool b = READ_BIT1(data, offset) != 0x00U;
+		if (b)
+			frag1 |= MASK;
+	}
+
+	MASK = 0x800000U;
+	for (unsigned int i = 0U; i < (M17_LICH_FRAGMENT_FEC_LENGTH_BITS / 4U); i++, offset++, MASK >>= 1) {
+		bool b = READ_BIT1(data, offset) != 0x00U;
+		if (b)
+			frag2 |= MASK;
+	}
+
+	MASK = 0x800000U;
+	for (unsigned int i = 0U; i < (M17_LICH_FRAGMENT_FEC_LENGTH_BITS / 4U); i++, offset++, MASK >>= 1) {
+		bool b = READ_BIT1(data, offset) != 0x00U;
+		if (b)
+			frag3 |= MASK;
+	}
+
+	MASK = 0x800000U;
+	for (unsigned int i = 0U; i < (M17_LICH_FRAGMENT_FEC_LENGTH_BITS / 4U); i++, offset++, MASK >>= 1) {
+		bool b = READ_BIT1(data, offset) != 0x00U;
+		if (b)
+			frag4 |= MASK;
+	}
+}
+
+void CM17Utils::combineFragmentLICH(unsigned int frag1, unsigned int frag2, unsigned int frag3, unsigned int frag4, unsigned char* data)
+{
+	assert(data != NULL);
+
+	unsigned int offset = 0U;
+	unsigned int MASK = 0x800U;
+	for (unsigned int i = 0U; i < (M17_LICH_FRAGMENT_LENGTH_BITS / 4U); i++, offset++, MASK >>= 1) {
+		bool b = (frag1 & MASK) == MASK;
+		WRITE_BIT1(data, offset, b);
+	}
+
+	MASK = 0x800U;
+	for (unsigned int i = 0U; i < (M17_LICH_FRAGMENT_LENGTH_BITS / 4U); i++, offset++, MASK >>= 1) {
+		bool b = (frag2 & MASK) == MASK;
+		WRITE_BIT1(data, offset, b);
+	}
+
+	MASK = 0x800U;
+	for (unsigned int i = 0U; i < (M17_LICH_FRAGMENT_LENGTH_BITS / 4U); i++, offset++, MASK >>= 1) {
+		bool b = (frag3 & MASK) == MASK;
+		WRITE_BIT1(data, offset, b);
+	}
+
+	MASK = 0x800U;
+	for (unsigned int i = 0U; i < (M17_LICH_FRAGMENT_LENGTH_BITS / 4U); i++, offset++, MASK >>= 1) {
+		bool b = (frag4 & MASK) == MASK;
+		WRITE_BIT1(data, offset, b);
+	}
+}
+
+void CM17Utils::combineFragmentLICHFEC(unsigned int frag1, unsigned int frag2, unsigned int frag3, unsigned int frag4, unsigned char* data)
+{
+	assert(data != NULL);
+
+	unsigned int offset = 0U;
+	unsigned int MASK = 0x800000U;
+	for (unsigned int i = 0U; i < (M17_LICH_FRAGMENT_FEC_LENGTH_BITS / 4U); i++, offset++, MASK >>= 1) {
+		bool b = (frag1 & MASK) == MASK;
+		WRITE_BIT1(data, offset, b);
+	}
+
+	MASK = 0x800000U;
+	for (unsigned int i = 0U; i < (M17_LICH_FRAGMENT_FEC_LENGTH_BITS / 4U); i++, offset++, MASK >>= 1) {
+		bool b = (frag2 & MASK) == MASK;
+		WRITE_BIT1(data, offset, b);
+	}
+
+	MASK = 0x800000U;
+	for (unsigned int i = 0U; i < (M17_LICH_FRAGMENT_FEC_LENGTH_BITS / 4U); i++, offset++, MASK >>= 1) {
+		bool b = (frag3 & MASK) == MASK;
+		WRITE_BIT1(data, offset, b);
+	}
+
+	MASK = 0x800000U;
+	for (unsigned int i = 0U; i < (M17_LICH_FRAGMENT_FEC_LENGTH_BITS / 4U); i++, offset++, MASK >>= 1) {
+		bool b = (frag4 & MASK) == MASK;
+		WRITE_BIT1(data, offset, b);
+	}
+}
