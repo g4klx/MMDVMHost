@@ -180,6 +180,15 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			std::string source = m_rfLICH.getSource();
 			std::string dest   = m_rfLICH.getDest();
 
+			if (m_selfOnly) {
+				bool ret = checkCallsign(source);
+				if (!ret) {
+					LogMessage("M17, invalid access attempt from %s to %s", source.c_str(), dest.c_str());
+					m_rfState = RS_RF_REJECTED;
+					return false;
+				}
+			}
+
 			unsigned char dataType = m_rfLICH.getDataType();
 			switch (dataType) {
 			case 1U:
@@ -268,6 +277,15 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 #endif
 				std::string source = m_rfLICH.getSource();
 				std::string dest   = m_rfLICH.getDest();
+
+				if (m_selfOnly) {
+					bool ret = checkCallsign(source);
+					if (!ret) {
+						LogMessage("M17, invalid access attempt from %s to %s", source.c_str(), dest.c_str());
+						m_rfState = RS_RF_REJECTED;
+						return false;
+					}
+				}
 
 				unsigned char dataType = m_rfLICH.getDataType();
 				switch (dataType) {
@@ -691,6 +709,13 @@ void CM17Control::decorrelator(const unsigned char* in, unsigned char* out) cons
 	for (unsigned int i = M17_SYNC_LENGTH_BYTES; i < M17_FRAME_LENGTH_BYTES; i++) {
 		out[i] = in[i] ^ SCRAMBLER[i];
 	}
+}
+
+bool CM17Control::checkCallsign(const std::string& callsign) const
+{
+	size_t len = m_callsign.size();
+
+	return m_callsign.compare(0U, len, callsign, 0U, len) == 0;
 }
 
 bool CM17Control::openFile()

@@ -85,6 +85,8 @@ private:
 	void interleaver(const unsigned char* in, unsigned char* out) const;
 	void decorrelator(const unsigned char* in, unsigned char* out) const;
 
+	bool checkCallsign(const std::string& source) const;
+
 	unsigned int countBits(unsigned char byte);
 
 	void writeEndRF();
