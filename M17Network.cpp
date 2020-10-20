@@ -222,7 +222,7 @@ void CM17Network::clock(unsigned int ms)
 	unsigned char c = length - 6U;
 	m_buffer.addData(&c, 1U);
 
-	m_buffer.addData(buffer + 6U, length - 6U);
+	m_buffer.addData(buffer + 6U, length - 8U);
 }
 
 bool CM17Network::read(unsigned char* data)

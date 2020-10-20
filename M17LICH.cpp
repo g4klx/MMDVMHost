@@ -80,13 +80,13 @@ void CM17LICH::setDest(const std::string& callsign)
 
 unsigned char CM17LICH::getDataType() const
 {
-	return (m_lich[12U] >> 1) & 0x03U;
+	return (m_lich[13U] >> 1) & 0x03U;
 }
 
 void CM17LICH::setDataType(unsigned char type)
 {
-	m_lich[12U] &= 0xF9U;
-	m_lich[12U] |= (type << 1) & 0x06U;
+	m_lich[13U] &= 0xF9U;
+	m_lich[13U] |= (type << 1) & 0x06U;
 }
 
 void CM17LICH::reset()

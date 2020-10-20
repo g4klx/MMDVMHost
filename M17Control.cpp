@@ -234,6 +234,8 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 				writeQueueRF(data);
 			}
+
+			return true;
 		} else {
 			m_rfState = RS_RF_LATE_ENTRY;
 		}
@@ -396,10 +398,6 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		// Add the Convolution FEC
 		conv.encodeData(frame, rfData + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES);
 
-		unsigned char temp[M17_FRAME_LENGTH_BYTES];
-		interleaver(rfData + 2U, temp);
-		decorrelator(rfData, data + 2U);
-
 		// Calculate the BER
 		if (valid) {
 			for (unsigned int i = 2U; i < (M17_FRAME_LENGTH_BYTES + 2U); i++)
@@ -411,6 +409,10 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_display->writeM17BER(ber);
 		}
 
+		unsigned char temp[M17_FRAME_LENGTH_BYTES];
+		interleaver(rfData + 2U, temp);
+		decorrelator(rfData, data + 2U);
+
 		if (m_duplex)
 			writeQueueRF(rfData);
 
@@ -419,7 +421,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		m_rfLICH.getNetwork(netData + 0U);
 
 		// Copy the FN and payload from the frame
-		::memcpy(netData + M17_LICH_LENGTH_BYTES, frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
+		::memcpy(netData + M17_LICH_LENGTH_BYTES - M17_CRC_LENGTH_BYTES, frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
 
 		// The CRC is added in the networking code
 
@@ -572,7 +574,7 @@ void CM17Control::writeNetwork()
 	m_netFrames++;
 
 	// Add the fragment LICH
-	uint16_t fn = (netData[38U] << 8) + (netData[39U] << 0);
+	uint16_t fn = (netData[28U] << 8) + (netData[29U] << 0);
 
 	unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
 	m_netLICH.getFragment(lich, fn);
@@ -590,7 +592,7 @@ void CM17Control::writeNetwork()
 
 	// Add the FN and the data/audio
 	unsigned char payload[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
-	::memcpy(payload, netData + 38U, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
+	::memcpy(payload, netData + 28U, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
 
 	// Add the CRC
 	CM17CRC::encodeCRC(payload, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);

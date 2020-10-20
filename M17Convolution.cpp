@@ -124,7 +124,7 @@ void CM17Convolution::decodeLinkSetup(const unsigned char* in, unsigned char* ou
 	assert(in != NULL);
 	assert(out != NULL);
 
-	uint8_t temp[488U];
+	uint8_t temp[500U];
 
 	unsigned int n = 0U;
 	unsigned int index = 0U;
@@ -151,7 +151,7 @@ void CM17Convolution::decodeLinkSetup(const unsigned char* in, unsigned char* ou
 		decode(s0, s1);
 	}
 
-	chainback(out, 244U);
+	chainback(out, 240U);
 }
 
 void CM17Convolution::decodeData(const unsigned char* in, unsigned char* out)
@@ -159,7 +159,7 @@ void CM17Convolution::decodeData(const unsigned char* in, unsigned char* out)
 	assert(in != NULL);
 	assert(out != NULL);
 
-	uint8_t temp[328U];
+	uint8_t temp[350U];
 
 	unsigned int n = 0U;
 	unsigned int index = 0U;
@@ -186,7 +186,7 @@ void CM17Convolution::decodeData(const unsigned char* in, unsigned char* out)
 		decode(s0, s1);
 	}
 
-	chainback(out, 164U);
+	chainback(out, 160U);
 }
 
 void CM17Convolution::start()
