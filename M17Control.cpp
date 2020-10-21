@@ -442,6 +442,22 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		}
 	}
 
+	if (m_rfState == RS_RF_REJECTED) {
+		CM17Convolution conv;
+		unsigned char frame[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
+		conv.decodeData(data + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES, frame);
+
+		bool valid = CM17CRC::checkCRC(frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
+		if (valid) {
+			// Handle the EOT for rejected frames
+			unsigned int fn = (frame[0U] << 8) + (frame[1U] << 0);
+			if ((fn & 0x8000U) == 0x8000U)
+				writeEndRF();
+		}
+
+		return false;
+	}
+
 	return true;
 }
 
