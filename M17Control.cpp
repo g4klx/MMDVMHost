@@ -384,14 +384,14 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
 		m_netLICH.getFragment(lich, m_rfFN);
 
-		unsigned int lich1, lich2, lich3, lich4;
-		CM17Utils::splitFragmentLICH(lich, lich1, lich2, lich3, lich4);
+		unsigned int frag1, frag2, frag3, frag4;
+		CM17Utils::splitFragmentLICH(lich, frag1, frag2, frag3, frag4);
 
 		// Add Golay to the LICH fragment here
-		CGolay24128::encode24128(lich1);
-		CGolay24128::encode24128(lich2);
-		CGolay24128::encode24128(lich3);
-		CGolay24128::encode24128(lich4);
+		unsigned int lich1 = CGolay24128::encode24128(frag1);
+		unsigned int lich2 = CGolay24128::encode24128(frag2);
+		unsigned int lich3 = CGolay24128::encode24128(frag3);
+		unsigned int lich4 = CGolay24128::encode24128(frag4);
 
 		CM17Utils::combineFragmentLICHFEC(lich1, lich2, lich3, lich4, rfData + 2U + M17_SYNC_LENGTH_BYTES);
 
@@ -595,14 +595,14 @@ void CM17Control::writeNetwork()
 	unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
 	m_netLICH.getFragment(lich, fn);
 
-	unsigned int lich1, lich2, lich3, lich4;
-	CM17Utils::splitFragmentLICH(lich, lich1, lich2, lich3, lich4);
+	unsigned int frag1, frag2, frag3, frag4;
+	CM17Utils::splitFragmentLICH(lich, frag1, frag2, frag3, frag4);
 
 	// Add Golay to the LICH fragment here
-	CGolay24128::encode24128(lich1);
-	CGolay24128::encode24128(lich2);
-	CGolay24128::encode24128(lich3);
-	CGolay24128::encode24128(lich4);
+	unsigned int lich1 = CGolay24128::encode24128(frag1);
+	unsigned int lich2 = CGolay24128::encode24128(frag2);
+	unsigned int lich3 = CGolay24128::encode24128(frag3);
+	unsigned int lich4 = CGolay24128::encode24128(frag4);
 
 	CM17Utils::combineFragmentLICHFEC(lich1, lich2, lich3, lich4, data + 2U + M17_SYNC_LENGTH_BYTES);
 
