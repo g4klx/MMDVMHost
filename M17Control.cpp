@@ -400,10 +400,14 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 		// Calculate the BER
 		if (valid) {
+			unsigned int errors = 0U;
 			for (unsigned int i = 2U; i < (M17_FRAME_LENGTH_BYTES + 2U); i++)
-				m_rfErrs += countBits(rfData[i] ^ data[i]);
+				errors += countBits(rfData[i] ^ data[i]);
+
+			LogDebug("M17, FN. %u, errs: %u/384 (%.1f%%)", m_rfFN, errors, float(errors) / 3.84F);
 
 			m_rfBits += M17_FRAME_LENGTH_BITS;
+			m_rfErrs += errors;
 
 			float ber = float(m_rfErrs) / float(m_rfBits);
 			m_display->writeM17BER(ber);
