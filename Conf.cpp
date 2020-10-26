@@ -169,6 +169,7 @@ m_nxdnTXHang(5U),
 m_nxdnModeHang(10U),
 m_m17Enabled(false),
 m_m17SelfOnly(false),
+m_m17AllowEncryption(false),
 m_m17TXHang(5U),
 m_m17ModeHang(10U),
 m_pocsagEnabled(false),
@@ -706,6 +707,8 @@ bool CConf::read()
 			m_m17Enabled = ::atoi(value) == 1;
 		else if (::strcmp(key, "SelfOnly") == 0)
 			m_m17SelfOnly = ::atoi(value) == 1;
+		else if (::strcmp(key, "AllowEncryption") == 0)
+			m_m17AllowEncryption = ::atoi(value) == 1;
 		else if (::strcmp(key, "TXHang") == 0)
 			m_m17TXHang = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "ModeHang") == 0)
@@ -1514,6 +1517,11 @@ bool CConf::getM17Enabled() const
 bool CConf::getM17SelfOnly() const
 {
 	return m_m17SelfOnly;
+}
+
+bool CConf::getM17AllowEncryption() const
+{
+	return m_m17AllowEncryption;
 }
 
 unsigned int CConf::getM17TXHang() const

@@ -38,6 +38,8 @@ public:
 	unsigned char getDataType() const;
 	void setDataType(unsigned char type);
 
+	bool isNONCENull() const;
+
 	void reset();
 	bool isValid() const;
 

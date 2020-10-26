@@ -40,6 +40,10 @@ const unsigned int M17_LICH_FRAGMENT_FEC_LENGTH_BYTES = M17_LICH_FRAGMENT_FEC_LE
 const unsigned int M17_PAYLOAD_LENGTH_BITS  = 128U;
 const unsigned int M17_PAYLOAD_LENGTH_BYTES = M17_PAYLOAD_LENGTH_BITS / 8U;
 
+const unsigned char M17_NULL_NONCE[] = {0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U};
+const unsigned int  M17_NONCE_LENGTH_BITS  = 112U;
+const unsigned int  M17_NONCE_LENGTH_BYTES = M17_NONCE_LENGTH_BITS / 8U;
+
 const unsigned int M17_FN_LENGTH_BITS  = 16U;
 const unsigned int M17_FN_LENGTH_BYTES = M17_FN_LENGTH_BITS / 8U;
 

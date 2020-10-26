@@ -57,9 +57,10 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 #define WRITE_BIT(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
-CM17Control::CM17Control(const std::string& callsign, bool selfOnly, CM17Network* network, CDisplay* display, unsigned int timeout, bool duplex, CRSSIInterpolator* rssiMapper) :
+CM17Control::CM17Control(const std::string& callsign, bool selfOnly, bool allowEncryption, CM17Network* network, CDisplay* display, unsigned int timeout, bool duplex, CRSSIInterpolator* rssiMapper) :
 m_callsign(callsign),
 m_selfOnly(selfOnly),
+m_allowEncryption(allowEncryption),
 m_network(network),
 m_display(display),
 m_duplex(duplex),
@@ -182,6 +183,15 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 			if (m_selfOnly) {
 				bool ret = checkCallsign(source);
+				if (!ret) {
+					LogMessage("M17, invalid access attempt from %s to %s", source.c_str(), dest.c_str());
+					m_rfState = RS_RF_REJECTED;
+					return false;
+				}
+			}
+
+			if (!m_allowEncryption) {
+				bool ret = m_rfLICH.isNONCENull();
 				if (!ret) {
 					LogMessage("M17, invalid access attempt from %s to %s", source.c_str(), dest.c_str());
 					m_rfState = RS_RF_REJECTED;
@@ -531,9 +541,15 @@ void CM17Control::writeNetwork()
 
 	m_networkWatchdog.start();
 
-	if (m_netState == RS_NET_IDLE) {
-		m_netLICH.setNetwork(netData);
+	m_netLICH.setNetwork(netData);
 
+	if (!m_allowEncryption) {
+		bool ret = m_rfLICH.isNONCENull();
+		if (!ret)
+			return;
+	}
+
+	if (m_netState == RS_NET_IDLE) {
 		std::string source = m_netLICH.getSource();
 		std::string dest   = m_netLICH.getDest();
 

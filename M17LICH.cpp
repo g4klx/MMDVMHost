@@ -89,6 +89,11 @@ void CM17LICH::setDataType(unsigned char type)
 	m_lich[13U] |= (type << 1) & 0x06U;
 }
 
+bool CM17LICH::isNONCENull() const
+{
+	return ::memcmp(m_lich + 14U, M17_NULL_NONCE, M17_NONCE_LENGTH_BYTES) == 0;
+}
+
 void CM17LICH::reset()
 {
 	::memset(m_lich, 0x00U, 30U);

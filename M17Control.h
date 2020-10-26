@@ -34,7 +34,7 @@
 
 class CM17Control {
 public:
-	CM17Control(const std::string& callsign, bool selfOnly, CM17Network* network, CDisplay* display, unsigned int timeout, bool duplex, CRSSIInterpolator* rssiMapper);
+	CM17Control(const std::string& callsign, bool selfOnly, bool allowEncryption, CM17Network* network, CDisplay* display, unsigned int timeout, bool duplex, CRSSIInterpolator* rssiMapper);
 	~CM17Control();
 
 	bool writeModem(unsigned char* data, unsigned int len);
@@ -50,6 +50,7 @@ public:
 private:
 	std::string                m_callsign;
 	bool                       m_selfOnly;
+	bool                       m_allowEncryption;
 	CM17Network*               m_network;
 	CDisplay*                  m_display;
 	bool                       m_duplex;
