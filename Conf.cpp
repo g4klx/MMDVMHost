@@ -82,7 +82,7 @@ m_logDisplayLevel(0U),
 m_logFileLevel(0U),
 m_logFilePath(),
 m_logFileRoot(),
-m_logRotateLogs(1U),
+m_logTimestampLogs(1U),
 m_cwIdEnabled(false),
 m_cwIdTime(10U),
 m_cwIdCallsign(),
@@ -454,8 +454,8 @@ bool CConf::read()
 			m_logFileLevel = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "DisplayLevel") == 0)
 			m_logDisplayLevel = (unsigned int)::atoi(value);
-		else if (::strcmp(key, "RotateLogs") == 0)
-			m_logRotateLogs = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "TimestampLogs") == 0)
+			m_logTimestampLogs = (unsigned int)::atoi(value);
 	} else if (section == SECTION_CWID) {
 		if (::strcmp(key, "Enable") == 0)
 			m_cwIdEnabled = ::atoi(value) == 1;
@@ -1077,9 +1077,9 @@ std::string CConf::getLogFileRoot() const
 	return m_logFileRoot;
 }
 
-unsigned int CConf::getLogRotateLogs() const
+unsigned int CConf::getLogTimestampLogs() const
 {
-	return m_logRotateLogs;
+	return m_logTimestampLogs;
 }
 
 bool CConf::getCWIdEnabled() const

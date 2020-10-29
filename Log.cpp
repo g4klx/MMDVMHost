@@ -41,7 +41,7 @@ static bool m_daemon = false;
 
 static unsigned int m_displayLevel = 2U;
 
-static unsigned int m_rotateLogs = 1U;
+static unsigned int m_timestampLogs = 1U;
 
 static struct tm m_tm;
 
@@ -70,7 +70,7 @@ static bool LogOpen()
 	char filename[200U];
 	char timestamp[37U] = "";
 
-	if (m_rotateLogs) {
+	if (m_timestampLogs) {
 		::sprintf(timestamp, "-%04d-%02d-%02d", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
 	}
 
@@ -94,13 +94,13 @@ static bool LogOpen()
 	return status;
 }
 
-bool LogInitialise(bool daemon, const std::string& filePath, const std::string& fileRoot, unsigned int fileLevel, unsigned int displayLevel, unsigned int rotateLogs)
+bool LogInitialise(bool daemon, const std::string& filePath, const std::string& fileRoot, unsigned int fileLevel, unsigned int displayLevel, unsigned int timestampLogs)
 {
 	m_filePath     = filePath;
 	m_fileRoot     = fileRoot;
 	m_fileLevel    = fileLevel;
 	m_displayLevel = displayLevel;
-	m_rotateLogs   = rotateLogs;
+	m_timestampLogs   = timestampLogs;
 	m_daemon       = daemon;
 
 	if (m_daemon)
