@@ -54,7 +54,6 @@ public:
   unsigned int getLogFileLevel() const;
   std::string  getLogFilePath() const;
   std::string  getLogFileRoot() const;
-  unsigned int getLogTimestampLogs() const;
 
   // The CW ID section
   bool         getCWIdEnabled() const;
@@ -338,7 +337,6 @@ private:
   unsigned int m_logFileLevel;
   std::string  m_logFilePath;
   std::string  m_logFileRoot;
-  unsigned int m_logTimestampLogs;
 
   bool         m_cwIdEnabled;
   unsigned int m_cwIdTime;

@@ -41,8 +41,6 @@ static bool m_daemon = false;
 
 static unsigned int m_displayLevel = 2U;
 
-static unsigned int m_timestampLogs = 1U;
-
 static struct tm m_tm;
 
 static char LEVELS[] = " DMIWEF";
@@ -68,16 +66,10 @@ static bool LogOpen()
 	}
 
 	char filename[200U];
-	char timestamp[37U] = "";
-
-	if (m_timestampLogs) {
-		::sprintf(timestamp, "-%04d-%02d-%02d", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
-	}
-
 #if defined(_WIN32) || defined(_WIN64)
-	::sprintf(filename, "%s\\%s%s.log", m_filePath.c_str(), m_fileRoot.c_str(), timestamp);
+	::sprintf(filename, "%s\\%s-%04d-%02d-%02d.log", m_filePath.c_str(), m_fileRoot.c_str(), tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
 #else
-	::sprintf(filename, "%s/%s%s.log", m_filePath.c_str(), m_fileRoot.c_str(), timestamp);
+	::sprintf(filename, "%s/%s-%04d-%02d-%02d.log", m_filePath.c_str(), m_fileRoot.c_str(), tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
 #endif
 
 	if ((m_fpLog = ::fopen(filename, "a+t")) != NULL) {
@@ -94,13 +86,12 @@ static bool LogOpen()
 	return status;
 }
 
-bool LogInitialise(bool daemon, const std::string& filePath, const std::string& fileRoot, unsigned int fileLevel, unsigned int displayLevel, unsigned int timestampLogs)
+bool LogInitialise(bool daemon, const std::string& filePath, const std::string& fileRoot, unsigned int fileLevel, unsigned int displayLevel)
 {
 	m_filePath     = filePath;
 	m_fileRoot     = fileRoot;
 	m_fileLevel    = fileLevel;
 	m_displayLevel = displayLevel;
-	m_timestampLogs   = timestampLogs;
 	m_daemon       = daemon;
 
 	if (m_daemon)

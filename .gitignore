@@ -15,6 +15,5 @@ RemoteCommand
 *.user
 *.VC.db
 .vs
-.vscode
 *.ambe
 GitVersion.h

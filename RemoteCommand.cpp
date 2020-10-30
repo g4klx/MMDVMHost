@@ -51,7 +51,7 @@ int main(int argc, char** argv)
 CRemoteCommand::CRemoteCommand(unsigned int port) :
 m_port(port)
 {
-	::LogInitialise(false, ".", "RemoteCommand", 2U, 2U, 1U);
+	::LogInitialise(false, ".", "RemoteCommand", 2U, 2U);
 }
 
 CRemoteCommand::~CRemoteCommand()
