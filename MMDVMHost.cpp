@@ -411,6 +411,7 @@ int CMMDVMHost::run()
 		std::string module                 = m_conf.getDStarModule();
 		bool selfOnly                      = m_conf.getDStarSelfOnly();
 		std::vector<std::string> blackList = m_conf.getDStarBlackList();
+		std::vector<std::string> whiteList = m_conf.getDStarWhiteList();
 		bool ackReply                      = m_conf.getDStarAckReply();
 		unsigned int ackTime               = m_conf.getDStarAckTime();
 		bool ackMessage                    = m_conf.getDStarAckMessage();
@@ -430,8 +431,10 @@ int CMMDVMHost::run()
 
 		if (blackList.size() > 0U)
 			LogInfo("    Black List: %u", blackList.size());
+		if (whiteList.size() > 0U)
+			LogInfo("    White List: %u", whiteList.size());
 
-		m_dstar = new CDStarControl(m_callsign, module, selfOnly, ackReply, ackTime, ackMessage, errorReply, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex, remoteGateway, rssi);
+		m_dstar = new CDStarControl(m_callsign, module, selfOnly, ackReply, ackTime, ackMessage, errorReply, blackList, whiteList, m_dstarNetwork, m_display, m_timeout, m_duplex, remoteGateway, rssi);
 	}
 
 	DMR_BEACONS dmrBeacons = DMR_BEACONS_OFF;
