@@ -107,6 +107,7 @@ public:
   std::string  getDStarModule() const;
   bool         getDStarSelfOnly() const;
   std::vector<std::string> getDStarBlackList() const;
+  std::vector<std::string> getDStarWhiteList() const;
   bool         getDStarAckReply() const;
   unsigned int getDStarAckTime() const;
   bool         getDStarAckMessage() const;
@@ -389,6 +390,7 @@ private:
   std::string  m_dstarModule;
   bool         m_dstarSelfOnly;
   std::vector<std::string> m_dstarBlackList;
+  std::vector<std::string> m_dstarWhiteList;
   bool         m_dstarAckReply;
   unsigned int m_dstarAckTime;
   bool         m_dstarAckMessage;
