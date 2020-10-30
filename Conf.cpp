@@ -124,6 +124,7 @@ m_dstarEnabled(false),
 m_dstarModule("C"),
 m_dstarSelfOnly(false),
 m_dstarBlackList(),
+m_dstarWhiteList(),
 m_dstarAckReply(true),
 m_dstarAckTime(750U),
 m_dstarAckMessage(false),
@@ -568,6 +569,18 @@ bool CConf::read()
 						std::string callsign = std::string(p);
 						callsign.resize(DSTAR_LONG_CALLSIGN_LENGTH, ' ');
 						m_dstarBlackList.push_back(callsign);
+					}
+					p = ::strtok(NULL, ",\r\n");
+				}
+			} else if (::strcmp(key, "WhiteList") == 0) {
+				char* p = ::strtok(value, ",\r\n");
+				while (p != NULL) {
+					if (::strlen(p) > 0U) {
+						for (unsigned int i = 0U; p[i] != 0; i++)
+							p[i] = ::toupper(p[i]);
+						std::string callsign = std::string(p);
+						callsign.resize(DSTAR_LONG_CALLSIGN_LENGTH, ' ');
+						m_dstarWhiteList.push_back(callsign);
 					}
 					p = ::strtok(NULL, ",\r\n");
 				}
@@ -1316,6 +1329,11 @@ bool CConf::getDStarSelfOnly() const
 std::vector<std::string> CConf::getDStarBlackList() const
 {
 	return m_dstarBlackList;
+}
+
+std::vector<std::string> CConf::getDStarWhiteList() const
+{
+        return m_dstarWhiteList;
 }
 
 bool CConf::getDStarAckReply() const

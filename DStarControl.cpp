@@ -36,7 +36,7 @@ bool CallsignCompare(const std::string& arg, const unsigned char* my)
 
 // #define	DUMP_DSTAR
 
-CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool ackReply, unsigned int ackTime, bool ackMessage, bool errorReply, const std::vector<std::string>& blackList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
+CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool ackReply, unsigned int ackTime, bool ackMessage, bool errorReply, const std::vector<std::string>& blackList, const std::vector<std::string>& whiteList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
 m_callsign(NULL),
 m_gateway(NULL),
 m_selfOnly(selfOnly),
@@ -45,6 +45,7 @@ m_ackMessage(ackMessage),
 m_errorReply(errorReply),
 m_remoteGateway(remoteGateway),
 m_blackList(blackList),
+m_whiteList(whiteList),
 m_network(network),
 m_display(display),
 m_duplex(duplex),
@@ -231,7 +232,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			return false;
 		}
 
-		if (m_selfOnly && ::memcmp(my1, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH - 1U) != 0) {
+		if (m_selfOnly && ::memcmp(my1, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH - 1U) != 0 && !(std::find_if(m_whiteList.begin(), m_whiteList.end(), std::bind(CallsignCompare, std::placeholders::_1, my1)) != m_whiteList.end())) {
 			LogMessage("D-Star, invalid access attempt from %8.8s", my1);
 			m_rfState = RS_RF_REJECTED;
 			return false;
@@ -465,7 +466,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 				return false;
 			}
 
-			if (m_selfOnly && ::memcmp(my1, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH - 1U) != 0) {
+			if (m_selfOnly && ::memcmp(my1, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH - 1U) != 0 && !(std::find_if(m_whiteList.begin(), m_whiteList.end(), std::bind(CallsignCompare, std::placeholders::_1, my1)) != m_whiteList.end())) {
 				LogMessage("D-Star, invalid access attempt from %8.8s", my1);
 				m_rfState = RS_RF_REJECTED;
 				delete header;
