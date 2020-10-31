@@ -92,7 +92,7 @@ void CNetworkInfo::getNetworkInterface(unsigned char* info)
 	::fclose(fp);
 
 #elif defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__APPLE__)
-	const int mib[] = {
+	int mib[] = {
 		CTL_NET,
 		PF_ROUTE,
 		0,		// protocol
