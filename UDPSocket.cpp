@@ -289,6 +289,12 @@ int CUDPSocket::read(unsigned char* buffer, unsigned int length, sockaddr_storag
 		LogError("Error returned from recvfrom, err: %lu", ::GetLastError());
 #else
 		LogError("Error returned from recvfrom, err: %d", errno);
+
+		if (len == -1 && errno == ENOTSOCK) {
+			LogMessage("Re-opening UDP port on %u", m_port);
+			close();
+			open();
+		}
 #endif
 		return -1;
 	}

@@ -48,6 +48,7 @@ public:
   unsigned int getLogFileLevel() const;
   std::string  getLogFilePath() const;
   std::string  getLogFileRoot() const;
+  bool         getLogFileRotate() const;
 
   // The CW ID section
   bool         getCWIdEnabled() const;
@@ -352,6 +353,7 @@ private:
   unsigned int m_logFileLevel;
   std::string  m_logFilePath;
   std::string  m_logFileRoot;
+  bool         m_logFileRotate;
 
   bool         m_cwIdEnabled;
   unsigned int m_cwIdTime;
