@@ -35,6 +35,7 @@
 static unsigned int m_fileLevel = 2U;
 static std::string m_filePath;
 static std::string m_fileRoot;
+static bool m_fileRotate = true;
 
 static FILE* m_fpLog = NULL;
 static bool m_daemon = false;
@@ -45,7 +46,7 @@ static struct tm m_tm;
 
 static char LEVELS[] = " DMIWEF";
 
-static bool LogOpen()
+static bool logOpenRotate()
 {
 	bool status = false;
 	
@@ -86,13 +87,51 @@ static bool LogOpen()
 	return status;
 }
 
-bool LogInitialise(bool daemon, const std::string& filePath, const std::string& fileRoot, unsigned int fileLevel, unsigned int displayLevel)
+static bool logOpenNoRotate()
+{
+	bool status = false;
+
+	if (m_fileLevel == 0U)
+		return true;
+
+	if (m_fpLog != NULL)
+		return true;
+
+	char filename[200U];
+#if defined(_WIN32) || defined(_WIN64)
+	::sprintf(filename, "%s\\%s.log", m_filePath.c_str(), m_fileRoot.c_str());
+#else
+	::sprintf(filename, "%s/%s.log", m_filePath.c_str(), m_fileRoot.c_str());
+#endif
+
+	if ((m_fpLog = ::fopen(filename, "a+t")) != NULL) {
+		status = true;
+
+#if !defined(_WIN32) && !defined(_WIN64)
+		if (m_daemon)
+			dup2(fileno(m_fpLog), fileno(stderr));
+#endif
+	}
+
+	return status;
+}
+
+bool LogOpen()
+{
+	if (m_fileRotate)
+		return logOpenRotate();
+	else
+		return logOpenNoRotate();
+}
+
+bool LogInitialise(bool daemon, const std::string& filePath, const std::string& fileRoot, unsigned int fileLevel, unsigned int displayLevel, bool rotate)
 {
 	m_filePath     = filePath;
 	m_fileRoot     = fileRoot;
 	m_fileLevel    = fileLevel;
 	m_displayLevel = displayLevel;
 	m_daemon       = daemon;
+	m_fileRotate   = rotate;
 
 	if (m_daemon)
 		m_displayLevel = 0U;
