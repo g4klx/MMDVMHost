@@ -81,4 +81,6 @@ enum DMR_OVCM_TYPES {
 	DMR_OVCM_ON
 };
 
+typedef void UNUSED;
+
 #endif

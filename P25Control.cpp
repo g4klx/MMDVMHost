@@ -86,6 +86,7 @@ m_fp(NULL)
 	assert(display != NULL);
 	assert(lookup != NULL);
 	assert(rssiMapper != NULL);
+	(UNUSED)m_nac;
 
 	m_netLDU1 = new unsigned char[9U * 25U];
 	m_netLDU2 = new unsigned char[9U * 25U];
