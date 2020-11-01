@@ -29,8 +29,8 @@
 
 const unsigned int BUFFER_LENGTH = 200U;
 
-CM17Network::CM17Network(const std::string& callsign, unsigned int port, bool debug) :
-m_socket(port),
+CM17Network::CM17Network(unsigned int localPort, const std::string& gwyAddress, unsigned int gwyPort, bool debug) :
+m_socket(localPort),
 m_addr(),
 m_addrLen(0U),
 m_debug(debug),
@@ -39,69 +39,44 @@ m_outId(0U),
 m_inId(0U),
 m_buffer(1000U, "M17 Network"),
 m_random(),
-m_state(M17N_NOTLINKED),
-m_encoded(NULL),
-m_module(' '),
 m_timer(1000U, 5U)
 {
+	if (CUDPSocket::lookup(gwyAddress, gwyPort, m_addr, m_addrLen) != 0) {
+		m_addrLen = 0U;
+		return;
+	}
+
 	std::random_device rd;
 	std::mt19937 mt(rd());
 	m_random = mt;
-
-	m_encoded = new unsigned char[6U];
-
-	std::string call = callsign;
-	call.resize(8U, ' ');
-	call += "D";
-
-	CM17Utils::encodeCallsign(call, m_encoded);
 }
 
 CM17Network::~CM17Network()
 {
-	delete[] m_encoded;
 }
 
 bool CM17Network::open()
 {
-	LogMessage("Opening M17 network connection");
-
-	return m_socket.open(m_addr);
-}
-
-bool CM17Network::link(const std::string& address, unsigned int port, char module)
-{
-	if (CUDPSocket::lookup(address, port, m_addr, m_addrLen) != 0) {
-		m_state = M17N_NOTLINKED;
+	if (m_addrLen == 0U) {
+		LogError("M17, unable to resolve the gateway address");
 		return false;
 	}
 
-	m_module = module;
+	LogMessage("Opening M17 network connection");
 
-	m_state = M17N_LINKING;
+	bool ret = m_socket.open(m_addr);
 
-	sendConnect();
-
-	m_timer.start();
-
-	return true;
-}
-
-void CM17Network::unlink()
-{
-	if (m_state != M17N_LINKED)
-		return;
-
-	m_state = M17N_UNLINKING;
-
-	sendConnect();
-
-	m_timer.start();
+	if (ret) {
+		m_timer.start();
+		return true;
+	} else {
+		return false;
+	}
 }
 
 bool CM17Network::write(const unsigned char* data)
 {
-	if (m_state != M17N_LINKED)
+	if (m_addrLen != 0U)
 		return false;
 
 	assert(data != NULL);
@@ -138,19 +113,8 @@ void CM17Network::clock(unsigned int ms)
 {
 	m_timer.clock(ms);
 	if (m_timer.isRunning() && m_timer.hasExpired()) {
-		switch (m_state) {
-		case M17N_LINKING:
-			sendConnect();
-			m_timer.start();
-			break;
-		case M17N_UNLINKING:
-			sendDisconnect();
-			m_timer.start();
-			break;
-		default:
-			m_timer.stop();
-			break;
-		}
+		sendPing();
+		m_timer.start();
 	}
 
 	unsigned char buffer[BUFFER_LENGTH];
@@ -169,34 +133,10 @@ void CM17Network::clock(unsigned int ms)
 	if (m_debug)
 		CUtils::dump(1U, "M17 Network Data Received", buffer, length);
 
-	if (::memcmp(buffer + 0U, "ACKN", 4U) == 0) {
-		m_timer.stop();
-		m_state = M17N_LINKED;
-		LogMessage("M17, linked to reflector");
-		return;
-	}
-
-	if (::memcmp(buffer + 0U, "NACK", 4U) == 0) {
-		m_timer.stop();
-		m_state = M17N_NOTLINKED;
-		LogMessage("M17, link refused by reflector");
-		return;
-	}
-
-	if (::memcmp(buffer + 0U, "DISC", 4U) == 0) {
-		m_timer.stop();
-		m_state = M17N_NOTLINKED;
-		LogMessage("M17, unlinked from reflector");
-		return;
-	}
-
-	if (::memcmp(buffer + 0U, "PING", 4U) == 0) {
-		if (m_state == M17N_LINKED)
-			sendPong();
-		return;
-	}
-
 	if (!m_enabled)
+		return;
+
+	if (::memcmp(buffer + 0U, "PING", 4U) == 0)
 		return;
 
 	if (::memcmp(buffer + 0U, "M17 ", 4U) != 0) {
@@ -254,70 +194,17 @@ void CM17Network::enable(bool enabled)
 	m_enabled = enabled;
 }
 
-void CM17Network::sendConnect()
+void CM17Network::sendPing()
 {
-	unsigned char buffer[15U];
-
-	buffer[0U] = 'C';
-	buffer[1U] = 'O';
-	buffer[2U] = 'N';
-	buffer[3U] = 'N';
-
-	buffer[4U] = m_encoded[0U];
-	buffer[5U] = m_encoded[1U];
-	buffer[6U] = m_encoded[2U];
-	buffer[7U] = m_encoded[3U];
-	buffer[8U] = m_encoded[4U];
-	buffer[9U] = m_encoded[5U];
-
-	buffer[10U] = m_module;
-
-	if (m_debug)
-		CUtils::dump(1U, "M17 data transmitted", buffer, 11U);
-
-	m_socket.write(buffer, 11U, m_addr, m_addrLen);
-}
-
-void CM17Network::sendPong()
-{
-	unsigned char buffer[15U];
+	unsigned char buffer[5U];
 
 	buffer[0U] = 'P';
-	buffer[1U] = 'O';
+	buffer[1U] = 'I';
 	buffer[2U] = 'N';
 	buffer[3U] = 'G';
 
-	buffer[4U] = m_encoded[0U];
-	buffer[5U] = m_encoded[1U];
-	buffer[6U] = m_encoded[2U];
-	buffer[7U] = m_encoded[3U];
-	buffer[8U] = m_encoded[4U];
-	buffer[9U] = m_encoded[5U];
-
 	if (m_debug)
-		CUtils::dump(1U, "M17 data transmitted", buffer, 10U);
+		CUtils::dump(1U, "M17 data transmitted", buffer, 4U);
 
-	m_socket.write(buffer, 10U, m_addr, m_addrLen);
-}
-
-void CM17Network::sendDisconnect()
-{
-	unsigned char buffer[15U];
-
-	buffer[0U] = 'D';
-	buffer[1U] = 'I';
-	buffer[2U] = 'S';
-	buffer[3U] = 'C';
-
-	buffer[4U] = m_encoded[0U];
-	buffer[5U] = m_encoded[1U];
-	buffer[6U] = m_encoded[2U];
-	buffer[7U] = m_encoded[3U];
-	buffer[8U] = m_encoded[4U];
-	buffer[9U] = m_encoded[5U];
-
-	if (m_debug)
-		CUtils::dump(1U, "M17 data transmitted", buffer, 10U);
-
-	m_socket.write(buffer, 10U, m_addr, m_addrLen);
+	m_socket.write(buffer, 4U, m_addr, m_addrLen);
 }
