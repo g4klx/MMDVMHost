@@ -29,10 +29,12 @@
 #include "YSFControl.h"
 #include "P25Control.h"
 #include "NXDNControl.h"
+#include "M17Control.h"
 #include "NXDNLookup.h"
 #include "YSFNetwork.h"
 #include "P25Network.h"
 #include "DMRNetwork.h"
+#include "M17Network.h"
 #include "DMRLookup.h"
 #include "Display.h"
 #include "Timer.h"
@@ -59,12 +61,14 @@ private:
   CYSFControl*    m_ysf;
   CP25Control*    m_p25;
   CNXDNControl*   m_nxdn;
+  CM17Control*    m_m17;
   CPOCSAGControl* m_pocsag;
   CDStarNetwork*  m_dstarNetwork;
   CDMRNetwork*    m_dmrNetwork;
   CYSFNetwork*    m_ysfNetwork;
   CP25Network*    m_p25Network;
   INXDNNetwork*   m_nxdnNetwork;
+  CM17Network*    m_m17Network;
   CPOCSAGNetwork* m_pocsagNetwork;
   CDisplay*       m_display;
   CUMP*           m_ump;
@@ -74,11 +78,13 @@ private:
   unsigned int    m_ysfRFModeHang;
   unsigned int    m_p25RFModeHang;
   unsigned int    m_nxdnRFModeHang;
+  unsigned int    m_m17RFModeHang;
   unsigned int    m_dstarNetModeHang;
   unsigned int    m_dmrNetModeHang;
   unsigned int    m_ysfNetModeHang;
   unsigned int    m_p25NetModeHang;
   unsigned int    m_nxdnNetModeHang;
+  unsigned int    m_m17NetModeHang;
   unsigned int    m_pocsagNetModeHang;
   CTimer          m_modeTimer;
   CTimer          m_dmrTXTimer;
@@ -90,6 +96,7 @@ private:
   bool            m_ysfEnabled;
   bool            m_p25Enabled;
   bool            m_nxdnEnabled;
+  bool            m_m17Enabled;
   bool            m_pocsagEnabled;
   bool            m_fmEnabled;
   unsigned int    m_cwIdTime;
@@ -110,6 +117,7 @@ private:
   bool createYSFNetwork();
   bool createP25Network();
   bool createNXDNNetwork();
+  bool createM17Network();
   bool createPOCSAGNetwork();
 
   void remoteControl();

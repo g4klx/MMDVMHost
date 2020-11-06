@@ -70,6 +70,11 @@ protected:
   virtual void writeNXDNBERInt(float ber);
   virtual void clearNXDNInt();
 
+  virtual void writeM17Int(const char* source, const char* dest, const char* type);
+  virtual void writeM17RSSIInt(unsigned char rssi);
+  virtual void writeM17BERInt(float ber);
+  virtual void clearM17Int();
+
   virtual void writePOCSAGInt(uint32_t ric, const std::string& message);
   virtual void clearPOCSAGInt();
 

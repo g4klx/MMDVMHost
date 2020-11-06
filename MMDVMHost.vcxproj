@@ -188,6 +188,13 @@
     <ClInclude Include="I2CController.h" />
     <ClInclude Include="LCDproc.h" />
     <ClInclude Include="Log.h" />
+    <ClInclude Include="M17Control.h" />
+    <ClInclude Include="M17Convolution.h" />
+    <ClInclude Include="M17CRC.h" />
+    <ClInclude Include="M17Defines.h" />
+    <ClInclude Include="M17LICH.h" />
+    <ClInclude Include="M17Network.h" />
+    <ClInclude Include="M17Utils.h" />
     <ClInclude Include="MMDVMHost.h" />
     <ClInclude Include="Modem.h" />
     <ClInclude Include="ModemSerialPort.h" />
@@ -283,6 +290,11 @@
     <ClCompile Include="I2CController.cpp" />
     <ClCompile Include="LCDproc.cpp" />
     <ClCompile Include="Log.cpp" />
+    <ClCompile Include="M17Control.cpp" />
+    <ClCompile Include="M17Convolution.cpp" />
+    <ClCompile Include="M17CRC.cpp" />
+    <ClCompile Include="M17LICH.cpp" />
+    <ClCompile Include="M17Network.cpp" />
     <ClCompile Include="MMDVMHost.cpp" />
     <ClCompile Include="Modem.cpp" />
     <ClCompile Include="ModemSerialPort.cpp" />
@@ -321,6 +333,7 @@
     <ClCompile Include="RSSIInterpolator.cpp" />
     <ClCompile Include="SerialController.cpp" />
     <ClCompile Include="SerialPort.cpp" />
+    <ClCompile Include="M17Utils.cpp" />
     <ClCompile Include="StopWatch.cpp" />
     <ClCompile Include="Sync.cpp" />
     <ClCompile Include="TFTSerial.cpp" />

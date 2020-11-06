@@ -397,7 +397,7 @@ void CTFTSerial::writeNXDNInt(const char* source, bool group, unsigned int dest,
 
 		setFontSize(FONT_MEDIUM);
 
-		// Draw the P25 insignia
+		// Draw the NXDN insignia
 		displayBitmap(0U, 0U, "NXDN_sm.bmp");
 	}
 
@@ -416,6 +416,48 @@ void CTFTSerial::writeNXDNInt(const char* source, bool group, unsigned int dest,
 }
 
 void CTFTSerial::clearNXDNInt()
+{
+	gotoPosPixel(5U, 70U);
+	displayText("  Listening   ");
+
+	gotoPosPixel(5U, 90U);
+	displayText("              ");
+
+	gotoPosPixel(5U, 110U);
+	displayText("              ");
+}
+
+void CTFTSerial::writeM17Int(const char* source, const char* dest, const char* type)
+{
+	assert(source != NULL);
+	assert(dest != NULL);
+	assert(type != NULL);
+
+	if (m_mode != MODE_M17) {
+		// Clear the screen
+		clearScreen();
+
+		setFontSize(FONT_MEDIUM);
+
+		// Draw the M17 insignia
+		displayBitmap(0U, 0U, "M17_sm.bmp");
+	}
+
+	char text[30U];
+	::sprintf(text, "%s %.10s", type, source);
+
+	gotoPosPixel(5U, 70U);
+	displayText(text);
+
+	::sprintf(text, "  %s", dest);
+
+	gotoPosPixel(5U, 90U);
+	displayText(text);
+
+	m_mode = MODE_M17;
+}
+
+void CTFTSerial::clearM17Int()
 {
 	gotoPosPixel(5U, 70U);
 	displayText("  Listening   ");

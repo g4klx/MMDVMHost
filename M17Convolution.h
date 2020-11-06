@@ -16,26 +16,35 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(SYNC_H)
-#define	SYNC_H
+#if !defined(M17Convolution_H)
+#define  M17Convolution_H
 
-class CSync
-{
+#include <cstdint>
+
+class CM17Convolution {
 public:
-	static void addDStarSync(unsigned char* data);
+	CM17Convolution();
+	~CM17Convolution();
 
-	static void addDMRDataSync(unsigned char* data, bool duplex);
-	static void addDMRAudioSync(unsigned char* data, bool duplex);
+	void decodeLinkSetup(const unsigned char* in, unsigned char* out);
+	void decodeData(const unsigned char* in, unsigned char* out);
 
-	static void addYSFSync(unsigned char* data);
-
-	static void addP25Sync(unsigned char* data);
-
-	static void addNXDNSync(unsigned char* data);
-
-	static void addM17Sync(unsigned char* data);
+	void encodeLinkSetup(const unsigned char* in, unsigned char* out) const;
+	void encodeData(const unsigned char* in, unsigned char* out) const;
 
 private:
+	uint16_t* m_metrics1;
+	uint16_t* m_metrics2;
+	uint16_t* m_oldMetrics;
+	uint16_t* m_newMetrics;
+	uint64_t* m_decisions;
+	uint64_t* m_dp;
+
+	void start();
+	void decode(uint8_t s0, uint8_t s1);
+	void chainback(unsigned char* out, unsigned int nBits);
+
+	void encode(const unsigned char* in, unsigned char* out, unsigned int nBits) const;
 };
 
 #endif
