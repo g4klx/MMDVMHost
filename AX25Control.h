@@ -16,9 +16,35 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "Modem.h"
+#if !defined(AX25Control_H)
+#define	AX25Control_H
 
-IModem::~IModem()
-{
-}
+#include "AX25Network.h"
 
+#include <string>
+
+class CAX25Control {
+public:
+	CAX25Control(CAX25Network* network, bool trace);
+	~CAX25Control();
+
+	bool writeModem(unsigned char* data, unsigned int len);
+
+	unsigned int readModem(unsigned char* data);
+
+	void enable(bool enabled);
+
+private:
+	CAX25Network* m_network;
+	bool          m_trace;
+	bool          m_enabled;
+	FILE*         m_fp;
+
+	void decode(const unsigned char* data, unsigned int length);
+	bool decodeAddress(const unsigned char* data, std::string& text, bool isDigi = false) const;
+	bool openFile();
+	bool writeFile(const unsigned char* data, unsigned int length);
+	void closeFile();
+};
+
+#endif

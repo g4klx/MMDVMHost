@@ -153,6 +153,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AMBEFEC.h" />
+    <ClInclude Include="AX25Control.h" />
+    <ClInclude Include="AX25Defines.h" />
+    <ClInclude Include="AX25Network.h" />
     <ClInclude Include="BCH.h" />
     <ClInclude Include="BPTC19696.h" />
     <ClInclude Include="CASTInfo.h" />
@@ -181,11 +184,13 @@
     <ClInclude Include="DStarHeader.h" />
     <ClInclude Include="DStarNetwork.h" />
     <ClInclude Include="DStarSlowData.h" />
+    <ClInclude Include="FMControl.h" />
+    <ClInclude Include="FMNetwork.h" />
     <ClInclude Include="Golay2087.h" />
     <ClInclude Include="Golay24128.h" />
     <ClInclude Include="Hamming.h" />
     <ClInclude Include="DMRLookup.h" />
-    <ClInclude Include="I2CController.h" />
+    <ClInclude Include="IIRDirectForm1Filter.h" />
     <ClInclude Include="LCDproc.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="M17Control.h" />
@@ -228,6 +233,7 @@
     <ClInclude Include="POCSAGControl.h" />
     <ClInclude Include="POCSAGDefines.h" />
     <ClInclude Include="POCSAGNetwork.h" />
+    <ClInclude Include="PseudoTTYController.h" />
     <ClInclude Include="QR1676.h" />
     <ClInclude Include="RemoteControl.h" />
     <ClInclude Include="RingBuffer.h" />
@@ -236,6 +242,7 @@
     <ClInclude Include="RSSIInterpolator.h" />
     <ClInclude Include="NXDNSACCH.h" />
     <ClInclude Include="SerialController.h" />
+    <ClInclude Include="SerialModem.h" />
     <ClInclude Include="SerialPort.h" />
     <ClInclude Include="StopWatch.h" />
     <ClInclude Include="Sync.h" />
@@ -258,6 +265,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AMBEFEC.cpp" />
+    <ClCompile Include="AX25Control.cpp" />
+    <ClCompile Include="AX25Network.cpp" />
     <ClCompile Include="BCH.cpp" />
     <ClCompile Include="BPTC19696.cpp" />
     <ClCompile Include="CASTInfo.cpp" />
@@ -284,10 +293,12 @@
     <ClCompile Include="DStarHeader.cpp" />
     <ClCompile Include="DStarNetwork.cpp" />
     <ClCompile Include="DStarSlowData.cpp" />
+    <ClCompile Include="FMControl.cpp" />
+    <ClCompile Include="FMNetwork.cpp" />
     <ClCompile Include="Golay2087.cpp" />
     <ClCompile Include="Golay24128.cpp" />
     <ClCompile Include="Hamming.cpp" />
-    <ClCompile Include="I2CController.cpp" />
+    <ClCompile Include="IIRDirectForm1Filter.cpp" />
     <ClCompile Include="LCDproc.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="M17Control.cpp" />
@@ -326,12 +337,14 @@
     <ClCompile Include="P25Utils.cpp" />
     <ClCompile Include="POCSAGControl.cpp" />
     <ClCompile Include="POCSAGNetwork.cpp" />
+    <ClCompile Include="PseudoTTYController.cpp" />
     <ClCompile Include="QR1676.cpp" />
     <ClCompile Include="RemoteControl.cpp" />
     <ClCompile Include="RS129.cpp" />
     <ClCompile Include="RS241213.cpp" />
     <ClCompile Include="RSSIInterpolator.cpp" />
     <ClCompile Include="SerialController.cpp" />
+    <ClCompile Include="SerialModem.cpp" />
     <ClCompile Include="SerialPort.cpp" />
     <ClCompile Include="M17Utils.cpp" />
     <ClCompile Include="StopWatch.cpp" />

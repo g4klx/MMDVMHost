@@ -23,8 +23,10 @@
 #include "POCSAGNetwork.h"
 #include "POCSAGControl.h"
 #include "DStarNetwork.h"
+#include "AX25Network.h"
 #include "NXDNNetwork.h"
 #include "DStarControl.h"
+#include "AX25Control.h"
 #include "DMRControl.h"
 #include "YSFControl.h"
 #include "P25Control.h"
@@ -35,7 +37,9 @@
 #include "P25Network.h"
 #include "DMRNetwork.h"
 #include "M17Network.h"
+#include "FMNetwork.h"
 #include "DMRLookup.h"
+#include "FMControl.h"
 #include "Display.h"
 #include "Timer.h"
 #include "Modem.h"
@@ -55,7 +59,7 @@ public:
 
 private:
   CConf           m_conf;
-  CModem*         m_modem;
+  IModem*         m_modem;
   CDStarControl*  m_dstar;
   CDMRControl*    m_dmr;
   CYSFControl*    m_ysf;
@@ -63,6 +67,8 @@ private:
   CNXDNControl*   m_nxdn;
   CM17Control*    m_m17;
   CPOCSAGControl* m_pocsag;
+  CFMControl*     m_fm;
+  CAX25Control*   m_ax25;
   CDStarNetwork*  m_dstarNetwork;
   CDMRNetwork*    m_dmrNetwork;
   CYSFNetwork*    m_ysfNetwork;
@@ -70,6 +76,8 @@ private:
   INXDNNetwork*   m_nxdnNetwork;
   CM17Network*    m_m17Network;
   CPOCSAGNetwork* m_pocsagNetwork;
+  CFMNetwork*     m_fmNetwork;
+  CAX25Network*   m_ax25Network;
   CDisplay*       m_display;
   CUMP*           m_ump;
   unsigned char   m_mode;
@@ -79,6 +87,7 @@ private:
   unsigned int    m_p25RFModeHang;
   unsigned int    m_nxdnRFModeHang;
   unsigned int    m_m17RFModeHang;
+  unsigned int    m_fmRFModeHang;
   unsigned int    m_dstarNetModeHang;
   unsigned int    m_dmrNetModeHang;
   unsigned int    m_ysfNetModeHang;
@@ -86,6 +95,7 @@ private:
   unsigned int    m_nxdnNetModeHang;
   unsigned int    m_m17NetModeHang;
   unsigned int    m_pocsagNetModeHang;
+  unsigned int    m_fmNetModeHang;
   CTimer          m_modeTimer;
   CTimer          m_dmrTXTimer;
   CTimer          m_cwIdTimer;
@@ -99,6 +109,7 @@ private:
   bool            m_m17Enabled;
   bool            m_pocsagEnabled;
   bool            m_fmEnabled;
+  bool            m_ax25Enabled;
   unsigned int    m_cwIdTime;
   CDMRLookup*     m_dmrLookup;
   CNXDNLookup*    m_nxdnLookup;
@@ -119,6 +130,8 @@ private:
   bool createNXDNNetwork();
   bool createM17Network();
   bool createPOCSAGNetwork();
+  bool createFMNetwork();
+  bool createAX25Network();
 
   void remoteControl();
   void processModeCommand(unsigned char mode, unsigned int timeout);

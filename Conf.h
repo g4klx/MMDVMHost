@@ -66,6 +66,7 @@ public:
   // The Modem section
   std::string  getModemPort() const;
   std::string  getModemProtocol() const;
+  unsigned int getModemSpeed() const;
   unsigned int getModemAddress() const;
   bool         getModemRXInvert() const;
   bool         getModemTXInvert() const;
@@ -87,6 +88,7 @@ public:
   float        getModemM17TXLevel() const;
   float        getModemPOCSAGTXLevel() const;
   float        getModemFMTXLevel() const;
+  float        getModemAX25TXLevel() const;
   std::string  getModemRSSIMappingFile() const;
   bool         getModemUseCOSAsLockout() const;
   bool         getModemTrace() const;
@@ -174,6 +176,14 @@ public:
   bool         getPOCSAGEnabled() const;
   unsigned int getPOCSAGFrequency() const;
 
+  // The AX.25 section
+  bool         getAX25Enabled() const;
+  unsigned int getAX25TXDelay() const;
+  int          getAX25RXTwist() const;
+  unsigned int getAX25SlotTime() const;
+  unsigned int getAX25PPersist() const;
+  bool         getAX25Trace() const;
+
   // The FM Section
   bool         getFMEnabled() const;
   std::string  getFMCallsign() const;
@@ -203,9 +213,13 @@ public:
   unsigned int getFMHangTime() const;
   unsigned int getFMAccessMode() const;
   bool         getFMCOSInvert() const;
+  bool         getFMNoiseSquelch() const;
+  unsigned int getFMSquelchHighThreshold() const;
+  unsigned int getFMSquelchLowThreshold() const;
   unsigned int getFMRFAudioBoost() const;
   float        getFMMaxDevLevel() const;
   unsigned int getFMExtAudioBoost() const;
+  unsigned int getFMModeHang() const;
 
   // The D-Star Network section
   bool         getDStarNetworkEnabled() const;
@@ -271,6 +285,22 @@ public:
   unsigned int getPOCSAGLocalPort() const;
   unsigned int getPOCSAGNetworkModeHang() const;
   bool         getPOCSAGNetworkDebug() const;
+
+  // The FM Network section
+  bool         getFMNetworkEnabled() const;
+  std::string  getFMGatewayAddress() const;
+  unsigned int getFMGatewayPort() const;
+  std::string  getFMLocalAddress() const;
+  unsigned int getFMLocalPort() const;
+  unsigned int getFMSampleRate() const;
+  unsigned int getFMNetworkModeHang() const;
+  bool         getFMNetworkDebug() const;
+
+  // The AX.25 Network section
+  bool         getAX25NetworkEnabled() const;
+  std::string  getAX25NetworkPort() const;
+  unsigned int getAX25NetworkSpeed() const;
+  bool         getAX25NetworkDebug() const;
 
   // The TFTSERIAL section
   std::string  getTFTSerialPort() const;
@@ -353,6 +383,7 @@ private:
 
   std::string  m_modemPort;
   std::string  m_modemProtocol;
+  unsigned int m_modemSpeed;
   unsigned int m_modemAddress;
   bool         m_modemRXInvert;
   bool         m_modemTXInvert;
@@ -374,6 +405,7 @@ private:
   float        m_modemM17TXLevel;
   float        m_modemPOCSAGTXLevel;
   float        m_modemFMTXLevel;
+  float        m_modemAX25TXLevel;
   std::string  m_modemRSSIMappingFile;
   bool         m_modemUseCOSAsLockout;
   bool         m_modemTrace;
@@ -480,9 +512,20 @@ private:
   unsigned int m_fmHangTime;
   unsigned int m_fmAccessMode;
   bool         m_fmCOSInvert;
+  bool         m_fmNoiseSquelch;
+  unsigned int m_fmSquelchHighThreshold;
+  unsigned int m_fmSquelchLowThreshold;
   unsigned int m_fmRFAudioBoost;
   float        m_fmMaxDevLevel;
   unsigned int m_fmExtAudioBoost;
+  unsigned int m_fmModeHang;
+
+  bool         m_ax25Enabled;
+  unsigned int m_ax25TXDelay;
+  int          m_ax25RXTwist;
+  unsigned int m_ax25SlotTime;
+  unsigned int m_ax25PPersist;
+  bool         m_ax25Trace;
 
   bool         m_dstarNetworkEnabled;
   std::string  m_dstarGatewayAddress;
@@ -541,6 +584,20 @@ private:
   unsigned int m_pocsagLocalPort;
   unsigned int m_pocsagNetworkModeHang;
   bool         m_pocsagNetworkDebug;
+
+  bool         m_fmNetworkEnabled;
+  std::string  m_fmGatewayAddress;
+  unsigned int m_fmGatewayPort;
+  std::string  m_fmLocalAddress;
+  unsigned int m_fmLocalPort;
+  unsigned int m_fmSampleRate;
+  unsigned int m_fmNetworkModeHang;
+  bool         m_fmNetworkDebug;
+
+  bool         m_ax25NetworkEnabled;
+  std::string  m_ax25NetworkPort;
+  unsigned int m_ax25NetworkSpeed;
+  bool         m_ax25NetworkDebug;
 
   std::string  m_tftSerialPort;
   unsigned int m_tftSerialBrightness;

@@ -106,6 +106,8 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 				m_command = RCD_ENABLE_M17;
 			else if (m_args.at(1U) == "fm")
 				m_command = RCD_ENABLE_FM;
+			else if (m_args.at(1U) == "ax25")
+				m_command = RCD_ENABLE_AX25;
 		} else if (m_args.at(0U) == "disable" && m_args.size() >= DISABLE_ARGS) {
 			if (m_args.at(1U) == "dstar")
 				m_command = RCD_DISABLE_DSTAR;
@@ -121,6 +123,8 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 				m_command = RCD_DISABLE_M17;
 			else if (m_args.at(1U) == "fm")
 				m_command = RCD_DISABLE_FM;
+			else if (m_args.at(1U) == "ax25")
+				m_command = RCD_DISABLE_AX25;
 		} else if (m_args.at(0U) == "page" && m_args.size() >= PAGE_ARGS) {
 			// Page command is in the form of "page <ric> <message>"
 			m_command = RCD_PAGE;

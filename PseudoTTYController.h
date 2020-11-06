@@ -16,9 +16,28 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "Modem.h"
+#ifndef PseudoTTYController_H
+#define PseudoTTYController_H
 
-IModem::~IModem()
-{
-}
+#if !defined(_WIN32) && !defined(_WIN64)
 
+#include <cstring>
+
+#include "SerialController.h"
+
+class CPseudoTTYController : public CSerialController {
+public:
+	CPseudoTTYController(const std::string& symlink, unsigned int speed, bool assertRTS = false);
+	virtual ~CPseudoTTYController();
+
+	virtual bool open();
+
+	virtual void close();
+
+protected:
+	std::string m_symlink;
+};
+
+#endif
+
+#endif
