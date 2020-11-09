@@ -25,12 +25,15 @@
 #include <cstring>
 
 const unsigned int SET_MODE_ARGS = 2U;
+const unsigned int ENABLE_ARGS = 2U;
+const unsigned int DISABLE_ARGS = 2U;
 const unsigned int PAGE_ARGS = 3U;
+const unsigned int CW_ARGS = 2U;
 
 const unsigned int BUFFER_LENGTH = 100U;
 
-CRemoteControl::CRemoteControl(unsigned int port) :
-m_socket(port),
+CRemoteControl::CRemoteControl(const std::string address, unsigned int port) :
+m_socket(address, port),
 m_command(RCD_NONE),
 m_args()
 {
@@ -53,9 +56,9 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 
 	char command[BUFFER_LENGTH];
 	char buffer[BUFFER_LENGTH];
-	in_addr address;
-	unsigned int port;
-	int ret = m_socket.read((unsigned char*)buffer, BUFFER_LENGTH, address, port);
+	sockaddr_storage address;
+	unsigned int addrlen;
+	int ret = m_socket.read((unsigned char*)buffer, BUFFER_LENGTH, address, addrlen);
 	if (ret > 0) {
 		buffer[ret] = '\0';
 
@@ -86,10 +89,39 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 				m_command = RCD_MODE_P25;
 			else if (m_args.at(1U) == "nxdn")
 				m_command = RCD_MODE_NXDN;
+		} else if (m_args.at(0U) == "enable" && m_args.size() >= ENABLE_ARGS) {
+			if (m_args.at(1U) == "dstar")
+				m_command = RCD_ENABLE_DSTAR;
+			else if (m_args.at(1U) == "dmr")
+				m_command = RCD_ENABLE_DMR;
+			else if (m_args.at(1U) == "ysf")
+				m_command = RCD_ENABLE_YSF;
+			else if (m_args.at(1U) == "p25")
+				m_command = RCD_ENABLE_P25;
+			else if (m_args.at(1U) == "nxdn")
+				m_command = RCD_ENABLE_NXDN;
+			else if (m_args.at(1U) == "fm")
+				m_command = RCD_ENABLE_FM;
+		} else if (m_args.at(0U) == "disable" && m_args.size() >= DISABLE_ARGS) {
+			if (m_args.at(1U) == "dstar")
+				m_command = RCD_DISABLE_DSTAR;
+			else if (m_args.at(1U) == "dmr")
+				m_command = RCD_DISABLE_DMR;
+			else if (m_args.at(1U) == "ysf")
+				m_command = RCD_DISABLE_YSF;
+			else if (m_args.at(1U) == "p25")
+				m_command = RCD_DISABLE_P25;
+			else if (m_args.at(1U) == "nxdn")
+				m_command = RCD_DISABLE_NXDN;
+			else if (m_args.at(1U) == "fm")
+				m_command = RCD_DISABLE_FM;
 		} else if (m_args.at(0U) == "page" && m_args.size() >= PAGE_ARGS) {
 			// Page command is in the form of "page <ric> <message>"
 			m_command = RCD_PAGE;
-		}
+		} else if (m_args.at(0U) == "cw" && m_args.size() >= CW_ARGS) {
+                        // CW command is in the form of "cw <message>"
+                        m_command = RCD_CW;
+                }
 
 		if (m_command == RCD_NONE) {
 			m_args.clear();
@@ -115,6 +147,8 @@ unsigned int CRemoteControl::getArgCount() const
 			return m_args.size() - SET_MODE_ARGS;
 		case RCD_PAGE:
 			return m_args.size() - 1U;
+		case RCD_CW:
+                        return m_args.size() - 1U;
 		default:
 			return 0U;
 	}
@@ -135,6 +169,9 @@ std::string CRemoteControl::getArgString(unsigned int n) const
 		case RCD_PAGE:
 			n += 1U;
 			break;
+		case RCD_CW:
+                        n += 1U;
+                        break;
 		default:
 			return "";
 	}

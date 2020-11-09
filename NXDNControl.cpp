@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015-2019 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015-2020 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 #define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
-CNXDNControl::CNXDNControl(unsigned int ran, unsigned int id, bool selfOnly, CNXDNNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CNXDNLookup* lookup, CRSSIInterpolator* rssiMapper) :
+CNXDNControl::CNXDNControl(unsigned int ran, unsigned int id, bool selfOnly, INXDNNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CNXDNLookup* lookup, CRSSIInterpolator* rssiMapper) :
 m_ran(ran),
 m_id(id),
 m_selfOnly(selfOnly),
@@ -835,15 +835,16 @@ void CNXDNControl::writeNetwork()
 
 		unsigned short dstId = m_netLayer3.getDestinationGroupId();
 		bool grp             = m_netLayer3.getIsGroup();
-		std::string source   = m_lookup->find(m_netLayer3.getSourceUnitId());
+		class CUserDBentry source;
+		m_lookup->findWithName(m_netLayer3.getSourceUnitId(), &source);
 
 		if (type == NXDN_MESSAGE_TYPE_TX_REL) {
 			m_netFrames++;
-			LogMessage("NXDN, received network end of transmission from %s to %s%u, %.1f seconds", source.c_str(), grp ? "TG " : "", dstId, float(m_netFrames) / 12.5F);
+			LogMessage("NXDN, received network end of transmission from %s to %s%u, %.1f seconds", source.get(keyCALLSIGN).c_str(), grp ? "TG " : "", dstId, float(m_netFrames) / 12.5F);
 			writeEndNet();
 		} else if (type == NXDN_MESSAGE_TYPE_VCALL) {
-			LogMessage("NXDN, received network transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
-			m_display->writeNXDN(source.c_str(), grp, dstId, "N");
+			LogMessage("NXDN, received network transmission from %s to %s%u", source.get(keyCALLSIGN).c_str(), grp ? "TG " : "", dstId);
+			m_display->writeNXDN(source, grp, dstId, "N");
 
 			m_netTimeoutTimer.start();
 			m_packetTimer.start();
@@ -892,9 +893,10 @@ void CNXDNControl::writeNetwork()
 			unsigned short dstId = m_netLayer3.getDestinationGroupId();
 			bool grp             = m_netLayer3.getIsGroup();
 
-			std::string source = m_lookup->find(srcId);
-			LogMessage("NXDN, received network transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
-			m_display->writeNXDN(source.c_str(), grp, dstId, "N");
+			class CUserDBentry source;
+			m_lookup->findWithName(srcId, &source);
+			LogMessage("NXDN, received network transmission from %s to %s%u", source.get(keyCALLSIGN).c_str(), grp ? "TG " : "", dstId);
+			m_display->writeNXDN(source, grp, dstId, "N");
 
 			m_netTimeoutTimer.start();
 			m_packetTimer.start();

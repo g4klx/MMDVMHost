@@ -77,9 +77,6 @@
     <ClInclude Include="SerialController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SHA256.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="StopWatch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -278,9 +275,6 @@
     <ClInclude Include="I2CController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MobileGPS.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="NullModem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -291,6 +285,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="TFTSurenoo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UserDB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UserDBentry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NXDNIcomNetwork.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NXDNKenwoodNetwork.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -347,9 +353,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SerialController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SHA256.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StopWatch.cpp">
@@ -535,9 +538,6 @@
     <ClCompile Include="I2CController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MobileGPS.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="NullModem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -548,6 +548,18 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TFTSurenoo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UserDB.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UserDBentry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NXDNIcomNetwork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NXDNKenwoodNetwork.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

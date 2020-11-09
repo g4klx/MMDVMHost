@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -101,6 +101,17 @@ void CDisplay::setQuit()
 	setQuitInt();
 }
 
+void CDisplay::setFM()
+{
+	m_timer1.stop();
+	m_timer2.stop();
+
+	m_mode1 = MODE_FM;
+	m_mode2 = MODE_FM;
+
+	setFMInt();
+}
+
 void CDisplay::writeDStar(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
 	assert(my1 != NULL);
@@ -151,6 +162,29 @@ void CDisplay::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 	writeDMRInt(slotNo, src, group, dst, type);
 }
 
+void CDisplay::writeDMR(unsigned int slotNo, const class CUserDBentry& src, bool group, const std::string& dst, const char* type)
+{
+	assert(type != NULL);
+
+	if (slotNo == 1U) {
+		m_timer1.start();
+		m_mode1 = MODE_IDLE;
+	} else {
+		m_timer2.start();
+		m_mode2 = MODE_IDLE;
+	}
+
+	if (int err = writeDMRIntEx(slotNo, src, group, dst, type)) {
+		std::string src_str = src.get(keyCALLSIGN);
+		if (err < 0 && !src.get(keyFIRST_NAME).empty()) {
+		  	// emulate the result of old CDMRLookup::findWithName()
+			//  (it returned callsign and firstname)
+			src_str += " " + src.get(keyFIRST_NAME);
+		}
+		writeDMRInt(slotNo, src_str, group, dst, type);
+	}
+}
+
 void CDisplay::writeDMRRSSI(unsigned int slotNo, unsigned char rssi)
 {
 	if (rssi != 0U)
@@ -167,6 +201,7 @@ void CDisplay::writeDMRBER(unsigned int slotNo, float ber)
 {
 	writeDMRBERInt(slotNo, ber);
 }
+
 void CDisplay::clearDMR(unsigned int slotNo)
 {
 	if (slotNo == 1U) {
@@ -188,7 +223,7 @@ void CDisplay::clearDMR(unsigned int slotNo)
 	}
 }
 
-void CDisplay::writeFusion(const char* source, const char* dest, const char* type, const char* origin)
+void CDisplay::writeFusion(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
 	assert(source != NULL);
 	assert(dest != NULL);
@@ -198,7 +233,7 @@ void CDisplay::writeFusion(const char* source, const char* dest, const char* typ
 	m_timer1.start();
 	m_mode1 = MODE_IDLE;
 
-	writeFusionInt(source, dest, type, origin);
+	writeFusionInt(source, dest, dgid, type, origin);
 }
 
 void CDisplay::writeFusionRSSI(unsigned char rssi)
@@ -265,6 +300,17 @@ void CDisplay::writeNXDN(const char* source, bool group, unsigned int dest, cons
 	m_mode1 = MODE_IDLE;
 
 	writeNXDNInt(source, group, dest, type);
+}
+
+void CDisplay::writeNXDN(const class CUserDBentry& source, bool group, unsigned int dest, const char* type)
+{
+	assert(type != NULL);
+
+	m_timer1.start();
+	m_mode1 = MODE_IDLE;
+
+	if (writeNXDNIntEx(source, group, dest, type))
+		writeNXDNInt(source.get(keyCALLSIGN).c_str(), group, dest, type);
 }
 
 void CDisplay::writeNXDNRSSI(unsigned char rssi)
@@ -386,6 +432,20 @@ void CDisplay::writeDStarBERInt(float ber)
 {
 }
 
+int CDisplay::writeDMRIntEx(unsigned int slotNo, const class CUserDBentry& src, bool group, const std::string& dst, const char* type)
+{
+	/*
+	 * return value:
+	 *	< 0	error condition (i.e. not supported)
+	 *		-> call writeXXXXInt() to display
+	 *	= 0	no error, writeXXXXIntEx() displayed whole status
+	 *	= 1	no error, writeXXXXIntEx() displayed partial status
+	 *		-> call writeXXXXInt() to display remain part
+	 *	> 1	reserved for future use
+	 */
+	return -1;	// not supported
+}
+
 void CDisplay::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
 {
 }
@@ -421,6 +481,13 @@ void CDisplay::writeNXDNRSSIInt(unsigned char rssi)
 void CDisplay::writeNXDNBERInt(float ber)
 {
 }
+
+int CDisplay::writeNXDNIntEx(const class CUserDBentry& source, bool group, unsigned int dest, const char* type)
+{
+	/* return value definition is same as writeDMRIntEx() */
+	return -1;	// not supported
+}
+
 	
 /* Factory method extracted from MMDVMHost.cpp - BG5HHP */
 CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
@@ -447,7 +514,7 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
 			serial = new CSerialController(port, (type == "TFT Serial") ? SERIAL_9600 : SERIAL_115200);
 
 		if (type == "TFT Surenoo")
-			display = new CTFTSurenoo(conf.getCallsign(), dmrid, serial, brightness);
+			display = new CTFTSurenoo(conf.getCallsign(), dmrid, serial, brightness, conf.getDuplex());
 		else
 			display = new CTFTSerial(conf.getCallsign(), dmrid, serial, brightness);
 	} else if (type == "Nextion") {
@@ -489,22 +556,22 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
 
 		if (port == "modem") {
 			ISerialPort* serial = new CModemSerialPort(modem);
-			display = new CNextion(conf.getCallsign(), dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF, conf.getLocation());
+			display = new CNextion(conf.getCallsign(), dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF);
 		} else if (port == "ump") {
 			if (ump != NULL) {
-				display = new CNextion(conf.getCallsign(), dmrid, ump, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF, conf.getLocation());
-                        } else {
-                		LogInfo("    NullDisplay loaded");
-                		display = new CNullDisplay;
-                        }
+				display = new CNextion(conf.getCallsign(), dmrid, ump, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF);
+			} else {
+				LogInfo("    NullDisplay loaded");
+				display = new CNullDisplay;
+			}
 		} else {
 			SERIAL_SPEED baudrate = SERIAL_9600;
-			if (screenLayout==4U)
+			if (screenLayout&0x0cU)
 				baudrate = SERIAL_115200;
 			
 			LogInfo("    Display baudrate: %u ",baudrate);
 			ISerialPort* serial = new CSerialController(port, baudrate);
-			display = new CNextion(conf.getCallsign(), dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF, conf.getLocation());
+			display = new CNextion(conf.getCallsign(), dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF);
 		}
 	} else if (type == "LCDproc") {
 		std::string address       = conf.getLCDprocAddress();

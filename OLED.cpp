@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -217,6 +217,7 @@ bool COLED::open()
     }
 
     // init done
+    m_display.setTextWrap(false); // disable text wrap as default
     m_display.clearDisplay();   // clears the screen  buffer
     m_display.display();        // display it (clear display)
 
@@ -240,7 +241,8 @@ void COLED::setIdleInt()
 //    m_display.print("Idle");
 
 //    m_display.setTextSize(1);
-    m_display.startscrolldiagright(0x00,0x0f);  //the MMDVM logo scrolls the whole screen
+    if (m_displayScroll && m_displayLogoScreensaver)
+        m_display.startscrolldiagleft(0x00,0x0f);  //the MMDVM logo scrolls the whole screen
     m_display.display();
 
     unsigned char info[100U];
@@ -270,8 +272,10 @@ void COLED::setErrorInt(const char* text)
     m_display.clearDisplay();
     OLED_statusbar();
 
+    m_display.setTextWrap(true);    // text wrap temorally enable
     m_display.setCursor(0,OLED_LINE1);
     m_display.printf("%s\n",text);
+    m_display.setTextWrap(false);
 
     m_display.display();
 }
@@ -301,6 +305,21 @@ void COLED::setQuitInt()
     m_display.setCursor(0,30);
     m_display.setTextSize(3);
     m_display.print("Stopped");
+
+    m_display.setTextSize(1);
+    m_display.display();
+}
+
+void COLED::setFMInt()
+{
+    m_mode = MODE_FM;
+
+    m_display.clearDisplay();
+    OLED_statusbar();
+
+    m_display.setCursor(0,30);
+    m_display.setTextSize(3);
+    m_display.print("FM");
 
     m_display.setTextSize(1);
     m_display.display();
@@ -345,6 +364,16 @@ void COLED::clearDStarInt()
 
 void COLED::writeDMRInt(unsigned int slotNo,const std::string& src,bool group,const std::string& dst,const char* type)
 {
+    CUserDBentry tmp;
+
+    tmp.set(keyCALLSIGN, src);
+    writeDMRIntEx(slotNo, tmp, group, dst, type);
+}
+
+#define CALLandNAME(u) ((u).get(keyCALLSIGN) + " " + (u).get(keyFIRST_NAME))
+
+int COLED::writeDMRIntEx(unsigned int slotNo, const class CUserDBentry& src, bool group, const std::string& dst, const char* type)
+{
 
     if (m_mode != MODE_DMR) {
         m_display.clearDisplay();
@@ -352,13 +381,13 @@ void COLED::writeDMRInt(unsigned int slotNo,const std::string& src,bool group,co
         clearDMRInt(slotNo);
     }
     // if both slots, use lines 2-3 for slot 1, lines 4-5 for slot 2
-    // if single slot, use lines 3-4
+    // if single slot, use lines 2-3
     if ( m_slot1Enabled && m_slot2Enabled ) {
 
         if (slotNo == 1U) {
             m_display.fillRect(0,OLED_LINE2,m_display.width(),40,BLACK);
             m_display.setCursor(0,OLED_LINE2);
-            m_display.printf("%s",src.c_str());
+            m_display.printf("%s",CALLandNAME(src).c_str());
             m_display.setCursor(0,OLED_LINE3);
             m_display.printf("Slot: %i %s %s%s",slotNo,type,group ? "TG: " : "",dst.c_str());
         }
@@ -366,34 +395,41 @@ void COLED::writeDMRInt(unsigned int slotNo,const std::string& src,bool group,co
         {
             m_display.fillRect(0,OLED_LINE4,m_display.width(),40,BLACK);
             m_display.setCursor(0,OLED_LINE4);
-            m_display.printf("%s",src.c_str());
+            m_display.printf("%s",CALLandNAME(src).c_str());
             m_display.setCursor(0,OLED_LINE5);
             m_display.printf("Slot: %i %s %s%s",slotNo,type,group ? "TG: " : "",dst.c_str());
         }
 
+        m_display.fillRect(0,OLED_LINE6,m_display.width(),20,BLACK);
+        m_display.setCursor(0,OLED_LINE6);
+        m_display.printf("%s",m_ipaddress.c_str());
     }
     else
     {
-        m_display.fillRect(0,OLED_LINE3,m_display.width(),20,BLACK);
+        m_display.fillRect(0,OLED_LINE2,m_display.width(),m_display.height(),BLACK);
+        m_display.setCursor(0,OLED_LINE2);
+        m_display.printf("%s",CALLandNAME(src).c_str());
         m_display.setCursor(0,OLED_LINE3);
-        m_display.printf("%s",src.c_str());
-        m_display.setCursor(0,OLED_LINE4);
         m_display.printf("Slot: %i %s %s%s",slotNo,type,group ? "TG: " : "",dst.c_str());
+        m_display.setCursor(0,OLED_LINE4);
+        m_display.printf("%s",src.get(keyCITY).c_str());
+        m_display.setCursor(0,OLED_LINE5);
+        m_display.printf("%s",src.get(keySTATE).c_str());
+        m_display.setCursor(0,OLED_LINE6);
+        m_display.printf("%s",src.get(keyCOUNTRY).c_str());
     }
-
-    m_display.fillRect(0,OLED_LINE6,m_display.width(),20,BLACK);
-    m_display.setCursor(0,OLED_LINE6);
-    m_display.printf("%s",m_ipaddress.c_str());
 
     OLED_statusbar();
     m_display.display();
 
+    // must be 0, to avoid calling writeDMRInt() from CDisplay::writeDMR()
+    return 0;
 }
 
 void COLED::clearDMRInt(unsigned int slotNo)
 {
     // if both slots, use lines 2-3 for slot 1, lines 4-5 for slot 2
-    // if single slot, use lines 3-4
+    // if single slot, use lines 2-3
     if ( m_slot1Enabled && m_slot2Enabled ){
         if (slotNo == 1U) {
             m_display.fillRect(0, OLED_LINE3, m_display.width(), 40, BLACK);
@@ -407,8 +443,8 @@ void COLED::clearDMRInt(unsigned int slotNo)
         }
     }
     else {
-        m_display.fillRect(0, OLED_LINE4, m_display.width(), 40, BLACK);
-        m_display.setCursor(0,OLED_LINE4);
+        m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
+        m_display.setCursor(0,OLED_LINE3);
         m_display.printf("Slot: %i Listening",slotNo);
     }
 
@@ -418,9 +454,8 @@ void COLED::clearDMRInt(unsigned int slotNo)
     m_display.display();
 }
 
-void COLED::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
+void COLED::writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
-
     m_mode = MODE_YSF;
 
     m_display.clearDisplay();
@@ -430,11 +465,11 @@ void COLED::writeFusionInt(const char* source, const char* dest, const char* typ
     m_display.printf("%s %.10s", type, source);
 
     m_display.setCursor(0,OLED_LINE5);
-    m_display.printf("  %.10s", dest);
+    m_display.printf("  DG-ID %u", dgid);
 
     OLED_statusbar();
-    m_display.display();
 
+    m_display.display();
 }
 
 void COLED::clearFusionInt()
@@ -483,27 +518,46 @@ void COLED::clearP25Int()
 
 void COLED::writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type)
 {
+    CUserDBentry tmp;
+
+    tmp.set(keyCALLSIGN, source);
+    writeNXDNIntEx(tmp, group, dest, type);
+}
+
+int COLED::writeNXDNIntEx(const class CUserDBentry& source, bool group, unsigned int dest, const char* type)
+{
     m_mode = MODE_NXDN;
 
     m_display.clearDisplay();
     m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
+    m_display.setCursor(0,OLED_LINE2);
+    m_display.printf("%s %s", type, CALLandNAME(source).c_str());
+
     m_display.setCursor(0,OLED_LINE3);
-    m_display.printf("%s %.10s", type, source);
+    m_display.printf("  %s%u", group ? "TG" : "", dest);
+
+    m_display.setCursor(0,OLED_LINE4);
+    m_display.printf("%s",source.get(keyCITY).c_str());
 
     m_display.setCursor(0,OLED_LINE5);
-    m_display.printf("  %s%u", group ? "TG" : "", dest);
+    m_display.printf("%s",source.get(keySTATE).c_str());
+
+    m_display.setCursor(0,OLED_LINE6);
+    m_display.printf("%s",source.get(keyCOUNTRY).c_str());
 
     OLED_statusbar();
     m_display.display();
 
+    // must be 0, to avoid calling writeNXDNInt() from CDisplay::writeNXDN()
+    return 0;
 }
 
 void COLED::clearNXDNInt()
 {
     m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
-    m_display.setCursor(40,OLED_LINE4);
+    m_display.setCursor(40,OLED_LINE3);
     m_display.print("Listening");
 
     m_display.setCursor(0,OLED_LINE6);
@@ -522,8 +576,10 @@ void COLED::writePOCSAGInt(uint32_t ric, const std::string& message)
     m_display.setCursor(0,OLED_LINE3);
     m_display.printf("RIC: %u", ric);
 
+    m_display.setTextWrap(true);    // text wrap temorally enable
     m_display.setCursor(0,OLED_LINE5);
     m_display.printf("MSG: %s", message.c_str());
+    m_display.setTextWrap(false);
 
     OLED_statusbar();
     m_display.display();
@@ -553,7 +609,8 @@ void COLED::writeCWInt()
 
     m_display.setTextSize(1);
     m_display.display();
-    m_display.startscrollright(0x02,0x0f);
+    if (m_displayScroll)
+        m_display.startscrollleft(0x02,0x0f);
 }
 
 void COLED::clearCWInt()
@@ -570,13 +627,16 @@ void COLED::clearCWInt()
 
     OLED_statusbar();
     m_display.display();
+    if (m_displayScroll)
+        m_display.startscrollleft(0x02,0x0f);
 }
 
 void COLED::close()
 {
     m_display.clearDisplay();
     m_display.fillRect(0, 0, m_display.width(), 16, BLACK);
-    m_display.startscrollright(0x00,0x01);
+    if (m_displayScroll)
+        m_display.startscrollleft(0x00,0x01);
     m_display.setCursor(0,00);
     m_display.setTextSize(2);
     m_display.print("-CLOSE-");
@@ -608,5 +668,5 @@ void COLED::OLED_statusbar()
         m_display.drawBitmap(0, 0, logo_glcd_bmp, 128, 16, WHITE);
 
     if (m_displayScroll)
-        m_display.startscrollright(0x00,0x01);
+        m_display.startscrollleft(0x00,0x01);
 }

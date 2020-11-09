@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include <Windows.h>
 #else
 #include <sys/time.h>
+#include <unistd.h>
 #endif
 
 #include <cstdio>
@@ -34,8 +35,10 @@
 static unsigned int m_fileLevel = 2U;
 static std::string m_filePath;
 static std::string m_fileRoot;
+static bool m_fileRotate = true;
 
 static FILE* m_fpLog = NULL;
+static bool m_daemon = false;
 
 static unsigned int m_displayLevel = 2U;
 
@@ -43,8 +46,10 @@ static struct tm m_tm;
 
 static char LEVELS[] = " DMIWEF";
 
-static bool LogOpen()
+static bool logOpenRotate()
 {
+	bool status = false;
+	
 	if (m_fileLevel == 0U)
 		return true;
 
@@ -61,39 +66,90 @@ static bool LogOpen()
 			::fclose(m_fpLog);
 	}
 
-	char filename[100U];
+	char filename[200U];
 #if defined(_WIN32) || defined(_WIN64)
 	::sprintf(filename, "%s\\%s-%04d-%02d-%02d.log", m_filePath.c_str(), m_fileRoot.c_str(), tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
 #else
 	::sprintf(filename, "%s/%s-%04d-%02d-%02d.log", m_filePath.c_str(), m_fileRoot.c_str(), tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
 #endif
 
-	m_fpLog = ::fopen(filename, "a+t");
+	if ((m_fpLog = ::fopen(filename, "a+t")) != NULL) {
+		status = true;
+
+#if !defined(_WIN32) && !defined(_WIN64)
+		if (m_daemon)
+			dup2(fileno(m_fpLog), fileno(stderr));
+#endif
+	}
+	
 	m_tm = *tm;
 
-    return m_fpLog != NULL;
+	return status;
 }
 
-bool LogInitialise(const std::string& filePath, const std::string& fileRoot, unsigned int fileLevel, unsigned int displayLevel)
+static bool logOpenNoRotate()
+{
+	bool status = false;
+
+	if (m_fileLevel == 0U)
+		return true;
+
+	if (m_fpLog != NULL)
+		return true;
+
+	char filename[200U];
+#if defined(_WIN32) || defined(_WIN64)
+	::sprintf(filename, "%s\\%s.log", m_filePath.c_str(), m_fileRoot.c_str());
+#else
+	::sprintf(filename, "%s/%s.log", m_filePath.c_str(), m_fileRoot.c_str());
+#endif
+
+	if ((m_fpLog = ::fopen(filename, "a+t")) != NULL) {
+		status = true;
+
+#if !defined(_WIN32) && !defined(_WIN64)
+		if (m_daemon)
+			dup2(fileno(m_fpLog), fileno(stderr));
+#endif
+	}
+
+	return status;
+}
+
+bool LogOpen()
+{
+	if (m_fileRotate)
+		return logOpenRotate();
+	else
+		return logOpenNoRotate();
+}
+
+bool LogInitialise(bool daemon, const std::string& filePath, const std::string& fileRoot, unsigned int fileLevel, unsigned int displayLevel, bool rotate)
 {
 	m_filePath     = filePath;
 	m_fileRoot     = fileRoot;
 	m_fileLevel    = fileLevel;
 	m_displayLevel = displayLevel;
-    return ::LogOpen();
+	m_daemon       = daemon;
+	m_fileRotate   = rotate;
+
+	if (m_daemon)
+		m_displayLevel = 0U;
+
+	return ::LogOpen();
 }
 
 void LogFinalise()
 {
-    if (m_fpLog != NULL)
-        ::fclose(m_fpLog);
+	if (m_fpLog != NULL)
+		::fclose(m_fpLog);
 }
 
 void Log(unsigned int level, const char* fmt, ...)
 {
-    assert(fmt != NULL);
+	assert(fmt != NULL);
 
-	char buffer[300U];
+	char buffer[501U];
 #if defined(_WIN32) || defined(_WIN64)
 	SYSTEMTIME st;
 	::GetSystemTime(&st);
@@ -105,13 +161,13 @@ void Log(unsigned int level, const char* fmt, ...)
 
 	struct tm* tm = ::gmtime(&now.tv_sec);
 
-	::sprintf(buffer, "%c: %04d-%02d-%02d %02d:%02d:%02d.%03lu ", LEVELS[level], tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, now.tv_usec / 1000U);
+	::sprintf(buffer, "%c: %04d-%02d-%02d %02d:%02d:%02d.%03ld ", LEVELS[level], tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, now.tv_usec / 1000L);
 #endif
 
 	va_list vl;
 	va_start(vl, fmt);
 
-	::vsprintf(buffer + ::strlen(buffer), fmt, vl);
+	::vsnprintf(buffer + ::strlen(buffer), 500, fmt, vl);
 
 	va_end(vl);
 
@@ -130,7 +186,7 @@ void Log(unsigned int level, const char* fmt, ...)
 	}
 
 	if (level == 6U) {		// Fatal
-        ::fclose(m_fpLog);
-        exit(1);
-    }
+		::fclose(m_fpLog);
+		exit(1);
+	}
 }

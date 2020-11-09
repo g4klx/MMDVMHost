@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2018,2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2018,2019,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -30,13 +30,14 @@ const unsigned int BUFFER_LENGTH = 200U;
 
 CPOCSAGNetwork::CPOCSAGNetwork(const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug) :
 m_socket(myAddress, myPort),
-m_address(),
-m_port(gatewayPort),
+m_addr(),
+m_addrLen(0U),
 m_debug(debug),
 m_enabled(false),
 m_buffer(1000U, "POCSAG Network")
 {
-	m_address = CUDPSocket::lookup(gatewayAddress);
+	if (CUDPSocket::lookup(gatewayAddress, gatewayPort, m_addr, m_addrLen) != 0)
+		m_addrLen = 0U;
 }
 
 CPOCSAGNetwork::~CPOCSAGNetwork()
@@ -45,10 +46,12 @@ CPOCSAGNetwork::~CPOCSAGNetwork()
 
 bool CPOCSAGNetwork::open()
 {
-	LogMessage("Opening POCSAG network connection");
-
-	if (m_address.s_addr == INADDR_NONE)
+	if (m_addrLen == 0U) {
+		LogError("Unable to resolve the address of the DAPNET Gateway");
 		return false;
+	}
+
+	LogMessage("Opening POCSAG network connection");
 
 	return m_socket.open();
 }
@@ -57,17 +60,19 @@ void CPOCSAGNetwork::clock(unsigned int ms)
 {
 	unsigned char buffer[BUFFER_LENGTH];
 
-	in_addr address;
-	unsigned int port;
-	int length = m_socket.read(buffer, BUFFER_LENGTH, address, port);
+	sockaddr_storage address;
+	unsigned int addrLen;
+	int length = m_socket.read(buffer, BUFFER_LENGTH, address, addrLen);
 	if (length <= 0)
 		return;
 
-	// Check if the data is for us
-	if (m_address.s_addr != address.s_addr || m_port != port) {
-		LogMessage("POCSAG packet received from an invalid source, %08X != %08X and/or %u != %u", m_address.s_addr, address.s_addr, m_port, port);
+	if (!CUDPSocket::match(m_addr, address)) {
+		LogMessage("POCSAG, packet received from an invalid source");
 		return;
 	}
+
+	if (m_debug)
+		CUtils::dump(1U, "POCSAG Network Data Received", buffer, length);
 
 	// Invalid packet type?
 	if (::memcmp(buffer, "POCSAG", 6U) != 0)
@@ -75,9 +80,6 @@ void CPOCSAGNetwork::clock(unsigned int ms)
 
 	if (!m_enabled)
 		return;
-
-	if (m_debug)
-		CUtils::dump(1U, "POCSAG Network Data Received", buffer, length);
 
 	unsigned char len = length - 6U;
 	m_buffer.addData(&len, 1U);
@@ -118,7 +120,7 @@ void CPOCSAGNetwork::enable(bool enabled)
 
 	unsigned char c = enabled ? 0x00U : 0xFFU;
 	
-	m_socket.write(&c, 1U, m_address, m_port);
+	m_socket.write(&c, 1U, m_addr, m_addrLen);
 	
 	m_enabled = enabled;
 }

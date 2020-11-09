@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020 by SASANO Takayoshi JG1UAA
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,48 +16,35 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef	MobileGPS_H
-#define	MobileGPS_H
-
-#include "DMRNetwork.h"
-#include "UDPSocket.h"
-#include "Timer.h"
+#if !defined(USERDBENTRY_H)
+#define USERDBENTRY_H
 
 #include <string>
+#include <unordered_map>
+#include <vector>
 
-#if !defined(_WIN32) && !defined(_WIN64)
-#include <netdb.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <errno.h>
-#else
-#include <winsock.h>
-#endif
+#define keyRADIO_ID	"RADIO_ID"
+#define keyCALLSIGN	"CALLSIGN"
+#define keyFIRST_NAME	"FIRST_NAME"
+#define keyLAST_NAME	"LAST_NAME"
+#define keyCITY		"CITY"
+#define keySTATE	"STATE"
+#define keyCOUNTRY	"COUNTRY"
 
-class CMobileGPS {
+class CUserDBentry {
 public:
-	CMobileGPS(const std::string& address, unsigned int port, CDMRNetwork* network);
-	~CMobileGPS();
+	CUserDBentry();
+	~CUserDBentry();
 
-	bool open();
+	static const std::vector<std::string> keyList;
+	static bool isValidKey(const std::string key);
 
-	void clock(unsigned int ms);
-
-	void close();
+	void set(const std::string key, const std::string value);
+	const std::string get(const std::string key) const;
+	void clear(void);
 
 private:
-	CTimer       m_idTimer;
-	in_addr      m_address;
-	unsigned int m_port;
-	CUDPSocket   m_socket;
-	CDMRNetwork* m_network;
-
-	bool pollGPS();
-	void sendReport();
+	std::unordered_map<std::string, std::string>    m_db;
 };
 
 #endif

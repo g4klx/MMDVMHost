@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015-2019 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015-2020 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -487,6 +487,12 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				break;
 			case CSBKO_PRECCSBK:
 				LogMessage("DMR Slot %u, received RF %s Preamble CSBK (%u to follow) from %s to %s%s", m_slotNo, csbk.getDataContent() ? "Data" : "CSBK", csbk.getCBF(), src.c_str(), gi ? "TG ": "", dst.c_str());
+				break;
+			case CSBKO_CALL_ALERT:
+				LogMessage("DMR Slot %u, received RF Call Alert CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG " : "", dst.c_str());
+				break;
+			case CSBKO_CALL_ALERT_ACK:
+				LogMessage("DMR Slot %u, received RF Call Alert Ack CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG " : "", dst.c_str());
 				break;
 			default:
 				LogWarning("DMR Slot %u, unhandled RF CSBK type - 0x%02X", m_slotNo, csbko);
@@ -1102,7 +1108,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		setShortLC(m_slotNo, dstId, flco, ACTIVITY_VOICE);
 		std::string src = m_lookup->find(srcId);
 		std::string dst = m_lookup->find(dstId);
-		std::string cn = m_lookup->findWithName(srcId);
+		class CUserDBentry cn;
+		m_lookup->findWithName(srcId, &cn);
 		m_display->writeDMR(m_slotNo, cn, flco == FLCO_GROUP, dst, "N");
 
 #if defined(DUMP_DMR)
@@ -1169,11 +1176,12 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			m_netState = RS_NET_AUDIO;
 
 			setShortLC(m_slotNo, dstId, m_netLC->getFLCO(), ACTIVITY_VOICE);
-
 			std::string src = m_lookup->find(srcId);
 			std::string dst = m_lookup->find(dstId);
+			class CUserDBentry cn;
+			m_lookup->findWithName(srcId, &cn);
 
-			m_display->writeDMR(m_slotNo, src, m_netLC->getFLCO() == FLCO_GROUP, dst, "N");
+			m_display->writeDMR(m_slotNo, cn, m_netLC->getFLCO() == FLCO_GROUP, dst, "N");
 
 			LogMessage("DMR Slot %u, received network late entry from %s to %s%s", m_slotNo, src.c_str(), m_netLC->getFLCO() == FLCO_GROUP ? "TG " : "", dst.c_str());
 		}
@@ -1367,8 +1375,10 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 	
 			std::string src = m_lookup->find(srcId);
 			std::string dst = m_lookup->find(dstId);
+			class CUserDBentry cn;
+			m_lookup->findWithName(srcId, &cn);
 
-			m_display->writeDMR(m_slotNo, src, m_netLC->getFLCO() == FLCO_GROUP, dst, "N");
+			m_display->writeDMR(m_slotNo, cn, m_netLC->getFLCO() == FLCO_GROUP, dst, "N");
 
 			LogMessage("DMR Slot %u, received network late entry from %s to %s%s", m_slotNo, src.c_str(), m_netLC->getFLCO() == FLCO_GROUP ? "TG " : "", dst.c_str());
 		}
@@ -1639,6 +1649,12 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			break;
 		case CSBKO_PRECCSBK:
 			LogMessage("DMR Slot %u, received network %s Preamble CSBK (%u to follow) from %s to %s%s", m_slotNo, csbk.getDataContent() ? "Data" : "CSBK", csbk.getCBF(), src.c_str(), gi ? "TG " : "", dst.c_str());
+			break;
+		case CSBKO_CALL_ALERT:
+			LogMessage("DMR Slot %u, received network Call Alert CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG " : "", dst.c_str());
+			break;
+		case CSBKO_CALL_ALERT_ACK:
+			LogMessage("DMR Slot %u, received network Call Alert Ack CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG " : "", dst.c_str());
 			break;
 		default:
 			LogWarning("DMR Slot %u, unhandled network CSBK type - 0x%02X", m_slotNo, csbko);

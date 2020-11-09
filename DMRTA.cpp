@@ -72,7 +72,7 @@ bool CDMRTA::decodeTA()
 
     unsigned int TAformat = (talkerAlias[0] >> 6U) & 0x03U;
     unsigned int TAsize   = (talkerAlias[0] >> 1U) & 0x1FU;
-    ::memcpy(m_TA, "(could not decode)", sizeof(m_TA));
+    ::strcpy(m_TA, "(could not decode)");
 
     switch (TAformat) {
 	case 0U:		// 7 bit
