@@ -23,7 +23,9 @@
 #include "UDPSocket.h"
 #include "Timer.h"
 
+#if !defined(_WIN32) && !defined(_WIN64)
 #include <samplerate.h>
+#endif
 
 #include <cstdint>
 #include <string>
@@ -58,8 +60,10 @@ private:
 	bool             m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
 	CTimer           m_pollTimer;
+#if !defined(_WIN32) && !defined(_WIN64)
 	SRC_STATE*       m_incoming;
 	SRC_STATE*       m_outgoing;
+#endif
 
 	bool writePoll();
 };

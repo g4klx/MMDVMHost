@@ -44,18 +44,22 @@ m_pollTimer(1000U, 5U)
 	if (CUDPSocket::lookup(gatewayAddress, gatewayPort, m_addr, m_addrLen) != 0)
 		m_addrLen = 0U;
 
+#if !defined(_WIN32) && !defined(_WIN64)
 	int error;
 	m_incoming = ::src_new(SRC_SINC_FASTEST, 1, &error);
 	m_outgoing = ::src_new(SRC_SINC_FASTEST, 1, &error);
 
 	assert(m_incoming != NULL);
 	assert(m_outgoing != NULL);
+#endif
 }
 
 CFMNetwork::~CFMNetwork()
 {
+#if !defined(_WIN32) && !defined(_WIN64)
 	::src_delete(m_incoming);
 	::src_delete(m_outgoing);
+#endif
 }
 
 bool CFMNetwork::open()
@@ -74,9 +78,11 @@ bool CFMNetwork::open()
 
 bool CFMNetwork::writeData(float* data, unsigned int nSamples)
 {
-	assert(m_outgoing != NULL);
 	assert(data != NULL);
 	assert(nSamples > 0U);
+
+#if !defined(_WIN32) && !defined(_WIN64)
+	assert(m_outgoing != NULL);
 
 	float out[1000U];
 	SRC_DATA src;
@@ -98,6 +104,7 @@ bool CFMNetwork::writeData(float* data, unsigned int nSamples)
 		src.data_out = data;
 		src.output_frames_gen = nSamples;
 	}
+#endif
 
 	unsigned int length = 3U;
 
@@ -108,8 +115,13 @@ bool CFMNetwork::writeData(float* data, unsigned int nSamples)
 	buffer[1U] = 'M';
 	buffer[2U] = 'D';
 
+#if defined(_WIN32) || defined(_WIN64)
+	for (long i = 0L; i < nSamples; i++) {
+		unsigned short val = (unsigned short)((data[i] + 1.0F) * 32767.0F + 0.5F);
+#else
 	for (long i = 0L; i < src.output_frames_gen; i++) {
 		unsigned short val = (unsigned short)((src.data_out[i] + 1.0F) * 32767.0F + 0.5F);
+#endif
 
 		buffer[length++] = (val >> 8) & 0xFFU;
 		buffer[length++] = (val >> 0) & 0xFFU;
@@ -177,7 +189,6 @@ void CFMNetwork::clock(unsigned int ms)
 
 unsigned int CFMNetwork::read(float* data, unsigned int nSamples)
 {
-	assert(m_incoming != NULL);
 	assert(data != NULL);
 	assert(nSamples > 0U);
 
@@ -190,6 +201,9 @@ unsigned int CFMNetwork::read(float* data, unsigned int nSamples)
 
 	unsigned char buffer[1500U];
 	m_buffer.getData(buffer, nSamples * sizeof(unsigned short));
+
+#if !defined(_WIN32) && !defined(_WIN64)
+	assert(m_incoming != NULL);
 
 	SRC_DATA src;
 
@@ -217,6 +231,7 @@ unsigned int CFMNetwork::read(float* data, unsigned int nSamples)
 
 		return src.output_frames_gen;
 	} else {
+#endif
 		for (unsigned int i = 0U; i < nSamples; i++) {
 			unsigned short val = ((buffer[i * 2U + 0U] & 0xFFU) << 8) +
 			                     ((buffer[i * 2U + 1U] & 0xFFU) << 0);
@@ -224,18 +239,22 @@ unsigned int CFMNetwork::read(float* data, unsigned int nSamples)
 		}
 
 		return nSamples;
+#if !defined(_WIN32) && !defined(_WIN64)
 	}
+#endif
 }
 
 void CFMNetwork::reset()
 {
+#if !defined(_WIN32) && !defined(_WIN64)
 	assert(m_incoming != NULL);
 	assert(m_outgoing != NULL);
 
-	m_buffer.clear();
-
 	::src_reset(m_incoming);
 	::src_reset(m_outgoing);
+#endif
+
+	m_buffer.clear();
 }
 
 void CFMNetwork::close()
@@ -268,4 +287,3 @@ bool CFMNetwork::writePoll()
 
 	return m_socket.write(buffer, 3U, m_addr, m_addrLen);
 }
-
