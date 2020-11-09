@@ -138,6 +138,7 @@ public:
 
 private:
 	std::string                m_port;
+	unsigned int               m_protocolVersion;
 	unsigned int               m_dmrColorCode;
 	bool                       m_ysfLoDev;
 	unsigned int               m_ysfTXHang;
@@ -268,7 +269,8 @@ private:
 
 	bool readVersion();
 	bool readStatus();
-	bool setConfig();
+	bool setConfig1();
+	bool setConfig2();
 	bool setFrequency();
 	bool setFMCallsignParams();
 	bool setFMAckParams();

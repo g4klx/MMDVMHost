@@ -112,11 +112,10 @@ const unsigned int MAX_RESPONSES = 30U;
 
 const unsigned int BUFFER_LENGTH = 2000U;
 
-const unsigned char PROTOCOL_VERSION = 2U;
-
 
 CSerialModem::CSerialModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug) :
 m_port(port),
+m_protocolVersion(0U),
 m_dmrColorCode(0U),
 m_ysfLoDev(false),
 m_ysfTXHang(4U),
@@ -373,7 +372,7 @@ bool CSerialModem::open()
 		return false;
 	}
 
-	ret = setConfig();
+	ret = writeConfig();
 	if (!ret) {
 		m_serial->close();
 		delete m_serial;
@@ -737,48 +736,102 @@ void CSerialModem::clock(unsigned int ms)
 			}
 			break;
 
-			case MMDVM_GET_STATUS: {
-					// if (m_trace)
-					//	CUtils::dump(1U, "GET_STATUS", m_buffer, m_length);
+			case MMDVM_GET_STATUS:
+				// if (m_trace)
+				//	CUtils::dump(1U, "GET_STATUS", m_buffer, m_length);
 
-					m_mode = m_buffer[m_offset + 0U];
+				switch (m_protocolVersion) {
+				case 1U: {
+						m_mode = m_buffer[m_offset + 1U];
 
-					m_tx = (m_buffer[m_offset + 1U] & 0x01U) == 0x01U;
+						m_tx = (m_buffer[m_offset + 2U] & 0x01U) == 0x01U;
+						bool adcOverflow = (m_buffer[m_offset + 2U] & 0x02U) == 0x02U;
+						if (adcOverflow)
+							LogError("MMDVM ADC levels have overflowed");
+						bool rxOverflow = (m_buffer[m_offset + 2U] & 0x04U) == 0x04U;
+						if (rxOverflow)
+							LogError("MMDVM RX buffer has overflowed");
+						bool txOverflow = (m_buffer[m_offset + 2U] & 0x08U) == 0x08U;
+						if (txOverflow)
+							LogError("MMDVM TX buffer has overflowed");
+						m_lockout = (m_buffer[m_offset + 2U] & 0x10U) == 0x10U;
+						bool dacOverflow = (m_buffer[m_offset + 2U] & 0x20U) == 0x20U;
+						if (dacOverflow)
+							LogError("MMDVM DAC levels have overflowed");
+						m_cd = (m_buffer[m_offset + 2U] & 0x40U) == 0x40U;
 
-					bool adcOverflow = (m_buffer[m_offset + 1U] & 0x02U) == 0x02U;
-					if (adcOverflow)
-						LogError("MMDVM ADC levels have overflowed");
+						m_p25Space    = 0U;
+						m_nxdnSpace   = 0U;
+						m_m17Space    = 0U;
+						m_pocsagSpace = 0U;
+						m_fmSpace     = 0U;
+						m_ax25Space   = 0U;
 
-					bool rxOverflow = (m_buffer[m_offset + 1U] & 0x04U) == 0x04U;
-					if (rxOverflow)
-						LogError("MMDVM RX buffer has overflowed");
+						m_dstarSpace = m_buffer[m_offset + 3U];
+						m_dmrSpace1  = m_buffer[m_offset + 4U];
+						m_dmrSpace2  = m_buffer[m_offset + 5U];
+						m_ysfSpace   = m_buffer[m_offset + 6U];
 
-					bool txOverflow = (m_buffer[m_offset + 1U] & 0x08U) == 0x08U;
-					if (txOverflow)
-						LogError("MMDVM TX buffer has overflowed");
+						// The following depend on the version of the firmware
+						if (m_length > (m_offset + 7U))
+							m_p25Space    = m_buffer[m_offset + 7U];
+						if (m_length > (m_offset + 8U))
+							m_nxdnSpace   = m_buffer[m_offset + 8U];
+						if (m_length > (m_offset + 9U))
+							m_pocsagSpace = m_buffer[m_offset + 9U];
+						if (m_length > (m_offset + 10U))
+							m_m17Space    = m_buffer[m_offset + 10U];
+					}
+					break;
 
-					m_lockout = (m_buffer[m_offset + 1U] & 0x10U) == 0x10U;
+				case 2U: {
+						m_mode = m_buffer[m_offset + 0U];
 
-					bool dacOverflow = (m_buffer[m_offset + 1U] & 0x20U) == 0x20U;
-					if (dacOverflow)
-						LogError("MMDVM DAC levels have overflowed");
+						m_tx = (m_buffer[m_offset + 1U] & 0x01U) == 0x01U;
+						bool adcOverflow = (m_buffer[m_offset + 1U] & 0x02U) == 0x02U;
+						if (adcOverflow)
+							LogError("MMDVM ADC levels have overflowed");
+						bool rxOverflow = (m_buffer[m_offset + 1U] & 0x04U) == 0x04U;
+						if (rxOverflow)
+							LogError("MMDVM RX buffer has overflowed");
+						bool txOverflow = (m_buffer[m_offset + 1U] & 0x08U) == 0x08U;
+						if (txOverflow)
+							LogError("MMDVM TX buffer has overflowed");
+						m_lockout = (m_buffer[m_offset + 1U] & 0x10U) == 0x10U;
+						bool dacOverflow = (m_buffer[m_offset + 1U] & 0x20U) == 0x20U;
+						if (dacOverflow)
+							LogError("MMDVM DAC levels have overflowed");
+						m_cd = (m_buffer[m_offset + 1U] & 0x40U) == 0x40U;
 
-					m_cd = (m_buffer[m_offset + 1U] & 0x40U) == 0x40U;
+						m_dstarSpace  = m_buffer[m_offset + 3U];
+						m_dmrSpace1   = m_buffer[m_offset + 4U];
+						m_dmrSpace2   = m_buffer[m_offset + 5U];
+						m_ysfSpace    = m_buffer[m_offset + 6U];
+						m_p25Space    = m_buffer[m_offset + 7U];
+						m_nxdnSpace   = m_buffer[m_offset + 8U];
+						m_m17Space    = m_buffer[m_offset + 9U];
+						m_fmSpace     = m_buffer[m_offset + 10U];
+						m_pocsagSpace = m_buffer[m_offset + 11U];
+						m_ax25Space   = m_buffer[m_offset + 12U];
+					}
+					break;
 
-					m_dstarSpace  = m_buffer[m_offset + 2U];
-					m_dmrSpace1   = m_buffer[m_offset + 3U];
-					m_dmrSpace2   = m_buffer[m_offset + 4U];
-					m_ysfSpace    = m_buffer[m_offset + 5U];
-					m_p25Space    = m_buffer[m_offset + 6U];
-					m_nxdnSpace   = m_buffer[m_offset + 7U];
-					m_m17Space    = m_buffer[m_offset + 8U];
-					m_pocsagSpace = m_buffer[m_offset + 9U];
-					m_fmSpace     = m_buffer[m_offset + 10U];
-					m_ax25Space   = m_buffer[m_offset + 11U];
-
-					m_inactivityTimer.start();
-					// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u,%u,%u,%u,%u,%u lockout=%d, cd=%d", m_buffer[m_offset + 2U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, m_nxdnSpace, m_m17Space, m_pocsagSpace, m_fmSpace, m_ax25Space, int(m_lockout), int(m_cd));
+				default:
+					m_dstarSpace  = 0U;
+					m_dmrSpace1   = 0U;
+					m_dmrSpace2   = 0U;
+					m_ysfSpace    = 0U;
+					m_p25Space    = 0U;
+					m_nxdnSpace   = 0U;
+					m_m17Space    = 0U;
+					m_pocsagSpace = 0U;
+					m_fmSpace     = 0U;
+					m_ax25Space   = 0U;
+					break;
 				}
+
+				m_inactivityTimer.start();
+				// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u,%u,%u,%u,%u,%u lockout=%d, cd=%d", m_buffer[m_offset + 2U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, m_nxdnSpace, m_m17Space, m_pocsagSpace, m_fmSpace, m_ax25Space, int(m_lockout), int(m_cd));
 				break;
 
 			case MMDVM_TRANSPARENT: {
@@ -1846,10 +1899,33 @@ bool CSerialModem::readVersion()
 				else if (::memcmp(m_buffer + 4U, "SkyBridge", 9U) == 0)
 					m_hwType = HWT_SKYBRIDGE;
 
-				LogInfo("MMDVM protocol version: %u, description: %.*s", m_buffer[3U], m_length - 4U, m_buffer + 4U);
+				m_protocolVersion = m_buffer[3U];
 
-				if (m_buffer[3U] != PROTOCOL_VERSION) {
-					LogError("Invalid protocol version for this MMDVM host");
+				switch (m_protocolVersion) {
+				case 1U:
+					LogInfo("MMDVM protocol version: %u, description: %.*s", m_protocolVersion, m_length - 4U, m_buffer + 4U);
+					return true;
+
+				case 2U:
+					LogInfo("MMDVM protocol version: %u, description: %.*s", m_protocolVersion, m_length - 21U, m_buffer + 21U);
+					switch (m_buffer[4U]) {
+					case 0U:
+						LogInfo("Atmel ARM, UDID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", m_buffer[5U], m_buffer[6U], m_buffer[7U], m_buffer[8U], m_buffer[9U], m_buffer[10U], m_buffer[11U], m_buffer[12U], m_buffer[13U], m_buffer[14U], m_buffer[15U], m_buffer[16U], m_buffer[17U], m_buffer[18U], m_buffer[19U], m_buffer[20U]);
+						break;
+					case 1U:
+						LogInfo("NXP ARM, UDID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", m_buffer[5U], m_buffer[6U], m_buffer[7U], m_buffer[8U], m_buffer[9U], m_buffer[10U], m_buffer[11U], m_buffer[12U], m_buffer[13U], m_buffer[14U], m_buffer[15U], m_buffer[16U], m_buffer[17U], m_buffer[18U], m_buffer[19U], m_buffer[20U]);
+						break;
+					case 2U:
+						LogInfo("ST-Micro ARM, UDID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", m_buffer[5U], m_buffer[6U], m_buffer[7U], m_buffer[8U], m_buffer[9U], m_buffer[10U], m_buffer[11U], m_buffer[12U], m_buffer[13U], m_buffer[14U], m_buffer[15U], m_buffer[16U]);
+						break;
+					default:
+						LogInfo("Unknown CPU type: %u", m_buffer[4U]);
+						break;
+					}
+					return true;
+
+				default:
+					LogError("MMDVM protocol version: %u, unsupported by this version of the MMDVM Host", m_protocolVersion);
 					return false;
 				}
 
@@ -1882,18 +1958,140 @@ bool CSerialModem::readStatus()
 
 bool CSerialModem::writeConfig()
 {
-	return setConfig();
+	switch (m_protocolVersion) {
+	case 1U:
+		return setConfig1();
+	case 2U:
+		return setConfig2();
+	default:
+		return false;
+	}
 }
 
-bool CSerialModem::setConfig()
+bool CSerialModem::setConfig1()
 {
 	assert(m_serial != NULL);
 
-	unsigned char buffer[40U];
+	unsigned char buffer[30U];
 
 	buffer[0U] = MMDVM_FRAME_START;
 
-	buffer[1U] = 31U;
+	buffer[1U] = 26U;
+
+	buffer[2U] = MMDVM_SET_CONFIG;
+
+	buffer[3U] = 0x00U;
+	if (m_rxInvert)
+		buffer[3U] |= 0x01U;
+	if (m_txInvert)
+		buffer[3U] |= 0x02U;
+	if (m_pttInvert)
+		buffer[3U] |= 0x04U;
+	if (m_ysfLoDev)
+		buffer[3U] |= 0x08U;
+	if (m_debug)
+		buffer[3U] |= 0x10U;
+	if (m_useCOSAsLockout)
+		buffer[3U] |= 0x20U;
+	if (!m_duplex)
+		buffer[3U] |= 0x80U;
+
+	buffer[4U] = 0x00U;
+	if (m_dstarEnabled)
+		buffer[4U] |= 0x01U;
+	if (m_dmrEnabled)
+		buffer[4U] |= 0x02U;
+	if (m_ysfEnabled)
+		buffer[4U] |= 0x04U;
+	if (m_p25Enabled)
+		buffer[4U] |= 0x08U;
+	if (m_nxdnEnabled)
+		buffer[4U] |= 0x10U;
+	if (m_pocsagEnabled)
+		buffer[4U] |= 0x20U;
+	if (m_m17Enabled)
+		buffer[4U] |= 0x40U;
+
+	buffer[5U] = m_txDelay / 10U;		// In 10ms units
+
+	buffer[6U] = MODE_IDLE;
+
+	buffer[7U] = (unsigned char)(m_rxLevel * 2.55F + 0.5F);
+
+	buffer[8U] = (unsigned char)(m_cwIdTXLevel * 2.55F + 0.5F);
+
+	buffer[9U] = m_dmrColorCode;
+
+	buffer[10U] = m_dmrDelay;
+
+	buffer[11U] = 128U;           // Was OscOffset
+
+	buffer[12U] = (unsigned char)(m_dstarTXLevel * 2.55F + 0.5F);
+	buffer[13U] = (unsigned char)(m_dmrTXLevel * 2.55F + 0.5F);
+	buffer[14U] = (unsigned char)(m_ysfTXLevel * 2.55F + 0.5F);
+	buffer[15U] = (unsigned char)(m_p25TXLevel * 2.55F + 0.5F);
+
+	buffer[16U] = (unsigned char)(m_txDCOffset + 128);
+	buffer[17U] = (unsigned char)(m_rxDCOffset + 128);
+
+	buffer[18U] = (unsigned char)(m_nxdnTXLevel * 2.55F + 0.5F);
+
+	buffer[19U] = (unsigned char)m_ysfTXHang;
+
+	buffer[20U] = (unsigned char)(m_pocsagTXLevel * 2.55F + 0.5F);
+
+	buffer[21U] = (unsigned char)(m_fmTXLevel * 2.55F + 0.5F);
+
+	buffer[22U] = (unsigned char)m_p25TXHang;
+
+	buffer[23U] = (unsigned char)m_nxdnTXHang;
+
+	buffer[24U] = (unsigned char)(m_m17TXLevel * 2.55F + 0.5F);
+
+	buffer[25U] = (unsigned char)m_m17TXHang;
+
+	// CUtils::dump(1U, "Written", buffer, 26U);
+
+	int ret = m_serial->write(buffer, 26U);
+	if (ret != 26)
+		return false;
+
+	unsigned int count = 0U;
+	RESP_TYPE_MMDVM resp;
+	do {
+		CThread::sleep(10U);
+
+		resp = getResponse();
+		if (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK) {
+			count++;
+			if (count >= MAX_RESPONSES) {
+				LogError("The MMDVM is not responding to the SET_CONFIG command");
+				return false;
+			}
+		}
+	} while (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK);
+
+	// CUtils::dump(1U, "Response", m_buffer, m_length);
+
+	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
+		LogError("Received a NAK to the SET_CONFIG command from the modem");
+		return false;
+	}
+
+	m_playoutTimer.start();
+
+	return true;
+}
+
+bool CSerialModem::setConfig2()
+{
+	assert(m_serial != NULL);
+
+	unsigned char buffer[50U];
+
+	buffer[0U] = MMDVM_FRAME_START;
+
+	buffer[1U] = 40U;
 
 	buffer[2U] = MMDVM_SET_CONFIG;
 
@@ -1954,24 +2152,34 @@ bool CSerialModem::setConfig()
 	buffer[18U] = (unsigned char)(m_pocsagTXLevel * 2.55F + 0.5F);
 	buffer[19U] = (unsigned char)(m_fmTXLevel * 2.55F + 0.5F);
 	buffer[20U] = (unsigned char)(m_ax25TXLevel * 2.55F + 0.5F);
+	buffer[21U] = 0x00U;
+	buffer[22U] = 0x00U;
 
-	buffer[21U] = (unsigned char)m_ysfTXHang;
-	buffer[22U] = (unsigned char)m_p25TXHang;
-	buffer[23U] = (unsigned char)m_nxdnTXHang;
-	buffer[24U] = (unsigned char)m_m17TXHang;
+	buffer[23U] = (unsigned char)m_ysfTXHang;
+	buffer[24U] = (unsigned char)m_p25TXHang;
+	buffer[25U] = (unsigned char)m_nxdnTXHang;
+	buffer[26U] = (unsigned char)m_m17TXHang;
+	buffer[27U] = 0x00U;
+	buffer[28U] = 0x00U;
 
-	buffer[25U] = m_dmrColorCode;
-	buffer[26U] = m_dmrDelay;
+	buffer[29U] = m_dmrColorCode;
+	buffer[30U] = m_dmrDelay;
 
-	buffer[27U] = (unsigned char)(m_ax25RXTwist + 128);
-	buffer[28U] = m_ax25TXDelay / 10U;		// In 10ms units
-	buffer[29U] = m_ax25SlotTime / 10U;		// In 10ms units
-	buffer[30U] = m_ax25PPersist;
+	buffer[31U] = (unsigned char)(m_ax25RXTwist + 128);
+	buffer[32U] = m_ax25TXDelay / 10U;		// In 10ms units
+	buffer[33U] = m_ax25SlotTime / 10U;		// In 10ms units
+	buffer[34U] = m_ax25PPersist;
 
-	// CUtils::dump(1U, "Written", buffer, 31U);
+	buffer[35U] = 0x00U;
+	buffer[36U] = 0x00U;
+	buffer[37U] = 0x00U;
+	buffer[38U] = 0x00U;
+	buffer[39U] = 0x00U;
 
-	int ret = m_serial->write(buffer, 31U);
-	if (ret != 31)
+	// CUtils::dump(1U, "Written", buffer, 40U);
+
+	int ret = m_serial->write(buffer, 40U);
+	if (ret != 40)
 		return false;
 
 	unsigned int count = 0U;
