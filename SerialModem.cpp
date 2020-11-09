@@ -1907,21 +1907,30 @@ bool CSerialModem::readVersion()
 					return true;
 
 				case 2U:
-					LogInfo("MMDVM protocol version: %u, description: %.*s", m_protocolVersion, m_length - 21U, m_buffer + 21U);
-					switch (m_buffer[4U]) {
+					LogInfo("MMDVM protocol version: %u, description: %.*s", m_protocolVersion, m_length - 23U, m_buffer + 23U);
+					switch (m_buffer[6U]) {
 					case 0U:
-						LogInfo("Atmel ARM, UDID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", m_buffer[5U], m_buffer[6U], m_buffer[7U], m_buffer[8U], m_buffer[9U], m_buffer[10U], m_buffer[11U], m_buffer[12U], m_buffer[13U], m_buffer[14U], m_buffer[15U], m_buffer[16U], m_buffer[17U], m_buffer[18U], m_buffer[19U], m_buffer[20U]);
+						LogInfo("Atmel ARM, UDID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", m_buffer[7U], m_buffer[8U], m_buffer[9U], m_buffer[10U], m_buffer[11U], m_buffer[12U], m_buffer[13U], m_buffer[14U], m_buffer[15U], m_buffer[16U], m_buffer[17U], m_buffer[18U], m_buffer[19U], m_buffer[20U], m_buffer[21U], m_buffer[22U]);
 						break;
 					case 1U:
-						LogInfo("NXP ARM, UDID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", m_buffer[5U], m_buffer[6U], m_buffer[7U], m_buffer[8U], m_buffer[9U], m_buffer[10U], m_buffer[11U], m_buffer[12U], m_buffer[13U], m_buffer[14U], m_buffer[15U], m_buffer[16U], m_buffer[17U], m_buffer[18U], m_buffer[19U], m_buffer[20U]);
+						LogInfo("NXP ARM, UDID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", m_buffer[7U], m_buffer[8U], m_buffer[9U], m_buffer[10U], m_buffer[11U], m_buffer[12U], m_buffer[13U], m_buffer[14U], m_buffer[15U], m_buffer[16U], m_buffer[17U], m_buffer[18U], m_buffer[19U], m_buffer[20U], m_buffer[21U], m_buffer[22U]);
 						break;
 					case 2U:
-						LogInfo("ST-Micro ARM, UDID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", m_buffer[5U], m_buffer[6U], m_buffer[7U], m_buffer[8U], m_buffer[9U], m_buffer[10U], m_buffer[11U], m_buffer[12U], m_buffer[13U], m_buffer[14U], m_buffer[15U], m_buffer[16U]);
+						LogInfo("ST-Micro ARM, UDID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", m_buffer[7U], m_buffer[8U], m_buffer[9U], m_buffer[10U], m_buffer[11U], m_buffer[12U], m_buffer[13U], m_buffer[14U], m_buffer[15U], m_buffer[16U], m_buffer[17U], m_buffer[18U]);
 						break;
 					default:
-						LogInfo("Unknown CPU type: %u", m_buffer[4U]);
+						LogInfo("Unknown CPU type: %u", m_buffer[6U]);
 						break;
 					}
+					LogInfo("D-Star: %s", (m_buffer[4U] & 0x01U) == 0x01U ? "yes" : "no");
+					LogInfo("DMR: %s",    (m_buffer[4U] & 0x02U) == 0x02U ? "yes" : "no");
+					LogInfo("YSF: %s",    (m_buffer[4U] & 0x04U) == 0x04U ? "yes" : "no");
+					LogInfo("P25: %s",    (m_buffer[4U] & 0x08U) == 0x08U ? "yes" : "no");
+					LogInfo("NXDN: %s",   (m_buffer[4U] & 0x10U) == 0x10U ? "yes" : "no");
+					LogInfo("M17: %s",    (m_buffer[4U] & 0x20U) == 0x20U ? "yes" : "no");
+					LogInfo("FM: %s",     (m_buffer[4U] & 0x40U) == 0x40U ? "yes" : "no");
+					LogInfo("POCSAG: %s", (m_buffer[5U] & 0x01U) == 0x01U ? "yes" : "no");
+					LogInfo("AX.25: %s",  (m_buffer[5U] & 0x02U) == 0x02U ? "yes" : "no");
 					return true;
 
 				default:
