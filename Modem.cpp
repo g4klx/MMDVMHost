@@ -21,4 +21,3 @@
 IModem::~IModem()
 {
 }
-
