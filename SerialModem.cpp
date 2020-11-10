@@ -1922,15 +1922,27 @@ bool CSerialModem::readVersion()
 						LogInfo("Unknown CPU type: %u", m_buffer[6U]);
 						break;
 					}
-					LogInfo("D-Star: %s", (m_buffer[4U] & 0x01U) == 0x01U ? "yes" : "no");
-					LogInfo("DMR: %s",    (m_buffer[4U] & 0x02U) == 0x02U ? "yes" : "no");
-					LogInfo("YSF: %s",    (m_buffer[4U] & 0x04U) == 0x04U ? "yes" : "no");
-					LogInfo("P25: %s",    (m_buffer[4U] & 0x08U) == 0x08U ? "yes" : "no");
-					LogInfo("NXDN: %s",   (m_buffer[4U] & 0x10U) == 0x10U ? "yes" : "no");
-					LogInfo("M17: %s",    (m_buffer[4U] & 0x20U) == 0x20U ? "yes" : "no");
-					LogInfo("FM: %s",     (m_buffer[4U] & 0x40U) == 0x40U ? "yes" : "no");
-					LogInfo("POCSAG: %s", (m_buffer[5U] & 0x01U) == 0x01U ? "yes" : "no");
-					LogInfo("AX.25: %s",  (m_buffer[5U] & 0x02U) == 0x02U ? "yes" : "no");
+					char modeText[10U];
+					::strcpy(modeText, "Modes:");
+					if ((m_buffer[4U] & 0x01U) == 0x01U)
+						::strcat(modeText, " D-Star");
+					if ((m_buffer[4U] & 0x02U) == 0x02U)
+						::strcat(modeText, " DMR");
+					if ((m_buffer[4U] & 0x04U) == 0x04U)
+						::strcat(modeText, " YSF");
+					if ((m_buffer[4U] & 0x08U) == 0x08U)
+						::strcat(modeText, " P25");
+					if ((m_buffer[4U] & 0x10U) == 0x10U)
+						::strcat(modeText, " NXDN");
+					if ((m_buffer[4U] & 0x20U) == 0x20U)
+						::strcat(modeText, " M17");
+					if ((m_buffer[4U] & 0x40U) == 0x40U)
+						::strcat(modeText, " FM");
+					if ((m_buffer[5U] & 0x01U) == 0x01U)
+						::strcat(modeText, " POCSAG");
+					if ((m_buffer[5U] & 0x02U) == 0x02U)
+						::strcat(modeText, " AX.25");
+					LogInfo(modeText);
 					return true;
 
 				default:
