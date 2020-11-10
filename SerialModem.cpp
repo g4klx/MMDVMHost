@@ -1922,7 +1922,7 @@ bool CSerialModem::readVersion()
 						LogInfo("Unknown CPU type: %u", m_buffer[6U]);
 						break;
 					}
-					char modeText[10U];
+					char modeText[100U];
 					::strcpy(modeText, "Modes:");
 					if ((m_buffer[4U] & 0x01U) == 0x01U)
 						::strcat(modeText, " D-Star");
