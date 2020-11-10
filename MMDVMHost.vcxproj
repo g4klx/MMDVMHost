@@ -246,7 +246,6 @@
     <ClInclude Include="SerialPort.h" />
     <ClInclude Include="StopWatch.h" />
     <ClInclude Include="Sync.h" />
-    <ClInclude Include="TFTSerial.h" />
     <ClInclude Include="TFTSurenoo.h" />
     <ClInclude Include="Thread.h" />
     <ClInclude Include="Timer.h" />
@@ -348,7 +347,6 @@
     <ClCompile Include="M17Utils.cpp" />
     <ClCompile Include="StopWatch.cpp" />
     <ClCompile Include="Sync.cpp" />
-    <ClCompile Include="TFTSerial.cpp" />
     <ClCompile Include="TFTSurenoo.cpp" />
     <ClCompile Include="Thread.cpp" />
     <ClCompile Include="Timer.cpp" />

@@ -23,7 +23,6 @@ these are:
 	- Adafruit 16x2 LCD+Keypad Kits (I2C)
 	- Connection via PCF8574 GPIO Extender (I2C)
 - Nextion TFTs (all sizes, both Basic and Enhanced versions)
-- TFT display sold by Hobbytronics in UK
 - OLED 128x64 (SSD1306)
 - LCDproc
 
