@@ -29,7 +29,6 @@
 
 class CConf;
 class IModem;
-class CUMP;
 
 class CDisplay
 {
@@ -87,7 +86,7 @@ public:
 
 	void clock(unsigned int ms);
 
-	static CDisplay* createDisplay(const CConf& conf, CUMP* ump, IModem* modem);
+	static CDisplay* createDisplay(const CConf& conf, IModem* modem);
 
 protected:
 	virtual void setIdleInt() = 0;

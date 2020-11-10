@@ -215,9 +215,6 @@
     <ClInclude Include="LCDproc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="UMP.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RSSIInterpolator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -524,9 +521,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="LCDproc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="UMP.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RSSIInterpolator.cpp">

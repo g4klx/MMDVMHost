@@ -44,7 +44,6 @@
 #include "Timer.h"
 #include "Modem.h"
 #include "Conf.h"
-#include "UMP.h"
 
 #include <string>
 
@@ -79,7 +78,6 @@ private:
   CFMNetwork*     m_fmNetwork;
   CAX25Network*   m_ax25Network;
   CDisplay*       m_display;
-  CUMP*           m_ump;
   unsigned char   m_mode;
   unsigned int    m_dstarRFModeHang;
   unsigned int    m_dmrRFModeHang;

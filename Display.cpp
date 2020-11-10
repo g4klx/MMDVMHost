@@ -28,7 +28,6 @@
 #include "CASTInfo.h"
 #include "Conf.h"
 #include "Modem.h"
-#include "UMP.h"
 #include "Log.h"
 
 #if defined(HD44780)
@@ -537,11 +536,11 @@ int CDisplay::writeNXDNIntEx(const class CUserDBentry& source, bool group, unsig
 
 	
 /* Factory method extracted from MMDVMHost.cpp - BG5HHP */
-CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, IModem* modem)
+CDisplay* CDisplay::createDisplay(const CConf& conf, IModem* modem)
 {
-        CDisplay *display = NULL;
+	CDisplay *display = NULL;
 
-        std::string type   = conf.getDisplay();
+	std::string type   = conf.getDisplay();
 	unsigned int dmrid = conf.getDMRId();
 
 	LogInfo("Display Parameters");
@@ -604,13 +603,6 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, IModem* modem)
 		if (port == "modem") {
 			ISerialPort* serial = new IModemSerialPort(modem);
 			display = new CNextion(conf.getCallsign(), dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF);
-		} else if (port == "ump") {
-			if (ump != NULL) {
-				display = new CNextion(conf.getCallsign(), dmrid, ump, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF);
-			} else {
-				LogInfo("    NullDisplay loaded");
-				display = new CNullDisplay;
-			}
 		} else {
 			unsigned int baudrate = 9600U;
 			if (screenLayout == 4U)
