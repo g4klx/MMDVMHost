@@ -28,6 +28,7 @@
 #if defined(HAVE_LOG_H)
 #include "Log.h"
 #else
+#define LogMessage(fmt, ...)	::fprintf(stderr, fmt "\n", ## __VA_ARGS__)
 #define LogError(fmt, ...)	::fprintf(stderr, fmt "\n", ## __VA_ARGS__)
 #define LogInfo(fmt, ...)	::fprintf(stderr, fmt "\n", ## __VA_ARGS__)
 #endif

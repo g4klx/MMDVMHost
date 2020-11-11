@@ -391,6 +391,9 @@ bool CDMRNetwork::writeConfig()
 		case HWT_OPENGD77_HS:
 			software = "MMDVM_OpenGD77_HS";
 			break;
+		case HWT_SKYBRIDGE:
+			software = "MMDVM_SkyBridge";
+			break;
 		default:
 			software = "MMDVM_Unknown";
 			break;

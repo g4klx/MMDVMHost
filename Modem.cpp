@@ -1612,6 +1612,8 @@ bool CModem::readVersion()
 					m_hwType = HWT_MMDVM_HS;
 				else if (::memcmp(m_buffer + 4U, "OpenGD77_HS", 11U) == 0)
 					m_hwType = HWT_OPENGD77_HS;
+				else if (::memcmp(m_buffer + 4U, "SkyBridge", 9U) == 0)
+					m_hwType = HWT_SKYBRIDGE;
 
 				LogInfo("MMDVM protocol version: %u, description: %.*s", m_buffer[3U], m_length - 4U, m_buffer + 4U);
 				return true;
