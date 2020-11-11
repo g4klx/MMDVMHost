@@ -1689,10 +1689,8 @@ bool CModem::setConfig()
 		buffer[4U] |= 0x10U;
 	if (m_pocsagEnabled)
 		buffer[4U] |= 0x20U;
-	if (m_fmEnabled && m_duplex)
-		buffer[4U] |= 0x40U;
 	if (m_m17Enabled)
-		buffer[4U] |= 0x80U;
+		buffer[4U] |= 0x40U;
 
 	buffer[5U] = m_txDelay / 10U;		// In 10ms units
 
