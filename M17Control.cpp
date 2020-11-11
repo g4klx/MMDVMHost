@@ -416,7 +416,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			for (unsigned int i = 2U; i < (M17_FRAME_LENGTH_BYTES + 2U); i++)
 				errors += countBits(rfData[i] ^ data[i]);
 
-			LogDebug("M17, FN. %u, errs: %u/384 (%.1f%%)", m_rfFN, errors, float(errors) / 3.84F);
+			LogDebug("M17, FN: %u, errs: %u/384 (%.1f%%)", m_rfFN, errors, float(errors) / 3.84F);
 
 			m_rfBits += M17_FRAME_LENGTH_BITS;
 			m_rfErrs += errors;
