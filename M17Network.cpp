@@ -76,7 +76,7 @@ bool CM17Network::open()
 
 bool CM17Network::write(const unsigned char* data)
 {
-	if (m_addrLen != 0U)
+	if (m_addrLen == 0U)
 		return false;
 
 	assert(data != NULL);
