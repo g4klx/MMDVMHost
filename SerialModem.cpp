@@ -97,7 +97,7 @@ const unsigned char MMDVM_FM_EOT      = 0x67U;
 const unsigned char MMDVM_ACK         = 0x70U;
 const unsigned char MMDVM_NAK         = 0x7FU;
 
-const unsigned char MMDVM_SERIAL      = 0x80U;
+const unsigned char MMDVM_SERIAL_DATA = 0x80U;
 
 const unsigned char MMDVM_TRANSPARENT = 0x90U;
 const unsigned char MMDVM_QSO_INFO    = 0x91U;
@@ -864,7 +864,7 @@ void CSerialModem::clock(unsigned int ms)
 				printDebug();
 				break;
 
-			case MMDVM_SERIAL:
+			case MMDVM_SERIAL_DATA:
 				//MMDVMHost does not process serial data from the display,
 				// so we send it to the transparent port if sendFrameType==1
 				if (m_sendTransparentDataFrameType > 0U) {
@@ -879,6 +879,8 @@ void CSerialModem::clock(unsigned int ms)
 					m_rxTransparentData.addData(m_buffer + m_offset - offset, m_length - m_offset + offset);
 					break; //only break when sendFrameType>0, else message is unknown
 				}
+				break;
+
 			default:
 				LogMessage("Unknown message, type: %02X", m_type);
 				CUtils::dump("Buffer dump", m_buffer, m_length);
@@ -1816,11 +1818,11 @@ bool CSerialModem::writeSerial(const unsigned char* data, unsigned int length)
 	assert(data != NULL);
 	assert(length > 0U);
 
-	unsigned char buffer[250U];
+	unsigned char buffer[255U];
 
 	buffer[0U] = MMDVM_FRAME_START;
 	buffer[1U] = length + 3U;
-	buffer[2U] = MMDVM_SERIAL;
+	buffer[2U] = MMDVM_SERIAL_DATA;
 
 	::memcpy(buffer + 3U, data, length);
 
