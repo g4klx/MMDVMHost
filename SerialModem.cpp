@@ -182,6 +182,8 @@ m_rxFMData(5000U, "Modem RX FM"),
 m_txFMData(5000U, "Modem TX FM"),
 m_rxAX25Data(1000U, "Modem RX AX.25"),
 m_txAX25Data(1000U, "Modem TX AX.25"),
+m_rxSerialData(1000U, "Modem RX Serial"),
+m_txSerialData(1000U, "Modem TX Serial"),
 m_rxTransparentData(1000U, "Modem RX Transparent"),
 m_txTransparentData(1000U, "Modem TX Transparent"),
 m_sendTransparentDataFrameType(0U),
@@ -865,20 +867,9 @@ void CSerialModem::clock(unsigned int ms)
 				break;
 
 			case MMDVM_SERIAL_DATA:
-				//MMDVMHost does not process serial data from the display,
-				// so we send it to the transparent port if sendFrameType==1
-				if (m_sendTransparentDataFrameType > 0U) {
-					if (m_trace)
-						CUtils::dump(1U, "RX Serial Data", m_buffer, m_length);
-
-					unsigned char offset = m_sendTransparentDataFrameType;
-					if (offset > 1U) offset = 1U;
-					unsigned char data = m_length - m_offset + offset;
-					m_rxTransparentData.addData(&data, 1U);
-
-					m_rxTransparentData.addData(m_buffer + m_offset - offset, m_length - m_offset + offset);
-					break; //only break when sendFrameType>0, else message is unknown
-				}
+				if (m_trace)
+					CUtils::dump(1U, "RX Serial Data", m_buffer, m_length);
+				m_rxSerialData.addData(m_buffer + m_offset, m_length - m_offset);
 				break;
 
 			default:
@@ -1099,6 +1090,19 @@ void CSerialModem::clock(unsigned int ms)
 		if (ret != int(len))
 			LogWarning("Error when writing Transparent data to the MMDVM");
 	}
+
+	if (!m_txSerialData.isEmpty()) {
+		unsigned char len = 0U;
+		m_txSerialData.getData(&len, 1U);
+		m_txSerialData.getData(m_buffer, len);
+
+		if (m_trace)
+			CUtils::dump(1U, "TX Serial Data", m_buffer, len);
+
+		int ret = m_serial->write(m_buffer, len);
+		if (ret != int(len))
+			LogWarning("Error when writing Serial data to the MMDVM");
+	}
 }
 
 void CSerialModem::close()
@@ -1250,13 +1254,18 @@ unsigned int CSerialModem::readTransparentData(unsigned char* data)
 	return len;
 }
 
-// To be implemented later if needed
 unsigned int CSerialModem::readSerial(unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
 	assert(length > 0U);
 
-	return 0U;
+	unsigned int n = 0U;
+	while (!m_rxSerialData.isEmpty() && n < length) {
+		m_rxSerialData.getData(data + n, 1U);
+		n++;
+	}
+
+	return n;
 }
 
 bool CSerialModem::hasDStarSpace() const
@@ -1826,9 +1835,11 @@ bool CSerialModem::writeSerial(const unsigned char* data, unsigned int length)
 
 	::memcpy(buffer + 3U, data, length);
 
-	int ret = m_serial->write(buffer, length + 3U);
+	unsigned char len = length + 3U;
+	m_txSerialData.addData(&len, 1U);
+	m_txSerialData.addData(buffer, len);
 
-	return ret != int(length + 3U);
+	return true;
 }
 
 bool CSerialModem::hasTX() const

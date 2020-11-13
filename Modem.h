@@ -55,9 +55,6 @@ public:
 	virtual unsigned int readM17Data(unsigned char* data) = 0;
 	virtual unsigned int readFMData(unsigned char* data) = 0;
 	virtual unsigned int readAX25Data(unsigned char* data) = 0;
-	virtual unsigned int readTransparentData(unsigned char* data) = 0;
-
-	virtual unsigned int readSerial(unsigned char* data, unsigned int length) = 0;
 
 	virtual bool hasDStarSpace() const = 0;
 	virtual bool hasDMRSpace1() const = 0;
@@ -88,8 +85,6 @@ public:
 	virtual bool writeFMData(const unsigned char* data, unsigned int length) = 0;
 	virtual bool writeAX25Data(const unsigned char* data, unsigned int length) = 0;
 
-	virtual bool writeTransparentData(const unsigned char* data, unsigned int length) = 0;
-
 	virtual bool writeDStarInfo(const char* my1, const char* my2, const char* your, const char* type, const char* reflector) = 0;
 	virtual bool writeDMRInfo(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type) = 0;
 	virtual bool writeYSFInfo(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin) = 0;
@@ -103,7 +98,11 @@ public:
 	virtual bool writeDMRShortLC(const unsigned char* lc) = 0;
 	virtual bool writeDMRAbort(unsigned int slotNo) = 0;
 
+	virtual bool writeTransparentData(const unsigned char* data, unsigned int length) = 0;
+	virtual unsigned int readTransparentData(unsigned char* data) = 0;
+
 	virtual bool writeSerial(const unsigned char* data, unsigned int length) = 0;
+	virtual unsigned int readSerial(unsigned char* data, unsigned int length) = 0;
 
 	virtual unsigned char getMode() const = 0;
 	virtual bool setMode(unsigned char mode) = 0;

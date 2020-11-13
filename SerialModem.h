@@ -75,9 +75,6 @@ public:
 	virtual unsigned int readM17Data(unsigned char* data);
 	virtual unsigned int readFMData(unsigned char* data);
 	virtual unsigned int readAX25Data(unsigned char* data);
-	virtual unsigned int readTransparentData(unsigned char* data);
-
-	virtual unsigned int readSerial(unsigned char* data, unsigned int length);
 
 	virtual bool hasDStarSpace() const;
 	virtual bool hasDMRSpace1() const;
@@ -108,8 +105,6 @@ public:
 	virtual bool writeFMData(const unsigned char* data, unsigned int length);
 	virtual bool writeAX25Data(const unsigned char* data, unsigned int length);
 
-	virtual bool writeTransparentData(const unsigned char* data, unsigned int length);
-
 	virtual bool writeDStarInfo(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
 	virtual bool writeDMRInfo(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
 	virtual bool writeYSFInfo(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
@@ -123,7 +118,11 @@ public:
 	virtual bool writeDMRShortLC(const unsigned char* lc);
 	virtual bool writeDMRAbort(unsigned int slotNo);
 
+	virtual bool writeTransparentData(const unsigned char* data, unsigned int length);
+	virtual unsigned int readTransparentData(unsigned char* data);
+
 	virtual bool writeSerial(const unsigned char* data, unsigned int length);
+	virtual unsigned int readSerial(unsigned char* data, unsigned int length);
 
 	virtual unsigned char getMode() const;
 	virtual bool setMode(unsigned char mode);
@@ -205,6 +204,8 @@ private:
 	CRingBuffer<unsigned char> m_txFMData;
 	CRingBuffer<unsigned char> m_rxAX25Data;
 	CRingBuffer<unsigned char> m_txAX25Data;
+	CRingBuffer<unsigned char> m_rxSerialData;
+	CRingBuffer<unsigned char> m_txSerialData;
 	CRingBuffer<unsigned char> m_rxTransparentData;
 	CRingBuffer<unsigned char> m_txTransparentData;
 	unsigned int               m_sendTransparentDataFrameType;
