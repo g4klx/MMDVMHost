@@ -104,6 +104,9 @@ public:
 	virtual bool writeSerial(const unsigned char* data, unsigned int length) = 0;
 	virtual unsigned int readSerial(unsigned char* data, unsigned int length) = 0;
 
+	virtual bool writeI2C(const unsigned char* data, unsigned int length) = 0;
+	virtual unsigned int readI2C(unsigned char* data, unsigned int length) = 0;
+
 	virtual unsigned char getMode() const = 0;
 	virtual bool setMode(unsigned char mode) = 0;
 

@@ -124,6 +124,9 @@ public:
 	virtual bool writeSerial(const unsigned char* data, unsigned int length);
 	virtual unsigned int readSerial(unsigned char* data, unsigned int length);
 
+	virtual bool writeI2C(const unsigned char* data, unsigned int length);
+	virtual unsigned int readI2C(unsigned char* data, unsigned int length);
+
 	virtual unsigned char getMode() const;
 	virtual bool setMode(unsigned char mode);
 
@@ -206,6 +209,8 @@ private:
 	CRingBuffer<unsigned char> m_txAX25Data;
 	CRingBuffer<unsigned char> m_rxSerialData;
 	CRingBuffer<unsigned char> m_txSerialData;
+	CRingBuffer<unsigned char> m_rxI2CData;
+	CRingBuffer<unsigned char> m_txI2CData;
 	CRingBuffer<unsigned char> m_rxTransparentData;
 	CRingBuffer<unsigned char> m_txTransparentData;
 	unsigned int               m_sendTransparentDataFrameType;
