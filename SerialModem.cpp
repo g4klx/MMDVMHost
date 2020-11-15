@@ -184,9 +184,6 @@ m_txFMData(5000U, "Modem TX FM"),
 m_rxAX25Data(1000U, "Modem RX AX.25"),
 m_txAX25Data(1000U, "Modem TX AX.25"),
 m_rxSerialData(1000U, "Modem RX Serial"),
-m_txSerialData(1000U, "Modem TX Serial"),
-m_rxI2CData(1000U, "Modem RX I2C"),
-m_txI2CData(1000U, "Modem TX I2C"),
 m_rxTransparentData(1000U, "Modem RX Transparent"),
 m_txTransparentData(1000U, "Modem TX Transparent"),
 m_sendTransparentDataFrameType(0U),
@@ -875,12 +872,6 @@ void CSerialModem::clock(unsigned int ms)
 				m_rxSerialData.addData(m_buffer + m_offset, m_length - m_offset);
 				break;
 
-			case MMDVM_I2C_DATA:
-				if (m_trace)
-					CUtils::dump(1U, "RX I2C Data", m_buffer, m_length);
-				m_rxI2CData.addData(m_buffer + m_offset, m_length - m_offset);
-				break;
-
 			default:
 				LogMessage("Unknown message, type: %02X", m_type);
 				CUtils::dump("Buffer dump", m_buffer, m_length);
@@ -1099,32 +1090,6 @@ void CSerialModem::clock(unsigned int ms)
 		if (ret != int(len))
 			LogWarning("Error when writing Transparent data to the MMDVM");
 	}
-
-	if (!m_txSerialData.isEmpty()) {
-		unsigned char len = 0U;
-		m_txSerialData.getData(&len, 1U);
-		m_txSerialData.getData(m_buffer, len);
-
-		if (m_trace)
-			CUtils::dump(1U, "TX Serial Data", m_buffer, len);
-
-		int ret = m_serial->write(m_buffer, len);
-		if (ret != int(len))
-			LogWarning("Error when writing Serial data to the MMDVM");
-	}
-
-	if (!m_txI2CData.isEmpty()) {
-		unsigned char len = 0U;
-		m_txI2CData.getData(&len, 1U);
-		m_txI2CData.getData(m_buffer, len);
-
-		if (m_trace)
-			CUtils::dump(1U, "TX I2C Data", m_buffer, len);
-
-		int ret = m_serial->write(m_buffer, len);
-		if (ret != int(len))
-			LogWarning("Error when writing I2C data to the MMDVM");
-	}
 }
 
 void CSerialModem::close()
@@ -1284,20 +1249,6 @@ unsigned int CSerialModem::readSerial(unsigned char* data, unsigned int length)
 	unsigned int n = 0U;
 	while (!m_rxSerialData.isEmpty() && n < length) {
 		m_rxSerialData.getData(data + n, 1U);
-		n++;
-	}
-
-	return n;
-}
-
-unsigned int CSerialModem::readI2C(unsigned char* data, unsigned int length)
-{
-	assert(data != NULL);
-	assert(length > 0U);
-
-	unsigned int n = 0U;
-	while (!m_rxI2CData.isEmpty() && n < length) {
-		m_rxI2CData.getData(data + n, 1U);
 		n++;
 	}
 
@@ -1670,9 +1621,7 @@ bool CSerialModem::writeSerial(const unsigned char* data, unsigned int length)
 
 	::memcpy(buffer + 3U, data, length);
 
-	unsigned char len = length + 3U;
-	m_txSerialData.addData(&len, 1U);
-	m_txSerialData.addData(buffer, len);
+	m_serial->write(buffer, length + 3U);
 
 	return true;
 }
@@ -1691,9 +1640,7 @@ bool CSerialModem::writeI2C(const unsigned char* data, unsigned int length)
 
 	::memcpy(buffer + 3U, data, length);
 
-	unsigned char len = length + 3U;
-	m_txI2CData.addData(&len, 1U);
-	m_txI2CData.addData(buffer, len);
+	m_serial->write(buffer, length + 3U);
 
 	return true;
 }
