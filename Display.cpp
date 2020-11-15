@@ -27,14 +27,11 @@
 #include "CASTInfo.h"
 #include "Conf.h"
 #include "Modem.h"
+#include "OLED.h"
 #include "Log.h"
 
 #if defined(HD44780)
 #include "HD44780.h"
-#endif
-
-#if defined(OLED)
-#include "OLED.h"
 #endif
 
 #include <cstdio>
@@ -668,21 +665,18 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, IModem* modem)
 			display = new CHD44780(rows, columns, conf.getCallsign(), dmrid, pins, i2cAddress, pwm, pwmPin, pwmBright, pwmDim, displayClock, utc, conf.getDuplex());
 		}
 #endif
-#if defined(OLED)
 	} else if (type == "OLED") {
-	        unsigned char type       = conf.getOLEDType();
-	        unsigned char brightness = conf.getOLEDBrightness();
-	        bool          invert     = conf.getOLEDInvert();
-	        bool          scroll     = conf.getOLEDScroll();
+		unsigned char type       = conf.getOLEDType();
+		unsigned char brightness = conf.getOLEDBrightness();
+		bool          invert     = conf.getOLEDInvert();
+		bool          scroll     = conf.getOLEDScroll();
 		bool          rotate     = conf.getOLEDRotate();
 		bool          logosaver  = conf.getOLEDLogoScreensaver();
 
 		display = new COLED(type, brightness, invert, scroll, rotate, logosaver, conf.getDMRNetworkSlot1(), conf.getDMRNetworkSlot2());
-#endif
 	} else if (type == "CAST") {
 		display = new CCASTInfo(modem);
 	} else {
-		LogWarning("No valid display found, disabling");
 		display = new CNullDisplay;
 	}
 

@@ -221,6 +221,7 @@
     <ClInclude Include="NXDNLookup.h" />
     <ClInclude Include="NXDNNetwork.h" />
     <ClInclude Include="NXDNUDCH.h" />
+    <ClInclude Include="OLED.h" />
     <ClInclude Include="P25Audio.h" />
     <ClInclude Include="P25Control.h" />
     <ClInclude Include="P25Defines.h" />
@@ -325,6 +326,7 @@
     <ClCompile Include="NXDNNetwork.cpp" />
     <ClCompile Include="NXDNSACCH.cpp" />
     <ClCompile Include="NXDNUDCH.cpp" />
+    <ClCompile Include="OLED.cpp" />
     <ClCompile Include="P25Audio.cpp" />
     <ClCompile Include="P25Control.cpp" />
     <ClCompile Include="P25Data.cpp" />

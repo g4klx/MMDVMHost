@@ -500,7 +500,6 @@ void COLED::writeP25Int(const char* source, bool group, unsigned int dest, const
 
     OLED_statusbar();
     m_display.display();
-
 }
 
 void COLED::clearP25Int()
@@ -566,6 +565,36 @@ void COLED::clearNXDNInt()
     m_display.display();
 }
 
+void COLED::writeM17Int(const char* source, const char* dest, const char* type)
+{
+    m_mode = MODE_M17;
+
+    m_display.clearDisplay();
+    m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
+
+    m_display.setCursor(0, OLED_LINE3);
+    m_display.printf("%s %.10s", type, source);
+
+    m_display.setCursor(0, OLED_LINE4);
+    m_display.printf("  %s", dest);
+
+    OLED_statusbar();
+    m_display.display();
+}
+
+void COLED::clearM17Int()
+{
+    m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
+
+    m_display.setCursor(40, OLED_LINE4);
+    m_display.print("Listening");
+
+    m_display.setCursor(0, OLED_LINE6);
+    m_display.printf("%s", m_ipaddress.c_str());
+
+    m_display.display();
+}
+
 void COLED::writePOCSAGInt(uint32_t ric, const std::string& message)
 {
     m_mode = MODE_POCSAG;
@@ -583,7 +612,6 @@ void COLED::writePOCSAGInt(uint32_t ric, const std::string& message)
 
     OLED_statusbar();
     m_display.display();
-
 }
 
 void COLED::clearPOCSAGInt()
@@ -658,6 +686,8 @@ void COLED::OLED_statusbar()
         m_display.drawBitmap(0, 0, logo_P25_bmp, 128, 16, WHITE);
     else if (m_mode == MODE_NXDN)
         m_display.drawBitmap(0, 0, logo_NXDN_bmp, 128, 16, WHITE);
+    else if (m_mode == MODE_M17)
+        m_display.drawBitmap(0, 0, logo_M17_bmp, 128, 16, WHITE);
     else if (m_mode == MODE_POCSAG)
         m_display.drawBitmap(0, 0, logo_POCSAG_bmp, 128, 16, WHITE);
     else if (m_displayLogoScreensaver)

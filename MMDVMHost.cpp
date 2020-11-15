@@ -217,7 +217,7 @@ int CMMDVMHost::run()
 			return -1;
 		}
 
-#if !defined(HD44780) && !defined(OLED) && !defined(_OPENWRT)
+#if !defined(HD44780) && !defined(_OPENWRT)
 		// If we are currently root...
 		if (getuid() == 0) {
 			struct passwd* user = ::getpwnam("mmdvm");

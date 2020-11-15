@@ -335,6 +335,9 @@
     <ClInclude Include="SerialModem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="OLED.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -626,6 +629,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SerialModem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="OLED.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
