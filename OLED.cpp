@@ -148,8 +148,8 @@ const unsigned char logo_NXDN_bmp [] =
 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
 };
 
-// XXX FIXME This is still the NXDN logo
 // Logo M17_sm, 128x16px
+// XXX FIXME This is the NXDN logo, it needs replacing with the M17 logo
 const unsigned char logo_M17_bmp [] =
 {
 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -368,7 +368,6 @@ void COLED::writeDStarInt(const char* my1, const char* my2, const char* your, co
 
     OLED_statusbar();
     m_display.display();
-
 }
 
 void COLED::clearDStarInt()
@@ -634,7 +633,6 @@ void COLED::writePOCSAGInt(uint32_t ric, const std::string& message)
 
     OLED_statusbar();
     m_display.display();
-
 }
 
 void COLED::clearPOCSAGInt()
