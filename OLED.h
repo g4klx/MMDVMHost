@@ -22,13 +22,14 @@
 #include "Display.h"
 #include "Defines.h"
 #include "UserDBentry.h"
+#include "I2CPort.h"
 
 #include <string>
 
 class COLED : public CDisplay 
 {
 public:
-	COLED(unsigned char displayType, unsigned char displayBrighness, bool displayInvert, bool displayScroll, bool displayRotate, bool displayLogoScreensaver, bool slot1Enabled, bool slot2Enabled);
+	COLED(II2CPort* port, unsigned char displayType, unsigned char displayBrighness, bool displayInvert, bool displayScroll, bool displayRotate, bool displayLogoScreensaver, bool slot1Enabled, bool slot2Enabled);
 	virtual ~COLED();
 
 	virtual bool open();
@@ -69,6 +70,7 @@ public:
 	virtual void close();
 
 private:
+	II2CPort*      m_port;
 	unsigned char  m_mode;
 	unsigned char  m_displayType;
 	unsigned char  m_displayBrightness;

@@ -20,6 +20,8 @@
 #include "Log.h"
 #include "NetworkInfo.h"
 
+#include <cassert>
+
 const uint16_t BLACK = 0U;
 const uint16_t WHITE = 1U;
 
@@ -471,7 +473,8 @@ const unsigned char logo_POCSAG_bmp [] = {
 	0xFFU, 0xFFU, 0xFFU, 0xE6U, 0x7FU, 0xFEU, 0x07U, 0xFFU, 0xF6U, 0xFFU, 0xDFU, 0xF6U, 0x00U, 0xFBU, 0xFFU, 0xFFU,
 	0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU};
 
-COLED::COLED(unsigned char displayType, unsigned char displayBrightness, bool displayInvert, bool displayScroll, bool displayRotate, bool displayLogoScreensaver, bool slot1Enabled, bool slot2Enabled) :
+COLED::COLED(II2CPort* port, unsigned char displayType, unsigned char displayBrightness, bool displayInvert, bool displayScroll, bool displayRotate, bool displayLogoScreensaver, bool slot1Enabled, bool slot2Enabled) :
+m_port(port),
 m_mode(MODE_IDLE),
 m_displayType(displayType),
 m_displayBrightness(displayBrightness),
@@ -493,6 +496,7 @@ m_textSize(1U),
 m_textColor(0xFFFFU),
 m_textBGColor(0xFFFFU)
 {
+	assert(port != NULL);
 }
 
 COLED::~COLED()
@@ -503,6 +507,10 @@ bool COLED::open()
 {
 	// I2C change parameters to fit to your LCD
 	if (!m_display.init(OLED_I2C_RESET, m_displayType))
+		return false;
+
+	bool ret = m_port->open();
+	if (!ret)
 		return false;
 
 	m_display.begin();
@@ -1073,6 +1081,8 @@ void COLED::close()
 
 	m_display.close();
 
+	m_port->close();
+
 	delete[] m_oledBuffer;
 }
 
@@ -1304,7 +1314,7 @@ void COLED::display(void)
 				for (uint8_t x = 1U; x <= 16U; x++)
 					buff[x] = *p++;
 
-				fastI2Cwrite(buff, 17U);
+				m_port->write(buff, 17U);
 			}
 		}
 	} else {
@@ -1314,21 +1324,21 @@ void COLED::display(void)
 			for (uint8_t x = 1U; x <= 16U; x++)
 				buff[x] = *p++;
 
-			fastI2Cwrite(buff, 17U);
+			m_port->write(buff, 17U);
 		}
 	}
 }
 
 void COLED::sendCommand(uint8_t c)
 {
-	char buff[2U];
+	uint8_t buff[2U];
 
 	// Clear D/C to switch to command mode
 	buff[0] = SSD_Command_Mode;
 	buff[1] = c;
 
 	// Write Data on I2C
-	fastI2Cwrite(buff, 2U);
+	m_port->write(buff, 2U);
 }
 
 size_t COLED::write(uint8_t c)

@@ -25,6 +25,8 @@
 #include "LCDproc.h"
 #include "Nextion.h"
 #include "CASTInfo.h"
+#include "I2CModem.h"
+#include "I2CPort.h""
 #include "Conf.h"
 #include "Modem.h"
 #include "OLED.h"
@@ -32,6 +34,10 @@
 
 #if defined(HD44780)
 #include "HD44780.h"
+#endif
+
+#if defined(OLED)
+#include "I2CPi.h""
 #endif
 
 #include <cstdio>
@@ -666,6 +672,7 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, IModem* modem)
 		}
 #endif
 	} else if (type == "OLED") {
+		std::string   port       = conf.getOLEDPort();
 		unsigned char type       = conf.getOLEDType();
 		unsigned char brightness = conf.getOLEDBrightness();
 		bool          invert     = conf.getOLEDInvert();
@@ -673,7 +680,15 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, IModem* modem)
 		bool          rotate     = conf.getOLEDRotate();
 		bool          logosaver  = conf.getOLEDLogoScreensaver();
 
-		display = new COLED(type, brightness, invert, scroll, rotate, logosaver, conf.getDMRNetworkSlot1(), conf.getDMRNetworkSlot2());
+		if (port == "modem") {
+			II2CPort* i2c = new CI2CModem(modem);
+			display = new COLED(i2c, type, brightness, invert, scroll, rotate, logosaver, conf.getDMRNetworkSlot1(), conf.getDMRNetworkSlot2());
+#if defined(OLED)
+		} else {
+			II2CPort* i2c = new CI2CPi;
+			display = new COLED(i2c, type, brightness, invert, scroll, rotate, logosaver, conf.getDMRNetworkSlot1(), conf.getDMRNetworkSlot2());
+#endif
+		}
 	} else if (type == "CAST") {
 		display = new CCASTInfo(modem);
 	} else {

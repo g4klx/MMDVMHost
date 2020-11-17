@@ -338,6 +338,12 @@
     <ClInclude Include="OLED.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="I2CPort.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="I2CModem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -632,6 +638,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="OLED.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="I2CPort.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="I2CModem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

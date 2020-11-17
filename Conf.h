@@ -324,6 +324,7 @@ public:
   bool         getNextionTempInFahrenheit() const;
 
   // The OLED section
+  std::string    getOLEDPort() const;
   unsigned char  getOLEDType() const;
   unsigned char  getOLEDBrightness() const;
   bool           getOLEDInvert() const;
@@ -613,7 +614,8 @@ private:
   unsigned int m_nextionIdleBrightness;
   unsigned int m_nextionScreenLayout;
   bool         m_nextionTempInFahrenheit;
-  
+
+  std::string   m_oledPort;
   unsigned char m_oledType;
   unsigned char m_oledBrightness;
   bool          m_oledInvert;
