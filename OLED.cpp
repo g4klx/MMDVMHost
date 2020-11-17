@@ -20,6 +20,304 @@
 #include "Log.h"
 #include "NetworkInfo.h"
 
+const uint16_t BLACK = 0U;
+const uint16_t WHITE = 1U;
+
+// Init gray level for text. Default:Brightest White
+const uint8_t GRAY_H = 0xF0U;
+const uint8_t GRAY_L = 0x0FU;
+
+const uint16_t OLED_STATUSBAR = 0U;
+const uint16_t OLED_LINE1 = 8U; //16
+const uint16_t OLED_LINE2 = 18U; //26 
+const uint16_t OLED_LINE3 = 28U; //36
+const uint16_t OLED_LINE4 = 37U; //46
+const uint16_t OLED_LINE5 = 47U; //56
+const uint16_t OLED_LINE6 = 57U;
+
+const uint8_t SSD_Command_Mode = 0x00U;  /* C0 and DC bit are 0         */
+const uint8_t SSD_Data_Mode    = 0x40U;  /* C0 bit is 0 and DC bit is 1 */
+
+const uint8_t SSD_Inverse_Display   = 0xA7U;
+const uint8_t SSD_Set_ContrastLevel = 0x81U;
+
+const uint8_t SSD_Activate_Scroll   = 0x2FU;
+const uint8_t SSD_Deactivate_Scroll = 0x2EU;
+
+const uint8_t SSD_Left_Horizontal_Scroll = 0x27U;
+
+const uint8_t SSD1306_Normal_Display = 0xA6U;
+
+// Scrolling #defines
+const uint8_t SSD1306_SET_VERTICAL_SCROLL_AREA             = 0xA3U;
+const uint8_t SSD1306_VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL = 0x29U;
+const uint8_t SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL  = 0x2AU;
+
+const uint8_t SSD1306_Set_Lower_Column_Start_Address       = 0x00U;
+const uint8_t SSD1306_Set_Higher_Column_Start_Address      = 0x10U;
+const uint8_t SSD1306_Set_Start_Line     = 0x40U;
+
+// Arduino Compatible Macro
+#define _BV(bit) (1 << (bit))
+
+// standard ascii 5x7 font
+const uint8_t FONT[] = {
+	0x00U, 0x00U, 0x00U, 0x00U, 0x00U,
+	0x3EU, 0x5BU, 0x4FU, 0x5BU, 0x3EU,
+	0x3EU, 0x6BU, 0x4FU, 0x6BU, 0x3EU,
+	0x1CU, 0x3EU, 0x7CU, 0x3EU, 0x1CU,
+	0x18U, 0x3CU, 0x7EU, 0x3CU, 0x18U,
+	0x1CU, 0x57U, 0x7DU, 0x57U, 0x1CU,
+	0x1CU, 0x5EU, 0x7FU, 0x5EU, 0x1CU,
+	0x00U, 0x18U, 0x3CU, 0x18U, 0x00U,
+	0xFFU, 0xE7U, 0xC3U, 0xE7U, 0xFFU,
+	0x00U, 0x18U, 0x24U, 0x18U, 0x00U,
+	0xFFU, 0xE7U, 0xDBU, 0xE7U, 0xFFU,
+	0x30U, 0x48U, 0x3AU, 0x06U, 0x0EU,
+	0x26U, 0x29U, 0x79U, 0x29U, 0x26U,
+	0x40U, 0x7FU, 0x05U, 0x05U, 0x07U,
+	0x40U, 0x7FU, 0x05U, 0x25U, 0x3FU,
+	0x5AU, 0x3CU, 0xE7U, 0x3CU, 0x5AU,
+	0x7FU, 0x3EU, 0x1CU, 0x1CU, 0x08U,
+	0x08U, 0x1CU, 0x1CU, 0x3EU, 0x7FU,
+	0x14U, 0x22U, 0x7FU, 0x22U, 0x14U,
+	0x5FU, 0x5FU, 0x00U, 0x5FU, 0x5FU,
+	0x06U, 0x09U, 0x7FU, 0x01U, 0x7FU,
+	0x00U, 0x66U, 0x89U, 0x95U, 0x6AU,
+	0x60U, 0x60U, 0x60U, 0x60U, 0x60U,
+	0x94U, 0xA2U, 0xFFU, 0xA2U, 0x94U,
+	0x08U, 0x04U, 0x7EU, 0x04U, 0x08U,
+	0x10U, 0x20U, 0x7EU, 0x20U, 0x10U,
+	0x08U, 0x08U, 0x2AU, 0x1CU, 0x08U,
+	0x08U, 0x1CU, 0x2AU, 0x08U, 0x08U,
+	0x1EU, 0x10U, 0x10U, 0x10U, 0x10U,
+	0x0CU, 0x1EU, 0x0CU, 0x1EU, 0x0CU,
+	0x30U, 0x38U, 0x3EU, 0x38U, 0x30U,
+	0x06U, 0x0EU, 0x3EU, 0x0EU, 0x06U,
+	0x00U, 0x00U, 0x00U, 0x00U, 0x00U,
+	0x00U, 0x00U, 0x5FU, 0x00U, 0x00U,
+	0x00U, 0x07U, 0x00U, 0x07U, 0x00U,
+	0x14U, 0x7FU, 0x14U, 0x7FU, 0x14U,
+	0x24U, 0x2AU, 0x7FU, 0x2AU, 0x12U,
+	0x23U, 0x13U, 0x08U, 0x64U, 0x62U,
+	0x36U, 0x49U, 0x56U, 0x20U, 0x50U,
+	0x00U, 0x08U, 0x07U, 0x03U, 0x00U,
+	0x00U, 0x1CU, 0x22U, 0x41U, 0x00U,
+	0x00U, 0x41U, 0x22U, 0x1CU, 0x00U,
+	0x2AU, 0x1CU, 0x7FU, 0x1CU, 0x2AU,
+	0x08U, 0x08U, 0x3EU, 0x08U, 0x08U,
+	0x00U, 0x80U, 0x70U, 0x30U, 0x00U,
+	0x08U, 0x08U, 0x08U, 0x08U, 0x08U,
+	0x00U, 0x00U, 0x60U, 0x60U, 0x00U,
+	0x20U, 0x10U, 0x08U, 0x04U, 0x02U,
+	0x3EU, 0x51U, 0x49U, 0x45U, 0x3EU,
+	0x00U, 0x42U, 0x7FU, 0x40U, 0x00U,
+	0x72U, 0x49U, 0x49U, 0x49U, 0x46U,
+	0x21U, 0x41U, 0x49U, 0x4DU, 0x33U,
+	0x18U, 0x14U, 0x12U, 0x7FU, 0x10U,
+	0x27U, 0x45U, 0x45U, 0x45U, 0x39U,
+	0x3CU, 0x4AU, 0x49U, 0x49U, 0x31U,
+	0x41U, 0x21U, 0x11U, 0x09U, 0x07U,
+	0x36U, 0x49U, 0x49U, 0x49U, 0x36U,
+	0x46U, 0x49U, 0x49U, 0x29U, 0x1EU,
+	0x00U, 0x00U, 0x14U, 0x00U, 0x00U,
+	0x00U, 0x40U, 0x34U, 0x00U, 0x00U,
+	0x00U, 0x08U, 0x14U, 0x22U, 0x41U,
+	0x14U, 0x14U, 0x14U, 0x14U, 0x14U,
+	0x00U, 0x41U, 0x22U, 0x14U, 0x08U,
+	0x02U, 0x01U, 0x59U, 0x09U, 0x06U,
+	0x3EU, 0x41U, 0x5DU, 0x59U, 0x4EU,
+	0x7CU, 0x12U, 0x11U, 0x12U, 0x7CU,
+	0x7FU, 0x49U, 0x49U, 0x49U, 0x36U,
+	0x3EU, 0x41U, 0x41U, 0x41U, 0x22U,
+	0x7FU, 0x41U, 0x41U, 0x41U, 0x3EU,
+	0x7FU, 0x49U, 0x49U, 0x49U, 0x41U,
+	0x7FU, 0x09U, 0x09U, 0x09U, 0x01U,
+	0x3EU, 0x41U, 0x41U, 0x51U, 0x73U,
+	0x7FU, 0x08U, 0x08U, 0x08U, 0x7FU,
+	0x00U, 0x41U, 0x7FU, 0x41U, 0x00U,
+	0x20U, 0x40U, 0x41U, 0x3FU, 0x01U,
+	0x7FU, 0x08U, 0x14U, 0x22U, 0x41U,
+	0x7FU, 0x40U, 0x40U, 0x40U, 0x40U,
+	0x7FU, 0x02U, 0x1CU, 0x02U, 0x7FU,
+	0x7FU, 0x04U, 0x08U, 0x10U, 0x7FU,
+	0x3EU, 0x41U, 0x41U, 0x41U, 0x3EU,
+	0x7FU, 0x09U, 0x09U, 0x09U, 0x06U,
+	0x3EU, 0x41U, 0x51U, 0x21U, 0x5EU,
+	0x7FU, 0x09U, 0x19U, 0x29U, 0x46U,
+	0x26U, 0x49U, 0x49U, 0x49U, 0x32U,
+	0x03U, 0x01U, 0x7FU, 0x01U, 0x03U,
+	0x3FU, 0x40U, 0x40U, 0x40U, 0x3FU,
+	0x1FU, 0x20U, 0x40U, 0x20U, 0x1FU,
+	0x3FU, 0x40U, 0x38U, 0x40U, 0x3FU,
+	0x63U, 0x14U, 0x08U, 0x14U, 0x63U,
+	0x03U, 0x04U, 0x78U, 0x04U, 0x03U,
+	0x61U, 0x59U, 0x49U, 0x4DU, 0x43U,
+	0x00U, 0x7FU, 0x41U, 0x41U, 0x41U,
+	0x02U, 0x04U, 0x08U, 0x10U, 0x20U,
+	0x00U, 0x41U, 0x41U, 0x41U, 0x7FU,
+	0x04U, 0x02U, 0x01U, 0x02U, 0x04U,
+	0x40U, 0x40U, 0x40U, 0x40U, 0x40U,
+	0x00U, 0x03U, 0x07U, 0x08U, 0x00U,
+	0x20U, 0x54U, 0x54U, 0x78U, 0x40U,
+	0x7FU, 0x28U, 0x44U, 0x44U, 0x38U,
+	0x38U, 0x44U, 0x44U, 0x44U, 0x28U,
+	0x38U, 0x44U, 0x44U, 0x28U, 0x7FU,
+	0x38U, 0x54U, 0x54U, 0x54U, 0x18U,
+	0x00U, 0x08U, 0x7EU, 0x09U, 0x02U,
+	0x18U, 0xA4U, 0xA4U, 0x9CU, 0x78U,
+	0x7FU, 0x08U, 0x04U, 0x04U, 0x78U,
+	0x00U, 0x44U, 0x7DU, 0x40U, 0x00U,
+	0x20U, 0x40U, 0x40U, 0x3DU, 0x00U,
+	0x7FU, 0x10U, 0x28U, 0x44U, 0x00U,
+	0x00U, 0x41U, 0x7FU, 0x40U, 0x00U,
+	0x7CU, 0x04U, 0x78U, 0x04U, 0x78U,
+	0x7CU, 0x08U, 0x04U, 0x04U, 0x78U,
+	0x38U, 0x44U, 0x44U, 0x44U, 0x38U,
+	0xFCU, 0x18U, 0x24U, 0x24U, 0x18U,
+	0x18U, 0x24U, 0x24U, 0x18U, 0xFCU,
+	0x7CU, 0x08U, 0x04U, 0x04U, 0x08U,
+	0x48U, 0x54U, 0x54U, 0x54U, 0x24U,
+	0x04U, 0x04U, 0x3FU, 0x44U, 0x24U,
+	0x3CU, 0x40U, 0x40U, 0x20U, 0x7CU,
+	0x1CU, 0x20U, 0x40U, 0x20U, 0x1CU,
+	0x3CU, 0x40U, 0x30U, 0x40U, 0x3CU,
+	0x44U, 0x28U, 0x10U, 0x28U, 0x44U,
+	0x4CU, 0x90U, 0x90U, 0x90U, 0x7CU,
+	0x44U, 0x64U, 0x54U, 0x4CU, 0x44U,
+	0x00U, 0x08U, 0x36U, 0x41U, 0x00U,
+	0x00U, 0x00U, 0x77U, 0x00U, 0x00U,
+	0x00U, 0x41U, 0x36U, 0x08U, 0x00U,
+	0x02U, 0x01U, 0x02U, 0x04U, 0x02U,
+	0x3CU, 0x26U, 0x23U, 0x26U, 0x3CU,
+	0x1EU, 0xA1U, 0xA1U, 0x61U, 0x12U,
+	0x3AU, 0x40U, 0x40U, 0x20U, 0x7AU,
+	0x38U, 0x54U, 0x54U, 0x55U, 0x59U,
+	0x21U, 0x55U, 0x55U, 0x79U, 0x41U,
+	0x21U, 0x54U, 0x54U, 0x78U, 0x41U,
+	0x21U, 0x55U, 0x54U, 0x78U, 0x40U,
+	0x20U, 0x54U, 0x55U, 0x79U, 0x40U,
+	0x0CU, 0x1EU, 0x52U, 0x72U, 0x12U,
+	0x39U, 0x55U, 0x55U, 0x55U, 0x59U,
+	0x39U, 0x54U, 0x54U, 0x54U, 0x59U,
+	0x39U, 0x55U, 0x54U, 0x54U, 0x58U,
+	0x00U, 0x00U, 0x45U, 0x7CU, 0x41U,
+	0x00U, 0x02U, 0x45U, 0x7DU, 0x42U,
+	0x00U, 0x01U, 0x45U, 0x7CU, 0x40U,
+	0xF0U, 0x29U, 0x24U, 0x29U, 0xF0U,
+	0xF0U, 0x28U, 0x25U, 0x28U, 0xF0U,
+	0x7CU, 0x54U, 0x55U, 0x45U, 0x00U,
+	0x20U, 0x54U, 0x54U, 0x7CU, 0x54U,
+	0x7CU, 0x0AU, 0x09U, 0x7FU, 0x49U,
+	0x32U, 0x49U, 0x49U, 0x49U, 0x32U,
+	0x32U, 0x48U, 0x48U, 0x48U, 0x32U,
+	0x32U, 0x4AU, 0x48U, 0x48U, 0x30U,
+	0x3AU, 0x41U, 0x41U, 0x21U, 0x7AU,
+	0x3AU, 0x42U, 0x40U, 0x20U, 0x78U,
+	0x00U, 0x9DU, 0xA0U, 0xA0U, 0x7DU,
+	0x39U, 0x44U, 0x44U, 0x44U, 0x39U,
+	0x3DU, 0x40U, 0x40U, 0x40U, 0x3DU,
+	0x3CU, 0x24U, 0xFFU, 0x24U, 0x24U,
+	0x48U, 0x7EU, 0x49U, 0x43U, 0x66U,
+	0x2BU, 0x2FU, 0xFCU, 0x2FU, 0x2BU,
+	0xFFU, 0x09U, 0x29U, 0xF6U, 0x20U,
+	0xC0U, 0x88U, 0x7EU, 0x09U, 0x03U,
+	0x20U, 0x54U, 0x54U, 0x79U, 0x41U,
+	0x00U, 0x00U, 0x44U, 0x7DU, 0x41U,
+	0x30U, 0x48U, 0x48U, 0x4AU, 0x32U,
+	0x38U, 0x40U, 0x40U, 0x22U, 0x7AU,
+	0x00U, 0x7AU, 0x0AU, 0x0AU, 0x72U,
+	0x7DU, 0x0DU, 0x19U, 0x31U, 0x7DU,
+	0x26U, 0x29U, 0x29U, 0x2FU, 0x28U,
+	0x26U, 0x29U, 0x29U, 0x29U, 0x26U,
+	0x30U, 0x48U, 0x4DU, 0x40U, 0x20U,
+	0x38U, 0x08U, 0x08U, 0x08U, 0x08U,
+	0x08U, 0x08U, 0x08U, 0x08U, 0x38U,
+	0x2FU, 0x10U, 0xC8U, 0xACU, 0xBAU,
+	0x2FU, 0x10U, 0x28U, 0x34U, 0xFAU,
+	0x00U, 0x00U, 0x7BU, 0x00U, 0x00U,
+	0x08U, 0x14U, 0x2AU, 0x14U, 0x22U,
+	0x22U, 0x14U, 0x2AU, 0x14U, 0x08U,
+	0xAAU, 0x00U, 0x55U, 0x00U, 0xAAU,
+	0xAAU, 0x55U, 0xAAU, 0x55U, 0xAAU,
+	0x00U, 0x00U, 0x00U, 0xFFU, 0x00U,
+	0x10U, 0x10U, 0x10U, 0xFFU, 0x00U,
+	0x14U, 0x14U, 0x14U, 0xFFU, 0x00U,
+	0x10U, 0x10U, 0xFFU, 0x00U, 0xFFU,
+	0x10U, 0x10U, 0xF0U, 0x10U, 0xF0U,
+	0x14U, 0x14U, 0x14U, 0xFCU, 0x00U,
+	0x14U, 0x14U, 0xF7U, 0x00U, 0xFFU,
+	0x00U, 0x00U, 0xFFU, 0x00U, 0xFFU,
+	0x14U, 0x14U, 0xF4U, 0x04U, 0xFCU,
+	0x14U, 0x14U, 0x17U, 0x10U, 0x1FU,
+	0x10U, 0x10U, 0x1FU, 0x10U, 0x1FU,
+	0x14U, 0x14U, 0x14U, 0x1FU, 0x00U,
+	0x10U, 0x10U, 0x10U, 0xF0U, 0x00U,
+	0x00U, 0x00U, 0x00U, 0x1FU, 0x10U,
+	0x10U, 0x10U, 0x10U, 0x1FU, 0x10U,
+	0x10U, 0x10U, 0x10U, 0xF0U, 0x10U,
+	0x00U, 0x00U, 0x00U, 0xFFU, 0x10U,
+	0x10U, 0x10U, 0x10U, 0x10U, 0x10U,
+	0x10U, 0x10U, 0x10U, 0xFFU, 0x10U,
+	0x00U, 0x00U, 0x00U, 0xFFU, 0x14U,
+	0x00U, 0x00U, 0xFFU, 0x00U, 0xFFU,
+	0x00U, 0x00U, 0x1FU, 0x10U, 0x17U,
+	0x00U, 0x00U, 0xFCU, 0x04U, 0xF4U,
+	0x14U, 0x14U, 0x17U, 0x10U, 0x17U,
+	0x14U, 0x14U, 0xF4U, 0x04U, 0xF4U,
+	0x00U, 0x00U, 0xFFU, 0x00U, 0xF7U,
+	0x14U, 0x14U, 0x14U, 0x14U, 0x14U,
+	0x14U, 0x14U, 0xF7U, 0x00U, 0xF7U,
+	0x14U, 0x14U, 0x14U, 0x17U, 0x14U,
+	0x10U, 0x10U, 0x1FU, 0x10U, 0x1FU,
+	0x14U, 0x14U, 0x14U, 0xF4U, 0x14U,
+	0x10U, 0x10U, 0xF0U, 0x10U, 0xF0U,
+	0x00U, 0x00U, 0x1FU, 0x10U, 0x1FU,
+	0x00U, 0x00U, 0x00U, 0x1FU, 0x14U,
+	0x00U, 0x00U, 0x00U, 0xFCU, 0x14U,
+	0x00U, 0x00U, 0xF0U, 0x10U, 0xF0U,
+	0x10U, 0x10U, 0xFFU, 0x10U, 0xFFU,
+	0x14U, 0x14U, 0x14U, 0xFFU, 0x14U,
+	0x10U, 0x10U, 0x10U, 0x1FU, 0x00U,
+	0x00U, 0x00U, 0x00U, 0xF0U, 0x10U,
+	0xFFU, 0xFFU, 0xFFU, 0xFFU, 0xFFU,
+	0xF0U, 0xF0U, 0xF0U, 0xF0U, 0xF0U,
+	0xFFU, 0xFFU, 0xFFU, 0x00U, 0x00U,
+	0x00U, 0x00U, 0x00U, 0xFFU, 0xFFU,
+	0x0FU, 0x0FU, 0x0FU, 0x0FU, 0x0FU,
+	0x38U, 0x44U, 0x44U, 0x38U, 0x44U,
+	0x7CU, 0x2AU, 0x2AU, 0x3EU, 0x14U,
+	0x7EU, 0x02U, 0x02U, 0x06U, 0x06U,
+	0x02U, 0x7EU, 0x02U, 0x7EU, 0x02U,
+	0x63U, 0x55U, 0x49U, 0x41U, 0x63U,
+	0x38U, 0x44U, 0x44U, 0x3CU, 0x04U,
+	0x40U, 0x7EU, 0x20U, 0x1EU, 0x20U,
+	0x06U, 0x02U, 0x7EU, 0x02U, 0x02U,
+	0x99U, 0xA5U, 0xE7U, 0xA5U, 0x99U,
+	0x1CU, 0x2AU, 0x49U, 0x2AU, 0x1CU,
+	0x4CU, 0x72U, 0x01U, 0x72U, 0x4CU,
+	0x30U, 0x4AU, 0x4DU, 0x4DU, 0x30U,
+	0x30U, 0x48U, 0x78U, 0x48U, 0x30U,
+	0xBCU, 0x62U, 0x5AU, 0x46U, 0x3DU,
+	0x3EU, 0x49U, 0x49U, 0x49U, 0x00U,
+	0x7EU, 0x01U, 0x01U, 0x01U, 0x7EU,
+	0x2AU, 0x2AU, 0x2AU, 0x2AU, 0x2AU,
+	0x44U, 0x44U, 0x5FU, 0x44U, 0x44U,
+	0x40U, 0x51U, 0x4AU, 0x44U, 0x40U,
+	0x40U, 0x44U, 0x4AU, 0x51U, 0x40U,
+	0x00U, 0x00U, 0xFFU, 0x01U, 0x03U,
+	0xE0U, 0x80U, 0xFFU, 0x00U, 0x00U,
+	0x08U, 0x08U, 0x6BU, 0x6BU, 0x08U,
+	0x36U, 0x12U, 0x36U, 0x24U, 0x36U,
+	0x06U, 0x0FU, 0x09U, 0x0FU, 0x06U,
+	0x00U, 0x00U, 0x18U, 0x18U, 0x00U,
+	0x00U, 0x00U, 0x10U, 0x10U, 0x00U,
+	0x30U, 0x40U, 0xFFU, 0x01U, 0x01U,
+	0x00U, 0x1FU, 0x01U, 0x01U, 0x1EU,
+	0x00U, 0x19U, 0x1DU, 0x17U, 0x12U,
+	0x00U, 0x3CU, 0x3CU, 0x3CU, 0x3CU,
+	0x00U, 0x00U, 0x00U, 0x00U, 0x00U};
+
 //Logo MMDVM for Idle Screen
 static unsigned char logo_glcd_bmp[] = {
 	0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U, 0x00U,
@@ -185,7 +483,15 @@ m_slot1Enabled(slot1Enabled),
 m_slot2Enabled(slot2Enabled),
 m_ipAddress(),
 m_passCounter(0U),
-m_display()
+m_oledBuffer(NULL),
+m_width(0U),
+m_height(0U),
+m_textWrap(true),
+m_cursorX(0U),
+m_cursorY(0U),
+m_textSize(1U),
+m_textColor(0xFFFFU),
+m_textBGColor(0xFFFFU)
 {
 }
 
@@ -195,39 +501,35 @@ COLED::~COLED()
 
 bool COLED::open()
 {
-	// SPI
-	if (m_display.oled_is_spi_proto(m_displayType)) {
-		// SPI change parameters to fit to your LCD
-		if (!m_display.init(OLED_SPI_DC, OLED_SPI_RESET, OLED_SPI_CS, m_displayType))
-			return false;
-	} else {
-		// I2C change parameters to fit to your LCD
-		if (!m_display.init(OLED_I2C_RESET, m_displayType))
-			return false;
-	}
+	// I2C change parameters to fit to your LCD
+	if (!m_display.init(OLED_I2C_RESET, m_displayType))
+		return false;
 
 	m_display.begin();
 
-	m_display.invertDisplay(m_displayInvert ? 1 : 0);
-	if (m_displayBrightness > 0U)
-		m_display.setBrightness(m_displayBrightness);
+	m_oledBuffer = new uint8_t[m_width * m_height];
 
-	if (m_displayRotate > 0U) {
-		m_display.sendCommand(0xC0U);
-		m_display.sendCommand(0xA0U);
+	invertDisplay(m_displayInvert);
+	if (m_displayBrightness > 0U)
+		setBrightness(m_displayBrightness);
+
+	if (m_displayRotate) {
+		sendCommand(0xC0U);
+		sendCommand(0xA0U);
 	}
 
 	// init done
-	m_display.setTextWrap(false); // disable text wrap as default
-	m_display.clearDisplay();   // clears the screen  buffer
-	m_display.display();		// display it (clear display)
+	m_textWrap = false; // disable text wrap as default
+	clearDisplay();   // clears the screen  buffer
+	display();		// display it (clear display)
 
 	statusbar();
 
-	m_display.setCursor(0, OLED_LINE3);
-	m_display.print("Startup");
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE3;
+	print("Startup");
 
-	m_display.display();
+	display();
 
 	return true;
 }
@@ -236,12 +538,12 @@ void COLED::setIdleInt()
 {
 	m_mode = MODE_IDLE;
 
-	m_display.clearDisplay();
+	clearDisplay();
 	statusbar();
 
 	if (m_displayScroll && m_displayLogoScreensaver)
-		m_display.startscrolldiagleft(0x00U, 0x0FU);  //the MMDVM logo scrolls the whole screen
-	m_display.display();
+		startscrolldiagleft(0x00U, 0x0FU);  //the MMDVM logo scrolls the whole screen
+	display();
 
 	m_passCounter++;
 	if (m_passCounter > 253U)
@@ -262,98 +564,113 @@ void COLED::setErrorInt(const char* text)
 {
 	m_mode = MODE_ERROR;
 
-	m_display.clearDisplay();
+	clearDisplay();
 	statusbar();
 
-	m_display.setTextWrap(true);	// text wrap temorally enable
+	m_textWrap = true;	// text wrap temorally enable
 
-	m_display.setCursor(0, OLED_LINE1);
-	m_display.printf("%s\n", text);
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE1;
+	print(text);
 
-	m_display.setTextWrap(false);
+	m_textWrap = false;
 
-	m_display.display();
+	display();
 }
 
 void COLED::setLockoutInt()
 {
 	m_mode = MODE_LOCKOUT;
 
-	m_display.clearDisplay();
+	clearDisplay();
 	statusbar();
 
-	m_display.setCursor(0, 30);
-	m_display.setTextSize(3);
-	m_display.print("Lockout");
+	m_cursorX = 0U;
+	m_cursorY = 30U;
+	m_textSize = 3U;
+	print("Lockout");
 
-	m_display.setTextSize(1);
-	m_display.display();
+	m_textSize = 1U;
+	display();
 }
 
 void COLED::setQuitInt()
 {
 	m_mode = MODE_QUIT;
 
-	m_display.clearDisplay();
+	clearDisplay();
 	statusbar();
 
-	m_display.setCursor(0, 30);
-	m_display.setTextSize(3);
-	m_display.print("Stopped");
+	m_cursorX = 0U;
+	m_cursorY = 30U;
+	m_textSize = 3U;
+	print("Stopped");
 
-	m_display.setTextSize(1);
-	m_display.display();
+	m_textSize = 1U;
+	display();
 }
 
 void COLED::setFMInt()
 {
 	m_mode = MODE_FM;
 
-	m_display.clearDisplay();
+	clearDisplay();
 	statusbar();
 
-	m_display.setCursor(0, 30);
-	m_display.setTextSize(3);
-	m_display.print("FM");
+	m_cursorX = 0U;
+	m_cursorY = 30U;
+	m_textSize = 3U;
+	print("FM");
 
-	m_display.setTextSize(1);
-	m_display.display();
+	m_textSize = 1U;
+	display();
 }
 
 void COLED::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
 	m_mode = MODE_DSTAR;
 
-	m_display.clearDisplay();
-	m_display.fillRect(0, OLED_LINE3, m_display.width(), m_display.height(), BLACK); //clear everything beneath logo
+	clearDisplay();
+	fillRect(0U, OLED_LINE3, m_width, m_height, BLACK); //clear everything beneath logo
 
-	m_display.setCursor(0, OLED_LINE3);
-	m_display.printf("%s %.8s/%4.4s", type, my1, my2);
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE3;
 
-	m_display.setCursor(0, OLED_LINE4);
-	m_display.printf("-> %.8s", your);
+	char text[100U];
+	::sprintf(text, "%s %.8s/%4.4s", type, my1, my2);
+	print(text);
 
-	m_display.setCursor(0, OLED_LINE5);
-	m_display.printf("via %.8s", reflector);
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE4;
+	::sprintf(text, "-> %.8s", your);
+	print(text);
 
-	m_display.setCursor(0, OLED_LINE6);
-	m_display.printf("%s", m_ipAddress.c_str());
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE5;
+	::sprintf(text, "via %.8s", reflector);
+	print(text);
+
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE6;
+	print(m_ipAddress.c_str());
 
 	statusbar();
-	m_display.display();
+	display();
 }
 
 void COLED::clearDStarInt()
 {
-	m_display.fillRect(0, OLED_LINE3, m_display.width(), m_display.height(), BLACK); //clear everything beneath the logo
+	fillRect(0U, OLED_LINE3, m_width, m_height, BLACK); //clear everything beneath the logo
 
-	m_display.setCursor(40, OLED_LINE3);
-	m_display.print("Listening");
+	m_cursorX = 40U;
+	m_cursorY = OLED_LINE3;
+	print("Listening");
 
-	m_display.setCursor(0, OLED_LINE5);
-	m_display.printf("%s", m_ipAddress.c_str());
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE5;
+	print(m_ipAddress.c_str());
 
-	m_display.display();
+	display();
 }
 
 void COLED::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
@@ -369,7 +686,7 @@ void COLED::writeDMRInt(unsigned int slotNo, const std::string& src, bool group,
 int COLED::writeDMRIntEx(unsigned int slotNo, const class CUserDBentry& src, bool group, const std::string& dst, const char* type)
 {
 	if (m_mode != MODE_DMR) {
-		m_display.clearDisplay();
+		clearDisplay();
 		m_mode = MODE_DMR;
 		clearDMRInt(slotNo);
 	}
@@ -378,48 +695,67 @@ int COLED::writeDMRIntEx(unsigned int slotNo, const class CUserDBentry& src, boo
 	// If single slot, use lines 2-3
 	if (m_slot1Enabled && m_slot2Enabled) {
 		if (slotNo == 1U) {
-			m_display.fillRect(0, OLED_LINE2, m_display.width(), 40, BLACK);
+			fillRect(0U, OLED_LINE2, m_width, 40U, BLACK);
 
-			m_display.setCursor(0, OLED_LINE2);
-			m_display.printf("%s", CALLandNAME(src).c_str());
+			m_cursorX = 0U;
+			m_cursorY = OLED_LINE2;
+			print(CALLandNAME(src).c_str());
 
-			m_display.setCursor(0, OLED_LINE3);
-			m_display.printf("Slot: %i %s %s%s", slotNo, type, group ? "TG: " : "", dst.c_str());
+			m_cursorX = 0U;
+			m_cursorY = OLED_LINE3;
+
+			char text[100U];
+			::sprintf(text, "Slot: %i %s %s%s", slotNo, type, group ? "TG: " : "", dst.c_str());
+			print(text);
 		} else {
-			m_display.fillRect(0, OLED_LINE4, m_display.width(), 40, BLACK);
+			fillRect(0U, OLED_LINE4, m_width, 40U, BLACK);
 
-			m_display.setCursor(0, OLED_LINE4);
-			m_display.printf("%s", CALLandNAME(src).c_str());
+			m_cursorX = 0U;
+			m_cursorY = OLED_LINE4;
+			print(CALLandNAME(src).c_str());
 
-			m_display.setCursor(0, OLED_LINE5);
-			m_display.printf("Slot: %i %s %s%s",slotNo,type,group ? "TG: " : "", dst.c_str());
+			m_cursorX = 0U;
+			m_cursorY = OLED_LINE5;
+
+			char text[100U];
+			::sprintf(text, "Slot: %i %s %s%s",slotNo,type,group ? "TG: " : "", dst.c_str());
+			print(text);
 		}
 
-		m_display.fillRect(0, OLED_LINE6, m_display.width(), 20, BLACK);
+		fillRect(0U, OLED_LINE6, m_width, 20U, BLACK);
 
-		m_display.setCursor(0, OLED_LINE6);
-		m_display.printf("%s",m_ipAddress.c_str());
+		m_cursorX = 0U;
+		m_cursorY = OLED_LINE6;
+		print(m_ipAddress.c_str());
 	} else {
-		m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
+		fillRect(0U, OLED_LINE2, m_width, m_height, BLACK);
 
-		m_display.setCursor(0, OLED_LINE2);
-		m_display.printf("%s", CALLandNAME(src).c_str());
+		m_cursorX = 0U;
+		m_cursorY = OLED_LINE2;
+		print(CALLandNAME(src).c_str());
 
-		m_display.setCursor(0, OLED_LINE3);
-		m_display.printf("Slot: %i %s %s%s", slotNo, type, group ? "TG: " : "", dst.c_str());
+		m_cursorX = 0U;
+		m_cursorY = OLED_LINE3;
 
-		m_display.setCursor(0, OLED_LINE4);
-		m_display.printf("%s", src.get(keyCITY).c_str());
+		char text[100U];
+		::printf(text, "Slot: %i %s %s%s", slotNo, type, group ? "TG: " : "", dst.c_str());
+		print(text);
 
-		m_display.setCursor(0, OLED_LINE5);
-		m_display.printf("%s", src.get(keySTATE).c_str());
+		m_cursorX = 0U;
+		m_cursorY = OLED_LINE4;
+		print(src.get(keyCITY).c_str());
 
-		m_display.setCursor(0, OLED_LINE6);
-		m_display.printf("%s", src.get(keyCOUNTRY).c_str());
+		m_cursorX = 0U;
+		m_cursorY = OLED_LINE5;
+		print(src.get(keySTATE).c_str());
+
+		m_cursorX = 0U;
+		m_cursorY = OLED_LINE6;
+		print(src.get(keyCOUNTRY).c_str());
 	}
 
 	statusbar();
-	m_display.display();
+	display();
 
 	// must be 0, to avoid calling writeDMRInt() from CDisplay::writeDMR()
 	return 0;
@@ -431,89 +767,114 @@ void COLED::clearDMRInt(unsigned int slotNo)
 	// If single slot, use lines 2-3
 	if (m_slot1Enabled && m_slot2Enabled) {
 		if (slotNo == 1U) {
-			m_display.fillRect(0, OLED_LINE3, m_display.width(), 40, BLACK);
+			fillRect(0U, OLED_LINE3, m_width, 40U, BLACK);
 
-			m_display.setCursor(0, OLED_LINE3);
-			m_display.print("Slot: 1 Listening");
+			m_cursorX = 0U;
+			m_cursorY = OLED_LINE3;
+			print("Slot: 1 Listening");
 		} else {
-			m_display.fillRect(0, OLED_LINE5, m_display.width(), 40, BLACK);
+			fillRect(0U, OLED_LINE5, m_width, 40U, BLACK);
 
-			m_display.setCursor(0, OLED_LINE5);
-			m_display.print("Slot: 2 Listening");
+			m_cursorX = 0U;
+			m_cursorY = OLED_LINE5;
+			print("Slot: 2 Listening");
 		}
 	} else {
-		m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
+		fillRect(0U, OLED_LINE2, m_width, m_height, BLACK);
 
-		m_display.setCursor(0, OLED_LINE3);
-		m_display.printf("Slot: %i Listening",slotNo);
+		m_cursorX = 0U;
+		m_cursorY = OLED_LINE3;
+
+		char text[100U];
+		::sprintf(text, "Slot: %i Listening", slotNo);
+		print(text);
 	}
 
-	m_display.fillRect(0, OLED_LINE6, m_display.width(), 20, BLACK);
+	fillRect(0U, OLED_LINE6, m_width, 20U, BLACK);
 
-	m_display.setCursor(0, OLED_LINE6);
-	m_display.printf("%s", m_ipAddress.c_str());
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE6;
+ 	print(m_ipAddress.c_str());
 
-	m_display.display();
+	display();
 }
 
 void COLED::writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
 	m_mode = MODE_YSF;
 
-	m_display.clearDisplay();
-	m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
+	clearDisplay();
+	fillRect(0U, OLED_LINE2, m_width, m_height, BLACK);
 
-	m_display.setCursor(0, OLED_LINE4);
-	m_display.printf("%s %.10s", type, source);
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE4;
 
-	m_display.setCursor(0, OLED_LINE5);
-	m_display.printf("  DG-ID %u", dgid);
+	char text[100U];
+	::sprintf(text, "%s %.10s", type, source);
+	print(text);
+
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE5;
+
+	::sprintf(text, "  DG-ID %u", dgid);
+	print(text);
 
 	statusbar();
-	m_display.display();
+	display();
 }
 
 void COLED::clearFusionInt()
 {
-	m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
+	fillRect(0U, OLED_LINE2, m_width, m_height, BLACK);
 
-	m_display.setCursor(40, OLED_LINE4);
-	m_display.print("Listening");
+	m_cursorX = 40U;
+	m_cursorY = OLED_LINE4;
+	print("Listening");
 
-	m_display.setCursor(0, OLED_LINE6);
-	m_display.printf("%s", m_ipAddress.c_str());
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE6;
+	print(m_ipAddress.c_str());
 
-	m_display.display();
+	display();
 }
 
 void COLED::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
 {
 	m_mode = MODE_P25;
 
-	m_display.clearDisplay();
-	m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
+	clearDisplay();
+	fillRect(0U, OLED_LINE2, m_width, m_height, BLACK);
 
-	m_display.setCursor(0, OLED_LINE3);
-	m_display.printf("%s %.10s", type, source);
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE3;
 
-	m_display.setCursor(0, OLED_LINE4);
-	m_display.printf("  %s%u", group ? "TG" : "", dest);
+	char text[100U];
+	::sprintf(text, "%s %.10s", type, source);
+	print(text);
+
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE4;
+
+	::sprintf(text, "  %s%u", group ? "TG" : "", dest);
+	print(text);
 
 	statusbar();
-	m_display.display();
+	display();
 }
 
 void COLED::clearP25Int()
 {
-	m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
+	fillRect(0U, OLED_LINE2, m_width, m_height, BLACK);
 
-	m_display.setCursor(40, OLED_LINE4);
-	m_display.print("Listening");
+	m_cursorX = 40U;
+	m_cursorY = OLED_LINE4;
+	print("Listening");
 
-	m_display.setCursor(0, OLED_LINE6);
-	m_display.printf("%s", m_ipAddress.c_str());
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE6;
+	print(m_ipAddress.c_str());
 
-	m_display.display();
+	display();
 }
 
 void COLED::writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type)
@@ -528,26 +889,36 @@ int COLED::writeNXDNIntEx(const class CUserDBentry& source, bool group, unsigned
 {
 	m_mode = MODE_NXDN;
 
-	m_display.clearDisplay();
-	m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
+	clearDisplay();
+	fillRect(0U, OLED_LINE2, m_width, m_height, BLACK);
 
-	m_display.setCursor(0, OLED_LINE2);
-	m_display.printf("%s %s", type, CALLandNAME(source).c_str());
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE2;
 
-	m_display.setCursor(0, OLED_LINE3);
-	m_display.printf("  %s%u", group ? "TG" : "", dest);
+	char text[100U];
+	::sprintf(text, "%s %s", type, CALLandNAME(source).c_str());
+	print(text);
 
-	m_display.setCursor(0, OLED_LINE4);
-	m_display.printf("%s", source.get(keyCITY).c_str());
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE3;
 
-	m_display.setCursor(0, OLED_LINE5);
-	m_display.printf("%s", source.get(keySTATE).c_str());
+	::sprintf(text, "  %s%u", group ? "TG" : "", dest);
+	print(text);
 
-	m_display.setCursor(0, OLED_LINE6);
-	m_display.printf("%s", source.get(keyCOUNTRY).c_str());
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE4;
+	print(source.get(keyCITY).c_str());
+
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE5;
+	print(source.get(keySTATE).c_str());
+
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE6;
+	print(source.get(keyCOUNTRY).c_str());
 
 	statusbar();
-	m_display.display();
+	display();
 
 	// must be 0, to avoid calling writeNXDNInt() from CDisplay::writeNXDN()
 	return 0;
@@ -555,155 +926,462 @@ int COLED::writeNXDNIntEx(const class CUserDBentry& source, bool group, unsigned
 
 void COLED::clearNXDNInt()
 {
-	m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
+	fillRect(0U, OLED_LINE2, m_width, m_height, BLACK);
 
-	m_display.setCursor(40, OLED_LINE3);
-	m_display.print("Listening");
+	m_cursorX = 40U;
+	m_cursorY = OLED_LINE3;
+	print("Listening");
 
-	m_display.setCursor(0, OLED_LINE6);
-	m_display.printf("%s", m_ipAddress.c_str());
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE6;
+	print(m_ipAddress.c_str());
 
-	m_display.display();
+	display();
 }
 
 void COLED::writeM17Int(const char* source, const char* dest, const char* type)
 {
 	m_mode = MODE_M17;
 
-	m_display.clearDisplay();
-	m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
+	clearDisplay();
+	fillRect(0U, OLED_LINE2, m_width, m_height, BLACK);
 
-	m_display.setCursor(0, OLED_LINE3);
-	m_display.printf("%s %s", type, source);
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE3;
 
-	m_display.setCursor(0, OLED_LINE4);
-	m_display.printf("  %s", dest);
+	char text[100U];
+	::sprintf(text, "%s %s", type, source);
+	print(text);
+
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE4;
+
+	::sprintf(text, "  %s", dest);
+	print(text);
 
 	statusbar();
-	m_display.display();
+	display();
 }
 
 void COLED::clearM17Int()
 {
-	m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
+	fillRect(0U, OLED_LINE2, m_width, m_height, BLACK);
 
-	m_display.setCursor(40, OLED_LINE4);
-	m_display.print("Listening");
+	m_cursorX = 40U;
+	m_cursorY = OLED_LINE4;
+	print("Listening");
 
-	m_display.setCursor(0, OLED_LINE6);
-	m_display.printf("%s", m_ipAddress.c_str());
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE6;
+	print(m_ipAddress.c_str());
 
-	m_display.display();
+	display();
 }
 
 void COLED::writePOCSAGInt(uint32_t ric, const std::string& message)
 {
 	m_mode = MODE_POCSAG;
 
-	m_display.clearDisplay();
-	m_display.fillRect(0, OLED_LINE1, m_display.width(), m_display.height(), BLACK);
+	clearDisplay();
+	fillRect(0U, OLED_LINE1, m_width, m_height, BLACK);
 
-	m_display.setCursor(0, OLED_LINE3);
-	m_display.printf("RIC: %u", ric);
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE3;
 
-	m_display.setTextWrap(true);	// text wrap temorally enable
+	char text[100U];
+	::sprintf(text, "RIC: %u", ric);
+	print(text);
 
-	m_display.setCursor(0, OLED_LINE5);
-	m_display.printf("MSG: %s", message.c_str());
+	m_textWrap = true;	// text wrap temorally enable
 
-	m_display.setTextWrap(false);
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE5;
+
+	::sprintf(text, "MSG: %s", message.c_str());
+	print(text);
+
+	m_textWrap = false;
 
 	statusbar();
-	m_display.display();
+	display();
 }
 
 void COLED::clearPOCSAGInt()
 {
-	m_display.fillRect(0, OLED_LINE1, m_display.width(), m_display.height(), BLACK);
+	fillRect(0U, OLED_LINE1, m_width, m_height, BLACK);
+		
+	m_cursorX = 40U;
+	m_cursorY = OLED_LINE4;
+	print("Listening");
 
-	m_display.setCursor(40, OLED_LINE4);
-	m_display.print("Listening");
+	m_cursorX = 0U;
+	m_cursorY = OLED_LINE6;
+	print(m_ipAddress.c_str());
 
-	m_display.setCursor(0, OLED_LINE6);
-	m_display.printf("%s", m_ipAddress.c_str());
-
-	m_display.display();
+	display();
 }
 
 void COLED::writeCWInt()
 {
-	m_display.clearDisplay();
+	clearDisplay();
 
-	m_display.setCursor(0, 30);
-	m_display.setTextSize(3);
+	m_cursorX = 0U;
+	m_cursorY = 30U;
+	m_textSize = 3U;
 
-	m_display.print("CW TX");
+	print("CW TX");
 
-	m_display.setTextSize(1);
-	m_display.display();
+	m_textSize = 1U;
+	display();
 
 	if (m_displayScroll)
-		m_display.startscrollleft(0x02U, 0x0FU);
+		startscrollleft(0x02U, 0x0FU);
 }
 
 void COLED::clearCWInt()
 {
-	m_display.clearDisplay();
+	clearDisplay();
 
-	m_display.setCursor(0, 30);
-	m_display.setTextSize(3);
+	m_cursorX = 0U;
+	m_cursorY = 30U;
+	m_textSize = 3U;
 
-	m_display.print("Idle");
+	print("Idle");
 
-	m_display.setTextSize(1);
-	m_display.display();
+	m_textSize = 1U;
+	display();
 
 	if (m_displayScroll)
-		m_display.startscrollleft(0x02U, 0x0FU);
+		startscrollleft(0x02U, 0x0FU);
 }
 
 void COLED::close()
 {
-	m_display.clearDisplay();
-	m_display.fillRect(0, 0, m_display.width(), 16, BLACK);
+	clearDisplay();
+	fillRect(0U, 0, m_width, 16, BLACK);
 
 	if (m_displayScroll)
-		m_display.startscrollleft(0x00U, 0x01U);
+		startscrollleft(0x00U, 0x01U);
 
-	m_display.setCursor(0, 0);
-	m_display.setTextSize(2);
+	m_cursorX = 0U;
+	m_cursorY = 0U;
+	m_textSize = 2U;
 
-	m_display.print("-CLOSE-");
+	print("-CLOSE-");
 
-	m_display.display();
+	display();
 
 	m_display.close();
+
+	delete[] m_oledBuffer;
 }
 
 void COLED::statusbar()
 {
-	m_display.stopscroll();
-	m_display.fillRect(0, 0, m_display.width(), 16, BLACK);
-	m_display.setTextColor(WHITE);
+	stopscroll();
+	fillRect(0U, 0, m_width, 16, BLACK);
+	m_textColor = WHITE;
 
-	m_display.setCursor(0, 0);
+	m_cursorX = 0U;
+	m_cursorY = 0U;
+
 	if (m_mode == MODE_DMR)
-		m_display.drawBitmap(0, 0, logo_dmr_bmp, 128, 16, WHITE);
+		drawBitmap(0U, 0U, logo_dmr_bmp, 128U, 16U, WHITE);
 	else if (m_mode == MODE_DSTAR)
-		m_display.drawBitmap(0, 0, logo_dstar_bmp, 128, 16, WHITE);
+		drawBitmap(0U, 0U, logo_dstar_bmp, 128U, 16U, WHITE);
 	else if (m_mode == MODE_YSF)
-		m_display.drawBitmap(0, 0, logo_fusion_bmp, 128, 16, WHITE);
+		drawBitmap(0U, 0U, logo_fusion_bmp, 128U, 16U, WHITE);
 	else if (m_mode == MODE_P25)
-		m_display.drawBitmap(0, 0, logo_P25_bmp, 128, 16, WHITE);
+		drawBitmap(0U, 0U, logo_P25_bmp, 128U, 16U, WHITE);
 	else if (m_mode == MODE_NXDN)
-		m_display.drawBitmap(0, 0, logo_NXDN_bmp, 128, 16, WHITE);
+		drawBitmap(0U, 0U, logo_NXDN_bmp, 128U, 16U, WHITE);
 	else if (m_mode == MODE_M17)
-		m_display.drawBitmap(0, 0, logo_M17_bmp, 128, 16, WHITE);
+		drawBitmap(0U, 0U, logo_M17_bmp, 128U, 16U, WHITE);
 	else if (m_mode == MODE_POCSAG)
-		m_display.drawBitmap(0, 0, logo_POCSAG_bmp, 128, 16, WHITE);
+		drawBitmap(0U, 0U, logo_POCSAG_bmp, 128U, 16U, WHITE);
 	else if (m_displayLogoScreensaver)
-		m_display.drawBitmap(0, 0, logo_glcd_bmp, 128, 16, WHITE);
+		drawBitmap(0U, 0U, logo_glcd_bmp, 128U, 16U, WHITE);
 
 	if (m_displayScroll)
-		m_display.startscrollleft(0x00U, 0x01U);
+		startscrollleft(0x00U, 0x01U);
+}
+
+// clear everything (in the buffer)
+void COLED::clearDisplay()
+{
+	::memset(m_oledBuffer, 0x00U, m_width * m_height);
+}
+
+// startscrollleft
+// Activate a right handed scroll for rows start through stop
+// Hint, the display is 16 rows tall. To scroll the whole display, run:
+// display.scrollright(0x00U, 0x0F) 
+void COLED::startscrollleft(uint8_t start, uint8_t stop)
+{
+	sendCommand(SSD_Left_Horizontal_Scroll);
+	sendCommand(0X00);
+	sendCommand(start);
+	sendCommand(0X00);
+	sendCommand(stop);
+	sendCommand(0X01);
+	sendCommand(0XFF);
+	sendCommand(SSD_Activate_Scroll);
+}
+
+// startscrolldiagleft
+// Activate a diagonal scroll for rows start through stop
+// Hint, the display is 16 rows tall. To scroll the whole display, run:
+// display.scrollright(0x00U, 0x0F) 
+void COLED::startscrolldiagleft(uint8_t start, uint8_t stop)
+{
+	sendCommand(SSD1306_SET_VERTICAL_SCROLL_AREA);
+	sendCommand(0X00);
+	sendCommand(m_height);
+	sendCommand(SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL);
+	sendCommand(0X00);
+	sendCommand(start);
+	sendCommand(0X00);
+	sendCommand(stop);
+	sendCommand(0X01);
+	sendCommand(SSD_Activate_Scroll);
+}
+
+void COLED::stopscroll(void)
+{
+	sendCommand(SSD_Deactivate_Scroll);
+}
+
+void COLED::setBrightness(uint8_t brightness)
+{
+	sendCommand(SSD_Set_ContrastLevel);
+	sendCommand(brightness);
+}
+
+void COLED::invertDisplay(bool invert)
+{
+	if (invert)
+		sendCommand(SSD_Inverse_Display);
+	else
+		sendCommand(SSD1306_Normal_Display);
+	}
+
+void COLED::fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color)
+{
+	// stupidest version - update in subclasses if desired!
+	for (uint16_t i = x; i < x + w; i++)
+		drawLine(i, y, i, y + h - 1, color);
+}
+
+// bresenham's algorithm - thx wikpedia
+void COLED::drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t color)
+{
+	int16_t steep = abs(y1 - y0) > abs(x1 - x0);
+
+	if (steep) {
+		uint16_t temp = x0;
+		x0 = y0;
+		y0 = temp;
+
+		temp = x1;
+		x1 = y1;
+		y1 = temp;
+	}
+
+	if (x0 > x1) {
+		uint16_t temp = x0;
+		x0 = x1;
+		x1 = temp;
+
+		temp = y0;
+		y0 = y1;
+		y1 = temp;
+	}
+
+	int16_t dx, dy;
+	dx = x1 - x0;
+	dy = abs(y1 - y0);
+
+	int16_t err = dx / 2;
+	int16_t ystep;
+
+	if (y0 < y1)
+		ystep = 1;
+	else
+		ystep = -1;
+
+	for (; x0 <= x1; x0++) {
+		if (steep)
+			drawPixel(y0, x0, color);
+		else
+			drawPixel(x0, y0, color);
+		err -= dy;
+
+		if (err < 0) {
+			y0 += ystep;
+			err += dx;
+		}
+	}
+}
+
+void COLED::drawBitmap(uint16_t x, uint16_t y, const uint8_t* bitmap, uint16_t w, uint16_t h, uint16_t color)
+{
+	uint16_t byteWidth = (w + 7U) / 8U;
+
+	for (uint16_t j = 0U; j < h; j++) {
+		for (uint16_t i = 0U; i < w; i++) {
+			if (*(bitmap + j * byteWidth + i / 8) & (128 >> (i & 7)))
+				drawPixel(x + i, y + j, color);
+		}
+	}
+}
+
+// the most basic function, set a single pixel
+void COLED::drawPixel(uint16_t x, uint16_t y, uint16_t color)
+{
+	if ((x < 0) || (x >= m_width) || (y < 0) || (y >= m_height))
+		return;
+
+	if (oled_type == OLED_SEEED_I2C_96x96) {
+		// Get where to do the change in the buffer
+		uint8_t* p = m_oledBuffer + (x + (y / 2) * m_width);
+
+		// Get old value to not touch the other nible
+		uint8_t c = *p;
+
+		// We are on High nible ?
+		if (((y / 2) & 1) == 1) {
+			c &= 0x0F;
+			c |= (color == WHITE ? GRAY_H : 0x00) << 4;
+		} else {
+			c &= 0xF0;
+			c |= (color == WHITE ? GRAY_L : 0x00);
+		}
+
+		// set new nible value leaving the other untouched
+		*p = c;
+	} else {
+		// Get where to do the change in the buffer
+		uint8_t* p = m_oledBuffer + (x + (y / 8) * m_width);
+
+		// x is which column
+		if (color == WHITE)
+			*p |= _BV((y % 8));
+		else
+			*p &= ~_BV((y % 8));
+	}
+}
+
+// the print function
+void COLED::print(const char* text)
+{
+	const char* p = text;
+
+	while (*p != 0x00U)
+		write(uint8_t(*p++));
+}
+
+void COLED::display(void)
+{
+	sendCommand(SSD1306_Set_Lower_Column_Start_Address | 0x0); // low col = 0
+	sendCommand(SSD1306_Set_Higher_Column_Start_Address | 0x0); // hi col = 0
+	sendCommand(SSD1306_Set_Start_Line | 0x0); // line #0
+
+	// pointer to OLED data buffer
+	uint8_t* p = m_oledBuffer;
+
+	uint8_t buff[17U];
+
+	// Setup D/C to switch to data mode
+	buff[0] = SSD_Data_Mode;
+
+	if (oled_type == OLED_SH1106_I2C_128x64) {
+		for (uint8_t k = 0U; k < 8U; k++) {
+			sendCommand(0xB0U + k);//set page addressSSD_Data_Mode;
+			sendCommand(0x02U);//set lower column address
+			sendCommand(0x10U);//set higher column address
+
+			for (uint8_t i = 0U; i < 8U; i++) {
+				for (uint8_t x = 1U; x <= 16U; x++)
+					buff[x] = *p++;
+
+				fastI2Cwrite(buff, 17U);
+			}
+		}
+	} else {
+		// loop trough all OLED buffer and 
+		// send a bunch of 16 data byte in one xmission
+		for (uint16_t i = 0U; i < (m_width * m_height); i += 16U) {
+			for (uint8_t x = 1U; x <= 16U; x++)
+				buff[x] = *p++;
+
+			fastI2Cwrite(buff, 17U);
+		}
+	}
+}
+
+void COLED::sendCommand(uint8_t c)
+{
+	char buff[2U];
+
+	// Clear D/C to switch to command mode
+	buff[0] = SSD_Command_Mode;
+	buff[1] = c;
+
+	// Write Data on I2C
+	fastI2Cwrite(buff, 2U);
+}
+
+size_t COLED::write(uint8_t c)
+{
+	if (c == '\n') {
+		m_cursorY += m_textSize * 8U;
+		m_cursorX = 0U;
+	} else if (c == '\r') {
+		// skip em
+	} else {
+		drawChar(m_cursorX, m_cursorY, c, m_textColor, m_textBGColor, m_textSize);
+		m_cursorX += m_textSize * 6U;
+
+		if (m_textWrap && (m_cursorX > (m_width - m_textSize * 6U))) {
+			m_cursorY += m_textSize * 8U;
+			m_cursorX = 0U;
+		}
+	}
+
+	return 1;
+}
+
+// draw a character
+void COLED::drawChar(uint16_t x, uint16_t y, unsigned char c, uint16_t color, uint16_t bg, uint8_t size)
+{
+	if ((x >= m_width) || // Clip right
+		(y >= m_height) || // Clip bottom
+		((x + 5 * size - 1) < 0) || // Clip left
+		((y + 8 * size - 1) < 0))   // Clip top
+		return;
+
+	for (int8_t i = 0; i < 6; i++) {
+		uint8_t line;
+		if (i == 5)
+			line = 0x0;
+		else
+			line = FONT[(c * 5) + i];
+
+		for (uint8_t j = 0U; j < 8U; j++) {
+			if (line & 0x1) {
+				if (size == 1) // default size
+					drawPixel(x + i, y + j, color);
+				else  // big size
+					fillRect(x + (i * size), y + (j * size), size, size, color);
+			} else if (bg != color) {
+				if (size == 1) // default size
+					drawPixel(x + i, y + j, bg);
+				else
+					// big size
+					fillRect(x + i * size, y + j * size, size, size, bg);
+			}
+
+			line >>= 1;
+		}
+	}
 }

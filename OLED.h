@@ -19,14 +19,6 @@
 #if !defined(OLED_H)
 #define	OLED_H
 
-#define OLED_STATUSBAR 0
-#define OLED_LINE1 8 //16
-#define OLED_LINE2 18 //26 
-#define OLED_LINE3 28 //36
-#define OLED_LINE4 37 //46
-#define OLED_LINE5 47 //56
-#define OLED_LINE6 57
-
 #include "Display.h"
 #include "Defines.h"
 #include "UserDBentry.h"
@@ -77,20 +69,45 @@ public:
 	virtual void close();
 
 private:
-	unsigned char m_mode;
-	unsigned char m_displayType;
-	unsigned char m_displayBrightness;
-	bool          m_displayInvert;
-	bool          m_displayScroll;
-	bool          m_displayRotate;
-	bool          m_displayLogoScreensaver;
-	bool          m_slot1Enabled;
-	bool          m_slot2Enabled;
-	std::string   m_ipAddress;
-	unsigned int  m_passCounter;
-	ArduiPi_OLED  m_display;
+	unsigned char  m_mode;
+	unsigned char  m_displayType;
+	unsigned char  m_displayBrightness;
+	bool           m_displayInvert;
+	bool           m_displayScroll;
+	bool           m_displayRotate;
+	bool           m_displayLogoScreensaver;
+	bool           m_slot1Enabled;
+	bool           m_slot2Enabled;
+	std::string    m_ipAddress;
+	unsigned int   m_passCounter;
+
+	unsigned char* m_oledBuffer;
+	uint8_t        m_width;
+	uint8_t        m_height;
+	bool           m_textWrap;
+	uint8_t        m_cursorX;
+	uint8_t        m_cursorY;
+	uint8_t        m_textSize;
+	uint16_t       m_textColor;
+	uint16_t       m_textBGColor;
 
 	void statusbar();
+	void clearDisplay();
+	void startscrollleft(uint8_t start, uint8_t stop);
+	void startscrolldiagleft(uint8_t start, uint8_t stop);
+	void stopscroll();
+	void setBrightness(uint8_t brightness);
+	void invertDisplay(bool invert);
+	void fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color);
+	void drawLine(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1, uint16_t color);
+	void drawBitmap(uint16_t x, uint16_t y, const uint8_t* bitmap, uint16_t w, uint16_t h, uint16_t color);
+	void drawPixel(uint16_t x, uint16_t y, uint16_t color);
+	void print(const char* text);
+	void display();
+	void sendCommand(uint8_t c);
+	size_t write(uint8_t c);
+	void drawChar(uint16_t x, uint16_t y, unsigned char c, uint16_t color, uint16_t bg, uint8_t size);
+
 };
 
 #endif
