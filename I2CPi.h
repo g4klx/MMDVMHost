@@ -26,7 +26,7 @@ public:
 	CI2CPi();
 	virtual ~CI2CPi();
 
-	virtual bool open();
+	virtual bool open(unsigned char displayType);
 
 	virtual bool write(const uint8_t* data, uint16_t length);
 

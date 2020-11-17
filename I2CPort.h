@@ -25,7 +25,7 @@ class II2CPort {
 public:
 	virtual ~II2CPort() = 0;
 
-	virtual bool open() = 0;
+	virtual bool open(unsigned char displayType) = 0;
 
 	virtual bool write(const uint8_t* data, uint16_t length) = 0;
 

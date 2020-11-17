@@ -16,25 +16,33 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef	I2CMODEM_H
-#define	I2CMODEM_H
+#include "I2CPi.h"
 
-#include "I2CPort.h"
-#include "Modem.h"
+#include "bcm2835.h"
 
-class CI2CModem : public II2CPort {
-public:
-	CI2CModem(IModem* modem);
-	virtual ~CI2CModem();
+CI2CPi::CI2CPi()
+{
+}
 
-	virtual bool open(unsigned char displayType);
+CI2CPi::~CI2CPi()
+{
+}
 
-	virtual bool write(const uint8_t* data, uint16_t length);
+bool CI2CPi::open(unsigned char displayType)
+{
+}
 
-	virtual void close();
+bool CI2CPi::write(const uint8_t* data, uint16_t length)
+{
+	bcm2835_i2c_write(data, length);
 
-private:
-	IModem* m_modem;
-};
+	return true;
+}
 
-#endif
+void CI2CPi::close()
+{
+	bcm2835_i2c_end();
+
+	// Release Raspberry I/O control
+	bcm2835_close();
+}

@@ -20,6 +20,7 @@
 #include "Log.h"
 #include "NetworkInfo.h"
 
+#include <cstring>
 #include <cassert>
 
 const uint16_t BLACK = 0U;
@@ -61,6 +62,14 @@ const uint8_t SSD1306_Set_Start_Line     = 0x40U;
 
 // Arduino Compatible Macro
 #define _BV(bit) (1 << (bit))
+
+const uint16_t OLED_ADAFRUIT_SPI_128x32 = 0U;
+const uint16_t OLED_ADAFRUIT_SPI_128x64 = 1U;
+const uint16_t OLED_ADAFRUIT_I2C_128x32 = 2U;
+const uint16_t OLED_ADAFRUIT_I2C_128x64 = 3U;
+const uint16_t OLED_SEEED_I2C_128x64    = 4U;
+const uint16_t OLED_SEEED_I2C_96x96     = 5U;
+const uint16_t OLED_SH1106_I2C_128x64   = 6U;
 
 // standard ascii 5x7 font
 const uint8_t FONT[] = {
@@ -497,6 +506,27 @@ m_textColor(0xFFFFU),
 m_textBGColor(0xFFFFU)
 {
 	assert(port != NULL);
+
+	switch (displayType) {
+	case OLED_ADAFRUIT_SPI_128x32:
+	case OLED_ADAFRUIT_I2C_128x32:
+		m_width  = 128U;
+		m_height = 32U;
+		break;
+	case OLED_ADAFRUIT_SPI_128x64:
+	case OLED_ADAFRUIT_I2C_128x64:
+	case OLED_SEEED_I2C_128x64:
+	case OLED_SH1106_I2C_128x64:
+		m_width  = 128U;
+		m_height = 64U;
+		break;
+	case OLED_SEEED_I2C_96x96:
+		m_width  = 96U;
+		m_height = 96U;
+		break;
+	default:
+		break;
+	}
 }
 
 COLED::~COLED()
@@ -505,11 +535,14 @@ COLED::~COLED()
 
 bool COLED::open()
 {
+	if (m_width == 0U || m_height == 0U)
+		return false;
+
 	// I2C change parameters to fit to your LCD
 	if (!m_display.init(OLED_I2C_RESET, m_displayType))
 		return false;
 
-	bool ret = m_port->open();
+	bool ret = m_port->open(m_displayType);
 	if (!ret)
 		return false;
 
@@ -1079,8 +1112,6 @@ void COLED::close()
 
 	display();
 
-	m_display.close();
-
 	m_port->close();
 
 	delete[] m_oledBuffer;
@@ -1129,12 +1160,12 @@ void COLED::clearDisplay()
 void COLED::startscrollleft(uint8_t start, uint8_t stop)
 {
 	sendCommand(SSD_Left_Horizontal_Scroll);
-	sendCommand(0X00);
+	sendCommand(0x00U);
 	sendCommand(start);
-	sendCommand(0X00);
+	sendCommand(0x00U);
 	sendCommand(stop);
-	sendCommand(0X01);
-	sendCommand(0XFF);
+	sendCommand(0x01U);
+	sendCommand(0xFFU);
 	sendCommand(SSD_Activate_Scroll);
 }
 
@@ -1145,14 +1176,14 @@ void COLED::startscrollleft(uint8_t start, uint8_t stop)
 void COLED::startscrolldiagleft(uint8_t start, uint8_t stop)
 {
 	sendCommand(SSD1306_SET_VERTICAL_SCROLL_AREA);
-	sendCommand(0X00);
+	sendCommand(0x00U);
 	sendCommand(m_height);
 	sendCommand(SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL);
-	sendCommand(0X00);
+	sendCommand(0x00U);
 	sendCommand(start);
-	sendCommand(0X00);
+	sendCommand(0x00U);
 	sendCommand(stop);
-	sendCommand(0X01);
+	sendCommand(0x01U);
 	sendCommand(SSD_Activate_Scroll);
 }
 
@@ -1251,7 +1282,7 @@ void COLED::drawPixel(uint16_t x, uint16_t y, uint16_t color)
 	if ((x < 0) || (x >= m_width) || (y < 0) || (y >= m_height))
 		return;
 
-	if (oled_type == OLED_SEEED_I2C_96x96) {
+	if (m_displayType == OLED_SEEED_I2C_96x96) {
 		// Get where to do the change in the buffer
 		uint8_t* p = m_oledBuffer + (x + (y / 2) * m_width);
 
@@ -1304,7 +1335,7 @@ void COLED::display(void)
 	// Setup D/C to switch to data mode
 	buff[0] = SSD_Data_Mode;
 
-	if (oled_type == OLED_SH1106_I2C_128x64) {
+	if (m_displayType == OLED_SH1106_I2C_128x64) {
 		for (uint8_t k = 0U; k < 8U; k++) {
 			sendCommand(0xB0U + k);//set page addressSSD_Data_Mode;
 			sendCommand(0x02U);//set lower column address

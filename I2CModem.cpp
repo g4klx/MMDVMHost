@@ -30,7 +30,7 @@ CI2CModem::~CI2CModem()
 {
 }
 
-bool CI2CModem::open()
+bool CI2CModem::open(unsigned char displayType)
 {
 	return true;
 }
