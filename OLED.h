@@ -36,7 +36,6 @@
 #include "ArduiPi_OLED_lib.h"
 #include "Adafruit_GFX.h"
 #include "ArduiPi_OLED.h"
-#include "NetworkInfo.h"
 
 class COLED : public CDisplay 
 {
@@ -96,7 +95,8 @@ private:
   bool          m_displayLogoScreensaver;
   bool          m_slot1Enabled;
   bool          m_slot2Enabled;
-  std::string   m_ipaddress;
+  std::string   m_ipAddress;
+  unsigned int  m_passCounter;
   ArduiPi_OLED  m_display;
 
   void OLED_statusbar();
