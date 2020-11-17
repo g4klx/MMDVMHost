@@ -26,7 +26,7 @@
 #include "Nextion.h"
 #include "CASTInfo.h"
 #include "I2CModem.h"
-#include "I2CPort.h""
+#include "I2CPort.h"
 #include "Conf.h"
 #include "Modem.h"
 #include "OLED.h"
@@ -37,7 +37,7 @@
 #endif
 
 #if defined(OLED)
-#include "I2CPi.h""
+#include "I2CPi.h"
 #endif
 
 #include <cstdio>
