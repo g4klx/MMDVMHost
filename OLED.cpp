@@ -19,16 +19,13 @@
 #include "OLED.h"
 #include "Log.h"
 #include "NetworkInfo.h"
+#include "Thread.h"
 
 #include <cstring>
 #include <cassert>
 
 const uint16_t BLACK = 0U;
 const uint16_t WHITE = 1U;
-
-// Init gray level for text. Default:Brightest White
-const uint8_t GRAY_H = 0xF0U;
-const uint8_t GRAY_L = 0x0FU;
 
 const uint16_t OLED_STATUSBAR = 0U;
 const uint16_t OLED_LINE1 = 8U; //16
@@ -41,35 +38,72 @@ const uint16_t OLED_LINE6 = 57U;
 const uint8_t SSD_Command_Mode = 0x00U;  /* C0 and DC bit are 0         */
 const uint8_t SSD_Data_Mode    = 0x40U;  /* C0 bit is 0 and DC bit is 1 */
 
-const uint8_t SSD_Inverse_Display   = 0xA7U;
+const uint8_t SSD_Set_Segment_Remap  = 0xA0U;
+const uint8_t SSD_Inverse_Display    = 0xA7U;
+const uint8_t SSD_Set_Muliplex_Ratio = 0xA8U;
+
+const uint8_t SSD_Display_Off = 0xAEU;
+const uint8_t SSD_Display_On  = 0xAFU;
+
 const uint8_t SSD_Set_ContrastLevel = 0x81U;
+
+const uint8_t SSD_External_Vcc = 0x01U;
+const uint8_t SSD_Internal_Vcc = 0x02U;
+
+const uint8_t SSD_Set_Column_Address = 0x21U;
+const uint8_t SSD_Set_Page_Address   = 0x22U;
 
 const uint8_t SSD_Activate_Scroll   = 0x2FU;
 const uint8_t SSD_Deactivate_Scroll = 0x2EU;
 
-const uint8_t SSD_Left_Horizontal_Scroll = 0x27U;
+const uint8_t SSD_Right_Horizontal_Scroll = 0x26U;
+const uint8_t SSD_Left_Horizontal_Scroll  = 0x27U;
+
+const uint8_t SSD1306_Entire_Display_Resume = 0xA4U;
+const uint8_t SSD1306_Entire_Display_On     = 0xA5U;
 
 const uint8_t SSD1306_Normal_Display = 0xA6U;
+
+const uint8_t SSD1306_Set_Display_Offset                   = 0xD3U;
+const uint8_t SSD1306_Set_Com_Pins                         = 0xDAU;
+const uint8_t SSD1306_Set_Vcomh_Deselect_Level             = 0xDBU;
+const uint8_t SSD1306_Set_Display_Clock_Div                = 0xD5U;
+const uint8_t SSD1306_Set_Precharge_Period                 = 0xD9U;
+const uint8_t SSD1306_Set_Lower_Column_Start_Address       = 0x00U;
+const uint8_t SSD1306_Set_Higher_Column_Start_Address      = 0x10U;
+const uint8_t SSD1306_Set_Start_Line                       = 0x40U;
+const uint8_t SSD1306_Set_Memory_Mode                      = 0x20U;
+const uint8_t SSD1306_Set_Com_Output_Scan_Direction_Normal = 0xC0U;
+const uint8_t SSD1306_Set_Com_Output_Scan_Direction_Remap  = 0xC8U;
+const uint8_t SSD1306_Charge_Pump_Setting                  = 0x8DU;
 
 // Scrolling #defines
 const uint8_t SSD1306_SET_VERTICAL_SCROLL_AREA             = 0xA3U;
 const uint8_t SSD1306_VERTICAL_AND_RIGHT_HORIZONTAL_SCROLL = 0x29U;
 const uint8_t SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL  = 0x2AU;
 
-const uint8_t SSD1306_Set_Lower_Column_Start_Address       = 0x00U;
-const uint8_t SSD1306_Set_Higher_Column_Start_Address      = 0x10U;
-const uint8_t SSD1306_Set_Start_Line     = 0x40U;
+const uint8_t SSD1308_Normal_Display = 0xA6U;
+
+const uint8_t SSD1327_Set_Display_Start_Line = 0xA1U;
+const uint8_t SSD1327_Set_Display_Offset     = 0xA2U;
+const uint8_t SSD1327_Normal_Display         = 0xA4U;
+const uint8_t SSD1327_Set_Display_Clock_Div  = 0xB3U;
+const uint8_t SSD1327_Set_Command_Lock       = 0xFDU;
+const uint8_t SSD1327_Set_Column_Address     = 0x15U;
+const uint8_t SSD1327_Set_Row_Address        = 0x75U;
+
+const uint8_t SH1106_Set_Page_Address = 0xB0U;
 
 // Arduino Compatible Macro
 #define _BV(bit) (1 << (bit))
 
-const uint16_t OLED_ADAFRUIT_SPI_128x32 = 0U;
-const uint16_t OLED_ADAFRUIT_SPI_128x64 = 1U;
-const uint16_t OLED_ADAFRUIT_I2C_128x32 = 2U;
-const uint16_t OLED_ADAFRUIT_I2C_128x64 = 3U;
-const uint16_t OLED_SEEED_I2C_128x64    = 4U;
-const uint16_t OLED_SEEED_I2C_96x96     = 5U;
-const uint16_t OLED_SH1106_I2C_128x64   = 6U;
+const unsigned char OLED_ADAFRUIT_SPI_128x32 = 0U;
+const unsigned char OLED_ADAFRUIT_SPI_128x64 = 1U;
+const unsigned char OLED_ADAFRUIT_I2C_128x32 = 2U;
+const unsigned char OLED_ADAFRUIT_I2C_128x64 = 3U;
+const unsigned char OLED_SEEED_I2C_128x64    = 4U;
+const unsigned char OLED_SEEED_I2C_96x96     = 5U;
+const unsigned char OLED_SH1106_I2C_128x64   = 6U;
 
 // standard ascii 5x7 font
 const uint8_t FONT[] = {
@@ -496,6 +530,7 @@ m_slot2Enabled(slot2Enabled),
 m_ipAddress(),
 m_passCounter(0U),
 m_oledBuffer(NULL),
+m_oledBufferSize(0U),
 m_width(0U),
 m_height(0U),
 m_textWrap(true),
@@ -503,7 +538,9 @@ m_cursorX(0U),
 m_cursorY(0U),
 m_textSize(1U),
 m_textColor(0xFFFFU),
-m_textBGColor(0xFFFFU)
+m_textBGColor(0xFFFFU),
+m_grayH(0x00U),		// XXX
+m_grayL(0x00U)		// XXX
 {
 	assert(port != NULL);
 
@@ -538,25 +575,27 @@ bool COLED::open()
 	if (m_width == 0U || m_height == 0U)
 		return false;
 
-	// I2C change parameters to fit to your LCD
-	if (!m_display.init(OLED_I2C_RESET, m_displayType))
-		return false;
-
 	bool ret = m_port->open(m_displayType);
 	if (!ret)
 		return false;
 
-	m_display.begin();
+	begin();
 
-	m_oledBuffer = new uint8_t[m_width * m_height];
+	m_oledBufferSize = m_width * m_height;
+	if (m_displayType == OLED_SEEED_I2C_96x96)
+		m_oledBufferSize /= 2U;
+	else
+		m_oledBufferSize /= 8U;
+
+	m_oledBuffer = new uint8_t[m_oledBufferSize];
 
 	invertDisplay(m_displayInvert);
 	if (m_displayBrightness > 0U)
 		setBrightness(m_displayBrightness);
 
 	if (m_displayRotate) {
-		sendCommand(0xC0U);
-		sendCommand(0xA0U);
+		m_port->sendCommand(0xC0U);
+		m_port->sendCommand(0xA0U);
 	}
 
 	// init done
@@ -1150,7 +1189,7 @@ void COLED::statusbar()
 // clear everything (in the buffer)
 void COLED::clearDisplay()
 {
-	::memset(m_oledBuffer, 0x00U, m_width * m_height);
+	::memset(m_oledBuffer, 0x00U, m_oledBufferSize);
 }
 
 // startscrollleft
@@ -1159,14 +1198,14 @@ void COLED::clearDisplay()
 // display.scrollright(0x00U, 0x0F) 
 void COLED::startscrollleft(uint8_t start, uint8_t stop)
 {
-	sendCommand(SSD_Left_Horizontal_Scroll);
-	sendCommand(0x00U);
-	sendCommand(start);
-	sendCommand(0x00U);
-	sendCommand(stop);
-	sendCommand(0x01U);
-	sendCommand(0xFFU);
-	sendCommand(SSD_Activate_Scroll);
+	m_port->sendCommand(SSD_Left_Horizontal_Scroll);
+	m_port->sendCommand(0x00U);
+	m_port->sendCommand(start);
+	m_port->sendCommand(0x00U);
+	m_port->sendCommand(stop);
+	m_port->sendCommand(0x01U);
+	m_port->sendCommand(0xFFU);
+	m_port->sendCommand(SSD_Activate_Scroll);
 }
 
 // startscrolldiagleft
@@ -1175,35 +1214,35 @@ void COLED::startscrollleft(uint8_t start, uint8_t stop)
 // display.scrollright(0x00U, 0x0F) 
 void COLED::startscrolldiagleft(uint8_t start, uint8_t stop)
 {
-	sendCommand(SSD1306_SET_VERTICAL_SCROLL_AREA);
-	sendCommand(0x00U);
-	sendCommand(m_height);
-	sendCommand(SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL);
-	sendCommand(0x00U);
-	sendCommand(start);
-	sendCommand(0x00U);
-	sendCommand(stop);
-	sendCommand(0x01U);
-	sendCommand(SSD_Activate_Scroll);
+	m_port->sendCommand(SSD1306_SET_VERTICAL_SCROLL_AREA);
+	m_port->sendCommand(0x00U);
+	m_port->sendCommand(m_height);
+	m_port->sendCommand(SSD1306_VERTICAL_AND_LEFT_HORIZONTAL_SCROLL);
+	m_port->sendCommand(0x00U);
+	m_port->sendCommand(start);
+	m_port->sendCommand(0x00U);
+	m_port->sendCommand(stop);
+	m_port->sendCommand(0x01U);
+	m_port->sendCommand(SSD_Activate_Scroll);
 }
 
 void COLED::stopscroll(void)
 {
-	sendCommand(SSD_Deactivate_Scroll);
+	m_port->sendCommand(SSD_Deactivate_Scroll);
 }
 
 void COLED::setBrightness(uint8_t brightness)
 {
-	sendCommand(SSD_Set_ContrastLevel);
-	sendCommand(brightness);
+	m_port->sendCommand(SSD_Set_ContrastLevel);
+	m_port->sendCommand(brightness);
 }
 
 void COLED::invertDisplay(bool invert)
 {
 	if (invert)
-		sendCommand(SSD_Inverse_Display);
+		m_port->sendCommand(SSD_Inverse_Display);
 	else
-		sendCommand(SSD1306_Normal_Display);
+		m_port->sendCommand(SSD1306_Normal_Display);
 	}
 
 void COLED::fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t color)
@@ -1292,10 +1331,10 @@ void COLED::drawPixel(uint16_t x, uint16_t y, uint16_t color)
 		// We are on High nible ?
 		if (((y / 2) & 1) == 1) {
 			c &= 0x0F;
-			c |= (color == WHITE ? GRAY_H : 0x00) << 4;
+			c |= (color == WHITE ? m_grayH : 0x00) << 4;
 		} else {
 			c &= 0xF0;
-			c |= (color == WHITE ? GRAY_L : 0x00);
+			c |= (color == WHITE ? m_grayL : 0x00);
 		}
 
 		// set new nible value leaving the other untouched
@@ -1321,55 +1360,63 @@ void COLED::print(const char* text)
 		write(uint8_t(*p++));
 }
 
-void COLED::display(void)
+void COLED::display()
 {
-	sendCommand(SSD1306_Set_Lower_Column_Start_Address | 0x0); // low col = 0
-	sendCommand(SSD1306_Set_Higher_Column_Start_Address | 0x0); // hi col = 0
-	sendCommand(SSD1306_Set_Start_Line | 0x0); // line #0
+	if (m_displayType == OLED_SEEED_I2C_96x96) {
+		m_port->sendCommand(SSD1327_Set_Row_Address,    0x00U, 0x5FU);
+		m_port->sendCommand(SSD1327_Set_Column_Address, 0x08U, 0x37U);
+	} else {
+		m_port->sendCommand(SSD1306_Set_Lower_Column_Start_Address | 0x0); // low col = 0
+		m_port->sendCommand(SSD1306_Set_Higher_Column_Start_Address | 0x0); // hi col = 0
+		m_port->sendCommand(SSD1306_Set_Start_Line | 0x0); // line #0
+	}
 
 	// pointer to OLED data buffer
 	uint8_t* p = m_oledBuffer;
 
-	uint8_t buff[17U];
+	if (m_displayType == OLED_ADAFRUIT_SPI_128x32 ||
+		m_displayType == OLED_ADAFRUIT_SPI_128x64) {
+		m_port->setDataMode();
 
-	// Setup D/C to switch to data mode
-	buff[0] = SSD_Data_Mode;
+		// Send all data to OLED
+		for (uint16_t i = 0U; i < m_oledBufferSize; i++)
+			m_port->writeData(*p++);
 
-	if (m_displayType == OLED_SH1106_I2C_128x64) {
-		for (uint8_t k = 0U; k < 8U; k++) {
-			sendCommand(0xB0U + k);//set page addressSSD_Data_Mode;
-			sendCommand(0x02U);//set lower column address
-			sendCommand(0x10U);//set higher column address
+		// I wonder why we have to do this (check datasheet)
+		if (m_height == 32U) {
+			for (uint16_t i = 0U; i < m_oledBufferSize; i++)
+				m_port->writeData(0x00U);
+		}
+	} else {
+		uint8_t buff[17U];
 
-			for (uint8_t i = 0U; i < 8U; i++) {
+		// Setup D/C to switch to data mode
+		buff[0] = SSD_Data_Mode;
+
+		if (m_displayType == OLED_SH1106_I2C_128x64) {
+			for (uint8_t k = 0U; k < 8U; k++) {
+				m_port->sendCommand(0xB0U + k);//set page addressSSD_Data_Mode;
+				m_port->sendCommand(0x02U);//set lower column address
+				m_port->sendCommand(0x10U);//set higher column address
+
+				for (uint8_t i = 0U; i < 8U; i++) {
+					for (uint8_t x = 1U; x <= 16U; x++)
+						buff[x] = *p++;
+
+					m_port->writeData(buff, 17U);
+				}
+			}
+		} else {
+			// loop trough all OLED buffer and 
+			// send a bunch of 16 data byte in one xmission
+			for (uint16_t i = 0U; i < m_oledBufferSize; i += 16U) {
 				for (uint8_t x = 1U; x <= 16U; x++)
 					buff[x] = *p++;
 
-				m_port->write(buff, 17U);
+				m_port->writeData(buff, 17U);
 			}
 		}
-	} else {
-		// loop trough all OLED buffer and 
-		// send a bunch of 16 data byte in one xmission
-		for (uint16_t i = 0U; i < (m_width * m_height); i += 16U) {
-			for (uint8_t x = 1U; x <= 16U; x++)
-				buff[x] = *p++;
-
-			m_port->write(buff, 17U);
-		}
 	}
-}
-
-void COLED::sendCommand(uint8_t c)
-{
-	uint8_t buff[2U];
-
-	// Clear D/C to switch to command mode
-	buff[0] = SSD_Command_Mode;
-	buff[1] = c;
-
-	// Write Data on I2C
-	m_port->write(buff, 2U);
 }
 
 size_t COLED::write(uint8_t c)
@@ -1425,4 +1472,154 @@ void COLED::drawChar(uint16_t x, uint16_t y, unsigned char c, uint16_t color, ui
 			line >>= 1;
 		}
 	}
+}
+
+
+void COLED::begin()
+{
+	uint8_t vccType = SSD_Internal_Vcc;
+	if (m_displayType == OLED_SEEED_I2C_128x64)
+		vccType = SSD_External_Vcc;
+
+	// depends on OLED type configuration
+	uint8_t multiplex;
+	uint8_t compins;
+	uint8_t contrast;
+	if (m_height == 32U) {
+		multiplex = 0x1FU;
+		compins   = 0x02U;
+		contrast  = 0x8FU;
+	} else {
+		if (m_displayType == OLED_SEEED_I2C_96x96) {
+			multiplex = 0x5FU;
+			compins   = 0x12U;
+			contrast  = 0x53U;
+		} else {
+			// So 128x64
+			multiplex = 0x3FU;
+			compins = 0x12U;
+
+			if (m_displayType == OLED_SH1106_I2C_128x64)
+				contrast = 0x80U;
+			else
+				contrast = (vccType == SSD_External_Vcc ? 0x9FU : 0xCFU);
+		}
+	}
+
+	uint8_t chargepump;
+	uint8_t precharge;
+	if (vccType == SSD_External_Vcc) {
+		chargepump = 0x10U;
+		precharge  = 0x22U;
+	} else {
+		chargepump = 0x14U;
+		precharge  = 0xF1U;
+	}
+
+	if (m_displayType == OLED_SEEED_I2C_96x96)
+		m_port->sendCommand(SSD1327_Set_Command_Lock, 0x12U); // Unlock OLED driver IC MCU interface from entering command. i.e: Accept commands
+
+	m_port->sendCommand(SSD_Display_Off);
+	m_port->sendCommand(SSD_Set_Muliplex_Ratio, multiplex);
+
+	if (m_displayType == OLED_SEEED_I2C_96x96) {
+		m_port->sendCommand(SSD1327_Set_Display_Clock_Div, 0x01U);
+		m_port->sendCommand(SSD1327_Set_Display_Start_Line, 0U);
+		m_port->sendCommand(SSD1327_Set_Display_Offset, 96U);
+		m_port->sendCommand(SSD_Set_Segment_Remap, 0x46U);
+
+		m_port->sendCommand(0xABU); // set vdd internal
+		m_port->sendCommand(0x01U); //
+
+		m_port->sendCommand(0xB1U); // Set Phase Length
+		m_port->sendCommand(0X51U); //
+
+		m_port->sendCommand(0xB9U); //
+
+		m_port->sendCommand(0xBCU); // set pre_charge voltage/VCOMH
+		m_port->sendCommand(0x08U); // (0x08);
+
+		m_port->sendCommand(0xBEU); // set VCOMH
+		m_port->sendCommand(0X07U); // (0x07);
+
+		m_port->sendCommand(0xB6U); // Set second pre-charge period
+		m_port->sendCommand(0x01U); //
+
+		m_port->sendCommand(0xD5U); // enable second precharge and enternal vsl
+		m_port->sendCommand(0X62U); // (0x62);
+
+		// Set Normal Display Mode
+		m_port->sendCommand(SSD1327_Normal_Display);
+
+		// Row Address
+		// Start 0 End 95
+		m_port->sendCommand(SSD1327_Set_Row_Address, 0U, 95U);
+
+		// Column Address
+		// Start from 8th Column of driver IC. This is 0th Column for OLED 
+		// End at  (8 + 47)th column. Each Column has 2 pixels(segments)
+		m_port->sendCommand(SSD1327_Set_Column_Address, 8U, 0x37U);
+
+		// Map to horizontal mode
+		m_port->sendCommand(0xA0U); // remap to
+		m_port->sendCommand(0x46U); // Vertical mode
+
+		// Init gray level for text. Default:Brightest White
+		m_grayH = 0xF0U;
+		m_grayL = 0x0FU;
+	} else if (m_displayType == OLED_SH1106_I2C_128x64) {
+		m_port->sendCommand(SSD1306_Set_Lower_Column_Start_Address | 0x02U); /*set lower column address*/
+		m_port->sendCommand(SSD1306_Set_Higher_Column_Start_Address);     /*set higher column address*/
+		m_port->sendCommand(SSD1306_Set_Start_Line);                      /*set display start line*/
+		m_port->sendCommand(SH1106_Set_Page_Address);    /*set page address*/
+		m_port->sendCommand(SSD_Set_Segment_Remap | 0x01); /*set segment remap*/
+		m_port->sendCommand(SSD1306_Normal_Display);     /*normal / reverse*/
+		m_port->sendCommand(0xADU);    /*set charge pump enable*/
+		m_port->sendCommand(0x8BU);    /*external VCC   */
+		m_port->sendCommand(0x30U);    /*0X30---0X33  set VPP   9V liangdu!!!!*/
+		m_port->sendCommand(SSD1306_Set_Com_Output_Scan_Direction_Remap);    /*Com scan direction*/
+		m_port->sendCommand(SSD1306_Set_Display_Offset);    /*set display offset*/
+		m_port->sendCommand(0x00U);   /*   0x20  */
+		m_port->sendCommand(SSD1306_Set_Display_Clock_Div);    /*set osc division*/
+		m_port->sendCommand(0x80U);
+		m_port->sendCommand(SSD1306_Set_Precharge_Period);    /*set pre-charge period*/
+		m_port->sendCommand(0x1FU);    /*0x22*/
+		m_port->sendCommand(SSD1306_Set_Com_Pins);    /*set COM pins*/
+		m_port->sendCommand(0x12U);
+		m_port->sendCommand(SSD1306_Set_Vcomh_Deselect_Level);    /*set vcomh*/
+		m_port->sendCommand(0x40U);
+	} else {
+		m_port->sendCommand(SSD1306_Charge_Pump_Setting, chargepump);
+		m_port->sendCommand(SSD1306_Set_Memory_Mode, 0x00U);              // 0x20 0x0 act like ks0108
+		m_port->sendCommand(SSD1306_Set_Display_Clock_Div, 0x80U);      // 0xD5 + the suggested ratio 0x80
+		m_port->sendCommand(SSD1306_Set_Display_Offset, 0x00U);        // no offset
+		m_port->sendCommand(SSD1306_Set_Start_Line | 0x0U);            // line #0
+		// use this two commands to flip display
+		m_port->sendCommand(SSD_Set_Segment_Remap | 0x1U);
+		m_port->sendCommand(SSD1306_Set_Com_Output_Scan_Direction_Remap);
+
+		m_port->sendCommand(SSD1306_Set_Com_Pins, compins);
+		m_port->sendCommand(SSD1306_Set_Precharge_Period, precharge);
+		m_port->sendCommand(SSD1306_Set_Vcomh_Deselect_Level, 0x40U); // 0x40 -> unknown value in datasheet
+		m_port->sendCommand(SSD1306_Entire_Display_Resume);
+		m_port->sendCommand(SSD1306_Normal_Display);         // 0xA6
+
+		// Reset to default value in case of 
+		// no reset pin available on OLED, 
+		m_port->sendCommand(SSD_Set_Column_Address, 0U, 127U);
+		m_port->sendCommand(SSD_Set_Page_Address, 0U, 7U);
+	}
+
+	m_port->sendCommand(SSD_Set_ContrastLevel, contrast);
+
+	stopscroll();
+
+	// Empty uninitialized buffer
+	clearDisplay();
+
+	// turn on oled panel
+	m_port->sendCommand(SSD_Display_On);
+
+	// wait 100ms
+	CThread::sleep(100U);
 }

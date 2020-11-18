@@ -27,7 +27,14 @@ public:
 
 	virtual bool open(unsigned char displayType) = 0;
 
-	virtual bool write(const uint8_t* data, uint16_t length) = 0;
+	virtual void setDataMode() = 0;
+
+	virtual void sendCommand(uint8_t c0, uint8_t c1, uint8_t c2) = 0;
+	virtual void sendCommand(uint8_t c0, uint8_t c1) = 0;
+	virtual void sendCommand(uint8_t c) = 0;
+
+	virtual void writeData(const uint8_t* data, uint16_t length) = 0;
+	virtual void writeData(uint8_t c) = 0;
 
 	virtual void close() = 0;
 };

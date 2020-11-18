@@ -124,7 +124,8 @@ public:
 	virtual bool writeSerial(const unsigned char* data, unsigned int length);
 	virtual unsigned int readSerial(unsigned char* data, unsigned int length);
 
-	virtual bool writeI2C(const unsigned char* data, unsigned int length);
+	virtual bool writeI2CCommand(const unsigned char* data, unsigned int length);
+	virtual bool writeI2CData(const unsigned char* data, unsigned int length);
 
 	virtual unsigned char getMode() const;
 	virtual bool setMode(unsigned char mode);

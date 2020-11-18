@@ -113,6 +113,8 @@ const unsigned int MAX_RESPONSES = 30U;
 
 const unsigned int BUFFER_LENGTH = 2000U;
 
+const uint8_t SSD_Command_Mode = 0x00U;  /* C0 and DC bit are 0         */
+const uint8_t SSD_Data_Mode    = 0x40U;  /* C0 bit is 0 and DC bit is 1 */
 
 CSerialModem::CSerialModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug) :
 m_port(port),
@@ -1626,7 +1628,7 @@ bool CSerialModem::writeSerial(const unsigned char* data, unsigned int length)
 	return true;
 }
 
-bool CSerialModem::writeI2C(const unsigned char* data, unsigned int length)
+bool CSerialModem::writeI2CCommand(const unsigned char* data, unsigned int length)
 {
 	assert(m_serial != NULL);
 	assert(data != NULL);
@@ -1635,12 +1637,35 @@ bool CSerialModem::writeI2C(const unsigned char* data, unsigned int length)
 	unsigned char buffer[255U];
 
 	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = length + 3U;
+	buffer[1U] = length + 4U;
 	buffer[2U] = MMDVM_I2C_DATA;
 
-	::memcpy(buffer + 3U, data, length);
+	buffer[3U] = SSD_Command_Mode;
 
-	m_serial->write(buffer, length + 3U);
+	::memcpy(buffer + 4U, data, length);
+
+	m_serial->write(buffer, length + 4U);
+
+	return true;
+}
+
+bool CSerialModem::writeI2CData(const unsigned char* data, unsigned int length)
+{
+	assert(m_serial != NULL);
+	assert(data != NULL);
+	assert(length > 0U);
+
+	unsigned char buffer[255U];
+
+	buffer[0U] = MMDVM_FRAME_START;
+	buffer[1U] = length + 4U;
+	buffer[2U] = MMDVM_I2C_DATA;
+
+	buffer[3U] = SSD_Data_Mode;
+
+	::memcpy(buffer + 4U, data, length);
+
+	m_serial->write(buffer, length + 4U);
 
 	return true;
 }

@@ -106,7 +106,8 @@ public:
 	virtual bool writeSerial(const unsigned char* data, unsigned int length) { return true; };
 	virtual unsigned int readSerial(unsigned char* data, unsigned int length) { return 0U; };
 
-	virtual bool writeI2C(const unsigned char* data, unsigned int length) { return true; };
+	virtual bool writeI2CCommand(const unsigned char* data, unsigned int length) { return true; };
+	virtual bool writeI2CData(const unsigned char* data, unsigned int length) { return true; };
 
 	virtual unsigned char getMode() const { return MODE_IDLE; };
 	virtual bool setMode(unsigned char mode) { return true; };

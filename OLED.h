@@ -84,6 +84,7 @@ private:
 	unsigned int   m_passCounter;
 
 	unsigned char* m_oledBuffer;
+	uint16_t       m_oledBufferSize;
 	uint8_t        m_width;
 	uint8_t        m_height;
 	bool           m_textWrap;
@@ -92,6 +93,8 @@ private:
 	uint8_t        m_textSize;
 	uint16_t       m_textColor;
 	uint16_t       m_textBGColor;
+	uint8_t        m_grayH;
+	uint8_t        m_grayL;
 
 	void statusbar();
 	void clearDisplay();
@@ -106,10 +109,9 @@ private:
 	void drawPixel(uint16_t x, uint16_t y, uint16_t color);
 	void print(const char* text);
 	void display();
-	void sendCommand(uint8_t c);
 	size_t write(uint8_t c);
 	void drawChar(uint16_t x, uint16_t y, unsigned char c, uint16_t color, uint16_t bg, uint8_t size);
-
+	void begin();
 };
 
 #endif

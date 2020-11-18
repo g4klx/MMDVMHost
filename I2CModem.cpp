@@ -20,6 +20,7 @@
 
 #include <cassert>
 
+
 CI2CModem::CI2CModem(IModem* modem) :
 m_modem(modem)
 {
@@ -35,9 +36,47 @@ bool CI2CModem::open(unsigned char displayType)
 	return true;
 }
 
-bool CI2CModem::write(const uint8_t* data, uint16_t length)
+void CI2CModem::setDataMode()
 {
-	return m_modem->writeI2C(data, length);
+}
+
+void CI2CModem::sendCommand(uint8_t c0, uint8_t c1, uint8_t c2)
+{
+	uint8_t buff[3U];
+
+	buff[0U] = c0;
+	buff[1U] = c1;
+	buff[2U] = c2;
+
+	// Write Data on I2C
+	m_modem->writeI2CCommand(buff, 3U);
+}
+
+void CI2CModem::sendCommand(uint8_t c0, uint8_t c1)
+{
+	uint8_t buff[2U];
+
+	buff[0U] = c0;
+	buff[1U] = c1;
+
+	// Write Data on I2C
+	m_modem->writeI2CCommand(buff, 2U);
+}
+
+void CI2CModem::sendCommand(uint8_t c)
+{
+	// Write Data on I2C
+	m_modem->writeI2CCommand(&c, 1U);
+}
+
+void CI2CModem::writeData(const uint8_t* data, uint16_t length)
+{
+	m_modem->writeI2CData(data, length);
+}
+
+void CI2CModem::writeData(uint8_t c)
+{
+	m_modem->writeI2CData(&c, 1U);
 }
 
 void CI2CModem::close()
