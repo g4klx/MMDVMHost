@@ -4,9 +4,8 @@ the other. It supports D-Star, DMR, P25 Phase 1, NXDN, System Fusion, M17,
 POCSAG, FM, and AX.25 on the MMDVM, and D-Star, DMR, and System Fusion on the DVMega.
 
 On the D-Star side the MMDVMHost interfaces with the ircDDB Gateway, on DMR it
-can connect to BrandMeister, DMR+, TGIF, HB Link, XLX or
-[DMRGateway](https://github.com/g4klx/DMRGateway) (to connect to multiple DMR
-networks at once) on System Fusion it connects to the YSF Gateway to allow
+connects to the DMR Gateway to allow for connection to multiple DMR networks,
+on System Fusion it connects to the YSF Gateway to allow
 access to the FCS and YSF networks. On P25 it connects to the P25 Gateway. On
 NXDN it connects to the NXDN Gateway which provides access to the NXDN and
 NXCore talk groups. On M17 it uses the M17 Gateway to access the M17 reflector system.
@@ -32,9 +31,6 @@ output of the MMDVM modem (Arduino Due, STM32, Teensy).
 
 The HD44780 displays are integrated with wiringPi for Raspberry Pi based
 platforms.
-
-The Hobbytronics TFT Display, which is a Pi-Hat, connects to the UART on the
-Raspbery Pi.
 
 The OLED display needs an extra library see OLED.md
 
