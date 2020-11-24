@@ -1448,21 +1448,21 @@ void COLED::drawChar(uint16_t x, uint16_t y, unsigned char c, uint16_t color, ui
 		((y + 8 * size - 1) < 0))   // Clip top
 		return;
 
-	for (int8_t i = 0; i < 6; i++) {
+	for (uint8_t i = 0U; i < 6U; i++) {
 		uint8_t line;
-		if (i == 5)
-			line = 0x0;
+		if (i == 5U)
+			line = 0x00U;
 		else
 			line = FONT[(c * 5) + i];
 
 		for (uint8_t j = 0U; j < 8U; j++) {
 			if (line & 0x1) {
-				if (size == 1) // default size
+				if (size == 1U) // default size
 					drawPixel(x + i, y + j, color);
 				else  // big size
 					fillRect(x + (i * size), y + (j * size), size, size, color);
 			} else if (bg != color) {
-				if (size == 1) // default size
+				if (size == 1U) // default size
 					drawPixel(x + i, y + j, bg);
 				else
 					// big size
@@ -1473,7 +1473,6 @@ void COLED::drawChar(uint16_t x, uint16_t y, unsigned char c, uint16_t color, ui
 		}
 	}
 }
-
 
 void COLED::begin()
 {
