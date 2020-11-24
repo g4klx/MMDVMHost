@@ -28,6 +28,8 @@ public:
 
 	virtual bool open(unsigned char displayType);
 
+	virtual void setAddress(unsigned char addr);
+
 	virtual void setDataMode();
 
 	virtual void sendCommand(uint8_t c0, uint8_t c1, uint8_t c2);
@@ -40,8 +42,7 @@ public:
 	virtual void close();
 
 private:
-	unsigned char m_displayType;
-	bool          m_spi;
+	bool m_spi;
 };
 
 #endif

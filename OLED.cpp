@@ -105,6 +105,12 @@ const unsigned char OLED_SEEED_I2C_128x64    = 4U;
 const unsigned char OLED_SEEED_I2C_96x96     = 5U;
 const unsigned char OLED_SH1106_I2C_128x64   = 6U;
 
+// OLED type I2C Address
+const unsigned char ADAFRUIT_I2C_ADDRESS = 0x3CU; /* 011110+SA0+RW - 0x3C or 0x3D */
+const unsigned char SEEED_I2C_ADDRESS    = 0x3CU; /* 011110+SA0+RW - 0x3C or 0x3D */
+const unsigned char SH1106_I2C_ADDRESS   = 0x3CU;
+
+
 // standard ascii 5x7 font
 const uint8_t FONT[] = {
 	0x00U, 0x00U, 0x00U, 0x00U, 0x00U,
@@ -547,21 +553,38 @@ m_grayL(0x00U)		// XXX
 	switch (displayType) {
 	case OLED_ADAFRUIT_SPI_128x32:
 	case OLED_ADAFRUIT_I2C_128x32:
+		port->setAddress(ADAFRUIT_I2C_ADDRESS);
 		m_width  = 128U;
 		m_height = 32U;
 		break;
+
 	case OLED_ADAFRUIT_SPI_128x64:
 	case OLED_ADAFRUIT_I2C_128x64:
+		port->setAddress(ADAFRUIT_I2C_ADDRESS);
+		m_width = 128U;
+		m_height = 64U;
+		break;
+
 	case OLED_SEEED_I2C_128x64:
+		port->setAddress(SEEED_I2C_ADDRESS);
+		m_width = 128U;
+		m_height = 64U;
+		break;
+
 	case OLED_SH1106_I2C_128x64:
+		port->setAddress(SH1106_I2C_ADDRESS);
 		m_width  = 128U;
 		m_height = 64U;
 		break;
+
 	case OLED_SEEED_I2C_96x96:
+		port->setAddress(SEEED_I2C_ADDRESS);
 		m_width  = 96U;
 		m_height = 96U;
 		break;
+
 	default:
+		port->setAddress(0x00U);
 		break;
 	}
 }

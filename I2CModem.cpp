@@ -22,7 +22,8 @@
 
 
 CI2CModem::CI2CModem(IModem* modem) :
-m_modem(modem)
+m_modem(modem),
+m_address(0x00U)
 {
 	assert(modem != NULL);
 }
@@ -34,6 +35,11 @@ CI2CModem::~CI2CModem()
 bool CI2CModem::open(unsigned char displayType)
 {
 	return true;
+}
+
+void CI2CModem::setAddress(unsigned char address)
+{
+	m_address = address;
 }
 
 void CI2CModem::setDataMode()
@@ -49,7 +55,7 @@ void CI2CModem::sendCommand(uint8_t c0, uint8_t c1, uint8_t c2)
 	buff[2U] = c2;
 
 	// Write Data on I2C
-	m_modem->writeI2CCommand(buff, 3U);
+	m_modem->writeI2CCommand(m_address, buff, 3U);
 }
 
 void CI2CModem::sendCommand(uint8_t c0, uint8_t c1)
@@ -60,23 +66,23 @@ void CI2CModem::sendCommand(uint8_t c0, uint8_t c1)
 	buff[1U] = c1;
 
 	// Write Data on I2C
-	m_modem->writeI2CCommand(buff, 2U);
+	m_modem->writeI2CCommand(m_address, buff, 2U);
 }
 
 void CI2CModem::sendCommand(uint8_t c)
 {
 	// Write Data on I2C
-	m_modem->writeI2CCommand(&c, 1U);
+	m_modem->writeI2CCommand(m_address, &c, 1U);
 }
 
 void CI2CModem::writeData(const uint8_t* data, uint16_t length)
 {
-	m_modem->writeI2CData(data, length);
+	m_modem->writeI2CData(m_address, data, length);
 }
 
 void CI2CModem::writeData(uint8_t c)
 {
-	m_modem->writeI2CData(&c, 1U);
+	m_modem->writeI2CData(m_address, &c, 1U);
 }
 
 void CI2CModem::close()

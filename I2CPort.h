@@ -27,6 +27,8 @@ public:
 
 	virtual bool open(unsigned char displayType) = 0;
 
+	virtual void setAddress(unsigned char addr) = 0;
+
 	virtual void setDataMode() = 0;
 
 	virtual void sendCommand(uint8_t c0, uint8_t c1, uint8_t c2) = 0;

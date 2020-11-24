@@ -26,7 +26,6 @@ const unsigned char OLED_ADAFRUIT_SPI_128x64 = 1U;
 
 
 CI2CPi::CI2CPi() :
-m_displayType(0U),
 m_spi(false)
 {
 }
@@ -37,8 +36,6 @@ CI2CPi::~CI2CPi()
 
 bool CI2CPi::open(unsigned char displayType)
 {
-	m_displayType = displayType;
-
     if (displayType == OLED_ADAFRUIT_SPI_128x32 ||
 	    displayType == OLED_ADAFRUIT_SPI_128x64) {
 		m_spi = true;
@@ -83,27 +80,6 @@ bool CI2CPi::open(unsigned char displayType)
 		if (!bcm2835_i2c_begin())
 			return false;
 
-		switch (displayType) {
-		case OLED_ADAFRUIT_I2C_128x32:
-		case OLED_ADAFRUIT_I2C_128x64:
-			i2cAddr = ADAFRUIT_I2C_ADDRESS;
-			break;
-
-		case OLED_SEEED_I2C_128x64:
-		case OLED_SEEED_I2C_96x96:
-			i2cAddr = SEEED_I2C_ADDRESS ;
-			break;
-
-		case OLED_SH1106_I2C_128x64:
-			i2cAddr = SH1106_I2C_ADDRESS;
-			break;
-
-		default:
-			return false;
-		}
-
-		bcm2835_i2c_setSlaveAddress(i2cAddr);
-
 		// Setup reset pin direction as output
 		bcm2835_gpio_fsel(OLED_I2C_RESET, BCM2835_GPIO_FSEL_OUTP);
 
@@ -127,7 +103,13 @@ bool CI2CPi::open(unsigned char displayType)
 	return true;
 }
 
-void CI2CMPi::setDataMode()
+void CI2CPi::setAddress(unsigned char address)
+{
+	if (!m_spi)
+		bcm2835_i2c_setSlaveAddress(address);
+}
+
+void CI2CPi::setDataMode()
 {
 	if (m_spi) {
 		// Setup D/C line to high to switch to data mode

@@ -1628,7 +1628,7 @@ bool CSerialModem::writeSerial(const unsigned char* data, unsigned int length)
 	return true;
 }
 
-bool CSerialModem::writeI2CCommand(const unsigned char* data, unsigned int length)
+bool CSerialModem::writeI2CCommand(unsigned char address, const unsigned char* data, unsigned int length)
 {
 	assert(m_serial != NULL);
 	assert(data != NULL);
@@ -1637,19 +1637,20 @@ bool CSerialModem::writeI2CCommand(const unsigned char* data, unsigned int lengt
 	unsigned char buffer[255U];
 
 	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = length + 4U;
+	buffer[1U] = length + 5U;
 	buffer[2U] = MMDVM_I2C_DATA;
 
-	buffer[3U] = SSD_Command_Mode;
+	buffer[3U] = address;
+	buffer[4U] = SSD_Command_Mode;
 
-	::memcpy(buffer + 4U, data, length);
+	::memcpy(buffer + 5U, data, length);
 
-	m_serial->write(buffer, length + 4U);
+	m_serial->write(buffer, length + 5U);
 
 	return true;
 }
 
-bool CSerialModem::writeI2CData(const unsigned char* data, unsigned int length)
+bool CSerialModem::writeI2CData(unsigned char address, const unsigned char* data, unsigned int length)
 {
 	assert(m_serial != NULL);
 	assert(data != NULL);
@@ -1658,14 +1659,15 @@ bool CSerialModem::writeI2CData(const unsigned char* data, unsigned int length)
 	unsigned char buffer[255U];
 
 	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = length + 4U;
+	buffer[1U] = length + 5U;
 	buffer[2U] = MMDVM_I2C_DATA;
 
-	buffer[3U] = SSD_Data_Mode;
+	buffer[3U] = address;
+	buffer[4U] = SSD_Data_Mode;
 
-	::memcpy(buffer + 4U, data, length);
+	::memcpy(buffer + 5U, data, length);
 
-	m_serial->write(buffer, length + 4U);
+	m_serial->write(buffer, length + 5U);
 
 	return true;
 }
