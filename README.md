@@ -4,9 +4,8 @@ the other. It supports D-Star, DMR, P25 Phase 1, NXDN, System Fusion,
 POCSAG, and FM on the MMDVM, and D-Star, DMR, and System Fusion on the DVMega.
 
 On the D-Star side the MMDVMHost interfaces with the ircDDB Gateway, on DMR it
-can connect to BrandMeister, DMR+, TGIF, HB Link, XLX or
-[DMRGateway](https://github.com/g4klx/DMRGateway) (to connect to multiple DMR
-networks at once) on System Fusion it connects to the YSF Gateway to allow
+connects to the DMR Gateway to allow for connection to multiple DMR networks,
+on System Fusion it connects to the YSF Gateway to allow
 access to the FCS and YSF networks. On P25 it connects to the P25 Gateway. On
 NXDN it connects to the NXDN Gateway which provides access to the NXDN and
 NXCore talk groups. It uses the DAPNET Gateway to access DAPNET to receive
@@ -22,7 +21,6 @@ these are:
 	- Adafruit 16x2 LCD+Keypad Kits (I2C)
 	- Connection via PCF8574 GPIO Extender (I2C)
 - Nextion TFTs (all sizes, both Basic and Enhanced versions)
-- TFT display sold by Hobbytronics in UK
 - OLED 128x64 (SSD1306)
 - LCDproc
 
@@ -33,9 +31,6 @@ on the UMP.
 
 The HD44780 displays are integrated with wiringPi for Raspberry Pi based
 platforms.
-
-The Hobbytronics TFT Display, which is a Pi-Hat, connects to the UART on the
-Raspbery Pi.
 
 The OLED display needs an extra library see OLED.md
 
