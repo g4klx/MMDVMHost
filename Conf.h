@@ -163,6 +163,7 @@ public:
 
   // The M17 section
   bool         getM17Enabled() const;
+  unsigned int getM17ColorCode() const;
   bool         getM17SelfOnly() const;
   bool         getM17AllowEncryption() const;
   unsigned int getM17TXHang() const;
@@ -470,6 +471,7 @@ private:
   unsigned int m_nxdnModeHang;
 
   bool         m_m17Enabled;
+  unsigned int m_m17ColorCode;
   bool         m_m17SelfOnly;
   bool         m_m17AllowEncryption;
   unsigned int m_m17TXHang;

@@ -619,18 +619,20 @@ int CMMDVMHost::run()
 	}
 
 	if (m_m17Enabled) {
-		bool selfOnly        = m_conf.getM17SelfOnly();
-		bool allowEncryption = m_conf.getM17AllowEncryption();
-		unsigned int txHang  = m_conf.getM17TXHang();
-		m_m17RFModeHang      = m_conf.getM17ModeHang();
+		bool selfOnly          = m_conf.getM17SelfOnly();
+		unsigned int colorCode = m_conf.getM17ColorCode();
+		bool allowEncryption   = m_conf.getM17AllowEncryption();
+		unsigned int txHang    = m_conf.getM17TXHang();
+		m_m17RFModeHang        = m_conf.getM17ModeHang();
 
 		LogInfo("M17 RF Parameters");
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
+		LogInfo("    Color Code: %u", colorCode);
 		LogInfo("    Allow Encryption: %s", allowEncryption ? "yes" : "no");
 		LogInfo("    TX Hang: %us", txHang);
 		LogInfo("    Mode Hang: %us", m_m17RFModeHang);
 
-		m_m17 = new CM17Control(m_callsign, selfOnly, allowEncryption, m_m17Network, m_display, m_timeout, m_duplex, rssi);
+		m_m17 = new CM17Control(m_callsign, colorCode, selfOnly, allowEncryption, m_m17Network, m_display, m_timeout, m_duplex, rssi);
 	}
 
 	CTimer pocsagTimer(1000U, 30U);

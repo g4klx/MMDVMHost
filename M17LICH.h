@@ -46,8 +46,8 @@ public:
 	void getLinkSetup(unsigned char* data) const;
 	void setLinkSetup(const unsigned char* data);
 
-	void getFragment(unsigned char* data, unsigned short fn) const;
-	void setFragment(const unsigned char* data, unsigned short fn);
+	void getFragment(unsigned char* data, unsigned int n) const;
+	void setFragment(const unsigned char* data, unsigned int n);
 
 private:
 	unsigned char* m_lich;

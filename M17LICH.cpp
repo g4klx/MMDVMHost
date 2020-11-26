@@ -124,22 +124,18 @@ void CM17LICH::setLinkSetup(const unsigned char* data)
 	m_valid = CM17CRC::checkCRC(m_lich, M17_LICH_LENGTH_BYTES);
 }
 
-void CM17LICH::getFragment(unsigned char* data, unsigned short fn) const
+void CM17LICH::getFragment(unsigned char* data, unsigned int n) const
 {
 	assert(data != NULL);
 
 	CM17CRC::encodeCRC(m_lich, M17_LICH_LENGTH_BYTES);
 
-	unsigned int n = (fn & 0x7FFFU) % 5U;
-
 	::memcpy(data, m_lich + (n * M17_LICH_FRAGMENT_LENGTH_BYTES), M17_LICH_FRAGMENT_LENGTH_BYTES);
 }
 
-void CM17LICH::setFragment(const unsigned char* data, unsigned short fn)
+void CM17LICH::setFragment(const unsigned char* data, unsigned int n)
 {
 	assert(data != NULL);
-
-	unsigned int n = (fn & 0x7FFFU) % 5U;
 
 	::memcpy(m_lich + (n * M17_LICH_FRAGMENT_LENGTH_BYTES), data, M17_LICH_FRAGMENT_LENGTH_BYTES);
 

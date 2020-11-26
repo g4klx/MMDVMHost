@@ -85,9 +85,16 @@ void CSync::addNXDNSync(unsigned char* data)
 		data[i] = (data[i] & ~NXDN_FSW_BYTES_MASK[i]) | NXDN_FSW_BYTES[i];
 }
 
-void CSync::addM17Sync(unsigned char* data)
+void CSync::addM17HeaderSync(unsigned char* data)
 {
 	assert(data != NULL);
 
-	::memcpy(data, M17_SYNC_BYTES, M17_SYNC_LENGTH_BYTES);
+	::memcpy(data, M17_HEADER_SYNC_BYTES, M17_SYNC_LENGTH_BYTES);
+}
+
+void CSync::addM17DataSync(unsigned char* data)
+{
+	assert(data != NULL);
+
+	::memcpy(data, M17_DATA_SYNC_BYTES, M17_SYNC_LENGTH_BYTES);
 }
