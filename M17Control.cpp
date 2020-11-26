@@ -57,8 +57,9 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 #define WRITE_BIT(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
-CM17Control::CM17Control(const std::string& callsign, bool selfOnly, bool allowEncryption, CM17Network* network, CDisplay* display, unsigned int timeout, bool duplex, CRSSIInterpolator* rssiMapper) :
+CM17Control::CM17Control(const std::string& callsign, unsigned int colorCode, bool selfOnly, bool allowEncryption, CM17Network* network, CDisplay* display, unsigned int timeout, bool duplex, CRSSIInterpolator* rssiMapper) :
 m_callsign(callsign),
+m_colorCode(colorCode),
 m_selfOnly(selfOnly),
 m_allowEncryption(allowEncryption),
 m_network(network),
@@ -154,7 +155,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 	decorrelator(data + 2U, temp);
 	interleaver(temp, data + 2U);
 
-	if (m_rfState == RS_RF_LISTENING) {
+	if (m_rfState == RS_RF_LISTENING && data[0U] == TAG_HEADER) {
 		m_rfLICH.reset();
 
 		CM17Convolution conv;
@@ -225,11 +226,11 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			writeFile(data + 2U);
 #endif
 			if (m_duplex) {
-				data[0U] = TAG_DATA;
+				data[0U] = TAG_HEADER;
 				data[1U] = 0x00U;
 
 				// Generate the sync
-				CSync::addM17Sync(data + 2U);
+				CSync::addM17HeaderSync(data + 2U);
 
 				unsigned char setup[M17_LICH_LENGTH_BYTES];
 				m_rfLICH.getLinkSetup(setup);
@@ -251,7 +252,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		}
 	}
 
-	if (m_rfState == RS_RF_LATE_ENTRY) {
+	if (m_rfState == RS_RF_LATE_ENTRY && data[0U] == TAG_DATA) {
 		CM17Convolution conv;
 		unsigned char frame[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
 		conv.decodeData(data + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES, frame);
@@ -323,11 +324,11 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 				if (m_duplex) {
 					// Create a Link Setup frame
-					data[0U] = TAG_DATA;
+					data[0U] = TAG_HEADER;
 					data[1U] = 0x00U;
 
 					// Generate the sync
-					CSync::addM17Sync(data + 2U);
+					CSync::addM17HeaderSync(data + 2U);
 
 					unsigned char setup[M17_LICH_LENGTH_BYTES];
 					m_rfLICH.getLinkSetup(setup);
@@ -348,7 +349,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		}
 	}
 
-	if (m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA) {
+	if ((m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA) && data[0U] == TAG_DATA) {
 #if defined(DUMP_M17)
 		writeFile(data + 2U);
 #endif
@@ -391,7 +392,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		rfData[1U] = 0x00U;
 
 		// Generate the sync
-		CSync::addM17Sync(rfData + 2U);
+		CSync::addM17DataSync(rfData + 2U);
 
 		unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
 		m_netLICH.getFragment(lich, m_rfFN);
@@ -460,7 +461,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		return true;
 	}
 
-	if (m_rfState == RS_RF_REJECTED) {
+	if (m_rfState == RS_RF_REJECTED && data[0U] == TAG_DATA) {
 		CM17Convolution conv;
 		unsigned char frame[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
 		conv.decodeData(data + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES, frame);
@@ -583,11 +584,11 @@ void CM17Control::writeNetwork()
 		// Create a dummy start message
 		unsigned char start[M17_FRAME_LENGTH_BYTES + 2U];
 
-		start[0U] = TAG_DATA;
+		start[0U] = TAG_HEADER;
 		start[1U] = 0x00U;
 
 		// Generate the sync
-		CSync::addM17Sync(start + 2U);
+		CSync::addM17HeaderSync(start + 2U);
 
 		unsigned char setup[M17_LICH_LENGTH_BYTES];
 		m_netLICH.getLinkSetup(setup);
@@ -609,7 +610,7 @@ void CM17Control::writeNetwork()
 	data[1U] = 0x00U;
 
 	// Generate the sync
-	CSync::addM17Sync(data + 2U);
+	CSync::addM17DataSync(data + 2U);
 
 	m_netFrames++;
 

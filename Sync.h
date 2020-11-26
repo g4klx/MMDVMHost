@@ -33,7 +33,8 @@ public:
 
 	static void addNXDNSync(unsigned char* data);
 
-	static void addM17Sync(unsigned char* data);
+	static void addM17HeaderSync(unsigned char* data);
+	static void addM17DataSync(unsigned char* data);
 
 private:
 };

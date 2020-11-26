@@ -79,8 +79,9 @@ const unsigned char MMDVM_P25_LOST    = 0x32U;
 const unsigned char MMDVM_NXDN_DATA   = 0x40U;
 const unsigned char MMDVM_NXDN_LOST   = 0x41U;
 
-const unsigned char MMDVM_M17_DATA    = 0x45U;
-const unsigned char MMDVM_M17_LOST    = 0x46U;
+const unsigned char MMDVM_M17_HEADER  = 0x45U;
+const unsigned char MMDVM_M17_DATA    = 0x46U;
+const unsigned char MMDVM_M17_LOST    = 0x47U;
 
 const unsigned char MMDVM_POCSAG_DATA = 0x50U;
 
@@ -659,6 +660,20 @@ void CSerialModem::clock(unsigned int ms)
 			}
 			break;
 
+			case MMDVM_M17_HEADER: {
+				if (m_trace)
+					CUtils::dump(1U, "RX M17 Header", m_buffer, m_length);
+
+				unsigned char data = m_length - 2U;
+				m_rxM17Data.addData(&data, 1U);
+
+				data = TAG_HEADER;
+				m_rxM17Data.addData(&data, 1U);
+
+				m_rxM17Data.addData(m_buffer + 3U, m_length - 3U);
+			}
+			break;
+
 			case MMDVM_M17_DATA: {
 				if (m_trace)
 					CUtils::dump(1U, "RX M17 Data", m_buffer, m_length);
@@ -1015,8 +1030,12 @@ void CSerialModem::clock(unsigned int ms)
 		m_txM17Data.getData(&len, 1U);
 		m_txM17Data.getData(m_buffer, len);
 
-		if (m_trace)
-			CUtils::dump(1U, "TX M17 Data", m_buffer, len);
+		if (m_trace) {
+			if (m_buffer[2U] == MMDVM_M17_HEADER)
+				CUtils::dump(1U, "TX M17 Header", m_buffer, len);
+			else
+				CUtils::dump(1U, "TX M17 Data", m_buffer, len);
+		}
 
 		int ret = m_serial->write(m_buffer, len);
 		if (ret != int(len))
@@ -1471,14 +1490,18 @@ bool CSerialModem::writeM17Data(const unsigned char* data, unsigned int length)
 	assert(data != NULL);
 	assert(length > 0U);
 
-	if (data[0U] != TAG_DATA && data[0U] != TAG_EOT)
+	if (data[0U] != TAG_HEADER && data[0U] != TAG_DATA && data[0U] != TAG_EOT)
 		return false;
 
 	unsigned char buffer[130U];
 
 	buffer[0U] = MMDVM_FRAME_START;
 	buffer[1U] = length + 2U;
-	buffer[2U] = MMDVM_M17_DATA;
+
+	if (data[0U] == TAG_HEADER)
+		buffer[2U] = MMDVM_M17_HEADER;
+	else
+		buffer[2U] = MMDVM_M17_DATA;
 
 	::memcpy(buffer + 3U, data + 1U, length - 1U);
 

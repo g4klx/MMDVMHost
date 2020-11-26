@@ -172,6 +172,7 @@ m_nxdnRemoteGateway(false),
 m_nxdnTXHang(5U),
 m_nxdnModeHang(10U),
 m_m17Enabled(false),
+m_m17ColorCode(1U),
 m_m17SelfOnly(false),
 m_m17AllowEncryption(false),
 m_m17TXHang(5U),
@@ -739,6 +740,8 @@ bool CConf::read()
 		} else if (section == SECTION_M17) {
 			if (::strcmp(key, "Enable") == 0)
 				m_m17Enabled = ::atoi(value) == 1;
+			else if (::strcmp(key, "ColorCode") == 0)
+				m_m17ColorCode = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "SelfOnly") == 0)
 				m_m17SelfOnly = ::atoi(value) == 1;
 			else if (::strcmp(key, "AllowEncryption") == 0)
@@ -1601,6 +1604,11 @@ unsigned int CConf::getNXDNModeHang() const
 bool CConf::getM17Enabled() const
 {
 	return m_m17Enabled;
+}
+
+unsigned int CConf::getM17ColorCode() const
+{
+	return m_m17ColorCode;
 }
 
 bool CConf::getM17SelfOnly() const
