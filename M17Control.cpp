@@ -203,12 +203,15 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		if (colorCode != m_colorCode)
 			return false;
 
+		bool lateEntry = false;
 		if (!m_rfLICH.isValid()) {
 			unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
 			CM17Utils::combineFragmentLICH(lich1, lich2, lich3, lich4, lich);
 
 			unsigned int n = (lich4 >> 4) & 0x07U;
 			m_rfLICH.setFragment(lich, n);
+
+			lateEntry = true;
 		}
 
 		bool valid = m_rfLICH.isValid();
@@ -241,19 +244,19 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			unsigned char dataType = m_rfLICH.getDataType();
 			switch (dataType) {
 			case 1U:
-				LogMessage("M17, received RF data transmission from %s to %s", source.c_str(), dest.c_str());
+				LogMessage("M17, received RF %s data transmission from %s to %s", lateEntry ? "late entry" : "", source.c_str(), dest.c_str());
 				m_rfState = RS_RF_DATA;
 				break;
 			case 2U:
-				LogMessage("M17, received RF voice transmission from %s to %s", source.c_str(), dest.c_str());
+				LogMessage("M17, received RF %s voice transmission from %s to %s", lateEntry ? "late entry" : "", source.c_str(), dest.c_str());
 				m_rfState = RS_RF_AUDIO;
 				break;
 			case 3U:
-				LogMessage("M17, received RF voice + data transmission from %s to %s", source.c_str(), dest.c_str());
+				LogMessage("M17, received RF %s voice + data transmission from %s to %s", lateEntry ? "late entry" : "", source.c_str(), dest.c_str());
 				m_rfState = RS_RF_AUDIO;
 				break;
 			default:
-				LogMessage("M17, received RF unknown transmission from %s to %s", source.c_str(), dest.c_str());
+				LogMessage("M17, received RF %s unknown transmission from %s to %s", lateEntry ? "late entry" : "", source.c_str(), dest.c_str());
 				m_rfState = RS_RF_DATA;
 				break;
 			}
