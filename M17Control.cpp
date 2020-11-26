@@ -79,7 +79,9 @@ m_rfFN(0U),
 m_rfErrs(0U),
 m_rfBits(1U),
 m_rfLICH(),
+m_rfLICHn(0U),
 m_netLICH(),
+m_netLICHn(0U),
 m_rssiMapper(rssiMapper),
 m_rssi(0U),
 m_maxRSSI(0U),
@@ -172,27 +174,63 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_maxRSSI = m_rssi;
 			m_aveRSSI = m_rssi;
 			m_rssiCount = 1U;
-			m_rfFN = 0U;
+			m_rfLICHn   = 0U;
+			m_rfFN      = 0U;
 
 #if defined(DUMP_M17)
 			openFile();
 #endif
 			m_rfLICH.setLinkSetup(frame);
 
+			m_rfState = RS_RF_LATE_ENTRY;
+
+			return true;
+		} else {
+			m_rfState = RS_RF_LATE_ENTRY;
+		}
+	}
+
+	if (m_rfState == RS_RF_LATE_ENTRY && data[0U] == TAG_DATA) {
+		unsigned int frag1, frag2, frag3, frag4;
+		CM17Utils::splitFragmentLICHFEC(data + 2U + M17_SYNC_LENGTH_BYTES, frag1, frag2, frag3, frag4);
+
+		unsigned int lich1 = CGolay24128::decode24128(frag1);
+		unsigned int lich2 = CGolay24128::decode24128(frag2);
+		unsigned int lich3 = CGolay24128::decode24128(frag3);
+		unsigned int lich4 = CGolay24128::decode24128(frag4);
+
+		unsigned int colorCode = (lich4 >> 7) & 0x1FU;
+		if (colorCode != m_colorCode)
+			return false;
+
+		if (!m_rfLICH.isValid()) {
+			unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
+			CM17Utils::combineFragmentLICH(lich1, lich2, lich3, lich4, lich);
+
+			unsigned int n = (lich4 >> 4) & 0x07U;
+			m_rfLICH.setFragment(lich, n);
+		}
+
+		bool valid = m_rfLICH.isValid();
+		if (valid) {
+			m_rfFrames = 0U;
+			m_rfErrs = 0U;
+			m_rfBits = 1U;
+			m_rfTimeoutTimer.start();
+			m_minRSSI = m_rssi;
+			m_maxRSSI = m_rssi;
+			m_aveRSSI = m_rssi;
+			m_rssiCount = 1U;
+			m_rfLICHn   = 0U;
+
+#if defined(DUMP_M17)
+			openFile();
+#endif
 			std::string source = m_rfLICH.getSource();
 			std::string dest   = m_rfLICH.getDest();
 
 			if (m_selfOnly) {
 				bool ret = checkCallsign(source);
-				if (!ret) {
-					LogMessage("M17, invalid access attempt from %s to %s", source.c_str(), dest.c_str());
-					m_rfState = RS_RF_REJECTED;
-					return false;
-				}
-			}
-
-			if (!m_allowEncryption) {
-				bool ret = m_rfLICH.isNONCENull();
 				if (!ret) {
 					LogMessage("M17, invalid access attempt from %s to %s", source.c_str(), dest.c_str());
 					m_rfState = RS_RF_REJECTED;
@@ -222,16 +260,14 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 			m_display->writeM17(source.c_str(), dest.c_str(), "R");
 
-#if defined(DUMP_M17)
-			writeFile(data + 2U);
-#endif
 			if (m_duplex) {
+				// Create a Link Setup frame
 				data[0U] = TAG_HEADER;
 				data[1U] = 0x00U;
 
 				// Generate the sync
 				CSync::addM17HeaderSync(data + 2U);
-
+				
 				unsigned char setup[M17_LICH_LENGTH_BYTES];
 				m_rfLICH.getLinkSetup(setup);
 
@@ -246,106 +282,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 				writeQueueRF(data);
 			}
 
-			return true;
-		} else {
-			m_rfState = RS_RF_LATE_ENTRY;
-		}
-	}
-
-	if (m_rfState == RS_RF_LATE_ENTRY && data[0U] == TAG_DATA) {
-		CM17Convolution conv;
-		unsigned char frame[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
-		conv.decodeData(data + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES, frame);
-
-		bool valid = CM17CRC::checkCRC(frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
-		if (valid) {
-			m_rfFN = (frame[0U] << 8) + (frame[1U] << 0);
-
-			unsigned int frag1, frag2, frag3, frag4;
-			CM17Utils::splitFragmentLICHFEC(data + 2U + M17_SYNC_LENGTH_BYTES, frag1, frag2, frag3, frag4);
-
-			unsigned int lich1 = CGolay24128::decode24128(frag1);
-			unsigned int lich2 = CGolay24128::decode24128(frag2);
-			unsigned int lich3 = CGolay24128::decode24128(frag3);
-			unsigned int lich4 = CGolay24128::decode24128(frag4);
-
-			unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
-			CM17Utils::combineFragmentLICH(lich1, lich2, lich3, lich4, lich);
-
-			m_rfLICH.setFragment(lich, m_rfFN);
-
-			valid = m_rfLICH.isValid();
-			if (valid) {
-				m_rfFrames = 0U;
-				m_rfErrs = 0U;
-				m_rfBits = 1U;
-				m_rfTimeoutTimer.start();
-				m_minRSSI = m_rssi;
-				m_maxRSSI = m_rssi;
-				m_aveRSSI = m_rssi;
-				m_rssiCount = 1U;
-
-#if defined(DUMP_M17)
-				openFile();
-#endif
-				std::string source = m_rfLICH.getSource();
-				std::string dest   = m_rfLICH.getDest();
-
-				if (m_selfOnly) {
-					bool ret = checkCallsign(source);
-					if (!ret) {
-						LogMessage("M17, invalid access attempt from %s to %s", source.c_str(), dest.c_str());
-						m_rfState = RS_RF_REJECTED;
-						return false;
-					}
-				}
-
-				unsigned char dataType = m_rfLICH.getDataType();
-				switch (dataType) {
-				case 1U:
-					LogMessage("M17, received RF late entry data transmission from %s to %s", source.c_str(), dest.c_str());
-					m_rfState = RS_RF_DATA;
-					break;
-				case 2U:
-					LogMessage("M17, received RF late entry voice transmission from %s to %s", source.c_str(), dest.c_str());
-					m_rfState = RS_RF_AUDIO;
-					break;
-				case 3U:
-					LogMessage("M17, received RF late entry voice + data transmission from %s to %s", source.c_str(), dest.c_str());
-					m_rfState = RS_RF_AUDIO;
-					break;
-				default:
-					LogMessage("M17, received RF late entry unknown transmission from %s to %s", source.c_str(), dest.c_str());
-					m_rfState = RS_RF_DATA;
-					break;
-				}
-
-				m_display->writeM17(source.c_str(), dest.c_str(), "R");
-
-				if (m_duplex) {
-					// Create a Link Setup frame
-					data[0U] = TAG_HEADER;
-					data[1U] = 0x00U;
-
-					// Generate the sync
-					CSync::addM17HeaderSync(data + 2U);
-
-					unsigned char setup[M17_LICH_LENGTH_BYTES];
-					m_rfLICH.getLinkSetup(setup);
-
-					// Add the convolution FEC
-					CM17Convolution conv;
-					conv.encodeLinkSetup(setup, data + 2U + M17_SYNC_LENGTH_BYTES);
-
-					unsigned char temp[M17_FRAME_LENGTH_BYTES];
-					interleaver(data + 2U, temp);
-					decorrelator(temp, data + 2U);
-
-					writeQueueRF(data);
-				}
-
-				// Fall through to the next section
-			}
+			// Fall through to the next section
 		}
 	}
 
@@ -395,10 +332,14 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		CSync::addM17DataSync(rfData + 2U);
 
 		unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
-		m_netLICH.getFragment(lich, m_rfFN);
+		m_netLICH.getFragment(lich, m_rfLICHn);
 
 		unsigned int frag1, frag2, frag3, frag4;
 		CM17Utils::splitFragmentLICH(lich, frag1, frag2, frag3, frag4);
+
+		// Add the Color Code and fragment number
+		frag4 |= (m_rfLICHn & 0x07U)   << 4;
+		frag4 |= (m_colorCode & 0x1FU) << 7;
 
 		// Add Golay to the LICH fragment here
 		unsigned int lich1 = CGolay24128::encode24128(frag1);
@@ -445,6 +386,10 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		writeNetwork(netData);
 
 		m_rfFrames++;
+
+		m_rfLICHn++;
+		if (m_rfLICHn >= 6U)
+			m_rfLICHn = 0U;
 
 		// EOT?
 		if ((m_rfFN & 0x8000U) == 0x8000U) {
@@ -501,6 +446,8 @@ void CM17Control::writeEndRF()
 
 	m_rfTimeoutTimer.stop();
 
+	m_rfLICH.reset();
+
 	if (m_netState == RS_NET_IDLE) {
 		m_display->clearM17();
 
@@ -520,6 +467,8 @@ void CM17Control::writeEndNet()
 	m_netTimeoutTimer.stop();
 	m_networkWatchdog.stop();
 	m_packetTimer.stop();
+
+	m_netLICH.reset();
 
 	m_display->clearM17();
 
@@ -580,6 +529,7 @@ void CM17Control::writeNetwork()
 		m_packetTimer.start();
 		m_elapsed.start();
 		m_netFrames = 0U;
+		m_netLICHn  = 0U;
 
 		// Create a dummy start message
 		unsigned char start[M17_FRAME_LENGTH_BYTES + 2U];
@@ -615,13 +565,15 @@ void CM17Control::writeNetwork()
 	m_netFrames++;
 
 	// Add the fragment LICH
-	uint16_t fn = (netData[28U] << 8) + (netData[29U] << 0);
-
 	unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
-	m_netLICH.getFragment(lich, fn);
+	m_netLICH.getFragment(lich, m_netLICHn);
 
 	unsigned int frag1, frag2, frag3, frag4;
 	CM17Utils::splitFragmentLICH(lich, frag1, frag2, frag3, frag4);
+
+	// Add the Color Code and fragment number
+	frag4 |= (m_netLICHn & 0x07U)  << 4;
+	frag4 |= (m_colorCode & 0x1FU) << 7;
 
 	// Add Golay to the LICH fragment here
 	unsigned int lich1 = CGolay24128::encode24128(frag1);
@@ -648,7 +600,12 @@ void CM17Control::writeNetwork()
 
 	writeQueueNet(data);
 
+	m_netLICHn++;
+	if (m_netLICHn >= 6U)
+		m_netLICHn = 0U;
+
 	// EOT handling
+	uint16_t fn = (netData[28U] << 8) + (netData[29U] << 0);
 	if ((fn & 0x8000U) == 0x8000U) {
 		std::string source = m_netLICH.getSource();
 		std::string dest   = m_netLICH.getDest();

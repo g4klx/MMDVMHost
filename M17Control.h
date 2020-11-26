@@ -69,7 +69,9 @@ private:
 	unsigned int               m_rfErrs;
 	unsigned int               m_rfBits;
 	CM17LICH                   m_rfLICH;
+	unsigned int               m_rfLICHn;
 	CM17LICH                   m_netLICH;
+	unsigned int               m_netLICHn;
 	CRSSIInterpolator*         m_rssiMapper;
 	unsigned char              m_rssi;
 	unsigned char              m_maxRSSI;
