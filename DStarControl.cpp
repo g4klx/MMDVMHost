@@ -730,10 +730,10 @@ void CDStarControl::writeNetwork()
 			writeEndNet();
 		}
 	} else if (type == TAG_DATA) {
-		unsigned char n = data[1U];
+		unsigned char m_netN = data[1U];
 
 		// Check for the fast data signature
-		if (m_netState == RS_NET_AUDIO && (n % 2U) == 1U) {
+		if (m_netState == RS_NET_AUDIO && (m_netN % 2U) == 1U) {
 			unsigned char slowDataType = data[DSTAR_VOICE_FRAME_LENGTH_BYTES + 2U] & DSTAR_SLOW_DATA_TYPE_MASK;
 			if (slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA1 || slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA2) {
 				LogMessage("D-Star, switching to fast data mode");
@@ -748,8 +748,6 @@ void CDStarControl::writeNetwork()
 
 			m_netBits += 72U;
 			m_netErrs  = 0U;
-
-			m_netN = n;
 
 			// Regenerate the sync
 			if (m_netN == 0U)
@@ -780,14 +778,12 @@ void CDStarControl::writeNetwork()
 			data[1U] = TAG_DATA;
 
 			// Insert silence and reject if in the past
-			bool ret = insertSilence(data + 1U, n);
+			bool ret = insertSilence(data + 1U, m_netN);
 			if (!ret)
 				return;
 
 			m_netErrs += errors;
 			m_netBits += 48U;
-
-			m_netN = n;
 
 			// Regenerate the sync
 			if (m_netN == 0U)
