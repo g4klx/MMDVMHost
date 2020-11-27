@@ -856,8 +856,7 @@ void CDStarControl::clock()
 		}
 	}
 
-	// Only insert silence on audio data
-	if (m_netState == RS_NET_AUDIO) {
+	if (m_netState == RS_NET_AUDIO || m_netState == RS_NET_DATA) {
 		m_packetTimer.clock(ms);
 
 		if (m_packetTimer.isRunning() && m_packetTimer.hasExpired()) {
