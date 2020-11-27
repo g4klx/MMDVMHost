@@ -730,8 +730,6 @@ void CDStarControl::writeNetwork()
 			writeEndNet();
 		}
 	} else if (type == TAG_DATA) {
-		unsigned char m_netN = data[1U];
-
 		// Check for the fast data signature
 		if (m_netState == RS_NET_AUDIO && (m_netN % 2U) == 1U) {
 			unsigned char slowDataType = data[DSTAR_VOICE_FRAME_LENGTH_BYTES + 2U] & DSTAR_SLOW_DATA_TYPE_MASK;
@@ -744,13 +742,17 @@ void CDStarControl::writeNetwork()
 		}
 
 		if (m_netState == RS_NET_DATA) {
+			unsigned char n = data[1U];
+
 			data[1U] = TAG_DATA;
 
 			m_netBits += 72U;
 			m_netErrs  = 0U;
 
+			m_netN = n;
+
 			// Regenerate the sync
-			if (m_netN == 0U)
+			if (n == 0U)
 				CSync::addDStarSync(data + 2U);
 
 			m_packetTimer.start();
@@ -760,9 +762,12 @@ void CDStarControl::writeNetwork()
 			writeFile(data + 1U, length - 1U);
 #endif
 			writeQueueDataNet(data + 1U);
-		} else if (m_netState == RS_NET_AUDIO) {
-			unsigned int errors = 0U;
 
+			m_netN = (m_netN + 1U) % 21U;
+		} else if (m_netState == RS_NET_AUDIO) {
+			unsigned char n = data[1U];
+
+			unsigned int errors = 0U;
 			if (!m_netHeader.isDataPacket()) {
 				if (CUtils::compare(data + 2U, DSTAR_NULL_FRAME_DATA_SRAMBLED_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U) {
 					// Fix any scrambled null data frames, typically sent by Kenwood D-Star radios
@@ -778,15 +783,17 @@ void CDStarControl::writeNetwork()
 			data[1U] = TAG_DATA;
 
 			// Insert silence and reject if in the past
-			bool ret = insertSilence(data + 1U, m_netN);
+			bool ret = insertSilence(data + 1U, n);
 			if (!ret)
 				return;
 
 			m_netErrs += errors;
 			m_netBits += 48U;
 
+			m_netN = n;
+
 			// Regenerate the sync
-			if (m_netN == 0U)
+			if (n == 0U)
 				CSync::addDStarSync(data + 2U);
 
 			m_packetTimer.start();
@@ -796,6 +803,8 @@ void CDStarControl::writeNetwork()
 			writeFile(data + 1U, length - 1U);
 #endif
 			writeQueueDataNet(data + 1U);
+
+			m_netN = (m_netN + 1U) % 21U;
 		}
 	} else {
 		CUtils::dump("D-Star, unknown data from network", data, DSTAR_FRAME_LENGTH_BYTES + 1U);
