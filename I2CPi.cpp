@@ -24,6 +24,16 @@
 const unsigned char OLED_ADAFRUIT_SPI_128x32 = 0U;
 const unsigned char OLED_ADAFRUIT_SPI_128x64 = 1U;
 
+const uint8_t SSD_Command_Mode = 0x00U;  /* C0 and DC bit are 0         */
+const uint8_t SSD_Data_Mode    = 0x40U;  /* C0 bit is 0 and DC bit is 1 */
+
+// Configuration Pin for ArduiPi board
+const uint8_t OLED_SPI_RESET = RPI_V2_GPIO_P1_22; /* GPIO 25 pin 22  */
+const uint8_t OLED_SPI_DC    = RPI_V2_GPIO_P1_18; /* GPIO 24 pin 18  */
+const uint8_t OLED_SPI_CS0   = BCM2835_SPI_CS0;   /* Chip Select CE0 */
+const uint8_t OLED_SPI_CS1   = BCM2835_SPI_CS1;   /* Chip Select CE1 */
+const uint8_t OLED_SPI_CS    = BCM2835_SPI_CS1;   /* Default Chip Select */
+const uint8_t OLED_I2C_RESET = RPI_V2_GPIO_P1_22; /* GPIO 25 pin 12  */
 
 CI2CPi::CI2CPi() :
 m_spi(false)
@@ -41,7 +51,9 @@ bool CI2CPi::open(unsigned char displayType)
 		m_spi = true;
 
 		// Init & Configure Raspberry PI SPI
-		bcm2835_spi_begin(OLED_SPI_CS);
+		if (!bcm2835_spi_begin())
+			return false;
+
 		bcm2835_spi_setBitOrder(BCM2835_SPI_BIT_ORDER_MSBFIRST);      
 		bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);                
   
@@ -119,7 +131,7 @@ void CI2CPi::setDataMode()
 
 void CI2CPi::sendCommand(uint8_t c0, uint8_t c1, uint8_t c2) 
 { 
-	uint8_t buff[4U];
+	char buff[4U];
     
 	buff[1U] = c0;
 	buff[2U] = c1;
@@ -143,7 +155,7 @@ void CI2CPi::sendCommand(uint8_t c0, uint8_t c1, uint8_t c2)
 
 void CI2CPi::sendCommand(uint8_t c0, uint8_t c1)
 { 
-	uint8_t buff[3U];
+	char buff[3U];
     
 	buff[1U] = c0;
 	buff[2U] = c1;
@@ -174,7 +186,7 @@ void CI2CPi::sendCommand(uint8_t c)
 		// Write Data on SPI
 		bcm2835_spi_transfer(c);
 	} else {
-		uint8_t buff[2U];
+		char buff[2U];
 
 		// Clear D/C to switch to command mode
 		buff[0] = SSD_Command_Mode; 
@@ -188,9 +200,9 @@ void CI2CPi::sendCommand(uint8_t c)
 void CI2CPi::writeData(const uint8_t* data, uint16_t length)
 {
 	if (m_spi)
-		bcm2835_spi_writenb(data, length);
+		bcm2835_spi_writenb((char*)data, length);
 	else
-		bcm2835_i2c_write(data, length);
+		bcm2835_i2c_write((char*)data, length);
 }
 
 void CI2CPi::writeData(uint8_t c)

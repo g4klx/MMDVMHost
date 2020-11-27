@@ -3,7 +3,7 @@
 CC      = cc
 CXX     = c++
 CFLAGS  = -g -O3 -Wall -std=c++0x -pthread -DHAVE_LOG_H -DOLED -I/usr/local/include
-LIBS    = -lArduiPi_OLED -lpthread -lsamplerate -lutil
+LIBS    = -lpthread -lsamplerate -lutil -lbcm2835
 
 # If you use NetBSD, add following CFLAGS
 #CFLAGS += -L/usr/local/lib -Wl,-rpath=/usr/local/lib
