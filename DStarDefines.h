@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018,2019 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -49,7 +49,10 @@ const unsigned char DSTAR_SLOW_DATA_TYPE_HEADER  = 0x50U;
 const unsigned char DSTAR_SLOW_DATA_TYPE_SQUELCH = 0xC0U;
 const unsigned char DSTAR_SLOW_DATA_LENGTH_MASK  = 0x0FU;
 
-const unsigned char DSTAR_SCRAMBLER_BYTES[] = {0x70U, 0x4FU, 0x93U};
+// Data Frames are always scrambled using the first three bytes of
+// DSTAR_SCRAMBLER_BYTES, and Voice Frames are scrambled with all nine
+// bytes when Fast Data is in use
+const unsigned char DSTAR_SCRAMBLER_BYTES[] = { 0x70U, 0x4FU, 0x93U, 0x40U, 0x64U, 0x74U, 0x6DU, 0x30U, 0x2BU };
 
 const unsigned char DSTAR_DATA_MASK           = 0x80U;
 const unsigned char DSTAR_REPEATER_MASK       = 0x40U;
