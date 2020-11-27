@@ -357,14 +357,12 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		}
 
 		// Check for the fast data signature
-		if (m_rfState == RS_RF_AUDIO && (m_rfN % 2U) == 1U) {
+		if (m_rfState == RS_RF_AUDIO) {
 			unsigned char slowDataType = (data[DSTAR_VOICE_FRAME_LENGTH_BYTES + 1U] ^ DSTAR_SCRAMBLER_BYTE1) & DSTAR_SLOW_DATA_TYPE_MASK;
 			if (slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA1 || slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA2) {
 				LogMessage("D-Star, switching to fast data mode");
 				m_rfState = RS_RF_DATA;
 			}
-		} else {
-			// Handle return to voice mode here?
 		}
 
 		if (m_rfState == RS_RF_DATA) {
@@ -731,14 +729,12 @@ void CDStarControl::writeNetwork()
 		}
 	} else if (type == TAG_DATA) {
 		// Check for the fast data signature
-		if (m_netState == RS_NET_AUDIO && (m_netN % 2U) == 1U) {
+		if (m_netState == RS_NET_AUDIO) {
 			unsigned char slowDataType = data[DSTAR_VOICE_FRAME_LENGTH_BYTES + 2U] & DSTAR_SLOW_DATA_TYPE_MASK;
 			if (slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA1 || slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA2) {
 				LogMessage("D-Star, switching to fast data mode");
 				m_netState = RS_NET_DATA;
 			}
-		} else {
-			// Handle return to voice mode here?
 		}
 
 		if (m_netState == RS_NET_DATA) {
@@ -762,8 +758,6 @@ void CDStarControl::writeNetwork()
 			writeFile(data + 1U, length - 1U);
 #endif
 			writeQueueDataNet(data + 1U);
-
-			m_netN = (m_netN + 1U) % 21U;
 		} else if (m_netState == RS_NET_AUDIO) {
 			unsigned char n = data[1U];
 
@@ -803,8 +797,6 @@ void CDStarControl::writeNetwork()
 			writeFile(data + 1U, length - 1U);
 #endif
 			writeQueueDataNet(data + 1U);
-
-			m_netN = (m_netN + 1U) % 21U;
 		}
 	} else {
 		CUtils::dump("D-Star, unknown data from network", data, DSTAR_FRAME_LENGTH_BYTES + 1U);
