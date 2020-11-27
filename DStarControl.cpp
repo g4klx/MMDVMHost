@@ -360,7 +360,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		if (m_rfState == RS_RF_AUDIO && (m_rfN % 2U) == 1U) {
 			unsigned char slowDataType = (data[DSTAR_VOICE_FRAME_LENGTH_BYTES + 1U] ^ DSTAR_SCRAMBLER_BYTES[0U]) & DSTAR_SLOW_DATA_TYPE_MASK;
 			unsigned char guard = data[4U + 1U] ^ DSTAR_SCRAMBLER_BYTES[4U];
-			if ((slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA1 || slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA2) /* && guard == DSTAR_FAST_DATA_GUARD_BYTE */) {
+			if ((slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA1 || slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA2) && guard == DSTAR_FAST_DATA_GUARD_BYTE) {
 				LogMessage("D-Star, switching to fast data mode");
 				m_rfState = RS_RF_DATA;
 			}
@@ -737,7 +737,7 @@ void CDStarControl::writeNetwork()
 		if (m_netState == RS_NET_AUDIO && (n % 2U) == 1U) {
 			unsigned char slowDataType = (data[DSTAR_VOICE_FRAME_LENGTH_BYTES + 2U] ^ DSTAR_SCRAMBLER_BYTES[0U]) & DSTAR_SLOW_DATA_TYPE_MASK;
 			unsigned char guard = data[4U + 2U] ^ DSTAR_SCRAMBLER_BYTES[4U];
-			if ((slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA1 || slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA2) /* && guard == DSTAR_FAST_DATA_GUARD_BYTE */) {
+			if ((slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA1 || slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA2) && guard == DSTAR_FAST_DATA_GUARD_BYTE) {
 				LogMessage("D-Star, switching to fast data mode");
 				m_netState = RS_NET_DATA;
 			}
