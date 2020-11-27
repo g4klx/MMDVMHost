@@ -362,7 +362,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 
 		// Check for the fast data signature
 		if (m_rfState == RS_RF_AUDIO) {
-			unsigned char slowDataType = (data[DSTAR_VOICE_FRAME_LENGTH_BYTES + 1U] ^ DSTAR_SCRAMBLER_BYTE1) & DSTAR_SLOW_DATA_TYPE_MASK;
+			unsigned char slowDataType = data[DSTAR_VOICE_FRAME_LENGTH_BYTES + 1U] & DSTAR_SLOW_DATA_TYPE_MASK;
 			if (slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA1 || slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA2) {
 				LogMessage("D-Star, switching to fast data mode");
 				m_rfState = RS_RF_DATA;
