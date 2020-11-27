@@ -53,7 +53,7 @@ const unsigned char DSTAR_SLOW_DATA_TYPE_FAST_DATA2 = 0x90U;
 const unsigned char DSTAR_SLOW_DATA_TYPE_SQUELCH    = 0xC0U;
 const unsigned char DSTAR_SLOW_DATA_LENGTH_MASK     = 0x0FU;
 
-const unsigned char DSTAR_SCRAMBLER_BYTES[] = { 0x70U, 0x4FU, 0x93U, 0x40U, 0x64U, 0x74U, 0x6DU, 0x30U, 0x2BU };
+const unsigned char DSTAR_SCRAMBLER_BYTES[] = {0x70U, 0x4FU, 0x93U};
 
 const unsigned char DSTAR_DATA_MASK           = 0x80U;
 const unsigned char DSTAR_REPEATER_MASK       = 0x40U;
@@ -67,7 +67,9 @@ const unsigned char DSTAR_ACK_FLAG            = 0x03U;
 const unsigned char DSTAR_NO_RESPONSE         = 0x02U;
 const unsigned char DSTAR_RELAY_UNAVAILABLE   = 0x01U;
 
-const unsigned char DSTAR_FAST_DATA_GUARD_BYTE = 0x02U;
+const unsigned char DSTAR_SCRAMBLER_BYTE1 = 0x70U;
+const unsigned char DSTAR_SCRAMBLER_BYTE2 = 0x4FU;
+const unsigned char DSTAR_SCRAMBLER_BYTE3 = 0x93U;
 
 const unsigned char DSTAR_SYNC_BYTES[] = {0x55U, 0x2DU, 0x16U};
 
