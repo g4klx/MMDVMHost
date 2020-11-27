@@ -356,6 +356,10 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			return false;
 		}
 
+		// Fix any scrambled null data frames
+		if (CUtils::compare(data + 1U, DSTAR_NULL_FRAME_DATA_SRAMBLED_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U)
+			::memcpy(data + 1U, DSTAR_NULL_FRAME_DATA_SRAMBLED_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES);
+
 		// Check for the fast data signature
 		if (m_rfState == RS_RF_AUDIO) {
 			unsigned char slowDataType = (data[DSTAR_VOICE_FRAME_LENGTH_BYTES + 1U] ^ DSTAR_SCRAMBLER_BYTE1) & DSTAR_SLOW_DATA_TYPE_MASK;
@@ -390,14 +394,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		} else if (m_rfState == RS_RF_AUDIO) {
 			unsigned int errors = 0U;
 			if (!m_rfHeader.isDataPacket()) {
-				if (CUtils::compare(data + 1U, DSTAR_NULL_FRAME_DATA_SRAMBLED_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U) {
-					// Fix any scrambled null data frames, typically sent by Kenwood D-Star radios
-					::memcpy(data + 1U, DSTAR_NULL_FRAME_DATA_SRAMBLED_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES);
-				} else {
-					// This appears to be a normal FEC protected audio frame
-					errors = m_fec.regenerateDStar(data + 1U);
-				}
-
+				errors = m_fec.regenerateDStar(data + 1U);
 				m_display->writeDStarBER(float(errors) / 0.48F);
 				LogDebug("D-Star, audio sequence no. %u, errs: %u/48 (%.1f%%)", m_rfN, errors, float(errors) / 0.48F);
 				m_rfErrs += errors;
@@ -728,6 +725,10 @@ void CDStarControl::writeNetwork()
 			writeEndNet();
 		}
 	} else if (type == TAG_DATA) {
+		// Fix any scrambled null data frames
+		if (CUtils::compare(data + 2U, DSTAR_NULL_FRAME_DATA_SRAMBLED_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U)
+			::memcpy(data + 2U, DSTAR_NULL_FRAME_DATA_SRAMBLED_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES);
+
 		// Check for the fast data signature
 		if (m_netState == RS_NET_AUDIO) {
 			unsigned char slowDataType = data[DSTAR_VOICE_FRAME_LENGTH_BYTES + 2U] & DSTAR_SLOW_DATA_TYPE_MASK;
@@ -762,15 +763,8 @@ void CDStarControl::writeNetwork()
 			unsigned char n = data[1U];
 
 			unsigned int errors = 0U;
-			if (!m_netHeader.isDataPacket()) {
-				if (CUtils::compare(data + 2U, DSTAR_NULL_FRAME_DATA_SRAMBLED_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U) {
-					// Fix any scrambled null data frames, typically sent by Kenwood D-Star radios
-					::memcpy(data + 2U, DSTAR_NULL_FRAME_DATA_SRAMBLED_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES);
-				} else {
-					// This appears to be a normal FEC protected audio frame
-					errors = m_fec.regenerateDStar(data + 2U);
-				}
-			}
+			if (!m_netHeader.isDataPacket())
+				errors = m_fec.regenerateDStar(data + 2U);
 
 			blankDTMF(data + 2U);
 
