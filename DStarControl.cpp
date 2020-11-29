@@ -149,7 +149,9 @@ unsigned int CDStarControl::maybeFixupVoiceFrame(
 	unsigned char mini_header_type = mini_header & DSTAR_SLOW_DATA_TYPE_MASK;
 
 	if (n == 0U) {
-		LogMessage("%s frame %u: FEC regeneration disabled for first frame", log_prefix, n);
+		LogMessage("%s frame %u: delaying FEC and DTMF processing of first voice frame", log_prefix, n);
+		::memcpy(voice_sync_data, data, MODEM_DATA_LEN);
+		*voice_sync_data_len = len;
 	} else if ((n % 2U != 0U) &&
 		   ((mini_header_type == DSTAR_SLOW_DATA_TYPE_FASTDATA01) ||
 		    (mini_header_type == DSTAR_SLOW_DATA_TYPE_FASTDATA16))) {
@@ -163,14 +165,25 @@ unsigned int CDStarControl::maybeFixupVoiceFrame(
 			*skip_dtmf_blanking_frames = FAST_DATA_BEEP_GRACE_FRAMES;
 		LogMessage("%s frame %u: found fast data (cont.)", log_prefix, n);
 	} else {
-		errors = m_fec.regenerateDStar(data + offset);
+		if (n == 1U) {
+			LogMessage("%s frame 0: *** REGENERATING FEC ***", log_prefix);
+			errors += m_fec.regenerateDStar(voice_sync_data + offset);
+		}
 		LogMessage("%s frame %u: *** REGENERATING FEC ***", log_prefix, n);
+		errors += m_fec.regenerateDStar(data + offset);
 
 		if (blank_dtmf && (*skip_dtmf_blanking_frames > 0U)) {
 			(*skip_dtmf_blanking_frames)--;
+			if (n == 1U)
+				LogMessage("%s frame 0: *** Not BLANKING DTMF (left to skip: %u) ***",
+					   log_prefix, *skip_dtmf_blanking_frames);
 			LogMessage("%s frame %u: *** Not BLANKING DTMF (left to skip: %u) ***",
 				   log_prefix, n, *skip_dtmf_blanking_frames);
 		} else if (blank_dtmf && (*skip_dtmf_blanking_frames == 0U)) {
+			if (n == 1U) {
+				LogMessage("%s frame 0: *** BLANKING DTMF ***", log_prefix);
+				blankDTMF(voice_sync_data + offset);
+			}
 			LogMessage("%s frame %u: *** BLANKING DTMF ***", log_prefix, n);
 			blankDTMF(data + offset);
 		}
@@ -439,11 +452,19 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			m_rfBits += 48U;
 			m_rfFrames++;
 
-			if (m_net)
-				writeNetworkDataRF(data, errors, false);
+			if (m_net) {
+				if (m_rfN == 1U)
+					writeNetworkDataRF(m_rfVoiceSyncData, 0U, false);
+				if (m_rfN >= 1U)
+					writeNetworkDataRF(data, errors, false);
+			}
 
-			if (m_duplex)
-				writeQueueDataRF(data);
+			if (m_duplex) {
+				if (m_rfN == 1U)
+					writeQueueDataRF(m_rfVoiceSyncData);
+				if (m_rfN >= 1U)
+					writeQueueDataRF(data);
+			}
 
 			m_rfN = (m_rfN + 1U) % 21U;
 		} else if (m_rfState == RS_RF_LATE_ENTRY) {
@@ -753,12 +774,12 @@ void CDStarControl::writeNetwork()
 
 		unsigned char n = data[1U];
 
+		data[1U] = TAG_DATA;
+
 		unsigned int errors = 0U;
 		if (!m_netHeader.isDataPacket())
 			errors = maybeFixupVoiceFrame(data, length, 2U, "Net", n, true, m_netVoiceSyncData, &m_netVoiceSyncDataLen,
 						      &m_netNextFrameIsFastData, &m_netSkipDTMFBlankingFrames);
-
-		data[1U] = TAG_DATA;
 
 		// Insert silence and reject if in the past
 		bool ret = insertSilence(data + 1U, n);
@@ -778,9 +799,15 @@ void CDStarControl::writeNetwork()
 		m_netFrames++;
 
 #if defined(DUMP_DSTAR)
-		writeFile(data + 1U, length - 1U);
+		if (n == 1U)
+			writeFile(m_netVoiceSyncData + 1U, m_netVoiceSyncDataLen - 1U);
+		if (n >= 1U)
+			writeFile(data + 1U, length - 1U);
 #endif
-		writeQueueDataNet(data + 1U);
+		if (n == 1U)
+			writeQueueDataNet(m_netVoiceSyncData + 1U);
+		if (n >= 1U)
+			writeQueueDataNet(data + 1U);
 	} else {
 		CUtils::dump("D-Star, unknown data from network", data, DSTAR_FRAME_LENGTH_BYTES + 1U);
 	}
