@@ -149,7 +149,6 @@ unsigned int CDStarControl::maybeFixupVoiceFrame(
 	unsigned char mini_header_type = mini_header & DSTAR_SLOW_DATA_TYPE_MASK;
 
 	if (n == 0U) {
-		LogMessage("%s frame %u: delaying FEC and DTMF processing of first voice frame", log_prefix, n);
 		::memcpy(voice_sync_data, data, MODEM_DATA_LEN);
 		*voice_sync_data_len = len;
 	} else if ((n % 2U != 0U) &&
@@ -158,49 +157,30 @@ unsigned int CDStarControl::maybeFixupVoiceFrame(
 		*next_frame_is_fast_data = true;
 		if (blank_dtmf)
 			*skip_dtmf_blanking_frames = FAST_DATA_BEEP_GRACE_FRAMES;
-		LogMessage("%s frame %u: found fast data", log_prefix, n);
 	} else if (*next_frame_is_fast_data == true) {
 		*next_frame_is_fast_data = false;
 		if (blank_dtmf)
 			*skip_dtmf_blanking_frames = FAST_DATA_BEEP_GRACE_FRAMES;
-		LogMessage("%s frame %u: found fast data (cont.)", log_prefix, n);
 	} else {
 		bool voice_sync_data_is_null_ambe_data = false;
 		bool data_is_null_ambe_data = false;
-		if ((n == 1U) && (::memcmp(voice_sync_data + offset, DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) == 0)) {
-			LogMessage("%s frame 0: *** Null AMBE data detected in voice frame ***", log_prefix);
+		if ((n == 1U) && (::memcmp(voice_sync_data + offset, DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) == 0))
 			voice_sync_data_is_null_ambe_data = true;
-		}
-		if (::memcmp(data + offset, DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) == 0) {
-			LogMessage("%s frame %u: *** Null AMBE data detected in voice frame ***", log_prefix, n);
+		if (::memcmp(data + offset, DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) == 0)
 			data_is_null_ambe_data = true;
-		}
 
-		if ((n == 1U) && !voice_sync_data_is_null_ambe_data) {
-			LogMessage("%s frame 0: *** REGENERATING FEC ***", log_prefix);
+		if ((n == 1U) && !voice_sync_data_is_null_ambe_data)
 			errors += m_fec.regenerateDStar(voice_sync_data + offset);
-		}
-		if (!data_is_null_ambe_data) {
-			LogMessage("%s frame %u: *** REGENERATING FEC ***", log_prefix, n);
+		if (!data_is_null_ambe_data)
 			errors += m_fec.regenerateDStar(data + offset);
-		}
 
 		if (blank_dtmf && (*skip_dtmf_blanking_frames > 0U)) {
 			(*skip_dtmf_blanking_frames)--;
-			if (n == 1U)
-				LogMessage("%s frame 0: *** Not BLANKING DTMF (left to skip: %u) ***",
-					   log_prefix, *skip_dtmf_blanking_frames);
-			LogMessage("%s frame %u: *** Not BLANKING DTMF (left to skip: %u) ***",
-				   log_prefix, n, *skip_dtmf_blanking_frames);
 		} else if (blank_dtmf && (*skip_dtmf_blanking_frames == 0U)) {
-			if ((n == 1U) && !voice_sync_data_is_null_ambe_data) {
-				LogMessage("%s frame 0: *** BLANKING DTMF ***", log_prefix);
+			if ((n == 1U) && !voice_sync_data_is_null_ambe_data)
 				blankDTMF(voice_sync_data + offset);
-			}
-			if (!data_is_null_ambe_data) {
-				LogMessage("%s frame %u: *** BLANKING DTMF ***", log_prefix, n);
+			if (!data_is_null_ambe_data)
 				blankDTMF(data + offset);
-			}
 		}
 	}
 
