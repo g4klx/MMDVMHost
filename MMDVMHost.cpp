@@ -48,6 +48,7 @@ const char* DEFAULT_INI_FILE = "/etc/MMDVM.ini";
 #endif
 
 static bool m_killed = false;
+bool m_reload = false;
 static int  m_signal = 0;
 
 #if !defined(_WIN32) && !defined(_WIN64)
@@ -56,6 +57,12 @@ static void sigHandler(int signum)
 	m_killed = true;
 	m_signal = signum;
 }
+
+static void sigHandler2(int signum)
+{
+	m_reload = true;
+}
+
 #endif
 
 const char* HEADER1 = "This software is for use on amateur radio networks only,";
@@ -85,6 +92,7 @@ int main(int argc, char** argv)
 	::signal(SIGINT,  sigHandler);
 	::signal(SIGTERM, sigHandler);
 	::signal(SIGHUP,  sigHandler);
+	::signal(SIGUSR1,  sigHandler2);
 #endif
 
 	int ret = 0;

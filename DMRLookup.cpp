@@ -25,6 +25,8 @@
 #include <cstring>
 #include <cctype>
 
+extern bool m_reload;
+
 CDMRLookup::CDMRLookup(const std::string& filename, unsigned int reloadTime) :
 CThread(),
 m_filename(filename),
@@ -59,9 +61,10 @@ void CDMRLookup::entry()
 		sleep(1000U);
 
 		timer.clock();
-		if (timer.hasExpired()) {
+		if (m_reload || timer.hasExpired()) {
 			m_table.load(m_filename);
 			timer.start();
+			m_reload = false;
 		}
 	}
 
