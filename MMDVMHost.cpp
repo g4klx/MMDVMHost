@@ -17,6 +17,8 @@
  */
 
 #include "MMDVMHost.h"
+#include "DMRDirectNetwork.h"
+#include "DMRGatewayNetwork.h"
 #include "NXDNKenwoodNetwork.h"
 #include "NXDNIcomNetwork.h"
 #include "RSSIInterpolator.h"
@@ -1335,8 +1337,12 @@ bool CMMDVMHost::createDMRNetwork()
 	bool slot2           = m_conf.getDMRNetworkSlot2();
 	HW_TYPE hwType       = m_modem->getHWType();
 	m_dmrNetModeHang     = m_conf.getDMRNetworkModeHang();
+	std::string options  = m_conf.getDMRNetworkOptions();
+
+	std::string type = m_conf.getDMRNetworkType();
 
 	LogInfo("DMR Network Parameters");
+	LogInfo("    Type: %s", type.c_str());
 	LogInfo("    Address: %s", address.c_str());
 	LogInfo("    Port: %u", port);
 	if (local > 0U)
@@ -1348,7 +1354,10 @@ bool CMMDVMHost::createDMRNetwork()
 	LogInfo("    Slot 2: %s", slot2 ? "enabled" : "disabled");
 	LogInfo("    Mode Hang: %us", m_dmrNetModeHang);
 
-	m_dmrNetwork = new CDMRNetwork(address, port, local, id, m_duplex, VERSION, debug, slot1, slot2, hwType);
+	if (type == "Direct")
+		m_dmrNetwork = new CDMRDirectNetwork(address, port, local, id, password, m_duplex, VERSION, slot1, slot2, hwType, debug);
+	else
+		m_dmrNetwork = new CDMRGatewayNetwork(address, port, local, id, m_duplex, VERSION, slot1, slot2, hwType, debug);
 
 	unsigned int rxFrequency = m_conf.getRXFrequency();
 	unsigned int txFrequency = m_conf.getTXFrequency();
@@ -1362,6 +1371,12 @@ bool CMMDVMHost::createDMRNetwork()
 	LogInfo("    Power: %uW", power);
 
 	m_dmrNetwork->setConfig(m_callsign, rxFrequency, txFrequency, power, colorCode);
+
+	if (!options.empty()) {
+		LogInfo("    Options: %s", options.c_str());
+
+		m_dmrNetwork->setOptions(options);
+	}
 
 	bool ret = m_dmrNetwork->open();
 	if (!ret) {

@@ -209,6 +209,7 @@ public:
 
   // The DMR Network section
   bool         getDMRNetworkEnabled() const;
+  std::string  getDMRNetworkType() const;
   std::string  getDMRNetworkAddress() const;
   unsigned int getDMRNetworkPort() const;
   unsigned int getDMRNetworkLocal() const;
@@ -469,6 +470,7 @@ private:
   bool         m_dstarNetworkDebug;
 
   bool         m_dmrNetworkEnabled;
+  std::string  m_dmrNetworkType;
   std::string  m_dmrNetworkAddress;
   unsigned int m_dmrNetworkPort;
   unsigned int m_dmrNetworkLocal;
