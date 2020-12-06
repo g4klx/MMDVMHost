@@ -344,6 +344,15 @@
     <ClInclude Include="I2CModem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DMRDirectNetwork.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DMRGatewayNetwork.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SHA256.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -644,6 +653,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="I2CModem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DMRDirectNetwork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DMRGatewayNetwork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SHA256.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

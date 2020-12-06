@@ -19,71 +19,38 @@
 #if !defined(DMRNetwork_H)
 #define	DMRNetwork_H
 
-#include "UDPSocket.h"
-#include "Timer.h"
-#include "RingBuffer.h"
 #include "DMRData.h"
-#include "Defines.h"
 
 #include <string>
-#include <cstdint>
-#include <random>
 
-class CDMRNetwork
+class IDMRNetwork
 {
 public:
-	CDMRNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, bool duplex, const char* version, bool debug, bool slot1, bool slot2, HW_TYPE hwType);
-	~CDMRNetwork();
+	virtual ~IDMRNetwork() = 0;
 
-	void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode);
+	virtual void setOptions(const std::string& options) = 0;
 
-	bool open();
+	virtual void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode) = 0;
 
-	void enable(bool enabled);
+	virtual bool open() = 0;
 
-	bool read(CDMRData& data);
+	virtual void enable(bool enabled) = 0;
 
-	bool write(const CDMRData& data);
+	virtual bool read(CDMRData& data) = 0;
 
-	bool writeRadioPosition(unsigned int id, const unsigned char* data);
+	virtual bool write(const CDMRData& data) = 0;
 
-	bool writeTalkerAlias(unsigned int id, unsigned char type, const unsigned char* data);
+	virtual bool writeRadioPosition(unsigned int id, const unsigned char* data) = 0;
 
-	bool wantsBeacon();
+	virtual bool writeTalkerAlias(unsigned int id, unsigned char type, const unsigned char* data) = 0;
 
-	void clock(unsigned int ms);
+	virtual bool wantsBeacon() = 0;
 
-	void close();
+	virtual void clock(unsigned int ms) = 0;
+
+	virtual void close() = 0;
 
 private: 
-	std::string      m_addressStr;
-	sockaddr_storage m_addr;
-	unsigned int     m_addrLen;
-	unsigned int     m_port;
-	uint8_t*         m_id;
-	bool             m_duplex;
-	const char*      m_version;
-	bool             m_debug;
-	CUDPSocket       m_socket;
-	bool             m_enabled;
-	bool             m_slot1;
-	bool             m_slot2;
-	HW_TYPE          m_hwType;
-	unsigned char*   m_buffer;
-	uint32_t*        m_streamId;
-	CRingBuffer<unsigned char> m_rxData;
-	bool             m_beacon;
-	std::mt19937     m_random;
-	std::string      m_callsign;
-	unsigned int     m_rxFrequency;
-	unsigned int     m_txFrequency;
-	unsigned int     m_power;
-	unsigned int     m_colorCode;
-	CTimer           m_pingTimer;
-
-	bool writeConfig();
-
-	bool write(const unsigned char* data, unsigned int length);
 };
 
 #endif

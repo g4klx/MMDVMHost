@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@
 
 class CDMRControl {
 public:
-	CDMRControl(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, bool embeddedLCOnly, bool dumpTAData, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& whitelist, const std::vector<unsigned int>& slot1TGWhitelist, const std::vector<unsigned int>& slot2TGWhitelist, unsigned int timeout, IModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssi, unsigned int jitter, DMR_OVCM_TYPES ovcm);
+	CDMRControl(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, bool embeddedLCOnly, bool dumpTAData, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& whitelist, const std::vector<unsigned int>& slot1TGWhitelist, const std::vector<unsigned int>& slot2TGWhitelist, unsigned int timeout, IModem* modem, IDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssi, unsigned int jitter, DMR_OVCM_TYPES ovcm);
 	~CDMRControl();
 
 	bool processWakeup(const unsigned char* data);
@@ -51,7 +51,7 @@ public:
 private:
 	unsigned int m_colorCode;
 	IModem*      m_modem;
-	CDMRNetwork* m_network;
+	IDMRNetwork* m_network;
 	CDMRSlot     m_slot1;
 	CDMRSlot     m_slot2;
 	CDMRLookup*  m_lookup;

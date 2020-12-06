@@ -169,9 +169,11 @@
     <ClInclude Include="DMRData.h" />
     <ClInclude Include="DMRDataHeader.h" />
     <ClInclude Include="DMRDefines.h" />
+    <ClInclude Include="DMRDirectNetwork.h" />
     <ClInclude Include="DMREMB.h" />
     <ClInclude Include="DMREmbeddedData.h" />
     <ClInclude Include="DMRFullLC.h" />
+    <ClInclude Include="DMRGatewayNetwork.h" />
     <ClInclude Include="DMRLC.h" />
     <ClInclude Include="DMRNetwork.h" />
     <ClInclude Include="DMRShortLC.h" />
@@ -247,6 +249,7 @@
     <ClInclude Include="SerialController.h" />
     <ClInclude Include="SerialModem.h" />
     <ClInclude Include="SerialPort.h" />
+    <ClInclude Include="SHA256.h" />
     <ClInclude Include="StopWatch.h" />
     <ClInclude Include="Sync.h" />
     <ClInclude Include="TFTSurenoo.h" />
@@ -279,9 +282,11 @@
     <ClCompile Include="DMRCSBK.cpp" />
     <ClCompile Include="DMRData.cpp" />
     <ClCompile Include="DMRDataHeader.cpp" />
+    <ClCompile Include="DMRDirectNetwork.cpp" />
     <ClCompile Include="DMREMB.cpp" />
     <ClCompile Include="DMREmbeddedData.cpp" />
     <ClCompile Include="DMRFullLC.cpp" />
+    <ClCompile Include="DMRGatewayNetwork.cpp" />
     <ClCompile Include="DMRLC.cpp" />
     <ClCompile Include="DMRLookup.cpp" />
     <ClCompile Include="DMRNetwork.cpp" />
@@ -309,6 +314,7 @@
     <ClCompile Include="M17CRC.cpp" />
     <ClCompile Include="M17LICH.cpp" />
     <ClCompile Include="M17Network.cpp" />
+    <ClCompile Include="M17Utils.cpp" />
     <ClCompile Include="MMDVMHost.cpp" />
     <ClCompile Include="Modem.cpp" />
     <ClCompile Include="ModemSerialPort.cpp" />
@@ -350,7 +356,7 @@
     <ClCompile Include="SerialController.cpp" />
     <ClCompile Include="SerialModem.cpp" />
     <ClCompile Include="SerialPort.cpp" />
-    <ClCompile Include="M17Utils.cpp" />
+    <ClCompile Include="SHA256.cpp" />
     <ClCompile Include="StopWatch.cpp" />
     <ClCompile Include="Sync.cpp" />
     <ClCompile Include="TFTSurenoo.cpp" />
