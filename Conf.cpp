@@ -227,6 +227,7 @@ m_dstarLocalPort(0U),
 m_dstarNetworkModeHang(3U),
 m_dstarNetworkDebug(false),
 m_dmrNetworkEnabled(false),
+m_dmrNetworkType("Gateway"),
 m_dmrNetworkAddress(),
 m_dmrNetworkPort(0U),
 m_dmrNetworkLocal(0U),
@@ -868,6 +869,8 @@ bool CConf::read()
 		} else if (section == SECTION_DMR_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_dmrNetworkEnabled = ::atoi(value) == 1;
+			else if (::strcmp(key, "Type") == 0)
+				m_dmrNetworkType = value;
 			else if (::strcmp(key, "Address") == 0)
 				m_dmrNetworkAddress = value;
 			else if (::strcmp(key, "Port") == 0)
@@ -1879,6 +1882,11 @@ bool CConf::getDStarNetworkDebug() const
 bool CConf::getDMRNetworkEnabled() const
 {
 	return m_dmrNetworkEnabled;
+}
+
+std::string CConf::getDMRNetworkType() const
+{
+	return m_dmrNetworkType;
 }
 
 std::string CConf::getDMRNetworkAddress() const
