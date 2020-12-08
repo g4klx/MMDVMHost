@@ -591,7 +591,7 @@ bool CDMRDirectNetwork::writeConfig()
 
 	char buffer[150U];
 
-	::memcpy(buffer + 0U, "DMRC", 4U);
+	::memcpy(buffer + 0U, "RPTC", 4U);
 	::memcpy(buffer + 4U, m_id, 4U);
 	::sprintf(buffer + 8U, "%-8.8s%09u%09u%02u%02u%c%-40.40s%-40.40s",
 		m_callsign.c_str(), m_rxFrequency, m_txFrequency, power, m_colorCode, slots, m_version,
