@@ -90,7 +90,7 @@ CDMRGatewayNetwork::~CDMRGatewayNetwork()
 	delete[] m_id;
 }
 
-void CDMRGatewayNetwork::setConfig(const std::string & callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode)
+void CDMRGatewayNetwork::setConfig(const std::string & callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url)
 {
 	m_callsign    = callsign;
 	m_rxFrequency = rxFrequency;

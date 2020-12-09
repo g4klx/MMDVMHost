@@ -38,7 +38,7 @@ public:
 
 	virtual void setOptions(const std::string& options);
 
-	virtual void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode);
+	virtual void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url);
 
 	virtual bool open();
 
