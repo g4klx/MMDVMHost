@@ -37,7 +37,7 @@ public:
 
 	virtual void setOptions(const std::string& options);
 
-	virtual void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode);
+	virtual void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url);
 
 	virtual bool open();
 
@@ -97,7 +97,12 @@ private:
 	unsigned int   m_txFrequency;
 	unsigned int   m_power;
 	unsigned int   m_colorCode;
-
+	float          m_latitude;
+	float          m_longitude;
+	int            m_height;
+	std::string    m_location;
+	std::string    m_description;
+	std::string    m_url;
 	bool           m_beacon;
 
 	bool writeLogin();

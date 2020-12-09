@@ -58,6 +58,12 @@ m_rxFrequency(0U),
 m_txFrequency(0U),
 m_power(0U),
 m_colorCode(0U),
+m_latitude(0.0F),
+m_longitude(0.0F),
+m_height(0),
+m_location(),
+m_description(),
+m_url(), 
 m_beacon(false)
 {
 	assert(!address.empty());
@@ -103,13 +109,19 @@ void CDMRDirectNetwork::setOptions(const std::string& options)
 	m_options = options;
 }
 
-void CDMRDirectNetwork::setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode)
+void CDMRDirectNetwork::setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url)
 {
 	m_callsign    = callsign;
 	m_rxFrequency = rxFrequency;
 	m_txFrequency = txFrequency;
 	m_power       = power;
 	m_colorCode   = colorCode;
+	m_latitude    = latitude;
+	m_longitude   = longitude;
+	m_height      = height;
+	m_location    = location;
+	m_description = description;
+	m_url         = url;
 }
 
 bool CDMRDirectNetwork::open()
@@ -573,31 +585,36 @@ bool CDMRDirectNetwork::writeConfig()
 		case HWT_MMDVM_HS:
 			software = "MMDVM_MMDVM_HS";
 			break;
-		case HWT_OPENGD77_HS:
-			software = "MMDVM_OpenGD77_HS";
-			break;
-		case HWT_SKYBRIDGE:
-			software = "MMDVM_SkyBridge";
-			break;
 		default:
 			software = "MMDVM_Unknown";
 			break;
 		}
 	}
 
+	char buffer[400U];
+
+	::memcpy(buffer + 0U, "RPTC", 4U);
+	::memcpy(buffer + 4U, m_id, 4U);
+
+	char latitude[20U];
+	::sprintf(latitude, "%08f", m_latitude);
+
+	char longitude[20U];
+	::sprintf(longitude, "%09f", m_longitude);
+
 	unsigned int power = m_power;
 	if (power > 99U)
 		power = 99U;
 
-	char buffer[150U];
+	int height = m_height;
+	if (height > 999)
+		height = 999;
 
-	::memcpy(buffer + 0U, "RPTC", 4U);
-	::memcpy(buffer + 4U, m_id, 4U);
-	::sprintf(buffer + 8U, "%-8.8s%09u%09u%02u%02u%c%-40.40s%-40.40s",
-		m_callsign.c_str(), m_rxFrequency, m_txFrequency, power, m_colorCode, slots, m_version,
-		software);
+	::sprintf(buffer + 8U, "%-8.8s%09u%09u%02u%02u%8.8s%9.9s%03d%-20.20s%-19.19s%c%-124.124s%-40.40s%-40.40s", m_callsign.c_str(),
+		m_rxFrequency, m_txFrequency, power, m_colorCode, latitude, longitude, height, m_location.c_str(),
+		m_description.c_str(), slots, m_url.c_str(), m_version, software);
 
-	return write((unsigned char*)buffer, 119U);
+	return write((unsigned char*)buffer, 302U);
 }
 
 bool CDMRDirectNetwork::writePing()
