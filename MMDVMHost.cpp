@@ -1370,8 +1370,26 @@ bool CMMDVMHost::createDMRNetwork()
 	LogInfo("    TX Frequency: %uHz", txFrequency);
 	LogInfo("    Power: %uW", power);
 
-	m_dmrNetwork->setConfig(m_callsign, rxFrequency, txFrequency, power, colorCode);
+	if (type == "Direct") {
+		float latitude          = m_conf.getLatitude();
+		float longitude         = m_conf.getLongitude();
+		int height              = m_conf.getHeight();
+		std::string location    = m_conf.getLocation();
+		std::string description = m_conf.getDescription();
+		std::string url         = m_conf.getURL();
 
+		LogInfo("    Latitude: %fdeg N", latitude);
+		LogInfo("    Longitude: %fdeg E", longitude);
+		LogInfo("    Height: %um", height);
+		LogInfo("    Location: \"%s\"", location.c_str());
+		LogInfo("    Description: \"%s\"", description.c_str());
+		LogInfo("    URL: \"%s\"", url.c_str());
+
+		m_dmrNetwork->setConfig(m_callsign, rxFrequency, txFrequency, power, colorCode, latitude, longitude, height, location, description, url);
+	} else {
+		m_dmrNetwork->setConfig(m_callsign, rxFrequency, txFrequency, power, colorCode, 0.0F, 0.0F, 0, "", "", "");
+	}
+	
 	if (!options.empty()) {
 		LogInfo("    Options: %s", options.c_str());
 
