@@ -52,7 +52,6 @@ public:
 	~CUDPSocket();
 
 	bool open(unsigned int af = AF_UNSPEC);
-	bool open(const sockaddr_storage& address);
 	bool open(const unsigned int index, const unsigned int af, const std::string& address, const unsigned int port);
 
 	int  read(unsigned char* buffer, unsigned int length, sockaddr_storage& address, unsigned int &address_length);
