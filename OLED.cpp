@@ -621,14 +621,25 @@ void COLED::writePOCSAGInt(uint32_t ric, const std::string& message)
     m_mode = MODE_POCSAG;
 
     m_display.clearDisplay();
-    m_display.fillRect(0, OLED_LINE1, m_display.width(), m_display.height(), BLACK);
+    m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
-    m_display.setCursor(0,OLED_LINE3);
+    m_display.setCursor(0,OLED_LINE2);
     m_display.printf("RIC: %u", ric);
 
     m_display.setTextWrap(true);    // text wrap temorally enable
-    m_display.setCursor(0,OLED_LINE5);
-    m_display.printf("MSG: %s", message.c_str());
+    m_display.setCursor(0,OLED_LINE3);
+    // no room to display "MSG: " header
+
+    // due to limitation of AdaFruit_GFX::vprintf() (in ArduiPi_OLED),
+    // the maximum string length displayed by single printf() call is 63.
+    // to avoid this, divide POCSAG (max 80 chars) message into some pieces.
+    int total = message.length();
+    for (int i = 0; i < total; ) {
+	int remain = total - i;
+	int len = (remain < 40) ? remain : 40;
+	m_display.printf("%s", message.substr(i, len).c_str());
+	i += len;
+    }
     m_display.setTextWrap(false);
 
     OLED_statusbar();
@@ -637,9 +648,9 @@ void COLED::writePOCSAGInt(uint32_t ric, const std::string& message)
 
 void COLED::clearPOCSAGInt()
 {
-    m_display.fillRect(0, OLED_LINE1, m_display.width(), m_display.height(), BLACK);
+    m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
-    m_display.setCursor(40,OLED_LINE4);
+    m_display.setCursor(40,OLED_LINE3);
     m_display.print("Listening");
 
     m_display.setCursor(0,OLED_LINE6);
