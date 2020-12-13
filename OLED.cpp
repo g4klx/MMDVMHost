@@ -1086,10 +1086,10 @@ void COLED::writePOCSAGInt(uint32_t ric, const std::string& message)
 	m_mode = MODE_POCSAG;
 
 	clearDisplay();
-	fillRect(0U, OLED_LINE1, m_width, m_height, BLACK);
+	fillRect(0U, OLED_LINE2, m_width, m_height, BLACK);
 
 	m_cursorX = 0U;
-	m_cursorY = OLED_LINE3;
+	m_cursorY = OLED_LINE2;
 
 	char text[100U];
 	::sprintf(text, "RIC: %u", ric);
@@ -1098,10 +1098,10 @@ void COLED::writePOCSAGInt(uint32_t ric, const std::string& message)
 	m_textWrap = true;	// text wrap temorally enable
 
 	m_cursorX = 0U;
-	m_cursorY = OLED_LINE5;
+	m_cursorY = OLED_LINE3;
 
-	::sprintf(text, "MSG: %s", message.c_str());
-	print(text);
+	// No room to display "MSG: " header
+	print(message.c_str());
 
 	m_textWrap = false;
 
@@ -1111,10 +1111,10 @@ void COLED::writePOCSAGInt(uint32_t ric, const std::string& message)
 
 void COLED::clearPOCSAGInt()
 {
-	fillRect(0U, OLED_LINE1, m_width, m_height, BLACK);
+	fillRect(0U, OLED_LINE2, m_width, m_height, BLACK);
 		
 	m_cursorX = 40U;
-	m_cursorY = OLED_LINE4;
+	m_cursorY = OLED_LINE3;
 	print("Listening");
 
 	m_cursorX = 0U;
