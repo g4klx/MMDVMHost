@@ -28,6 +28,8 @@ const unsigned char DSTAR_END_PATTERN_BYTES[] = { TAG_EOT, 0x55, 0x55, 0x55, 0x5
 const unsigned int  DSTAR_END_PATTERN_LENGTH_BYTES = 6U;
 
 const unsigned char DSTAR_NULL_AMBE_DATA_BYTES[] = { 0x9E, 0x8D, 0x32, 0x88, 0x26, 0x1A, 0x3F, 0x61, 0xE8 };
+// DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED is DSTAR_NULL_AMBE_DATA_BYTES XORed with DSTAR_SCRAMBLER_BYTES.
+const unsigned char DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED[] = { 0xEEU, 0xC2U, 0xA1U, 0xC8U, 0x42U, 0x6EU, 0x52U, 0x51U, 0xC3U };
 
 const unsigned char DSTAR_NULL_SLOW_SYNC_BYTES[] = { 0x55, 0x2D, 0x16 };
 // Note that these are already scrambled, 0x66 0x66 0x66 otherwise

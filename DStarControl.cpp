@@ -165,12 +165,25 @@ unsigned int CDStarControl::maybeFixupVoiceFrame(
 			*skip_dtmf_blanking_frames = FAST_DATA_BEEP_GRACE_FRAMES;
 		LogMessage("%s frame %u: found fast data (cont.)", log_prefix, n);
 	} else {
-		if (n == 1U) {
+		bool voice_sync_data_is_null_ambe_data = false;
+		bool data_is_null_ambe_data = false;
+		if ((n == 1U) && (::memcmp(voice_sync_data + offset, DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) == 0)) {
+			LogMessage("%s frame 0: *** Null AMBE data detected in voice frame ***", log_prefix);
+			voice_sync_data_is_null_ambe_data = true;
+		}
+		if (::memcmp(data + offset, DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) == 0) {
+			LogMessage("%s frame %u: *** Null AMBE data detected in voice frame ***", log_prefix, n);
+			data_is_null_ambe_data = true;
+		}
+
+		if ((n == 1U) && !voice_sync_data_is_null_ambe_data) {
 			LogMessage("%s frame 0: *** REGENERATING FEC ***", log_prefix);
 			errors += m_fec.regenerateDStar(voice_sync_data + offset);
 		}
-		LogMessage("%s frame %u: *** REGENERATING FEC ***", log_prefix, n);
-		errors += m_fec.regenerateDStar(data + offset);
+		if (!data_is_null_ambe_data) {
+			LogMessage("%s frame %u: *** REGENERATING FEC ***", log_prefix, n);
+			errors += m_fec.regenerateDStar(data + offset);
+		}
 
 		if (blank_dtmf && (*skip_dtmf_blanking_frames > 0U)) {
 			(*skip_dtmf_blanking_frames)--;
@@ -180,12 +193,14 @@ unsigned int CDStarControl::maybeFixupVoiceFrame(
 			LogMessage("%s frame %u: *** Not BLANKING DTMF (left to skip: %u) ***",
 				   log_prefix, n, *skip_dtmf_blanking_frames);
 		} else if (blank_dtmf && (*skip_dtmf_blanking_frames == 0U)) {
-			if (n == 1U) {
+			if ((n == 1U) && !voice_sync_data_is_null_ambe_data) {
 				LogMessage("%s frame 0: *** BLANKING DTMF ***", log_prefix);
 				blankDTMF(voice_sync_data + offset);
 			}
-			LogMessage("%s frame %u: *** BLANKING DTMF ***", log_prefix, n);
-			blankDTMF(data + offset);
+			if (!data_is_null_ambe_data) {
+				LogMessage("%s frame %u: *** BLANKING DTMF ***", log_prefix, n);
+				blankDTMF(data + offset);
+			}
 		}
 	}
 
