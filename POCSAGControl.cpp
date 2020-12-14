@@ -147,36 +147,38 @@ bool CPOCSAGControl::readNetwork()
 
 	addAddress(functional, output->m_ric, output->m_buffer);
 
-	std::string out;
 	switch (functional) {
 		case FUNCTIONAL_ALPHANUMERIC:
 			output->m_text = std::string((char*)(data + 4U), length - 4U);
 			switch (output->m_ric) {
 			case 4512U:
-				decodeROT1(output->m_text, 3U, out);
-				LogDebug("Message to %07u, func Alphanumeric: (%u) \"%s\"", output->m_ric, output->m_text.at(1U) - 0x1FU, out.c_str());
+				decodeROT1(output->m_text, 3U, output->m_display);
+				LogDebug("Message to %07u, func Alphanumeric: (%u) \"%s\"", output->m_ric, output->m_text.at(1U) - 0x1FU, output->m_display.c_str());
 				break;
 			case 4520U:
-				decodeROT1(output->m_text, 2U, out);
-				LogDebug("Message to %07u, func Alphanumeric: (%u-%u) \"%s\"", output->m_ric, output->m_text.at(0U) - 0x1FU, output->m_text.at(1U) - 0x20U, out.c_str());
+				decodeROT1(output->m_text, 2U, output->m_display);
+				LogDebug("Message to %07u, func Alphanumeric: (%u-%u) \"%s\"", output->m_ric, output->m_text.at(0U) - 0x1FU, output->m_text.at(1U) - 0x20U, output->m_display.c_str());
 				break;
 			default:
-				LogDebug("Message to %07u, func Alphanumeric: \"%s\"", output->m_ric, output->m_text.c_str());
+				output->m_display = output->m_text;
+				LogDebug("Message to %07u, func Alphanumeric: \"%s\"", output->m_ric, output->m_display.c_str());
 				break;
 			}
 			packASCII(output->m_text, output->m_buffer);
 			break;
 		case FUNCTIONAL_NUMERIC:
-			output->m_text = std::string((char*)(data + 4U), length - 4U);
-			LogDebug("Message to %07u, func Numeric: \"%s\"", output->m_ric, output->m_text.c_str());
+			output->m_text    = std::string((char*)(data + 4U), length - 4U);
+			output->m_display = output->m_text;
+			LogDebug("Message to %07u, func Numeric: \"%s\"", output->m_ric, output->m_display.c_str());
 			packNumeric(output->m_text, output->m_buffer);
 			break;
 		case FUNCTIONAL_ALERT1:
 			LogDebug("Message to %07u, func Alert 1", output->m_ric);
 			break;
 		case FUNCTIONAL_ALERT2:
-			output->m_text = std::string((char*)(data + 4U), length - 4U);
-			LogDebug("Message to %07u, func Alert 2: \"%s\"", output->m_ric, output->m_text.c_str());
+			output->m_text    = std::string((char*)(data + 4U), length - 4U);
+			output->m_display = output->m_text;
+			LogDebug("Message to %07u, func Alert 2: \"%s\"", output->m_ric, output->m_display.c_str());
 			packASCII(output->m_text, output->m_buffer);
 			break;
 		default:
@@ -200,7 +202,7 @@ bool CPOCSAGControl::processData()
 	POCSAGData* output = m_data.front();
 	m_data.pop_front();
 
-	m_display->writePOCSAG(output->m_ric, output->m_text);
+	m_display->writePOCSAG(output->m_ric, output->m_display);
 
 	m_buffer = output->m_buffer;
 	m_ric    = output->m_ric;

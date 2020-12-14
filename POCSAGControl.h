@@ -33,6 +33,7 @@
 struct POCSAGData {
 	unsigned int         m_ric;
 	std::string          m_text;
+	std::string          m_display;
 	std::deque<uint32_t> m_buffer;
 };
 
