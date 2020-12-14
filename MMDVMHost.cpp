@@ -670,7 +670,7 @@ int CMMDVMHost::run()
 			m_ump->setCD(cd);
 		}
 
-		unsigned char data[220U];
+		unsigned char data[MODEM_DATA_LEN];
 		unsigned int len;
 		bool ret;
 
