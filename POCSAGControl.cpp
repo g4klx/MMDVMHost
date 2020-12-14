@@ -1,5 +1,5 @@
 /*
-*	Copyright (C) 2018,2019 Jonathan Naylor, G4KLX
+*	Copyright (C) 2018,2019,2020 Jonathan Naylor, G4KLX
 *
 *	This program is free software; you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -147,10 +147,23 @@ bool CPOCSAGControl::readNetwork()
 
 	addAddress(functional, output->m_ric, output->m_buffer);
 
+	std::string out;
 	switch (functional) {
 		case FUNCTIONAL_ALPHANUMERIC:
 			output->m_text = std::string((char*)(data + 4U), length - 4U);
-			LogDebug("Message to %07u, func Alphanumeric: \"%s\"", output->m_ric, output->m_text.c_str());
+			switch (output->m_ric) {
+			case 4512U:
+				decodeROT1(output->m_text, 3U, out);
+				LogDebug("Message to %07u, func Alphanumeric: (%u) \"%s\"", output->m_ric, output->m_text.at(1U) - 0x1FU, out.c_str());
+				break;
+			case 4520U:
+				decodeROT1(output->m_text, 2U, out);
+				LogDebug("Message to %07u, func Alphanumeric: (%u-%u) \"%s\"", output->m_ric, output->m_text.at(0U) - 0x1FU, output->m_text.at(1U) - 0x20U, out.c_str());
+				break;
+			default:
+				LogDebug("Message to %07u, func Alphanumeric: \"%s\"", output->m_ric, output->m_text.c_str());
+				break;
+			}
 			packASCII(output->m_text, output->m_buffer);
 			break;
 		case FUNCTIONAL_NUMERIC:
@@ -482,4 +495,10 @@ void CPOCSAGControl::enable(bool enabled)
 	}
 
 	m_enabled = enabled;
+}
+
+void CPOCSAGControl::decodeROT1(const std::string& in, unsigned int start, std::string& out) const
+{
+	for (size_t i = start; i < in.length(); i++)
+		out += in.at(i) - 1U;
 }
