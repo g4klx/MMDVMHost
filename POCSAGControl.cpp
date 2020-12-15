@@ -173,11 +173,12 @@ bool CPOCSAGControl::readNetwork()
 			packNumeric(output->m_text, output->m_buffer);
 			break;
 		case FUNCTIONAL_ALERT1:
+			output->m_display = "Func alert 1";
 			LogDebug("Message to %07u, func Alert 1", output->m_ric);
 			break;
 		case FUNCTIONAL_ALERT2:
 			output->m_text    = std::string((char*)(data + 4U), length - 4U);
-			output->m_display = output->m_text;
+			output->m_display = "Func alert 2: " + output->m_text;
 			LogDebug("Message to %07u, func Alert 2: \"%s\"", output->m_ric, output->m_display.c_str());
 			packASCII(output->m_text, output->m_buffer);
 			break;
