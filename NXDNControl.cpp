@@ -737,7 +737,7 @@ void CNXDNControl::writeEndNet()
 
 void CNXDNControl::writeNetwork()
 {
-	unsigned char netData[100U];
+	unsigned char netData[40U];
 	bool exists = m_network->read(netData);
 	if (!exists)
 		return;

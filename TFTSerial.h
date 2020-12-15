@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,20 +16,20 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(CASTINFO_H)
-#define	CASTINFO_H
+#if !defined(TFTSERIAL_H)
+#define	TFTSERIAL_H
 
 #include "Display.h"
+#include "Defines.h"
+#include "SerialPort.h"
 
 #include <string>
 
-#include "NetworkInfo.h"
-#include "Modem.h"
-class CCASTInfo : public CDisplay
+class CTFTSerial : public CDisplay
 {
 public:
-  CCASTInfo(CModem* modem);
-  virtual ~CCASTInfo();
+  CTFTSerial(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness);
+  virtual ~CTFTSerial();
 
   virtual bool open();
 
@@ -64,8 +64,26 @@ protected:
 	virtual void clearCWInt();
 
 private:
-  	CModem*		m_modem;
-	std::string	m_ipaddress;
+   std::string   m_callsign;
+   unsigned int  m_dmrid;
+   ISerialPort*  m_serial;
+   unsigned int  m_brightness;
+   unsigned char m_mode;
+
+  void clearScreen();
+  void setBackground(unsigned char colour);
+  void setForeground(unsigned char colour);
+  void setRotation(unsigned char rotation);
+  void setFontSize(unsigned char size);
+  void gotoBegOfLine();
+  void gotoPosText(unsigned char x, unsigned char y);
+  void gotoPosPixel(unsigned char x, unsigned char y);
+  void drawLine(unsigned char x1, unsigned char y1, unsigned char x2, unsigned char y2);
+  void drawBox(unsigned char x1, unsigned char y1, unsigned char x2, unsigned char y2, bool filled);
+  void drawCircle(unsigned char x, unsigned char y, unsigned char radius, bool filled);
+  void displayBitmap(unsigned char x, unsigned char y, const char* filename);
+  void setBrightness(unsigned char brightness);
+  void displayText(const char* text);
 };
 
 #endif
