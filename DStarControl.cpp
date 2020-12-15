@@ -101,8 +101,8 @@ m_netSkipDTMFBlankingFrames(0U)
 	m_gateway  = new unsigned char[DSTAR_LONG_CALLSIGN_LENGTH];
 
 	m_lastFrame = new unsigned char[DSTAR_FRAME_LENGTH_BYTES + 1U];
-	m_rfVoiceSyncData = new unsigned char[MODEM_DATA_LEN];
-	m_netVoiceSyncData = new unsigned char[MODEM_DATA_LEN];
+	m_rfVoiceSyncData = new unsigned char[DSTAR_MODEM_DATA_LEN];
+	m_netVoiceSyncData = new unsigned char[DSTAR_MODEM_DATA_LEN];
 
 	std::string call = callsign;
 	call.resize(DSTAR_LONG_CALLSIGN_LENGTH - 1U, ' ');
@@ -149,7 +149,7 @@ unsigned int CDStarControl::maybeFixupVoiceFrame(
 	unsigned char mini_header_type = mini_header & DSTAR_SLOW_DATA_TYPE_MASK;
 
 	if (n == 0U) {
-		::memcpy(voice_sync_data, data, MODEM_DATA_LEN);
+		::memcpy(voice_sync_data, data, DSTAR_MODEM_DATA_LEN);
 		*voice_sync_data_len = len;
 	} else if ((n % 2U != 0U) &&
 		   ((mini_header_type == DSTAR_SLOW_DATA_TYPE_FASTDATA01) ||
