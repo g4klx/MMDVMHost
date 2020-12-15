@@ -21,12 +21,14 @@
 #include "SerialController.h"
 #include "ModemSerialPort.h"
 #include "NullDisplay.h"
+#include "TFTSerial.h"
 #include "TFTSurenoo.h"
 #include "LCDproc.h"
 #include "Nextion.h"
 #include "CASTInfo.h"
 #include "Conf.h"
 #include "Modem.h"
+#include "UMP.h"
 #include "Log.h"
 
 #if defined(HD44780)
@@ -333,40 +335,6 @@ void CDisplay::clearNXDN()
 	}
 }
 
-void CDisplay::writeM17(const char* source, const char* dest, const char* type)
-{
-	assert(source != NULL);
-	assert(dest != NULL);
-	assert(type != NULL);
-
-	m_timer1.start();
-	m_mode1 = MODE_IDLE;
-
-	writeM17Int(source, dest, type);
-}
-
-void CDisplay::writeM17RSSI(unsigned char rssi)
-{
-	if (rssi != 0U)
-		writeM17RSSIInt(rssi);
-}
-
-void CDisplay::writeM17BER(float ber)
-{
-	writeM17BERInt(ber);
-}
-
-void CDisplay::clearM17()
-{
-	if (m_timer1.hasExpired()) {
-		clearM17Int();
-		m_timer1.stop();
-		m_mode1 = MODE_IDLE;
-	} else {
-		m_mode1 = MODE_M17;
-	}
-}
-
 void CDisplay::writePOCSAG(uint32_t ric, const std::string& message)
 {
 	m_timer1.start();
@@ -421,11 +389,6 @@ void CDisplay::clock(unsigned int ms)
 			break;
 		case MODE_NXDN:
 			clearNXDNInt();
-			m_mode1 = MODE_IDLE;
-			m_timer1.stop();
-			break;
-		case MODE_M17:
-			clearM17Int();
 			m_mode1 = MODE_IDLE;
 			m_timer1.stop();
 			break;
@@ -519,14 +482,6 @@ void CDisplay::writeNXDNBERInt(float ber)
 {
 }
 
-void CDisplay::writeM17RSSIInt(unsigned char rssi)
-{
-}
-
-void CDisplay::writeM17BERInt(float ber)
-{
-}
-
 int CDisplay::writeNXDNIntEx(const class CUserDBentry& source, bool group, unsigned int dest, const char* type)
 {
 	/* return value definition is same as writeDMRIntEx() */
@@ -535,17 +490,17 @@ int CDisplay::writeNXDNIntEx(const class CUserDBentry& source, bool group, unsig
 
 	
 /* Factory method extracted from MMDVMHost.cpp - BG5HHP */
-CDisplay* CDisplay::createDisplay(const CConf& conf, IModem* modem)
+CDisplay* CDisplay::createDisplay(const CConf& conf, CUMP* ump, CModem* modem)
 {
-	CDisplay *display = NULL;
+        CDisplay *display = NULL;
 
-	std::string type   = conf.getDisplay();
+        std::string type   = conf.getDisplay();
 	unsigned int dmrid = conf.getDMRId();
 
 	LogInfo("Display Parameters");
 	LogInfo("    Type: %s", type.c_str());
 
-	if (type == "TFT Surenoo") {
+	if (type == "TFT Serial" || type == "TFT Surenoo") {
 		std::string port        = conf.getTFTSerialPort();
 		unsigned int brightness = conf.getTFTSerialBrightness();
 
@@ -554,11 +509,14 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, IModem* modem)
 
 		ISerialPort* serial = NULL;
 		if (port == "modem")
-			serial = new IModemSerialPort(modem);
+			serial = new CModemSerialPort(modem);
 		else
-			serial = new CSerialController(port, 115200U);
+			serial = new CSerialController(port, (type == "TFT Serial") ? SERIAL_9600 : SERIAL_115200);
 
-		display = new CTFTSurenoo(conf.getCallsign(), dmrid, serial, brightness, conf.getDuplex());
+		if (type == "TFT Surenoo")
+			display = new CTFTSurenoo(conf.getCallsign(), dmrid, serial, brightness, conf.getDuplex());
+		else
+			display = new CTFTSerial(conf.getCallsign(), dmrid, serial, brightness);
 	} else if (type == "Nextion") {
 		std::string port            = conf.getNextionPort();
 		unsigned int brightness     = conf.getNextionBrightness();
@@ -597,14 +555,21 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, IModem* modem)
 		}
 
 		if (port == "modem") {
-			ISerialPort* serial = new IModemSerialPort(modem);
+			ISerialPort* serial = new CModemSerialPort(modem);
 			display = new CNextion(conf.getCallsign(), dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF);
+		} else if (port == "ump") {
+			if (ump != NULL) {
+				display = new CNextion(conf.getCallsign(), dmrid, ump, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF);
+			} else {
+				LogInfo("    NullDisplay loaded");
+				display = new CNullDisplay;
+			}
 		} else {
-			unsigned int baudrate = 9600U;
-			if (screenLayout == 4U)
-				baudrate = 115200U;
+			SERIAL_SPEED baudrate = SERIAL_9600;
+			if (screenLayout&0x0cU)
+				baudrate = SERIAL_115200;
 			
-			LogInfo("    Display baudrate: %u ", baudrate);
+			LogInfo("    Display baudrate: %u ",baudrate);
 			ISerialPort* serial = new CSerialController(port, baudrate);
 			display = new CNextion(conf.getCallsign(), dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF);
 		}

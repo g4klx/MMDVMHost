@@ -21,7 +21,7 @@
 static bool networkInfoInitialized = false;
 static unsigned char passCounter = 0;
 
-CCASTInfo::CCASTInfo(IModem* modem) :
+CCASTInfo::CCASTInfo(CModem* modem) :
 CDisplay(),
 m_modem(modem),
 m_ipaddress()
@@ -127,16 +127,6 @@ void CCASTInfo::writeNXDNInt(const char* source, bool group, unsigned int dest, 
 }
 
 void CCASTInfo::clearNXDNInt()
-{
-}
-
-void CCASTInfo::writeM17Int(const char* source, const char* dest, const char* type)
-{
-    if (m_modem != NULL)
-        m_modem->writeM17Info(source, dest, type);
-}
-
-void CCASTInfo::clearM17Int()
 {
 }
 

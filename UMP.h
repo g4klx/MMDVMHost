@@ -16,27 +16,48 @@
 *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef ModemSerialPort_H
-#define ModemSerialPort_H
+#if !defined(UMP_H)
+#define	UMP_H
 
+#include "SerialController.h"
 #include "SerialPort.h"
-#include "Modem.h"
 
-class CModemSerialPort : public ISerialPort {
+#include <string>
+
+class CUMP : public ISerialPort
+{
 public:
-	CModemSerialPort(CModem* modem);
-	virtual ~CModemSerialPort();
+	CUMP(const std::string& port);
+	virtual ~CUMP();
 
 	virtual bool open();
+
+	bool setMode(unsigned char mode);
+
+	bool setTX(bool on);
+
+	bool setCD(bool on);
+
+	bool getLockout() const;
 
 	virtual int read(unsigned char* buffer, unsigned int length);
 
 	virtual int write(const unsigned char* buffer, unsigned int length);
 
+	void clock(unsigned int ms);
+
 	virtual void close();
 
 private:
-	CModem* m_modem;
+	CSerialController m_serial;
+	bool              m_open;
+	unsigned char*    m_buffer;
+	unsigned int      m_length;
+	unsigned int      m_offset;
+	bool              m_lockout;
+	unsigned char     m_mode;
+	bool              m_tx;
+	bool              m_cd;
 };
 
 #endif
