@@ -80,9 +80,6 @@
     <ClInclude Include="StopWatch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="TFTSerial.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Timer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -215,9 +212,6 @@
     <ClInclude Include="LCDproc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="UMP.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RSSIInterpolator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -272,9 +266,6 @@
     <ClInclude Include="POCSAGDefines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="I2CController.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="NullModem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -293,10 +284,55 @@
     <ClInclude Include="UserDBentry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="AX25Control.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AX25Network.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="NXDNIcomNetwork.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NXDNKenwoodNetwork.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M17Defines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M17Control.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M17Network.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M17LICH.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M17CRC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M17Convolution.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M17Utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AX25Defines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FMNetwork.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FMControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IIRDirectForm1Filter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PseudoTTYController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SerialModem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DMRDirectNetwork.h">
@@ -365,9 +401,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StopWatch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TFTSerial.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Timer.cpp">
@@ -493,9 +526,6 @@
     <ClCompile Include="LCDproc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="UMP.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="RSSIInterpolator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -544,9 +574,6 @@
     <ClCompile Include="POCSAGControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="I2CController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="NullModem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -565,10 +592,49 @@
     <ClCompile Include="UserDBentry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AX25Control.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AX25Network.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="NXDNIcomNetwork.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NXDNKenwoodNetwork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M17Control.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M17Network.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M17CRC.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M17Utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M17LICH.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M17Convolution.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FMNetwork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FMControl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IIRDirectForm1Filter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PseudoTTYController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SerialModem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DMRDirectNetwork.cpp">
