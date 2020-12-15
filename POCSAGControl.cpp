@@ -147,28 +147,23 @@ bool CPOCSAGControl::readNetwork()
 
 	addAddress(functional, output->m_ric, output->m_buffer);
 
-	char rubric[20U];
-	std::string out;
-
 	switch (functional) {
 		case FUNCTIONAL_ALPHANUMERIC:
 			output->m_text = std::string((char*)(data + 4U), length - 4U);
 			switch (output->m_ric) {
 			case 4512U:
-				::sprintf(rubric, "(%u) \"", output->m_text.at(1U) - 0x1FU);
-				decodeROT1(output->m_text, 3U, out);
-				output->m_display = rubric + out + "\"";
+				decodeROT1(output->m_text, 3U, output->m_display);
+				LogDebug("Message to %07u, func Alphanumeric: (%u) \"%s\"", output->m_ric, output->m_text.at(1U) - 0x1FU, output->m_display.c_str());
 				break;
 			case 4520U:
-				::sprintf(rubric, "(%u-%u) \"", output->m_text.at(0U) - 0x1FU, output->m_text.at(1U) - 0x20U);
-				decodeROT1(output->m_text, 2U, out);
-				output->m_display = rubric + out + "\"";
+				decodeROT1(output->m_text, 2U, output->m_display);
+				LogDebug("Message to %07u, func Alphanumeric: (%u-%u) \"%s\"", output->m_ric, output->m_text.at(0U) - 0x1FU, output->m_text.at(1U) - 0x20U, output->m_display.c_str());
 				break;
 			default:
-				output->m_display = "\"" + output->m_text + "\"";
+				output->m_display = output->m_text;
+				LogDebug("Message to %07u, func Alphanumeric: \"%s\"", output->m_ric, output->m_display.c_str());
 				break;
 			}
-			LogDebug("Message to %07u, func Alphanumeric: %s", output->m_ric, output->m_display.c_str());
 			packASCII(output->m_text, output->m_buffer);
 			break;
 		case FUNCTIONAL_NUMERIC:
