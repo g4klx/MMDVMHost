@@ -618,6 +618,36 @@ void COLED::clearM17Int()
 
 void COLED::writePOCSAGInt(uint32_t ric, const std::string& message)
 {
+    int pos;
+    int length = message.length();
+    std::string rublic;
+
+    // extract rublic index "(xx-xx)"
+    switch (ric) {
+    case 4512U:
+    case 4520U:
+        if (length) {
+            std::string::size_type start = message.find("(");
+            std::string::size_type end = message.find(") ");
+            if (start != std::string::npos && end != std::string::npos) {
+                rublic = message.substr(start, end - start + 1);
+                pos = end + 2;
+                break;
+            }
+        }
+        /*FALLTHROUGH*/
+    default:
+        rublic = "";
+        pos = 0;
+        break;
+    }
+
+    // remove double-quotation leading/trailing message
+    if (length && message.at(pos) == '\"' && message.at(length - 1) == '\"') {
+        pos++;
+        length--;
+    }
+
     m_mode = MODE_POCSAG;
 
     m_display.clearDisplay();
@@ -625,6 +655,9 @@ void COLED::writePOCSAGInt(uint32_t ric, const std::string& message)
 
     m_display.setCursor(0,OLED_LINE2);
     m_display.printf("RIC: %u", ric);
+    if (!rublic.empty()) {
+        m_display.printf(" / %s", rublic.c_str());
+    }
 
     m_display.setTextWrap(true);    // text wrap temorally enable
     m_display.setCursor(0,OLED_LINE3);
@@ -633,12 +666,11 @@ void COLED::writePOCSAGInt(uint32_t ric, const std::string& message)
     // due to limitation of AdaFruit_GFX::vprintf() (in ArduiPi_OLED),
     // the maximum string length displayed by single printf() call is 63.
     // to avoid this, divide POCSAG (max 80 chars) message into some pieces.
-    int total = message.length();
-    for (int i = 0; i < total; ) {
-	int remain = total - i;
-	int len = (remain < 40) ? remain : 40;
-	m_display.printf("%s", message.substr(i, len).c_str());
-	i += len;
+    while (pos < length) {
+        int remain = length - pos;
+        int n = (remain < 40) ? remain : 40;
+        m_display.printf("%s", message.substr(pos, n).c_str());
+        pos += n;
     }
     m_display.setTextWrap(false);
 
