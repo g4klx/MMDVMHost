@@ -1088,6 +1088,36 @@ void COLED::writePOCSAGInt(uint32_t ric, const std::string& message)
 	clearDisplay();
 	fillRect(0U, OLED_LINE2, m_width, m_height, BLACK);
 
+	unsigned int pos;
+	size_t length = message.length();
+	std::string rubric;
+
+	// extract rublic index "(xx-xx)"
+	switch (ric) {
+	case 4512U:
+	case 4520U:
+		if (length > 0U) {
+			std::string::size_type start = message.find("(");
+			std::string::size_type end = message.find(") ");
+			if (start != std::string::npos && end != std::string::npos) {
+				rubric = message.substr(start, end - start + 1);
+				pos = end + 2U;
+				break;
+			}
+		}
+		/*FALLTHROUGH*/
+	default:
+		rubric = "";
+		pos = 0U;
+		break;
+	}
+
+	// Remove double-quotation leading/trailing message
+	if (length > 0U && message.at(pos) == '\"' && message.at(length - 1) == '\"') {
+		pos++;
+		length--;
+	}
+
 	m_cursorX = 0U;
 	m_cursorY = OLED_LINE2;
 
@@ -1097,10 +1127,14 @@ void COLED::writePOCSAGInt(uint32_t ric, const std::string& message)
 
 	m_textWrap = true;	// text wrap temorally enable
 
+	if (!rubric.empty()) {
+		::sprintf(text, " / %s", rubric.c_str());
+		print(text);
+	}
+
 	m_cursorX = 0U;
 	m_cursorY = OLED_LINE3;
 
-	// No room to display "MSG: " header
 	print(message.c_str());
 
 	m_textWrap = false;
