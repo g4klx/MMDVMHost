@@ -269,7 +269,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 				data[1U] = 0x00U;
 
 				// Generate the sync
-				CSync::addM17HeaderSync(data + 2U);
+				CSync::addM17LinkSetupSync(data + 2U);
 				
 				unsigned char setup[M17_LICH_LENGTH_BYTES];
 				m_rfLICH.getLinkSetup(setup);
@@ -332,7 +332,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		rfData[1U] = 0x00U;
 
 		// Generate the sync
-		CSync::addM17DataSync(rfData + 2U);
+		CSync::addM17StreamSync(rfData + 2U);
 
 		unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
 		m_netLICH.getFragment(lich, m_rfLICHn);
@@ -541,7 +541,7 @@ void CM17Control::writeNetwork()
 		start[1U] = 0x00U;
 
 		// Generate the sync
-		CSync::addM17HeaderSync(start + 2U);
+		CSync::addM17LinkSetupSync(start + 2U);
 
 		unsigned char setup[M17_LICH_LENGTH_BYTES];
 		m_netLICH.getLinkSetup(setup);
@@ -563,7 +563,7 @@ void CM17Control::writeNetwork()
 	data[1U] = 0x00U;
 
 	// Generate the sync
-	CSync::addM17DataSync(data + 2U);
+	CSync::addM17StreamSync(data + 2U);
 
 	m_netFrames++;
 

@@ -24,8 +24,9 @@ const unsigned int M17_RADIO_SYMBOL_LENGTH = 5U;      // At 24 kHz sample rate
 const unsigned int M17_FRAME_LENGTH_BITS    = 384U;
 const unsigned int M17_FRAME_LENGTH_BYTES   = M17_FRAME_LENGTH_BITS / 8U;
 
-const unsigned char M17_HEADER_SYNC_BYTES[] = {0x5DU, 0xDDU};
-const unsigned char M17_DATA_SYNC_BYTES[]   = {0xDDU, 0xDDU};
+const unsigned char M17_LINK_SETUP_SYNC_BYTES[] = {0x55U, 0xF7U};
+const unsigned char M17_STREAM_SYNC_BYTES[]     = {0xFFU, 0x5DU};
+const unsigned char M17_PACKET_SYNC_BYTES[]     = {0x75U, 0xFFU};
 
 const unsigned int  M17_SYNC_LENGTH_BITS  = 16U;
 const unsigned int  M17_SYNC_LENGTH_BYTES = M17_SYNC_LENGTH_BITS / 8U;
