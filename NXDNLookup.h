@@ -31,6 +31,8 @@ public:
 
 	bool read();
 
+	void reload();
+
 	virtual void entry();
 
 	std::string find(unsigned int id);
@@ -45,6 +47,7 @@ private:
 	unsigned int    m_reloadTime;
 	class CUserDB   m_table;
 	bool            m_stop;
+	bool            m_reload;
 };
 
 #endif

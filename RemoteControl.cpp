@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2019,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2019,2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -131,6 +131,9 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 		} else if (m_args.at(0U) == "cw" && m_args.size() >= CW_ARGS) {
                         // CW command is in the form of "cw <message>"
                         m_command = RCD_CW;
+		} else if (m_args.at(0U) == "reload") {
+                        // Reload command is in the form of "reload"
+                        m_command = RCD_RELOAD;
                 }
 
 		if (m_command == RCD_NONE) {
