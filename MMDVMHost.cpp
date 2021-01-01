@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -51,12 +51,18 @@ const char* DEFAULT_INI_FILE = "/etc/MMDVM.ini";
 
 static bool m_killed = false;
 static int  m_signal = 0;
+static bool m_reload = false;
 
 #if !defined(_WIN32) && !defined(_WIN64)
-static void sigHandler(int signum)
+static void sigHandler1(int signum)
 {
 	m_killed = true;
 	m_signal = signum;
+}
+
+static void sigHandler2(int signum)
+{
+	m_reload = true;
 }
 #endif
 
@@ -84,9 +90,10 @@ int main(int argc, char** argv)
 	}
 
 #if !defined(_WIN32) && !defined(_WIN64)
-	::signal(SIGINT,  sigHandler);
-	::signal(SIGTERM, sigHandler);
-	::signal(SIGHUP,  sigHandler);
+	::signal(SIGINT,  sigHandler1);
+	::signal(SIGTERM, sigHandler1);
+	::signal(SIGHUP,  sigHandler1);
+	::signal(SIGUSR1, sigHandler2);
 #endif
 
 	int ret = 0;
@@ -982,6 +989,16 @@ int CMMDVMHost::run()
 		if (!m_fixedMode)
 			m_modeTimer.clock(ms);
 
+		if (m_reload) {
+			if (m_dmrLookup != NULL)
+				m_dmrLookup->reload();
+
+			if (m_nxdnLookup != NULL)
+				m_nxdnLookup->reload();
+
+			m_reload = false;
+		}
+		
 		if (m_dstar != NULL)
 			m_dstar->clock();
 		if (m_dmr != NULL)
@@ -2074,18 +2091,23 @@ void CMMDVMHost::remoteControl()
 				}
 				m_pocsag->sendPage(ric, text);
 			}
+			break;
 		case RCD_CW:
 			setMode(MODE_IDLE); // Force the modem to go idle so that we can send the CW text.
-                        if (!m_modem->hasTX()){
-                                std::string cwtext;
-                                for (unsigned int i = 0U; i < m_remoteControl->getArgCount(); i++) {
-                                        if (i > 0U)
-                                                cwtext += " ";
-                                        cwtext += m_remoteControl->getArgString(i);
-                                }
-                                m_display->writeCW();
-                                m_modem->sendCWId(cwtext);
-                        }
+			if (!m_modem->hasTX()){
+				std::string cwtext;
+				for (unsigned int i = 0U; i < m_remoteControl->getArgCount(); i++) {
+					if (i > 0U)
+						cwtext += " ";
+					cwtext += m_remoteControl->getArgString(i);
+				}
+				m_display->writeCW();
+				m_modem->sendCWId(cwtext);
+			}
+                       break;
+		case RCD_RELOAD:
+			m_reload = true;
+			break;
 		default:
 			break;
 	}

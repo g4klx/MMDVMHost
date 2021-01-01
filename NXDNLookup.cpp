@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2017,2018,2021 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -30,7 +30,8 @@ CThread(),
 m_filename(filename),
 m_reloadTime(reloadTime),
 m_table(),
-m_stop(false)
+m_stop(false),
+m_reload(false)
 {
 }
 
@@ -48,6 +49,14 @@ bool CNXDNLookup::read()
 	return ret;
 }
 
+void CNXDNLookup::reload()
+{
+	if (m_reloadTime == 0U)
+		m_table.load(m_filename);
+	else
+		m_reload = true;	
+}
+
 void CNXDNLookup::entry()
 {
 	LogInfo("Started the NXDN Id lookup reload thread");
@@ -59,9 +68,10 @@ void CNXDNLookup::entry()
 		sleep(1000U);
 
 		timer.clock();
-		if (timer.hasExpired()) {
+		if (timer.hasExpired() || m_reload) {
 			m_table.load(m_filename);
 			timer.start();
+			m_reload = false;
 		}
 	}
 
