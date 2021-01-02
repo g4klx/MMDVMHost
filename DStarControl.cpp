@@ -145,6 +145,7 @@ unsigned int CDStarControl::maybeFixupVoiceFrame(
 	)
 {
 	unsigned int errors = 0U;
+	unsigned int voice_sync_errors = 0U;
 	unsigned char mini_header = data[offset + 9U] ^ DSTAR_SCRAMBLER_BYTES[0U];
 	unsigned char mini_header_type = mini_header & DSTAR_SLOW_DATA_TYPE_MASK;
 
@@ -157,10 +158,14 @@ unsigned int CDStarControl::maybeFixupVoiceFrame(
 		*next_frame_is_fast_data = true;
 		if (blank_dtmf)
 			*skip_dtmf_blanking_frames = FAST_DATA_BEEP_GRACE_FRAMES;
+		if (n == 1U)
+			LogDebug("D-Star, %s fastdata  sequence no.  0", log_prefix);
+		LogDebug("D-Star, %s fastdata  sequence no. %2u", log_prefix, n);
 	} else if (*next_frame_is_fast_data == true) {
 		*next_frame_is_fast_data = false;
 		if (blank_dtmf)
 			*skip_dtmf_blanking_frames = FAST_DATA_BEEP_GRACE_FRAMES;
+		LogDebug("D-Star, %s fastdata  sequence no. %2u", log_prefix, n);
 	} else {
 		bool voice_sync_data_is_null_ambe_data = false;
 		bool data_is_null_ambe_data = false;
@@ -170,7 +175,7 @@ unsigned int CDStarControl::maybeFixupVoiceFrame(
 			data_is_null_ambe_data = true;
 
 		if ((n == 1U) && !voice_sync_data_is_null_ambe_data)
-			errors += m_fec.regenerateDStar(voice_sync_data + offset);
+			voice_sync_errors += m_fec.regenerateDStar(voice_sync_data + offset);
 		if (!data_is_null_ambe_data)
 			errors += m_fec.regenerateDStar(data + offset);
 
@@ -182,9 +187,22 @@ unsigned int CDStarControl::maybeFixupVoiceFrame(
 			if (!data_is_null_ambe_data)
 				blankDTMF(data + offset);
 		}
-	}
 
-	return errors;
+		if (n == 1U) {
+			if (voice_sync_data_is_null_ambe_data)
+				LogDebug("D-Star, %s nullaudio sequence no.  0", log_prefix);
+			else
+				LogDebug("D-Star, %s audio     sequence no.  0, errs: %2u/48 (%5.1f%%)", log_prefix, voice_sync_errors,
+					 float(voice_sync_errors) / 0.48F);
+		}
+		if (data_is_null_ambe_data)
+			LogDebug("D-Star, %s nullaudio sequence no. %2u", log_prefix, n);
+		else
+			LogDebug("D-Star, %s audio     sequence no. %2u, errs: %2u/48 (%5.1f%%)", log_prefix, n, errors,
+				 float(errors) / 0.48F);
+        }
+
+	return voice_sync_errors + errors;
 }
 
 bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
@@ -440,7 +458,6 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 				errors = maybeFixupVoiceFrame(data, len, 1U, "RF", m_rfN, m_duplex, m_rfVoiceSyncData, &m_rfVoiceSyncDataLen,
 							      &m_rfNextFrameIsFastData, &m_rfSkipDTMFBlankingFrames);
 				m_display->writeDStarBER(float(errors) / 0.48F);
-				LogDebug("D-Star, audio sequence no. %u, errs: %u/48 (%.1f%%)", m_rfN, errors, float(errors) / 0.48F);
 				m_rfErrs += errors;
 			}
 
@@ -573,7 +590,6 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			if (!m_rfHeader.isDataPacket()) {
 				errors = maybeFixupVoiceFrame(data, len, 1U, "RF", m_rfN, m_duplex, m_rfVoiceSyncData, &m_rfVoiceSyncDataLen,
 							       &m_rfNextFrameIsFastData, &m_rfSkipDTMFBlankingFrames);
-				LogDebug("D-Star, audio sequence no. %u, errs: %u/48 (%.1f%%)", m_rfN, errors, float(errors) / 0.48F);
 				m_rfErrs += errors;
 			}
 
