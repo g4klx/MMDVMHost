@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
  */
 
 #include "MMDVMHost.h"
+#include "DMRDirectNetwork.h"
+#include "DMRGatewayNetwork.h"
 #include "NXDNKenwoodNetwork.h"
 #include "NXDNIcomNetwork.h"
 #include "RSSIInterpolator.h"
@@ -49,12 +51,18 @@ const char* DEFAULT_INI_FILE = "/etc/MMDVM.ini";
 
 static bool m_killed = false;
 static int  m_signal = 0;
+static bool m_reload = false;
 
 #if !defined(_WIN32) && !defined(_WIN64)
-static void sigHandler(int signum)
+static void sigHandler1(int signum)
 {
 	m_killed = true;
 	m_signal = signum;
+}
+
+static void sigHandler2(int signum)
+{
+	m_reload = true;
 }
 #endif
 
@@ -82,9 +90,10 @@ int main(int argc, char** argv)
 	}
 
 #if !defined(_WIN32) && !defined(_WIN64)
-	::signal(SIGINT,  sigHandler);
-	::signal(SIGTERM, sigHandler);
-	::signal(SIGHUP,  sigHandler);
+	::signal(SIGINT,  sigHandler1);
+	::signal(SIGTERM, sigHandler1);
+	::signal(SIGHUP,  sigHandler1);
+	::signal(SIGUSR1, sigHandler2);
 #endif
 
 	int ret = 0;
@@ -668,7 +677,7 @@ int CMMDVMHost::run()
 			m_ump->setCD(cd);
 		}
 
-		unsigned char data[220U];
+		unsigned char data[MODEM_DATA_LEN];
 		unsigned int len;
 		bool ret;
 
@@ -1040,6 +1049,16 @@ int CMMDVMHost::run()
 		if (!m_fixedMode)
 			m_modeTimer.clock(ms);
 
+		if (m_reload) {
+			if (m_dmrLookup != NULL)
+				m_dmrLookup->reload();
+
+			if (m_nxdnLookup != NULL)
+				m_nxdnLookup->reload();
+
+			m_reload = false;
+		}
+		
 		if (m_dstar != NULL)
 			m_dstar->clock();
 		if (m_dmr != NULL)
@@ -1402,8 +1421,12 @@ bool CMMDVMHost::createDMRNetwork()
 	bool slot2           = m_conf.getDMRNetworkSlot2();
 	HW_TYPE hwType       = m_modem->getHWType();
 	m_dmrNetModeHang     = m_conf.getDMRNetworkModeHang();
+	std::string options  = m_conf.getDMRNetworkOptions();
+
+	std::string type = m_conf.getDMRNetworkType();
 
 	LogInfo("DMR Network Parameters");
+	LogInfo("    Type: %s", type.c_str());
 	LogInfo("    Address: %s", address.c_str());
 	LogInfo("    Port: %u", port);
 	if (local > 0U)
@@ -1415,7 +1438,10 @@ bool CMMDVMHost::createDMRNetwork()
 	LogInfo("    Slot 2: %s", slot2 ? "enabled" : "disabled");
 	LogInfo("    Mode Hang: %us", m_dmrNetModeHang);
 
-	m_dmrNetwork = new CDMRNetwork(address, port, local, id, m_duplex, VERSION, debug, slot1, slot2, hwType);
+	if (type == "Direct")
+		m_dmrNetwork = new CDMRDirectNetwork(address, port, local, id, password, m_duplex, VERSION, slot1, slot2, hwType, debug);
+	else
+		m_dmrNetwork = new CDMRGatewayNetwork(address, port, local, id, m_duplex, VERSION, slot1, slot2, hwType, debug);
 
 	unsigned int rxFrequency = m_conf.getRXFrequency();
 	unsigned int txFrequency = m_conf.getTXFrequency();
@@ -1428,7 +1454,31 @@ bool CMMDVMHost::createDMRNetwork()
 	LogInfo("    TX Frequency: %uHz", txFrequency);
 	LogInfo("    Power: %uW", power);
 
-	m_dmrNetwork->setConfig(m_callsign, rxFrequency, txFrequency, power, colorCode);
+	if (type == "Direct") {
+		float latitude          = m_conf.getLatitude();
+		float longitude         = m_conf.getLongitude();
+		int height              = m_conf.getHeight();
+		std::string location    = m_conf.getLocation();
+		std::string description = m_conf.getDescription();
+		std::string url         = m_conf.getURL();
+
+		LogInfo("    Latitude: %fdeg N", latitude);
+		LogInfo("    Longitude: %fdeg E", longitude);
+		LogInfo("    Height: %um", height);
+		LogInfo("    Location: \"%s\"", location.c_str());
+		LogInfo("    Description: \"%s\"", description.c_str());
+		LogInfo("    URL: \"%s\"", url.c_str());
+
+		m_dmrNetwork->setConfig(m_callsign, rxFrequency, txFrequency, power, colorCode, latitude, longitude, height, location, description, url);
+	} else {
+		m_dmrNetwork->setConfig(m_callsign, rxFrequency, txFrequency, power, colorCode, 0.0F, 0.0F, 0, "", "", "");
+	}
+	
+	if (!options.empty()) {
+		LogInfo("    Options: %s", options.c_str());
+
+		m_dmrNetwork->setOptions(options);
+	}
 
 	bool ret = m_dmrNetwork->open();
 	if (!ret) {
@@ -2110,18 +2160,23 @@ void CMMDVMHost::remoteControl()
 				}
 				m_pocsag->sendPage(ric, text);
 			}
+			break;
 		case RCD_CW:
 			setMode(MODE_IDLE); // Force the modem to go idle so that we can send the CW text.
-                        if (!m_modem->hasTX()){
-                                std::string cwtext;
-                                for (unsigned int i = 0U; i < m_remoteControl->getArgCount(); i++) {
-                                        if (i > 0U)
-                                                cwtext += " ";
-                                        cwtext += m_remoteControl->getArgString(i);
-                                }
-                                m_display->writeCW();
-                                m_modem->sendCWId(cwtext);
-                        }
+			if (!m_modem->hasTX()){
+				std::string cwtext;
+				for (unsigned int i = 0U; i < m_remoteControl->getArgCount(); i++) {
+					if (i > 0U)
+						cwtext += " ";
+					cwtext += m_remoteControl->getArgString(i);
+				}
+				m_display->writeCW();
+				m_modem->sendCWId(cwtext);
+			}
+                       break;
+		case RCD_RELOAD:
+			m_reload = true;
+			break;
 		default:
 			break;
 	}

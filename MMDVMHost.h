@@ -61,7 +61,7 @@ private:
   CNXDNControl*   m_nxdn;
   CPOCSAGControl* m_pocsag;
   CDStarNetwork*  m_dstarNetwork;
-  CDMRNetwork*    m_dmrNetwork;
+  IDMRNetwork*    m_dmrNetwork;
   CYSFNetwork*    m_ysfNetwork;
   CP25Network*    m_p25Network;
   INXDNNetwork*   m_nxdnNetwork;

@@ -1,5 +1,5 @@
 /*
-*	Copyright (C) 2018,2019 Jonathan Naylor, G4KLX
+*	Copyright (C) 2018,2019,2020 Jonathan Naylor, G4KLX
 *
 *	This program is free software; you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -147,23 +147,44 @@ bool CPOCSAGControl::readNetwork()
 
 	addAddress(functional, output->m_ric, output->m_buffer);
 
+	char rubric[20U];
+	std::string out;
+
 	switch (functional) {
 		case FUNCTIONAL_ALPHANUMERIC:
 			output->m_text = std::string((char*)(data + 4U), length - 4U);
-			LogDebug("Message to %07u, func Alphanumeric: \"%s\"", output->m_ric, output->m_text.c_str());
+			switch (output->m_ric) {
+			case 4512U:
+				::sprintf(rubric, "(%u) \"", output->m_text.at(1U) - 0x1FU);
+				decodeROT1(output->m_text, 3U, out);
+				output->m_display = rubric + out + "\"";
+				break;
+			case 4520U:
+				::sprintf(rubric, "(%u-%u) \"", output->m_text.at(0U) - 0x1FU, output->m_text.at(1U) - 0x20U);
+				decodeROT1(output->m_text, 2U, out);
+				output->m_display = rubric + out + "\"";
+				break;
+			default:
+				output->m_display = "\"" + output->m_text + "\"";
+				break;
+			}
+			LogDebug("Message to %07u, func Alphanumeric: %s", output->m_ric, output->m_display.c_str());
 			packASCII(output->m_text, output->m_buffer);
 			break;
 		case FUNCTIONAL_NUMERIC:
-			output->m_text = std::string((char*)(data + 4U), length - 4U);
-			LogDebug("Message to %07u, func Numeric: \"%s\"", output->m_ric, output->m_text.c_str());
+			output->m_text    = std::string((char*)(data + 4U), length - 4U);
+			output->m_display = output->m_text;
+			LogDebug("Message to %07u, func Numeric: \"%s\"", output->m_ric, output->m_display.c_str());
 			packNumeric(output->m_text, output->m_buffer);
 			break;
 		case FUNCTIONAL_ALERT1:
+			output->m_display = "Func alert 1";
 			LogDebug("Message to %07u, func Alert 1", output->m_ric);
 			break;
 		case FUNCTIONAL_ALERT2:
-			output->m_text = std::string((char*)(data + 4U), length - 4U);
-			LogDebug("Message to %07u, func Alert 2: \"%s\"", output->m_ric, output->m_text.c_str());
+			output->m_text    = std::string((char*)(data + 4U), length - 4U);
+			output->m_display = "Func alert 2: " + output->m_text;
+			LogDebug("Message to %07u, func Alert 2: \"%s\"", output->m_ric, output->m_display.c_str());
 			packASCII(output->m_text, output->m_buffer);
 			break;
 		default:
@@ -187,7 +208,7 @@ bool CPOCSAGControl::processData()
 	POCSAGData* output = m_data.front();
 	m_data.pop_front();
 
-	m_display->writePOCSAG(output->m_ric, output->m_text);
+	m_display->writePOCSAG(output->m_ric, output->m_display);
 
 	m_buffer = output->m_buffer;
 	m_ric    = output->m_ric;
@@ -482,4 +503,10 @@ void CPOCSAGControl::enable(bool enabled)
 	}
 
 	m_enabled = enabled;
+}
+
+void CPOCSAGControl::decodeROT1(const std::string& in, unsigned int start, std::string& out) const
+{
+	for (size_t i = start; i < in.length(); i++)
+		out += in.at(i) - 1U;
 }

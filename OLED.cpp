@@ -568,17 +568,60 @@ void COLED::clearNXDNInt()
 
 void COLED::writePOCSAGInt(uint32_t ric, const std::string& message)
 {
+    int pos;
+    int length = message.length();
+    std::string rublic;
+
+    // extract rublic index "(xx-xx)"
+    switch (ric) {
+    case 4512U:
+    case 4520U:
+        if (length) {
+            std::string::size_type start = message.find("(");
+            std::string::size_type end = message.find(") ");
+            if (start != std::string::npos && end != std::string::npos) {
+                rublic = message.substr(start, end - start + 1);
+                pos = end + 2;
+                break;
+            }
+        }
+        /*FALLTHROUGH*/
+    default:
+        rublic = "";
+        pos = 0;
+        break;
+    }
+
+    // remove double-quotation leading/trailing message
+    if (length && message.at(pos) == '\"' && message.at(length - 1) == '\"') {
+        pos++;
+        length--;
+    }
+
     m_mode = MODE_POCSAG;
 
     m_display.clearDisplay();
-    m_display.fillRect(0, OLED_LINE1, m_display.width(), m_display.height(), BLACK);
+    m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
-    m_display.setCursor(0,OLED_LINE3);
+    m_display.setCursor(0,OLED_LINE2);
     m_display.printf("RIC: %u", ric);
+    if (!rublic.empty()) {
+        m_display.printf(" / %s", rublic.c_str());
+    }
 
     m_display.setTextWrap(true);    // text wrap temorally enable
-    m_display.setCursor(0,OLED_LINE5);
-    m_display.printf("MSG: %s", message.c_str());
+    m_display.setCursor(0,OLED_LINE3);
+    // no room to display "MSG: " header
+
+    // due to limitation of AdaFruit_GFX::vprintf() (in ArduiPi_OLED),
+    // the maximum string length displayed by single printf() call is 63.
+    // to avoid this, divide POCSAG (max 80 chars) message into some pieces.
+    while (pos < length) {
+        int remain = length - pos;
+        int n = (remain < 40) ? remain : 40;
+        m_display.printf("%s", message.substr(pos, n).c_str());
+        pos += n;
+    }
     m_display.setTextWrap(false);
 
     OLED_statusbar();
@@ -588,9 +631,9 @@ void COLED::writePOCSAGInt(uint32_t ric, const std::string& message)
 
 void COLED::clearPOCSAGInt()
 {
-    m_display.fillRect(0, OLED_LINE1, m_display.width(), m_display.height(), BLACK);
+    m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
-    m_display.setCursor(40,OLED_LINE4);
+    m_display.setCursor(40,OLED_LINE3);
     m_display.print("Listening");
 
     m_display.setCursor(0,OLED_LINE6);

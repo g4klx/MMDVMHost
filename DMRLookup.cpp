@@ -30,7 +30,8 @@ CThread(),
 m_filename(filename),
 m_reloadTime(reloadTime),
 m_table(),
-m_stop(false)
+m_stop(false),
+m_reload(false)
 {
 }
 
@@ -48,6 +49,14 @@ bool CDMRLookup::read()
 	return ret;
 }
 
+void CDMRLookup::reload()
+{
+	if (m_reloadTime == 0U)
+		m_table.load(m_filename);
+	else
+		m_reload = true;	
+}
+
 void CDMRLookup::entry()
 {
 	LogInfo("Started the DMR Id lookup reload thread");
@@ -59,9 +68,10 @@ void CDMRLookup::entry()
 		sleep(1000U);
 
 		timer.clock();
-		if (timer.hasExpired()) {
+		if (timer.hasExpired() || m_reload) {
 			m_table.load(m_filename);
 			timer.start();
+			m_reload = false;
 		}
 	}
 

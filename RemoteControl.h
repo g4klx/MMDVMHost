@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2019,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -47,7 +47,8 @@ enum REMOTE_COMMAND {
 	RCD_DISABLE_NXDN,
 	RCD_DISABLE_FM,
 	RCD_PAGE,
-	RCD_CW
+	RCD_CW,
+	RCD_RELOAD
 };
 
 class CRemoteControl {

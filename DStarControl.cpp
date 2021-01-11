@@ -23,6 +23,7 @@
 #include <functional>
 
 const unsigned int MAX_SYNC_BIT_ERRORS = 2U;
+const unsigned int FAST_DATA_BEEP_GRACE_FRAMES = 6U;
 
 bool CallsignCompare(const std::string& arg, const unsigned char* my)
 {
@@ -83,7 +84,15 @@ m_minRSSI(0U),
 m_aveRSSI(0U),
 m_rssiCount(0U),
 m_enabled(true),
-m_fp(NULL)
+m_fp(NULL),
+m_rfVoiceSyncData(NULL),
+m_rfVoiceSyncDataLen(0U),
+m_netVoiceSyncData(NULL),
+m_netVoiceSyncDataLen(0U),
+m_rfNextFrameIsFastData(false),
+m_netNextFrameIsFastData(false),
+m_rfSkipDTMFBlankingFrames(0U),
+m_netSkipDTMFBlankingFrames(0U)
 {
 	assert(display != NULL);
 	assert(rssiMapper != NULL);
@@ -92,6 +101,8 @@ m_fp(NULL)
 	m_gateway  = new unsigned char[DSTAR_LONG_CALLSIGN_LENGTH];
 
 	m_lastFrame = new unsigned char[DSTAR_FRAME_LENGTH_BYTES + 1U];
+	m_rfVoiceSyncData = new unsigned char[MODEM_DATA_LEN];
+	m_netVoiceSyncData = new unsigned char[MODEM_DATA_LEN];
 
 	std::string call = callsign;
 	call.resize(DSTAR_LONG_CALLSIGN_LENGTH - 1U, ' ');
@@ -116,6 +127,82 @@ CDStarControl::~CDStarControl()
 	delete[] m_callsign;
 	delete[] m_gateway;
 	delete[] m_lastFrame;
+	delete[] m_rfVoiceSyncData;
+	delete[] m_netVoiceSyncData;
+}
+
+unsigned int CDStarControl::maybeFixupVoiceFrame(
+	unsigned char*  data,
+	unsigned int    len,
+	unsigned int    offset,
+	const char*     log_prefix,
+	unsigned char   n,
+	bool            blank_dtmf,
+	unsigned char*  voice_sync_data,
+	unsigned int*   voice_sync_data_len,
+	bool*           next_frame_is_fast_data,
+	unsigned int*   skip_dtmf_blanking_frames
+	)
+{
+	unsigned int errors = 0U;
+	unsigned int voice_sync_errors = 0U;
+	unsigned char mini_header = data[offset + 9U] ^ DSTAR_SCRAMBLER_BYTES[0U];
+	unsigned char mini_header_type = mini_header & DSTAR_SLOW_DATA_TYPE_MASK;
+
+	if (n == 0U) {
+		::memcpy(voice_sync_data, data, MODEM_DATA_LEN);
+		*voice_sync_data_len = len;
+	} else if ((n % 2U != 0U) &&
+		   ((mini_header_type == DSTAR_SLOW_DATA_TYPE_FASTDATA01) ||
+		    (mini_header_type == DSTAR_SLOW_DATA_TYPE_FASTDATA16))) {
+		*next_frame_is_fast_data = true;
+		if (blank_dtmf)
+			*skip_dtmf_blanking_frames = FAST_DATA_BEEP_GRACE_FRAMES;
+		if (n == 1U)
+			LogDebug("D-Star, %s fastdata  sequence no.  0", log_prefix);
+		LogDebug("D-Star, %s fastdata  sequence no. %2u", log_prefix, n);
+	} else if (*next_frame_is_fast_data == true) {
+		*next_frame_is_fast_data = false;
+		if (blank_dtmf)
+			*skip_dtmf_blanking_frames = FAST_DATA_BEEP_GRACE_FRAMES;
+		LogDebug("D-Star, %s fastdata  sequence no. %2u", log_prefix, n);
+	} else {
+		bool voice_sync_data_is_null_ambe_data = false;
+		bool data_is_null_ambe_data = false;
+		if ((n == 1U) && (::memcmp(voice_sync_data + offset, DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) == 0))
+			voice_sync_data_is_null_ambe_data = true;
+		if (::memcmp(data + offset, DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) == 0)
+			data_is_null_ambe_data = true;
+
+		if ((n == 1U) && !voice_sync_data_is_null_ambe_data)
+			voice_sync_errors += m_fec.regenerateDStar(voice_sync_data + offset);
+		if (!data_is_null_ambe_data)
+			errors += m_fec.regenerateDStar(data + offset);
+
+		if (blank_dtmf && (*skip_dtmf_blanking_frames > 0U)) {
+			(*skip_dtmf_blanking_frames)--;
+		} else if (blank_dtmf && (*skip_dtmf_blanking_frames == 0U)) {
+			if ((n == 1U) && !voice_sync_data_is_null_ambe_data)
+				blankDTMF(voice_sync_data + offset);
+			if (!data_is_null_ambe_data)
+				blankDTMF(data + offset);
+		}
+
+		if (n == 1U) {
+			if (voice_sync_data_is_null_ambe_data)
+				LogDebug("D-Star, %s nullaudio sequence no.  0", log_prefix);
+			else
+				LogDebug("D-Star, %s audio     sequence no.  0, errs: %2u/48 (%5.1f%%)", log_prefix, voice_sync_errors,
+					 float(voice_sync_errors) / 0.48F);
+		}
+		if (data_is_null_ambe_data)
+			LogDebug("D-Star, %s nullaudio sequence no. %2u", log_prefix, n);
+		else
+			LogDebug("D-Star, %s audio     sequence no. %2u, errs: %2u/48 (%5.1f%%)", log_prefix, n, errors,
+				 float(errors) / 0.48F);
+        }
+
+	return voice_sync_errors + errors;
 }
 
 bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
@@ -127,7 +214,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 
 	unsigned char type = data[0U];
 
-	if (type == TAG_LOST && (m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA)) {
+	if (type == TAG_LOST && m_rfState == RS_RF_AUDIO) {
 		unsigned char my1[DSTAR_LONG_CALLSIGN_LENGTH];
 		unsigned char my2[DSTAR_SHORT_CALLSIGN_LENGTH];
 		unsigned char your[DSTAR_LONG_CALLSIGN_LENGTH];
@@ -316,12 +403,15 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			}
 
 			return false;
-		} else if (m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA) {
+		} else if (m_rfState == RS_RF_AUDIO) {
 			if (m_net)
 				writeNetworkDataRF(DSTAR_END_PATTERN_BYTES, 0U, true);
 
 			if (m_duplex)
 				writeQueueEOTRF();
+
+			m_rfNextFrameIsFastData = false;
+			m_rfSkipDTMFBlankingFrames = 0U;
 
 			unsigned char my1[DSTAR_LONG_CALLSIGN_LENGTH];
 			unsigned char my2[DSTAR_SHORT_CALLSIGN_LENGTH];
@@ -340,13 +430,11 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 
 		return false;
 	} else if (type == TAG_DATA) {
-		if (m_rfState == RS_RF_REJECTED)
+		if (m_rfState == RS_RF_REJECTED) {
 			return false;
-
-		if (m_rfState == RS_RF_INVALID)
+		} else if (m_rfState == RS_RF_INVALID) {
 			return false;
-
-		if (m_rfState == RS_RF_LISTENING) {
+		} else if (m_rfState == RS_RF_LISTENING) {
 			// The sync is regenerated by the modem so can do exact match
 			if (::memcmp(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES) == 0) {
 				m_slowData.start();
@@ -354,24 +442,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			}
 
 			return false;
-		}
-
-		// Check for the fast data signature
-		if (m_rfState == RS_RF_AUDIO && (m_rfN % 2U) == 1U) {
-			unsigned char slowDataType = (data[DSTAR_VOICE_FRAME_LENGTH_BYTES + 1U] ^ DSTAR_SCRAMBLER_BYTES[0U]) & DSTAR_SLOW_DATA_TYPE_MASK;
-			if (slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA1 || slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA2) {
-				LogMessage("D-Star, switching to fast data mode");
-				m_rfState = RS_RF_DATA;
-			}
-		} else {
-			// Handle return to voice mode here?
-		}
-
-		if (m_rfState == RS_RF_DATA) {
-			m_rfBits += 72U;
-			m_rfErrs  = 0U;
-			m_rfFrames++;
-
+		} else if (m_rfState == RS_RF_AUDIO) {
 			// The sync is regenerated by the modem so can do exact match
 			if (::memcmp(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES) == 0)
 				m_rfN = 0U;
@@ -382,52 +453,29 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 				m_display->writeDStarRSSI(m_rssi);
 			}
 
-			if (m_net)
-				writeNetworkDataRF(data, 0U, false);
-
-			if (m_duplex)
-				writeQueueDataRF(data);
-
-			m_rfN = (m_rfN + 1U) % 21U;
-		} else if (m_rfState == RS_RF_AUDIO) {
 			unsigned int errors = 0U;
 			if (!m_rfHeader.isDataPacket()) {
-				if (CUtils::compare(data + 1U, DSTAR_NULL_FRAME_DATA_SRAMBLED_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U) {
-					// Fix any scrambled null data frames, typically sent by Kenwood D-Star radios
-					::memcpy(data + 1U, DSTAR_NULL_FRAME_DATA_SRAMBLED_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES);
-				} else {
-					// This appears to be a normal FEC protected audio frame
-					errors = m_fec.regenerateDStar(data + 1U);
-				}
-
+				errors = maybeFixupVoiceFrame(data, len, 1U, "RF", m_rfN, m_duplex, m_rfVoiceSyncData, &m_rfVoiceSyncDataLen,
+							      &m_rfNextFrameIsFastData, &m_rfSkipDTMFBlankingFrames);
 				m_display->writeDStarBER(float(errors) / 0.48F);
-				LogDebug("D-Star, audio sequence no. %u, errs: %u/48 (%.1f%%)", m_rfN, errors, float(errors) / 0.48F);
 				m_rfErrs += errors;
-
-				// The sync is regenerated by the modem so can do exact match
-				if (::memcmp(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES) == 0)
-					m_rfN = 0U;
 			}
 
 			m_rfBits += 48U;
 			m_rfFrames++;
 
-			// The sync is regenerated by the modem so can do exact match
-			if (::memcmp(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES) == 0)
-				m_rfN = 0U;
-
-			// Regenerate the sync and send the RSSI data to the display
-			if (m_rfN == 0U) {
-				CSync::addDStarSync(data + 1U);
-				m_display->writeDStarRSSI(m_rssi);
+			if (m_net) {
+				if (m_rfN == 1U)
+					writeNetworkDataRF(m_rfVoiceSyncData, 0U, false);
+				if (m_rfN >= 1U)
+					writeNetworkDataRF(data, errors, false);
 			}
 
-			if (m_net)
-				writeNetworkDataRF(data, errors, false);
-
 			if (m_duplex) {
-				blankDTMF(data + 1U);
-				writeQueueDataRF(data);
+				if (m_rfN == 1U)
+					writeQueueDataRF(m_rfVoiceSyncData);
+				if (m_rfN >= 1U)
+					writeQueueDataRF(data);
 			}
 
 			m_rfN = (m_rfN + 1U) % 21U;
@@ -540,8 +588,8 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 
 			unsigned int errors = 0U;
 			if (!m_rfHeader.isDataPacket()) {
-				errors = m_fec.regenerateDStar(data + 1U);
-				LogDebug("D-Star, audio sequence no. %u, errs: %u/48 (%.1f%%)", m_rfN, errors, float(errors) / 0.48F);
+				errors = maybeFixupVoiceFrame(data, len, 1U, "RF", m_rfN, m_duplex, m_rfVoiceSyncData, &m_rfVoiceSyncDataLen,
+							       &m_rfNextFrameIsFastData, &m_rfSkipDTMFBlankingFrames);
 				m_rfErrs += errors;
 			}
 
@@ -550,10 +598,8 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			if (m_net)
 				writeNetworkDataRF(data, errors, false);
 
-			if (m_duplex) {
-				blankDTMF(data + 1U);
+			if (m_duplex)
 				writeQueueDataRF(data);
-			}
 
 			m_rfState = RS_RF_AUDIO;
 
@@ -637,7 +683,7 @@ void CDStarControl::writeNetwork()
 	if (!m_enabled)
 		return;
 
-	if ((m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA) && m_netState == RS_NET_IDLE)
+	if (m_rfState == RS_RF_AUDIO && m_netState == RS_NET_IDLE)
 		return;
 
 	m_networkWatchdog.start();
@@ -707,100 +753,72 @@ void CDStarControl::writeNetwork()
 		m_elapsed.start();
 
 	} else if (type == TAG_EOT) {
-		if (m_netState == RS_NET_AUDIO || m_netState == RS_NET_DATA) {
-			writeQueueEOTNet();
+		if (m_netState != RS_NET_AUDIO)
+			return;
 
-			data[1U] = TAG_EOT;
+		writeQueueEOTNet();
+
+		data[1U] = TAG_EOT;
 
 #if defined(DUMP_DSTAR)
-			writeFile(data + 1U, length - 1U);
-			closeFile();
+		writeFile(data + 1U, length - 1U);
+		closeFile();
 #endif
-			unsigned char my1[DSTAR_LONG_CALLSIGN_LENGTH];
-			unsigned char my2[DSTAR_SHORT_CALLSIGN_LENGTH];
-			unsigned char your[DSTAR_LONG_CALLSIGN_LENGTH];
-			m_netHeader.getMyCall1(my1);
-			m_netHeader.getMyCall2(my2);
-			m_netHeader.getYourCall(your);
+		m_netNextFrameIsFastData = false;
+		m_netSkipDTMFBlankingFrames = 0U;
 
-			// We've received the header and EOT haven't we?
-			m_netFrames += 2U;
-			LogMessage("D-Star, received network end of transmission from %8.8s/%4.4s to %8.8s, %.1f seconds, %u%% packet loss, BER: %.1f%%", my1, my2, your, float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
+		unsigned char my1[DSTAR_LONG_CALLSIGN_LENGTH];
+		unsigned char my2[DSTAR_SHORT_CALLSIGN_LENGTH];
+		unsigned char your[DSTAR_LONG_CALLSIGN_LENGTH];
+		m_netHeader.getMyCall1(my1);
+		m_netHeader.getMyCall2(my2);
+		m_netHeader.getYourCall(your);
 
-			writeEndNet();
-		}
+		// We've received the header and EOT haven't we?
+		m_netFrames += 2U;
+		LogMessage("D-Star, received network end of transmission from %8.8s/%4.4s to %8.8s, %.1f seconds, %u%% packet loss, BER: %.1f%%", my1, my2, your, float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
+
+		writeEndNet();
 	} else if (type == TAG_DATA) {
+		if (m_netState != RS_NET_AUDIO)
+			return;
+
 		unsigned char n = data[1U];
 
-		// Check for the fast data signature
-		if (m_netState == RS_NET_AUDIO && (n % 2U) == 1U) {
-			unsigned char slowDataType = (data[DSTAR_VOICE_FRAME_LENGTH_BYTES + 2U] ^ DSTAR_SCRAMBLER_BYTES[0U]) & DSTAR_SLOW_DATA_TYPE_MASK;
-			if (slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA1 || slowDataType == DSTAR_SLOW_DATA_TYPE_FAST_DATA2) {
-				LogMessage("D-Star, switching to fast data mode");
-				m_netState = RS_NET_DATA;
-			}
-		} else {
-			// Handle return to voice mode here?
-		}
+		data[1U] = TAG_DATA;
 
-		if (m_netState == RS_NET_DATA) {
-			data[1U] = TAG_DATA;
+		unsigned int errors = 0U;
+		if (!m_netHeader.isDataPacket())
+			errors = maybeFixupVoiceFrame(data, length, 2U, "Net", n, true, m_netVoiceSyncData, &m_netVoiceSyncDataLen,
+						      &m_netNextFrameIsFastData, &m_netSkipDTMFBlankingFrames);
 
-			m_netBits += 72U;
-			m_netErrs  = 0U;
+		// Insert silence and reject if in the past
+		bool ret = insertSilence(data + 1U, n);
+		if (!ret)
+			return;
 
-			m_netN = n;
+		m_netErrs += errors;
+		m_netBits += 48U;
 
-			// Regenerate the sync
-			if (m_netN == 0U)
-				CSync::addDStarSync(data + 2U);
+		m_netN = n;
 
-			m_packetTimer.start();
-			m_netFrames++;
+		// Regenerate the sync
+		if (n == 0U)
+			CSync::addDStarSync(data + 2U);
+
+		m_packetTimer.start();
+		m_netFrames++;
 
 #if defined(DUMP_DSTAR)
+		if (n == 1U)
+			writeFile(m_netVoiceSyncData + 1U, m_netVoiceSyncDataLen - 1U);
+		if (n >= 1U)
 			writeFile(data + 1U, length - 1U);
 #endif
+		if (n == 1U)
+			writeQueueDataNet(m_netVoiceSyncData + 1U);
+		if (n >= 1U)
 			writeQueueDataNet(data + 1U);
-		} else if (m_netState == RS_NET_AUDIO) {
-			unsigned int errors = 0U;
-
-			if (!m_netHeader.isDataPacket()) {
-				if (CUtils::compare(data + 2U, DSTAR_NULL_FRAME_DATA_SRAMBLED_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U) {
-					// Fix any scrambled null data frames, typically sent by Kenwood D-Star radios
-					::memcpy(data + 2U, DSTAR_NULL_FRAME_DATA_SRAMBLED_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES);
-				} else {
-					// This appears to be a normal FEC protected audio frame
-					errors = m_fec.regenerateDStar(data + 2U);
-				}
-			}
-
-			blankDTMF(data + 2U);
-
-			data[1U] = TAG_DATA;
-
-			// Insert silence and reject if in the past
-			bool ret = insertSilence(data + 1U, n);
-			if (!ret)
-				return;
-
-			m_netErrs += errors;
-			m_netBits += 48U;
-
-			m_netN = n;
-
-			// Regenerate the sync
-			if (m_netN == 0U)
-				CSync::addDStarSync(data + 2U);
-
-			m_packetTimer.start();
-			m_netFrames++;
-
-#if defined(DUMP_DSTAR)
-			writeFile(data + 1U, length - 1U);
-#endif
-			writeQueueDataNet(data + 1U);
-		}
 	} else {
 		CUtils::dump("D-Star, unknown data from network", data, DSTAR_FRAME_LENGTH_BYTES + 1U);
 	}
@@ -829,7 +847,7 @@ void CDStarControl::clock()
 	m_rfTimeoutTimer.clock(ms);
 	m_netTimeoutTimer.clock(ms);
 
-	if (m_netState == RS_NET_AUDIO || m_netState == RS_NET_DATA) {
+	if (m_netState == RS_NET_AUDIO) {
 		m_networkWatchdog.clock(ms);
 
 		if (m_networkWatchdog.hasExpired()) {

@@ -39,6 +39,8 @@ const unsigned char TAG_DATA   = 0x01U;
 const unsigned char TAG_LOST   = 0x02U;
 const unsigned char TAG_EOT    = 0x03U;
 
+const unsigned int  MODEM_DATA_LEN = 220U;
+
 enum HW_TYPE {
 	HWT_MMDVM,
 	HWT_DVMEGA,

@@ -71,6 +71,12 @@ m_daemon(false),
 m_rxFrequency(0U),
 m_txFrequency(0U),
 m_power(0U),
+m_latitude(0.0F),
+m_longitude(0.0F),
+m_height(0),
+m_location(),
+m_description(),
+m_url(),
 m_logDisplayLevel(0U),
 m_logFileLevel(0U),
 m_logFilePath(),
@@ -206,6 +212,7 @@ m_dstarLocalPort(0U),
 m_dstarNetworkModeHang(3U),
 m_dstarNetworkDebug(false),
 m_dmrNetworkEnabled(false),
+m_dmrNetworkType("Gateway"),
 m_dmrNetworkAddress(),
 m_dmrNetworkPort(0U),
 m_dmrNetworkLocal(0U),
@@ -423,6 +430,18 @@ bool CConf::read()
 			m_rxFrequency = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "Power") == 0)
 			m_power = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "Latitude") == 0)
+			m_latitude = float(::atof(value));
+		else if (::strcmp(key, "Longitude") == 0)
+			m_longitude = float(::atof(value));
+		else if (::strcmp(key, "Height") == 0)
+			m_height = ::atoi(value);
+		else if (::strcmp(key, "Location") == 0)
+			m_location = value;
+		else if (::strcmp(key, "Description") == 0)
+			m_description = value;
+		else if (::strcmp(key, "URL") == 0)
+			m_url = value;
 	} else if (section == SECTION_LOG) {
 		if (::strcmp(key, "FilePath") == 0)
 			m_logFilePath = value;
@@ -794,6 +813,8 @@ bool CConf::read()
 	} else if (section == SECTION_DMR_NETWORK) {
 		if (::strcmp(key, "Enable") == 0)
 			m_dmrNetworkEnabled = ::atoi(value) == 1;
+		else if (::strcmp(key, "Type") == 0)
+			m_dmrNetworkType = value;
 		else if (::strcmp(key, "Address") == 0)
 			m_dmrNetworkAddress = value;
 		else if (::strcmp(key, "Port") == 0)
@@ -1010,6 +1031,36 @@ unsigned int CConf::getTXFrequency() const
 unsigned int CConf::getPower() const
 {
 	return m_power;
+}
+
+float CConf::getLatitude() const
+{
+	return m_latitude;
+}
+
+float CConf::getLongitude() const
+{
+	return m_longitude;
+}
+
+int CConf::getHeight() const
+{
+	return m_height;
+}
+
+std::string CConf::getLocation() const
+{
+	return m_location;
+}
+
+std::string CConf::getDescription() const
+{
+	return m_description;
+}
+
+std::string CConf::getURL() const
+{
+	return m_url;
 }
 
 unsigned int CConf::getLogDisplayLevel() const
@@ -1685,6 +1736,11 @@ bool CConf::getDStarNetworkDebug() const
 bool CConf::getDMRNetworkEnabled() const
 {
 	return m_dmrNetworkEnabled;
+}
+
+std::string CConf::getDMRNetworkType() const
+{
+	return m_dmrNetworkType;
 }
 
 std::string CConf::getDMRNetworkAddress() const

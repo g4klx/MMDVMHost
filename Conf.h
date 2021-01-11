@@ -42,6 +42,12 @@ public:
   unsigned int getRXFrequency() const;
   unsigned int getTXFrequency() const;
   unsigned int getPower() const;
+  float        getLatitude() const;
+  float        getLongitude() const;
+  int          getHeight() const;
+  std::string  getLocation() const;
+  std::string  getDescription() const;
+  std::string  getURL() const;
 
   // The Log section
   unsigned int getLogDisplayLevel() const;
@@ -209,6 +215,7 @@ public:
 
   // The DMR Network section
   bool         getDMRNetworkEnabled() const;
+  std::string  getDMRNetworkType() const;
   std::string  getDMRNetworkAddress() const;
   unsigned int getDMRNetworkPort() const;
   unsigned int getDMRNetworkLocal() const;
@@ -318,6 +325,12 @@ private:
   unsigned int m_rxFrequency;
   unsigned int m_txFrequency;
   unsigned int m_power;
+  float        m_latitude;
+  float        m_longitude;
+  int          m_height;
+  std::string  m_location;
+  std::string  m_description;
+  std::string  m_url;
 
   unsigned int m_logDisplayLevel;
   unsigned int m_logFileLevel;
@@ -469,6 +482,7 @@ private:
   bool         m_dstarNetworkDebug;
 
   bool         m_dmrNetworkEnabled;
+  std::string  m_dmrNetworkType;
   std::string  m_dmrNetworkAddress;
   unsigned int m_dmrNetworkPort;
   unsigned int m_dmrNetworkLocal;
