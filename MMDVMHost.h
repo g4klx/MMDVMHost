@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -34,7 +34,6 @@
 #include "P25Network.h"
 #include "DMRNetwork.h"
 #include "DMRLookup.h"
-#include "MobileGPS.h"
 #include "Display.h"
 #include "Timer.h"
 #include "Modem.h"
@@ -42,7 +41,6 @@
 #include "UMP.h"
 
 #include <string>
-
 
 
 class CMMDVMHost
@@ -63,10 +61,10 @@ private:
   CNXDNControl*   m_nxdn;
   CPOCSAGControl* m_pocsag;
   CDStarNetwork*  m_dstarNetwork;
-  CDMRNetwork*    m_dmrNetwork;
+  IDMRNetwork*    m_dmrNetwork;
   CYSFNetwork*    m_ysfNetwork;
   CP25Network*    m_p25Network;
-  CNXDNNetwork*   m_nxdnNetwork;
+  INXDNNetwork*   m_nxdnNetwork;
   CPOCSAGNetwork* m_pocsagNetwork;
   CDisplay*       m_display;
   CUMP*           m_ump;
@@ -93,6 +91,7 @@ private:
   bool            m_p25Enabled;
   bool            m_nxdnEnabled;
   bool            m_pocsagEnabled;
+  bool            m_fmEnabled;
   unsigned int    m_cwIdTime;
   CDMRLookup*     m_dmrLookup;
   CNXDNLookup*    m_nxdnLookup;
@@ -101,7 +100,6 @@ private:
   std::string     m_cwCallsign;
   bool            m_lockFileEnabled;
   std::string     m_lockFileName;
-  CMobileGPS*     m_mobileGPS;
   CRemoteControl* m_remoteControl;
   bool            m_fixedMode;
 
@@ -116,6 +114,7 @@ private:
 
   void remoteControl();
   void processModeCommand(unsigned char mode, unsigned int timeout);
+  void processEnableCommand(bool& mode, bool enabled);
 
   void setMode(unsigned char mode);
 

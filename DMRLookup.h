@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2017,2021 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -20,10 +20,9 @@
 #define	DMRLookup_H
 
 #include "Thread.h"
-#include "Mutex.h"
+#include "UserDB.h"
 
 #include <string>
-#include <unordered_map>
 
 class CDMRLookup : public CThread {
 public:
@@ -32,23 +31,23 @@ public:
 
 	bool read();
 
+	void reload();
+
 	virtual void entry();
 
 	std::string find(unsigned int id);
-	std::string findWithName(unsigned int id);
+	void findWithName(unsigned int id, class CUserDBentry *entry);
 
 	bool exists(unsigned int id);
 
 	void stop();
 
 private:
-	std::string                                   m_filename;
-	unsigned int                                  m_reloadTime;
-	std::unordered_map<unsigned int, std::string> m_table;
-	CMutex                                        m_mutex;
-	bool                                          m_stop;
-
-	bool load();
+	std::string     m_filename;
+	unsigned int    m_reloadTime;
+	class CUserDB   m_table;
+	bool            m_stop;
+	bool            m_reload;
 };
 
 #endif

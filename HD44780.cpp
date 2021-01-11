@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX & Tony Corbett G0WFV
+ *   Copyright (C) 2016,2017,2018,2020 by Jonathan Naylor G4KLX & Tony Corbett G0WFV
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -399,6 +399,37 @@ void CHD44780::setQuitInt()
 	m_dmr = false;
 }
 
+void CHD44780::setFMInt()
+{
+	m_clockDisplayTimer.stop();
+	::lcdClear(m_fd);
+	
+#ifdef ADAFRUIT_DISPLAY
+  adafruitLCDColour(AC_WHITE);
+#endif
+
+	if (m_pwm) {
+		if (m_pwmPin != 1U)
+			::softPwmWrite(m_pwmPin, m_pwmDim);
+		else
+			::pwmWrite(m_pwmPin, (m_pwmDim / 100) * 1024);
+	}
+
+	// Print callsign and ID at on top row for all screen sizes
+	::lcdPosition(m_fd, 0, 0);
+	::lcdPrintf(m_fd, "%-6s", m_callsign.c_str());
+	::lcdPosition(m_fd, m_cols - 7, 0);
+	::lcdPrintf(m_fd, "%7u", m_dmrid);
+
+	// Print MMDVM and Idle on bottom row for all screen sizes
+	::lcdPosition(m_fd, 0, m_rows - 1);
+	::lcdPuts(m_fd, "MMDVM");
+	::lcdPosition(m_fd, m_cols - 4, m_rows - 1);
+	::lcdPuts(m_fd, "FM");              // Gets overwritten by clock on 2 line screen
+
+	m_dmr = false;
+}
+
 void CHD44780::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
 	assert(my1 != NULL);
@@ -706,7 +737,7 @@ void CHD44780::clearDMRInt(unsigned int slotNo)
 	}
 }
 
-void CHD44780::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
+void CHD44780::writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
 	assert(source != NULL);
 	assert(dest != NULL);
@@ -741,7 +772,7 @@ void CHD44780::writeFusionInt(const char* source, const char* dest, const char* 
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 
-		::sprintf(m_buffer1, "%.10s", dest);
+		::sprintf(m_buffer1, "DG-ID %u", dgid);
 		::lcdPosition(m_fd, 0, 2);
 		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 	} else if (m_rows == 4U && m_cols == 20U) {
@@ -750,31 +781,31 @@ void CHD44780::writeFusionInt(const char* source, const char* dest, const char* 
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 
-		::sprintf(m_buffer1, "%.10s", dest);
+		::sprintf(m_buffer1, "DG-ID %u", dgid);
 		::lcdPosition(m_fd, 0, 2);
 		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 	} else if (m_rows == 2 && m_cols == 40U) {
 		char m_buffer1[40U];
-		::sprintf(m_buffer1, "%.10s > %.10s", source, dest);
+		::sprintf(m_buffer1, "%.10s > DG-ID %u", source, dgid);
 
 		::lcdPosition(m_fd, 0, 1);
 		::lcdPrintf(m_fd, "%.*s", m_cols, m_buffer1);
 	}
 
 	m_dmr = false;
-  m_rssiCount1 = 0U; 
+	m_rssiCount1 = 0U; 
 } 
  
 void CHD44780::writeFusionRSSIInt(unsigned char rssi) 
 { 
-  if (m_rssiCount1 == 0U && m_rows > 2) { 
+	if (m_rssiCount1 == 0U && m_rows > 2) { 
 		::lcdPosition(m_fd, 0, 3);
 		::lcdPrintf(m_fd, "-%3udBm", rssi);
-  } 
+	} 
  
-  m_rssiCount1++; 
-  if (m_rssiCount1 >= YSF_RSSI_COUNT) 
-    m_rssiCount1 = 0U; 
+	m_rssiCount1++; 
+	if (m_rssiCount1 >= YSF_RSSI_COUNT) 
+		m_rssiCount1 = 0U; 
 }
 
 void CHD44780::clearFusionInt()
@@ -782,7 +813,6 @@ void CHD44780::clearFusionInt()
 #ifdef ADAFRUIT_DISPLAY
 	adafruitLCDColour(AC_PURPLE);
 #endif
-
 	m_clockDisplayTimer.stop();           // Stop the clock display
 
 	if (m_rows == 2U && m_cols == 16U) {

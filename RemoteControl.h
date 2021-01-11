@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2019,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -33,12 +33,27 @@ enum REMOTE_COMMAND {
 	RCD_MODE_YSF,
 	RCD_MODE_P25,
 	RCD_MODE_NXDN,
-	RCD_PAGE
+	RCD_MODE_FM,
+	RCD_ENABLE_DSTAR,
+	RCD_ENABLE_DMR,
+	RCD_ENABLE_YSF,
+	RCD_ENABLE_P25,
+	RCD_ENABLE_NXDN,
+	RCD_ENABLE_FM,
+	RCD_DISABLE_DSTAR,
+	RCD_DISABLE_DMR,
+	RCD_DISABLE_YSF,
+	RCD_DISABLE_P25,
+	RCD_DISABLE_NXDN,
+	RCD_DISABLE_FM,
+	RCD_PAGE,
+	RCD_CW,
+	RCD_RELOAD
 };
 
 class CRemoteControl {
 public:
-	CRemoteControl(unsigned int port);
+	CRemoteControl(const std::string address, unsigned int port);
 	~CRemoteControl();
 
 	bool open();

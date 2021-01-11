@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2019 by SASANO Takayoshi JG1UAA
- *   Copyright (C) 2015,2016,2018,2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018,2019,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -49,7 +49,8 @@ enum LcdColour {
 #define FONT_MEDIUM		24	// 12x24
 #define FONT_LARGE		32	// 16x32
 
-#define FG_COLOUR		COLOUR_CYAN
+#define INFO_COLOUR		COLOUR_CYAN
+#define EXT_COLOUR		COLOUR_DARK_GREEN
 #define BG_COLOUR		COLOUR_BLACK
 #define ERROR_COLOUR		COLOUR_DARK_RED
 #define MODE_COLOUR   		COLOUR_YELLOW
@@ -63,11 +64,13 @@ enum LcdColour {
 #define MODE_CHARS		(X_WIDTH / (MODE_FONT_SIZE / 2))
 #define STATUS_CHARS		(X_WIDTH / (STATUS_FONT_SIZE / 2))
 #define STATUS_LINES		((Y_WIDTH - STATUS_MARGIN) / STATUS_FONT_SIZE)
-#define	statusLine_offset(x)	((STATUS_CHARS + 1) * ((x) + 1))
+#define statusLineOffset(x)	((STATUS_CHARS + 1) * ((x) + 1))
+#define statusLineNo(x)		(x)
+#define INFO_LINES		statusLineNo(2)
 
 // This module sometimes ignores display command (too busy?),
 // so supress display refresh
-#define REFRESH_PERIOD		250	// msec
+#define REFRESH_PERIOD		600	// msec
 
 #define STR_CRLF		"\x0D\x0A"
 #define STR_DMR			"DMR"
@@ -77,13 +80,15 @@ enum LcdColour {
 #define STR_P25			"P25"
 #define STR_YSF			"SystemFusion"
 
-CTFTSurenoo::CTFTSurenoo(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness) :
+CTFTSurenoo::CTFTSurenoo(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool duplex) :
 CDisplay(),
 m_callsign(callsign),
 m_dmrid(dmrid),
 m_serial(serial),
 m_brightness(brightness),
 m_mode(MODE_IDLE),
+m_duplex(duplex),
+//m_duplex(true),                      // uncomment to force duplex display for testing!
 m_refresh(false),
 m_refreshTimer(1000U, 0U, REFRESH_PERIOD),
 m_lineBuf(NULL)
@@ -105,7 +110,7 @@ bool CTFTSurenoo::open()
 		return false;
 	}
 
-	m_lineBuf = new char[statusLine_offset(STATUS_LINES)];
+	m_lineBuf = new char[statusLineOffset(STATUS_LINES)];
 	if (m_lineBuf == NULL) {
 		LogError("Cannot allocate line buffer");
 		m_serial->close();
@@ -130,9 +135,9 @@ void CTFTSurenoo::setIdleInt()
 {
 	setModeLine(STR_MMDVM);
 
-	::snprintf(m_temp, sizeof(m_temp), "%-6s / %u", m_callsign.c_str(), m_dmrid);
-	setStatusLine(0, m_temp);
-	setStatusLine(2, "IDLE");
+	::snprintf(m_temp, sizeof(m_temp), "%s / %u", m_callsign.c_str(), m_dmrid);
+	setStatusLine(statusLineNo(0), m_temp);
+	setStatusLine(statusLineNo(1), "IDLE");
 
 	m_mode = MODE_IDLE;
 }
@@ -142,8 +147,8 @@ void CTFTSurenoo::setErrorInt(const char* text)
 	assert(text != NULL);
 
 	setModeLine(STR_MMDVM);
-	setStatusLine(0, text);
-	setStatusLine(2, "ERROR");
+	setStatusLine(statusLineNo(0), text);
+	setStatusLine(statusLineNo(1), "ERROR");
 
 	m_mode = MODE_ERROR;
 }
@@ -151,7 +156,7 @@ void CTFTSurenoo::setErrorInt(const char* text)
 void CTFTSurenoo::setLockoutInt()
 {
 	setModeLine(STR_MMDVM);
-	setStatusLine(2, "LOCKOUT");
+	setStatusLine(statusLineNo(1), "LOCKOUT");
 
 	m_mode = MODE_LOCKOUT;
 }
@@ -162,11 +167,19 @@ void CTFTSurenoo::setQuitInt()
 	CThread::sleep(REFRESH_PERIOD);
 
 	setModeLine(STR_MMDVM);
-	setStatusLine(2, "STOPPED");
+	setStatusLine(statusLineNo(1), "STOPPED");
 
 	refreshDisplay();
 
 	m_mode = MODE_QUIT;
+}
+
+void CTFTSurenoo::setFMInt()
+{
+	setModeLine(STR_MMDVM);
+	setStatusLine(statusLineNo(1), "FM");
+
+	m_mode = MODE_FM;
 }
 
 void CTFTSurenoo::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
@@ -179,61 +192,86 @@ void CTFTSurenoo::writeDStarInt(const char* my1, const char* my2, const char* yo
 
 	setModeLine(STR_MMDVM);
 
-	::snprintf(m_temp, sizeof(m_temp), "%s %.8s/%4.4s", type, my1, my2);
-	setStatusLine(0, m_temp);
+	::snprintf(m_temp, sizeof(m_temp), "%s %s/%s", type, my1, my2);
+	setStatusLine(statusLineNo(0), m_temp);
 
-	::snprintf(m_temp, sizeof(m_temp), "%.8s", your);
-	setStatusLine(2, m_temp);
+	::snprintf(m_temp, sizeof(m_temp), "%s", your);
+	setStatusLine(statusLineNo(1), m_temp);
 
 	if (::strcmp(reflector, "        ") != 0)
-		::snprintf(m_temp, sizeof(m_temp), "via %.8s", reflector);
+		::snprintf(m_temp, sizeof(m_temp), "via %s", reflector);
 	else
 		::strcpy(m_temp, "");
-	setStatusLine(4, m_temp);
+	setStatusLine(statusLineNo(2), m_temp);
 
 	m_mode = MODE_DSTAR;
 }
 
 void CTFTSurenoo::clearDStarInt()
 {
-	setStatusLine(0, "Listening");
-	setStatusLine(2, "");
-	setStatusLine(4, "");
+	setStatusLine(statusLineNo(0), "Listening");
+	for (int i = 1; i < STATUS_LINES; i++)
+		setStatusLine(statusLineNo(i), "");
 }
 
 void CTFTSurenoo::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
 	assert(type != NULL);
 
-	// slotNo comes 1 or 2, convert 0 or 1
-	slotNo--;
+	if (m_mode != MODE_DMR) {
+		setModeLine(STR_DMR);
+		if (m_duplex) {
+			setStatusLine(statusLineNo(0), "Listening");
+			setStatusLine(statusLineNo(1), "TS1");
+			setStatusLine(statusLineNo(2), "Listening");
+			setStatusLine(statusLineNo(3), "TS2");
+		}
+	}		
 
-	setModeLine(STR_DMR);
+	int pos = m_duplex ? (slotNo - 1) : 0;
+	::snprintf(m_temp, sizeof(m_temp), "%s %s", type, src.c_str());
+	setStatusLine(statusLineNo(pos * 2), m_temp);
 
-	::snprintf(m_temp, sizeof(m_temp), "%d Listening", 2 - slotNo);
-	setStatusLine((1 - slotNo) * 2, m_temp);
-
-	::snprintf(m_temp, sizeof(m_temp), "%d %s %s", slotNo + 1, type, src.c_str());
-	setStatusLine(slotNo * 2, m_temp);
-
-	::snprintf(m_temp, sizeof(m_temp), "%s%s", group ? "TG" : "", dst.c_str());
-	setStatusLine(slotNo * 2 + 1, m_temp);
+	::snprintf(m_temp, sizeof(m_temp), "TS%d %s%s", slotNo, group ? "TG" : "", dst.c_str());
+	setStatusLine(statusLineNo(pos * 2 + 1), m_temp);
 
 	m_mode = MODE_DMR;
 }
 
-void CTFTSurenoo::clearDMRInt(unsigned int slotNo)
+int CTFTSurenoo::writeDMRIntEx(unsigned int slotNo, const class CUserDBentry& src, bool group, const std::string& dst, const char* type)
 {
-	// slotNo comes 1 or 2, convert 0 or 1
-	slotNo--;
+	assert(type != NULL);
 
-	::snprintf(m_temp, sizeof(m_temp), "%d Listening", slotNo + 1);
-	setStatusLine(slotNo * 2, m_temp);
+	// duplex mode is not supported
+	if (m_duplex)
+		return -1;
 
-	setStatusLine(slotNo * 2 + 1, "");
+	setModeLine(STR_DMR);
+	setStatusLine(statusLineNo(2), (src.get(keyFIRST_NAME) + " " + src.get(keyLAST_NAME)).c_str());
+	setStatusLine(statusLineNo(3), src.get(keyCITY).c_str());
+	setStatusLine(statusLineNo(4), src.get(keySTATE).c_str());
+	setStatusLine(statusLineNo(5), src.get(keyCOUNTRY).c_str());
+
+	m_mode = MODE_DMR;
+
+	return 1;
 }
 
-void CTFTSurenoo::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
+void CTFTSurenoo::clearDMRInt(unsigned int slotNo)
+{
+	int pos = m_duplex ? (slotNo - 1) : 0;
+	setStatusLine(statusLineNo(pos * 2), "Listening");
+
+	if (m_duplex) {
+		::snprintf(m_temp, sizeof(m_temp), "TS%d", slotNo);
+		setStatusLine(statusLineNo(pos * 2 + 1), m_temp);
+	} else {
+		for (int i = 1; i < STATUS_LINES; i++)
+			setStatusLine(statusLineNo(i), "");
+	}
+}
+
+void CTFTSurenoo::writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
 	assert(source != NULL);
 	assert(dest != NULL);
@@ -242,17 +280,17 @@ void CTFTSurenoo::writeFusionInt(const char* source, const char* dest, const cha
 
 	setModeLine(STR_YSF);
 
-	::snprintf(m_temp, sizeof(m_temp), "%s %.10s", type, source);
-	setStatusLine(0, m_temp);
+	::snprintf(m_temp, sizeof(m_temp), "%s %s", type, source);
+	setStatusLine(statusLineNo(0), m_temp);
 
-	::snprintf(m_temp, sizeof(m_temp), "  %.10s", dest);
-	setStatusLine(2, m_temp);
+	::snprintf(m_temp, sizeof(m_temp), "DG-ID %u", dgid);
+	setStatusLine(statusLineNo(1), m_temp);
 
 	if (::strcmp(origin, "          ") != 0)
-		::snprintf(m_temp, sizeof(m_temp), "at %.10s", origin);
+		::snprintf(m_temp, sizeof(m_temp), "at %s", origin);
 	else
 		::strcpy(m_temp, "");
-	setStatusLine(4, m_temp);
+	setStatusLine(statusLineNo(2), m_temp);
 
 	m_mode = MODE_YSF;
 }
@@ -269,11 +307,11 @@ void CTFTSurenoo::writeP25Int(const char* source, bool group, unsigned int dest,
 
 	setModeLine(STR_P25);
 
-	::snprintf(m_temp, sizeof(m_temp), "%s %.10s", type, source);
-	setStatusLine(0, m_temp);
+	::snprintf(m_temp, sizeof(m_temp), "%s %s", type, source);
+	setStatusLine(statusLineNo(0), m_temp);
 
-	::snprintf(m_temp, sizeof(m_temp), "  %s%u", group ? "TG" : "", dest);
-	setStatusLine(2, m_temp);
+	::snprintf(m_temp, sizeof(m_temp), "%s%u", group ? "TG" : "", dest);
+	setStatusLine(statusLineNo(1), m_temp);
 
 	m_mode = MODE_P25;
 }
@@ -288,15 +326,31 @@ void CTFTSurenoo::writeNXDNInt(const char* source, bool group, unsigned int dest
 	assert(source != NULL);
 	assert(type != NULL);
 
-	setModeLine(STR_NXDN);
+	if (m_mode != MODE_NXDN)
+		setModeLine(STR_NXDN);
 
-	::snprintf(m_temp, sizeof(m_temp), "%s %.10s", type, source);
-	setStatusLine(0, m_temp);
+	::snprintf(m_temp, sizeof(m_temp), "%s %s", type, source);
+	setStatusLine(statusLineNo(0), m_temp);
 
-	::snprintf(m_temp, sizeof(m_temp), "  %s%u", group ? "TG" : "", dest);
-	setStatusLine(2, m_temp);
+	::snprintf(m_temp, sizeof(m_temp), "%s%u", group ? "TG" : "", dest);
+	setStatusLine(statusLineNo(1), m_temp);
 
 	m_mode = MODE_NXDN;
+}
+
+int CTFTSurenoo::writeNXDNIntEx(const class CUserDBentry& source, bool group, unsigned int dest, const char* type)
+{
+	assert(type != NULL);
+
+	setModeLine(STR_NXDN);
+	setStatusLine(statusLineNo(2), (source.get(keyFIRST_NAME) + " " + source.get(keyLAST_NAME)).c_str());
+	setStatusLine(statusLineNo(3), source.get(keyCITY).c_str());
+	setStatusLine(statusLineNo(4), source.get(keySTATE).c_str());
+	setStatusLine(statusLineNo(5), source.get(keyCOUNTRY).c_str());
+
+	m_mode = MODE_NXDN;
+
+	return 1;
 }
 
 void CTFTSurenoo::clearNXDNInt()
@@ -306,26 +360,26 @@ void CTFTSurenoo::clearNXDNInt()
 
 void CTFTSurenoo::writePOCSAGInt(uint32_t ric, const std::string& message)
 {
-	setStatusLine(2, "POCSAG TX");
+	setStatusLine(statusLineNo(1), "POCSAG TX");
 
 	m_mode = MODE_POCSAG;
 }
 
 void CTFTSurenoo::clearPOCSAGInt()
 {
-	setStatusLine(2, "IDLE");
+	setStatusLine(statusLineNo(1), "IDLE");
 }
 
 void CTFTSurenoo::writeCWInt()
 {
-	setStatusLine(2, "CW TX");
+	setStatusLine(statusLineNo(1), "CW TX");
 
 	m_mode = MODE_CW;
 }
 
 void CTFTSurenoo::clearCWInt()
 {
-	setStatusLine(2, "IDLE");
+	setStatusLine(statusLineNo(1), "IDLE");
 }
 
 void CTFTSurenoo::close()
@@ -352,8 +406,6 @@ void CTFTSurenoo::setLineBuffer(char *buf, const char *text, int maxchar)
 
 	for (i = 0; i < maxchar && text[i] != '\0'; i++)
 		buf[i] = text[i];
-	for (; i < maxchar; i++)
-		buf[i] = ' ';
 	buf[i] = '\0';
 
 	m_refresh = true;
@@ -369,12 +421,21 @@ void CTFTSurenoo::setModeLine(const char *text)
 
 void CTFTSurenoo::setStatusLine(unsigned int line, const char *text)
 {
-	setLineBuffer(m_lineBuf + statusLine_offset(line), text, STATUS_CHARS);
+	setLineBuffer(m_lineBuf + statusLineOffset(line), text, STATUS_CHARS);
 }  
 
 void CTFTSurenoo::refreshDisplay(void)
 {
 	if (!m_refresh) return;
+
+	// send CR+LF to avoid first command is not processed
+	::snprintf(m_temp, sizeof(m_temp), STR_CRLF);
+	m_serial->write((unsigned char*)m_temp, (unsigned int)::strlen(m_temp));
+
+	// clear display
+	::snprintf(m_temp, sizeof(m_temp), "BOXF(%d,%d,%d,%d,%d);",
+		   0, 0, X_WIDTH - 1, Y_WIDTH - 1, BG_COLOUR);
+	m_serial->write((unsigned char*)m_temp, ::strlen(m_temp));
 
 	// mode line
 	::snprintf(m_temp, sizeof(m_temp), "DCV%d(%d,%d,'%s',%d);",
@@ -383,10 +444,13 @@ void CTFTSurenoo::refreshDisplay(void)
 
 	// status line
 	for (int i = 0; i < STATUS_LINES; i++) {
+		char *p = m_lineBuf + statusLineOffset(i);
+		if (!::strlen(p)) continue;
+
 		::snprintf(m_temp, sizeof(m_temp), "DCV%d(%d,%d,'%s',%d);",
 			   STATUS_FONT_SIZE, 0,
-			   STATUS_MARGIN + STATUS_FONT_SIZE * i,
-			   m_lineBuf + statusLine_offset(i), FG_COLOUR);
+			   STATUS_MARGIN + STATUS_FONT_SIZE * i, p,
+			   (!m_duplex && i >= INFO_LINES) ? EXT_COLOUR : INFO_COLOUR);
 		m_serial->write((unsigned char*)m_temp, (unsigned int)::strlen(m_temp));
 	}
 

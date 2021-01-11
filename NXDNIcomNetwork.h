@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2014,2016,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2014,2016,2018,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,36 +16,36 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef	P25Network_H
-#define	P25Network_H
+#ifndef	NXDNIcomNetwork_H
+#define	NXDNIcomNetwork_H
 
-#include "P25LowSpeedData.h"
+#include "NXDNNetwork.h"
+#include "NXDNDefines.h"
 #include "RingBuffer.h"
 #include "UDPSocket.h"
-#include "P25Audio.h"
-#include "P25Data.h"
+#include "Timer.h"
 
 #include <cstdint>
 #include <string>
 
-class CP25Network {
+class CNXDNIcomNetwork : public INXDNNetwork {
 public:
-	CP25Network(const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int localPort, bool debug);
-	~CP25Network();
+	CNXDNIcomNetwork(const std::string& localAddress, unsigned int localPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug);
+	virtual ~CNXDNIcomNetwork();
 
-	bool open();
+	virtual bool open();
 
-	void enable(bool enabled);
+	virtual void enable(bool enabled);
 
-	bool writeLDU1(const unsigned char* ldu1, const CP25Data& control, const CP25LowSpeedData& lsd, bool end);
+	virtual bool write(const unsigned char* data, NXDN_NETWORK_MESSAGE_TYPE type);
 
-	bool writeLDU2(const unsigned char* ldu2, const CP25Data& control, const CP25LowSpeedData& lsd, bool end);
+	virtual bool read(unsigned char* data);
 
-	unsigned int read(unsigned char* data, unsigned int length);
+	virtual void reset();
 
-	void close();
+	virtual void close();
 
-	void clock(unsigned int ms);
+	virtual void clock(unsigned int ms);
 
 private:
 	CUDPSocket       m_socket;
@@ -54,7 +54,6 @@ private:
 	bool             m_debug;
 	bool             m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
-	CP25Audio        m_audio;
 };
 
 #endif

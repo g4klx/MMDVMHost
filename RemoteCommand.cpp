@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2019,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -51,25 +51,34 @@ int main(int argc, char** argv)
 CRemoteCommand::CRemoteCommand(unsigned int port) :
 m_port(port)
 {
-	::LogInitialise(".", "RemoteCommand", 2U, 2U);
+	CUDPSocket::startup();
+
+	::LogInitialise(false, ".", "RemoteCommand", 2U, 2U, false);
 }
 
 CRemoteCommand::~CRemoteCommand()
 {
 	::LogFinalise();
+
+	CUDPSocket::shutdown();
 }
 
 int CRemoteCommand::send(const std::string& command)
 {
+	sockaddr_storage addr;
+	unsigned int addrLen;
+	if (CUDPSocket::lookup("127.0.0.1", m_port, addr, addrLen) != 0) {
+		LogError("Unable to resolve the address of the host");
+		return 1;
+	}
+
 	CUDPSocket socket(0U);
 	
-	bool ret = socket.open();
+	bool ret = socket.open(addr);
 	if (!ret)
 		return 1;
 
-	in_addr address = CUDPSocket::lookup("localhost");
-
-	ret = socket.write((unsigned char*)command.c_str(), command.length(), address, m_port);
+	ret = socket.write((unsigned char*)command.c_str(), command.length(), addr, addrLen);
 	if (!ret) {
 		socket.close();
 		return 1;

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2014,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2014,2016,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@
 
 #include <cstdint>
 #include <string>
+#include <random>
 
 class CDStarNetwork {
 public:
@@ -50,20 +51,21 @@ public:
 	void clock(unsigned int ms);
 
 private:
-	CUDPSocket     m_socket;
-	in_addr        m_address;
-	unsigned int   m_port;
-	bool           m_duplex;
-	const char*    m_version;
-	bool           m_debug;
-	bool           m_enabled;
-	uint16_t       m_outId;
-	uint8_t        m_outSeq;
-	uint16_t       m_inId;
+	CUDPSocket       m_socket;
+	sockaddr_storage m_addr;
+	unsigned int     m_addrLen;
+	bool             m_duplex;
+	const char*      m_version;
+	bool             m_debug;
+	bool             m_enabled;
+	uint16_t         m_outId;
+	uint8_t          m_outSeq;
+	uint16_t         m_inId;
 	CRingBuffer<unsigned char> m_buffer;
-	CTimer         m_pollTimer;
-	LINK_STATUS    m_linkStatus;
-	unsigned char* m_linkReflector;
+	CTimer           m_pollTimer;
+	LINK_STATUS      m_linkStatus;
+	unsigned char*   m_linkReflector;
+	std::mt19937     m_random;
 
 	bool writePoll(const char* text);
 };

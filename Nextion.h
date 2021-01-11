@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 class CNextion : public CDisplay
 {
 public:
-  CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness, unsigned int screenLayout, unsigned int txFrequency, unsigned int rxFrequency, bool displayTempInF, const std::string& location);
+  CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness, unsigned int screenLayout, unsigned int txFrequency, unsigned int rxFrequency, bool displayTempInF);
   virtual ~CNextion();
 
   virtual bool open();
@@ -41,6 +41,7 @@ protected:
   virtual void setErrorInt(const char* text);
   virtual void setLockoutInt();
   virtual void setQuitInt();
+  virtual void setFMInt();
 
   virtual void writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
   virtual void writeDStarRSSIInt(unsigned char rssi);
@@ -54,7 +55,7 @@ protected:
   virtual void writeDMRBERInt(unsigned int slotNo, float ber);
   virtual void clearDMRInt(unsigned int slotNo);
 
-  virtual void writeFusionInt(const char* source, const char* dest, const char* type, const char* origin);
+  virtual void writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
   virtual void writeFusionRSSIInt(unsigned char rssi);
   virtual void writeFusionBERInt(float ber);
   virtual void clearFusionInt();
@@ -99,10 +100,9 @@ private:
   unsigned int  m_berCount2;
   unsigned int  m_txFrequency;
   unsigned int  m_rxFrequency;
-  float         m_fl_txFrequency;
-  float         m_fl_rxFrequency;
+  double        m_fl_txFrequency;
+  double        m_fl_rxFrequency;
   bool          m_displayTempInF;
-  std::string   m_location;
   
   void sendCommand(const char* command);
   void sendCommandAction(unsigned int status);

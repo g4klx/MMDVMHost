@@ -26,6 +26,9 @@ const unsigned char MODE_YSF     = 3U;
 const unsigned char MODE_P25     = 4U;
 const unsigned char MODE_NXDN    = 5U;
 const unsigned char MODE_POCSAG  = 6U;
+
+const unsigned char MODE_FM      = 10U;
+
 const unsigned char MODE_CW      = 98U;
 const unsigned char MODE_LOCKOUT = 99U;
 const unsigned char MODE_ERROR   = 100U;
@@ -35,6 +38,8 @@ const unsigned char TAG_HEADER = 0x00U;
 const unsigned char TAG_DATA   = 0x01U;
 const unsigned char TAG_LOST   = 0x02U;
 const unsigned char TAG_EOT    = 0x03U;
+
+const unsigned int  MODEM_DATA_LEN = 220U;
 
 enum HW_TYPE {
 	HWT_MMDVM,
@@ -46,6 +51,8 @@ enum HW_TYPE {
 	HWT_NANO_DV,
 	HWT_D2RG_MMDVM_HS,
 	HWT_MMDVM_HS,
+	HWT_OPENGD77_HS,
+	HWT_SKYBRIDGE,
 	HWT_UNKNOWN
 };
 

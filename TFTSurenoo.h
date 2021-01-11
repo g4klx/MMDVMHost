@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2019 by SASANO Takayoshi JG1UAA
- *   Copyright (C) 2015,2016,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018,2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -23,13 +23,14 @@
 #include "Display.h"
 #include "Defines.h"
 #include "SerialPort.h"
+#include "UserDBentry.h"
 
 #include <string>
 
 class CTFTSurenoo : public CDisplay
 {
 public:
-  CTFTSurenoo(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness);
+  CTFTSurenoo(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool duplex);
   virtual ~CTFTSurenoo();
 
   virtual bool open();
@@ -41,20 +42,23 @@ protected:
 	virtual void setErrorInt(const char* text);
 	virtual void setLockoutInt();
 	virtual void setQuitInt();
+    virtual void setFMInt();
 
 	virtual void writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
 	virtual void clearDStarInt();
 
 	virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
+	virtual int writeDMRIntEx(unsigned int slotNo, const class CUserDBentry& src, bool group, const std::string& dst, const char* type);
 	virtual void clearDMRInt(unsigned int slotNo);
 
-	virtual void writeFusionInt(const char* source, const char* dest, const char* type, const char* origin);
+	virtual void writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
 	virtual void clearFusionInt();
 
 	virtual void writeP25Int(const char* source, bool group, unsigned int dest, const char* type);
 	virtual void clearP25Int();
 
 	virtual void writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type);
+	virtual int writeNXDNIntEx(const class CUserDBentry& source, bool group, unsigned int dest, const char* type);
 	virtual void clearNXDNInt();
 
 	virtual void writePOCSAGInt(uint32_t ric, const std::string& message);
@@ -71,6 +75,7 @@ private:
    ISerialPort*  m_serial;
    unsigned int  m_brightness;
    unsigned char m_mode;
+   bool          m_duplex;
    bool          m_refresh;
    CTimer        m_refreshTimer;
    char*         m_lineBuf;

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,6 +17,10 @@
  */
 
 #include "MMDVMHost.h"
+#include "DMRDirectNetwork.h"
+#include "DMRGatewayNetwork.h"
+#include "NXDNKenwoodNetwork.h"
+#include "NXDNIcomNetwork.h"
 #include "RSSIInterpolator.h"
 #include "SerialController.h"
 #include "Version.h"
@@ -47,19 +51,25 @@ const char* DEFAULT_INI_FILE = "/etc/MMDVM.ini";
 
 static bool m_killed = false;
 static int  m_signal = 0;
+static bool m_reload = false;
 
 #if !defined(_WIN32) && !defined(_WIN64)
-static void sigHandler(int signum)
+static void sigHandler1(int signum)
 {
 	m_killed = true;
 	m_signal = signum;
+}
+
+static void sigHandler2(int signum)
+{
+	m_reload = true;
 }
 #endif
 
 const char* HEADER1 = "This software is for use on amateur radio networks only,";
 const char* HEADER2 = "it is to be used for educational purposes only. Its use on";
 const char* HEADER3 = "commercial networks is strictly prohibited.";
-const char* HEADER4 = "Copyright(C) 2015-2018 by Jonathan Naylor, G4KLX and others";
+const char* HEADER4 = "Copyright(C) 2015-2020 by Jonathan Naylor, G4KLX and others";
 
 int main(int argc, char** argv)
 {
@@ -80,9 +90,10 @@ int main(int argc, char** argv)
 	}
 
 #if !defined(_WIN32) && !defined(_WIN64)
-	::signal(SIGINT,  sigHandler);
-	::signal(SIGTERM, sigHandler);
-	::signal(SIGHUP,  sigHandler);
+	::signal(SIGINT,  sigHandler1);
+	::signal(SIGTERM, sigHandler1);
+	::signal(SIGHUP,  sigHandler1);
+	::signal(SIGUSR1, sigHandler2);
 #endif
 
 	int ret = 0;
@@ -150,6 +161,7 @@ m_ysfEnabled(false),
 m_p25Enabled(false),
 m_nxdnEnabled(false),
 m_pocsagEnabled(false),
+m_fmEnabled(false),
 m_cwIdTime(0U),
 m_dmrLookup(NULL),
 m_nxdnLookup(NULL),
@@ -158,14 +170,15 @@ m_id(0U),
 m_cwCallsign(),
 m_lockFileEnabled(false),
 m_lockFileName(),
-m_mobileGPS(NULL),
 m_remoteControl(NULL),
 m_fixedMode(false)
 {
+	CUDPSocket::startup();
 }
 
 CMMDVMHost::~CMMDVMHost()
 {
+	CUDPSocket::shutdown();
 }
 
 int CMMDVMHost::run()
@@ -236,7 +249,11 @@ int CMMDVMHost::run()
 #endif
 #endif
 
-	ret = ::LogInitialise(m_conf.getLogFilePath(), m_conf.getLogFileRoot(), m_conf.getLogFileLevel(), m_conf.getLogDisplayLevel());
+#if !defined(_WIN32) && !defined(_WIN64)
+	ret = ::LogInitialise(m_daemon, m_conf.getLogFilePath(), m_conf.getLogFileRoot(), m_conf.getLogFileLevel(), m_conf.getLogDisplayLevel(), m_conf.getLogFileRotate());
+#else
+	ret = ::LogInitialise(false, m_conf.getLogFilePath(), m_conf.getLogFileRoot(), m_conf.getLogFileLevel(), m_conf.getLogDisplayLevel(), m_conf.getLogFileRotate());
+#endif
 	if (!ret) {
 		::fprintf(stderr, "MMDVMHost: unable to open the log file\n");
 		return 1;
@@ -246,7 +263,6 @@ int CMMDVMHost::run()
 	if (m_daemon) {
 		::close(STDIN_FILENO);
 		::close(STDOUT_FILENO);
-		::close(STDERR_FILENO);
 	}
 #endif
 
@@ -316,8 +332,8 @@ int CMMDVMHost::run()
 			return 1;
 	}
 
-	in_addr transparentAddress;
-	unsigned int transparentPort = 0U;
+	sockaddr_storage transparentAddress;
+	unsigned int transparentAddrLen;
 	CUDPSocket* transparentSocket = NULL;
 
 	unsigned int sendFrameType = 0U;
@@ -333,11 +349,13 @@ int CMMDVMHost::run()
 		LogInfo("    Local Port: %u", localPort);
 		LogInfo("    Send Frame Type: %u", sendFrameType);
 
-		transparentAddress = CUDPSocket::lookup(remoteAddress);
-		transparentPort    = remotePort;
+		if (CUDPSocket::lookup(remoteAddress, remotePort, transparentAddress, transparentAddrLen) != 0) {
+			LogError("Unable to resolve the address of the Transparent Data source");
+			return 1;
+		}
 
 		transparentSocket = new CUDPSocket(localPort);
-		ret = transparentSocket->open();
+		ret = transparentSocket->open(transparentAddress);
 		if (!ret) {
 			LogWarning("Could not open the Transparent data socket, disabling");
 			delete transparentSocket;
@@ -402,6 +420,7 @@ int CMMDVMHost::run()
 		std::string module                 = m_conf.getDStarModule();
 		bool selfOnly                      = m_conf.getDStarSelfOnly();
 		std::vector<std::string> blackList = m_conf.getDStarBlackList();
+		std::vector<std::string> whiteList = m_conf.getDStarWhiteList();
 		bool ackReply                      = m_conf.getDStarAckReply();
 		unsigned int ackTime               = m_conf.getDStarAckTime();
 		bool ackMessage                    = m_conf.getDStarAckMessage();
@@ -421,8 +440,10 @@ int CMMDVMHost::run()
 
 		if (blackList.size() > 0U)
 			LogInfo("    Black List: %u", blackList.size());
+		if (whiteList.size() > 0U)
+			LogInfo("    White List: %u", whiteList.size());
 
-		m_dstar = new CDStarControl(m_callsign, module, selfOnly, ackReply, ackTime, ackMessage, errorReply, blackList, m_dstarNetwork, m_display, m_timeout, m_duplex, remoteGateway, rssi);
+		m_dstar = new CDStarControl(m_callsign, module, selfOnly, ackReply, ackTime, ackMessage, errorReply, blackList, whiteList, m_dstarNetwork, m_display, m_timeout, m_duplex, remoteGateway, rssi);
 	}
 
 	DMR_BEACONS dmrBeacons = DMR_BEACONS_OFF;
@@ -527,8 +548,6 @@ int CMMDVMHost::run()
 		bool remoteGateway  = m_conf.getFusionRemoteGateway();
 		unsigned int txHang = m_conf.getFusionTXHang();
 		bool selfOnly       = m_conf.getFusionSelfOnly();
-		bool dgIdEnabled    = m_conf.getFusionDGIdEnabled();
-		unsigned char dgId  = m_conf.getFusionDGId();
 		m_ysfRFModeHang     = m_conf.getFusionModeHang();
 
 		LogInfo("YSF RF Parameters");
@@ -536,22 +555,19 @@ int CMMDVMHost::run()
 		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
 		LogInfo("    TX Hang: %us", txHang);
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
-		LogInfo("    DG-ID: %s", dgIdEnabled ? "yes" : "no");
-		if (dgIdEnabled)
-			LogInfo("    DG-ID Value: %u", dgId);
 		LogInfo("    Mode Hang: %us", m_ysfRFModeHang);
 
 		m_ysf = new CYSFControl(m_callsign, selfOnly, m_ysfNetwork, m_display, m_timeout, m_duplex, lowDeviation, remoteGateway, rssi);
-		m_ysf->setDGId(dgIdEnabled, dgId);
 	}
 
 	if (m_p25Enabled) {
-		unsigned int id    = m_conf.getP25Id();
-		unsigned int nac   = m_conf.getP25NAC();
-		bool uidOverride   = m_conf.getP25OverrideUID();
-		bool selfOnly      = m_conf.getP25SelfOnly();
-		bool remoteGateway = m_conf.getP25RemoteGateway();
-		m_p25RFModeHang    = m_conf.getP25ModeHang();
+		unsigned int id     = m_conf.getP25Id();
+		unsigned int nac    = m_conf.getP25NAC();
+		unsigned int txHang = m_conf.getP25TXHang();
+		bool uidOverride    = m_conf.getP25OverrideUID();
+		bool selfOnly       = m_conf.getP25SelfOnly();
+		bool remoteGateway  = m_conf.getP25RemoteGateway();
+		m_p25RFModeHang     = m_conf.getP25ModeHang();
 
 		LogInfo("P25 RF Parameters");
 		LogInfo("    Id: %u", id);
@@ -559,6 +575,7 @@ int CMMDVMHost::run()
 		LogInfo("    UID Override: %s", uidOverride ? "yes" : "no");
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
 		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
+		LogInfo("    TX Hang: %us", txHang);
 		LogInfo("    Mode Hang: %us", m_p25RFModeHang);
 
 		m_p25 = new CP25Control(nac, id, selfOnly, uidOverride, m_p25Network, m_display, m_timeout, m_duplex, m_dmrLookup, remoteGateway, rssi);
@@ -576,17 +593,19 @@ int CMMDVMHost::run()
 		m_nxdnLookup = new CNXDNLookup(lookupFile, reloadTime);
 		m_nxdnLookup->read();
 
-		unsigned int id    = m_conf.getNXDNId();
-		unsigned int ran   = m_conf.getNXDNRAN();
-		bool selfOnly      = m_conf.getNXDNSelfOnly();
-		bool remoteGateway = m_conf.getNXDNRemoteGateway();
-		m_nxdnRFModeHang   = m_conf.getNXDNModeHang();
+		unsigned int id     = m_conf.getNXDNId();
+		unsigned int ran    = m_conf.getNXDNRAN();
+		bool selfOnly       = m_conf.getNXDNSelfOnly();
+		bool remoteGateway  = m_conf.getNXDNRemoteGateway();
+		unsigned int txHang = m_conf.getNXDNTXHang();
+		m_nxdnRFModeHang    = m_conf.getNXDNModeHang();
 
 		LogInfo("NXDN RF Parameters");
 		LogInfo("    Id: %u", id);
 		LogInfo("    RAN: %u", ran);
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
 		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
+		LogInfo("    TX Hang: %us", txHang);
 		LogInfo("    Mode Hang: %us", m_nxdnRFModeHang);
 
 		m_nxdn = new CNXDNControl(ran, id, selfOnly, m_nxdnNetwork, m_display, m_timeout, m_duplex, remoteGateway, m_nxdnLookup, rssi);
@@ -602,17 +621,20 @@ int CMMDVMHost::run()
 
 		m_pocsag = new CPOCSAGControl(m_pocsagNetwork, m_display);
 
-		pocsagTimer.start();
+		if (m_pocsagNetwork != NULL)
+			pocsagTimer.start();
 	}
 
 	bool remoteControlEnabled = m_conf.getRemoteControlEnabled();
 	if (remoteControlEnabled) {
+		std::string address = m_conf.getRemoteControlAddress();
 		unsigned int port = m_conf.getRemoteControlPort();
 
 		LogInfo("Remote Control Parameters");
+		LogInfo("    Address: %s", address.c_str());
 		LogInfo("    Port: %u", port);
 
-		m_remoteControl = new CRemoteControl(port);
+		m_remoteControl = new CRemoteControl(address, port);
 
 		ret = m_remoteControl->open();
 		if (!ret) {
@@ -642,6 +664,12 @@ int CMMDVMHost::run()
 		else if (!error && m_mode == MODE_ERROR)
 			setMode(MODE_IDLE);
 
+		unsigned char mode = m_modem->getMode();
+		if (mode == MODE_FM && m_mode != MODE_FM)
+			setMode(mode);
+		else if (mode != MODE_FM && m_mode == MODE_FM)
+			setMode(mode);
+
 		if (m_ump != NULL) {
 			bool tx = m_modem->hasTX();
 			m_ump->setTX(tx);
@@ -649,7 +677,7 @@ int CMMDVMHost::run()
 			m_ump->setCD(cd);
 		}
 
-		unsigned char data[220U];
+		unsigned char data[MODEM_DATA_LEN];
 		unsigned int len;
 		bool ret;
 
@@ -793,7 +821,7 @@ int CMMDVMHost::run()
 
 		len = m_modem->readTransparentData(data);
 		if (transparentSocket != NULL && len > 0U)
-			transparentSocket->write(data, len, transparentAddress, transparentPort);
+			transparentSocket->write(data, len, transparentAddress, transparentAddrLen);
 
 		if (!m_fixedMode) {
 			if (m_modeTimer.isRunning() && m_modeTimer.hasExpired())
@@ -942,9 +970,9 @@ int CMMDVMHost::run()
 		}
 
 		if (transparentSocket != NULL) {
-			in_addr address;
-			unsigned int port = 0U;
-			len = transparentSocket->read(data, 200U, address, port);
+			sockaddr_storage address;
+			unsigned int addrlen;
+			len = transparentSocket->read(data, 200U, address, addrlen);
 			if (len > 0U)
 				m_modem->writeTransparentData(data, len);
 		}
@@ -961,6 +989,16 @@ int CMMDVMHost::run()
 		if (!m_fixedMode)
 			m_modeTimer.clock(ms);
 
+		if (m_reload) {
+			if (m_dmrLookup != NULL)
+				m_dmrLookup->reload();
+
+			if (m_nxdnLookup != NULL)
+				m_nxdnLookup->reload();
+
+			m_reload = false;
+		}
+		
 		if (m_dstar != NULL)
 			m_dstar->clock();
 		if (m_dmr != NULL)
@@ -986,9 +1024,6 @@ int CMMDVMHost::run()
 			m_nxdnNetwork->clock(ms);
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->clock(ms);
-
-		if (m_mobileGPS != NULL)
-			m_mobileGPS->clock(ms);
 
 		m_cwIdTimer.clock(ms);
 		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
@@ -1064,11 +1099,6 @@ int CMMDVMHost::run()
 
 	m_display->close();
 	delete m_display;
-
-	if (m_mobileGPS != NULL) {
-		m_mobileGPS->close();
-		delete m_mobileGPS;
-	}
 
 	if (m_ump != NULL) {
 		m_ump->close();
@@ -1149,11 +1179,14 @@ bool CMMDVMHost::createModem()
 	float p25TXLevel             = m_conf.getModemP25TXLevel();
 	float nxdnTXLevel            = m_conf.getModemNXDNTXLevel();
 	float pocsagTXLevel          = m_conf.getModemPOCSAGTXLevel();
+	float fmTXLevel              = m_conf.getModemFMTXLevel();
 	bool trace                   = m_conf.getModemTrace();
 	bool debug                   = m_conf.getModemDebug();
 	unsigned int colorCode       = m_conf.getDMRColorCode();
 	bool lowDeviation            = m_conf.getFusionLowDeviation();
-	unsigned int txHang          = m_conf.getFusionTXHang();
+	unsigned int ysfTXHang       = m_conf.getFusionTXHang();
+	unsigned int p25TXHang       = m_conf.getP25TXHang();
+	unsigned int nxdnTXHang      = m_conf.getNXDNTXHang();
 	unsigned int rxFrequency     = m_conf.getRXFrequency();
 	unsigned int txFrequency     = m_conf.getTXFrequency();
 	unsigned int pocsagFrequency = m_conf.getPOCSAGFrequency();
@@ -1162,6 +1195,7 @@ bool CMMDVMHost::createModem()
 	int rxDCOffset               = m_conf.getModemRXDCOffset();
 	int txDCOffset               = m_conf.getModemTXDCOffset();
 	float rfLevel                = m_conf.getModemRFLevel();
+	bool useCOSAsLockout         = m_conf.getModemUseCOSAsLockout();
 
 	LogInfo("Modem Parameters");
 	LogInfo("    Port: %s", port.c_str());
@@ -1186,16 +1220,88 @@ bool CMMDVMHost::createModem()
 	LogInfo("    P25 TX Level: %.1f%%", p25TXLevel);
 	LogInfo("    NXDN TX Level: %.1f%%", nxdnTXLevel);
 	LogInfo("    POCSAG TX Level: %.1f%%", pocsagTXLevel);
-	LogInfo("    RX Frequency: %uHz (%uHz)", rxFrequency, rxFrequency + rxOffset);
+	LogInfo("    FM TX Level: %.1f%%", fmTXLevel);
 	LogInfo("    TX Frequency: %uHz (%uHz)", txFrequency, txFrequency + txOffset);
+	LogInfo("    Use COS as Lockout: %s", useCOSAsLockout ? "yes" : "no");
 
-	m_modem = CModem::createModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, trace, debug);
-	m_modem->setSerialParams(protocol,address);
-	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_pocsagEnabled);
-	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel);
+	m_modem = CModem::createModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, useCOSAsLockout, trace, debug);
+	m_modem->setSerialParams(protocol, address);
+	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_pocsagEnabled, m_fmEnabled);
+	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, fmTXLevel);
 	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel, pocsagFrequency);
 	m_modem->setDMRParams(colorCode);
-	m_modem->setYSFParams(lowDeviation, txHang);
+	m_modem->setYSFParams(lowDeviation, ysfTXHang);
+	m_modem->setP25Params(p25TXHang);
+	m_modem->setNXDNParams(nxdnTXHang);
+
+	if (m_fmEnabled) {
+		std::string  callsign           = m_conf.getFMCallsign();
+		unsigned int callsignSpeed      = m_conf.getFMCallsignSpeed();
+		unsigned int callsignFrequency  = m_conf.getFMCallsignFrequency();
+		unsigned int callsignTime       = m_conf.getFMCallsignTime();
+		unsigned int callsignHoldoff    = m_conf.getFMCallsignHoldoff();
+		float        callsignHighLevel  = m_conf.getFMCallsignHighLevel();
+		float        callsignLowLevel   = m_conf.getFMCallsignLowLevel();
+		bool         callsignAtStart    = m_conf.getFMCallsignAtStart();
+		bool         callsignAtEnd      = m_conf.getFMCallsignAtEnd();
+		bool         callsignAtLatch    = m_conf.getFMCallsignAtLatch();
+		std::string  rfAck              = m_conf.getFMRFAck();
+		std::string  extAck             = m_conf.getFMExtAck();
+		unsigned int ackSpeed           = m_conf.getFMAckSpeed();
+		unsigned int ackFrequency       = m_conf.getFMAckFrequency();
+		unsigned int ackMinTime         = m_conf.getFMAckMinTime();
+		unsigned int ackDelay           = m_conf.getFMAckDelay();
+		float        ackLevel           = m_conf.getFMAckLevel();
+		unsigned int timeout            = m_conf.getFMTimeout();
+		float        timeoutLevel       = m_conf.getFMTimeoutLevel();
+		float        ctcssFrequency     = m_conf.getFMCTCSSFrequency();
+		unsigned int ctcssHighThreshold = m_conf.getFMCTCSSHighThreshold();
+		unsigned int ctcssLowThreshold  = m_conf.getFMCTCSSLowThreshold();
+		float        ctcssLevel         = m_conf.getFMCTCSSLevel();
+		unsigned int kerchunkTime       = m_conf.getFMKerchunkTime();
+		unsigned int hangTime           = m_conf.getFMHangTime();
+		unsigned int accessMode         = m_conf.getFMAccessMode();
+		bool         cosInvert          = m_conf.getFMCOSInvert();
+		unsigned int rfAudioBoost       = m_conf.getFMRFAudioBoost();
+		float        maxDevLevel        = m_conf.getFMMaxDevLevel();
+		unsigned int extAudioBoost      = m_conf.getFMExtAudioBoost();
+
+		LogInfo("FM Parameters");
+		LogInfo("    Callsign: %s", callsign.c_str());
+		LogInfo("    Callsign Speed: %uWPM", callsignSpeed);
+		LogInfo("    Callsign Frequency: %uHz", callsignFrequency);
+		LogInfo("    Callsign Time: %umins", callsignTime);
+		LogInfo("    Callsign Holdoff: 1/%u", callsignHoldoff);
+		LogInfo("    Callsign High Level: %.1f%%", callsignHighLevel);
+		LogInfo("    Callsign Low Level: %.1f%%", callsignLowLevel);
+		LogInfo("    Callsign At Start: %s", callsignAtStart ? "yes" : "no");
+		LogInfo("    Callsign At End: %s", callsignAtEnd ? "yes" : "no");
+		LogInfo("    Callsign At Latch: %s", callsignAtLatch ? "yes" : "no");
+		LogInfo("    RF Ack: %s", rfAck.c_str());
+		// LogInfo("    Ext. Ack: %s", extAck.c_str());
+		LogInfo("    Ack Speed: %uWPM", ackSpeed);
+		LogInfo("    Ack Frequency: %uHz", ackFrequency);
+		LogInfo("    Ack Min Time: %us", ackMinTime);
+		LogInfo("    Ack Delay: %ums", ackDelay);
+		LogInfo("    Ack Level: %.1f%%", ackLevel);
+		LogInfo("    Timeout: %us", timeout);
+		LogInfo("    Timeout Level: %.1f%%", timeoutLevel);
+		LogInfo("    CTCSS Frequency: %.1fHz", ctcssFrequency);
+		LogInfo("    CTCSS High Threshold: %u", ctcssHighThreshold);
+		LogInfo("    CTCSS Low Threshold: %u", ctcssLowThreshold);
+		LogInfo("    CTCSS Level: %.1f%%", ctcssLevel);
+		LogInfo("    Kerchunk Time: %us", kerchunkTime);
+		LogInfo("    Hang Time: %us", hangTime);
+		LogInfo("    Access Mode: %u", accessMode);
+		LogInfo("    COS Invert: %s", cosInvert ? "yes" : "no");
+		LogInfo("    RF Audio Boost: x%u", rfAudioBoost);
+		LogInfo("    Max. Deviation Level: %.1f%%", maxDevLevel);
+		// LogInfo("    Ext. Audio Boost: x%u", extAudioBoost);
+
+		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd, callsignAtLatch);
+		m_modem->setFMAckParams(rfAck, ackSpeed, ackFrequency, ackMinTime, ackDelay, ackLevel);
+		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssHighThreshold, ctcssLowThreshold, ctcssLevel, kerchunkTime, hangTime, accessMode, cosInvert, rfAudioBoost, maxDevLevel);
+	}
 
 	bool ret = m_modem->open();
 	if (!ret) {
@@ -1248,8 +1354,12 @@ bool CMMDVMHost::createDMRNetwork()
 	bool slot2           = m_conf.getDMRNetworkSlot2();
 	HW_TYPE hwType       = m_modem->getHWType();
 	m_dmrNetModeHang     = m_conf.getDMRNetworkModeHang();
+	std::string options  = m_conf.getDMRNetworkOptions();
+
+	std::string type = m_conf.getDMRNetworkType();
 
 	LogInfo("DMR Network Parameters");
+	LogInfo("    Type: %s", type.c_str());
 	LogInfo("    Address: %s", address.c_str());
 	LogInfo("    Port: %u", port);
 	if (local > 0U)
@@ -1261,62 +1371,53 @@ bool CMMDVMHost::createDMRNetwork()
 	LogInfo("    Slot 2: %s", slot2 ? "enabled" : "disabled");
 	LogInfo("    Mode Hang: %us", m_dmrNetModeHang);
 
-	m_dmrNetwork = new CDMRNetwork(address, port, local, id, password, m_duplex, VERSION, debug, slot1, slot2, hwType);
-
-	std::string options = m_conf.getDMRNetworkOptions();
-	if (!options.empty()) {
-		LogInfo("    Options: %s", options.c_str());
-		m_dmrNetwork->setOptions(options);
-	}
+	if (type == "Direct")
+		m_dmrNetwork = new CDMRDirectNetwork(address, port, local, id, password, m_duplex, VERSION, slot1, slot2, hwType, debug);
+	else
+		m_dmrNetwork = new CDMRGatewayNetwork(address, port, local, id, m_duplex, VERSION, slot1, slot2, hwType, debug);
 
 	unsigned int rxFrequency = m_conf.getRXFrequency();
 	unsigned int txFrequency = m_conf.getTXFrequency();
 	unsigned int power       = m_conf.getPower();
 	unsigned int colorCode   = m_conf.getDMRColorCode();
-	float latitude           = m_conf.getLatitude();
-	float longitude          = m_conf.getLongitude();
-	int height               = m_conf.getHeight();
-	std::string location     = m_conf.getLocation();
-	std::string description  = m_conf.getDescription();
-	std::string url          = m_conf.getURL();
 
 	LogInfo("Info Parameters");
 	LogInfo("    Callsign: %s", m_callsign.c_str());
 	LogInfo("    RX Frequency: %uHz", rxFrequency);
 	LogInfo("    TX Frequency: %uHz", txFrequency);
 	LogInfo("    Power: %uW", power);
-	LogInfo("    Latitude: %fdeg N", latitude);
-	LogInfo("    Longitude: %fdeg E", longitude);
-	LogInfo("    Height: %um", height);
-	LogInfo("    Location: \"%s\"", location.c_str());
-	LogInfo("    Description: \"%s\"", description.c_str());
-	LogInfo("    URL: \"%s\"", url.c_str());
 
-	m_dmrNetwork->setConfig(m_callsign, rxFrequency, txFrequency, power, colorCode, latitude, longitude, height, location, description, url);
+	if (type == "Direct") {
+		float latitude          = m_conf.getLatitude();
+		float longitude         = m_conf.getLongitude();
+		int height              = m_conf.getHeight();
+		std::string location    = m_conf.getLocation();
+		std::string description = m_conf.getDescription();
+		std::string url         = m_conf.getURL();
+
+		LogInfo("    Latitude: %fdeg N", latitude);
+		LogInfo("    Longitude: %fdeg E", longitude);
+		LogInfo("    Height: %um", height);
+		LogInfo("    Location: \"%s\"", location.c_str());
+		LogInfo("    Description: \"%s\"", description.c_str());
+		LogInfo("    URL: \"%s\"", url.c_str());
+
+		m_dmrNetwork->setConfig(m_callsign, rxFrequency, txFrequency, power, colorCode, latitude, longitude, height, location, description, url);
+	} else {
+		m_dmrNetwork->setConfig(m_callsign, rxFrequency, txFrequency, power, colorCode, 0.0F, 0.0F, 0, "", "", "");
+	}
+	
+	if (!options.empty()) {
+		LogInfo("    Options: %s", options.c_str());
+
+		m_dmrNetwork->setOptions(options);
+	}
 
 	bool ret = m_dmrNetwork->open();
 	if (!ret) {
 		delete m_dmrNetwork;
 		m_dmrNetwork = NULL;
 		return false;
-	}
-
-	bool mobileGPSEnabled = m_conf.getMobileGPSEnabled();
-	if (mobileGPSEnabled) {
-		std::string mobileGPSAddress = m_conf.getMobileGPSAddress();
-		unsigned int mobileGPSPort   = m_conf.getMobileGPSPort();
-
-		LogInfo("Mobile GPS Parameters");
-		LogInfo("    Address: %s", mobileGPSAddress.c_str());
-		LogInfo("    Port: %u", mobileGPSPort);
-
-		m_mobileGPS = new CMobileGPS(address, port, m_dmrNetwork);
-
-		ret = m_mobileGPS->open();
-		if (!ret) {
-			delete m_mobileGPS;
-			m_mobileGPS = NULL;
-		}
 	}
 
 	m_dmrNetwork->enable(true);
@@ -1326,12 +1427,12 @@ bool CMMDVMHost::createDMRNetwork()
 
 bool CMMDVMHost::createYSFNetwork()
 {
-	std::string myAddress  = m_conf.getFusionNetworkMyAddress();
-	unsigned int myPort    = m_conf.getFusionNetworkMyPort();
+	std::string myAddress      = m_conf.getFusionNetworkMyAddress();
+	unsigned int myPort        = m_conf.getFusionNetworkMyPort();
 	std::string gatewayAddress = m_conf.getFusionNetworkGatewayAddress();
 	unsigned int gatewayPort   = m_conf.getFusionNetworkGatewayPort();
-	m_ysfNetModeHang       = m_conf.getFusionNetworkModeHang();
-	bool debug             = m_conf.getFusionNetworkDebug();
+	m_ysfNetModeHang           = m_conf.getFusionNetworkModeHang();
+	bool debug                 = m_conf.getFusionNetworkDebug();
 
 	LogInfo("System Fusion Network Parameters");
 	LogInfo("    Local Address: %s", myAddress.c_str());
@@ -1384,6 +1485,7 @@ bool CMMDVMHost::createP25Network()
 
 bool CMMDVMHost::createNXDNNetwork()
 {
+	std::string protocol       = m_conf.getNXDNNetworkProtocol();
 	std::string gatewayAddress = m_conf.getNXDNGatewayAddress();
 	unsigned int gatewayPort   = m_conf.getNXDNGatewayPort();
 	std::string localAddress   = m_conf.getNXDNLocalAddress();
@@ -1392,13 +1494,17 @@ bool CMMDVMHost::createNXDNNetwork()
 	bool debug                 = m_conf.getNXDNNetworkDebug();
 
 	LogInfo("NXDN Network Parameters");
+	LogInfo("    Protocol: %s", protocol.c_str());
 	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
 	LogInfo("    Gateway Port: %u", gatewayPort);
 	LogInfo("    Local Address: %s", localAddress.c_str());
 	LogInfo("    Local Port: %u", localPort);
 	LogInfo("    Mode Hang: %us", m_nxdnNetModeHang);
 
-	m_nxdnNetwork = new CNXDNNetwork(localAddress, localPort, gatewayAddress, gatewayPort, debug);
+	if (protocol == "Kenwood")
+		m_nxdnNetwork = new CNXDNKenwoodNetwork(localAddress, localPort, gatewayAddress, gatewayPort, debug);
+	else
+		m_nxdnNetwork = new CNXDNIcomNetwork(localAddress, localPort, gatewayAddress, gatewayPort, debug);
 
 	bool ret = m_nxdnNetwork->open();
 	if (!ret) {
@@ -1450,6 +1556,7 @@ void CMMDVMHost::readParams()
 	m_p25Enabled    = m_conf.getP25Enabled();
 	m_nxdnEnabled   = m_conf.getNXDNEnabled();
 	m_pocsagEnabled = m_conf.getPOCSAGEnabled();
+	m_fmEnabled     = m_conf.getFMEnabled();
 	m_duplex        = m_conf.getDuplex();
 	m_callsign      = m_conf.getCallsign();
 	m_id            = m_conf.getId();
@@ -1466,6 +1573,7 @@ void CMMDVMHost::readParams()
 	LogInfo("    P25: %s", m_p25Enabled ? "enabled" : "disabled");
 	LogInfo("    NXDN: %s", m_nxdnEnabled ? "enabled" : "disabled");
 	LogInfo("    POCSAG: %s", m_pocsagEnabled ? "enabled" : "disabled");
+	LogInfo("    FM: %s", m_fmEnabled ? "enabled" : "disabled");
 }
 
 void CMMDVMHost::setMode(unsigned char mode)
@@ -1682,8 +1790,45 @@ void CMMDVMHost::setMode(unsigned char mode)
 		createLockFile("POCSAG");
 		break;
 
+	case MODE_FM:
+		if (m_dstarNetwork != NULL)
+			m_dstarNetwork->enable(false);
+		if (m_dmrNetwork != NULL)
+			m_dmrNetwork->enable(false);
+		if (m_ysfNetwork != NULL)
+			m_ysfNetwork->enable(false);
+		if (m_p25Network != NULL)
+			m_p25Network->enable(false);
+		if (m_nxdnNetwork != NULL)
+			m_nxdnNetwork->enable(false);
+		if (m_pocsagNetwork != NULL)
+			m_pocsagNetwork->enable(false);
+		if (m_dstar != NULL)
+			m_dstar->enable(false);
+		if (m_dmr != NULL)
+			m_dmr->enable(false);
+		if (m_ysf != NULL)
+			m_ysf->enable(false);
+		if (m_p25 != NULL)
+			m_p25->enable(false);
+		if (m_nxdn != NULL)
+			m_nxdn->enable(false);
+		if (m_pocsag != NULL)
+			m_pocsag->enable(false);
+		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
+			m_modem->writeDMRStart(false);
+			m_dmrTXTimer.stop();
+		}
+		if (m_ump != NULL)
+			m_ump->setMode(MODE_FM);
+		m_display->setFM();
+		m_mode = MODE_FM;
+		m_modeTimer.stop();
+		m_cwIdTimer.stop();
+		createLockFile("FM");
+		break;
+
 	case MODE_LOCKOUT:
-		LogMessage("Mode set to Lockout");
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(false);
 		if (m_dmrNetwork != NULL)
@@ -1863,6 +2008,78 @@ void CMMDVMHost::remoteControl()
 			if (m_nxdn != NULL)
 				processModeCommand(MODE_NXDN, m_nxdnRFModeHang);
 			break;
+		case RCD_MODE_FM:
+			if (m_fmEnabled != false)
+				processModeCommand(MODE_FM, 0);
+			break;
+		case RCD_ENABLE_DSTAR:
+			if (m_dstar != NULL && m_dstarEnabled==false)
+				processEnableCommand(m_dstarEnabled, true);
+                        if (m_dstarNetwork != NULL)
+                                m_dstarNetwork->enable(true);
+			break;
+		case RCD_ENABLE_DMR:
+			if (m_dmr != NULL && m_dmrEnabled==false)
+				processEnableCommand(m_dmrEnabled, true);
+                        if (m_dmrNetwork != NULL)
+                                m_dmrNetwork->enable(true);
+			break;
+		case RCD_ENABLE_YSF:
+			if (m_ysf != NULL && m_ysfEnabled==false)
+				processEnableCommand(m_ysfEnabled, true);
+                        if (m_ysfNetwork != NULL)
+                                m_ysfNetwork->enable(true);
+			break;
+		case RCD_ENABLE_P25:
+			if (m_p25 != NULL && m_p25Enabled==false)
+				processEnableCommand(m_p25Enabled, true);
+                       if (m_p25Network != NULL)
+                                m_p25Network->enable(true);
+			break;
+		case RCD_ENABLE_NXDN:
+			if (m_nxdn != NULL && m_nxdnEnabled==false)
+				processEnableCommand(m_nxdnEnabled, true);
+                        if (m_nxdnNetwork != NULL)
+                                m_nxdnNetwork->enable(true);
+			break;
+		case RCD_ENABLE_FM:
+			if (m_fmEnabled==false)
+				processEnableCommand(m_fmEnabled, true);
+			break;
+		case RCD_DISABLE_DSTAR:
+			if (m_dstar != NULL && m_dstarEnabled==true)
+				processEnableCommand(m_dstarEnabled, false);
+                        if (m_dstarNetwork != NULL)
+                                m_dstarNetwork->enable(false);
+			break;
+		case RCD_DISABLE_DMR:
+			if (m_dmr != NULL && m_dmrEnabled==true)
+				processEnableCommand(m_dmrEnabled, false);
+                        if (m_dmrNetwork != NULL)
+                                m_dmrNetwork->enable(false);
+			break;
+		case RCD_DISABLE_YSF:
+			if (m_ysf != NULL && m_ysfEnabled==true)
+				processEnableCommand(m_ysfEnabled, false);
+                        if (m_ysfNetwork != NULL)
+                                m_ysfNetwork->enable(false);
+			break;
+		case RCD_DISABLE_P25:
+			if (m_p25 != NULL && m_p25Enabled==true)
+				processEnableCommand(m_p25Enabled, false);
+                        if (m_p25Network != NULL)
+                                m_p25Network->enable(false);
+			break;
+		case RCD_DISABLE_NXDN:
+			if (m_nxdn != NULL && m_nxdnEnabled==true)
+				processEnableCommand(m_nxdnEnabled, false);
+                        if (m_nxdnNetwork != NULL)
+                                m_nxdnNetwork->enable(false);
+			break;
+		case RCD_DISABLE_FM:
+			if (m_fmEnabled == true)
+				processEnableCommand(m_fmEnabled, false);
+			break;
 		case RCD_PAGE:
 			if (m_pocsag != NULL) {
 				unsigned int ric = m_remoteControl->getArgUInt(0U);
@@ -1874,6 +2091,23 @@ void CMMDVMHost::remoteControl()
 				}
 				m_pocsag->sendPage(ric, text);
 			}
+			break;
+		case RCD_CW:
+			setMode(MODE_IDLE); // Force the modem to go idle so that we can send the CW text.
+			if (!m_modem->hasTX()){
+				std::string cwtext;
+				for (unsigned int i = 0U; i < m_remoteControl->getArgCount(); i++) {
+					if (i > 0U)
+						cwtext += " ";
+					cwtext += m_remoteControl->getArgString(i);
+				}
+				m_display->writeCW();
+				m_modem->sendCWId(cwtext);
+			}
+                       break;
+		case RCD_RELOAD:
+			m_reload = true;
+			break;
 		default:
 			break;
 	}
@@ -1895,4 +2129,13 @@ void CMMDVMHost::processModeCommand(unsigned char mode, unsigned int timeout)
 	}
 
 	setMode(mode);
+}
+
+void CMMDVMHost::processEnableCommand(bool& mode, bool enabled)
+{
+	LogDebug("Setting mode current=%s new=%s",mode ? "true" : "false",enabled ? "true" : "false");
+	mode=enabled;
+	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_pocsagEnabled, m_fmEnabled);
+	if (!m_modem->writeConfig())
+		LogError("Cannot write Config to MMDVM");
 }
