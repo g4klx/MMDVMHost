@@ -21,7 +21,7 @@
 
 #include "Modem.h"
 
-#include "SerialPort.h"
+#include "MMDVMModemPort.h"
 #include "RingBuffer.h"
 #include "Defines.h"
 #include "Timer.h"
@@ -44,10 +44,10 @@ enum SERIAL_STATE {
 
 class CMMDVMModem : public IModem {
 public:
-	CMMDVMModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug);
+	CMMDVMModem(bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug);
 	virtual ~CMMDVMModem();
 
-	virtual void setSerialParams(const std::string& protocol, unsigned int address, unsigned int speed);
+	virtual void setModem(IMMDVMModemPort* port);
 	virtual void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency);
 	virtual void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool m17Enabled, bool pocsagEnabled, bool fmEnabled, bool ax25Enabled);
 	virtual void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float m17TXLevel, float pocsagLevel, float fmTXLevel, float ax25TXLevel);
@@ -136,7 +136,6 @@ public:
 	virtual void close();
 
 private:
-	std::string                m_port;
 	unsigned int               m_protocolVersion;
 	unsigned int               m_dmrColorCode;
 	bool                       m_ysfLoDev;
@@ -179,7 +178,7 @@ private:
 	bool                       m_ax25Enabled;
 	int                        m_rxDCOffset;
 	int                        m_txDCOffset;
-	ISerialPort*               m_serial;
+	IMMDVMModemPort*           m_port;
 	unsigned char*             m_buffer;
 	unsigned int               m_length;
 	unsigned int               m_offset;

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -70,10 +70,14 @@ public:
   unsigned int getNXDNIdLookupTime() const;
 
   // The Modem section
-  std::string  getModemPort() const;
   std::string  getModemProtocol() const;
-  unsigned int getModemSpeed() const;
-  unsigned int getModemAddress() const;
+  std::string  getModemUARTPort() const;
+  unsigned int getModemUARTSpeed() const;
+  std::string  getModemI2CPort() const;
+  unsigned int getModemI2CAddress() const;
+  std::string  getModemModemAddress() const;
+  unsigned int getModemModemPort() const;
+  unsigned int getModemLocalPort() const;
   bool         getModemRXInvert() const;
   bool         getModemTXInvert() const;
   bool         getModemPTTInvert() const;
@@ -391,10 +395,14 @@ private:
   std::string  m_nxdnIdLookupFile;
   unsigned int m_nxdnIdLookupTime;
 
-  std::string  m_modemPort;
   std::string  m_modemProtocol;
-  unsigned int m_modemSpeed;
-  unsigned int m_modemAddress;
+  std::string  m_modemUARTPort;
+  unsigned int m_modemUARTSpeed;
+  std::string  m_modemI2CPort;
+  unsigned int m_modemI2CAddress;
+  std::string  m_modemModemAddress;
+  unsigned int m_modemModemPort;
+  unsigned int m_modemLocalPort;
   bool         m_modemRXInvert;
   bool         m_modemTXInvert;
   bool         m_modemPTTInvert;

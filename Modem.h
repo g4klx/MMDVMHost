@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2011-2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2011-2018,2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 #define	MODEM_H
 
 #include "Defines.h"
+#include "MMDVMModemPort.h"
 
 #include <string>
 
@@ -27,7 +28,7 @@ class IModem {
 public:
 	virtual ~IModem() = 0;
 
-	virtual void setSerialParams(const std::string& protocol, unsigned int address, unsigned int speed) = 0;
+	virtual void setModem(IMMDVMModemPort* port) = 0;
 	virtual void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency) = 0;
 	virtual void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool m17ENabled, bool pocsagEnabled, bool fmEnabled, bool ax25Enabled) = 0;
 	virtual void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float m17TXLevel, float pocsagLevel, float fmTXLevel, float ax25TXLevel) = 0;

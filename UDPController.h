@@ -1,6 +1,5 @@
 /*
- *   Copyright (C) 2002-2004,2007-2009,2011-2013,2015-2017,2020,2021 by Jonathan Naylor G4KLX
- *   Copyright (C) 1999-2001 by Thomas Sailor HB9JNX
+ *   Copyright (C) 2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,20 +16,18 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef I2CController_H
-#define I2CController_H
-
-#if defined(__linux__)
+#ifndef UDPController_H
+#define UDPController_H
 
 #include "MMDVMModemPort.h"
-#include "SerialPort.h"
+#include "UDPSocket.h"
 
 #include <string>
 
-class CI2CController : public ISerialPort, public IMMDVMModemPort {
+class CUDPController : public IMMDVMModemPort {
 public:
-	CI2CController(const std::string& device, unsigned int address = 0x22U);
-	virtual ~CI2CController();
+	CUDPController(const std::string& modemAddress, unsigned int modemPort, unsigned int localPort);
+	virtual ~CUDPController();
 
 	virtual bool open();
 
@@ -40,12 +37,13 @@ public:
 
 	virtual void close();
 
-private:
-	std::string  m_device;
-	unsigned int m_address;
-	int          m_fd;
+protected:
+	CUDPSocket       m_socket;
+	sockaddr_storage m_addr;
+	unsigned int     m_addrLen;
+	unsigned char*   m_buffer;
+	unsigned int     m_length;
+	unsigned int     m_offset;
 };
-
-#endif
 
 #endif

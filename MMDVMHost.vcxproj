@@ -203,6 +203,7 @@
     <ClInclude Include="M17Network.h" />
     <ClInclude Include="M17Utils.h" />
     <ClInclude Include="MMDVMHost.h" />
+    <ClInclude Include="MMDVMModemPort.h" />
     <ClInclude Include="Modem.h" />
     <ClInclude Include="ModemSerialPort.h" />
     <ClInclude Include="Mutex.h" />
@@ -252,6 +253,7 @@
     <ClInclude Include="TFTSurenoo.h" />
     <ClInclude Include="Thread.h" />
     <ClInclude Include="Timer.h" />
+    <ClInclude Include="UDPController.h" />
     <ClInclude Include="UDPSocket.h" />
     <ClInclude Include="UserDB.h" />
     <ClInclude Include="UserDBentry.h" />
@@ -311,6 +313,7 @@
     <ClCompile Include="M17Network.cpp" />
     <ClCompile Include="M17Utils.cpp" />
     <ClCompile Include="MMDVMHost.cpp" />
+    <ClCompile Include="MMDVMModemPort.cpp" />
     <ClCompile Include="Modem.cpp" />
     <ClCompile Include="ModemSerialPort.cpp" />
     <ClCompile Include="Mutex.cpp" />
@@ -356,6 +359,7 @@
     <ClCompile Include="TFTSurenoo.cpp" />
     <ClCompile Include="Thread.cpp" />
     <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="UDPController.cpp" />
     <ClCompile Include="UDPSocket.cpp" />
     <ClCompile Include="UserDB.cpp" />
     <ClCompile Include="UserDBentry.cpp" />

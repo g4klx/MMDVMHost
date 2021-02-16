@@ -23,6 +23,7 @@
 #include "NXDNIcomNetwork.h"
 #include "RSSIInterpolator.h"
 #include "UARTController.h"
+#include "UDPController.h"
 #include "MMDVMModem.h"
 #include "NullModem.h"
 #include "Version.h"
@@ -1315,10 +1316,14 @@ int CMMDVMHost::run()
 
 bool CMMDVMHost::createModem()
 {
-	std::string port             = m_conf.getModemPort();
-	std::string protocol	     = m_conf.getModemProtocol();
-	unsigned int speed           = m_conf.getModemSpeed();
-	unsigned int address	     = m_conf.getModemAddress();
+	std::string protocol         = m_conf.getModemProtocol();
+	std::string uartPort         = m_conf.getModemUARTPort();
+	unsigned int uartSpeed       = m_conf.getModemUARTSpeed();
+	std::string i2cPort          = m_conf.getModemI2CPort();
+	unsigned int i2cAddress      = m_conf.getModemI2CAddress();
+	std::string modemAddress     = m_conf.getModemModemAddress();
+	unsigned int modemPort       = m_conf.getModemModemPort();
+	unsigned int localPort       = m_conf.getModemLocalPort();
 	bool rxInvert                = m_conf.getModemRXInvert();
 	bool txInvert                = m_conf.getModemTXInvert();
 	bool pttInvert               = m_conf.getModemPTTInvert();
@@ -1358,14 +1363,23 @@ bool CMMDVMHost::createModem()
 	bool useCOSAsLockout         = m_conf.getModemUseCOSAsLockout();
 
 	LogInfo("Modem Parameters");
-	LogInfo("    Port: %s", port.c_str());
-#if defined(__linux__)
 	LogInfo("    Protocol: %s", protocol.c_str());
-	if (protocol == "i2c")
-		LogInfo("    I2C Address: %02X", address);
-	else
+
+	if (protocol == "uart") {
+		LogInfo("    UART Port: %s", uartPort.c_str());
+		LogInfo("    UART Speed: %u", uartSpeed);
+	} else if (protocol == "udp") {
+		LogInfo("    Modem Address: %s", modemAddress.c_str());
+		LogInfo("    Modem Port: %u", modemPort);
+		LogInfo("    Local Port: %u", localPort);
+	}
+#if defined(__linux__)
+	else if (protocol == "i2c") {
+		LogInfo("    I2C Port: %s", i2cPort.c_str());
+		LogInfo("    I2C Address: %02X", i2cAddress);
+	}
 #endif
-	LogInfo("    Speed: %u", speed);
+
 	LogInfo("    RX Invert: %s", rxInvert ? "yes" : "no");
 	LogInfo("    TX Invert: %s", txInvert ? "yes" : "no");
 	LogInfo("    PTT Invert: %s", pttInvert ? "yes" : "no");
@@ -1390,11 +1404,24 @@ bool CMMDVMHost::createModem()
 	LogInfo("    TX Frequency: %uHz (%uHz)", txFrequency, txFrequency + txOffset);
 	LogInfo("    Use COS as Lockout: %s", useCOSAsLockout ? "yes" : "no");
 
-	if (port == "NullModem")
+	if (protocol == "null")
 		m_modem = new CNullModem;
 	else
-		m_modem = new CMMDVMModem(port, m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, useCOSAsLockout, trace, debug);
-	m_modem->setSerialParams(protocol, address, speed);
+		m_modem = new CMMDVMModem(m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, useCOSAsLockout, trace, debug);
+
+	IMMDVMModemPort* modem = NULL;
+	if (protocol == "uart")
+		modem = new CUARTController(uartPort, uartSpeed, true);
+	else if (protocol == "udp")
+		modem = new CUDPController(modemAddress, modemPort, localPort);
+#if defined(__linux__)
+	else if (protocol == "i2c")
+		modem = new CI2CController(i2cPort, i2cAddress);
+#endif
+	else
+		return false;
+
+	m_modem->setModem(modem);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_m17Enabled, m_pocsagEnabled, m_fmEnabled, m_ax25Enabled);
 	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, m17TXLevel, pocsagTXLevel, fmTXLevel, ax25TXLevel);
 	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel, pocsagFrequency);
