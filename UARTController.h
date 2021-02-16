@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2002-2004,2007-2009,2011-2013,2015-2017,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2002-2004,2007-2009,2011-2013,2015-2017,2020,2021 by Jonathan Naylor G4KLX
  *   Copyright (C) 1999-2001 by Thomas Sailor HB9JNX
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef SerialController_H
-#define SerialController_H
+#ifndef UARTController_H
+#define UARTController_H
 
 #include "SerialPort.h"
 
@@ -28,10 +28,10 @@
 #include <windows.h>
 #endif
 
-class CSerialController : public ISerialPort {
+class CUARTController : public ISerialPort {
 public:
-	CSerialController(const std::string& device, unsigned int speed, bool assertRTS = false);
-	virtual ~CSerialController();
+	CUARTController(const std::string& device, unsigned int speed, bool assertRTS = false);
+	virtual ~CUARTController();
 
 	virtual bool open();
 
@@ -46,7 +46,7 @@ public:
 #endif
 
 protected:
-	CSerialController(unsigned int speed, bool assertRTS = false);
+	CUARTController(unsigned int speed, bool assertRTS = false);
 
 	std::string    m_device;
 	unsigned int   m_speed;

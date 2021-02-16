@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018,2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 #include "Display.h"
 #include "Defines.h"
-#include "SerialController.h"
+#include "UARTController.h"
 #include "ModemSerialPort.h"
 #include "NullDisplay.h"
 #include "TFTSurenoo.h"
@@ -556,7 +556,7 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, IModem* modem)
 		if (port == "modem")
 			serial = new IModemSerialPort(modem);
 		else
-			serial = new CSerialController(port, 115200U);
+			serial = new CUARTController(port, 115200U);
 
 		display = new CTFTSurenoo(conf.getCallsign(), dmrid, serial, brightness, conf.getDuplex());
 	} else if (type == "Nextion") {
@@ -605,7 +605,7 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, IModem* modem)
 				baudrate = 115200U;
 			
 			LogInfo("    Display baudrate: %u ", baudrate);
-			ISerialPort* serial = new CSerialController(port, baudrate);
+			ISerialPort* serial = new CUARTController(port, baudrate);
 			display = new CNextion(conf.getCallsign(), dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF);
 		}
 	} else if (type == "LCDproc") {

@@ -74,9 +74,6 @@
     <ClInclude Include="RS129.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SerialController.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="StopWatch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -332,9 +329,6 @@
     <ClInclude Include="PseudoTTYController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SerialModem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DMRDirectNetwork.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -342,6 +336,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SHA256.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MMDVMModem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UARTController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -395,9 +395,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RS129.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SerialController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StopWatch.cpp">
@@ -634,9 +631,6 @@
     <ClCompile Include="PseudoTTYController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SerialModem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DMRDirectNetwork.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -644,6 +638,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SHA256.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MMDVMModem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UARTController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

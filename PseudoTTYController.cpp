@@ -1,6 +1,5 @@
 /*
- *   Copyright (C) 2002-2004,2007-2011,2013,2014-2017,2019,2020 by Jonathan Naylor G4KLX
- *   Copyright (C) 1999-2001 by Thomas Sailor HB9JNX
+ *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -37,7 +36,7 @@
 
 
 CPseudoTTYController::CPseudoTTYController(const std::string& symlink, unsigned int speed, bool assertRTS) :
-CSerialController(speed, assertRTS),
+CUARTController(speed, assertRTS),
 m_symlink(symlink)
 {
 }
@@ -77,10 +76,9 @@ bool CPseudoTTYController::open()
 
 void CPseudoTTYController::close()
 {
-	CSerialController::close();
+	CUARTController::close();
 
 	::unlink(m_symlink.c_str());
 }
 
 #endif
-

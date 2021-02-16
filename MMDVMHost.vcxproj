@@ -243,8 +243,8 @@
     <ClInclude Include="RS241213.h" />
     <ClInclude Include="RSSIInterpolator.h" />
     <ClInclude Include="NXDNSACCH.h" />
-    <ClInclude Include="SerialController.h" />
-    <ClInclude Include="SerialModem.h" />
+    <ClInclude Include="UARTController.h" />
+    <ClInclude Include="MMDVMModem.h" />
     <ClInclude Include="SerialPort.h" />
     <ClInclude Include="SHA256.h" />
     <ClInclude Include="StopWatch.h" />
@@ -347,8 +347,8 @@
     <ClCompile Include="RS129.cpp" />
     <ClCompile Include="RS241213.cpp" />
     <ClCompile Include="RSSIInterpolator.cpp" />
-    <ClCompile Include="SerialController.cpp" />
-    <ClCompile Include="SerialModem.cpp" />
+    <ClCompile Include="UARTController.cpp" />
+    <ClCompile Include="MMDVMModem.cpp" />
     <ClCompile Include="SerialPort.cpp" />
     <ClCompile Include="SHA256.cpp" />
     <ClCompile Include="StopWatch.cpp" />

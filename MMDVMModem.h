@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2011-2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2011-2018,2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef	SERIALMODEM_H
-#define	SERIALMODEM_H
+#ifndef	MMDVMMODEM_H
+#define	MMDVMMODEM_H
 
 #include "Modem.h"
 
@@ -42,10 +42,10 @@ enum SERIAL_STATE {
 	SS_DATA
 };
 
-class CSerialModem : public IModem {
+class CMMDVMModem : public IModem {
 public:
-	CSerialModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug);
-	virtual ~CSerialModem();
+	CMMDVMModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug);
+	virtual ~CMMDVMModem();
 
 	virtual void setSerialParams(const std::string& protocol, unsigned int address, unsigned int speed);
 	virtual void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency);

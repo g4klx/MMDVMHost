@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2011-2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2011-2018,2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "SerialController.h"
+#include "UARTController.h"
 #if defined(__linux__)
 #include "I2CController.h"
 #endif
@@ -29,7 +29,7 @@
 #include "POCSAGDefines.h"
 #include "M17Defines.h"
 #include "Thread.h"
-#include "SerialModem.h"
+#include "MMDVMModem.h"
 #include "NullModem.h"
 #include "Utils.h"
 #include "Log.h"
@@ -114,7 +114,7 @@ const unsigned int MAX_RESPONSES = 30U;
 const unsigned int BUFFER_LENGTH = 2000U;
 
 
-CSerialModem::CSerialModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug) :
+CMMDVMModem::CMMDVMModem(const std::string& port, bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug) :
 m_port(port),
 m_protocolVersion(0U),
 m_dmrColorCode(0U),
@@ -251,13 +251,13 @@ m_fmExtEnable(false)
 	assert(!port.empty());
 }
 
-CSerialModem::~CSerialModem()
+CMMDVMModem::~CMMDVMModem()
 {
 	delete   m_serial;
 	delete[] m_buffer;
 }
 
-void CSerialModem::setSerialParams(const std::string& protocol, unsigned int address, unsigned int speed)
+void CMMDVMModem::setSerialParams(const std::string& protocol, unsigned int address, unsigned int speed)
 {
 	// Create the serial controller instance according the protocol specified in conf.
 #if defined(__linux__)
@@ -265,10 +265,10 @@ void CSerialModem::setSerialParams(const std::string& protocol, unsigned int add
 		m_serial = new CI2CController(m_port, address);
 	else
 #endif
-		m_serial = new CSerialController(m_port, speed, true);
+		m_serial = new CUARTController(m_port, speed, true);
 }
 
-void CSerialModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency)
+void CMMDVMModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency)
 {
 	m_rxFrequency     = rxFrequency + rxOffset;
 	m_txFrequency     = txFrequency + txOffset;
@@ -278,7 +278,7 @@ void CSerialModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned 
 	m_pocsagFrequency = pocsagFrequency + txOffset;
 }
 
-void CSerialModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool m17Enabled, bool pocsagEnabled, bool fmEnabled, bool ax25Enabled)
+void CMMDVMModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool m17Enabled, bool pocsagEnabled, bool fmEnabled, bool ax25Enabled)
 {
 	m_dstarEnabled  = dstarEnabled;
 	m_dmrEnabled    = dmrEnabled;
@@ -291,7 +291,7 @@ void CSerialModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEna
 	m_ax25Enabled   = ax25Enabled;
 }
 
-void CSerialModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float m17TXLevel, float pocsagTXLevel, float fmTXLevel, float ax25TXLevel)
+void CMMDVMModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float m17TXLevel, float pocsagTXLevel, float fmTXLevel, float ax25TXLevel)
 {
 	m_rxLevel       = rxLevel;
 	m_cwIdTXLevel   = cwIdTXLevel;
@@ -306,35 +306,35 @@ void CSerialModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLeve
 	m_ax25TXLevel   = ax25TXLevel;
 }
 
-void CSerialModem::setDMRParams(unsigned int colorCode)
+void CMMDVMModem::setDMRParams(unsigned int colorCode)
 {
 	assert(colorCode < 16U);
 
 	m_dmrColorCode = colorCode;
 }
 
-void CSerialModem::setYSFParams(bool loDev, unsigned int txHang)
+void CMMDVMModem::setYSFParams(bool loDev, unsigned int txHang)
 {
 	m_ysfLoDev  = loDev;
 	m_ysfTXHang = txHang;
 }
 
-void CSerialModem::setP25Params(unsigned int txHang)
+void CMMDVMModem::setP25Params(unsigned int txHang)
 {
 	m_p25TXHang = txHang;
 }
 
-void CSerialModem::setNXDNParams(unsigned int txHang)
+void CMMDVMModem::setNXDNParams(unsigned int txHang)
 {
 	m_nxdnTXHang = txHang;
 }
 
-void CSerialModem::setM17Params(unsigned int txHang)
+void CMMDVMModem::setM17Params(unsigned int txHang)
 {
 	m_m17TXHang = txHang;
 }
 
-void CSerialModem::setAX25Params(int rxTwist, unsigned int txDelay, unsigned int slotTime, unsigned int pPersist)
+void CMMDVMModem::setAX25Params(int rxTwist, unsigned int txDelay, unsigned int slotTime, unsigned int pPersist)
 {
 	m_ax25RXTwist  = rxTwist;
 	m_ax25TXDelay  = txDelay;
@@ -342,12 +342,12 @@ void CSerialModem::setAX25Params(int rxTwist, unsigned int txDelay, unsigned int
 	m_ax25PPersist = pPersist;
 }
 
-void CSerialModem::setTransparentDataParams(unsigned int sendFrameType)
+void CMMDVMModem::setTransparentDataParams(unsigned int sendFrameType)
 {
     m_sendTransparentDataFrameType = sendFrameType;
 }
 
-bool CSerialModem::open()
+bool CMMDVMModem::open()
 {
 	::LogMessage("Opening the MMDVM");
 
@@ -427,7 +427,7 @@ bool CSerialModem::open()
 	return true;
 }
 
-void CSerialModem::clock(unsigned int ms)
+void CMMDVMModem::clock(unsigned int ms)
 {
 	assert(m_serial != NULL);
 
@@ -1124,7 +1124,7 @@ void CSerialModem::clock(unsigned int ms)
 	}
 }
 
-void CSerialModem::close()
+void CMMDVMModem::close()
 {
 	assert(m_serial != NULL);
 
@@ -1133,7 +1133,7 @@ void CSerialModem::close()
 	m_serial->close();
 }
 
-unsigned int CSerialModem::readDStarData(unsigned char* data)
+unsigned int CMMDVMModem::readDStarData(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -1147,7 +1147,7 @@ unsigned int CSerialModem::readDStarData(unsigned char* data)
 	return len;
 }
 
-unsigned int CSerialModem::readDMRData1(unsigned char* data)
+unsigned int CMMDVMModem::readDMRData1(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -1161,7 +1161,7 @@ unsigned int CSerialModem::readDMRData1(unsigned char* data)
 	return len;
 }
 
-unsigned int CSerialModem::readDMRData2(unsigned char* data)
+unsigned int CMMDVMModem::readDMRData2(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -1175,7 +1175,7 @@ unsigned int CSerialModem::readDMRData2(unsigned char* data)
 	return len;
 }
 
-unsigned int CSerialModem::readYSFData(unsigned char* data)
+unsigned int CMMDVMModem::readYSFData(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -1189,7 +1189,7 @@ unsigned int CSerialModem::readYSFData(unsigned char* data)
 	return len;
 }
 
-unsigned int CSerialModem::readP25Data(unsigned char* data)
+unsigned int CMMDVMModem::readP25Data(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -1203,7 +1203,7 @@ unsigned int CSerialModem::readP25Data(unsigned char* data)
 	return len;
 }
 
-unsigned int CSerialModem::readNXDNData(unsigned char* data)
+unsigned int CMMDVMModem::readNXDNData(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -1217,7 +1217,7 @@ unsigned int CSerialModem::readNXDNData(unsigned char* data)
 	return len;
 }
 
-unsigned int CSerialModem::readM17Data(unsigned char* data)
+unsigned int CMMDVMModem::readM17Data(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -1231,7 +1231,7 @@ unsigned int CSerialModem::readM17Data(unsigned char* data)
 	return len;
 }
 
-unsigned int CSerialModem::readFMData(unsigned char* data)
+unsigned int CMMDVMModem::readFMData(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -1245,7 +1245,7 @@ unsigned int CSerialModem::readFMData(unsigned char* data)
 	return len;
 }
 
-unsigned int CSerialModem::readAX25Data(unsigned char* data)
+unsigned int CMMDVMModem::readAX25Data(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -1259,7 +1259,7 @@ unsigned int CSerialModem::readAX25Data(unsigned char* data)
 	return len;
 }
 
-unsigned int CSerialModem::readTransparentData(unsigned char* data)
+unsigned int CMMDVMModem::readTransparentData(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -1273,7 +1273,7 @@ unsigned int CSerialModem::readTransparentData(unsigned char* data)
 	return len;
 }
 
-unsigned int CSerialModem::readSerial(unsigned char* data, unsigned int length)
+unsigned int CMMDVMModem::readSerial(unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
 	assert(length > 0U);
@@ -1287,14 +1287,14 @@ unsigned int CSerialModem::readSerial(unsigned char* data, unsigned int length)
 	return n;
 }
 
-bool CSerialModem::hasDStarSpace() const
+bool CMMDVMModem::hasDStarSpace() const
 {
 	unsigned int space = m_txDStarData.freeSpace() / (DSTAR_FRAME_LENGTH_BYTES + 4U);
 
 	return space > 1U;
 }
 
-bool CSerialModem::writeDStarData(const unsigned char* data, unsigned int length)
+bool CMMDVMModem::writeDStarData(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
 	assert(length > 0U);
@@ -1328,21 +1328,21 @@ bool CSerialModem::writeDStarData(const unsigned char* data, unsigned int length
 	return true;
 }
 
-bool CSerialModem::hasDMRSpace1() const
+bool CMMDVMModem::hasDMRSpace1() const
 {
 	unsigned int space = m_txDMRData1.freeSpace() / (DMR_FRAME_LENGTH_BYTES + 4U);
 
 	return space > 1U;
 }
 
-bool CSerialModem::hasDMRSpace2() const
+bool CMMDVMModem::hasDMRSpace2() const
 {
 	unsigned int space = m_txDMRData2.freeSpace() / (DMR_FRAME_LENGTH_BYTES + 4U);
 
 	return space > 1U;
 }
 
-bool CSerialModem::writeDMRData1(const unsigned char* data, unsigned int length)
+bool CMMDVMModem::writeDMRData1(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
 	assert(length > 0U);
@@ -1365,7 +1365,7 @@ bool CSerialModem::writeDMRData1(const unsigned char* data, unsigned int length)
 	return true;
 }
 
-bool CSerialModem::writeDMRData2(const unsigned char* data, unsigned int length)
+bool CMMDVMModem::writeDMRData2(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
 	assert(length > 0U);
@@ -1388,14 +1388,14 @@ bool CSerialModem::writeDMRData2(const unsigned char* data, unsigned int length)
 	return true;
 }
 
-bool CSerialModem::hasYSFSpace() const
+bool CMMDVMModem::hasYSFSpace() const
 {
 	unsigned int space = m_txYSFData.freeSpace() / (YSF_FRAME_LENGTH_BYTES + 4U);
 
 	return space > 1U;
 }
 
-bool CSerialModem::writeYSFData(const unsigned char* data, unsigned int length)
+bool CMMDVMModem::writeYSFData(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
 	assert(length > 0U);
@@ -1418,14 +1418,14 @@ bool CSerialModem::writeYSFData(const unsigned char* data, unsigned int length)
 	return true;
 }
 
-bool CSerialModem::hasP25Space() const
+bool CMMDVMModem::hasP25Space() const
 {
 	unsigned int space = m_txP25Data.freeSpace() / (P25_LDU_FRAME_LENGTH_BYTES + 4U);
 
 	return space > 1U;
 }
 
-bool CSerialModem::writeP25Data(const unsigned char* data, unsigned int length)
+bool CMMDVMModem::writeP25Data(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
 	assert(length > 0U);
@@ -1448,14 +1448,14 @@ bool CSerialModem::writeP25Data(const unsigned char* data, unsigned int length)
 	return true;
 }
 
-bool CSerialModem::hasNXDNSpace() const
+bool CMMDVMModem::hasNXDNSpace() const
 {
 	unsigned int space = m_txNXDNData.freeSpace() / (NXDN_FRAME_LENGTH_BYTES + 4U);
 
 	return space > 1U;
 }
 
-bool CSerialModem::writeNXDNData(const unsigned char* data, unsigned int length)
+bool CMMDVMModem::writeNXDNData(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
 	assert(length > 0U);
@@ -1478,14 +1478,14 @@ bool CSerialModem::writeNXDNData(const unsigned char* data, unsigned int length)
 	return true;
 }
 
-bool CSerialModem::hasM17Space() const
+bool CMMDVMModem::hasM17Space() const
 {
 	unsigned int space = m_txM17Data.freeSpace() / (M17_FRAME_LENGTH_BYTES + 4U);
 
 	return space > 1U;
 }
 
-bool CSerialModem::writeM17Data(const unsigned char* data, unsigned int length)
+bool CMMDVMModem::writeM17Data(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
 	assert(length > 0U);
@@ -1512,14 +1512,14 @@ bool CSerialModem::writeM17Data(const unsigned char* data, unsigned int length)
 	return true;
 }
 
-bool CSerialModem::hasPOCSAGSpace() const
+bool CMMDVMModem::hasPOCSAGSpace() const
 {
 	unsigned int space = m_txPOCSAGData.freeSpace() / (POCSAG_FRAME_LENGTH_BYTES + 4U);
 
 	return space > 1U;
 }
 
-bool CSerialModem::writePOCSAGData(const unsigned char* data, unsigned int length)
+bool CMMDVMModem::writePOCSAGData(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
 	assert(length > 0U);
@@ -1539,12 +1539,12 @@ bool CSerialModem::writePOCSAGData(const unsigned char* data, unsigned int lengt
 	return true;
 }
 
-unsigned int CSerialModem::getFMSpace() const
+unsigned int CMMDVMModem::getFMSpace() const
 {
 	return m_txFMData.freeSpace();
 }
 
-bool CSerialModem::writeFMData(const unsigned char* data, unsigned int length)
+bool CMMDVMModem::writeFMData(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
 	assert(length > 0U);
@@ -1573,14 +1573,14 @@ bool CSerialModem::writeFMData(const unsigned char* data, unsigned int length)
 	return true;
 }
 
-bool CSerialModem::hasAX25Space() const
+bool CMMDVMModem::hasAX25Space() const
 {
 	unsigned int space = m_txAX25Data.freeSpace() / (AX25_MAX_FRAME_LENGTH_BYTES + 5U);
 
 	return space > 1U;
 }
 
-bool CSerialModem::writeAX25Data(const unsigned char* data, unsigned int length)
+bool CMMDVMModem::writeAX25Data(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
 	assert(length > 0U);
@@ -1609,7 +1609,7 @@ bool CSerialModem::writeAX25Data(const unsigned char* data, unsigned int length)
 	return true;
 }
 
-bool CSerialModem::writeTransparentData(const unsigned char* data, unsigned int length)
+bool CMMDVMModem::writeTransparentData(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
 	assert(length > 0U);
@@ -1643,7 +1643,7 @@ bool CSerialModem::writeTransparentData(const unsigned char* data, unsigned int 
 	return true;
 }
 
-bool CSerialModem::writeDStarInfo(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
+bool CMMDVMModem::writeDStarInfo(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
 	assert(m_serial != NULL);
 	assert(my1 != NULL);
@@ -1672,7 +1672,7 @@ bool CSerialModem::writeDStarInfo(const char* my1, const char* my2, const char* 
 	return m_serial->write(buffer, 33U) != 33;
 }
 
-bool CSerialModem::writeDMRInfo(unsigned int slotNo, const std::string& src, bool group, const std::string& dest, const char* type)
+bool CMMDVMModem::writeDMRInfo(unsigned int slotNo, const std::string& src, bool group, const std::string& dest, const char* type)
 {
 	assert(m_serial != NULL);
 	assert(type != NULL);
@@ -1698,7 +1698,7 @@ bool CSerialModem::writeDMRInfo(unsigned int slotNo, const std::string& src, boo
 	return m_serial->write(buffer, 47U) != 47;
 }
 
-bool CSerialModem::writeYSFInfo(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
+bool CMMDVMModem::writeYSFInfo(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
 	assert(m_serial != NULL);
 	assert(source != NULL);
@@ -1726,7 +1726,7 @@ bool CSerialModem::writeYSFInfo(const char* source, const char* dest, unsigned c
 	return m_serial->write(buffer, 36U) != 36;
 }
 
-bool CSerialModem::writeP25Info(const char* source, bool group, unsigned int dest, const char* type)
+bool CMMDVMModem::writeP25Info(const char* source, bool group, unsigned int dest, const char* type)
 {
 	assert(m_serial != NULL);
 	assert(source != NULL);
@@ -1751,7 +1751,7 @@ bool CSerialModem::writeP25Info(const char* source, bool group, unsigned int des
 	return m_serial->write(buffer, 31U) != 31;
 }
 
-bool CSerialModem::writeNXDNInfo(const char* source, bool group, unsigned int dest, const char* type)
+bool CMMDVMModem::writeNXDNInfo(const char* source, bool group, unsigned int dest, const char* type)
 {
 	assert(m_serial != NULL);
 	assert(source != NULL);
@@ -1776,7 +1776,7 @@ bool CSerialModem::writeNXDNInfo(const char* source, bool group, unsigned int de
 	return m_serial->write(buffer, 31U) != 31;
 }
 
-bool CSerialModem::writeM17Info(const char* source, const char* dest, const char* type)
+bool CMMDVMModem::writeM17Info(const char* source, const char* dest, const char* type)
 {
 	assert(m_serial != NULL);
 	assert(source != NULL);
@@ -1800,7 +1800,7 @@ bool CSerialModem::writeM17Info(const char* source, const char* dest, const char
 	return m_serial->write(buffer, 23U) != 23;
 }
 
-bool CSerialModem::writePOCSAGInfo(unsigned int ric, const std::string& message)
+bool CMMDVMModem::writePOCSAGInfo(unsigned int ric, const std::string& message)
 {
 	assert(m_serial != NULL);
 
@@ -1823,7 +1823,7 @@ bool CSerialModem::writePOCSAGInfo(unsigned int ric, const std::string& message)
 	return ret != int(length + 11U);
 }
 
-bool CSerialModem::writeIPInfo(const std::string& address)
+bool CMMDVMModem::writeIPInfo(const std::string& address)
 {
 	assert(m_serial != NULL);
 
@@ -1844,7 +1844,7 @@ bool CSerialModem::writeIPInfo(const std::string& address)
 	return ret != int(length + 4U);
 }
 
-bool CSerialModem::writeSerial(const unsigned char* data, unsigned int length)
+bool CMMDVMModem::writeSerial(const unsigned char* data, unsigned int length)
 {
 	assert(m_serial != NULL);
 	assert(data != NULL);
@@ -1865,27 +1865,27 @@ bool CSerialModem::writeSerial(const unsigned char* data, unsigned int length)
 	return true;
 }
 
-bool CSerialModem::hasTX() const
+bool CMMDVMModem::hasTX() const
 {
 	return m_tx;
 }
 
-bool CSerialModem::hasCD() const
+bool CMMDVMModem::hasCD() const
 {
 	return m_cd;
 }
 
-bool CSerialModem::hasLockout() const
+bool CMMDVMModem::hasLockout() const
 {
 	return m_lockout;
 }
 
-bool CSerialModem::hasError() const
+bool CMMDVMModem::hasError() const
 {
 	return m_error;
 }
 
-bool CSerialModem::readVersion()
+bool CMMDVMModem::readVersion()
 {
 	assert(m_serial != NULL);
 
@@ -1998,7 +1998,7 @@ bool CSerialModem::readVersion()
 	return false;
 }
 
-bool CSerialModem::readStatus()
+bool CMMDVMModem::readStatus()
 {
 	assert(m_serial != NULL);
 
@@ -2013,7 +2013,7 @@ bool CSerialModem::readStatus()
 	return m_serial->write(buffer, 3U) == 3;
 }
 
-bool CSerialModem::writeConfig()
+bool CMMDVMModem::writeConfig()
 {
 	switch (m_protocolVersion) {
 	case 1U:
@@ -2025,7 +2025,7 @@ bool CSerialModem::writeConfig()
 	}
 }
 
-bool CSerialModem::setConfig1()
+bool CMMDVMModem::setConfig1()
 {
 	assert(m_serial != NULL);
 
@@ -2140,7 +2140,7 @@ bool CSerialModem::setConfig1()
 	return true;
 }
 
-bool CSerialModem::setConfig2()
+bool CMMDVMModem::setConfig2()
 {
 	assert(m_serial != NULL);
 
@@ -2266,7 +2266,7 @@ bool CSerialModem::setConfig2()
 	return true;
 }
 
-bool CSerialModem::setFrequency()
+bool CMMDVMModem::setFrequency()
 {
 	assert(m_serial != NULL);
 
@@ -2339,7 +2339,7 @@ bool CSerialModem::setFrequency()
 	return true;
 }
 
-RESP_TYPE_MMDVM CSerialModem::getResponse()
+RESP_TYPE_MMDVM CMMDVMModem::getResponse()
 {
 	assert(m_serial != NULL);
 
@@ -2441,17 +2441,17 @@ RESP_TYPE_MMDVM CSerialModem::getResponse()
 	return RTM_OK;
 }
 
-HW_TYPE CSerialModem::getHWType() const
+HW_TYPE CMMDVMModem::getHWType() const
 {
 	return m_hwType;
 }
 
-unsigned char CSerialModem::getMode() const
+unsigned char CMMDVMModem::getMode() const
 {
 	return m_mode;
 }
 
-bool CSerialModem::setMode(unsigned char mode)
+bool CMMDVMModem::setMode(unsigned char mode)
 {
 	assert(m_serial != NULL);
 
@@ -2467,7 +2467,7 @@ bool CSerialModem::setMode(unsigned char mode)
 	return m_serial->write(buffer, 4U) == 4;
 }
 
-bool CSerialModem::sendCWId(const std::string& callsign)
+bool CMMDVMModem::sendCWId(const std::string& callsign)
 {
 	assert(m_serial != NULL);
 
@@ -2489,7 +2489,7 @@ bool CSerialModem::sendCWId(const std::string& callsign)
 	return m_serial->write(buffer, length + 3U) == int(length + 3U);
 }
 
-bool CSerialModem::writeDMRStart(bool tx)
+bool CMMDVMModem::writeDMRStart(bool tx)
 {
 	assert(m_serial != NULL);
 
@@ -2510,7 +2510,7 @@ bool CSerialModem::writeDMRStart(bool tx)
 	return m_serial->write(buffer, 4U) == 4;
 }
 
-bool CSerialModem::writeDMRAbort(unsigned int slotNo)
+bool CMMDVMModem::writeDMRAbort(unsigned int slotNo)
 {
 	assert(m_serial != NULL);
 
@@ -2531,7 +2531,7 @@ bool CSerialModem::writeDMRAbort(unsigned int slotNo)
 	return m_serial->write(buffer, 4U) == 4;
 }
 
-bool CSerialModem::writeDMRShortLC(const unsigned char* lc)
+bool CMMDVMModem::writeDMRShortLC(const unsigned char* lc)
 {
 	assert(m_serial != NULL);
 	assert(lc != NULL);
@@ -2556,7 +2556,7 @@ bool CSerialModem::writeDMRShortLC(const unsigned char* lc)
 	return m_serial->write(buffer, 12U) == 12;
 }
 
-void CSerialModem::setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch)
+void CMMDVMModem::setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch)
 {
 	m_fmCallsign          = callsign;
 	m_fmCallsignSpeed     = callsignSpeed;
@@ -2570,7 +2570,7 @@ void CSerialModem::setFMCallsignParams(const std::string& callsign, unsigned int
 	m_fmCallsignAtLatch   = callsignAtLatch;
 }
 
-void CSerialModem::setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackMinTime, unsigned int ackDelay, float ackLevel)
+void CMMDVMModem::setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackMinTime, unsigned int ackDelay, float ackLevel)
 {
 	m_fmRfAck        = rfAck;
 	m_fmAckSpeed     = ackSpeed;
@@ -2580,7 +2580,7 @@ void CSerialModem::setFMAckParams(const std::string& rfAck, unsigned int ackSpee
 	m_fmAckLevel     = ackLevel;
 }
 
-void CSerialModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, unsigned int accessMode, bool cosInvert, bool noiseSquelch, unsigned int squelchHighThreshold, unsigned int squelchLowThreshold, unsigned int rfAudioBoost, float maxDevLevel)
+void CMMDVMModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, unsigned int accessMode, bool cosInvert, bool noiseSquelch, unsigned int squelchHighThreshold, unsigned int squelchLowThreshold, unsigned int rfAudioBoost, float maxDevLevel)
 {
 	m_fmTimeout      = timeout;
 	m_fmTimeoutLevel = timeoutLevel;
@@ -2605,14 +2605,14 @@ void CSerialModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, flo
 	m_fmMaxDevLevel  = maxDevLevel;
 }
 
-void CSerialModem::setFMExtParams(const std::string& ack, unsigned int audioBoost)
+void CMMDVMModem::setFMExtParams(const std::string& ack, unsigned int audioBoost)
 {
 	m_fmExtAck        = ack;
 	m_fmExtAudioBoost = audioBoost;
 	m_fmExtEnable     = true;
 }
 
-bool CSerialModem::setFMCallsignParams()
+bool CMMDVMModem::setFMCallsignParams()
 {
 	assert(m_serial != NULL);
 
@@ -2673,7 +2673,7 @@ bool CSerialModem::setFMCallsignParams()
 	return true;
 }
 
-bool CSerialModem::setFMAckParams()
+bool CMMDVMModem::setFMAckParams()
 {
 	assert(m_serial != NULL);
 
@@ -2725,7 +2725,7 @@ bool CSerialModem::setFMAckParams()
 	return true;
 }
 
-bool CSerialModem::setFMMiscParams()
+bool CMMDVMModem::setFMMiscParams()
 {
 	assert(m_serial != NULL);
 
@@ -2792,7 +2792,7 @@ bool CSerialModem::setFMMiscParams()
 	return true;
 }
 
-bool CSerialModem::setFMExtParams()
+bool CMMDVMModem::setFMExtParams()
 {
 	assert(m_serial != NULL);
 
@@ -2843,7 +2843,7 @@ bool CSerialModem::setFMExtParams()
 	return true;
 }
 
-void CSerialModem::printDebug()
+void CMMDVMModem::printDebug()
 {
 	if (m_buffer[2U] == MMDVM_DEBUG1) {
 		LogMessage("Debug: %.*s", m_length - m_offset - 0U, m_buffer + m_offset);
