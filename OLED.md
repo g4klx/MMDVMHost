@@ -28,16 +28,6 @@ root@raspberrypi:~# ls /dev/i2c*
 root@raspberrypi:~# ls /dev/spi*
 /dev/spidev0.0  /dev/spidev0.1
 ```
-# Installation of the generic Driver
-
-The Driver is based on Adafruit Arduino library, I ported the code to be able to compile and run on Raspberry Pi but added also some features.
-
-Get all the file from github dedicated repo :
-```
-git clone https://github.com/hallard/ArduiPi_OLED
-cd ArduiPi_OLED
-sudo make
-```
 
 # Building MMDVMHost
 ```

@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2020,2021 by Jonathan Naylor G4KLX
+*   Copyright (C) 2021 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -16,16 +16,15 @@
 *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef ModemSerialPort_H
-#define ModemSerialPort_H
+#ifndef NullController_H
+#define NullController_H
 
-#include "SerialPort.h"
-#include "Modem.h"
+#include "ModemPort.h"
 
-class IModemSerialPort : public ISerialPort {
+class CNullController : public IModemPort {
 public:
-	IModemSerialPort(CModem* modem);
-	virtual ~IModemSerialPort();
+	CNullController();
+	virtual ~CNullController();
 
 	virtual bool open();
 
@@ -36,7 +35,6 @@ public:
 	virtual void close();
 
 private:
-	CModem* m_modem;
 };
 
 #endif

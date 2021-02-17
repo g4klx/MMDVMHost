@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -93,10 +93,14 @@ m_dmrIdLookupFile(),
 m_dmrIdLookupTime(0U),
 m_nxdnIdLookupFile(),
 m_nxdnIdLookupTime(0U),
-m_modemPort(),
 m_modemProtocol("uart"),
-m_modemSpeed(115200U),
-m_modemAddress(0x22),
+m_modemUARTPort(),
+m_modemUARTSpeed(115200U),
+m_modemI2CPort(),
+m_modemI2CAddress(0x22U),
+m_modemModemAddress(),
+m_modemModemPort(0U),
+m_modemLocalPort(0U),
 m_modemRXInvert(false),
 m_modemTXInvert(false),
 m_modemPTTInvert(false),
@@ -515,14 +519,22 @@ bool CConf::read()
 			else if (::strcmp(key, "Time") == 0)
 				m_nxdnIdLookupTime = (unsigned int)::atoi(value);
 		} else if (section == SECTION_MODEM) {
-			if (::strcmp(key, "Port") == 0)
-				m_modemPort = value;
-			else if (::strcmp(key, "Protocol") == 0)
+			if (::strcmp(key, "Protocol") == 0)
 				m_modemProtocol = value;
-			else if (::strcmp(key, "Speed") == 0)
-				m_modemSpeed = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "Address") == 0)
-				m_modemAddress = (unsigned int)::strtoul(value, NULL, 16);
+			else if (::strcmp(key, "UARTPort") == 0)
+				m_modemUARTPort = value;
+			else if (::strcmp(key, "UARTSpeed") == 0)
+				m_modemUARTSpeed = (unsigned int)::atoi(value);
+			else if (::strcmp(key, "I2CPort") == 0)
+				m_modemI2CPort = value;
+			else if (::strcmp(key, "I2CAddress") == 0)
+				m_modemI2CAddress = (unsigned int)::strtoul(value, NULL, 16);
+			else if (::strcmp(key, "ModemAddress") == 0)
+				m_modemModemAddress = value;
+			else if (::strcmp(key, "ModemPort") == 0)
+				m_modemModemPort = (unsigned int)::atoi(value);
+			else if (::strcmp(key, "LocalPort") == 0)
+				m_modemLocalPort = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "RXInvert") == 0)
 				m_modemRXInvert = ::atoi(value) == 1;
 			else if (::strcmp(key, "TXInvert") == 0)
@@ -1235,24 +1247,44 @@ unsigned int CConf::getNXDNIdLookupTime() const
 	return m_nxdnIdLookupTime;
 }
 
-std::string CConf::getModemPort() const
-{
-	return m_modemPort;
-}
-
 std::string CConf::getModemProtocol() const
 {
 	return m_modemProtocol;
 }
 
-unsigned int CConf::getModemSpeed() const
+std::string CConf::getModemUARTPort() const
 {
-	return m_modemSpeed;
+	return m_modemUARTPort;
 }
 
-unsigned int CConf::getModemAddress() const
+unsigned int CConf::getModemUARTSpeed() const
 {
-	return m_modemAddress;
+	return m_modemUARTSpeed;
+}
+
+std::string CConf::getModemI2CPort() const
+{
+	return m_modemI2CPort;
+}
+
+unsigned int CConf::getModemI2CAddress() const
+{
+	return m_modemI2CAddress;
+}
+
+std::string CConf::getModemModemAddress() const
+{
+	return m_modemModemAddress;
+}
+
+unsigned int CConf::getModemModemPort() const
+{
+	return m_modemModemPort;
+}
+
+unsigned int CConf::getModemLocalPort() const
+{
+	return m_modemLocalPort;
 }
 
 bool CConf::getModemRXInvert() const

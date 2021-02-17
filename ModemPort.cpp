@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2020,2021 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2021 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -16,27 +16,8 @@
 *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#ifndef ModemSerialPort_H
-#define ModemSerialPort_H
+#include "ModemPort.h"
 
-#include "SerialPort.h"
-#include "Modem.h"
-
-class IModemSerialPort : public ISerialPort {
-public:
-	IModemSerialPort(CModem* modem);
-	virtual ~IModemSerialPort();
-
-	virtual bool open();
-
-	virtual int read(unsigned char* buffer, unsigned int length);
-
-	virtual int write(const unsigned char* buffer, unsigned int length);
-
-	virtual void close();
-
-private:
-	CModem* m_modem;
-};
-
-#endif
+IModemPort::~IModemPort()
+{
+}

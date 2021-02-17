@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018,2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 #include <cstdint>
 
 class CConf;
-class IModem;
+class CModem;
 
 class CDisplay
 {
@@ -86,7 +86,7 @@ public:
 
 	void clock(unsigned int ms);
 
-	static CDisplay* createDisplay(const CConf& conf, IModem* modem);
+	static CDisplay* createDisplay(const CConf& conf, CModem* modem);
 
 protected:
 	virtual void setIdleInt() = 0;

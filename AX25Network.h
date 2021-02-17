@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #define	AX25Network_H
 
 #if defined(_WIN32) || defined(_WIN64)
-#include "SerialController.h"
+#include "UARTController.h"
 #else
 #include "PseudoTTYController.h"
 #endif
@@ -47,7 +47,7 @@ public:
 
 private:
 #if defined(_WIN32) || defined(_WIN64)
-	CSerialController    m_serial;
+	CUARTController      m_serial;
 #else
 	CPseudoTTYController m_serial;
 #endif

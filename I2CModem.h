@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 
 class CI2CModem : public II2CPort {
 public:
-	CI2CModem(IModem* modem);
+	CI2CModem(CModem* modem);
 	virtual ~CI2CModem();
 
 	virtual bool open(unsigned char displayType);
@@ -43,7 +43,7 @@ public:
 	virtual void close();
 
 private:
-	IModem*       m_modem;
+	CModem*       m_modem;
 	unsigned char m_address;
 };
 

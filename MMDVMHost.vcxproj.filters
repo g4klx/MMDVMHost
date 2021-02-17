@@ -56,9 +56,6 @@
     <ClInclude Include="MMDVMHost.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Modem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="NullDisplay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -72,9 +69,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RS129.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SerialController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="StopWatch.h">
@@ -266,9 +260,6 @@
     <ClInclude Include="POCSAGDefines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="NullModem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DMRTA.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -332,9 +323,6 @@
     <ClInclude Include="PseudoTTYController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SerialModem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="OLED.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -351,6 +339,21 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SHA256.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UARTController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UDPController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NullController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Modem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ModemPort.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -391,9 +394,6 @@
     <ClCompile Include="MMDVMHost.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Modem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="NullDisplay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -404,9 +404,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RS129.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SerialController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="StopWatch.cpp">
@@ -583,9 +580,6 @@
     <ClCompile Include="POCSAGControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="NullModem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DMRTA.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -643,9 +637,6 @@
     <ClCompile Include="PseudoTTYController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SerialModem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="OLED.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -662,6 +653,21 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SHA256.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UARTController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UDPController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NullController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Modem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ModemPort.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2011-2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,20 +16,33 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "NullModem.h"
-#include "Log.h"
+#ifndef UDPController_H
+#define UDPController_H
 
-CNullModem::CNullModem()
-{
-}
+#include "ModemPort.h"
+#include "RingBuffer.h"
+#include "UDPSocket.h"
 
-CNullModem::~CNullModem()
-{
-}
+#include <string>
 
-bool CNullModem::open()
-{
-	::LogMessage("Opening the MMDVM Null Modem");
+class CUDPController : public IModemPort {
+public:
+	CUDPController(const std::string& modemAddress, unsigned int modemPort, unsigned int localPort);
+	virtual ~CUDPController();
 
-	return true;
-}
+	virtual bool open();
+
+	virtual int read(unsigned char* buffer, unsigned int length);
+
+	virtual int write(const unsigned char* buffer, unsigned int length);
+
+	virtual void close();
+
+protected:
+	CUDPSocket       m_socket;
+	sockaddr_storage m_addr;
+	unsigned int     m_addrLen;
+	CRingBuffer<unsigned char> m_buffer;
+};
+
+#endif

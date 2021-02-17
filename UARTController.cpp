@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2002-2004,2007-2011,2013,2014-2017,2019,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2002-2004,2007-2011,2013,2014-2017,2019,2020,2021 by Jonathan Naylor G4KLX
  *   Copyright (C) 1999-2001 by Thomas Sailor HB9JNX
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -17,7 +17,7 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "SerialController.h"
+#include "UARTController.h"
 #include "Log.h"
 
 #include <cstring>
@@ -39,7 +39,7 @@
 
 #if defined(_WIN32) || defined(_WIN64)
 
-CSerialController::CSerialController(const std::string& device, unsigned int speed, bool assertRTS) :
+CUARTController::CUARTController(const std::string& device, unsigned int speed, bool assertRTS) :
 m_device(device),
 m_speed(speed),
 m_assertRTS(assertRTS),
@@ -48,7 +48,7 @@ m_handle(INVALID_HANDLE_VALUE)
 	assert(!device.empty());
 }
 
-CSerialController::CSerialController(unsigned int speed, bool assertRTS) :
+CUARTController::CUARTController(unsigned int speed, bool assertRTS) :
 m_device(),
 m_speed(speed),
 m_assertRTS(assertRTS),
@@ -56,11 +56,11 @@ m_handle(INVALID_HANDLE_VALUE)
 {
 }
 
-CSerialController::~CSerialController()
+CUARTController::~CUARTController()
 {
 }
 
-bool CSerialController::open()
+bool CUARTController::open()
 {
 	assert(m_handle == INVALID_HANDLE_VALUE);
 
@@ -140,7 +140,7 @@ bool CSerialController::open()
 	return true;
 }
 
-int CSerialController::read(unsigned char* buffer, unsigned int length)
+int CUARTController::read(unsigned char* buffer, unsigned int length)
 {
 	assert(m_handle != INVALID_HANDLE_VALUE);
 	assert(buffer != NULL);
@@ -162,7 +162,7 @@ int CSerialController::read(unsigned char* buffer, unsigned int length)
 	return int(length);
 }
 
-int CSerialController::readNonblock(unsigned char* buffer, unsigned int length)
+int CUARTController::readNonblock(unsigned char* buffer, unsigned int length)
 {
 	assert(m_handle != INVALID_HANDLE_VALUE);
 	assert(buffer != NULL);
@@ -194,7 +194,7 @@ int CSerialController::readNonblock(unsigned char* buffer, unsigned int length)
 	return int(bytes);
 }
 
-int CSerialController::write(const unsigned char* buffer, unsigned int length)
+int CUARTController::write(const unsigned char* buffer, unsigned int length)
 {
 	assert(m_handle != INVALID_HANDLE_VALUE);
 	assert(buffer != NULL);
@@ -218,7 +218,7 @@ int CSerialController::write(const unsigned char* buffer, unsigned int length)
 	return int(length);
 }
 
-void CSerialController::close()
+void CUARTController::close()
 {
 	assert(m_handle != INVALID_HANDLE_VALUE);
 
@@ -228,7 +228,7 @@ void CSerialController::close()
 
 #else
 
-CSerialController::CSerialController(const std::string& device, unsigned int speed, bool assertRTS) :
+CUARTController::CUARTController(const std::string& device, unsigned int speed, bool assertRTS) :
 m_device(device),
 m_speed(speed),
 m_assertRTS(assertRTS),
@@ -237,7 +237,7 @@ m_fd(-1)
 	assert(!device.empty());
 }
 
-CSerialController::CSerialController(unsigned int speed, bool assertRTS) :
+CUARTController::CUARTController(unsigned int speed, bool assertRTS) :
 m_device(),
 m_speed(speed),
 m_assertRTS(assertRTS),
@@ -245,11 +245,11 @@ m_fd(-1)
 {
 }
 
-CSerialController::~CSerialController()
+CUARTController::~CUARTController()
 {
 }
 
-bool CSerialController::open()
+bool CUARTController::open()
 {
 	assert(m_fd == -1);
 
@@ -269,7 +269,7 @@ bool CSerialController::open()
 	return true;
 }
 
-bool CSerialController::setRaw()
+bool CUARTController::setRaw()
 {
 	termios termios;
 	if (::tcgetattr(m_fd, &termios) < 0) {
@@ -368,7 +368,7 @@ bool CSerialController::setRaw()
 }
 
 #if defined(__APPLE__)
-int CSerialController::setNonblock(bool nonblock)
+int CUARTController::setNonblock(bool nonblock)
 {
 	int flag = ::fcntl(m_fd, F_GETFD, 0);
 
@@ -381,7 +381,7 @@ int CSerialController::setNonblock(bool nonblock)
 }
 #endif
 
-int CSerialController::read(unsigned char* buffer, unsigned int length)
+int CUARTController::read(unsigned char* buffer, unsigned int length)
 {
 	assert(buffer != NULL);
 	assert(m_fd != -1);
@@ -429,7 +429,7 @@ int CSerialController::read(unsigned char* buffer, unsigned int length)
 	return length;
 }
 
-bool CSerialController::canWrite(){
+bool CUARTController::canWrite(){
 #if defined(__APPLE__)
 	fd_set wset;
 	FD_ZERO(&wset);
@@ -449,7 +449,7 @@ bool CSerialController::canWrite(){
 #endif
 }
 
-int CSerialController::write(const unsigned char* buffer, unsigned int length)
+int CUARTController::write(const unsigned char* buffer, unsigned int length)
 {
 	assert(buffer != NULL);
 	assert(m_fd != -1);
@@ -476,7 +476,7 @@ int CSerialController::write(const unsigned char* buffer, unsigned int length)
 	return length;
 }
 
-void CSerialController::close()
+void CUARTController::close()
 {
 	assert(m_fd != -1);
 
