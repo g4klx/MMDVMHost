@@ -16,8 +16,22 @@
 *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#include "MMDVMModemPort.h"
+#ifndef ModemPort_H
+#define ModemPort_H
 
-IMMDVMModemPort::~IMMDVMModemPort()
-{
-}
+class IModemPort {
+public:
+	virtual ~IModemPort() = 0;
+
+	virtual bool open() = 0;
+
+	virtual int read(unsigned char* buffer, unsigned int length) = 0;
+
+	virtual int write(const unsigned char* buffer, unsigned int length) = 0;
+
+	virtual void close() = 0;
+
+private:
+};
+
+#endif

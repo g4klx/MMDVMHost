@@ -28,7 +28,6 @@
 #include "I2CController.h"
 #endif
 #include "UDPController.h"
-#include "MMDVMModem.h"
 #include "Version.h"
 #include "StopWatch.h"
 #include "Defines.h"
@@ -1407,23 +1406,23 @@ bool CMMDVMHost::createModem()
 	LogInfo("    TX Frequency: %uHz (%uHz)", txFrequency, txFrequency + txOffset);
 	LogInfo("    Use COS as Lockout: %s", useCOSAsLockout ? "yes" : "no");
 
-	m_modem = new CMMDVMModem(m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, useCOSAsLockout, trace, debug);
+	m_modem = new CModem(m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, useCOSAsLockout, trace, debug);
 
-	IMMDVMModemPort* modem = NULL;
+	IModemPort* port = NULL;
 	if (protocol == "uart")
-		modem = new CUARTController(uartPort, uartSpeed, true);
+		port = new CUARTController(uartPort, uartSpeed, true);
 	else if (protocol == "udp")
-		modem = new CUDPController(modemAddress, modemPort, localPort);
+		port = new CUDPController(modemAddress, modemPort, localPort);
 #if defined(__linux__)
 	else if (protocol == "i2c")
-		modem = new CI2CController(i2cPort, i2cAddress);
+		port = new CI2CController(i2cPort, i2cAddress);
 #endif
 	else if (protocol == "null")
-		modem = new CNullController;
+		port = new CNullController;
 	else
 		return false;
 
-	m_modem->setModem(modem);
+	m_modem->setPort(port);
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_m17Enabled, m_pocsagEnabled, m_fmEnabled, m_ax25Enabled);
 	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, m17TXLevel, pocsagTXLevel, fmTXLevel, ax25TXLevel);
 	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel, pocsagFrequency);

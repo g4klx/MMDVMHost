@@ -22,12 +22,12 @@
 
 #if defined(__linux__)
 
-#include "MMDVMModemPort.h"
+#include "ModemPort.h"
 #include "SerialPort.h"
 
 #include <string>
 
-class CI2CController : public ISerialPort, public IMMDVMModemPort {
+class CI2CController : public ISerialPort, public IModemPort {
 public:
 	CI2CController(const std::string& device, unsigned int address = 0x22U);
 	virtual ~CI2CController();

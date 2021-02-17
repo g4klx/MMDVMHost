@@ -20,7 +20,7 @@
 #ifndef UARTController_H
 #define UARTController_H
 
-#include "MMDVMModemPort.h"
+#include "ModemPort.h"
 #include "SerialPort.h"
 
 #include <string>
@@ -29,7 +29,7 @@
 #include <windows.h>
 #endif
 
-class CUARTController : public ISerialPort, public IMMDVMModemPort {
+class CUARTController : public ISerialPort, public IModemPort {
 public:
 	CUARTController(const std::string& device, unsigned int speed, bool assertRTS = false);
 	virtual ~CUARTController();

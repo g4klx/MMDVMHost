@@ -535,7 +535,7 @@ int CDisplay::writeNXDNIntEx(const class CUserDBentry& source, bool group, unsig
 
 	
 /* Factory method extracted from MMDVMHost.cpp - BG5HHP */
-CDisplay* CDisplay::createDisplay(const CConf& conf, IModem* modem)
+CDisplay* CDisplay::createDisplay(const CConf& conf, CModem* modem)
 {
 	CDisplay *display = NULL;
 

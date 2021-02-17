@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2018,2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 static bool networkInfoInitialized = false;
 static unsigned char passCounter = 0;
 
-CCASTInfo::CCASTInfo(IModem* modem) :
+CCASTInfo::CCASTInfo(CModem* modem) :
 CDisplay(),
 m_modem(modem),
 m_ipaddress()

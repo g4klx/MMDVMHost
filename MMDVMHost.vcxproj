@@ -203,8 +203,7 @@
     <ClInclude Include="M17Network.h" />
     <ClInclude Include="M17Utils.h" />
     <ClInclude Include="MMDVMHost.h" />
-    <ClInclude Include="MMDVMModemPort.h" />
-    <ClInclude Include="Modem.h" />
+    <ClInclude Include="ModemPort.h" />
     <ClInclude Include="ModemSerialPort.h" />
     <ClInclude Include="Mutex.h" />
     <ClInclude Include="NetworkInfo.h" />
@@ -245,7 +244,7 @@
     <ClInclude Include="RSSIInterpolator.h" />
     <ClInclude Include="NXDNSACCH.h" />
     <ClInclude Include="UARTController.h" />
-    <ClInclude Include="MMDVMModem.h" />
+    <ClInclude Include="Modem.h" />
     <ClInclude Include="SerialPort.h" />
     <ClInclude Include="SHA256.h" />
     <ClInclude Include="StopWatch.h" />
@@ -313,8 +312,7 @@
     <ClCompile Include="M17Network.cpp" />
     <ClCompile Include="M17Utils.cpp" />
     <ClCompile Include="MMDVMHost.cpp" />
-    <ClCompile Include="MMDVMModemPort.cpp" />
-    <ClCompile Include="Modem.cpp" />
+    <ClCompile Include="ModemPort.cpp" />
     <ClCompile Include="ModemSerialPort.cpp" />
     <ClCompile Include="Mutex.cpp" />
     <ClCompile Include="NetworkInfo.cpp" />
@@ -351,7 +349,7 @@
     <ClCompile Include="RS241213.cpp" />
     <ClCompile Include="RSSIInterpolator.cpp" />
     <ClCompile Include="UARTController.cpp" />
-    <ClCompile Include="MMDVMModem.cpp" />
+    <ClCompile Include="Modem.cpp" />
     <ClCompile Include="SerialPort.cpp" />
     <ClCompile Include="SHA256.cpp" />
     <ClCompile Include="StopWatch.cpp" />

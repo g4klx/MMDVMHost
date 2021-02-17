@@ -19,13 +19,13 @@
 #ifndef UDPController_H
 #define UDPController_H
 
-#include "MMDVMModemPort.h"
+#include "ModemPort.h"
 #include "RingBuffer.h"
 #include "UDPSocket.h"
 
 #include <string>
 
-class CUDPController : public IMMDVMModemPort {
+class CUDPController : public IModemPort {
 public:
 	CUDPController(const std::string& modemAddress, unsigned int modemPort, unsigned int localPort);
 	virtual ~CUDPController();

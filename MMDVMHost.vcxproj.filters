@@ -56,9 +56,6 @@
     <ClInclude Include="MMDVMHost.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Modem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="NullDisplay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -335,19 +332,19 @@
     <ClInclude Include="SHA256.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MMDVMModem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="UARTController.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MMDVMModemPort.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="UDPController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NullController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Modem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ModemPort.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -386,9 +383,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MMDVMHost.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Modem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NullDisplay.cpp">
@@ -643,19 +637,19 @@
     <ClCompile Include="SHA256.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MMDVMModem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="UARTController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MMDVMModemPort.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="UDPController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NullController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Modem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ModemPort.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

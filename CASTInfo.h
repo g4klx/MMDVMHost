@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2018,2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -25,10 +25,11 @@
 
 #include "NetworkInfo.h"
 #include "Modem.h"
+
 class CCASTInfo : public CDisplay
 {
 public:
-  CCASTInfo(IModem* modem);
+  CCASTInfo(CModem* modem);
   virtual ~CCASTInfo();
 
   virtual bool open();
@@ -67,7 +68,7 @@ protected:
 	virtual void clearCWInt();
 
 private:
-  	IModem*		m_modem;
+	CModem*		m_modem;
 	std::string	m_ipaddress;
 };
 

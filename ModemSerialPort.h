@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2020 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2020,2021 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 
 class IModemSerialPort : public ISerialPort {
 public:
-	IModemSerialPort(IModem* modem);
+	IModemSerialPort(CModem* modem);
 	virtual ~IModemSerialPort();
 
 	virtual bool open();
@@ -36,7 +36,7 @@ public:
 	virtual void close();
 
 private:
-	IModem* m_modem;
+	CModem* m_modem;
 };
 
 #endif

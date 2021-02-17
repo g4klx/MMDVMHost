@@ -19,9 +19,9 @@
 #ifndef NullController_H
 #define NullController_H
 
-#include "MMDVMModemPort.h"
+#include "ModemPort.h"
 
-class CNullController : public IMMDVMModemPort {
+class CNullController : public IModemPort {
 public:
 	CNullController();
 	virtual ~CNullController();
