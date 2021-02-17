@@ -22,10 +22,13 @@
 #include "NXDNKenwoodNetwork.h"
 #include "NXDNIcomNetwork.h"
 #include "RSSIInterpolator.h"
+#include "NullController.h"
 #include "UARTController.h"
+#if defined(__linux__)
+#include "I2CController.h"
+#endif
 #include "UDPController.h"
 #include "MMDVMModem.h"
-#include "NullModem.h"
 #include "Version.h"
 #include "StopWatch.h"
 #include "Defines.h"
@@ -1404,10 +1407,7 @@ bool CMMDVMHost::createModem()
 	LogInfo("    TX Frequency: %uHz (%uHz)", txFrequency, txFrequency + txOffset);
 	LogInfo("    Use COS as Lockout: %s", useCOSAsLockout ? "yes" : "no");
 
-	if (protocol == "null")
-		m_modem = new CNullModem;
-	else
-		m_modem = new CMMDVMModem(m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, useCOSAsLockout, trace, debug);
+	m_modem = new CMMDVMModem(m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, useCOSAsLockout, trace, debug);
 
 	IMMDVMModemPort* modem = NULL;
 	if (protocol == "uart")
@@ -1418,6 +1418,8 @@ bool CMMDVMHost::createModem()
 	else if (protocol == "i2c")
 		modem = new CI2CController(i2cPort, i2cAddress);
 #endif
+	else if (protocol == "null")
+		modem = new CNullController;
 	else
 		return false;
 

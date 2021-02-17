@@ -263,9 +263,6 @@
     <ClInclude Include="POCSAGDefines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="NullModem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DMRTA.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -348,6 +345,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="UDPController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NullController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -577,9 +577,6 @@
     <ClCompile Include="POCSAGControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="NullModem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DMRTA.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -656,6 +653,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="UDPController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NullController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -16,10 +16,6 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "UARTController.h"
-#if defined(__linux__)
-#include "I2CController.h"
-#endif
 #include "DStarDefines.h"
 #include "DMRDefines.h"
 #include "YSFDefines.h"
@@ -30,7 +26,6 @@
 #include "M17Defines.h"
 #include "Thread.h"
 #include "MMDVMModem.h"
-#include "NullModem.h"
 #include "Utils.h"
 #include "Log.h"
 

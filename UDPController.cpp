@@ -28,9 +28,7 @@ CUDPController::CUDPController(const std::string& modemAddress, unsigned int mod
 m_socket(localPort),
 m_addr(),
 m_addrLen(0U),
-m_buffer(NULL),
-m_length(0U),
-m_offset(0U)
+m_buffer(2000U, "UDP Controller Ring Buffer")
 {
 	assert(!modemAddress.empty());
 	assert(modemPort > 0U);
@@ -38,13 +36,10 @@ m_offset(0U)
 
 	if (CUDPSocket::lookup(modemAddress, modemPort, m_addr, m_addrLen) != 0)
 		m_addrLen = 0U;
-
-	m_buffer = new unsigned char[BUFFER_LENGTH];
 }
 
 CUDPController::~CUDPController()
 {
-	delete[] m_buffer;
 }
 
 bool CUDPController::open()
@@ -59,10 +54,32 @@ bool CUDPController::open()
 
 int CUDPController::read(unsigned char* buffer, unsigned int length)
 {
-	assert(buffer != NULL);
-	assert(length > 0U);
+    assert(buffer != NULL);
+    assert(length > 0U);
 
-	return 0;
+    unsigned char data[BUFFER_LENGTH];
+    sockaddr_storage addr;
+    unsigned int addrLen;
+    int ret = m_socket.read(data, BUFFER_LENGTH, addr, addrLen);
+
+    // An error occurred on the socket
+    if (ret < 0)
+        return ret;
+
+    // Add new data to the ring buffer
+    if (ret > 0) {
+        if (CUDPSocket::match(addr, m_addr))
+            m_buffer.addData(data, ret);
+    }
+
+    // Get required data from the ring buffer
+    unsigned int avail = m_buffer.dataSize();
+    if (avail < length)
+        length = avail;
+
+    m_buffer.getData(buffer, length);
+
+    return int(length);
 }
 
 int CUDPController::write(const unsigned char* buffer, unsigned int length)

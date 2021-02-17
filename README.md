@@ -5,7 +5,7 @@ POCSAG, FM, and AX.25 on the MMDVM, and D-Star, DMR, and System Fusion on the DV
 
 On the D-Star side the MMDVMHost interfaces with the ircDDB Gateway, on DMR it
 connects to the DMR Gateway to allow for connection to multiple DMR networks,
-on System Fusion it connects to the YSF Gateway to allow
+or a single network directly. on System Fusion it connects to the YSF Gateway to allow
 access to the FCS and YSF networks. On P25 it connects to the P25 Gateway. On
 NXDN it connects to the NXDN Gateway which provides access to the NXDN and
 NXCore talk groups. On M17 it uses the M17 Gateway to access the M17 reflector system.

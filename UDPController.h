@@ -20,6 +20,7 @@
 #define UDPController_H
 
 #include "MMDVMModemPort.h"
+#include "RingBuffer.h"
 #include "UDPSocket.h"
 
 #include <string>
@@ -41,9 +42,7 @@ protected:
 	CUDPSocket       m_socket;
 	sockaddr_storage m_addr;
 	unsigned int     m_addrLen;
-	unsigned char*   m_buffer;
-	unsigned int     m_length;
-	unsigned int     m_offset;
+	CRingBuffer<unsigned char> m_buffer;
 };
 
 #endif
