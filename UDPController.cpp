@@ -77,7 +77,8 @@ int CUDPController::read(unsigned char* buffer, unsigned int length)
     if (avail < length)
         length = avail;
 
-    m_buffer.getData(buffer, length);
+    if (length > 0U)
+        m_buffer.getData(buffer, length);
 
     return int(length);
 }
