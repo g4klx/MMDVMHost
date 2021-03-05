@@ -117,10 +117,10 @@ bool CFMNetwork::writeData(float* data, unsigned int nSamples)
 
 #if defined(_WIN32) || defined(_WIN64)
 	for (long i = 0L; i < nSamples; i++) {
-		 short val = (unsigned short)((data[i] ) * 32767.0F);	// Changing audio format from  U16BE to S16LE
+		 short val = ( short)((data[i] ) * 32767.0F);	// Changing audio format from  U16BE to S16LE
 #else
 	for (long i = 0L; i < src.output_frames_gen; i++) {
-		 short val = (unsigned short)((src.data_out[i] ) * 32767.0F );	// Changing audio format from  U16BE to S16LE
+		 short val = ( short)((src.data_out[i] ) * 32767.0F );	// Changing audio format from  U16BE to S16LE
 #endif
 
 		buffer[length++] = (val >> 0) & 0xFFU;	// changing from  BE to LE
