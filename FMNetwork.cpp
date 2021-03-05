@@ -211,8 +211,8 @@ unsigned int CFMNetwork::read(float* data, unsigned int nSamples)
 		float in[750U];
 
 		for (unsigned int i = 0U; i < nSamples; i++) {
-			unsigned short val = ((buffer[i * 2U + 0U] & 0xFFU) << 0) +	// Changing audio format from  U16BE to S16LE
-			                     ((buffer[i * 2U + 1U] & 0xFFU) << 8);	// Changing audio format from  U16BE to S16LE
+			 short val = ((buffer[i * 2U + 0U] & 0xFFU) << 0) +	// Changing audio format from  U16BE to S16LE
+			             ((buffer[i * 2U + 1U] & 0xFFU) << 8);	// Changing audio format from  U16BE to S16LE
 			in[i] = (float(val) / 65536.0F);	// Changing audio format from  U16BE to S16LE
 		}
 
@@ -233,8 +233,8 @@ unsigned int CFMNetwork::read(float* data, unsigned int nSamples)
 	} else {
 #endif
 		for (unsigned int i = 0U; i < nSamples; i++) {
-			unsigned short val = ((buffer[i * 2U + 0U] & 0xFFU) << 0) +	// Changing audio format from  U16BE to S16LE
-			                     ((buffer[i * 2U + 1U] & 0xFFU) << 8);	// Changing audio format from  U16BE to S16LE
+			 short val = ((buffer[i * 2U + 0U] & 0xFFU) << 0) +	// Changing audio format from  U16BE to S16LE
+			             ((buffer[i * 2U + 1U] & 0xFFU) << 8);	// Changing audio format from  U16BE to S16LE
 			data[i] = (float(val)  / 65536.0F);	// Changing audio format from  U16BE to S16LE
 		}
 
