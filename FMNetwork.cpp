@@ -117,14 +117,14 @@ bool CFMNetwork::writeData(float* data, unsigned int nSamples)
 
 #if defined(_WIN32) || defined(_WIN64)
 	for (long i = 0L; i < nSamples; i++) {
-		unsigned short val = (unsigned short)((data[i] + 1.0F) * 32767.0F + 0.5F);
+		unsigned short val = (unsigned short)((data[i] ) * 32767.0F);	// Changing audio format from  U16BE to S16LE
 #else
 	for (long i = 0L; i < src.output_frames_gen; i++) {
-		unsigned short val = (unsigned short)((src.data_out[i] + 1.0F) * 32767.0F + 0.5F);
+		unsigned short val = (unsigned short)((src.data_out[i] ) * 32767.0F );	// Changing audio format from  U16BE to S16LE
 #endif
 
-		buffer[length++] = (val >> 8) & 0xFFU;
-		buffer[length++] = (val >> 0) & 0xFFU;
+		buffer[length++] = (val >> 0) & 0xFFU;	// changing from  BE to LE
+		buffer[length++] = (val >> 8) & 0xFFU;	// changing from  BE to LE
 	}
 
 	if (m_debug)
@@ -164,11 +164,11 @@ void CFMNetwork::clock(unsigned int ms)
 	if (length <= 0)
 		return;
 
-	// Check if the data is for us
-	if (!CUDPSocket::match(addr, m_addr)) {
-		LogMessage("FM packet received from an invalid source");
-		return;
-	}
+	// Check if the data is for us					// does not accept data from USRP 
+	//if (!CUDPSocket::match(addr, m_addr)) {
+	//	LogMessage("FM packet received from an invalid source");
+	//	return;
+	//}
 
 	// Ignore incoming polls
 	if (::memcmp(buffer, "FMP", 3U) == 0)
@@ -211,9 +211,9 @@ unsigned int CFMNetwork::read(float* data, unsigned int nSamples)
 		float in[750U];
 
 		for (unsigned int i = 0U; i < nSamples; i++) {
-			unsigned short val = ((buffer[i * 2U + 0U] & 0xFFU) << 8) +
-			                     ((buffer[i * 2U + 1U] & 0xFFU) << 0);
-			in[i] = (float(val) - 32768.0F) / 32768.0F;
+			unsigned short val = ((buffer[i * 2U + 0U] & 0xFFU) << 0) +	// Changing audio format from  U16BE to S16LE
+			                     ((buffer[i * 2U + 1U] & 0xFFU) << 8);	// Changing audio format from  U16BE to S16LE
+			in[i] = (float(val) / 65536.0F;	// Changing audio format from  U16BE to S16LE
 		}
 
 		src.data_in = in;
@@ -233,9 +233,9 @@ unsigned int CFMNetwork::read(float* data, unsigned int nSamples)
 	} else {
 #endif
 		for (unsigned int i = 0U; i < nSamples; i++) {
-			unsigned short val = ((buffer[i * 2U + 0U] & 0xFFU) << 8) +
-			                     ((buffer[i * 2U + 1U] & 0xFFU) << 0);
-			data[i] = (float(val) - 32768.0F) / 32768.0F;
+			unsigned short val = ((buffer[i * 2U + 0U] & 0xFFU) << 0) +	// Changing audio format from  U16BE to S16LE
+			                     ((buffer[i * 2U + 1U] & 0xFFU) << 8);	// Changing audio format from  U16BE to S16LE
+			data[i] = (float(val) ) / 65536.0F;	// Changing audio format from  U16BE to S16LE
 		}
 
 		return nSamples;
