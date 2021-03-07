@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -50,6 +50,7 @@ public:
 	// Set/Get the OVCM bit in the supported CSBKs
 	bool getOVCM() const;
 	void setOVCM(bool ovcm);
+	void clearOVCM();
 
 	// For BS Dwn Act
 	unsigned int  getBSId() const;

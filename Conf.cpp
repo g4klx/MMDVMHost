@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -667,6 +667,9 @@ bool CConf::read()
 					break;
 				case 3:
 					m_dmrOVCM = DMR_OVCM_ON;
+					break;
+				case 4:
+					m_dmrOVCM = DMR_OVCM_FORCE_OFF;
 					break;
 				default:
 					m_dmrOVCM = DMR_OVCM_OFF;

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2020,2021 by Jonathan Naylor G4KLX
  *   Copyright (C) 2019 by Patrick Maier DK5MP
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -187,6 +187,12 @@ void CDMRCSBK::setOVCM(bool ovcm)
 		if (ovcm)
 			m_data[2U] |= 0x04U;
 	}
+}
+
+void CDMRCSBK::clearOVCM()
+{
+	if (getOVCM())
+		m_data[2U] ^= 0x04U;
 }
 
 bool CDMRCSBK::getGI() const
