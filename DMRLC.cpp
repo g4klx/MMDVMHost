@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2019,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -193,6 +193,12 @@ void CDMRLC::setOVCM(bool ovcm)
 {
 	if (ovcm)
 		m_options |= 0x04U;
+}
+
+void CDMRLC::clearOVCM()
+{
+	if (getOVCM())
+		m_options ^= 0x04U;
 }
 
 unsigned int CDMRLC::getSrcId() const

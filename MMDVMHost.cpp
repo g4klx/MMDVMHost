@@ -527,6 +527,8 @@ int CMMDVMHost::run()
 			LogInfo("    OVCM: on(tx only)");
 		else if (ovcm == DMR_OVCM_ON)
 			LogInfo("    OVCM: on");
+		else if (ovcm == DMR_OVCM_FORCE_OFF)
+			LogInfo("    OVCM: off (forced)");
 
 		switch (dmrBeacons) {
 			case DMR_BEACONS_NETWORK: {
