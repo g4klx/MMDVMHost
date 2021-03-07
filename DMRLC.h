@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2019,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -41,6 +41,7 @@ public:
 
 	bool getOVCM() const;
 	void setOVCM(bool ovcm);
+	void clearOVCM();
 
 	unsigned char getFID() const;
 	void setFID(unsigned char fid);

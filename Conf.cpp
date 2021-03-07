@@ -719,6 +719,9 @@ bool CConf::read()
 				case 3:
 					m_dmrOVCM = DMR_OVCM_ON;
 					break;
+				case 4:
+					m_dmrOVCM = DMR_OVCM_FORCE_OFF;
+					break;
 				default:
 					m_dmrOVCM = DMR_OVCM_OFF;
 					break;
