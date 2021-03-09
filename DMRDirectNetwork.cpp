@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017,2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017,2018,2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
 
 #include "DMRDirectNetwork.h"
 
-#include "StopWatch.h"
 #include "SHA256.h"
 #include "Utils.h"
 #include "Log.h"
@@ -91,9 +90,6 @@ m_beacon(false)
 	std::uniform_int_distribution<uint32_t> dist(0x00000001, 0xfffffffe);
 	m_streamId[0U] = dist(m_random);
 	m_streamId[1U] = dist(m_random);
-
-	CStopWatch stopWatch;
-	::srand(stopWatch.start());
 }
 
 CDMRDirectNetwork::~CDMRDirectNetwork()
@@ -340,23 +336,36 @@ void CDMRDirectNetwork::close()
 
 void CDMRDirectNetwork::clock(unsigned int ms)
 {
-	if (m_status == WAITING_CONNECT) {
-		m_retryTimer.clock(ms);
-		if (m_retryTimer.isRunning() && m_retryTimer.hasExpired()) {
-			bool ret = m_socket.open(m_addr);
-			if (ret) {
-				ret = writeLogin();
-				if (!ret)
-					return;
-
-				m_status = WAITING_LOGIN;
-				m_timeoutTimer.start();
+	m_retryTimer.clock(ms);
+	if (m_retryTimer.isRunning() && m_retryTimer.hasExpired()) {
+		switch (m_status) {
+		case WAITING_CONNECT:
+			if (m_socket.open(m_addr.ss_family)) {
+				if (writeLogin()) {
+					m_status = WAITING_LOGIN;
+				}
 			}
-
-			m_retryTimer.start();
+			break;
+		case WAITING_LOGIN:
+			writeLogin();
+			break;
+		case WAITING_AUTHORISATION:
+			writeAuthorisation();
+			break;
+		case WAITING_OPTIONS:
+			writeOptions();
+			break;
+		case WAITING_CONFIG:
+			writeConfig();
+			break;
+		case RUNNING:
+			writePing();
+			break;
+		default:
+			break;
 		}
 
-		return;
+		m_retryTimer.start();
 	}
 
 	sockaddr_storage address;
@@ -369,20 +378,22 @@ void CDMRDirectNetwork::clock(unsigned int ms)
 		return;
 	}
 
-	if (m_debug && length > 0)
-		CUtils::dump(1U, "Network Received", m_buffer, length);
+	if (length > 0) {
+		if (!CUDPSocket::match(m_addr, address)) {
+			LogMessage("DMR, packet received from an invalid source");
+			return;
+		}
 
-	if (length > 0 && CUDPSocket::match(m_addr, address)) {
+		if (m_debug)
+			CUtils::dump(1U, "DMR, Network Received", m_buffer, length);
+
 		if (::memcmp(m_buffer, "DMRD", 4U) == 0) {
-			if (m_debug)
-				CUtils::dump(1U, "DMR Network Received", m_buffer, length);
-
 			if (m_enabled) {
 				unsigned char len = length;
 				m_rxData.addData(&len, 1U);
 				m_rxData.addData(m_buffer, len);
 			}
-		} else if (::memcmp(m_buffer, "MSTNAK",  6U) == 0) {
+		} else if (::memcmp(m_buffer, "MSTNAK", 6U) == 0) {
 			if (m_status == RUNNING) {
 				LogWarning("DMR, Login to the master has failed, retrying login ...");
 				m_status = WAITING_LOGIN;
@@ -397,45 +408,45 @@ void CDMRDirectNetwork::clock(unsigned int ms)
 				open();
 				return;
 			}
-		} else if (::memcmp(m_buffer, "RPTACK",  6U) == 0) {
+		} else if (::memcmp(m_buffer, "RPTACK", 6U) == 0) {
 			switch (m_status) {
-				case WAITING_LOGIN:
-					LogDebug("DMR, Sending authorisation");
-					::memcpy(m_salt, m_buffer + 6U, sizeof(uint32_t));
-					writeAuthorisation();
-					m_status = WAITING_AUTHORISATION;
-					m_timeoutTimer.start();
-					m_retryTimer.start();
-					break;
-				case WAITING_AUTHORISATION:
-					LogDebug("DMR, Sending configuration");
-					writeConfig();
-					m_status = WAITING_CONFIG;
-					m_timeoutTimer.start();
-					m_retryTimer.start();
-					break;
-				case WAITING_CONFIG:
-					if (m_options.empty()) {
-						LogMessage("DMR, Logged into the master successfully");
-						m_status = RUNNING;
-					} else {
-						LogDebug("DMR, Sending options");
-						writeOptions();
-						m_status = WAITING_OPTIONS;
-					}
-					m_timeoutTimer.start();
-					m_retryTimer.start();
-					break;
-				case WAITING_OPTIONS:
+			case WAITING_LOGIN:
+				LogDebug("DMR, Sending authorisation");
+				::memcpy(m_salt, m_buffer + 6U, sizeof(uint32_t));
+				writeAuthorisation();
+				m_status = WAITING_AUTHORISATION;
+				m_timeoutTimer.start();
+				m_retryTimer.start();
+				break;
+			case WAITING_AUTHORISATION:
+				LogDebug("DMR, Sending configuration");
+				writeConfig();
+				m_status = WAITING_CONFIG;
+				m_timeoutTimer.start();
+				m_retryTimer.start();
+				break;
+			case WAITING_CONFIG:
+				if (m_options.empty()) {
 					LogMessage("DMR, Logged into the master successfully");
 					m_status = RUNNING;
-					m_timeoutTimer.start();
-					m_retryTimer.start();
-					break;
-				default:
-					break;
+				} else {
+					LogDebug("DMR, Sending options");
+					writeOptions();
+					m_status = WAITING_OPTIONS;
+				}
+				m_timeoutTimer.start();
+				m_retryTimer.start();
+				break;
+			case WAITING_OPTIONS:
+				LogMessage("DMR, Logged into the master successfully");
+				m_status = RUNNING;
+				m_timeoutTimer.start();
+				m_retryTimer.start();
+				break;
+			default:
+				break;
 			}
-		} else if (::memcmp(m_buffer, "MSTCL",   5U) == 0) {
+		} else if (::memcmp(m_buffer, "MSTCL", 5U) == 0) {
 			LogError("DMR, Master is closing down");
 			close();
 			open();
@@ -444,35 +455,8 @@ void CDMRDirectNetwork::clock(unsigned int ms)
 		} else if (::memcmp(m_buffer, "RPTSBKN", 7U) == 0) {
 			m_beacon = true;
 		} else {
-			char buffer[100U];
-			::sprintf(buffer, "DMR, Unknown packet from the master");
-			CUtils::dump(buffer, m_buffer, length);
+			CUtils::dump("DMR, Unknown packet from the master", m_buffer, length);
 		}
-	}
-
-	m_retryTimer.clock(ms);
-	if (m_retryTimer.isRunning() && m_retryTimer.hasExpired()) {
-		switch (m_status) {
-			case WAITING_LOGIN:
-				writeLogin();
-				break;
-			case WAITING_AUTHORISATION:
-				writeAuthorisation();
-				break;
-			case WAITING_OPTIONS:
-				writeOptions();
-				break;
-			case WAITING_CONFIG:
-				writeConfig();
-				break;
-			case RUNNING:
-				writePing();
-				break;
-			default:
-				break;
-		}
-
-		m_retryTimer.start();
 	}
 
 	m_timeoutTimer.clock(ms);
