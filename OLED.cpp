@@ -169,15 +169,15 @@ const unsigned char logo_POCSAG_bmp [] =
 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
 };
 
-COLED::COLED(unsigned char displayType, unsigned char displayBrightness, bool displayInvert, bool displayScroll, bool displayRotate, bool displayLogoScreensaver, bool slot1Enabled, bool slot2Enabled) :
+COLED::COLED(unsigned char displayType, unsigned char displayBrightness, bool displayInvert, bool displayScroll, bool displayRotate, bool displayLogoScreensaver, bool duplex) :
 m_displayType(displayType),
 m_displayBrightness(displayBrightness),
 m_displayInvert(displayInvert),
 m_displayScroll(displayScroll),
 m_displayRotate(displayRotate),
 m_displayLogoScreensaver(displayLogoScreensaver),
-m_slot1Enabled(slot1Enabled),
-m_slot2Enabled(slot2Enabled),
+m_duplex(duplex),
+//m_duplex(true),         // uncomment to force duplex display for testing!
 m_ipaddress(),
 m_display()
 {
@@ -382,7 +382,7 @@ int COLED::writeDMRIntEx(unsigned int slotNo, const class CUserDBentry& src, boo
     }
     // if both slots, use lines 2-3 for slot 1, lines 4-5 for slot 2
     // if single slot, use lines 2-3
-    if ( m_slot1Enabled && m_slot2Enabled ) {
+    if ( m_duplex ) {
 
         if (slotNo == 1U) {
             m_display.fillRect(0,OLED_LINE2,m_display.width(),40,BLACK);
@@ -430,7 +430,7 @@ void COLED::clearDMRInt(unsigned int slotNo)
 {
     // if both slots, use lines 2-3 for slot 1, lines 4-5 for slot 2
     // if single slot, use lines 2-3
-    if ( m_slot1Enabled && m_slot2Enabled ){
+    if ( m_duplex ){
         if (slotNo == 1U) {
             m_display.fillRect(0, OLED_LINE3, m_display.width(), 40, BLACK);
             m_display.setCursor(0,OLED_LINE3);
