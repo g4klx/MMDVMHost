@@ -58,8 +58,10 @@ public:
 	virtual void close();
 
 private:
+	std::string      m_addressStr;
 	sockaddr_storage m_addr;
 	unsigned int     m_addrLen;
+	unsigned int     m_port;
 	uint8_t*         m_id;
 	std::string      m_password;
 	bool             m_duplex;

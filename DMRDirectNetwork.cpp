@@ -31,8 +31,10 @@ const unsigned int HOMEBREW_DATA_PACKET_LENGTH = 55U;
 
 
 CDMRDirectNetwork::CDMRDirectNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool slot1, bool slot2, HW_TYPE hwType, bool debug) :
+m_addressStr(address),
 m_addr(),
 m_addrLen(0U),
+m_port(port),
 m_id(NULL),
 m_password(password),
 m_duplex(duplex),
@@ -122,7 +124,7 @@ void CDMRDirectNetwork::setConfig(const std::string& callsign, unsigned int rxFr
 
 bool CDMRDirectNetwork::open()
 {
-	if (m_addrLen == 0U) {
+	if (CUDPSocket::lookup(m_addressStr, m_port, m_addr, m_addrLen) != 0) {
 		LogError("DMR, Could not lookup the address of the DMR Network");
 		return false;
 	}
