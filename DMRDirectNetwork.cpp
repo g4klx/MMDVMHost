@@ -130,7 +130,7 @@ bool CDMRDirectNetwork::open()
 	LogMessage("Opening DMR Network");
 
 	m_status = WAITING_CONNECT;
-	m_timeoutTimer.stop();
+	m_timeoutTimer.start();
 	m_retryTimer.start();
 
 	return true;
