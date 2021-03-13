@@ -95,7 +95,6 @@ private:
   bool          m_displayRotate;
   bool          m_displayLogoScreensaver;
   bool          m_duplex;
-  bool          m_slot2Enabled;
   std::string   m_ipaddress;
   ArduiPi_OLED  m_display;
 
