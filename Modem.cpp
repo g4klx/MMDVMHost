@@ -74,9 +74,10 @@ const unsigned char MMDVM_P25_LOST    = 0x32U;
 const unsigned char MMDVM_NXDN_DATA   = 0x40U;
 const unsigned char MMDVM_NXDN_LOST   = 0x41U;
 
-const unsigned char MMDVM_M17_HEADER  = 0x45U;
-const unsigned char MMDVM_M17_DATA    = 0x46U;
-const unsigned char MMDVM_M17_LOST    = 0x47U;
+const unsigned char MMDVM_M17_LINK_SETUP = 0x45U;
+const unsigned char MMDVM_M17_STREAM     = 0x46U;
+const unsigned char MMDVM_M17_PACKET     = 0x47U;
+const unsigned char MMDVM_M17_LOST       = 0x48U;
 
 const unsigned char MMDVM_POCSAG_DATA = 0x50U;
 
@@ -648,9 +649,9 @@ void CModem::clock(unsigned int ms)
 			}
 			break;
 
-			case MMDVM_M17_HEADER: {
+			case MMDVM_M17_LINK_SETUP: {
 				if (m_trace)
-					CUtils::dump(1U, "RX M17 Header", m_buffer, m_length);
+					CUtils::dump(1U, "RX M17 Link Setup", m_buffer, m_length);
 
 				unsigned char data = m_length - 2U;
 				m_rxM17Data.addData(&data, 1U);
@@ -662,9 +663,23 @@ void CModem::clock(unsigned int ms)
 			}
 			break;
 
-			case MMDVM_M17_DATA: {
+			case MMDVM_M17_STREAM: {
 				if (m_trace)
-					CUtils::dump(1U, "RX M17 Data", m_buffer, m_length);
+					CUtils::dump(1U, "RX M17 Stream Data", m_buffer, m_length);
+
+				unsigned char data = m_length - 2U;
+				m_rxM17Data.addData(&data, 1U);
+
+				data = TAG_DATA;
+				m_rxM17Data.addData(&data, 1U);
+
+				m_rxM17Data.addData(m_buffer + 3U, m_length - 3U);
+			}
+			break;
+
+			case MMDVM_M17_PACKET: {
+				if (m_trace)
+					CUtils::dump(1U, "RX M17 Packet Data", m_buffer, m_length);
 
 				unsigned char data = m_length - 2U;
 				m_rxM17Data.addData(&data, 1U);
@@ -1019,10 +1034,17 @@ void CModem::clock(unsigned int ms)
 		m_txM17Data.getData(m_buffer, len);
 
 		if (m_trace) {
-			if (m_buffer[2U] == MMDVM_M17_HEADER)
-				CUtils::dump(1U, "TX M17 Header", m_buffer, len);
-			else
-				CUtils::dump(1U, "TX M17 Data", m_buffer, len);
+			switch (m_buffer[2U]) {
+			case MMDVM_M17_LINK_SETUP:
+				CUtils::dump(1U, "TX M17 Link Setup", m_buffer, len);
+				break;
+			case MMDVM_M17_STREAM:
+				CUtils::dump(1U, "TX M17 Stream Data", m_buffer, len);
+				break;
+			case MMDVM_M17_PACKET:
+				CUtils::dump(1U, "TX M17 Packet Data", m_buffer, len);
+				break;
+			}
 		}
 
 		int ret = m_port->write(m_buffer, len);
@@ -1487,9 +1509,9 @@ bool CModem::writeM17Data(const unsigned char* data, unsigned int length)
 	buffer[1U] = length + 2U;
 
 	if (data[0U] == TAG_HEADER)
-		buffer[2U] = MMDVM_M17_HEADER;
+		buffer[2U] = MMDVM_M17_LINK_SETUP;
 	else
-		buffer[2U] = MMDVM_M17_DATA;
+		buffer[2U] = MMDVM_M17_STREAM;
 
 	::memcpy(buffer + 3U, data + 1U, length - 1U);
 
