@@ -681,15 +681,19 @@ int CMMDVMHost::run()
 	}
 
 	if (m_fmEnabled) {
-		m_fmRFModeHang = m_conf.getFMModeHang();
+		bool preEmphasis  = m_conf.getFMPreEmphasis();
+		bool deEmphasis   = m_conf.getFMDeEmphasis();
+		float txAudioGain = m_conf.getFMTXAudioGain();
+		float rxAudioGain = m_conf.getFMRXAudioGain();
+		m_fmRFModeHang    = m_conf.getFMModeHang();
 
-		m_fm = new CFMControl(m_fmNetwork);
+		m_fm = new CFMControl(m_fmNetwork, txAudioGain, rxAudioGain, preEmphasis, deEmphasis);
 	}
 
 	bool remoteControlEnabled = m_conf.getRemoteControlEnabled();
 	if (remoteControlEnabled) {
 		std::string address = m_conf.getRemoteControlAddress();
-		unsigned int port = m_conf.getRemoteControlPort();
+		unsigned int port   = m_conf.getRemoteControlPort();
 
 		LogInfo("Remote Control Parameters");
 		LogInfo("    Address: %s", address.c_str());
@@ -1796,25 +1800,33 @@ bool CMMDVMHost::createPOCSAGNetwork()
 
 bool CMMDVMHost::createFMNetwork()
 {
-	std::string format         = m_conf.getFMNetworkFormat();
+	std::string protocol       = m_conf.getFMNetworkProtocol();
 	std::string gatewayAddress = m_conf.getFMGatewayAddress();
 	unsigned int gatewayPort   = m_conf.getFMGatewayPort();
 	std::string localAddress   = m_conf.getFMLocalAddress();
 	unsigned int localPort     = m_conf.getFMLocalPort();
 	unsigned int sampleRate    = m_conf.getFMSampleRate();
+	bool preEmphasis           = m_conf.getFMPreEmphasis();
+	bool deEmphasis            = m_conf.getFMDeEmphasis();
+	float txAudioGain          = m_conf.getFMTXAudioGain();
+	float rxAudioGain          = m_conf.getFMRXAudioGain();
 	m_fmNetModeHang            = m_conf.getFMNetworkModeHang();
 	bool debug                 = m_conf.getFMNetworkDebug();
 
 	LogInfo("FM Network Parameters");
-	LogInfo("    Format: %s", format.c_str());
+	LogInfo("    Protocol: %s", protocol.c_str());
 	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
 	LogInfo("    Gateway Port: %u", gatewayPort);
 	LogInfo("    Local Address: %s", localAddress.c_str());
 	LogInfo("    Local Port: %u", localPort);
 	LogInfo("    Sample Rate: %u", sampleRate);
+	LogInfo("    Pre-Emphasis: %s", preEmphasis ? "yes" : "no");
+	LogInfo("    De-Emphasis: %s", deEmphasis ? "yes" : "no");
+	LogInfo("    TX Audio Gain: %.2f", txAudioGain);
+	LogInfo("    RX Audio Gain: %.2f", rxAudioGain);
 	LogInfo("    Mode Hang: %us", m_fmNetModeHang);
 
-	m_fmNetwork = new CFMNetwork(format, localAddress, localPort, gatewayAddress, gatewayPort, sampleRate, debug);
+	m_fmNetwork = new CFMNetwork(protocol, localAddress, localPort, gatewayAddress, gatewayPort, sampleRate, debug);
 
 	bool ret = m_fmNetwork->open();
 	if (!ret) {

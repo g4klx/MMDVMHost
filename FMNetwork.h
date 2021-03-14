@@ -30,14 +30,14 @@
 #include <cstdint>
 #include <string>
 
-enum FM_FORMAT {
-	FMF_MMDVM,
-	FMF_USRP
+enum FM_NETWORK_PROTOCOL {
+	FMNP_MMDVM,
+	FMNP_USRP
 };
 
 class CFMNetwork {
 public:
-	CFMNetwork(const std::string& format, const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int sampleRate, bool debug);
+	CFMNetwork(const std::string& protocol, const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int sampleRate, bool debug);
 	~CFMNetwork();
 
 	bool open();
@@ -57,19 +57,19 @@ public:
 	void clock(unsigned int ms);
 
 private:
-	FM_FORMAT        m_format;
-	CUDPSocket       m_socket;
-	sockaddr_storage m_addr;
-	unsigned int     m_addrLen;
-	unsigned int     m_sampleRate;
-	bool             m_debug;
-	bool             m_enabled;
+	FM_NETWORK_PROTOCOL m_protocol;
+	CUDPSocket          m_socket;
+	sockaddr_storage    m_addr;
+	unsigned int        m_addrLen;
+	unsigned int        m_sampleRate;
+	bool                m_debug;
+	bool                m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
-	CTimer           m_pollTimer;
-	unsigned int     m_seqNo;
+	CTimer              m_pollTimer;
+	unsigned int        m_seqNo;
 #if !defined(_WIN32) && !defined(_WIN64)
-	SRC_STATE*       m_incoming;
-	SRC_STATE*       m_outgoing;
+	SRC_STATE*          m_incoming;
+	SRC_STATE*          m_outgoing;
 #endif
 
 	void writePoll();

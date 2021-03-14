@@ -27,8 +27,8 @@
 
 const unsigned int BUFFER_LENGTH = 500U;
 
-CFMNetwork::CFMNetwork(const std::string& format, const std::string& localAddress, unsigned int localPort, const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int sampleRate, bool debug) :
-m_format(FMF_MMDVM),
+CFMNetwork::CFMNetwork(const std::string& protocol, const std::string& localAddress, unsigned int localPort, const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int sampleRate, bool debug) :
+m_protocol(FMNP_MMDVM),
 m_socket(localAddress, localPort),
 m_addr(),
 m_addrLen(0U),
@@ -46,8 +46,8 @@ m_seqNo(0U)
 	if (CUDPSocket::lookup(gatewayAddress, gatewayPort, m_addr, m_addrLen) != 0)
 		m_addrLen = 0U;
 
-	if (format == "USRP")
-		m_format = FMF_USRP;
+	if (protocol == "USRP")
+		m_protocol = FMNP_USRP;
 
 #if !defined(_WIN32) && !defined(_WIN64)
 	int error;
@@ -116,7 +116,7 @@ bool CFMNetwork::writeData(float* data, unsigned int nSamples)
 
 	unsigned int length = 0U;
 
-	if (m_format == FMF_USRP) {
+	if (m_protocol == FMNP_USRP) {
 		buffer[length++] = 'U';
 		buffer[length++] = 'S';
 		buffer[length++] = 'R';
@@ -187,7 +187,7 @@ bool CFMNetwork::writeData(float* data, unsigned int nSamples)
 
 bool CFMNetwork::writeEOT()
 {
-	if (m_format == FMF_MMDVM) {
+	if (m_protocol == FMNP_MMDVM) {
 		unsigned char buffer[10U];
 		::memset(buffer, 0x00U, 10U);
 
@@ -220,11 +220,11 @@ void CFMNetwork::clock(unsigned int ms)
 	if (length <= 0)
 		return;
 
-	// Check if the data is for us					// does not accept data from USRP 
-	//if (!CUDPSocket::match(addr, m_addr)) {
-	//	LogMessage("FM packet received from an invalid source");
-	//	return;
-	//}
+	// Check if the data is for us
+	if (!CUDPSocket::match(addr, m_addr)) {
+		LogMessage("FM packet received from an invalid source");
+		return;
+	}
 
 	if (!m_enabled)
 		return;
@@ -232,7 +232,7 @@ void CFMNetwork::clock(unsigned int ms)
 	if (m_debug)
 		CUtils::dump(1U, "FM Network Data Received", buffer, length);
 
-	if (m_format == FMF_USRP) {
+	if (m_protocol == FMNP_USRP) {
 		// Invalid packet type?
 		if (::memcmp(buffer, "USRP", 4U) != 0)
 			return;
@@ -304,9 +304,9 @@ unsigned int CFMNetwork::read(float* data, unsigned int nSamples)
 	} else {
 #endif
 		for (unsigned int i = 0U; i < nSamples; i++) {
-			 short val = ((buffer[i * 2U + 0U] & 0xFFU) << 0) +	// Changing audio format from  U16BE to S16LE
-			             ((buffer[i * 2U + 1U] & 0xFFU) << 8);	// Changing audio format from  U16BE to S16LE
-			data[i] = (float(val)  / 65536.0F);	// Changing audio format from  U16BE to S16LE
+			short val = ((buffer[i * 2U + 0U] & 0xFFU) << 0) +
+						((buffer[i * 2U + 1U] & 0xFFU) << 8);
+			data[i] = float(val) / 65536.0F;
 		}
 
 		return nSamples;
@@ -347,7 +347,7 @@ void CFMNetwork::enable(bool enabled)
 
 void CFMNetwork::writePoll()
 {
-	if (m_format == FMF_MMDVM) {
+	if (m_protocol == FMNP_MMDVM) {
 		unsigned char buffer[3U];
 
 		buffer[0U] = 'F';

@@ -283,12 +283,16 @@ m_pocsagLocalPort(0U),
 m_pocsagNetworkModeHang(3U),
 m_pocsagNetworkDebug(false),
 m_fmNetworkEnabled(false),
-m_fmNetworkFormat("MMDVM"),
+m_fmNetworkProtocol("MMDVM"),
 m_fmGatewayAddress(),
 m_fmGatewayPort(0U),
 m_fmLocalAddress(),
 m_fmLocalPort(0U),
 m_fmSampleRate(8000U),
+m_fmPreEmphasis(true),
+m_fmDeEmphasis(true),
+m_fmTXAudioGain(1.0F),
+m_fmRXAudioGain(1.0F),
 m_fmNetworkModeHang(3U),
 m_fmNetworkDebug(false),
 m_ax25NetworkEnabled(false),
@@ -999,8 +1003,8 @@ bool CConf::read()
 		} else if (section == SECTION_FM_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_fmNetworkEnabled = ::atoi(value) == 1;
-			else if (::strcmp(key, "Format") == 0)
-				m_fmNetworkFormat = value;
+			else if (::strcmp(key, "Protocol") == 0)
+				m_fmNetworkProtocol = value;
 			else if (::strcmp(key, "LocalAddress") == 0)
 				m_fmLocalAddress = value;
 			else if (::strcmp(key, "LocalPort") == 0)
@@ -1011,6 +1015,14 @@ bool CConf::read()
 				m_fmGatewayPort = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "SampleRate") == 0)
 				m_fmSampleRate = (unsigned int)::atoi(value);
+			else if (::strcmp(key, "PreEmphasis") == 0)
+				m_fmPreEmphasis = ::atoi(value) == 1;
+			else if (::strcmp(key, "DeEmphasis") == 0)
+				m_fmDeEmphasis = ::atoi(value) == 1;
+			else if (::strcmp(key, "TXAudioGain") == 0)
+				m_fmTXAudioGain = float(::atof(value));
+			else if (::strcmp(key, "RXAudioGain") == 0)
+				m_fmRXAudioGain = float(::atof(value));
 			else if (::strcmp(key, "ModeHang") == 0)
 				m_fmNetworkModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Debug") == 0)
@@ -2200,9 +2212,9 @@ bool CConf::getFMNetworkEnabled() const
 	return m_fmNetworkEnabled;
 }
 
-std::string CConf::getFMNetworkFormat() const
+std::string CConf::getFMNetworkProtocol() const
 {
-	return m_fmNetworkFormat;
+	return m_fmNetworkProtocol;
 }
 
 std::string CConf::getFMGatewayAddress() const
@@ -2228,6 +2240,26 @@ unsigned int CConf::getFMLocalPort() const
 unsigned int CConf::getFMSampleRate() const
 {
 	return m_fmSampleRate;
+}
+
+bool CConf::getFMPreEmphasis() const
+{
+	return m_fmPreEmphasis;
+}
+
+bool CConf::getFMDeEmphasis() const
+{
+	return m_fmDeEmphasis;
+}
+
+float CConf::getFMTXAudioGain() const
+{
+	return m_fmTXAudioGain;
+}
+
+float CConf::getFMRXAudioGain() const
+{
+	return m_fmRXAudioGain;
 }
 
 unsigned int CConf::getFMNetworkModeHang() const
