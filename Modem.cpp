@@ -1078,8 +1078,12 @@ void CModem::clock(unsigned int ms)
 		m_txFMData.getData((unsigned char*)&len, sizeof(unsigned int));
 		m_txFMData.getData(m_buffer, len);
 
-		if (m_trace)
-			CUtils::dump(1U, "TX FM Data", m_buffer, len);
+		if (m_trace) {
+			if (m_buffer[2U] == MMDVM_FM_CONTROL)
+				CUtils::dump(1U, "TX FM Control", m_buffer, len);
+			else
+				CUtils::dump(1U, "TX FM Data", m_buffer, len);
+		}
 
 		int ret = m_port->write(m_buffer, len);
 		if (ret != int(len))
