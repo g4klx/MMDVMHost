@@ -25,7 +25,7 @@
 #include <cassert>
 #include <cstring>
 
-const unsigned int BUFFER_LENGTH = 500U;
+const unsigned int BUFFER_LENGTH = 1500U;
 
 CFMNetwork::CFMNetwork(const std::string& protocol, const std::string& localAddress, unsigned int localPort, const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int sampleRate, bool debug) :
 m_protocol(FMNP_MMDVM),
@@ -111,8 +111,8 @@ bool CFMNetwork::writeData(float* data, unsigned int nSamples)
 	}
 #endif
 
-	unsigned char buffer[2000U];
-	::memset(buffer, 0x00U, 2000U);
+	unsigned char buffer[1500U];
+	::memset(buffer, 0x00U, 1500U);
 
 	unsigned int length = 0U;
 
@@ -237,6 +237,9 @@ void CFMNetwork::clock(unsigned int ms)
 		if (::memcmp(buffer, "USRP", 4U) != 0)
 			return;
 
+		if (length < 32)
+			return;
+
 		// The type is a big-endian 4-byte integer
 		unsigned int type = (buffer[20U] << 24) +
 							(buffer[21U] << 16) +
@@ -252,6 +255,9 @@ void CFMNetwork::clock(unsigned int ms)
 
 		// Invalid packet type?
 		if (::memcmp(buffer, "FMD", 3U) != 0)
+			return;
+
+		if (length < 3)
 			return;
 
 		m_buffer.addData(buffer + 3U, length - 3U);
