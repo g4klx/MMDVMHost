@@ -1796,6 +1796,7 @@ bool CMMDVMHost::createPOCSAGNetwork()
 
 bool CMMDVMHost::createFMNetwork()
 {
+	std::string format         = m_conf.getFMNetworkFormat();
 	std::string gatewayAddress = m_conf.getFMGatewayAddress();
 	unsigned int gatewayPort   = m_conf.getFMGatewayPort();
 	std::string localAddress   = m_conf.getFMLocalAddress();
@@ -1805,6 +1806,7 @@ bool CMMDVMHost::createFMNetwork()
 	bool debug                 = m_conf.getFMNetworkDebug();
 
 	LogInfo("FM Network Parameters");
+	LogInfo("    Format: %s", format.c_str());
 	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
 	LogInfo("    Gateway Port: %u", gatewayPort);
 	LogInfo("    Local Address: %s", localAddress.c_str());
@@ -1812,7 +1814,7 @@ bool CMMDVMHost::createFMNetwork()
 	LogInfo("    Sample Rate: %u", sampleRate);
 	LogInfo("    Mode Hang: %us", m_fmNetModeHang);
 
-	m_fmNetwork = new CFMNetwork(localAddress, localPort, gatewayAddress, gatewayPort, sampleRate, debug);
+	m_fmNetwork = new CFMNetwork(format, localAddress, localPort, gatewayAddress, gatewayPort, sampleRate, debug);
 
 	bool ret = m_fmNetwork->open();
 	if (!ret) {

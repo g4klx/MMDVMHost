@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -30,9 +30,14 @@
 #include <cstdint>
 #include <string>
 
+enum FM_FORMAT {
+	FMF_MMDVM,
+	FMF_USRP
+};
+
 class CFMNetwork {
 public:
-	CFMNetwork(const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int sampleRate, bool debug);
+	CFMNetwork(const std::string& format, const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int sampleRate, bool debug);
 	~CFMNetwork();
 
 	bool open();
@@ -52,6 +57,7 @@ public:
 	void clock(unsigned int ms);
 
 private:
+	FM_FORMAT        m_format;
 	CUDPSocket       m_socket;
 	sockaddr_storage m_addr;
 	unsigned int     m_addrLen;
@@ -60,12 +66,13 @@ private:
 	bool             m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
 	CTimer           m_pollTimer;
+	unsigned int     m_seqNo;
 #if !defined(_WIN32) && !defined(_WIN64)
 	SRC_STATE*       m_incoming;
 	SRC_STATE*       m_outgoing;
 #endif
 
-	bool writePoll();
+	void writePoll();
 };
 
 #endif

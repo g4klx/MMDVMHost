@@ -296,6 +296,7 @@ public:
 
   // The FM Network section
   bool         getFMNetworkEnabled() const;
+  std::string  getFMNetworkFormat() const;
   std::string  getFMGatewayAddress() const;
   unsigned int getFMGatewayPort() const;
   std::string  getFMLocalAddress() const;
@@ -603,6 +604,7 @@ private:
   bool         m_pocsagNetworkDebug;
 
   bool         m_fmNetworkEnabled;
+  std::string  m_fmNetworkFormat;
   std::string  m_fmGatewayAddress;
   unsigned int m_fmGatewayPort;
   std::string  m_fmLocalAddress;

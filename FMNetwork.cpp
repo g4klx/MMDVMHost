@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -27,7 +27,8 @@
 
 const unsigned int BUFFER_LENGTH = 500U;
 
-CFMNetwork::CFMNetwork(const std::string& localAddress, unsigned int localPort, const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int sampleRate, bool debug) :
+CFMNetwork::CFMNetwork(const std::string& format, const std::string& localAddress, unsigned int localPort, const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int sampleRate, bool debug) :
+m_format(FMF_MMDVM),
 m_socket(localAddress, localPort),
 m_addr(),
 m_addrLen(0U),
@@ -35,7 +36,8 @@ m_sampleRate(sampleRate),
 m_debug(debug),
 m_enabled(false),
 m_buffer(2000U, "FM Network"),
-m_pollTimer(1000U, 5U)
+m_pollTimer(1000U, 5U),
+m_seqNo(0U)
 {
 	assert(gatewayPort > 0U);
 	assert(!gatewayAddress.empty());
@@ -43,6 +45,9 @@ m_pollTimer(1000U, 5U)
 
 	if (CUDPSocket::lookup(gatewayAddress, gatewayPort, m_addr, m_addrLen) != 0)
 		m_addrLen = 0U;
+
+	if (format == "USRP")
+		m_format = FMF_USRP;
 
 #if !defined(_WIN32) && !defined(_WIN64)
 	int error;
@@ -106,46 +111,97 @@ bool CFMNetwork::writeData(float* data, unsigned int nSamples)
 	}
 #endif
 
-	unsigned int length = 3U;
+	unsigned char buffer[2000U];
+	::memset(buffer, 0x00U, 2000U);
 
-	unsigned char buffer[1500U];
-	::memset(buffer, 0x00U, 1500U);
+	unsigned int length = 0U;
 
-	buffer[0U] = 'F';
-	buffer[1U] = 'M';
-	buffer[2U] = 'D';
+	if (m_format == FMF_USRP) {
+		buffer[length++] = 'U';
+		buffer[length++] = 'S';
+		buffer[length++] = 'R';
+		buffer[length++] = 'P';
+
+		// Sequence number
+		buffer[length++] = (m_seqNo >> 24) & 0xFFU;
+		buffer[length++] = (m_seqNo >> 16) & 0xFFU;
+		buffer[length++] = (m_seqNo >> 8)  & 0xFFU;
+		buffer[length++] = (m_seqNo >> 0)  & 0xFFU;
+
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+
+		// PTT, this may be wrong
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x01U;
+
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+
+		// Type, 0 for audio
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+	} else {
+		buffer[length++] = 'F';
+		buffer[length++] = 'M';
+		buffer[length++] = 'D';
+	}
 
 #if defined(_WIN32) || defined(_WIN64)
-	for (long i = 0L; i < nSamples; i++) {
-		 short val = ( short)((data[i] ) * 32767.0F);	// Changing audio format from  U16BE to S16LE
+	for (unsigned int i = 0U; i < nSamples; i++) {
+		 short val = short(data[i] * 32767.0F + 0.5F);			// Changing audio format from float to S16LE
 #else
 	for (long i = 0L; i < src.output_frames_gen; i++) {
-		 short val = ( short)((src.data_out[i] ) * 32767.0F );	// Changing audio format from  U16BE to S16LE
+		 short val = short(src.data_out[i] * 32767.0F + 0.5F);	// Changing audio format from float to S16LE
 #endif
 
-		buffer[length++] = (val >> 0) & 0xFFU;	// changing from  BE to LE
-		buffer[length++] = (val >> 8) & 0xFFU;	// changing from  BE to LE
+		buffer[length++] = (val >> 0) & 0xFFU;
+		buffer[length++] = (val >> 8) & 0xFFU;
 	}
 
 	if (m_debug)
 		CUtils::dump(1U, "FM Network Data Sent", buffer, length);
+
+	m_seqNo++;
 
 	return m_socket.write(buffer, length, m_addr, m_addrLen);
 }
 
 bool CFMNetwork::writeEOT()
 {
-	unsigned char buffer[10U];
-	::memset(buffer, 0x00U, 10U);
+	if (m_format == FMF_MMDVM) {
+		unsigned char buffer[10U];
+		::memset(buffer, 0x00U, 10U);
 
-	buffer[0U] = 'F';
-	buffer[1U] = 'M';
-	buffer[2U] = 'E';
+		buffer[0U] = 'F';
+		buffer[1U] = 'M';
+		buffer[2U] = 'E';
 
-	if (m_debug)
-		CUtils::dump(1U, "FM Network End of Transmission Sent", buffer, 3U);
+		if (m_debug)
+			CUtils::dump(1U, "FM Network End of Transmission Sent", buffer, 3U);
 
-	return m_socket.write(buffer, 3U, m_addr, m_addrLen);
+		return m_socket.write(buffer, 3U, m_addr, m_addrLen);
+	}
+
+	return true;
 }
 
 void CFMNetwork::clock(unsigned int ms)
@@ -170,21 +226,36 @@ void CFMNetwork::clock(unsigned int ms)
 	//	return;
 	//}
 
-	// Ignore incoming polls
-	if (::memcmp(buffer, "FMP", 3U) == 0)
-		return;
-
-	// Invalid packet type?
-	if (::memcmp(buffer, "FMD", 3U) != 0)
-		return;
-
 	if (!m_enabled)
 		return;
 
 	if (m_debug)
 		CUtils::dump(1U, "FM Network Data Received", buffer, length);
 
-	m_buffer.addData(buffer + 3U, length - 3U);
+	if (m_format == FMF_USRP) {
+		// Invalid packet type?
+		if (::memcmp(buffer, "USRP", 4U) != 0)
+			return;
+
+		// The type is a big-endian 4-byte integer
+		unsigned int type = (buffer[20U] << 24) +
+							(buffer[21U] << 16) +
+							(buffer[22U] << 8)  +
+							(buffer[23U] << 0);
+
+		if (type == 0U)
+			m_buffer.addData(buffer + 32U, length - 32U);
+	} else {
+		// Ignore incoming polls
+		if (::memcmp(buffer, "FMP", 3U) == 0)
+			return;
+
+		// Invalid packet type?
+		if (::memcmp(buffer, "FMD", 3U) != 0)
+			return;
+
+		m_buffer.addData(buffer + 3U, length - 3U);
+	}
 }
 
 unsigned int CFMNetwork::read(float* data, unsigned int nSamples)
@@ -274,16 +345,18 @@ void CFMNetwork::enable(bool enabled)
 	m_enabled = enabled;
 }
 
-bool CFMNetwork::writePoll()
+void CFMNetwork::writePoll()
 {
-	unsigned char buffer[3U];
+	if (m_format == FMF_MMDVM) {
+		unsigned char buffer[3U];
 
-	buffer[0U] = 'F';
-	buffer[1U] = 'M';
-	buffer[2U] = 'P';
+		buffer[0U] = 'F';
+		buffer[1U] = 'M';
+		buffer[2U] = 'P';
 
-	if (m_debug)
-		CUtils::dump(1U, "FM Network Poll Sent", buffer, 3U);
+		if (m_debug)
+			CUtils::dump(1U, "FM Network Poll Sent", buffer, 3U);
 
-	return m_socket.write(buffer, 3U, m_addr, m_addrLen);
+		m_socket.write(buffer, 3U, m_addr, m_addrLen);
+	}
 }

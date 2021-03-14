@@ -283,6 +283,7 @@ m_pocsagLocalPort(0U),
 m_pocsagNetworkModeHang(3U),
 m_pocsagNetworkDebug(false),
 m_fmNetworkEnabled(false),
+m_fmNetworkFormat("MMDVM"),
 m_fmGatewayAddress(),
 m_fmGatewayPort(0U),
 m_fmLocalAddress(),
@@ -440,7 +441,7 @@ bool CConf::read()
 			value++;
 		} else {
 			// if value is not quoted, remove after # (to make comment)
-			::strtok(value, "#");
+			(void)::strtok(value, "#");
 		}
 
 		if (section == SECTION_GENERAL) {
@@ -998,6 +999,8 @@ bool CConf::read()
 		} else if (section == SECTION_FM_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_fmNetworkEnabled = ::atoi(value) == 1;
+			else if (::strcmp(key, "Format") == 0)
+				m_fmNetworkFormat = value;
 			else if (::strcmp(key, "LocalAddress") == 0)
 				m_fmLocalAddress = value;
 			else if (::strcmp(key, "LocalPort") == 0)
@@ -2195,6 +2198,11 @@ bool CConf::getPOCSAGNetworkDebug() const
 bool CConf::getFMNetworkEnabled() const
 {
 	return m_fmNetworkEnabled;
+}
+
+std::string CConf::getFMNetworkFormat() const
+{
+	return m_fmNetworkFormat;
 }
 
 std::string CConf::getFMGatewayAddress() const
