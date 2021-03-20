@@ -22,6 +22,10 @@
 #include "Log.h"
 
 #include <cstdio>
+#include <chrono>
+#include <thread>
+
+const unsigned int BUFFER_LENGTH = 100U;
 
 int main(int argc, char** argv)
 {
@@ -67,6 +71,9 @@ int CRemoteCommand::send(const std::string& command)
 {
 	sockaddr_storage addr;
 	unsigned int addrLen;
+	char buffer[BUFFER_LENGTH];
+	int retStatus = 0;
+
 	if (CUDPSocket::lookup("127.0.0.1", m_port, addr, addrLen) != 0) {
 		LogError("Unable to resolve the address of the host");
 		return 1;
@@ -86,7 +93,19 @@ int CRemoteCommand::send(const std::string& command)
 
 	LogMessage("Command sent: \"%s\" to port: %u", command.c_str(), m_port);
 
+	std::this_thread::sleep_for(std::chrono::milliseconds(50));
+	
+	int len = socket.read((unsigned char*)&buffer[0], BUFFER_LENGTH, addr, addrLen);
+	if (len > 0) {
+		buffer[len] = '\0';
+		LogMessage("%s", buffer);
+	}
+	else
+	{
+		retStatus = 1;
+	}
+	
 	socket.close();
 
-	return 0;
+	return retStatus;
 }
