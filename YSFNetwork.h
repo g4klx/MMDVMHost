@@ -42,6 +42,8 @@ public:
 
 	void reset();
 
+	bool isConnected() const;
+
 	void close();
 
 	void clock(unsigned int ms);

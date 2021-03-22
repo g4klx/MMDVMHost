@@ -56,6 +56,8 @@ public:
 
 	virtual void clock(unsigned int ms);
 
+	virtual bool isConnected() const;
+
 	virtual void close();
 
 private: 
