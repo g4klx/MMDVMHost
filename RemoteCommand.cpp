@@ -75,7 +75,7 @@ int CRemoteCommand::send(const std::string& command)
 	int retStatus = 0;
 
 	if (CUDPSocket::lookup("127.0.0.1", m_port, addr, addrLen) != 0) {
-		LogError("Unable to resolve the address of the host");
+		::fprintf(stderr, "Unable to resolve the address of the host\n");
 		return 1;
 	}
 
@@ -91,14 +91,14 @@ int CRemoteCommand::send(const std::string& command)
 		return 1;
 	}
 
-	LogMessage("Command sent: \"%s\" to port: %u", command.c_str(), m_port);
+	::fprintf(stdout, "Command sent: \"%s\" to port: %u\n", command.c_str(), m_port);
 
 	std::this_thread::sleep_for(std::chrono::milliseconds(50));
 	
-	int len = socket.read((unsigned char*)&buffer[0], BUFFER_LENGTH, addr, addrLen);
+	int len = socket.read((unsigned char*)buffer, BUFFER_LENGTH, addr, addrLen);
 	if (len > 0) {
 		buffer[len] = '\0';
-		LogMessage("%s", buffer);
+		::fprintf(stdout, "%s\n", buffer);
 	}
 	else
 	{

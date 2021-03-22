@@ -635,7 +635,7 @@ int CMMDVMHost::run()
 		LogInfo("    Address: %s", address.c_str());
 		LogInfo("    Port: %u", port);
 
-		m_remoteControl = new CRemoteControl(address, port);
+		m_remoteControl = new CRemoteControl(this, address, port);
 
 		ret = m_remoteControl->open();
 		if (!ret) {
@@ -2139,4 +2139,15 @@ void CMMDVMHost::processEnableCommand(bool& mode, bool enabled)
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_pocsagEnabled, m_fmEnabled);
 	if (!m_modem->writeConfig())
 		LogError("Cannot write Config to MMDVM");
+}
+
+void CMMDVMHost::buildNetworkStatusString(std::string &str)
+{
+	str = "";
+	str += std::string("dstar:") + (((m_dstarNetwork == NULL) || (m_dstarEnabled == false)) ? "n/a" : (m_dstarNetwork->isConnected() ? "conn" : "disc"));
+	str += std::string(" dmr:") + (((m_dmrNetwork == NULL) || (m_dmrEnabled == false)) ? "n/a" : (m_dmrNetwork->isConnected() ? "conn" : "disc"));
+	str += std::string(" ysf:") + (((m_ysfNetwork == NULL) || (m_ysfEnabled == false)) ? "n/a" : (m_ysfNetwork->isConnected() ? "conn" : "disc"));
+	str += std::string(" p25:") + (((m_p25Network == NULL) || (m_p25Enabled == false)) ? "n/a" : (m_p25Network->isConnected() ? "conn" : "disc"));
+	str += std::string(" nxdn:") + (((m_nxdnNetwork == NULL) || (m_nxdnEnabled == false)) ? "n/a" : (m_nxdnNetwork->isConnected() ? "conn" : "disc"));
+	str += std::string(" fm:") + (m_fmEnabled ? "conn" : "n/a");
 }

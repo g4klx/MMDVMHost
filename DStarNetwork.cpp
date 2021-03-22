@@ -314,6 +314,11 @@ void CDStarNetwork::reset()
 	m_inId = 0U;
 }
 
+bool CDStarNetwork::isConnected() const
+{
+	return (m_enabled && (m_addrLen != 0));
+}
+
 void CDStarNetwork::close()
 {
 	m_socket.close();
