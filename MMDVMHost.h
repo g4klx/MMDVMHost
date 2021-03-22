@@ -51,6 +51,8 @@ public:
 
   int run();
 
+  void buildNetworkStatusString(std::string &str);
+
 private:
   CConf           m_conf;
   CModem*         m_modem;

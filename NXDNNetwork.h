@@ -46,6 +46,8 @@ public:
 
 	virtual void reset() = 0;
 
+	virtual bool isConnected() const = 0;
+
 	virtual void close() = 0;
 
 	virtual void clock(unsigned int ms) = 0;

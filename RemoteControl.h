@@ -24,6 +24,8 @@
 #include <vector>
 #include <string>
 
+class CMMDVMHost;
+
 enum REMOTE_COMMAND {
 	RCD_NONE,
 	RCD_MODE_IDLE,
@@ -48,12 +50,13 @@ enum REMOTE_COMMAND {
 	RCD_DISABLE_FM,
 	RCD_PAGE,
 	RCD_CW,
-	RCD_RELOAD
+	RCD_RELOAD,
+	RCD_CONNECTION_STATUS
 };
 
 class CRemoteControl {
 public:
-	CRemoteControl(const std::string address, unsigned int port);
+	CRemoteControl(class CMMDVMHost *host, const std::string address, unsigned int port);
 	~CRemoteControl();
 
 	bool open();
@@ -69,6 +72,7 @@ public:
 	void close();
 
 private:
+	CMMDVMHost*              m_host;
 	CUDPSocket               m_socket;
 	REMOTE_COMMAND           m_command;
 	std::vector<std::string> m_args;

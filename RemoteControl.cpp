@@ -17,6 +17,7 @@
  */
 
 #include "RemoteControl.h"
+#include "MMDVMHost.h"
 #include "Log.h"
 
 #include <cstdio>
@@ -32,7 +33,8 @@ const unsigned int CW_ARGS = 2U;
 
 const unsigned int BUFFER_LENGTH = 100U;
 
-CRemoteControl::CRemoteControl(const std::string address, unsigned int port) :
+CRemoteControl::CRemoteControl(CMMDVMHost *host, const std::string address, unsigned int port) :
+m_host(host),
 m_socket(address, port),
 m_command(RCD_NONE),
 m_args()
@@ -131,7 +133,16 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 		} else if (m_args.at(0U) == "reload") {
                         // Reload command is in the form of "reload"
                         m_command = RCD_RELOAD;
-                }
+		} else if (m_args.at(0U) == "status") {
+			if (m_host != NULL) {
+				m_host->buildNetworkStatusString(replyStr);
+			}
+			else {
+				replyStr = "KO";
+			}
+
+			m_command = RCD_CONNECTION_STATUS;
+		}
 		else
 			replyStr = "KO";
 

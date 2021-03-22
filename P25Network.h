@@ -43,6 +43,8 @@ public:
 
 	unsigned int read(unsigned char* data, unsigned int length);
 
+	bool isConnected() const;
+
 	void close();
 
 	void clock(unsigned int ms);

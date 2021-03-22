@@ -424,6 +424,11 @@ unsigned int CP25Network::read(unsigned char* data, unsigned int length)
 	return c;
 }
 
+bool CP25Network::isConnected() const
+{
+	return (m_enabled && (m_addrLen != 0));
+}
+
 void CP25Network::close()
 {
 	m_socket.close();

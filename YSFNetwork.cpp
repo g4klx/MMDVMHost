@@ -183,6 +183,11 @@ void CYSFNetwork::reset()
 	::memset(m_tag, ' ', YSF_CALLSIGN_LENGTH);
 }
 
+bool CYSFNetwork::isConnected() const
+{
+	return (m_enabled && (m_addrLen != 0));
+}
+
 void CYSFNetwork::close()
 {
 	m_socket.close();
