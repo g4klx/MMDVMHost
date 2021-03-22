@@ -55,7 +55,8 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 	m_args.clear();
 
 	char command[BUFFER_LENGTH];
-	char buffer[BUFFER_LENGTH];
+	char buffer[BUFFER_LENGTH * 2];
+	std::string replyStr = "OK";
 	sockaddr_storage address;
 	unsigned int addrlen;
 	int ret = m_socket.read((unsigned char*)buffer, BUFFER_LENGTH, address, addrlen);
@@ -89,6 +90,8 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 				m_command = RCD_MODE_P25;
 			else if (m_args.at(1U) == "nxdn")
 				m_command = RCD_MODE_NXDN;
+			else
+				replyStr = "KO";
 		} else if (m_args.at(0U) == "enable" && m_args.size() >= ENABLE_ARGS) {
 			if (m_args.at(1U) == "dstar")
 				m_command = RCD_ENABLE_DSTAR;
@@ -102,6 +105,8 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 				m_command = RCD_ENABLE_NXDN;
 			else if (m_args.at(1U) == "fm")
 				m_command = RCD_ENABLE_FM;
+			else
+				replyStr = "KO";
 		} else if (m_args.at(0U) == "disable" && m_args.size() >= DISABLE_ARGS) {
 			if (m_args.at(1U) == "dstar")
 				m_command = RCD_DISABLE_DSTAR;
@@ -115,6 +120,8 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 				m_command = RCD_DISABLE_NXDN;
 			else if (m_args.at(1U) == "fm")
 				m_command = RCD_DISABLE_FM;
+			else
+				replyStr = "KO";
 		} else if (m_args.at(0U) == "page" && m_args.size() >= PAGE_ARGS) {
 			// Page command is in the form of "page <ric> <message>"
 			m_command = RCD_PAGE;
@@ -125,13 +132,18 @@ REMOTE_COMMAND CRemoteControl::getCommand()
                         // Reload command is in the form of "reload"
                         m_command = RCD_RELOAD;
                 }
+		else
+			replyStr = "KO";
 
+		::snprintf(buffer, BUFFER_LENGTH * 2, "%s remote command of \"%s\" received", ((m_command == RCD_NONE) ? "Invalid" : "Valid"), command);
 		if (m_command == RCD_NONE) {
 			m_args.clear();
-			LogWarning("Invalid remote command of \"%s\" received", command);
+			LogWarning(buffer);
 		} else {
-			LogMessage("Valid remote command of \"%s\" received", command);
+			LogMessage(buffer);
 		}
+		
+		m_socket.write((unsigned char*)replyStr.c_str(), replyStr.length(), address, addrlen);
 	}
 	
 	return m_command;
