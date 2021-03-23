@@ -289,7 +289,7 @@ bool CDMRGatewayNetwork::writeTalkerAlias(unsigned int id, unsigned char type, c
 
 bool CDMRGatewayNetwork::isConnected() const
 {
-	return (m_enabled && (m_addrLen != 0));
+	return (m_addrLen != 0);
 }
 
 void CDMRGatewayNetwork::close()

@@ -316,7 +316,7 @@ void CDStarNetwork::reset()
 
 bool CDStarNetwork::isConnected() const
 {
-	return (m_enabled && (m_addrLen != 0));
+	return (m_addrLen != 0);
 }
 
 void CDStarNetwork::close()

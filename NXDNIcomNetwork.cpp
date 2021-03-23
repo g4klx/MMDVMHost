@@ -155,7 +155,7 @@ void CNXDNIcomNetwork::reset()
 
 bool CNXDNIcomNetwork::isConnected() const
 {
-	return (m_enabled && (m_addrLen != 0));
+	return (m_addrLen != 0);
 }
 
 void CNXDNIcomNetwork::close()
