@@ -296,7 +296,7 @@
     <ClInclude Include="M17Network.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="M17LICH.h">
+    <ClInclude Include="M17LSF.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="M17CRC.h">
@@ -610,7 +610,7 @@
     <ClCompile Include="M17Utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="M17LICH.cpp">
+    <ClCompile Include="M17LSF.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="M17Convolution.cpp">

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,15 +16,15 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(M17LICH_H)
-#define  M17LICH_H
+#if !defined(M17LSF_H)
+#define  M17LSF_H
 
 #include <string>
 
-class CM17LICH {
+class CM17LSF {
 public:
-	CM17LICH();
-	~CM17LICH();
+	CM17LSF();
+	~CM17LSF();
 
 	void getNetwork(unsigned char* data) const;
 	void setNetwork(const unsigned char* data);
@@ -35,10 +35,20 @@ public:
 	std::string getDest() const;
 	void setDest(const std::string& callsign);
 
+	unsigned char getPacketStream() const;
+	void setPacketStream(unsigned char ps);
+
 	unsigned char getDataType() const;
 	void setDataType(unsigned char type);
 
-	bool isNONCENull() const;
+	unsigned char getEncryptionType() const;
+	void setEncryptionType(unsigned char type);
+
+	unsigned char getEncryptionSubType() const;
+	void setEncryptionSubType(unsigned char type);
+
+	unsigned char getCAN() const;
+	void setCAN(unsigned char can);
 
 	void reset();
 	bool isValid() const;
@@ -50,7 +60,7 @@ public:
 	void setFragment(const unsigned char* data, unsigned int n);
 
 private:
-	unsigned char* m_lich;
+	unsigned char* m_lsf;
 	bool           m_valid;
 };
 

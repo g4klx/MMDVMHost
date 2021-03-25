@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -60,12 +60,13 @@ void CM17Utils::decodeCallsign(const unsigned char* encoded, std::string& callsi
 
 	callsign.clear();
 
-	uint64_t enc = (uint64_t(encoded[0U]) << 40) +
-		       (uint64_t(encoded[1U]) << 32) +
-		       (uint64_t(encoded[2U]) << 24) +
-		       (uint64_t(encoded[3U]) << 16) +
-		       (uint64_t(encoded[4U]) << 8)  +
-		       (uint64_t(encoded[5U]) << 0);
+	uint64_t enc =
+			(uint64_t(encoded[0U]) << 40) +
+			(uint64_t(encoded[1U]) << 32) +
+			(uint64_t(encoded[2U]) << 24) +
+			(uint64_t(encoded[3U]) << 16) +
+			(uint64_t(encoded[4U]) << 8) +
+			(uint64_t(encoded[5U]) << 0);
 
 	if (enc >= 262144000000000ULL)	// 40^9
 		return;

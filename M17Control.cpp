@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015-2020 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2020,2021 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -57,9 +57,9 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 #define WRITE_BIT(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
-CM17Control::CM17Control(const std::string& callsign, unsigned int colorCode, bool selfOnly, bool allowEncryption, CM17Network* network, CDisplay* display, unsigned int timeout, bool duplex, CRSSIInterpolator* rssiMapper) :
+CM17Control::CM17Control(const std::string& callsign, unsigned int can, bool selfOnly, bool allowEncryption, CM17Network* network, CDisplay* display, unsigned int timeout, bool duplex, CRSSIInterpolator* rssiMapper) :
 m_callsign(callsign),
-m_colorCode(colorCode),
+m_can(can),
 m_selfOnly(selfOnly),
 m_allowEncryption(allowEncryption),
 m_network(network),
@@ -78,10 +78,10 @@ m_netFrames(0U),
 m_rfFN(0U),
 m_rfErrs(0U),
 m_rfBits(1U),
-m_rfLICH(),
-m_rfLICHn(0U),
-m_netLICH(),
-m_netLICHn(0U),
+m_rfLSF(),
+m_rfLSFn(0U),
+m_netLSF(),
+m_netLSFn(0U),
 m_rssiMapper(rssiMapper),
 m_rssi(0U),
 m_maxRSSI(0U),
@@ -109,8 +109,8 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 	unsigned char type = data[0U];
 
 	if (type == TAG_LOST && m_rfState == RS_RF_AUDIO) {
-		std::string source = m_rfLICH.getSource();
-		std::string dest = m_rfLICH.getDest();
+		std::string source = m_rfLSF.getSource();
+		std::string dest   = m_rfLSF.getDest();
 
 		if (m_rssi != 0U)
 			LogMessage("M17, transmission lost from %s to %s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
@@ -121,6 +121,11 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 	}
 
 	if (type == TAG_LOST && m_rfState == RS_RF_DATA) {
+		writeEndRF();
+		return false;
+	}
+
+	if (type == TAG_LOST && m_rfState == RS_RF_REJECTED) {
 		writeEndRF();
 		return false;
 	}
@@ -158,14 +163,22 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 	interleaver(temp, data + 2U);
 
 	if (m_rfState == RS_RF_LISTENING && data[0U] == TAG_HEADER) {
-		m_rfLICH.reset();
+		m_rfLSF.reset();
 
 		CM17Convolution conv;
-		unsigned char frame[M17_LICH_LENGTH_BYTES];
+		unsigned char frame[M17_LSF_LENGTH_BYTES];
 		conv.decodeLinkSetup(data + 2U + M17_SYNC_LENGTH_BYTES, frame);
 
-		bool valid = CM17CRC::checkCRC(frame, M17_LICH_LENGTH_BYTES);
+		bool valid = CM17CRC::checkCRC(frame, M17_LSF_LENGTH_BYTES);
 		if (valid) {
+			m_rfLSF.setLinkSetup(frame);
+
+			bool ret = processRFHeader(false);
+			if (!ret) {
+				m_rfLSF.reset();
+				return false;
+			}
+
 			m_rfFrames = 0U;
 			m_rfErrs = 0U;
 			m_rfBits = 1U;
@@ -174,20 +187,21 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_maxRSSI = m_rssi;
 			m_aveRSSI = m_rssi;
 			m_rssiCount = 1U;
-			m_rfLICHn   = 0U;
+			m_rfLSFn    = 0U;
 			m_rfFN      = 0U;
 
 #if defined(DUMP_M17)
 			openFile();
 #endif
-			m_rfLICH.setLinkSetup(frame);
-
-			m_rfState = RS_RF_LATE_ENTRY;
-
 			return true;
 		} else {
 			m_rfState = RS_RF_LATE_ENTRY;
 		}
+	}
+
+	if (m_rfState == RS_RF_LISTENING && data[0U] == TAG_DATA) {
+		m_rfState = RS_RF_LATE_ENTRY;
+		m_rfLSF.reset();
 	}
 
 	if (m_rfState == RS_RF_LATE_ENTRY && data[0U] == TAG_DATA) {
@@ -199,23 +213,24 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		unsigned int lich3 = CGolay24128::decode24128(frag3);
 		unsigned int lich4 = CGolay24128::decode24128(frag4);
 
-		unsigned int colorCode = (lich4 >> 7) & 0x1FU;
-		if (colorCode != m_colorCode)
+		unsigned int can = lich4 & 0x1FU;
+		if (can != m_can)
 			return false;
 
-		bool lateEntry = false;
-		if (!m_rfLICH.isValid()) {
-			unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
-			CM17Utils::combineFragmentLICH(lich1, lich2, lich3, lich4, lich);
+		unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
+		CM17Utils::combineFragmentLICH(lich1, lich2, lich3, lich4, lich);
 
-			unsigned int n = (lich4 >> 4) & 0x07U;
-			m_rfLICH.setFragment(lich, n);
+		m_rfLSFn = (lich4 >> 5) & 0x07U;
+		m_rfLSF.setFragment(lich, m_rfLSFn);
 
-			lateEntry = true;
-		}
-
-		bool valid = m_rfLICH.isValid();
+		bool valid = m_rfLSF.isValid();
 		if (valid) {
+			bool ret = processRFHeader(true);
+			if (!ret) {
+				m_rfLSF.reset();
+				return false;
+			}
+
 			m_rfFrames = 0U;
 			m_rfErrs = 0U;
 			m_rfBits = 1U;
@@ -224,68 +239,13 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_maxRSSI = m_rssi;
 			m_aveRSSI = m_rssi;
 			m_rssiCount = 1U;
-			m_rfLICHn   = 0U;
 
 #if defined(DUMP_M17)
 			openFile();
 #endif
-			std::string source = m_rfLICH.getSource();
-			std::string dest   = m_rfLICH.getDest();
-
-			if (m_selfOnly) {
-				bool ret = checkCallsign(source);
-				if (!ret) {
-					LogMessage("M17, invalid access attempt from %s to %s", source.c_str(), dest.c_str());
-					m_rfState = RS_RF_REJECTED;
-					return false;
-				}
-			}
-
-			unsigned char dataType = m_rfLICH.getDataType();
-			switch (dataType) {
-			case 1U:
-				LogMessage("M17, received RF %s data transmission from %s to %s", lateEntry ? "late entry" : "", source.c_str(), dest.c_str());
-				m_rfState = RS_RF_DATA;
-				break;
-			case 2U:
-				LogMessage("M17, received RF %s voice transmission from %s to %s", lateEntry ? "late entry" : "", source.c_str(), dest.c_str());
-				m_rfState = RS_RF_AUDIO;
-				break;
-			case 3U:
-				LogMessage("M17, received RF %s voice + data transmission from %s to %s", lateEntry ? "late entry" : "", source.c_str(), dest.c_str());
-				m_rfState = RS_RF_AUDIO;
-				break;
-			default:
-				LogMessage("M17, received RF %s unknown transmission from %s to %s", lateEntry ? "late entry" : "", source.c_str(), dest.c_str());
-				m_rfState = RS_RF_DATA;
-				break;
-			}
-
-			m_display->writeM17(source.c_str(), dest.c_str(), "R");
-
-			if (m_duplex) {
-				// Create a Link Setup frame
-				data[0U] = TAG_HEADER;
-				data[1U] = 0x00U;
-
-				// Generate the sync
-				CSync::addM17LinkSetupSync(data + 2U);
-				
-				unsigned char setup[M17_LICH_LENGTH_BYTES];
-				m_rfLICH.getLinkSetup(setup);
-
-				// Add the convolution FEC
-				CM17Convolution conv;
-				conv.encodeLinkSetup(setup, data + 2U + M17_SYNC_LENGTH_BYTES);
-
-				unsigned char temp[M17_FRAME_LENGTH_BYTES];
-				interleaver(data + 2U, temp);
-				decorrelator(temp, data + 2U);
-
-				writeQueueRF(data);
-			}
-
-			// Fall through to the next section
+			// Fall through
+		} else {
+			return false;
 		}
 	}
 
@@ -309,13 +269,13 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			frame[1U] = m_rfFN >> 0;
 
 			// Add silent audio
-			unsigned char dataType = m_rfLICH.getDataType();
+			unsigned char dataType = m_rfLSF.getDataType();
 			switch (dataType) {
-			case 2U:
+			case M17_DATA_TYPE_VOICE:
 				::memcpy(frame + M17_FN_LENGTH_BYTES + 0U, M17_3200_SILENCE, 8U);
 				::memcpy(frame + M17_FN_LENGTH_BYTES + 8U, M17_3200_SILENCE, 8U);
 				break;
-			case 3U:
+			case M17_DATA_TYPE_VOICE_DATA:
 				::memcpy(frame + M17_FN_LENGTH_BYTES + 0U, M17_1600_SILENCE, 8U);
 				break;
 			default:
@@ -335,14 +295,14 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		CSync::addM17StreamSync(rfData + 2U);
 
 		unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
-		m_netLICH.getFragment(lich, m_rfLICHn);
+		m_rfLSF.getFragment(lich, m_rfLSFn);
 
 		unsigned int frag1, frag2, frag3, frag4;
 		CM17Utils::splitFragmentLICH(lich, frag1, frag2, frag3, frag4);
 
-		// Add the Color Code and fragment number
-		frag4 |= (m_rfLICHn & 0x07U)   << 4;
-		frag4 |= (m_colorCode & 0x1FU) << 7;
+		// Add the CAN and fragment number
+		frag4 |= (m_rfLSFn & 0x07U) << 5;
+		frag4 |= m_can & 0x1FU;
 
 		// Add Golay to the LICH fragment here
 		unsigned int lich1 = CGolay24128::encode24128(frag1);
@@ -361,7 +321,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			for (unsigned int i = 2U; i < (M17_FRAME_LENGTH_BYTES + 2U); i++)
 				errors += countBits(rfData[i] ^ data[i]);
 
-			LogDebug("M17, FN: %u, errs: %u/384 (%.1f%%)", m_rfFN, errors, float(errors) / 3.84F);
+			LogDebug("M17, FN: %u, errs: %u/384 (%.1f%%)", m_rfFN & 0x7FU, errors, float(errors) / 3.84F);
 
 			m_rfBits += M17_FRAME_LENGTH_BITS;
 			m_rfErrs += errors;
@@ -372,32 +332,34 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 		unsigned char temp[M17_FRAME_LENGTH_BYTES];
 		interleaver(rfData + 2U, temp);
-		decorrelator(rfData, data + 2U);
+		decorrelator(temp, rfData + 2U);
 
 		if (m_duplex)
 			writeQueueRF(rfData);
 
-		unsigned char netData[M17_LICH_LENGTH_BYTES + M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
+		if (m_network != NULL && m_rfTimeoutTimer.isRunning() && !m_rfTimeoutTimer.hasExpired()) {
+			unsigned char netData[M17_LSF_LENGTH_BYTES + M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
 
-		m_rfLICH.getNetwork(netData + 0U);
+			m_rfLSF.getNetwork(netData + 0U);
 
-		// Copy the FN and payload from the frame
-		::memcpy(netData + M17_LICH_LENGTH_BYTES - M17_CRC_LENGTH_BYTES, frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
+			// Copy the FN and payload from the frame
+			::memcpy(netData + M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES, frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
 
-		// The CRC is added in the networking code
+			// The CRC is added in the networking code
 
-		writeNetwork(netData);
+			m_network->write(netData);
+		}
 
 		m_rfFrames++;
 
-		m_rfLICHn++;
-		if (m_rfLICHn >= 6U)
-			m_rfLICHn = 0U;
+		m_rfLSFn++;
+		if (m_rfLSFn >= 6U)
+			m_rfLSFn = 0U;
 
 		// EOT?
 		if ((m_rfFN & 0x8000U) == 0x8000U) {
-			std::string source = m_rfLICH.getSource();
-			std::string dest   = m_rfLICH.getDest();
+			std::string source = m_rfLSF.getSource();
+			std::string dest   = m_rfLSF.getDest();
 
 			if (m_rssi != 0U)
 				LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
@@ -407,22 +369,6 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		}
 
 		return true;
-	}
-
-	if (m_rfState == RS_RF_REJECTED && data[0U] == TAG_DATA) {
-		CM17Convolution conv;
-		unsigned char frame[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
-		conv.decodeData(data + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES, frame);
-
-		bool valid = CM17CRC::checkCRC(frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
-		if (valid) {
-			// Handle the EOT for rejected frames
-			unsigned int fn = (frame[0U] << 8) + (frame[1U] << 0);
-			if ((fn & 0x8000U) == 0x8000U)
-				writeEndRF();
-		}
-
-		return false;
 	}
 
 	return false;
@@ -449,7 +395,7 @@ void CM17Control::writeEndRF()
 
 	m_rfTimeoutTimer.stop();
 
-	m_rfLICH.reset();
+	m_rfLSF.reset();
 
 	if (m_netState == RS_NET_IDLE) {
 		m_display->clearM17();
@@ -471,7 +417,7 @@ void CM17Control::writeEndNet()
 	m_networkWatchdog.stop();
 	m_packetTimer.stop();
 
-	m_netLICH.reset();
+	m_netLSF.reset();
 
 	m_display->clearM17();
 
@@ -494,29 +440,30 @@ void CM17Control::writeNetwork()
 
 	m_networkWatchdog.start();
 
-	m_netLICH.setNetwork(netData);
+	m_netLSF.setNetwork(netData);
+	m_netLSF.setCAN(m_can);
 
 	if (!m_allowEncryption) {
-		bool ret = m_rfLICH.isNONCENull();
-		if (!ret)
+		unsigned char type = m_netLSF.getEncryptionType();
+		if (type != M17_ENCRYPTION_TYPE_NONE)
 			return;
 	}
 
 	if (m_netState == RS_NET_IDLE) {
-		std::string source = m_netLICH.getSource();
-		std::string dest   = m_netLICH.getDest();
+		std::string source = m_netLSF.getSource();
+		std::string dest   = m_netLSF.getDest();
 
-		unsigned char dataType = m_netLICH.getDataType();
+		unsigned char dataType = m_netLSF.getDataType();
 		switch (dataType) {
-		case 1U:
+		case M17_DATA_TYPE_DATA:
 			LogMessage("M17, received network data transmission from %s to %s", source.c_str(), dest.c_str());
 			m_netState = RS_NET_DATA;
 			break;
-		case 2U:
+		case M17_DATA_TYPE_VOICE:
 			LogMessage("M17, received network voice transmission from %s to %s", source.c_str(), dest.c_str());
 			m_netState = RS_NET_AUDIO;
 			break;
-		case 3U:
+		case M17_DATA_TYPE_VOICE_DATA:
 			LogMessage("M17, received network voice + data transmission from %s to %s", source.c_str(), dest.c_str());
 			m_netState = RS_NET_AUDIO;
 			break;
@@ -532,7 +479,7 @@ void CM17Control::writeNetwork()
 		m_packetTimer.start();
 		m_elapsed.start();
 		m_netFrames = 0U;
-		m_netLICHn  = 0U;
+		m_netLSFn   = 0U;
 
 		// Create a dummy start message
 		unsigned char start[M17_FRAME_LENGTH_BYTES + 2U];
@@ -543,8 +490,8 @@ void CM17Control::writeNetwork()
 		// Generate the sync
 		CSync::addM17LinkSetupSync(start + 2U);
 
-		unsigned char setup[M17_LICH_LENGTH_BYTES];
-		m_netLICH.getLinkSetup(setup);
+		unsigned char setup[M17_LSF_LENGTH_BYTES];
+		m_netLSF.getLinkSetup(setup);
 
 		// Add the convolution FEC
 		CM17Convolution conv;
@@ -557,64 +504,142 @@ void CM17Control::writeNetwork()
 		writeQueueNet(start);
 	}
 
-	unsigned char data[M17_FRAME_LENGTH_BYTES + 2U];
+	if (m_netState == RS_NET_AUDIO) {
+		unsigned char data[M17_FRAME_LENGTH_BYTES + 2U];
 
-	data[0U] = TAG_DATA;
-	data[1U] = 0x00U;
+		data[0U] = TAG_DATA;
+		data[1U] = 0x00U;
 
-	// Generate the sync
-	CSync::addM17StreamSync(data + 2U);
+		// Generate the sync
+		CSync::addM17StreamSync(data + 2U);
 
-	m_netFrames++;
+		m_netFrames++;
 
-	// Add the fragment LICH
-	unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
-	m_netLICH.getFragment(lich, m_netLICHn);
+		// Add the fragment LICH
+		unsigned char lich[M17_LSF_FRAGMENT_LENGTH_BYTES];
+		m_netLSF.getFragment(lich, m_netLSFn);
 
-	unsigned int frag1, frag2, frag3, frag4;
-	CM17Utils::splitFragmentLICH(lich, frag1, frag2, frag3, frag4);
+		unsigned int frag1, frag2, frag3, frag4;
+		CM17Utils::splitFragmentLICH(lich, frag1, frag2, frag3, frag4);
 
-	// Add the Color Code and fragment number
-	frag4 |= (m_netLICHn & 0x07U)  << 4;
-	frag4 |= (m_colorCode & 0x1FU) << 7;
+		// Add the Color Code and fragment number
+		frag4 |= (m_netLSFn & 0x07U) << 4;
+		frag4 |= (m_can & 0x1FU) << 7;
 
-	// Add Golay to the LICH fragment here
-	unsigned int lich1 = CGolay24128::encode24128(frag1);
-	unsigned int lich2 = CGolay24128::encode24128(frag2);
-	unsigned int lich3 = CGolay24128::encode24128(frag3);
-	unsigned int lich4 = CGolay24128::encode24128(frag4);
+		// Add Golay to the LICH fragment here
+		unsigned int lich1 = CGolay24128::encode24128(frag1);
+		unsigned int lich2 = CGolay24128::encode24128(frag2);
+		unsigned int lich3 = CGolay24128::encode24128(frag3);
+		unsigned int lich4 = CGolay24128::encode24128(frag4);
 
-	CM17Utils::combineFragmentLICHFEC(lich1, lich2, lich3, lich4, data + 2U + M17_SYNC_LENGTH_BYTES);
+		CM17Utils::combineFragmentLICHFEC(lich1, lich2, lich3, lich4, data + 2U + M17_SYNC_LENGTH_BYTES);
 
-	// Add the FN and the data/audio
-	unsigned char payload[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
-	::memcpy(payload, netData + 28U, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
+		// Add the FN and the data/audio
+		unsigned char payload[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
+		::memcpy(payload, netData + 28U, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
 
-	// Add the CRC
-	CM17CRC::encodeCRC(payload, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
+		// Add the CRC
+		CM17CRC::encodeCRC(payload, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
 
-	// Add the Convolution FEC
-	CM17Convolution conv;
-	conv.encodeData(payload, data + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES);
+		// Add the Convolution FEC
+		CM17Convolution conv;
+		conv.encodeData(payload, data + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES);
 
-	unsigned char temp[M17_FRAME_LENGTH_BYTES];
-	interleaver(data + 2U, temp);
-	decorrelator(temp, data + 2U);
+		unsigned char temp[M17_FRAME_LENGTH_BYTES];
+		interleaver(data + 2U, temp);
+		decorrelator(temp, data + 2U);
 
-	writeQueueNet(data);
+		writeQueueNet(data);
 
-	m_netLICHn++;
-	if (m_netLICHn >= 6U)
-		m_netLICHn = 0U;
+		m_netLSFn++;
+		if (m_netLSFn >= 6U)
+			m_netLSFn = 0U;
 
-	// EOT handling
-	uint16_t fn = (netData[28U] << 8) + (netData[29U] << 0);
-	if ((fn & 0x8000U) == 0x8000U) {
-		std::string source = m_netLICH.getSource();
-		std::string dest   = m_netLICH.getDest();
-		LogMessage("M17, received network end of transmission from %s to %s, %.1f seconds", source.c_str(), dest.c_str(), float(m_netFrames) / 25.0F);
-		writeEndNet();
+		// EOT handling
+		uint16_t fn = (netData[28U] << 8) + (netData[29U] << 0);
+		if ((fn & 0x8000U) == 0x8000U) {
+			std::string source = m_netLSF.getSource();
+			std::string dest   = m_netLSF.getDest();
+			LogMessage("M17, received network end of transmission from %s to %s, %.1f seconds", source.c_str(), dest.c_str(), float(m_netFrames) / 25.0F);
+			writeEndNet();
+		}
 	}
+}
+
+bool CM17Control::processRFHeader(bool lateEntry)
+{
+	unsigned char can = m_rfLSF.getCAN();
+	if (can != m_can)
+		return false;
+
+	std::string source = m_rfLSF.getSource();
+	std::string dest   = m_rfLSF.getDest();
+
+	if (!m_allowEncryption) {
+		unsigned char type = m_rfLSF.getEncryptionType();
+		if (type != M17_ENCRYPTION_TYPE_NONE) {
+			LogMessage("M17, access attempt with encryption from %s to %s", source.c_str(), dest.c_str());
+			m_rfState = RS_RF_REJECTED;
+			return false;
+		}
+	}
+
+	if (m_selfOnly) {
+		bool ret = checkCallsign(source);
+		if (!ret) {
+			LogMessage("M17, invalid access attempt from %s to %s", source.c_str(), dest.c_str());
+			m_rfState = RS_RF_REJECTED;
+			return false;
+		}
+	}
+
+	unsigned char dataType = m_rfLSF.getDataType();
+	switch (dataType) {
+	case M17_DATA_TYPE_DATA:
+		LogMessage("M17, received RF%sdata transmission from %s to %s", lateEntry ? " late entry " : " ", source.c_str(), dest.c_str());
+		m_rfState = RS_RF_DATA;
+		break;
+	case M17_DATA_TYPE_VOICE:
+		LogMessage("M17, received RF%svoice transmission from %s to %s", lateEntry ? " late entry " : " ", source.c_str(), dest.c_str());
+		m_rfState = RS_RF_AUDIO;
+		break;
+	case M17_DATA_TYPE_VOICE_DATA:
+		LogMessage("M17, received RF%svoice + data transmission from %s to %s", lateEntry ? " late entry " : " ", source.c_str(), dest.c_str());
+		m_rfState = RS_RF_AUDIO;
+		break;
+	default:
+		LogMessage("M17, received RF%sunknown transmission from %s to %s", lateEntry ? " late entry " : " ", source.c_str(), dest.c_str());
+		m_rfState = RS_RF_DATA;
+		break;
+	}
+
+	m_display->writeM17(source.c_str(), dest.c_str(), "R");
+
+	if (m_duplex) {
+		unsigned char data[M17_FRAME_LENGTH_BYTES + 2U];
+
+		// Create a Link Setup frame
+		data[0U] = TAG_HEADER;
+		data[1U] = 0x00U;
+
+		// Generate the sync
+		CSync::addM17LinkSetupSync(data + 2U);
+
+		unsigned char setup[M17_LSF_LENGTH_BYTES];
+		m_rfLSF.getLinkSetup(setup);
+
+		// Add the convolution FEC
+		CM17Convolution conv;
+		conv.encodeLinkSetup(setup, data + 2U + M17_SYNC_LENGTH_BYTES);
+
+		unsigned char temp[M17_FRAME_LENGTH_BYTES];
+		interleaver(data + 2U, temp);
+		decorrelator(temp, data + 2U);
+
+		writeQueueRF(data);
+	}
+
+	return true;
 }
 
 void CM17Control::clock(unsigned int ms)
@@ -676,19 +701,6 @@ void CM17Control::writeQueueNet(const unsigned char *data)
 	m_queue.addData(&len, 1U);
 
 	m_queue.addData(data, len);
-}
-
-void CM17Control::writeNetwork(const unsigned char *data)
-{
-	assert(data != NULL);
-
-	if (m_network == NULL)
-		return;
-
-	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired())
-		return;
-
-	m_network->write(data);
 }
 
 void CM17Control::interleaver(const unsigned char* in, unsigned char* out) const
