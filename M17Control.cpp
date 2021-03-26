@@ -213,10 +213,6 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		unsigned int lich3 = CGolay24128::decode24128(frag3);
 		unsigned int lich4 = CGolay24128::decode24128(frag4);
 
-		unsigned int can = lich4 & 0x1FU;
-		if (can != m_can)
-			return false;
-
 		unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
 		CM17Utils::combineFragmentLICH(lich1, lich2, lich3, lich4, lich);
 
@@ -300,9 +296,8 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		unsigned int frag1, frag2, frag3, frag4;
 		CM17Utils::splitFragmentLICH(lich, frag1, frag2, frag3, frag4);
 
-		// Add the CAN and fragment number
+		// Add the fragment number
 		frag4 |= (m_rfLSFn & 0x07U) << 5;
-		frag4 |= m_can & 0x1FU;
 
 		// Add Golay to the LICH fragment here
 		unsigned int lich1 = CGolay24128::encode24128(frag1);
@@ -522,9 +517,8 @@ void CM17Control::writeNetwork()
 		unsigned int frag1, frag2, frag3, frag4;
 		CM17Utils::splitFragmentLICH(lich, frag1, frag2, frag3, frag4);
 
-		// Add the Color Code and fragment number
+		// Add the fragment number
 		frag4 |= (m_netLSFn & 0x07U) << 4;
-		frag4 |= (m_can & 0x1FU) << 7;
 
 		// Add Golay to the LICH fragment here
 		unsigned int lich1 = CGolay24128::encode24128(frag1);
