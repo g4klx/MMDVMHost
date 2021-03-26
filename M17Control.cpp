@@ -169,7 +169,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		unsigned char frame[M17_LSF_LENGTH_BYTES];
 		conv.decodeLinkSetup(data + 2U + M17_SYNC_LENGTH_BYTES, frame);
 
-		bool valid = CM17CRC::checkCRC(frame, M17_LSF_LENGTH_BYTES);
+		bool valid = CM17CRC::checkCRC16(frame, M17_LSF_LENGTH_BYTES);
 		if (valid) {
 			m_rfLSF.setLinkSetup(frame);
 
@@ -196,6 +196,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			return true;
 		} else {
 			m_rfState = RS_RF_LATE_ENTRY;
+			return false;
 		}
 	}
 
@@ -215,6 +216,9 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 		unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
 		CM17Utils::combineFragmentLICH(lich1, lich2, lich3, lich4, lich);
+
+		if (!CM17CRC::checkCRC8(lich, M17_LICH_FRAGMENT_LENGTH_BYTES))
+			return false;
 
 		m_rfLSFn = (lich4 >> 5) & 0x07U;
 		m_rfLSF.setFragment(lich, m_rfLSFn);
@@ -253,7 +257,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		unsigned char frame[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
 		conv.decodeData(data + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES, frame);
 
-		bool valid = CM17CRC::checkCRC(frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
+		bool valid = CM17CRC::checkCRC16(frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
 		if (valid) {
 			m_rfFN = (frame[0U] << 8) + (frame[1U] << 0);
 		} else {
@@ -279,7 +283,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			}
 
 			// Add the CRC
-			CM17CRC::encodeCRC(frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
+			CM17CRC::encodeCRC16(frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
 		}
 
 		unsigned char rfData[2U + M17_FRAME_LENGTH_BYTES];
@@ -293,11 +297,14 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
 		m_rfLSF.getFragment(lich, m_rfLSFn);
 
+		// Add the fragment number
+		lich[5U] = (m_rfLSFn & 0x07U) << 5;
+
+		// Add the CRC
+		CM17CRC::encodeCRC8(lich, M17_LICH_FRAGMENT_LENGTH_BYTES);
+
 		unsigned int frag1, frag2, frag3, frag4;
 		CM17Utils::splitFragmentLICH(lich, frag1, frag2, frag3, frag4);
-
-		// Add the fragment number
-		frag4 |= (m_rfLSFn & 0x07U) << 5;
 
 		// Add Golay to the LICH fragment here
 		unsigned int lich1 = CGolay24128::encode24128(frag1);
@@ -362,11 +369,9 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 				LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%", source.c_str(), dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 			writeEndRF();
 		}
-
-		return true;
 	}
 
-	return false;
+	return true;
 }
 
 unsigned int CM17Control::readModem(unsigned char* data)
@@ -511,14 +516,17 @@ void CM17Control::writeNetwork()
 		m_netFrames++;
 
 		// Add the fragment LICH
-		unsigned char lich[M17_LSF_FRAGMENT_LENGTH_BYTES];
+		unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
 		m_netLSF.getFragment(lich, m_netLSFn);
+
+		// Add the fragment number
+		lich[5U] = (m_netLSFn & 0x07U) << 5;
+
+		// Add the CRC
+		CM17CRC::encodeCRC8(lich, M17_LICH_FRAGMENT_LENGTH_BYTES);
 
 		unsigned int frag1, frag2, frag3, frag4;
 		CM17Utils::splitFragmentLICH(lich, frag1, frag2, frag3, frag4);
-
-		// Add the fragment number
-		frag4 |= (m_netLSFn & 0x07U) << 4;
 
 		// Add Golay to the LICH fragment here
 		unsigned int lich1 = CGolay24128::encode24128(frag1);
@@ -533,7 +541,7 @@ void CM17Control::writeNetwork()
 		::memcpy(payload, netData + 28U, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
 
 		// Add the CRC
-		CM17CRC::encodeCRC(payload, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
+		CM17CRC::encodeCRC16(payload, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
 
 		// Add the Convolution FEC
 		CM17Convolution conv;

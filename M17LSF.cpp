@@ -162,7 +162,7 @@ void CM17LSF::getLinkSetup(unsigned char* data) const
 
 	::memcpy(data, m_lsf, M17_LSF_LENGTH_BYTES);
 
-	CM17CRC::encodeCRC(data, M17_LSF_LENGTH_BYTES);
+	CM17CRC::encodeCRC16(data, M17_LSF_LENGTH_BYTES);
 }
 
 void CM17LSF::setLinkSetup(const unsigned char* data)
@@ -171,14 +171,14 @@ void CM17LSF::setLinkSetup(const unsigned char* data)
 
 	::memcpy(m_lsf, data, M17_LSF_LENGTH_BYTES);
 
-	m_valid = CM17CRC::checkCRC(m_lsf, M17_LSF_LENGTH_BYTES);
+	m_valid = CM17CRC::checkCRC16(m_lsf, M17_LSF_LENGTH_BYTES);
 }
 
 void CM17LSF::getFragment(unsigned char* data, unsigned int n) const
 {
 	assert(data != NULL);
 
-	CM17CRC::encodeCRC(m_lsf, M17_LSF_LENGTH_BYTES);
+	CM17CRC::encodeCRC16(m_lsf, M17_LSF_LENGTH_BYTES);
 
 	::memcpy(data, m_lsf + (n * M17_LSF_FRAGMENT_LENGTH_BYTES), M17_LSF_FRAGMENT_LENGTH_BYTES);
 }
@@ -189,5 +189,5 @@ void CM17LSF::setFragment(const unsigned char* data, unsigned int n)
 
 	::memcpy(m_lsf + (n * M17_LSF_FRAGMENT_LENGTH_BYTES), data, M17_LSF_FRAGMENT_LENGTH_BYTES);
 
-	m_valid = CM17CRC::checkCRC(m_lsf, M17_LSF_LENGTH_BYTES);
+	m_valid = CM17CRC::checkCRC16(m_lsf, M17_LSF_LENGTH_BYTES);
 }
