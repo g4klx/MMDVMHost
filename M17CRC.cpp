@@ -101,7 +101,7 @@ uint16_t CM17CRC::createCRC16(const unsigned char* in, unsigned int nBytes)
 	return crc;
 }
 
-bool CM17CRC::checkCRC8(unsigned char* in, unsigned int nBytes)
+bool CM17CRC::checkCRC4(unsigned char* in, unsigned int nBytes)
 {
 	assert(in != NULL);
 	assert(nBytes > 1U);
@@ -111,7 +111,7 @@ bool CM17CRC::checkCRC8(unsigned char* in, unsigned int nBytes)
 	// Mask out the 4-bit CRC location
 	in[nBytes - 1U] &= 0xF0U;
 
-	uint8_t crc = createCRC8(in, nBytes);
+	uint8_t crc = createCRC4(in, nBytes);
 
 	// Restore the original CRC
 	in[nBytes - 1U] |= save;
@@ -119,19 +119,19 @@ bool CM17CRC::checkCRC8(unsigned char* in, unsigned int nBytes)
 	return save == crc;
 }
 
-void CM17CRC::encodeCRC8(unsigned char* in, unsigned int nBytes)
+void CM17CRC::encodeCRC4(unsigned char* in, unsigned int nBytes)
 {
 	assert(in != NULL);
 	assert(nBytes > 1U);
 
 	in[nBytes - 1U] &= 0xF0U;
 
-	uint8_t crc = createCRC8(in, nBytes);
+	uint8_t crc = createCRC4(in, nBytes);
 
 	in[nBytes - 1U] |= crc & 0x0FU;
 }
 
-uint8_t CM17CRC::createCRC8(const unsigned char* in, unsigned int nBytes)
+uint8_t CM17CRC::createCRC4(const unsigned char* in, unsigned int nBytes)
 {
 	assert(in != NULL);
 

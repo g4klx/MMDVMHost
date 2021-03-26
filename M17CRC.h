@@ -27,12 +27,12 @@ public:
 	static bool checkCRC16(const unsigned char* in, unsigned int nBytes);
 	static void encodeCRC16(unsigned char* in, unsigned int nBytes);
 
-	static bool checkCRC8(unsigned char* in, unsigned int nBytes);
-	static void encodeCRC8(unsigned char* in, unsigned int nBytes);
+	static bool checkCRC4(unsigned char* in, unsigned int nBytes);
+	static void encodeCRC4(unsigned char* in, unsigned int nBytes);
 
 private:
 	static uint16_t createCRC16(const unsigned char* in, unsigned int nBytes);
-	static uint8_t  createCRC8(const unsigned char* in, unsigned int nBytes);
+	static uint8_t  createCRC4(const unsigned char* in, unsigned int nBytes);
 };
 
 #endif
