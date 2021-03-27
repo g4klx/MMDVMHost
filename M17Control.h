@@ -92,8 +92,6 @@ private:
 
 	bool checkCallsign(const std::string& source) const;
 
-	unsigned int countBits(unsigned char byte);
-
 	void writeEndRF();
 	void writeEndNet();
 

@@ -1,9 +1,10 @@
 /*
- *   Copyright (C) 2010,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2010,2016,2021 by Jonathan Naylor G4KLX
  *   Copyright (C) 2002 by Robert H. Morelos-Zaragoza. All rights reserved.
  */
 
 #include "Golay24128.h"
+#include "Utils.h"
 
 #include <cstdio>
 #include <cassert>
@@ -1089,20 +1090,23 @@ unsigned int CGolay24128::decode23127(unsigned int code)
 	return code >> 11;
 }
 
-unsigned int CGolay24128::decode24128(unsigned int code)
+unsigned int CGolay24128::decode24128(unsigned int input, bool& valid)
 {
-	return decode23127(code >> 1);
+	unsigned int syndrome = ::get_syndrome_23127(input >> 1);
+	unsigned int error_pattern = DECODING_TABLE_23127[syndrome] << 1;
+
+	unsigned int output = input ^ error_pattern;
+
+	valid = (CUtils::countBits(syndrome) < 3U) || !(CUtils::countBits(output) & 1);
+
+	return output >> 12;
 }
 
-unsigned int CGolay24128::decode24128(unsigned char* bytes)
+unsigned int CGolay24128::decode24128(unsigned char* bytes, bool& valid)
 {
 	assert(bytes != NULL);
 
-	unsigned int code = bytes[0U];
-	code <<= 8;
-	code |= bytes[1U];
-	code <<= 8;
-	code |= bytes[2U];
+	unsigned int code = (bytes[0U] << 16) | (bytes[1U] << 8) | (bytes[2U] << 0);
 
-	return decode23127(code >> 1);
+	return decode24128(code, valid);
 }

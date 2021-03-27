@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2010,2014,2016,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2010,2014,2016,2018,2021 by Jonathan Naylor G4KLX
  *   Copyright (C) 2016 Mathias Weyland, HB9FRV
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -20,6 +20,7 @@
 #include "Golay24128.h"
 #include "Hamming.h"
 #include "AMBEFEC.h"
+#include "Utils.h"
 
 #include <cstdio>
 #include <cassert>
@@ -792,10 +793,12 @@ unsigned int CAMBEFEC::regenerateIMBE(unsigned char* bytes) const
 
 unsigned int CAMBEFEC::regenerateDStar(unsigned int& a, unsigned int& b) const
 {
+	bool valid;
+
 	unsigned int orig_a = a;
 	unsigned int orig_b = b;
 
-	unsigned int data = CGolay24128::decode24128(a);
+	unsigned int data = CGolay24128::decode24128(a, valid);
 
 	a = CGolay24128::encode24128(data);
 
@@ -804,35 +807,29 @@ unsigned int CAMBEFEC::regenerateDStar(unsigned int& a, unsigned int& b) const
 
 	b ^= p;
 
-	unsigned int datb = CGolay24128::decode24128(b);
+	unsigned int datb = CGolay24128::decode24128(b, valid);
 
 	b = CGolay24128::encode24128(datb);
 
 	b ^= p;
 
-	unsigned int errsA = 0U, errsB = 0U;
-
 	unsigned int v = a ^ orig_a;
-	while (v != 0U) {
-		v &= v - 1U;
-		errsA++;
-	}
+	unsigned int errsA = CUtils::countBits(v);
 
 	v = b ^ orig_b;
-	while (v != 0U) {
-		v &= v - 1U;
-		errsB++;
-	}
+	unsigned int errsB = CUtils::countBits(v);
 
 	return errsA + errsB;
 }
 
 unsigned int CAMBEFEC::regenerateDMR(unsigned int& a, unsigned int& b, unsigned int& c) const
 {
+	bool valid;
+
 	unsigned int orig_a = a;
 	unsigned int orig_b = b;
 
-	unsigned int data = CGolay24128::decode24128(a);
+	unsigned int data = CGolay24128::decode24128(a, valid);
 
 	a = CGolay24128::encode24128(data);
 
@@ -847,19 +844,11 @@ unsigned int CAMBEFEC::regenerateDMR(unsigned int& a, unsigned int& b, unsigned 
 
 	b ^= p;
 
-	unsigned int errsA = 0U, errsB = 0U;
-
 	unsigned int v = a ^ orig_a;
-	while (v != 0U) {
-		v &= v - 1U;
-		errsA++;
-	}
+	unsigned int errsA = CUtils::countBits(v);
 
 	v = b ^ orig_b;
-	while (v != 0U) {
-		v &= v - 1U;
-		errsB++;
-	}
+	unsigned int errsB = CUtils::countBits(v);
 
 	if (errsA >= 4U || ((errsA + errsB) >= 6U && errsA >= 2U)) {
 		a = 0xF00292U;

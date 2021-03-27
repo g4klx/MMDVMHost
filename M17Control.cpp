@@ -206,13 +206,14 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 	}
 
 	if (m_rfState == RS_RF_LATE_ENTRY && data[0U] == TAG_DATA) {
-		unsigned int frag1, frag2, frag3, frag4;
-		CM17Utils::splitFragmentLICHFEC(data + 2U + M17_SYNC_LENGTH_BYTES, frag1, frag2, frag3, frag4);
+		bool valid1, valid2, valid3, valid4;
+		unsigned int lich1 = CGolay24128::decode24128(data + 2U + M17_SYNC_LENGTH_BYTES + 0U, valid1);
+		unsigned int lich2 = CGolay24128::decode24128(data + 2U + M17_SYNC_LENGTH_BYTES + 3U, valid2);
+		unsigned int lich3 = CGolay24128::decode24128(data + 2U + M17_SYNC_LENGTH_BYTES + 6U, valid3);
+		unsigned int lich4 = CGolay24128::decode24128(data + 2U + M17_SYNC_LENGTH_BYTES + 9U, valid4);
 
-		unsigned int lich1 = CGolay24128::decode24128(frag1);
-		unsigned int lich2 = CGolay24128::decode24128(frag2);
-		unsigned int lich3 = CGolay24128::decode24128(frag3);
-		unsigned int lich4 = CGolay24128::decode24128(frag4);
+		if (!valid1 || !valid2 || !valid3 || !valid4)
+			return false;
 
 		unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
 		CM17Utils::combineFragmentLICH(lich1, lich2, lich3, lich4, lich);
@@ -306,7 +307,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		unsigned int errors = 0U;
 		for (unsigned int i = 0U; i < (M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES); i++) {
 			unsigned int offset = i + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES;
-			errors += countBits(rfData[offset] ^ data[offset]);
+			errors += CUtils::countBits(rfData[offset] ^ data[offset]);
 		}
 
 		LogDebug("M17, FN: %u, errs: %u/144 (%.1f%%)", m_rfFN & 0x7FU, errors, float(errors) / 1.44F);
@@ -784,18 +785,4 @@ void CM17Control::enable(bool enabled)
 	}
 
 	m_enabled = enabled;
-}
-
-unsigned int CM17Control::countBits(unsigned char byte)
-{
-	unsigned int count = 0U;
-
-	const unsigned char* p = &byte;
-
-	for (unsigned int i = 0U; i < 8U; i++) {
-		if (READ_BIT(p, i) != 0U)
-			count++;
-	}
-
-	return count;
 }

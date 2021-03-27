@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2019,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2019,2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -99,10 +99,14 @@ bool CYSFFICH::decode(const unsigned char* bytes)
 	unsigned char output[13U];
 	viterbi.chainback(output, 96U);
 
-	unsigned int b0 = CGolay24128::decode24128(output + 0U);
-	unsigned int b1 = CGolay24128::decode24128(output + 3U);
-	unsigned int b2 = CGolay24128::decode24128(output + 6U);
-	unsigned int b3 = CGolay24128::decode24128(output + 9U);
+	bool valid1, valid2, valid3, valid4;
+	unsigned int b0 = CGolay24128::decode24128(output + 0U, valid1);
+	unsigned int b1 = CGolay24128::decode24128(output + 3U, valid2);
+	unsigned int b2 = CGolay24128::decode24128(output + 6U, valid3);
+	unsigned int b3 = CGolay24128::decode24128(output + 9U, valid4);
+
+	if (!valid1 || !valid2 || !valid3 || !valid4)
+		return false;
 
 	m_fich[0U] = (b0 >> 4) & 0xFFU;
 	m_fich[1U] = ((b0 << 4) & 0xF0U) | ((b1 >> 8) & 0x0FU);
