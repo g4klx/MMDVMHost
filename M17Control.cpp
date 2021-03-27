@@ -217,8 +217,8 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
 		CM17Utils::combineFragmentLICH(lich1, lich2, lich3, lich4, lich);
 
-		if (!CM17CRC::checkCRC4(lich, M17_LICH_FRAGMENT_LENGTH_BYTES))
-			return false;
+		// if (!CM17CRC::checkCRC4(lich, M17_LICH_FRAGMENT_LENGTH_BYTES))
+		//	return false;
 
 		m_rfLSFn = (lich4 >> 5) & 0x07U;
 		m_rfLSF.setFragment(lich, m_rfLSFn);
@@ -249,7 +249,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		}
 	}
 
-	if ((m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA) && data[0U] == TAG_DATA) {
+	if (m_rfState == RS_RF_AUDIO && data[0U] == TAG_DATA) {
 #if defined(DUMP_M17)
 		writeFile(data + 2U);
 #endif
@@ -261,28 +261,13 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		if (valid) {
 			m_rfFN = (frame[0U] << 8) + (frame[1U] << 0);
 		} else {
-			// Create a silence frame
 			m_rfFN++;
 
 			// The new FN
 			frame[0U] = m_rfFN >> 8;
 			frame[1U] = m_rfFN >> 0;
 
-			// Add silent audio
-			unsigned char dataType = m_rfLSF.getDataType();
-			switch (dataType) {
-			case M17_DATA_TYPE_VOICE:
-				::memcpy(frame + M17_FN_LENGTH_BYTES + 0U, M17_3200_SILENCE, 8U);
-				::memcpy(frame + M17_FN_LENGTH_BYTES + 8U, M17_3200_SILENCE, 8U);
-				break;
-			case M17_DATA_TYPE_VOICE_DATA:
-				::memcpy(frame + M17_FN_LENGTH_BYTES + 0U, M17_1600_SILENCE, 8U);
-				break;
-			default:
-				break;
-			}
-
-			// Add the CRC
+			// Recalculate the CRC
 			CM17CRC::encodeCRC16(frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
 		}
 
@@ -301,7 +286,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		lich[5U] = (m_rfLSFn & 0x07U) << 5;
 
 		// Add the CRC
-		CM17CRC::encodeCRC4(lich, M17_LICH_FRAGMENT_LENGTH_BYTES);
+		// CM17CRC::encodeCRC4(lich, M17_LICH_FRAGMENT_LENGTH_BYTES);
 
 		unsigned int frag1, frag2, frag3, frag4;
 		CM17Utils::splitFragmentLICH(lich, frag1, frag2, frag3, frag4);
@@ -318,19 +303,19 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		conv.encodeData(frame, rfData + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES);
 
 		// Calculate the BER
-		if (valid) {
-			unsigned int errors = 0U;
-			for (unsigned int i = 2U; i < (M17_FRAME_LENGTH_BYTES + 2U); i++)
-				errors += countBits(rfData[i] ^ data[i]);
-
-			LogDebug("M17, FN: %u, errs: %u/384 (%.1f%%)", m_rfFN & 0x7FU, errors, float(errors) / 3.84F);
-
-			m_rfBits += M17_FRAME_LENGTH_BITS;
-			m_rfErrs += errors;
-
-			float ber = float(m_rfErrs) / float(m_rfBits);
-			m_display->writeM17BER(ber);
+		unsigned int errors = 0U;
+		for (unsigned int i = 0U; i < (M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES); i++) {
+			unsigned int offset = i + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES;
+			errors += countBits(rfData[offset] ^ data[offset]);
 		}
+
+		LogDebug("M17, FN: %u, errs: %u/144 (%.1f%%)", m_rfFN & 0x7FU, errors, float(errors) / 1.44F);
+
+		m_rfBits += M17_FN_LENGTH_BITS + M17_PAYLOAD_LENGTH_BITS;
+		m_rfErrs += errors;
+
+		float ber = float(m_rfErrs) / float(m_rfBits);
+		m_display->writeM17BER(ber);
 
 		unsigned char temp[M17_FRAME_LENGTH_BYTES];
 		interleaver(rfData + 2U, temp);
@@ -358,8 +343,8 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		if (m_rfLSFn >= 6U)
 			m_rfLSFn = 0U;
 
-		// EOT?
-		if ((m_rfFN & 0x8000U) == 0x8000U) {
+		// Only check for the EOT marker if the frame has a valid CRC
+		if (valid && (m_rfFN & 0x8000U) == 0x8000U) {
 			std::string source = m_rfLSF.getSource();
 			std::string dest   = m_rfLSF.getDest();
 
@@ -523,7 +508,7 @@ void CM17Control::writeNetwork()
 		lich[5U] = (m_netLSFn & 0x07U) << 5;
 
 		// Add the CRC
-		CM17CRC::encodeCRC4(lich, M17_LICH_FRAGMENT_LENGTH_BYTES);
+		// CM17CRC::encodeCRC4(lich, M17_LICH_FRAGMENT_LENGTH_BYTES);
 
 		unsigned int frag1, frag2, frag3, frag4;
 		CM17Utils::splitFragmentLICH(lich, frag1, frag2, frag3, frag4);
