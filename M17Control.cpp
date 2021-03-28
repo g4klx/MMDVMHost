@@ -218,9 +218,6 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
 		CM17Utils::combineFragmentLICH(lich1, lich2, lich3, lich4, lich);
 
-		// if (!CM17CRC::checkCRC4(lich, M17_LICH_FRAGMENT_LENGTH_BYTES))
-		//	return false;
-
 		m_rfLSFn = (lich4 >> 5) & 0x07U;
 		m_rfLSF.setFragment(lich, m_rfLSFn);
 
@@ -285,9 +282,6 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 		// Add the fragment number
 		lich[5U] = (m_rfLSFn & 0x07U) << 5;
-
-		// Add the CRC
-		// CM17CRC::encodeCRC4(lich, M17_LICH_FRAGMENT_LENGTH_BYTES);
 
 		unsigned int frag1, frag2, frag3, frag4;
 		CM17Utils::splitFragmentLICH(lich, frag1, frag2, frag3, frag4);
@@ -507,9 +501,6 @@ void CM17Control::writeNetwork()
 
 		// Add the fragment number
 		lich[5U] = (m_netLSFn & 0x07U) << 5;
-
-		// Add the CRC
-		// CM17CRC::encodeCRC4(lich, M17_LICH_FRAGMENT_LENGTH_BYTES);
 
 		unsigned int frag1, frag2, frag3, frag4;
 		CM17Utils::splitFragmentLICH(lich, frag1, frag2, frag3, frag4);
