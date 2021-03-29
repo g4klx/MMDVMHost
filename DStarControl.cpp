@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015-2019 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015-2019,2021 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -429,7 +429,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		}
 
 		return false;
-	} else if (type == TAG_DATA) {
+	} else if (type == TAG_DATA1) {
 		if (m_rfState == RS_RF_REJECTED) {
 			return false;
 		} else if (m_rfState == RS_RF_INVALID) {
@@ -779,13 +779,13 @@ void CDStarControl::writeNetwork()
 		LogMessage("D-Star, received network end of transmission from %8.8s/%4.4s to %8.8s, %.1f seconds, %u%% packet loss, BER: %.1f%%", my1, my2, your, float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
 
 		writeEndNet();
-	} else if (type == TAG_DATA) {
+	} else if (type == TAG_DATA1) {
 		if (m_netState != RS_NET_AUDIO)
 			return;
 
 		unsigned char n = data[1U];
 
-		data[1U] = TAG_DATA;
+		data[1U] = TAG_DATA1;
 
 		unsigned int errors = 0U;
 		if (!m_netHeader.isDataPacket())

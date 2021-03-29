@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015-2020 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015-2021 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -223,7 +223,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 		m_rfLayer3 = layer3;
 
-		data[0U] = type == NXDN_MESSAGE_TYPE_TX_REL ? TAG_EOT : TAG_DATA;
+		data[0U] = type == NXDN_MESSAGE_TYPE_TX_REL ? TAG_EOT : TAG_DATA1;
 		data[1U] = 0x00U;
 
 		CSync::addNXDNSync(data + 2U);
@@ -401,7 +401,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			// Create a dummy start message
 			unsigned char start[NXDN_FRAME_LENGTH_BYTES + 2U];
 
-			start[0U] = TAG_DATA;
+			start[0U] = TAG_DATA1;
 			start[1U] = 0x00U;
 
 			// Generate the sync
@@ -539,7 +539,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			facch12.getRaw(netData + 5U + 14U);
 		}
 
-		data[0U] = TAG_DATA;
+		data[0U] = TAG_DATA1;
 		data[1U] = 0x00U;
 
 		scrambler(data + 2U);
@@ -638,12 +638,12 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 
 	if (validUDCH) {
 		type = layer3.getMessageType();
-		data[0U] = type == NXDN_MESSAGE_TYPE_TX_REL ? TAG_EOT : TAG_DATA;
+		data[0U] = type == NXDN_MESSAGE_TYPE_TX_REL ? TAG_EOT : TAG_DATA1;
 
 		udch.setRAN(m_ran);
 		udch.encode(data + 2U);
 	} else {
-		data[0U] = TAG_DATA;
+		data[0U] = TAG_DATA1;
 		data[1U] = 0x00U;
 	}
 
@@ -785,7 +785,7 @@ void CNXDNControl::writeNetwork()
 		}
 
 		if (m_netState == RS_NET_DATA) {
-			data[0U] = type == NXDN_MESSAGE_TYPE_TX_REL ? TAG_EOT : TAG_DATA;
+			data[0U] = type == NXDN_MESSAGE_TYPE_TX_REL ? TAG_EOT : TAG_DATA1;
 			data[1U] = 0x00U;
 
 			CNXDNUDCH udch;
@@ -826,7 +826,7 @@ void CNXDNControl::writeNetwork()
 		facch.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS);
 		facch.encode(data + 2U, NXDN_FSW_LENGTH_BITS + NXDN_LICH_LENGTH_BITS + NXDN_SACCH_LENGTH_BITS + NXDN_FACCH1_LENGTH_BITS);
 
-		data[0U] = type == NXDN_MESSAGE_TYPE_TX_REL ? TAG_EOT : TAG_DATA;
+		data[0U] = type == NXDN_MESSAGE_TYPE_TX_REL ? TAG_EOT : TAG_DATA1;
 		data[1U] = 0x00U;
 
 		scrambler(data + 2U);
@@ -907,7 +907,7 @@ void CNXDNControl::writeNetwork()
 			// Create a dummy start message
 			unsigned char start[NXDN_FRAME_LENGTH_BYTES + 2U];
 
-			start[0U] = TAG_DATA;
+			start[0U] = TAG_DATA1;
 			start[1U] = 0x00U;
 
 			// Generate the sync
@@ -942,7 +942,7 @@ void CNXDNControl::writeNetwork()
 
 		m_netFrames++;
 
-		data[0U] = TAG_DATA;
+		data[0U] = TAG_DATA1;
 		data[1U] = 0x00U;
 
 		CNXDNSACCH sacch;

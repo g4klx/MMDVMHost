@@ -36,9 +36,10 @@ const unsigned char MODE_ERROR   = 100U;
 const unsigned char MODE_QUIT    = 110U;
 
 const unsigned char TAG_HEADER = 0x00U;
-const unsigned char TAG_DATA   = 0x01U;
-const unsigned char TAG_LOST   = 0x02U;
-const unsigned char TAG_EOT    = 0x03U;
+const unsigned char TAG_DATA1  = 0x01U;
+const unsigned char TAG_DATA2  = 0x02U;
+const unsigned char TAG_LOST   = 0x03U;
+const unsigned char TAG_EOT    = 0x04U;
 
 const unsigned int  DSTAR_MODEM_DATA_LEN = 220U;
 

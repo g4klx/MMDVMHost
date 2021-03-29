@@ -135,6 +135,12 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		return false;
 	}
 
+	// Ignore packet data
+	if (type == TAG_DATA2) {
+		m_rfState = RS_RF_LISTENING;
+		return false;
+	}
+
 	// Have we got RSSI bytes on the end?
 	if (len == (M17_FRAME_LENGTH_BYTES + 4U)) {
 		uint16_t raw = 0U;
@@ -200,12 +206,12 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		}
 	}
 
-	if (m_rfState == RS_RF_LISTENING && data[0U] == TAG_DATA) {
+	if (m_rfState == RS_RF_LISTENING && data[0U] == TAG_DATA1) {
 		m_rfState = RS_RF_LATE_ENTRY;
 		m_rfLSF.reset();
 	}
 
-	if (m_rfState == RS_RF_LATE_ENTRY && data[0U] == TAG_DATA) {
+	if (m_rfState == RS_RF_LATE_ENTRY && data[0U] == TAG_DATA1) {
 		bool valid1, valid2, valid3, valid4;
 		unsigned int lich1 = CGolay24128::decode24128(data + 2U + M17_SYNC_LENGTH_BYTES + 0U, valid1);
 		unsigned int lich2 = CGolay24128::decode24128(data + 2U + M17_SYNC_LENGTH_BYTES + 3U, valid2);
@@ -247,7 +253,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		}
 	}
 
-	if (m_rfState == RS_RF_AUDIO && data[0U] == TAG_DATA) {
+	if (m_rfState == RS_RF_AUDIO && data[0U] == TAG_DATA1) {
 #if defined(DUMP_M17)
 		writeFile(data + 2U);
 #endif
@@ -271,7 +277,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 		unsigned char rfData[2U + M17_FRAME_LENGTH_BYTES];
 
-		rfData[0U] = TAG_DATA;
+		rfData[0U] = TAG_DATA1;
 		rfData[1U] = 0x00U;
 
 		// Generate the sync
@@ -487,7 +493,7 @@ void CM17Control::writeNetwork()
 	if (m_netState == RS_NET_AUDIO) {
 		unsigned char data[M17_FRAME_LENGTH_BYTES + 2U];
 
-		data[0U] = TAG_DATA;
+		data[0U] = TAG_DATA1;
 		data[1U] = 0x00U;
 
 		// Generate the sync
@@ -547,6 +553,10 @@ void CM17Control::writeNetwork()
 
 bool CM17Control::processRFHeader(bool lateEntry)
 {
+	unsigned char packetStream = m_rfLSF.getPacketStream();
+	if (packetStream == M17_PACKET_TYPE)
+		return false;
+
 	unsigned char can = m_rfLSF.getCAN();
 	if (can != m_can)
 		return false;
