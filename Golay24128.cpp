@@ -1090,23 +1090,25 @@ unsigned int CGolay24128::decode23127(unsigned int code)
 	return code >> 11;
 }
 
-unsigned int CGolay24128::decode24128(unsigned int input, bool& valid)
+bool CGolay24128::decode24128(unsigned int in, unsigned int& out)
 {
-	unsigned int syndrome = ::get_syndrome_23127(input >> 1);
+	unsigned int syndrome = ::get_syndrome_23127(in >> 1);
 	unsigned int error_pattern = DECODING_TABLE_23127[syndrome] << 1;
 
-	unsigned int output = input ^ error_pattern;
+	out = in ^ error_pattern;
 
-	valid = (CUtils::countBits(syndrome) < 3U) || !(CUtils::countBits(output) & 1);
+	bool valid = (CUtils::countBits(syndrome) < 3U) || !(CUtils::countBits(out) & 1);
 
-	return output >> 12;
+	out >>= 12;
+
+	return valid;
 }
 
-unsigned int CGolay24128::decode24128(unsigned char* bytes, bool& valid)
+bool CGolay24128::decode24128(unsigned char* in, unsigned int& out)
 {
-	assert(bytes != NULL);
+	assert(in != NULL);
 
-	unsigned int code = (bytes[0U] << 16) | (bytes[1U] << 8) | (bytes[2U] << 0);
+	unsigned int code = (in[0U] << 16) | (in[1U] << 8) | (in[2U] << 0);
 
-	return decode24128(code, valid);
+	return decode24128(code, out);
 }

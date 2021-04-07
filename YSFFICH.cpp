@@ -99,13 +99,13 @@ bool CYSFFICH::decode(const unsigned char* bytes)
 	unsigned char output[13U];
 	viterbi.chainback(output, 96U);
 
-	bool valid1, valid2, valid3, valid4;
-	unsigned int b0 = CGolay24128::decode24128(output + 0U, valid1);
-	unsigned int b1 = CGolay24128::decode24128(output + 3U, valid2);
-	unsigned int b2 = CGolay24128::decode24128(output + 6U, valid3);
-	unsigned int b3 = CGolay24128::decode24128(output + 9U, valid4);
+	unsigned int b0, b1, b2, b3;
+	bool valid0 = CGolay24128::decode24128(output + 0U, b0);
+	bool valid1 = CGolay24128::decode24128(output + 3U, b1);
+	bool valid2 = CGolay24128::decode24128(output + 6U, b2);
+	bool valid3 = CGolay24128::decode24128(output + 9U, b3);
 
-	if (!valid1 || !valid2 || !valid3 || !valid4)
+	if (!valid0 || !valid1 || !valid2 || !valid3)
 		return false;
 
 	m_fich[0U] = (b0 >> 4) & 0xFFU;

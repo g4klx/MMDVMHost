@@ -212,11 +212,11 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 	}
 
 	if (m_rfState == RS_RF_LATE_ENTRY && data[0U] == TAG_DATA1) {
-		bool valid1, valid2, valid3, valid4;
-		unsigned int lich1 = CGolay24128::decode24128(data + 2U + M17_SYNC_LENGTH_BYTES + 0U, valid1);
-		unsigned int lich2 = CGolay24128::decode24128(data + 2U + M17_SYNC_LENGTH_BYTES + 3U, valid2);
-		unsigned int lich3 = CGolay24128::decode24128(data + 2U + M17_SYNC_LENGTH_BYTES + 6U, valid3);
-		unsigned int lich4 = CGolay24128::decode24128(data + 2U + M17_SYNC_LENGTH_BYTES + 9U, valid4);
+		unsigned int lich1, lich2, lich3, lich4;
+		bool valid1 = CGolay24128::decode24128(data + 2U + M17_SYNC_LENGTH_BYTES + 0U, lich1);
+		bool valid2 = CGolay24128::decode24128(data + 2U + M17_SYNC_LENGTH_BYTES + 3U, lich2);
+		bool valid3 = CGolay24128::decode24128(data + 2U + M17_SYNC_LENGTH_BYTES + 6U, lich3);
+		bool valid4 = CGolay24128::decode24128(data + 2U + M17_SYNC_LENGTH_BYTES + 9U, lich4);
 
 		if (!valid1 || !valid2 || !valid3 || !valid4)
 			return false;

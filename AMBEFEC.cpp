@@ -793,22 +793,25 @@ unsigned int CAMBEFEC::regenerateIMBE(unsigned char* bytes) const
 
 unsigned int CAMBEFEC::regenerateDStar(unsigned int& a, unsigned int& b) const
 {
-	bool valid;
-
 	unsigned int orig_a = a;
 	unsigned int orig_b = b;
 
-	unsigned int data = CGolay24128::decode24128(a, valid);
-
-	a = CGolay24128::encode24128(data);
+	unsigned int data;
+	bool valid1 = CGolay24128::decode24128(a, data);
+	if (!valid1)
+		return 10U;
 
 	// The PRNG
 	unsigned int p = PRNG_TABLE[data];
 
 	b ^= p;
 
-	unsigned int datb = CGolay24128::decode24128(b, valid);
+	unsigned int datb;
+	bool valid2 = CGolay24128::decode24128(b, datb);
+	if (!valid2)
+		return 10U;
 
+	a = CGolay24128::encode24128(data);
 	b = CGolay24128::encode24128(datb);
 
 	b ^= p;
@@ -824,12 +827,17 @@ unsigned int CAMBEFEC::regenerateDStar(unsigned int& a, unsigned int& b) const
 
 unsigned int CAMBEFEC::regenerateDMR(unsigned int& a, unsigned int& b, unsigned int& c) const
 {
-	bool valid;
-
 	unsigned int orig_a = a;
 	unsigned int orig_b = b;
 
-	unsigned int data = CGolay24128::decode24128(a, valid);
+	unsigned int data;
+	bool valid = CGolay24128::decode24128(a, data);
+	if (!valid) {
+		a = 0xF00292U;
+		b = 0x0E0B20U;
+		c = 0x000000U;
+		return 10U;		// An invalid A block gives an error count of 10
+	}
 
 	a = CGolay24128::encode24128(data);
 
