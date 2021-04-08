@@ -292,7 +292,7 @@ bool CDMRGatewayNetwork::isConnected() const
 	return (m_addrLen != 0);
 }
 
-void CDMRGatewayNetwork::close()
+void CDMRGatewayNetwork::close(bool sayGoodbye)
 {
 	LogMessage("DMR, Closing DMR Network");
 

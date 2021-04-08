@@ -1118,7 +1118,7 @@ int CMMDVMHost::run()
 	}
 
 	if (m_dmrNetwork != NULL) {
-		m_dmrNetwork->close();
+		m_dmrNetwork->close(true);
 		delete m_dmrNetwork;
 	}
 
