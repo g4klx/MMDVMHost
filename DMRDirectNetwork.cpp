@@ -321,11 +321,11 @@ bool CDMRDirectNetwork::isConnected() const
 	return (m_status == RUNNING);
 }
 
-void CDMRDirectNetwork::close()
+void CDMRDirectNetwork::close(bool sayGoodbye)
 {
 	LogMessage("Closing DMR Network");
 
-	if (m_status == RUNNING) {
+	if (sayGoodbye && (m_status == RUNNING)) {
 		unsigned char buffer[9U];
 		::memcpy(buffer + 0U, "RPTCL", 5U);
 		::memcpy(buffer + 5U, m_id, 4U);
@@ -377,7 +377,7 @@ void CDMRDirectNetwork::clock(unsigned int ms)
 	int length = m_socket.read(m_buffer, BUFFER_LENGTH, address, addrlen);
 	if (length < 0) {
 		LogError("DMR, Socket has failed, retrying connection to the master");
-		close();
+		close(false);
 		open();
 		return;
 	}
@@ -408,7 +408,7 @@ void CDMRDirectNetwork::clock(unsigned int ms)
 				   the Network sometimes times out and reaches here.
 				   We want it to reconnect so... */
 				LogError("DMR, Login to the master has failed, retrying network ...");
-				close();
+				close(false);
 				open();
 				return;
 			}
@@ -452,7 +452,7 @@ void CDMRDirectNetwork::clock(unsigned int ms)
 			}
 		} else if (::memcmp(m_buffer, "MSTCL", 5U) == 0) {
 			LogError("DMR, Master is closing down");
-			close();
+			close(false);
 			open();
 		} else if (::memcmp(m_buffer, "MSTPONG", 7U) == 0) {
 			m_timeoutTimer.start();
@@ -466,7 +466,7 @@ void CDMRDirectNetwork::clock(unsigned int ms)
 	m_timeoutTimer.clock(ms);
 	if (m_timeoutTimer.isRunning() && m_timeoutTimer.hasExpired()) {
 		LogError("DMR, Connection to the master has timed out, retrying connection");
-		close();
+		close(false);
 		open();
 	}
 }
@@ -635,7 +635,7 @@ bool CDMRDirectNetwork::write(const unsigned char* data, unsigned int length)
 	bool ret = m_socket.write(data, length, m_addr, m_addrLen);
 	if (!ret) {
 		LogError("DMR, Socket has failed when writing data to the master, retrying connection");
-		m_socket.close();
+		close(false);
 		open();
 		return false;
 	}

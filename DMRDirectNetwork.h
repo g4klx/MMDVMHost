@@ -57,7 +57,7 @@ public:
 
 	virtual bool isConnected() const;
 
-	virtual void close();
+	virtual void close(bool sayGoodbye);
 
 private:
 	std::string      m_address;
