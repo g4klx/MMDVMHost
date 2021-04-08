@@ -188,6 +188,8 @@ bool CUDPSocket::open(const unsigned int index, const unsigned int af, const std
 		return false;
 	}
 
+	close(index);
+
 	int fd = ::socket(addr.ss_family, SOCK_DGRAM, 0);
 	if (fd < 0) {
 #if defined(_WIN32) || defined(_WIN64)
@@ -344,13 +346,13 @@ bool CUDPSocket::write(const unsigned char* buffer, unsigned int length, const s
 
 void CUDPSocket::close()
 {
-	for (int i = 0; i < UDP_SOCKET_MAX; i++)
-		close(m_fd[i]);
+	for (unsigned int i = 0; i < UDP_SOCKET_MAX; i++)
+		close(i);
 }
 
 void CUDPSocket::close(const unsigned int index)
 {
- 	if (m_fd[index] >= 0) {
+	if ((index < UDP_SOCKET_MAX) && (m_fd[index] >= 0)) {
 #if defined(_WIN32) || defined(_WIN64)
 		::closesocket(m_fd[index]);
 #else
