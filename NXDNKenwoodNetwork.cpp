@@ -835,6 +835,11 @@ void CNXDNKenwoodNetwork::reset()
 	m_seen4 = false;
 }
 
+bool CNXDNKenwoodNetwork::isConnected() const
+{
+	return ((m_rtcpAddrLen != 0U) && (m_rtpAddrLen != 0U));
+}
+
 void CNXDNKenwoodNetwork::close()
 {
 	m_rtcpSocket.close();

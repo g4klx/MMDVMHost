@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017,2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017,2018,2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -55,9 +55,13 @@ public:
 
 	virtual void clock(unsigned int ms);
 
-	virtual void close();
+	virtual bool isConnected() const;
+
+	virtual void close(bool sayGoodbye);
 
 private:
+	std::string      m_address;
+	unsigned int     m_port;
 	sockaddr_storage m_addr;
 	unsigned int     m_addrLen;
 	uint8_t*         m_id;

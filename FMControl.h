@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
 
 class CFMControl {
 public:
-	CFMControl(CFMNetwork* network);
+	CFMControl(CFMNetwork* network, float txAudioGain, float rxAudioGain, bool preEmphasisOn, bool deEmphasisOn);
 	~CFMControl();
 
 	bool writeModem(const unsigned char* data, unsigned int length);
@@ -43,10 +43,14 @@ public:
 
 private:
 	CFMNetwork* m_network;
+	float       m_txAudioGain;
+	float       m_rxAudioGain;
+	bool        m_preEmphasisOn;
+	bool        m_deEmphasisOn;
     bool        m_enabled;
 	CRingBuffer<unsigned char> m_incomingRFAudio;
-	CIIRDirectForm1Filter* m_preemphasis;
-	CIIRDirectForm1Filter* m_deemphasis;
+	CIIRDirectForm1Filter* m_preEmphasis;
+	CIIRDirectForm1Filter* m_deEmphasis;
 	CIIRDirectForm1Filter* m_filterStage1;
 	CIIRDirectForm1Filter* m_filterStage2;
 	CIIRDirectForm1Filter* m_filterStage3;

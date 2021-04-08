@@ -182,7 +182,7 @@ m_nxdnRemoteGateway(false),
 m_nxdnTXHang(5U),
 m_nxdnModeHang(10U),
 m_m17Enabled(false),
-m_m17ColorCode(1U),
+m_m17CAN(0U),
 m_m17SelfOnly(false),
 m_m17AllowEncryption(false),
 m_m17TXHang(5U),
@@ -283,11 +283,16 @@ m_pocsagLocalPort(0U),
 m_pocsagNetworkModeHang(3U),
 m_pocsagNetworkDebug(false),
 m_fmNetworkEnabled(false),
+m_fmNetworkProtocol("MMDVM"),
 m_fmGatewayAddress(),
 m_fmGatewayPort(0U),
 m_fmLocalAddress(),
 m_fmLocalPort(0U),
 m_fmSampleRate(8000U),
+m_fmPreEmphasis(true),
+m_fmDeEmphasis(true),
+m_fmTXAudioGain(1.0F),
+m_fmRXAudioGain(1.0F),
 m_fmNetworkModeHang(3U),
 m_fmNetworkDebug(false),
 m_ax25NetworkEnabled(false),
@@ -441,7 +446,7 @@ bool CConf::read()
 			value++;
 		} else {
 			// if value is not quoted, remove after # (to make comment)
-			::strtok(value, "#");
+			(void)::strtok(value, "#");
 		}
 
 		if (section == SECTION_GENERAL) {
@@ -775,8 +780,8 @@ bool CConf::read()
 		} else if (section == SECTION_M17) {
 			if (::strcmp(key, "Enable") == 0)
 				m_m17Enabled = ::atoi(value) == 1;
-			else if (::strcmp(key, "ColorCode") == 0)
-				m_m17ColorCode = (unsigned int)::atoi(value);
+			else if (::strcmp(key, "CAN") == 0)
+				m_m17CAN = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "SelfOnly") == 0)
 				m_m17SelfOnly = ::atoi(value) == 1;
 			else if (::strcmp(key, "AllowEncryption") == 0)
@@ -999,6 +1004,8 @@ bool CConf::read()
 		} else if (section == SECTION_FM_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_fmNetworkEnabled = ::atoi(value) == 1;
+			else if (::strcmp(key, "Protocol") == 0)
+				m_fmNetworkProtocol = value;
 			else if (::strcmp(key, "LocalAddress") == 0)
 				m_fmLocalAddress = value;
 			else if (::strcmp(key, "LocalPort") == 0)
@@ -1009,6 +1016,14 @@ bool CConf::read()
 				m_fmGatewayPort = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "SampleRate") == 0)
 				m_fmSampleRate = (unsigned int)::atoi(value);
+			else if (::strcmp(key, "PreEmphasis") == 0)
+				m_fmPreEmphasis = ::atoi(value) == 1;
+			else if (::strcmp(key, "DeEmphasis") == 0)
+				m_fmDeEmphasis = ::atoi(value) == 1;
+			else if (::strcmp(key, "TXAudioGain") == 0)
+				m_fmTXAudioGain = float(::atof(value));
+			else if (::strcmp(key, "RXAudioGain") == 0)
+				m_fmRXAudioGain = float(::atof(value));
 			else if (::strcmp(key, "ModeHang") == 0)
 				m_fmNetworkModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Debug") == 0)
@@ -1695,9 +1710,9 @@ bool CConf::getM17Enabled() const
 	return m_m17Enabled;
 }
 
-unsigned int CConf::getM17ColorCode() const
+unsigned int CConf::getM17CAN() const
 {
-	return m_m17ColorCode;
+	return m_m17CAN;
 }
 
 bool CConf::getM17SelfOnly() const
@@ -2200,6 +2215,11 @@ bool CConf::getFMNetworkEnabled() const
 	return m_fmNetworkEnabled;
 }
 
+std::string CConf::getFMNetworkProtocol() const
+{
+	return m_fmNetworkProtocol;
+}
+
 std::string CConf::getFMGatewayAddress() const
 {
 	return m_fmGatewayAddress;
@@ -2223,6 +2243,26 @@ unsigned int CConf::getFMLocalPort() const
 unsigned int CConf::getFMSampleRate() const
 {
 	return m_fmSampleRate;
+}
+
+bool CConf::getFMPreEmphasis() const
+{
+	return m_fmPreEmphasis;
+}
+
+bool CConf::getFMDeEmphasis() const
+{
+	return m_fmDeEmphasis;
+}
+
+float CConf::getFMTXAudioGain() const
+{
+	return m_fmTXAudioGain;
+}
+
+float CConf::getFMRXAudioGain() const
+{
+	return m_fmRXAudioGain;
 }
 
 unsigned int CConf::getFMNetworkModeHang() const

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -24,11 +24,11 @@
 class CM17CRC
 {
 public:
-	static bool checkCRC(const unsigned char* in, unsigned int nBytes);
-	static void encodeCRC(unsigned char* in, unsigned int nBytes);
+	static bool checkCRC16(const unsigned char* in, unsigned int nBytes);
+	static void encodeCRC16(unsigned char* in, unsigned int nBytes);
 
 private:
-	static uint16_t createCRC(const unsigned char* in, unsigned int nBytes);
+	static uint16_t createCRC16(const unsigned char* in, unsigned int nBytes);
 };
 
 #endif

@@ -634,19 +634,19 @@ int CMMDVMHost::run()
 
 	if (m_m17Enabled) {
 		bool selfOnly          = m_conf.getM17SelfOnly();
-		unsigned int colorCode = m_conf.getM17ColorCode();
+		unsigned int can       = m_conf.getM17CAN();
 		bool allowEncryption   = m_conf.getM17AllowEncryption();
 		unsigned int txHang    = m_conf.getM17TXHang();
 		m_m17RFModeHang        = m_conf.getM17ModeHang();
 
 		LogInfo("M17 RF Parameters");
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
-		LogInfo("    Color Code: %u", colorCode);
+		LogInfo("    CAN: %u", can);
 		LogInfo("    Allow Encryption: %s", allowEncryption ? "yes" : "no");
 		LogInfo("    TX Hang: %us", txHang);
 		LogInfo("    Mode Hang: %us", m_m17RFModeHang);
 
-		m_m17 = new CM17Control(m_callsign, colorCode, selfOnly, allowEncryption, m_m17Network, m_display, m_timeout, m_duplex, rssi);
+		m_m17 = new CM17Control(m_callsign, can, selfOnly, allowEncryption, m_m17Network, m_display, m_timeout, m_duplex, rssi);
 	}
 
 	CTimer pocsagTimer(1000U, 30U);
@@ -681,21 +681,25 @@ int CMMDVMHost::run()
 	}
 
 	if (m_fmEnabled) {
-		m_fmRFModeHang = m_conf.getFMModeHang();
+		bool preEmphasis  = m_conf.getFMPreEmphasis();
+		bool deEmphasis   = m_conf.getFMDeEmphasis();
+		float txAudioGain = m_conf.getFMTXAudioGain();
+		float rxAudioGain = m_conf.getFMRXAudioGain();
+		m_fmRFModeHang    = m_conf.getFMModeHang();
 
-		m_fm = new CFMControl(m_fmNetwork);
+		m_fm = new CFMControl(m_fmNetwork, txAudioGain, rxAudioGain, preEmphasis, deEmphasis);
 	}
 
 	bool remoteControlEnabled = m_conf.getRemoteControlEnabled();
 	if (remoteControlEnabled) {
 		std::string address = m_conf.getRemoteControlAddress();
-		unsigned int port = m_conf.getRemoteControlPort();
+		unsigned int port   = m_conf.getRemoteControlPort();
 
 		LogInfo("Remote Control Parameters");
 		LogInfo("    Address: %s", address.c_str());
 		LogInfo("    Port: %u", port);
 
-		m_remoteControl = new CRemoteControl(address, port);
+		m_remoteControl = new CRemoteControl(this, address, port);
 
 		ret = m_remoteControl->open();
 		if (!ret) {
@@ -1256,7 +1260,7 @@ int CMMDVMHost::run()
 	}
 
 	if (m_dmrNetwork != NULL) {
-		m_dmrNetwork->close();
+		m_dmrNetwork->close(true);
 		delete m_dmrNetwork;
 	}
 
@@ -1796,23 +1800,33 @@ bool CMMDVMHost::createPOCSAGNetwork()
 
 bool CMMDVMHost::createFMNetwork()
 {
+	std::string protocol       = m_conf.getFMNetworkProtocol();
 	std::string gatewayAddress = m_conf.getFMGatewayAddress();
 	unsigned int gatewayPort   = m_conf.getFMGatewayPort();
 	std::string localAddress   = m_conf.getFMLocalAddress();
 	unsigned int localPort     = m_conf.getFMLocalPort();
 	unsigned int sampleRate    = m_conf.getFMSampleRate();
+	bool preEmphasis           = m_conf.getFMPreEmphasis();
+	bool deEmphasis            = m_conf.getFMDeEmphasis();
+	float txAudioGain          = m_conf.getFMTXAudioGain();
+	float rxAudioGain          = m_conf.getFMRXAudioGain();
 	m_fmNetModeHang            = m_conf.getFMNetworkModeHang();
 	bool debug                 = m_conf.getFMNetworkDebug();
 
 	LogInfo("FM Network Parameters");
+	LogInfo("    Protocol: %s", protocol.c_str());
 	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
 	LogInfo("    Gateway Port: %u", gatewayPort);
 	LogInfo("    Local Address: %s", localAddress.c_str());
 	LogInfo("    Local Port: %u", localPort);
 	LogInfo("    Sample Rate: %u", sampleRate);
+	LogInfo("    Pre-Emphasis: %s", preEmphasis ? "yes" : "no");
+	LogInfo("    De-Emphasis: %s", deEmphasis ? "yes" : "no");
+	LogInfo("    TX Audio Gain: %.2f", txAudioGain);
+	LogInfo("    RX Audio Gain: %.2f", rxAudioGain);
 	LogInfo("    Mode Hang: %us", m_fmNetModeHang);
 
-	m_fmNetwork = new CFMNetwork(localAddress, localPort, gatewayAddress, gatewayPort, sampleRate, debug);
+	m_fmNetwork = new CFMNetwork(protocol, localAddress, localPort, gatewayAddress, gatewayPort, sampleRate, debug);
 
 	bool ret = m_fmNetwork->open();
 	if (!ret) {
@@ -2607,4 +2621,15 @@ void CMMDVMHost::processEnableCommand(bool& mode, bool enabled)
 	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_m17Enabled, m_pocsagEnabled, m_fmEnabled, m_ax25Enabled);
 	if (!m_modem->writeConfig())
 		LogError("Cannot write Config to MMDVM");
+}
+
+void CMMDVMHost::buildNetworkStatusString(std::string &str)
+{
+	str = "";
+	str += std::string("dstar:") + (((m_dstarNetwork == NULL) || (m_dstarEnabled == false)) ? "n/a" : (m_dstarNetwork->isConnected() ? "conn" : "disc"));
+	str += std::string(" dmr:") + (((m_dmrNetwork == NULL) || (m_dmrEnabled == false)) ? "n/a" : (m_dmrNetwork->isConnected() ? "conn" : "disc"));
+	str += std::string(" ysf:") + (((m_ysfNetwork == NULL) || (m_ysfEnabled == false)) ? "n/a" : (m_ysfNetwork->isConnected() ? "conn" : "disc"));
+	str += std::string(" p25:") + (((m_p25Network == NULL) || (m_p25Enabled == false)) ? "n/a" : (m_p25Network->isConnected() ? "conn" : "disc"));
+	str += std::string(" nxdn:") + (((m_nxdnNetwork == NULL) || (m_nxdnEnabled == false)) ? "n/a" : (m_nxdnNetwork->isConnected() ? "conn" : "disc"));
+	str += std::string(" fm:") + (m_fmEnabled ? "conn" : "n/a");
 }

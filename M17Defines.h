@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -31,11 +31,17 @@ const unsigned char M17_PACKET_SYNC_BYTES[]     = {0x75U, 0xFFU};
 const unsigned int  M17_SYNC_LENGTH_BITS  = 16U;
 const unsigned int  M17_SYNC_LENGTH_BYTES = M17_SYNC_LENGTH_BITS / 8U;
 
-const unsigned int M17_LICH_LENGTH_BITS  = 240U;
-const unsigned int M17_LICH_LENGTH_BYTES = M17_LICH_LENGTH_BITS / 8U;
+const unsigned int M17_LSF_LENGTH_BITS  = 240U;
+const unsigned int M17_LSF_LENGTH_BYTES = M17_LSF_LENGTH_BITS / 8U;
 
-const unsigned int M17_LICH_FRAGMENT_LENGTH_BITS  = M17_LICH_LENGTH_BITS / 6U;
+const unsigned int M17_LSF_FRAGMENT_LENGTH_BITS  = M17_LSF_LENGTH_BITS / 6U;
+const unsigned int M17_LSF_FRAGMENT_LENGTH_BYTES = M17_LSF_FRAGMENT_LENGTH_BITS / 8U;
+
+const unsigned int M17_LICH_FRAGMENT_LENGTH_BITS  = M17_LSF_FRAGMENT_LENGTH_BITS + 8U;
 const unsigned int M17_LICH_FRAGMENT_LENGTH_BYTES = M17_LICH_FRAGMENT_LENGTH_BITS / 8U;
+
+const unsigned int M17_LSF_FRAGMENT_FEC_LENGTH_BITS  = M17_LSF_FRAGMENT_LENGTH_BITS * 2U;
+const unsigned int M17_LSF_FRAGMENT_FEC_LENGTH_BYTES = M17_LSF_FRAGMENT_FEC_LENGTH_BITS / 8U;
 
 const unsigned int M17_LICH_FRAGMENT_FEC_LENGTH_BITS  = M17_LICH_FRAGMENT_LENGTH_BITS * 2U;
 const unsigned int M17_LICH_FRAGMENT_FEC_LENGTH_BYTES = M17_LICH_FRAGMENT_FEC_LENGTH_BITS / 8U;
@@ -55,5 +61,16 @@ const unsigned int M17_CRC_LENGTH_BYTES = M17_CRC_LENGTH_BITS / 8U;
 
 const unsigned char M17_3200_SILENCE[] = {0x01U, 0x00U, 0x09U, 0x43U, 0x9CU, 0xE4U, 0x21U, 0x08U};
 const unsigned char M17_1600_SILENCE[] = {0x01U, 0x00U, 0x04U, 0x00U, 0x25U, 0x75U, 0xDDU, 0xF2U};
+
+const unsigned char M17_PACKET_TYPE = 0U;
+const unsigned char M17_STREAM_TYPE = 1U;
+
+const unsigned char M17_DATA_TYPE_DATA       = 0x01U;
+const unsigned char M17_DATA_TYPE_VOICE      = 0x02U;
+const unsigned char M17_DATA_TYPE_VOICE_DATA = 0x03U;
+
+const unsigned char M17_ENCRYPTION_TYPE_NONE     = 0x00U;
+const unsigned char M17_ENCRYPTION_TYPE_AES      = 0x01U;
+const unsigned char M17_ENCRYPTION_TYPE_SCRAMBLE = 0x02U;
 
 #endif

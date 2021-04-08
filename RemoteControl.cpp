@@ -17,6 +17,7 @@
  */
 
 #include "RemoteControl.h"
+#include "MMDVMHost.h"
 #include "Log.h"
 
 #include <cstdio>
@@ -32,7 +33,8 @@ const unsigned int CW_ARGS = 2U;
 
 const unsigned int BUFFER_LENGTH = 100U;
 
-CRemoteControl::CRemoteControl(const std::string address, unsigned int port) :
+CRemoteControl::CRemoteControl(CMMDVMHost *host, const std::string address, unsigned int port) :
+m_host(host),
 m_socket(address, port),
 m_command(RCD_NONE),
 m_args()
@@ -55,7 +57,8 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 	m_args.clear();
 
 	char command[BUFFER_LENGTH];
-	char buffer[BUFFER_LENGTH];
+	char buffer[BUFFER_LENGTH * 2];
+	std::string replyStr = "OK";
 	sockaddr_storage address;
 	unsigned int addrlen;
 	int ret = m_socket.read((unsigned char*)buffer, BUFFER_LENGTH, address, addrlen);
@@ -91,6 +94,8 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 				m_command = RCD_MODE_NXDN;
 			else if (m_args.at(1U) == "m17")
 				m_command = RCD_MODE_M17;
+			else
+				replyStr = "KO";
 		} else if (m_args.at(0U) == "enable" && m_args.size() >= ENABLE_ARGS) {
 			if (m_args.at(1U) == "dstar")
 				m_command = RCD_ENABLE_DSTAR;
@@ -108,6 +113,8 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 				m_command = RCD_ENABLE_FM;
 			else if (m_args.at(1U) == "ax25")
 				m_command = RCD_ENABLE_AX25;
+			else
+				replyStr = "KO";
 		} else if (m_args.at(0U) == "disable" && m_args.size() >= DISABLE_ARGS) {
 			if (m_args.at(1U) == "dstar")
 				m_command = RCD_DISABLE_DSTAR;
@@ -125,6 +132,8 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 				m_command = RCD_DISABLE_FM;
 			else if (m_args.at(1U) == "ax25")
 				m_command = RCD_DISABLE_AX25;
+			else
+				replyStr = "KO";
 		} else if (m_args.at(0U) == "page" && m_args.size() >= PAGE_ARGS) {
 			// Page command is in the form of "page <ric> <message>"
 			m_command = RCD_PAGE;
@@ -134,14 +143,27 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 		} else if (m_args.at(0U) == "reload") {
                         // Reload command is in the form of "reload"
                         m_command = RCD_RELOAD;
-                }
+		} else if (m_args.at(0U) == "status") {
+			if (m_host != NULL) {
+				m_host->buildNetworkStatusString(replyStr);
+			} else {
+				replyStr = "KO";
+			}
 
+			m_command = RCD_CONNECTION_STATUS;
+		} else {
+			replyStr = "KO";
+		}
+
+		::snprintf(buffer, BUFFER_LENGTH * 2, "%s remote command of \"%s\" received", ((m_command == RCD_NONE) ? "Invalid" : "Valid"), command);
 		if (m_command == RCD_NONE) {
 			m_args.clear();
-			LogWarning("Invalid remote command of \"%s\" received", command);
+			LogWarning(buffer);
 		} else {
-			LogMessage("Valid remote command of \"%s\" received", command);
+			LogMessage(buffer);
 		}
+		
+		m_socket.write((unsigned char*)replyStr.c_str(), replyStr.length(), address, addrlen);
 	}
 	
 	return m_command;

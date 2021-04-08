@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -24,9 +24,9 @@
 #include "M17Defines.h"
 #include "RingBuffer.h"
 #include "StopWatch.h"
-#include "M17LICH.h"
 #include "Display.h"
 #include "Defines.h"
+#include "M17LSF.h"
 #include "Timer.h"
 #include "Modem.h"
 
@@ -34,7 +34,7 @@
 
 class CM17Control {
 public:
-	CM17Control(const std::string& callsign, unsigned int colorCode, bool selfOnly, bool allowEncryption, CM17Network* network, CDisplay* display, unsigned int timeout, bool duplex, CRSSIInterpolator* rssiMapper);
+	CM17Control(const std::string& callsign, unsigned int can, bool selfOnly, bool allowEncryption, CM17Network* network, CDisplay* display, unsigned int timeout, bool duplex, CRSSIInterpolator* rssiMapper);
 	~CM17Control();
 
 	bool writeModem(unsigned char* data, unsigned int len);
@@ -49,7 +49,7 @@ public:
 
 private:
 	std::string                m_callsign;
-	unsigned int               m_colorCode;
+	unsigned int               m_can;
 	bool                       m_selfOnly;
 	bool                       m_allowEncryption;
 	CM17Network*               m_network;
@@ -68,10 +68,10 @@ private:
 	unsigned int               m_rfFN;
 	unsigned int               m_rfErrs;
 	unsigned int               m_rfBits;
-	CM17LICH                   m_rfLICH;
-	unsigned int               m_rfLICHn;
-	CM17LICH                   m_netLICH;
-	unsigned int               m_netLICHn;
+	CM17LSF                    m_rfLSF;
+	unsigned int               m_rfLSFn;
+	CM17LSF                    m_netLSF;
+	unsigned int               m_netLSFn;
 	CRSSIInterpolator*         m_rssiMapper;
 	unsigned char              m_rssi;
 	unsigned char              m_maxRSSI;
@@ -81,17 +81,16 @@ private:
 	bool                       m_enabled;
 	FILE*                      m_fp;
 
+	bool processRFHeader(bool lateEntry);
+
 	void writeQueueRF(const unsigned char* data);
 	void writeQueueNet(const unsigned char* data);
-	void writeNetwork(const unsigned char* data);
 	void writeNetwork();
 
 	void interleaver(const unsigned char* in, unsigned char* out) const;
 	void decorrelator(const unsigned char* in, unsigned char* out) const;
 
 	bool checkCallsign(const std::string& source) const;
-
-	unsigned int countBits(unsigned char byte);
 
 	void writeEndRF();
 	void writeEndNet();

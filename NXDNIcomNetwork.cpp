@@ -153,6 +153,11 @@ void CNXDNIcomNetwork::reset()
 {
 }
 
+bool CNXDNIcomNetwork::isConnected() const
+{
+	return (m_addrLen != 0);
+}
+
 void CNXDNIcomNetwork::close()
 {
 	m_socket.close();

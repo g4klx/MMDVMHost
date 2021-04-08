@@ -21,6 +21,8 @@
 
 #include "ModemPort.h"
 
+#include "RingBuffer.h"
+
 class CNullController : public IModemPort {
 public:
 	CNullController();
@@ -35,6 +37,11 @@ public:
 	virtual void close();
 
 private:
+	CRingBuffer<unsigned char> m_buffer;
+
+	void writeVersion();
+	void writeStatus();
+	void writeAck(unsigned char type);
 };
 
 #endif

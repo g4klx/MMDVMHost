@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015-2020 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015-2021 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -265,7 +265,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 
 			fich.encode(data + 2U);
 
-			data[0U] = TAG_DATA;
+			data[0U] = TAG_DATA1;
 			data[1U] = 0x00U;
 
 			writeNetwork(data, m_rfFrames % 128U);
@@ -358,7 +358,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 
 			fich.encode(data + 2U);
 
-			data[0U] = TAG_DATA;
+			data[0U] = TAG_DATA1;
 			data[1U] = 0x00U;
 
 			writeNetwork(data, m_rfFrames % 128U);
@@ -434,7 +434,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			fich.encode(data + 2U);
 
-			data[0U] = TAG_DATA;
+			data[0U] = TAG_DATA1;
 			data[1U] = 0x00U;
 
 			writeNetwork(data, m_rfFrames % 128U);
@@ -540,7 +540,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			fich.encode(data + 2U);
 
-			data[0U] = TAG_DATA;
+			data[0U] = TAG_DATA1;
 			data[1U] = 0x00U;
 
 			writeNetwork(data, m_rfFrames % 128U);
@@ -636,7 +636,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			CYSFPayload payload;
 			payload.writeHeader(buffer + 2U, csd1, csd2);
 
-			buffer[0U] = TAG_DATA;
+			buffer[0U] = TAG_DATA1;
 			buffer[1U] = 0x00U;
 
 			writeNetwork(buffer, m_rfFrames % 128U);
@@ -660,7 +660,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			fich.encode(data + 2U);
 
-			data[0U] = TAG_DATA;
+			data[0U] = TAG_DATA1;
 			data[1U] = 0x00U;
 
 			writeNetwork(data, m_rfFrames % 128U);
@@ -733,7 +733,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 			fich.encode(data + 2U);
 
-			data[0U] = TAG_DATA;
+			data[0U] = TAG_DATA1;
 			data[1U] = 0x00U;
 
 			writeNetwork(data, m_rfFrames % 128U);
@@ -814,7 +814,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 			fich.encode(data + 2U);
 
-			data[0U] = TAG_DATA;
+			data[0U] = TAG_DATA1;
 			data[1U] = 0x00U;
 
 			writeNetwork(data, m_rfFrames % 128U);
@@ -949,7 +949,7 @@ void CYSFControl::writeNetwork()
 			return;
 	}
 
-	data[33U] = end ? TAG_EOT : TAG_DATA;
+	data[33U] = end ? TAG_EOT : TAG_DATA1;
 	data[34U] = 0x00U;
 
 	if (valid) {

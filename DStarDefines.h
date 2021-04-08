@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2018,2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018,2019,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -35,8 +35,8 @@ const unsigned char DSTAR_NULL_SLOW_SYNC_BYTES[] = { 0x55, 0x2D, 0x16 };
 // Note that these are already scrambled, 0x66 0x66 0x66 otherwise
 const unsigned char DSTAR_NULL_SLOW_DATA_BYTES[] = { 0x16, 0x29, 0xF5 };
 
-const unsigned char DSTAR_NULL_FRAME_SYNC_BYTES[] = { TAG_DATA, 0x9E, 0x8D, 0x32, 0x88, 0x26, 0x1A, 0x3F, 0x61, 0xE8, 0x55, 0x2D, 0x16 };
-const unsigned char DSTAR_NULL_FRAME_DATA_BYTES[] = { TAG_DATA, 0x9E, 0x8D, 0x32, 0x88, 0x26, 0x1A, 0x3F, 0x61, 0xE8, 0x16, 0x29, 0xF5 };
+const unsigned char DSTAR_NULL_FRAME_SYNC_BYTES[] = { TAG_DATA1, 0x9E, 0x8D, 0x32, 0x88, 0x26, 0x1A, 0x3F, 0x61, 0xE8, 0x55, 0x2D, 0x16 };
+const unsigned char DSTAR_NULL_FRAME_DATA_BYTES[] = { TAG_DATA1, 0x9E, 0x8D, 0x32, 0x88, 0x26, 0x1A, 0x3F, 0x61, 0xE8, 0x16, 0x29, 0xF5 };
 
 const unsigned int  DSTAR_VOICE_FRAME_LENGTH_BYTES = 9U;
 const unsigned int  DSTAR_DATA_FRAME_LENGTH_BYTES  = 3U;

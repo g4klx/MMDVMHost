@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2009,2014,2015,2016 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2009,2014,2015,2016,2021 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -143,4 +143,16 @@ void CUtils::bitsToByteLE(const bool* bits, unsigned char& byte)
 	byte |= bits[5U] ? 0x20U : 0x00U;
 	byte |= bits[6U] ? 0x40U : 0x00U;
 	byte |= bits[7U] ? 0x80U : 0x00U;
+}
+
+unsigned int CUtils::countBits(unsigned int v)
+{
+	unsigned int count = 0U;
+
+	while (v != 0U) {
+		v &= v - 1U;
+		count++;
+	}
+
+	return count;
 }

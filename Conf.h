@@ -173,7 +173,7 @@ public:
 
   // The M17 section
   bool         getM17Enabled() const;
-  unsigned int getM17ColorCode() const;
+  unsigned int getM17CAN() const;
   bool         getM17SelfOnly() const;
   bool         getM17AllowEncryption() const;
   unsigned int getM17TXHang() const;
@@ -296,11 +296,16 @@ public:
 
   // The FM Network section
   bool         getFMNetworkEnabled() const;
+  std::string  getFMNetworkProtocol() const;
   std::string  getFMGatewayAddress() const;
   unsigned int getFMGatewayPort() const;
   std::string  getFMLocalAddress() const;
   unsigned int getFMLocalPort() const;
   unsigned int getFMSampleRate() const;
+  bool         getFMPreEmphasis() const;
+  bool         getFMDeEmphasis() const;
+  float        getFMTXAudioGain() const;
+  float        getFMRXAudioGain() const;
   unsigned int getFMNetworkModeHang() const;
   bool         getFMNetworkDebug() const;
 
@@ -492,7 +497,7 @@ private:
   unsigned int m_nxdnModeHang;
 
   bool         m_m17Enabled;
-  unsigned int m_m17ColorCode;
+  unsigned int m_m17CAN;
   bool         m_m17SelfOnly;
   bool         m_m17AllowEncryption;
   unsigned int m_m17TXHang;
@@ -604,11 +609,16 @@ private:
   bool         m_pocsagNetworkDebug;
 
   bool         m_fmNetworkEnabled;
+  std::string  m_fmNetworkProtocol;
   std::string  m_fmGatewayAddress;
   unsigned int m_fmGatewayPort;
   std::string  m_fmLocalAddress;
   unsigned int m_fmLocalPort;
   unsigned int m_fmSampleRate;
+  bool         m_fmPreEmphasis;
+  bool         m_fmDeEmphasis;
+  float        m_fmTXAudioGain;
+  float        m_fmRXAudioGain;
   unsigned int m_fmNetworkModeHang;
   bool         m_fmNetworkDebug;
 

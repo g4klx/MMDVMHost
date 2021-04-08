@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #include <cstdio>
 #include <cassert>
 
-const uint16_t CRC_TABLE[] = {0x0000U, 0x5935U, 0xB26AU, 0xEB5FU, 0x3DE1U, 0x64D4U, 0x8F8BU, 0xD6BEU, 0x7BC2U, 0x22F7U, 0xC9A8U,
+const uint16_t CRC16_TABLE[] = {0x0000U, 0x5935U, 0xB26AU, 0xEB5FU, 0x3DE1U, 0x64D4U, 0x8F8BU, 0xD6BEU, 0x7BC2U, 0x22F7U, 0xC9A8U,
 			       0x909DU, 0x4623U, 0x1F16U, 0xF449U, 0xAD7CU, 0xF784U, 0xAEB1U, 0x45EEU, 0x1CDBU, 0xCA65U, 0x9350U,
 			       0x780FU, 0x213AU, 0x8C46U, 0xD573U, 0x3E2CU, 0x6719U, 0xB1A7U, 0xE892U, 0x03CDU, 0x5AF8U, 0xB63DU,
 			       0xEF08U, 0x0457U, 0x5D62U, 0x8BDCU, 0xD2E9U, 0x39B6U, 0x6083U, 0xCDFFU, 0x94CAU, 0x7F95U, 0x26A0U,
@@ -46,12 +46,12 @@ const uint16_t CRC_TABLE[] = {0x0000U, 0x5935U, 0xB26AU, 0xEB5FU, 0x3DE1U, 0x64D
 			       0xAC02U, 0xF537U, 0x2389U, 0x7ABCU, 0x91E3U, 0xC8D6U, 0x65AAU, 0x3C9FU, 0xD7C0U, 0x8EF5U, 0x584BU,
 			       0x017EU, 0xEA21U, 0xB314U};
 
-bool CM17CRC::checkCRC(const unsigned char* in, unsigned int nBytes)
+bool CM17CRC::checkCRC16(const unsigned char* in, unsigned int nBytes)
 {
 	assert(in != NULL);
 	assert(nBytes > 2U);
 
-	uint16_t crc = createCRC(in, nBytes - 2U);
+	uint16_t crc = createCRC16(in, nBytes - 2U);
 
 	uint8_t temp[2U];
 	temp[0U] = (crc >> 8) & 0xFFU;
@@ -60,26 +60,25 @@ bool CM17CRC::checkCRC(const unsigned char* in, unsigned int nBytes)
 	return temp[0U] == in[nBytes - 2U] && temp[1U] == in[nBytes - 1U];
 }
 
-void CM17CRC::encodeCRC(unsigned char* in, unsigned int nBytes)
+void CM17CRC::encodeCRC16(unsigned char* in, unsigned int nBytes)
 {
 	assert(in != NULL);
 	assert(nBytes > 2U);
 
-	uint16_t crc = createCRC(in, nBytes - 2U);
+	uint16_t crc = createCRC16(in, nBytes - 2U);
 
 	in[nBytes - 2U] = (crc >> 8) & 0xFFU;
 	in[nBytes - 1U] = (crc >> 0) & 0xFFU;
 }
 
-uint16_t CM17CRC::createCRC(const unsigned char* in, unsigned int nBytes)
+uint16_t CM17CRC::createCRC16(const unsigned char* in, unsigned int nBytes)
 {
 	assert(in != NULL);
 
 	uint16_t crc = 0xFFFFU;
 
 	for (unsigned int i = 0U; i < nBytes; i++)
-		crc = (crc << 8) ^ CRC_TABLE[((crc >> 8) ^ uint16_t(in[i])) & 0x00FFU];
+		crc = (crc << 8) ^ CRC16_TABLE[((crc >> 8) ^ uint16_t(in[i])) & 0x00FFU];
 
 	return crc;
 }
-
