@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -32,9 +32,8 @@ const unsigned int PUNCTURE_LIST_LINK_SETUP[] = {
 	449U, 452U, 455U, 462U, 465U, 468U, 471U, 478U, 481U, 484U};
 
 const unsigned int PUNCTURE_LIST_DATA[] = {
-	5U, 11U, 17U, 20U, 23U, 29U, 35U, 46U, 52U, 58U, 61U, 64U, 70U, 76U, 87U, 93U, 99U, 102U, 105U, 111U, 117U, 128U, 134U, 140U,
-	143U, 146U, 152U, 158U, 169U, 175U, 181U, 184U, 187U, 193U, 199U, 210U, 216U, 222U, 225U, 228U, 234U, 240U, 251U, 257U, 263U,
-	266U, 269U, 275U, 281U, 292U, 298U, 304U, 307U, 310U, 316U, 322U};
+	11U, 23U, 35U, 47U, 59U, 71U, 83U, 95U, 107U, 119U, 131U, 143U, 155U, 167U, 179U, 191U, 203U, 215U, 227U, 239U, 251U, 263U,
+	275U, 287U, 299U, 311U, 323U };
 
 const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U};
 
