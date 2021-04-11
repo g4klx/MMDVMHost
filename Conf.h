@@ -301,7 +301,6 @@ public:
   unsigned int getFMGatewayPort() const;
   std::string  getFMLocalAddress() const;
   unsigned int getFMLocalPort() const;
-  unsigned int getFMSampleRate() const;
   bool         getFMPreEmphasis() const;
   bool         getFMDeEmphasis() const;
   float        getFMTXAudioGain() const;
@@ -614,7 +613,6 @@ private:
   unsigned int m_fmGatewayPort;
   std::string  m_fmLocalAddress;
   unsigned int m_fmLocalPort;
-  unsigned int m_fmSampleRate;
   bool         m_fmPreEmphasis;
   bool         m_fmDeEmphasis;
   float        m_fmTXAudioGain;

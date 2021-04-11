@@ -1805,7 +1805,6 @@ bool CMMDVMHost::createFMNetwork()
 	unsigned int gatewayPort   = m_conf.getFMGatewayPort();
 	std::string localAddress   = m_conf.getFMLocalAddress();
 	unsigned int localPort     = m_conf.getFMLocalPort();
-	unsigned int sampleRate    = m_conf.getFMSampleRate();
 	bool preEmphasis           = m_conf.getFMPreEmphasis();
 	bool deEmphasis            = m_conf.getFMDeEmphasis();
 	float txAudioGain          = m_conf.getFMTXAudioGain();
@@ -1819,14 +1818,13 @@ bool CMMDVMHost::createFMNetwork()
 	LogInfo("    Gateway Port: %u", gatewayPort);
 	LogInfo("    Local Address: %s", localAddress.c_str());
 	LogInfo("    Local Port: %u", localPort);
-	LogInfo("    Sample Rate: %u", sampleRate);
 	LogInfo("    Pre-Emphasis: %s", preEmphasis ? "yes" : "no");
 	LogInfo("    De-Emphasis: %s", deEmphasis ? "yes" : "no");
 	LogInfo("    TX Audio Gain: %.2f", txAudioGain);
 	LogInfo("    RX Audio Gain: %.2f", rxAudioGain);
 	LogInfo("    Mode Hang: %us", m_fmNetModeHang);
 
-	m_fmNetwork = new CFMNetwork(protocol, localAddress, localPort, gatewayAddress, gatewayPort, sampleRate, debug);
+	m_fmNetwork = new CFMNetwork(protocol, localAddress, localPort, gatewayAddress, gatewayPort, debug);
 
 	bool ret = m_fmNetwork->open();
 	if (!ret) {
