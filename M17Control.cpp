@@ -75,7 +75,6 @@ m_networkWatchdog(1000U, 0U, 1500U),
 m_elapsed(),
 m_rfFrames(0U),
 m_netFrames(0U),
-m_rfFN(0U),
 m_rfErrs(0U),
 m_rfBits(1U),
 m_rfLSF(),
@@ -194,7 +193,6 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_aveRSSI = m_rssi;
 			m_rssiCount = 1U;
 			m_rfLSFn    = 0U;
-			m_rfFN      = 0U;
 
 #if defined(DUMP_M17)
 			openFile();
@@ -258,22 +256,10 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		writeFile(data + 2U);
 #endif
 		CM17Convolution conv;
-		unsigned char frame[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
+		unsigned char frame[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES];
 		conv.decodeData(data + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES, frame);
 
-		bool valid = CM17CRC::checkCRC16(frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
-		if (valid) {
-			m_rfFN = (frame[0U] << 8) + (frame[1U] << 0);
-		} else {
-			m_rfFN++;
-
-			// The new FN
-			frame[0U] = m_rfFN >> 8;
-			frame[1U] = m_rfFN >> 0;
-
-			// Recalculate the CRC
-			CM17CRC::encodeCRC16(frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
-		}
+		unsigned int fn = ((frame[0U] << 8) + (frame[1U] << 0)) & 0x7FU;
 
 		unsigned char rfData[2U + M17_FRAME_LENGTH_BYTES];
 
@@ -310,7 +296,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			errors += CUtils::countBits(rfData[offset] ^ data[offset]);
 		}
 
-		LogDebug("M17, FN: %u, errs: %u/144 (%.1f%%)", m_rfFN & 0x7FU, errors, float(errors) / 1.44F);
+		LogDebug("M17, FN: %u, errs: %u/144 (%.1f%%)", fn & 0x7FU, errors, float(errors) / 1.44F);
 
 		m_rfBits += M17_FN_LENGTH_BITS + M17_PAYLOAD_LENGTH_BITS;
 		m_rfErrs += errors;
@@ -345,7 +331,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_rfLSFn = 0U;
 
 		// Only check for the EOT marker if the frame has a valid CRC
-		if (valid && (m_rfFN & 0x8000U) == 0x8000U) {
+		if ((fn & 0x8000U) == 0x8000U) {
 			std::string source = m_rfLSF.getSource();
 			std::string dest   = m_rfLSF.getDest();
 
@@ -520,11 +506,8 @@ void CM17Control::writeNetwork()
 		CM17Utils::combineFragmentLICHFEC(lich1, lich2, lich3, lich4, data + 2U + M17_SYNC_LENGTH_BYTES);
 
 		// Add the FN and the data/audio
-		unsigned char payload[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
+		unsigned char payload[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES];
 		::memcpy(payload, netData + 28U, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
-
-		// Add the CRC
-		CM17CRC::encodeCRC16(payload, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES);
 
 		// Add the Convolution FEC
 		CM17Convolution conv;
