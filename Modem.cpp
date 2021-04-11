@@ -104,6 +104,7 @@ const unsigned char MMDVM_DEBUG2      = 0xF2U;
 const unsigned char MMDVM_DEBUG3      = 0xF3U;
 const unsigned char MMDVM_DEBUG4      = 0xF4U;
 const unsigned char MMDVM_DEBUG5      = 0xF5U;
+const unsigned char MMDVM_DEBUG_DUMP  = 0xFAU;
 
 const unsigned int MAX_RESPONSES = 30U;
 
@@ -881,6 +882,7 @@ void CModem::clock(unsigned int ms)
 			case MMDVM_DEBUG3:
 			case MMDVM_DEBUG4:
 			case MMDVM_DEBUG5:
+			case MMDVM_DEBUG_DUMP:
 				printDebug();
 				break;
 
@@ -2859,25 +2861,27 @@ bool CModem::setFMExtParams()
 
 void CModem::printDebug()
 {
-	if (m_buffer[2U] == MMDVM_DEBUG1) {
+	if (m_type == MMDVM_DEBUG1) {
 		LogMessage("Debug: %.*s", m_length - m_offset - 0U, m_buffer + m_offset);
-	} else if (m_buffer[2U] == MMDVM_DEBUG2) {
+	} else if (m_type == MMDVM_DEBUG2) {
 		short val1 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
 		LogMessage("Debug: %.*s %d", m_length - m_offset - 2U, m_buffer + m_offset, val1);
-	} else if (m_buffer[2U] == MMDVM_DEBUG3) {
+	} else if (m_type == MMDVM_DEBUG3) {
 		short val1 = (m_buffer[m_length - 4U] << 8) | m_buffer[m_length - 3U];
 		short val2 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
 		LogMessage("Debug: %.*s %d %d", m_length - m_offset - 4U, m_buffer + m_offset, val1, val2);
-	} else if (m_buffer[2U] == MMDVM_DEBUG4) {
+	} else if (m_type == MMDVM_DEBUG4) {
 		short val1 = (m_buffer[m_length - 6U] << 8) | m_buffer[m_length - 5U];
 		short val2 = (m_buffer[m_length - 4U] << 8) | m_buffer[m_length - 3U];
 		short val3 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
 		LogMessage("Debug: %.*s %d %d %d", m_length - m_offset - 6U, m_buffer + m_offset, val1, val2, val3);
-	} else if (m_buffer[2U] == MMDVM_DEBUG5) {
+	} else if (m_type == MMDVM_DEBUG5) {
 		short val1 = (m_buffer[m_length - 8U] << 8) | m_buffer[m_length - 7U];
 		short val2 = (m_buffer[m_length - 6U] << 8) | m_buffer[m_length - 5U];
 		short val3 = (m_buffer[m_length - 4U] << 8) | m_buffer[m_length - 3U];
 		short val4 = (m_buffer[m_length - 2U] << 8) | m_buffer[m_length - 1U];
 		LogMessage("Debug: %.*s %d %d %d %d", m_length - m_offset - 8U, m_buffer + m_offset, val1, val2, val3, val4);
+	} else if (m_type == MMDVM_DEBUG_DUMP) {
+		CUtils::dump(1U, "Debug: Data", m_buffer + m_offset, m_length - m_offset);
 	}
 }
