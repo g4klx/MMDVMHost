@@ -283,12 +283,11 @@ m_pocsagLocalPort(0U),
 m_pocsagNetworkModeHang(3U),
 m_pocsagNetworkDebug(false),
 m_fmNetworkEnabled(false),
-m_fmNetworkProtocol("MMDVM"),
+m_fmNetworkProtocol("USRP"),
 m_fmGatewayAddress(),
 m_fmGatewayPort(0U),
 m_fmLocalAddress(),
 m_fmLocalPort(0U),
-m_fmSampleRate(8000U),
 m_fmPreEmphasis(true),
 m_fmDeEmphasis(true),
 m_fmTXAudioGain(1.0F),
@@ -1013,8 +1012,6 @@ bool CConf::read()
 				m_fmGatewayAddress = value;
 			else if (::strcmp(key, "GatewayPort") == 0)
 				m_fmGatewayPort = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "SampleRate") == 0)
-				m_fmSampleRate = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "PreEmphasis") == 0)
 				m_fmPreEmphasis = ::atoi(value) == 1;
 			else if (::strcmp(key, "DeEmphasis") == 0)
@@ -2235,11 +2232,6 @@ std::string CConf::getFMLocalAddress() const
 unsigned int CConf::getFMLocalPort() const
 {
 	return m_fmLocalPort;
-}
-
-unsigned int CConf::getFMSampleRate() const
-{
-	return m_fmSampleRate;
 }
 
 bool CConf::getFMPreEmphasis() const
