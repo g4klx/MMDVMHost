@@ -90,7 +90,7 @@ bool CFMNetwork::writeData(float* data, unsigned int nSamples)
 		buffer[length++] = 0x00U;
 		buffer[length++] = 0x00U;
 
-		// PTT, this may be wrong
+		// PTT on
 		buffer[length++] = 0x00U;
 		buffer[length++] = 0x00U;
 		buffer[length++] = 0x00U;
@@ -135,7 +135,64 @@ bool CFMNetwork::writeData(float* data, unsigned int nSamples)
 
 bool CFMNetwork::writeEOT()
 {
-	return true;
+	unsigned char buffer[1500U];
+	::memset(buffer, 0x00U, 1500U);
+
+	unsigned int length = 0U;
+
+	if (m_protocol == FMNP_USRP) {
+		buffer[length++] = 'U';
+		buffer[length++] = 'S';
+		buffer[length++] = 'R';
+		buffer[length++] = 'P';
+
+		// Sequence number
+		buffer[length++] = (m_seqNo >> 24) & 0xFFU;
+		buffer[length++] = (m_seqNo >> 16) & 0xFFU;
+		buffer[length++] = (m_seqNo >> 8) & 0xFFU;
+		buffer[length++] = (m_seqNo >> 0) & 0xFFU;
+
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+
+		// PTT off
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+
+		// Type, 0 for audio
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+		buffer[length++] = 0x00U;
+
+		length += 160U * sizeof(int16_t);
+	}
+
+	if (m_debug)
+		CUtils::dump(1U, "FM Network Data Sent", buffer, length);
+
+	m_seqNo++;
+
+	return m_socket.write(buffer, length, m_addr, m_addrLen);
 }
 
 void CFMNetwork::clock(unsigned int ms)
