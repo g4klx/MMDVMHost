@@ -33,7 +33,7 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 
 const unsigned int BUFFER_LENGTH = 200U;
 
-CNXDNKenwoodNetwork::CNXDNKenwoodNetwork(const std::string& localAddress, unsigned int localPort, const std::string& gwyAddress, unsigned int gwyPort, bool debug) :
+CNXDNKenwoodNetwork::CNXDNKenwoodNetwork(const std::string& localAddress, unsigned short localPort, const std::string& gwyAddress, unsigned short gwyPort, bool debug) :
 m_rtpSocket(localAddress, localPort + 0U),
 m_rtcpSocket(localAddress, localPort + 1U),
 m_rtcpAddr(),

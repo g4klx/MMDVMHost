@@ -29,7 +29,7 @@
 
 class CYSFNetwork {
 public:
-	CYSFNetwork(const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, const std::string& callsign, bool debug);
+	CYSFNetwork(const std::string& myAddress, unsigned short myPort, const std::string& gatewayAddress, unsigned short gatewayPort, const std::string& callsign, bool debug);
 	~CYSFNetwork();
 
 	bool open();

@@ -28,7 +28,7 @@
 
 const unsigned int BUFFER_LENGTH = 200U;
 
-CYSFNetwork::CYSFNetwork(const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, const std::string& callsign, bool debug) :
+CYSFNetwork::CYSFNetwork(const std::string& myAddress, unsigned short myPort, const std::string& gatewayAddress, unsigned short gatewayPort, const std::string& callsign, bool debug) :
 m_socket(myAddress, myPort),
 m_addr(),
 m_addrLen(0U),

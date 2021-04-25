@@ -32,7 +32,7 @@
 class CDMRDirectNetwork : public IDMRNetwork
 {
 public:
-	CDMRDirectNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool slot1, bool slot2, HW_TYPE hwType, bool debug);
+	CDMRDirectNetwork(const std::string& address, unsigned short port, unsigned short local, unsigned int id, const std::string& password, bool duplex, const char* version, bool slot1, bool slot2, HW_TYPE hwType, bool debug);
 	virtual ~CDMRDirectNetwork();
 
 	virtual void setOptions(const std::string& options);
@@ -61,7 +61,7 @@ public:
 
 private:
 	std::string      m_address;
-	unsigned int     m_port;
+	unsigned short   m_port;
 	sockaddr_storage m_addr;
 	unsigned int     m_addrLen;
 	uint8_t*         m_id;

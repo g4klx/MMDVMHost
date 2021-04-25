@@ -28,7 +28,7 @@
 
 const unsigned int BUFFER_LENGTH = 200U;
 
-CNXDNIcomNetwork::CNXDNIcomNetwork(const std::string& localAddress, unsigned int localPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug) :
+CNXDNIcomNetwork::CNXDNIcomNetwork(const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug) :
 m_socket(localAddress, localPort),
 m_addr(),
 m_addrLen(0U),
