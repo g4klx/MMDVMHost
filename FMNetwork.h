@@ -31,7 +31,7 @@ enum FM_NETWORK_PROTOCOL {
 
 class CFMNetwork {
 public:
-	CFMNetwork(const std::string& callsign, const std::string& protocol, const std::string& myAddress, unsigned short myPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug);
+	CFMNetwork(const std::string& callsign, const std::string& protocol, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug);
 	~CFMNetwork();
 
 	bool open();

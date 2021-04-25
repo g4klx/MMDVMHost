@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -29,8 +29,8 @@
 
 const unsigned int BUFFER_LENGTH = 200U;
 
-CM17Network::CM17Network(unsigned short localPort, const std::string& gwyAddress, unsigned short gwyPort, bool debug) :
-m_socket(localPort),
+CM17Network::CM17Network(const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug) :
+m_socket(localAddress, localPort),
 m_addr(),
 m_addrLen(0U),
 m_debug(debug),
@@ -41,7 +41,7 @@ m_buffer(1000U, "M17 Network"),
 m_random(),
 m_timer(1000U, 5U)
 {
-	if (CUDPSocket::lookup(gwyAddress, gwyPort, m_addr, m_addrLen) != 0) {
+	if (CUDPSocket::lookup(gatewayAddress, gatewayPort, m_addr, m_addrLen) != 0) {
 		m_addrLen = 0U;
 		return;
 	}

@@ -100,6 +100,7 @@ m_modemI2CPort(),
 m_modemI2CAddress(0x22U),
 m_modemModemAddress(),
 m_modemModemPort(0U),
+m_modemLocalAddress(),
 m_modemLocalPort(0U),
 m_modemRXInvert(false),
 m_modemTXInvert(false),
@@ -233,14 +234,16 @@ m_ax25Trace(false),
 m_dstarNetworkEnabled(false),
 m_dstarGatewayAddress(),
 m_dstarGatewayPort(0U),
+m_dstarLocalAddress(),
 m_dstarLocalPort(0U),
 m_dstarNetworkModeHang(3U),
 m_dstarNetworkDebug(false),
 m_dmrNetworkEnabled(false),
 m_dmrNetworkType("Gateway"),
-m_dmrNetworkAddress(),
-m_dmrNetworkPort(0U),
-m_dmrNetworkLocal(0U),
+m_dmrNetworkRemoteAddress(),
+m_dmrNetworkRemotePort(0U),
+m_dmrNetworkLocalAddress(),
+m_dmrNetworkLocalPort(0U),
 m_dmrNetworkPassword(),
 m_dmrNetworkOptions(),
 m_dmrNetworkDebug(false),
@@ -249,8 +252,8 @@ m_dmrNetworkSlot1(true),
 m_dmrNetworkSlot2(true),
 m_dmrNetworkModeHang(3U),
 m_fusionNetworkEnabled(false),
-m_fusionNetworkMyAddress(),
-m_fusionNetworkMyPort(0U),
+m_fusionNetworkLocalAddress(),
+m_fusionNetworkLocalPort(0U),
 m_fusionNetworkGatewayAddress(),
 m_fusionNetworkGatewayPort(0U),
 m_fusionNetworkModeHang(3U),
@@ -258,6 +261,7 @@ m_fusionNetworkDebug(false),
 m_p25NetworkEnabled(false),
 m_p25GatewayAddress(),
 m_p25GatewayPort(0U),
+m_p25LocalAddress(),
 m_p25LocalPort(0U),
 m_p25NetworkModeHang(3U),
 m_p25NetworkDebug(false),
@@ -272,6 +276,7 @@ m_nxdnNetworkDebug(false),
 m_m17NetworkEnabled(false),
 m_m17GatewayAddress(),
 m_m17GatewayPort(0U),
+m_m17LocalAddress(),
 m_m17LocalPort(0U),
 m_m17NetworkModeHang(3U),
 m_m17NetworkDebug(false),
@@ -536,6 +541,8 @@ bool CConf::read()
 				m_modemModemAddress = value;
 			else if (::strcmp(key, "ModemPort") == 0)
 				m_modemModemPort = (unsigned short)::atoi(value);
+			else if (::strcmp(key, "LocalAddress") == 0)
+				m_modemLocalAddress = value;
 			else if (::strcmp(key, "LocalPort") == 0)
 				m_modemLocalPort = (unsigned short)::atoi(value);
 			else if (::strcmp(key, "RXInvert") == 0)
@@ -897,6 +904,8 @@ bool CConf::read()
 				m_dstarGatewayAddress = value;
 			else if (::strcmp(key, "GatewayPort") == 0)
 				m_dstarGatewayPort = (unsigned short)::atoi(value);
+			else if (::strcmp(key, "LocalAddress") == 0)
+				m_dstarLocalAddress = value;
 			else if (::strcmp(key, "LocalPort") == 0)
 				m_dstarLocalPort = (unsigned short)::atoi(value);
 			else if (::strcmp(key, "ModeHang") == 0)
@@ -908,12 +917,14 @@ bool CConf::read()
 				m_dmrNetworkEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "Type") == 0)
 				m_dmrNetworkType = value;
-			else if (::strcmp(key, "Address") == 0)
-				m_dmrNetworkAddress = value;
-			else if (::strcmp(key, "Port") == 0)
-				m_dmrNetworkPort = (unsigned short)::atoi(value);
-			else if (::strcmp(key, "Local") == 0)
-				m_dmrNetworkLocal = (unsigned short)::atoi(value);
+			else if (::strcmp(key, "RemoteAddress") == 0)
+				m_dmrNetworkRemoteAddress = value;
+			else if (::strcmp(key, "RemotePort") == 0)
+				m_dmrNetworkRemotePort = (unsigned short)::atoi(value);
+			else if (::strcmp(key, "LocalAddress") == 0)
+				m_dmrNetworkLocalAddress = value;
+			else if (::strcmp(key, "LocalPort") == 0)
+				m_dmrNetworkLocalPort = (unsigned short)::atoi(value);
 			else if (::strcmp(key, "Password") == 0)
 				m_dmrNetworkPassword = value;
 			else if (::strcmp(key, "Options") == 0)
@@ -932,9 +943,9 @@ bool CConf::read()
 			if (::strcmp(key, "Enable") == 0)
 				m_fusionNetworkEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "LocalAddress") == 0)
-				m_fusionNetworkMyAddress = value;
+				m_fusionNetworkLocalAddress = value;
 			else if (::strcmp(key, "LocalPort") == 0)
-				m_fusionNetworkMyPort = (unsigned short)::atoi(value);
+				m_fusionNetworkLocalPort = (unsigned short)::atoi(value);
 			else if (::strcmp(key, "GatewayAddress") == 0)
 				m_fusionNetworkGatewayAddress = value;
 			else if (::strcmp(key, "GatewayPort") == 0)
@@ -950,6 +961,8 @@ bool CConf::read()
 				m_p25GatewayAddress = value;
 			else if (::strcmp(key, "GatewayPort") == 0)
 				m_p25GatewayPort = (unsigned short)::atoi(value);
+			else if (::strcmp(key, "LocalAddress") == 0)
+				m_p25LocalAddress = value;
 			else if (::strcmp(key, "LocalPort") == 0)
 				m_p25LocalPort = (unsigned short)::atoi(value);
 			else if (::strcmp(key, "ModeHang") == 0)
@@ -974,6 +987,8 @@ bool CConf::read()
 		} else if (section == SECTION_M17_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_m17NetworkEnabled = ::atoi(value) == 1;
+			else if (::strcmp(key, "LocalAddress") == 0)
+				m_m17LocalAddress = value;
 			else if (::strcmp(key, "LocalPort") == 0)
 				m_m17LocalPort = (unsigned short)::atoi(value);
 			else if (::strcmp(key, "GatewayAddress") == 0)
@@ -1292,6 +1307,11 @@ std::string CConf::getModemModemAddress() const
 unsigned short CConf::getModemModemPort() const
 {
 	return m_modemModemPort;
+}
+
+std::string CConf::getModemLocalAddress() const
+{
+	return m_modemLocalAddress;
 }
 
 unsigned short CConf::getModemLocalPort() const
@@ -1959,6 +1979,11 @@ unsigned short CConf::getDStarGatewayPort() const
 	return m_dstarGatewayPort;
 }
 
+std::string CConf::getDStarLocalAddress() const
+{
+	return m_dstarLocalAddress;
+}
+
 unsigned short CConf::getDStarLocalPort() const
 {
 	return m_dstarLocalPort;
@@ -1984,19 +2009,24 @@ std::string CConf::getDMRNetworkType() const
 	return m_dmrNetworkType;
 }
 
-std::string CConf::getDMRNetworkAddress() const
+std::string CConf::getDMRNetworkRemoteAddress() const
 {
-	return m_dmrNetworkAddress;
+	return m_dmrNetworkRemoteAddress;
 }
 
-unsigned short CConf::getDMRNetworkPort() const
+unsigned short CConf::getDMRNetworkRemotePort() const
 {
-	return m_dmrNetworkPort;
+	return m_dmrNetworkRemotePort;
 }
 
-unsigned short CConf::getDMRNetworkLocal() const
+std::string CConf::getDMRNetworkLocalAddress() const
 {
-	return m_dmrNetworkLocal;
+	return m_dmrNetworkLocalAddress;
+}
+
+unsigned short CConf::getDMRNetworkLocalPort() const
+{
+	return m_dmrNetworkLocalPort;
 }
 
 std::string CConf::getDMRNetworkPassword() const
@@ -2039,14 +2069,14 @@ bool CConf::getFusionNetworkEnabled() const
 	return m_fusionNetworkEnabled;
 }
 
-std::string CConf::getFusionNetworkMyAddress() const
+std::string CConf::getFusionNetworkLocalAddress() const
 {
-	return m_fusionNetworkMyAddress;
+	return m_fusionNetworkLocalAddress;
 }
 
-unsigned short CConf::getFusionNetworkMyPort() const
+unsigned short CConf::getFusionNetworkLocalPort() const
 {
-	return m_fusionNetworkMyPort;
+	return m_fusionNetworkLocalPort;
 }
 
 std::string CConf::getFusionNetworkGatewayAddress() const
@@ -2082,6 +2112,11 @@ std::string CConf::getP25GatewayAddress() const
 unsigned short CConf::getP25GatewayPort() const
 {
 	return m_p25GatewayPort;
+}
+
+std::string CConf::getP25LocalAddress() const
+{
+	return m_p25LocalAddress;
 }
 
 unsigned short CConf::getP25LocalPort() const
@@ -2152,6 +2187,11 @@ std::string CConf::getM17GatewayAddress() const
 unsigned short CConf::getM17GatewayPort() const
 {
 	return m_m17GatewayPort;
+}
+
+std::string CConf::getM17LocalAddress() const
+{
+	return m_m17LocalAddress;
 }
 
 unsigned short CConf::getM17LocalPort() const

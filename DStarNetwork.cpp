@@ -30,8 +30,8 @@
 
 const unsigned int BUFFER_LENGTH = 100U;
 
-CDStarNetwork::CDStarNetwork(const std::string& gatewayAddress, unsigned short gatewayPort, unsigned short localPort, bool duplex, const char* version, bool debug) :
-m_socket(localPort),
+CDStarNetwork::CDStarNetwork(const std::string& gatewayAddress, unsigned short gatewayPort, const std::string& localAddress, unsigned short localPort, bool duplex, const char* version, bool debug) :
+m_socket(localAddress, localPort),
 m_addr(),
 m_addrLen(0U),
 m_duplex(duplex),

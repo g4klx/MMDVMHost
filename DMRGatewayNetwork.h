@@ -33,7 +33,7 @@
 class CDMRGatewayNetwork : public IDMRNetwork
 {
 public:
-	CDMRGatewayNetwork(const std::string& address, unsigned short port, unsigned short local, unsigned int id, bool duplex, const char* version, bool slot1, bool slot2, HW_TYPE hwType, bool debug);
+	CDMRGatewayNetwork(const std::string& remoteAddress, unsigned short remotePort, const std::string& localAddress, unsigned short localPort, unsigned int id, bool duplex, const char* version, bool slot1, bool slot2, HW_TYPE hwType, bool debug);
 	virtual ~CDMRGatewayNetwork();
 
 	virtual void setOptions(const std::string& options);

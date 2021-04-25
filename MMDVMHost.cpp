@@ -1330,8 +1330,9 @@ bool CMMDVMHost::createModem()
 	std::string i2cPort          = m_conf.getModemI2CPort();
 	unsigned int i2cAddress      = m_conf.getModemI2CAddress();
 	std::string modemAddress     = m_conf.getModemModemAddress();
-	unsigned int modemPort       = m_conf.getModemModemPort();
-	unsigned int localPort       = m_conf.getModemLocalPort();
+	unsigned short modemPort     = m_conf.getModemModemPort();
+	std::string localAddress     = m_conf.getModemLocalAddress();
+	unsigned short localPort     = m_conf.getModemLocalPort();
 	bool rxInvert                = m_conf.getModemRXInvert();
 	bool txInvert                = m_conf.getModemTXInvert();
 	bool pttInvert               = m_conf.getModemPTTInvert();
@@ -1378,8 +1379,9 @@ bool CMMDVMHost::createModem()
 		LogInfo("    UART Speed: %u", uartSpeed);
 	} else if (protocol == "udp") {
 		LogInfo("    Modem Address: %s", modemAddress.c_str());
-		LogInfo("    Modem Port: %u", modemPort);
-		LogInfo("    Local Port: %u", localPort);
+		LogInfo("    Modem Port: %hu", modemPort);
+		LogInfo("    Local Address: %s", localAddress.c_str());
+		LogInfo("    Local Port: %hu", localPort);
 	}
 #if defined(__linux__)
 	else if (protocol == "i2c") {
@@ -1418,7 +1420,7 @@ bool CMMDVMHost::createModem()
 	if (protocol == "uart")
 		port = new CUARTController(uartPort, uartSpeed, true);
 	else if (protocol == "udp")
-		port = new CUDPController(modemAddress, modemPort, localPort);
+		port = new CUDPController(modemAddress, modemPort, localAddress, localPort);
 #if defined(__linux__)
 	else if (protocol == "i2c")
 		port = new CI2CController(i2cPort, i2cAddress);
@@ -1540,6 +1542,7 @@ bool CMMDVMHost::createDStarNetwork()
 {
 	std::string gatewayAddress = m_conf.getDStarGatewayAddress();
 	unsigned short gatewayPort = m_conf.getDStarGatewayPort();
+	std::string localAddress   = m_conf.getDStarLocalAddress();
 	unsigned short localPort   = m_conf.getDStarLocalPort();
 	bool debug                 = m_conf.getDStarNetworkDebug();
 	m_dstarNetModeHang         = m_conf.getDStarNetworkModeHang();
@@ -1547,10 +1550,11 @@ bool CMMDVMHost::createDStarNetwork()
 	LogInfo("D-Star Network Parameters");
 	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
 	LogInfo("    Gateway Port: %hu", gatewayPort);
+	LogInfo("    Local Address: %s", localAddress.c_str());
 	LogInfo("    Local Port: %hu", localPort);
 	LogInfo("    Mode Hang: %us", m_dstarNetModeHang);
 
-	m_dstarNetwork = new CDStarNetwork(gatewayAddress, gatewayPort, localPort, m_duplex, VERSION, debug);
+	m_dstarNetwork = new CDStarNetwork(gatewayAddress, gatewayPort, localAddress, localPort, m_duplex, VERSION, debug);
 
 	bool ret = m_dstarNetwork->open();
 	if (!ret) {
@@ -1566,9 +1570,10 @@ bool CMMDVMHost::createDStarNetwork()
 
 bool CMMDVMHost::createDMRNetwork()
 {
-	std::string address  = m_conf.getDMRNetworkAddress();
-	unsigned short port  = m_conf.getDMRNetworkPort();
-	unsigned short local = m_conf.getDMRNetworkLocal();
+	std::string remoteAddress  = m_conf.getDMRNetworkRemoteAddress();
+	unsigned short remotePort  = m_conf.getDMRNetworkRemotePort();
+	std::string localAddress   = m_conf.getDMRNetworkLocalAddress();
+	unsigned short localPort   = m_conf.getDMRNetworkLocalPort();
 	unsigned int id      = m_conf.getDMRId();
 	std::string password = m_conf.getDMRNetworkPassword();
 	bool debug           = m_conf.getDMRNetworkDebug();
@@ -1583,21 +1588,19 @@ bool CMMDVMHost::createDMRNetwork()
 
 	LogInfo("DMR Network Parameters");
 	LogInfo("    Type: %s", type.c_str());
-	LogInfo("    Address: %s", address.c_str());
-	LogInfo("    Port: %hu", port);
-	if (local > 0U)
-		LogInfo("    Local: %hu", local);
-	else
-		LogInfo("    Local: random");
+	LogInfo("    Remote Address: %s", remoteAddress.c_str());
+	LogInfo("    Remote Port: %hu", remotePort);
+	LogInfo("    Local Address: %s", localAddress.c_str());
+	LogInfo("    Local Port: %hu", localPort);
 	LogInfo("    Jitter: %ums", jitter);
 	LogInfo("    Slot 1: %s", slot1 ? "enabled" : "disabled");
 	LogInfo("    Slot 2: %s", slot2 ? "enabled" : "disabled");
 	LogInfo("    Mode Hang: %us", m_dmrNetModeHang);
 
 	if (type == "Direct")
-		m_dmrNetwork = new CDMRDirectNetwork(address, port, local, id, password, m_duplex, VERSION, slot1, slot2, hwType, debug);
+		m_dmrNetwork = new CDMRDirectNetwork(remoteAddress, remotePort, localAddress, localPort, id, password, m_duplex, VERSION, slot1, slot2, hwType, debug);
 	else
-		m_dmrNetwork = new CDMRGatewayNetwork(address, port, local, id, m_duplex, VERSION, slot1, slot2, hwType, debug);
+		m_dmrNetwork = new CDMRGatewayNetwork(remoteAddress, remotePort, localAddress, localPort, id, m_duplex, VERSION, slot1, slot2, hwType, debug);
 
 	unsigned int rxFrequency = m_conf.getRXFrequency();
 	unsigned int txFrequency = m_conf.getTXFrequency();
@@ -1650,21 +1653,21 @@ bool CMMDVMHost::createDMRNetwork()
 
 bool CMMDVMHost::createYSFNetwork()
 {
-	std::string myAddress      = m_conf.getFusionNetworkMyAddress();
-	unsigned short myPort      = m_conf.getFusionNetworkMyPort();
+	std::string localAddress   = m_conf.getFusionNetworkLocalAddress();
+	unsigned short localPort   = m_conf.getFusionNetworkLocalPort();
 	std::string gatewayAddress = m_conf.getFusionNetworkGatewayAddress();
 	unsigned short gatewayPort = m_conf.getFusionNetworkGatewayPort();
 	m_ysfNetModeHang           = m_conf.getFusionNetworkModeHang();
 	bool debug                 = m_conf.getFusionNetworkDebug();
 
 	LogInfo("System Fusion Network Parameters");
-	LogInfo("    Local Address: %s", myAddress.c_str());
-	LogInfo("    Local Port: %hu", myPort);
+	LogInfo("    Local Address: %s", localAddress.c_str());
+	LogInfo("    Local Port: %hu", localPort);
 	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
 	LogInfo("    Gateway Port: %hu", gatewayPort);
 	LogInfo("    Mode Hang: %us", m_ysfNetModeHang);
 
-	m_ysfNetwork = new CYSFNetwork(myAddress, myPort, gatewayAddress, gatewayPort, m_callsign, debug);
+	m_ysfNetwork = new CYSFNetwork(localAddress, localPort, gatewayAddress, gatewayPort, m_callsign, debug);
 
 	bool ret = m_ysfNetwork->open();
 	if (!ret) {
@@ -1682,6 +1685,7 @@ bool CMMDVMHost::createP25Network()
 {
 	std::string gatewayAddress = m_conf.getP25GatewayAddress();
 	unsigned short gatewayPort = m_conf.getP25GatewayPort();
+	std::string localAddress   = m_conf.getP25LocalAddress();
 	unsigned short localPort   = m_conf.getP25LocalPort();
 	m_p25NetModeHang           = m_conf.getP25NetworkModeHang();
 	bool debug                 = m_conf.getP25NetworkDebug();
@@ -1689,10 +1693,11 @@ bool CMMDVMHost::createP25Network()
 	LogInfo("P25 Network Parameters");
 	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
 	LogInfo("    Gateway Port: %hu", gatewayPort);
+	LogInfo("    Local Address: %s", localAddress.c_str());
 	LogInfo("    Local Port: %hu", localPort);
 	LogInfo("    Mode Hang: %us", m_p25NetModeHang);
 
-	m_p25Network = new CP25Network(gatewayAddress, gatewayPort, localPort, debug);
+	m_p25Network = new CP25Network(gatewayAddress, gatewayPort, localAddress, localPort, debug);
 
 	bool ret = m_p25Network->open();
 	if (!ret) {
@@ -1745,6 +1750,7 @@ bool CMMDVMHost::createM17Network()
 {
 	std::string gatewayAddress = m_conf.getM17GatewayAddress();
 	unsigned short gatewayPort = m_conf.getM17GatewayPort();
+	std::string localAddress   = m_conf.getM17LocalAddress();
 	unsigned short localPort   = m_conf.getM17LocalPort();
 	m_m17NetModeHang           = m_conf.getM17NetworkModeHang();
 	bool debug                 = m_conf.getM17NetworkDebug();
@@ -1752,10 +1758,11 @@ bool CMMDVMHost::createM17Network()
 	LogInfo("M17 Network Parameters");
 	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
 	LogInfo("    Gateway Port: %hu", gatewayPort);
+	LogInfo("    Local Address: %s", localAddress.c_str());
 	LogInfo("    Local Port: %hu", localPort);
 	LogInfo("    Mode Hang: %us", m_m17NetModeHang);
 
-	m_m17Network = new CM17Network(localPort, gatewayAddress, gatewayPort, debug);
+	m_m17Network = new CM17Network(localAddress, localPort, gatewayAddress, gatewayPort, debug);
 	bool ret = m_m17Network->open();
 	if (!ret) {
 		delete m_m17Network;

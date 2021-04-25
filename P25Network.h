@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2014,2016,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2014,2016,2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
 
 class CP25Network {
 public:
-	CP25Network(const std::string& gatewayAddress, unsigned short gatewayPort, unsigned short localPort, bool debug);
+	CP25Network(const std::string& gatewayAddress, unsigned short gatewayPort, const std::string& localAddress, unsigned short localPort, bool debug);
 	~CP25Network();
 
 	bool open();

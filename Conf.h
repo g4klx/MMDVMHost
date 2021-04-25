@@ -77,6 +77,7 @@ public:
   unsigned int getModemI2CAddress() const;
   std::string  getModemModemAddress() const;
   unsigned short getModemModemPort() const;
+  std::string  getModemLocalAddress() const;
   unsigned short getModemLocalPort() const;
   bool         getModemRXInvert() const;
   bool         getModemTXInvert() const;
@@ -232,6 +233,7 @@ public:
   bool         getDStarNetworkEnabled() const;
   std::string  getDStarGatewayAddress() const;
   unsigned short getDStarGatewayPort() const;
+  std::string  getDStarLocalAddress() const;
   unsigned short getDStarLocalPort() const;
   unsigned int getDStarNetworkModeHang() const;
   bool         getDStarNetworkDebug() const;
@@ -239,9 +241,10 @@ public:
   // The DMR Network section
   bool         getDMRNetworkEnabled() const;
   std::string  getDMRNetworkType() const;
-  std::string  getDMRNetworkAddress() const;
-  unsigned short getDMRNetworkPort() const;
-  unsigned short getDMRNetworkLocal() const;
+  std::string  getDMRNetworkRemoteAddress() const;
+  unsigned short getDMRNetworkRemotePort() const;
+  std::string  getDMRNetworkLocalAddress() const;
+  unsigned short getDMRNetworkLocalPort() const;
   std::string  getDMRNetworkPassword() const;
   std::string  getDMRNetworkOptions() const;
   bool         getDMRNetworkDebug() const;
@@ -252,8 +255,8 @@ public:
 
   // The System Fusion Network section
   bool         getFusionNetworkEnabled() const;
-  std::string  getFusionNetworkMyAddress() const;
-  unsigned short getFusionNetworkMyPort() const;
+  std::string  getFusionNetworkLocalAddress() const;
+  unsigned short getFusionNetworkLocalPort() const;
   std::string  getFusionNetworkGatewayAddress() const;
   unsigned short getFusionNetworkGatewayPort() const;
   unsigned int getFusionNetworkModeHang() const;
@@ -263,6 +266,7 @@ public:
   bool         getP25NetworkEnabled() const;
   std::string  getP25GatewayAddress() const;
   unsigned short getP25GatewayPort() const;
+  std::string  getP25LocalAddress() const;
   unsigned short getP25LocalPort() const;
   unsigned int getP25NetworkModeHang() const;
   bool         getP25NetworkDebug() const;
@@ -281,6 +285,7 @@ public:
   bool         getM17NetworkEnabled() const;
   std::string  getM17GatewayAddress() const;
   unsigned short getM17GatewayPort() const;
+  std::string  getM17LocalAddress() const;
   unsigned short getM17LocalPort() const;
   unsigned int getM17NetworkModeHang() const;
   bool         getM17NetworkDebug() const;
@@ -406,6 +411,7 @@ private:
   unsigned int m_modemI2CAddress;
   std::string  m_modemModemAddress;
   unsigned short m_modemModemPort;
+  std::string  m_modemLocalAddress;
   unsigned short m_modemLocalPort;
   bool         m_modemRXInvert;
   bool         m_modemTXInvert;
@@ -550,15 +556,17 @@ private:
   bool         m_dstarNetworkEnabled;
   std::string  m_dstarGatewayAddress;
   unsigned short m_dstarGatewayPort;
+  std::string  m_dstarLocalAddress;
   unsigned short m_dstarLocalPort;
   unsigned int m_dstarNetworkModeHang;
   bool         m_dstarNetworkDebug;
 
   bool         m_dmrNetworkEnabled;
   std::string  m_dmrNetworkType;
-  std::string  m_dmrNetworkAddress;
-  unsigned short m_dmrNetworkPort;
-  unsigned short m_dmrNetworkLocal;
+  std::string  m_dmrNetworkRemoteAddress;
+  unsigned short m_dmrNetworkRemotePort;
+  std::string  m_dmrNetworkLocalAddress;
+  unsigned short m_dmrNetworkLocalPort;
   std::string  m_dmrNetworkPassword;
   std::string  m_dmrNetworkOptions;
   bool         m_dmrNetworkDebug;
@@ -568,8 +576,8 @@ private:
   unsigned int m_dmrNetworkModeHang;
 
   bool         m_fusionNetworkEnabled;
-  std::string  m_fusionNetworkMyAddress;
-  unsigned short m_fusionNetworkMyPort;
+  std::string  m_fusionNetworkLocalAddress;
+  unsigned short m_fusionNetworkLocalPort;
   std::string  m_fusionNetworkGatewayAddress;
   unsigned short m_fusionNetworkGatewayPort;
   unsigned int m_fusionNetworkModeHang;
@@ -578,6 +586,7 @@ private:
   bool         m_p25NetworkEnabled;
   std::string  m_p25GatewayAddress;
   unsigned short m_p25GatewayPort;
+  std::string  m_p25LocalAddress;
   unsigned short m_p25LocalPort;
   unsigned int m_p25NetworkModeHang;
   bool         m_p25NetworkDebug;
@@ -594,6 +603,7 @@ private:
   bool         m_m17NetworkEnabled;
   std::string  m_m17GatewayAddress;
   unsigned short m_m17GatewayPort;
+  std::string  m_m17LocalAddress;
   unsigned short m_m17LocalPort;
   unsigned int m_m17NetworkModeHang;
   bool         m_m17NetworkDebug;
