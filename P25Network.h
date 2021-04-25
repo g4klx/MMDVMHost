@@ -30,7 +30,7 @@
 
 class CP25Network {
 public:
-	CP25Network(const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int localPort, bool debug);
+	CP25Network(const std::string& gatewayAddress, unsigned short gatewayPort, unsigned short localPort, bool debug);
 	~CP25Network();
 
 	bool open();

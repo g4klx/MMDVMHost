@@ -28,7 +28,7 @@
 
 const unsigned int BUFFER_LENGTH = 200U;
 
-CPOCSAGNetwork::CPOCSAGNetwork(const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug) :
+CPOCSAGNetwork::CPOCSAGNetwork(const std::string& myAddress, unsigned short myPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug) :
 m_socket(myAddress, myPort),
 m_addr(),
 m_addrLen(0U),
