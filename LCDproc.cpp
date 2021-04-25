@@ -97,7 +97,7 @@ const unsigned int P25_RSSI_COUNT   = 7U;		// 7 * 180ms = 1260ms
 const unsigned int NXDN_RSSI_COUNT  = 28U;		// 28 * 40ms = 1120ms
 const unsigned int M17_RSSI_COUNT   = 28U;		// 28 * 40ms = 1120ms
 
-CLCDproc::CLCDproc(std::string address, unsigned int port, unsigned int localPort, const std::string& callsign, unsigned int dmrid, bool displayClock, bool utc, bool duplex, bool dimOnIdle) :
+CLCDproc::CLCDproc(std::string address, unsigned int port, unsigned short localPort, const std::string& callsign, unsigned int dmrid, bool displayClock, bool utc, bool duplex, bool dimOnIdle) :
 CDisplay(),
 m_address(address),
 m_port(port),

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2014,2016,2019,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2014,2016,2019,2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 
 const unsigned int BUFFER_LENGTH = 200U;
 
-CYSFNetwork::CYSFNetwork(const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, const std::string& callsign, bool debug) :
+CYSFNetwork::CYSFNetwork(const std::string& myAddress, unsigned short myPort, const std::string& gatewayAddress, unsigned short gatewayPort, const std::string& callsign, bool debug) :
 m_socket(myAddress, myPort),
 m_addr(),
 m_addrLen(0U),

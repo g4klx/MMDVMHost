@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 
 class CM17Network {
 public:
-	CM17Network(unsigned int localPort, const std::string& gwyAddress, unsigned int gwyPort, bool debug);
+	CM17Network(unsigned short localPort, const std::string& gwyAddress, unsigned short gwyPort, bool debug);
 	~CM17Network();
 
 	bool open();

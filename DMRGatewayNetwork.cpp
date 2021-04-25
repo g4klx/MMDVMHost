@@ -31,7 +31,7 @@ const unsigned int BUFFER_LENGTH = 500U;
 const unsigned int HOMEBREW_DATA_PACKET_LENGTH = 55U;
 
 
-CDMRGatewayNetwork::CDMRGatewayNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, bool duplex, const char* version, bool slot1, bool slot2, HW_TYPE hwType, bool debug) :
+CDMRGatewayNetwork::CDMRGatewayNetwork(const std::string& address, unsigned short port, unsigned short local, unsigned int id, bool duplex, const char* version, bool slot1, bool slot2, HW_TYPE hwType, bool debug) :
 m_addressStr(address),
 m_addr(),
 m_addrLen(0U),

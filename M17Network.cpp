@@ -29,7 +29,7 @@
 
 const unsigned int BUFFER_LENGTH = 200U;
 
-CM17Network::CM17Network(unsigned int localPort, const std::string& gwyAddress, unsigned int gwyPort, bool debug) :
+CM17Network::CM17Network(unsigned short localPort, const std::string& gwyAddress, unsigned short gwyPort, bool debug) :
 m_socket(localPort),
 m_addr(),
 m_addrLen(0U),

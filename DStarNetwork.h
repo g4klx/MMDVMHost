@@ -30,7 +30,7 @@
 
 class CDStarNetwork {
 public:
-	CDStarNetwork(const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int localPort, bool duplex, const char* version, bool debug);
+	CDStarNetwork(const std::string& gatewayAddress, unsigned short gatewayPort, unsigned short localPort, bool duplex, const char* version, bool debug);
 	~CDStarNetwork();
 
 	bool open();

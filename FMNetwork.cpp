@@ -27,7 +27,7 @@
 
 const unsigned int BUFFER_LENGTH = 1500U;
 
-CFMNetwork::CFMNetwork(const std::string& callsign, const std::string& protocol, const std::string& localAddress, unsigned int localPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug) :
+CFMNetwork::CFMNetwork(const std::string& callsign, const std::string& protocol, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug) :
 m_callsign(callsign),
 m_protocol(FMNP_USRP),
 m_socket(localAddress, localPort),

@@ -87,7 +87,7 @@ const unsigned char REC80[] = {
 
 const unsigned int BUFFER_LENGTH = 100U;
 
-CP25Network::CP25Network(const std::string& gatewayAddress, unsigned int gatewayPort, unsigned int localPort, bool debug) :
+CP25Network::CP25Network(const std::string& gatewayAddress, unsigned short gatewayPort, unsigned short localPort, bool debug) :
 m_socket(localPort),
 m_addr(),
 m_addrLen(0U),

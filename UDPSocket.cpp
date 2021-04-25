@@ -33,7 +33,7 @@
 #define LogInfo(fmt, ...)	::fprintf(stderr, fmt "\n", ## __VA_ARGS__)
 #endif
 
-CUDPSocket::CUDPSocket(const std::string& address, unsigned int port) :
+CUDPSocket::CUDPSocket(const std::string& address, unsigned short port) :
 m_address_save(address),
 m_port_save(port),
 m_counter(0U)
@@ -46,7 +46,7 @@ m_counter(0U)
 	}
 }
 
-CUDPSocket::CUDPSocket(unsigned int port) :
+CUDPSocket::CUDPSocket(unsigned short port) :
 m_address_save(),
 m_port_save(port),
 m_counter(0U)
@@ -80,7 +80,7 @@ void CUDPSocket::shutdown()
 #endif
 }
 
-int CUDPSocket::lookup(const std::string& hostname, unsigned int port, sockaddr_storage& addr, unsigned int& address_length)
+int CUDPSocket::lookup(const std::string& hostname, unsigned short port, sockaddr_storage& addr, unsigned int& address_length)
 {
 	struct addrinfo hints;
 	::memset(&hints, 0, sizeof(hints));
@@ -88,7 +88,7 @@ int CUDPSocket::lookup(const std::string& hostname, unsigned int port, sockaddr_
 	return lookup(hostname, port, addr, address_length, hints);
 }
 
-int CUDPSocket::lookup(const std::string& hostname, unsigned int port, sockaddr_storage& addr, unsigned int& address_length, struct addrinfo& hints)
+int CUDPSocket::lookup(const std::string& hostname, unsigned short port, sockaddr_storage& addr, unsigned int& address_length, struct addrinfo& hints)
 {
 	std::string portstr = std::to_string(port);
 	struct addrinfo *res;
@@ -171,7 +171,7 @@ bool CUDPSocket::open(unsigned int af)
 	return open(0, af, m_address_save, m_port_save);
 }
 
-bool CUDPSocket::open(const unsigned int index, const unsigned int af, const std::string& address, const unsigned int port)
+bool CUDPSocket::open(const unsigned int index, const unsigned int af, const std::string& address, const unsigned short port)
 {
 	sockaddr_storage addr;
 	unsigned int addrlen;
@@ -225,7 +225,7 @@ bool CUDPSocket::open(const unsigned int index, const unsigned int af, const std
 			return false;
 		}
 
-		LogInfo("Opening UDP port on %u", port);
+		LogInfo("Opening UDP port on %hu", port);
 	}
 
 	return true;
@@ -294,7 +294,7 @@ int CUDPSocket::read(unsigned char* buffer, unsigned int length, sockaddr_storag
 		LogError("Error returned from recvfrom, err: %d", errno);
 
 		if (len == -1 && errno == ENOTSOCK) {
-			LogMessage("Re-opening UDP port on %u", m_port);
+			LogMessage("Re-opening UDP port on %hu", m_port[index]);
 			close();
 			open();
 		}
