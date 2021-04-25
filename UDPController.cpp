@@ -24,8 +24,8 @@
 
 const unsigned int BUFFER_LENGTH = 600U;
 
-CUDPController::CUDPController(const std::string& modemAddress, unsigned int modemPort, unsigned int localPort) :
-m_socket(localPort),
+CUDPController::CUDPController(const std::string& modemAddress, unsigned int modemPort, const std::string& localAddress, unsigned int localPort) :
+m_socket(localAddress, localPort),
 m_addr(),
 m_addrLen(0U),
 m_buffer(2000U, "UDP Controller Ring Buffer")

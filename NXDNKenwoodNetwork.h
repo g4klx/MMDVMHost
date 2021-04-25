@@ -29,7 +29,7 @@
 
 class CNXDNKenwoodNetwork : public INXDNNetwork {
 public:
-	CNXDNKenwoodNetwork(const std::string& localAddress, unsigned int localPort, const std::string& gwyAddress, unsigned int gwyPort, bool debug);
+	CNXDNKenwoodNetwork(const std::string& localAddress, unsigned short localPort, const std::string& gwyAddress, unsigned short gwyPort, bool debug);
 	virtual ~CNXDNKenwoodNetwork();
 
 	virtual bool open();

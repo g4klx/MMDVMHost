@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2018,2019,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2018,2019,2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -28,8 +28,8 @@
 
 const unsigned int BUFFER_LENGTH = 200U;
 
-CPOCSAGNetwork::CPOCSAGNetwork(const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug) :
-m_socket(myAddress, myPort),
+CPOCSAGNetwork::CPOCSAGNetwork(const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug) :
+m_socket(localAddress, localPort),
 m_addr(),
 m_addrLen(0U),
 m_debug(debug),

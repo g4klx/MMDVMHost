@@ -46,13 +46,13 @@ enum IPMATCHTYPE {
 
 class CUDPSocket {
 public:
-	CUDPSocket(const std::string& address, unsigned int port = 0U);
-	CUDPSocket(unsigned int port = 0U);
+	CUDPSocket(const std::string& address, unsigned short port = 0U);
+	CUDPSocket(unsigned short port = 0U);
 	~CUDPSocket();
 
 	bool open(unsigned int af = AF_UNSPEC);
 	bool open(const sockaddr_storage& address);
-	bool open(const unsigned int index, const unsigned int af, const std::string& address, const unsigned int port);
+	bool open(const unsigned int index, const unsigned int af, const std::string& address, const unsigned short port);
 
 	int  read(unsigned char* buffer, unsigned int length, sockaddr_storage& address, unsigned int &address_length);
 	bool write(const unsigned char* buffer, unsigned int length, const sockaddr_storage& address, unsigned int address_length);
@@ -63,8 +63,8 @@ public:
 	static void startup();
 	static void shutdown();
 
-	static int lookup(const std::string& hostName, unsigned int port, sockaddr_storage& address, unsigned int& address_length);
-	static int lookup(const std::string& hostName, unsigned int port, sockaddr_storage& address, unsigned int& address_length, struct addrinfo& hints);
+	static int lookup(const std::string& hostName, unsigned short port, sockaddr_storage& address, unsigned int& address_length);
+	static int lookup(const std::string& hostName, unsigned short port, sockaddr_storage& address, unsigned int& address_length, struct addrinfo& hints);
 
 	static bool match(const sockaddr_storage& addr1, const sockaddr_storage& addr2, IPMATCHTYPE type = IMT_ADDRESS_AND_PORT);
 

@@ -79,7 +79,7 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
         return true;
 
     if (data[0U] == TAG_EOT)
-        return m_network->writeEOT();
+        return m_network->writeEnd();
 
     if (data[0U] != TAG_DATA1)
         return false;

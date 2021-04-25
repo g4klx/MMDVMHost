@@ -27,7 +27,7 @@
 
 class CUDPController : public IModemPort {
 public:
-	CUDPController(const std::string& modemAddress, unsigned int modemPort, unsigned int localPort);
+	CUDPController(const std::string& modemAddress, unsigned int modemPort, const std::string& localAddress, unsigned int localPort);
 	virtual ~CUDPController();
 
 	virtual bool open();

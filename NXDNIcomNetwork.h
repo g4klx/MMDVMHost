@@ -30,7 +30,7 @@
 
 class CNXDNIcomNetwork : public INXDNNetwork {
 public:
-	CNXDNIcomNetwork(const std::string& localAddress, unsigned int localPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug);
+	CNXDNIcomNetwork(const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug);
 	virtual ~CNXDNIcomNetwork();
 
 	virtual bool open();

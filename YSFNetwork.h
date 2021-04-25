@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2014,2016,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2014,2016,2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 
 class CYSFNetwork {
 public:
-	CYSFNetwork(const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, const std::string& callsign, bool debug);
+	CYSFNetwork(const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, const std::string& callsign, bool debug);
 	~CYSFNetwork();
 
 	bool open();

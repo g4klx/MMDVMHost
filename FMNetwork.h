@@ -31,7 +31,7 @@ enum FM_NETWORK_PROTOCOL {
 
 class CFMNetwork {
 public:
-	CFMNetwork(const std::string& protocol, const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug);
+	CFMNetwork(const std::string& callsign, const std::string& protocol, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug);
 	~CFMNetwork();
 
 	bool open();
@@ -40,7 +40,7 @@ public:
 
 	bool writeData(float* data, unsigned int nSamples);
 
-	bool writeEOT();
+	bool writeEnd();
 
 	unsigned int read(float* data, unsigned int nSamples);
 
@@ -51,6 +51,7 @@ public:
 	void clock(unsigned int ms);
 
 private:
+	std::string         m_callsign;
 	FM_NETWORK_PROTOCOL m_protocol;
 	CUDPSocket          m_socket;
 	sockaddr_storage    m_addr;
@@ -59,6 +60,8 @@ private:
 	bool                m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
 	unsigned int        m_seqNo;
+
+	bool writeStart();
 };
 
 #endif
