@@ -386,13 +386,9 @@ int CMMDVMHost::run()
 	}
 
 	if (m_fmEnabled && m_conf.getFMNetworkEnabled()) {
-		if (m_modem->getVersion() == 1U) {
-			LogWarning("FM networking enabled in the host but not available the modem firmware, disabling");
-		} else {
-			ret = createFMNetwork();
-			if (!ret)
-				return 1;
-		}
+		ret = createFMNetwork();
+		if (!ret)
+			return 1;
 	}
 
 	if (m_ax25Enabled && m_conf.getAX25NetworkEnabled()) {
