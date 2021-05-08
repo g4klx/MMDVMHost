@@ -64,6 +64,18 @@ public:
 
 	bool open();
 
+	bool hasDStar() const;
+	bool hasDMR() const;
+	bool hasYSF() const;
+	bool hasP25() const;
+	bool hasNXDN() const;
+	bool hasM17() const;
+	bool hasPOCSAG() const;
+	bool hasFM() const;
+	bool hasAX25() const;
+
+	unsigned int getVersion() const;
+
 	unsigned int readDStarData(unsigned char* data);
 	unsigned int readDMRData1(unsigned char* data);
 	unsigned int readDMRData2(unsigned char* data);
@@ -264,6 +276,8 @@ private:
 	unsigned int               m_fmExtAudioBoost;
 	float                      m_fmMaxDevLevel;
 	bool                       m_fmExtEnable;
+	unsigned char              m_capabilities1;
+	unsigned char              m_capabilities2;
 
 	bool readVersion();
 	bool readStatus();

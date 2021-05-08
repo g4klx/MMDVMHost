@@ -110,6 +110,16 @@ const unsigned int MAX_RESPONSES = 30U;
 
 const unsigned int BUFFER_LENGTH = 2000U;
 
+const unsigned char CAP1_DSTAR  = 0x01U;
+const unsigned char CAP1_DMR    = 0x02U;
+const unsigned char CAP1_YSF    = 0x04U;
+const unsigned char CAP1_P25    = 0x08U;
+const unsigned char CAP1_NXDN   = 0x10U;
+const unsigned char CAP1_M17    = 0x20U;
+const unsigned char CAP1_FM     = 0x40U;
+const unsigned char CAP2_POCSAG = 0x01U;
+const unsigned char CAP2_AX25   = 0x02U;
+
 
 CModem::CModem(bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug) :
 m_protocolVersion(0U),
@@ -240,7 +250,9 @@ m_fmSquelchLowThreshold(20U),
 m_fmRFAudioBoost(1U),
 m_fmExtAudioBoost(1U),
 m_fmMaxDevLevel(90.0F),
-m_fmExtEnable(false)
+m_fmExtEnable(false),
+m_capabilities1(0x00U),
+m_capabilities2(0x00U)
 {
 	m_buffer = new unsigned char[BUFFER_LENGTH];
 }
@@ -1901,6 +1913,56 @@ bool CModem::hasError() const
 	return m_error;
 }
 
+bool CModem::hasDStar() const
+{
+	return (m_capabilities1 & CAP1_DSTAR) == CAP1_DSTAR;
+}
+
+bool CModem::hasDMR() const
+{
+	return (m_capabilities1 & CAP1_DMR) == CAP1_DMR;
+}
+
+bool CModem::hasYSF() const
+{
+	return (m_capabilities1 & CAP1_YSF) == CAP1_YSF;
+}
+
+bool CModem::hasP25() const
+{
+	return (m_capabilities1 & CAP1_P25) == CAP1_P25;
+}
+
+bool CModem::hasNXDN() const
+{
+	return (m_capabilities1 & CAP1_NXDN) == CAP1_NXDN;
+}
+
+bool CModem::hasM17() const
+{
+	return (m_capabilities1 & CAP1_M17) == CAP1_M17;
+}
+
+bool CModem::hasFM() const
+{
+	return (m_capabilities1 & CAP1_FM) == CAP1_FM;
+}
+
+bool CModem::hasPOCSAG() const
+{
+	return (m_capabilities2 & CAP2_POCSAG) == CAP2_POCSAG;
+}
+
+bool CModem::hasAX25() const
+{
+	return (m_capabilities2 & CAP2_AX25) == CAP2_AX25;
+}
+
+unsigned int CModem::getVersion() const
+{
+	return m_protocolVersion;
+}
+
 bool CModem::readVersion()
 {
 	assert(m_port != NULL);
@@ -1956,6 +2018,8 @@ bool CModem::readVersion()
 				switch (m_protocolVersion) {
 				case 1U:
 					LogInfo("MMDVM protocol version: %u, description: %.*s", m_protocolVersion, m_length - 4U, m_buffer + 4U);
+					m_capabilities1 = CAP1_DSTAR | CAP1_DMR | CAP1_YSF | CAP1_P25 | CAP1_NXDN | CAP1_FM;
+					m_capabilities2 = CAP2_POCSAG;
 					return true;
 
 				case 2U:
@@ -1974,25 +2038,27 @@ bool CModem::readVersion()
 						LogInfo("CPU: Unknown type: %u", m_buffer[6U]);
 						break;
 					}
+					m_capabilities1 = m_buffer[4U];
+					m_capabilities2 = m_buffer[5U];
 					char modeText[100U];
 					::strcpy(modeText, "Modes:");
-					if ((m_buffer[4U] & 0x01U) == 0x01U)
+					if (hasDStar())
 						::strcat(modeText, " D-Star");
-					if ((m_buffer[4U] & 0x02U) == 0x02U)
+					if (hasDMR())
 						::strcat(modeText, " DMR");
-					if ((m_buffer[4U] & 0x04U) == 0x04U)
+					if (hasYSF())
 						::strcat(modeText, " YSF");
-					if ((m_buffer[4U] & 0x08U) == 0x08U)
+					if (hasP25())
 						::strcat(modeText, " P25");
-					if ((m_buffer[4U] & 0x10U) == 0x10U)
+					if (hasNXDN())
 						::strcat(modeText, " NXDN");
-					if ((m_buffer[4U] & 0x20U) == 0x20U)
+					if (hasM17())
 						::strcat(modeText, " M17");
-					if ((m_buffer[4U] & 0x40U) == 0x40U)
+					if (hasFM())
 						::strcat(modeText, " FM");
-					if ((m_buffer[5U] & 0x01U) == 0x01U)
+					if (hasPOCSAG())
 						::strcat(modeText, " POCSAG");
-					if ((m_buffer[5U] & 0x02U) == 0x02U)
+					if (hasAX25())
 						::strcat(modeText, " AX.25");
 					LogInfo(modeText);
 					return true;

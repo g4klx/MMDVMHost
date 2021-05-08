@@ -296,6 +296,51 @@ int CMMDVMHost::run()
 	if (!ret)
 		return 1;
 
+	if (m_dstarEnabled && !m_modem->hasDStar()) {
+		LogWarning("D-Star enabled in the host but not in the modem firmware, disabling");
+		m_dstarEnabled = false;
+	}
+
+	if (m_dmrEnabled && !m_modem->hasDMR()) {
+		LogWarning("DMR enabled in the host but not in the modem firmware, disabling");
+		m_dmrEnabled = false;
+	}
+
+	if (m_ysfEnabled && !m_modem->hasYSF()) {
+		LogWarning("YSF enabled in the host but not in the modem firmware, disabling");
+		m_ysfEnabled = false;
+	}
+
+	if (m_p25Enabled && !m_modem->hasP25()) {
+		LogWarning("P25 enabled in the host but not in the modem firmware, disabling");
+		m_p25Enabled = false;
+	}
+
+	if (m_nxdnEnabled && !m_modem->hasNXDN()) {
+		LogWarning("NXDN enabled in the host but not in the modem firmware, disabling");
+		m_nxdnEnabled = false;
+	}
+
+	if (m_m17Enabled && !m_modem->hasM17()) {
+		LogWarning("M17 enabled in the host but not in the modem firmware, disabling");
+		m_m17Enabled = false;
+	}
+
+	if (m_fmEnabled && !m_modem->hasFM()) {
+		LogWarning("FM enabled in the host but not in the modem firmware, disabling");
+		m_fmEnabled = false;
+	}
+
+	if (m_pocsagEnabled && !m_modem->hasPOCSAG()) {
+		LogWarning("POCSAG enabled in the host but not in the modem firmware, disabling");
+		m_pocsagEnabled = false;
+	}
+
+	if (m_ax25Enabled && !m_modem->hasAX25()) {
+		LogWarning("AX.25 enabled in the host but not in the modem firmware, disabling");
+		m_ax25Enabled = false;
+	}
+
 	m_display = CDisplay::createDisplay(m_conf, m_modem);
 
 	if (m_dstarEnabled && m_conf.getDStarNetworkEnabled()) {
@@ -341,9 +386,13 @@ int CMMDVMHost::run()
 	}
 
 	if (m_fmEnabled && m_conf.getFMNetworkEnabled()) {
-		ret = createFMNetwork();
-		if (!ret)
-			return 1;
+		if (m_modem->getVersion() == 1U) {
+			LogWarning("FM networking enabled in the host but not available the modem firmware, disabling");
+		} else {
+			ret = createFMNetwork();
+			if (!ret)
+				return 1;
+		}
 	}
 
 	if (m_ax25Enabled && m_conf.getAX25NetworkEnabled()) {
