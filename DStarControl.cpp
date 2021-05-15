@@ -15,6 +15,7 @@
 #include "Utils.h"
 #include "Sync.h"
 #include "Log.h"
+#include "SMeter.h"
 
 #include <cstdio>
 #include <cassert>
@@ -37,7 +38,7 @@ bool CallsignCompare(const std::string& arg, const unsigned char* my)
 
 // #define	DUMP_DSTAR
 
-CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool ackReply, unsigned int ackTime, bool ackMessage, bool errorReply, const std::vector<std::string>& blackList, const std::vector<std::string>& whiteList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
+CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool ackReply, unsigned int ackTime, DSTAR_ACK_MESSAGE ackMessage, bool errorReply, const std::vector<std::string>& blackList, const std::vector<std::string>& whiteList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
 m_callsign(NULL),
 m_gateway(NULL),
 m_selfOnly(selfOnly),
@@ -1182,11 +1183,25 @@ void CDStarControl::sendAck()
 		m_network->getStatus(status, reflector);
 
 	char text[40U];
-	if (m_ackMessage && m_rssi != 0) {
+	if (m_ackMessage == DSTAR_ACK_RSSI && m_rssi != 0) {
 		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
-			::sprintf(text, "%-8.8s %.1f%% -%udBm    ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCount);
+			::sprintf(text, "%-8.8s %.1f%% -%udBm        ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCount);
 		else
 			::sprintf(text, "BER:%.1f%% -%udBm           ", float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCount);
+	}
+	else if (m_ackMessage == DSTAR_ACK_SMETER && m_rssi != 0) {
+		unsigned int signal, plus;
+		char signalText[10U];
+		CSMeter::getSignal(m_aveRSSI / m_rssiCount, signal, plus);
+		if (plus != 0U)
+			::sprintf(signalText, "S%u+%u", signal, plus);
+		else
+			::sprintf(signalText, "S%u+", signal);
+
+		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
+			::sprintf(text, "%-8.8s %.1f%% %s           ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), signalText);
+		else
+			::sprintf(text, "BER:%.1f%% -%s             ", float(m_rfErrs * 100U) / float(m_rfBits), signalText);
 	}
 	else {
 		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
@@ -1232,11 +1247,25 @@ void CDStarControl::sendError()
 		m_network->getStatus(status, reflector);
 
 	char text[40U];
-	if (m_ackMessage && m_rssi != 0) {
+	if (m_ackMessage == DSTAR_ACK_RSSI && m_rssi != 0) {
 		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
-			::sprintf(text, "%-8.8s %.1f%% -%udBm    ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCount);
+			::sprintf(text, "%-8.8s %.1f%% -%udBm        ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCount);
 		else
 			::sprintf(text, "BER:%.1f%% -%udBm           ", float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCount);
+	}
+	else if (m_ackMessage == DSTAR_ACK_SMETER && m_rssi != 0) {
+		unsigned int signal, plus;
+		char signalText[10U];
+		CSMeter::getSignal(m_aveRSSI / m_rssiCount, signal, plus);
+		if (plus != 0U)
+			::sprintf(signalText, "S%u+%u", signal, plus);
+		else
+			::sprintf(signalText, "S%u+", signal);
+
+		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
+			::sprintf(text, "%-8.8s %.1f%% %s           ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), signalText);
+		else
+			::sprintf(text, "BER:%.1f%% -%s             ", float(m_rfErrs * 100U) / float(m_rfBits), signalText);
 	}
 	else {
 		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)

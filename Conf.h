@@ -116,7 +116,7 @@ public:
   std::vector<std::string> getDStarWhiteList() const;
   bool         getDStarAckReply() const;
   unsigned int getDStarAckTime() const;
-  bool         getDStarAckMessage() const;
+  DSTAR_ACK_MESSAGE getDStarAckMessage() const;
   bool         getDStarErrorReply() const;
   bool         getDStarRemoteGateway() const;
   unsigned int getDStarModeHang() const;
@@ -391,7 +391,7 @@ private:
   std::vector<std::string> m_dstarWhiteList;
   bool         m_dstarAckReply;
   unsigned int m_dstarAckTime;
-  bool         m_dstarAckMessage;
+  DSTAR_ACK_MESSAGE      m_dstarAckMessage;
   bool         m_dstarErrorReply;
   bool         m_dstarRemoteGateway;
   unsigned int m_dstarModeHang;
