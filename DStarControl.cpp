@@ -1198,12 +1198,12 @@ void CDStarControl::sendAck()
 		if (plus != 0U)
 			::sprintf(signalText, "S%u+%u", signal, plus);
 		else
-			::sprintf(signalText, "S%u+", signal);
+			::sprintf(signalText, "S%u", signal);
 
 		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
 			::sprintf(text, "%-8.8s %.1f%% %s           ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), signalText);
 		else
-			::sprintf(text, "BER:%.1f%% -%s             ", float(m_rfErrs * 100U) / float(m_rfBits), signalText);
+			::sprintf(text, "BER:%.1f%% %s             ", float(m_rfErrs * 100U) / float(m_rfBits), signalText);
 	}
 	else {
 		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
@@ -1264,12 +1264,12 @@ void CDStarControl::sendError()
 		if (plus != 0U)
 			::sprintf(signalText, "S%u+%u", signal, plus);
 		else
-			::sprintf(signalText, "S%u+", signal);
+			::sprintf(signalText, "S%u", signal);
 
 		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
 			::sprintf(text, "%-8.8s %.1f%% %s           ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), signalText);
 		else
-			::sprintf(text, "BER:%.1f%% -%s             ", float(m_rfErrs * 100U) / float(m_rfBits), signalText);
+			::sprintf(text, "BER:%.1f%% %s             ", float(m_rfErrs * 100U) / float(m_rfBits), signalText);
 	}
 	else {
 		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
