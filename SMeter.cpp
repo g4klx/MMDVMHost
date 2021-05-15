@@ -23,17 +23,18 @@ void CSMeter::getSignal(unsigned int rssi, unsigned int & signal, unsigned int &
 {
     signal = 0U;
     plus = 0U;
-    if (rssi >= 33) { signal = 9; plus = 40; }
-    else if (rssi >= 43)  { signal = 9; plus = 30; }
-    else if (rssi >= 53)  { signal = 9; plus = 20; }
-    else if (rssi >= 63)  { signal = 9; plus = 10; }
-    else if (rssi >= 73)  { signal = 9; plus = 0; }
-    else if (rssi >= 79)  { signal = 8; plus = 0; }
-    else if (rssi >= 85)  { signal = 7; plus = 0; }
-    else if (rssi >= 91)  { signal = 6; plus = 0; }
-    else if (rssi >= 97)  { signal = 5; plus = 0; }
-    else if (rssi >= 103) { signal = 4; plus = 0; }
-    else if (rssi >= 109) { signal = 3; plus = 0; }
+
+    if (rssi >= 121) { signal = 1; plus = 0; }
     else if (rssi >= 115) { signal = 2; plus = 0; }
-    else if (rssi >= 121) { signal = 1; plus = 0; }
+    else if (rssi >= 109) { signal = 3; plus = 0; }
+    else if (rssi >= 103) { signal = 4; plus = 0; }
+    else if (rssi >= 97)  { signal = 5; plus = 0; }
+    else if (rssi >= 91)  { signal = 6; plus = 0; }
+    else if (rssi >= 85)  { signal = 7; plus = 0; }
+    else if (rssi >= 79)  { signal = 8; plus = 0; }
+    else if (rssi >= 73)  { signal = 9; plus = 0; }
+    else if (rssi >= 63)  { signal = 9; plus = 10; }
+    else if (rssi >= 53)  { signal = 9; plus = 20; }
+    else if (rssi >= 43)  { signal = 9; plus = 30; }
+    else if (rssi >= 33)  { signal = 9; plus = 40; }
 }
