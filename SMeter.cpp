@@ -26,11 +26,11 @@ void CSMeter::getSignal(unsigned int rssi, unsigned int & signal, unsigned int &
 {
     if (rssi > RSSI_S1) {
         signal = 0;
-        plus = 0;
+        plus = rssi - RSSI_S1;
     }
-    else if (rssi >= RSSI_S9 && rssi <= RSSI_S1) {
-        signal = ((RSSI_S1 - rssi) / 6) + 1;
-        plus =0;
+    else if (rssi > RSSI_S9 && rssi <= RSSI_S1) {
+        signal = ((RSSI_S1 - rssi) / 6U) + 1U;
+        plus = (RSSI_S1 - rssi) % 6U;
     }
     else {
         signal = 9U;
