@@ -30,6 +30,8 @@ public:
 	static void bitsToByteBE(const bool* bits, unsigned char& byte);
 	static void bitsToByteLE(const bool* bits, unsigned char& byte);
 
+	static void removeChar(unsigned char * haystack, char needdle);
+
 private:
 };
 

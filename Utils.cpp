@@ -144,3 +144,17 @@ void CUtils::bitsToByteLE(const bool* bits, unsigned char& byte)
 	byte |= bits[6U] ? 0x40U : 0x00U;
 	byte |= bits[7U] ? 0x80U : 0x00U;
 }
+
+void CUtils::removeChar(unsigned char * haystack, char needdle)
+{
+    unsigned int i = 0;
+	unsigned int j = 0;
+
+    while (haystack[i] != '\0') {
+        if (haystack[i] != needdle)
+            haystack[j++] = haystack[i];
+		i++;
+	}
+ 
+    haystack[j] = '\0';
+}
