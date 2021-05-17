@@ -1196,7 +1196,7 @@ void CDStarControl::sendAck()
 		char signalText[10U];
 		CSMeter::getSignal(m_aveRSSI / m_rssiCount, signal, plus);
 		if (plus != 0U)
-			::sprintf(signalText, "S%u+%u", signal, plus);
+			::sprintf(signalText, "S%u+%02u", signal, plus);
 		else
 			::sprintf(signalText, "S%u", signal);
 
@@ -1262,7 +1262,7 @@ void CDStarControl::sendError()
 		char signalText[10U];
 		CSMeter::getSignal(m_aveRSSI / m_rssiCount, signal, plus);
 		if (plus != 0U)
-			::sprintf(signalText, "S%u+%u", signal, plus);
+			::sprintf(signalText, "S%u+%02u", signal, plus);
 		else
 			::sprintf(signalText, "S%u", signal);
 
