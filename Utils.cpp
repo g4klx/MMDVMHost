@@ -156,3 +156,17 @@ unsigned int CUtils::countBits(unsigned int v)
 
 	return count;
 }
+
+void CUtils::removeChar(unsigned char * haystack, char needdle)
+{
+    unsigned int i = 0;
+	unsigned int j = 0;
+
+    while (haystack[i] != '\0') {
+        if (haystack[i] != needdle)
+            haystack[j++] = haystack[i];
+		i++;
+	}
+ 
+    haystack[j] = '\0';
+}

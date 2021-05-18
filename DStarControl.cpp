@@ -15,6 +15,7 @@
 #include "Utils.h"
 #include "Sync.h"
 #include "Log.h"
+#include "SMeter.h"
 
 #include <cstdio>
 #include <cassert>
@@ -37,7 +38,7 @@ bool CallsignCompare(const std::string& arg, const unsigned char* my)
 
 // #define	DUMP_DSTAR
 
-CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool ackReply, unsigned int ackTime, bool ackMessage, bool errorReply, const std::vector<std::string>& blackList, const std::vector<std::string>& whiteList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
+CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool ackReply, unsigned int ackTime, DSTAR_ACK_MESSAGE ackMessage, bool errorReply, const std::vector<std::string>& blackList, const std::vector<std::string>& whiteList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
 m_callsign(NULL),
 m_gateway(NULL),
 m_selfOnly(selfOnly),
@@ -139,9 +140,9 @@ unsigned int CDStarControl::maybeFixupVoiceFrame(
 	unsigned char   n,
 	bool            blank_dtmf,
 	unsigned char*  voice_sync_data,
-	unsigned int*   voice_sync_data_len,
-	bool*           next_frame_is_fast_data,
-	unsigned int*   skip_dtmf_blanking_frames
+	unsigned int&   voice_sync_data_len,
+	bool&           next_frame_is_fast_data,
+	unsigned int&   skip_dtmf_blanking_frames
 	)
 {
 	unsigned int errors = 0U;
@@ -151,37 +152,40 @@ unsigned int CDStarControl::maybeFixupVoiceFrame(
 
 	if (n == 0U) {
 		::memcpy(voice_sync_data, data, DSTAR_MODEM_DATA_LEN);
-		*voice_sync_data_len = len;
+		voice_sync_data_len = len;
 	} else if ((n % 2U != 0U) &&
 		   ((mini_header_type == DSTAR_SLOW_DATA_TYPE_FASTDATA01) ||
 		    (mini_header_type == DSTAR_SLOW_DATA_TYPE_FASTDATA16))) {
-		*next_frame_is_fast_data = true;
+		next_frame_is_fast_data = true;
 		if (blank_dtmf)
-			*skip_dtmf_blanking_frames = FAST_DATA_BEEP_GRACE_FRAMES;
+			skip_dtmf_blanking_frames = FAST_DATA_BEEP_GRACE_FRAMES;
 		if (n == 1U)
-			LogDebug("D-Star, %s fastdata  sequence no.  0", log_prefix);
+			LogDebug("D-Star, %s fastdata  sequence no. 0", log_prefix);
 		LogDebug("D-Star, %s fastdata  sequence no. %2u", log_prefix, n);
-	} else if (*next_frame_is_fast_data == true) {
-		*next_frame_is_fast_data = false;
+	} else if (next_frame_is_fast_data) {
+		next_frame_is_fast_data = false;
 		if (blank_dtmf)
-			*skip_dtmf_blanking_frames = FAST_DATA_BEEP_GRACE_FRAMES;
+			skip_dtmf_blanking_frames = FAST_DATA_BEEP_GRACE_FRAMES;
 		LogDebug("D-Star, %s fastdata  sequence no. %2u", log_prefix, n);
 	} else {
 		bool voice_sync_data_is_null_ambe_data = false;
 		bool data_is_null_ambe_data = false;
+
 		if ((n == 1U) && (::memcmp(voice_sync_data + offset, DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) == 0))
 			voice_sync_data_is_null_ambe_data = true;
+
 		if (::memcmp(data + offset, DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) == 0)
 			data_is_null_ambe_data = true;
 
 		if ((n == 1U) && !voice_sync_data_is_null_ambe_data)
 			voice_sync_errors += m_fec.regenerateDStar(voice_sync_data + offset);
+
 		if (!data_is_null_ambe_data)
 			errors += m_fec.regenerateDStar(data + offset);
 
-		if (blank_dtmf && (*skip_dtmf_blanking_frames > 0U)) {
-			(*skip_dtmf_blanking_frames)--;
-		} else if (blank_dtmf && (*skip_dtmf_blanking_frames == 0U)) {
+		if (blank_dtmf && skip_dtmf_blanking_frames > 0U) {
+			skip_dtmf_blanking_frames--;
+		} else if (blank_dtmf && skip_dtmf_blanking_frames == 0U) {
 			if ((n == 1U) && !voice_sync_data_is_null_ambe_data)
 				blankDTMF(voice_sync_data + offset);
 			if (!data_is_null_ambe_data)
@@ -190,17 +194,16 @@ unsigned int CDStarControl::maybeFixupVoiceFrame(
 
 		if (n == 1U) {
 			if (voice_sync_data_is_null_ambe_data)
-				LogDebug("D-Star, %s nullaudio sequence no.  0", log_prefix);
+				LogDebug("D-Star, %s nullaudio sequence no. 0", log_prefix);
 			else
-				LogDebug("D-Star, %s audio     sequence no.  0, errs: %2u/48 (%5.1f%%)", log_prefix, voice_sync_errors,
-					 float(voice_sync_errors) / 0.48F);
+				LogDebug("D-Star, %s audio     sequence no.  0, errs: %2u/48 (%5.1f%%)", log_prefix, voice_sync_errors, float(voice_sync_errors) / 0.48F);
 		}
+
 		if (data_is_null_ambe_data)
 			LogDebug("D-Star, %s nullaudio sequence no. %2u", log_prefix, n);
 		else
-			LogDebug("D-Star, %s audio     sequence no. %2u, errs: %2u/48 (%5.1f%%)", log_prefix, n, errors,
-				 float(errors) / 0.48F);
-        }
+			LogDebug("D-Star, %s audio     sequence no. %2u, errs: %2u/48 (%5.1f%%)", log_prefix, n, errors, float(errors) / 0.48F);
+	}
 
 	return voice_sync_errors + errors;
 }
@@ -455,8 +458,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 
 			unsigned int errors = 0U;
 			if (!m_rfHeader.isDataPacket()) {
-				errors = maybeFixupVoiceFrame(data, len, 1U, "RF", m_rfN, m_duplex, m_rfVoiceSyncData, &m_rfVoiceSyncDataLen,
-							      &m_rfNextFrameIsFastData, &m_rfSkipDTMFBlankingFrames);
+				errors = maybeFixupVoiceFrame(data, len, 1U, "RF", m_rfN, m_duplex, m_rfVoiceSyncData, m_rfVoiceSyncDataLen, m_rfNextFrameIsFastData, m_rfSkipDTMFBlankingFrames);
 				m_display->writeDStarBER(float(errors) / 0.48F);
 				m_rfErrs += errors;
 			}
@@ -588,8 +590,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 
 			unsigned int errors = 0U;
 			if (!m_rfHeader.isDataPacket()) {
-				errors = maybeFixupVoiceFrame(data, len, 1U, "RF", m_rfN, m_duplex, m_rfVoiceSyncData, &m_rfVoiceSyncDataLen,
-							       &m_rfNextFrameIsFastData, &m_rfSkipDTMFBlankingFrames);
+				errors = maybeFixupVoiceFrame(data, len, 1U, "RF", m_rfN, m_duplex, m_rfVoiceSyncData, m_rfVoiceSyncDataLen, m_rfNextFrameIsFastData, m_rfSkipDTMFBlankingFrames);
 				m_rfErrs += errors;
 			}
 
@@ -789,8 +790,7 @@ void CDStarControl::writeNetwork()
 
 		unsigned int errors = 0U;
 		if (!m_netHeader.isDataPacket())
-			errors = maybeFixupVoiceFrame(data, length, 2U, "Net", n, true, m_netVoiceSyncData, &m_netVoiceSyncDataLen,
-						      &m_netNextFrameIsFastData, &m_netSkipDTMFBlankingFrames);
+			errors = maybeFixupVoiceFrame(data, length, 2U, "Net", n, true, m_netVoiceSyncData, m_netVoiceSyncDataLen, m_netNextFrameIsFastData, m_netSkipDTMFBlankingFrames);
 
 		// Insert silence and reject if in the past
 		bool ret = insertSilence(data + 1U, n);
@@ -1182,18 +1182,33 @@ void CDStarControl::sendAck()
 		m_network->getStatus(status, reflector);
 
 	char text[40U];
-	if (m_ackMessage && m_rssi != 0) {
-		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
-			::sprintf(text, "%-8.8s -%udBm          ", reflector, m_aveRSSI / m_rssiCount);
-		else
+	if (m_ackMessage == DSTAR_ACK_RSSI && m_rssi != 0) {
+		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK) {
+			CUtils::removeChar(reflector, ' ');//remove space from reflector so all nicely fits onto 20 chars in case rssi < 99dBm
+			::sprintf(text, "%-8.8s %.1f%% -%udBm        ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCount);
+		} else {
 			::sprintf(text, "BER:%.1f%% -%udBm           ", float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCount);
-	}
-	else {
+		}
+	} else if (m_ackMessage == DSTAR_ACK_SMETER && m_rssi != 0) {
+		unsigned int signal, plus;
+		char signalText[10U];
+		CSMeter::getSignal(m_aveRSSI / m_rssiCount, signal, plus);
+		if (plus != 0U)
+			::sprintf(signalText, "S%u+%02u", signal, plus);
+		else
+			::sprintf(signalText, "S%u", signal);
+
+		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
+			::sprintf(text, "%-8.8s %.1f%% %s           ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), signalText);
+		else
+			::sprintf(text, "BER:%.1f%% %s             ", float(m_rfErrs * 100U) / float(m_rfBits), signalText);
+	} else {
 		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
 			::sprintf(text, "%-8.8s  BER: %.1f%%         ", reflector, float(m_rfErrs * 100U) / float(m_rfBits));
 		else
 			::sprintf(text, "BER: %.1f%%                 ", float(m_rfErrs * 100U) / float(m_rfBits));
 	}
+
 	m_slowData.setText(text);
 
 	::memcpy(data, DSTAR_NULL_FRAME_DATA_BYTES, DSTAR_FRAME_LENGTH_BYTES + 1U);
@@ -1232,18 +1247,33 @@ void CDStarControl::sendError()
 		m_network->getStatus(status, reflector);
 
 	char text[40U];
-	if (m_ackMessage && m_rssi != 0) {
-		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
-			::sprintf(text, "%-8.8s -%udBm          ", reflector, m_aveRSSI / m_rssiCount);
-		else
+	if (m_ackMessage == DSTAR_ACK_RSSI && m_rssi != 0) {
+		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK) {
+			CUtils::removeChar(reflector, ' ');//remove space from reflector so all nicely fits onto 20 chars in case rssi < 99dBm
+			::sprintf(text, "%-8.8s %.1f%% -%udBm        ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCount);
+		} else {
 			::sprintf(text, "BER:%.1f%% -%udBm           ", float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCount);
-	}
-	else {
+		}
+	} else if (m_ackMessage == DSTAR_ACK_SMETER && m_rssi != 0) {
+		unsigned int signal, plus;
+		char signalText[10U];
+		CSMeter::getSignal(m_aveRSSI / m_rssiCount, signal, plus);
+		if (plus != 0U)
+			::sprintf(signalText, "S%u+%02u", signal, plus);
+		else
+			::sprintf(signalText, "S%u", signal);
+
+		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
+			::sprintf(text, "%-8.8s %.1f%% %s           ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), signalText);
+		else
+			::sprintf(text, "BER:%.1f%% %s             ", float(m_rfErrs * 100U) / float(m_rfBits), signalText);
+	} else {
 		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
 			::sprintf(text, "%-8.8s  BER: %.1f%%         ", reflector, float(m_rfErrs * 100U) / float(m_rfBits));
 		else
 			::sprintf(text, "BER: %.1f%%                 ", float(m_rfErrs * 100U) / float(m_rfBits));
 	}
+
 	m_slowData.setText(text);
 
 	::memcpy(data, DSTAR_NULL_FRAME_DATA_BYTES, DSTAR_FRAME_LENGTH_BYTES + 1U);
