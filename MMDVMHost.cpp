@@ -2192,6 +2192,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_m17Network->enable(true);
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
+		if (m_fmNetwork != NULL)
+			m_fmNetwork->enable(false);
+		if (m_ax25Network != NULL)
+			m_ax25Network->enable(false);
 		if (m_dstar != NULL)
 			m_dstar->enable(false);
 		if (m_dmr != NULL)
@@ -2206,6 +2210,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_m17->enable(true);
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+		if (m_fm != NULL)
+			m_fm->enable(false);
+		if (m_ax25 != NULL)
+			m_ax25->enable(false);
 		m_modem->setMode(MODE_M17);
 		m_mode = MODE_M17;
 		m_modeTimer.start();
