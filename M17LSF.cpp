@@ -144,9 +144,23 @@ void CM17LSF::setCAN(unsigned char can)
 	m_lsf[12U] |= (can >> 1) & 0x07U;
 }
 
+void CM17LSF::getMeta(unsigned char* data) const
+{
+	assert(data != NULL);
+
+	::memcpy(data, m_lsf + 14U, M17_META_LENGTH_BYTES);
+}
+
+void CM17LSF::setMeta(const unsigned char* data)
+{
+	assert(data != NULL);
+
+	::memcpy(m_lsf + 14U, data, M17_META_LENGTH_BYTES);
+}
+
 void CM17LSF::reset()
 {
-	::memset(m_lsf, 0x00U, 30U);
+	::memset(m_lsf, 0x00U, M17_LSF_LENGTH_BYTES);
 
 	m_valid = false;
 }
