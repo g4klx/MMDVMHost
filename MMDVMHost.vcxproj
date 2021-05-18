@@ -233,6 +233,7 @@
     <ClInclude Include="SerialController.h" />
     <ClInclude Include="SerialPort.h" />
     <ClInclude Include="SHA256.h" />
+    <ClInclude Include="SMeter.h" />
     <ClInclude Include="StopWatch.h" />
     <ClInclude Include="Sync.h" />
     <ClInclude Include="TFTSerial.h" />
@@ -327,6 +328,7 @@
     <ClCompile Include="SerialController.cpp" />
     <ClCompile Include="SerialPort.cpp" />
     <ClCompile Include="SHA256.cpp" />
+    <ClCompile Include="SMeter.cpp" />
     <ClCompile Include="StopWatch.cpp" />
     <ClCompile Include="Sync.cpp" />
     <ClCompile Include="TFTSerial.cpp" />

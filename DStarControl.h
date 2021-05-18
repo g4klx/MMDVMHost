@@ -107,7 +107,6 @@ private:
 	unsigned int               m_rfSkipDTMFBlankingFrames;
 	unsigned int               m_netSkipDTMFBlankingFrames;
 
-
 	unsigned int maybeFixupVoiceFrame(
 		unsigned char*  data,
 		unsigned int    len,
@@ -116,9 +115,9 @@ private:
 		unsigned char   n,
 		bool            blank_dtmf,
 		unsigned char*  voice_sync_data,
-		unsigned int*   voice_sync_data_len,
-		bool*           next_frame_is_fast_data,
-		unsigned int*   skip_dtmf_blanking_frames
+		unsigned int&   voice_sync_data_len,
+		bool&           next_frame_is_fast_data,
+		unsigned int&   skip_dtmf_blanking_frames
 		);
 
 	void writeNetwork();

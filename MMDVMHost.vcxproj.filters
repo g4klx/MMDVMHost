@@ -308,6 +308,9 @@
     <ClInclude Include="SHA256.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SMeter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -578,6 +581,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SHA256.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SMeter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

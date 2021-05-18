@@ -20,13 +20,10 @@
 #if !defined(SMETER_H)
 #define	SMETER_H
 
-#include <string>
-#include <vector>
-
 class CSMeter
 {
 public:
-    static void getSignal(unsigned int rssi, unsigned int & signal, unsigned int & plus);
+    static void getSignal(unsigned int rssi, unsigned int& signal, unsigned int& plus);
 };
 
 #endif
