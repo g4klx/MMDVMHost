@@ -1486,7 +1486,7 @@ bool CMMDVMHost::createModem()
 	m_modem->setM17Params(m17TXHang);
 	m_modem->setAX25Params(rxTwist, ax25TXDelay, ax25SlotTime, ax25PPersist);
 
-	if (m_fmEnabled) {
+	if (m_fmEnabled && m_modem->hasFM()) {
 		std::string  callsign             = m_conf.getFMCallsign();
 		unsigned int callsignSpeed        = m_conf.getFMCallsignSpeed();
 		unsigned int callsignFrequency    = m_conf.getFMCallsignFrequency();
