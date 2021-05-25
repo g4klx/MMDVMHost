@@ -488,7 +488,7 @@ int CMMDVMHost::run()
 		std::vector<std::string> whiteList = m_conf.getDStarWhiteList();
 		bool ackReply                      = m_conf.getDStarAckReply();
 		unsigned int ackTime               = m_conf.getDStarAckTime();
-		bool ackMessage                    = m_conf.getDStarAckMessage();
+		DSTAR_ACK_MESSAGE ackMessage       = m_conf.getDStarAckMessage();
 		bool errorReply                    = m_conf.getDStarErrorReply();
 		bool remoteGateway                 = m_conf.getDStarRemoteGateway();
 		m_dstarRFModeHang                  = m_conf.getDStarModeHang();
@@ -497,7 +497,7 @@ int CMMDVMHost::run()
 		LogInfo("    Module: %s", module.c_str());
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
 		LogInfo("    Ack Reply: %s", ackReply ? "yes" : "no");
-		LogInfo("    Ack message: %s", ackMessage ? "RSSI" : "BER");
+		LogInfo("    Ack message: %s", ackMessage == DSTAR_ACK_RSSI? "RSSI" : (ackMessage == DSTAR_ACK_SMETER ? "SMETER" : "BER"));
 		LogInfo("    Ack Time: %ums", ackTime);
 		LogInfo("    Error Reply: %s", errorReply ? "yes" : "no");
 		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
@@ -2192,6 +2192,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_m17Network->enable(true);
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
+		if (m_fmNetwork != NULL)
+			m_fmNetwork->enable(false);
+		if (m_ax25Network != NULL)
+			m_ax25Network->enable(false);
 		if (m_dstar != NULL)
 			m_dstar->enable(false);
 		if (m_dmr != NULL)
@@ -2206,6 +2210,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_m17->enable(true);
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+		if (m_fm != NULL)
+			m_fm->enable(false);
+		if (m_ax25 != NULL)
+			m_ax25->enable(false);
 		m_modem->setMode(MODE_M17);
 		m_mode = MODE_M17;
 		m_modeTimer.start();

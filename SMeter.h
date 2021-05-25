@@ -1,5 +1,6 @@
 /*
  *   Copyright (C) 2015-2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2021 by Geoffrey Merck F4FXL / KC3FRA
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,9 +17,13 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(VERSION_H)
-#define	VERSION_H
+#if !defined(SMETER_H)
+#define	SMETER_H
 
-const char* VERSION = "20210525";
+class CSMeter
+{
+public:
+    static void getSignal(unsigned int rssi, unsigned int& signal, unsigned int& plus);
+};
 
 #endif

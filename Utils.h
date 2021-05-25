@@ -32,6 +32,8 @@ public:
 
 	static unsigned int countBits(unsigned int v);
 
+	static void removeChar(unsigned char * haystack, char needdle);
+
 private:
 };
 

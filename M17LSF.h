@@ -50,6 +50,9 @@ public:
 	unsigned char getCAN() const;
 	void setCAN(unsigned char can);
 
+	void getMeta(unsigned char* data) const;
+	void setMeta(const unsigned char* data);
+
 	void reset();
 	bool isValid() const;
 

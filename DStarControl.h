@@ -37,7 +37,7 @@
 
 class CDStarControl {
 public:
-	CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool ackReply, unsigned int ackTime, bool ackMessage, bool errorReply, const std::vector<std::string>& blackList, const std::vector<std::string>& whiteList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper);
+	CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool ackReply, unsigned int ackTime, DSTAR_ACK_MESSAGE ackMessage, bool errorReply, const std::vector<std::string>& blackList, const std::vector<std::string>& whiteList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper);
 	~CDStarControl();
 
 	bool writeModem(unsigned char* data, unsigned int len);
@@ -55,7 +55,7 @@ private:
 	unsigned char*             m_gateway;
 	bool                       m_selfOnly;
 	bool                       m_ackReply;
-	bool                       m_ackMessage;
+	DSTAR_ACK_MESSAGE          m_ackMessage;
 	bool                       m_errorReply;
 	bool                       m_remoteGateway;
 	std::vector<std::string>   m_blackList;
@@ -107,7 +107,6 @@ private:
 	unsigned int               m_rfSkipDTMFBlankingFrames;
 	unsigned int               m_netSkipDTMFBlankingFrames;
 
-
 	unsigned int maybeFixupVoiceFrame(
 		unsigned char*  data,
 		unsigned int    len,
@@ -116,9 +115,9 @@ private:
 		unsigned char   n,
 		bool            blank_dtmf,
 		unsigned char*  voice_sync_data,
-		unsigned int*   voice_sync_data_len,
-		bool*           next_frame_is_fast_data,
-		unsigned int*   skip_dtmf_blanking_frames
+		unsigned int&   voice_sync_data_len,
+		bool&           next_frame_is_fast_data,
+		unsigned int&   skip_dtmf_blanking_frames
 		);
 
 	void writeNetwork();
