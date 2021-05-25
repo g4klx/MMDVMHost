@@ -341,9 +341,11 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 				LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%", source.c_str(), dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 			writeEndRF();
 		}
+
+		return true;
 	}
 
-	return true;
+	return false;
 }
 
 unsigned int CM17Control::readModem(unsigned char* data)
