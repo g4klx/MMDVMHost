@@ -1191,7 +1191,7 @@ void CDStarControl::sendAck()
 		}
 	} else if (m_ackMessage == DSTAR_ACK_SMETER && m_rssi != 0) {
 		unsigned int signal, plus;
-		char signalText[10U];
+		char signalText[15U];
 		CSMeter::getSignal(m_aveRSSI / m_rssiCount, signal, plus);
 		if (plus != 0U)
 			::sprintf(signalText, "S%u+%02u", signal, plus);
@@ -1256,7 +1256,7 @@ void CDStarControl::sendError()
 		}
 	} else if (m_ackMessage == DSTAR_ACK_SMETER && m_rssi != 0) {
 		unsigned int signal, plus;
-		char signalText[10U];
+		char signalText[15U];
 		CSMeter::getSignal(m_aveRSSI / m_rssiCount, signal, plus);
 		if (plus != 0U)
 			::sprintf(signalText, "S%u+%02u", signal, plus);
