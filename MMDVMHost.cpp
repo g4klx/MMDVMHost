@@ -784,8 +784,9 @@ int CMMDVMHost::run()
 					setMode(MODE_DSTAR);
 				}
 			} else if (m_mode == MODE_DSTAR) {
-				m_dstar->writeModem(data, len);
-				m_modeTimer.start();
+				bool ret = m_dstar->writeModem(data, len);
+				if (ret)
+					m_modeTimer.start();
 			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("D-Star modem data received when in mode %u", m_mode);
 			}
@@ -874,8 +875,9 @@ int CMMDVMHost::run()
 					setMode(MODE_YSF);
 				}
 			} else if (m_mode == MODE_YSF) {
-				m_ysf->writeModem(data, len);
-				m_modeTimer.start();
+				bool ret = m_ysf->writeModem(data, len);
+				if (ret)
+					m_modeTimer.start();
 			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("System Fusion modem data received when in mode %u", m_mode);
 			}
@@ -890,8 +892,9 @@ int CMMDVMHost::run()
 					setMode(MODE_P25);
 				}
 			} else if (m_mode == MODE_P25) {
-				m_p25->writeModem(data, len);
-				m_modeTimer.start();
+				bool ret = m_p25->writeModem(data, len);
+				if (ret)
+					m_modeTimer.start();
 			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("P25 modem data received when in mode %u", m_mode);
 			}
@@ -906,8 +909,9 @@ int CMMDVMHost::run()
 					setMode(MODE_NXDN);
 				}
 			} else if (m_mode == MODE_NXDN) {
-				m_nxdn->writeModem(data, len);
-				m_modeTimer.start();
+				bool ret = m_nxdn->writeModem(data, len);
+				if (ret)
+					m_modeTimer.start();
 			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("NXDN modem data received when in mode %u", m_mode);
 			}
@@ -922,8 +926,9 @@ int CMMDVMHost::run()
 					setMode(MODE_M17);
 				}
 			} else if (m_mode == MODE_M17) {
-				m_m17->writeModem(data, len);
-				m_modeTimer.start();
+				bool ret = m_m17->writeModem(data, len);
+				if (ret)
+					m_modeTimer.start();
 			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("M17 modem data received when in mode %u", m_mode);
 			}
@@ -938,8 +943,9 @@ int CMMDVMHost::run()
 					setMode(MODE_FM);
 				}
 			} else if (m_mode == MODE_FM) {
-				m_fm->writeModem(data, len);
-				m_modeTimer.start();
+				bool ret = m_fm->writeModem(data, len);
+				if (ret)
+					m_modeTimer.start();
 			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("FM modem data received when in mode %u", m_mode);
 			}
