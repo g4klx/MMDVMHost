@@ -44,8 +44,8 @@ m_newMetrics(NULL),
 m_decisions(NULL),
 m_dp(NULL)
 {
-	m_metrics1  = new uint16_t[16U];
-	m_metrics2  = new uint16_t[16U];
+	m_metrics1  = new uint16_t[20U];
+	m_metrics2  = new uint16_t[20U];
 	m_decisions = new uint64_t[300U];
 }
 

@@ -214,7 +214,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 				unsigned short srcId = layer3.getSourceUnitId();
 				if (srcId != m_id) {
 					m_rfState = RS_RF_REJECTED;
-					return false;
+					return true;
 				}
 			}
 		} else {
@@ -375,7 +375,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			if (m_selfOnly) {
 				if (srcId != m_id) {
 					m_rfState = RS_RF_REJECTED;
-					return false;
+					return true;
 				}
 			}
 

@@ -233,7 +233,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 				if (!ret) {
 					LogMessage("YSF, invalid access attempt from %10.10s to DG-ID %u", m_rfSource, dgid);
 					m_rfState = RS_RF_REJECTED;
-					return false;
+					return true;
 				}
 			}
 
@@ -402,7 +402,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 				if (!ret) {
 					LogMessage("YSF, invalid access attempt from %10.10s to DG-ID %u", m_rfSource, dgid);
 					m_rfState = RS_RF_REJECTED;
-					return false;
+					return true;
 				}
 			}
 
@@ -598,7 +598,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 				if (!ret) {
 					LogMessage("YSF, invalid access attempt from %10.10s to DG-ID %u", m_rfSource, dgid);
 					m_rfState = RS_RF_REJECTED;
-					return false;
+					return true;
 				}
 			}
 
@@ -704,7 +704,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 				if (!ret) {
 					LogMessage("YSF, invalid access attempt from %10.10s to DG-ID %u", m_rfSource, dgid);
 					m_rfState = RS_RF_REJECTED;
-					return false;
+					return true;
 				}
 			}
 
