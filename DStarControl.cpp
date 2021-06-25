@@ -309,7 +309,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		if (!header.isRepeater()) {
 			LogMessage("D-Star, non repeater RF header received from %8.8s", my1);
 			m_rfState = RS_RF_INVALID;
-			return false;
+			return true;
 		}
 
 		unsigned char callsign[DSTAR_LONG_CALLSIGN_LENGTH];
@@ -319,19 +319,19 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		if (::memcmp(callsign, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH) != 0) {
 			LogMessage("D-Star, received RF header for wrong repeater (%8.8s) from %8.8s", callsign, my1);
 			m_rfState = RS_RF_INVALID;
-			return false;
+			return true;
 		}
 
 		if (m_selfOnly && ::memcmp(my1, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH - 1U) != 0 && !(std::find_if(m_whiteList.begin(), m_whiteList.end(), std::bind(CallsignCompare, std::placeholders::_1, my1)) != m_whiteList.end())) {
 			LogMessage("D-Star, invalid access attempt from %8.8s", my1);
 			m_rfState = RS_RF_REJECTED;
-			return false;
+			return true;
 		}
 
 		if (!m_selfOnly && std::find_if(m_blackList.begin(), m_blackList.end(), std::bind(CallsignCompare, std::placeholders::_1, my1)) != m_blackList.end()) {
 			LogMessage("D-Star, invalid access attempt from %8.8s", my1);
 			m_rfState = RS_RF_REJECTED;
-			return false;
+			return true;
 		}
 
 		unsigned char gateway[DSTAR_LONG_CALLSIGN_LENGTH];
@@ -502,7 +502,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 				LogMessage("D-Star, non repeater RF header received from %8.8s", my1);
 				m_rfState = RS_RF_INVALID;
 				delete header;
-				return false;
+				return true;
 			}
 
 			unsigned char callsign[DSTAR_LONG_CALLSIGN_LENGTH];
@@ -513,21 +513,21 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 				LogMessage("D-Star, received RF header for wrong repeater (%8.8s) from %8.8s", callsign, my1);
 				m_rfState = RS_RF_INVALID;
 				delete header;
-				return false;
+				return true;
 			}
 
 			if (m_selfOnly && ::memcmp(my1, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH - 1U) != 0 && !(std::find_if(m_whiteList.begin(), m_whiteList.end(), std::bind(CallsignCompare, std::placeholders::_1, my1)) != m_whiteList.end())) {
 				LogMessage("D-Star, invalid access attempt from %8.8s", my1);
 				m_rfState = RS_RF_REJECTED;
 				delete header;
-				return false;
+				return true;
 			}
 
 			if (!m_selfOnly && std::find_if(m_blackList.begin(), m_blackList.end(), std::bind(CallsignCompare, std::placeholders::_1, my1)) != m_blackList.end()) {
 				LogMessage("D-Star, invalid access attempt from %8.8s", my1);
 				m_rfState = RS_RF_REJECTED;
 				delete header;
-				return false;
+				return true;
 			}
 
 			unsigned char gateway[DSTAR_LONG_CALLSIGN_LENGTH];
