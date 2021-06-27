@@ -118,7 +118,7 @@ void CM17Convolution::encodeData(const unsigned char* in, unsigned char* out) co
 	}
 }
 
-void CM17Convolution::decodeLinkSetup(const unsigned char* in, unsigned char* out)
+unsigned int CM17Convolution::decodeLinkSetup(const unsigned char* in, unsigned char* out)
 {
 	assert(in != NULL);
 	assert(out != NULL);
@@ -150,10 +150,10 @@ void CM17Convolution::decodeLinkSetup(const unsigned char* in, unsigned char* ou
 		decode(s0, s1);
 	}
 
-	chainback(out, 240U);
+	return chainback(out, 240U);
 }
 
-void CM17Convolution::decodeData(const unsigned char* in, unsigned char* out)
+unsigned int CM17Convolution::decodeData(const unsigned char* in, unsigned char* out)
 {
 	assert(in != NULL);
 	assert(out != NULL);
@@ -185,7 +185,7 @@ void CM17Convolution::decodeData(const unsigned char* in, unsigned char* out)
 		decode(s0, s1);
 	}
 
-	chainback(out, 160U);
+	return chainback(out, 160U);
 }
 
 void CM17Convolution::start()
@@ -229,7 +229,7 @@ void CM17Convolution::decode(uint8_t s0, uint8_t s1)
   m_newMetrics = tmp;
 }
 
-void CM17Convolution::chainback(unsigned char* out, unsigned int nBits)
+unsigned int CM17Convolution::chainback(unsigned char* out, unsigned int nBits)
 {
 	assert(out != NULL);
 
@@ -244,6 +244,15 @@ void CM17Convolution::chainback(unsigned char* out, unsigned int nBits)
 
 		WRITE_BIT1(out, nBits, bit != 0U);
 	}
+
+	unsigned int minCost = m_oldMetrics[0];
+
+	for (unsigned int i = 0U; i < NUM_OF_STATES; i++) {
+		if (m_oldMetrics[i] < minCost)
+			minCost = m_oldMetrics[i];
+	}
+
+	return minCost / (M >> 1);
 }
 
 void CM17Convolution::encode(const unsigned char* in, unsigned char* out, unsigned int nBits) const

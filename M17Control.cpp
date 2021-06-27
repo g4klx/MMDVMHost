@@ -257,7 +257,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 #endif
 		CM17Convolution conv;
 		unsigned char frame[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES];
-		conv.decodeData(data + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES, frame);
+		unsigned int convBER = conv.decodeData(data + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES, frame);
 
 		unsigned int fn = ((frame[0U] << 8) + (frame[1U] << 0)) & 0x7FU;
 
@@ -296,7 +296,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			errors += CUtils::countBits(rfData[offset] ^ data[offset]);
 		}
 
-		LogDebug("M17, FN: %u, errs: %u/144 (%.1f%%)", fn & 0x7FU, errors, float(errors) / 1.44F);
+		LogDebug("M17, FN: %u, errs: %u/%u/144 (%.1f%%)", fn & 0x7FU, errors, convBER, float(errors) / 1.44F);
 
 		m_rfBits += M17_FN_LENGTH_BITS + M17_PAYLOAD_LENGTH_BITS;
 		m_rfErrs += errors;
