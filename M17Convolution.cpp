@@ -23,6 +23,8 @@
 #include <cstring>
 #include <cstdlib>
 
+const unsigned int PUNCTURE_LIST_LINK_SETUP_COUNT = 60U;
+
 const unsigned int PUNCTURE_LIST_LINK_SETUP[] = {
 	3U, 6U, 9U, 12U, 19U, 22U, 25U, 28U, 35U, 38U, 41U, 44U, 51U, 54U, 57U, 64U, 67U, 70U, 73U, 80U, 83U, 86U, 89U, 96U, 99U, 102U,
 	105U, 112U, 115U, 118U, 125U, 128U, 131U, 134U, 141U, 144U, 147U, 150U, 157U, 160U, 163U, 166U, 173U, 176U, 179U, 186U, 189U,
@@ -30,6 +32,8 @@ const unsigned int PUNCTURE_LIST_LINK_SETUP[] = {
 	279U, 282U, 285U, 288U, 295U, 298U, 301U, 308U, 311U, 314U, 317U, 324U, 327U, 330U, 333U, 340U, 343U, 346U, 349U, 356U, 359U,
 	362U, 369U, 372U, 375U, 378U, 385U, 388U, 391U, 394U, 401U, 404U, 407U, 410U, 417U, 420U, 423U, 430U, 433U, 436U, 439U, 446U,
 	449U, 452U, 455U, 462U, 465U, 468U, 471U, 478U, 481U, 484U};
+
+const unsigned int PUNCTURE_LIST_DATA_COUNT = 22U;
 
 const unsigned int PUNCTURE_LIST_DATA[] = {
 	11U, 23U, 35U, 47U, 59U, 71U, 83U, 95U, 107U, 119U, 131U, 143U, 155U, 167U, 179U, 191U, 203U, 215U, 227U, 239U, 251U, 263U,
@@ -150,7 +154,7 @@ unsigned int CM17Convolution::decodeLinkSetup(const unsigned char* in, unsigned 
 		decode(s0, s1);
 	}
 
-	return chainback(out, 240U);
+	return chainback(out, 240U) - PUNCTURE_LIST_LINK_SETUP_COUNT;
 }
 
 unsigned int CM17Convolution::decodeData(const unsigned char* in, unsigned char* out)
@@ -185,7 +189,7 @@ unsigned int CM17Convolution::decodeData(const unsigned char* in, unsigned char*
 		decode(s0, s1);
 	}
 
-	return chainback(out, 160U);
+	return chainback(out, 160U) - PUNCTURE_LIST_DATA_COUNT;
 }
 
 void CM17Convolution::start()

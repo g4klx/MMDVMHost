@@ -79,6 +79,7 @@ m_rfErrs(0U),
 m_rfBits(1U),
 m_rfLSF(),
 m_rfLSFn(0U),
+m_rfFN(0U),
 m_netLSF(),
 m_netLSFn(0U),
 m_rssiMapper(rssiMapper),
@@ -172,7 +173,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 		CM17Convolution conv;
 		unsigned char frame[M17_LSF_LENGTH_BYTES];
-		conv.decodeLinkSetup(data + 2U + M17_SYNC_LENGTH_BYTES, frame);
+		unsigned int ber = conv.decodeLinkSetup(data + 2U + M17_SYNC_LENGTH_BYTES, frame);
 
 		bool valid = CM17CRC::checkCRC16(frame, M17_LSF_LENGTH_BYTES);
 		if (valid) {
@@ -184,15 +185,16 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 				return false;
 			}
 
-			m_rfFrames = 0U;
-			m_rfErrs = 0U;
-			m_rfBits = 1U;
+			m_rfFrames  = 0U;
+			m_rfErrs    = ber;
+			m_rfBits    = 368U;
 			m_rfTimeoutTimer.start();
-			m_minRSSI = m_rssi;
-			m_maxRSSI = m_rssi;
-			m_aveRSSI = m_rssi;
+			m_minRSSI   = m_rssi;
+			m_maxRSSI   = m_rssi;
+			m_aveRSSI   = m_rssi;
 			m_rssiCount = 1U;
 			m_rfLSFn    = 0U;
+			m_rfFN      = 0U;
 
 #if defined(DUMP_M17)
 			openFile();
@@ -233,14 +235,15 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 				return false;
 			}
 
-			m_rfFrames = 0U;
-			m_rfErrs = 0U;
-			m_rfBits = 1U;
+			m_rfFrames  = 0U;
+			m_rfErrs    = 0U;
+			m_rfBits    = 1U;
 			m_rfTimeoutTimer.start();
-			m_minRSSI = m_rssi;
-			m_maxRSSI = m_rssi;
-			m_aveRSSI = m_rssi;
+			m_minRSSI   = m_rssi;
+			m_maxRSSI   = m_rssi;
+			m_aveRSSI   = m_rssi;
 			m_rssiCount = 1U;
+			m_rfFN      = 0U;
 
 #if defined(DUMP_M17)
 			openFile();
@@ -257,59 +260,64 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 #endif
 		CM17Convolution conv;
 		unsigned char frame[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES];
-		unsigned int convBER = conv.decodeData(data + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES, frame);
+		unsigned int errors = conv.decodeData(data + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES, frame);
 
-		unsigned int fn = ((frame[0U] << 8) + (frame[1U] << 0)) & 0x7FU;
+		// If we have a BER of less than 12, then we consider the audio to be usable
+		bool valid = errors < 12U;
 
-		unsigned char rfData[2U + M17_FRAME_LENGTH_BYTES];
+		if (!valid) {
+			frame[0U] = (m_rfFN >> 8) & 0xFFU;
+			frame[1U] = (m_rfFN >> 0) & 0xFFU;
 
-		rfData[0U] = TAG_DATA1;
-		rfData[1U] = 0x00U;
-
-		// Generate the sync
-		CSync::addM17StreamSync(rfData + 2U);
-
-		unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
-		m_rfLSF.getFragment(lich, m_rfLSFn);
-
-		// Add the fragment number
-		lich[5U] = (m_rfLSFn & 0x07U) << 5;
-
-		unsigned int frag1, frag2, frag3, frag4;
-		CM17Utils::splitFragmentLICH(lich, frag1, frag2, frag3, frag4);
-
-		// Add Golay to the LICH fragment here
-		unsigned int lich1 = CGolay24128::encode24128(frag1);
-		unsigned int lich2 = CGolay24128::encode24128(frag2);
-		unsigned int lich3 = CGolay24128::encode24128(frag3);
-		unsigned int lich4 = CGolay24128::encode24128(frag4);
-
-		CM17Utils::combineFragmentLICHFEC(lich1, lich2, lich3, lich4, rfData + 2U + M17_SYNC_LENGTH_BYTES);
-
-		// Add the Convolution FEC
-		conv.encodeData(frame, rfData + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES);
-
-		// Calculate the BER
-		unsigned int errors = 0U;
-		for (unsigned int i = 0U; i < (M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES); i++) {
-			unsigned int offset = i + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES;
-			errors += CUtils::countBits(rfData[offset] ^ data[offset]);
+			::memcpy(frame + 2U + 0U, M17_3200_SILENCE, 8U);
+			::memcpy(frame + 2U + 8U, M17_3200_SILENCE, 8U);
+		} else {
+			m_rfFN = ((frame[0U] << 8) + (frame[1U] << 0)) & 0x7FU;
 		}
 
-		LogDebug("M17, FN: %u, errs: %u/%u/144 (%.1f%%)", fn & 0x7FU, errors, convBER, float(errors) / 1.44F);
+		LogDebug("M17, FN: %u, errs: %u/272 (%.1f%%)", m_rfFN & 0x7FU, errors, float(errors) / 2.72F);
 
-		m_rfBits += M17_FN_LENGTH_BITS + M17_PAYLOAD_LENGTH_BITS;
+		m_rfBits += 272U;
 		m_rfErrs += errors;
 
 		float ber = float(m_rfErrs) / float(m_rfBits);
 		m_display->writeM17BER(ber);
 
-		unsigned char temp[M17_FRAME_LENGTH_BYTES];
-		interleaver(rfData + 2U, temp);
-		decorrelator(temp, rfData + 2U);
+		if (m_duplex) {
+			unsigned char rfData[2U + M17_FRAME_LENGTH_BYTES];
 
-		if (m_duplex)
+			rfData[0U] = TAG_DATA1;
+			rfData[1U] = 0x00U;
+
+			// Generate the sync
+			CSync::addM17StreamSync(rfData + 2U);
+
+			unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
+			m_rfLSF.getFragment(lich, m_rfLSFn);
+
+			// Add the fragment number
+			lich[5U] = (m_rfLSFn & 0x07U) << 5;
+
+			unsigned int frag1, frag2, frag3, frag4;
+			CM17Utils::splitFragmentLICH(lich, frag1, frag2, frag3, frag4);
+
+			// Add Golay to the LICH fragment here
+			unsigned int lich1 = CGolay24128::encode24128(frag1);
+			unsigned int lich2 = CGolay24128::encode24128(frag2);
+			unsigned int lich3 = CGolay24128::encode24128(frag3);
+			unsigned int lich4 = CGolay24128::encode24128(frag4);
+
+			CM17Utils::combineFragmentLICHFEC(lich1, lich2, lich3, lich4, rfData + 2U + M17_SYNC_LENGTH_BYTES);
+
+			// Add the Convolution FEC
+			conv.encodeData(frame, rfData + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES);
+
+			unsigned char temp[M17_FRAME_LENGTH_BYTES];
+			interleaver(rfData + 2U, temp);
+			decorrelator(temp, rfData + 2U);
+
 			writeQueueRF(rfData);
+		}
 
 		if (m_network != NULL && m_rfTimeoutTimer.isRunning() && !m_rfTimeoutTimer.hasExpired()) {
 			unsigned char netData[M17_LSF_LENGTH_BYTES + M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
@@ -325,13 +333,14 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		}
 
 		m_rfFrames++;
+		m_rfFN++;
 
 		m_rfLSFn++;
 		if (m_rfLSFn >= 6U)
 			m_rfLSFn = 0U;
 
-		// Only check for the EOT marker if the frame has a valid CRC
-		if ((fn & 0x8000U) == 0x8000U) {
+		// Only check for the EOT marker if the frame has a reasonable BER
+		if (valid && (m_rfFN & 0x8000U) == 0x8000U) {
 			std::string source = m_rfLSF.getSource();
 			std::string dest   = m_rfLSF.getDest();
 
