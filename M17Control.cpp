@@ -266,13 +266,15 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		bool valid = errors < 12U;
 
 		if (!valid) {
+			m_rfFN++;
+
 			frame[0U] = (m_rfFN >> 8) & 0xFFU;
 			frame[1U] = (m_rfFN >> 0) & 0xFFU;
 
 			::memcpy(frame + 2U + 0U, M17_3200_SILENCE, 8U);
 			::memcpy(frame + 2U + 8U, M17_3200_SILENCE, 8U);
 		} else {
-			m_rfFN = ((frame[0U] << 8) + (frame[1U] << 0)) & 0x7FU;
+			m_rfFN = (frame[0U] << 8) + (frame[1U] << 0);
 		}
 
 		LogDebug("M17, FN: %u, errs: %u/272 (%.1f%%)", m_rfFN & 0x7FU, errors, float(errors) / 2.72F);
@@ -333,14 +335,13 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		}
 
 		m_rfFrames++;
-		m_rfFN++;
 
 		m_rfLSFn++;
 		if (m_rfLSFn >= 6U)
 			m_rfLSFn = 0U;
 
 		// Only check for the EOT marker if the frame has a reasonable BER
-		if (valid && (m_rfFN & 0x8000U) == 0x8000U) {
+		if (valid && ((m_rfFN & 0x8000U) == 0x8000U)) {
 			std::string source = m_rfLSF.getSource();
 			std::string dest   = m_rfLSF.getDest();
 
