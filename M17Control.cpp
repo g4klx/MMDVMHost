@@ -185,6 +185,8 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 				return false;
 			}
 
+			LogDebug("M17, link setup frame: errs: %u/368 (%.1f%%)", ber, float(ber) / 3.68F);
+
 			m_rfFrames  = 0U;
 			m_rfErrs    = ber;
 			m_rfBits    = 368U;
@@ -277,7 +279,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_rfFN = (frame[0U] << 8) + (frame[1U] << 0);
 		}
 
-		LogDebug("M17, FN: %u, errs: %u/272 (%.1f%%)", m_rfFN & 0x7FU, errors, float(errors) / 2.72F);
+		LogDebug("M17, audio: FN: %u, errs: %u/272 (%.1f%%)", m_rfFN & 0x7FU, errors, float(errors) / 2.72F);
 
 		m_rfBits += 272U;
 		m_rfErrs += errors;
