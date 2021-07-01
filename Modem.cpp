@@ -2017,13 +2017,13 @@ bool CModem::readVersion()
 
 				switch (m_protocolVersion) {
 				case 1U:
-					LogInfo("MMDVM protocol version: %u, description: %.*s", m_protocolVersion, m_length - 4U, m_buffer + 4U);
-					m_capabilities1 = CAP1_DSTAR | CAP1_DMR | CAP1_YSF | CAP1_P25 | CAP1_NXDN | CAP1_FM;
+					LogInfo("MMDVM protocol version: 1, description: %.*s", m_length - 4U, m_buffer + 4U);
+					m_capabilities1 = CAP1_DSTAR | CAP1_DMR | CAP1_YSF | CAP1_P25 | CAP1_NXDN | CAP1_M17;
 					m_capabilities2 = CAP2_POCSAG;
 					return true;
 
 				case 2U:
-					LogInfo("MMDVM protocol version: %u, description: %.*s", m_protocolVersion, m_length - 23U, m_buffer + 23U);
+					LogInfo("MMDVM protocol version: 2, description: %.*s", m_length - 23U, m_buffer + 23U);
 					switch (m_buffer[6U]) {
 					case 0U:
 						LogInfo("CPU: Atmel ARM, UDID: %02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X", m_buffer[7U], m_buffer[8U], m_buffer[9U], m_buffer[10U], m_buffer[11U], m_buffer[12U], m_buffer[13U], m_buffer[14U], m_buffer[15U], m_buffer[16U], m_buffer[17U], m_buffer[18U], m_buffer[19U], m_buffer[20U], m_buffer[21U], m_buffer[22U]);
