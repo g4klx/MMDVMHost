@@ -54,10 +54,6 @@ void CM17LSF::setNetwork(const unsigned char* data)
 
 std::string CM17LSF::getSource() const
 {
-	if (m_lsf[6U] == 0xFFU && m_lsf[7U]  == 0xFFU && m_lsf[8U]  == 0xFFU &&
-		m_lsf[9U] == 0xFFU && m_lsf[10U] == 0xFFU && m_lsf[11U] == 0xFFU)
-		return "******";
-
 	std::string callsign;
 	CM17Utils::decodeCallsign(m_lsf + 6U, callsign);
 
@@ -71,10 +67,6 @@ void CM17LSF::setSource(const std::string& callsign)
 
 std::string CM17LSF::getDest() const
 {
-	if (m_lsf[0U] == 0xFFU && m_lsf[1U] == 0xFFU && m_lsf[2U] == 0xFFU &&
-		m_lsf[3U] == 0xFFU && m_lsf[4U] == 0xFFU && m_lsf[5U] == 0xFFU)
-		return "******";
-
 	std::string callsign;
 	CM17Utils::decodeCallsign(m_lsf + 0U, callsign);
 

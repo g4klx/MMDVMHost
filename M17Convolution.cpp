@@ -102,16 +102,16 @@ void CM17Convolution::encodeData(const unsigned char* in, unsigned char* out) co
 	assert(in != NULL);
 	assert(out != NULL);
 
-	unsigned char temp1[21U];
-	::memset(temp1, 0x00U, 21U);
-	::memcpy(temp1, in, 20U);
+	unsigned char temp1[19U];
+	::memset(temp1, 0x00U, 19U);
+	::memcpy(temp1, in, 18U);
 
-	unsigned char temp2[41U];
-	encode(temp1, temp2, 164U);
+	unsigned char temp2[37U];
+	encode(temp1, temp2, 148U);
 
 	unsigned int n = 0U;
 	unsigned int index = 0U;
-	for (unsigned int i = 0U; i < 328U; i++) {
+	for (unsigned int i = 0U; i < 296U; i++) {
 		if (i != PUNCTURE_LIST_DATA[index]) {
 			bool b = READ_BIT1(temp2, i);
 			WRITE_BIT1(out, n, b);
@@ -154,7 +154,7 @@ unsigned int CM17Convolution::decodeLinkSetup(const unsigned char* in, unsigned 
 		decode(s0, s1);
 	}
 
-	return chainback(out, 240U) - PUNCTURE_LIST_LINK_SETUP_COUNT;
+	return chainback(out, 144U) - PUNCTURE_LIST_LINK_SETUP_COUNT;
 }
 
 unsigned int CM17Convolution::decodeData(const unsigned char* in, unsigned char* out)
