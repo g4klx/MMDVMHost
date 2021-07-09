@@ -693,6 +693,10 @@ int CMMDVMHost::run()
 			} else if (m_mode == MODE_DSTAR) {
 				m_dstar->writeModem(data, len);
 				m_modeTimer.start();
+				if (m_conf.getCWIdEnabled() && !m_cwIdTimer.isRunning()) {
+					LogDebug("starting CW ID timer - MODE_DSTAR");
+					m_cwIdTimer.start();
+				}
 			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("D-Star modem data received when in mode %u", m_mode);
 			}
@@ -720,12 +724,20 @@ int CMMDVMHost::run()
 					if (ret) {
 						m_modem->writeDMRStart(true);
 						m_dmrTXTimer.start();
+						if (m_conf.getCWIdEnabled() && !m_cwIdTimer.isRunning()) {
+							LogDebug("starting CW ID timer - MODE_DMR duplex");
+							m_cwIdTimer.start();
+						}
 					}
 				} else {
 					bool ret = m_dmr->writeModemSlot1(data, len);
 					if (ret) {
 						dmrBeaconDurationTimer.stop();
 						m_modeTimer.start();
+						if (m_conf.getCWIdEnabled() && !m_cwIdTimer.isRunning()) {
+							LogDebug("starting CW ID timer - MODE_DMR T1");
+							m_cwIdTimer.start();
+						}
 						if (m_duplex)
 							m_dmrTXTimer.start();
 					}
@@ -757,12 +769,20 @@ int CMMDVMHost::run()
 					if (ret) {
 						m_modem->writeDMRStart(true);
 						m_dmrTXTimer.start();
+						if (m_conf.getCWIdEnabled() && !m_cwIdTimer.isRunning()) {
+							LogDebug("starting CW ID timer - MODE_DMR Duplex T2");
+							m_cwIdTimer.start();
+						}
 					}
 				} else {
 					bool ret = m_dmr->writeModemSlot2(data, len);
 					if (ret) {
 						dmrBeaconDurationTimer.stop();
 						m_modeTimer.start();
+						if (m_conf.getCWIdEnabled() && !m_cwIdTimer.isRunning()) {
+							LogDebug("starting CW ID timer - MODE_DMR T2");
+							m_cwIdTimer.start();
+						}
 						if (m_duplex)
 							m_dmrTXTimer.start();
 					}
@@ -783,6 +803,10 @@ int CMMDVMHost::run()
 			} else if (m_mode == MODE_YSF) {
 				m_ysf->writeModem(data, len);
 				m_modeTimer.start();
+				if (m_conf.getCWIdEnabled() && !m_cwIdTimer.isRunning()) {
+					LogDebug("starting CW ID timer - MODE_YSF");
+					m_cwIdTimer.start();
+				}
 			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("System Fusion modem data received when in mode %u", m_mode);
 			}
@@ -799,6 +823,10 @@ int CMMDVMHost::run()
 			} else if (m_mode == MODE_P25) {
 				m_p25->writeModem(data, len);
 				m_modeTimer.start();
+				if (m_conf.getCWIdEnabled() && !m_cwIdTimer.isRunning()) {
+					LogDebug("starting CW ID timer - MODE_P25");
+					m_cwIdTimer.start();
+				}
 			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("P25 modem data received when in mode %u", m_mode);
 			}
@@ -815,6 +843,10 @@ int CMMDVMHost::run()
 			} else if (m_mode == MODE_NXDN) {
 				m_nxdn->writeModem(data, len);
 				m_modeTimer.start();
+				if (m_conf.getCWIdEnabled() && !m_cwIdTimer.isRunning()) {
+					LogDebug("starting CW ID timer - MODE_NXDN");
+					m_cwIdTimer.start();
+				}
 			} else if (m_mode != MODE_LOCKOUT) {
 				LogWarning("NXDN modem data received when in mode %u", m_mode);
 			}
@@ -841,6 +873,10 @@ int CMMDVMHost::run()
 					if (m_mode == MODE_DSTAR) {
 						m_modem->writeDStarData(data, len);
 						m_modeTimer.start();
+						if (m_conf.getCWIdEnabled() && !m_cwIdTimer.isRunning()) {
+							LogDebug("starting CW ID timer - MODE_DMR T2");
+							m_cwIdTimer.start();
+						}
 					} else if (m_mode != MODE_LOCKOUT) {
 						LogWarning("D-Star data received when in mode %u", m_mode);
 					}
@@ -865,6 +901,10 @@ int CMMDVMHost::run()
 						m_modem->writeDMRData1(data, len);
 						dmrBeaconDurationTimer.stop();
 						m_modeTimer.start();
+						if (m_conf.getCWIdEnabled() && !m_cwIdTimer.isRunning()) {
+							LogDebug("starting CW ID timer - MODE_DMR T2");
+							m_cwIdTimer.start();
+						}
 					} else if (m_mode != MODE_LOCKOUT) {
 						LogWarning("DMR data received when in mode %u", m_mode);
 					}
@@ -883,6 +923,10 @@ int CMMDVMHost::run()
 						if (m_duplex) {
 							m_modem->writeDMRStart(true);
 							m_dmrTXTimer.start();
+							if (m_conf.getCWIdEnabled() && !m_cwIdTimer.isRunning()) {
+								LogDebug("starting CW ID timer - MODE_DMR T2");
+								m_cwIdTimer.start();
+							}
 						}
 						m_modem->writeDMRData2(data, len);
 						dmrBeaconDurationTimer.stop();
@@ -906,6 +950,10 @@ int CMMDVMHost::run()
 					if (m_mode == MODE_YSF) {
 						m_modem->writeYSFData(data, len);
 						m_modeTimer.start();
+						if (m_conf.getCWIdEnabled() && !m_cwIdTimer.isRunning()) {
+							LogDebug("starting CW ID timer - MODE_YSF");
+							m_cwIdTimer.start();
+						}
 					} else if (m_mode != MODE_LOCKOUT) {
 						LogWarning("System Fusion data received when in mode %u", m_mode);
 					}
@@ -925,6 +973,10 @@ int CMMDVMHost::run()
 					if (m_mode == MODE_P25) {
 						m_modem->writeP25Data(data, len);
 						m_modeTimer.start();
+						if (m_conf.getCWIdEnabled() && !m_cwIdTimer.isRunning()) {
+							LogDebug("starting CW ID timer - MODE_P25");
+							m_cwIdTimer.start();
+						}
 					} else if (m_mode != MODE_LOCKOUT) {
 						LogWarning("P25 data received when in mode %u", m_mode);
 					}
@@ -944,6 +996,10 @@ int CMMDVMHost::run()
 					if (m_mode == MODE_NXDN) {
 						m_modem->writeNXDNData(data, len);
 						m_modeTimer.start();
+						if (m_conf.getCWIdEnabled() && !m_cwIdTimer.isRunning()) {
+							LogDebug("starting CW ID timer - MODE_NXDN");
+							m_cwIdTimer.start();
+						}
 					} else if (m_mode != MODE_LOCKOUT) {
 						LogWarning("NXDN data received when in mode %u", m_mode);
 					}
@@ -963,6 +1019,10 @@ int CMMDVMHost::run()
 					if (m_mode == MODE_POCSAG) {
 						m_modem->writePOCSAGData(data, len);
 						m_modeTimer.start();
+						if (m_conf.getCWIdEnabled() && !m_cwIdTimer.isRunning()) {
+							LogDebug("starting CW ID timer - MODE_POCSAG");
+							m_cwIdTimer.start();
+						}
 					} else if (m_mode != MODE_LOCKOUT) {
 						LogWarning("POCSAG data received when in mode %u", m_mode);
 					}
@@ -1029,12 +1089,14 @@ int CMMDVMHost::run()
 		m_cwIdTimer.clock(ms);
 		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
 			if (!m_modem->hasTX()){
-				LogDebug("sending CW ID");
+				LogMessage("Sending CW ID");
+				setMode(MODE_IDLE);
 				m_display->writeCW();
 				m_modem->sendCWId(m_cwCallsign);
 
 				m_cwIdTimer.setTimeout(m_cwIdTime);
-				m_cwIdTimer.start();
+				//m_cwIdTimer.start();
+				m_cwIdTimer.stop();
 			}
 		}
 
@@ -1091,6 +1153,11 @@ int CMMDVMHost::run()
 
 		if (ms < 5U)
 			CThread::sleep(5U);
+	}
+
+	// ID one last time in case there's been a transmission since the last ID.
+	if (m_conf.getCWIdEnabled() && m_cwIdTimer.isRunning()) {
+		m_modem->sendCWId(m_callsign);
 	}
 
 	setMode(MODE_QUIT);
@@ -1613,7 +1680,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_ump->setMode(MODE_DSTAR);
 		m_mode = MODE_DSTAR;
 		m_modeTimer.start();
-		m_cwIdTimer.stop();
+		//m_cwIdTimer.stop();
 		createLockFile("D-Star");
 		break;
 
@@ -1651,7 +1718,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		}
 		m_mode = MODE_DMR;
 		m_modeTimer.start();
-		m_cwIdTimer.stop();
+		//m_cwIdTimer.stop();
 		createLockFile("DMR");
 		break;
 
@@ -1685,7 +1752,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_ump->setMode(MODE_YSF);
 		m_mode = MODE_YSF;
 		m_modeTimer.start();
-		m_cwIdTimer.stop();
+		//m_cwIdTimer.stop();
 		createLockFile("System Fusion");
 		break;
 
@@ -1719,7 +1786,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_ump->setMode(MODE_P25);
 		m_mode = MODE_P25;
 		m_modeTimer.start();
-		m_cwIdTimer.stop();
+		//m_cwIdTimer.stop();
 		createLockFile("P25");
 		break;
 
@@ -1753,7 +1820,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_ump->setMode(MODE_NXDN);
 		m_mode = MODE_NXDN;
 		m_modeTimer.start();
-		m_cwIdTimer.stop();
+		//m_cwIdTimer.stop();
 		createLockFile("NXDN");
 		break;
 
@@ -1787,7 +1854,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_ump->setMode(MODE_POCSAG);
 		m_mode = MODE_POCSAG;
 		m_modeTimer.start();
-		m_cwIdTimer.stop();
+		//m_cwIdTimer.stop();
 		createLockFile("POCSAG");
 		break;
 
@@ -1864,7 +1931,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_display->setLockout();
 		m_mode = MODE_LOCKOUT;
 		m_modeTimer.stop();
-		m_cwIdTimer.stop();
+		//m_cwIdTimer.stop();
 		removeLockFile();
 		break;
 
@@ -1903,7 +1970,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_display->setError("MODEM");
 		m_mode = MODE_ERROR;
 		m_modeTimer.stop();
-		m_cwIdTimer.stop();
+		//m_cwIdTimer.stop();
 		removeLockFile();
 		break;
 
@@ -1944,8 +2011,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_cwIdTimer.setTimeout(m_cwIdTime);
 			m_cwIdTimer.start();
 		} else {
-			m_cwIdTimer.setTimeout(m_cwIdTime / 4U);
-			m_cwIdTimer.start();
+			if (m_mode != MODE_IDLE) {
+				m_cwIdTimer.setTimeout(m_cwIdTime);
+				//m_cwIdTimer.start();
+			}
 		}
 		m_display->setIdle();
 		if (mode == MODE_QUIT)
