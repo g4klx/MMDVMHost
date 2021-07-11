@@ -91,4 +91,6 @@ enum DSTAR_ACK_MESSAGE {
 	DSTAR_ACK_SMETER
 };
 
+typedef void UNUSED;
+
 #endif
