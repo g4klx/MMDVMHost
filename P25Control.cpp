@@ -303,7 +303,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			::memcpy(m_rfLDU, data + 2U, P25_LDU_FRAME_LENGTH_BYTES);
 
 			if (m_duplex) {
-				data[0U] = TAG_DATA1;
+				data[0U] = TAG_DATA;
 				data[1U] = 0x00U;
 				writeQueueRF(data, P25_LDU_FRAME_LENGTH_BYTES + 2U);
 			}
@@ -349,7 +349,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			::memcpy(m_rfLDU, data + 2U, P25_LDU_FRAME_LENGTH_BYTES);
 
 			if (m_duplex) {
-				data[0U] = TAG_DATA1;
+				data[0U] = TAG_DATA;
 				data[1U] = 0x00U;
 				writeQueueRF(data, P25_LDU_FRAME_LENGTH_BYTES + 2U);
 			}
@@ -399,7 +399,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			setBusyBits(data + 2U, P25_SS0_START, true, true);
 
 			if (m_duplex) {
-				data[0U] = TAG_DATA1;
+				data[0U] = TAG_DATA;
 				data[1U] = 0x00U;
 
 				writeQueueRF(data, P25_TSDU_FRAME_LENGTH_BYTES + 2U);
@@ -425,7 +425,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			setBusyBits(data + 2U, P25_SS0_START, true, true);
 
 			if (m_duplex) {
-				data[0U] = TAG_DATA1;
+				data[0U] = TAG_DATA;
 				data[1U] = 0x00U;
 
 				writeQueueRF(data, P25_TSDU_FRAME_LENGTH_BYTES + 2U);
@@ -569,7 +569,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 				addBusyBits(pdu + 2U, newBitLength, false, true);
 
 				if (m_duplex) {
-					pdu[0U] = TAG_DATA1;
+					pdu[0U] = TAG_DATA;
 					pdu[1U] = 0x00U;
 					writeQueueRF(pdu, newByteLength + 2U);
 				}
@@ -1010,7 +1010,7 @@ void CP25Control::createNetLDU1()
 	unsigned char buffer[P25_LDU_FRAME_LENGTH_BYTES + 2U];
 	::memset(buffer, 0x00U, P25_LDU_FRAME_LENGTH_BYTES + 2U);
 
-	buffer[0U] = TAG_DATA1;
+	buffer[0U] = TAG_DATA;
 	buffer[1U] = 0x00U;
 
 	// Add the sync
@@ -1058,7 +1058,7 @@ void CP25Control::createNetLDU2()
 	unsigned char buffer[P25_LDU_FRAME_LENGTH_BYTES + 2U];
 	::memset(buffer, 0x00U, P25_LDU_FRAME_LENGTH_BYTES + 2U);
 
-	buffer[0U] = TAG_DATA1;
+	buffer[0U] = TAG_DATA;
 	buffer[1U] = 0x00U;
 
 	// Add the sync

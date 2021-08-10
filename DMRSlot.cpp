@@ -257,7 +257,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			// Convert the Data Sync to be from the BS or MS as needed
 			CSync::addDMRDataSync(data + 2U, m_duplex);
 
-			data[0U] = TAG_DATA1;
+			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
 
 			m_rfTimeoutTimer.start();
@@ -317,7 +317,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			bptc.decode(data + 2U, payload);
 			bptc.encode(payload, data + 2U);
 
-			data[0U] = TAG_DATA1;
+			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
 
 			if (m_duplex)
@@ -408,7 +408,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			// Convert the Data Sync to be from the BS or MS as needed
 			CSync::addDMRDataSync(data + 2U, m_duplex);
 
-			data[0U] = m_rfFrames == 0U ? TAG_EOT : TAG_DATA1;
+			data[0U] = m_rfFrames == 0U ? TAG_EOT : TAG_DATA;
 			data[1U] = 0x00U;
 
 			if (m_duplex)
@@ -478,7 +478,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			// Convert the Data Sync to be from the BS or MS as needed
 			CSync::addDMRDataSync(data + 2U, m_duplex);
 
-			data[0U] = TAG_DATA1;
+			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
 
 			if (m_duplex)
@@ -551,7 +551,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			m_rfFrames--;
 
-			data[0U] = m_rfFrames == 0U ? TAG_EOT : TAG_DATA1;
+			data[0U] = m_rfFrames == 0U ? TAG_EOT : TAG_DATA;
 			data[1U] = 0x00U;
 
 			if (m_duplex)
@@ -592,7 +592,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			m_display->writeDMRRSSI(m_slotNo, m_rssi);
 
 			if (!m_rfTimeout) {
-				data[0U] = TAG_DATA1;
+				data[0U] = TAG_DATA;
 				data[1U] = 0x00U;
 
 				if (m_duplex)
@@ -758,7 +758,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			emb.getData(data + 2U);
 
 			if (!m_rfTimeout) {
-				data[0U] = TAG_DATA1;
+				data[0U] = TAG_DATA;
 				data[1U] = 0x00U;
 
 				writeNetworkRF(data, DT_VOICE, errors);
@@ -836,7 +836,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				slotType.setDataType(DT_VOICE_LC_HEADER);
 				slotType.getData(start + 2U);
 
-				start[0U] = TAG_DATA1;
+				start[0U] = TAG_DATA;
 				start[1U] = 0x00U;
 
 				m_rfTimeoutTimer.start();
@@ -888,7 +888,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				m_rfBits += 141U;
 				m_rfFrames++;
 
-				data[0U] = TAG_DATA1;
+				data[0U] = TAG_DATA;
 				data[1U] = 0x00U;
 
 				if (m_duplex)
@@ -1096,7 +1096,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		// Convert the Data Sync to be from the BS or MS as needed
 		CSync::addDMRDataSync(data + 2U, m_duplex);
 
-		data[0U] = TAG_DATA1;
+		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
 
 		m_lastFrameValid = false;
@@ -1185,7 +1185,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			slotType.setDataType(DT_VOICE_LC_HEADER);
 			slotType.getData(start + 2U);
 
-			start[0U] = TAG_DATA1;
+			start[0U] = TAG_DATA;
 			start[1U] = 0x00U;
 
 			if (m_duplex) {
@@ -1232,7 +1232,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		bptc.decode(data + 2U, payload);
 		bptc.encode(payload, data + 2U);
 
-		data[0U] = TAG_DATA1;
+		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
 
 		writeQueueNet(data);
@@ -1312,7 +1312,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		// Convert the Data Sync to be from the BS or MS as needed
 		CSync::addDMRDataSync(data + 2U, m_duplex);
 
-		data[0U] = m_netFrames == 0U ? TAG_EOT : TAG_DATA1;
+		data[0U] = m_netFrames == 0U ? TAG_EOT : TAG_DATA;
 		data[1U] = 0x00U;
 
 		// Put a small delay into starting transmission
@@ -1382,7 +1382,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			slotType.setDataType(DT_VOICE_LC_HEADER);
 			slotType.getData(start + 2U);
 
-			start[0U] = TAG_DATA1;
+			start[0U] = TAG_DATA;
 			start[1U] = 0x00U;
 
 			if (m_duplex) {
@@ -1425,7 +1425,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				m_netErrs += m_fec.regenerateDMR(data + 2U);
 			m_netBits += 141U;
 
-			data[0U] = TAG_DATA1;
+			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
 
 			// Convert the Audio Sync to be from the BS or MS as needed
@@ -1580,7 +1580,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		emb.setLCSS(lcss);
 		emb.getData(data + 2U);
 
-		data[0U] = TAG_DATA1;
+		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
 
 		// Initialise the lost packet data
@@ -1641,7 +1641,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		// Convert the Data Sync to be from the BS or MS as needed
 		CSync::addDMRDataSync(data + 2U, m_duplex);
 
-		data[0U] = TAG_DATA1;
+		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
 
 		if (csbko == CSBKO_PRECCSBK && csbk.getDataContent()) {
@@ -1740,7 +1740,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		m_netFrames--;
 
-		data[0U] = m_netFrames == 0U ? TAG_EOT : TAG_DATA1;
+		data[0U] = m_netFrames == 0U ? TAG_EOT : TAG_DATA;
 		data[1U] = 0x00U;
 
 #if defined(DUMP_DMR)

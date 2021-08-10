@@ -263,7 +263,7 @@ void CDStarNetwork::clock(unsigned int ms)
 					m_inId = 0U;
 					ctrl[1U] = TAG_EOT;
 				} else {
-					ctrl[1U] = TAG_DATA1;
+					ctrl[1U] = TAG_DATA;
 				}
 
 				ctrl[2U] = buffer[7] & 0x3FU;
@@ -299,7 +299,7 @@ unsigned int CDStarNetwork::read(unsigned char* data, unsigned int length)
 
 	switch (buffer[0U]) {
 	case TAG_HEADER:
-	case TAG_DATA1:
+	case TAG_DATA:
 	case TAG_EOT:
 		::memcpy(data, buffer, c);
 		return c;

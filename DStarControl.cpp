@@ -432,7 +432,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		}
 
 		return false;
-	} else if (type == TAG_DATA1) {
+	} else if (type == TAG_DATA) {
 		if (m_rfState == RS_RF_REJECTED) {
 			return true;
 		} else if (m_rfState == RS_RF_INVALID) {
@@ -780,13 +780,13 @@ void CDStarControl::writeNetwork()
 		LogMessage("D-Star, received network end of transmission from %8.8s/%4.4s to %8.8s, %.1f seconds, %u%% packet loss, BER: %.1f%%", my1, my2, your, float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
 
 		writeEndNet();
-	} else if (type == TAG_DATA1) {
+	} else if (type == TAG_DATA) {
 		if (m_netState != RS_NET_AUDIO)
 			return;
 
 		unsigned char n = data[1U];
 
-		data[1U] = TAG_DATA1;
+		data[1U] = TAG_DATA;
 
 		unsigned int errors = 0U;
 		if (!m_netHeader.isDataPacket())

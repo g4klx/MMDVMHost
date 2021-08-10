@@ -481,7 +481,7 @@ void CModem::clock(unsigned int ms)
 					unsigned char data = m_length - m_offset + 1U;
 					m_rxDStarData.addData(&data, 1U);
 
-					data = TAG_DATA1;
+					data = TAG_DATA;
 					m_rxDStarData.addData(&data, 1U);
 
 					m_rxDStarData.addData(m_buffer + m_offset, m_length - m_offset);
@@ -522,7 +522,7 @@ void CModem::clock(unsigned int ms)
 					if (m_buffer[3U] == (DMR_SYNC_DATA | DT_TERMINATOR_WITH_LC))
 						data = TAG_EOT;
 					else
-						data = TAG_DATA1;
+						data = TAG_DATA;
 					m_rxDMRData1.addData(&data, 1U);
 
 					m_rxDMRData1.addData(m_buffer + m_offset, m_length - m_offset);
@@ -539,7 +539,7 @@ void CModem::clock(unsigned int ms)
 					if (m_buffer[3U] == (DMR_SYNC_DATA | DT_TERMINATOR_WITH_LC))
 						data = TAG_EOT;
 					else
-						data = TAG_DATA1;
+						data = TAG_DATA;
 					m_rxDMRData2.addData(&data, 1U);
 
 					m_rxDMRData2.addData(m_buffer + m_offset, m_length - m_offset);
@@ -577,7 +577,7 @@ void CModem::clock(unsigned int ms)
 					unsigned char data = m_length - m_offset + 1U;
 					m_rxYSFData.addData(&data, 1U);
 
-					data = TAG_DATA1;
+					data = TAG_DATA;
 					m_rxYSFData.addData(&data, 1U);
 
 					m_rxYSFData.addData(m_buffer + m_offset, m_length - m_offset);
@@ -617,7 +617,7 @@ void CModem::clock(unsigned int ms)
 				unsigned char data = m_length - m_offset + 1U;
 				m_rxP25Data.addData(&data, 1U);
 
-				data = TAG_DATA1;
+				data = TAG_DATA;
 				m_rxP25Data.addData(&data, 1U);
 
 				m_rxP25Data.addData(m_buffer + m_offset, m_length - m_offset);
@@ -643,7 +643,7 @@ void CModem::clock(unsigned int ms)
 				unsigned char data = m_length - m_offset + 1U;
 				m_rxNXDNData.addData(&data, 1U);
 
-				data = TAG_DATA1;
+				data = TAG_DATA;
 				m_rxNXDNData.addData(&data, 1U);
 
 				m_rxNXDNData.addData(m_buffer + m_offset, m_length - m_offset);
@@ -683,21 +683,7 @@ void CModem::clock(unsigned int ms)
 				unsigned char data = m_length - 2U;
 				m_rxM17Data.addData(&data, 1U);
 
-				data = TAG_DATA1;
-				m_rxM17Data.addData(&data, 1U);
-
-				m_rxM17Data.addData(m_buffer + 3U, m_length - 3U);
-			}
-			break;
-
-			case MMDVM_M17_PACKET: {
-				if (m_trace)
-					CUtils::dump(1U, "RX M17 Packet Data", m_buffer, m_length);
-
-				unsigned char data = m_length - 2U;
-				m_rxM17Data.addData(&data, 1U);
-
-				data = TAG_DATA2;
+				data = TAG_DATA;
 				m_rxM17Data.addData(&data, 1U);
 
 				m_rxM17Data.addData(m_buffer + 3U, m_length - 3U);
@@ -723,7 +709,7 @@ void CModem::clock(unsigned int ms)
 				unsigned int data1 = m_length - m_offset + 1U;
 				m_rxFMData.addData((unsigned char*)&data1, sizeof(unsigned int));
 
-				unsigned char data2 = TAG_DATA1;
+				unsigned char data2 = TAG_DATA;
 				m_rxFMData.addData(&data2, 1U);
 
 				m_rxFMData.addData(m_buffer + m_offset, m_length - m_offset);
@@ -1336,7 +1322,7 @@ bool CModem::writeDStarData(const unsigned char* data, unsigned int length)
 		case TAG_HEADER:
 			buffer[2U] = MMDVM_DSTAR_HEADER;
 			break;
-		case TAG_DATA1:
+		case TAG_DATA:
 			buffer[2U] = MMDVM_DSTAR_DATA;
 			break;
 		case TAG_EOT:
@@ -1375,7 +1361,7 @@ bool CModem::writeDMRData1(const unsigned char* data, unsigned int length)
 	assert(data != NULL);
 	assert(length > 0U);
 
-	if (data[0U] != TAG_DATA1 && data[0U] != TAG_EOT)
+	if (data[0U] != TAG_DATA && data[0U] != TAG_EOT)
 		return false;
 
 	unsigned char buffer[40U];
@@ -1398,7 +1384,7 @@ bool CModem::writeDMRData2(const unsigned char* data, unsigned int length)
 	assert(data != NULL);
 	assert(length > 0U);
 
-	if (data[0U] != TAG_DATA1 && data[0U] != TAG_EOT)
+	if (data[0U] != TAG_DATA && data[0U] != TAG_EOT)
 		return false;
 
 	unsigned char buffer[40U];
@@ -1428,7 +1414,7 @@ bool CModem::writeYSFData(const unsigned char* data, unsigned int length)
 	assert(data != NULL);
 	assert(length > 0U);
 
-	if (data[0U] != TAG_DATA1 && data[0U] != TAG_EOT)
+	if (data[0U] != TAG_DATA && data[0U] != TAG_EOT)
 		return false;
 
 	unsigned char buffer[130U];
@@ -1458,7 +1444,7 @@ bool CModem::writeP25Data(const unsigned char* data, unsigned int length)
 	assert(data != NULL);
 	assert(length > 0U);
 
-	if (data[0U] != TAG_HEADER && data[0U] != TAG_DATA1 && data[0U] != TAG_EOT)
+	if (data[0U] != TAG_HEADER && data[0U] != TAG_DATA && data[0U] != TAG_EOT)
 		return false;
 
 	unsigned char buffer[250U];
@@ -1488,7 +1474,7 @@ bool CModem::writeNXDNData(const unsigned char* data, unsigned int length)
 	assert(data != NULL);
 	assert(length > 0U);
 
-	if (data[0U] != TAG_DATA1 && data[0U] != TAG_EOT)
+	if (data[0U] != TAG_DATA && data[0U] != TAG_EOT)
 		return false;
 
 	unsigned char buffer[130U];
@@ -1518,7 +1504,7 @@ bool CModem::writeM17Data(const unsigned char* data, unsigned int length)
 	assert(data != NULL);
 	assert(length > 0U);
 
-	if (data[0U] != TAG_HEADER && data[0U] != TAG_DATA1 && data[0U] != TAG_EOT)
+	if (data[0U] != TAG_HEADER && data[0U] != TAG_DATA && data[0U] != TAG_EOT)
 		return false;
 
 	unsigned char buffer[130U];

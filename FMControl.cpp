@@ -81,7 +81,7 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
     if (data[0U] == TAG_EOT)
         return m_network->writeEnd();
 
-    if (data[0U] != TAG_DATA1)
+    if (data[0U] != TAG_DATA)
         return false;
 
     m_incomingRFAudio.addData(data + 1U, length - 1U);

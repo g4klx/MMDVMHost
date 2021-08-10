@@ -108,7 +108,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 	unsigned char type = data[0U];
 
-	if (type == TAG_LOST && m_rfState == RS_RF_AUDIO) {
+	if (type == TAG_LOST && (m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA_AUDIO)) {
 		std::string source = m_rfLSF.getSource();
 		std::string dest   = m_rfLSF.getDest();
 
@@ -131,12 +131,6 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 	}
 
 	if (type == TAG_LOST) {
-		m_rfState = RS_RF_LISTENING;
-		return false;
-	}
-
-	// Ignore packet data
-	if (type == TAG_DATA2) {
 		m_rfState = RS_RF_LISTENING;
 		return false;
 	}
@@ -208,12 +202,12 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		}
 	}
 
-	if (m_rfState == RS_RF_LISTENING && data[0U] == TAG_DATA1) {
+	if (m_rfState == RS_RF_LISTENING && data[0U] == TAG_DATA) {
 		m_rfState = RS_RF_LATE_ENTRY;
 		m_rfLSF.reset();
 	}
 
-	if (m_rfState == RS_RF_LATE_ENTRY && data[0U] == TAG_DATA1) {
+	if (m_rfState == RS_RF_LATE_ENTRY && data[0U] == TAG_DATA) {
 		unsigned int lich1, lich2, lich3, lich4;
 		bool valid1 = CGolay24128::decode24128(data + 2U + M17_SYNC_LENGTH_BYTES + 0U, lich1);
 		bool valid2 = CGolay24128::decode24128(data + 2U + M17_SYNC_LENGTH_BYTES + 3U, lich2);
@@ -256,7 +250,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		}
 	}
 
-	if (m_rfState == RS_RF_AUDIO && data[0U] == TAG_DATA1) {
+	if ((m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA_AUDIO) && data[0U] == TAG_DATA) {
 #if defined(DUMP_M17)
 		writeFile(data + 2U);
 #endif
@@ -273,8 +267,14 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			frame[0U] = (m_rfFN >> 8) & 0xFFU;
 			frame[1U] = (m_rfFN >> 0) & 0xFFU;
 
-			::memcpy(frame + 2U + 0U, M17_3200_SILENCE, 8U);
-			::memcpy(frame + 2U + 8U, M17_3200_SILENCE, 8U);
+			if (m_rfState == RS_RF_AUDIO) {
+				::memcpy(frame + 2U + 0U, M17_3200_SILENCE, 8U);
+				::memcpy(frame + 2U + 8U, M17_3200_SILENCE, 8U);
+			} else {
+				::memcpy(frame + 2U + 0U, M17_1600_SILENCE, 4U);
+				::memcpy(frame + 2U + 4U, M17_1600_SILENCE, 4U);
+				::memset(frame + 2U + 8U, 0x00U, 8U);
+			}
 		} else {
 			m_rfFN = (frame[0U] << 8) + (frame[1U] << 0);
 		}
@@ -290,7 +290,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		if (m_duplex) {
 			unsigned char rfData[2U + M17_FRAME_LENGTH_BYTES];
 
-			rfData[0U] = TAG_DATA1;
+			rfData[0U] = TAG_DATA;
 			rfData[1U] = 0x00U;
 
 			// Generate the sync
@@ -451,7 +451,7 @@ void CM17Control::writeNetwork()
 			break;
 		case M17_DATA_TYPE_VOICE_DATA:
 			LogMessage("M17, received network voice + data transmission from %s to %s", source.c_str(), dest.c_str());
-			m_netState = RS_NET_AUDIO;
+			m_netState = RS_NET_DATA_AUDIO;
 			break;
 		default:
 			LogMessage("M17, received network unknown transmission from %s to %s", source.c_str(), dest.c_str());
@@ -490,10 +490,10 @@ void CM17Control::writeNetwork()
 		writeQueueNet(start);
 	}
 
-	if (m_netState == RS_NET_AUDIO) {
+	if (m_netState == RS_NET_AUDIO || m_netState == RS_NET_DATA_AUDIO) {
 		unsigned char data[M17_FRAME_LENGTH_BYTES + 2U];
 
-		data[0U] = TAG_DATA1;
+		data[0U] = TAG_DATA;
 		data[1U] = 0x00U;
 
 		// Generate the sync
@@ -591,7 +591,7 @@ bool CM17Control::processRFHeader(bool lateEntry)
 		break;
 	case M17_DATA_TYPE_VOICE_DATA:
 		LogMessage("M17, received RF%svoice + data transmission from %s to %s", lateEntry ? " late entry " : " ", source.c_str(), dest.c_str());
-		m_rfState = RS_RF_AUDIO;
+		m_rfState = RS_RF_DATA_AUDIO;
 		break;
 	default:
 		LogMessage("M17, received RF%sunknown transmission from %s to %s", lateEntry ? " late entry " : " ", source.c_str(), dest.c_str());
@@ -636,7 +636,7 @@ void CM17Control::clock(unsigned int ms)
 	m_rfTimeoutTimer.clock(ms);
 	m_netTimeoutTimer.clock(ms);
 
-	if (m_netState == RS_NET_AUDIO) {
+	if (m_netState == RS_NET_AUDIO || m_netState == RS_NET_DATA_AUDIO) {
 		m_networkWatchdog.clock(ms);
 
 		if (m_networkWatchdog.hasExpired()) {

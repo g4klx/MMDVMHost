@@ -36,10 +36,9 @@ const unsigned char MODE_ERROR   = 100U;
 const unsigned char MODE_QUIT    = 110U;
 
 const unsigned char TAG_HEADER = 0x00U;
-const unsigned char TAG_DATA1  = 0x01U;
-const unsigned char TAG_DATA2  = 0x02U;
-const unsigned char TAG_LOST   = 0x03U;
-const unsigned char TAG_EOT    = 0x04U;
+const unsigned char TAG_DATA   = 0x01U;
+const unsigned char TAG_LOST   = 0x02U;
+const unsigned char TAG_EOT    = 0x03U;
 
 const unsigned int  DSTAR_MODEM_DATA_LEN = 220U;
 
@@ -62,6 +61,7 @@ enum RPT_RF_STATE {
 	RS_RF_LISTENING,
 	RS_RF_LATE_ENTRY,
 	RS_RF_AUDIO,
+	RS_RF_DATA_AUDIO,
 	RS_RF_DATA,
 	RS_RF_REJECTED,
 	RS_RF_INVALID
@@ -70,6 +70,7 @@ enum RPT_RF_STATE {
 enum RPT_NET_STATE {
 	RS_NET_IDLE,
 	RS_NET_AUDIO,
+	RS_NET_DATA_AUDIO,
 	RS_NET_DATA
 };
 
