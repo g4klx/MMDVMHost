@@ -258,28 +258,11 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		unsigned char frame[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES];
 		unsigned int errors = conv.decodeData(data + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES, frame);
 
-		// If we have a BER of less than 12, then we consider the audio to be usable
-		bool valid = errors < 12U;
-
-		if (!valid) {
-			m_rfFN++;
-
-			frame[0U] = (m_rfFN >> 8) & 0xFFU;
-			frame[1U] = (m_rfFN >> 0) & 0xFFU;
-
-			if (m_rfState == RS_RF_AUDIO) {
-				::memcpy(frame + 2U + 0U, M17_3200_SILENCE, 8U);
-				::memcpy(frame + 2U + 8U, M17_3200_SILENCE, 8U);
-			} else {
-				::memcpy(frame + 2U + 0U, M17_1600_SILENCE, 4U);
-				::memcpy(frame + 2U + 4U, M17_1600_SILENCE, 4U);
-				::memset(frame + 2U + 8U, 0x00U, 8U);
-			}
-		} else {
-			m_rfFN = (frame[0U] << 8) + (frame[1U] << 0);
-		}
+		m_rfFN = (frame[0U] << 8) + (frame[1U] << 0);
 
 		LogDebug("M17, audio: FN: %u, errs: %u/272 (%.1f%%)", m_rfFN & 0x7FFFU, errors, float(errors) / 2.72F);
+
+		m_rfFN++;
 
 		m_rfBits += 272U;
 		m_rfErrs += errors;
@@ -343,7 +326,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_rfLSFn = 0U;
 
 		// Only check for the EOT marker if the frame has a reasonable BER
-		if (valid && ((m_rfFN & 0x8000U) == 0x8000U)) {
+		if ((m_rfFN & 0x8000U) == 0x8000U) {
 			std::string source = m_rfLSF.getSource();
 			std::string dest   = m_rfLSF.getDest();
 

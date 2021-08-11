@@ -33,7 +33,7 @@ const unsigned int PUNCTURE_LIST_LINK_SETUP[] = {
 	362U, 369U, 372U, 375U, 378U, 385U, 388U, 391U, 394U, 401U, 404U, 407U, 410U, 417U, 420U, 423U, 430U, 433U, 436U, 439U, 446U,
 	449U, 452U, 455U, 462U, 465U, 468U, 471U, 478U, 481U, 484U};
 
-const unsigned int PUNCTURE_LIST_DATA_COUNT = 22U;
+const unsigned int PUNCTURE_LIST_DATA_COUNT = 12U;
 
 const unsigned int PUNCTURE_LIST_DATA[] = {
 	11U, 23U, 35U, 47U, 59U, 71U, 83U, 95U, 107U, 119U, 131U, 143U, 155U, 167U, 179U, 191U, 203U, 215U, 227U, 239U, 251U, 263U,
@@ -128,6 +128,7 @@ unsigned int CM17Convolution::decodeLinkSetup(const unsigned char* in, unsigned 
 	assert(out != NULL);
 
 	uint8_t temp[500U];
+	::memset(temp, 0x00U, 500U);
 
 	unsigned int n = 0U;
 	unsigned int index = 0U;
@@ -141,9 +142,6 @@ unsigned int CM17Convolution::decodeLinkSetup(const unsigned char* in, unsigned 
 		temp[n++] = b ? 2U : 0U;
 	}
 
-	for (unsigned int i = 0U; i < 8U; i++)
-		temp[n++] = 0U;
-
 	start();
 
 	n = 0U;
@@ -154,7 +152,7 @@ unsigned int CM17Convolution::decodeLinkSetup(const unsigned char* in, unsigned 
 		decode(s0, s1);
 	}
 
-	return chainback(out, 144U) - PUNCTURE_LIST_LINK_SETUP_COUNT;
+	return chainback(out, 240U) - PUNCTURE_LIST_LINK_SETUP_COUNT;
 }
 
 unsigned int CM17Convolution::decodeData(const unsigned char* in, unsigned char* out)
@@ -162,7 +160,8 @@ unsigned int CM17Convolution::decodeData(const unsigned char* in, unsigned char*
 	assert(in != NULL);
 	assert(out != NULL);
 
-	uint8_t temp[350U];
+	uint8_t temp[300U];
+	::memset(temp, 0x00U, 300U);
 
 	unsigned int n = 0U;
 	unsigned int index = 0U;
@@ -176,20 +175,17 @@ unsigned int CM17Convolution::decodeData(const unsigned char* in, unsigned char*
 		temp[n++] = b ? 2U : 0U;
 	}
 
-	for (unsigned int i = 0U; i < 8U; i++)
-		temp[n++] = 0U;
-
 	start();
 
 	n = 0U;
-	for (unsigned int i = 0U; i < 164U; i++) {
+	for (unsigned int i = 0U; i < 148U; i++) {
 		uint8_t s0 = temp[n++];
 		uint8_t s1 = temp[n++];
 
 		decode(s0, s1);
 	}
 
-	return chainback(out, 160U) - PUNCTURE_LIST_DATA_COUNT;
+	return chainback(out, 144U) - PUNCTURE_LIST_DATA_COUNT;
 }
 
 void CM17Convolution::start()
