@@ -32,7 +32,11 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <termios.h>
-#include <pty.h>
+#if defined(__APPLE__)
+	#include <util.h>
+#else
+	#include <pty.h>
+#endif
 
 
 CPseudoTTYController::CPseudoTTYController(const std::string& symlink, unsigned int speed, bool assertRTS) :

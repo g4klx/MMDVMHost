@@ -328,8 +328,13 @@ bool CUARTController::setRaw()
 			::cfsetispeed(&termios, B230400);
 			break;
 		case 460800U:
-			::cfsetospeed(&termios, B460800);
-			::cfsetispeed(&termios, B460800);
+#if defined(__APPLE__)
+			::cfsetospeed(&termios, 460800);
+			::cfsetispeed(&termios, 460800);
+#else
+ 			::cfsetospeed(&termios, B460800);
+ 			::cfsetispeed(&termios, B460800);
+#endif
 			break;
 		default:
 			LogError("Unsupported serial port speed - %u", m_speed);

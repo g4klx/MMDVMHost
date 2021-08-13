@@ -35,6 +35,10 @@ public:
 	virtual int write(const unsigned char* buffer, unsigned int length);
 
 	virtual void close();
+	
+#if defined(__APPLE__)
+	int setNonblock(bool nonblock) { return 0; }
+#endif
 
 private:
 	CRingBuffer<unsigned char> m_buffer;

@@ -30,6 +30,9 @@ public:
 	virtual int write(const unsigned char* buffer, unsigned int length) = 0;
 
 	virtual void close() = 0;
+#if defined(__APPLE__)
+	virtual int setNonblock(bool nonblock) = 0;
+#endif
 
 private:
 };
