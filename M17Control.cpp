@@ -70,7 +70,6 @@ m_rfState(RS_RF_LISTENING),
 m_netState(RS_NET_IDLE),
 m_rfTimeoutTimer(1000U, timeout),
 m_netTimeoutTimer(1000U, timeout),
-m_packetTimer(1000U, 0U, 200U),
 m_networkWatchdog(1000U, 0U, 1500U),
 m_elapsed(),
 m_rfFrames(0U),
@@ -384,7 +383,6 @@ void CM17Control::writeEndNet()
 
 	m_netTimeoutTimer.stop();
 	m_networkWatchdog.stop();
-	m_packetTimer.stop();
 
 	m_netLSF.reset();
 
@@ -445,7 +443,6 @@ void CM17Control::writeNetwork()
 		m_display->writeM17(source.c_str(), dest.c_str(), "N");
 
 		m_netTimeoutTimer.start();
-		m_packetTimer.start();
 		m_elapsed.start();
 		m_netFrames = 0U;
 		m_netLSFn   = 0U;
@@ -762,7 +759,6 @@ void CM17Control::enable(bool enabled)
 
 		m_netTimeoutTimer.stop();
 		m_networkWatchdog.stop();
-		m_packetTimer.stop();
 	}
 
 	m_enabled = enabled;
