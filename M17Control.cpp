@@ -402,7 +402,7 @@ void CM17Control::writeNetwork()
 	if (!m_enabled)
 		return;
 
-	if (m_rfState != RS_RF_LISTENING && m_netState == RS_NET_IDLE)
+	if (m_rfState != RS_RF_LISTENING && m_rfState != RS_RF_LATE_ENTRY && m_netState == RS_NET_IDLE)
 		return;
 
 	m_networkWatchdog.start();
