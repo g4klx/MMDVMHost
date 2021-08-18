@@ -78,7 +78,6 @@ m_rfErrs(0U),
 m_rfBits(1U),
 m_rfLSF(),
 m_rfLSFn(0U),
-m_rfFN(0U),
 m_netLSF(),
 m_netLSFn(0U),
 m_rssiMapper(rssiMapper),
@@ -189,7 +188,6 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_aveRSSI   = m_rssi;
 			m_rssiCount = 1U;
 			m_rfLSFn    = 0U;
-			m_rfFN      = 0U;
 
 #if defined(DUMP_M17)
 			openFile();
@@ -238,7 +236,6 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_maxRSSI   = m_rssi;
 			m_aveRSSI   = m_rssi;
 			m_rssiCount = 1U;
-			m_rfFN      = 0U;
 
 #if defined(DUMP_M17)
 			openFile();
@@ -257,11 +254,9 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		unsigned char frame[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES];
 		unsigned int errors = conv.decodeData(data + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES, frame);
 
-		m_rfFN = (frame[0U] << 8) + (frame[1U] << 0);
+		uint16_t fn = (frame[0U] << 8) + (frame[1U] << 0);
 
-		LogDebug("M17, audio: FN: %u, errs: %u/272 (%.1f%%)", m_rfFN & 0x7FFFU, errors, float(errors) / 2.72F);
-
-		m_rfFN++;
+		LogDebug("M17, audio: FN: %u, errs: %u/272 (%.1f%%)", fn & 0x7FFFU, errors, float(errors) / 2.72F);
 
 		m_rfBits += 272U;
 		m_rfErrs += errors;
@@ -324,8 +319,10 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		if (m_rfLSFn >= 6U)
 			m_rfLSFn = 0U;
 
-		// Only check for the EOT marker if the frame has a reasonable BER
-		if ((m_rfFN & 0x8000U) == 0x8000U) {
+		bool bValid = (fn & 0x7FFFU) < (210U * 25U);		// 210 seconds maximum
+		bool bEnd   = (fn & 0x8000U) == 0x8000U;
+
+		if (bValid && bEnd) {
 			std::string source = m_rfLSF.getSource();
 			std::string dest   = m_rfLSF.getDest();
 

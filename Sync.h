@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018,2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -35,7 +35,6 @@ public:
 
 	static void addM17LinkSetupSync(unsigned char* data);
 	static void addM17StreamSync(unsigned char* data);
-	static void addM17PacketSync(unsigned char* data);
 
 private:
 };

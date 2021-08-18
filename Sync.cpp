@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018,2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -99,9 +99,3 @@ void CSync::addM17StreamSync(unsigned char* data)
 	::memcpy(data, M17_STREAM_SYNC_BYTES, M17_SYNC_LENGTH_BYTES);
 }
 
-void CSync::addM17PacketSync(unsigned char* data)
-{
-	assert(data != NULL);
-
-	::memcpy(data, M17_PACKET_SYNC_BYTES, M17_SYNC_LENGTH_BYTES);
-}
