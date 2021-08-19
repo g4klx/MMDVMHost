@@ -256,7 +256,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 		uint16_t fn = (frame[0U] << 8) + (frame[1U] << 0);
 
-		LogDebug("M17, audio: FN: %u, errs: %u/272 (%.1f%%)", fn & 0x7FFFU, errors, float(errors) / 2.72F);
+		LogDebug("M17, audio: FN: %u, errs: %u/272 (%.1f%%)", fn, errors, float(errors) / 2.72F);
 
 		m_rfBits += 272U;
 		m_rfErrs += errors;
@@ -319,19 +319,77 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		if (m_rfLSFn >= 6U)
 			m_rfLSFn = 0U;
 
-		bool bValid = (fn & 0x7FFFU) < (210U * 25U);		// 210 seconds maximum
-		bool bEnd   = (fn & 0x8000U) == 0x8000U;
+		return true;
+	}
 
-		if (bValid && bEnd) {
-			std::string source = m_rfLSF.getSource();
-			std::string dest   = m_rfLSF.getDest();
+	if ((m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA_AUDIO) && data[0U] == TAG_HEADER) {
+#if defined(DUMP_M17)
+		writeFile(data + 2U);
+#endif
 
-			if (m_rssi != 0U)
-				LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-			else
-				LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%", source.c_str(), dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
-			writeEndRF();
+		std::string source = m_rfLSF.getSource();
+		std::string dest   = m_rfLSF.getDest();
+
+		if (m_duplex) {
+			unsigned char rfData[M17_FRAME_LENGTH_BYTES + 2U];
+
+			// Create a Link Setup frame
+			rfData[0U] = TAG_HEADER;
+			rfData[1U] = 0x00U;
+
+			// Generate the sync
+			CSync::addM17LinkSetupSync(rfData + 2U);
+
+			CM17LSF lsf;
+			lsf.setSource(source);
+			lsf.setDest(dest);
+			lsf.setPacketStream(M17_STREAM_TYPE);
+			lsf.setDataType(M17_DATA_TYPE_END);
+			lsf.setEncryptionType(M17_ENCRYPTION_TYPE_NONE);
+			lsf.setEncryptionSubType(M17_ENCRYPTION_SUB_TYPE_TEXT);
+			lsf.setMeta(M17_NULL_NONCE);
+
+			unsigned char setup[M17_LSF_LENGTH_BYTES];
+			lsf.getLinkSetup(setup);
+
+			// Add the convolution FEC
+			CM17Convolution conv;
+			conv.encodeLinkSetup(setup, rfData + 2U + M17_SYNC_LENGTH_BYTES);
+
+			unsigned char temp[M17_FRAME_LENGTH_BYTES];
+			interleaver(rfData + 2U, temp);
+			decorrelator(temp, rfData + 2U);
+
+			writeQueueRF(rfData);
 		}
+
+		if (m_network != NULL && m_rfTimeoutTimer.isRunning() && !m_rfTimeoutTimer.hasExpired()) {
+			unsigned char netData[M17_LSF_LENGTH_BYTES + M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
+
+			m_rfLSF.getNetwork(netData + 0U);
+
+			// Add a EOF FN and silence for the EOF frame
+			netData[M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES + 0U] = 0x80U;
+			netData[M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES + 1U] = 0x00U;
+
+			if (m_rfState == RS_RF_AUDIO) {
+				::memcpy(netData + M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES + M17_FN_LENGTH_BYTES + 0U, M17_3200_SILENCE, 8U);
+				::memcpy(netData + M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES + M17_FN_LENGTH_BYTES + 8U, M17_3200_SILENCE, 8U);
+			} else {
+				::memcpy(netData + M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES + M17_FN_LENGTH_BYTES + 0U, M17_1600_SILENCE, 8U);
+				::memset(netData + M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES + M17_FN_LENGTH_BYTES + 8U, 0x00U, 8U);
+			}
+
+			// The CRC is added in the networking code
+
+			m_network->write(netData);
+		}
+
+		if (m_rssi != 0U)
+			LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+		else
+			LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%", source.c_str(), dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+		writeEndRF();
 
 		return true;
 	}
@@ -519,7 +577,40 @@ void CM17Control::writeNetwork()
 		if ((fn & 0x8000U) == 0x8000U) {
 			std::string source = m_netLSF.getSource();
 			std::string dest   = m_netLSF.getDest();
+
 			LogMessage("M17, received network end of transmission from %s to %s, %.1f seconds", source.c_str(), dest.c_str(), float(m_netFrames) / 25.0F);
+
+			unsigned char rfData[M17_FRAME_LENGTH_BYTES + 2U];
+
+			// Create a Link Setup frame
+			rfData[0U] = TAG_HEADER;
+			rfData[1U] = 0x00U;
+
+			// Generate the sync
+			CSync::addM17LinkSetupSync(rfData + 2U);
+
+			CM17LSF lsf;
+			lsf.setSource(source);
+			lsf.setDest(dest);
+			lsf.setPacketStream(M17_STREAM_TYPE);
+			lsf.setDataType(M17_DATA_TYPE_END);
+			lsf.setEncryptionType(M17_ENCRYPTION_TYPE_NONE);
+			lsf.setEncryptionSubType(M17_ENCRYPTION_SUB_TYPE_TEXT);
+			lsf.setMeta(M17_NULL_NONCE);
+
+			unsigned char setup[M17_LSF_LENGTH_BYTES];
+			lsf.getLinkSetup(setup);
+
+			// Add the convolution FEC
+			CM17Convolution conv;
+			conv.encodeLinkSetup(setup, rfData + 2U + M17_SYNC_LENGTH_BYTES);
+
+			unsigned char temp[M17_FRAME_LENGTH_BYTES];
+			interleaver(rfData + 2U, temp);
+			decorrelator(temp, rfData + 2U);
+
+			writeQueueRF(rfData);
+
 			writeEndNet();
 		}
 	}
