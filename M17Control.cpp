@@ -614,7 +614,7 @@ void CM17Control::writeNetwork()
 			interleaver(rfData + 2U, temp);
 			decorrelator(temp, rfData + 2U);
 
-			writeQueueRF(rfData);
+			writeQueueNet(rfData);
 
 			writeEndNet();
 		}
