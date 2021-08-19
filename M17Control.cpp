@@ -556,7 +556,12 @@ void CM17Control::writeNetwork()
 
 		// Add the FN and the data/audio
 		unsigned char payload[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES];
-		::memcpy(payload, netData + 28U, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
+
+		// Copy the FN minus the EOF marker
+		payload[0U] = netData[28U] & 0x7FU;
+		payload[1U] = netData[29U];
+
+		::memcpy(payload + 2U, netData + 30U, M17_PAYLOAD_LENGTH_BYTES);
 
 		// Add the Convolution FEC
 		CM17Convolution conv;
