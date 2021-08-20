@@ -59,7 +59,7 @@ const unsigned int M17_CRC_LENGTH_BITS  = 16U;
 const unsigned int M17_CRC_LENGTH_BYTES = M17_CRC_LENGTH_BITS / 8U;
 
 const unsigned char M17_3200_SILENCE[] = {0x01U, 0x00U, 0x09U, 0x43U, 0x9CU, 0xE4U, 0x21U, 0x08U};
-const unsigned char M17_1600_SILENCE[] = {0x01U, 0x00U, 0x04U, 0x00U, 0x25U, 0x75U, 0xDDU, 0xF2U};
+const unsigned char M17_1600_SILENCE[] = {0x0CU, 0x41U, 0x09U, 0x03U, 0x0CU, 0x41U, 0x09U, 0x03U};
 
 const unsigned char M17_PACKET_TYPE = 0U;
 const unsigned char M17_STREAM_TYPE = 1U;
