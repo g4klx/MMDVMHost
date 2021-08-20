@@ -307,6 +307,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 			// Copy the FN and payload from the frame
 			::memcpy(netData + M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES, frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
+			netData[M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES + 0U] |= 0x80U;
 
 			// The CRC is added in the networking code
 
@@ -326,10 +327,6 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 #if defined(DUMP_M17)
 		writeFile(data + 2U);
 #endif
-
-		std::string source = m_rfLSF.getSource();
-		std::string dest   = m_rfLSF.getDest();
-
 		if (m_duplex) {
 			unsigned char rfData[M17_FRAME_LENGTH_BYTES + 2U];
 
@@ -340,17 +337,10 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			// Generate the sync
 			CSync::addM17LinkSetupSync(rfData + 2U);
 
-			CM17LSF lsf;
-			lsf.setSource(source);
-			lsf.setDest(dest);
-			lsf.setPacketStream(M17_STREAM_TYPE);
-			lsf.setDataType(M17_DATA_TYPE_END);
-			lsf.setEncryptionType(M17_ENCRYPTION_TYPE_NONE);
-			lsf.setEncryptionSubType(M17_ENCRYPTION_SUB_TYPE_TEXT);
-			lsf.setMeta(M17_NULL_NONCE);
+			m_rfLSF.setDataType(M17_DATA_TYPE_END);
 
 			unsigned char setup[M17_LSF_LENGTH_BYTES];
-			lsf.getLinkSetup(setup);
+			m_rfLSF.getLinkSetup(setup);
 
 			// Add the convolution FEC
 			CM17Convolution conv;
@@ -384,6 +374,9 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 			m_network->write(netData);
 		}
+
+		std::string source = m_rfLSF.getSource();
+		std::string dest   = m_rfLSF.getDest();
 
 		if (m_rssi != 0U)
 			LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
@@ -594,17 +587,10 @@ void CM17Control::writeNetwork()
 			// Generate the sync
 			CSync::addM17LinkSetupSync(rfData + 2U);
 
-			CM17LSF lsf;
-			lsf.setSource(source);
-			lsf.setDest(dest);
-			lsf.setPacketStream(M17_STREAM_TYPE);
-			lsf.setDataType(M17_DATA_TYPE_END);
-			lsf.setEncryptionType(M17_ENCRYPTION_TYPE_NONE);
-			lsf.setEncryptionSubType(M17_ENCRYPTION_SUB_TYPE_TEXT);
-			lsf.setMeta(M17_NULL_NONCE);
+			m_netLSF.setDataType(M17_DATA_TYPE_END);
 
 			unsigned char setup[M17_LSF_LENGTH_BYTES];
-			lsf.getLinkSetup(setup);
+			m_netLSF.getLinkSetup(setup);
 
 			// Add the convolution FEC
 			CM17Convolution conv;
@@ -667,9 +653,7 @@ bool CM17Control::processRFHeader(bool lateEntry)
 		m_rfState = RS_RF_DATA_AUDIO;
 		break;
 	default:
-		LogMessage("M17, received RF%sunknown transmission from %s to %s", lateEntry ? " late entry " : " ", source.c_str(), dest.c_str());
-		m_rfState = RS_RF_DATA;
-		break;
+		return false;
 	}
 
 	m_display->writeM17(source.c_str(), dest.c_str(), "R");
