@@ -307,7 +307,9 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 			// Copy the FN and payload from the frame
 			::memcpy(netData + M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES, frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
-			netData[M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES + 0U] |= 0x80U;
+			// Remove any erronous EOF from the FN
+			netData[M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES + 0U] &= 0x7FU;
+
 
 			// The CRC is added in the networking code
 
@@ -450,8 +452,10 @@ void CM17Control::writeNetwork()
 	if (!m_enabled)
 		return;
 
-	if (m_rfState != RS_RF_LISTENING && m_rfState != RS_RF_LATE_ENTRY && m_netState == RS_NET_IDLE)
+	if (m_rfState != RS_RF_LISTENING && m_rfState != RS_RF_LATE_ENTRY && m_netState == RS_NET_IDLE) {
+		m_network->reset();
 		return;
+	}
 
 	m_networkWatchdog.start();
 
@@ -460,8 +464,10 @@ void CM17Control::writeNetwork()
 
 	if (!m_allowEncryption) {
 		unsigned char type = m_netLSF.getEncryptionType();
-		if (type != M17_ENCRYPTION_TYPE_NONE)
+		if (type != M17_ENCRYPTION_TYPE_NONE) {
+			m_network->reset();
 			return;
+		}
 	}
 
 	if (m_netState == RS_NET_IDLE) {
@@ -483,9 +489,8 @@ void CM17Control::writeNetwork()
 			m_netState = RS_NET_DATA_AUDIO;
 			break;
 		default:
-			LogMessage("M17, received network unknown transmission from %s to %s", source.c_str(), dest.c_str());
-			m_netState = RS_NET_DATA;
-			break;
+			m_network->reset();
+			return;
 		}
 
 		m_display->writeM17(source.c_str(), dest.c_str(), "N");
