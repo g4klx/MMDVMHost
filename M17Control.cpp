@@ -79,7 +79,6 @@ m_rfBits(1U),
 m_rfLSF(),
 m_rfLSFn(0U),
 m_netLSF(),
-m_netLSFn(0U),
 m_rssiMapper(rssiMapper),
 m_rssi(0U),
 m_maxRSSI(0U),
@@ -309,8 +308,15 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			writeQueueRF(rfData);
 		}
 
-		if (m_network != NULL && m_rfTimeoutTimer.isRunning() && !m_rfTimeoutTimer.hasExpired())
-			m_network->writeData(m_rfLSF.getSource(), m_rfLSF.getDest(), frame);
+		if (m_network != NULL && m_rfTimeoutTimer.isRunning() && !m_rfTimeoutTimer.hasExpired()) {
+			unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
+			m_rfLSF.getFragment(lich, m_rfLSFn);
+
+			// Add the fragment number
+			lich[5U] = (m_rfLSFn & 0x07U) << 5;
+
+			m_network->writeData(m_rfLSF.getSource(), m_rfLSF.getDest(), lich, frame);
+		}
 
 		m_rfFrames++;
 
@@ -404,7 +410,7 @@ void CM17Control::writeNetwork()
 	m_networkWatchdog.start();
 
 	if (netData[0U] == TAG_HEADER) {
-		m_netLSF.setNetwork(netData + 25U);
+		m_netLSF.setNetwork(netData + 19U);
 		m_netLSF.setCAN(m_can);
 
 		if (!m_allowEncryption) {
@@ -433,6 +439,7 @@ void CM17Control::writeNetwork()
 			m_netState = RS_NET_DATA_AUDIO;
 			break;
 		default:
+			LogMessage("M17, received unknown network transmission from %s to %s", source.c_str(), dest.c_str());
 			m_network->reset();
 			break;
 		}
@@ -442,7 +449,6 @@ void CM17Control::writeNetwork()
 		m_netTimeoutTimer.start();
 		m_elapsed.start();
 		m_netFrames = 0U;
-		m_netLSFn   = 0U;
 
 		// Create a dummy start message
 		unsigned char start[M17_FRAME_LENGTH_BYTES + 2U];
@@ -478,15 +484,8 @@ void CM17Control::writeNetwork()
 
 		m_netFrames++;
 
-		// Add the fragment LICH
-		unsigned char lich[M17_LICH_FRAGMENT_LENGTH_BYTES];
-		m_netLSF.getFragment(lich, m_netLSFn);
-
-		// Add the fragment number
-		lich[5U] = (m_netLSFn & 0x07U) << 5;
-
 		unsigned int frag1, frag2, frag3, frag4;
-		CM17Utils::splitFragmentLICH(lich, frag1, frag2, frag3, frag4);
+		CM17Utils::splitFragmentLICH(netData + 19U, frag1, frag2, frag3, frag4);
 
 		// Add Golay to the LICH fragment here
 		unsigned int lich1 = CGolay24128::encode24128(frag1);
@@ -496,13 +495,9 @@ void CM17Control::writeNetwork()
 
 		CM17Utils::combineFragmentLICHFEC(lich1, lich2, lich3, lich4, data + 2U + M17_SYNC_LENGTH_BYTES);
 
-		// Add the FN and the data/audio
-		unsigned char payload[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES];
-		::memcpy(payload, netData + 24U, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
-
 		// Add the Convolution FEC
 		CM17Convolution conv;
-		conv.encodeData(payload, data + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES);
+		conv.encodeData(netData + 25U, data + 2U + M17_SYNC_LENGTH_BYTES + M17_LICH_FRAGMENT_FEC_LENGTH_BYTES);
 
 		unsigned char temp[M17_FRAME_LENGTH_BYTES];
 		interleaver(data + 2U, temp);
@@ -510,12 +505,8 @@ void CM17Control::writeNetwork()
 
 		writeQueueNet(data);
 
-		m_netLSFn++;
-		if (m_netLSFn >= 6U)
-			m_netLSFn = 0U;
-
 		// EOT handling
-		uint16_t fn = (netData[24U] << 8) + (netData[25U] << 0);
+		uint16_t fn = (netData[25U] << 8) + (netData[26U] << 0);
 		if ((fn & 0x8000U) == 0x8000U) {
 			std::string source = m_netLSF.getSource();
 			std::string dest   = m_netLSF.getDest();

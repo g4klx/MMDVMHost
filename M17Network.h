@@ -36,9 +36,9 @@ public:
 
 	void enable(bool enabled);
 
-	bool writeHeader(const std::string& source, const std::string& dest, const unsigned char* data);
+	bool writeHeader(const std::string& source, const std::string& dest, const unsigned char* lsf);
 
-	bool writeData(const std::string& source, const std::string& dest, const unsigned char* data);
+	bool writeData(const std::string& source, const std::string& dest, const unsigned char* lsf, const unsigned char* data);
 
 	bool read(unsigned char* data);
 

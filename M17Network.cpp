@@ -74,12 +74,12 @@ bool CM17Network::open()
 	}
 }
 
-bool CM17Network::writeHeader(const std::string& source, const std::string& dest, const unsigned char* data)
+bool CM17Network::writeHeader(const std::string& source, const std::string& dest, const unsigned char* lsf)
 {
 	if (m_addrLen == 0U)
 		return false;
 
-	assert(data != NULL);
+	assert(lsf != NULL);
 
 	unsigned char buffer[60U];
 
@@ -103,7 +103,7 @@ bool CM17Network::writeHeader(const std::string& source, const std::string& dest
 	::memset(buffer + 15U, ' ', 9U);
 	::memcpy(buffer + 15U, dest.c_str(), dest.size());
 
-	::memcpy(buffer + 24U, data, 28U);
+	::memcpy(buffer + 24U, lsf, 28U);
 
 	if (m_debug)
 		CUtils::dump(1U, "M17 header transmitted", buffer, 52U);
@@ -111,12 +111,13 @@ bool CM17Network::writeHeader(const std::string& source, const std::string& dest
 	return m_socket.write(buffer, 52U, m_addr, m_addrLen);
 }
 
-bool CM17Network::writeData(const std::string& source, const std::string& dest, const unsigned char* data)
+bool CM17Network::writeData(const std::string& source, const std::string& dest,const unsigned char* lsf, const unsigned char* data)
 {
 	if (m_addrLen == 0U)
 		return false;
 
 	assert(data != NULL);
+	assert(lsf != NULL);
 
 	unsigned char buffer[50U];
 
@@ -134,12 +135,14 @@ bool CM17Network::writeData(const std::string& source, const std::string& dest, 
 	::memset(buffer + 15U, ' ', 9U);
 	::memcpy(buffer + 15U, dest.c_str(), dest.size());
 
-	::memcpy(buffer + 24U, data, 18U);
+	::memcpy(buffer + 24U, lsf, 6U);
+
+	::memcpy(buffer + 30U, data, 18U);
 
 	if (m_debug)
-		CUtils::dump(1U, "M17 data transmitted", buffer, 42U);
+		CUtils::dump(1U, "M17 data transmitted", buffer, 48U);
 
-	return m_socket.write(buffer, 42U, m_addr, m_addrLen);
+	return m_socket.write(buffer, 48U, m_addr, m_addrLen);
 }
 
 void CM17Network::clock(unsigned int ms)

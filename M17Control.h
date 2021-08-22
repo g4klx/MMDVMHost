@@ -69,7 +69,6 @@ private:
 	CM17LSF                    m_rfLSF;
 	unsigned int               m_rfLSFn;
 	CM17LSF                    m_netLSF;
-	unsigned int               m_netLSFn;
 	CRSSIInterpolator*         m_rssiMapper;
 	unsigned char              m_rssi;
 	unsigned char              m_maxRSSI;
