@@ -189,6 +189,9 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_rssiCount = 1U;
 			m_rfLSFn    = 0U;
 
+			if (m_network != NULL)
+				m_network->writeHeader(m_rfLSF.getSource(), m_rfLSF.getDest(), frame);
+
 #if defined(DUMP_M17)
 			openFile();
 #endif
@@ -236,6 +239,12 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_maxRSSI   = m_rssi;
 			m_aveRSSI   = m_rssi;
 			m_rssiCount = 1U;
+
+			if (m_network != NULL) {
+				unsigned char lsf[M17_LSF_LENGTH_BYTES];
+				m_rfLSF.getNetwork(lsf);
+				m_network->writeHeader(m_rfLSF.getSource(), m_rfLSF.getDest(), lsf);
+			}
 
 #if defined(DUMP_M17)
 			openFile();
@@ -300,18 +309,8 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			writeQueueRF(rfData);
 		}
 
-		if (m_network != NULL && m_rfTimeoutTimer.isRunning() && !m_rfTimeoutTimer.hasExpired()) {
-			unsigned char netData[M17_LSF_LENGTH_BYTES + M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
-
-			m_rfLSF.getNetwork(netData + 0U);
-
-			// Copy the FN and payload from the frame
-			::memcpy(netData + M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES, frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
-
-			// The CRC is added in the networking code
-
-			m_network->write(netData);
-		}
+		if (m_network != NULL && m_rfTimeoutTimer.isRunning() && !m_rfTimeoutTimer.hasExpired())
+			m_network->writeData(m_rfLSF.getSource(), m_rfLSF.getDest(), frame);
 
 		m_rfFrames++;
 
@@ -404,16 +403,18 @@ void CM17Control::writeNetwork()
 
 	m_networkWatchdog.start();
 
-	m_netLSF.setNetwork(netData);
-	m_netLSF.setCAN(m_can);
+	if (netData[0U] == TAG_HEADER) {
+		m_netLSF.setNetwork(netData + 25U);
+		m_netLSF.setCAN(m_can);
 
-	if (!m_allowEncryption) {
-		unsigned char type = m_netLSF.getEncryptionType();
-		if (type != M17_ENCRYPTION_TYPE_NONE)
-			return;
-	}
+		if (!m_allowEncryption) {
+			unsigned char type = m_netLSF.getEncryptionType();
+			if (type != M17_ENCRYPTION_TYPE_NONE) {
+				m_network->reset();
+				return;
+			}
+		}
 
-	if (m_netState == RS_NET_IDLE) {
 		std::string source = m_netLSF.getSource();
 		std::string dest   = m_netLSF.getDest();
 
@@ -432,8 +433,7 @@ void CM17Control::writeNetwork()
 			m_netState = RS_NET_DATA_AUDIO;
 			break;
 		default:
-			LogMessage("M17, received network unknown transmission from %s to %s", source.c_str(), dest.c_str());
-			m_netState = RS_NET_DATA;
+			m_network->reset();
 			break;
 		}
 
@@ -467,7 +467,7 @@ void CM17Control::writeNetwork()
 		writeQueueNet(start);
 	}
 
-	if (m_netState == RS_NET_AUDIO || m_netState == RS_NET_DATA_AUDIO) {
+	if (netData[0U] == TAG_DATA) {
 		unsigned char data[M17_FRAME_LENGTH_BYTES + 2U];
 
 		data[0U] = TAG_DATA;
@@ -498,7 +498,7 @@ void CM17Control::writeNetwork()
 
 		// Add the FN and the data/audio
 		unsigned char payload[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES];
-		::memcpy(payload, netData + 28U, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
+		::memcpy(payload, netData + 24U, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
 
 		// Add the Convolution FEC
 		CM17Convolution conv;
@@ -515,7 +515,7 @@ void CM17Control::writeNetwork()
 			m_netLSFn = 0U;
 
 		// EOT handling
-		uint16_t fn = (netData[28U] << 8) + (netData[29U] << 0);
+		uint16_t fn = (netData[24U] << 8) + (netData[25U] << 0);
 		if ((fn & 0x8000U) == 0x8000U) {
 			std::string source = m_netLSF.getSource();
 			std::string dest   = m_netLSF.getDest();

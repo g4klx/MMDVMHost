@@ -74,19 +74,19 @@ bool CM17Network::open()
 	}
 }
 
-bool CM17Network::write(const unsigned char* data)
+bool CM17Network::writeHeader(const std::string& source, const std::string& dest, const unsigned char* data)
 {
 	if (m_addrLen == 0U)
 		return false;
 
 	assert(data != NULL);
 
-	unsigned char buffer[100U];
+	unsigned char buffer[60U];
 
 	buffer[0U] = 'M';
 	buffer[1U] = '1';
 	buffer[2U] = '7';
-	buffer[3U] = ' ';
+	buffer[3U] = 'H';
 
 	// Create a random id for this transmission if needed
 	if (m_outId == 0U) {
@@ -97,16 +97,49 @@ bool CM17Network::write(const unsigned char* data)
 	buffer[4U] = m_outId / 256U;	// Unique session id
 	buffer[5U] = m_outId % 256U;
 
-	::memcpy(buffer + 6U, data, 46U);
+	::memset(buffer + 6U, ' ', 9U);
+	::memcpy(buffer + 6U, source.c_str(), source.size());
 
-	// Dummy CRC
-	buffer[52U] = 0x00U;
-	buffer[53U] = 0x00U;
+	::memset(buffer + 15U, ' ', 9U);
+	::memcpy(buffer + 15U, dest.c_str(), dest.size());
+
+	::memcpy(buffer + 24U, data, 28U);
 
 	if (m_debug)
-		CUtils::dump(1U, "M17 data transmitted", buffer, 54U);
+		CUtils::dump(1U, "M17 header transmitted", buffer, 52U);
 
-	return m_socket.write(buffer, 54U, m_addr, m_addrLen);
+	return m_socket.write(buffer, 52U, m_addr, m_addrLen);
+}
+
+bool CM17Network::writeData(const std::string& source, const std::string& dest, const unsigned char* data)
+{
+	if (m_addrLen == 0U)
+		return false;
+
+	assert(data != NULL);
+
+	unsigned char buffer[50U];
+
+	buffer[0U] = 'M';
+	buffer[1U] = '1';
+	buffer[2U] = '7';
+	buffer[3U] = 'D';
+
+	buffer[4U] = m_outId / 256U;	// Unique session id
+	buffer[5U] = m_outId % 256U;
+
+	::memset(buffer + 6U, ' ', 9U);
+	::memcpy(buffer + 6U, source.c_str(), source.size());
+
+	::memset(buffer + 15U, ' ', 9U);
+	::memcpy(buffer + 15U, dest.c_str(), dest.size());
+
+	::memcpy(buffer + 24U, data, 18U);
+
+	if (m_debug)
+		CUtils::dump(1U, "M17 data transmitted", buffer, 42U);
+
+	return m_socket.write(buffer, 42U, m_addr, m_addrLen);
 }
 
 void CM17Network::clock(unsigned int ms)
@@ -139,7 +172,7 @@ void CM17Network::clock(unsigned int ms)
 	if (::memcmp(buffer + 0U, "PING", 4U) == 0)
 		return;
 
-	if (::memcmp(buffer + 0U, "M17 ", 4U) != 0) {
+	if (::memcmp(buffer + 0U, "M17H", 4U) != 0 && ::memcmp(buffer + 0U, "M17D", 4U) != 0) {
 		CUtils::dump(2U, "M17, received unknown packet", buffer, length);
 		return;
 	}
@@ -152,10 +185,19 @@ void CM17Network::clock(unsigned int ms)
 			return;
 	}
 
-	unsigned char c = length - 6U;
-	m_buffer.addData(&c, 1U);
+	if (::memcmp(buffer + 0U, "M17H", 4U) == 0) {
+		unsigned char c = length - 5U;
+		m_buffer.addData(&c, 1U);
 
-	m_buffer.addData(buffer + 6U, length - 6U);
+		m_buffer.addData(&TAG_HEADER, 1U);
+		m_buffer.addData(buffer + 6U, length - 6U);
+	} else {
+		unsigned char c = length - 5U;
+		m_buffer.addData(&c, 1U);
+
+		m_buffer.addData(&TAG_DATA, 1U);
+		m_buffer.addData(buffer + 6U, length - 6U);
+	}
 }
 
 bool CM17Network::read(unsigned char* data)
