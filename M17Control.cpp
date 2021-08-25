@@ -325,35 +325,12 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		return true;
 	}
 
-	if ((m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA_AUDIO) && data[0U] == TAG_HEADER) {
+	if ((m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA_AUDIO) && data[0U] == TAG_EOT) {
 #if defined(DUMP_M17)
 		writeFile(data + 2U);
 #endif
-		if (m_duplex) {
-			unsigned char rfData[M17_FRAME_LENGTH_BYTES + 2U];
-
-			// Create a Link Setup frame
-			rfData[0U] = TAG_HEADER;
-			rfData[1U] = 0x00U;
-
-			// Generate the sync
-			CSync::addM17LinkSetupSync(rfData + 2U);
-
-			m_rfLSF.setDataType(M17_DATA_TYPE_END);
-
-			unsigned char setup[M17_LSF_LENGTH_BYTES];
-			m_rfLSF.getLinkSetup(setup);
-
-			// Add the convolution FEC
-			CM17Convolution conv;
-			conv.encodeLinkSetup(setup, rfData + 2U + M17_SYNC_LENGTH_BYTES);
-
-			unsigned char temp[M17_FRAME_LENGTH_BYTES];
-			interleaver(rfData + 2U, temp);
-			decorrelator(temp, rfData + 2U);
-
-			writeQueueRF(rfData);
-		}
+		if (m_duplex)
+			writeQueueEOTRF();
 
 		if (m_network != NULL && m_rfTimeoutTimer.isRunning() && !m_rfTimeoutTimer.hasExpired()) {
 			unsigned char netData[M17_LSF_LENGTH_BYTES + M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
@@ -583,29 +560,7 @@ void CM17Control::writeNetwork()
 
 			LogMessage("M17, received network end of transmission from %s to %s, %.1f seconds", source.c_str(), dest.c_str(), float(m_netFrames) / 25.0F);
 
-			unsigned char rfData[M17_FRAME_LENGTH_BYTES + 2U];
-
-			// Create a Link Setup frame
-			rfData[0U] = TAG_HEADER;
-			rfData[1U] = 0x00U;
-
-			// Generate the sync
-			CSync::addM17LinkSetupSync(rfData + 2U);
-
-			m_netLSF.setDataType(M17_DATA_TYPE_END);
-
-			unsigned char setup[M17_LSF_LENGTH_BYTES];
-			m_netLSF.getLinkSetup(setup);
-
-			// Add the convolution FEC
-			CM17Convolution conv;
-			conv.encodeLinkSetup(setup, rfData + 2U + M17_SYNC_LENGTH_BYTES);
-
-			unsigned char temp[M17_FRAME_LENGTH_BYTES];
-			interleaver(rfData + 2U, temp);
-			decorrelator(temp, rfData + 2U);
-
-			writeQueueNet(rfData);
+			writeQueueEOTNet();
 
 			writeEndNet();
 		}
@@ -718,7 +673,7 @@ void CM17Control::writeQueueRF(const unsigned char *data)
 	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired())
 		return;
 
-	unsigned char len = M17_FRAME_LENGTH_BYTES + 2U;
+	const unsigned char len = M17_FRAME_LENGTH_BYTES + 2U;
 
 	unsigned int space = m_queue.freeSpace();
 	if (space < (len + 1U)) {
@@ -731,6 +686,28 @@ void CM17Control::writeQueueRF(const unsigned char *data)
 	m_queue.addData(data, len);
 }
 
+void CM17Control::writeQueueEOTRF()
+{
+	if (m_netState != RS_NET_IDLE)
+		return;
+
+	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired())
+		return;
+
+	const unsigned char len = 1U;
+
+	unsigned int space = m_queue.freeSpace();
+	if (space < (len + 1U)) {
+		LogError("M17, overflow in the M17 RF queue");
+		return;
+	}
+
+	m_queue.addData(&len, 1U);
+
+	const unsigned char data = TAG_EOT;
+	m_queue.addData(&data, len);
+}
+
 void CM17Control::writeQueueNet(const unsigned char *data)
 {
 	assert(data != NULL);
@@ -738,7 +715,7 @@ void CM17Control::writeQueueNet(const unsigned char *data)
 	if (m_netTimeoutTimer.isRunning() && m_netTimeoutTimer.hasExpired())
 		return;
 
-	unsigned char len = M17_FRAME_LENGTH_BYTES + 2U;
+	const unsigned char len = M17_FRAME_LENGTH_BYTES + 2U;
 
 	unsigned int space = m_queue.freeSpace();
 	if (space < (len + 1U)) {
@@ -749,6 +726,25 @@ void CM17Control::writeQueueNet(const unsigned char *data)
 	m_queue.addData(&len, 1U);
 
 	m_queue.addData(data, len);
+}
+
+void CM17Control::writeQueueEOTNet()
+{
+	if (m_netTimeoutTimer.isRunning() && m_netTimeoutTimer.hasExpired())
+		return;
+
+	const unsigned char len = 1U;
+
+	unsigned int space = m_queue.freeSpace();
+	if (space < (len + 1U)) {
+		LogError("M17, overflow in the M17 RF queue");
+		return;
+	}
+
+	m_queue.addData(&len, 1U);
+
+	const unsigned char data = TAG_EOT;
+	m_queue.addData(&data, len);
 }
 
 void CM17Control::interleaver(const unsigned char* in, unsigned char* out) const
