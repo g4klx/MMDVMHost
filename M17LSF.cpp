@@ -24,6 +24,15 @@
 #include <cassert>
 #include <cstring>
 
+CM17LSF::CM17LSF(const CM17LSF& lsf) :
+m_lsf(NULL),
+m_valid(lsf.m_valid)
+{
+	m_lsf = new unsigned char[M17_LSF_LENGTH_BYTES];
+
+	::memcpy(m_lsf, lsf.m_lsf, M17_LSF_LENGTH_BYTES);
+}
+
 CM17LSF::CM17LSF() :
 m_lsf(NULL),
 m_valid(false)
@@ -196,4 +205,14 @@ void CM17LSF::setFragment(const unsigned char* data, unsigned int n)
 	::memcpy(m_lsf + (n * M17_LSF_FRAGMENT_LENGTH_BYTES), data, M17_LSF_FRAGMENT_LENGTH_BYTES);
 
 	m_valid = CM17CRC::checkCRC16(m_lsf, M17_LSF_LENGTH_BYTES);
+}
+
+CM17LSF& CM17LSF::operator=(const CM17LSF& lsf)
+{
+	if (&lsf != this) {
+		::memcpy(m_lsf, lsf.m_lsf, M17_LSF_LENGTH_BYTES);
+		m_valid = lsf.m_valid;
+	}
+
+	return *this;
 }

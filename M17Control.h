@@ -66,9 +66,12 @@ private:
 	unsigned int               m_netFrames;
 	unsigned int               m_rfErrs;
 	unsigned int               m_rfBits;
-	CM17LSF                    m_rfLSF;
+	CM17LSF                    m_rfLSF1;
+	CM17LSF                    m_rfLSF2;
+	CM17LSF                    m_rfLSF3;
 	unsigned int               m_rfLSFn;
 	CM17LSF                    m_netLSF;
+	unsigned int               m_netLSFn;
 	CRSSIInterpolator*         m_rssiMapper;
 	unsigned char              m_rssi;
 	unsigned char              m_maxRSSI;
