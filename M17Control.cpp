@@ -156,9 +156,16 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		m_rssiCount++;
 	}
 
+	CUtils::dump(1U, "RX Raw M17 Frame", data + 2U, M17_FRAME_LENGTH_BYTES);
+
 	unsigned char temp[M17_FRAME_LENGTH_BYTES];
 	decorrelator(data + 2U, temp);
+
+	CUtils::dump(1U, "RX Decorrelated M17 Frame", temp, M17_FRAME_LENGTH_BYTES);
+
 	interleaver(temp, data + 2U);
+
+	CUtils::dump(1U, "RX Deinterleaved M17 Frame", data + 2U, M17_FRAME_LENGTH_BYTES);
 
 	if (m_rfState == RS_RF_LISTENING && data[0U] == TAG_HEADER) {
 		m_rfLSF.reset();
@@ -166,6 +173,8 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		CM17Convolution conv;
 		unsigned char frame[M17_LSF_LENGTH_BYTES];
 		unsigned int ber = conv.decodeLinkSetup(data + 2U + M17_SYNC_LENGTH_BYTES, frame);
+
+		CUtils::dump(1U, "RX LSF without FEC", frame, M17_LSF_LENGTH_BYTES);
 
 		bool valid = CM17CRC::checkCRC16(frame, M17_LSF_LENGTH_BYTES);
 		if (valid) {
@@ -296,7 +305,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			unsigned char temp[M17_FRAME_LENGTH_BYTES];
 			interleaver(rfData + 2U, temp);
 			decorrelator(temp, rfData + 2U);
-
+ 
 			writeQueueRF(rfData);
 		}
 
@@ -591,13 +600,22 @@ bool CM17Control::processRFHeader(bool lateEntry)
 		unsigned char setup[M17_LSF_LENGTH_BYTES];
 		m_rfLSF.getLinkSetup(setup);
 
+		CUtils::dump(1U, "TX LSF without FEC", setup, M17_LSF_LENGTH_BYTES);
+
 		// Add the convolution FEC
 		CM17Convolution conv;
 		conv.encodeLinkSetup(setup, data + 2U + M17_SYNC_LENGTH_BYTES);
 
+		CUtils::dump(1U, "TX LSF with sync and FEC", data + 2U, M17_FRAME_LENGTH_BYTES);
+
 		unsigned char temp[M17_FRAME_LENGTH_BYTES];
 		interleaver(data + 2U, temp);
+
+		CUtils::dump(1U, "TX Interleaved LSF", temp, M17_FRAME_LENGTH_BYTES);
+
 		decorrelator(temp, data + 2U);
+
+		CUtils::dump(1U, "TX Decorrelated LSF", data + 2U, M17_FRAME_LENGTH_BYTES);
 
 		writeQueueRF(data);
 	}
