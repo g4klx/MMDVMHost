@@ -23,7 +23,7 @@
 #include <cstring>
 #include <cstdlib>
 
-const unsigned int PUNCTURE_LIST_LINK_SETUP_COUNT = 61U;
+const unsigned int PUNCTURE_LIST_LINK_SETUP_COUNT = 60U;
 
 const unsigned int PUNCTURE_LIST_LINK_SETUP[] = {
 	  2U,   6U,  10U,  14U,  18U,  22U,  26U,  30U,  34U,  38U,  42U,  46U,  50U,  54U,  58U,  63U,  67U,  71U,  75U,  79U,  83U,
