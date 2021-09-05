@@ -293,7 +293,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 		uint16_t fn = (frame[0U] << 8) + (frame[1U] << 0);
 
-		LogDebug("M17, audio: FN: %u, errs: %u/272 (%.1f%%)", fn & 0x7FFFU, errors, float(errors) / 2.72F);
+		LogDebug("M17, audio: FN: %u, errs: %u/272 (%.1f%%)", fn, errors, float(errors) / 2.72F);
 
 		m_rfBits += 272U;
 		m_rfErrs += errors;
@@ -344,6 +344,9 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 			// Copy the FN and payload from the frame
 			::memcpy(netData + M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES, frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
+			// Remove any erronous EOF from the FN
+			netData[M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES + 0U] &= 0x7FU;
+
 
 			// The CRC is added in the networking code
 
@@ -356,19 +359,46 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		if (m_rfLSFn >= 6U)
 			m_rfLSFn = 0U;
 
-		bool bValid = (fn & 0x7FFFU) < (210U * 25U);		// 210 seconds maximum
-		bool bEnd   = (fn & 0x8000U) == 0x8000U;
+		return true;
+	}
 
-		if (bValid && bEnd) {
-			std::string source = m_rfLSF1.getSource();
-			std::string dest   = m_rfLSF1.getDest();
+	if ((m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA_AUDIO) && data[0U] == TAG_EOT) {
+#if defined(DUMP_M17)
+		writeFile(data + 2U);
+#endif
+		if (m_duplex)
+			writeQueueEOTRF();
 
-			if (m_rssi != 0U)
-				LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-			else
-				LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%", source.c_str(), dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
-			writeEndRF();
+		if (m_network != NULL && m_rfTimeoutTimer.isRunning() && !m_rfTimeoutTimer.hasExpired()) {
+			unsigned char netData[M17_LSF_LENGTH_BYTES + M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
+
+			m_rfLSF1.getNetwork(netData + 0U);
+
+			// Add a EOF FN and silence for the EOF frame
+			netData[M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES + 0U] = 0x80U;
+			netData[M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES + 1U] = 0x00U;
+
+			if (m_rfState == RS_RF_AUDIO) {
+				::memcpy(netData + M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES + M17_FN_LENGTH_BYTES + 0U, M17_3200_SILENCE, 8U);
+				::memcpy(netData + M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES + M17_FN_LENGTH_BYTES + 8U, M17_3200_SILENCE, 8U);
+			} else {
+				::memcpy(netData + M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES + M17_FN_LENGTH_BYTES + 0U, M17_1600_SILENCE, 8U);
+				::memset(netData + M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES + M17_FN_LENGTH_BYTES + 8U, 0x00U, 8U);
+			}
+
+			// The CRC is added in the networking code
+
+			m_network->write(netData);
 		}
+
+		std::string source = m_rfLSF1.getSource();
+		std::string dest   = m_rfLSF1.getDest();
+
+		if (m_rssi != 0U)
+			LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+		else
+			LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%", source.c_str(), dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+		writeEndRF();
 
 		return true;
 	}
@@ -438,8 +468,10 @@ void CM17Control::writeNetwork()
 	if (!m_enabled)
 		return;
 
-	if (m_rfState != RS_RF_LISTENING && m_rfState != RS_RF_LATE_ENTRY && m_netState == RS_NET_IDLE)
+	if (m_rfState != RS_RF_LISTENING && m_rfState != RS_RF_LATE_ENTRY && m_netState == RS_NET_IDLE) {
+		m_network->reset();
 		return;
+	}
 
 	m_networkWatchdog.start();
 
@@ -475,7 +507,7 @@ void CM17Control::writeNetwork()
 		default:
 			LogMessage("M17, received network unknown transmission from %s to %s", source.c_str(), dest.c_str());
 			m_network->reset();
-			break;
+			return;
 		}
 
 		m_display->writeM17(source.c_str(), dest.c_str(), "N");
@@ -545,7 +577,12 @@ void CM17Control::writeNetwork()
 
 		// Add the FN and the data/audio
 		unsigned char payload[M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES];
-		::memcpy(payload, netData + 28U, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
+
+		// Copy the FN minus the EOF marker
+		payload[0U] = netData[28U] & 0x7FU;
+		payload[1U] = netData[29U];
+
+		::memcpy(payload + 2U, netData + 30U, M17_PAYLOAD_LENGTH_BYTES);
 
 		// Add the Convolution FEC
 		CM17Convolution conv;
@@ -566,7 +603,11 @@ void CM17Control::writeNetwork()
 		if ((fn & 0x8000U) == 0x8000U) {
 			std::string source = m_netLSF.getSource();
 			std::string dest   = m_netLSF.getDest();
+
 			LogMessage("M17, received network end of transmission from %s to %s, %.1f seconds", source.c_str(), dest.c_str(), float(m_netFrames) / 25.0F);
+
+			writeQueueEOTNet();
+
 			writeEndNet();
 		}
 	}
@@ -618,9 +659,7 @@ bool CM17Control::processRFHeader(bool lateEntry)
 		m_rfState = RS_RF_DATA_AUDIO;
 		break;
 	default:
-		LogMessage("M17, received RF%sunknown transmission from %s to %s", lateEntry ? " late entry " : " ", source.c_str(), dest.c_str());
-		m_rfState = RS_RF_DATA;
-		break;
+		return false;
 	}
 
 	m_display->writeM17(source.c_str(), dest.c_str(), "R");
@@ -680,7 +719,7 @@ void CM17Control::writeQueueRF(const unsigned char *data)
 	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired())
 		return;
 
-	unsigned char len = M17_FRAME_LENGTH_BYTES + 2U;
+	const unsigned char len = M17_FRAME_LENGTH_BYTES + 2U;
 
 	unsigned int space = m_queue.freeSpace();
 	if (space < (len + 1U)) {
@@ -693,6 +732,28 @@ void CM17Control::writeQueueRF(const unsigned char *data)
 	m_queue.addData(data, len);
 }
 
+void CM17Control::writeQueueEOTRF()
+{
+	if (m_netState != RS_NET_IDLE)
+		return;
+
+	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired())
+		return;
+
+	const unsigned char len = 1U;
+
+	unsigned int space = m_queue.freeSpace();
+	if (space < (len + 1U)) {
+		LogError("M17, overflow in the M17 RF queue");
+		return;
+	}
+
+	m_queue.addData(&len, 1U);
+
+	const unsigned char data = TAG_EOT;
+	m_queue.addData(&data, len);
+}
+
 void CM17Control::writeQueueNet(const unsigned char *data)
 {
 	assert(data != NULL);
@@ -700,7 +761,7 @@ void CM17Control::writeQueueNet(const unsigned char *data)
 	if (m_netTimeoutTimer.isRunning() && m_netTimeoutTimer.hasExpired())
 		return;
 
-	unsigned char len = M17_FRAME_LENGTH_BYTES + 2U;
+	const unsigned char len = M17_FRAME_LENGTH_BYTES + 2U;
 
 	unsigned int space = m_queue.freeSpace();
 	if (space < (len + 1U)) {
@@ -711,6 +772,25 @@ void CM17Control::writeQueueNet(const unsigned char *data)
 	m_queue.addData(&len, 1U);
 
 	m_queue.addData(data, len);
+}
+
+void CM17Control::writeQueueEOTNet()
+{
+	if (m_netTimeoutTimer.isRunning() && m_netTimeoutTimer.hasExpired())
+		return;
+
+	const unsigned char len = 1U;
+
+	unsigned int space = m_queue.freeSpace();
+	if (space < (len + 1U)) {
+		LogError("M17, overflow in the M17 RF queue");
+		return;
+	}
+
+	m_queue.addData(&len, 1U);
+
+	const unsigned char data = TAG_EOT;
+	m_queue.addData(&data, len);
 }
 
 void CM17Control::interleaver(const unsigned char* in, unsigned char* out) const

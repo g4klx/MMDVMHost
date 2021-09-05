@@ -84,7 +84,11 @@ private:
 	bool processRFHeader(bool lateEntry);
 
 	void writeQueueRF(const unsigned char* data);
+	void writeQueueEOTRF();
+
 	void writeQueueNet(const unsigned char* data);
+	void writeQueueEOTNet();
+
 	void writeNetwork();
 
 	void interleaver(const unsigned char* in, unsigned char* out) const;
