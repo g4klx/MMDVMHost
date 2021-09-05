@@ -1518,6 +1518,7 @@ bool CMMDVMHost::createModem()
 		unsigned int kerchunkTime         = m_conf.getFMKerchunkTime();
 		unsigned int hangTime             = m_conf.getFMHangTime();
 		unsigned int accessMode           = m_conf.getFMAccessMode();
+		bool         simpleMode           = m_conf.getFMSimpleMode();
 		bool         cosInvert            = m_conf.getFMCOSInvert();
 		bool         noiseSquelch         = m_conf.getFMNoiseSquelch();
 		unsigned int squelchHighThreshold = m_conf.getFMSquelchHighThreshold();
@@ -1552,6 +1553,7 @@ bool CMMDVMHost::createModem()
 		LogInfo("    Kerchunk Time: %us", kerchunkTime);
 		LogInfo("    Hang Time: %us", hangTime);
 		LogInfo("    Access Mode: %u", accessMode);
+		LogInfo("    Simple Mode: %s", simpleMode ? "yes" : "no");
 		LogInfo("    COS Invert: %s", cosInvert ? "yes" : "no");
 
 		LogInfo("    Noise Squelch: %s", noiseSquelch ? "yes" : "no");
@@ -1566,7 +1568,7 @@ bool CMMDVMHost::createModem()
 
 		m_modem->setFMCallsignParams(callsign, callsignSpeed, callsignFrequency, callsignTime, callsignHoldoff, callsignHighLevel, callsignLowLevel, callsignAtStart, callsignAtEnd, callsignAtLatch);
 		m_modem->setFMAckParams(rfAck, ackSpeed, ackFrequency, ackMinTime, ackDelay, ackLevel);
-		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssHighThreshold, ctcssLowThreshold, ctcssLevel, kerchunkTime, hangTime, accessMode, cosInvert, noiseSquelch, squelchHighThreshold, squelchLowThreshold, rfAudioBoost, maxDevLevel);
+		m_modem->setFMMiscParams(timeout, timeoutLevel, ctcssFrequency, ctcssHighThreshold, ctcssLowThreshold, ctcssLevel, kerchunkTime, hangTime, accessMode, simpleMode, cosInvert, noiseSquelch, squelchHighThreshold, squelchLowThreshold, rfAudioBoost, maxDevLevel);
 
 		if (m_conf.getFMNetworkEnabled()) {
 			std::string  extAck        = m_conf.getFMExtAck();
