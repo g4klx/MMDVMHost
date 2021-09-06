@@ -220,7 +220,7 @@ public:
   unsigned int getFMKerchunkTime() const;
   unsigned int getFMHangTime() const;
   unsigned int getFMAccessMode() const;
-  bool         getFMSimpleMode() const;
+  bool         getFMLinkMode() const;
   bool         getFMCOSInvert() const;
   bool         getFMNoiseSquelch() const;
   unsigned int getFMSquelchHighThreshold() const;
@@ -538,7 +538,7 @@ private:
   unsigned int m_fmKerchunkTime;
   unsigned int m_fmHangTime;
   unsigned int m_fmAccessMode;
-  bool         m_fmSimpleMode;
+  bool         m_fmLinkMode;
   bool         m_fmCOSInvert;
   bool         m_fmNoiseSquelch;
   unsigned int m_fmSquelchHighThreshold;

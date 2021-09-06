@@ -217,7 +217,7 @@ m_fmCTCSSLevel(2.0F),
 m_fmKerchunkTime(0U),
 m_fmHangTime(7U),
 m_fmAccessMode(1U),
-m_fmSimpleMode(false),
+m_fmLinkMode(false),
 m_fmCOSInvert(false),
 m_fmNoiseSquelch(false),
 m_fmSquelchHighThreshold(30U),
@@ -869,8 +869,8 @@ bool CConf::read()
 				m_fmHangTime = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "AccessMode") == 0)
 				m_fmAccessMode = ::atoi(value);
-			else if (::strcmp(key, "SimpleMode") == 0)
-				m_fmSimpleMode = ::atoi(value) == 1;
+			else if (::strcmp(key, "LinkMode") == 0)
+				m_fmLinkMode = ::atoi(value) == 1;
 			else if (::strcmp(key, "COSInvert") == 0)
 				m_fmCOSInvert = ::atoi(value) == 1;
 			else if (::strcmp(key, "NoiseSquelch") == 0)
@@ -1899,9 +1899,9 @@ unsigned int CConf::getFMAccessMode() const
 	return m_fmAccessMode;
 }
 
-bool CConf::getFMSimpleMode() const
+bool CConf::getFMLinkMode() const
 {
-	return m_fmSimpleMode;
+	return m_fmLinkMode;
 }
 
 bool CConf::getFMCOSInvert() const
