@@ -244,6 +244,7 @@ m_fmCtcssLevel(10.0F),
 m_fmKerchunkTime(0U),
 m_fmHangTime(5U),
 m_fmAccessMode(1U),
+m_fmLinkMode(false),
 m_fmCOSInvert(false),
 m_fmNoiseSquelch(false),
 m_fmSquelchHighThreshold(30U),
@@ -2667,7 +2668,7 @@ void CModem::setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, uns
 	m_fmAckLevel     = ackLevel;
 }
 
-void CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, unsigned int accessMode, bool cosInvert, bool noiseSquelch, unsigned int squelchHighThreshold, unsigned int squelchLowThreshold, unsigned int rfAudioBoost, float maxDevLevel)
+void CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, unsigned int accessMode, bool linkMode, bool cosInvert, bool noiseSquelch, unsigned int squelchHighThreshold, unsigned int squelchLowThreshold, unsigned int rfAudioBoost, float maxDevLevel)
 {
 	m_fmTimeout      = timeout;
 	m_fmTimeoutLevel = timeoutLevel;
@@ -2681,8 +2682,9 @@ void CModem::setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctc
 
 	m_fmHangTime     = hangTime;
 
-	m_fmAccessMode   = accessMode;
-	m_fmCOSInvert    = cosInvert;
+	m_fmAccessMode = accessMode;
+	m_fmLinkMode   = linkMode;
+	m_fmCOSInvert  = cosInvert;
 
 	m_fmNoiseSquelch         = noiseSquelch;
 	m_fmSquelchHighThreshold = squelchHighThreshold;
@@ -2834,6 +2836,8 @@ bool CModem::setFMMiscParams()
 	buffer[10U] = m_fmHangTime;
 
 	buffer[11U] = m_fmAccessMode & 0x0FU;
+	if (m_fmLinkMode)
+		buffer[11U] |= 0x20U;
 	if (m_fmNoiseSquelch)
 		buffer[11U] |= 0x40U;
 	if (m_fmCOSInvert)
