@@ -989,6 +989,12 @@ bool CConf::read()
 	}
   }
 
+  if ( m_duplex && m_rxFrequency == m_txFrequency ) {
+    ::fprintf(stderr, "Duplex == 1 and TX == RX-QRG!\n");
+    ::fclose(fp);
+    return false;
+  }
+
   ::fclose(fp);
 
   return true;
