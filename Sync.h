@@ -35,6 +35,7 @@ public:
 
 	static void addM17LinkSetupSync(unsigned char* data);
 	static void addM17StreamSync(unsigned char* data);
+	static void addM17EOTSync(unsigned char* data);
 
 private:
 };

@@ -366,8 +366,18 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 #if defined(DUMP_M17)
 		writeFile(data + 2U);
 #endif
-		if (m_duplex)
-			writeQueueEOTRF();
+		if (m_duplex) {
+			unsigned char rfData[M17_FRAME_LENGTH_BYTES + 2U];
+
+			rfData[0U] = TAG_EOT;
+			rfData[1U] = 0x00U;
+
+			// Generate the sync
+			for (unsigned int i = 0U; i < M17_FRAME_LENGTH_BYTES; i += M17_SYNC_LENGTH_BYTES)
+				CSync::addM17EOTSync(rfData + 2U + i);
+
+			writeQueueRF(rfData);
+		}
 
 		if (m_network != NULL && m_rfTimeoutTimer.isRunning() && !m_rfTimeoutTimer.hasExpired()) {
 			unsigned char netData[M17_LSF_LENGTH_BYTES + M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
@@ -606,7 +616,16 @@ void CM17Control::writeNetwork()
 
 			LogMessage("M17, received network end of transmission from %s to %s, %.1f seconds", source.c_str(), dest.c_str(), float(m_netFrames) / 25.0F);
 
-			writeQueueEOTNet();
+			unsigned char data[M17_FRAME_LENGTH_BYTES + 2U];
+
+			data[0U] = TAG_EOT;
+			data[1U] = 0x00U;
+
+			// Generate the sync
+			for (unsigned int i = 0U; i < M17_FRAME_LENGTH_BYTES; i += M17_SYNC_LENGTH_BYTES)
+				CSync::addM17EOTSync(data + 2U + i);
+
+			writeQueueNet(data);
 
 			writeEndNet();
 		}
@@ -732,28 +751,6 @@ void CM17Control::writeQueueRF(const unsigned char *data)
 	m_queue.addData(data, len);
 }
 
-void CM17Control::writeQueueEOTRF()
-{
-	if (m_netState != RS_NET_IDLE)
-		return;
-
-	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired())
-		return;
-
-	const unsigned char len = 1U;
-
-	unsigned int space = m_queue.freeSpace();
-	if (space < (len + 1U)) {
-		LogError("M17, overflow in the M17 RF queue");
-		return;
-	}
-
-	m_queue.addData(&len, 1U);
-
-	const unsigned char data = TAG_EOT;
-	m_queue.addData(&data, len);
-}
-
 void CM17Control::writeQueueNet(const unsigned char *data)
 {
 	assert(data != NULL);
@@ -772,25 +769,6 @@ void CM17Control::writeQueueNet(const unsigned char *data)
 	m_queue.addData(&len, 1U);
 
 	m_queue.addData(data, len);
-}
-
-void CM17Control::writeQueueEOTNet()
-{
-	if (m_netTimeoutTimer.isRunning() && m_netTimeoutTimer.hasExpired())
-		return;
-
-	const unsigned char len = 1U;
-
-	unsigned int space = m_queue.freeSpace();
-	if (space < (len + 1U)) {
-		LogError("M17, overflow in the M17 RF queue");
-		return;
-	}
-
-	m_queue.addData(&len, 1U);
-
-	const unsigned char data = TAG_EOT;
-	m_queue.addData(&data, len);
 }
 
 void CM17Control::interleaver(const unsigned char* in, unsigned char* out) const

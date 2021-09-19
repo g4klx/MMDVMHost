@@ -26,6 +26,7 @@ const unsigned int M17_FRAME_LENGTH_BYTES   = M17_FRAME_LENGTH_BITS / 8U;
 
 const unsigned char M17_LINK_SETUP_SYNC_BYTES[] = {0x55U, 0xF7U};
 const unsigned char M17_STREAM_SYNC_BYTES[]     = {0xFFU, 0x5DU};
+const unsigned char M17_EOT_SYNC_BYTES[]        = {0x55U, 0x5DU};
 
 const unsigned int  M17_SYNC_LENGTH_BITS  = 16U;
 const unsigned int  M17_SYNC_LENGTH_BYTES = M17_SYNC_LENGTH_BITS / 8U;
