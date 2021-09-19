@@ -1534,6 +1534,7 @@ bool CModem::writeM17Data(const unsigned char* data, unsigned int length)
 			break;
 		case TAG_EOT:
 			buffer[2U] = MMDVM_M17_EOT;
+			::memcpy(buffer + 3U, data + 1U, length - 1U);
 			break;
 		default:
 			return false;
