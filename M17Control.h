@@ -56,6 +56,8 @@ private:
 	CDisplay*                  m_display;
 	bool                       m_duplex;
 	CRingBuffer<unsigned char> m_queue;
+	std::string                m_source;
+	std::string                m_dest;
 	RPT_RF_STATE               m_rfState;
 	RPT_NET_STATE              m_netState;
 	CTimer                     m_rfTimeoutTimer;
@@ -66,9 +68,11 @@ private:
 	unsigned int               m_netFrames;
 	unsigned int               m_rfErrs;
 	unsigned int               m_rfBits;
-	CM17LSF                    m_rfLSF1;
-	CM17LSF                    m_rfLSF2;
-	CM17LSF                    m_rfLSF3;
+	unsigned int               m_rfLSFCount;
+	CM17LSF                    m_rfCurrentRFLSF;
+	CM17LSF                    m_rfCurrentNetLSF;
+	CM17LSF                    m_rfCollectingLSF;
+	CM17LSF                    m_rfCollectedLSF;
 	unsigned int               m_rfLSFn;
 	CM17LSF                    m_netLSF;
 	unsigned int               m_netLSFn;
@@ -93,6 +97,8 @@ private:
 	void decorrelator(const unsigned char* in, unsigned char* out) const;
 
 	bool checkCallsign(const std::string& source) const;
+
+	void createRFLSF(bool addCallsign);
 
 	void writeEndRF();
 	void writeEndNet();
