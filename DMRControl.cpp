@@ -35,6 +35,9 @@ m_lookup(lookup)
 	assert(lookup != NULL);
 	assert(rssi != NULL);
 
+	(UNUSED)m_colorCode;
+	(UNUSED)m_modem;
+
 	// Load black and white lists to DMRAccessControl
 	CDMRAccessControl::init(blacklist, whitelist, slot1TGWhitelist, slot2TGWhitelist, selfOnly, prefixes, id);
 
