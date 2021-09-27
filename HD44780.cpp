@@ -1052,13 +1052,13 @@ void CHD44780::clearNXDNInt()
 
 void CHD44780::writePOCSAGInt(uint32_t ric, const std::string& message)
 {
-	::lcdPosition(m_fd, m_cols - 5, m_rows - 1);
+	::lcdPosition(m_fd, m_cols - 9, m_rows - 1);
 	::lcdPuts(m_fd, "POCSAG TX");
 }
 
 void CHD44780::clearPOCSAGInt()
 {
-	::lcdPosition(m_fd, m_cols - 5, m_rows - 1);
+	::lcdPosition(m_fd, m_cols - 9, m_rows - 1);
 	::lcdPuts(m_fd, " Idle");
 }
 
