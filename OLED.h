@@ -66,11 +66,8 @@ public:
   virtual void writeP25Int(const char* source, bool group, unsigned int dest, const char* type);
   virtual void clearP25Int();
 
-  virtual void writeM17Int(const char* source, const char* dest, const char* type);
-  virtual void clearM17Int();
-
   virtual void writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type);
-  virtual int writeNXDNIntEx(const class CUserDBentry& source, bool group, unsigned int dest, const char* type);
+  virtual int  writeNXDNIntEx(const class CUserDBentry& source, bool group, unsigned int dest, const char* type);
   virtual void clearNXDNInt();
 
   virtual void writeM17Int(const char* source, const char* dest, const char* type);
