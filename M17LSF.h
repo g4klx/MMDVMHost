@@ -23,6 +23,7 @@
 
 class CM17LSF {
 public:
+	CM17LSF(const CM17LSF& lsf);
 	CM17LSF();
 	~CM17LSF();
 
@@ -61,6 +62,8 @@ public:
 
 	void getFragment(unsigned char* data, unsigned int n) const;
 	void setFragment(const unsigned char* data, unsigned int n);
+
+	CM17LSF& operator=(const CM17LSF& lsf);
 
 private:
 	unsigned char* m_lsf;

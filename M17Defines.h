@@ -73,7 +73,8 @@ const unsigned char M17_ENCRYPTION_TYPE_NONE     = 0x00U;
 const unsigned char M17_ENCRYPTION_TYPE_AES      = 0x01U;
 const unsigned char M17_ENCRYPTION_TYPE_SCRAMBLE = 0x02U;
 
-const unsigned char M17_ENCRYPTION_SUB_TYPE_TEXT = 0x00U;
-const unsigned char M17_ENCRYPTION_SUB_TYPE_GPS  = 0x01U;
+const unsigned char M17_ENCRYPTION_SUB_TYPE_TEXT       = 0x00U;
+const unsigned char M17_ENCRYPTION_SUB_TYPE_GPS        = 0x01U;
+const unsigned char M17_ENCRYPTION_SUB_TYPE_CALLSIGNS  = 0x02U;
 
 #endif
