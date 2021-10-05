@@ -1052,14 +1052,14 @@ void CHD44780::clearNXDNInt()
 
 void CHD44780::writePOCSAGInt(uint32_t ric, const std::string& message)
 {
-	::lcdPosition(m_fd, m_cols - 9, m_rows - 1);
-	::lcdPuts(m_fd, "POCSAG TX");
+	::lcdPosition(m_fd, m_cols - 5, m_rows - 1);
+	::lcdPuts(m_fd, "POCSAG");                 //  Shortened "POCSAG TX" to 5 characters because it wraps around onto the next line (or on 16x2 displays the 1st line).
 }
 
 void CHD44780::clearPOCSAGInt()
 {
-	::lcdPosition(m_fd, m_cols - 9, m_rows - 1);
-	::lcdPuts(m_fd, " Idle");
+	::lcdPosition(m_fd, m_cols - 5, m_rows - 1);
+	::lcdPuts(m_fd, " Idle");                 //  Reverted back to 5 character implementation.
 }
 
 void CHD44780::writeCWInt()
