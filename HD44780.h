@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018,2020 by Jonathan Naylor G4KLX & Tony Corbett G0WFV
+ *   Copyright (C) 2016,2017,2018,2020,2021 by Jonathan Naylor G4KLX & Tony Corbett G0WFV
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -89,47 +89,51 @@ enum ADAFRUIT_COLOUR {
 class CHD44780 : public CDisplay
 {
 public:
-  CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, unsigned int i2cAddress, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim, bool displayClock, bool utc, bool duplex);
-  virtual ~CHD44780();
+	CHD44780(unsigned int rows, unsigned int cols, const std::string& callsign, unsigned int dmrid, const std::vector<unsigned int>& pins, unsigned int i2cAddress, bool pwm, unsigned int pwmPin, unsigned int pwmBright, unsigned int pwmDim, bool displayClock, bool utc, bool duplex);
+	virtual ~CHD44780();
 
-  virtual bool open();
+	virtual bool open();
 
-  virtual void close();
+	virtual void close();
 
 protected:
-  virtual void setIdleInt();
-  virtual void setErrorInt(const char* text);
-  virtual void setLockoutInt();
-  virtual void setQuitInt();
-  virtual void setFMInt();
+	virtual void setIdleInt();
+	virtual void setErrorInt(const char* text);
+	virtual void setLockoutInt();
+	virtual void setQuitInt();
+	virtual void setFMInt();
 
-  virtual void writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
-  virtual void writeDStarRSSIInt(unsigned char rssi); 
-  virtual void clearDStarInt();
+	virtual void writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
+	virtual void writeDStarRSSIInt(unsigned char rssi); 
+	virtual void clearDStarInt();
 
-  virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
-  virtual void writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi); 
-  virtual void clearDMRInt(unsigned int slotNo);
+	virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
+	virtual void writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi); 
+	virtual void clearDMRInt(unsigned int slotNo);
 
-  virtual void writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
-  virtual void writeFusionRSSIInt(unsigned char rssi); 
-  virtual void clearFusionInt();
+	virtual void writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
+	virtual void writeFusionRSSIInt(unsigned char rssi); 
+	virtual void clearFusionInt();
 
-  virtual void writeP25Int(const char* source, bool group, unsigned int dest, const char* type);
-  virtual void writeP25RSSIInt(unsigned char rssi); 
-  virtual void clearP25Int();
+	virtual void writeP25Int(const char* source, bool group, unsigned int dest, const char* type);
+	virtual void writeP25RSSIInt(unsigned char rssi); 
+	virtual void clearP25Int();
 
-  virtual void writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type);
-  virtual void writeNXDNRSSIInt(unsigned char rssi); 
-  virtual void clearNXDNInt();
+	virtual void writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type);
+	virtual void writeNXDNRSSIInt(unsigned char rssi); 
+	virtual void clearNXDNInt();
 
-  virtual void writePOCSAGInt(uint32_t ric, const std::string& message);
-  virtual void clearPOCSAGInt();
+	virtual void writeM17Int(const char* source, const char* dest, const char* type);
+	virtual void writeM17RSSIInt(unsigned char rssi);
+	virtual void clearM17Int();
 
-  virtual void writeCWInt();
-  virtual void clearCWInt();
+	virtual void writePOCSAGInt(uint32_t ric, const std::string& message);
+	virtual void clearPOCSAGInt();
 
-  virtual void clockInt(unsigned int ms);
+	virtual void writeCWInt();
+	virtual void clearCWInt();
+
+	virtual void clockInt(unsigned int ms);
 
 private:
 	unsigned int m_rows;
@@ -162,12 +166,12 @@ private:
 */
 
 #ifdef ADAFRUIT_DISPLAY
-  void adafruitLCDSetup();
-  void adafruitLCDColour(ADAFRUIT_COLOUR colour);
+	void adafruitLCDSetup();
+	void adafruitLCDColour(ADAFRUIT_COLOUR colour);
 #endif
 
 #ifdef PCF8574_DISPLAY
-  void pcf8574LCDSetup();
+	void pcf8574LCDSetup();
 #endif
 };
 
