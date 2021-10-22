@@ -496,16 +496,16 @@ void CHD44780::writeDStarInt(const char* my1, const char* my2, const char* your,
 	m_rssiCount1 = 0U; 
 } 
  
-void CHD44780::writeDStarRSSIInt(unsigned char rssi) 
-{ 
-	if (m_rssiCount1 == 0U && m_rows > 2) { 
+void CHD44780::writeDStarRSSIInt(unsigned char rssi)
+{
+	if (m_rssiCount1 == 0U && m_rows > 2) {
 		::lcdPosition(m_fd, 0, 3);
 		::lcdPrintf(m_fd, "-%3udBm", rssi);
-	} 
- 
-	m_rssiCount1++; 
-	if (m_rssiCount1 >= DSTAR_RSSI_COUNT) 
-		m_rssiCount1 = 0U; 
+	}
+
+	m_rssiCount1++;
+	if (m_rssiCount1 >= DSTAR_RSSI_COUNT)
+		m_rssiCount1 = 0U;
 }
 
 void CHD44780::clearDStarInt()
@@ -666,8 +666,8 @@ void CHD44780::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 	m_rssiCount2 = 0U; 
 } 
  
-void CHD44780::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi) 
-{ 
+void CHD44780::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
+{
 	if (m_rows > 2) {
 		if (slotNo == 1U) {
 			if (m_rssiCount1 == 0U) {
@@ -787,16 +787,16 @@ void CHD44780::writeFusionInt(const char* source, const char* dest, unsigned cha
 	m_rssiCount1 = 0U; 
 } 
  
-void CHD44780::writeFusionRSSIInt(unsigned char rssi) 
-{ 
-	if (m_rssiCount1 == 0U && m_rows > 2) { 
+void CHD44780::writeFusionRSSIInt(unsigned char rssi)
+{
+	if (m_rssiCount1 == 0U && m_rows > 2) {
 		::lcdPosition(m_fd, 0, 3);
 		::lcdPrintf(m_fd, "-%3udBm", rssi);
-	} 
- 
-	m_rssiCount1++; 
-	if (m_rssiCount1 >= YSF_RSSI_COUNT) 
-		m_rssiCount1 = 0U; 
+	}
+
+	m_rssiCount1++;
+	if (m_rssiCount1 >= YSF_RSSI_COUNT)
+		m_rssiCount1 = 0U;
 }
 
 void CHD44780::clearFusionInt()
@@ -886,7 +886,7 @@ void CHD44780::writeP25Int(const char* source, bool group, unsigned int dest, co
 	m_rssiCount1 = 0U; 
 } 
  
-void CHD44780::writeP25RSSIInt(unsigned char rssi) 
+void CHD44780::writeP25RSSIInt(unsigned char rssi)
 {
 	if (m_rssiCount1 == 0U && m_rows > 2) {
 		::lcdPosition(m_fd, 0, 3);
@@ -985,16 +985,16 @@ void CHD44780::writeNXDNInt(const char* source, bool group, unsigned int dest, c
 	m_rssiCount1 = 0U; 
 } 
  
-void CHD44780::writeNXDNRSSIInt(unsigned char rssi) 
+void CHD44780::writeNXDNRSSIInt(unsigned char rssi)
 {
-	if (m_rssiCount1 == 0U && m_rows > 2) { 
+	if (m_rssiCount1 == 0U && m_rows > 2) {
 		::lcdPosition(m_fd, 0, 3);
 		::lcdPrintf(m_fd, "-%3udBm", rssi);
-	} 
- 
-	m_rssiCount1++; 
-	if (m_rssiCount1 >= NXDN_RSSI_COUNT) 
-		m_rssiCount1 = 0U; 
+	}
+
+	m_rssiCount1++;
+	if (m_rssiCount1 >= NXDN_RSSI_COUNT)
+		m_rssiCount1 = 0U;
 }
 
 void CHD44780::clearNXDNInt()
@@ -1083,16 +1083,16 @@ void CHD44780::writeM17Int(const char* source, const char* dest, const char* typ
 	m_rssiCount1 = 0U; 
 } 
  
-void CHD44780::writeFusionM17Int(unsigned char rssi) 
+void CHD44780::writeM17RSSIInt(unsigned char rssi)
 { 
-	if (m_rssiCount1 == 0U && m_rows > 2) { 
+	if (m_rssiCount1 == 0U && m_rows > 2) {
 		::lcdPosition(m_fd, 0, 3);
 		::lcdPrintf(m_fd, "-%3udBm", rssi);
-	} 
- 
-	m_rssiCount1++; 
-	if (m_rssiCount1 >= M17_RSSI_COUNT) 
-		m_rssiCount1 = 0U; 
+	}
+
+	m_rssiCount1++;
+	if (m_rssiCount1 >= M17_RSSI_COUNT)
+		m_rssiCount1 = 0U;
 }
 
 void CHD44780::clearM17Int()
