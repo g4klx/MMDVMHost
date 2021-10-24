@@ -294,53 +294,77 @@ bool CUARTController::setRaw()
 	termios.c_cc[VTIME] = 10;
 #endif
 
+#if !defined(B38400) || (B38400 != 38400)
 	switch (m_speed) {
+#if defined(B1200)
 		case 1200U:
 			::cfsetospeed(&termios, B1200);
 			::cfsetispeed(&termios, B1200);
 			break;
+#endif /*B1200*/
+#if defined(B2400)			
 		case 2400U:
 			::cfsetospeed(&termios, B2400);
 			::cfsetispeed(&termios, B2400);
 			break;
+#endif /*B2400*/
+#if defined(B4800)
 		case 4800U:
 			::cfsetospeed(&termios, B4800);
 			::cfsetispeed(&termios, B4800);
 			break;
+#endif /*B4800*/
+#if defined(B9600)
 		case 9600U:
 			::cfsetospeed(&termios, B9600);
 			::cfsetispeed(&termios, B9600);
 			break;
+#endif /*B9600*/
+#if defined(B19200)
 		case 19200U:
 			::cfsetospeed(&termios, B19200);
 			::cfsetispeed(&termios, B19200);
 			break;
+#endif /*B19200*/
+#if defined(B38400)
 		case 38400U:
 			::cfsetospeed(&termios, B38400);
 			::cfsetispeed(&termios, B38400);
 			break;
+#endif /*B38400*/
+#if defined(B57600)
+		case 57600U:
+			::cfsetospeed(&termios, B57600);
+			::cfsetispeed(&termios, B57600);
+			break;
+#endif /*B57600*/
+#if defined(B115200)
 		case 115200U:
 			::cfsetospeed(&termios, B115200);
 			::cfsetispeed(&termios, B115200);
 			break;
+#endif /*B115200*/
+#if defined(B230400)
 		case 230400U:
 			::cfsetospeed(&termios, B230400);
 			::cfsetispeed(&termios, B230400);
 			break;
+#endif /*B230400*/
+#if defined(B460800)		
 		case 460800U:
-#if defined(__APPLE__)
-			::cfsetospeed(&termios, 460800);
-			::cfsetispeed(&termios, 460800);
-#else
  			::cfsetospeed(&termios, B460800);
  			::cfsetispeed(&termios, B460800);
-#endif
 			break;
+#endif /*B460800*/
 		default:
 			LogError("Unsupported serial port speed - %u", m_speed);
 			::close(m_fd);
 			return false;
 	}
+#else
+	::cfsetospeed(&termios, m_speed);
+	::cfsetispeed(&termios, m_speed);
+#endif
 
 	if (::tcsetattr(m_fd, TCSANOW, &termios) < 0) {
 		LogError("Cannot set the attributes for %s", m_device.c_str());
