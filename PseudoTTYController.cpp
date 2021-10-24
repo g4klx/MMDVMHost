@@ -32,10 +32,10 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <termios.h>
-#if defined(__APPLE__)
-	#include <util.h>
-#else
+#if defined(__linux__)
 	#include <pty.h>
+#else
+	#include <util.h>
 #endif
 
 
