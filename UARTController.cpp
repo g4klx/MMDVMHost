@@ -289,6 +289,7 @@ bool CUARTController::setRaw()
 #if defined(__APPLE__)
 	termios.c_cc[VMIN] = 1;
 	termios.c_cc[VTIME] = 1;
+	#define B460800 460800
 #else
 	termios.c_cc[VMIN]  = 0;
 	termios.c_cc[VTIME] = 10;
