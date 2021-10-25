@@ -435,7 +435,7 @@ bool CConf::read()
 			continue;
 		}
 
-		char* key   = ::strtok(buffer, " \t=\r\n");
+		char* key = ::strtok(buffer, " \t=\r\n");
 		if (key == NULL)
 			continue;
 
@@ -449,8 +449,15 @@ bool CConf::read()
 			value[len - 1U] = '\0';
 			value++;
 		} else {
+			char *p;
+
 			// if value is not quoted, remove after # (to make comment)
-			(void)::strtok(value, "#");
+			if ((p = strchr(value, '#')) != NULL)
+				*p = '\0';
+
+			// remove trailing tab/space
+			for (p = value + strlen(value) - 1U; p >= value && (*p == '\t' || *p == ' '); p--)
+				*p = '\0';
 		}
 
 		if (section == SECTION_GENERAL) {
