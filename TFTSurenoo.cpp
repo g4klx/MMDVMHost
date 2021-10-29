@@ -121,10 +121,6 @@ bool CTFTSurenoo::open()
 
 	lcdReset();
 	clearScreen(BG_COLOUR);
-
-	setRotation(ROTATION_LANDSCAPE);
-	setBrightness(m_brightness);
-	setBackground(BG_COLOUR);
 	setIdle();
 
 	m_refreshTimer.start();
@@ -455,6 +451,13 @@ void CTFTSurenoo::refreshDisplay(void)
 	// send CR+LF to avoid first command is not processed
 	::snprintf(m_temp, sizeof(m_temp), STR_CRLF);
 	m_serial->write((unsigned char*)m_temp, (unsigned int)::strlen(m_temp));
+
+	// config display
+	setRotation(ROTATION_LANDSCAPE);
+	setBrightness(m_brightness);
+	setBackground(BG_COLOUR);
+	m_serial->write((unsigned char*)m_temp, (unsigned int)::strlen(m_temp));
+	CThread::sleep(5);
 
 	// clear display
 	::snprintf(m_temp, sizeof(m_temp), "BOXF(%d,%d,%d,%d,%d);",
