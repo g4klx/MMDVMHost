@@ -832,7 +832,7 @@ void CNextion::writeM17Int(const char* source, const char* dest, const char* typ
 
 	if (m_mode != MODE_M17) {
 		sendCommand("page M17");
-		sendCommandAction(6U);
+		sendCommandAction(8U);
 	}
 
 	char text[30U];
@@ -843,11 +843,11 @@ void CNextion::writeM17Int(const char* source, const char* dest, const char* typ
 
 	::sprintf(text, "t0.txt=\"%s %.10s\"", type, source);
 	sendCommand(text);
-	sendCommandAction(122U);
+	sendCommandAction(142U);
 
 	::sprintf(text, "t1.txt=\"%s\"", dest);
 	sendCommand(text);
-	sendCommandAction(123U);
+	sendCommandAction(143U);
 
 	m_clockDisplayTimer.stop();
 
@@ -867,7 +867,7 @@ void CNextion::writeM17RSSIInt(unsigned char rssi)
 		char text[25U];
 		::sprintf(text, "t2.txt=\"-%udBm\"", m_rssiAccum1 / M17_RSSI_COUNT);
 		sendCommand(text);
-		sendCommandAction(124U);
+		sendCommandAction(144U);
 		m_rssiAccum1 = 0U;
 		m_rssiCount1 = 0U;
 	}
@@ -882,7 +882,7 @@ void CNextion::writeM17BERInt(float ber)
 		char text[25U];
 		::sprintf(text, "t3.txt=\"%.1f%%\"", m_berAccum1 / float(M17_BER_COUNT));
 		sendCommand(text);
-		sendCommandAction(125U);
+		sendCommandAction(145U);
 		m_berAccum1 = 0.0F;
 		m_berCount1 = 0U;
 	}
@@ -891,7 +891,7 @@ void CNextion::writeM17BERInt(float ber)
 void CNextion::clearM17Int()
 {
 	sendCommand("t0.txt=\"Listening\"");
-	sendCommandAction(121U);
+	sendCommandAction(141U);
 	sendCommand("t1.txt=\"\"");
 	sendCommand("t2.txt=\"\"");
 	sendCommand("t3.txt=\"\"");
