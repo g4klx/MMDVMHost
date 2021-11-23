@@ -85,8 +85,8 @@ NOTE: it might be good to *not* remove fields from the display when you do not
 
 Status codes that will be sent:
 -------------------------------
-The status code gives more information about what was sent in the 
-changed field.
+The status code gives more information about which type of information 
+was sent to the display.
 
  1 : page MMDVM
  2 : page D-Star
@@ -95,7 +95,9 @@ changed field.
  5 : page P25 
  6 : page NXDN
  7 : page POCSAG
- 
+ 8 : page M17
+
+MMDVMHOST
 11 : IDLE
 12 : CW
 13 : ERROR text
@@ -109,6 +111,7 @@ changed field.
 22 : Temperature
 23 : Location
 
+DSTAR
 41 : D-Star listening
 42 : type/my1/my2
 45 : your
@@ -116,6 +119,7 @@ changed field.
 47 : RSSI
 48 : ber
 
+DMR
 61 : DMR listening1
 62 : ID1
 63 : TA1
@@ -133,6 +137,7 @@ changed field.
 76 : GPS1 (t8,t9,t12)
 77 : GPS2 (t10,t11,t13)
 
+YSF
 81 : YSF listening
 82 : src
 83 : dest
@@ -140,22 +145,31 @@ changed field.
 85 : RSSI
 86 : ber
 
+P25
 101 : P25 listening
 102 : source
 103 : dest
 104 : RSSI
 105 : ber
 
+NXDN
 121 : NXDN listening
 122 : source
 123 : dest
 124 : RSSI
 125 : ber
 
+POCSAG
 132 : RIC
 133 : message text
 134 : waiting
 
+M17
+121 : M17 listening
+122 : source
+123 : dest
+124 : RSSI
+125 : ber
 
 Fields (and their numbers) on the pages, used by MMDVMHost
 ----------------------------------------------------------
@@ -227,3 +241,9 @@ t3 : ber
 POCSAG
 t0 : waiting / RIC
 t1 : message
+
+M17
+t0 : source
+t1 : dst
+t2 : rssi
+t3 : ber
