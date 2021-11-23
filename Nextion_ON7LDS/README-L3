@@ -241,3 +241,9 @@ t3 : ber
 POCSAG
 t0 : waiting / RIC
 t1 : message
+
+M17
+t0 : source
+t1 : dst
+t2 : rssi
+t3 : ber
