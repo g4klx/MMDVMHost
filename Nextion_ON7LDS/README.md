@@ -1,6 +1,15 @@
 Nextion Display Layouts by ON7LDS (for MMDVMHost)
 =================================================
 
+##### WARNING
+These layouts should be opened with Nextion Editor LTS (v0.53)  
+The fonts that are used are made by me at the time (with 'zi edit') and are (in my opinion) very good readable and compact to show as much as possible.  
+Nextion has changed a lot since then and sadly, these fonts seem not to be compatible with later versions of Nextion Editor.  
+  
+  
+  
+##### Use
+  
 The screenlayout has to be selected with the parameter **ScreenLayout** in the
 MMDVM.ini file under the Nextion section. This way, the extra functions
 are activated.  
