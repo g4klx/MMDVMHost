@@ -165,11 +165,11 @@ POCSAG
 134 : waiting
 
 M17
-121 : M17 listening
-122 : source
-123 : dest
-124 : RSSI
-125 : ber
+141 : M17 listening
+142 : source
+143 : dest
+144 : RSSI
+145 : ber
 
 Fields (and their numbers) on the pages, used by MMDVMHost
 ----------------------------------------------------------
