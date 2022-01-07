@@ -46,6 +46,8 @@ public:
 
 	void clock(unsigned int ms);
 
+	bool isConnected() const;
+
 private:
 	CUDPSocket       m_socket;
 	sockaddr_storage m_addr;

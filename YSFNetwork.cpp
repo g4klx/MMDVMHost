@@ -185,7 +185,7 @@ void CYSFNetwork::reset()
 
 bool CYSFNetwork::isConnected() const
 {
-	return m_enabled && (m_addrLen != 0U);
+	return (m_addrLen != 0U);
 }
 
 void CYSFNetwork::close()
