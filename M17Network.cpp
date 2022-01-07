@@ -194,6 +194,11 @@ void CM17Network::enable(bool enabled)
 	m_enabled = enabled;
 }
 
+bool CM17Network::isConnected() const
+{
+	return (m_addrLen != 0);
+}
+
 void CM17Network::sendPing()
 {
 	unsigned char buffer[5U];
