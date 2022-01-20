@@ -30,7 +30,7 @@ const unsigned int BUFFER_LENGTH = 100U;
 int main(int argc, char** argv)
 {
 	if (argc < 3) {
-		::fprintf(stderr, "Usage: RemoteCommand <port> <command>\n");
+		::fprintf(stderr, "Usage: RemoteCommand <port> <command> [argument]\n");
 		return 1;
 	}
 	
