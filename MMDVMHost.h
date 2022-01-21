@@ -57,6 +57,7 @@ public:
   int run();
 
   void buildNetworkStatusString(std::string &str);
+  void buildNetworkHostsString(std::string &str);
 
 private:
   CConf           m_conf;

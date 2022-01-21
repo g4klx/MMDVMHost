@@ -25,7 +25,7 @@
 #include <chrono>
 #include <thread>
 
-const unsigned int BUFFER_LENGTH = 100U;
+const unsigned int BUFFER_LENGTH = 1024U;
 
 int main(int argc, char** argv)
 {
