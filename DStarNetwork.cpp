@@ -51,6 +51,7 @@ m_random()
 		m_addrLen = 0U;
 
 	m_linkReflector = new unsigned char[DSTAR_LONG_CALLSIGN_LENGTH];
+	::memset(m_linkReflector, 0, DSTAR_LONG_CALLSIGN_LENGTH);
 
 	std::random_device rd;
 	std::mt19937 mt(rd());

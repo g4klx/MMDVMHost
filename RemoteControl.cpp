@@ -151,6 +151,14 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 			}
 
 			m_command = RCD_CONNECTION_STATUS;
+		} else if (m_args.at(0U) == "hosts") {
+			if (m_host != NULL) {
+				m_host->buildNetworkHostsString(replyStr);
+			} else {
+				replyStr = "KO";
+			}
+
+			m_command = RCD_CONFIG_HOSTS;
 		} else {
 			replyStr = "KO";
 		}

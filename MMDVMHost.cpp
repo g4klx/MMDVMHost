@@ -28,6 +28,7 @@
 #include "I2CController.h"
 #endif
 #include "UDPController.h"
+#include "DStarDefines.h"
 #include "Version.h"
 #include "StopWatch.h"
 #include "Defines.h"
@@ -2700,4 +2701,38 @@ void CMMDVMHost::buildNetworkStatusString(std::string &str)
 	str += std::string(" nxdn:") + (((m_nxdnNetwork == NULL) || (m_nxdnEnabled == false)) ? "n/a" : (m_nxdnNetwork->isConnected() ? "conn" : "disc"));
 	str += std::string(" m17:") + (((m_m17Network == NULL) || (m_m17Enabled == false)) ? "n/a" : (m_m17Network->isConnected() ? "conn" : "disc"));
 	str += std::string(" fm:") + (m_fmEnabled ? "conn" : "n/a");
+}
+
+void CMMDVMHost::buildNetworkHostsString(std::string &str)
+{
+	str = "";
+
+	std::string dstarReflector;
+	if (m_dstarEnabled && (m_dstarNetwork != NULL)) {
+		unsigned char ref[DSTAR_LONG_CALLSIGN_LENGTH + 1];
+		LINK_STATUS status;
+
+		::memset(ref, 0, sizeof(ref));
+
+		m_dstarNetwork->getStatus(status, &ref[0]);
+		switch (status) {
+			case LINK_STATUS::LS_LINKED_LOOPBACK:
+			case LINK_STATUS::LS_LINKED_DEXTRA:
+			case LINK_STATUS::LS_LINKED_DPLUS:
+			case LINK_STATUS::LS_LINKED_DCS:
+			case LINK_STATUS::LS_LINKED_CCS:
+			     dstarReflector = std::string((char *)ref);
+			     break;
+
+			default:
+			     break;
+		}
+	}
+	str += std::string("dstar:\"") + ((dstarReflector.length() == 0) ? "NONE" : dstarReflector) + "\"";
+	str += std::string(" dmr:\"") + ((m_dmrEnabled && (m_dmrNetwork != NULL)) ? m_conf.getDMRNetworkRemoteAddress() : "NONE") + "\"";
+	str += std::string(" ysf:\"") + ((m_ysfEnabled && (m_ysfNetwork != NULL)) ? m_conf.getFusionNetworkGatewayAddress() : "NONE") + "\"";
+	str += std::string(" p25:\"") + ((m_p25Enabled && (m_p25Network != NULL)) ? m_conf.getP25GatewayAddress() : "NONE") + "\"";
+	str += std::string(" nxdn:\"") + ((m_nxdnEnabled && (m_nxdnNetwork != NULL)) ? m_conf.getNXDNGatewayAddress() : "NONE") + "\"";
+	str += std::string(" m17:\"") + ((m_m17Enabled && (m_m17Network != NULL)) ? m_conf.getM17GatewayAddress() : "NONE") + "\"";
+	str += std::string(" fm:\"") + ((m_fmEnabled && (m_fmNetwork != NULL)) ? m_conf.getFMGatewayAddress() : "NONE") + "\"";
 }
