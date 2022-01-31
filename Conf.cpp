@@ -599,6 +599,8 @@ bool CConf::read()
 				m_modemAX25TXLevel = float(::atof(value));
 			else if (::strcmp(key, "RSSIMappingFile") == 0)
 				m_modemRSSIMappingFile = value;
+			else if (::strcmp(key, "UseCOSAsLockout") == 0)
+				m_modemUseCOSAsLockout = ::atoi(value) == 1;
 			else if (::strcmp(key, "Trace") == 0)
 				m_modemTrace = ::atoi(value) == 1;
 			else if (::strcmp(key, "Debug") == 0)
