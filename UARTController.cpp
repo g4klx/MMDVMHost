@@ -400,7 +400,7 @@ bool CUARTController::setRaw()
 #if defined(__APPLE__)
 int CUARTController::setNonblock(bool nonblock)
 {
-	int flag = ::fcntl(m_fd, F_GETFD, 0);
+	int flag = ::fcntl(m_fd, F_GETFL, 0);
 
 	if (nonblock)
 		flag |= O_NONBLOCK;
