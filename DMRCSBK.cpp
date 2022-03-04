@@ -129,6 +129,21 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 		CUtils::dump(1U, "Call Alert Ack CSBK", m_data, 12U);
 		break;
 
+	case CSBKO_RADIO_CHECK:
+		m_GI    = false;
+		if (m_data[3U] == 0x80) {
+			m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
+			m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
+			CUtils::dump(1U, "Radio Check Req CSBK", m_data, 12U);
+		} else {
+			m_srcId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
+			m_dstId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
+			CUtils::dump(1U, "Radio Check Ack CSBK", m_data, 12U);
+		}
+		m_dataContent = false;
+		m_CBF   = 0U;
+		break;
+
 	default:
 		m_GI    = false;
 		m_srcId = 0U;
