@@ -274,7 +274,7 @@ void CNextion::setFMInt()
 	}
 
 	sendCommand("t0.txt=\"FM\"");
-	sendCommandAction(15U);
+	sendCommandAction(18U);
 
 	m_clockDisplayTimer.stop();
 
