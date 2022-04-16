@@ -1999,6 +1999,8 @@ bool CModem::readVersion()
 			if (resp == RTM_OK && m_buffer[2U] == MMDVM_GET_VERSION) {
 				if (::memcmp(m_buffer + 4U, "MMDVM ", 6U) == 0)
 					m_hwType = HWT_MMDVM;
+				else if (::memcmp(m_buffer + 23U, "MMDVM ", 6U) == 0)
+					m_hwType = HWT_MMDVM;
 				else if (::memcmp(m_buffer + 4U, "DVMEGA", 6U) == 0)
 					m_hwType = HWT_DVMEGA;
 				else if (::memcmp(m_buffer + 4U, "ZUMspot", 7U) == 0)
