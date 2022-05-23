@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2020,2021,2022 by Jonathan Naylor G4KLX
  *   Copyright (C) 2019 by Patrick Maier DK5MP
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -34,7 +34,8 @@ m_bsId(0U),
 m_srcId(0U),
 m_dstId(0U),
 m_dataContent(false),
-m_CBF(0U)
+m_CBF(0U),
+m_OVCM(false)
 {
 	m_data = new unsigned char[12U];
 }
@@ -81,6 +82,7 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
 		m_dataContent = false;
 		m_CBF   = 0U;
+		m_OVCM  = (m_data[2U] & 0x04U) == 0x04U;
 		CUtils::dump(1U, "Unit to Unit Service Request CSBK", m_data, 12U);
 		break;
 
@@ -90,6 +92,7 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
 		m_dataContent = false;
 		m_CBF   = 0U;
+		m_OVCM  = (m_data[2U] & 0x04U) == 0x04U;
 		CUtils::dump(1U, "Unit to Unit Service Answer Response CSBK", m_data, 12U);
 		break;
 
@@ -185,29 +188,19 @@ unsigned char CDMRCSBK::getFID() const
 
 bool CDMRCSBK::getOVCM() const
 {
-	bool bOVCM = false;
-	// Service options informations are only available in
-	// "Unit to Unit Voice Service Request CSBK" and
-	// "Unit to Unit Voice Service Answer Response CSBK"
-	if ((m_CSBKO == CSBKO_UUVREQ) || (m_CSBKO == CSBKO_UUANSRSP))
-		bOVCM = (m_data[2U] & 0x04U) == 0x04U;
-
-	return bOVCM;
+	return m_OVCM;
 }
 
 void CDMRCSBK::setOVCM(bool ovcm)
 {
-	// Set OVCM only in CSBKs having the service options information
-	if ((m_CSBKO == CSBKO_UUVREQ) || (m_CSBKO == CSBKO_UUANSRSP)) {
+	if (m_CSBKO == CSBKO_UUVREQ || m_CSBKO == CSBKO_UUANSRSP) {
+		m_OVCM = ovcm;
+
 		if (ovcm)
 			m_data[2U] |= 0x04U;
+		else
+			m_data[2U] &= 0xFBU;
 	}
-}
-
-void CDMRCSBK::clearOVCM()
-{
-	if (getOVCM())
-		m_data[2U] ^= 0x04U;
 }
 
 bool CDMRCSBK::getGI() const
