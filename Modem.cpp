@@ -387,7 +387,7 @@ bool CModem::open()
 		return false;
 	}
 
-	if (m_fmEnabled && m_duplex) {
+	if (m_fmEnabled) {
 		ret = setFMCallsignParams();
 		if (!ret) {
 			m_port->close();
