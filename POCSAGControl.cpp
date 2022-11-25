@@ -123,6 +123,31 @@ void CPOCSAGControl::sendPage(unsigned int ric, const std::string& text)
 	m_data.push_back(output);
 }
 
+
+void CPOCSAGControl::sendBCDPage(unsigned int ric, const std::string& text)
+{
+	if (!m_enabled)
+		return;
+
+	POCSAGData* output = new POCSAGData;
+
+	output->m_ric  = ric;
+	output->m_text = text;
+
+	addAddress(FUNCTIONAL_NUMERIC, ric, output->m_buffer);
+
+	LogDebug("Local message to %07u, func NUMERIC: \"%s\"", ric, text.c_str());
+
+	packNumeric(text, output->m_buffer);
+
+	// Ensure data is an even number of words
+	if ((output->m_buffer.size() % 2U) == 1U)
+		output->m_buffer.push_back(POCSAG_IDLE_WORD);
+
+	m_data.push_back(output);
+}
+
+
 bool CPOCSAGControl::readNetwork()
 {
 	if (m_network == NULL)

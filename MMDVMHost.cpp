@@ -2639,6 +2639,7 @@ void CMMDVMHost::remoteControl()
 					text += m_remoteControl->getArgString(i);
 				}
 				m_pocsag->sendPage(ric, text);
+				m_pocsag->sendBCDPage(ric, "01234");
 			}
 			break;
 		case RCD_CW:

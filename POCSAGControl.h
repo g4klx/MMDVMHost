@@ -43,6 +43,7 @@ public:
 	~CPOCSAGControl();
 
 	void sendPage(unsigned int ric, const std::string& text);
+	void sendBCDPage(unsigned int ric, const std::string& text);
 
 	unsigned int readModem(unsigned char* data);
 
