@@ -124,7 +124,7 @@ void CPOCSAGControl::sendPage(unsigned int ric, const std::string& text)
 }
 
 
-void CPOCSAGControl::sendBCDPage(unsigned int ric, const std::string& text)
+void CPOCSAGControl::sendPageBCD(unsigned int ric, const std::string& text)
 {
 	if (!m_enabled)
 		return;

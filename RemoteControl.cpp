@@ -137,6 +137,9 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 		} else if (m_args.at(0U) == "page" && m_args.size() >= PAGE_ARGS) {
 			// Page command is in the form of "page <ric> <message>"
 			m_command = RCD_PAGE;
+		} else if (m_args.at(0U) == "page_bcd" && m_args.size() >= PAGE_ARGS) {
+			// BCD page command is in the form of "page_bcd <ric> <bcd message>"
+			m_command = RCD_PAGE_BCD;
 		} else if (m_args.at(0U) == "cw" && m_args.size() >= CW_ARGS) {
                         // CW command is in the form of "cw <message>"
                         m_command = RCD_CW;
@@ -192,6 +195,7 @@ unsigned int CRemoteControl::getArgCount() const
 		case RCD_MODE_M17:
 			return m_args.size() - SET_MODE_ARGS;
 		case RCD_PAGE:
+		case RCD_PAGE_BCD:
 			return m_args.size() - 1U;
 		case RCD_CW:
                         return m_args.size() - 1U;
@@ -214,6 +218,7 @@ std::string CRemoteControl::getArgString(unsigned int n) const
 			n += SET_MODE_ARGS;
 			break;
 		case RCD_PAGE:
+		case RCD_PAGE_BCD:
 			n += 1U;
 			break;
 		case RCD_CW:
