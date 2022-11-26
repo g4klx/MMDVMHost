@@ -2641,6 +2641,36 @@ void CMMDVMHost::remoteControl()
 				m_pocsag->sendPage(ric, text);
 			}
 			break;
+		case RCD_PAGE_BCD:
+			if (m_pocsag != NULL) {
+				unsigned int ric = m_remoteControl->getArgUInt(0U);
+				std::string text;
+				for (unsigned int i = 1U; i < m_remoteControl->getArgCount(); i++) {
+					if (i > 1U)
+						text += " ";
+					text += m_remoteControl->getArgString(i);
+				}
+				m_pocsag->sendPageBCD(ric, text);
+			}
+			break;
+		case RCD_PAGE_A1:
+			if (m_pocsag != NULL) {
+				unsigned int ric = m_remoteControl->getArgUInt(0U);
+				m_pocsag->sendPageAlert1(ric);
+			}
+			break;
+		case RCD_PAGE_A2:
+			if (m_pocsag != NULL) {
+				unsigned int ric = m_remoteControl->getArgUInt(0U);
+				std::string text;
+				for (unsigned int i = 1U; i < m_remoteControl->getArgCount(); i++) {
+					if (i > 1U)
+						text += " ";
+					text += m_remoteControl->getArgString(i);
+				}
+				m_pocsag->sendPageAlert2(ric, text);
+			}
+			break;
 		case RCD_CW:
 			setMode(MODE_IDLE); // Force the modem to go idle so that we can send the CW text.
 			if (!m_modem->hasTX()) {
