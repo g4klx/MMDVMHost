@@ -44,6 +44,8 @@ public:
 
 	void sendPage(unsigned int ric, const std::string& text);
 	void sendPageBCD(unsigned int ric, const std::string& text);
+	void sendPageAlert1(unsigned int ric);
+	void sendPageAlert2(unsigned int ric, const std::string& text);
 
 	unsigned int readModem(unsigned char* data);
 
