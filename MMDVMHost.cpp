@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2022 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include "I2CController.h"
 #endif
 #include "UDPController.h"
+#include "MQTTPublisher.h"
 #include "DStarDefines.h"
 #include "Version.h"
 #include "StopWatch.h"
@@ -58,6 +59,9 @@ const char* DEFAULT_INI_FILE = "/etc/MMDVM.ini";
 static bool m_killed = false;
 static int  m_signal = 0;
 static bool m_reload = false;
+
+// In Log.cpp
+extern CMQTTPublisher* m_mqtt;
 
 #if !defined(_WIN32) && !defined(_WIN64)
 static void sigHandler1(int signum)
@@ -267,13 +271,21 @@ int CMMDVMHost::run()
 #endif
 
 #if !defined(_WIN32) && !defined(_WIN64)
-	ret = ::LogInitialise(m_daemon, m_conf.getLogFilePath(), m_conf.getLogFileRoot(), m_conf.getLogFileLevel(), m_conf.getLogDisplayLevel(), m_conf.getLogFileRotate());
+	ret = ::LogInitialise(m_daemon, m_conf.getLogFilePath(), m_conf.getLogFileRoot(), m_conf.getLogFileLevel(), m_conf.getLogDisplayLevel(), m_conf.getLogFileRotate(), m_conf.getMQTTName());
 #else
-	ret = ::LogInitialise(false, m_conf.getLogFilePath(), m_conf.getLogFileRoot(), m_conf.getLogFileLevel(), m_conf.getLogDisplayLevel(), m_conf.getLogFileRotate());
+	ret = ::LogInitialise(false, m_conf.getLogFilePath(), m_conf.getLogFileRoot(), m_conf.getLogFileLevel(), m_conf.getLogDisplayLevel(), m_conf.getLogFileRotate(), m_conf.getMQTTName());
 #endif
 	if (!ret) {
 		::fprintf(stderr, "MMDVMHost: unable to open the log file\n");
 		return 1;
+	}
+
+	m_mqtt = new CMQTTPublisher(m_conf.getMQTTHost(), m_conf.getMQTTPort(), m_conf.getMQTTKeepalive(), 2);
+	ret = m_mqtt->open();
+	if (!ret) {
+		::fprintf(stderr, "MMDVMHost: unable to start the MQTT Publisher\n");
+		delete m_mqtt;
+		m_mqtt = NULL;
 	}
 
 #if !defined(_WIN32) && !defined(_WIN64)
@@ -1359,6 +1371,11 @@ int CMMDVMHost::run()
 	if (m_remoteControl != NULL) {
 		m_remoteControl->close();
 		delete m_remoteControl;
+	}
+
+	if (m_mqtt != NULL) {
+		m_mqtt->close();
+		delete m_mqtt;
 	}
 
 	delete m_dstar;

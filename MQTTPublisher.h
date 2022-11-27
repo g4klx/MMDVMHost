@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2020,2022 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2022 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,21 +16,36 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(LOG_H)
-#define	LOG_H
+#if !defined(MQTTPUBLISHER_H)
+#define	MQTTPUBLISHER_H
+
+#include <mosquitto.h>
 
 #include <string>
 
-#define	LogDebug(fmt, ...)	Log(1U, fmt, ##__VA_ARGS__)
-#define	LogMessage(fmt, ...)	Log(2U, fmt, ##__VA_ARGS__)
-#define	LogInfo(fmt, ...)	Log(3U, fmt, ##__VA_ARGS__)
-#define	LogWarning(fmt, ...)	Log(4U, fmt, ##__VA_ARGS__)
-#define	LogError(fmt, ...)	Log(5U, fmt, ##__VA_ARGS__)
-#define	LogFatal(fmt, ...)	Log(6U, fmt, ##__VA_ARGS__)
 
-extern void Log(unsigned int level, const char* fmt, ...);
+class CMQTTPublisher {
+public:
+	CMQTTPublisher(const std::string& host, unsigned short port, unsigned int keepalive, unsigned int qos);
+	~CMQTTPublisher();
 
-extern bool LogInitialise(bool daemon, const std::string& filePath, const std::string& fileRoot, unsigned int fileLevel, unsigned int displayLevel, bool rotate, const std::string& mqttName = "");
-extern void LogFinalise();
+	bool open();
+
+	bool publish(const char* topic, const char* text);
+
+	void close();
+
+private:
+	std::string    m_host;
+	unsigned short m_port;
+	unsigned int   m_keepalive;
+	unsigned int   m_qos;
+	mosquitto*     m_mosq;
+	bool           m_connected;
+
+	static void onConnect(mosquitto* mosq, void* obj, int rc);
+	static void onDisconnect(mosquitto* mosq, void* obj, int rc);
+};
 
 #endif
+

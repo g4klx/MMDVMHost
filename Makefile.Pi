@@ -3,7 +3,7 @@
 CC      = cc
 CXX     = c++
 CFLAGS  = -g -O3 -Wall -std=c++0x -pthread -DHAVE_LOG_H -DRASPBERRY_PI -I/usr/local/include
-LIBS    = -lwiringPi -lwiringPiDev -lpthread -lutil
+LIBS    = -lwiringPi -lwiringPiDev -lpthread -lutil -lmosquitto
 LDFLAGS = -g -L/usr/local/lib
 
 OBJECTS = \
@@ -11,7 +11,7 @@ OBJECTS = \
 		DMRDirectNetwork.o DMREMB.o DMREmbeddedData.o DMRFullLC.o DMRGatewayNetwork.o DMRLookup.o DMRLC.o DMRNetwork.o DMRShortLC.o DMRSlot.o DMRSlotType.o \
 		DMRAccessControl.o DMRTA.o DMRTrellis.o DStarControl.o DStarHeader.o DStarNetwork.o DStarSlowData.o FMControl.o FMNetwork.o Golay2087.o Golay24128.o \
 		Hamming.o I2CController.o IIRDirectForm1Filter.o LCDproc.o Log.o M17Control.o M17Convolution.o M17CRC.o M17LSF.o M17Network.o M17Utils.o MMDVMHost.o \
-		Modem.o ModemPort.o ModemSerialPort.o Mutex.o NetworkInfo.o Nextion.o NullController.o NullDisplay.o NXDNAudio.o NXDNControl.o \
+		MQTTPublisher.o Modem.o ModemPort.o ModemSerialPort.o Mutex.o NetworkInfo.o Nextion.o NullController.o NullDisplay.o NXDNAudio.o NXDNControl.o \
 		NXDNConvolution.o NXDNCRC.o NXDNFACCH1.o NXDNIcomNetwork.o NXDNKenwoodNetwork.o NXDNLayer3.o NXDNLICH.o NXDNLookup.o NXDNNetwork.o NXDNSACCH.o \
 		NXDNUDCH.o P25Audio.o P25Control.o P25Data.o P25LowSpeedData.o P25Network.o P25NID.o P25Trellis.o P25Utils.o PseudoTTYController.o POCSAGControl.o \
 		POCSAGNetwork.o QR1676.o RemoteControl.o RS129.o RS241213.o RSSIInterpolator.o SerialPort.o SMeter.o StopWatch.o Sync.o SHA256.o TFTSurenoo.o Thread.o \
@@ -22,8 +22,8 @@ all:		MMDVMHost RemoteCommand
 MMDVMHost:	GitVersion.h $(OBJECTS) 
 		$(CXX) $(OBJECTS) $(CFLAGS) $(LIBS) -o MMDVMHost
 
-RemoteCommand:	Log.o RemoteCommand.o UDPSocket.o
-		$(CXX) Log.o RemoteCommand.o UDPSocket.o $(CFLAGS) $(LIBS) -o RemoteCommand
+RemoteCommand:	Log.o MQTTPublisher.o RemoteCommand.o UDPSocket.o
+		$(CXX) Log.o MQTTPublisher.o RemoteCommand.o UDPSocket.o $(CFLAGS) $(LIBS) -o RemoteCommand
 
 %.o: %.cpp
 		$(CXX) $(CFLAGS) -c -o $@ $<

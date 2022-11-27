@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2022 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -55,6 +55,12 @@ public:
   std::string  getLogFilePath() const;
   std::string  getLogFileRoot() const;
   bool         getLogFileRotate() const;
+
+  // The MQTT section
+  std::string    getMQTTHost() const;
+  unsigned short getMQTTPort() const;
+  unsigned int   getMQTTKeepalive() const;
+  std::string    getMQTTName() const;
 
   // The CW ID section
   bool         getCWIdEnabled() const;
@@ -394,6 +400,11 @@ private:
   std::string  m_logFilePath;
   std::string  m_logFileRoot;
   bool         m_logFileRotate;
+
+  std::string  m_mqttHost;
+  unsigned short m_mqttPort;
+  unsigned int m_mqttKeepalive;
+  std::string  m_mqttName;
 
   bool         m_cwIdEnabled;
   unsigned int m_cwIdTime;

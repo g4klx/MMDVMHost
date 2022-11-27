@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2020,2022 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 
 #include "Log.h"
+#include "MQTTPublisher.h"
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <Windows.h>
@@ -31,6 +32,9 @@
 #include <ctime>
 #include <cassert>
 #include <cstring>
+
+CMQTTPublisher* m_mqtt = NULL;
+static std::string m_mqttName;
 
 static unsigned int m_fileLevel = 2U;
 static std::string m_filePath;
@@ -124,7 +128,7 @@ bool LogOpen()
 		return logOpenNoRotate();
 }
 
-bool LogInitialise(bool daemon, const std::string& filePath, const std::string& fileRoot, unsigned int fileLevel, unsigned int displayLevel, bool rotate)
+bool LogInitialise(bool daemon, const std::string& filePath, const std::string& fileRoot, unsigned int fileLevel, unsigned int displayLevel, bool rotate, const std::string& mqttName)
 {
 	m_filePath     = filePath;
 	m_fileRoot     = fileRoot;
@@ -132,6 +136,7 @@ bool LogInitialise(bool daemon, const std::string& filePath, const std::string& 
 	m_displayLevel = displayLevel;
 	m_daemon       = daemon;
 	m_fileRotate   = rotate;
+	m_mqttName     = mqttName;
 
 	if (m_daemon)
 		m_displayLevel = 0U;
@@ -170,6 +175,13 @@ void Log(unsigned int level, const char* fmt, ...)
 	::vsnprintf(buffer + ::strlen(buffer), 500, fmt, vl);
 
 	va_end(vl);
+
+	if (m_mqtt != NULL) {
+		char topic[100U];
+		::sprintf(topic, "%s/log/%c", m_mqttName.c_str(), LEVELS[level]);
+
+		m_mqtt->publish(topic, buffer + 3U);
+	}
 
 	if (level >= m_fileLevel && m_fileLevel != 0U) {
 		bool ret = ::LogOpen();
