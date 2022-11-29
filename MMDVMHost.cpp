@@ -271,16 +271,16 @@ int CMMDVMHost::run()
 #endif
 
 #if !defined(_WIN32) && !defined(_WIN64)
-	ret = ::LogInitialise(m_daemon, m_conf.getLogFilePath(), m_conf.getLogFileRoot(), m_conf.getLogFileLevel(), m_conf.getLogDisplayLevel(), m_conf.getLogFileRotate(), m_conf.getMQTTName());
+	ret = ::LogInitialise(m_daemon, m_conf.getLogFilePath(), m_conf.getLogFileRoot(), m_conf.getLogFileLevel(), m_conf.getLogDisplayLevel(), m_conf.getLogFileRotate());
 #else
-	ret = ::LogInitialise(false, m_conf.getLogFilePath(), m_conf.getLogFileRoot(), m_conf.getLogFileLevel(), m_conf.getLogDisplayLevel(), m_conf.getLogFileRotate(), m_conf.getMQTTName());
+	ret = ::LogInitialise(false, m_conf.getLogFilePath(), m_conf.getLogFileRoot(), m_conf.getLogFileLevel(), m_conf.getLogDisplayLevel(), m_conf.getLogFileRotate());
 #endif
 	if (!ret) {
 		::fprintf(stderr, "MMDVMHost: unable to open the log file\n");
 		return 1;
 	}
 
-	m_mqtt = new CMQTTPublisher(m_conf.getMQTTHost(), m_conf.getMQTTPort(), m_conf.getMQTTKeepalive(), 2);
+	m_mqtt = new CMQTTPublisher(m_conf.getMQTTHost(), m_conf.getMQTTPort(), m_conf.getMQTTName(), m_conf.getMQTTKeepalive());
 	ret = m_mqtt->open();
 	if (!ret) {
 		::fprintf(stderr, "MMDVMHost: unable to start the MQTT Publisher\n");

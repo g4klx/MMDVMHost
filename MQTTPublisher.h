@@ -23,10 +23,15 @@
 
 #include <string>
 
+enum MQTT_QOS {
+	MQTT_QOS_AT_MODE_ONCE  = 0U,
+	MQTT_QOS_AT_LEAST_ONCE = 1U,
+	MQTT_QOS_EXACTLY_ONCE  = 2U
+};
 
 class CMQTTPublisher {
 public:
-	CMQTTPublisher(const std::string& host, unsigned short port, unsigned int keepalive, unsigned int qos);
+	CMQTTPublisher(const std::string& host, unsigned short port, const std::string& name, unsigned int keepalive, MQTT_QOS qos = MQTT_QOS_EXACTLY_ONCE);
 	~CMQTTPublisher();
 
 	bool open();
@@ -38,8 +43,9 @@ public:
 private:
 	std::string    m_host;
 	unsigned short m_port;
+	std::string    m_name;
 	unsigned int   m_keepalive;
-	unsigned int   m_qos;
+	MQTT_QOS       m_qos;
 	mosquitto*     m_mosq;
 	bool           m_connected;
 

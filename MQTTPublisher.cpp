@@ -23,9 +23,10 @@
 #include <cstring>
 
 
-CMQTTPublisher::CMQTTPublisher(const std::string& host, unsigned short port, unsigned int keepalive, unsigned int qos) :
+CMQTTPublisher::CMQTTPublisher(const std::string& host, unsigned short port, const std::string& name, unsigned int keepalive, MQTT_QOS qos) :
 m_host(host),
 m_port(port),
+m_name(name),
 m_keepalive(keepalive),
 m_qos(qos),
 m_mosq(NULL),
@@ -33,8 +34,8 @@ m_connected(false)
 {
 	assert(!host.empty());
 	assert(port > 0U);
+	assert(!name.empty());
 	assert(keepalive >= 5U);
-	assert(qos >= 0U && qos <= 2U);
 
 	::mosquitto_lib_init();
 }
@@ -46,7 +47,7 @@ CMQTTPublisher::~CMQTTPublisher()
 
 bool CMQTTPublisher::open()
 {
-	m_mosq = ::mosquitto_new(NULL, true, this);
+	m_mosq = ::mosquitto_new(m_name.c_str(), true, this);
 	if (m_mosq == NULL){
 		::fprintf(stderr, "MQTT Error newing: Out of memory.\n");
 		return false;
@@ -81,8 +82,11 @@ bool CMQTTPublisher::publish(const char* topic, const char* text)
 
 	if (!m_connected)
 		return false;
-	
-	int rc = ::mosquitto_publish(m_mosq, NULL, topic, ::strlen(text), text, m_qos, false);
+
+	char topicEx[100U];
+	::sprintf(topicEx, "%s/%s", m_name.c_str(), topic);
+
+	int rc = ::mosquitto_publish(m_mosq, NULL, topicEx, ::strlen(text), text, static_cast<int>(m_qos), false);
 	if (rc != MOSQ_ERR_SUCCESS) {
 		::fprintf(stderr, "MQTT Error publishing: %s\n", ::mosquitto_strerror(rc));
 		return false;
