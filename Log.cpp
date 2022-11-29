@@ -35,6 +35,8 @@
 
 CMQTTPublisher* m_mqtt = NULL;
 
+static unsigned int m_mqttLevel = 2U;
+
 static unsigned int m_fileLevel = 2U;
 static std::string m_filePath;
 static std::string m_fileRoot;
@@ -127,10 +129,11 @@ bool LogOpen()
 		return logOpenNoRotate();
 }
 
-bool LogInitialise(bool daemon, const std::string& filePath, const std::string& fileRoot, unsigned int fileLevel, unsigned int displayLevel, bool rotate)
+bool LogInitialise(bool daemon, const std::string& filePath, const std::string& fileRoot, unsigned int fileLevel, unsigned int displayLevel, unsigned int mqttLevel, bool rotate)
 {
 	m_filePath     = filePath;
 	m_fileRoot     = fileRoot;
+	m_mqttLevel    = mqttLevel;
 	m_fileLevel    = fileLevel;
 	m_displayLevel = displayLevel;
 	m_daemon       = daemon;
@@ -174,7 +177,7 @@ void Log(unsigned int level, const char* fmt, ...)
 
 	va_end(vl);
 
-	if (m_mqtt != NULL)
+	if (m_mqtt != NULL && level >= m_mqttLevel && m_mqttLevel != 0U)
 		m_mqtt->publish("log", buffer);
 
 	if (level >= m_fileLevel && m_fileLevel != 0U) {

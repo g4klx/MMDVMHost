@@ -82,6 +82,7 @@ m_height(0),
 m_location(),
 m_description(),
 m_url(),
+m_logMQTTLevel(0U),
 m_logDisplayLevel(0U),
 m_logFileLevel(0U),
 m_logFilePath(),
@@ -514,6 +515,8 @@ bool CConf::read()
 				m_logFilePath = value;
 			else if (::strcmp(key, "FileRoot") == 0)
 				m_logFileRoot = value;
+			else if (::strcmp(key, "MQTTLevel") == 0)
+				m_logMQTTLevel = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "FileLevel") == 0)
 				m_logFileLevel = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "DisplayLevel") == 0)
@@ -1242,6 +1245,11 @@ std::string CConf::getDescription() const
 std::string CConf::getURL() const
 {
 	return m_url;
+}
+
+unsigned int CConf::getLogMQTTLevel() const
+{
+	return m_logMQTTLevel;
 }
 
 unsigned int CConf::getLogDisplayLevel() const

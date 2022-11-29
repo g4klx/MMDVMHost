@@ -50,6 +50,7 @@ public:
   std::string  getURL() const;
 
   // The Log section
+  unsigned int getLogMQTTLevel() const;
   unsigned int getLogDisplayLevel() const;
   unsigned int getLogFileLevel() const;
   std::string  getLogFilePath() const;
@@ -395,6 +396,7 @@ private:
   std::string  m_description;
   std::string  m_url;
 
+  unsigned int m_logMQTTLevel;
   unsigned int m_logDisplayLevel;
   unsigned int m_logFileLevel;
   std::string  m_logFilePath;

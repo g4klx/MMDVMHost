@@ -57,7 +57,7 @@ m_port(port)
 {
 	CUDPSocket::startup();
 
-	::LogInitialise(false, ".", "RemoteCommand", 2U, 2U, false);
+	::LogInitialise(false, ".", "RemoteCommand", 2U, 2U, 2U, false);
 }
 
 CRemoteCommand::~CRemoteCommand()
