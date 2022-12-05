@@ -1249,7 +1249,8 @@ int CMMDVMHost::run()
 							setMode(MODE_DMR);
 						dmrBeaconIntervalTimer.start();
 						dmrBeaconDurationTimer.start();
-						LogDebug("sending DMR Roaming Beacon (timed mode)");
+						if (m_duplex)
+							LogDebug("sending DMR Roaming Beacon (timed mode)");
 					}
 				}
 				break;
@@ -1261,7 +1262,8 @@ int CMMDVMHost::run()
 							if (!m_fixedMode && m_mode == MODE_IDLE)
 								setMode(MODE_DMR);
 							dmrBeaconDurationTimer.start();
-							LogDebug("sending DMR Roaming Beacon (network mode)");
+							if (m_duplex)
+								LogDebug("sending DMR Roaming Beacon (network mode)");
 						}
 					}
 				}
