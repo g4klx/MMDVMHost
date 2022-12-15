@@ -147,6 +147,15 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 		m_CBF   = 0U;
 		break;
 
+	case CSBKO_CALL_EMERGENCY:
+		m_GI    = true;
+		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
+		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
+		m_dataContent = false;
+		m_CBF   = 0U;
+		CUtils::dump(1U, "Call Emergency CSBK", m_data, 12U);
+		break;
+
 	default:
 		m_GI    = false;
 		m_srcId = 0U;
