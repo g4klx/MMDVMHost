@@ -1,15 +1,22 @@
 {
-	"$defs" : {
+	"$defs": {
 		"dstar_callsign": {"type": "string", "minLength": 8, "maxLength": 8},
 		"dstar_extension": {"type": "string", "minLength": 4, "maxLength": 4},
 		"ysf_callsign": {"type": "string", "minLength": 10, "maxLength": 10},
+		"ax25_callsign": {"type": "string", "minLength": 1, "maxLength": 9},
 		"m17_callsign": {"type": "string", "minLength": 9, "maxLength": 9},
 		"dmr_id": {"type": "integer", "minimum": 1, "maximum": 16777215},
 		"p25_id": {"type": "integer", "minimum": 1, "maximum": 65535},
 		"nxdn_id": {"type": "integer", "minimum": 1, "maximum": 65535},
+		"pocsag_ric": {"type": "integer"},
 		"id_type": {"enum": ["group", "individual"]},
+		"ysf_mode": {"enum": ["v/d_1", "v/d_2", "voice_fr", "data_fr"]}.
+		"ax25_type": {"enum": ["sabm", "disc", "ui", "ua", "rr", "rnr", "rej", "frmr", "i"]},
 		"source": {"enum": ["rf", "network"]},
-		"action": {"enum": ["start", "end", "lost"]},
+		"ax25_pid": {"type": "string"},
+		"pocsag_source": {"enum": ["local", "network"]},
+		"pocsag_function": {"enum": ["numeric", "alphanumeric", "alert_1", "alert_2"]},
+		"action": {"enum": ["invalid", "header", "late_entry", "end", "lost"]},
 		"duration": {"type": "number", "minimum": 0.0},
 		"loss": {"type": "number", "minimum": 0.0},
 		"ber": {"type": "number", "minimum": 0.0},
@@ -17,14 +24,14 @@
 		"timestamp": {"type": "string" }
 	},
 
-	"MMDVM" : {
+	"MMDVM": {
 		"type": "object",
 		"timestamp": {"$ref": "#/$defs/timestamp"},
 		"description": {"type": "string"},
 		"required": {"timestamp", "description"}
 	},
 
-	"D-Star" : {
+	"D-Star": {
 		"type": "object",
 		"timestamp": {"$ref": "#/$defs/timestamp"},
 		"source_callsign": {"$ref": "#/$defs/dstar_callsign"},
@@ -43,7 +50,7 @@
 		"required": {"timestamp", "source_callsign", "source_ext", "destination_callsign", "source", "action"}
 	},
 
-	"DMR" : {
+	"DMR": {
 		"type": "object",
 		"timestamp": {"$ref": "#/$defs/timestamp"},
 		"source_id": {"$ref": "#/$defs/dmr_id"},
@@ -62,13 +69,14 @@
 		"required": {"timestamp", "source_id", "destination_id", "destination_type", "source", "action"}
 	},
 
-	"SystemFusion" : {
+	"YSF": {
 		"type": "object",
 		"timestamp": {"$ref": "#/$defs/timestamp"},
 		"source_callsign": {"$ref": "#/$defs/ysf_callsign"},
 		"destination_callsign": {"$ref": "#/$defs/ysf_callsign"},
 		"source": {"$ref": "#/$defs/source"},
 		"action": {"$ref": "#/$defs/action"},
+		"mode": {"$ref": "#/$defs/ysf_mode"},
 		"duration": {"$ref": "#/$defs/duration"},
 		"loss": {"$ref": "#/$defs/loss"},
 		"ber": {"$ref": "#/$defs/ber"},
@@ -77,10 +85,10 @@
 			"max_rssi": {"$ref": "#/$defs/rssi"},
 			"ave_rssi": {"$ref": "#/$defs/rssi"}
 		},
-		"required": {"timestamp", "source_callsign", "destination_callsign", "source", "action"}
+		"required": {"timestamp", "source_callsign", "destination_callsign", "source", "action", "mode"}
 	},
 
-	"P25" : {
+	"P25": {
 		"type": "object",
 		"timestamp": {"$ref": "#/$defs/timestamp"},
 		"source_id": {"$ref": "#/$defs/dmr_id"},
@@ -99,7 +107,7 @@
 		"required": {"timestamp", "source_id", "destination_id", "destination_type", "source", "action"}
 	},
 
-	"NXDN" : {
+	"NXDN": {
 		"type": "object",
 		"timestamp": {"$ref": "#/$defs/timestamp"},
 		"source_id": {"$ref": "#/$defs/nxdn_id"},
@@ -118,7 +126,33 @@
 		"required": {"timestamp", "source_id", "destination_id", "destination_type", "source", "action"}
 	},
 
-	"M17" : {
+	"POCSAG": {
+		"type": "object",
+		"timestamp": {"$ref": "#/$defs/timestamp"},
+		"ric": {"$ref": "#/$defs/pocsag_ric"},
+		"function": {"$ref": "#/$defs/pocsag_function"},
+		"source": {"$ref": "#/$defs/pocsag_source"},
+		"data": {"type": "string"},
+		"required": {"timestamp", "ric", "function", "source", "data"}
+	}.
+
+	"AX.25": {
+		"type": "object",
+		"timestamp": {"$ref": "#/$defs/timestamp"},
+		"source": {"$ref": "#/$defs/ax25_callsign"},
+		"destination": {"$ref": "#/$defs/ax25_callsign"},
+		"digipeaters": {
+			"type": "array",
+			"callsign": {"$ref": "#/$defs/ax25_callsign"},
+			"repeated": {"type": "boolean"}
+		},
+		"type": {"$ref": "#/$defs/ax25_type"},
+		"pid": {"$ref": "#/$defs/ax25_pid"},
+		"data": {"type": "string"},
+		"required": {"timestamp", "source", "destination", "source", "type"}
+	}.
+
+	"M17": {
 		"type": "object",
 		"timestamp": {"$ref": "#/$defs/timestamp"},
 		"source_callsign": {"$ref": "#/$defs/m17_callsign"},
