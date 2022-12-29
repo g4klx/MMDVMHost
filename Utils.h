@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2009,2014,2015,2021 by Jonathan Naylor, G4KLX
+ *	Copyright (C) 2009,2014,2015,2021,2022 by Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -33,6 +33,8 @@ public:
 	static unsigned int countBits(unsigned int v);
 
 	static void removeChar(unsigned char * haystack, char needdle);
+
+	static std::string createTimestamp();
 
 private:
 };

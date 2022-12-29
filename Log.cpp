@@ -199,3 +199,10 @@ void Log(unsigned int level, const char* fmt, ...)
 		exit(1);
 	}
 }
+
+void WriteJSON(const std::string& json)
+{
+	if (m_mqtt != NULL)
+		m_mqtt->publish("json", json.c_str());
+}
+

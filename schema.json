@@ -1,6 +1,6 @@
 {
 	"$defs": {
-		"mmdvm_state": {"enum": ["lockout", "idle", "d-star", "dmr", "ysf", "nxdn", "pocsag", "fm", "ax,25", "m17"]),
+		"mmdvm_state": {"enum": ["lockout", "idle", "d-star", "dmr", "ysf", "nxdn", "pocsag", "fm", "ax,25", "m17"]},
 		"dstar_callsign": {"type": "string", "minLength": 8, "maxLength": 8},
 		"dstar_extension": {"type": "string", "minLength": 4, "maxLength": 4},
 		"ysf_callsign": {"type": "string", "minLength": 10, "maxLength": 10},
@@ -11,7 +11,7 @@
 		"nxdn_id": {"type": "integer", "minimum": 1, "maximum": 65535},
 		"pocsag_ric": {"type": "integer"},
 		"id_type": {"enum": ["group", "individual"]},
-		"ysf_mode": {"enum": ["v/d_1", "v/d_2", "voice_fr", "data_fr"]}.
+		"ysf_mode": {"enum": ["v/d_1", "v/d_2", "voice_fr", "data_fr"]},
 		"ax25_type": {"enum": ["sabm", "disc", "ui", "ua", "rr", "rnr", "rej", "frmr", "i"]},
 		"dmr_slot": {"enum": [1, 2]},
 		"source": {"enum": ["rf", "network"]},
@@ -20,7 +20,7 @@
 		"ax25_pid": {"type": "string"},
 		"pocsag_source": {"enum": ["local", "network"]},
 		"pocsag_function": {"enum": ["numeric", "alphanumeric", "alert_1", "alert_2"]},
-		"action": {"enum": ["invalid", "header", "late_entry", "end", "lost"]},
+		"action": {"enum": ["invalid", "rejected", "header", "late_entry", "end", "lost"]},
 		"duration": {"type": "number", "minimum": 0.0},
 		"loss": {"type": "number", "minimum": 0.0},
 		"ber": {"type": "number", "minimum": 0.0},
@@ -47,9 +47,9 @@
 		"loss": {"$ref": "#/$defs/loss"},
 		"ber": {"$ref": "#/$defs/ber"},
 		"rssi": {
-			"min_rssi": {"$ref": "#/$defs/rssi"},
-			"max_rssi": {"$ref": "#/$defs/rssi"},
-			"ave_rssi": {"$ref": "#/$defs/rssi"}
+			"minimum": {"$ref": "#/$defs/rssi"},
+			"maximum": {"$ref": "#/$defs/rssi"},
+			"average": {"$ref": "#/$defs/rssi"}
 		},
 		"required": ["timestamp", "source_callsign", "source_ext", "destination_callsign", "source", "action"]
 	},
@@ -67,9 +67,9 @@
 		"loss": {"$ref": "#/$defs/loss"},
 		"ber": {"$ref": "#/$defs/ber"},
 		"rssi": {
-			"min_rssi": {"$ref": "#/$defs/rssi"},
-			"max_rssi": {"$ref": "#/$defs/rssi"},
-			"ave_rssi": {"$ref": "#/$defs/rssi"}
+			"minimum": {"$ref": "#/$defs/rssi"},
+			"maximum": {"$ref": "#/$defs/rssi"},
+			"average": {"$ref": "#/$defs/rssi"}
 		},
 		"required": ["timestamp", "source_id", "destination_id", "destination_type", "slot", "source", "action"]
 	},
@@ -86,9 +86,9 @@
 		"loss": {"$ref": "#/$defs/loss"},
 		"ber": {"$ref": "#/$defs/ber"},
 		"rssi": {
-			"min_rssi": {"$ref": "#/$defs/rssi"},
-			"max_rssi": {"$ref": "#/$defs/rssi"},
-			"ave_rssi": {"$ref": "#/$defs/rssi"}
+			"minimum": {"$ref": "#/$defs/rssi"},
+			"maximum": {"$ref": "#/$defs/rssi"},
+			"average": {"$ref": "#/$defs/rssi"}
 		},
 		"required": ["timestamp", "source_callsign", "destination_callsign", "source", "action", "mode"]
 	},
@@ -105,9 +105,9 @@
 		"loss": {"$ref": "#/$defs/loss"},
 		"ber": {"$ref": "#/$defs/ber"},
 		"rssi": {
-			"min_rssi": {"$ref": "#/$defs/rssi"},
-			"max_rssi": {"$ref": "#/$defs/rssi"},
-			"ave_rssi": {"$ref": "#/$defs/rssi"}
+			"minimum": {"$ref": "#/$defs/rssi"},
+			"maximum": {"$ref": "#/$defs/rssi"},
+			"average": {"$ref": "#/$defs/rssi"}
 		},
 		"required": ["timestamp", "source_id", "destination_id", "destination_type", "source", "action"]
 	},
@@ -124,9 +124,9 @@
 		"loss": {"$ref": "#/$defs/loss"},
 		"ber": {"$ref": "#/$defs/ber"},
 		"rssi": {
-			"min_rssi": {"$ref": "#/$defs/rssi"},
-			"max_rssi": {"$ref": "#/$defs/rssi"},
-			"ave_rssi": {"$ref": "#/$defs/rssi"}
+			"minimum": {"$ref": "#/$defs/rssi"},
+			"maximum": {"$ref": "#/$defs/rssi"},
+			"average": {"$ref": "#/$defs/rssi"}
 		},
 		"required": ["timestamp", "source_id", "destination_id", "destination_type", "source", "action"]
 	},
@@ -139,7 +139,7 @@
 		"source": {"$ref": "#/$defs/pocsag_source"},
 		"data": {"type": "string"},
 		"required": ["timestamp", "ric", "function", "source", "data"]
-	}.
+	},
 
 	"FM": {
 		"type": "object",
@@ -162,7 +162,7 @@
 		"pid": {"$ref": "#/$defs/ax25_pid"},
 		"data": {"type": "string"},
 		"required": ["timestamp", "source", "destination", "source", "type"]
-	}.
+	},
 
 	"M17": {
 		"type": "object",
@@ -173,12 +173,11 @@
 		"action": {"$ref": "#/$defs/action"},
 		"traffic_type": {"$ref": "#/$defs/m17_traffic_type"},
 		"duration": {"$ref": "#/$defs/duration"},
-		"loss": {"$ref": "#/$defs/loss"},
 		"ber": {"$ref": "#/$defs/ber"},
 		"rssi": {
-			"min_rssi": {"$ref": "#/$defs/rssi"},
-			"max_rssi": {"$ref": "#/$defs/rssi"},
-			"ave_rssi": {"$ref": "#/$defs/rssi"}
+			"minimum": {"$ref": "#/$defs/rssi"},
+			"maximum": {"$ref": "#/$defs/rssi"},
+			"average": {"$ref": "#/$defs/rssi"}
 		},
 		"required": ["timestamp", "source_callsign", "destination_callsign", "source", "action", "traffic_type"]
 	}
