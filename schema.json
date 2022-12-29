@@ -16,6 +16,7 @@
 		"dmr_slot": {"enum": [1, 2]},
 		"source": {"enum": ["rf", "network"]},
 		"fm_state": {"enum": ["waiting_rf", "waiting_network"]},
+		"m17_traffic_type": {"enum": ["audio", "audio_data", "data"]},
 		"ax25_pid": {"type": "string"},
 		"pocsag_source": {"enum": ["local", "network"]},
 		"pocsag_function": {"enum": ["numeric", "alphanumeric", "alert_1", "alert_2"]},
