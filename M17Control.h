@@ -32,6 +32,8 @@
 
 #include <string>
 
+#include <nlohmann/json.hpp>
+
 class CM17Control {
 public:
 	CM17Control(const std::string& callsign, unsigned int can, bool selfOnly, bool allowEncryption, CM17Network* network, CDisplay* display, unsigned int timeout, bool duplex, CRSSIInterpolator* rssiMapper);
@@ -108,6 +110,10 @@ private:
 	void writeJSON(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber, float minRSSI, float maxRSSI, float aveRSSI);
 	void writeJSON(const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest);
 	void writeJSON(const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest, float duration);
+
+	void writeJSON(nlohmann::json& json, const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest);
+	void writeJSON(nlohmann::json& json, const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber);
+	void writeJSON(nlohmann::json& json, const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest);
 
 	bool openFile();
 	bool writeFile(const unsigned char* data);

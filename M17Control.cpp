@@ -25,8 +25,6 @@
 #include <cstring>
 #include <ctime>
 
-#include <nlohmann/json.hpp>
-
 const unsigned int INTERLEAVER[] = {
 	0U, 137U, 90U, 227U, 180U, 317U, 270U, 39U, 360U, 129U, 82U, 219U, 172U, 309U, 262U, 31U, 352U, 121U, 74U, 211U, 164U,
 	301U, 254U, 23U, 344U, 113U, 66U, 203U, 156U, 293U, 246U, 15U, 336U, 105U, 58U, 195U, 148U, 285U, 238U, 7U, 328U, 97U,
@@ -932,28 +930,7 @@ void CM17Control::writeJSON(const char* action, RPT_RF_STATE state, const std::s
 
 	nlohmann::json json;
 
-	json["timestamp"] = CUtils::createTimestamp();
-
-	json["source_callsign"]      = source;
-	json["destination_callsign"] = dest;
-
-	json["source"] = "rf";
-	json["action"] = action;
-
-	switch (state)
-	{
-		case RS_RF_AUDIO:
-			json["traffic_type"] = "audio";
-			break;
-		case RS_RF_DATA_AUDIO:
-			json["traffic_type"] = "audio_data";
-			break;
-		case RS_RF_DATA:
-			json["traffic_type"] = "data";
-			break;
-		default:
-			break;
-	}
+	writeJSON(json, action, state, source, dest);
 
 	WriteJSON(json.dump());
 }
@@ -964,31 +941,7 @@ void CM17Control::writeJSON(const char* action, RPT_RF_STATE state, const std::s
 
 	nlohmann::json json;
 
-	json["timestamp"] = CUtils::createTimestamp();
-
-	json["source_callsign"]      = source;
-	json["destination_callsign"] = dest;
-
-	json["source"] = "rf";
-	json["action"] = action;
-
-	switch (state)
-	{
-		case RS_RF_AUDIO:
-			json["traffic_type"] = "audio";
-			break;
-		case RS_RF_DATA_AUDIO:
-			json["traffic_type"] = "audio_data";
-			break;
-		case RS_RF_DATA:
-			json["traffic_type"] = "data";
-			break;
-		default:
-			break;
-	}
-
-	json["duration"] = duration;
-	json["ber"]      = ber;
+	writeJSON(json, action, state, source, dest, duration, ber);
 
 	WriteJSON(json.dump());
 }
@@ -999,31 +952,7 @@ void CM17Control::writeJSON(const char* action, RPT_RF_STATE state, const std::s
 
 	nlohmann::json json;
 
-	json["timestamp"] = CUtils::createTimestamp();
-
-	json["source_callsign"]      = source;
-	json["destination_callsign"] = dest;
-
-	json["source"] = "rf";
-	json["action"] = action;
-
-	switch (state)
-	{
-		case RS_RF_AUDIO:
-			json["traffic_type"] = "audio";
-			break;
-		case RS_RF_DATA_AUDIO:
-			json["traffic_type"] = "audio_data";
-			break;
-		case RS_RF_DATA:
-			json["traffic_type"] = "data";
-			break;
-		default:
-			break;
-	}
-
-	json["duration"] = duration;
-	json["ber"]      = ber;
+	writeJSON(json, action, state, source, dest, duration, ber);
 
 	nlohmann::json rssi;
 	rssi["minimumm"] = minRSSI;
@@ -1041,28 +970,7 @@ void CM17Control::writeJSON(const char* action, RPT_NET_STATE state, const std::
 
 	nlohmann::json json;
 
-	json["timestamp"] = CUtils::createTimestamp();
-
-	json["source_callsign"]      = source;
-	json["destination_callsign"] = dest;
-
-	json["source"] = "network";
-	json["action"] = action;
-
-	switch (state)
-	{
-		case RS_NET_AUDIO:
-			json["traffic_type"] = "audio";
-			break;
-		case RS_NET_DATA_AUDIO:
-			json["traffic_type"] = "audio_data";
-			break;
-		case RS_NET_DATA:
-			json["traffic_type"] = "data";
-			break;
-		default:
-			break;
-	}
+	writeJSON(action, state, source, dest);
 
 	WriteJSON(json.dump());
 }
@@ -1073,6 +981,55 @@ void CM17Control::writeJSON(const char* action, RPT_NET_STATE state, const std::
 
 	nlohmann::json json;
 
+	writeJSON(action, state, source, dest);
+
+	json["duration"] = duration;
+
+	WriteJSON(json.dump());
+}
+
+void CM17Control::writeJSON(nlohmann::json& json, const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest)
+{
+	assert(action != NULL);
+
+	json["timestamp"] = CUtils::createTimestamp();
+
+	json["source_callsign"]      = source;
+	json["destination_callsign"] = dest;
+
+	json["source"] = "rf";
+	json["action"] = action;
+
+	switch (state)
+	{
+		case RS_RF_AUDIO:
+			json["traffic_type"] = "audio";
+			break;
+		case RS_RF_DATA_AUDIO:
+			json["traffic_type"] = "audio_data";
+			break;
+		case RS_RF_DATA:
+			json["traffic_type"] = "data";
+			break;
+		default:
+			break;
+	}
+}
+
+void CM17Control::writeJSON(nlohmann::json& json, const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber)
+{
+	assert(action != NULL);
+
+	writeJSON(json, action, state, source, dest);
+
+	json["duration"] = duration;
+	json["ber"]      = ber;
+}
+
+void CM17Control::writeJSON(nlohmann::json& json, const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest)
+{
+	assert(action != NULL);
+
 	json["timestamp"] = CUtils::createTimestamp();
 
 	json["source_callsign"]      = source;
@@ -1095,9 +1052,5 @@ void CM17Control::writeJSON(const char* action, RPT_NET_STATE state, const std::
 		default:
 			break;
 	}
-
-	json["duration"] = duration;
-
-	WriteJSON(json.dump());
 }
 
