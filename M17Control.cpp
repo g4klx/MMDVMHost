@@ -970,7 +970,7 @@ void CM17Control::writeJSON(const char* action, RPT_NET_STATE state, const std::
 
 	nlohmann::json json;
 
-	writeJSON(action, state, source, dest);
+	writeJSON(json, action, state, source, dest);
 
 	WriteJSON("M17", json);
 }
@@ -981,7 +981,7 @@ void CM17Control::writeJSON(const char* action, RPT_NET_STATE state, const std::
 
 	nlohmann::json json;
 
-	writeJSON(action, state, source, dest);
+	writeJSON(json, action, state, source, dest);
 
 	json["duration"] = duration;
 
