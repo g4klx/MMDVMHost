@@ -38,26 +38,27 @@
 	"D-Star": {
 		"type": "object",
 		"timestamp": {"$ref": "#/$defs/timestamp"},
-		"source_callsign": {"$ref": "#/$defs/dstar_callsign"},
+		"source_cs": {"$ref": "#/$defs/dstar_callsign"},
 		"source_ext": {"$ref": "#/$defs/dstar_extension"},
-		"destination_callsign": {"$ref": "#/$defs/dstar_callsign"},
+		"destination_cs": {"$ref": "#/$defs/dstar_callsign"},
 		"source": {"$ref": "#/$defs/source"},
 		"action": {"$ref": "#/$defs/action"},
 		"duration": {"$ref": "#/$defs/duration"},
 		"loss": {"$ref": "#/$defs/loss"},
 		"ber": {"$ref": "#/$defs/ber"},
 		"rssi": {
-			"minimum": {"$ref": "#/$defs/rssi"},
-			"maximum": {"$ref": "#/$defs/rssi"},
-			"average": {"$ref": "#/$defs/rssi"}
+			"min": {"$ref": "#/$defs/rssi"},
+			"max": {"$ref": "#/$defs/rssi"},
+			"ave": {"$ref": "#/$defs/rssi"}
 		},
-		"required": ["timestamp", "source_callsign", "source_ext", "destination_callsign", "source", "action"]
+		"required": ["timestamp", "source_cs", "source_ext", "destination_cs", "source", "action"]
 	},
 
 	"DMR": {
 		"type": "object",
 		"timestamp": {"$ref": "#/$defs/timestamp"},
 		"source_id": {"$ref": "#/$defs/dmr_id"},
+		"source_info": {"type": "string"},
 		"destination_id": {"$ref": "#/$defs/dmr_id"},
 		"destination_type": {"$ref": "#/$defs/id_type"},
 		"slot": {"$ref": "#/$defs/dmr_slot"},
@@ -67,9 +68,9 @@
 		"loss": {"$ref": "#/$defs/loss"},
 		"ber": {"$ref": "#/$defs/ber"},
 		"rssi": {
-			"minimum": {"$ref": "#/$defs/rssi"},
-			"maximum": {"$ref": "#/$defs/rssi"},
-			"average": {"$ref": "#/$defs/rssi"}
+			"min": {"$ref": "#/$defs/rssi"},
+			"max": {"$ref": "#/$defs/rssi"},
+			"ave": {"$ref": "#/$defs/rssi"}
 		},
 		"required": ["timestamp", "source_id", "destination_id", "destination_type", "slot", "source", "action"]
 	},
@@ -77,8 +78,8 @@
 	"YSF": {
 		"type": "object",
 		"timestamp": {"$ref": "#/$defs/timestamp"},
-		"source_callsign": {"$ref": "#/$defs/ysf_callsign"},
-		"destination_callsign": {"$ref": "#/$defs/ysf_callsign"},
+		"source_cs": {"$ref": "#/$defs/ysf_callsign"},
+		"destination_cs": {"$ref": "#/$defs/ysf_callsign"},
 		"source": {"$ref": "#/$defs/source"},
 		"action": {"$ref": "#/$defs/action"},
 		"mode": {"$ref": "#/$defs/ysf_mode"},
@@ -86,17 +87,18 @@
 		"loss": {"$ref": "#/$defs/loss"},
 		"ber": {"$ref": "#/$defs/ber"},
 		"rssi": {
-			"minimum": {"$ref": "#/$defs/rssi"},
-			"maximum": {"$ref": "#/$defs/rssi"},
-			"average": {"$ref": "#/$defs/rssi"}
+			"min": {"$ref": "#/$defs/rssi"},
+			"max": {"$ref": "#/$defs/rssi"},
+			"ave": {"$ref": "#/$defs/rssi"}
 		},
-		"required": ["timestamp", "source_callsign", "destination_callsign", "source", "action", "mode"]
+		"required": ["timestamp", "source_cs", "destination_cs", "source", "action", "mode"]
 	},
 
 	"P25": {
 		"type": "object",
 		"timestamp": {"$ref": "#/$defs/timestamp"},
 		"source_id": {"$ref": "#/$defs/dmr_id"},
+		"source_info": {"type": "string"},
 		"destination_id": {"$ref": "#/$defs/p25_id"},
 		"destination_type": {"$ref": "#/$defs/id_type"},
 		"source": {"$ref": "#/$defs/source"},
@@ -105,9 +107,9 @@
 		"loss": {"$ref": "#/$defs/loss"},
 		"ber": {"$ref": "#/$defs/ber"},
 		"rssi": {
-			"minimum": {"$ref": "#/$defs/rssi"},
-			"maximum": {"$ref": "#/$defs/rssi"},
-			"average": {"$ref": "#/$defs/rssi"}
+			"min": {"$ref": "#/$defs/rssi"},
+			"max": {"$ref": "#/$defs/rssi"},
+			"ave": {"$ref": "#/$defs/rssi"}
 		},
 		"required": ["timestamp", "source_id", "destination_id", "destination_type", "source", "action"]
 	},
@@ -116,6 +118,7 @@
 		"type": "object",
 		"timestamp": {"$ref": "#/$defs/timestamp"},
 		"source_id": {"$ref": "#/$defs/nxdn_id"},
+		"source_info": {"type": "string"},
 		"destination_id": {"$ref": "#/$defs/nxdn_id"},
 		"destination_type": {"$ref": "#/$defs/id_type"},
 		"source": {"$ref": "#/$defs/source"},
@@ -124,9 +127,9 @@
 		"loss": {"$ref": "#/$defs/loss"},
 		"ber": {"$ref": "#/$defs/ber"},
 		"rssi": {
-			"minimum": {"$ref": "#/$defs/rssi"},
-			"maximum": {"$ref": "#/$defs/rssi"},
-			"average": {"$ref": "#/$defs/rssi"}
+			"min": {"$ref": "#/$defs/rssi"},
+			"max": {"$ref": "#/$defs/rssi"},
+			"ave": {"$ref": "#/$defs/rssi"}
 		},
 		"required": ["timestamp", "source_id", "destination_id", "destination_type", "source", "action"]
 	},
@@ -167,18 +170,18 @@
 	"M17": {
 		"type": "object",
 		"timestamp": {"$ref": "#/$defs/timestamp"},
-		"source_callsign": {"$ref": "#/$defs/m17_callsign"},
-		"destination_callsign": {"$ref": "#/$defs/m17_callsign"},
+		"source_cs": {"$ref": "#/$defs/m17_callsign"},
+		"destination_cs": {"$ref": "#/$defs/m17_callsign"},
 		"source": {"$ref": "#/$defs/source"},
 		"action": {"$ref": "#/$defs/action"},
 		"traffic_type": {"$ref": "#/$defs/m17_traffic_type"},
 		"duration": {"$ref": "#/$defs/duration"},
 		"ber": {"$ref": "#/$defs/ber"},
 		"rssi": {
-			"minimum": {"$ref": "#/$defs/rssi"},
-			"maximum": {"$ref": "#/$defs/rssi"},
-			"average": {"$ref": "#/$defs/rssi"}
+			"min": {"$ref": "#/$defs/rssi"},
+			"max": {"$ref": "#/$defs/rssi"},
+			"ave": {"$ref": "#/$defs/rssi"}
 		},
-		"required": ["timestamp", "source_callsign", "destination_callsign", "source", "action", "traffic_type"]
+		"required": ["timestamp", "source_cs", "destination_cs", "source", "action", "traffic_type"]
 	}
 }

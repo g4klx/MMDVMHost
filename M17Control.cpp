@@ -932,7 +932,7 @@ void CM17Control::writeJSON(const char* action, RPT_RF_STATE state, const std::s
 
 	writeJSON(json, action, state, source, dest);
 
-	WriteJSON(json.dump());
+	WriteJSON("M17", json);
 }
 
 void CM17Control::writeJSON(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber)
@@ -943,7 +943,7 @@ void CM17Control::writeJSON(const char* action, RPT_RF_STATE state, const std::s
 
 	writeJSON(json, action, state, source, dest, duration, ber);
 
-	WriteJSON(json.dump());
+	WriteJSON("M17", json);
 }
 
 void CM17Control::writeJSON(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber, float minRSSI, float maxRSSI, float aveRSSI)
@@ -955,13 +955,13 @@ void CM17Control::writeJSON(const char* action, RPT_RF_STATE state, const std::s
 	writeJSON(json, action, state, source, dest, duration, ber);
 
 	nlohmann::json rssi;
-	rssi["minimumm"] = minRSSI;
-	rssi["maximumm"] = maxRSSI;
-	rssi["average"]  = aveRSSI;
+	rssi["min"] = minRSSI;
+	rssi["max"] = maxRSSI;
+	rssi["ave"]  = aveRSSI;
 
 	json["rssi"] = rssi;
 
-	WriteJSON(json.dump());
+	WriteJSON("M17", json);
 }
 
 void CM17Control::writeJSON(const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest)
@@ -972,7 +972,7 @@ void CM17Control::writeJSON(const char* action, RPT_NET_STATE state, const std::
 
 	writeJSON(action, state, source, dest);
 
-	WriteJSON(json.dump());
+	WriteJSON("M17", json);
 }
 
 void CM17Control::writeJSON(const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest, float duration)
@@ -985,7 +985,7 @@ void CM17Control::writeJSON(const char* action, RPT_NET_STATE state, const std::
 
 	json["duration"] = duration;
 
-	WriteJSON(json.dump());
+	WriteJSON("M17", json);
 }
 
 void CM17Control::writeJSON(nlohmann::json& json, const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest)
@@ -994,8 +994,8 @@ void CM17Control::writeJSON(nlohmann::json& json, const char* action, RPT_RF_STA
 
 	json["timestamp"] = CUtils::createTimestamp();
 
-	json["source_callsign"]      = source;
-	json["destination_callsign"] = dest;
+	json["source_cs"]      = source;
+	json["destination_cs"] = dest;
 
 	json["source"] = "rf";
 	json["action"] = action;
@@ -1032,8 +1032,8 @@ void CM17Control::writeJSON(nlohmann::json& json, const char* action, RPT_NET_ST
 
 	json["timestamp"] = CUtils::createTimestamp();
 
-	json["source_callsign"]      = source;
-	json["destination_callsign"] = dest;
+	json["source_cs"]      = source;
+	json["destination_cs"] = dest;
 
 	json["source"] = "network";
 	json["action"] = action;
