@@ -11,7 +11,8 @@
 		"nxdn_id": {"type": "integer", "minimum": 1, "maximum": 65535},
 		"pocsag_ric": {"type": "integer"},
 		"id_type": {"type": "string", "enum": ["group", "individual"]},
-		"ysf_mode": {"type": "string", "enum": ["v/d_1", "v/d_2", "voice_fr", "data_fr"]},
+		"ysf_mode": {"type": "string", "enum": ["voice_vw", "voice_dn", "data_fr"]},
+		"dg-id": {"type": "integer", "minimum": 0, "maximum": 127},
 		"ax25_type": {"type": "string", "enum": ["sabm", "disc", "ui", "ua", "rr", "rnr", "rej", "frmr", "i"]},
 		"dmr_slot": {"type": "integer", "enum": [1, 2]},
 		"source": {"type": "string", "enum": ["rf", "network"]},
@@ -79,10 +80,11 @@
 		"type": "object",
 		"timestamp": {"$ref": "#/$defs/timestamp"},
 		"source_cs": {"$ref": "#/$defs/ysf_callsign"},
-		"destination_cs": {"$ref": "#/$defs/ysf_callsign"},
 		"source": {"$ref": "#/$defs/source"},
 		"action": {"$ref": "#/$defs/action"},
 		"mode": {"$ref": "#/$defs/ysf_mode"},
+		"dg-id": {"$ref": "#/$defs/dg-id"},
+		"reflector": {"$ref": "#/$defs/ysf_callsign"},
 		"duration": {"$ref": "#/$defs/duration"},
 		"loss": {"$ref": "#/$defs/loss"},
 		"ber": {"$ref": "#/$defs/ber"},
@@ -91,7 +93,7 @@
 			"max": {"$ref": "#/$defs/rssi"},
 			"ave": {"$ref": "#/$defs/rssi"}
 		},
-		"required": ["timestamp", "source_cs", "destination_cs", "source", "action", "mode"]
+		"required": ["timestamp", "source_cs", "dg-id", "source", "action", "mode"]
 	},
 
 	"P25": {

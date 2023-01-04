@@ -107,7 +107,7 @@ private:
 
 	void writeJSON(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest);
 	void writeJSON(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber);
-	void writeJSON(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber, float minRSSI, float maxRSSI, float aveRSSI);
+	void writeJSON(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI);
 	void writeJSON(const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest);
 	void writeJSON(const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest, float duration);
 

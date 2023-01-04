@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2020,2021,2022 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2020,2021,2022,2023 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -948,7 +948,7 @@ void CM17Control::writeJSON(const char* action, RPT_RF_STATE state, const std::s
 	WriteJSON("M17", json);
 }
 
-void CM17Control::writeJSON(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber, float minRSSI, float maxRSSI, float aveRSSI)
+void CM17Control::writeJSON(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI)
 {
 	assert(action != NULL);
 
@@ -957,9 +957,9 @@ void CM17Control::writeJSON(const char* action, RPT_RF_STATE state, const std::s
 	writeJSON(json, action, state, source, dest, duration, ber);
 
 	nlohmann::json rssi;
-	rssi["min"] = minRSSI;
-	rssi["max"] = maxRSSI;
-	rssi["ave"]  = aveRSSI;
+	rssi["min"] = -int(minRSSI);
+	rssi["max"] = -int(maxRSSI);
+	rssi["ave"] = -int(aveRSSI);
 
 	json["rssi"] = rssi;
 
