@@ -683,6 +683,7 @@ bool CM17Control::processRFHeader(bool lateEntry)
 		if (type != M17_ENCRYPTION_TYPE_NONE) {
 			LogMessage("M17, access attempt with encryption from %s to %s", m_source.c_str(), m_dest.c_str());
 			m_rfState = RS_RF_REJECTED;
+			writeJSON("rejected", RS_RF_AUDIO, m_source, m_dest);
 			return true;
 		}
 	}
@@ -692,6 +693,7 @@ bool CM17Control::processRFHeader(bool lateEntry)
 		if (!ret) {
 			LogMessage("M17, invalid access attempt from %s to %s", m_source.c_str(), m_dest.c_str());
 			m_rfState = RS_RF_REJECTED;
+			writeJSON("rejected", RS_RF_AUDIO, m_source, m_dest);
 			return true;
 		}
 	}

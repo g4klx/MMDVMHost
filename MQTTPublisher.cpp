@@ -66,6 +66,7 @@ bool CMQTTPublisher::open()
 
 	rc = ::mosquitto_loop_start(m_mosq);
 	if (rc != MOSQ_ERR_SUCCESS) {
+		::mosquitto_disconnect(m_mosq);
 		::mosquitto_destroy(m_mosq);
 		m_mosq = NULL;
 		::fprintf(stderr, "MQTT Error loop starting: %s\n", ::mosquitto_strerror(rc));
@@ -97,9 +98,11 @@ bool CMQTTPublisher::publish(const char* topic, const char* text)
 
 void CMQTTPublisher::close()
 {
-	::mosquitto_disconnect(m_mosq);
-	::mosquitto_destroy(m_mosq);
-	m_mosq = NULL;
+	if (m_mosq != NULL) {
+		::mosquitto_disconnect(m_mosq);
+		::mosquitto_destroy(m_mosq);
+		m_mosq = NULL;
+	}
 }
 
 void CMQTTPublisher::onConnect(mosquitto* mosq, void* obj, int rc)

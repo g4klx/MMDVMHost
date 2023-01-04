@@ -149,6 +149,12 @@ void LogFinalise()
 {
 	if (m_fpLog != NULL)
 		::fclose(m_fpLog);
+
+	if (m_mqtt != NULL) {
+		m_mqtt->close();
+		delete m_mqtt;
+		m_mqtt = NULL;
+	}
 }
 
 void Log(unsigned int level, const char* fmt, ...)
