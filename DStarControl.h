@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2019,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -34,6 +34,8 @@
 
 #include <string>
 #include <vector>
+
+#include <nlohmann/json.hpp>
 
 class CDStarControl {
 public:
@@ -87,7 +89,6 @@ private:
 	unsigned int               m_rfBits;
 	unsigned int               m_netBits;
 	unsigned int               m_rfErrs;
-	unsigned int               m_netErrs;
 	unsigned char*             m_lastFrame;
 	bool                       m_lastFrameValid;
 	CRSSIInterpolator*         m_rssiMapper;
@@ -133,6 +134,18 @@ private:
 
 	void writeEndRF();
 	void writeEndNet();
+
+	void writeJSONRF(const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your);
+	void writeJSONRF(const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your, float duration, float ber);
+	void writeJSONRF(const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI);
+	void writeJSONNet(const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your, const unsigned char* reflector = NULL);
+	void writeJSONNet(const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your, float duration, float loss);
+
+	void writeJSONRF(nlohmann::json& json, const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your);
+	void writeJSONRF(nlohmann::json& json, const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your, float duration, float ber);
+	void writeJSONNet(nlohmann::json& json, const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your);
+
+	std::string convertBuffer(const unsigned char* buffer, unsigned int length) const;
 
 	bool openFile();
 	bool writeFile(const unsigned char* data, unsigned int length);

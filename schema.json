@@ -42,6 +42,7 @@
 		"source_cs": {"$ref": "#/$defs/dstar_callsign"},
 		"source_ext": {"$ref": "#/$defs/dstar_extension"},
 		"destination_cs": {"$ref": "#/$defs/dstar_callsign"},
+		"reflector": {"$ref": "#/$defs/dstar_callsign"},
 		"source": {"$ref": "#/$defs/source"},
 		"action": {"$ref": "#/$defs/action"},
 		"duration": {"$ref": "#/$defs/duration"},
