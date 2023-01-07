@@ -12,7 +12,7 @@
 		"pocsag_ric": {"type": "integer"},
 		"id_type": {"type": "string", "enum": ["group", "individual"]},
 		"ysf_mode": {"type": "string", "enum": ["voice_vw", "voice_dn", "data_fr"]},
-		"dg-id": {"type": "integer", "minimum": 0, "maximum": 127},
+		"dg-id": {"type": "integer", "minimum": 0, "maximum": 99},
 		"ax25_type": {"type": "string", "enum": ["sabm", "disc", "ui", "ua", "rr", "rnr", "rej", "frmr", "i"]},
 		"dmr_slot": {"type": "integer", "enum": [1, 2]},
 		"source": {"type": "string", "enum": ["rf", "network"]},
@@ -25,7 +25,7 @@
 		"duration": {"type": "number", "minimum": 0.0},
 		"loss": {"type": "number", "minimum": 0.0},
 		"ber": {"type": "number", "minimum": 0.0},
-		"rssi": {"type": "number"},
+		"rssi": {"type": "number", "minimum": -200.0, "maximum": -10.0},
 		"timestamp": {"type": "string"}
 	},
 

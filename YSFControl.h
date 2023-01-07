@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2020,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -32,6 +32,8 @@
 #include "Modem.h"
 
 #include <string>
+
+#include <nlohmann/json.hpp>
 
 class CYSFControl {
 public:
@@ -70,7 +72,6 @@ private:
 	unsigned int               m_netLost;
 	unsigned int               m_rfErrs;
 	unsigned int               m_rfBits;
-	unsigned int               m_netErrs;
 	unsigned int               m_netBits;
 	unsigned char*             m_rfSource;
 	unsigned char*             m_rfDest;
@@ -100,6 +101,17 @@ private:
 
 	void writeEndRF();
 	void writeEndNet();
+
+	void writeJSON(const char* action, const char* mode, const unsigned char* source, unsigned char dgid);
+	void writeJSON(const char* action, const char* mode, const unsigned char* source, unsigned char dgid, float duration, float ber);
+	void writeJSON(const char* action, const char* mode, const unsigned char* source, unsigned char dgid, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI);
+	void writeJSON(const char* action, const char* mode, const unsigned char* source, unsigned char dgid, const unsigned char* reflector);
+	void writeJSON(const char* action, const char* mode, const unsigned char* source, unsigned char dgid, const unsigned char* reflector, float duration, unsigned int loss);
+
+	void writeJSON(nlohmann::json& json, const char* action, const char* mode, const unsigned char* source, unsigned char dgid);
+	void writeJSON(nlohmann::json& json, const char* action, const char* mode, const unsigned char* source, unsigned char dgid, const unsigned char* reflector);
+
+	std::string convertBuffer(const unsigned char* buffer) const;
 
 	bool openFile();
 	bool writeFile(const unsigned char* data);
