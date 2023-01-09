@@ -357,6 +357,12 @@ bool CUARTController::setRaw()
  			::cfsetispeed(&termios, B460800);
 			break;
 #endif /*B460800*/
+#if defined(B500000)
+                case 500000U:
+                        ::cfsetospeed(&termios, B500000);
+                        ::cfsetispeed(&termios, B500000);
+                        break;
+#endif /*B500000*/
 		default:
 			LogError("Unsupported serial port speed - %u", m_speed);
 			::close(m_fd);
