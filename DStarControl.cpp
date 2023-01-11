@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015-2019,2021 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015-2019,2021,2023 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -640,6 +640,8 @@ void CDStarControl::writeEndRF()
 {
 	m_rfState = RS_RF_LISTENING;
 
+	m_rfTimeoutTimer.stop();
+
 	if (m_netState == RS_NET_IDLE) {
 		m_display->clearDStar();
 
@@ -647,8 +649,6 @@ void CDStarControl::writeEndRF()
 
 		if (m_network != NULL)
 			m_network->reset();
-	} else {
-		m_rfTimeoutTimer.stop();
 	}
 }
 
