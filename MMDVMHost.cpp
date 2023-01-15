@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2022 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@
 #include "StopWatch.h"
 #include "Defines.h"
 #include "Thread.h"
+#include "Utils.h"
 #include "Log.h"
 #include "GitVersion.h"
 
@@ -2025,6 +2026,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
 		createLockFile("D-Star");
+		writeJSON("D-Star");
 		break;
 
 	case MODE_DMR:
@@ -2073,6 +2075,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
 		createLockFile("DMR");
+		writeJSON("DMR");
 		break;
 
 	case MODE_YSF:
@@ -2117,6 +2120,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
 		createLockFile("System Fusion");
+		writeJSON("YSF");
 		break;
 
 	case MODE_P25:
@@ -2161,6 +2165,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
 		createLockFile("P25");
+		writeJSON("P25");
 		break;
 
 	case MODE_NXDN:
@@ -2205,6 +2210,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
 		createLockFile("NXDN");
+		writeJSON("NXDN");
 		break;
 
 	case MODE_M17:
@@ -2249,6 +2255,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
 		createLockFile("M17");
+		writeJSON("M17");
 		break;
 
 	case MODE_POCSAG:
@@ -2293,6 +2300,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
 		createLockFile("POCSAG");
+		writeJSON("POCSAG");
 		break;
 
 	case MODE_FM:
@@ -2342,6 +2350,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
 		createLockFile("FM");
+		writeJSON("FM");
 		break;
 
 	case MODE_LOCKOUT:
@@ -2391,6 +2400,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.stop();
 		m_cwIdTimer.stop();
 		removeLockFile();
+		writeJSON("lockout");
 		break;
 
 	case MODE_ERROR:
@@ -2440,6 +2450,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.stop();
 		m_cwIdTimer.stop();
 		removeLockFile();
+		writeJSON("error");
 		break;
 
 	default:
@@ -2498,6 +2509,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_mode = MODE_IDLE;
 		m_modeTimer.stop();
 		removeLockFile();
+		writeJSON("idle");
 		break;
 	}
 }
@@ -2787,3 +2799,14 @@ void CMMDVMHost::buildNetworkHostsString(std::string &str)
 	str += std::string(" m17:\"") + ((m_m17Enabled && (m_m17Network != NULL)) ? m_conf.getM17GatewayAddress() : "NONE") + "\"";
 	str += std::string(" fm:\"") + ((m_fmEnabled && (m_fmNetwork != NULL)) ? m_conf.getFMGatewayAddress() : "NONE") + "\"";
 }
+
+void CMMDVMHost::writeJSON(const std::string& mode)
+{
+	nlohmann::json json;
+
+	json["timestamp"] = CUtils::createTimestamp();
+	json["mode"]      = mode;
+
+	WriteJSON("MMDVM", json);
+}
+

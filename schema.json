@@ -1,6 +1,6 @@
 {
 	"$defs": {
-		"mmdvm_state": {"type": "string", "enum": ["lockout", "idle", "d-star", "dmr", "ysf", "nxdn", "pocsag", "fm", "ax,25", "m17"]},
+		"mmdvm_mode": {"type": "string", "enum": ["lockout", "idle", "error", "D-Star", "DMR", "YSF", "NXDN", "POCSAG", "FM", "M17"]},
 		"dstar_callsign": {"type": "string", "minLength": 8, "maxLength": 8},
 		"dstar_extension": {"type": "string", "minLength": 4, "maxLength": 4},
 		"ysf_callsign": {"type": "string", "minLength": 10, "maxLength": 10},
@@ -32,8 +32,8 @@
 	"MMDVM": {
 		"type": "object",
 		"timestamp": {"$ref": "#/$defs/timestamp"},
-		"state": {"$ref": "#/$defs/mmdvm_state"},
-		"required": ["timestamp"]
+		"mode": {"$ref": "#/$defs/mmdvm_mode"},
+		"required": ["timestamp", "mode"]
 	},
 
 	"D-Star": {
