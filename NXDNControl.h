@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2020,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -100,6 +100,16 @@ private:
 	bool openFile();
 	bool writeFile(const unsigned char* data);
 	void closeFile();
+
+	void writeJSONRF(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId);
+	void writeJSONRF(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId, float duration, float ber);
+	void writeJSONRF(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI);
+
+	void writeJSONNet(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId);
+	void writeJSONNet(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId, unsigned char frames);
+	void writeJSONNet(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId, float duration);
+
+	void writeJSON(nlohmann::json& json, const char* source, const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId);
 };
 
 #endif

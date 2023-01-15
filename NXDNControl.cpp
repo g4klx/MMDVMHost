@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015-2021 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015-2021,2023 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -95,12 +95,16 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 	if (type == TAG_LOST && m_rfState == RS_RF_AUDIO) {
 		unsigned short dstId = m_rfLayer3.getDestinationGroupId();
 		bool grp             = m_rfLayer3.getIsGroup();
-		std::string source = m_lookup->find(m_rfLayer3.getSourceUnitId());
+		unsigned short srcId = m_rfLayer3.getSourceUnitId();
+		std::string source = m_lookup->find(srcId);
 
-		if (m_rssi != 0U)
+		if (m_rssi != 0U) {
 			LogMessage("NXDN, transmission lost from %s to %s%u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-		else
+			writeJSONRF("lost", srcId, source, grp, dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+		} else {
 			LogMessage("NXDN, transmission lost from %s to %s%u, %.1f seconds, BER: %.1f%%", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits));
+			writeJSONRF("lost", srcId, source, grp, dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits));
+		}
 		writeEndRF();
 		return false;
 	}
@@ -265,13 +269,17 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		if (data[0U] == TAG_EOT) {
 			unsigned short dstId = m_rfLayer3.getDestinationGroupId();
 			bool grp             = m_rfLayer3.getIsGroup();
-			std::string source   = m_lookup->find(m_rfLayer3.getSourceUnitId());
+			unsigned short srcId = m_rfLayer3.getSourceUnitId();
+			std::string source   = m_lookup->find(srcId);
 
 			m_rfFrames++;
-			if (m_rssi != 0U)
+			if (m_rssi != 0U) {
 				LogMessage("NXDN, received RF end of transmission from %s to %s%u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-			else
+				writeJSONRF("end", srcId, source, grp, dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			} else {
 				LogMessage("NXDN, received RF end of transmission from %s to %s%u, %.1f seconds, BER: %.1f%%", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits));
+				writeJSONRF("end", srcId, source, grp, dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits));
+			}
 			writeEndRF();
 		} else {
 			m_rfFrames  = 0U;
@@ -286,12 +294,13 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 #if defined(DUMP_NXDN)
 			openFile();
 #endif
-			unsigned short srcId = m_rfLayer3.getSourceUnitId();
 			unsigned short dstId = m_rfLayer3.getDestinationGroupId();
 			bool grp             = m_rfLayer3.getIsGroup();
+			unsigned short srcId = m_rfLayer3.getSourceUnitId();
+			std::string source   = m_lookup->find(srcId);
 
-			std::string source = m_lookup->find(srcId);
 			LogMessage("NXDN, received RF header from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
+			writeJSONRF("header", srcId, source, grp, dstId);
 			m_display->writeNXDN(source.c_str(), grp, dstId, "R");
 		}
 
@@ -394,6 +403,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 #endif
 			std::string source = m_lookup->find(srcId);
 			LogMessage("NXDN, received RF late entry from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
+			writeJSONRF("late_entry", srcId, source, grp, dstId);
 			m_display->writeNXDN(source.c_str(), grp, dstId, "R");
 
 			m_rfState = RS_RF_AUDIO;
@@ -606,6 +616,7 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 		m_display->writeNXDNRSSI(m_rssi);
 
 		LogMessage("NXDN, received RF data header from %s to %s%u, %u blocks", source.c_str(), grp ? "TG " : "", dstId, frames);
+		writeJSONNet("header", srcId, source, grp, dstId, frames);
 
 		m_rfLayer3 = layer3;
 		m_rfFrames = 0U;
@@ -673,9 +684,11 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 	if (data[0U] == TAG_EOT) {
 		unsigned short dstId = m_rfLayer3.getDestinationGroupId();
 		bool grp             = m_rfLayer3.getIsGroup();
-		std::string source   = m_lookup->find(m_rfLayer3.getSourceUnitId());
+		unsigned short srcId = m_rfLayer3.getSourceUnitId();
+		std::string source   = m_lookup->find(srcId);
 
 		LogMessage("NXDN, ended RF data transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
+		writeJSONNet("end", srcId, source, grp, dstId);
 		writeEndRF();
 	}
 
@@ -777,6 +790,7 @@ void CNXDNControl::writeNetwork()
 				std::string source = m_lookup->find(srcId);
 				m_display->writeNXDN(source.c_str(), grp, dstId, "N");
 				LogMessage("NXDN, received network data header from %s to %s%u, %u blocks", source.c_str(), grp ? "TG " : "", dstId, frames);
+				writeJSONNet("header", srcId, source, grp, dstId, frames);
 
 				m_netState = RS_NET_DATA;
 			} else {
@@ -800,9 +814,11 @@ void CNXDNControl::writeNetwork()
 			if (type == NXDN_MESSAGE_TYPE_TX_REL) {
 				unsigned short dstId = m_netLayer3.getDestinationGroupId();
 				bool grp             = m_netLayer3.getIsGroup();
-				std::string source   = m_lookup->find(m_netLayer3.getSourceUnitId());
+				unsigned short srcId = m_netLayer3.getSourceUnitId();
+				std::string source   = m_lookup->find(srcId);
 
 				LogMessage("NXDN, ended network data transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
+				writeJSONNet("header", srcId, source, grp, dstId);
 				writeEndNet();
 			}
 		}
@@ -835,15 +851,18 @@ void CNXDNControl::writeNetwork()
 
 		unsigned short dstId = m_netLayer3.getDestinationGroupId();
 		bool grp             = m_netLayer3.getIsGroup();
+		unsigned short srcId = m_netLayer3.getSourceUnitId();
 		class CUserDBentry source;
-		m_lookup->findWithName(m_netLayer3.getSourceUnitId(), &source);
+		m_lookup->findWithName(srcId, &source);
 
 		if (type == NXDN_MESSAGE_TYPE_TX_REL) {
 			m_netFrames++;
 			LogMessage("NXDN, received network end of transmission from %s to %s%u, %.1f seconds", source.get(keyCALLSIGN).c_str(), grp ? "TG " : "", dstId, float(m_netFrames) / 12.5F);
+			writeJSONNet("end", srcId, source.get(keyCALLSIGN), grp, dstId, float(m_netFrames) / 12.5F);
 			writeEndNet();
 		} else if (type == NXDN_MESSAGE_TYPE_VCALL) {
 			LogMessage("NXDN, received network transmission from %s to %s%u", source.get(keyCALLSIGN).c_str(), grp ? "TG " : "", dstId);
+			writeJSONNet("header", srcId, source.get(keyCALLSIGN), grp, dstId);
 			m_display->writeNXDN(source, grp, dstId, "N");
 
 			m_netTimeoutTimer.start();
@@ -896,6 +915,7 @@ void CNXDNControl::writeNetwork()
 			class CUserDBentry source;
 			m_lookup->findWithName(srcId, &source);
 			LogMessage("NXDN, received network transmission from %s to %s%u", source.get(keyCALLSIGN).c_str(), grp ? "TG " : "", dstId);
+			writeJSONNet("header", srcId, source.get(keyCALLSIGN), grp, dstId);
 			m_display->writeNXDN(source, grp, dstId, "N");
 
 			m_netTimeoutTimer.start();
@@ -996,7 +1016,15 @@ void CNXDNControl::clock(unsigned int ms)
 		m_networkWatchdog.clock(ms);
 
 		if (m_networkWatchdog.hasExpired()) {
+			unsigned short srcId = m_netLayer3.getSourceUnitId();
+			unsigned short dstId = m_netLayer3.getDestinationGroupId();
+			bool grp             = m_netLayer3.getIsGroup();
+
+			class CUserDBentry source;
+			m_lookup->findWithName(srcId, &source);
+
 			LogMessage("NXDN, network watchdog has expired, %.1f seconds", float(m_netFrames) / 12.5F);
+			writeJSONNet("lost", srcId, source.get(keyCALLSIGN), grp, dstId, float(m_netFrames) / 12.5F);
 			writeEndNet();
 		}
 	}
@@ -1137,3 +1165,101 @@ void CNXDNControl::enable(bool enabled)
 
 	m_enabled = enabled;
 }
+
+void CNXDNControl::writeJSONRF(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId)
+{
+	assert(action != NULL);
+
+	nlohmann::json json;
+
+	writeJSON(json, "rf", action, srcId, srcInfo, grp, dstId);
+
+	WriteJSON("NXDN", json);
+}
+
+void CNXDNControl::writeJSONRF(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId, float duration, float ber)
+{
+	assert(action != NULL);
+
+	nlohmann::json json;
+
+	writeJSON(json, "rf", action, srcId, srcInfo, grp, dstId);
+
+	json["duration"] = duration;
+	json["ber"]      = ber;
+
+	WriteJSON("NXDN", json);
+}
+
+void CNXDNControl::writeJSONRF(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI)
+{
+	assert(action != NULL);
+
+	nlohmann::json json;
+
+	writeJSON(json, "rf", action, srcId, srcInfo, grp, dstId);
+
+	json["duration"] = duration;
+	json["ber"]      = ber;
+
+	nlohmann::json rssi;
+	rssi["min"] = -int(minRSSI);
+	rssi["max"] = -int(maxRSSI);
+	rssi["ave"] = -int(aveRSSI);
+
+	json["rssi"] = rssi;
+
+	WriteJSON("NXDN", json);
+}
+
+void CNXDNControl::writeJSONNet(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId)
+{
+	assert(action != NULL);
+
+	nlohmann::json json;
+
+	writeJSON(json, "network", action, srcId, srcInfo, grp, dstId);
+
+	WriteJSON("NXDN", json);
+}
+
+void CNXDNControl::writeJSONNet(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId, unsigned char frames)
+{
+	assert(action != NULL);
+
+	nlohmann::json json;
+
+	writeJSON(json, "network", action, srcId, srcInfo, grp, dstId);
+
+	json["frames"] = int(frames);
+
+	WriteJSON("NXDN", json);
+}
+
+void CNXDNControl::writeJSONNet(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId, float duration)
+{
+	assert(action != NULL);
+
+	nlohmann::json json;
+
+	writeJSON(json, "network", action, srcId, srcInfo, grp, dstId);
+
+	json["duration"] = duration;
+
+	WriteJSON("NXDN", json);
+}
+
+void CNXDNControl::writeJSON(nlohmann::json& json, const char* source, const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId)
+{
+	assert(source != NULL);
+	assert(action != NULL);
+
+	json["timestamp"]        = CUtils::createTimestamp();
+	json["source"]           = source;
+	json["action"]           = action;
+	json["source_id"]        = int(srcId);
+	json["source_info"]      = srcInfo;
+	json["destination_id"]   = int(dstId);
+	json["destination_type"] = grp ? "group" : "individual";
+}
+
