@@ -88,8 +88,8 @@ private:
 
 	void decodeROT1(const std::string& in, unsigned int start, std::string& out) const;
 
-	void writeJSON(const std::string& source, unsigned int ric, const std::string& functional);
-	void writeJSON(const std::string& source, unsigned int ric, const std::string& functional, const std::string& message);
+	void writeJSON(const char* source, unsigned int ric, const char* functional);
+	void writeJSON(const char* source, unsigned int ric, const char* functional, const std::string& message);
 };
 
 #endif

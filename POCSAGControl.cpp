@@ -588,8 +588,11 @@ void CPOCSAGControl::decodeROT1(const std::string& in, unsigned int start, std::
 		out += in.at(i) - 1U;
 }
 
-void CPOCSAGControl::writeJSON(const std::string& source, unsigned int ric, const std::string& functional)
+void CPOCSAGControl::writeJSON(const char* source, unsigned int ric, const char* functional)
 {
+	assert(source != NULL);
+	assert(functional != NULL);
+
 	nlohmann::json json;
 
 	json["timestamp"]  = CUtils::createTimestamp();
@@ -600,8 +603,11 @@ void CPOCSAGControl::writeJSON(const std::string& source, unsigned int ric, cons
 	WriteJSON("POCSAG", json);
 }
 
-void CPOCSAGControl::writeJSON(const std::string& source, unsigned int ric, const std::string& functional, const std::string& message)
+void CPOCSAGControl::writeJSON(const char* source, unsigned int ric, const char* functional, const std::string& message)
 {
+	assert(source != NULL);
+	assert(functional != NULL);
+
 	nlohmann::json json;
 
 	json["timestamp"]  = CUtils::createTimestamp();
