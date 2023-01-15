@@ -20,7 +20,7 @@
 		"m17_traffic_type": {"type": "string", "enum": ["audio", "audio_data", "data"]},
 		"ax25_pid": {"type": "string"},
 		"pocsag_source": {"type": "string", "enum": ["local", "network"]},
-		"pocsag_function": {"type": "string", "enum": ["numeric", "alphanumeric", "alert_1", "alert_2"]},
+		"pocsag_functional": {"type": "string", "enum": ["numeric", "alphanumeric", "alert_1", "alert_2"]},
 		"action": {"type": "string", "enum": ["invalid", "rejected", "header", "late_entry", "end", "lost"]},
 		"duration": {"type": "number", "minimum": 0.0},
 		"loss": {"type": "number", "minimum": 0.0},
@@ -141,10 +141,10 @@
 		"type": "object",
 		"timestamp": {"$ref": "#/$defs/timestamp"},
 		"ric": {"$ref": "#/$defs/pocsag_ric"},
-		"function": {"$ref": "#/$defs/pocsag_function"},
+		"functional": {"$ref": "#/$defs/pocsag_functional"},
 		"source": {"$ref": "#/$defs/pocsag_source"},
-		"data": {"type": "string"},
-		"required": ["timestamp", "ric", "function", "source", "data"]
+		"message": {"type": "string"},
+		"required": ["timestamp", "ric", "functional", "source"]
 	},
 
 	"FM": {
