@@ -34,6 +34,8 @@
 
 #include <string>
 
+#include <nlohmann/json.hpp>
+
 class CNXDNControl {
 public:
 	CNXDNControl(unsigned int ran, unsigned int id, bool selfOnly, INXDNNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CNXDNLookup* lookup, CRSSIInterpolator* rssiMapper);

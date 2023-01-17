@@ -47,7 +47,6 @@
 
 #include <string>
 
-
 class CMMDVMHost
 {
 public:

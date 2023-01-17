@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016-2019 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016-2019,2023 by Jonathan Naylor G4KLX
 *   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com>
 *
 *   This program is free software; you can redistribute it and/or modify
@@ -34,6 +34,8 @@
 #include "Timer.h"
 
 #include <cstdio>
+
+#include <nlohmann/json.hpp>
 
 class CP25Control {
 public:
@@ -118,6 +120,15 @@ private:
 	bool openFile();
 	bool writeFile(const unsigned char* data, unsigned char length);
 	void closeFile();
+
+	void writeJSONRF(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId);
+	void writeJSONRF(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId, float duration, float ber);
+	void writeJSONRF(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI);
+
+	void writeJSONNet(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId);
+	void writeJSONNet(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId, float duration, float loss);
+
+	void writeJSON(nlohmann::json& json, const char* source, const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId);
 };
 
 #endif

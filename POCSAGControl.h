@@ -30,6 +30,8 @@
 #include <string>
 #include <deque>
 
+#include <nlohmann/json.hpp>
+
 struct POCSAGData {
 	unsigned int         m_ric;
 	std::string          m_text;
