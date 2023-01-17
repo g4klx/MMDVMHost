@@ -398,7 +398,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		}
 
 		LogMessage("D-Star, received RF header from %8.8s/%4.4s to %8.8s", my1, my2, your);
-		writeJSONRF("header", my1, my2, your);
+		writeJSONRF("start", my1, my2, your);
 	} else if (type == TAG_EOT) {
 		if (m_rfState == RS_RF_REJECTED) {
 			m_rfState = RS_RF_LISTENING;
@@ -759,11 +759,11 @@ void CDStarControl::writeNetwork()
 		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK) {
 			m_display->writeDStar((char*)my1, (char*)my2, (char*)your, "N", (char*) reflector);
 			LogMessage("D-Star, received network header from %8.8s/%4.4s to %8.8s via %8.8s", my1, my2, your, reflector);
-			writeJSONNet("header", my1, my2, your, reflector);
+			writeJSONNet("start", my1, my2, your, reflector);
 		} else {
 			m_display->writeDStar((char*)my1, (char*)my2, (char*)your, "N", (char*) "        ");
 			LogMessage("D-Star, received network header from %8.8s/%4.4s to %8.8s", my1, my2, your);
-			writeJSONNet("header", my1, my2, your);
+			writeJSONNet("start", my1, my2, your);
 		}	
 
 		// Something just above here introduces a large delay forcing erroneous(?) insertion of silence packets.

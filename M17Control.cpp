@@ -115,10 +115,10 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 	if (type == TAG_LOST && (m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA_AUDIO)) {
 		if (m_rssi != 0U) {
 			LogMessage("M17, transmission lost from %s to %s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_source.c_str(), m_dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-			writeJSON("lost", m_rfState, m_source, m_dest, float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			writeJSONRF("lost", m_rfState, m_source, m_dest, float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 		} else {
 			LogMessage("M17, transmission lost from %s to %s, %.1f seconds, BER: %.1f%%", m_source.c_str(), m_dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
-			writeJSON("lost", m_rfState, m_source, m_dest, float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+			writeJSONRF("lost", m_rfState, m_source, m_dest, float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 		}
 		writeEndRF();
 		return false;
@@ -424,10 +424,10 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 		if (m_rssi != 0U) {
 			LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_source.c_str(), m_dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-			writeJSON("end", m_rfState, m_source, m_dest, float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+			writeJSONRF("end", m_rfState, m_source, m_dest, float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 		} else {
 			LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%", m_source.c_str(), m_dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
-			writeJSON("end", m_rfState, m_source, m_dest, float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			writeJSONRF("end", m_rfState, m_source, m_dest, float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 		}
 		writeEndRF();
 
@@ -535,17 +535,17 @@ void CM17Control::writeNetwork()
 		case M17_DATA_TYPE_DATA:
 			LogMessage("M17, received network data transmission from %s to %s", m_source.c_str(), m_dest.c_str());
 			m_netState = RS_NET_DATA;
-			writeJSON("header", m_netState, m_source, m_dest);
+			writeJSONNet("start", m_netState, m_source, m_dest);
 			break;
 		case M17_DATA_TYPE_VOICE:
 			LogMessage("M17, received network voice transmission from %s to %s", m_source.c_str(), m_dest.c_str());
 			m_netState = RS_NET_AUDIO;
-			writeJSON("header", m_netState, m_source, m_dest);
+			writeJSONNet("start", m_netState, m_source, m_dest);
 			break;
 		case M17_DATA_TYPE_VOICE_DATA:
 			LogMessage("M17, received network voice + data transmission from %s to %s", m_source.c_str(), m_dest.c_str());
 			m_netState = RS_NET_DATA_AUDIO;
-			writeJSON("header", m_netState, m_source, m_dest);
+			writeJSONNet("start", m_netState, m_source, m_dest);
 			break;
 		default:
 			LogMessage("M17, received network unknown transmission from %s to %s", m_source.c_str(), m_dest.c_str());
@@ -647,7 +647,7 @@ void CM17Control::writeNetwork()
 		uint16_t fn = (netData[28U] << 8) + (netData[29U] << 0);
 		if ((fn & 0x8000U) == 0x8000U) {
 			LogMessage("M17, received network end of transmission from %s to %s, %.1f seconds", m_source.c_str(), m_dest.c_str(), float(m_netFrames) / 25.0F);
-			writeJSON("end", m_netState, m_source, m_dest, float(m_netFrames) / 25.0F);
+			writeJSONNet("end", m_netState, m_source, m_dest, float(m_netFrames) / 25.0F);
 
 			unsigned char data[M17_FRAME_LENGTH_BYTES + 2U];
 
@@ -683,7 +683,7 @@ bool CM17Control::processRFHeader(bool lateEntry)
 		if (type != M17_ENCRYPTION_TYPE_NONE) {
 			LogMessage("M17, access attempt with encryption from %s to %s", m_source.c_str(), m_dest.c_str());
 			m_rfState = RS_RF_REJECTED;
-			writeJSON("rejected", RS_RF_AUDIO, m_source, m_dest);
+			writeJSONRF("rejected", RS_RF_AUDIO, m_source, m_dest);
 			return true;
 		}
 	}
@@ -693,7 +693,7 @@ bool CM17Control::processRFHeader(bool lateEntry)
 		if (!ret) {
 			LogMessage("M17, invalid access attempt from %s to %s", m_source.c_str(), m_dest.c_str());
 			m_rfState = RS_RF_REJECTED;
-			writeJSON("rejected", RS_RF_AUDIO, m_source, m_dest);
+			writeJSONRF("rejected", RS_RF_AUDIO, m_source, m_dest);
 			return true;
 		}
 	}
@@ -703,17 +703,17 @@ bool CM17Control::processRFHeader(bool lateEntry)
 	case M17_DATA_TYPE_DATA:
 		LogMessage("M17, received RF%sdata transmission from %s to %s", lateEntry ? " late entry " : " ", m_source.c_str(), m_dest.c_str());
 		m_rfState = RS_RF_DATA;
-		writeJSON(lateEntry ? "late_entry" : "header", m_rfState, m_source, m_dest);
+		writeJSONRF(lateEntry ? "late_entry" : "start", m_rfState, m_source, m_dest);
 		break;
 	case M17_DATA_TYPE_VOICE:
 		LogMessage("M17, received RF%svoice transmission from %s to %s", lateEntry ? " late entry " : " ", m_source.c_str(), m_dest.c_str());
 		m_rfState = RS_RF_AUDIO;
-		writeJSON(lateEntry ? "late_entry" : "header", m_rfState, m_source, m_dest);
+		writeJSONRF(lateEntry ? "late_entry" : "start", m_rfState, m_source, m_dest);
 		break;
 	case M17_DATA_TYPE_VOICE_DATA:
 		LogMessage("M17, received RF%svoice + data transmission from %s to %s", lateEntry ? " late entry " : " ", m_source.c_str(), m_dest.c_str());
 		m_rfState = RS_RF_DATA_AUDIO;
-		writeJSON(lateEntry ? "late_entry" : "header", m_rfState, m_source, m_dest);
+		writeJSONRF(lateEntry ? "late_entry" : "start", m_rfState, m_source, m_dest);
 		break;
 	default:
 		return false;
@@ -782,7 +782,7 @@ void CM17Control::clock(unsigned int ms)
 
 		if (m_networkWatchdog.hasExpired()) {
 			LogMessage("M17, network watchdog has expired, %.1f seconds", float(m_netFrames) / 25.0F);
-			writeJSON("lost", m_netState, m_source, m_dest, float(m_netFrames) / 25.0F);
+			writeJSONNet("lost", m_netState, m_source, m_dest, float(m_netFrames) / 25.0F);
 			writeEndNet();
 		}
 	}
@@ -926,35 +926,35 @@ void CM17Control::enable(bool enabled)
 	m_enabled = enabled;
 }
 
-void CM17Control::writeJSON(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest)
+void CM17Control::writeJSONRF(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest)
 {
 	assert(action != NULL);
 
 	nlohmann::json json;
 
-	writeJSON(json, action, state, source, dest);
+	writeJSONRF(json, action, state, source, dest);
 
 	WriteJSON("M17", json);
 }
 
-void CM17Control::writeJSON(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber)
+void CM17Control::writeJSONRF(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber)
 {
 	assert(action != NULL);
 
 	nlohmann::json json;
 
-	writeJSON(json, action, state, source, dest, duration, ber);
+	writeJSONRF(json, action, state, source, dest, duration, ber);
 
 	WriteJSON("M17", json);
 }
 
-void CM17Control::writeJSON(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI)
+void CM17Control::writeJSONRF(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI)
 {
 	assert(action != NULL);
 
 	nlohmann::json json;
 
-	writeJSON(json, action, state, source, dest, duration, ber);
+	writeJSONRF(json, action, state, source, dest, duration, ber);
 
 	nlohmann::json rssi;
 	rssi["min"] = -int(minRSSI);
@@ -966,31 +966,31 @@ void CM17Control::writeJSON(const char* action, RPT_RF_STATE state, const std::s
 	WriteJSON("M17", json);
 }
 
-void CM17Control::writeJSON(const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest)
+void CM17Control::writeJSONNet(const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest)
 {
 	assert(action != NULL);
 
 	nlohmann::json json;
 
-	writeJSON(json, action, state, source, dest);
+	writeJSONNet(json, action, state, source, dest);
 
 	WriteJSON("M17", json);
 }
 
-void CM17Control::writeJSON(const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest, float duration)
+void CM17Control::writeJSONNet(const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest, float duration)
 {
 	assert(action != NULL);
 
 	nlohmann::json json;
 
-	writeJSON(json, action, state, source, dest);
+	writeJSONNet(json, action, state, source, dest);
 
 	json["duration"] = duration;
 
 	WriteJSON("M17", json);
 }
 
-void CM17Control::writeJSON(nlohmann::json& json, const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest)
+void CM17Control::writeJSONRF(nlohmann::json& json, const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest)
 {
 	assert(action != NULL);
 
@@ -1018,17 +1018,17 @@ void CM17Control::writeJSON(nlohmann::json& json, const char* action, RPT_RF_STA
 	}
 }
 
-void CM17Control::writeJSON(nlohmann::json& json, const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber)
+void CM17Control::writeJSONRF(nlohmann::json& json, const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber)
 {
 	assert(action != NULL);
 
-	writeJSON(json, action, state, source, dest);
+	writeJSONRF(json, action, state, source, dest);
 
 	json["duration"] = duration;
 	json["ber"]      = ber;
 }
 
-void CM17Control::writeJSON(nlohmann::json& json, const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest)
+void CM17Control::writeJSONNet(nlohmann::json& json, const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest)
 {
 	assert(action != NULL);
 

@@ -21,7 +21,7 @@
 		"ax25_pid": {"type": "string"},
 		"pocsag_source": {"type": "string", "enum": ["local", "network"]},
 		"pocsag_functional": {"type": "string", "enum": ["numeric", "alphanumeric", "alert_1", "alert_2"]},
-		"action": {"type": "string", "enum": ["invalid", "rejected", "header", "late_entry", "end", "lost"]},
+		"action": {"type": "string", "enum": ["invalid", "rejected", "start", "late_entry", "end", "lost"]},
 		"duration": {"type": "number", "minimum": 0.0},
 		"loss": {"type": "number", "minimum": 0.0},
 		"ber": {"type": "number", "minimum": 0.0},
@@ -127,7 +127,6 @@
 		"source": {"$ref": "#/$defs/source"},
 		"action": {"$ref": "#/$defs/action"},
 		"duration": {"$ref": "#/$defs/duration"},
-		"loss": {"$ref": "#/$defs/loss"},
 		"ber": {"$ref": "#/$defs/ber"},
 		"rssi": {
 			"min": {"$ref": "#/$defs/rssi"},

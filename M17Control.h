@@ -105,15 +105,16 @@ private:
 	void writeEndRF();
 	void writeEndNet();
 
-	void writeJSON(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest);
-	void writeJSON(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber);
-	void writeJSON(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI);
-	void writeJSON(const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest);
-	void writeJSON(const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest, float duration);
+	void writeJSONRF(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest);
+	void writeJSONRF(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber);
+	void writeJSONRF(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI);
 
-	void writeJSON(nlohmann::json& json, const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest);
-	void writeJSON(nlohmann::json& json, const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber);
-	void writeJSON(nlohmann::json& json, const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest);
+	void writeJSONNet(const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest);
+	void writeJSONNet(const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest, float duration);
+
+	void writeJSONRF(nlohmann::json& json, const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest);
+	void writeJSONRF(nlohmann::json& json, const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber);
+	void writeJSONNet(nlohmann::json& json, const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest);
 
 	bool openFile();
 	bool writeFile(const unsigned char* data);

@@ -300,7 +300,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			std::string source   = m_lookup->find(srcId);
 
 			LogMessage("NXDN, received RF header from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
-			writeJSONRF("header", srcId, source, grp, dstId);
+			writeJSONRF("start", srcId, source, grp, dstId);
 			m_display->writeNXDN(source.c_str(), grp, dstId, "R");
 		}
 
@@ -616,7 +616,7 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 		m_display->writeNXDNRSSI(m_rssi);
 
 		LogMessage("NXDN, received RF data header from %s to %s%u, %u blocks", source.c_str(), grp ? "TG " : "", dstId, frames);
-		writeJSONNet("header", srcId, source, grp, dstId, frames);
+		writeJSONNet("start", srcId, source, grp, dstId, frames);
 
 		m_rfLayer3 = layer3;
 		m_rfFrames = 0U;
@@ -790,7 +790,7 @@ void CNXDNControl::writeNetwork()
 				std::string source = m_lookup->find(srcId);
 				m_display->writeNXDN(source.c_str(), grp, dstId, "N");
 				LogMessage("NXDN, received network data header from %s to %s%u, %u blocks", source.c_str(), grp ? "TG " : "", dstId, frames);
-				writeJSONNet("header", srcId, source, grp, dstId, frames);
+				writeJSONNet("start", srcId, source, grp, dstId, frames);
 
 				m_netState = RS_NET_DATA;
 			} else {
@@ -818,7 +818,7 @@ void CNXDNControl::writeNetwork()
 				std::string source   = m_lookup->find(srcId);
 
 				LogMessage("NXDN, ended network data transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
-				writeJSONNet("header", srcId, source, grp, dstId);
+				writeJSONNet("start", srcId, source, grp, dstId);
 				writeEndNet();
 			}
 		}
@@ -862,7 +862,7 @@ void CNXDNControl::writeNetwork()
 			writeEndNet();
 		} else if (type == NXDN_MESSAGE_TYPE_VCALL) {
 			LogMessage("NXDN, received network transmission from %s to %s%u", source.get(keyCALLSIGN).c_str(), grp ? "TG " : "", dstId);
-			writeJSONNet("header", srcId, source.get(keyCALLSIGN), grp, dstId);
+			writeJSONNet("start", srcId, source.get(keyCALLSIGN), grp, dstId);
 			m_display->writeNXDN(source, grp, dstId, "N");
 
 			m_netTimeoutTimer.start();
@@ -915,7 +915,7 @@ void CNXDNControl::writeNetwork()
 			class CUserDBentry source;
 			m_lookup->findWithName(srcId, &source);
 			LogMessage("NXDN, received network transmission from %s to %s%u", source.get(keyCALLSIGN).c_str(), grp ? "TG " : "", dstId);
-			writeJSONNet("header", srcId, source.get(keyCALLSIGN), grp, dstId);
+			writeJSONNet("start", srcId, source.get(keyCALLSIGN), grp, dstId);
 			m_display->writeNXDN(source, grp, dstId, "N");
 
 			m_netTimeoutTimer.start();
