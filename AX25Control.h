@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -41,7 +41,10 @@ private:
 	FILE*         m_fp;
 
 	void decode(const unsigned char* data, unsigned int length);
+	void decodeJSON(const char* source, const unsigned char* data, unsigned int length);
 	bool decodeAddress(const unsigned char* data, std::string& text, bool isDigi = false) const;
+	bool decodeAddressJSON(const unsigned char* data, std::string& text, bool& isDigi) const;
+
 	bool openFile();
 	bool writeFile(const unsigned char* data, unsigned int length);
 	void closeFile();

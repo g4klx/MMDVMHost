@@ -37,6 +37,8 @@
 
 #include <vector>
 
+#include <nlohmann/json.hpp>
+
 enum ACTIVITY_TYPE {
 	ACTIVITY_NONE,
 	ACTIVITY_VOICE,
