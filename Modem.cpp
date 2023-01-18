@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2011-2018,2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2011-2018,2020,2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -89,7 +89,7 @@ const unsigned char MMDVM_FM_PARAMS2  = 0x61U;
 const unsigned char MMDVM_FM_PARAMS3  = 0x62U;
 const unsigned char MMDVM_FM_PARAMS4  = 0x63U;
 const unsigned char MMDVM_FM_DATA     = 0x65U;
-const unsigned char MMDVM_FM_CONTROL  = 0x66U;
+const unsigned char MMDVM_FM_STATUS   = 0x66U;
 const unsigned char MMDVM_FM_EOT      = 0x67U;
 
 const unsigned char MMDVM_ACK         = 0x70U;
@@ -730,14 +730,14 @@ void CModem::clock(unsigned int ms)
 			}
 			break;
 
-			case MMDVM_FM_CONTROL: {
+			case MMDVM_FM_STATUS: {
 				if (m_trace)
-					CUtils::dump(1U, "RX FM Control", m_buffer, m_length);
+					CUtils::dump(1U, "RX FM Status", m_buffer, m_length);
 
 				unsigned int data1 = m_length - m_offset + 1U;
 				m_rxFMData.addData((unsigned char*)&data1, sizeof(unsigned int));
 
-				unsigned char data2= TAG_HEADER;
+				unsigned char data2 = TAG_HEADER;
 				m_rxFMData.addData(&data2, 1U);
 
 				m_rxFMData.addData(m_buffer + m_offset, m_length - m_offset);
@@ -1093,8 +1093,8 @@ void CModem::clock(unsigned int ms)
 		m_txFMData.getData(m_buffer, len);
 
 		if (m_trace) {
-			if (m_buffer[2U] == MMDVM_FM_CONTROL)
-				CUtils::dump(1U, "TX FM Control", m_buffer, len);
+			if (m_buffer[2U] == MMDVM_FM_STATUS)
+				CUtils::dump(1U, "TX FM Status", m_buffer, len);
 			else
 				CUtils::dump(1U, "TX FM Data", m_buffer, len);
 		}

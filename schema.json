@@ -16,7 +16,7 @@
 		"ax25_type": {"type": "string", "enum": ["sabm", "disc", "ui", "ua", "rr", "rnr", "rej", "frmr", "i"]},
 		"dmr_slot": {"type": "integer", "enum": [1, 2]},
 		"source": {"type": "string", "enum": ["rf", "network"]},
-		"fm_state": {"type": "string", "enum": ["waiting_rf", "waiting_network"]},
+		"fm_state": {"type": "string", "enum": ["listening", "kerchunk_rf", "relaying_rf", "relaying_wait_rf", "timeout_rf", "timeout_wait_rf", "kerchunk_ext", "relaying_ext", "relaying_wait_ext", "timeout_ext", "timeout_wait_ext", "hang", "unknown"]},
 		"m17_traffic_type": {"type": "string", "enum": ["audio", "audio_data", "data"]},
 		"ax25_pid": {"type": "string"},
 		"pocsag_source": {"type": "string", "enum": ["local", "network"]},

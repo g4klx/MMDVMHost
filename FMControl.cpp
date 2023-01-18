@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 
 #include "FMControl.h"
+#include "Utils.h"
 
 #include <string>
 
@@ -30,6 +31,19 @@ const float        DEEMPHASIS_GAIN_DB  = 8.0F;  // Audio gain  adjustment
 const float        PREEMPHASIS_GAIN_DB = 0.0F;  // Audio gain  adjustment
 const float        FILTER_GAIN_DB      = 2.0F;  // Audio gain  adjustment
 const unsigned int FM_MASK             = 0x00000FFFU;
+
+const unsigned char FS_LISTENING         = 0U;
+const unsigned char FS_KERCHUNK_RF       = 1U;
+const unsigned char FS_RELAYING_RF       = 2U;
+const unsigned char FS_RELAYING_WAIT_RF  = 3U;
+const unsigned char FS_TIMEOUT_RF        = 4U;
+const unsigned char FS_TIMEOUT_WAIT_RF   = 5U;
+const unsigned char FS_KERCHUNK_EXT      = 6U;
+const unsigned char FS_RELAYING_EXT      = 7U;
+const unsigned char FS_RELAYING_WAIT_EXT = 8U;
+const unsigned char FS_TIMEOUT_EXT       = 9U;
+const unsigned char FS_TIMEOUT_WAIT_EXT  = 10U;
+const unsigned char FS_HANG              = 11U;
 
 CFMControl::CFMControl(CFMNetwork* network, float txAudioGain, float rxAudioGain, bool preEmphasisOn, bool deEmphasisOn) :
 m_network(network),
@@ -75,8 +89,25 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
     if (m_network == NULL)
         return true;
 
-    if (data[0U] == TAG_HEADER)
+    if (data[0U] == TAG_HEADER) {
+        switch (data[1U]) {
+            case FS_LISTENING:         writeJSON("listening");         break;
+            case FS_KERCHUNK_RF:       writeJSON("kerchunk_rf");       break;
+            case FS_RELAYING_RF:       writeJSON("relaying_rf");       break;
+            case FS_RELAYING_WAIT_RF:  writeJSON("relaying_wait_rf");  break;
+            case FS_TIMEOUT_RF:        writeJSON("timeout_rf");        break;
+            case FS_TIMEOUT_WAIT_RF:   writeJSON("timeout_wait_rf");   break;
+            case FS_KERCHUNK_EXT:      writeJSON("kerchunk_ext");      break;
+            case FS_RELAYING_EXT:      writeJSON("relaying_ext");      break;
+            case FS_RELAYING_WAIT_EXT: writeJSON("relaying_wait_ext"); break;
+            case FS_TIMEOUT_EXT:       writeJSON("timeout_ext");       break;
+            case FS_TIMEOUT_WAIT_EXT:  writeJSON("timeout_wait_ext");  break;
+            case FS_HANG:              writeJSON("hang");              break;
+            default:                   writeJSON("unknown");           break;
+        }
+
         return true;
+    }
 
     if (data[0U] == TAG_EOT)
         return m_network->writeEnd();
@@ -190,3 +221,16 @@ void CFMControl::enable(bool enabled)
 {
     // May not be needed
 }
+
+void CFMControl::writeJSON(const char* state)
+{
+	assert(state != NULL);
+
+	nlohmann::json json;
+
+	json["timestamp"] = CUtils::createTimestamp();
+	json["state"]     = state;
+
+	WriteJSON("FM", json);
+}
+
