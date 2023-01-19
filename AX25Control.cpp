@@ -236,15 +236,16 @@ void CAX25Control::decodeJSON(const char* source, const unsigned char* data, uns
 	nlohmann::json json;
 
 	json["timestamp"] = CUtils::createTimestamp();
+	json["source"]    = source;
 
 	std::string text;
 
 	bool isDigi;
 	bool more = decodeAddressJSON(data + 7U, text, isDigi);
-	json["source"] = text;
+	json["source_cs"] = text;
 
 	decodeAddressJSON(data + 0U, text, isDigi);
-	json["destination"] = text;
+	json["destination_cs"] = text;
 
 	unsigned int n = 14U;
 

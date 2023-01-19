@@ -103,15 +103,17 @@ private:
 	void writeEndNet();
 
 	void writeJSONRF(const char* action, const char* mode, const unsigned char* source, unsigned char dgid);
+	void writeJSONRF(const char* action, const unsigned char* source, unsigned char dgid, float duration, float ber);
 	void writeJSONRF(const char* action, const char* mode, const unsigned char* source, unsigned char dgid, float duration, float ber);
+	void writeJSONRF(const char* action, const unsigned char* source, unsigned char dgid, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI);
 	void writeJSONRF(const char* action, const char* mode, const unsigned char* source, unsigned char dgid, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI);
 
-	void writeJSONNet(const char* action, const char* mode, const unsigned char* source, unsigned char dgid, const unsigned char* reflector);
-	void writeJSONNet(const char* action, const char* mode, const unsigned char* source, unsigned char dgid, float duration, unsigned int loss);
-	void writeJSONNet(const char* action, const char* mode, const unsigned char* source, unsigned char dgid, const unsigned char* reflector, float duration, unsigned int loss);
+	void writeJSONNet(const char* action, const unsigned char* source, unsigned char dgid, const unsigned char* reflector);
+	void writeJSONNet(const char* action, const unsigned char* source, unsigned char dgid, float duration, unsigned int loss);
+	void writeJSONNet(const char* action, const unsigned char* source, unsigned char dgid, const unsigned char* reflector, float duration, unsigned int loss);
 
-	void writeJSONRF(nlohmann::json& json, const char* action, const char* mode, const unsigned char* source, unsigned char dgid);
-	void writeJSONNet(nlohmann::json& json, const char* action, const char* mode, const unsigned char* source, unsigned char dgid);
+	void writeJSONRF(nlohmann::json& json, const char* action, const unsigned char* source, unsigned char dgid);
+	void writeJSONNet(nlohmann::json& json, const char* action, const unsigned char* source, unsigned char dgid);
 
 	std::string convertBuffer(const unsigned char* buffer) const;
 

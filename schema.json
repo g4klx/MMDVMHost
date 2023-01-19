@@ -98,7 +98,7 @@
 			"max": {"$ref": "#/$defs/rssi"},
 			"ave": {"$ref": "#/$defs/rssi"}
 		},
-		"required": ["timestamp", "source_cs", "dg-id", "source", "action", "mode"]
+		"required": ["timestamp", "source_cs", "dg-id", "source", "action"]
 	},
 
 	"P25": {
@@ -160,8 +160,9 @@
 	"AX.25": {
 		"type": "object",
 		"timestamp": {"$ref": "#/$defs/timestamp"},
-		"source": {"$ref": "#/$defs/ax25_callsign"},
-		"destination": {"$ref": "#/$defs/ax25_callsign"},
+		"source": {"$ref": "#/$defs/source"},
+		"source_cs": {"$ref": "#/$defs/ax25_callsign"},
+		"destination_cs": {"$ref": "#/$defs/ax25_callsign"},
 		"digipeaters": {
 			"type": "array",
 			"callsign": {"$ref": "#/$defs/ax25_callsign"},
