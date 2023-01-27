@@ -16,21 +16,24 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef RemoteCommand_H
-#define RemoteCommand_H
+#ifndef RemoteCommand_H_
+#define RemoteCommand_H_
 
 #include <string>
 
-class CRemoteCommand
-{
+
+class CRemoteCommand {
 public:
 	CRemoteCommand(unsigned int port);
+	CRemoteCommand(const std::string &host, unsigned int port);
 	~CRemoteCommand();
-	
-	int send(const std::string& command);
+
+	int send(const std::string &command);
 
 private:
+	std::string m_host;
 	unsigned int m_port;
 };
 
-#endif
+
+#endif	/* !RemoteCommand_H_ */
