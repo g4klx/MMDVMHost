@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2022 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -248,13 +248,10 @@ public:
 
   // The DMR Network section
   bool         getDMRNetworkEnabled() const;
-  std::string  getDMRNetworkType() const;
-  std::string  getDMRNetworkRemoteAddress() const;
-  unsigned short getDMRNetworkRemotePort() const;
+  std::string  getDMRNetworkGatewayAddress() const;
+  unsigned short getDMRNetworkGatewayPort() const;
   std::string  getDMRNetworkLocalAddress() const;
   unsigned short getDMRNetworkLocalPort() const;
-  std::string  getDMRNetworkPassword() const;
-  std::string  getDMRNetworkOptions() const;
   bool         getDMRNetworkDebug() const;
   unsigned int getDMRNetworkJitter() const;
   bool         getDMRNetworkSlot1() const;
@@ -577,13 +574,10 @@ private:
   bool         m_dstarNetworkDebug;
 
   bool         m_dmrNetworkEnabled;
-  std::string  m_dmrNetworkType;
-  std::string  m_dmrNetworkRemoteAddress;
-  unsigned short m_dmrNetworkRemotePort;
+  std::string  m_dmrNetworkGatewayAddress;
+  unsigned short m_dmrNetworkGatewayPort;
   std::string  m_dmrNetworkLocalAddress;
   unsigned short m_dmrNetworkLocalPort;
-  std::string  m_dmrNetworkPassword;
-  std::string  m_dmrNetworkOptions;
   bool         m_dmrNetworkDebug;
   unsigned int m_dmrNetworkJitter;
   bool         m_dmrNetworkSlot1;

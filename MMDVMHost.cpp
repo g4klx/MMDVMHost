@@ -17,8 +17,6 @@
  */
 
 #include "MMDVMHost.h"
-#include "DMRDirectNetwork.h"
-#include "DMRGatewayNetwork.h"
 #include "NXDNKenwoodNetwork.h"
 #include "NXDNIcomNetwork.h"
 #include "RSSIInterpolator.h"
@@ -82,7 +80,7 @@ static void sigHandler2(int signum)
 const char* HEADER1 = "This software is for use on amateur radio networks only,";
 const char* HEADER2 = "it is to be used for educational purposes only. Its use on";
 const char* HEADER3 = "commercial networks is strictly prohibited.";
-const char* HEADER4 = "Copyright(C) 2015-2021 by Jonathan Naylor, G4KLX and others";
+const char* HEADER4 = "Copyright(C) 2015-2023 by Jonathan Naylor, G4KLX and others";
 
 int main(int argc, char** argv)
 {
@@ -1648,26 +1646,21 @@ bool CMMDVMHost::createDStarNetwork()
 
 bool CMMDVMHost::createDMRNetwork()
 {
-	std::string remoteAddress  = m_conf.getDMRNetworkRemoteAddress();
-	unsigned short remotePort  = m_conf.getDMRNetworkRemotePort();
+	std::string gatewayAddress = m_conf.getDMRNetworkGatewayAddress();
+	unsigned short gatewayPort = m_conf.getDMRNetworkGatewayPort();
 	std::string localAddress   = m_conf.getDMRNetworkLocalAddress();
 	unsigned short localPort   = m_conf.getDMRNetworkLocalPort();
 	unsigned int id      = m_conf.getDMRId();
-	std::string password = m_conf.getDMRNetworkPassword();
 	bool debug           = m_conf.getDMRNetworkDebug();
 	unsigned int jitter  = m_conf.getDMRNetworkJitter();
 	bool slot1           = m_conf.getDMRNetworkSlot1();
 	bool slot2           = m_conf.getDMRNetworkSlot2();
 	HW_TYPE hwType       = m_modem->getHWType();
 	m_dmrNetModeHang     = m_conf.getDMRNetworkModeHang();
-	std::string options  = m_conf.getDMRNetworkOptions();
-
-	std::string type = m_conf.getDMRNetworkType();
 
 	LogInfo("DMR Network Parameters");
-	LogInfo("    Type: %s", type.c_str());
-	LogInfo("    Remote Address: %s", remoteAddress.c_str());
-	LogInfo("    Remote Port: %hu", remotePort);
+	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
+	LogInfo("    Gateway Port: %hu", gatewayPort);
 	LogInfo("    Local Address: %s", localAddress.c_str());
 	LogInfo("    Local Port: %hu", localPort);
 	LogInfo("    Jitter: %ums", jitter);
@@ -1675,10 +1668,7 @@ bool CMMDVMHost::createDMRNetwork()
 	LogInfo("    Slot 2: %s", slot2 ? "enabled" : "disabled");
 	LogInfo("    Mode Hang: %us", m_dmrNetModeHang);
 
-	if (type == "Direct")
-		m_dmrNetwork = new CDMRDirectNetwork(remoteAddress, remotePort, localAddress, localPort, id, password, m_duplex, VERSION, slot1, slot2, hwType, debug);
-	else
-		m_dmrNetwork = new CDMRGatewayNetwork(remoteAddress, remotePort, localAddress, localPort, id, m_duplex, VERSION, slot1, slot2, hwType, debug);
+	m_dmrNetwork = new CDMRNetwork(gatewayAddress, gatewayPort, localAddress, localPort, id, m_duplex, VERSION, slot1, slot2, hwType, debug);
 
 	unsigned int rxFrequency = m_conf.getRXFrequency();
 	unsigned int txFrequency = m_conf.getTXFrequency();
@@ -1691,32 +1681,8 @@ bool CMMDVMHost::createDMRNetwork()
 	LogInfo("    TX Frequency: %uHz", txFrequency);
 	LogInfo("    Power: %uW", power);
 
-	if (type == "Direct") {
-		float latitude          = m_conf.getLatitude();
-		float longitude         = m_conf.getLongitude();
-		int height              = m_conf.getHeight();
-		std::string location    = m_conf.getLocation();
-		std::string description = m_conf.getDescription();
-		std::string url         = m_conf.getURL();
-
-		LogInfo("    Latitude: %fdeg N", latitude);
-		LogInfo("    Longitude: %fdeg E", longitude);
-		LogInfo("    Height: %um", height);
-		LogInfo("    Location: \"%s\"", location.c_str());
-		LogInfo("    Description: \"%s\"", description.c_str());
-		LogInfo("    URL: \"%s\"", url.c_str());
-
-		m_dmrNetwork->setConfig(m_callsign, rxFrequency, txFrequency, power, colorCode, latitude, longitude, height, location, description, url);
-	} else {
-		m_dmrNetwork->setConfig(m_callsign, rxFrequency, txFrequency, power, colorCode, 0.0F, 0.0F, 0, "", "", "");
-	}
+	m_dmrNetwork->setConfig(m_callsign, rxFrequency, txFrequency, power, colorCode);
 	
-	if (!options.empty()) {
-		LogInfo("    Options: %s", options.c_str());
-
-		m_dmrNetwork->setOptions(options);
-	}
-
 	bool ret = m_dmrNetwork->open();
 	if (!ret) {
 		delete m_dmrNetwork;
@@ -2747,7 +2713,7 @@ void CMMDVMHost::processModeCommand(unsigned char mode, unsigned int timeout)
 
 void CMMDVMHost::processEnableCommand(bool& mode, bool enabled)
 {
-	LogDebug("Setting mode current=%s new=%s",mode ? "true" : "false",enabled ? "true" : "false");
+	LogDebug("Setting mode current=%s new=%s", mode ? "true" : "false", enabled ? "true" : "false");
 
 	mode = enabled;
 
@@ -2794,7 +2760,7 @@ void CMMDVMHost::buildNetworkHostsString(std::string &str)
 		}
 	}
 	str += std::string("dstar:\"") + ((dstarReflector.length() == 0) ? "NONE" : dstarReflector) + "\"";
-	str += std::string(" dmr:\"") + ((m_dmrEnabled && (m_dmrNetwork != NULL)) ? m_conf.getDMRNetworkRemoteAddress() : "NONE") + "\"";
+	str += std::string(" dmr:\"") + ((m_dmrEnabled && (m_dmrNetwork != NULL)) ? m_conf.getDMRNetworkGatewayAddress() : "NONE") + "\"";
 	str += std::string(" ysf:\"") + ((m_ysfEnabled && (m_ysfNetwork != NULL)) ? m_conf.getFusionNetworkGatewayAddress() : "NONE") + "\"";
 	str += std::string(" p25:\"") + ((m_p25Enabled && (m_p25Network != NULL)) ? m_conf.getP25GatewayAddress() : "NONE") + "\"";
 	str += std::string(" nxdn:\"") + ((m_nxdnEnabled && (m_nxdnNetwork != NULL)) ? m_conf.getNXDNGatewayAddress() : "NONE") + "\"";

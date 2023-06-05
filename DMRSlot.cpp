@@ -38,7 +38,7 @@ bool           CDMRSlot::m_embeddedLCOnly = false;
 bool           CDMRSlot::m_dumpTAData = true;
 
 CModem*        CDMRSlot::m_modem = NULL;
-IDMRNetwork*   CDMRSlot::m_network = NULL;
+CDMRNetwork*   CDMRSlot::m_network = NULL;
 CDisplay*      CDMRSlot::m_display = NULL;
 bool           CDMRSlot::m_duplex = true;
 CDMRLookup*    CDMRSlot::m_lookup = NULL;
@@ -2015,7 +2015,7 @@ void CDMRSlot::writeQueueNet(const unsigned char *data)
 	m_queue.addData(data, len);
 }
 
-void CDMRSlot::init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData, unsigned int callHang, CModem* modem, IDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter, DMR_OVCM_TYPES ovcm)
+void CDMRSlot::init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData, unsigned int callHang, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter, DMR_OVCM_TYPES ovcm)
 {
 	assert(modem != NULL);
 	assert(display != NULL);

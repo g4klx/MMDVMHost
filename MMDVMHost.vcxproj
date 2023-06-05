@@ -169,11 +169,9 @@
     <ClInclude Include="DMRData.h" />
     <ClInclude Include="DMRDataHeader.h" />
     <ClInclude Include="DMRDefines.h" />
-    <ClInclude Include="DMRDirectNetwork.h" />
     <ClInclude Include="DMREMB.h" />
     <ClInclude Include="DMREmbeddedData.h" />
     <ClInclude Include="DMRFullLC.h" />
-    <ClInclude Include="DMRGatewayNetwork.h" />
     <ClInclude Include="DMRLC.h" />
     <ClInclude Include="DMRNetwork.h" />
     <ClInclude Include="DMRShortLC.h" />
@@ -281,11 +279,9 @@
     <ClCompile Include="DMRCSBK.cpp" />
     <ClCompile Include="DMRData.cpp" />
     <ClCompile Include="DMRDataHeader.cpp" />
-    <ClCompile Include="DMRDirectNetwork.cpp" />
     <ClCompile Include="DMREMB.cpp" />
     <ClCompile Include="DMREmbeddedData.cpp" />
     <ClCompile Include="DMRFullLC.cpp" />
-    <ClCompile Include="DMRGatewayNetwork.cpp" />
     <ClCompile Include="DMRLC.cpp" />
     <ClCompile Include="DMRLookup.cpp" />
     <ClCompile Include="DMRNetwork.cpp" />

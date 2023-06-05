@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2022 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2022,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -246,13 +246,10 @@ m_dstarLocalPort(0U),
 m_dstarNetworkModeHang(3U),
 m_dstarNetworkDebug(false),
 m_dmrNetworkEnabled(false),
-m_dmrNetworkType("Gateway"),
-m_dmrNetworkRemoteAddress(),
-m_dmrNetworkRemotePort(0U),
+m_dmrNetworkGatewayAddress(),
+m_dmrNetworkGatewayPort(0U),
 m_dmrNetworkLocalAddress(),
 m_dmrNetworkLocalPort(0U),
-m_dmrNetworkPassword(),
-m_dmrNetworkOptions(),
 m_dmrNetworkDebug(false),
 m_dmrNetworkJitter(360U),
 m_dmrNetworkSlot1(true),
@@ -948,20 +945,14 @@ bool CConf::read()
 		} else if (section == SECTION_DMR_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_dmrNetworkEnabled = ::atoi(value) == 1;
-			else if (::strcmp(key, "Type") == 0)
-				m_dmrNetworkType = value;
-			else if (::strcmp(key, "RemoteAddress") == 0)
-				m_dmrNetworkRemoteAddress = value;
-			else if (::strcmp(key, "RemotePort") == 0)
-				m_dmrNetworkRemotePort = (unsigned short)::atoi(value);
+			else if (::strcmp(key, "GatewayAddress") == 0)
+				m_dmrNetworkGatewayAddress = value;
+			else if (::strcmp(key, "GatewayPort") == 0)
+				m_dmrNetworkGatewayPort = (unsigned short)::atoi(value);
 			else if (::strcmp(key, "LocalAddress") == 0)
 				m_dmrNetworkLocalAddress = value;
 			else if (::strcmp(key, "LocalPort") == 0)
 				m_dmrNetworkLocalPort = (unsigned short)::atoi(value);
-			else if (::strcmp(key, "Password") == 0)
-				m_dmrNetworkPassword = value;
-			else if (::strcmp(key, "Options") == 0)
-				m_dmrNetworkOptions = value;
 			else if (::strcmp(key, "Debug") == 0)
 				m_dmrNetworkDebug = ::atoi(value) == 1;
 			else if (::strcmp(key, "Jitter") == 0)
@@ -2067,19 +2058,14 @@ bool CConf::getDMRNetworkEnabled() const
 	return m_dmrNetworkEnabled;
 }
 
-std::string CConf::getDMRNetworkType() const
+std::string CConf::getDMRNetworkGatewayAddress() const
 {
-	return m_dmrNetworkType;
+	return m_dmrNetworkGatewayAddress;
 }
 
-std::string CConf::getDMRNetworkRemoteAddress() const
+unsigned short CConf::getDMRNetworkGatewayPort() const
 {
-	return m_dmrNetworkRemoteAddress;
-}
-
-unsigned short CConf::getDMRNetworkRemotePort() const
-{
-	return m_dmrNetworkRemotePort;
+	return m_dmrNetworkGatewayPort;
 }
 
 std::string CConf::getDMRNetworkLocalAddress() const
@@ -2090,16 +2076,6 @@ std::string CConf::getDMRNetworkLocalAddress() const
 unsigned short CConf::getDMRNetworkLocalPort() const
 {
 	return m_dmrNetworkLocalPort;
-}
-
-std::string CConf::getDMRNetworkPassword() const
-{
-	return m_dmrNetworkPassword;
-}
-
-std::string CConf::getDMRNetworkOptions() const
-{
-	return m_dmrNetworkOptions;
 }
 
 unsigned int CConf::getDMRNetworkModeHang() const

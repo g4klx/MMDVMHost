@@ -71,7 +71,7 @@ private:
   CFMControl*     m_fm;
   CAX25Control*   m_ax25;
   CDStarNetwork*  m_dstarNetwork;
-  IDMRNetwork*    m_dmrNetwork;
+  CDMRNetwork*    m_dmrNetwork;
   CYSFNetwork*    m_ysfNetwork;
   CP25Network*    m_p25Network;
   INXDNNetwork*   m_nxdnNetwork;

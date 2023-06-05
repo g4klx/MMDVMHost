@@ -323,12 +323,6 @@
     <ClInclude Include="PseudoTTYController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DMRDirectNetwork.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DMRGatewayNetwork.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SHA256.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -629,12 +623,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PseudoTTYController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DMRDirectNetwork.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DMRGatewayNetwork.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SHA256.cpp">
