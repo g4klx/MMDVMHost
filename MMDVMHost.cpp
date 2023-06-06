@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -75,7 +75,7 @@ static void sigHandler2(int signum)
 const char* HEADER1 = "This software is for use on amateur radio networks only,";
 const char* HEADER2 = "it is to be used for educational purposes only. Its use on";
 const char* HEADER3 = "commercial networks is strictly prohibited.";
-const char* HEADER4 = "Copyright(C) 2015-2021 by Jonathan Naylor, G4KLX and others";
+const char* HEADER4 = "Copyright(C) 2015-2023 by Jonathan Naylor, G4KLX and others";
 
 int main(int argc, char** argv)
 {
@@ -112,15 +112,24 @@ int main(int argc, char** argv)
 
 		delete host;
 
-		if (m_signal == 2)
-			::LogInfo("MMDVMHost-%s exited on receipt of SIGINT", VERSION);
-
-		if (m_signal == 15)
-			::LogInfo("MMDVMHost-%s exited on receipt of SIGTERM", VERSION);
-
-		if (m_signal == 1)
-			::LogInfo("MMDVMHost-%s is restarting on receipt of SIGHUP", VERSION);
-	} while (m_signal == 1);
+		switch (m_signal) {
+			case 2:
+				::LogInfo("MMDVMHost-%s exited on receipt of SIGINT", VERSION);
+				break;
+			case 15:
+				::LogInfo("MMDVMHost-%s exited on receipt of SIGTERM", VERSION);
+				break;
+			case 1:
+				::LogInfo("MMDVMHost-%s exited on receipt of SIGHUP", VERSION);
+				break;
+			case 10:
+				::LogInfo("MMDVMHost-%s is restarting on receipt of SIGUSR1", VERSION);
+				break;
+			default:
+				::LogInfo("MMDVMHost-%s exited on receipt of an unknown signal", VERSION);
+				break;
+		}
+	} while (m_signal == 10);
 
 	::LogFinalise();
 
