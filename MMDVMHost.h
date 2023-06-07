@@ -142,7 +142,8 @@ private:
   void createLockFile(const char* mode) const;
   void removeLockFile() const;
 
-  void writeJSON(const std::string& mode);
+  void writeJSONMode(const std::string& mode);
+  void writeJSONMessage(const std::string& message);
 };
 
 #endif

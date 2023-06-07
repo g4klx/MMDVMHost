@@ -35,7 +35,8 @@
 		"type": "object",
 		"timestamp": {"$ref": "#/$defs/timestamp"},
 		"mode": {"$ref": "#/$defs/mmdvm_mode"},
-		"required": ["timestamp", "mode"]
+		"message": {"type": "string"},
+		"required": ["timestamp"]
 	},
 
 	"D-Star": {

@@ -369,6 +369,7 @@ int CMMDVMHost::run()
 	m_display = CDisplay::createDisplay(m_conf, m_modem);
 
 	LogInfo("Opening network connections");
+	writeJSONMessage("Opening network connections");
 
 	if (m_dstarEnabled && m_conf.getDStarNetworkEnabled()) {
 		ret = createDStarNetwork();
@@ -506,6 +507,7 @@ int CMMDVMHost::run()
 	}
 
 	LogInfo("Starting protocol handlers");
+	writeJSONMessage("Starting protocol handlers");
 
 	CStopWatch stopWatch;
 	stopWatch.start();
@@ -785,6 +787,7 @@ int CMMDVMHost::run()
 	setMode(MODE_IDLE);
 
 	LogInfo("MMDVMHost-%s is running", VERSION);
+	writeJSONMessage("MMDVMHost is running");
 
 	while (!m_killed) {
 		bool lockout = m_modem->hasLockout();
@@ -1333,6 +1336,7 @@ int CMMDVMHost::run()
 		m_nxdnLookup->stop();
 
 	LogInfo("Closing network connections");
+	writeJSONMessage("Closing network connections");
 
 	if (m_dstarNetwork != NULL) {
 		m_dstarNetwork->close();
@@ -1390,6 +1394,7 @@ int CMMDVMHost::run()
 	}
 
 	LogInfo("Stopping protocol handlers");
+	writeJSONMessage("Stopping protocol handlers");
 
 	delete m_dstar;
 	delete m_dmr;
@@ -1402,6 +1407,7 @@ int CMMDVMHost::run()
 	delete m_ax25;
 
 	LogInfo("MMDVMHost-%s has stopped", VERSION);
+	writeJSONMessage("MMDVMHost has stopped");
 
 	m_modem->close();
 	delete m_modem;
@@ -2047,7 +2053,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
 		createLockFile("D-Star");
-		writeJSON("D-Star");
+		writeJSONMode("D-Star");
 		break;
 
 	case MODE_DMR:
@@ -2096,7 +2102,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
 		createLockFile("DMR");
-		writeJSON("DMR");
+		writeJSONMode("DMR");
 		break;
 
 	case MODE_YSF:
@@ -2141,7 +2147,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
 		createLockFile("System Fusion");
-		writeJSON("YSF");
+		writeJSONMode("YSF");
 		break;
 
 	case MODE_P25:
@@ -2186,7 +2192,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
 		createLockFile("P25");
-		writeJSON("P25");
+		writeJSONMode("P25");
 		break;
 
 	case MODE_NXDN:
@@ -2231,7 +2237,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
 		createLockFile("NXDN");
-		writeJSON("NXDN");
+		writeJSONMode("NXDN");
 		break;
 
 	case MODE_M17:
@@ -2276,7 +2282,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
 		createLockFile("M17");
-		writeJSON("M17");
+		writeJSONMode("M17");
 		break;
 
 	case MODE_POCSAG:
@@ -2321,7 +2327,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
 		createLockFile("POCSAG");
-		writeJSON("POCSAG");
+		writeJSONMode("POCSAG");
 		break;
 
 	case MODE_FM:
@@ -2371,7 +2377,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
 		createLockFile("FM");
-		writeJSON("FM");
+		writeJSONMode("FM");
 		break;
 
 	case MODE_LOCKOUT:
@@ -2421,7 +2427,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.stop();
 		m_cwIdTimer.stop();
 		removeLockFile();
-		writeJSON("lockout");
+		writeJSONMode("lockout");
 		break;
 
 	case MODE_ERROR:
@@ -2471,7 +2477,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_modeTimer.stop();
 		m_cwIdTimer.stop();
 		removeLockFile();
-		writeJSON("error");
+		writeJSONMode("error");
 		break;
 
 	default:
@@ -2530,7 +2536,7 @@ void CMMDVMHost::setMode(unsigned char mode)
 		m_mode = MODE_IDLE;
 		m_modeTimer.stop();
 		removeLockFile();
-		writeJSON("idle");
+		writeJSONMode("idle");
 		break;
 	}
 }
@@ -2821,12 +2827,22 @@ void CMMDVMHost::buildNetworkHostsString(std::string &str)
 	str += std::string(" fm:\"") + ((m_fmEnabled && (m_fmNetwork != NULL)) ? m_conf.getFMGatewayAddress() : "NONE") + "\"";
 }
 
-void CMMDVMHost::writeJSON(const std::string& mode)
+void CMMDVMHost::writeJSONMode(const std::string& mode)
 {
 	nlohmann::json json;
 
 	json["timestamp"] = CUtils::createTimestamp();
 	json["mode"]      = mode;
+
+	WriteJSON("MMDVM", json);
+}
+
+void CMMDVMHost::writeJSONMessage(const std::string& message)
+{
+	nlohmann::json json;
+
+	json["timestamp"] = CUtils::createTimestamp();
+	json["message"]   = message;
 
 	WriteJSON("MMDVM", json);
 }
