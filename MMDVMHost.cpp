@@ -297,8 +297,8 @@ int CMMDVMHost::run()
 	LogInfo(HEADER3);
 	LogInfo(HEADER4);
 
-	LogMessage("MMDVMHost-%s is starting", VERSION);
-	LogMessage("Built %s %s (GitID #%.7s)", __TIME__, __DATE__, gitversion);
+	LogInfo("MMDVMHost-%s is starting", VERSION);
+	LogInfo("Built %s %s (GitID #%.7s)", __TIME__, __DATE__, gitversion);
 
 	readParams();
 
@@ -352,6 +352,8 @@ int CMMDVMHost::run()
 	}
 
 	m_display = CDisplay::createDisplay(m_conf, m_modem);
+
+	LogInfo("Opening network connections");
 
 	if (m_dstarEnabled && m_conf.getDStarNetworkEnabled()) {
 		ret = createDStarNetwork();
@@ -487,6 +489,8 @@ int CMMDVMHost::run()
 		m_dmrLookup = new CDMRLookup(lookupFile, reloadTime);
 		m_dmrLookup->read();
 	}
+
+	LogInfo("Starting protocol handlers");
 
 	CStopWatch stopWatch;
 	stopWatch.start();
@@ -765,7 +769,7 @@ int CMMDVMHost::run()
 
 	setMode(MODE_IDLE);
 
-	LogMessage("MMDVMHost-%s is running", VERSION);
+	LogInfo("MMDVMHost-%s is running", VERSION);
 
 	while (!m_killed) {
 		bool lockout = m_modem->hasLockout();
@@ -1307,17 +1311,13 @@ int CMMDVMHost::run()
 
 	setMode(MODE_QUIT);
 
-	m_modem->close();
-	delete m_modem;
-
-	m_display->close();
-	delete m_display;
-
 	if (m_dmrLookup != NULL)
 		m_dmrLookup->stop();
 
 	if (m_nxdnLookup != NULL)
 		m_nxdnLookup->stop();
+
+	LogInfo("Closing network connections");
 
 	if (m_dstarNetwork != NULL) {
 		m_dstarNetwork->close();
@@ -1374,6 +1374,8 @@ int CMMDVMHost::run()
 		delete m_remoteControl;
 	}
 
+	LogInfo("Stopping protocol handlers");
+
 	delete m_dstar;
 	delete m_dmr;
 	delete m_ysf;
@@ -1383,6 +1385,14 @@ int CMMDVMHost::run()
 	delete m_pocsag;
 	delete m_fm;
 	delete m_ax25;
+
+	LogInfo("MMDVMHost-%s has stopped", VERSION);
+
+	m_modem->close();
+	delete m_modem;
+
+	m_display->close();
+	delete m_display;
 
 	return 0;
 }

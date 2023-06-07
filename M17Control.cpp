@@ -362,7 +362,6 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			// Remove any erronous EOF from the FN
 			netData[M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES + 0U] &= 0x7FU;
 
-
 			// The CRC is added in the networking code
 
 			m_network->write(netData);
