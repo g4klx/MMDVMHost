@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018,2020,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -477,7 +477,7 @@ void CNextion::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
 	}
 }
 
-void CNextion::writeDMRTAInt(unsigned int slotNo, unsigned char* talkerAlias, const char* type)
+void CNextion::writeDMRTAInt(unsigned int slotNo, const unsigned char* talkerAlias, const char* type)
 {
 	if (!(m_screenLayout & LAYOUT_TA_ENABLE))
 		return;

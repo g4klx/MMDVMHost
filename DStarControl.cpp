@@ -656,6 +656,8 @@ void CDStarControl::writeEndRF()
 {
 	m_rfState = RS_RF_LISTENING;
 
+	m_rfTimeoutTimer.stop();
+
 	if (m_netState == RS_NET_IDLE) {
 		m_display->clearDStar();
 
@@ -663,8 +665,6 @@ void CDStarControl::writeEndRF()
 
 		if (m_network != NULL)
 			m_network->reset();
-	} else {
-		m_rfTimeoutTimer.stop();
 	}
 }
 

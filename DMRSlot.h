@@ -82,6 +82,7 @@ private:
 	unsigned int               m_netEmbeddedReadN;
 	unsigned int               m_netEmbeddedWriteN;
 	unsigned char              m_netTalkerId;
+	CDMRTA                     m_netTalkerAlias;
 	CDMRLC*                    m_rfLC;
 	CDMRLC*                    m_netLC;
 	unsigned char              m_rfSeqNo;
@@ -134,7 +135,7 @@ private:
 
 	static unsigned char*      m_idle;
 
-    static FLCO                m_flco1;
+	static FLCO                m_flco1;
 	static unsigned char       m_id1;
 	static ACTIVITY_TYPE       m_activity1;
 	static FLCO                m_flco2;
