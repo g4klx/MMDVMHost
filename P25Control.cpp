@@ -129,10 +129,10 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 
 		if (m_rssi != 0U) {
 			LogMessage("P25, transmission lost from %s to %s%u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-			writeJSONRF("lost", srcId, source, grp, dstId, float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			writeJSONRF("lost", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 		} else {
 			LogMessage("P25, transmission lost from %s to %s%u, %.1f seconds, BER: %.1f%%", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
-			writeJSONRF("lost", srcId, source, grp, dstId, float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
+			writeJSONRF("lost", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
 		}
 
 		if (m_netState == RS_NET_IDLE)
@@ -470,10 +470,10 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 
 			if (m_rssi != 0U) {
 				LogMessage("P25, received RF end of voice transmission from %s to %s%u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-				writeJSONRF("end", srcId, source, grp, dstId, float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				writeJSONRF("end", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			} else {
 				LogMessage("P25, received RF end of voice transmission from %s to %s%u, %.1f seconds, BER: %.1f%%", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
-				writeJSONRF("end", srcId, source, grp, dstId, float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
+				writeJSONRF("end", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
 			}
 
 			m_display->clearP25();
@@ -734,12 +734,8 @@ void CP25Control::clock(unsigned int ms)
 		m_networkWatchdog.clock(ms);
 
 		if (m_networkWatchdog.hasExpired()) {
-			unsigned int dstId = m_netData.getDstId();
-			unsigned int srcId = m_netData.getSrcId();
-			std::string source = m_lookup->find(srcId);
-
 			LogMessage("P25, network watchdog has expired, %.1f seconds, %u%% packet loss", float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames);
-			writeJSONNet("lost", srcId, source, m_netData.getLCF() == P25_LCF_GROUP, dstId, float(m_netFrames) / 50.0F, float(m_netLost * 100U) / float(m_netFrames));
+			writeJSONNet("lost", float(m_netFrames) / 50.0F, float(m_netLost * 100U) / float(m_netFrames));
 			m_display->clearP25();
 
 			m_networkWatchdog.stop();
@@ -1141,7 +1137,7 @@ void CP25Control::createNetTerminator()
 	std::string source = m_lookup->find(srcId);
 
 	LogMessage("P25, network end of transmission from %s to %s%u, %.1f seconds, %u%% packet loss", source.c_str(), m_netData.getLCF() == P25_LCF_GROUP ? "TG " : "", dstId, float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames);
-	writeJSONNet("end", srcId, source, m_netData.getLCF() == P25_LCF_GROUP, dstId, float(m_netFrames) / 50.0F, float(m_netLost * 100U) / float(m_netFrames));
+	writeJSONNet("end", float(m_netFrames) / 50.0F, float(m_netLost * 100U) / float(m_netFrames));
 
 	m_display->clearP25();
 	m_netTimeout.stop();
@@ -1228,13 +1224,13 @@ void CP25Control::writeJSONRF(const char* action, unsigned int srcId, const std:
 	WriteJSON("P25", json);
 }
 
-void CP25Control::writeJSONRF(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId, float duration, float ber)
+void CP25Control::writeJSONRF(const char* action, float duration, float ber)
 {
 	assert(action != NULL);
 
 	nlohmann::json json;
 
-	writeJSON(json, "rf", action, srcId, srcInfo, grp, dstId);
+	writeJSON(json, "rf", action);
 
 	json["duration"] = duration;
 	json["ber"]      = ber;
@@ -1242,13 +1238,13 @@ void CP25Control::writeJSONRF(const char* action, unsigned int srcId, const std:
 	WriteJSON("P25", json);
 }
 
-void CP25Control::writeJSONRF(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI)
+void CP25Control::writeJSONRF(const char* action, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI)
 {
 	assert(action != NULL);
 
 	nlohmann::json json;
 
-	writeJSON(json, "rf", action, srcId, srcInfo, grp, dstId);
+	writeJSON(json, "rf", action);
 
 	json["duration"] = duration;
 	json["ber"]      = ber;
@@ -1274,18 +1270,28 @@ void CP25Control::writeJSONNet(const char* action, unsigned int srcId, const std
 	WriteJSON("P25", json);
 }
 
-void CP25Control::writeJSONNet(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId, float duration, float loss)
+void CP25Control::writeJSONNet(const char* action, float duration, float loss)
 {
 	assert(action != NULL);
 
 	nlohmann::json json;
 
-	writeJSON(json, "network", action, srcId, srcInfo, grp, dstId);
+	writeJSON(json, "network", action);
 
 	json["duration"] = duration;
 	json["loss"]     = loss;
 
 	WriteJSON("P25", json);
+}
+
+void CP25Control::writeJSON(nlohmann::json& json, const char* source, const char* action)
+{
+	assert(source != NULL);
+	assert(action != NULL);
+
+	json["timestamp"] = CUtils::createTimestamp();
+	json["source"]    = source;
+	json["action"]    = action;
 }
 
 void CP25Control::writeJSON(nlohmann::json& json, const char* source, const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId)

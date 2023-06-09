@@ -115,10 +115,10 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 	if (type == TAG_LOST && (m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA_AUDIO)) {
 		if (m_rssi != 0U) {
 			LogMessage("M17, transmission lost from %s to %s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_source.c_str(), m_dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-			writeJSONRF("lost", m_rfState, m_source, m_dest, float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			writeJSONRF("lost", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 		} else {
 			LogMessage("M17, transmission lost from %s to %s, %.1f seconds, BER: %.1f%%", m_source.c_str(), m_dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
-			writeJSONRF("lost", m_rfState, m_source, m_dest, float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+			writeJSONRF("lost", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 		}
 		writeEndRF();
 		return false;
@@ -423,10 +423,10 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 		if (m_rssi != 0U) {
 			LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_source.c_str(), m_dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-			writeJSONRF("end", m_rfState, m_source, m_dest, float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+			writeJSONRF("end", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 		} else {
 			LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%", m_source.c_str(), m_dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
-			writeJSONRF("end", m_rfState, m_source, m_dest, float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			writeJSONRF("end", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 		}
 		writeEndRF();
 
@@ -646,7 +646,7 @@ void CM17Control::writeNetwork()
 		uint16_t fn = (netData[28U] << 8) + (netData[29U] << 0);
 		if ((fn & 0x8000U) == 0x8000U) {
 			LogMessage("M17, received network end of transmission from %s to %s, %.1f seconds", m_source.c_str(), m_dest.c_str(), float(m_netFrames) / 25.0F);
-			writeJSONNet("end", m_netState, m_source, m_dest, float(m_netFrames) / 25.0F);
+			writeJSONNet("end", float(m_netFrames) / 25.0F);
 
 			unsigned char data[M17_FRAME_LENGTH_BYTES + 2U];
 
@@ -781,7 +781,7 @@ void CM17Control::clock(unsigned int ms)
 
 		if (m_networkWatchdog.hasExpired()) {
 			LogMessage("M17, network watchdog has expired, %.1f seconds", float(m_netFrames) / 25.0F);
-			writeJSONNet("lost", m_netState, m_source, m_dest, float(m_netFrames) / 25.0F);
+			writeJSONNet("lost", float(m_netFrames) / 25.0F);
 			writeEndNet();
 		}
 	}
@@ -936,24 +936,24 @@ void CM17Control::writeJSONRF(const char* action, RPT_RF_STATE state, const std:
 	WriteJSON("M17", json);
 }
 
-void CM17Control::writeJSONRF(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber)
+void CM17Control::writeJSONRF(const char* action, float duration, float ber)
 {
 	assert(action != NULL);
 
 	nlohmann::json json;
 
-	writeJSONRF(json, action, state, source, dest, duration, ber);
+	writeJSONRF(json, action, duration, ber);
 
 	WriteJSON("M17", json);
 }
 
-void CM17Control::writeJSONRF(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI)
+void CM17Control::writeJSONRF(const char* action, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI)
 {
 	assert(action != NULL);
 
 	nlohmann::json json;
 
-	writeJSONRF(json, action, state, source, dest, duration, ber);
+	writeJSONRF(json, action, duration, ber);
 
 	nlohmann::json rssi;
 	rssi["min"] = -int(minRSSI);
@@ -976,17 +976,27 @@ void CM17Control::writeJSONNet(const char* action, RPT_NET_STATE state, const st
 	WriteJSON("M17", json);
 }
 
-void CM17Control::writeJSONNet(const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest, float duration)
+void CM17Control::writeJSONNet(const char* action, float duration)
 {
 	assert(action != NULL);
 
 	nlohmann::json json;
 
-	writeJSONNet(json, action, state, source, dest);
+	writeJSONNet(json, action);
 
 	json["duration"] = duration;
 
 	WriteJSON("M17", json);
+}
+
+void CM17Control::writeJSONRF(nlohmann::json& json, const char* action)
+{
+	assert(action != NULL);
+
+	json["timestamp"] = CUtils::createTimestamp();
+
+	json["source"] = "rf";
+	json["action"] = action;
 }
 
 void CM17Control::writeJSONRF(nlohmann::json& json, const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest)
@@ -1017,14 +1027,24 @@ void CM17Control::writeJSONRF(nlohmann::json& json, const char* action, RPT_RF_S
 	}
 }
 
-void CM17Control::writeJSONRF(nlohmann::json& json, const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber)
+void CM17Control::writeJSONRF(nlohmann::json& json, const char* action, float duration, float ber)
 {
 	assert(action != NULL);
 
-	writeJSONRF(json, action, state, source, dest);
+	writeJSONRF(json, action);
 
 	json["duration"] = duration;
 	json["ber"]      = ber;
+}
+
+void CM17Control::writeJSONNet(nlohmann::json& json, const char* action)
+{
+	assert(action != NULL);
+
+	json["timestamp"] = CUtils::createTimestamp();
+
+	json["source"] = "network";
+	json["action"] = action;
 }
 
 void CM17Control::writeJSONNet(nlohmann::json& json, const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest)

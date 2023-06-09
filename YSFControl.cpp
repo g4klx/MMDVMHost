@@ -105,15 +105,14 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 		return false;
 
 	unsigned char type = data[0U];
-	unsigned char dgid = m_lastFICH.getDGId();
 
 	if (type == TAG_LOST && m_rfState == RS_RF_AUDIO) {
 		if (m_rssi != 0U) {
 			LogMessage("YSF, transmission lost from %10.10s to %10.10s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_rfSource, m_rfDest, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-			writeJSONRF("lost", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			writeJSONRF("lost", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 		} else {
 			LogMessage("YSF, transmission lost from %10.10s to %10.10s, %.1f seconds, BER: %.1f%%", m_rfSource, m_rfDest, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
-			writeJSONRF("lost", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+			writeJSONRF("lost", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 		}
 		writeEndRF();
 		return false;
@@ -324,10 +323,10 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 
 			if (m_rssi != 0U) {
 				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-				writeJSONRF("end", "voice_vw", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				writeJSONRF("end", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			} else {
 				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds, BER: %.1f%%", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
-				writeJSONRF("end", "voice_vw", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+				writeJSONRF("end", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 			}
 
 			writeEndRF();
@@ -498,10 +497,10 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			if (m_rssi != 0U) {
 				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-				writeJSONRF("end", "voice_dn", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				writeJSONRF("end", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			} else {
 				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds, BER: %.1f%%", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
-				writeJSONRF("end", "voice_dn", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+				writeJSONRF("end", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 			}
 
 			writeEndRF();
@@ -803,10 +802,10 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 			if (m_rssi != 0U) {
 				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds, RSSI: -%u/-%u/-%u dBm", m_rfSource, dgid, float(m_rfFrames) / 10.0F, m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-				writeJSONRF("end", "data_fr", m_rfSource, dgid, float(m_rfFrames) / 10.0F, 0.0F, m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				writeJSONRF("end", float(m_rfFrames) / 10.0F, 0.0F, m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			} else {
 				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds", m_rfSource, dgid, float(m_rfFrames) / 10.0F);
-				writeJSONRF("end", "data_fr", m_rfSource, dgid, float(m_rfFrames) / 10.0F, 0.0F);
+				writeJSONRF("end", float(m_rfFrames) / 10.0F, 0.0F);
 			}
 
 			writeEndRF();
@@ -1064,7 +1063,7 @@ void CYSFControl::writeNetwork()
 
 	if (end) {
 		LogMessage("YSF, received network end of transmission from %10.10s to DG-ID %u at %10.10s, %.1f seconds, %u%% packet loss", m_netSource, dgid, data + 4U, float(m_netFrames) / 10.0F, (m_netLost * 100U) / m_netFrames);
-		writeJSONNet("end", m_netSource, dgid, data + 4U, float(m_netFrames) / 10.0F, (m_netLost * 100U) / m_netFrames);
+		writeJSONNet("end", float(m_netFrames) / 10.0F, (m_netLost * 100U) / m_netFrames);
 		writeEndNet();
 	}
 }
@@ -1081,9 +1080,8 @@ void CYSFControl::clock(unsigned int ms)
 		m_networkWatchdog.clock(ms);
 
 		if (m_networkWatchdog.hasExpired()) {
-			unsigned char dgid = m_lastFICH.getDGId();
 			LogMessage("YSF, network watchdog has expired, %.1f seconds, %u%% packet loss", float(m_netFrames) / 10.0F, (m_netLost * 100U) / m_netFrames);
-			writeJSONNet("lost", m_netSource, dgid, float(m_netFrames) / 10.0F, (m_netLost * 100U) / m_netFrames);
+			writeJSONNet("lost", float(m_netFrames) / 10.0F, (m_netLost * 100U) / m_netFrames);
 			writeEndNet();
 		}
 	}
@@ -1263,14 +1261,13 @@ void CYSFControl::writeJSONRF(const char* action, const char* mode, const unsign
 	WriteJSON("YSF", json);
 }
 
-void CYSFControl::writeJSONRF(const char* action, const unsigned char* source, unsigned char dgid, float duration, float ber)
+void CYSFControl::writeJSONRF(const char* action, float duration, float ber)
 {
 	assert(action != NULL);
-	assert(source != NULL);
 
 	nlohmann::json json;
 
-	writeJSONRF(json, action, source, dgid);
+	writeJSONRF(json, action);
 
 	json["duration"] = duration;
 	json["ber"]      = ber;
@@ -1278,56 +1275,14 @@ void CYSFControl::writeJSONRF(const char* action, const unsigned char* source, u
 	WriteJSON("YSF", json);
 }
 
-void CYSFControl::writeJSONRF(const char* action, const char* mode, const unsigned char* source, unsigned char dgid, float duration, float ber)
+void CYSFControl::writeJSONRF(const char* action, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI)
 {
 	assert(action != NULL);
-	assert(mode != NULL);
-	assert(source != NULL);
 
 	nlohmann::json json;
 
-	writeJSONRF(json, action, source, dgid);
+	writeJSONRF(json, action);
 
-	json["mode"]     = mode;
-	json["duration"] = duration;
-	json["ber"]      = ber;
-
-	WriteJSON("YSF", json);
-}
-
-void CYSFControl::writeJSONRF(const char* action, const unsigned char* source, unsigned char dgid, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI)
-{
-	assert(action != NULL);
-	assert(source != NULL);
-
-	nlohmann::json json;
-
-	writeJSONRF(json, action, source, dgid);
-
-	json["duration"] = duration;
-	json["ber"]      = ber;
-
-	nlohmann::json rssi;
-	rssi["min"] = -int(minRSSI);
-	rssi["max"] = -int(maxRSSI);
-	rssi["ave"] = -int(aveRSSI);
-
-	json["rssi"] = rssi;
-
-	WriteJSON("YSF", json);
-}
-
-void CYSFControl::writeJSONRF(const char* action, const char* mode, const unsigned char* source, unsigned char dgid, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI)
-{
-	assert(action != NULL);
-	assert(mode != NULL);
-	assert(source != NULL);
-
-	nlohmann::json json;
-
-	writeJSONRF(json, action, source, dgid);
-
-	json["mode"]     = mode;
 	json["duration"] = duration;
 	json["ber"]      = ber;
 
@@ -1356,14 +1311,13 @@ void CYSFControl::writeJSONNet(const char* action, const unsigned char* source, 
 	WriteJSON("YSF", json);
 }
 
-void CYSFControl::writeJSONNet(const char* action, const unsigned char* source, unsigned char dgid, float duration, unsigned int loss)
+void CYSFControl::writeJSONNet(const char* action, float duration, unsigned int loss)
 {
 	assert(action != NULL);
-	assert(source != NULL);
 
 	nlohmann::json json;
 
-	writeJSONNet(json, action, source, dgid);
+	writeJSONNet(json, action);
 
 	json["duration"] = duration;
 	json["loss"]     = loss;
@@ -1371,22 +1325,14 @@ void CYSFControl::writeJSONNet(const char* action, const unsigned char* source, 
 	WriteJSON("YSF", json);
 }
 
-void CYSFControl::writeJSONNet(const char* action, const unsigned char* source, unsigned char dgid, const unsigned char* reflector, float duration, unsigned int loss)
+void CYSFControl::writeJSONRF(nlohmann::json& json, const char* action)
 {
 	assert(action != NULL);
-	assert(source != NULL);
-	assert(reflector != NULL);
 
-	nlohmann::json json;
+	json["timestamp"] = CUtils::createTimestamp();
 
-	writeJSONNet(json, action, source, dgid);
-
-	json["reflector"] = convertBuffer(reflector);
-
-	json["duration"]  = duration;
-	json["loss"]      = loss;
-
-	WriteJSON("YSF", json);
+	json["source"] = "rf";
+	json["action"] = action;
 }
 
 void CYSFControl::writeJSONRF(nlohmann::json& json, const char* action, const unsigned char* source, unsigned char dgid)
@@ -1401,6 +1347,16 @@ void CYSFControl::writeJSONRF(nlohmann::json& json, const char* action, const un
 	json["source"] = "rf";
 	json["action"] = action;
 	json["dg-id"]  = int(dgid);
+}
+
+void CYSFControl::writeJSONNet(nlohmann::json& json, const char* action)
+{
+	assert(action != NULL);
+
+	json["timestamp"] = CUtils::createTimestamp();
+
+	json["source"] = "network";
+	json["action"] = action;
 }
 
 void CYSFControl::writeJSONNet(nlohmann::json& json, const char* action, const unsigned char* source, unsigned char dgid)
