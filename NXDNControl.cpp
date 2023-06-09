@@ -1176,7 +1176,7 @@ void CNXDNControl::writeJSONRF(const char* action, float duration, float ber)
 
 	nlohmann::json json;
 
-	writeJSON(json, "rf", action);
+	writeJSON(json, action);
 
 	json["duration"] = duration;
 	json["ber"]      = ber;
@@ -1190,7 +1190,7 @@ void CNXDNControl::writeJSONRF(const char* action, float duration, float ber, un
 
 	nlohmann::json json;
 
-	writeJSON(json, "rf", action);
+	writeJSON(json, action);
 
 	json["duration"] = duration;
 	json["ber"]      = ber;
@@ -1211,7 +1211,7 @@ void CNXDNControl::writeJSONNet(const char* action)
 
 	nlohmann::json json;
 
-	writeJSON(json, "network", action);
+	writeJSON(json, action);
 
 	WriteJSON("NXDN", json);
 }
@@ -1246,21 +1246,19 @@ void CNXDNControl::writeJSONNet(const char* action, float duration)
 
 	nlohmann::json json;
 
-	writeJSON(json, "network", action);
+	writeJSON(json, action);
 
 	json["duration"] = duration;
 
 	WriteJSON("NXDN", json);
 }
 
-void CNXDNControl::writeJSON(nlohmann::json& json, const char* source, const char* action)
+void CNXDNControl::writeJSON(nlohmann::json& json, const char* action)
 {
-	assert(source != NULL);
 	assert(action != NULL);
 
-	json["timestamp"]        = CUtils::createTimestamp();
-	json["source"]           = source;
-	json["action"]           = action;
+	json["timestamp"] = CUtils::createTimestamp();
+	json["action"]    = action;
 }
 
 void CNXDNControl::writeJSON(nlohmann::json& json, const char* source, const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId)

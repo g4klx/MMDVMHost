@@ -39,6 +39,33 @@
 		"required": ["timestamp"]
 	},
 
+	"RSSI" : {
+		"type": "object",
+		"timestamp": {"$ref": "#/$defs/timestamp"},
+		"mode": {"$ref": "#/$defs/mmdvm_mode"},
+		"slot": {"$ref": "#/$defs/dmr_slot"},
+		"value": {"$ref": "#/$defs/rssi"},
+		"required": ["timestamp", "mode", "value"]
+	},
+
+	"BER" : {
+		"type": "object",
+		"timestamp": {"$ref": "#/$defs/timestamp"},
+		"mode": {"$ref": "#/$defs/mmdvm_mode"},
+		"slot": {"$ref": "#/$defs/dmr_slot"},
+		"value": {"$ref": "#/$defs/ber"},
+		"required": ["timestamp", "mode", "value"]
+	},
+
+	"Text" : {
+		"type": "object",
+		"timestamp": {"$ref": "#/$defs/timestamp"},
+		"mode": {"$ref": "#/$defs/mmdvm_mode"},
+		"slot": {"$ref": "#/$defs/dmr_slot"},
+		"value": {"type": "string"},
+		"required": ["timestamp", "mode", "value"]
+	},
+
 	"D-Star": {
 		"type": "object",
 		"timestamp": {"$ref": "#/$defs/timestamp"},
@@ -56,7 +83,7 @@
 			"max": {"$ref": "#/$defs/rssi"},
 			"ave": {"$ref": "#/$defs/rssi"}
 		},
-		"required": ["timestamp", "source", "action"]
+		"required": ["timestamp", "action"]
 	},
 
 	"DMR": {
@@ -79,7 +106,7 @@
 			"max": {"$ref": "#/$defs/rssi"},
 			"ave": {"$ref": "#/$defs/rssi"}
 		},
-		"required": ["timestamp", "slot", "source", "action"]
+		"required": ["timestamp", "slot", "action"]
 	},
 
 	"YSF": {
@@ -99,7 +126,7 @@
 			"max": {"$ref": "#/$defs/rssi"},
 			"ave": {"$ref": "#/$defs/rssi"}
 		},
-		"required": ["timestamp", "source", "action"]
+		"required": ["timestamp", "action"]
 	},
 
 	"P25": {
@@ -119,7 +146,7 @@
 			"max": {"$ref": "#/$defs/rssi"},
 			"ave": {"$ref": "#/$defs/rssi"}
 		},
-		"required": ["timestamp", "source", "action"]
+		"required": ["timestamp", "action"]
 	},
 
 	"NXDN": {
@@ -138,7 +165,7 @@
 			"max": {"$ref": "#/$defs/rssi"},
 			"ave": {"$ref": "#/$defs/rssi"}
 		},
-		"required": ["timestamp", "source", "action"]
+		"required": ["timestamp", "action"]
 	},
 
 	"POCSAG": {
@@ -190,6 +217,6 @@
 			"max": {"$ref": "#/$defs/rssi"},
 			"ave": {"$ref": "#/$defs/rssi"}
 		},
-		"required": ["timestamp", "source", "action"]
+		"required": ["timestamp", "action"]
 	}
 }

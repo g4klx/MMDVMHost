@@ -1330,9 +1330,7 @@ void CYSFControl::writeJSONRF(nlohmann::json& json, const char* action)
 	assert(action != NULL);
 
 	json["timestamp"] = CUtils::createTimestamp();
-
-	json["source"] = "rf";
-	json["action"] = action;
+	json["action"]    = action;
 }
 
 void CYSFControl::writeJSONRF(nlohmann::json& json, const char* action, const unsigned char* source, unsigned char dgid)
@@ -1354,9 +1352,7 @@ void CYSFControl::writeJSONNet(nlohmann::json& json, const char* action)
 	assert(action != NULL);
 
 	json["timestamp"] = CUtils::createTimestamp();
-
-	json["source"] = "network";
-	json["action"] = action;
+	json["action"]    = action;
 }
 
 void CYSFControl::writeJSONNet(nlohmann::json& json, const char* action, const unsigned char* source, unsigned char dgid)

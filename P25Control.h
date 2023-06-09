@@ -128,7 +128,7 @@ private:
 	void writeJSONNet(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId);
 	void writeJSONNet(const char* action, float duration, float loss);
 
-	void writeJSON(nlohmann::json& json, const char* source, const char* action);
+	void writeJSON(nlohmann::json& json, const char* action);
 	void writeJSON(nlohmann::json& json, const char* source, const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId);
 };
 

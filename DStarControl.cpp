@@ -1423,7 +1423,6 @@ void CDStarControl::writeJSONNet(const char* action, float duration, float loss)
 	json["duration"] = duration;
 	json["loss"]     = loss;
 
-	json["source"] = "network";
 	json["action"] = action;
 
 	WriteJSON("D-Star", json);
@@ -1438,7 +1437,6 @@ void CDStarControl::writeJSONRF(nlohmann::json& json, const char* action, float 
 	json["duration"] = duration;
 	json["ber"]      = ber;
 
-	json["source"] = "rf";
 	json["action"] = action;
 }
 

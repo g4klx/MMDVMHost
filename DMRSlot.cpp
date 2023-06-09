@@ -2295,7 +2295,7 @@ void CDMRSlot::writeJSONRF(const char* action)
 
 	nlohmann::json json;
 
-	writeJSON(json, "rf", action);
+	writeJSON(json, action);
 
 	WriteJSON("DMR", json);
 }
@@ -2344,7 +2344,7 @@ void CDMRSlot::writeJSONRF(const char* action, float duration, float ber)
 
 	nlohmann::json json;
 
-	writeJSON(json, "rf", action);
+	writeJSON(json, action);
 
 	json["duration"] = duration;
 	json["ber"]      = ber;
@@ -2358,7 +2358,7 @@ void CDMRSlot::writeJSONRF(const char* action, float duration, float ber, unsign
 
 	nlohmann::json json;
 
-	writeJSON(json, "rf", action);
+	writeJSON(json, action);
 
 	json["duration"] = duration;
 	json["ber"]      = ber;
@@ -2379,7 +2379,7 @@ void CDMRSlot::writeJSONNet(const char* action)
 
 	nlohmann::json json;
 
-	writeJSON(json, "network", action);
+	writeJSON(json, action);
 
 	WriteJSON("DMR", json);
 }
@@ -2428,7 +2428,7 @@ void CDMRSlot::writeJSONNet(const char* action, float duration, float loss, floa
 
 	nlohmann::json json;
 
-	writeJSON(json, "network", action);
+	writeJSON(json, action);
 
 	json["duration"] = duration;
 	json["loss"]     = loss;
@@ -2437,13 +2437,11 @@ void CDMRSlot::writeJSONNet(const char* action, float duration, float loss, floa
 	WriteJSON("DMR", json);
 }
 
-void CDMRSlot::writeJSON(nlohmann::json& json, const char* source, const char* action)
+void CDMRSlot::writeJSON(nlohmann::json& json, const char* action)
 {
-	assert(source != NULL);
 	assert(action != NULL);
 
 	json["timestamp"] = CUtils::createTimestamp();
-	json["source"]    = source;
 	json["action"]    = action;
 	json["slot"]      = int(m_slotNo);
 }

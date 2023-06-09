@@ -995,7 +995,6 @@ void CM17Control::writeJSONRF(nlohmann::json& json, const char* action)
 
 	json["timestamp"] = CUtils::createTimestamp();
 
-	json["source"] = "rf";
 	json["action"] = action;
 }
 
@@ -1043,7 +1042,6 @@ void CM17Control::writeJSONNet(nlohmann::json& json, const char* action)
 
 	json["timestamp"] = CUtils::createTimestamp();
 
-	json["source"] = "network";
 	json["action"] = action;
 }
 

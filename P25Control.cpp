@@ -1230,7 +1230,7 @@ void CP25Control::writeJSONRF(const char* action, float duration, float ber)
 
 	nlohmann::json json;
 
-	writeJSON(json, "rf", action);
+	writeJSON(json, action);
 
 	json["duration"] = duration;
 	json["ber"]      = ber;
@@ -1244,7 +1244,7 @@ void CP25Control::writeJSONRF(const char* action, float duration, float ber, uns
 
 	nlohmann::json json;
 
-	writeJSON(json, "rf", action);
+	writeJSON(json, action);
 
 	json["duration"] = duration;
 	json["ber"]      = ber;
@@ -1276,7 +1276,7 @@ void CP25Control::writeJSONNet(const char* action, float duration, float loss)
 
 	nlohmann::json json;
 
-	writeJSON(json, "network", action);
+	writeJSON(json, action);
 
 	json["duration"] = duration;
 	json["loss"]     = loss;
@@ -1284,13 +1284,11 @@ void CP25Control::writeJSONNet(const char* action, float duration, float loss)
 	WriteJSON("P25", json);
 }
 
-void CP25Control::writeJSON(nlohmann::json& json, const char* source, const char* action)
+void CP25Control::writeJSON(nlohmann::json& json, const char* action)
 {
-	assert(source != NULL);
 	assert(action != NULL);
 
 	json["timestamp"] = CUtils::createTimestamp();
-	json["source"]    = source;
 	json["action"]    = action;
 }
 
