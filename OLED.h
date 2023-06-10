@@ -32,6 +32,8 @@
 #include "UserDBentry.h"
 
 #include <string>
+#include <fstream>
+#include <sstream>
 
 #include "ArduiPi_OLED_lib.h"
 #include "Adafruit_GFX.h"

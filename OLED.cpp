@@ -243,8 +243,9 @@ bool COLED::open()
     m_display.display();        // display it (clear display)
 
     OLED_statusbar();
-    m_display.setCursor(0,OLED_LINE3);
-    m_display.print("Startup");
+    m_display.setCursor(0,OLED_LINE4);
+    m_display.setTextSize(1);
+    m_display.print("   -Initializing-");
     m_display.display();
 
     return true;
@@ -257,11 +258,6 @@ void COLED::setIdleInt()
     m_display.clearDisplay();
     OLED_statusbar();
 
-//    m_display.setCursor(0,30);
-//    m_display.setTextSize(3);
-//    m_display.print("Idle");
-
-//    m_display.setTextSize(1);
     if (m_displayScroll && m_displayLogoScreensaver)
         m_display.startscrolldiagleft(0x00,0x0f);  //the MMDVM logo scrolls the whole screen
     m_display.display();
@@ -284,6 +280,53 @@ void COLED::setIdleInt()
         networkInfoInitialized = true;
         passCounter = 0;
     }
+
+    // Let's let the users know if they are in Auto-AP mode...
+    if (m_ipaddress.find("wlan0_ap") != std::string::npos) {
+	size_t pos = m_ipaddress.find("wlan0_ap");
+	if (pos != std::string::npos) {
+	    m_ipaddress.erase(pos, 9); // remove redundant/superfluous "wlan0_ap" from string
+	}
+	// Read ssid value from /etc/hostapd.conf if it exists...
+	std::string ssid;
+	std::ifstream configFile("/etc/hostapd.conf");
+	if (configFile.is_open()) {
+	    std::string line;
+	    while (std::getline(configFile, line)) {
+		if (line.find("ssid=") != std::string::npos) {
+		    std::istringstream iss(line);
+		    std::string key, value;
+		    if (std::getline(iss, key, '=') && std::getline(iss, value)) {
+			ssid = value;
+			break;
+		    }
+		}
+	    }
+	    configFile.close();
+ 	} else {
+	    ssid = "Unknown"; // `/etc/hostapd.conf` does not exist...
+	}
+
+	m_display.setCursor(0, OLED_LINE3);
+	m_display.setTextSize(1);
+	m_display.printf("Auto-AP Running...");
+	m_display.setCursor(0, OLED_LINE4);
+	m_display.setTextSize(1);
+	m_display.printf("SSID: %s", ssid.c_str());
+	m_display.setCursor(0, OLED_LINE5);
+	m_display.setTextSize(1);
+	m_display.printf("IP: %s", m_ipaddress.c_str());
+    } else { // Connected to network - no Auto-AP mode; normal display layout...
+	m_display.setCursor(0,OLED_LINE3);
+	m_display.setTextSize(1);
+	m_display.print("        -IDLE-");
+	m_display.setCursor(0, OLED_LINE5);
+	m_display.printf("  %s", m_ipaddress.c_str());
+    }
+
+    if (m_displayScroll && m_displayLogoScreensaver)
+	m_display.startscrolldiagleft(0x00, 0x0f);  // the MMDVM logo scrolls the whole screen
+    m_display.display();
 }
 
 void COLED::setErrorInt(const char* text)
@@ -324,11 +367,12 @@ void COLED::setQuitInt()
     OLED_statusbar();
 
     m_display.setCursor(0,30);
-    m_display.setTextSize(3);
-    m_display.print("Stopped");
+    m_display.setTextSize(2);
+    m_display.print(" Stopping");
 
     m_display.setTextSize(1);
     m_display.display();
+    sleep(2);
 }
 
 void COLED::setFMInt()
@@ -374,7 +418,7 @@ void COLED::clearDStarInt()
     m_display.fillRect(0,OLED_LINE3, m_display.width(),m_display.height(),BLACK); //clear everything beneath the logo
 
     m_display.setCursor(40,OLED_LINE3);
-    m_display.print("Listening");
+    m_display.print("Standby");
 
     m_display.setCursor(0,OLED_LINE5);
     m_display.printf("%s",m_ipaddress.c_str());
@@ -454,18 +498,18 @@ void COLED::clearDMRInt(unsigned int slotNo)
         if (slotNo == 1U) {
             m_display.fillRect(0, OLED_LINE3, m_display.width(), 40, BLACK);
             m_display.setCursor(0,OLED_LINE3);
-            m_display.print("Slot: 1 Listening");
+            m_display.print("Slot: 1 Standby");
         }
         else {
             m_display.fillRect(0, OLED_LINE5, m_display.width(), 40, BLACK);
             m_display.setCursor(0, OLED_LINE5);
-            m_display.print("Slot: 2 Listening");
+            m_display.print("Slot: 2 Standby");
         }
     }
     else {
         m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
         m_display.setCursor(0,OLED_LINE3);
-        m_display.printf("Slot: %i Listening",slotNo);
+        m_display.printf("Slot: %i Standby",slotNo);
     }
 
     m_display.fillRect(0, OLED_LINE6, m_display.width(), 20, BLACK);
@@ -497,7 +541,7 @@ void COLED::clearFusionInt()
     m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
     m_display.setCursor(40,OLED_LINE4);
-    m_display.print("Listening");
+    m_display.print("Standby");
 
     m_display.setCursor(0,OLED_LINE6);
     m_display.printf("%s",m_ipaddress.c_str());
@@ -527,7 +571,7 @@ void COLED::clearP25Int()
     m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
     m_display.setCursor(40,OLED_LINE4);
-    m_display.print("Listening");
+    m_display.print("Standby");
 
     m_display.setCursor(0,OLED_LINE6);
     m_display.printf("%s",m_ipaddress.c_str());
@@ -577,7 +621,7 @@ void COLED::clearNXDNInt()
     m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
     m_display.setCursor(40,OLED_LINE3);
-    m_display.print("Listening");
+    m_display.print("Standby");
 
     m_display.setCursor(0,OLED_LINE6);
     m_display.printf("%s",m_ipaddress.c_str());
@@ -593,10 +637,14 @@ void COLED::writeM17Int(const char* source, const char* dest, const char* type)
     m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
     m_display.setCursor(0,OLED_LINE3);
-    m_display.printf("%s %s", type, source);
+    m_display.printf("from: %s %s", type, source);
 
     m_display.setCursor(0,OLED_LINE4);
-    m_display.printf("  %s", dest);
+    m_display.printf("to:   %s", dest);
+
+    m_display.setCursor(0,OLED_LINE6);
+    m_display.printf("%s",m_ipaddress.c_str());
+
 
     OLED_statusbar();
     m_display.display();
@@ -607,7 +655,7 @@ void COLED::clearM17Int()
     m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
     m_display.setCursor(40,OLED_LINE4);
-    m_display.print("Listening");
+    m_display.print("Standby");
 
     m_display.setCursor(0,OLED_LINE6);
     m_display.printf("%s",m_ipaddress.c_str());
@@ -682,7 +730,7 @@ void COLED::clearPOCSAGInt()
     m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
     m_display.setCursor(40,OLED_LINE3);
-    m_display.print("Listening");
+    m_display.print("Standby");
 
     m_display.setCursor(0,OLED_LINE6);
     m_display.printf("%s",m_ipaddress.c_str());
@@ -696,7 +744,7 @@ void COLED::writeCWInt()
 
     m_display.setCursor(0,30);
     m_display.setTextSize(3);
-    m_display.print("CW TX");
+    m_display.print("CW ID TX");
 
     m_display.setTextSize(1);
     m_display.display();
@@ -708,14 +756,18 @@ void COLED::clearCWInt()
 {
     m_display.clearDisplay();
 
-    m_display.setCursor(0,30);
-    m_display.setTextSize(3);
-    m_display.print("Idle");
-
+    m_display.setCursor(0,OLED_LINE1);
+    m_display.setTextSize(2);
     m_display.setTextSize(1);
-    m_display.display();
+    m_display.print(" -IDLE-");
+    m_display.setCursor(0,OLED_LINE3);
+    m_display.printf("%s",m_ipaddress.c_str());
+
     if (m_displayScroll)
-        m_display.startscrollleft(0x02,0x0f);
+        m_display.startscrolldiagleft(0x00,0x0f);
+    m_display.display();
+
+
 }
 
 void COLED::close()
@@ -724,9 +776,9 @@ void COLED::close()
     m_display.fillRect(0, 0, m_display.width(), 16, BLACK);
     if (m_displayScroll)
         m_display.startscrollleft(0x00,0x01);
-    m_display.setCursor(0,00);
+    m_display.setCursor(0,OLED_LINE3);
     m_display.setTextSize(2);
-    m_display.print("-CLOSE-");
+    m_display.print(" -OFFLINE-");
     m_display.display();
 
     m_display.close();
