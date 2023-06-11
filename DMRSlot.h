@@ -111,7 +111,11 @@ private:
 	unsigned char              m_maxRSSI;
 	unsigned char              m_minRSSI;
 	unsigned int               m_aveRSSI;
+	unsigned int               m_rssiCountTotal;
+	unsigned int               m_rssiAccum;
 	unsigned int               m_rssiCount;
+	unsigned int               m_bitErrsAccum;
+	unsigned int               m_bitsCount;
 	bool                       m_enabled;
 	FILE*                      m_fp;
 
@@ -160,6 +164,10 @@ private:
 	void insertSilence(unsigned int count);
 
 	static void setShortLC(unsigned int slotNo, unsigned int id, FLCO flco = FLCO_GROUP, ACTIVITY_TYPE type = ACTIVITY_NONE);
+
+	void writeJSONRSSI();
+	void writeJSONBER();
+	void writeJSONText(const unsigned char* text);
 
 	void writeJSONRF(const char* action);
 	void writeJSONRF(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId);

@@ -69,6 +69,9 @@ const unsigned int NO_HEADERS_SIMPLEX = 8U;
 const unsigned int NO_HEADERS_DUPLEX  = 3U;
 const unsigned int NO_PREAMBLE_CSBK   = 15U;
 
+const unsigned int RSSI_COUNT   = 4U;			// 4 * 360ms = 1440ms
+const unsigned int BER_COUNT    = 24U * 141U;		// 24 * 60ms = 1440ms
+
 // #define	DUMP_DMR
 
 CDMRSlot::CDMRSlot(unsigned int slotNo, unsigned int timeout) :
@@ -116,7 +119,11 @@ m_rssi(0U),
 m_maxRSSI(0U),
 m_minRSSI(0U),
 m_aveRSSI(0U),
+m_rssiCountTotal(0U),
+m_rssiAccum(0U),
 m_rssiCount(0U),
+m_bitErrsAccum(0U),
+m_bitsCount(0U),
 m_enabled(true),
 m_fp(NULL)
 {
@@ -150,8 +157,8 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 		FLCO flco       = m_rfLC->getFLCO();
 
 		if (m_rssi != 0U) {
-			LogMessage("DMR Slot %u, RF voice transmission lost from %s to %s%s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-			writeJSONRF("lost", float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			LogMessage("DMR Slot %u, RF voice transmission lost from %s to %s%s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
+			writeJSONRF("lost", float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
 		} else {
 			LogMessage("DMR Slot %u, RF voice transmission lost from %s to %s%s, %.1f seconds, BER: %.1f%%", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
 			writeJSONRF("lost", float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
@@ -204,7 +211,9 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			m_maxRSSI = m_rssi;
 
 		m_aveRSSI += m_rssi;
-		m_rssiCount++;
+		m_rssiCountTotal++;
+
+		writeJSONRSSI();
 	}
 
 	bool dataSync  = (data[1U] & DMR_SYNC_DATA)  == DMR_SYNC_DATA;
@@ -285,10 +294,16 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			m_rfEmbeddedWriteN = 1U;
 			m_rfTalkerId       = TALKER_ID_NONE;
 
-			m_minRSSI = m_rssi;
-			m_maxRSSI = m_rssi;
-			m_aveRSSI = m_rssi;
+			m_minRSSI        = m_rssi;
+			m_maxRSSI        = m_rssi;
+			m_aveRSSI        = m_rssi;
+			m_rssiCountTotal = 1U;
+
+			m_rssiAccum = m_rssi;
 			m_rssiCount = 1U;
+
+			m_bitsCount    = 0U;
+			m_bitErrsAccum = 0U;
 
 			if (m_duplex) {
 				m_queue.clear();
@@ -370,8 +385,8 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			FLCO flco       = m_rfLC->getFLCO();
 
 			if (m_rssi != 0U) {
-				LogMessage("DMR Slot %u, received RF end of voice transmission from %s to %s%s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-				writeJSONRF("end", float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				LogMessage("DMR Slot %u, received RF end of voice transmission from %s to %s%s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
+				writeJSONRF("end", float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
 			} else {
 				LogMessage("DMR Slot %u, received RF end of voice transmission from %s to %s%s, %.1f seconds, BER: %.1f%%", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
 				writeJSONRF("end", float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
@@ -613,11 +628,15 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				errors = m_fec.regenerateDMR(data + 2U);
 				LogDebug("DMR Slot %u, audio sequence no. 0, errs: %u/141 (%.1f%%)", m_slotNo, errors, float(errors) / 1.41F);
 				m_display->writeDMRBER(m_slotNo, float(errors) / 1.41F);
-				m_rfErrs += errors;
+				m_rfErrs       += errors;
+				m_bitErrsAccum += errors;
 			}
 
-			m_rfBits += 141U;
+			m_bitsCount += 141U;
+			m_rfBits    += 141U;
 			m_rfFrames++;
+
+			writeJSONBER();
 
 			m_rfEmbeddedReadN  = (m_rfEmbeddedReadN  + 1U) % 2U;
 			m_rfEmbeddedWriteN = (m_rfEmbeddedWriteN + 1U) % 2U;
@@ -661,11 +680,15 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				errors = m_fec.regenerateDMR(data + 2U);
 				LogDebug("DMR Slot %u, audio sequence no. %u, errs: %u/141 (%.1f%%)", m_slotNo, m_rfN, errors, float(errors) / 1.41F);
 				m_display->writeDMRBER(m_slotNo, float(errors) / 1.41F);
-				m_rfErrs += errors;
+				m_rfErrs       += errors;
+				m_bitErrsAccum += errors;
 			}
 
-			m_rfBits += 141U;
+			m_bitsCount += 141U;
+			m_rfBits    += 141U;
 			m_rfFrames++;
+
+			writeJSONBER();
 
 			// Get the LCSS from the EMB
 			CDMREMB emb;
@@ -705,8 +728,12 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					if (!(m_rfTalkerId & TALKER_ID_HEADER)) {
 						if (m_rfTalkerId == TALKER_ID_NONE)
 							m_rfTalkerAlias.reset();
-						m_rfTalkerAlias.add(0U, data + 2U, 7U);
-						m_display->writeDMRTA(m_slotNo, m_rfTalkerAlias.get(), "R");
+
+						bool complete = m_rfTalkerAlias.add(0U, data + 2U, 7U);
+						if (complete) {
+							writeJSONText(m_rfTalkerAlias.get());
+							m_display->writeDMRTA(m_slotNo, m_rfTalkerAlias.get(), "R");
+						}
 
 						if (m_dumpTAData) {
 							::sprintf(text, "DMR Slot %u, Embedded Talker Alias Header", m_slotNo);
@@ -724,8 +751,12 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					if (!(m_rfTalkerId & TALKER_ID_BLOCK1)) {
 						if (m_rfTalkerId == TALKER_ID_NONE)
 							m_rfTalkerAlias.reset();
-						m_rfTalkerAlias.add(1U, data + 2U, 7U);
-						m_display->writeDMRTA(m_slotNo, m_rfTalkerAlias.get(), "R");
+
+						bool complete = m_rfTalkerAlias.add(1U, data + 2U, 7U);
+						if (complete) {
+							writeJSONText(m_rfTalkerAlias.get());
+							m_display->writeDMRTA(m_slotNo, m_rfTalkerAlias.get(), "R");
+						}
 
 						if (m_dumpTAData) {
 							::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 1", m_slotNo);
@@ -743,8 +774,12 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					if (!(m_rfTalkerId & TALKER_ID_BLOCK2)) {
 						if (m_rfTalkerId == TALKER_ID_NONE)
 							m_rfTalkerAlias.reset();
-						m_rfTalkerAlias.add(2U, data + 2U, 7U);
-						m_display->writeDMRTA(m_slotNo, m_rfTalkerAlias.get(), "R");
+
+						bool complete = m_rfTalkerAlias.add(2U, data + 2U, 7U);
+						if (complete) {
+							writeJSONText(m_rfTalkerAlias.get());
+							m_display->writeDMRTA(m_slotNo, m_rfTalkerAlias.get(), "R");
+						}
 
 						if (m_dumpTAData) {
 							::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 2", m_slotNo);
@@ -762,8 +797,12 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					if (!(m_rfTalkerId & TALKER_ID_BLOCK3)) {
 						if (m_rfTalkerId == TALKER_ID_NONE)
 							m_rfTalkerAlias.reset();
-						m_rfTalkerAlias.add(3U, data + 2U, 7U);
-						m_display->writeDMRTA(m_slotNo, m_rfTalkerAlias.get(), "R");
+
+						bool complete = m_rfTalkerAlias.add(3U, data + 2U, 7U);
+						if (complete) {
+							writeJSONText(m_rfTalkerAlias.get());
+							m_display->writeDMRTA(m_slotNo, m_rfTalkerAlias.get(), "R");
+						}
 
 						if (m_dumpTAData) {
 							::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 3", m_slotNo);
@@ -889,10 +928,16 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				m_rfEmbeddedWriteN = 1U;
 				m_rfTalkerId       = TALKER_ID_NONE;
 
-				m_minRSSI = m_rssi;
-				m_maxRSSI = m_rssi;
-				m_aveRSSI = m_rssi;
+				m_minRSSI        = m_rssi;
+				m_maxRSSI        = m_rssi;
+				m_aveRSSI        = m_rssi;
+				m_rssiCountTotal = 1U;
+
+				m_rssiAccum = m_rssi;
 				m_rssiCount = 1U;
+
+				m_bitErrsAccum = 0U;
+				m_bitsCount    = 0U;
 
 				if (m_duplex) {
 					m_queue.clear();
@@ -920,11 +965,15 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				if (fid == FID_ETSI || fid == FID_DMRA) {
 					errors = m_fec.regenerateDMR(data + 2U);
 					LogDebug("DMR Slot %u, audio sequence no. %u, errs: %u/141 (%.1f%%)", m_slotNo, m_rfN, errors, float(errors) / 1.41F);
-					m_rfErrs += errors;
+					m_bitErrsAccum += errors;
+					m_rfErrs       += errors;
 				}
 
-				m_rfBits += 141U;
+				m_bitsCount += 141U;
+				m_rfBits    += 141U;
 				m_rfFrames++;
+
+				writeJSONBER();
 
 				data[0U] = TAG_DATA;
 				data[1U] = 0x00U;
@@ -1007,6 +1056,9 @@ void CDMRSlot::writeEndRF(bool writeEnd)
 	m_rfFrames = 0U;
 	m_rfErrs = 0U;
 	m_rfBits = 1U;
+
+	m_bitErrsAccum = 0U;
+	m_bitsCount    = 1U;
 
 	m_rfSeqNo = 0U;
 	m_rfN = 0U;
@@ -1542,8 +1594,12 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				if (!(m_netTalkerId & TALKER_ID_HEADER)) {
 					if (!m_netTalkerId)
 						m_netTalkerAlias.reset();
-					m_netTalkerAlias.add(0U, data + 2U, 7U);
-					m_display->writeDMRTA(m_slotNo, m_netTalkerAlias.get(), "N");
+
+					bool complete = m_netTalkerAlias.add(0U, data + 2U, 7U);
+					if (complete) {
+						writeJSONText(m_netTalkerAlias.get());
+						m_display->writeDMRTA(m_slotNo, m_netTalkerAlias.get(), "N");
+					}
 
 					if (m_dumpTAData) {
 						::sprintf(text, "DMR Slot %u, Embedded Talker Alias Header", m_slotNo);
@@ -1557,8 +1613,12 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				if (!(m_netTalkerId & TALKER_ID_BLOCK1)) {
 					if (!m_netTalkerId)
 						m_netTalkerAlias.reset();
-					m_netTalkerAlias.add(1U, data + 2U, 7U);
-					m_display->writeDMRTA(m_slotNo, m_netTalkerAlias.get(), "N");
+
+					bool complete = m_netTalkerAlias.add(1U, data + 2U, 7U);
+					if (complete) {
+						writeJSONText(m_netTalkerAlias.get());
+						m_display->writeDMRTA(m_slotNo, m_netTalkerAlias.get(), "N");
+					}
 
 					if (m_dumpTAData) {
 						::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 1", m_slotNo);
@@ -1572,8 +1632,12 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				if (!(m_netTalkerId & TALKER_ID_BLOCK2)) {
 					if (!m_netTalkerId)
 						m_netTalkerAlias.reset();
-					m_netTalkerAlias.add(2U, data + 2U, 7U);
-					m_display->writeDMRTA(m_slotNo, m_netTalkerAlias.get(), "N");
+
+					bool complete = m_netTalkerAlias.add(2U, data + 2U, 7U);
+					if (complete) {
+						writeJSONText(m_netTalkerAlias.get());
+						m_display->writeDMRTA(m_slotNo, m_netTalkerAlias.get(), "N");
+					}
 
 					if (m_dumpTAData) {
 						::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 2", m_slotNo);
@@ -1587,8 +1651,12 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				if (!(m_netTalkerId & TALKER_ID_BLOCK3)) {
 					if (!m_netTalkerId)
 						m_netTalkerAlias.reset();
-					m_netTalkerAlias.add(3U, data + 2U, 7U);
-					m_display->writeDMRTA(m_slotNo, m_netTalkerAlias.get(), "N");
+
+					bool complete = m_netTalkerAlias.add(3U, data + 2U, 7U);
+					if (complete) {
+						writeJSONText(m_netTalkerAlias.get());
+						m_display->writeDMRTA(m_slotNo, m_netTalkerAlias.get(), "N");
+					}
 
 					if (m_dumpTAData) {
 						::sprintf(text, "DMR Slot %u, Embedded Talker Alias Block 3", m_slotNo);
@@ -2258,6 +2326,9 @@ void CDMRSlot::enable(bool enabled)
 		m_rfErrs = 0U;
 		m_rfBits = 1U;
 
+		m_bitErrsAccum = 0U;
+		m_bitsCount    = 1U;
+
 		m_rfSeqNo = 0U;
 		m_rfN = 0U;
 
@@ -2287,6 +2358,60 @@ void CDMRSlot::enable(bool enabled)
 	}
 
 	m_enabled = enabled;
+}
+
+void CDMRSlot::writeJSONRSSI()
+{
+	m_rssiAccum += m_rssi;
+	m_rssiCount++;
+
+	if (m_rssiCount >= RSSI_COUNT) {
+		nlohmann::json json;
+
+		json["timestamp"] = CUtils::createTimestamp();
+		json["mode"]      = "DMR";
+		json["slot"]      = int(m_slotNo);
+
+		json["value"]     = -int(m_rssiAccum / m_rssiCount);
+
+		WriteJSON("RSSI", json);
+
+		m_rssiAccum = 0U;
+		m_rssiCount = 0U;
+	}
+}
+
+void CDMRSlot::writeJSONBER()
+{
+	if (m_bitsCount >= BER_COUNT) {
+		nlohmann::json json;
+
+		json["timestamp"] = CUtils::createTimestamp();
+		json["mode"]      = "DMR";
+		json["slot"]      = int(m_slotNo);
+
+		json["value"]     = float(m_bitErrsAccum * 100U) / float(m_bitsCount);
+
+		WriteJSON("BER", json);
+
+		m_bitErrsAccum = 0U;
+		m_bitsCount    = 1U;
+	}
+}
+
+void CDMRSlot::writeJSONText(const unsigned char* text)
+{
+	assert(text != NULL);
+
+	nlohmann::json json;
+
+	json["timestamp"] = CUtils::createTimestamp();
+	json["mode"]      = "DMR";
+	json["slot"]      = int(m_slotNo);
+
+	json["value"]     = std::string((char*)text);
+
+	WriteJSON("Text", json);
 }
 
 void CDMRSlot::writeJSONRF(const char* action)
