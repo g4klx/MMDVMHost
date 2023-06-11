@@ -257,15 +257,6 @@ void COLED::setIdleInt()
     m_display.clearDisplay();
     OLED_statusbar();
 
-//    m_display.setCursor(0,30);
-//    m_display.setTextSize(3);
-//    m_display.print("Idle");
-
-//    m_display.setTextSize(1);
-    if (m_displayScroll && m_displayLogoScreensaver)
-        m_display.startscrolldiagleft(0x00,0x0f);  //the MMDVM logo scrolls the whole screen
-    m_display.display();
-
     unsigned char info[100U];
     CNetworkInfo* m_network;
 
@@ -284,6 +275,53 @@ void COLED::setIdleInt()
         networkInfoInitialized = true;
         passCounter = 0;
     }
+
+    // Let's let the users know if they are in Auto-AP mode...
+    if (m_ipaddress.find("wlan0_ap") != std::string::npos) {
+	size_t pos = m_ipaddress.find("wlan0_ap");
+	if (pos != std::string::npos) {
+	    m_ipaddress.erase(pos, 9); // remove redundant/superfluous "wlan0_ap" from string
+	}
+	// Read ssid value from /etc/hostapd.conf if it exists...
+	std::string ssid;
+	std::ifstream configFile("/etc/hostapd/hostapd.conf");
+	if (configFile.is_open()) {
+	    std::string line;
+	    while (std::getline(configFile, line)) {
+		if (line.find("ssid=") != std::string::npos) {
+		    std::istringstream iss(line);
+		    std::string key, value;
+		    if (std::getline(iss, key, '=') && std::getline(iss, value)) {
+			ssid = value;
+			break;
+		    }
+		}
+	    }
+	    configFile.close();
+ 	} else {
+	    ssid = "Unknown"; // `/etc/hostapd.conf` does not exist...
+	}
+
+	m_display.setCursor(0, OLED_LINE3);
+	m_display.setTextSize(1);
+	m_display.printf("Auto-AP Running...");
+	m_display.setCursor(0, OLED_LINE5);
+	m_display.setTextSize(1);
+	m_display.printf("SSID: %s", ssid.c_str());
+	m_display.setCursor(0, OLED_LINE6);
+	m_display.setTextSize(1);
+	m_display.printf("IP: %s", m_ipaddress.c_str());
+    } else { // Connected to network - no Auto-AP mode; normal display layout...
+	m_display.setCursor(0,OLED_LINE3);
+	m_display.setTextSize(1);
+	m_display.print("        -IDLE-");
+	m_display.setCursor(0, OLED_LINE5);
+	m_display.printf("%s", m_ipaddress.c_str());
+    }
+
+    if (m_displayScroll && m_displayLogoScreensaver)
+	m_display.startscrolldiagleft(0x00,0x0f);  // the MMDVM logo scrolls the whole screen
+    m_display.display();
 }
 
 void COLED::setErrorInt(const char* text)
