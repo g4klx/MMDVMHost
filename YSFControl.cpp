@@ -265,7 +265,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 			m_maxRSSI = m_rssi;
 			m_aveRSSI = m_rssi;
 			m_rssiCountTotal = 1U;
-			
+
 			m_rssiAccum = m_rssi;
 			m_rssiCount = 1U;
 
@@ -1286,35 +1286,6 @@ void CYSFControl::enable(bool enabled)
 	m_enabled = enabled;
 }
 
-void CYSFControl::writeJSONRF(const char* action, const char* mode, const unsigned char* source, unsigned char dgid)
-{
-	assert(action != NULL);
-	assert(mode != NULL);
-	assert(source != NULL);
-
-	nlohmann::json json;
-
-	writeJSONRF(json, action, source, dgid);
-
-	json["mode"] = mode;
-
-	WriteJSON("YSF", json);
-}
-
-void CYSFControl::writeJSONRF(const char* action, float duration, float ber)
-{
-	assert(action != NULL);
-
-	nlohmann::json json;
-
-	writeJSONRF(json, action);
-
-	json["duration"] = duration;
-	json["ber"]      = ber;
-
-	WriteJSON("YSF", json);
-}
-
 void CYSFControl::writeJSONRSSI()
 {
 	m_rssiAccum += m_rssi;
@@ -1353,6 +1324,35 @@ void CYSFControl::writeJSONBER(unsigned int bits, unsigned int errs)
 		m_bitErrsAccum = 0U;
 		m_bitsCount    = 1U;
 	}
+}
+
+void CYSFControl::writeJSONRF(const char* action, const char* mode, const unsigned char* source, unsigned char dgid)
+{
+	assert(action != NULL);
+	assert(mode != NULL);
+	assert(source != NULL);
+
+	nlohmann::json json;
+
+	writeJSONRF(json, action, source, dgid);
+
+	json["mode"] = mode;
+
+	WriteJSON("YSF", json);
+}
+
+void CYSFControl::writeJSONRF(const char* action, float duration, float ber)
+{
+	assert(action != NULL);
+
+	nlohmann::json json;
+
+	writeJSONRF(json, action);
+
+	json["duration"] = duration;
+	json["ber"]      = ber;
+
+	WriteJSON("YSF", json);
 }
 
 void CYSFControl::writeJSONRF(const char* action, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI)

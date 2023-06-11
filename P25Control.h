@@ -93,7 +93,11 @@ private:
 	unsigned char              m_maxRSSI;
 	unsigned char              m_minRSSI;
 	unsigned int               m_aveRSSI;
+	unsigned int               m_rssiCountTotal;
+	unsigned int               m_rssiAccum;
 	unsigned int               m_rssiCount;
+	unsigned int               m_bitsCount;
+	unsigned int               m_bitErrsAccum;
 	bool                       m_enabled;
 	FILE*                      m_fp;
 
@@ -120,6 +124,9 @@ private:
 	bool openFile();
 	bool writeFile(const unsigned char* data, unsigned char length);
 	void closeFile();
+
+	void writeJSONRSSI();
+	void writeJSONBER();
 
 	void writeJSONRF(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId);
 	void writeJSONRF(const char* action, float duration, float ber);
