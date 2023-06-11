@@ -83,7 +83,11 @@ private:
 	unsigned char              m_maxRSSI;
 	unsigned char              m_minRSSI;
 	unsigned int               m_aveRSSI;
+	unsigned int               m_rssiCountTotal;
+	unsigned int               m_rssiAccum;
 	unsigned int               m_rssiCount;
+	unsigned int               m_bitsCount;
+	unsigned int               m_bitErrsAccum;
 	bool                       m_enabled;
 	FILE*                      m_fp;
 
@@ -104,6 +108,10 @@ private:
 
 	void writeEndRF();
 	void writeEndNet();
+
+	void writeJSONRSSI();
+	void writeJSONBER();
+	void writeJSONText(const unsigned char* text);
 
 	void writeJSONRF(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest);
 	void writeJSONRF(const char* action, float duration, float ber);

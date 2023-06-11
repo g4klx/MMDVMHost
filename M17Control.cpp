@@ -50,6 +50,9 @@ const unsigned char SCRAMBLER[] = {
 	0x5DU, 0x0CU, 0xC8U, 0x52U, 0x43U, 0x91U, 0x1DU, 0xF8U, 0x6EU, 0x68U, 0x2FU, 0x35U, 0xDAU, 0x14U, 0xEAU, 0xCDU, 0x76U,
 	0x19U, 0x8DU, 0xD5U, 0x80U, 0xD1U, 0x33U, 0x87U, 0x13U, 0x57U, 0x18U, 0x2DU, 0x29U, 0x78U, 0xC3U};
 
+const unsigned int RSSI_COUNT   = 28U;			// 28 * 40ms = 1120ms
+const unsigned int BER_COUNT    = 28U * 272U;		// 28 * 40ms = 1120ms
+
 // #define	DUMP_M17
 
 const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
@@ -91,7 +94,11 @@ m_rssi(0U),
 m_maxRSSI(0U),
 m_minRSSI(0U),
 m_aveRSSI(0U),
+m_rssiCountTotal(0U),
+m_rssiAccum(0U),
 m_rssiCount(0U),
+m_bitsCount(0U),
+m_bitErrsAccum(0U),
 m_enabled(true),
 m_fp(NULL)
 {
@@ -114,8 +121,8 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 	if (type == TAG_LOST && (m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA_AUDIO)) {
 		if (m_rssi != 0U) {
-			LogMessage("M17, transmission lost from %s to %s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_source.c_str(), m_dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-			writeJSONRF("lost", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			LogMessage("M17, transmission lost from %s to %s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_source.c_str(), m_dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
+			writeJSONRF("lost", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
 		} else {
 			LogMessage("M17, transmission lost from %s to %s, %.1f seconds, BER: %.1f%%", m_source.c_str(), m_dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 			writeJSONRF("lost", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
@@ -159,7 +166,9 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_maxRSSI = m_rssi;
 
 		m_aveRSSI += m_rssi;
-		m_rssiCount++;
+		m_rssiCountTotal++;
+
+		writeJSONRSSI();
 	}
 
 	unsigned char temp[M17_FRAME_LENGTH_BYTES];
@@ -190,13 +199,22 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_rfFrames   = 0U;
 			m_rfErrs     = ber;
 			m_rfBits     = 368U;
+
 			m_rfCollectingLSF.reset();
 			m_rfCollectedLSF.reset();
 			m_rfTimeoutTimer.start();
+
 			m_minRSSI    = m_rssi;
 			m_maxRSSI    = m_rssi;
 			m_aveRSSI    = m_rssi;
-			m_rssiCount  = 1U;
+			m_rssiCountTotal  = 1U;
+
+			m_rssiAccum = m_rssi;
+			m_rssiCount = 1U;
+
+			m_bitErrsAccum = 0U;
+			m_bitsCount    = 0U;
+
 			m_rfLSFn     = 0U;
 			m_rfLSFCount = 0U;
 
@@ -244,13 +262,22 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_rfFrames   = 0U;
 			m_rfErrs     = 0U;
 			m_rfBits     = 1U;
+
 			m_rfCollectingLSF.reset();
 			m_rfCollectedLSF.reset();
 			m_rfTimeoutTimer.start();
+
 			m_minRSSI    = m_rssi;
 			m_maxRSSI    = m_rssi;
 			m_aveRSSI    = m_rssi;
-			m_rssiCount  = 1U;
+			m_rssiCountTotal  = 1U;
+
+			m_rssiAccum = m_rssi;
+			m_rssiCount = 1U;
+
+			m_bitErrsAccum = 0U;
+			m_bitsCount    = 0U;
+
 			m_rfLSFCount = 0U;
 
 #if defined(DUMP_M17)
@@ -315,6 +342,10 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 		m_rfBits += 272U;
 		m_rfErrs += errors;
+
+		m_bitErrsAccum += errors;
+		m_bitsCount    += 272U;
+		writeJSONBER();
 
 		float ber = float(m_rfErrs) / float(m_rfBits);
 		m_display->writeM17BER(ber);
@@ -422,11 +453,11 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		}
 
 		if (m_rssi != 0U) {
-			LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_source.c_str(), m_dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_source.c_str(), m_dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
 			writeJSONRF("end", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 		} else {
 			LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%", m_source.c_str(), m_dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
-			writeJSONRF("end", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			writeJSONRF("end", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
 		}
 		writeEndRF();
 
@@ -923,6 +954,57 @@ void CM17Control::enable(bool enabled)
 	}
 
 	m_enabled = enabled;
+}
+
+void CM17Control::writeJSONRSSI()
+{
+	m_rssiAccum += m_rssi;
+	m_rssiCountTotal++;
+
+	if (m_rssiCountTotal >= RSSI_COUNT) {
+		nlohmann::json json;
+
+		json["timestamp"] = CUtils::createTimestamp();
+		json["mode"]      = "M17";
+
+		json["value"]     = -int(m_rssiAccum / m_rssiCountTotal);
+
+		WriteJSON("RSSI", json);
+
+		m_rssiAccum = 0U;
+		m_rssiCountTotal = 0U;
+	}
+}
+
+void CM17Control::writeJSONBER()
+{
+	if (m_bitsCount >= BER_COUNT) {
+		nlohmann::json json;
+
+		json["timestamp"] = CUtils::createTimestamp();
+		json["mode"]      = "M17";
+
+		json["value"]     = float(m_bitErrsAccum * 100U) / float(m_bitsCount);
+
+		WriteJSON("BER", json);
+
+		m_bitErrsAccum = 0U;
+		m_bitsCount    = 1U;
+	}
+}
+
+void CM17Control::writeJSONText(const unsigned char* text)
+{
+	assert(text != NULL);
+
+	nlohmann::json json;
+
+	json["timestamp"] = CUtils::createTimestamp();
+	json["mode"]      = "M17";
+
+	json["value"]     = std::string((char*)text);
+
+	WriteJSON("Text", json);
 }
 
 void CM17Control::writeJSONRF(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest)
