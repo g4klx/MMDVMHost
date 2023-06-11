@@ -258,10 +258,6 @@ void COLED::setIdleInt()
     m_display.clearDisplay();
     OLED_statusbar();
 
-    if (m_displayScroll && m_displayLogoScreensaver)
-        m_display.startscrolldiagleft(0x00,0x0f);  //the MMDVM logo scrolls the whole screen
-    m_display.display();
-
     unsigned char info[100U];
     CNetworkInfo* m_network;
 
@@ -289,7 +285,7 @@ void COLED::setIdleInt()
 	}
 	// Read ssid value from /etc/hostapd.conf if it exists...
 	std::string ssid;
-	std::ifstream configFile("/etc/hostapd.conf");
+	std::ifstream configFile("/etc/hostapd/hostapd.conf");
 	if (configFile.is_open()) {
 	    std::string line;
 	    while (std::getline(configFile, line)) {
@@ -310,10 +306,10 @@ void COLED::setIdleInt()
 	m_display.setCursor(0, OLED_LINE3);
 	m_display.setTextSize(1);
 	m_display.printf("Auto-AP Running...");
-	m_display.setCursor(0, OLED_LINE4);
+	m_display.setCursor(0, OLED_LINE5);
 	m_display.setTextSize(1);
 	m_display.printf("SSID: %s", ssid.c_str());
-	m_display.setCursor(0, OLED_LINE5);
+	m_display.setCursor(0, OLED_LINE6);
 	m_display.setTextSize(1);
 	m_display.printf("IP: %s", m_ipaddress.c_str());
     } else { // Connected to network - no Auto-AP mode; normal display layout...
@@ -321,11 +317,11 @@ void COLED::setIdleInt()
 	m_display.setTextSize(1);
 	m_display.print("        -IDLE-");
 	m_display.setCursor(0, OLED_LINE5);
-	m_display.printf("  %s", m_ipaddress.c_str());
+	m_display.printf("%s", m_ipaddress.c_str());
     }
 
     if (m_displayScroll && m_displayLogoScreensaver)
-	m_display.startscrolldiagleft(0x00, 0x0f);  // the MMDVM logo scrolls the whole screen
+	m_display.startscrolldiagleft(0x00,0x0f);  // the MMDVM logo scrolls the whole screen
     m_display.display();
 }
 
