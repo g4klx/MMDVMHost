@@ -96,7 +96,11 @@ private:
 	unsigned char              m_maxRSSI;
 	unsigned char              m_minRSSI;
 	unsigned int               m_aveRSSI;
+	unsigned int               m_rssiCountTotal;
+	unsigned int               m_rssiAccum;
 	unsigned int               m_rssiCount;
+	unsigned int               m_bitErrsAccum;
+	unsigned int               m_bitsCount;
 	bool                       m_enabled;
 	FILE*                      m_fp;
 	unsigned char*             m_rfVoiceSyncData;
@@ -134,6 +138,10 @@ private:
 
 	void writeEndRF();
 	void writeEndNet();
+
+	void writeJSONRSSI();
+	void writeJSONBER();
+	void writeJSONText(const unsigned char* text);
 
 	void writeJSONRF(const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your);
 	void writeJSONRF(const char* action, float duration, float ber);
