@@ -1386,7 +1386,7 @@ void CDStarControl::writeJSONBER()
 		nlohmann::json json;
 
 		json["timestamp"] = CUtils::createTimestamp();
-		json["mode"]      = "D-STar";
+		json["mode"]      = "D-Star";
 
 		json["value"]     = float(m_bitErrsAccum * 100U) / float(m_bitsCount);
 
