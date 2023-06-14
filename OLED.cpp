@@ -258,6 +258,9 @@ void COLED::setIdleInt()
     m_display.clearDisplay();
     OLED_statusbar();
 
+    if (m_displayScroll && m_displayLogoScreensaver)
+        m_display.startscrolldiagleft(0x00,0x0f);  //the MMDVM logo scrolls the whole screen
+
     unsigned char info[100U];
     CNetworkInfo* m_network;
 
@@ -303,26 +306,28 @@ void COLED::setIdleInt()
 	    ssid = "Unknown"; // `/etc/hostapd.conf` does not exist...
 	}
 
-	m_display.setCursor(0, OLED_LINE3);
-	m_display.setTextSize(1);
-	m_display.printf("Auto-AP Running...");
-	m_display.setCursor(0, OLED_LINE5);
-	m_display.setTextSize(1);
-	m_display.printf("SSID: %s", ssid.c_str());
-	m_display.setCursor(0, OLED_LINE6);
-	m_display.setTextSize(1);
-	m_display.printf("IP: %s", m_ipaddress.c_str());
+ 	if (m_displayLogoScreensaver) {
+	    m_display.setCursor(0, OLED_LINE3);
+	    m_display.setTextSize(1);
+	    m_display.printf("Auto-AP Running...");
+	    m_display.setCursor(0, OLED_LINE5);
+	    m_display.setTextSize(1);
+	    m_display.printf("SSID: %s", ssid.c_str());
+	    m_display.setCursor(0, OLED_LINE6);
+	    m_display.setTextSize(1);
+	    m_display.printf("IP: %s", m_ipaddress.c_str());
+	}
     } else { // Connected to network - no Auto-AP mode; normal display layout...
-	m_display.setCursor(0,OLED_LINE3);
-	m_display.setTextSize(1);
-	m_display.print("        -IDLE-");
-	m_display.setCursor(0, OLED_LINE5);
-	m_display.printf("%s", m_ipaddress.c_str());
+	if (m_displayLogoScreensaver) {
+	    m_display.setCursor(0,OLED_LINE3);
+	    m_display.setTextSize(1);
+	    m_display.print("        -IDLE-");
+	    m_display.setCursor(0, OLED_LINE5);
+	    m_display.printf("%s", m_ipaddress.c_str());
+        }
     }
-
-    if (m_displayScroll && m_displayLogoScreensaver)
-	m_display.startscrolldiagleft(0x00,0x0f);  // the MMDVM logo scrolls the whole screen
     m_display.display();
+
 }
 
 void COLED::setErrorInt(const char* text)
