@@ -257,6 +257,10 @@ void COLED::setIdleInt()
     m_display.clearDisplay();
     OLED_statusbar();
 
+    if (m_displayScroll && m_displayLogoScreensaver)
+        m_display.startscrolldiagleft(0x00,0x0f);  //the MMDVM logo scrolls the whole screen
+    m_display.display();
+
     unsigned char info[100U];
     CNetworkInfo* m_network;
 
@@ -319,9 +323,6 @@ void COLED::setIdleInt()
 	m_display.printf("%s", m_ipaddress.c_str());
     }
 
-    if (m_displayScroll && m_displayLogoScreensaver)
-	m_display.startscrolldiagleft(0x00,0x0f);  // the MMDVM logo scrolls the whole screen
-    m_display.display();
 }
 
 void COLED::setErrorInt(const char* text)
