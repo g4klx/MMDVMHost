@@ -226,7 +226,8 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		m_aveRSSI += m_rssi;
 		m_rssiCountTotal++;
 
-		writeJSONRSSI();
+		m_rssiAccum += m_rssi;
+		m_rssiCount++;
 	}
 
 	if (duid == P25_DUID_LDU1) {
@@ -333,6 +334,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			}
 
 			m_display->writeP25RSSI(m_rssi);
+			writeJSONRSSI();
 
 			return true;
 		}
@@ -383,6 +385,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			}
 
 			m_display->writeP25RSSI(m_rssi);
+			writeJSONRSSI();
 
 			return true;
 		}
@@ -1238,9 +1241,6 @@ void CP25Control::enable(bool enabled)
 
 void CP25Control::writeJSONRSSI()
 {
-	m_rssiAccum += m_rssi;
-	m_rssiCount++;
-
 	if (m_rssiCount >= RSSI_COUNT) {
 		nlohmann::json json;
 
