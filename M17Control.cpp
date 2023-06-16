@@ -86,6 +86,10 @@ m_rfCollectedLSF(),
 m_rfLSFn(0U),
 m_netLSF(),
 m_netLSFn(0U),
+m_rfTextBits(0x00U),
+m_netTextBits(0x00U),
+m_rfText(NULL),
+m_netText(NULL),
 m_rssiMapper(rssiMapper),
 m_rssi(0U),
 m_maxRSSI(0U),
@@ -97,10 +101,15 @@ m_fp(NULL)
 {
 	assert(display != NULL);
 	assert(rssiMapper != NULL);
+
+	m_rfText  = new char[4U * M17_META_LENGTH_BYTES];
+	m_netText = new char[4U * M17_META_LENGTH_BYTES];
 }
 
 CM17Control::~CM17Control()
 {
+	delete[] m_netText;
+	delete[] m_rfText;
 }
 
 bool CM17Control::writeModem(unsigned char* data, unsigned int len)
@@ -196,7 +205,8 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_rssiCount  = 1U;
 			m_rfLSFn     = 0U;
 			m_rfLSFCount = 0U;
-
+			m_rfTextBits = 0x00U;
+			::memset(m_rfText, 0x00U, 4U * M17_META_LENGTH_BYTES);
 #if defined(DUMP_M17)
 			openFile();
 #endif
@@ -249,7 +259,8 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_aveRSSI    = m_rssi;
 			m_rssiCount  = 1U;
 			m_rfLSFCount = 0U;
-
+			m_rfTextBits = 0x00U;
+			::memset(m_rfText, 0x00U, 4U * M17_META_LENGTH_BYTES);
 #if defined(DUMP_M17)
 			openFile();
 #endif
@@ -282,6 +293,38 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			if (valid) {
 				m_rfCollectedLSF = m_rfCollectingLSF;
 				m_rfCollectingLSF.reset();
+
+				unsigned char encryptionType    = m_rfCollectedLSF.getEncryptionType();
+				unsigned char encryptionSubType = m_rfCollectedLSF.getEncryptionSubType();
+				if (encryptionType == M17_ENCRYPTION_TYPE_NONE && encryptionSubType == M17_ENCRYPTION_SUB_TYPE_TEXT) {
+					unsigned char meta[20U];
+					m_rfCollectedLSF.getMeta(meta);
+					CUtils::dump(1U, "M17, LSF text data fragment", meta, M17_META_LENGTH_BYTES);
+
+					m_rfTextBits |= meta[0U];
+
+					switch (meta[0U] & 0x0FU) {
+						case 0x01U:
+							::memcpy(m_rfText + 0U,  meta + 1U, M17_META_LENGTH_BYTES - 1U);
+							break;
+						case 0x02U:
+							::memcpy(m_rfText + 13U, meta + 1U, M17_META_LENGTH_BYTES - 1U);
+							break;
+						case 0x04U:
+							::memcpy(m_rfText + 26U, meta + 1U, M17_META_LENGTH_BYTES - 1U);
+							break;
+						case 0x08U:
+							::memcpy(m_rfText + 39U, meta + 1U, M17_META_LENGTH_BYTES - 1U);
+							break;
+						default:
+							break;
+					}
+
+					if (m_rfTextBits == 0x11U || m_rfTextBits == 0x33U || m_rfTextBits == 0x77U || m_rfTextBits == 0xFFU) {
+						LogMessage("M17, text Data: \"%s\"", m_rfText);
+						m_rfTextBits = 0x00U;
+					}
+				}
 			}
 		}
 
@@ -547,8 +590,10 @@ void CM17Control::writeNetwork()
 
 		m_netTimeoutTimer.start();
 		m_elapsed.start();
-		m_netFrames = 0U;
-		m_netLSFn   = 0U;
+		m_netFrames   = 0U;
+		m_netLSFn     = 0U;
+		m_netTextBits = 0x00U;
+		::memset(m_netText, 0x00U, 4U * M17_META_LENGTH_BYTES);
 
 		// Create a dummy start message
 		unsigned char start[M17_FRAME_LENGTH_BYTES + 2U];
@@ -580,6 +625,38 @@ void CM17Control::writeNetwork()
 
 			m_netLSF.setSource(m_callsign);
 			m_netLSF.setCAN(m_can);
+
+			unsigned char encryptionType    = m_netLSF.getEncryptionType();
+			unsigned char encryptionSubType = m_netLSF.getEncryptionSubType();
+			if (encryptionType == M17_ENCRYPTION_TYPE_NONE && encryptionSubType == M17_ENCRYPTION_SUB_TYPE_TEXT) {
+				unsigned char meta[20U];
+				m_netLSF.getMeta(meta);
+				CUtils::dump(1U, "M17, LSF text data fragment", meta, M17_META_LENGTH_BYTES);
+
+				m_netTextBits |= meta[0U];
+
+				switch (meta[0U] & 0x0FU) {
+					case 0x01U:
+						::memcpy(m_netText + 0U,  meta + 1U, M17_META_LENGTH_BYTES - 1U);
+						break;
+					case 0x02U:
+						::memcpy(m_netText + 13U, meta + 1U, M17_META_LENGTH_BYTES - 1U);
+						break;
+					case 0x04U:
+						::memcpy(m_netText + 26U, meta + 1U, M17_META_LENGTH_BYTES - 1U);
+						break;
+					case 0x08U:
+						::memcpy(m_netText + 39U, meta + 1U, M17_META_LENGTH_BYTES - 1U);
+						break;
+					default:
+						break;
+				}
+
+				if (m_netTextBits == 0x11U || m_netTextBits == 0x33U || m_netTextBits == 0x77U || m_netTextBits == 0xFFU) {
+					LogMessage("M17, text Data: \"%s\"", m_netText);
+					m_netTextBits = 0x00U;
+				}
+			}
 		}
 
 		unsigned char data[M17_FRAME_LENGTH_BYTES + 2U];
