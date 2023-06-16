@@ -71,7 +71,8 @@ private:
 	RPT_RF_STATE               m_rfState;
 	RPT_NET_STATE              m_netState;
 	bool                       m_net;
-	CDStarSlowData             m_slowData;
+	CDStarSlowData             m_rfSlowData;
+	CDStarSlowData             m_netSlowData;
 	unsigned char              m_rfN;
 	unsigned char              m_netN;
 	CTimer                     m_networkWatchdog;
@@ -96,7 +97,11 @@ private:
 	unsigned char              m_maxRSSI;
 	unsigned char              m_minRSSI;
 	unsigned int               m_aveRSSI;
+	unsigned int               m_rssiCountTotal;
+	unsigned int               m_rssiAccum;
 	unsigned int               m_rssiCount;
+	unsigned int               m_bitErrsAccum;
+	unsigned int               m_bitsCount;
 	bool                       m_enabled;
 	FILE*                      m_fp;
 	unsigned char*             m_rfVoiceSyncData;
@@ -135,15 +140,17 @@ private:
 	void writeEndRF();
 	void writeEndNet();
 
-	void writeJSONRF(const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your);
-	void writeJSONRF(const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your, float duration, float ber);
-	void writeJSONRF(const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI);
-	void writeJSONNet(const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your, const unsigned char* reflector = NULL);
-	void writeJSONNet(const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your, float duration, float loss);
+	void writeJSONRSSI();
+	void writeJSONBER();
+	void writeJSONText(const unsigned char* text);
 
-	void writeJSONRF(nlohmann::json& json, const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your);
-	void writeJSONRF(nlohmann::json& json, const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your, float duration, float ber);
-	void writeJSONNet(nlohmann::json& json, const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your);
+	void writeJSONRF(const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your);
+	void writeJSONRF(const char* action, float duration, float ber);
+	void writeJSONRF(const char* action, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI);
+	void writeJSONNet(const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your, const unsigned char* reflector = NULL);
+	void writeJSONNet(const char* action, float duration, float loss);
+
+	void writeJSONRF(nlohmann::json& json, const char* action, float duration, float ber);
 
 	std::string convertBuffer(const unsigned char* buffer, unsigned int length) const;
 

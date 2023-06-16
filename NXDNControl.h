@@ -82,7 +82,11 @@ private:
 	unsigned char              m_maxRSSI;
 	unsigned char              m_minRSSI;
 	unsigned int               m_aveRSSI;
+	unsigned int               m_rssiCountTotal;
+	unsigned int               m_rssiAccum;
 	unsigned int               m_rssiCount;
+	unsigned int               m_bitsCount;
+	unsigned int               m_bitErrsAccum;
 	bool                       m_enabled;
 	FILE*                      m_fp;
 
@@ -103,14 +107,19 @@ private:
 	bool writeFile(const unsigned char* data);
 	void closeFile();
 
+	void writeJSONRSSI();
+	void writeJSONBER(unsigned int bits, unsigned int errs);
+
 	void writeJSONRF(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId);
-	void writeJSONRF(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId, float duration, float ber);
-	void writeJSONRF(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI);
+	void writeJSONRF(const char* action, float duration, float ber);
+	void writeJSONRF(const char* action, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI);
 
 	void writeJSONNet(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId);
 	void writeJSONNet(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId, unsigned char frames);
-	void writeJSONNet(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId, float duration);
+	void writeJSONNet(const char* action);
+	void writeJSONNet(const char* action, float duration);
 
+	void writeJSON(nlohmann::json& json, const char* action);
 	void writeJSON(nlohmann::json& json, const char* source, const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId);
 };
 

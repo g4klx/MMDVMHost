@@ -26,6 +26,9 @@
 const unsigned int MAX_SYNC_BIT_ERRORS = 2U;
 const unsigned int FAST_DATA_BEEP_GRACE_FRAMES = 6U;
 
+const unsigned int RSSI_COUNT = 3U * 21U;	// 3 * 420ms = 1260ms
+const unsigned int BER_COUNT  = 63U * 48U;	// 63 * 20ms = 1260ms
+
 bool CallsignCompare(const std::string& arg, const unsigned char* my)
 {
 	for (unsigned int i = 0U; i < (DSTAR_LONG_CALLSIGN_LENGTH - 1U); i++) {
@@ -57,7 +60,8 @@ m_netHeader(),
 m_rfState(RS_RF_LISTENING),
 m_netState(RS_NET_IDLE),
 m_net(false),
-m_slowData(),
+m_rfSlowData(),
+m_netSlowData(),
 m_rfN(0U),
 m_netN(0U),
 m_networkWatchdog(1000U, 0U, 1500U),
@@ -82,7 +86,11 @@ m_rssi(0U),
 m_maxRSSI(0U),
 m_minRSSI(0U),
 m_aveRSSI(0U),
+m_rssiCountTotal(0U),
+m_rssiAccum(0U),
 m_rssiCount(0U),
+m_bitErrsAccum(0U),
+m_bitsCount(0U),
 m_enabled(true),
 m_fp(NULL),
 m_rfVoiceSyncData(NULL),
@@ -226,11 +234,11 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		m_rfHeader.getYourCall(your);
 
 		if (m_rssi != 0U) {
-			LogMessage("D-Star, transmission lost from %8.8s/%4.4s to %8.8s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-			writeJSONRF("lost", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			LogMessage("D-Star, transmission lost from %8.8s/%4.4s to %8.8s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
+			writeJSONRF("lost", float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
 		} else {
 			LogMessage("D-Star, transmission lost from %8.8s/%4.4s to %8.8s, %.1f seconds, BER: %.1f%%", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits));
-			writeJSONRF("lost", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+			writeJSONRF("lost", float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 		}
 		writeEndRF();
 		return false;
@@ -275,7 +283,10 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			m_maxRSSI = m_rssi;
 
 		m_aveRSSI += m_rssi;
-		m_rssiCount++;
+		m_rssiCountTotal++;
+
+		m_rssiAccum += m_rssi;
+		m_rssiCountTotal++;
 	}
 
 	// Have we got RSSI bytes on the end of D-Star data?
@@ -298,7 +309,10 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			m_maxRSSI = m_rssi;
 
 		m_aveRSSI += m_rssi;
-		m_rssiCount++;
+		m_rssiCountTotal++;
+
+		m_rssiAccum += m_rssi;
+		m_rssiCountTotal++;
 	}
 
 	if (type == TAG_HEADER) {
@@ -368,7 +382,12 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		m_minRSSI = m_rssi;
 		m_maxRSSI = m_rssi;
 		m_aveRSSI = m_rssi;
+		m_rssiCountTotal = 1U;
+
+		m_rssiAccum = m_rssi;
 		m_rssiCount = 1U;
+
+		m_rfSlowData.start();
 
 		if (m_duplex) {
 			// Modify the header
@@ -395,6 +414,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		if (m_netState == RS_NET_IDLE) {
 			m_display->writeDStar((char*)my1, (char*)my2, (char*)your, "R", "        ");
 			m_display->writeDStarRSSI(m_rssi);
+			writeJSONRSSI();
 		}
 
 		LogMessage("D-Star, received RF header from %8.8s/%4.4s to %8.8s", my1, my2, your);
@@ -432,11 +452,11 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			m_rfHeader.getYourCall(your);
 
 			if (m_rssi != 0U) {
-				LogMessage("D-Star, received RF end of transmission from %8.8s/%4.4s to %8.8s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-				writeJSONRF("end", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				LogMessage("D-Star, received RF end of transmission from %8.8s/%4.4s to %8.8s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
+				writeJSONRF("end", float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
 			} else {
 				LogMessage("D-Star, received RF end of transmission from %8.8s/%4.4s to %8.8s, %.1f seconds, BER: %.1f%%", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits));
-				writeJSONRF("end", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+				writeJSONRF("end", float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 			}
 
 			writeEndRF();
@@ -451,31 +471,43 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		} else if (m_rfState == RS_RF_LISTENING) {
 			// The sync is regenerated by the modem so can do exact match
 			if (::memcmp(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES) == 0) {
-				m_slowData.start();
+				m_rfSlowData.start();
 				m_rfState = RS_RF_LATE_ENTRY;
 			}
 
 			return false;
 		} else if (m_rfState == RS_RF_AUDIO) {
 			// The sync is regenerated by the modem so can do exact match
-			if (::memcmp(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES) == 0)
+			if (::memcmp(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES) == 0) {
+				m_rfSlowData.start();
 				m_rfN = 0U;
+			}
 
 			// Regenerate the sync and send the RSSI data to the display
 			if (m_rfN == 0U) {
 				CSync::addDStarSync(data + 1U);
 				m_display->writeDStarRSSI(m_rssi);
+				writeJSONRSSI();
 			}
 
 			unsigned int errors = 0U;
 			if (!m_rfHeader.isDataPacket()) {
 				errors = maybeFixupVoiceFrame(data, len, 1U, "RF", m_rfN, m_duplex, m_rfVoiceSyncData, m_rfVoiceSyncDataLen, m_rfNextFrameIsFastData, m_rfSkipDTMFBlankingFrames);
+				m_bitErrsAccum += errors;
+				m_rfErrs       += errors;
 				m_display->writeDStarBER(float(errors) / 0.48F);
-				m_rfErrs += errors;
+				writeJSONBER();
 			}
 
-			m_rfBits += 48U;
+			m_bitsCount += 48U;
+			m_rfBits    += 48U;
 			m_rfFrames++;
+
+			const unsigned char* text = m_rfSlowData.addText(data + 1U);
+			if (text != NULL) {
+				LogMessage("D-Star, slow data text = \"%s\"", text);
+				writeJSONText(text);
+			}
 
 			if (m_net) {
 				if (m_rfN == 1U)
@@ -495,11 +527,11 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		} else if (m_rfState == RS_RF_LATE_ENTRY) {
 			// The sync is regenerated by the modem so can do exact match
 			if (::memcmp(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES) == 0) {
-				m_slowData.reset();
+				m_rfSlowData.reset();
 				return false;
 			}
 
-			CDStarHeader* header = m_slowData.add(data + 1U);
+			CDStarHeader* header = m_rfSlowData.addHeader(data + 1U);
 			if (header == NULL)
 				return false;
 
@@ -573,7 +605,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			m_minRSSI = m_rssi;
 			m_maxRSSI = m_rssi;
 			m_aveRSSI = m_rssi;
-			m_rssiCount = 1U;
+			m_rssiCountTotal = 1U;
 
 			if (m_duplex) {
 				unsigned char start[DSTAR_HEADER_LENGTH_BYTES + 1U];
@@ -606,10 +638,12 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			unsigned int errors = 0U;
 			if (!m_rfHeader.isDataPacket()) {
 				errors = maybeFixupVoiceFrame(data, len, 1U, "RF", m_rfN, m_duplex, m_rfVoiceSyncData, m_rfVoiceSyncDataLen, m_rfNextFrameIsFastData, m_rfSkipDTMFBlankingFrames);
-				m_rfErrs += errors;
+				m_bitErrsAccum += errors;
+				m_rfErrs       += errors;
 			}
 
-			m_rfBits += 48U;
+			m_bitsCount += 48U;
+			m_rfBits    += 48U;
 
 			if (m_net)
 				writeNetworkDataRF(data, errors, false);
@@ -625,6 +659,8 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 				m_display->writeDStar((char*)my1, (char*)my2, (char*)your, "R", "        ");
 				m_display->writeDStarRSSI(m_rssi);
 				m_display->writeDStarBER(float(errors) / 0.48F);
+				writeJSONRSSI();
+				writeJSONBER();
 			}
 
 			LogMessage("D-Star, received RF late entry from %8.8s/%4.4s to %8.8s", my1, my2, your);
@@ -656,6 +692,8 @@ void CDStarControl::writeEndRF()
 {
 	m_rfState = RS_RF_LISTENING;
 
+	m_rfTimeoutTimer.stop();
+
 	if (m_netState == RS_NET_IDLE) {
 		m_display->clearDStar();
 
@@ -663,8 +701,6 @@ void CDStarControl::writeEndRF()
 
 		if (m_network != NULL)
 			m_network->reset();
-	} else {
-		m_rfTimeoutTimer.stop();
 	}
 }
 
@@ -795,7 +831,7 @@ void CDStarControl::writeNetwork()
 		// We've received the header and EOT haven't we?
 		m_netFrames += 2U;
 		LogMessage("D-Star, received network end of transmission from %8.8s/%4.4s to %8.8s, %.1f seconds, %u%% packet loss", my1, my2, your, float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames);
-		writeJSONNet("end", my1, my2, your, float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames);
+		writeJSONNet("end", float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames);
 
 		writeEndNet();
 	} else if (type == TAG_DATA) {
@@ -819,8 +855,16 @@ void CDStarControl::writeNetwork()
 		m_netN = n;
 
 		// Regenerate the sync
-		if (n == 0U)
+		if (n == 0U) {
 			CSync::addDStarSync(data + 2U);
+			m_netSlowData.start();
+		}
+
+		const unsigned char* text = m_netSlowData.addText(data + 2U);
+		if (text != NULL) {
+			LogMessage("D-Star, slow data text = \"%s\"", text);
+			writeJSONText(text);
+		}
 
 		m_packetTimer.start();
 		m_netFrames++;
@@ -877,7 +921,7 @@ void CDStarControl::clock()
 			m_netFrames += 1U;
 
 			LogMessage("D-Star, network watchdog has expired, %.1f seconds,  %u%% packet loss", float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames);
-			writeJSONNet("lost", my1, my2, your, float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames);
+			writeJSONNet("lost", float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames);
 			writeEndNet();
 #if defined(DUMP_DSTAR)
 			closeFile();
@@ -1209,14 +1253,14 @@ void CDStarControl::sendAck()
 	if (m_ackMessage == DSTAR_ACK_RSSI && m_rssi != 0) {
 		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK) {
 			CUtils::removeChar(reflector, ' ');//remove space from reflector so all nicely fits onto 20 chars in case rssi < 99dBm
-			::sprintf(text, "%-8.8s %.1f%% -%udBm        ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCount);
+			::sprintf(text, "%-8.8s %.1f%% -%udBm        ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCountTotal);
 		} else {
-			::sprintf(text, "BER:%.1f%% -%udBm           ", float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCount);
+			::sprintf(text, "BER:%.1f%% -%udBm           ", float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCountTotal);
 		}
 	} else if (m_ackMessage == DSTAR_ACK_SMETER && m_rssi != 0) {
 		unsigned int signal, plus;
 		char signalText[15U];
-		CSMeter::getSignal(m_aveRSSI / m_rssiCount, signal, plus);
+		CSMeter::getSignal(m_aveRSSI / m_rssiCountTotal, signal, plus);
 		if (plus != 0U)
 			::sprintf(signalText, "S%u+%02u", signal, plus);
 		else
@@ -1233,12 +1277,12 @@ void CDStarControl::sendAck()
 			::sprintf(text, "BER: %.1f%%                 ", float(m_rfErrs * 100U) / float(m_rfBits));
 	}
 
-	m_slowData.setText(text);
+	m_rfSlowData.setText(text);
 
 	::memcpy(data, DSTAR_NULL_FRAME_DATA_BYTES, DSTAR_FRAME_LENGTH_BYTES + 1U);
 
 	for (unsigned int i = 0U; i < 19U; i++) {
-		m_slowData.get(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES);
+		m_rfSlowData.getSlowData(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES);
 		writeQueueDataRF(data);
 	}
 
@@ -1274,14 +1318,14 @@ void CDStarControl::sendError()
 	if (m_ackMessage == DSTAR_ACK_RSSI && m_rssi != 0) {
 		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK) {
 			CUtils::removeChar(reflector, ' ');//remove space from reflector so all nicely fits onto 20 chars in case rssi < 99dBm
-			::sprintf(text, "%-8.8s %.1f%% -%udBm        ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCount);
+			::sprintf(text, "%-8.8s %.1f%% -%udBm        ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCountTotal);
 		} else {
-			::sprintf(text, "BER:%.1f%% -%udBm           ", float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCount);
+			::sprintf(text, "BER:%.1f%% -%udBm           ", float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCountTotal);
 		}
 	} else if (m_ackMessage == DSTAR_ACK_SMETER && m_rssi != 0) {
 		unsigned int signal, plus;
 		char signalText[15U];
-		CSMeter::getSignal(m_aveRSSI / m_rssiCount, signal, plus);
+		CSMeter::getSignal(m_aveRSSI / m_rssiCountTotal, signal, plus);
 		if (plus != 0U)
 			::sprintf(signalText, "S%u+%02u", signal, plus);
 		else
@@ -1298,12 +1342,12 @@ void CDStarControl::sendError()
 			::sprintf(text, "BER: %.1f%%                 ", float(m_rfErrs * 100U) / float(m_rfBits));
 	}
 
-	m_slowData.setText(text);
+	m_rfSlowData.setText(text);
 
 	::memcpy(data, DSTAR_NULL_FRAME_DATA_BYTES, DSTAR_FRAME_LENGTH_BYTES + 1U);
 
 	for (unsigned int i = 0U; i < 19U; i++) {
-		m_slowData.get(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES);
+		m_rfSlowData.getSlowData(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES);
 		writeQueueDataRF(data);
 	}
 
@@ -1338,6 +1382,54 @@ void CDStarControl::enable(bool enabled)
 	m_enabled = enabled;
 }
 
+void CDStarControl::writeJSONRSSI()
+{
+	if (m_rssiCountTotal >= RSSI_COUNT) {
+		nlohmann::json json;
+
+		json["timestamp"] = CUtils::createTimestamp();
+		json["mode"]      = "D-Star";
+
+		json["value"]     = -int(m_rssiAccum / m_rssiCountTotal);
+
+		WriteJSON("RSSI", json);
+
+		m_rssiAccum = 0U;
+		m_rssiCountTotal = 0U;
+	}
+}
+
+void CDStarControl::writeJSONBER()
+{
+	if (m_bitsCount >= BER_COUNT) {
+		nlohmann::json json;
+
+		json["timestamp"] = CUtils::createTimestamp();
+		json["mode"]      = "D-Star";
+
+		json["value"]     = float(m_bitErrsAccum * 100U) / float(m_bitsCount);
+
+		WriteJSON("BER", json);
+
+		m_bitErrsAccum = 0U;
+		m_bitsCount    = 1U;
+	}
+}
+
+void CDStarControl::writeJSONText(const unsigned char* text)
+{
+	assert(text != NULL);
+
+	nlohmann::json json;
+
+	json["timestamp"] = CUtils::createTimestamp();
+	json["mode"]      = "D-Star";
+
+	json["value"]     = std::string((char*)text);
+
+	WriteJSON("Text", json);
+}
+
 void CDStarControl::writeJSONRF(const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your)
 {
 	assert(action != NULL);
@@ -1347,35 +1439,36 @@ void CDStarControl::writeJSONRF(const char* action, const unsigned char* my1, co
 
 	nlohmann::json json;
 
-	writeJSONRF(json, action, my1, my2, your);
+	json["timestamp"]      = CUtils::createTimestamp();
+
+	json["source_cs"]      = convertBuffer(my1, DSTAR_LONG_CALLSIGN_LENGTH);
+	json["source_ext"]     = convertBuffer(my2, DSTAR_SHORT_CALLSIGN_LENGTH);
+	json["destination_cs"] = convertBuffer(your, DSTAR_LONG_CALLSIGN_LENGTH);
+
+	json["source"] = "rf";
+	json["action"] = action;
 
 	WriteJSON("D-Star", json);
 }
 
-void CDStarControl::writeJSONRF(const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your, float duration, float ber)
+void CDStarControl::writeJSONRF(const char* action, float duration, float ber)
 {
 	assert(action != NULL);
-	assert(my1 != NULL);
-	assert(my2 != NULL);
-	assert(your != NULL);
 
 	nlohmann::json json;
 
-	writeJSONRF(json, action, my1, my2, your, duration, ber);
+	writeJSONRF(json, action, duration, ber);
 
 	WriteJSON("D-Star", json);
 }
 
-void CDStarControl::writeJSONRF(const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI)
+void CDStarControl::writeJSONRF(const char* action, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI)
 {
 	assert(action != NULL);
-	assert(my1 != NULL);
-	assert(my2 != NULL);
-	assert(your != NULL);
 
 	nlohmann::json json;
 
-	writeJSONRF(json, action, my1, my2, your, duration, ber);
+	writeJSONRF(json, action, duration, ber);
 
 	nlohmann::json rssi;
 	rssi["min"] = -int(minRSSI);
@@ -1396,7 +1489,14 @@ void CDStarControl::writeJSONNet(const char* action, const unsigned char* my1, c
 
 	nlohmann::json json;
 
-	writeJSONNet(json, action, my1, my2, your);
+	json["timestamp"]      = CUtils::createTimestamp();
+
+	json["source_cs"]      = convertBuffer(my1, DSTAR_LONG_CALLSIGN_LENGTH);
+	json["source_ext"]     = convertBuffer(my2, DSTAR_SHORT_CALLSIGN_LENGTH);
+	json["destination_cs"] = convertBuffer(your, DSTAR_LONG_CALLSIGN_LENGTH);
+
+	json["source"] = "network";
+	json["action"] = action;
 
 	if (reflector != NULL)
 		json["reflector"] = convertBuffer(reflector, DSTAR_LONG_CALLSIGN_LENGTH);
@@ -1404,67 +1504,31 @@ void CDStarControl::writeJSONNet(const char* action, const unsigned char* my1, c
 	WriteJSON("D-Star", json);
 }
 
-void CDStarControl::writeJSONNet(const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your, float duration, float loss)
+void CDStarControl::writeJSONNet(const char* action, float duration, float loss)
 {
 	assert(action != NULL);
-	assert(my1 != NULL);
-	assert(my2 != NULL);
-	assert(your != NULL);
 
 	nlohmann::json json;
 
-	writeJSONNet(json, action, my1, my2, your);
+	json["timestamp"] = CUtils::createTimestamp();
 
 	json["duration"] = duration;
 	json["loss"]     = loss;
 
+	json["action"] = action;
+
 	WriteJSON("D-Star", json);
 }
 
-void CDStarControl::writeJSONRF(nlohmann::json& json, const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your)
+void CDStarControl::writeJSONRF(nlohmann::json& json, const char* action, float duration, float ber)
 {
 	assert(action != NULL);
-	assert(my1 != NULL);
-	assert(my2 != NULL);
-	assert(your != NULL);
 
 	json["timestamp"] = CUtils::createTimestamp();
-
-	json["source_cs"]      = convertBuffer(my1, DSTAR_LONG_CALLSIGN_LENGTH);
-	json["source_ext"]     = convertBuffer(my2, DSTAR_SHORT_CALLSIGN_LENGTH);
-	json["destination_cs"] = convertBuffer(your, DSTAR_LONG_CALLSIGN_LENGTH);
-
-	json["source"] = "rf";
-	json["action"] = action;
-}
-
-void CDStarControl::writeJSONRF(nlohmann::json& json, const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your, float duration, float ber)
-{
-	assert(action != NULL);
-	assert(my1 != NULL);
-	assert(my2 != NULL);
-	assert(your != NULL);
-
-	writeJSONRF(json, action, my1, my2, your);
 
 	json["duration"] = duration;
 	json["ber"]      = ber;
-}
 
-void CDStarControl::writeJSONNet(nlohmann::json& json, const char* action, const unsigned char* my1, const unsigned char* my2, const unsigned char* your)
-{
-	assert(action != NULL);
-	assert(my1 != NULL);
-	assert(my2 != NULL);
-	assert(your != NULL);
-
-	json["timestamp"] = CUtils::createTimestamp();
-
-	json["source_cs"]      = convertBuffer(my1, DSTAR_LONG_CALLSIGN_LENGTH);
-	json["source_ext"]     = convertBuffer(my2, DSTAR_SHORT_CALLSIGN_LENGTH);
-	json["destination_cs"] = convertBuffer(your, DSTAR_LONG_CALLSIGN_LENGTH);
-
-	json["source"] = "network";
 	json["action"] = action;
 }
 

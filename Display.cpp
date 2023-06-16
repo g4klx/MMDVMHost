@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018,2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018,2020,2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -189,10 +189,15 @@ void CDisplay::writeDMRRSSI(unsigned int slotNo, unsigned char rssi)
 		writeDMRRSSIInt(slotNo, rssi);
 }
 
-void CDisplay::writeDMRTA(unsigned int slotNo, unsigned char* talkerAlias, const char* type)
+void CDisplay::writeDMRTA(unsigned int slotNo, const unsigned char* talkerAlias, const char* type)
 {
-    if (strcmp(type," ")==0) { writeDMRTAInt(slotNo, (unsigned char*)"", type); return; }
-    if (strlen((char*)talkerAlias)>=4U) writeDMRTAInt(slotNo, (unsigned char*)talkerAlias, type);
+	if (::strcmp(type, " ") == 0) {
+		writeDMRTAInt(slotNo, (unsigned char*)"", type);
+		return;
+	}
+
+	if (::strlen((char*)talkerAlias) >= 4U)
+		writeDMRTAInt(slotNo, (unsigned char*)talkerAlias, type);
 }
 
 void CDisplay::writeDMRBER(unsigned int slotNo, float ber)
@@ -487,7 +492,7 @@ void CDisplay::writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi)
 {
 }
 
-void CDisplay::writeDMRTAInt(unsigned int slotNo, unsigned char* talkerAlias, const char* type)
+void CDisplay::writeDMRTAInt(unsigned int slotNo, const unsigned char* talkerAlias, const char* type)
 {
 }
 

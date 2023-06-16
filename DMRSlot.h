@@ -82,6 +82,7 @@ private:
 	unsigned int               m_netEmbeddedReadN;
 	unsigned int               m_netEmbeddedWriteN;
 	unsigned char              m_netTalkerId;
+	CDMRTA                     m_netTalkerAlias;
 	CDMRLC*                    m_rfLC;
 	CDMRLC*                    m_netLC;
 	unsigned char              m_rfSeqNo;
@@ -110,7 +111,11 @@ private:
 	unsigned char              m_maxRSSI;
 	unsigned char              m_minRSSI;
 	unsigned int               m_aveRSSI;
+	unsigned int               m_rssiCountTotal;
+	unsigned int               m_rssiAccum;
 	unsigned int               m_rssiCount;
+	unsigned int               m_bitErrsAccum;
+	unsigned int               m_bitsCount;
 	bool                       m_enabled;
 	FILE*                      m_fp;
 
@@ -134,7 +139,7 @@ private:
 
 	static unsigned char*      m_idle;
 
-    static FLCO                m_flco1;
+	static FLCO                m_flco1;
 	static unsigned char       m_id1;
 	static ACTIVITY_TYPE       m_activity1;
 	static FLCO                m_flco2;
@@ -160,17 +165,24 @@ private:
 
 	static void setShortLC(unsigned int slotNo, unsigned int id, FLCO flco = FLCO_GROUP, ACTIVITY_TYPE type = ACTIVITY_NONE);
 
+	void writeJSONRSSI();
+	void writeJSONBER();
+	void writeJSONText(const unsigned char* text);
+
+	void writeJSONRF(const char* action);
 	void writeJSONRF(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId);
 	void writeJSONRF(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId, unsigned int frames);
 	void writeJSONRF(const char* action, const char* desc, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId);
-	void writeJSONRF(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId, float duration, float ber);
-	void writeJSONRF(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI);
+	void writeJSONRF(const char* action, float duration, float ber);
+	void writeJSONRF(const char* action, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI);
 
+	void writeJSONNet(const char* action);
 	void writeJSONNet(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId);
 	void writeJSONNet(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId, unsigned int frames);
-	void writeJSONNet(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId, float duration, float loss, float ber);
+	void writeJSONNet(const char* action, float duration, float loss, float ber);
 	void writeJSONNet(const char* action, const char* desc, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId);
 
+	void writeJSON(nlohmann::json& json, const char* action);
 	void writeJSON(nlohmann::json& json, const char* source, const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId);
 };
 

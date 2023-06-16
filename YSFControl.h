@@ -86,7 +86,11 @@ private:
 	unsigned char              m_maxRSSI;
 	unsigned char              m_minRSSI;
 	unsigned int               m_aveRSSI;
+	unsigned int               m_rssiCountTotal;
+	unsigned int               m_rssiAccum;
 	unsigned int               m_rssiCount;
+	unsigned int               m_bitsCount;
+	unsigned int               m_bitErrsAccum;
 	bool                       m_enabled;
 	FILE*                      m_fp;
 
@@ -102,17 +106,20 @@ private:
 	void writeEndRF();
 	void writeEndNet();
 
+	void writeJSONRSSI();
+	void writeJSONBER(unsigned int bits, unsigned int errs);
+
 	void writeJSONRF(const char* action, const char* mode, const unsigned char* source, unsigned char dgid);
-	void writeJSONRF(const char* action, const unsigned char* source, unsigned char dgid, float duration, float ber);
-	void writeJSONRF(const char* action, const char* mode, const unsigned char* source, unsigned char dgid, float duration, float ber);
-	void writeJSONRF(const char* action, const unsigned char* source, unsigned char dgid, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI);
-	void writeJSONRF(const char* action, const char* mode, const unsigned char* source, unsigned char dgid, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI);
+	void writeJSONRF(const char* action, float duration, float ber);
+	void writeJSONRF(const char* action, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI);
 
 	void writeJSONNet(const char* action, const unsigned char* source, unsigned char dgid, const unsigned char* reflector);
-	void writeJSONNet(const char* action, const unsigned char* source, unsigned char dgid, float duration, unsigned int loss);
-	void writeJSONNet(const char* action, const unsigned char* source, unsigned char dgid, const unsigned char* reflector, float duration, unsigned int loss);
+	void writeJSONNet(const char* action, float duration, unsigned int loss);
 
+	void writeJSONRF(nlohmann::json& json, const char* action);
 	void writeJSONRF(nlohmann::json& json, const char* action, const unsigned char* source, unsigned char dgid);
+
+	void writeJSONNet(nlohmann::json& json, const char* action);
 	void writeJSONNet(nlohmann::json& json, const char* action, const unsigned char* source, unsigned char dgid);
 
 	std::string convertBuffer(const unsigned char* buffer) const;

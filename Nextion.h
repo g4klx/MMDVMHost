@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018,2020,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -50,8 +50,7 @@ protected:
 
   virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
   virtual void writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi);
-  virtual void writeDMRTAInt(unsigned int slotNo, unsigned char* talkerAlias, const char* type);
-
+  virtual void writeDMRTAInt(unsigned int slotNo, const unsigned char* talkerAlias, const char* type);
   virtual void writeDMRBERInt(unsigned int slotNo, float ber);
   virtual void clearDMRInt(unsigned int slotNo);
 

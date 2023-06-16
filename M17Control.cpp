@@ -50,6 +50,9 @@ const unsigned char SCRAMBLER[] = {
 	0x5DU, 0x0CU, 0xC8U, 0x52U, 0x43U, 0x91U, 0x1DU, 0xF8U, 0x6EU, 0x68U, 0x2FU, 0x35U, 0xDAU, 0x14U, 0xEAU, 0xCDU, 0x76U,
 	0x19U, 0x8DU, 0xD5U, 0x80U, 0xD1U, 0x33U, 0x87U, 0x13U, 0x57U, 0x18U, 0x2DU, 0x29U, 0x78U, 0xC3U};
 
+const unsigned int RSSI_COUNT   = 28U;			// 28 * 40ms = 1120ms
+const unsigned int BER_COUNT    = 28U * 272U;		// 28 * 40ms = 1120ms
+
 // #define	DUMP_M17
 
 const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
@@ -86,21 +89,34 @@ m_rfCollectedLSF(),
 m_rfLSFn(0U),
 m_netLSF(),
 m_netLSFn(0U),
+m_rfTextBits(0x00U),
+m_netTextBits(0x00U),
+m_rfText(NULL),
+m_netText(NULL),
 m_rssiMapper(rssiMapper),
 m_rssi(0U),
 m_maxRSSI(0U),
 m_minRSSI(0U),
 m_aveRSSI(0U),
+m_rssiCountTotal(0U),
+m_rssiAccum(0U),
 m_rssiCount(0U),
+m_bitsCount(0U),
+m_bitErrsAccum(0U),
 m_enabled(true),
 m_fp(NULL)
 {
 	assert(display != NULL);
 	assert(rssiMapper != NULL);
+
+	m_rfText  = new char[4U * M17_META_LENGTH_BYTES];
+	m_netText = new char[4U * M17_META_LENGTH_BYTES];
 }
 
 CM17Control::~CM17Control()
 {
+	delete[] m_netText;
+	delete[] m_rfText;
 }
 
 bool CM17Control::writeModem(unsigned char* data, unsigned int len)
@@ -114,11 +130,11 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 	if (type == TAG_LOST && (m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA_AUDIO)) {
 		if (m_rssi != 0U) {
-			LogMessage("M17, transmission lost from %s to %s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_source.c_str(), m_dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-			writeJSONRF("lost", m_rfState, m_source, m_dest, float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			LogMessage("M17, transmission lost from %s to %s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_source.c_str(), m_dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
+			writeJSONRF("lost", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
 		} else {
 			LogMessage("M17, transmission lost from %s to %s, %.1f seconds, BER: %.1f%%", m_source.c_str(), m_dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
-			writeJSONRF("lost", m_rfState, m_source, m_dest, float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+			writeJSONRF("lost", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 		}
 		writeEndRF();
 		return false;
@@ -159,7 +175,10 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_maxRSSI = m_rssi;
 
 		m_aveRSSI += m_rssi;
-		m_rssiCount++;
+		m_rssiCountTotal++;
+
+		m_rssiAccum += m_rssi;
+		m_rssiCountTotal++;
 	}
 
 	unsigned char temp[M17_FRAME_LENGTH_BYTES];
@@ -190,16 +209,26 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_rfFrames   = 0U;
 			m_rfErrs     = ber;
 			m_rfBits     = 368U;
+
 			m_rfCollectingLSF.reset();
 			m_rfCollectedLSF.reset();
 			m_rfTimeoutTimer.start();
+
 			m_minRSSI    = m_rssi;
 			m_maxRSSI    = m_rssi;
 			m_aveRSSI    = m_rssi;
-			m_rssiCount  = 1U;
+			m_rssiCountTotal  = 1U;
+
+			m_rssiAccum = m_rssi;
+			m_rssiCount = 1U;
+
+			m_bitErrsAccum = 0U;
+			m_bitsCount    = 0U;
+
 			m_rfLSFn     = 0U;
 			m_rfLSFCount = 0U;
-
+			m_rfTextBits = 0x00U;
+			::memset(m_rfText, 0x00U, 4U * M17_META_LENGTH_BYTES);
 #if defined(DUMP_M17)
 			openFile();
 #endif
@@ -244,15 +273,25 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_rfFrames   = 0U;
 			m_rfErrs     = 0U;
 			m_rfBits     = 1U;
+
 			m_rfCollectingLSF.reset();
 			m_rfCollectedLSF.reset();
 			m_rfTimeoutTimer.start();
+
 			m_minRSSI    = m_rssi;
 			m_maxRSSI    = m_rssi;
 			m_aveRSSI    = m_rssi;
-			m_rssiCount  = 1U;
-			m_rfLSFCount = 0U;
+			m_rssiCountTotal  = 1U;
 
+			m_rssiAccum = m_rssi;
+			m_rssiCount = 1U;
+
+			m_bitErrsAccum = 0U;
+			m_bitsCount    = 0U;
+
+			m_rfLSFCount = 0U;
+			m_rfTextBits = 0x00U;
+			::memset(m_rfText, 0x00U, 4U * M17_META_LENGTH_BYTES);
 #if defined(DUMP_M17)
 			openFile();
 #endif
@@ -285,6 +324,39 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			if (valid) {
 				m_rfCollectedLSF = m_rfCollectingLSF;
 				m_rfCollectingLSF.reset();
+
+				unsigned char encryptionType    = m_rfCollectedLSF.getEncryptionType();
+				unsigned char encryptionSubType = m_rfCollectedLSF.getEncryptionSubType();
+				if (encryptionType == M17_ENCRYPTION_TYPE_NONE && encryptionSubType == M17_ENCRYPTION_SUB_TYPE_TEXT) {
+					unsigned char meta[20U];
+					m_rfCollectedLSF.getMeta(meta);
+					CUtils::dump(1U, "M17, LSF text data fragment", meta, M17_META_LENGTH_BYTES);
+
+					m_rfTextBits |= meta[0U];
+
+					switch (meta[0U] & 0x0FU) {
+						case 0x01U:
+							::memcpy(m_rfText + 0U,  meta + 1U, M17_META_LENGTH_BYTES - 1U);
+							break;
+						case 0x02U:
+							::memcpy(m_rfText + 13U, meta + 1U, M17_META_LENGTH_BYTES - 1U);
+							break;
+						case 0x04U:
+							::memcpy(m_rfText + 26U, meta + 1U, M17_META_LENGTH_BYTES - 1U);
+							break;
+						case 0x08U:
+							::memcpy(m_rfText + 39U, meta + 1U, M17_META_LENGTH_BYTES - 1U);
+							break;
+						default:
+							break;
+					}
+
+					if (m_rfTextBits == 0x11U || m_rfTextBits == 0x33U || m_rfTextBits == 0x77U || m_rfTextBits == 0xFFU) {
+						LogMessage("M17, text Data: \"%s\"", m_rfText);
+						writeJSONText(m_rfText);
+						m_rfTextBits = 0x00U;
+					}
+				}
 			}
 		}
 
@@ -315,6 +387,13 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 		m_rfBits += 272U;
 		m_rfErrs += errors;
+
+		m_bitErrsAccum += errors;
+		m_bitsCount    += 272U;
+		writeJSONBER();
+
+		m_display->writeM17RSSI(m_rssi);
+		writeJSONRSSI();
 
 		float ber = float(m_rfErrs) / float(m_rfBits);
 		m_display->writeM17BER(ber);
@@ -364,7 +443,6 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			::memcpy(netData + M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES, frame, M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES);
 			// Remove any erronous EOF from the FN
 			netData[M17_LSF_LENGTH_BYTES - M17_CRC_LENGTH_BYTES + 0U] &= 0x7FU;
-
 
 			// The CRC is added in the networking code
 
@@ -423,11 +501,11 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		}
 
 		if (m_rssi != 0U) {
-			LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_source.c_str(), m_dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
-			writeJSONRF("end", m_rfState, m_source, m_dest, float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+			LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_source.c_str(), m_dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
+			writeJSONRF("end", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 		} else {
 			LogMessage("M17, received RF end of transmission from %s to %s, %.1f seconds, BER: %.1f%%", m_source.c_str(), m_dest.c_str(), float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits));
-			writeJSONRF("end", m_rfState, m_source, m_dest, float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			writeJSONRF("end", float(m_rfFrames) / 25.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
 		}
 		writeEndRF();
 
@@ -557,8 +635,10 @@ void CM17Control::writeNetwork()
 
 		m_netTimeoutTimer.start();
 		m_elapsed.start();
-		m_netFrames = 0U;
-		m_netLSFn   = 0U;
+		m_netFrames   = 0U;
+		m_netLSFn     = 0U;
+		m_netTextBits = 0x00U;
+		::memset(m_netText, 0x00U, 4U * M17_META_LENGTH_BYTES);
 
 		// Create a dummy start message
 		unsigned char start[M17_FRAME_LENGTH_BYTES + 2U];
@@ -590,6 +670,39 @@ void CM17Control::writeNetwork()
 
 			m_netLSF.setSource(m_callsign);
 			m_netLSF.setCAN(m_can);
+
+			unsigned char encryptionType    = m_netLSF.getEncryptionType();
+			unsigned char encryptionSubType = m_netLSF.getEncryptionSubType();
+			if (encryptionType == M17_ENCRYPTION_TYPE_NONE && encryptionSubType == M17_ENCRYPTION_SUB_TYPE_TEXT) {
+				unsigned char meta[20U];
+				m_netLSF.getMeta(meta);
+				CUtils::dump(1U, "M17, LSF text data fragment", meta, M17_META_LENGTH_BYTES);
+
+				m_netTextBits |= meta[0U];
+
+				switch (meta[0U] & 0x0FU) {
+					case 0x01U:
+						::memcpy(m_netText + 0U,  meta + 1U, M17_META_LENGTH_BYTES - 1U);
+						break;
+					case 0x02U:
+						::memcpy(m_netText + 13U, meta + 1U, M17_META_LENGTH_BYTES - 1U);
+						break;
+					case 0x04U:
+						::memcpy(m_netText + 26U, meta + 1U, M17_META_LENGTH_BYTES - 1U);
+						break;
+					case 0x08U:
+						::memcpy(m_netText + 39U, meta + 1U, M17_META_LENGTH_BYTES - 1U);
+						break;
+					default:
+						break;
+				}
+
+				if (m_netTextBits == 0x11U || m_netTextBits == 0x33U || m_netTextBits == 0x77U || m_netTextBits == 0xFFU) {
+					LogMessage("M17, text Data: \"%s\"", m_netText);
+					writeJSONText(m_netText);
+					m_netTextBits = 0x00U;
+				}
+			}
 		}
 
 		unsigned char data[M17_FRAME_LENGTH_BYTES + 2U];
@@ -647,7 +760,7 @@ void CM17Control::writeNetwork()
 		uint16_t fn = (netData[28U] << 8) + (netData[29U] << 0);
 		if ((fn & 0x8000U) == 0x8000U) {
 			LogMessage("M17, received network end of transmission from %s to %s, %.1f seconds", m_source.c_str(), m_dest.c_str(), float(m_netFrames) / 25.0F);
-			writeJSONNet("end", m_netState, m_source, m_dest, float(m_netFrames) / 25.0F);
+			writeJSONNet("end", float(m_netFrames) / 25.0F);
 
 			unsigned char data[M17_FRAME_LENGTH_BYTES + 2U];
 
@@ -782,7 +895,7 @@ void CM17Control::clock(unsigned int ms)
 
 		if (m_networkWatchdog.hasExpired()) {
 			LogMessage("M17, network watchdog has expired, %.1f seconds", float(m_netFrames) / 25.0F);
-			writeJSONNet("lost", m_netState, m_source, m_dest, float(m_netFrames) / 25.0F);
+			writeJSONNet("lost", float(m_netFrames) / 25.0F);
 			writeEndNet();
 		}
 	}
@@ -926,6 +1039,54 @@ void CM17Control::enable(bool enabled)
 	m_enabled = enabled;
 }
 
+void CM17Control::writeJSONRSSI()
+{
+	if (m_rssiCountTotal >= RSSI_COUNT) {
+		nlohmann::json json;
+
+		json["timestamp"] = CUtils::createTimestamp();
+		json["mode"]      = "M17";
+
+		json["value"]     = -int(m_rssiAccum / m_rssiCountTotal);
+
+		WriteJSON("RSSI", json);
+
+		m_rssiAccum = 0U;
+		m_rssiCountTotal = 0U;
+	}
+}
+
+void CM17Control::writeJSONBER()
+{
+	if (m_bitsCount >= BER_COUNT) {
+		nlohmann::json json;
+
+		json["timestamp"] = CUtils::createTimestamp();
+		json["mode"]      = "M17";
+
+		json["value"]     = float(m_bitErrsAccum * 100U) / float(m_bitsCount);
+
+		WriteJSON("BER", json);
+
+		m_bitErrsAccum = 0U;
+		m_bitsCount    = 1U;
+	}
+}
+
+void CM17Control::writeJSONText(const char* text)
+{
+	assert(text != NULL);
+
+	nlohmann::json json;
+
+	json["timestamp"] = CUtils::createTimestamp();
+	json["mode"]      = "M17";
+
+	json["value"]     = std::string(text);
+
+	WriteJSON("Text", json);
+}
+
 void CM17Control::writeJSONRF(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest)
 {
 	assert(action != NULL);
@@ -937,24 +1098,24 @@ void CM17Control::writeJSONRF(const char* action, RPT_RF_STATE state, const std:
 	WriteJSON("M17", json);
 }
 
-void CM17Control::writeJSONRF(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber)
+void CM17Control::writeJSONRF(const char* action, float duration, float ber)
 {
 	assert(action != NULL);
 
 	nlohmann::json json;
 
-	writeJSONRF(json, action, state, source, dest, duration, ber);
+	writeJSONRF(json, action, duration, ber);
 
 	WriteJSON("M17", json);
 }
 
-void CM17Control::writeJSONRF(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI)
+void CM17Control::writeJSONRF(const char* action, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI)
 {
 	assert(action != NULL);
 
 	nlohmann::json json;
 
-	writeJSONRF(json, action, state, source, dest, duration, ber);
+	writeJSONRF(json, action, duration, ber);
 
 	nlohmann::json rssi;
 	rssi["min"] = -int(minRSSI);
@@ -977,17 +1138,26 @@ void CM17Control::writeJSONNet(const char* action, RPT_NET_STATE state, const st
 	WriteJSON("M17", json);
 }
 
-void CM17Control::writeJSONNet(const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest, float duration)
+void CM17Control::writeJSONNet(const char* action, float duration)
 {
 	assert(action != NULL);
 
 	nlohmann::json json;
 
-	writeJSONNet(json, action, state, source, dest);
+	writeJSONNet(json, action);
 
 	json["duration"] = duration;
 
 	WriteJSON("M17", json);
+}
+
+void CM17Control::writeJSONRF(nlohmann::json& json, const char* action)
+{
+	assert(action != NULL);
+
+	json["timestamp"] = CUtils::createTimestamp();
+
+	json["action"] = action;
 }
 
 void CM17Control::writeJSONRF(nlohmann::json& json, const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest)
@@ -1018,14 +1188,23 @@ void CM17Control::writeJSONRF(nlohmann::json& json, const char* action, RPT_RF_S
 	}
 }
 
-void CM17Control::writeJSONRF(nlohmann::json& json, const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest, float duration, float ber)
+void CM17Control::writeJSONRF(nlohmann::json& json, const char* action, float duration, float ber)
 {
 	assert(action != NULL);
 
-	writeJSONRF(json, action, state, source, dest);
+	writeJSONRF(json, action);
 
 	json["duration"] = duration;
 	json["ber"]      = ber;
+}
+
+void CM17Control::writeJSONNet(nlohmann::json& json, const char* action)
+{
+	assert(action != NULL);
+
+	json["timestamp"] = CUtils::createTimestamp();
+
+	json["action"] = action;
 }
 
 void CM17Control::writeJSONNet(nlohmann::json& json, const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest)
