@@ -158,11 +158,9 @@
     <ClInclude Include="AX25Network.h" />
     <ClInclude Include="BCH.h" />
     <ClInclude Include="BPTC19696.h" />
-    <ClInclude Include="CASTInfo.h" />
     <ClInclude Include="Conf.h" />
     <ClInclude Include="CRC.h" />
     <ClInclude Include="Defines.h" />
-    <ClInclude Include="Display.h" />
     <ClInclude Include="DMRAccessControl.h" />
     <ClInclude Include="DMRControl.h" />
     <ClInclude Include="DMRCSBK.h" />
@@ -191,7 +189,6 @@
     <ClInclude Include="Hamming.h" />
     <ClInclude Include="DMRLookup.h" />
     <ClInclude Include="IIRDirectForm1Filter.h" />
-    <ClInclude Include="LCDproc.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="M17Control.h" />
     <ClInclude Include="M17Convolution.h" />
@@ -204,10 +201,7 @@
     <ClInclude Include="ModemPort.h" />
     <ClInclude Include="ModemSerialPort.h" />
     <ClInclude Include="Mutex.h" />
-    <ClInclude Include="NetworkInfo.h" />
-    <ClInclude Include="Nextion.h" />
     <ClInclude Include="NullController.h" />
-    <ClInclude Include="NullDisplay.h" />
     <ClInclude Include="NXDNAudio.h" />
     <ClInclude Include="NXDNControl.h" />
     <ClInclude Include="NXDNConvolution.h" />
@@ -248,7 +242,6 @@
     <ClInclude Include="SMeter.h" />
     <ClInclude Include="StopWatch.h" />
     <ClInclude Include="Sync.h" />
-    <ClInclude Include="TFTSurenoo.h" />
     <ClInclude Include="Thread.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="UDPController.h" />
@@ -270,10 +263,8 @@
     <ClCompile Include="AX25Network.cpp" />
     <ClCompile Include="BCH.cpp" />
     <ClCompile Include="BPTC19696.cpp" />
-    <ClCompile Include="CASTInfo.cpp" />
     <ClCompile Include="Conf.cpp" />
     <ClCompile Include="CRC.cpp" />
-    <ClCompile Include="Display.cpp" />
     <ClCompile Include="DMRAccessControl.cpp" />
     <ClCompile Include="DMRControl.cpp" />
     <ClCompile Include="DMRCSBK.cpp" />
@@ -300,7 +291,6 @@
     <ClCompile Include="Golay24128.cpp" />
     <ClCompile Include="Hamming.cpp" />
     <ClCompile Include="IIRDirectForm1Filter.cpp" />
-    <ClCompile Include="LCDproc.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="M17Control.cpp" />
     <ClCompile Include="M17Convolution.cpp" />
@@ -312,10 +302,7 @@
     <ClCompile Include="ModemPort.cpp" />
     <ClCompile Include="ModemSerialPort.cpp" />
     <ClCompile Include="Mutex.cpp" />
-    <ClCompile Include="NetworkInfo.cpp" />
-    <ClCompile Include="Nextion.cpp" />
     <ClCompile Include="NullController.cpp" />
-    <ClCompile Include="NullDisplay.cpp" />
     <ClCompile Include="NXDNAudio.cpp" />
     <ClCompile Include="NXDNControl.cpp" />
     <ClCompile Include="NXDNConvolution.cpp" />
@@ -352,7 +339,6 @@
     <ClCompile Include="SMeter.cpp" />
     <ClCompile Include="StopWatch.cpp" />
     <ClCompile Include="Sync.cpp" />
-    <ClCompile Include="TFTSurenoo.cpp" />
     <ClCompile Include="Thread.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="UDPController.cpp" />
