@@ -177,7 +177,8 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		m_aveRSSI += m_rssi;
 		m_rssiCountTotal++;
 
-		writeJSONRSSI();
+		m_rssiAccum += m_rssi;
+		m_rssiCountTotal++;
 	}
 
 	unsigned char temp[M17_FRAME_LENGTH_BYTES];
@@ -352,6 +353,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 					if (m_rfTextBits == 0x11U || m_rfTextBits == 0x33U || m_rfTextBits == 0x77U || m_rfTextBits == 0xFFU) {
 						LogMessage("M17, text Data: \"%s\"", m_rfText);
+						writeJSONText(m_rfText);
 						m_rfTextBits = 0x00U;
 					}
 				}
@@ -389,6 +391,9 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 		m_bitErrsAccum += errors;
 		m_bitsCount    += 272U;
 		writeJSONBER();
+
+		m_display->writeM17RSSI(m_rssi);
+		writeJSONRSSI();
 
 		float ber = float(m_rfErrs) / float(m_rfBits);
 		m_display->writeM17BER(ber);
@@ -694,6 +699,7 @@ void CM17Control::writeNetwork()
 
 				if (m_netTextBits == 0x11U || m_netTextBits == 0x33U || m_netTextBits == 0x77U || m_netTextBits == 0xFFU) {
 					LogMessage("M17, text Data: \"%s\"", m_netText);
+					writeJSONText(m_netText);
 					m_netTextBits = 0x00U;
 				}
 			}
@@ -1035,9 +1041,6 @@ void CM17Control::enable(bool enabled)
 
 void CM17Control::writeJSONRSSI()
 {
-	m_rssiAccum += m_rssi;
-	m_rssiCountTotal++;
-
 	if (m_rssiCountTotal >= RSSI_COUNT) {
 		nlohmann::json json;
 
@@ -1070,7 +1073,7 @@ void CM17Control::writeJSONBER()
 	}
 }
 
-void CM17Control::writeJSONText(const unsigned char* text)
+void CM17Control::writeJSONText(const char* text)
 {
 	assert(text != NULL);
 
@@ -1079,7 +1082,7 @@ void CM17Control::writeJSONText(const unsigned char* text)
 	json["timestamp"] = CUtils::createTimestamp();
 	json["mode"]      = "M17";
 
-	json["value"]     = std::string((char*)text);
+	json["value"]     = std::string(text);
 
 	WriteJSON("Text", json);
 }

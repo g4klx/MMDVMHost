@@ -115,7 +115,7 @@ private:
 
 	void writeJSONRSSI();
 	void writeJSONBER();
-	void writeJSONText(const unsigned char* text);
+	void writeJSONText(const char* text);
 
 	void writeJSONRF(const char* action, RPT_RF_STATE state, const std::string& source, const std::string& dest);
 	void writeJSONRF(const char* action, float duration, float ber);
