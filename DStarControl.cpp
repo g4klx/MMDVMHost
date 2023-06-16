@@ -285,7 +285,8 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		m_aveRSSI += m_rssi;
 		m_rssiCountTotal++;
 
-		writeJSONRSSI();
+		m_rssiAccum += m_rssi;
+		m_rssiCountTotal++;
 	}
 
 	// Have we got RSSI bytes on the end of D-Star data?
@@ -310,7 +311,8 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		m_aveRSSI += m_rssi;
 		m_rssiCountTotal++;
 
-		writeJSONRSSI();
+		m_rssiAccum += m_rssi;
+		m_rssiCountTotal++;
 	}
 
 	if (type == TAG_HEADER) {
@@ -412,6 +414,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		if (m_netState == RS_NET_IDLE) {
 			m_display->writeDStar((char*)my1, (char*)my2, (char*)your, "R", "        ");
 			m_display->writeDStarRSSI(m_rssi);
+			writeJSONRSSI();
 		}
 
 		LogMessage("D-Star, received RF header from %8.8s/%4.4s to %8.8s", my1, my2, your);
@@ -484,25 +487,27 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			if (m_rfN == 0U) {
 				CSync::addDStarSync(data + 1U);
 				m_display->writeDStarRSSI(m_rssi);
+				writeJSONRSSI();
 			}
 
 			unsigned int errors = 0U;
 			if (!m_rfHeader.isDataPacket()) {
 				errors = maybeFixupVoiceFrame(data, len, 1U, "RF", m_rfN, m_duplex, m_rfVoiceSyncData, m_rfVoiceSyncDataLen, m_rfNextFrameIsFastData, m_rfSkipDTMFBlankingFrames);
-				m_display->writeDStarBER(float(errors) / 0.48F);
 				m_bitErrsAccum += errors;
 				m_rfErrs       += errors;
+				m_display->writeDStarBER(float(errors) / 0.48F);
+				writeJSONBER();
 			}
 
 			m_bitsCount += 48U;
 			m_rfBits    += 48U;
 			m_rfFrames++;
 
-			writeJSONBER();
-
 			const unsigned char* text = m_rfSlowData.addText(data + 1U);
-			if (text != NULL)
+			if (text != NULL) {
 				LogMessage("D-Star, slow data text = \"%s\"", text);
+				writeJSONText(text);
+			}
 
 			if (m_net) {
 				if (m_rfN == 1U)
@@ -640,8 +645,6 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			m_bitsCount += 48U;
 			m_rfBits    += 48U;
 
-			writeJSONBER();
-
 			if (m_net)
 				writeNetworkDataRF(data, errors, false);
 
@@ -656,6 +659,8 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 				m_display->writeDStar((char*)my1, (char*)my2, (char*)your, "R", "        ");
 				m_display->writeDStarRSSI(m_rssi);
 				m_display->writeDStarBER(float(errors) / 0.48F);
+				writeJSONRSSI();
+				writeJSONBER();
 			}
 
 			LogMessage("D-Star, received RF late entry from %8.8s/%4.4s to %8.8s", my1, my2, your);
@@ -856,8 +861,10 @@ void CDStarControl::writeNetwork()
 		}
 
 		const unsigned char* text = m_netSlowData.addText(data + 2U);
-		if (text != NULL)
+		if (text != NULL) {
 			LogMessage("D-Star, slow data text = \"%s\"", text);
+			writeJSONText(text);
+		}
 
 		m_packetTimer.start();
 		m_netFrames++;
@@ -1377,9 +1384,6 @@ void CDStarControl::enable(bool enabled)
 
 void CDStarControl::writeJSONRSSI()
 {
-	m_rssiAccum += m_rssi;
-	m_rssiCountTotal++;
-
 	if (m_rssiCountTotal >= RSSI_COUNT) {
 		nlohmann::json json;
 
