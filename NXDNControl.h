@@ -27,7 +27,6 @@
 #include "RingBuffer.h"
 #include "StopWatch.h"
 #include "NXDNLICH.h"
-#include "Display.h"
 #include "Defines.h"
 #include "Timer.h"
 #include "Modem.h"
@@ -38,7 +37,7 @@
 
 class CNXDNControl {
 public:
-	CNXDNControl(unsigned int ran, unsigned int id, bool selfOnly, INXDNNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CNXDNLookup* lookup, CRSSIInterpolator* rssiMapper);
+	CNXDNControl(unsigned int ran, unsigned int id, bool selfOnly, INXDNNetwork* network, unsigned int timeout, bool duplex, bool remoteGateway, CNXDNLookup* lookup, CRSSIInterpolator* rssiMapper);
 	~CNXDNControl();
 
 	bool writeModem(unsigned char* data, unsigned int len);
@@ -56,7 +55,6 @@ private:
 	unsigned int               m_id;
 	bool                       m_selfOnly;
 	INXDNNetwork*              m_network;
-	CDisplay*                  m_display;
 	bool                       m_duplex;
 	bool                       m_remoteGateway;
 	CNXDNLookup*               m_lookup;

@@ -27,7 +27,6 @@
 #include "DMRLookup.h"
 #include "P25Audio.h"
 #include "Defines.h"
-#include "Display.h"
 #include "P25Data.h"
 #include "P25NID.h"
 #include "Modem.h"
@@ -39,7 +38,7 @@
 
 class CP25Control {
 public:
-	CP25Control(unsigned int nac, unsigned int id, bool selfOly, bool uidOverride, CP25Network* network, CDisplay* display, unsigned int timeout, bool duplex, CDMRLookup* lookup, bool remoteGateway, CRSSIInterpolator* rssiMapper);
+	CP25Control(unsigned int nac, unsigned int id, bool selfOly, bool uidOverride, CP25Network* network, unsigned int timeout, bool duplex, CDMRLookup* lookup, bool remoteGateway, CRSSIInterpolator* rssiMapper);
 	~CP25Control();
 
 	bool writeModem(unsigned char* data, unsigned int len);
@@ -59,7 +58,6 @@ private:
 	bool                       m_uidOverride;
 	bool                       m_remoteGateway;
 	CP25Network*               m_network;
-	CDisplay*                  m_display;
 	bool                       m_duplex;
 	CDMRLookup*                m_lookup;
 	CRingBuffer<unsigned char> m_queue;

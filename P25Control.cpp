@@ -41,14 +41,13 @@ const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U
 #define WRITE_BIT(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
-CP25Control::CP25Control(unsigned int nac, unsigned int id, bool selfOnly, bool uidOverride, CP25Network* network, CDisplay* display, unsigned int timeout, bool duplex, CDMRLookup* lookup, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
+CP25Control::CP25Control(unsigned int nac, unsigned int id, bool selfOnly, bool uidOverride, CP25Network* network, unsigned int timeout, bool duplex, CDMRLookup* lookup, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
 m_nac(nac),
 m_id(id),
 m_selfOnly(selfOnly),
 m_uidOverride(uidOverride),
 m_remoteGateway(remoteGateway),
 m_network(network),
-m_display(display),
 m_duplex(duplex),
 m_lookup(lookup),
 m_queue(1000U, "P25 Control"),
@@ -90,7 +89,6 @@ m_bitErrsAccum(0U),
 m_enabled(true),
 m_fp(NULL)
 {
-	assert(display != NULL);
 	assert(lookup != NULL);
 	assert(rssiMapper != NULL);
 
@@ -142,9 +140,6 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			writeJSONRF("lost", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
 		}
 
-		if (m_netState == RS_NET_IDLE)
-			m_display->clearP25();
-
 		writeNetwork(m_rfLDU, m_lastDUID, true);
 		writeNetwork(data + 2U, P25_DUID_TERM, true);
 		m_rfState = RS_RF_LISTENING;
@@ -157,9 +152,6 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 	}
 
 	if (data[0U] == TAG_LOST && m_rfState == RS_RF_DATA) {
-		if (m_netState == RS_NET_IDLE)
-			m_display->clearP25();
-
 		m_rfState    = RS_RF_LISTENING;
 		m_rfPDUCount = 0U;
 		m_rfPDUBits  = 0U;
@@ -269,7 +261,6 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 
 			LogMessage("P25, received RF voice transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
 			writeJSONRF("start", srcId, source, grp, dstId);
-			m_display->writeP25(source.c_str(), grp, dstId, "R");
 
 			m_rfState = RS_RF_AUDIO;
 
@@ -307,8 +298,6 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			unsigned int errors = m_audio.process(data + 2U);
 			LogDebug("P25, LDU1 audio, errs: %u/1233 (%.1f%%)", errors, float(errors) / 12.33F);
 
-			m_display->writeP25BER(float(errors) / 12.33F);
-
 			m_rfBits += 1233U;
 			m_rfErrs += errors;
 			m_rfFrames++;
@@ -333,7 +322,6 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 				writeQueueRF(data, P25_LDU_FRAME_LENGTH_BYTES + 2U);
 			}
 
-			m_display->writeP25RSSI(m_rssi);
 			writeJSONRSSI();
 
 			return true;
@@ -358,8 +346,6 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			unsigned int errors = m_audio.process(data + 2U);
 			LogDebug("P25, LDU2 audio, errs: %u/1233 (%.1f%%)", errors, float(errors) / 12.33F);
 
-			m_display->writeP25BER(float(errors) / 12.33F);
-
 			m_rfBits += 1233U;
 			m_rfErrs += errors;
 			m_rfFrames++;
@@ -384,7 +370,6 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 				writeQueueRF(data, P25_LDU_FRAME_LENGTH_BYTES + 2U);
 			}
 
-			m_display->writeP25RSSI(m_rssi);
 			writeJSONRSSI();
 
 			return true;
@@ -502,8 +487,6 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 				writeJSONRF("end", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
 			}
 
-			m_display->clearP25();
-
 #if defined(DUMP_P25)
 			closeFile();
 #endif
@@ -610,7 +593,6 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 				}
 
 				LogMessage("P25, ended RF data transmission");
-				m_display->clearP25();
 
 				m_rfPDUCount = 0U;
 				m_rfPDUBits = 0U;
@@ -762,7 +744,6 @@ void CP25Control::clock(unsigned int ms)
 		if (m_networkWatchdog.hasExpired()) {
 			LogMessage("P25, network watchdog has expired, %.1f seconds, %u%% packet loss", float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames);
 			writeJSONNet("lost", float(m_netFrames) / 50.0F, float(m_netLost * 100U) / float(m_netFrames));
-			m_display->clearP25();
 
 			m_networkWatchdog.stop();
 			m_netState = RS_NET_IDLE;
@@ -1009,7 +990,6 @@ void CP25Control::createNetHeader()
 
 	LogMessage("P25, received network transmission from %s to %s%u", source.c_str(), lcf == P25_LCF_GROUP ? "TG " : "", dstId);
 	writeJSONNet("start", srcId, source, lcf == P25_LCF_GROUP, dstId);
-	m_display->writeP25(source.c_str(), lcf == P25_LCF_GROUP, dstId, "N");
 
 	m_netState = RS_NET_AUDIO;
 	m_netTimeout.start();
@@ -1165,7 +1145,6 @@ void CP25Control::createNetTerminator()
 	LogMessage("P25, network end of transmission from %s to %s%u, %.1f seconds, %u%% packet loss", source.c_str(), m_netData.getLCF() == P25_LCF_GROUP ? "TG " : "", dstId, float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames);
 	writeJSONNet("end", float(m_netFrames) / 50.0F, float(m_netLost * 100U) / float(m_netFrames));
 
-	m_display->clearP25();
 	m_netTimeout.stop();
 	m_networkWatchdog.stop();
 	m_netData.reset();

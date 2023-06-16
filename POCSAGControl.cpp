@@ -58,9 +58,8 @@ const unsigned char FUNCTIONAL_ALERT1       = 1U;
 const unsigned char FUNCTIONAL_ALERT2       = 2U;
 const unsigned char FUNCTIONAL_ALPHANUMERIC = 3U;
 
-CPOCSAGControl::CPOCSAGControl(CPOCSAGNetwork* network, CDisplay* display) :
+CPOCSAGControl::CPOCSAGControl(CPOCSAGNetwork* network) :
 m_network(network),
-m_display(display),
 m_queue(5000U, "POCSAG Control"),
 m_frames(0U),
 m_count(0U),
@@ -72,7 +71,6 @@ m_state(PS_NONE),
 m_enabled(true),
 m_fp(NULL)
 {
-	assert(display != NULL);
 }
 
 CPOCSAGControl::~CPOCSAGControl()
@@ -285,8 +283,6 @@ bool CPOCSAGControl::processData()
 	POCSAGData* output = m_data.front();
 	m_data.pop_front();
 
-	m_display->writePOCSAG(output->m_ric, output->m_display);
-
 	m_buffer = output->m_buffer;
 	m_ric    = output->m_ric;
 
@@ -366,7 +362,6 @@ void CPOCSAGControl::clock(unsigned int ms)
 
 	if (m_state == PS_ENDING) {
 		LogMessage("POCSAG, transmitted %u frame(s) of data from %u message(s)", m_frames, m_count);
-		m_display->clearPOCSAG();
 		m_state = PS_NONE;
 
 #if defined(DUMP_POCSAG)

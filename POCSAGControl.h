@@ -22,7 +22,6 @@
 #include "POCSAGNetwork.h"
 #include "POCSAGDefines.h"
 #include "RingBuffer.h"
-#include "Display.h"
 #include "Defines.h"
 
 #include <cstdint>
@@ -41,7 +40,7 @@ struct POCSAGData {
 
 class CPOCSAGControl {
 public:
-	CPOCSAGControl(CPOCSAGNetwork* network, CDisplay* display);
+	CPOCSAGControl(CPOCSAGNetwork* network);
 	~CPOCSAGControl();
 
 	void sendPage(unsigned int ric, const std::string& text);
@@ -57,7 +56,6 @@ public:
 
 private:
 	CPOCSAGNetwork*            m_network;
-	CDisplay*                  m_display;
 	CRingBuffer<unsigned char> m_queue;
 	unsigned int               m_frames;
 	unsigned int               m_count;

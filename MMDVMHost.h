@@ -40,7 +40,6 @@
 #include "FMNetwork.h"
 #include "DMRLookup.h"
 #include "FMControl.h"
-#include "Display.h"
 #include "Timer.h"
 #include "Modem.h"
 #include "Conf.h"
@@ -79,7 +78,6 @@ private:
   CPOCSAGNetwork* m_pocsagNetwork;
   CFMNetwork*     m_fmNetwork;
   CAX25Network*   m_ax25Network;
-  CDisplay*       m_display;
   unsigned char   m_mode;
   unsigned int    m_dstarRFModeHang;
   unsigned int    m_dmrRFModeHang;

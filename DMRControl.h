@@ -22,7 +22,6 @@
 #include "RSSIInterpolator.h"
 #include "DMRNetwork.h"
 #include "DMRLookup.h"
-#include "Display.h"
 #include "DMRSlot.h"
 #include "DMRData.h"
 #include "Modem.h"
@@ -31,7 +30,7 @@
 
 class CDMRControl {
 public:
-	CDMRControl(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, bool embeddedLCOnly, bool dumpTAData, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& whitelist, const std::vector<unsigned int>& slot1TGWhitelist, const std::vector<unsigned int>& slot2TGWhitelist, unsigned int timeout, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssi, unsigned int jitter, DMR_OVCM_TYPES ovcm);
+	CDMRControl(unsigned int id, unsigned int colorCode, unsigned int callHang, bool selfOnly, bool embeddedLCOnly, bool dumpTAData, const std::vector<unsigned int>& prefixes, const std::vector<unsigned int>& blacklist, const std::vector<unsigned int>& whitelist, const std::vector<unsigned int>& slot1TGWhitelist, const std::vector<unsigned int>& slot2TGWhitelist, unsigned int timeout, CModem* modem, CDMRNetwork* network, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssi, unsigned int jitter, DMR_OVCM_TYPES ovcm);
 	~CDMRControl();
 
 	bool processWakeup(const unsigned char* data);

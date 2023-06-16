@@ -162,7 +162,6 @@ m_m17Network(NULL),
 m_pocsagNetwork(NULL),
 m_fmNetwork(NULL),
 m_ax25Network(NULL),
-m_display(NULL),
 m_mode(MODE_IDLE),
 m_dstarRFModeHang(10U),
 m_dmrRFModeHang(10U),
@@ -364,8 +363,6 @@ int CMMDVMHost::run()
 		m_ax25Enabled = false;
 	}
 
-	m_display = CDisplay::createDisplay(m_conf, m_modem);
-
 	LogInfo("Opening network connections");
 	writeJSONMessage("Opening network connections");
 
@@ -537,7 +534,7 @@ int CMMDVMHost::run()
 		if (whiteList.size() > 0U)
 			LogInfo("    White List: %u", whiteList.size());
 
-		m_dstar = new CDStarControl(m_callsign, module, selfOnly, ackReply, ackTime, ackMessage, errorReply, blackList, whiteList, m_dstarNetwork, m_display, m_timeout, m_duplex, remoteGateway, rssi);
+		m_dstar = new CDStarControl(m_callsign, module, selfOnly, ackReply, ackTime, ackMessage, errorReply, blackList, whiteList, m_dstarNetwork, m_timeout, m_duplex, remoteGateway, rssi);
 	}
 
 	DMR_BEACONS dmrBeacons = DMR_BEACONS_OFF;
@@ -633,7 +630,7 @@ int CMMDVMHost::run()
 				break;
 		}
 
-		m_dmr = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, dumpTAData, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_display, m_duplex, m_dmrLookup, rssi, jitter, ovcm);
+		m_dmr = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, dumpTAData, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_duplex, m_dmrLookup, rssi, jitter, ovcm);
 
 		m_dmrTXTimer.setTimeout(txHang);
 	}
@@ -652,7 +649,7 @@ int CMMDVMHost::run()
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
 		LogInfo("    Mode Hang: %us", m_ysfRFModeHang);
 
-		m_ysf = new CYSFControl(m_callsign, selfOnly, m_ysfNetwork, m_display, m_timeout, m_duplex, lowDeviation, remoteGateway, rssi);
+		m_ysf = new CYSFControl(m_callsign, selfOnly, m_ysfNetwork, m_timeout, m_duplex, lowDeviation, remoteGateway, rssi);
 	}
 
 	if (m_p25Enabled) {
@@ -673,7 +670,7 @@ int CMMDVMHost::run()
 		LogInfo("    TX Hang: %us", txHang);
 		LogInfo("    Mode Hang: %us", m_p25RFModeHang);
 
-		m_p25 = new CP25Control(nac, id, selfOnly, uidOverride, m_p25Network, m_display, m_timeout, m_duplex, m_dmrLookup, remoteGateway, rssi);
+		m_p25 = new CP25Control(nac, id, selfOnly, uidOverride, m_p25Network, m_timeout, m_duplex, m_dmrLookup, remoteGateway, rssi);
 	}
 
 	if (m_nxdnEnabled) {
@@ -703,7 +700,7 @@ int CMMDVMHost::run()
 		LogInfo("    TX Hang: %us", txHang);
 		LogInfo("    Mode Hang: %us", m_nxdnRFModeHang);
 
-		m_nxdn = new CNXDNControl(ran, id, selfOnly, m_nxdnNetwork, m_display, m_timeout, m_duplex, remoteGateway, m_nxdnLookup, rssi);
+		m_nxdn = new CNXDNControl(ran, id, selfOnly, m_nxdnNetwork, m_timeout, m_duplex, remoteGateway, m_nxdnLookup, rssi);
 	}
 
 	if (m_m17Enabled) {
@@ -720,7 +717,7 @@ int CMMDVMHost::run()
 		LogInfo("    TX Hang: %us", txHang);
 		LogInfo("    Mode Hang: %us", m_m17RFModeHang);
 
-		m_m17 = new CM17Control(m_callsign, can, selfOnly, allowEncryption, m_m17Network, m_display, m_timeout, m_duplex, rssi);
+		m_m17 = new CM17Control(m_callsign, can, selfOnly, allowEncryption, m_m17Network, m_timeout, m_duplex, rssi);
 	}
 
 	CTimer pocsagTimer(1000U, 30U);
@@ -731,7 +728,7 @@ int CMMDVMHost::run()
 		LogInfo("POCSAG RF Parameters");
 		LogInfo("    Frequency: %uHz", frequency);
 
-		m_pocsag = new CPOCSAGControl(m_pocsagNetwork, m_display);
+		m_pocsag = new CPOCSAGControl(m_pocsagNetwork);
 
 		if (m_pocsagNetwork != NULL)
 			pocsagTimer.start();
@@ -1206,8 +1203,6 @@ int CMMDVMHost::run()
 		unsigned int ms = stopWatch.elapsed();
 		stopWatch.start();
 
-		m_display->clock(ms);
-
 		m_modem->clock(ms);
 
 		if (!m_fixedMode)
@@ -1261,7 +1256,6 @@ int CMMDVMHost::run()
 		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
 			if (!m_modem->hasTX()){
 				LogDebug("sending CW ID");
-				m_display->writeCW();
 				m_modem->sendCWId(m_cwCallsign);
 
 				m_cwIdTimer.setTimeout(m_cwIdTime);
@@ -1409,9 +1403,6 @@ int CMMDVMHost::run()
 
 	m_modem->close();
 	delete m_modem;
-
-	m_display->close();
-	delete m_display;
 
 	if (m_mqtt != NULL) {
 		m_mqtt->close();
@@ -1974,7 +1965,6 @@ void CMMDVMHost::readParams()
 void CMMDVMHost::setMode(unsigned char mode)
 {
 	assert(m_modem != NULL);
-	assert(m_display != NULL);
 
 	switch (mode) {
 	case MODE_DSTAR:
@@ -2338,7 +2328,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dmrTXTimer.stop();
 		}
 		m_modem->setMode(MODE_FM);
-		m_display->setFM();
 		m_mode = MODE_FM;
 		m_modeTimer.start();
 		m_cwIdTimer.stop();
@@ -2388,7 +2377,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_dmrTXTimer.stop();
 		}
 		m_modem->setMode(MODE_IDLE);
-		m_display->setLockout();
 		m_mode = MODE_LOCKOUT;
 		m_modeTimer.stop();
 		m_cwIdTimer.stop();
@@ -2438,7 +2426,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
 		}
-		m_display->setError("MODEM");
 		m_mode = MODE_ERROR;
 		m_modeTimer.stop();
 		m_cwIdTimer.stop();
@@ -2496,9 +2483,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_cwIdTimer.setTimeout(m_cwIdTime / 4U);
 			m_cwIdTimer.start();
 		}
-		m_display->setIdle();
-		if (mode == MODE_QUIT)
-			m_display->setQuit();
 		m_mode = MODE_IDLE;
 		m_modeTimer.stop();
 		removeLockFile();
@@ -2706,7 +2690,6 @@ void CMMDVMHost::remoteControl()
 						cwtext += " ";
 					cwtext += m_remoteControl->getArgString(i);
 				}
-				m_display->writeCW();
 				m_modem->sendCWId(cwtext);
 			}
 			break;

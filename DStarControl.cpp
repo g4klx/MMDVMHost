@@ -15,7 +15,6 @@
 #include "Utils.h"
 #include "Sync.h"
 #include "Log.h"
-#include "SMeter.h"
 
 #include <cstdio>
 #include <cassert>
@@ -41,7 +40,7 @@ bool CallsignCompare(const std::string& arg, const unsigned char* my)
 
 // #define	DUMP_DSTAR
 
-CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool ackReply, unsigned int ackTime, DSTAR_ACK_MESSAGE ackMessage, bool errorReply, const std::vector<std::string>& blackList, const std::vector<std::string>& whiteList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
+CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool ackReply, unsigned int ackTime, DSTAR_ACK_MESSAGE ackMessage, bool errorReply, const std::vector<std::string>& blackList, const std::vector<std::string>& whiteList, CDStarNetwork* network, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
 m_callsign(NULL),
 m_gateway(NULL),
 m_selfOnly(selfOnly),
@@ -52,7 +51,6 @@ m_remoteGateway(remoteGateway),
 m_blackList(blackList),
 m_whiteList(whiteList),
 m_network(network),
-m_display(display),
 m_duplex(duplex),
 m_queue(5000U, "D-Star Control"),
 m_rfHeader(),
@@ -102,7 +100,6 @@ m_netNextFrameIsFastData(false),
 m_rfSkipDTMFBlankingFrames(0U),
 m_netSkipDTMFBlankingFrames(0U)
 {
-	assert(display != NULL);
 	assert(rssiMapper != NULL);
 
 	m_callsign = new unsigned char[DSTAR_LONG_CALLSIGN_LENGTH];
@@ -411,11 +408,8 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 
 		m_rfState = RS_RF_AUDIO;
 
-		if (m_netState == RS_NET_IDLE) {
-			m_display->writeDStar((char*)my1, (char*)my2, (char*)your, "R", "        ");
-			m_display->writeDStarRSSI(m_rssi);
+		if (m_netState == RS_NET_IDLE)
 			writeJSONRSSI();
-		}
 
 		LogMessage("D-Star, received RF header from %8.8s/%4.4s to %8.8s", my1, my2, your);
 		writeJSONRF("start", my1, my2, your);
@@ -486,7 +480,6 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			// Regenerate the sync and send the RSSI data to the display
 			if (m_rfN == 0U) {
 				CSync::addDStarSync(data + 1U);
-				m_display->writeDStarRSSI(m_rssi);
 				writeJSONRSSI();
 			}
 
@@ -495,7 +488,6 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 				errors = maybeFixupVoiceFrame(data, len, 1U, "RF", m_rfN, m_duplex, m_rfVoiceSyncData, m_rfVoiceSyncDataLen, m_rfNextFrameIsFastData, m_rfSkipDTMFBlankingFrames);
 				m_bitErrsAccum += errors;
 				m_rfErrs       += errors;
-				m_display->writeDStarBER(float(errors) / 0.48F);
 				writeJSONBER();
 			}
 
@@ -656,9 +648,6 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			m_rfN = (m_rfN + 1U) % 21U;
 
 			if (m_netState == RS_NET_IDLE) {
-				m_display->writeDStar((char*)my1, (char*)my2, (char*)your, "R", "        ");
-				m_display->writeDStarRSSI(m_rssi);
-				m_display->writeDStarBER(float(errors) / 0.48F);
 				writeJSONRSSI();
 				writeJSONBER();
 			}
@@ -695,8 +684,6 @@ void CDStarControl::writeEndRF()
 	m_rfTimeoutTimer.stop();
 
 	if (m_netState == RS_NET_IDLE) {
-		m_display->clearDStar();
-
 		m_ackTimer.start();
 
 		if (m_network != NULL)
@@ -709,8 +696,6 @@ void CDStarControl::writeEndNet()
 	m_netState = RS_NET_IDLE;
 
 	m_lastFrameValid = false;
-
-	m_display->clearDStar();
 
 	m_netTimeoutTimer.stop();
 	m_networkWatchdog.stop();
@@ -793,11 +778,9 @@ void CDStarControl::writeNetwork()
 		unsigned char reflector[DSTAR_LONG_CALLSIGN_LENGTH];
 		m_network->getStatus(status, reflector);
 		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK) {
-			m_display->writeDStar((char*)my1, (char*)my2, (char*)your, "N", (char*) reflector);
 			LogMessage("D-Star, received network header from %8.8s/%4.4s to %8.8s via %8.8s", my1, my2, your, reflector);
 			writeJSONNet("start", my1, my2, your, reflector);
 		} else {
-			m_display->writeDStar((char*)my1, (char*)my2, (char*)your, "N", (char*) "        ");
 			LogMessage("D-Star, received network header from %8.8s/%4.4s to %8.8s", my1, my2, your);
 			writeJSONNet("start", my1, my2, your);
 		}	
@@ -1258,9 +1241,23 @@ void CDStarControl::sendAck()
 			::sprintf(text, "BER:%.1f%% -%udBm           ", float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCountTotal);
 		}
 	} else if (m_ackMessage == DSTAR_ACK_SMETER && m_rssi != 0) {
-		unsigned int signal, plus;
+		const unsigned int RSSI_S1 = 141U;
+		const unsigned int RSSI_S9 = 93U;
+
+		unsigned int signal = 0U;
+		unsigned int plus   = 0U;
+		unsigned int rssi   = m_aveRSSI / m_rssiCountTotal;
+
+		if (rssi > RSSI_S1) {
+			plus   = rssi - RSSI_S1;
+		} else if (rssi > RSSI_S9 && rssi <= RSSI_S1) {
+			signal = ((RSSI_S1 - rssi) / 6U) + 1U;
+			plus   = (RSSI_S1 - rssi) % 6U;
+		} else {
+			plus   = RSSI_S9 - rssi;
+		}
+
 		char signalText[15U];
-		CSMeter::getSignal(m_aveRSSI / m_rssiCountTotal, signal, plus);
 		if (plus != 0U)
 			::sprintf(signalText, "S%u+%02u", signal, plus);
 		else
@@ -1323,9 +1320,23 @@ void CDStarControl::sendError()
 			::sprintf(text, "BER:%.1f%% -%udBm           ", float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCountTotal);
 		}
 	} else if (m_ackMessage == DSTAR_ACK_SMETER && m_rssi != 0) {
-		unsigned int signal, plus;
+		const unsigned int RSSI_S1 = 141U;
+		const unsigned int RSSI_S9 = 93U;
+
+		unsigned int signal = 0U;
+		unsigned int plus   = 0U;
+		unsigned int rssi   = m_aveRSSI / m_rssiCountTotal;
+
+		if (rssi > RSSI_S1) {
+			plus   = rssi - RSSI_S1;
+		} else if (rssi > RSSI_S9 && rssi <= RSSI_S1) {
+			signal = ((RSSI_S1 - rssi) / 6U) + 1U;
+			plus   = (RSSI_S1 - rssi) % 6U;
+		} else {
+			plus   = RSSI_S9 - rssi;
+		}
+
 		char signalText[15U];
-		CSMeter::getSignal(m_aveRSSI / m_rssiCountTotal, signal, plus);
 		if (plus != 0U)
 			::sprintf(signalText, "S%u+%02u", signal, plus);
 		else

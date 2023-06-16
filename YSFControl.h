@@ -26,7 +26,6 @@
 #include "RingBuffer.h"
 #include "StopWatch.h"
 #include "YSFFICH.h"
-#include "Display.h"
 #include "Defines.h"
 #include "Timer.h"
 #include "Modem.h"
@@ -37,7 +36,7 @@
 
 class CYSFControl {
 public:
-	CYSFControl(const std::string& callsign, bool selfOnly, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool lowDeviation, bool remoteGateway, CRSSIInterpolator* rssiMapper);
+	CYSFControl(const std::string& callsign, bool selfOnly, CYSFNetwork* network, unsigned int timeout, bool duplex, bool lowDeviation, bool remoteGateway, CRSSIInterpolator* rssiMapper);
 	~CYSFControl();
 
 	bool writeModem(unsigned char* data, unsigned int len);
@@ -55,7 +54,6 @@ private:
 	unsigned char*             m_selfCallsign;
 	bool                       m_selfOnly;
 	CYSFNetwork*               m_network;
-	CDisplay*                  m_display;
 	bool                       m_duplex;
 	bool                       m_lowDeviation;
 	bool                       m_remoteGateway;

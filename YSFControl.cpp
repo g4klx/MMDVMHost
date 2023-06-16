@@ -26,12 +26,11 @@ const unsigned int BER_COUNT    = 13U;		// 13 * 100ms = 1300ms
 
 // #define	DUMP_YSF
 
-CYSFControl::CYSFControl(const std::string& callsign, bool selfOnly, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool lowDeviation, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
+CYSFControl::CYSFControl(const std::string& callsign, bool selfOnly, CYSFNetwork* network, unsigned int timeout, bool duplex, bool lowDeviation, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
 m_callsign(NULL),
 m_selfCallsign(NULL),
 m_selfOnly(selfOnly),
 m_network(network),
-m_display(display),
 m_duplex(duplex),
 m_lowDeviation(lowDeviation),
 m_remoteGateway(remoteGateway),
@@ -70,7 +69,6 @@ m_bitErrsAccum(0U),
 m_enabled(true),
 m_fp(NULL)
 {
-	assert(display != NULL);
 	assert(rssiMapper != NULL);
 
 	m_rfPayload.setUplink(callsign);
@@ -276,7 +274,6 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			openFile();
 #endif
-			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, dgid, "R", "          ");
 			LogMessage("YSF, received RF header from %10.10s to DG-ID %u", m_rfSource, dgid);
 			writeJSONRF("start", "voice_vw", m_rfSource, dgid);
 
@@ -303,7 +300,6 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 
 			m_rfFrames++;
 
-			m_display->writeFusionRSSI(m_rssi);
 			writeJSONRSSI();
 
 			return true;
@@ -371,13 +367,11 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 				unsigned int errors = m_rfPayload.processVoiceFRModeAudio2(data + 2U);
 				m_rfErrs += errors;
 				m_rfBits += 288U;
-				m_display->writeFusionBER(float(errors) / 2.88F);
 				LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/288 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 2.88F);
 			} else {
 				unsigned int errors = m_rfPayload.processVoiceFRModeAudio5(data + 2U);
 				m_rfErrs += errors;
 				m_rfBits += 720U;
-				m_display->writeFusionBER(float(errors) / 7.2F);
 				LogDebug("YSF, V Mode 3, seq %u, AMBE FEC %u/720 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 7.2F);
 				writeJSONBER(720U, errors);
 			}
@@ -401,8 +395,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 #endif
 			m_rfFrames++;
 
-			m_display->writeFusionRSSI(m_rssi);
-			wrteJSONRSSI();
+			writeJSONRSSI();
 
 			return true;
 		}
@@ -460,7 +453,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			openFile();
 #endif
-			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, dgid, "R", "          ");
 			LogMessage("YSF, received RF header from %10.10s to DG-ID %u", m_rfSource, dgid);
 			writeJSONRF("start", "voice_dn", m_rfSource, dgid);
 
@@ -487,7 +479,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			m_rfFrames++;
 
-			m_display->writeFusionRSSI(m_rssi);
 			writeJSONRSSI();
 
 			return true;
@@ -557,7 +548,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 					unsigned int errors = m_rfPayload.processVDMode1Audio(data + 2U);
 					m_rfErrs += errors;
 					m_rfBits += 235U;
-					m_display->writeFusionBER(float(errors) / 2.35F);
 					LogDebug("YSF, V/D Mode 1, seq %u, AMBE FEC %u/235 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 2.35F);
 					writeJSONBER(235U, errors);
 				}
@@ -568,7 +558,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 					unsigned int errors = m_rfPayload.processVDMode2Audio(data + 2U);
 					m_rfErrs += errors;
 					m_rfBits += 405U;
-					m_display->writeFusionBER(float(errors) / 4.05F);
 					LogDebug("YSF, V/D Mode 2, seq %u, Repetition FEC %u/405 (%.1f%%)", m_rfFrames % 128, errors, float(errors) / 4.05F);
 					writeJSONBER(405U, errors);
 				}
@@ -599,7 +588,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 #endif
 			m_rfFrames++;
 
-			m_display->writeFusionRSSI(m_rssi);
 			writeJSONRSSI();
 
 			return true;
@@ -702,7 +690,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			writeFile(buffer + 2U);
 #endif
-			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, dgid, "R", "          ");
 			LogMessage("YSF, received RF late entry from %10.10s to DG-ID %u", m_rfSource, dgid);
 			writeJSONRF("late_entry", "voice_dn", m_rfSource, dgid);
 
@@ -729,7 +716,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 #endif
 			m_rfFrames++;
 
-			m_display->writeFusionRSSI(m_rssi);
 			writeJSONRSSI();
 
 			return true;
@@ -785,7 +771,6 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 #if defined(DUMP_YSF)
 			openFile();
 #endif
-			m_display->writeFusion((char*)m_rfSource, (char*)m_rfDest, dgid, "R", "          ");
 			LogMessage("YSF, received RF header from %10.10s to DG-ID %u", m_rfSource, dgid);
 			writeJSONRF("start", "data_fr", m_rfSource, dgid);
 
@@ -811,7 +796,6 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 			m_rfFrames++;
 
-			m_display->writeFusionRSSI(m_rssi);
 			writeJSONRSSI();
 
 			return true;
@@ -897,7 +881,6 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 #endif
 			m_rfFrames++;
 
-			m_display->writeFusionRSSI(m_rssi);
 			writeJSONRSSI();
 
 			return true;
@@ -934,8 +917,6 @@ void CYSFControl::writeEndRF()
 	m_rfDest = NULL;
 
 	if (m_netState == RS_NET_IDLE) {
-		m_display->clearFusion();
-
 		if (m_network != NULL)
 			m_network->reset();
 	}
@@ -954,8 +935,6 @@ void CYSFControl::writeEndNet()
 	m_packetTimer.stop();
 
 	m_netPayload.reset();
-
-	m_display->clearFusion();
 
 	if (m_network != NULL)
 		m_network->reset();
@@ -996,7 +975,6 @@ void CYSFControl::writeNetwork()
 		::memcpy(m_netDest,   data + 24U, YSF_CALLSIGN_LENGTH);
 
 		if (::memcmp(m_netSource, "          ", 10U) != 0 && ::memcmp(m_netDest, "          ", 10U) != 0) {
-			m_display->writeFusion((char*)m_netSource, (char*)m_netDest, dgid, "N", (char*)(data + 4U));
 			LogMessage("YSF, received network data from %10.10s to DG-ID %u at %10.10s", m_netSource, dgid, data + 4U);
 			writeJSONNet("start", m_netSource, dgid, data + 4U);
 		}
@@ -1254,7 +1232,6 @@ void CYSFControl::processNetCallsigns(const unsigned char* data, unsigned char d
 		}
 
 		if (::memcmp(m_netSource, "          ", 10U) != 0 && ::memcmp(m_netDest, "          ", 10U) != 0) {
-			m_display->writeFusion((char*)m_netSource, (char*)m_netDest, dgid, "N", (char*)(data + 4U));
 			LogMessage("YSF, received network data from %10.10s to DG-ID %u at %10.10s", m_netSource, dgid, data + 4U);
 			writeJSONNet("start", m_netSource, dgid, data + 4U);
 		}

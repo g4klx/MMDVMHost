@@ -27,7 +27,6 @@
 #include "RingBuffer.h"
 #include "StopWatch.h"
 #include "AMBEFEC.h"
-#include "Display.h"
 #include "Defines.h"
 #include "Timer.h"
 #include "Modem.h"
@@ -39,7 +38,7 @@
 
 class CDStarControl {
 public:
-	CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool ackReply, unsigned int ackTime, DSTAR_ACK_MESSAGE ackMessage, bool errorReply, const std::vector<std::string>& blackList, const std::vector<std::string>& whiteList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper);
+	CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool ackReply, unsigned int ackTime, DSTAR_ACK_MESSAGE ackMessage, bool errorReply, const std::vector<std::string>& blackList, const std::vector<std::string>& whiteList, CDStarNetwork* network, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper);
 	~CDStarControl();
 
 	bool writeModem(unsigned char* data, unsigned int len);
@@ -63,7 +62,6 @@ private:
 	std::vector<std::string>   m_blackList;
 	std::vector<std::string>   m_whiteList;
 	CDStarNetwork*             m_network;
-	CDisplay*                  m_display;
 	bool                       m_duplex;
 	CRingBuffer<unsigned char> m_queue;
 	CDStarHeader               m_rfHeader;
