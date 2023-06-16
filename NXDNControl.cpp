@@ -150,7 +150,8 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 		m_aveRSSI += m_rssi;
 		m_rssiCountTotal++;
 
-		writeJSONRSSI();
+		m_rssiAccum += m_rssi;
+		m_rssiCount++;
 	}
 
 	scrambler(data + 2U);
@@ -597,6 +598,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		m_rfFrames++;
 
 		m_display->writeNXDNRSSI(m_rssi);
+		writeJSONRSSI();
 	}
 
 	return true;
@@ -645,6 +647,7 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 
 		m_display->writeNXDN(source.c_str(), grp, dstId, "R");
 		m_display->writeNXDNRSSI(m_rssi);
+		writeJSONRSSI();
 
 		LogMessage("NXDN, received RF data header from %s to %s%u, %u blocks", source.c_str(), grp ? "TG " : "", dstId, frames);
 		writeJSONNet("start", srcId, source, grp, dstId, frames);
@@ -1192,9 +1195,6 @@ void CNXDNControl::enable(bool enabled)
 
 void CNXDNControl::writeJSONRSSI()
 {
-	m_rssiAccum += m_rssi;
-	m_rssiCount++;
-
 	if (m_rssiCount >= RSSI_COUNT) {
 		nlohmann::json json;
 
