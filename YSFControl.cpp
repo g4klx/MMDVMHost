@@ -161,7 +161,8 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 		m_aveRSSI += m_rssi;
 		m_rssiCountTotal++;
 		
-		writeJSONRSSI();
+		m_rssiAccum += m_rssi;
+		m_rssiCount++;
 	}
 
 	CYSFFICH fich;
@@ -303,6 +304,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 			m_rfFrames++;
 
 			m_display->writeFusionRSSI(m_rssi);
+			writeJSONRSSI();
 
 			return true;
 		}
@@ -400,6 +402,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 			m_rfFrames++;
 
 			m_display->writeFusionRSSI(m_rssi);
+			wrteJSONRSSI();
 
 			return true;
 		}
@@ -485,6 +488,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			m_rfFrames++;
 
 			m_display->writeFusionRSSI(m_rssi);
+			writeJSONRSSI();
 
 			return true;
 		}
@@ -596,6 +600,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			m_rfFrames++;
 
 			m_display->writeFusionRSSI(m_rssi);
+			writeJSONRSSI();
 
 			return true;
 		} else if (valid && m_rfState == RS_RF_LISTENING) {
@@ -725,6 +730,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			m_rfFrames++;
 
 			m_display->writeFusionRSSI(m_rssi);
+			writeJSONRSSI();
 
 			return true;
 		}
@@ -806,6 +812,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 			m_rfFrames++;
 
 			m_display->writeFusionRSSI(m_rssi);
+			writeJSONRSSI();
 
 			return true;
 		}
@@ -891,6 +898,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 			m_rfFrames++;
 
 			m_display->writeFusionRSSI(m_rssi);
+			writeJSONRSSI();
 
 			return true;
 		}
@@ -1288,9 +1296,6 @@ void CYSFControl::enable(bool enabled)
 
 void CYSFControl::writeJSONRSSI()
 {
-	m_rssiAccum += m_rssi;
-	m_rssiCount++;
-
 	if (m_rssiCount >= RSSI_COUNT) {
 		nlohmann::json json;
 
