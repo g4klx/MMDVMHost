@@ -69,7 +69,8 @@ private:
 	RPT_RF_STATE               m_rfState;
 	RPT_NET_STATE              m_netState;
 	bool                       m_net;
-	CDStarSlowData             m_slowData;
+	CDStarSlowData             m_rfSlowData;
+	CDStarSlowData             m_netSlowData;
 	unsigned char              m_rfN;
 	unsigned char              m_netN;
 	CTimer                     m_networkWatchdog;

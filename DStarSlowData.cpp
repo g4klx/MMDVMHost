@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2023 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 #include "DStarSlowData.h"
 #include "DStarDefines.h"
+#include "Utils.h"
 #include "CRC.h"
 #include "Log.h"
 
@@ -31,6 +32,7 @@ m_ptr(0U),
 m_buffer(NULL),
 m_text(NULL),
 m_textPtr(0U),
+m_textBits(0x00U),
 m_state(SDD_FIRST)
 {
 	m_header = new unsigned char[50U];		// DSTAR_HEADER_LENGTH_BYTES
@@ -45,7 +47,7 @@ CDStarSlowData::~CDStarSlowData()
 	delete[] m_text;
 }
 
-CDStarHeader* CDStarSlowData::add(const unsigned char* data)
+CDStarHeader* CDStarSlowData::addHeader(const unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -93,18 +95,92 @@ CDStarHeader* CDStarSlowData::add(const unsigned char* data)
 	return new CDStarHeader(m_header);
 }
 
+const unsigned char* CDStarSlowData::addText(const unsigned char* data)
+{
+	assert(data != NULL);
+
+	switch (m_state) {
+	case SDD_FIRST:
+		m_buffer[0U] = data[9U]  ^ DSTAR_SCRAMBLER_BYTES[0U];
+		m_buffer[1U] = data[10U] ^ DSTAR_SCRAMBLER_BYTES[1U];
+		m_buffer[2U] = data[11U] ^ DSTAR_SCRAMBLER_BYTES[2U];
+		m_state = SDD_SECOND;
+		return NULL;
+
+	case SDD_SECOND:
+		m_buffer[3U] = data[9U]  ^ DSTAR_SCRAMBLER_BYTES[0U];
+		m_buffer[4U] = data[10U] ^ DSTAR_SCRAMBLER_BYTES[1U];
+		m_buffer[5U] = data[11U] ^ DSTAR_SCRAMBLER_BYTES[2U];
+		m_state = SDD_FIRST;
+		break;
+	}
+
+	switch (m_buffer[0U]) {
+		case DSTAR_SLOW_DATA_TYPE_TEXT | 0U:
+			CUtils::dump(1U, "D-Star slow data text fragment", m_buffer, 6U);
+			m_text[0U] = m_buffer[1U] & 0x7FU;
+			m_text[1U] = m_buffer[2U] & 0x7FU;
+			m_text[2U] = m_buffer[3U] & 0x7FU;
+			m_text[3U] = m_buffer[4U] & 0x7FU;
+			m_text[4U] = m_buffer[5U] & 0x7FU;
+			m_textBits |= 0x01U;
+			break;
+		case DSTAR_SLOW_DATA_TYPE_TEXT | 1U:
+			CUtils::dump(1U, "D-Star slow data text fragment", m_buffer, 6U);
+			m_text[5U] = m_buffer[1U] & 0x7FU;
+			m_text[6U] = m_buffer[2U] & 0x7FU;
+			m_text[7U] = m_buffer[3U] & 0x7FU;
+			m_text[8U] = m_buffer[4U] & 0x7FU;
+			m_text[9U] = m_buffer[5U] & 0x7FU;
+			m_textBits |= 0x02U;
+			break;
+		case DSTAR_SLOW_DATA_TYPE_TEXT | 2U:
+			CUtils::dump(1U, "D-Star slow data text fragment", m_buffer, 6U);
+			m_text[10U] = m_buffer[1U] & 0x7FU;
+			m_text[11U] = m_buffer[2U] & 0x7FU;
+			m_text[12U] = m_buffer[3U] & 0x7FU;
+			m_text[13U] = m_buffer[4U] & 0x7FU;
+			m_text[14U] = m_buffer[5U] & 0x7FU;
+			m_textBits |= 0x04U;
+			break;
+		case DSTAR_SLOW_DATA_TYPE_TEXT | 3U:
+			CUtils::dump(1U, "D-Star slow data text fragment", m_buffer, 6U);
+			m_text[15U] = m_buffer[1U] & 0x7FU;
+			m_text[16U] = m_buffer[2U] & 0x7FU;
+			m_text[17U] = m_buffer[3U] & 0x7FU;
+			m_text[18U] = m_buffer[4U] & 0x7FU;
+			m_text[19U] = m_buffer[5U] & 0x7FU;
+			m_text[20U] = 0x00U;
+			m_textBits |= 0x08U;
+			break;
+		default:
+			return NULL;
+	}
+
+	if (m_textBits != 0x0FU)
+		return NULL;
+
+	CUtils::dump(1U, "D-STar slow data text", m_text, 20U);
+
+	m_textBits = 0x00U;
+
+	return m_text;
+}
+
 void CDStarSlowData::start()
 {
 	::memset(m_header, 0x00U, DSTAR_HEADER_LENGTH_BYTES);
 
-	m_ptr   = 0U;
-	m_state = SDD_FIRST;
+	m_ptr      = 0U;
+	m_state    = SDD_FIRST;
+	m_textBits = 0x00U;
 }
 
 void CDStarSlowData::reset()
 {
-	m_ptr = 0U;
-	m_state = SDD_FIRST;
+	m_ptr      = 0U;
+	m_state    = SDD_FIRST;
+	m_textBits = 0x00U;
 }
 
 void CDStarSlowData::setText(const char* text)
@@ -139,10 +215,11 @@ void CDStarSlowData::setText(const char* text)
 	m_text[22U] = text[18U];
 	m_text[23U] = text[19U];
 
-	m_textPtr = 0U;
+	m_textPtr  = 0U;
+	m_textBits = 0x00U;
 }
 
-void CDStarSlowData::get(unsigned char* data)
+void CDStarSlowData::getSlowData(unsigned char* data)
 {
 	assert(data != NULL);
 

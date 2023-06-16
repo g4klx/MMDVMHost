@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2023 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -26,13 +26,15 @@ public:
 	CDStarSlowData();
 	~CDStarSlowData();
 
-	CDStarHeader* add(const unsigned char* data);
+	CDStarHeader* addHeader(const unsigned char* data);
+
+	const unsigned char* addText(const unsigned char* data);
 
 	void start();
 	void reset();
 
 	void setText(const char* text);
-	void get(unsigned char* data);
+	void getSlowData(unsigned char* data);
 
 private:
 	unsigned char* m_header;
@@ -40,6 +42,7 @@ private:
 	unsigned char* m_buffer;
 	unsigned char* m_text;
 	unsigned int   m_textPtr;
+	unsigned char  m_textBits;
 	
 	enum SDD_STATE {
 		SDD_FIRST,
