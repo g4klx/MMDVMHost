@@ -402,7 +402,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 			m_rfFrames++;
 
 			m_display->writeFusionRSSI(m_rssi);
-			wrteJSONRSSI();
+			writeJSONRSSI();
 
 			return true;
 		}
