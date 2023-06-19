@@ -26,7 +26,7 @@
 #include "I2CController.h"
 #endif
 #include "UDPController.h"
-#include "MQTTPublisher.h"
+#include "MQTTConnection.h"
 #include "DStarDefines.h"
 #include "Version.h"
 #include "StopWatch.h"
@@ -62,7 +62,7 @@ static int  m_signal = 0;
 static bool m_reload = false;
 
 // In Log.cpp
-extern CMQTTPublisher* m_mqtt;
+extern CMQTTConnection* m_mqtt;
 
 #if !defined(_WIN32) && !defined(_WIN64)
 static void sigHandler1(int signum)
@@ -289,7 +289,7 @@ int CMMDVMHost::run()
 		return 1;
 	}
 
-	m_mqtt = new CMQTTPublisher(m_conf.getMQTTHost(), m_conf.getMQTTPort(), m_conf.getMQTTName(), m_conf.getMQTTKeepalive());
+	m_mqtt = new CMQTTConnection(m_conf.getMQTTHost(), m_conf.getMQTTPort(), m_conf.getMQTTName(), m_conf.getMQTTKeepalive());
 	ret = m_mqtt->open();
 	if (!ret) {
 		::fprintf(stderr, "MMDVMHost: unable to start the MQTT Publisher\n");

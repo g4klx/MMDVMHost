@@ -17,7 +17,7 @@
  */
 
 #include "Log.h"
-#include "MQTTPublisher.h"
+#include "MQTTConnection.h"
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <Windows.h>
@@ -33,7 +33,7 @@
 #include <cassert>
 #include <cstring>
 
-CMQTTPublisher* m_mqtt = NULL;
+CMQTTConnection* m_mqtt = NULL;
 
 static unsigned int m_mqttLevel = 2U;
 

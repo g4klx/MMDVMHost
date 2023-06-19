@@ -29,10 +29,10 @@ enum MQTT_QOS {
 	MQTT_QOS_EXACTLY_ONCE  = 2U
 };
 
-class CMQTTPublisher {
+class CMQTTConnection {
 public:
-	CMQTTPublisher(const std::string& host, unsigned short port, const std::string& name, unsigned int keepalive, MQTT_QOS qos = MQTT_QOS_EXACTLY_ONCE);
-	~CMQTTPublisher();
+	CMQTTConnection(const std::string& host, unsigned short port, const std::string& name, unsigned int keepalive, MQTT_QOS qos = MQTT_QOS_EXACTLY_ONCE);
+	~CMQTTConnection();
 
 	bool open();
 

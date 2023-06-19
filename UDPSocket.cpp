@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2006-2016,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2006-2016,2020,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -25,13 +25,7 @@
 #include <cstring>
 #endif
 
-#if defined(HAVE_LOG_H)
 #include "Log.h"
-#else
-#define LogMessage(fmt, ...)	::fprintf(stderr, fmt "\n", ## __VA_ARGS__)
-#define LogError(fmt, ...)	::fprintf(stderr, fmt "\n", ## __VA_ARGS__)
-#define LogInfo(fmt, ...)	::fprintf(stderr, fmt "\n", ## __VA_ARGS__)
-#endif
 
 CUDPSocket::CUDPSocket(const std::string& address, unsigned short port) :
 m_address_save(address),

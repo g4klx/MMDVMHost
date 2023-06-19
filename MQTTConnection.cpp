@@ -16,14 +16,14 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "MQTTPublisher.h"
+#include "MQTTConnection.h"
 
 #include <cassert>
 #include <cstdio>
 #include <cstring>
 
 
-CMQTTPublisher::CMQTTPublisher(const std::string& host, unsigned short port, const std::string& name, unsigned int keepalive, MQTT_QOS qos) :
+CMQTTConnection::CMQTTConnection(const std::string& host, unsigned short port, const std::string& name, unsigned int keepalive, MQTT_QOS qos) :
 m_host(host),
 m_port(port),
 m_name(name),
@@ -40,12 +40,12 @@ m_connected(false)
 	::mosquitto_lib_init();
 }
 
-CMQTTPublisher::~CMQTTPublisher()
+CMQTTConnection::~CMQTTConnection()
 {
 	::mosquitto_lib_cleanup();
 }
 
-bool CMQTTPublisher::open()
+bool CMQTTConnection::open()
 {
 	m_mosq = ::mosquitto_new(m_name.c_str(), true, this);
 	if (m_mosq == NULL){
@@ -76,7 +76,7 @@ bool CMQTTPublisher::open()
 	return true;
 }
 
-bool CMQTTPublisher::publish(const char* topic, const char* text)
+bool CMQTTConnection::publish(const char* topic, const char* text)
 {
 	assert(topic != NULL);
 	assert(text != NULL);
@@ -96,7 +96,7 @@ bool CMQTTPublisher::publish(const char* topic, const char* text)
 	return true;
 }
 
-void CMQTTPublisher::close()
+void CMQTTConnection::close()
 {
 	if (m_mosq != NULL) {
 		::mosquitto_disconnect(m_mosq);
@@ -105,25 +105,25 @@ void CMQTTPublisher::close()
 	}
 }
 
-void CMQTTPublisher::onConnect(mosquitto* mosq, void* obj, int rc)
+void CMQTTConnection::onConnect(mosquitto* mosq, void* obj, int rc)
 {
 	assert(mosq != NULL);
 	assert(obj != NULL);
 
 	::fprintf(stdout, "MQTT: on_connect: %s\n", ::mosquitto_connack_string(rc));
 
-	CMQTTPublisher* p = static_cast<CMQTTPublisher*>(obj);
+	CMQTTConnection* p = static_cast<CMQTTConnection*>(obj);
 	p->m_connected = true;
 }
 
-void CMQTTPublisher::onDisconnect(mosquitto* mosq, void* obj, int rc)
+void CMQTTConnection::onDisconnect(mosquitto* mosq, void* obj, int rc)
 {
 	assert(mosq != NULL);
 	assert(obj != NULL);
 
 	::fprintf(stdout, "MQTT: on_disconnect: %s\n", ::mosquitto_reason_string(rc));
 
-	CMQTTPublisher* p = static_cast<CMQTTPublisher*>(obj);
+	CMQTTConnection* p = static_cast<CMQTTConnection*>(obj);
 	p->m_connected = false;
 }
 
