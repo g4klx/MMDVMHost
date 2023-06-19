@@ -1241,6 +1241,9 @@ void CP25Control::enable(bool enabled)
 
 void CP25Control::writeJSONRSSI()
 {
+	if (m_rssi == 0U)
+		return;
+
 	if (m_rssiCount >= RSSI_COUNT) {
 		nlohmann::json json;
 
