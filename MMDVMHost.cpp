@@ -77,6 +77,8 @@ static void sigHandler2(int signum)
 }
 #endif
 
+static CMMDVMHost* host = NULL;
+
 const char* HEADER1 = "This software is for use on amateur radio networks only,";
 const char* HEADER2 = "it is to be used for educational purposes only. Its use on";
 const char* HEADER3 = "commercial networks is strictly prohibited.";
@@ -112,10 +114,11 @@ int main(int argc, char** argv)
 	do {
 		m_signal = 0;
 
-		CMMDVMHost* host = new CMMDVMHost(std::string(iniFile));
+		host = new CMMDVMHost(std::string(iniFile));
 		ret = host->run();
 
 		delete host;
+		host = NULL;
 
 		switch (m_signal) {
 			case 2:
@@ -289,7 +292,11 @@ int CMMDVMHost::run()
 		return 1;
 	}
 
-	m_mqtt = new CMQTTConnection(m_conf.getMQTTHost(), m_conf.getMQTTPort(), m_conf.getMQTTName(), m_conf.getMQTTKeepalive());
+	std::vector<std::pair<std::string, void (*)(const std::string&)>> subscriptions;
+	subscriptions.push_back(std::make_pair("display", CMMDVMHost::onDisplay));
+	subscriptions.push_back(std::make_pair("command", CMMDVMHost::onCommand));
+
+	m_mqtt = new CMQTTConnection(m_conf.getMQTTHost(), m_conf.getMQTTPort(), m_conf.getMQTTName(), subscriptions, m_conf.getMQTTKeepalive());
 	ret = m_mqtt->open();
 	if (!ret) {
 		::fprintf(stderr, "MMDVMHost: unable to start the MQTT Publisher\n");
@@ -2794,5 +2801,13 @@ void CMMDVMHost::writeJSONMessage(const std::string& message)
 	json["message"]   = message;
 
 	WriteJSON("MMDVM", json);
+}
+
+void CMMDVMHost::onCommand(const std::string& command)
+{
+}
+
+void CMMDVMHost::onDisplay(const std::string& message)
+{
 }
 

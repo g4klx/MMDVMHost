@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2022 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2022,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 
 #include <mosquitto.h>
 
+#include <vector>
 #include <string>
 
 enum MQTT_QOS {
@@ -31,7 +32,7 @@ enum MQTT_QOS {
 
 class CMQTTConnection {
 public:
-	CMQTTConnection(const std::string& host, unsigned short port, const std::string& name, unsigned int keepalive, MQTT_QOS qos = MQTT_QOS_EXACTLY_ONCE);
+	CMQTTConnection(const std::string& host, unsigned short port, const std::string& name, const std::vector<std::pair<std::string, void (*)(const std::string&)>>& subs, unsigned int keepalive, MQTT_QOS qos = MQTT_QOS_EXACTLY_ONCE);
 	~CMQTTConnection();
 
 	bool open();
@@ -44,12 +45,15 @@ private:
 	std::string    m_host;
 	unsigned short m_port;
 	std::string    m_name;
+	std::vector<std::pair<std::string, void (*)(const std::string&)>> m_subs;
 	unsigned int   m_keepalive;
 	MQTT_QOS       m_qos;
 	mosquitto*     m_mosq;
 	bool           m_connected;
 
 	static void onConnect(mosquitto* mosq, void* obj, int rc);
+	static void onSubscribe(mosquitto* mosq, void* obj, int mid, int qosCount, const int* grantedQOS);
+	static void onMessage(mosquitto* mosq, void* obj, const mosquitto_message* message);
 	static void onDisconnect(mosquitto* mosq, void* obj, int rc);
 };
 
