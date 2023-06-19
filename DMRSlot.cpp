@@ -2321,6 +2321,9 @@ void CDMRSlot::enable(bool enabled)
 
 void CDMRSlot::writeJSONRSSI()
 {
+	if (m_rssi == 0U)
+		return;
+
 	if (m_rssiCount >= RSSI_COUNT) {
 		nlohmann::json json;
 

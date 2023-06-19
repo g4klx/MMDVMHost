@@ -1027,6 +1027,9 @@ void CM17Control::enable(bool enabled)
 
 void CM17Control::writeJSONRSSI()
 {
+	if (m_rssi == 0U)
+		return;
+
 	if (m_rssiCountTotal >= RSSI_COUNT) {
 		nlohmann::json json;
 

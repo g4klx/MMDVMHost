@@ -1395,6 +1395,9 @@ void CDStarControl::enable(bool enabled)
 
 void CDStarControl::writeJSONRSSI()
 {
+	if (m_rssi == 0U)
+		return;
+
 	if (m_rssiCountTotal >= RSSI_COUNT) {
 		nlohmann::json json;
 
