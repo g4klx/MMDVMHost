@@ -769,22 +769,8 @@ int CMMDVMHost::run()
 	}
 
 	bool remoteControlEnabled = m_conf.getRemoteControlEnabled();
-	if (remoteControlEnabled) {
-		std::string address = m_conf.getRemoteControlAddress();
-		unsigned short port = m_conf.getRemoteControlPort();
-
-		LogInfo("Remote Control Parameters");
-		LogInfo("    Address: %s", address.c_str());
-		LogInfo("    Port: %hu", port);
-
-		m_remoteControl = new CRemoteControl(this, address, port);
-
-		ret = m_remoteControl->open();
-		if (!ret) {
-			delete m_remoteControl;
-			m_remoteControl = NULL;
-		}
-	}
+	if (remoteControlEnabled)
+		m_remoteControl = new CRemoteControl(this, m_mqtt);
 
 	setMode(MODE_IDLE);
 
@@ -1205,8 +1191,6 @@ int CMMDVMHost::run()
 				m_modem->writeTransparentData(data, len);
 		}
 
-		remoteControl();
-
 		unsigned int ms = stopWatch.elapsed();
 		stopWatch.start();
 
@@ -1387,10 +1371,7 @@ int CMMDVMHost::run()
 		delete transparentSocket;
 	}
 
-	if (m_remoteControl != NULL) {
-		m_remoteControl->close();
-		delete m_remoteControl;
-	}
+	delete m_remoteControl;
 
 	LogInfo("Stopping protocol handlers");
 	writeJSONMessage("Stopping protocol handlers");
@@ -2515,12 +2496,12 @@ void  CMMDVMHost::removeLockFile() const
 		::remove(m_lockFileName.c_str());
 }
 
-void CMMDVMHost::remoteControl()
+void CMMDVMHost::remoteControl(const std::string& commandString)
 {
 	if (m_remoteControl == NULL)
 		return;
 
-	REMOTE_COMMAND command = m_remoteControl->getCommand();
+	REMOTE_COMMAND command = m_remoteControl->getCommand(commandString);
 	switch (command) {
 		case RCD_MODE_IDLE:
 			m_fixedMode = false;
@@ -2805,6 +2786,9 @@ void CMMDVMHost::writeJSONMessage(const std::string& message)
 
 void CMMDVMHost::onCommand(const std::string& command)
 {
+	assert(host != NULL);
+
+	host->remoteControl(command);
 }
 
 void CMMDVMHost::onDisplay(const std::string& message)

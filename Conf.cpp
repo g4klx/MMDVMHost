@@ -303,9 +303,7 @@ m_ax25NetworkSpeed(9600U),
 m_ax25NetworkDebug(false),
 m_lockFileEnabled(false),
 m_lockFileName(),
-m_remoteControlEnabled(false),
-m_remoteControlAddress("127.0.0.1"),
-m_remoteControlPort(0U)
+m_remoteControlEnabled(false)
 {
 }
 
@@ -1031,8 +1029,6 @@ bool CConf::read()
 		} else if (section == SECTION_REMOTE_CONTROL) {
 			if (::strcmp(key, "Enable") == 0)
 				m_remoteControlEnabled = ::atoi(value) == 1;
-			else if (::strcmp(key, "Port") == 0)
-				m_remoteControlPort = (unsigned short)::atoi(value);
 		}
 	}
 
@@ -2251,12 +2247,3 @@ bool CConf::getRemoteControlEnabled() const
 	return m_remoteControlEnabled;
 }
 
-std::string CConf::getRemoteControlAddress() const
-{
-	return m_remoteControlAddress;
-}
-
-unsigned short CConf::getRemoteControlPort() const
-{
-	return m_remoteControlPort;
-}

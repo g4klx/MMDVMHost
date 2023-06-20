@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2019,2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2019,2020,2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,10 +19,10 @@
 #ifndef	RemoteControl_H
 #define	RemoteControl_H
 
-#include "UDPSocket.h"
-
 #include <vector>
 #include <string>
+
+#include "MQTTConnection.h"
 
 class CMMDVMHost;
 
@@ -65,12 +65,10 @@ enum REMOTE_COMMAND {
 
 class CRemoteControl {
 public:
-	CRemoteControl(class CMMDVMHost *host, const std::string address, unsigned int port);
+	CRemoteControl(class CMMDVMHost *host, CMQTTConnection* mqtt);
 	~CRemoteControl();
 
-	bool open();
-
-	REMOTE_COMMAND getCommand();
+	REMOTE_COMMAND getCommand(const std::string& command);
 
 	unsigned int getArgCount() const;
 
@@ -78,11 +76,9 @@ public:
 	unsigned int getArgUInt(unsigned int n) const;
 	signed int   getArgInt(unsigned int n) const;
 
-	void close();
-
 private:
 	CMMDVMHost*              m_host;
-	CUDPSocket               m_socket;
+	CMQTTConnection*         m_mqtt;
 	REMOTE_COMMAND           m_command;
 	std::vector<std::string> m_args;
 };

@@ -17,13 +17,10 @@ OBJECTS = \
 		POCSAGNetwork.o QR1676.o RemoteControl.o RS129.o RS241213.o RSSIInterpolator.o SerialPort.o StopWatch.o Sync.o SHA256.o Thread.o \
 		Timer.o UARTController.o UDPController.o UDPSocket.o UserDB.o UserDBentry.o Utils.o YSFControl.o YSFConvolution.o YSFFICH.o YSFNetwork.o YSFPayload.o
 
-all:		MMDVMHost RemoteCommand
+all:		MMDVMHost
 
 MMDVMHost:	GitVersion.h $(OBJECTS) 
 		$(CXX) $(OBJECTS) $(CFLAGS) $(LIBS) -o MMDVMHost
-
-RemoteCommand:	Log.o MQTTConnection.o RemoteCommand.o UDPSocket.o
-		$(CXX) Log.o MQTTConnection.o RemoteCommand.o UDPSocket.o $(CFLAGS) $(LIBS) -o RemoteCommand
 
 %.o: %.cpp
 		$(CXX) $(CFLAGS) -c -o $@ $<
@@ -31,7 +28,6 @@ RemoteCommand:	Log.o MQTTConnection.o RemoteCommand.o UDPSocket.o
 .PHONY install:
 install: all
 		install -m 755 MMDVMHost /usr/local/bin/
-		install -m 755 RemoteCommand /usr/local/bin/
 
 .PHONY install-service:
 install-service: install /etc/MMDVM.ini
@@ -56,7 +52,7 @@ uninstall-service:
 		@rm -f /lib/systemd/system/mmdvmhost.service || true
 
 clean:
-		$(RM) MMDVMHost RemoteCommand *.o *.d *.bak *~ GitVersion.h
+		$(RM) MMDVMHost *.o *.d *.bak *~ GitVersion.h
 
 # Export the current git version if the index file exists, else 000...
 GitVersion.h:
