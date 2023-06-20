@@ -1191,6 +1191,10 @@ int CMMDVMHost::run()
 				m_modem->writeTransparentData(data, len);
 		}
 
+		len = m_modem->readSerialData(data);
+		if (len > 0U)
+			m_mqtt->publish("display", data, len);
+
 		unsigned int ms = stopWatch.elapsed();
 		stopWatch.start();
 
@@ -2784,6 +2788,13 @@ void CMMDVMHost::writeJSONMessage(const std::string& message)
 	WriteJSON("MMDVM", json);
 }
 
+void CMMDVMHost::writeSerial(const std::string& message)
+{
+	assert(m_modem != NULL);
+
+	m_modem->writeSerialData((unsigned char*)message.c_str(), message.length());
+}
+
 void CMMDVMHost::onCommand(const std::string& command)
 {
 	assert(host != NULL);
@@ -2793,5 +2804,8 @@ void CMMDVMHost::onCommand(const std::string& command)
 
 void CMMDVMHost::onDisplay(const std::string& message)
 {
+	assert(host != NULL);
+
+	host->writeSerial(message);	
 }
 

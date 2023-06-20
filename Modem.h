@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2011-2018,2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2011-2018,2020,2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -131,8 +131,8 @@ public:
 	bool writeTransparentData(const unsigned char* data, unsigned int length);
 	unsigned int readTransparentData(unsigned char* data);
 
-	bool writeSerial(const unsigned char* data, unsigned int length);
-	unsigned int readSerial(unsigned char* data, unsigned int length);
+	bool writeSerialData(const unsigned char* data, unsigned int length);
+	unsigned int readSerialData(unsigned char* data);
 
 	unsigned char getMode() const;
 	bool setMode(unsigned char mode);

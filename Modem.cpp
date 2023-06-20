@@ -898,10 +898,15 @@ void CModem::clock(unsigned int ms)
 				printDebug();
 				break;
 
-			case MMDVM_SERIAL_DATA:
-				if (m_trace)
-					CUtils::dump(1U, "RX Serial Data", m_buffer, m_length);
-				m_rxSerialData.addData(m_buffer + m_offset, m_length - m_offset);
+			case MMDVM_SERIAL_DATA: {
+					if (m_trace)
+						CUtils::dump(1U, "RX Serial Data", m_buffer, m_length);
+
+					unsigned char data = m_length - m_offset;
+					m_rxSerialData.addData(&data, 1U);
+
+					m_rxSerialData.addData(m_buffer + m_offset, m_length - m_offset);
+				}
 				break;
 
 			default:
@@ -1301,18 +1306,18 @@ unsigned int CModem::readTransparentData(unsigned char* data)
 	return len;
 }
 
-unsigned int CModem::readSerial(unsigned char* data, unsigned int length)
+unsigned int CModem::readSerialData(unsigned char* data)
 {
 	assert(data != NULL);
-	assert(length > 0U);
 
-	unsigned int n = 0U;
-	while (!m_rxSerialData.isEmpty() && n < length) {
-		m_rxSerialData.getData(data + n, 1U);
-		n++;
-	}
+	if (m_rxSerialData.isEmpty())
+		return 0U;
 
-	return n;
+	unsigned char len = 0U;
+	m_rxSerialData.getData(&len, 1U);
+	m_rxSerialData.getData(data, len);
+
+	return len;
 }
 
 bool CModem::hasDStarSpace() const
@@ -1879,7 +1884,7 @@ bool CModem::writeIPInfo(const std::string& address)
 	return ret != int(length + 4U);
 }
 
-bool CModem::writeSerial(const unsigned char* data, unsigned int length)
+bool CModem::writeSerialData(const unsigned char* data, unsigned int length)
 {
 	assert(m_port != NULL);
 	assert(data != NULL);

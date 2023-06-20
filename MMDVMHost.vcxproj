@@ -199,7 +199,6 @@
     <ClInclude Include="M17Utils.h" />
     <ClInclude Include="MMDVMHost.h" />
     <ClInclude Include="ModemPort.h" />
-    <ClInclude Include="ModemSerialPort.h" />
     <ClInclude Include="Mutex.h" />
     <ClInclude Include="NullController.h" />
     <ClInclude Include="NXDNAudio.h" />
@@ -299,7 +298,6 @@
     <ClCompile Include="M17Utils.cpp" />
     <ClCompile Include="MMDVMHost.cpp" />
     <ClCompile Include="ModemPort.cpp" />
-    <ClCompile Include="ModemSerialPort.cpp" />
     <ClCompile Include="Mutex.cpp" />
     <ClCompile Include="NullController.cpp" />
     <ClCompile Include="NXDNAudio.cpp" />

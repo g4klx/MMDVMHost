@@ -188,9 +188,6 @@
     <ClInclude Include="SerialPort.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ModemSerialPort.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Mutex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -476,9 +473,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SerialPort.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ModemSerialPort.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Mutex.cpp">

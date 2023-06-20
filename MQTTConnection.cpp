@@ -99,6 +99,26 @@ bool CMQTTConnection::publish(const char* topic, const char* text)
 	return true;
 }
 
+bool CMQTTConnection::publish(const char* topic, const unsigned char* data, unsigned int len)
+{
+	assert(topic != NULL);
+	assert(data != NULL);
+
+	if (!m_connected)
+		return false;
+
+	char topicEx[100U];
+	::sprintf(topicEx, "%s/%s", m_name.c_str(), topic);
+
+	int rc = ::mosquitto_publish(m_mosq, NULL, topicEx, len, data, static_cast<int>(m_qos), false);
+	if (rc != MOSQ_ERR_SUCCESS) {
+		::fprintf(stderr, "MQTT Error publishing: %s\n", ::mosquitto_strerror(rc));
+		return false;
+	}
+
+	return true;
+}
+
 void CMQTTConnection::close()
 {
 	if (m_mosq != NULL) {

@@ -131,6 +131,8 @@ private:
 	bool createFMNetwork();
 	bool createAX25Network();
 
+	void writeSerial(const std::string& message);
+
 	void remoteControl(const std::string& commandString);
 	void processModeCommand(unsigned char mode, unsigned int timeout);
 	void processEnableCommand(bool& mode, bool enabled);
