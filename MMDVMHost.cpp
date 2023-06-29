@@ -155,7 +155,9 @@ m_m17(NULL),
 #if defined(USE_POCSAG)
 m_pocsag(NULL),
 #endif
+#if defined(USE_FM)
 m_fm(NULL),
+#endif
 #if defined(USE_AX25)
 m_ax25(NULL),
 #endif
@@ -168,7 +170,9 @@ m_m17Network(NULL),
 #if defined(USE_POCSAG)
 m_pocsagNetwork(NULL),
 #endif
+#if defined(USE_FM)
 m_fmNetwork(NULL),
+#endif
 #if defined(USE_AX25)
 m_ax25Network(NULL),
 #endif
@@ -179,7 +183,9 @@ m_ysfRFModeHang(10U),
 m_p25RFModeHang(10U),
 m_nxdnRFModeHang(10U),
 m_m17RFModeHang(10U),
+#if defined(USE_FM)
 m_fmRFModeHang(10U),
+#endif
 m_dstarNetModeHang(3U),
 m_dmrNetModeHang(3U),
 m_ysfNetModeHang(3U),
@@ -189,7 +195,9 @@ m_m17NetModeHang(3U),
 #if defined(USE_POCSAG)
 m_pocsagNetModeHang(3U),
 #endif
+#if defined(USE_FM)
 m_fmNetModeHang(3U),
+#endif
 m_modeTimer(1000U),
 m_dmrTXTimer(1000U),
 m_cwIdTimer(1000U),
@@ -356,10 +364,12 @@ int CMMDVMHost::run()
 		m_m17Enabled = false;
 	}
 
+#if defined(USE_FM)
 	if (m_fmEnabled && !m_modem->hasFM()) {
 		LogWarning("FM enabled in the host but not in the modem firmware, disabling");
 		m_fmEnabled = false;
 	}
+#endif
 
 #if defined(USE_POCSAG)
 	if (m_pocsagEnabled && !m_modem->hasPOCSAG()) {
@@ -422,11 +432,13 @@ int CMMDVMHost::run()
 	}
 #endif
 
+#if defined(USE_FM)
 	if (m_fmEnabled && m_conf.getFMNetworkEnabled()) {
 		ret = createFMNetwork();
 		if (!ret)
 			return 1;
 	}
+#endif
 
 #if defined(USE_AX25)
 	if (m_ax25Enabled && m_conf.getAX25NetworkEnabled()) {
@@ -771,6 +783,7 @@ int CMMDVMHost::run()
 	}
 #endif
 
+#if defined(USE_FM)
 	if (m_fmEnabled) {
 		bool preEmphasis  = m_conf.getFMPreEmphasis();
 		bool deEmphasis   = m_conf.getFMDeEmphasis();
@@ -780,6 +793,7 @@ int CMMDVMHost::run()
 
 		m_fm = new CFMControl(m_fmNetwork, txAudioGain, rxAudioGain, preEmphasis, deEmphasis);
 	}
+#endif
 
 	bool remoteControlEnabled = m_conf.getRemoteControlEnabled();
 	if (remoteControlEnabled)
@@ -967,6 +981,7 @@ int CMMDVMHost::run()
 			}
 		}
 
+#if defined(USE_FM)
 		len = m_modem->readFMData(data);
 		if (m_fm != NULL && len > 0U) {
 			if (m_mode == MODE_IDLE) {
@@ -983,6 +998,7 @@ int CMMDVMHost::run()
 				LogWarning("FM modem data received when in mode %u", m_mode);
 			}
 		}
+#endif
 
 #if defined(USE_AX25)
 		len = m_modem->readAX25Data(data);
@@ -1166,6 +1182,7 @@ int CMMDVMHost::run()
 		}
 #endif
 
+#if defined(USE_FM)
 		if (m_fm != NULL) {
 			unsigned int space = m_modem->getFMSpace();
 			if (space > 0U) {
@@ -1184,6 +1201,7 @@ int CMMDVMHost::run()
 				}
 			}
 		}
+#endif
 
 #if defined(USE_AX25)
 		if (m_ax25 != NULL) {
@@ -1248,8 +1266,10 @@ int CMMDVMHost::run()
 		if (m_pocsag != NULL)
 			m_pocsag->clock(ms);
 #endif
+#if defined(USE_FM)
 		if (m_fm != NULL)
 			m_fm->clock(ms);
+#endif
 
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->clock(ms);
@@ -1267,8 +1287,10 @@ int CMMDVMHost::run()
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->clock(ms);
 #endif
+#if defined(USE_FM)
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->clock(ms);
+#endif
 
 		m_cwIdTimer.clock(ms);
 		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
@@ -1387,10 +1409,12 @@ int CMMDVMHost::run()
 	}
 #endif
 
+#if defined(USE_FM)
 	if (m_fmNetwork != NULL) {
 		m_fmNetwork->close();
 		delete m_fmNetwork;
 	}
+#endif
 
 #if defined(USE_AX25)
 	if (m_ax25Network != NULL) {
@@ -1418,7 +1442,9 @@ int CMMDVMHost::run()
 #if defined(USE_POCSAG)
 	delete m_pocsag;
 #endif
+#if defined(USE_FM)
 	delete m_fm;
+#endif
 #if defined(USE_AX25)
 	delete m_ax25;
 #endif
@@ -1466,7 +1492,11 @@ bool CMMDVMHost::createModem()
 #else
 	float pocsagTXLevel          = 0.0F;
 #endif
+#if defined(USE_FM)
 	float fmTXLevel              = m_conf.getModemFMTXLevel();
+#else
+	float fmTXLevel              = 0.0F;
+#endif
 #if defined(USE_AX25)
 	float ax25TXLevel            = m_conf.getModemAX25TXLevel();
 #else
@@ -1540,7 +1570,9 @@ bool CMMDVMHost::createModem()
 #if defined(USE_POCSAG)
 	LogInfo("    POCSAG TX Level: %.1f%%", pocsagTXLevel);
 #endif
+#if defined(USE_FM)
 	LogInfo("    FM TX Level: %.1f%%", fmTXLevel);
+#endif
 #if defined(USE_AX25)
 	LogInfo("    AX.25 TX Level: %.1f%%", ax25TXLevel);
 #endif
@@ -1576,6 +1608,7 @@ bool CMMDVMHost::createModem()
 	m_modem->setAX25Params(rxTwist, ax25TXDelay, ax25SlotTime, ax25PPersist);
 #endif
 
+#if defined(USE_FM)
 	if (m_fmEnabled) {
 		std::string  callsign             = m_conf.getFMCallsign();
 		unsigned int callsignSpeed        = m_conf.getFMCallsignSpeed();
@@ -1664,6 +1697,7 @@ bool CMMDVMHost::createModem()
 			m_modem->setFMExtParams(extAck, extAudioBoost);
 		}
 	}
+#endif
 
 	bool ret = m_modem->open();
 	if (!ret) {
@@ -1912,6 +1946,7 @@ bool CMMDVMHost::createPOCSAGNetwork()
 }
 #endif
 
+#if defined(USE_FM)
 bool CMMDVMHost::createFMNetwork()
 {
 	std::string callsign       = m_conf.getFMCallsign();
@@ -1952,6 +1987,7 @@ bool CMMDVMHost::createFMNetwork()
 
 	return true;
 }
+#endif
 
 #if defined(USE_AX25)
 bool CMMDVMHost::createAX25Network()
@@ -1990,7 +2026,9 @@ void CMMDVMHost::readParams()
 #if defined(USE_POCSAG)
 	m_pocsagEnabled = m_conf.getPOCSAGEnabled();
 #endif
+#if defined(USE_FM)
 	m_fmEnabled     = m_conf.getFMEnabled();
+#endif
 #if defined(USE_AX25)
 	m_ax25Enabled   = m_conf.getAX25Enabled();
 #endif
@@ -2013,7 +2051,9 @@ void CMMDVMHost::readParams()
 #if defined(USE_POCSAG)
 	LogInfo("    POCSAG: %s", m_pocsagEnabled ? "enabled" : "disabled");
 #endif
+#if defined(USE_FM)
 	LogInfo("    FM: %s", m_fmEnabled ? "enabled" : "disabled");
+#endif
 #if defined(USE_AX25)
 	LogInfo("    AX.25: %s", m_ax25Enabled ? "enabled" : "disabled");
 #endif
@@ -2041,8 +2081,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
 #endif
+#if defined(USE_FM)
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->enable(false);
+#endif
 #if defined(USE_AX25)
 		if (m_ax25Network != NULL)
 			m_ax25Network->enable(false);
@@ -2063,8 +2105,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
 #endif
+#if defined(USE_FM)
 		if (m_fm != NULL)
 			m_fm->enable(false);
+#endif
 #if defined(USE_AX25)
 		if (m_ax25 != NULL)
 			m_ax25->enable(false);
@@ -2094,8 +2138,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
 #endif
+#if defined(USE_FM)
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->enable(false);
+#endif
 #if defined(USE_AX25)
 		if (m_ax25Network != NULL)
 			m_ax25Network->enable(false);
@@ -2116,8 +2162,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
 #endif
+#if defined(USE_FM)
 		if (m_fm != NULL)
 			m_fm->enable(false);
+#endif
 #if defined(USE_AX25)
 		if (m_ax25 != NULL)
 			m_ax25->enable(false);
@@ -2151,8 +2199,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
 #endif
+#if defined(USE_FM)
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->enable(false);
+#endif
 #if defined(USE_AX25)
 		if (m_ax25Network != NULL)
 			m_ax25Network->enable(false);
@@ -2173,8 +2223,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
 #endif
+#if defined(USE_FM)
 		if (m_fm != NULL)
 			m_fm->enable(false);
+#endif
 #if defined(USE_AX25)
 		if (m_ax25 != NULL)
 			m_ax25->enable(false);
@@ -2204,8 +2256,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
 #endif
+#if defined(USE_FM)
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->enable(false);
+#endif
 #if defined(USE_AX25)
 		if (m_ax25Network != NULL)
 			m_ax25Network->enable(false);
@@ -2226,8 +2280,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
 #endif
+#if defined(USE_FM)
 		if (m_fm != NULL)
 			m_fm->enable(false);
+#endif
 #if defined(USE_AX25)
 		if (m_ax25 != NULL)
 			m_ax25->enable(false);
@@ -2257,8 +2313,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
 #endif
+#if defined(USE_FM)
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->enable(false);
+#endif
 #if defined(USE_AX25)
 		if (m_ax25Network != NULL)
 			m_ax25Network->enable(false);
@@ -2279,8 +2337,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
 #endif
+#if defined(USE_FM)
 		if (m_fm != NULL)
 			m_fm->enable(false);
+#endif
 #if defined(USE_AX25)
 		if (m_ax25 != NULL)
 			m_ax25->enable(false);
@@ -2310,8 +2370,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
 #endif
+#if defined(USE_FM)
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->enable(false);
+#endif
 #if defined(USE_AX25)
 		if (m_ax25Network != NULL)
 			m_ax25Network->enable(false);
@@ -2332,8 +2394,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
 #endif
+#if defined(USE_FM)
 		if (m_fm != NULL)
 			m_fm->enable(false);
+#endif
 #if defined(USE_AX25)
 		if (m_ax25 != NULL)
 			m_ax25->enable(false);
@@ -2363,8 +2427,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(true);
 #endif
+#if defined(USE_FM)
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->enable(false);
+#endif
 #if defined(USE_AX25)
 		if (m_ax25Network != NULL)
 			m_ax25Network->enable(false);
@@ -2385,8 +2451,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(true);
 #endif
+#if defined(USE_FM)
 		if (m_fm != NULL)
 			m_fm->enable(false);
+#endif
 #if defined(USE_AX25)
 		if (m_ax25 != NULL)
 			m_ax25->enable(false);
@@ -2416,8 +2484,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
 #endif
+#if defined(USE_FM)
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->enable(true);
+#endif
 #if defined(USE_AX25)
 		if (m_ax25Network != NULL)
 			m_ax25Network->enable(true);
@@ -2438,8 +2508,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
 #endif
+#if defined(USE_FM)
 		if (m_fm != NULL)
 			m_fm->enable(true);
+#endif
 #if defined(USE_AX25)
 		if (m_ax25 != NULL)
 			m_ax25->enable(true);
@@ -2473,8 +2545,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
 #endif
+#if defined(USE_FM)
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->enable(false);
+#endif
 #if defined(USE_AX25)
 		if (m_ax25Network != NULL)
 			m_ax25Network->enable(false);
@@ -2495,8 +2569,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
 #endif
+#if defined(USE_FM)
 		if (m_fm != NULL)
 			m_fm->enable(false);
+#endif
 #if defined(USE_AX25)
 		if (m_ax25 != NULL)
 			m_ax25->enable(false);
@@ -2531,8 +2607,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
 #endif
+#if defined(USE_FM)
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->enable(false);
+#endif
 #if defined(USE_AX25)
 		if (m_ax25Network != NULL)
 			m_ax25Network->enable(false);
@@ -2553,8 +2631,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
 #endif
+#if defined(USE_FM)
 		if (m_fm != NULL)
 			m_fm->enable(false);
+#endif
 #if defined(USE_AX25)
 		if (m_ax25 != NULL)
 			m_ax25->enable(false);
@@ -2587,8 +2667,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(true);
 #endif
+#if defined(USE_FM)
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->enable(true);
+#endif
 #if defined(USE_AX25)
 		if (m_ax25Network != NULL)
 			m_ax25Network->enable(true);
@@ -2609,8 +2691,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(true);
 #endif
+#if defined(USE_FM)
 		if (m_fm != NULL)
 			m_fm->enable(true);
+#endif
 #if defined(USE_AX25)
 		if (m_ax25 != NULL)
 			m_ax25->enable(true);
@@ -2692,10 +2776,12 @@ void CMMDVMHost::remoteControl(const std::string& commandString)
 			if (m_m17 != NULL)
 				processModeCommand(MODE_M17, m_m17RFModeHang);
 			break;
+#if defined(USE_FM)
 		case RCD_MODE_FM:
 			if (m_fmEnabled)
 				processModeCommand(MODE_FM, 0);
 			break;
+#endif
 		case RCD_ENABLE_DSTAR:
 			if (m_dstar != NULL && !m_dstarEnabled)
 				processEnableCommand(m_dstarEnabled, true);
@@ -2732,10 +2818,12 @@ void CMMDVMHost::remoteControl(const std::string& commandString)
 			if (m_m17Network != NULL)
 				m_m17Network->enable(true);
 			break;
+#if defined(USE_FM)
 		case RCD_ENABLE_FM:
 			if (!m_fmEnabled)
 				processEnableCommand(m_fmEnabled, true);
 			break;
+#endif
 #if defined(USE_AX25)
 		case RCD_ENABLE_AX25:
 			if (!m_ax25Enabled)
@@ -2778,10 +2866,12 @@ void CMMDVMHost::remoteControl(const std::string& commandString)
 			if (m_m17Network != NULL)
 				m_m17Network->enable(false);
 			break;
+#if defined(USE_FM)
 		case RCD_DISABLE_FM:
 			if (m_fmEnabled)
 				processEnableCommand(m_fmEnabled, false);
 			break;
+#endif
 #if defined(USE_AX25)
 		case RCD_DISABLE_AX25:
 			if (m_ax25Enabled)
@@ -2890,7 +2980,9 @@ void CMMDVMHost::buildNetworkStatusString(std::string &str)
 	str += std::string(" p25:") + (((m_p25Network == NULL) || (m_p25Enabled == false)) ? "n/a" : (m_p25Network->isConnected() ? "conn" : "disc"));
 	str += std::string(" nxdn:") + (((m_nxdnNetwork == NULL) || (m_nxdnEnabled == false)) ? "n/a" : (m_nxdnNetwork->isConnected() ? "conn" : "disc"));
 	str += std::string(" m17:") + (((m_m17Network == NULL) || (m_m17Enabled == false)) ? "n/a" : (m_m17Network->isConnected() ? "conn" : "disc"));
+#if defined(USE_FM)
 	str += std::string(" fm:") + (m_fmEnabled ? "conn" : "n/a");
+#endif
 }
 
 void CMMDVMHost::buildNetworkHostsString(std::string &str)
@@ -2924,7 +3016,9 @@ void CMMDVMHost::buildNetworkHostsString(std::string &str)
 	str += std::string(" p25:\"") + ((m_p25Enabled && (m_p25Network != NULL)) ? m_conf.getP25GatewayAddress() : "NONE") + "\"";
 	str += std::string(" nxdn:\"") + ((m_nxdnEnabled && (m_nxdnNetwork != NULL)) ? m_conf.getNXDNGatewayAddress() : "NONE") + "\"";
 	str += std::string(" m17:\"") + ((m_m17Enabled && (m_m17Network != NULL)) ? m_conf.getM17GatewayAddress() : "NONE") + "\"";
+#if defined(USE_FM)
 	str += std::string(" fm:\"") + ((m_fmEnabled && (m_fmNetwork != NULL)) ? m_conf.getFMGatewayAddress() : "NONE") + "\"";
+#endif
 }
 
 void CMMDVMHost::writeJSONMode(const std::string& mode)

@@ -102,7 +102,9 @@ public:
 #if defined(USE_POCSAG)
   float        getModemPOCSAGTXLevel() const;
 #endif
+#if defined(USE_FM)
   float        getModemFMTXLevel() const;
+#endif
 #if defined(USE_AX25)
   float        getModemAX25TXLevel() const;
 #endif
@@ -202,6 +204,7 @@ public:
   bool         getAX25Trace() const;
 #endif
 
+#if defined(USE_FM)
   // The FM Section
   bool         getFMEnabled() const;
   std::string  getFMCallsign() const;
@@ -239,6 +242,7 @@ public:
   float        getFMMaxDevLevel() const;
   unsigned int getFMExtAudioBoost() const;
   unsigned int getFMModeHang() const;
+#endif
 
   // The D-Star Network section
   bool         getDStarNetworkEnabled() const;
@@ -309,6 +313,7 @@ public:
   bool         getPOCSAGNetworkDebug() const;
 #endif
 
+#if defined(USE_FM)
   // The FM Network section
   bool         getFMNetworkEnabled() const;
   std::string  getFMNetworkProtocol() const;
@@ -322,6 +327,7 @@ public:
   float        getFMRXAudioGain() const;
   unsigned int getFMNetworkModeHang() const;
   bool         getFMNetworkDebug() const;
+#endif
 
 #if defined(USE_AX25)
   // The AX.25 Network section
@@ -482,8 +488,11 @@ private:
 #endif
   unsigned int m_pocsagFrequency;
 
+#if defined(USE_FM)
   bool         m_fmEnabled;
+#endif
   std::string  m_fmCallsign;
+#if defined(USE_FM)
   unsigned int m_fmCallsignSpeed;
   unsigned int m_fmCallsignFrequency;
   unsigned int m_fmCallsignTime;
@@ -500,7 +509,9 @@ private:
   unsigned int m_fmAckMinTime;
   unsigned int m_fmAckDelay;
   float        m_fmAckLevel;
+#endif
   unsigned int m_fmTimeout;
+#if defined(USE_FM)
   float        m_fmTimeoutLevel;
   float        m_fmCTCSSFrequency;
   unsigned int m_fmCTCSSHighThreshold;
@@ -517,6 +528,7 @@ private:
   unsigned int m_fmRFAudioBoost;
   float        m_fmMaxDevLevel;
   unsigned int m_fmExtAudioBoost;
+#endif
   unsigned int m_fmModeHang;
 
 #if defined(USE_AX25)
@@ -592,6 +604,7 @@ private:
   bool         m_pocsagNetworkDebug;
 #endif
 
+#if defined(USE_FM)
   bool         m_fmNetworkEnabled;
   std::string  m_fmNetworkProtocol;
   std::string  m_fmGatewayAddress;
@@ -602,8 +615,11 @@ private:
   bool         m_fmDeEmphasis;
   float        m_fmTXAudioGain;
   float        m_fmRXAudioGain;
+#endif
   unsigned int m_fmNetworkModeHang;
+#if defined(USE_FM)
   bool         m_fmNetworkDebug;
+#endif
 
 #if defined(USE_AX25)
   bool         m_ax25NetworkEnabled;

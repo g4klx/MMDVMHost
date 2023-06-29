@@ -23,6 +23,8 @@
 #include "Defines.h"
 #include "IIRDirectForm1Filter.h"
 
+#if defined(USE_FM)
+
 #include <nlohmann/json.hpp>
 
 // Uncomment this to dump audio to a raw audio file
@@ -59,6 +61,8 @@ private:
 
 	void writeJSON(const char* state);
 };
+
+#endif
 
 #endif
 

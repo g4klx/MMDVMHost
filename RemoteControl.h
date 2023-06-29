@@ -19,6 +19,8 @@
 #ifndef	RemoteControl_H
 #define	RemoteControl_H
 
+#include "Defines.h"
+
 #include <vector>
 #include <string>
 
@@ -36,27 +38,39 @@ enum REMOTE_COMMAND {
 	RCD_MODE_P25,
 	RCD_MODE_NXDN,
 	RCD_MODE_M17,
+#if defined(USE_FM)
 	RCD_MODE_FM,
+#endif
 	RCD_ENABLE_DSTAR,
 	RCD_ENABLE_DMR,
 	RCD_ENABLE_YSF,
 	RCD_ENABLE_P25,
 	RCD_ENABLE_NXDN,
 	RCD_ENABLE_M17,
+#if defined(USE_FM)
 	RCD_ENABLE_FM,
+#endif
+#if defined(USE_AX25)
 	RCD_ENABLE_AX25,
+#endif
 	RCD_DISABLE_DSTAR,
 	RCD_DISABLE_DMR,
 	RCD_DISABLE_YSF,
 	RCD_DISABLE_P25,
 	RCD_DISABLE_NXDN,
 	RCD_DISABLE_M17,
+#if defined(USE_FM)
 	RCD_DISABLE_FM,
+#endif
+#if defined(USE_AX25)
 	RCD_DISABLE_AX25,
+#endif
+#if defined(USE_POCSAG)
 	RCD_PAGE,
 	RCD_PAGE_BCD,
 	RCD_PAGE_A1,
 	RCD_PAGE_A2,
+#endif
 	RCD_CW,
 	RCD_RELOAD,
 	RCD_CONNECTION_STATUS,

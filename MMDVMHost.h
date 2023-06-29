@@ -70,7 +70,9 @@ private:
 #if defined(USE_POCSAG)
 	CPOCSAGControl* m_pocsag;
 #endif
+#if defined(USE_FM)
 	CFMControl*     m_fm;
+#endif
 #if defined(USE_AX25)
 	CAX25Control*   m_ax25;
 #endif
@@ -83,7 +85,9 @@ private:
 #if defined(USE_POCSAG)
 	CPOCSAGNetwork* m_pocsagNetwork;
 #endif
+#if defined(USE_FM)
 	CFMNetwork*     m_fmNetwork;
+#endif
 #if defined(USE_AX25)
 	CAX25Network*   m_ax25Network;
 #endif
@@ -94,7 +98,9 @@ private:
 	unsigned int    m_p25RFModeHang;
 	unsigned int    m_nxdnRFModeHang;
 	unsigned int    m_m17RFModeHang;
+#if defined(USE_FM)
 	unsigned int    m_fmRFModeHang;
+#endif
 	unsigned int    m_dstarNetModeHang;
 	unsigned int    m_dmrNetModeHang;
 	unsigned int    m_ysfNetModeHang;
@@ -104,7 +110,9 @@ private:
 #if defined(USE_POCSAG)
 	unsigned int    m_pocsagNetModeHang;
 #endif
+#if defined(USE_FM)
 	unsigned int    m_fmNetModeHang;
+#endif
 	CTimer          m_modeTimer;
 	CTimer          m_dmrTXTimer;
 	CTimer          m_cwIdTimer;
@@ -141,7 +149,9 @@ private:
 #if defined(USE_POCSAG)
 	bool createPOCSAGNetwork();
 #endif
+#if defined(USE_FM)
 	bool createFMNetwork();
+#endif
 #if defined(USE_AX25)
 	bool createAX25Network();
 #endif

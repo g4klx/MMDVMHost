@@ -92,10 +92,14 @@ REMOTE_COMMAND CRemoteControl::getCommand(const std::string& command)
 			m_command = RCD_ENABLE_NXDN;
 		else if (m_args.at(1U) == "m17")
 			m_command = RCD_ENABLE_M17;
+#if defined(USE_FM)
 		else if (m_args.at(1U) == "fm")
 			m_command = RCD_ENABLE_FM;
+#endif
+#if defined(USE_AX25)
 		else if (m_args.at(1U) == "ax25")
 			m_command = RCD_ENABLE_AX25;
+#endif
 		else
 			reply = "KO";
 	} else if (m_args.at(0U) == "disable" && m_args.size() >= DISABLE_ARGS) {
@@ -111,12 +115,17 @@ REMOTE_COMMAND CRemoteControl::getCommand(const std::string& command)
 			m_command = RCD_DISABLE_NXDN;
 		else if (m_args.at(1U) == "m17")
 			m_command = RCD_DISABLE_M17;
+#if defined(USE_FM)
 		else if (m_args.at(1U) == "fm")
 			m_command = RCD_DISABLE_FM;
+#endif
+#if defined(USE_AX25)
 		else if (m_args.at(1U) == "ax25")
 			m_command = RCD_DISABLE_AX25;
+#endif
 		else
 			reply = "KO";
+#if defined(USE_POCSAG)
 	} else if (m_args.at(0U) == "page" && m_args.size() >= PAGE_ARGS) {
 		// Page command is in the form of "page <ric> <message>"
 		m_command = RCD_PAGE;
@@ -129,6 +138,7 @@ REMOTE_COMMAND CRemoteControl::getCommand(const std::string& command)
 	} else if (m_args.at(0U) == "page_a2" && m_args.size() >= PAGE_ARGS) {
 		// Alert2 page command is in the form of "page_a2 <ric> <message>"
 		m_command = RCD_PAGE_A2;
+#endif
 	} else if (m_args.at(0U) == "cw" && m_args.size() >= CW_ARGS) {
 		// CW command is in the form of "cw <message>"
 		m_command = RCD_CW;
@@ -182,11 +192,13 @@ unsigned int CRemoteControl::getArgCount() const
 		case RCD_MODE_NXDN:
 		case RCD_MODE_M17:
 			return m_args.size() - SET_MODE_ARGS;
+#if defined(USE_POCSAG)
 		case RCD_PAGE:
 		case RCD_PAGE_BCD:
 		case RCD_PAGE_A1:
 		case RCD_PAGE_A2:
 			return m_args.size() - 1U;
+#endif
 		case RCD_CW:
                         return m_args.size() - 1U;
 		default:
@@ -207,12 +219,14 @@ std::string CRemoteControl::getArgString(unsigned int n) const
 		case RCD_MODE_M17:
 			n += SET_MODE_ARGS;
 			break;
+#if defined(USE_POCSAG)
 		case RCD_PAGE:
 		case RCD_PAGE_BCD:
 		case RCD_PAGE_A1:
 		case RCD_PAGE_A2:
 			n += 1U;
 			break;
+#endif
 		case RCD_CW:
 			n += 1U;
 			break;

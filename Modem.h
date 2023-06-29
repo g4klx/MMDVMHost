@@ -59,10 +59,12 @@ public:
 #endif
 	void setTransparentDataParams(unsigned int sendFrameType);
 
+#if defined(USE_FM)
 	void setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch);
 	void setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackMinTime, unsigned int ackDelay, float ackLevel);
 	void setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, unsigned int accessMode, bool linkMode, bool cosInvert, bool noiseSquelch, unsigned int squelchHighThreshold, unsigned int squelchLowThreshold, unsigned int rfAudioBoost, float maxDevLevel);
 	void setFMExtParams(const std::string& ack, unsigned int audioBoost);
+#endif
 
 	bool open();
 
@@ -75,7 +77,9 @@ public:
 #if defined(USE_POCSAG)
 	bool hasPOCSAG() const;
 #endif
+#if defined(USE_FM)
 	bool hasFM() const;
+#endif
 #if defined(USE_AX25)
 	bool hasAX25() const;
 #endif
@@ -88,7 +92,9 @@ public:
 	unsigned int readP25Data(unsigned char* data);
 	unsigned int readNXDNData(unsigned char* data);
 	unsigned int readM17Data(unsigned char* data);
+#if defined(USE_FM)
 	unsigned int readFMData(unsigned char* data);
+#endif
 #if defined(USE_AX25)
 	unsigned int readAX25Data(unsigned char* data);
 #endif
@@ -103,7 +109,9 @@ public:
 #if defined(USE_POCSAG)
 	bool hasPOCSAGSpace() const;
 #endif
+#if defined(USE_FM)
 	unsigned int getFMSpace() const;
+#endif
 #if defined(USE_AX25)
 	bool hasAX25Space() const;
 #endif
@@ -125,7 +133,9 @@ public:
 #if defined(USE_POCSAG)
 	bool writePOCSAGData(const unsigned char* data, unsigned int length);
 #endif
+#if defined(USE_FM)
 	bool writeFMData(const unsigned char* data, unsigned int length);
+#endif
 #if defined(USE_AX25)
 	bool writeAX25Data(const unsigned char* data, unsigned int length);
 #endif
@@ -187,7 +197,9 @@ private:
 #if defined(USE_POCSAG)
 	float                      m_pocsagTXLevel;
 #endif
+#if defined(USE_FM)
 	float                      m_fmTXLevel;
+#endif
 #if defined(USE_AX25)
 	float                      m_ax25TXLevel;
 #endif
@@ -209,7 +221,9 @@ private:
 #if defined(USE_POCSAG)
 	bool                       m_pocsagEnabled;
 #endif
+#if defined(USE_FM)
 	bool                       m_fmEnabled;
+#endif
 #if defined(USE_AX25)
 	bool                       m_ax25Enabled;
 #endif
@@ -238,8 +252,10 @@ private:
 #if defined(USE_POCSAG)
 	CRingBuffer<unsigned char> m_txPOCSAGData;
 #endif
+#if defined(USE_FM)
 	CRingBuffer<unsigned char> m_rxFMData;
 	CRingBuffer<unsigned char> m_txFMData;
+#endif
 #if defined(USE_AX25)
 	CRingBuffer<unsigned char> m_rxAX25Data;
 	CRingBuffer<unsigned char> m_txAX25Data;
@@ -262,7 +278,9 @@ private:
 #if defined(USE_POCSAG)
 	unsigned int               m_pocsagSpace;
 #endif
+#if defined(USE_FM)
 	unsigned int               m_fmSpace;
+#endif
 #if defined(USE_AX25)
 	unsigned int               m_ax25Space;
 #endif
@@ -278,6 +296,7 @@ private:
 	unsigned int               m_ax25SlotTime;
 	unsigned int               m_ax25PPersist;
 #endif
+#if defined(USE_FM)
 	std::string                m_fmCallsign;
 	unsigned int               m_fmCallsignSpeed;
 	unsigned int               m_fmCallsignFrequency;
@@ -313,6 +332,7 @@ private:
 	unsigned int               m_fmExtAudioBoost;
 	float                      m_fmMaxDevLevel;
 	bool                       m_fmExtEnable;
+#endif
 	unsigned char              m_capabilities1;
 	unsigned char              m_capabilities2;
 
@@ -321,11 +341,12 @@ private:
 	bool setConfig1();
 	bool setConfig2();
 	bool setFrequency();
+#if defined(USE_FM)
 	bool setFMCallsignParams();
 	bool setFMAckParams();
 	bool setFMMiscParams();
 	bool setFMExtParams();
-
+#endif
 	void printDebug();
 
 	RESP_TYPE_MMDVM getResponse();

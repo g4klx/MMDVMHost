@@ -88,6 +88,7 @@ const unsigned char MMDVM_POCSAG_DATA = 0x50U;
 const unsigned char MMDVM_AX25_DATA   = 0x55U;
 #endif
 
+#if defined(USE_FM)
 const unsigned char MMDVM_FM_PARAMS1  = 0x60U;
 const unsigned char MMDVM_FM_PARAMS2  = 0x61U;
 const unsigned char MMDVM_FM_PARAMS3  = 0x62U;
@@ -95,6 +96,7 @@ const unsigned char MMDVM_FM_PARAMS4  = 0x63U;
 const unsigned char MMDVM_FM_DATA     = 0x65U;
 const unsigned char MMDVM_FM_STATUS   = 0x66U;
 const unsigned char MMDVM_FM_EOT      = 0x67U;
+#endif
 
 const unsigned char MMDVM_ACK         = 0x70U;
 const unsigned char MMDVM_NAK         = 0x7FU;
@@ -121,7 +123,9 @@ const unsigned char CAP1_YSF    = 0x04U;
 const unsigned char CAP1_P25    = 0x08U;
 const unsigned char CAP1_NXDN   = 0x10U;
 const unsigned char CAP1_M17    = 0x20U;
+#if defined(USE_FM)
 const unsigned char CAP1_FM     = 0x40U;
+#endif
 #if defined(USE_POCSAG)
 const unsigned char CAP2_POCSAG = 0x01U;
 #endif
@@ -154,7 +158,9 @@ m_m17TXLevel(0.0F),
 #if defined(USE_POCSAG)
 m_pocsagTXLevel(0.0F),
 #endif
+#if defined(USE_FM)
 m_fmTXLevel(0.0F),
+#endif
 #if defined(USE_AX25)
 m_ax25TXLevel(0.0F),
 #endif
@@ -176,7 +182,9 @@ m_m17Enabled(false),
 #if defined(USE_POCSAG)
 m_pocsagEnabled(false),
 #endif
+#if defined(USE_FM)
 m_fmEnabled(false),
+#endif
 #if defined(USE_AX25)
 m_ax25Enabled(false),
 #endif
@@ -205,8 +213,10 @@ m_txM17Data(1000U, "Modem TX M17"),
 #if defined(USE_POCSAG)
 m_txPOCSAGData(1000U, "Modem TX POCSAG"),
 #endif
+#if defined(USE_FM)
 m_rxFMData(5000U, "Modem RX FM"),
 m_txFMData(5000U, "Modem TX FM"),
+#endif
 #if defined(USE_AX25)
 m_rxAX25Data(1000U, "Modem RX AX.25"),
 m_txAX25Data(1000U, "Modem TX AX.25"),
@@ -229,7 +239,9 @@ m_m17Space(0U),
 #if defined(USE_POCSAG)
 m_pocsagSpace(0U),
 #endif
+#if defined(USE_FM)
 m_fmSpace(0U),
+#endif
 #if defined(USE_AX25)
 m_ax25Space(0U),
 #endif
@@ -245,6 +257,7 @@ m_ax25TXDelay(300U),
 m_ax25SlotTime(30U),
 m_ax25PPersist(128U),
 #endif
+#if defined(USE_FM)
 m_fmCallsign(),
 m_fmCallsignSpeed(20U),
 m_fmCallsignFrequency(1000U),
@@ -280,6 +293,7 @@ m_fmRFAudioBoost(1U),
 m_fmExtAudioBoost(1U),
 m_fmMaxDevLevel(90.0F),
 m_fmExtEnable(false),
+#endif
 m_capabilities1(0x00U),
 m_capabilities2(0x00U)
 {
@@ -322,7 +336,9 @@ void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, 
 #if defined(USE_POCSAG)
 	m_pocsagEnabled = pocsagEnabled;
 #endif
+#if defined(USE_FM)
 	m_fmEnabled     = fmEnabled;
+#endif
 #if defined(USE_AX25)
 	m_ax25Enabled   = ax25Enabled;
 #endif
@@ -341,7 +357,9 @@ void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, flo
 #if defined(USE_POCSAG)
 	m_pocsagTXLevel = pocsagTXLevel;
 #endif
+#if defined(USE_FM)
 	m_fmTXLevel     = fmTXLevel;
+#endif
 #if defined(USE_AX25)
 	m_ax25TXLevel   = ax25TXLevel;
 #endif
@@ -426,6 +444,7 @@ bool CModem::open()
 		return false;
 	}
 
+#if defined(USE_FM)
 	if (m_fmEnabled) {
 		ret = setFMCallsignParams();
 		if (!ret) {
@@ -461,6 +480,7 @@ bool CModem::open()
 			}
 		}
 	}
+#endif
 
 	m_statusTimer.start();
 
@@ -755,6 +775,7 @@ void CModem::clock(unsigned int ms)
 			}
 			break;
 
+#if defined(USE_FM)
 			case MMDVM_FM_DATA: {
 				if (m_trace)
 					CUtils::dump(1U, "RX FM Data", m_buffer, m_length);
@@ -796,7 +817,7 @@ void CModem::clock(unsigned int ms)
 				m_rxFMData.addData(m_buffer + m_offset, m_length - m_offset);
 			}
 			break;
-
+#endif
 #if defined(USE_AX25)
 			case MMDVM_AX25_DATA: {
 				if (m_trace)
@@ -840,7 +861,9 @@ void CModem::clock(unsigned int ms)
 #if defined(USE_POCSAG)
 						m_pocsagSpace = 0U;
 #endif
+#if defined(USE_FM)
 						m_fmSpace     = 0U;
+#endif
 #if defined(USE_AX25)
 						m_ax25Space   = 0U;
 #endif
@@ -890,7 +913,9 @@ void CModem::clock(unsigned int ms)
 						m_p25Space    = m_buffer[m_offset + 7U];
 						m_nxdnSpace   = m_buffer[m_offset + 8U];
 						m_m17Space    = m_buffer[m_offset + 9U];
+#if defined(USE_FM)
 						m_fmSpace     = m_buffer[m_offset + 10U];
+#endif
 #if defined(USE_POCSAG)
 						m_pocsagSpace = m_buffer[m_offset + 11U];
 #endif
@@ -911,7 +936,9 @@ void CModem::clock(unsigned int ms)
 #if defined(USE_POCSAG)
 					m_pocsagSpace = 0U;
 #endif
+#if defined(USE_FM)
 					m_fmSpace     = 0U;
+#endif
 #if defined(USE_AX25)
 					m_ax25Space   = 0U;
 #endif
@@ -1149,6 +1176,7 @@ void CModem::clock(unsigned int ms)
 	}
 #endif
 
+#if defined(USE_FM)
 	if (m_fmSpace > 1U && !m_txFMData.isEmpty()) {
 		unsigned int len = 0U;
 		m_txFMData.getData((unsigned char*)&len, sizeof(unsigned int));
@@ -1169,6 +1197,7 @@ void CModem::clock(unsigned int ms)
 
 		m_fmSpace--;
 	}
+#endif
 
 #if defined(USE_AX25)
 	if (m_ax25Space > 0U && !m_txAX25Data.isEmpty()) {
@@ -1323,6 +1352,7 @@ unsigned int CModem::readM17Data(unsigned char* data)
 	return len;
 }
 
+#if defined(USE_FM)
 unsigned int CModem::readFMData(unsigned char* data)
 {
 	assert(data != NULL);
@@ -1336,6 +1366,7 @@ unsigned int CModem::readFMData(unsigned char* data)
 
 	return len;
 }
+#endif
 
 #if defined(USE_AX25)
 unsigned int CModem::readAX25Data(unsigned char* data)
@@ -1642,6 +1673,7 @@ bool CModem::writePOCSAGData(const unsigned char* data, unsigned int length)
 }
 #endif
 
+#if defined(USE_FM)
 unsigned int CModem::getFMSpace() const
 {
 	return m_txFMData.freeSpace();
@@ -1675,6 +1707,7 @@ bool CModem::writeFMData(const unsigned char* data, unsigned int length)
 
 	return true;
 }
+#endif
 
 #if defined(USE_AX25)
 bool CModem::hasAX25Space() const
@@ -2022,10 +2055,12 @@ bool CModem::hasM17() const
 	return (m_capabilities1 & CAP1_M17) == CAP1_M17;
 }
 
+#if defined(USE_FM)
 bool CModem::hasFM() const
 {
 	return (m_capabilities1 & CAP1_FM) == CAP1_FM;
 }
+#endif
 
 #if defined(USE_POCSAG)
 bool CModem::hasPOCSAG() const
@@ -2143,8 +2178,10 @@ bool CModem::readVersion()
 						::strcat(modeText, " NXDN");
 					if (hasM17())
 						::strcat(modeText, " M17");
+#if defined(USE_FM)
 					if (hasFM())
 						::strcat(modeText, " FM");
+#endif
 #if defined(USE_POCSAG)
 					if (hasPOCSAG())
 						::strcat(modeText, " POCSAG");
@@ -2276,8 +2313,11 @@ bool CModem::setConfig1()
 #else
 	buffer[20U] = 0U;
 #endif
+#if defined(USE_FM)
 	buffer[21U] = (unsigned char)(m_fmTXLevel * 2.55F + 0.5F);
-
+#else
+	buffer[21U] = 0U;
+#endif
 	buffer[22U] = (unsigned char)m_p25TXHang;
 
 	buffer[23U] = (unsigned char)m_nxdnTXHang;
@@ -2358,8 +2398,10 @@ bool CModem::setConfig2()
 		buffer[4U] |= 0x08U;
 	if (m_nxdnEnabled)
 		buffer[4U] |= 0x10U;
+#if defined(USE_FM)
 	if (m_fmEnabled)
 		buffer[4U] |= 0x20U;
+#endif
 	if (m_m17Enabled)
 		buffer[4U] |= 0x40U;
 
@@ -2393,7 +2435,11 @@ bool CModem::setConfig2()
 #else
 	buffer[18U] = 0U;
 #endif
+#if defined(USE_FM)
 	buffer[19U] = (unsigned char)(m_fmTXLevel * 2.55F + 0.5F);
+#else
+	buffer[19U] = 0U;
+#endif
 #if defined(USE_AX25)
 	buffer[20U] = (unsigned char)(m_ax25TXLevel * 2.55F + 0.5F);
 #else
@@ -2761,6 +2807,7 @@ bool CModem::writeDMRShortLC(const unsigned char* lc)
 	return m_port->write(buffer, 12U) == 12;
 }
 
+#if defined(USE_FM)
 void CModem::setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch)
 {
 	m_fmCallsign          = callsign;
@@ -3050,6 +3097,7 @@ bool CModem::setFMExtParams()
 
 	return true;
 }
+#endif
 
 void CModem::printDebug()
 {

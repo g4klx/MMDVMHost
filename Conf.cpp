@@ -47,7 +47,9 @@ enum SECTION {
 #if defined(USE_POCSAG)
 	SECTION_POCSAG,
 #endif
+#if defined(USE_FM)
 	SECTION_FM,
+#endif
 #if defined(USE_AX25)
 	SECTION_AX25,
 #endif
@@ -60,7 +62,9 @@ enum SECTION {
 #if defined(USE_POCSAG)
 	SECTION_POCSAG_NETWORK,
 #endif
+#if defined(USE_FM)
 	SECTION_FM_NETWORK,
+#endif
 #if defined(USE_AX25)
 	SECTION_AX25_NETWORK,
 #endif
@@ -196,8 +200,11 @@ m_m17ModeHang(10U),
 m_pocsagEnabled(false),
 #endif
 m_pocsagFrequency(0U),
+#if defined(USE_FM)
 m_fmEnabled(false),
+#endif
 m_fmCallsign(),
+#if defined(USE_FM)
 m_fmCallsignSpeed(20U),
 m_fmCallsignFrequency(1000U),
 m_fmCallsignTime(10U),
@@ -214,7 +221,9 @@ m_fmAckFrequency(1750U),
 m_fmAckMinTime(5U),
 m_fmAckDelay(1000U),
 m_fmAckLevel(80.0F),
+#endif
 m_fmTimeout(180U),
+#if defined(USE_FM)
 m_fmTimeoutLevel(80.0F),
 m_fmCTCSSFrequency(88.6F),
 m_fmCTCSSHighThreshold(30U),
@@ -231,6 +240,7 @@ m_fmSquelchLowThreshold(20U),
 m_fmRFAudioBoost(1U),
 m_fmMaxDevLevel(90.0F),
 m_fmExtAudioBoost(1U),
+#endif
 m_fmModeHang(10U),
 #if defined(USE_AX25)
 m_ax25Enabled(false),
@@ -297,6 +307,7 @@ m_pocsagLocalPort(0U),
 m_pocsagNetworkModeHang(3U),
 m_pocsagNetworkDebug(false),
 #endif
+#if defined(USE_FM)
 m_fmNetworkEnabled(false),
 m_fmNetworkProtocol("USRP"),
 m_fmGatewayAddress(),
@@ -307,8 +318,11 @@ m_fmPreEmphasis(true),
 m_fmDeEmphasis(true),
 m_fmTXAudioGain(1.0F),
 m_fmRXAudioGain(1.0F),
+#endif
 m_fmNetworkModeHang(3U),
+#if defined(USE_FM)
 m_fmNetworkDebug(false),
+#endif
 #if defined(USE_AX25)
 m_ax25NetworkEnabled(false),
 m_ax25NetworkPort(),
@@ -375,8 +389,10 @@ bool CConf::read()
 			else if (::strncmp(buffer, "[POCSAG]", 8U) == 0)
 				section = SECTION_POCSAG;
 #endif
+#if defined(USE_FM)
 			else if (::strncmp(buffer, "[FM]", 4U) == 0)
 				section = SECTION_FM;
+#endif
 #if defined(USE_AX25)
 			else if (::strncmp(buffer, "[AX.25]", 7U) == 0)
 				section = SECTION_AX25;
@@ -397,8 +413,10 @@ bool CConf::read()
 			else if (::strncmp(buffer, "[POCSAG Network]", 16U) == 0)
 				section = SECTION_POCSAG_NETWORK;
 #endif
+#if defined(USE_FM)
 			else if (::strncmp(buffer, "[FM Network]", 12U) == 0)
 				section = SECTION_FM_NETWORK;
+#endif
 #if defined(USE_AX25)
 			else if (::strncmp(buffer, "[AX.25 Network]", 15U) == 0)
 				section = SECTION_AX25_NETWORK;
@@ -570,12 +588,18 @@ bool CConf::read()
 				m_modemNXDNTXLevel = float(::atof(value));
 			else if (::strcmp(key, "M17TXLevel") == 0)
 				m_modemM17TXLevel = float(::atof(value));
+#if defined(USE_POCSAG)
 			else if (::strcmp(key, "POCSAGTXLevel") == 0)
 				m_modemPOCSAGTXLevel = float(::atof(value));
+#endif
+#if defined(USE_FM)
 			else if (::strcmp(key, "FMTXLevel") == 0)
 				m_modemFMTXLevel = float(::atof(value));
+#endif
+#if defined(USE_AX25)
 			else if (::strcmp(key, "AX25TXLevel") == 0)
 				m_modemAX25TXLevel = float(::atof(value));
+#endif
 			else if (::strcmp(key, "RSSIMappingFile") == 0)
 				m_modemRSSIMappingFile = value;
 			else if (::strcmp(key, "UseCOSAsLockout") == 0)
@@ -793,6 +817,7 @@ bool CConf::read()
 			else if (::strcmp(key, "Frequency") == 0)
 				m_pocsagFrequency = (unsigned int)::atoi(value);
 #endif
+#if defined(USE_FM)
 		} else if (section == SECTION_FM) {
 			if (::strcmp(key, "Enable") == 0)
 				m_fmEnabled = ::atoi(value) == 1;
@@ -879,6 +904,7 @@ bool CConf::read()
 				m_fmExtAudioBoost = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "ModeHang") == 0)
 				m_fmModeHang = (unsigned int)::atoi(value);
+#endif
 #if defined(USE_AX25)
 		} else if (section == SECTION_AX25) {
 			if (::strcmp(key, "Enable") == 0)
@@ -1007,6 +1033,7 @@ bool CConf::read()
 			else if (::strcmp(key, "Debug") == 0)
 				m_pocsagNetworkDebug = ::atoi(value) == 1;
 #endif
+#if defined(USE_FM)
 		} else if (section == SECTION_FM_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_fmNetworkEnabled = ::atoi(value) == 1;
@@ -1032,6 +1059,7 @@ bool CConf::read()
 				m_fmNetworkModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Debug") == 0)
 				m_fmNetworkDebug = ::atoi(value) == 1;
+#endif
 #if defined(USE_AX25)
 		} else if (section == SECTION_AX25_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
@@ -1336,10 +1364,12 @@ float CConf::getModemPOCSAGTXLevel() const
 }
 #endif
 
+#if defined(USE_FM)
 float CConf::getModemFMTXLevel() const
 {
 	return m_modemFMTXLevel;
 }
+#endif
 
 #if defined(USE_AX25)
 float CConf::getModemAX25TXLevel() const
@@ -1685,6 +1715,7 @@ unsigned int CConf::getPOCSAGFrequency() const
 }
 #endif
 
+#if defined(USE_FM)
 bool CConf::getFMEnabled() const
 {
 	return m_fmEnabled;
@@ -1864,6 +1895,7 @@ unsigned int CConf::getFMModeHang() const
 {
 	return m_fmModeHang;
 }
+#endif
 
 #if defined(USE_AX25)
 bool CConf::getAX25Enabled() const
@@ -2164,6 +2196,7 @@ bool CConf::getPOCSAGNetworkDebug() const
 }
 #endif
 
+#if defined(USE_FM)
 bool CConf::getFMNetworkEnabled() const
 {
 	return m_fmNetworkEnabled;
@@ -2223,6 +2256,7 @@ bool CConf::getFMNetworkDebug() const
 {
 	return m_fmNetworkDebug;
 }
+#endif
 
 #if defined(USE_AX25)
 bool CConf::getAX25NetworkEnabled() const

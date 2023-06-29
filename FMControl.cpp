@@ -19,11 +19,9 @@
 #include "FMControl.h"
 #include "Utils.h"
 
-#include <string>
+#if defined(USE_FM)
 
-#if defined(DUMP_RF_AUDIO)
-#include <cstdio>
-#endif
+#include <string>
 
 #define SWAP_BYTES_16(a) (((a >> 8) & 0x00FFU) | ((a << 8) & 0xFF00U))
 
@@ -153,13 +151,6 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
             }
         }
 
-#if defined(DUMP_RF_AUDIO)
-        FILE * audiofile = fopen("./audiodump.bin", "ab");
-        if (audiofile != NULL) {
-            fwrite(out, sizeof(float), nOut, audiofile);
-            fclose(audiofile);
-        }
-#endif
         return m_network->writeData(out, nOut);
     }
 
@@ -233,4 +224,6 @@ void CFMControl::writeJSON(const char* state)
 
 	WriteJSON("FM", json);
 }
+
+#endif
 
