@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
 
 #include "M17Utils.h"
 #include "M17Defines.h"
+
+#if defined(USE_M17)
 
 #include <cassert>
 
@@ -224,3 +226,6 @@ void CM17Utils::combineFragmentLICHFEC(unsigned int frag1, unsigned int frag2, u
 		WRITE_BIT1(data, offset, b);
 	}
 }
+
+#endif
+

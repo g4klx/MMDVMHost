@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
  */
 
 #include "M17CRC.h"
+
+#if defined(USE_M17)
 
 #include <cstdio>
 #include <cassert>
@@ -82,3 +84,6 @@ uint16_t CM17CRC::createCRC16(const unsigned char* in, unsigned int nBytes)
 
 	return crc;
 }
+
+#endif
+

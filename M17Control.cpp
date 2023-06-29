@@ -20,6 +20,8 @@
 #include "Sync.h"
 #include "Log.h"
 
+#if defined(USE_M17)
+
 #include <cstdio>
 #include <cassert>
 #include <cstring>
@@ -52,8 +54,6 @@ const unsigned char SCRAMBLER[] = {
 
 const unsigned int RSSI_COUNT   = 28U;			// 28 * 40ms = 1120ms
 const unsigned int BER_COUNT    = 28U * 272U;		// 28 * 40ms = 1120ms
-
-// #define	DUMP_M17
 
 const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
 
@@ -102,8 +102,7 @@ m_rssiAccum(0U),
 m_rssiCount(0U),
 m_bitsCount(0U),
 m_bitErrsAccum(0U),
-m_enabled(true),
-m_fp(NULL)
+m_enabled(true)
 {
 	assert(rssiMapper != NULL);
 
@@ -227,9 +226,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_rfLSFCount = 0U;
 			m_rfTextBits = 0x00U;
 			::memset(m_rfText, 0x00U, 4U * M17_META_LENGTH_BYTES);
-#if defined(DUMP_M17)
-			openFile();
-#endif
+
 			return true;
 		} else {
 			m_rfState = RS_RF_LATE_ENTRY;
@@ -290,9 +287,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			m_rfLSFCount = 0U;
 			m_rfTextBits = 0x00U;
 			::memset(m_rfText, 0x00U, 4U * M17_META_LENGTH_BYTES);
-#if defined(DUMP_M17)
-			openFile();
-#endif
+
 			// Fall through
 		} else {
 			return false;
@@ -300,9 +295,6 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 	}
 
 	if ((m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA_AUDIO) && data[0U] == TAG_DATA) {
-#if defined(DUMP_M17)
-		writeFile(data + 2U);
-#endif
 		// Keep looking at the running LSF in case of changed META field data
 		unsigned int lich1, lich2, lich3, lich4;
 		bool valid1 = CGolay24128::decode24128(data + 2U + M17_SYNC_LENGTH_BYTES + 0U, lich1);
@@ -453,9 +445,6 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 	}
 
 	if ((m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA_AUDIO) && data[0U] == TAG_EOT) {
-#if defined(DUMP_M17)
-		writeFile(data + 2U);
-#endif
 		if (m_duplex) {
 			unsigned char rfData[M17_FRAME_LENGTH_BYTES + 2U];
 
@@ -542,10 +531,6 @@ void CM17Control::writeEndRF()
 		if (m_network != NULL)
 			m_network->reset();
 	}
-
-#if defined(DUMP_M17)
-	closeFile();
-#endif
 }
 
 void CM17Control::writeEndNet()
@@ -960,46 +945,6 @@ bool CM17Control::checkCallsign(const std::string& callsign) const
 	return m_callsign.compare(0U, len, callsign, 0U, len) == 0;
 }
 
-bool CM17Control::openFile()
-{
-	if (m_fp != NULL)
-		return true;
-
-	time_t t;
-	::time(&t);
-
-	struct tm* tm = ::localtime(&t);
-
-	char name[100U];
-	::sprintf(name, "M17_%04d%02d%02d_%02d%02d%02d.ambe", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
-
-	m_fp = ::fopen(name, "wb");
-	if (m_fp == NULL)
-		return false;
-
-	::fwrite("M17", 1U, 3U, m_fp);
-
-	return true;
-}
-
-bool CM17Control::writeFile(const unsigned char* data)
-{
-	if (m_fp == NULL)
-		return false;
-
-	::fwrite(data, 1U, M17_FRAME_LENGTH_BYTES, m_fp);
-
-	return true;
-}
-
-void CM17Control::closeFile()
-{
-	if (m_fp != NULL) {
-		::fclose(m_fp);
-		m_fp = NULL;
-	}
-}
-
 bool CM17Control::isBusy() const
 {
 	return m_rfState != RS_RF_LISTENING || m_netState != RS_NET_IDLE;
@@ -1223,4 +1168,6 @@ void CM17Control::writeJSONNet(nlohmann::json& json, const char* action, RPT_NET
 			break;
 	}
 }
+
+#endif
 

@@ -153,7 +153,9 @@ m_dmr(NULL),
 m_ysf(NULL),
 m_p25(NULL),
 m_nxdn(NULL),
+#if defined(USE_M17)
 m_m17(NULL),
+#endif
 #if defined(USE_POCSAG)
 m_pocsag(NULL),
 #endif
@@ -170,7 +172,9 @@ m_dmrNetwork(NULL),
 m_ysfNetwork(NULL),
 m_p25Network(NULL),
 m_nxdnNetwork(NULL),
+#if defined(USE_M17)
 m_m17Network(NULL),
+#endif
 #if defined(USE_POCSAG)
 m_pocsagNetwork(NULL),
 #endif
@@ -188,7 +192,9 @@ m_dmrRFModeHang(10U),
 m_ysfRFModeHang(10U),
 m_p25RFModeHang(10U),
 m_nxdnRFModeHang(10U),
+#if defined(USE_M17)
 m_m17RFModeHang(10U),
+#endif
 #if defined(USE_FM)
 m_fmRFModeHang(10U),
 #endif
@@ -199,7 +205,9 @@ m_dmrNetModeHang(3U),
 m_ysfNetModeHang(3U),
 m_p25NetModeHang(3U),
 m_nxdnNetModeHang(3U),
+#if defined(USE_M17)
 m_m17NetModeHang(3U),
+#endif
 #if defined(USE_POCSAG)
 m_pocsagNetModeHang(3U),
 #endif
@@ -369,10 +377,12 @@ int CMMDVMHost::run()
 		m_nxdnEnabled = false;
 	}
 
+#if defined(USE_M17)
 	if (m_m17Enabled && !m_modem->hasM17()) {
 		LogWarning("M17 enabled in the host but not in the modem firmware, disabling");
 		m_m17Enabled = false;
 	}
+#endif
 
 #if defined(USE_FM)
 	if (m_fmEnabled && !m_modem->hasFM()) {
@@ -430,11 +440,13 @@ int CMMDVMHost::run()
 			return 1;
 	}
 
+#if defined(USE_M17)
 	if (m_m17Enabled && m_conf.getM17NetworkEnabled()) {
 		ret = createM17Network();
 		if (!ret)
 			return 1;
 	}
+#endif
 
 #if defined(USE_POCSAG)
 	if (m_pocsagEnabled && m_conf.getPOCSAGNetworkEnabled()) {
@@ -745,6 +757,7 @@ int CMMDVMHost::run()
 		m_nxdn = new CNXDNControl(ran, id, selfOnly, m_nxdnNetwork, m_timeout, m_duplex, remoteGateway, m_nxdnLookup, rssi);
 	}
 
+#if defined(USE_M17)
 	if (m_m17Enabled) {
 		bool selfOnly          = m_conf.getM17SelfOnly();
 		unsigned int can       = m_conf.getM17CAN();
@@ -761,6 +774,7 @@ int CMMDVMHost::run()
 
 		m_m17 = new CM17Control(m_callsign, can, selfOnly, allowEncryption, m_m17Network, m_timeout, m_duplex, rssi);
 	}
+#endif
 
 #if defined(USE_POCSAG)
 	CTimer pocsagTimer(1000U, 30U);
@@ -980,6 +994,7 @@ int CMMDVMHost::run()
 			}
 		}
 
+#if defined(USE_M17)
 		len = m_modem->readM17Data(data);
 		if (m_m17 != NULL && len > 0U) {
 			if (m_mode == MODE_IDLE) {
@@ -996,6 +1011,7 @@ int CMMDVMHost::run()
 				LogWarning("M17 modem data received when in mode %u", m_mode);
 			}
 		}
+#endif
 
 #if defined(USE_FM)
 		len = m_modem->readFMData(data);
@@ -1160,6 +1176,7 @@ int CMMDVMHost::run()
 			}
 		}
 
+#if defined(USE_M17)
 		if (m_m17 != NULL) {
 			ret = m_modem->hasM17Space();
 			if (ret) {
@@ -1178,6 +1195,7 @@ int CMMDVMHost::run()
 				}
 			}
 		}
+#endif
 
 #if defined(USE_POCSAG)
 		if (m_pocsag != NULL) {
@@ -1280,8 +1298,10 @@ int CMMDVMHost::run()
 			m_p25->clock(ms);
 		if (m_nxdn != NULL)
 			m_nxdn->clock(ms);
+#if defined(USE_M17)
 		if (m_m17 != NULL)
 			m_m17->clock(ms);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->clock(ms);
@@ -1303,8 +1323,10 @@ int CMMDVMHost::run()
 			m_p25Network->clock(ms);
 		if (m_nxdnNetwork != NULL)
 			m_nxdnNetwork->clock(ms);
+#if defined(USE_M17)
 		if (m_m17Network != NULL)
 			m_m17Network->clock(ms);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->clock(ms);
@@ -1421,10 +1443,12 @@ int CMMDVMHost::run()
 		delete m_nxdnNetwork;
 	}
 
+#if defined(USE_M17)
 	if (m_m17Network != NULL) {
 		m_m17Network->close();
 		delete m_m17Network;
 	}
+#endif
 
 #if defined(USE_POCSAG)
 	if (m_pocsagNetwork != NULL) {
@@ -1464,7 +1488,9 @@ int CMMDVMHost::run()
 	delete m_ysf;
 	delete m_p25;
 	delete m_nxdn;
+#if defined(USE_M17)
 	delete m_m17;
+#endif
 #if defined(USE_POCSAG)
 	delete m_pocsag;
 #endif
@@ -1516,7 +1542,11 @@ bool CMMDVMHost::createModem()
 	float ysfTXLevel             = m_conf.getModemYSFTXLevel();
 	float p25TXLevel             = m_conf.getModemP25TXLevel();
 	float nxdnTXLevel            = m_conf.getModemNXDNTXLevel();
+#if defined(USE_M17)
 	float m17TXLevel             = m_conf.getModemM17TXLevel();
+#else
+	float m17TXLevel             = 0.0F;
+#endif
 #if defined(USE_POCSAG)
 	float pocsagTXLevel          = m_conf.getModemPOCSAGTXLevel();
 #else
@@ -1539,7 +1569,9 @@ bool CMMDVMHost::createModem()
 	unsigned int ysfTXHang       = m_conf.getFusionTXHang();
 	unsigned int p25TXHang       = m_conf.getP25TXHang();
 	unsigned int nxdnTXHang      = m_conf.getNXDNTXHang();
+#if defined(USE_M17)
 	unsigned int m17TXHang       = m_conf.getM17TXHang();
+#endif
 	unsigned int rxFrequency     = m_conf.getRXFrequency();
 	unsigned int txFrequency     = m_conf.getTXFrequency();
 #if defined(USE_POCSAG)
@@ -1598,7 +1630,9 @@ bool CMMDVMHost::createModem()
 	LogInfo("    YSF TX Level: %.1f%%", ysfTXLevel);
 	LogInfo("    P25 TX Level: %.1f%%", p25TXLevel);
 	LogInfo("    NXDN TX Level: %.1f%%", nxdnTXLevel);
+#if defined(USE_M17)
 	LogInfo("    M17 TX Level: %.1f%%", m17TXLevel);
+#endif
 #if defined(USE_POCSAG)
 	LogInfo("    POCSAG TX Level: %.1f%%", pocsagTXLevel);
 #endif
@@ -1635,7 +1669,9 @@ bool CMMDVMHost::createModem()
 	m_modem->setYSFParams(lowDeviation, ysfTXHang);
 	m_modem->setP25Params(p25TXHang);
 	m_modem->setNXDNParams(nxdnTXHang);
+#if defined(USE_M17)
 	m_modem->setM17Params(m17TXHang);
+#endif
 #if defined(USE_AX25)
 	m_modem->setAX25Params(rxTwist, ax25TXDelay, ax25SlotTime, ax25PPersist);
 #endif
@@ -1919,6 +1955,7 @@ bool CMMDVMHost::createNXDNNetwork()
 	return true;
 }
 
+#if defined(USE_M17)
 bool CMMDVMHost::createM17Network()
 {
 	std::string gatewayAddress = m_conf.getM17GatewayAddress();
@@ -1947,6 +1984,7 @@ bool CMMDVMHost::createM17Network()
 
 	return true;
 }
+#endif
 
 #if defined(USE_POCSAG)
 bool CMMDVMHost::createPOCSAGNetwork()
@@ -2058,7 +2096,9 @@ void CMMDVMHost::readParams()
 	m_ysfEnabled    = m_conf.getFusionEnabled();
 	m_p25Enabled    = m_conf.getP25Enabled();
 	m_nxdnEnabled   = m_conf.getNXDNEnabled();
+#if defined(USE_M17)
 	m_m17Enabled    = m_conf.getM17Enabled();
+#endif
 #if defined(USE_POCSAG)
 	m_pocsagEnabled = m_conf.getPOCSAGEnabled();
 #endif
@@ -2085,7 +2125,9 @@ void CMMDVMHost::readParams()
 	LogInfo("    YSF: %s", m_ysfEnabled ? "enabled" : "disabled");
 	LogInfo("    P25: %s", m_p25Enabled ? "enabled" : "disabled");
 	LogInfo("    NXDN: %s", m_nxdnEnabled ? "enabled" : "disabled");
+#if defined(USE_M17)
 	LogInfo("    M17: %s", m_m17Enabled ? "enabled" : "disabled");
+#endif
 #if defined(USE_POCSAG)
 	LogInfo("    POCSAG: %s", m_pocsagEnabled ? "enabled" : "disabled");
 #endif
@@ -2115,8 +2157,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25Network->enable(false);
 		if (m_nxdnNetwork != NULL)
 			m_nxdnNetwork->enable(false);
+#if defined(USE_M17)
 		if (m_m17Network != NULL)
 			m_m17Network->enable(false);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
@@ -2141,8 +2185,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25->enable(false);
 		if (m_nxdn != NULL)
 			m_nxdn->enable(false);
+#if defined(USE_M17)
 		if (m_m17 != NULL)
 			m_m17->enable(false);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
@@ -2176,8 +2222,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25Network->enable(false);
 		if (m_nxdnNetwork != NULL)
 			m_nxdnNetwork->enable(false);
+#if defined(USE_M17)
 		if (m_m17Network != NULL)
 			m_m17Network->enable(false);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
@@ -2202,8 +2250,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25->enable(false);
 		if (m_nxdn != NULL)
 			m_nxdn->enable(false);
+#if defined(USE_M17)
 		if (m_m17 != NULL)
 			m_m17->enable(false);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
@@ -2241,8 +2291,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25Network->enable(false);
 		if (m_nxdnNetwork != NULL)
 			m_nxdnNetwork->enable(false);
+#if defined(USE_M17)
 		if (m_m17Network != NULL)
 			m_m17Network->enable(false);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
@@ -2267,8 +2319,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25->enable(false);
 		if (m_nxdn != NULL)
 			m_nxdn->enable(false);
+#if defined(USE_M17)
 		if (m_m17 != NULL)
 			m_m17->enable(false);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
@@ -2302,8 +2356,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25Network->enable(true);
 		if (m_nxdnNetwork != NULL)
 			m_nxdnNetwork->enable(false);
+#if defined(USE_M17)
 		if (m_m17Network != NULL)
 			m_m17Network->enable(false);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
@@ -2328,8 +2384,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25->enable(true);
 		if (m_nxdn != NULL)
 			m_nxdn->enable(false);
+#if defined(USE_M17)
 		if (m_m17 != NULL)
 			m_m17->enable(false);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
@@ -2363,8 +2421,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25Network->enable(false);
 		if (m_nxdnNetwork != NULL)
 			m_nxdnNetwork->enable(true);
+#if defined(USE_M17)
 		if (m_m17Network != NULL)
 			m_m17Network->enable(false);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
@@ -2389,8 +2449,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25->enable(false);
 		if (m_nxdn != NULL)
 			m_nxdn->enable(true);
+#if defined(USE_M17)
 		if (m_m17 != NULL)
 			m_m17->enable(false);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
@@ -2424,8 +2486,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25Network->enable(false);
 		if (m_nxdnNetwork != NULL)
 			m_nxdnNetwork->enable(false);
+#if defined(USE_M17)
 		if (m_m17Network != NULL)
 			m_m17Network->enable(true);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
@@ -2450,8 +2514,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25->enable(false);
 		if (m_nxdn != NULL)
 			m_nxdn->enable(false);
+#if defined(USE_M17)
 		if (m_m17 != NULL)
 			m_m17->enable(true);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
@@ -2485,8 +2551,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25Network->enable(false);
 		if (m_nxdnNetwork != NULL)
 			m_nxdnNetwork->enable(false);
+#if defined(USE_M17)
 		if (m_m17Network != NULL)
 			m_m17Network->enable(false);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(true);
@@ -2511,8 +2579,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25->enable(false);
 		if (m_nxdn != NULL)
 			m_nxdn->enable(false);
+#if defined(USE_M17)
 		if (m_m17 != NULL)
 			m_m17->enable(false);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(true);
@@ -2546,8 +2616,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25Network->enable(false);
 		if (m_nxdnNetwork != NULL)
 			m_nxdnNetwork->enable(false);
+#if defined(USE_M17)
 		if (m_m17Network != NULL)
 			m_m17Network->enable(false);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
@@ -2572,8 +2644,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25->enable(false);
 		if (m_nxdn != NULL)
 			m_nxdn->enable(false);
+#if defined(USE_M17)
 		if (m_m17 != NULL)
 			m_m17->enable(false);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
@@ -2611,8 +2685,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25Network->enable(false);
 		if (m_nxdnNetwork != NULL)
 			m_nxdnNetwork->enable(false);
+#if defined(USE_M17)
 		if (m_m17Network != NULL)
 			m_m17Network->enable(false);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
@@ -2637,8 +2713,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25->enable(false);
 		if (m_nxdn != NULL)
 			m_nxdn->enable(false);
+#if defined(USE_M17)
 		if (m_m17 != NULL)
 			m_m17->enable(false);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
@@ -2677,8 +2755,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25Network->enable(false);
 		if (m_nxdnNetwork != NULL)
 			m_nxdnNetwork->enable(false);
+#if defined(USE_M17)
 		if (m_m17Network != NULL)
 			m_m17Network->enable(false);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
@@ -2703,8 +2783,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25->enable(false);
 		if (m_nxdn != NULL)
 			m_nxdn->enable(false);
+#if defined(USE_M17)
 		if (m_m17 != NULL)
 			m_m17->enable(false);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
@@ -2741,8 +2823,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25Network->enable(true);
 		if (m_nxdnNetwork != NULL)
 			m_nxdnNetwork->enable(true);
+#if defined(USE_M17)
 		if (m_m17Network != NULL)
 			m_m17Network->enable(true);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(true);
@@ -2767,8 +2851,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_p25->enable(true);
 		if (m_nxdn != NULL)
 			m_nxdn->enable(true);
+#if defined(USE_M17)
 		if (m_m17 != NULL)
 			m_m17->enable(true);
+#endif
 #if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(true);
@@ -2856,10 +2942,12 @@ void CMMDVMHost::remoteControl(const std::string& commandString)
 			if (m_nxdn != NULL)
 				processModeCommand(MODE_NXDN, m_nxdnRFModeHang);
 			break;
+#if defined(USE_M17)
 		case RCD_MODE_M17:
 			if (m_m17 != NULL)
 				processModeCommand(MODE_M17, m_m17RFModeHang);
 			break;
+#endif
 #if defined(USE_FM)
 		case RCD_MODE_FM:
 			if (m_fmEnabled)
@@ -2898,12 +2986,14 @@ void CMMDVMHost::remoteControl(const std::string& commandString)
 			if (m_nxdnNetwork != NULL)
 				m_nxdnNetwork->enable(true);
 			break;
+#if defined(USE_M17)
 		case RCD_ENABLE_M17:
 			if (m_m17 != NULL && !m_m17Enabled)
 				processEnableCommand(m_m17Enabled, true);
 			if (m_m17Network != NULL)
 				m_m17Network->enable(true);
 			break;
+#endif
 #if defined(USE_FM)
 		case RCD_ENABLE_FM:
 			if (!m_fmEnabled)
@@ -2948,12 +3038,14 @@ void CMMDVMHost::remoteControl(const std::string& commandString)
 			if (m_nxdnNetwork != NULL)
 				m_nxdnNetwork->enable(false);
 			break;
+#if defined(USE_M17)
 		case RCD_DISABLE_M17:
 			if (m_m17 != NULL && m_m17Enabled)
 				processEnableCommand(m_m17Enabled, false);
 			if (m_m17Network != NULL)
 				m_m17Network->enable(false);
 			break;
+#endif
 #if defined(USE_FM)
 		case RCD_DISABLE_FM:
 			if (m_fmEnabled)
@@ -3070,7 +3162,9 @@ void CMMDVMHost::buildNetworkStatusString(std::string &str)
 	str += std::string(" ysf:") + (((m_ysfNetwork == NULL) || !m_ysfEnabled) ? "n/a" : (m_ysfNetwork->isConnected() ? "conn" : "disc"));
 	str += std::string(" p25:") + (((m_p25Network == NULL) || !m_p25Enabled) ? "n/a" : (m_p25Network->isConnected() ? "conn" : "disc"));
 	str += std::string(" nxdn:") + (((m_nxdnNetwork == NULL) || !m_nxdnEnabled) ? "n/a" : (m_nxdnNetwork->isConnected() ? "conn" : "disc"));
+#if defined(USE_M17)
 	str += std::string(" m17:") + (((m_m17Network == NULL) || !m_m17Enabled) ? "n/a" : (m_m17Network->isConnected() ? "conn" : "disc"));
+#endif
 #if defined(USE_FM)
 	str += std::string(" fm:") + (m_fmEnabled ? "conn" : "n/a");
 #endif
@@ -3109,7 +3203,9 @@ void CMMDVMHost::buildNetworkHostsString(std::string &str)
 	str += std::string(" ysf:\"") + ((m_ysfEnabled && (m_ysfNetwork != NULL)) ? m_conf.getFusionNetworkGatewayAddress() : "NONE") + "\"";
 	str += std::string(" p25:\"") + ((m_p25Enabled && (m_p25Network != NULL)) ? m_conf.getP25GatewayAddress() : "NONE") + "\"";
 	str += std::string(" nxdn:\"") + ((m_nxdnEnabled && (m_nxdnNetwork != NULL)) ? m_conf.getNXDNGatewayAddress() : "NONE") + "\"";
+#if defined(USE_M17)
 	str += std::string(" m17:\"") + ((m_m17Enabled && (m_m17Network != NULL)) ? m_conf.getM17GatewayAddress() : "NONE") + "\"";
+#endif
 #if defined(USE_FM)
 	str += std::string(" fm:\"") + ((m_fmEnabled && (m_fmNetwork != NULL)) ? m_conf.getFMGatewayAddress() : "NONE") + "\"";
 #endif

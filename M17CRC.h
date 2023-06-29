@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,6 +19,10 @@
 #if !defined(M17CRC_H)
 #define	M17CRC_H
 
+#include "Defines.h"
+
+#if defined(USE_M17)
+
 #include <cstdint>
 
 class CM17CRC
@@ -32,3 +36,6 @@ private:
 };
 
 #endif
+
+#endif
+

@@ -53,7 +53,9 @@ public:
 	void setYSFParams(bool loDev, unsigned int txHang);
 	void setP25Params(unsigned int txHang);
 	void setNXDNParams(unsigned int txHang);
+#if defined(USE_M17)
 	void setM17Params(unsigned int txHang);
+#endif
 #if defined(USE_AX25)
 	void setAX25Params(int rxTwist, unsigned int txDelay, unsigned int slotTime, unsigned int pPersist);
 #endif
@@ -75,7 +77,9 @@ public:
 	bool hasYSF() const;
 	bool hasP25() const;
 	bool hasNXDN() const;
+#if defined(USE_M17)
 	bool hasM17() const;
+#endif
 #if defined(USE_POCSAG)
 	bool hasPOCSAG() const;
 #endif
@@ -95,7 +99,9 @@ public:
 	unsigned int readYSFData(unsigned char* data);
 	unsigned int readP25Data(unsigned char* data);
 	unsigned int readNXDNData(unsigned char* data);
+#if defined(USE_M17)
 	unsigned int readM17Data(unsigned char* data);
+#endif
 #if defined(USE_FM)
 	unsigned int readFMData(unsigned char* data);
 #endif
@@ -111,7 +117,9 @@ public:
 	bool hasYSFSpace() const;
 	bool hasP25Space() const;
 	bool hasNXDNSpace() const;
+#if defined(USE_M17)
 	bool hasM17Space() const;
+#endif
 #if defined(USE_POCSAG)
 	bool hasPOCSAGSpace() const;
 #endif
@@ -138,7 +146,9 @@ public:
 	bool writeYSFData(const unsigned char* data, unsigned int length);
 	bool writeP25Data(const unsigned char* data, unsigned int length);
 	bool writeNXDNData(const unsigned char* data, unsigned int length);
+#if defined(USE_M17)
 	bool writeM17Data(const unsigned char* data, unsigned int length);
+#endif
 #if defined(USE_POCSAG)
 	bool writePOCSAGData(const unsigned char* data, unsigned int length);
 #endif
@@ -156,7 +166,9 @@ public:
 	bool writeYSFInfo(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
 	bool writeP25Info(const char* source, bool group, unsigned int dest, const char* type);
 	bool writeNXDNInfo(const char* source, bool group, unsigned int dest, const char* type);
+#if defined(USE_M17)
 	bool writeM17Info(const char* source, const char* dest, const char* type);
+#endif
 #if defined(USE_POCSAG)
 	bool writePOCSAGInfo(unsigned int ric, const std::string& message);
 #endif
@@ -190,7 +202,9 @@ private:
 	unsigned int               m_ysfTXHang;
 	unsigned int               m_p25TXHang;
 	unsigned int               m_nxdnTXHang;
+#if defined(USE_M17)
 	unsigned int               m_m17TXHang;
+#endif
 	bool                       m_duplex;
 	bool                       m_rxInvert;
 	bool                       m_txInvert;
@@ -206,7 +220,9 @@ private:
 	float                      m_ysfTXLevel;
 	float                      m_p25TXLevel;
 	float                      m_nxdnTXLevel;
+#if defined(USE_M17)
 	float                      m_m17TXLevel;
+#endif
 #if defined(USE_POCSAG)
 	float                      m_pocsagTXLevel;
 #endif
@@ -232,7 +248,9 @@ private:
 	bool                       m_ysfEnabled;
 	bool                       m_p25Enabled;
 	bool                       m_nxdnEnabled;
+#if defined(USE_M17)
 	bool                       m_m17Enabled;
+#endif
 #if defined(USE_POCSAG)
 	bool                       m_pocsagEnabled;
 #endif
@@ -265,8 +283,10 @@ private:
 	CRingBuffer<unsigned char> m_txP25Data;
 	CRingBuffer<unsigned char> m_rxNXDNData;
 	CRingBuffer<unsigned char> m_txNXDNData;
+#if defined(USE_M17)
 	CRingBuffer<unsigned char> m_rxM17Data;
 	CRingBuffer<unsigned char> m_txM17Data;
+#endif
 #if defined(USE_POCSAG)
 	CRingBuffer<unsigned char> m_txPOCSAGData;
 #endif
@@ -294,7 +314,9 @@ private:
 	unsigned int               m_ysfSpace;
 	unsigned int               m_p25Space;
 	unsigned int               m_nxdnSpace;
+#if defined(USE_M17)
 	unsigned int               m_m17Space;
+#endif
 #if defined(USE_POCSAG)
 	unsigned int               m_pocsagSpace;
 #endif

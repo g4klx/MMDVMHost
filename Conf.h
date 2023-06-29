@@ -100,7 +100,9 @@ public:
 	float        getModemYSFTXLevel() const;
 	float        getModemP25TXLevel() const;
 	float        getModemNXDNTXLevel() const;
+#if defined(USE_M17)
 	float        getModemM17TXLevel() const;
+#endif
 #if defined(USE_POCSAG)
 	float        getModemPOCSAGTXLevel() const;
 #endif
@@ -184,6 +186,7 @@ public:
 	unsigned int getNXDNTXHang() const;
 	unsigned int getNXDNModeHang() const;
 
+#if defined(USE_M17)
 	// The M17 section
 	bool         getM17Enabled() const;
 	unsigned int getM17CAN() const;
@@ -191,6 +194,7 @@ public:
 	bool         getM17AllowEncryption() const;
 	unsigned int getM17TXHang() const;
 	unsigned int getM17ModeHang() const;
+#endif
 
 #if defined(USE_POCSAG)
 	// The POCSAG section
@@ -299,6 +303,7 @@ public:
 	unsigned int getNXDNNetworkModeHang() const;
 	bool         getNXDNNetworkDebug() const;
 
+#if defined(USE_M17)
 	// The M17 Network section
 	bool         getM17NetworkEnabled() const;
 	std::string  getM17GatewayAddress() const;
@@ -307,6 +312,7 @@ public:
 	unsigned short getM17LocalPort() const;
 	unsigned int getM17NetworkModeHang() const;
 	bool         getM17NetworkDebug() const;
+#endif
 
 #if defined(USE_POCSAG)
 	// The POCSAG Network section
@@ -484,11 +490,13 @@ private:
 	unsigned int m_nxdnTXHang;
 	unsigned int m_nxdnModeHang;
 
+#if defined(USE_M17)
 	bool         m_m17Enabled;
 	unsigned int m_m17CAN;
 	bool         m_m17SelfOnly;
 	bool         m_m17AllowEncryption;
 	unsigned int m_m17TXHang;
+#endif
 	unsigned int m_m17ModeHang;
 
 #if defined(USE_POCSAG)
@@ -598,13 +606,17 @@ private:
 	unsigned int m_nxdnNetworkModeHang;
 	bool         m_nxdnNetworkDebug;
 
+#if defined(USE_M17)
 	bool         m_m17NetworkEnabled;
 	std::string  m_m17GatewayAddress;
 	unsigned short m_m17GatewayPort;
 	std::string  m_m17LocalAddress;
 	unsigned short m_m17LocalPort;
+#endif
 	unsigned int m_m17NetworkModeHang;
+#if defined(USE_M17)
 	bool         m_m17NetworkDebug;
+#endif
 
 #if defined(USE_POCSAG)
 	bool         m_pocsagNetworkEnabled;

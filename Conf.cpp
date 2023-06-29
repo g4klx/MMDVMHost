@@ -45,7 +45,9 @@ enum SECTION {
 	SECTION_FUSION,
 	SECTION_P25,
 	SECTION_NXDN,
+#if defined(USE_M17)
 	SECTION_M17,
+#endif
 #if defined(USE_POCSAG)
 	SECTION_POCSAG,
 #endif
@@ -62,7 +64,9 @@ enum SECTION {
 	SECTION_FUSION_NETWORK,
 	SECTION_P25_NETWORK,
 	SECTION_NXDN_NETWORK,
+#if defined(USE_M17)
 	SECTION_M17_NETWORK,
+#endif
 #if defined(USE_POCSAG)
 	SECTION_POCSAG_NETWORK,
 #endif
@@ -196,11 +200,13 @@ m_nxdnSelfOnly(false),
 m_nxdnRemoteGateway(false),
 m_nxdnTXHang(5U),
 m_nxdnModeHang(10U),
+#if defined(USE_M17)
 m_m17Enabled(false),
 m_m17CAN(0U),
 m_m17SelfOnly(false),
 m_m17AllowEncryption(false),
 m_m17TXHang(5U),
+#endif
 m_m17ModeHang(10U),
 #if defined(USE_POCSAG)
 m_pocsagEnabled(false),
@@ -301,13 +307,17 @@ m_nxdnLocalAddress(),
 m_nxdnLocalPort(0U),
 m_nxdnNetworkModeHang(3U),
 m_nxdnNetworkDebug(false),
+#if defined(USE_M17)
 m_m17NetworkEnabled(false),
 m_m17GatewayAddress(),
 m_m17GatewayPort(0U),
 m_m17LocalAddress(),
 m_m17LocalPort(0U),
+#endif
 m_m17NetworkModeHang(3U),
+#if defined(USE_M17)
 m_m17NetworkDebug(false),
+#endif
 #if defined(USE_POCSAG)
 m_pocsagNetworkEnabled(false),
 m_pocsagGatewayAddress(),
@@ -395,8 +405,10 @@ bool CConf::read()
 				section = SECTION_P25;
 			else if (::strncmp(buffer, "[NXDN]", 6U) == 0)
 				section = SECTION_NXDN;
+#if defined(USE_M17)
 			else if (::strncmp(buffer, "[M17]", 5U) == 0)
 				section = SECTION_M17;
+#endif
 #if defined(USE_POCSAG)
 			else if (::strncmp(buffer, "[POCSAG]", 8U) == 0)
 				section = SECTION_POCSAG;
@@ -421,8 +433,10 @@ bool CConf::read()
 				section = SECTION_P25_NETWORK;
 			else if (::strncmp(buffer, "[NXDN Network]", 14U) == 0)
 				section = SECTION_NXDN_NETWORK;
+#if defined(USE_M17)
 			else if (::strncmp(buffer, "[M17 Network]", 13U) == 0)
 				section = SECTION_M17_NETWORK;
+#endif
 #if defined(USE_POCSAG)
 			else if (::strncmp(buffer, "[POCSAG Network]", 16U) == 0)
 				section = SECTION_POCSAG_NETWORK;
@@ -600,8 +614,10 @@ bool CConf::read()
 				m_modemP25TXLevel = float(::atof(value));
 			else if (::strcmp(key, "NXDNTXLevel") == 0)
 				m_modemNXDNTXLevel = float(::atof(value));
+#if defined(USE_M17)
 			else if (::strcmp(key, "M17TXLevel") == 0)
 				m_modemM17TXLevel = float(::atof(value));
+#endif
 #if defined(USE_POCSAG)
 			else if (::strcmp(key, "POCSAGTXLevel") == 0)
 				m_modemPOCSAGTXLevel = float(::atof(value));
@@ -813,6 +829,7 @@ bool CConf::read()
 				m_nxdnTXHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "ModeHang") == 0)
 				m_nxdnModeHang = (unsigned int)::atoi(value);
+#if defined(USE_M17)
 		} else if (section == SECTION_M17) {
 			if (::strcmp(key, "Enable") == 0)
 				m_m17Enabled = ::atoi(value) == 1;
@@ -826,6 +843,7 @@ bool CConf::read()
 				m_m17TXHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "ModeHang") == 0)
 				m_m17ModeHang = (unsigned int)::atoi(value);
+#endif
 #if defined(USE_POCSAG)
 		} else if (section == SECTION_POCSAG) {
 			if (::strcmp(key, "Enable") == 0)
@@ -1019,6 +1037,7 @@ bool CConf::read()
 				m_nxdnNetworkModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Debug") == 0)
 				m_nxdnNetworkDebug = ::atoi(value) == 1;
+#if defined(USE_M17)
 		} else if (section == SECTION_M17_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_m17NetworkEnabled = ::atoi(value) == 1;
@@ -1034,6 +1053,7 @@ bool CConf::read()
 				m_m17NetworkModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Debug") == 0)
 				m_m17NetworkDebug = ::atoi(value) == 1;
+#endif
 #if defined(USE_POCSAG)
 		} else if (section == SECTION_POCSAG_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
@@ -1372,10 +1392,12 @@ float CConf::getModemNXDNTXLevel() const
 	return m_modemNXDNTXLevel;
 }
 
+#if defined(USE_M17)
 float CConf::getModemM17TXLevel() const
 {
 	return m_modemM17TXLevel;
 }
+#endif
 
 #if defined(USE_POCSAG)
 float CConf::getModemPOCSAGTXLevel() const
@@ -1695,6 +1717,7 @@ unsigned int CConf::getNXDNModeHang() const
 	return m_nxdnModeHang;
 }
 
+#if defined(USE_M17)
 bool CConf::getM17Enabled() const
 {
 	return m_m17Enabled;
@@ -1724,6 +1747,7 @@ unsigned int CConf::getM17ModeHang() const
 {
 	return m_m17ModeHang;
 }
+#endif
 
 #if defined(USE_POCSAG)
 bool CConf::getPOCSAGEnabled() const
@@ -2148,6 +2172,7 @@ bool CConf::getNXDNNetworkDebug() const
 	return m_nxdnNetworkDebug;
 }
 
+#if defined(USE_M17)
 bool CConf::getM17NetworkEnabled() const
 {
 	return m_m17NetworkEnabled;
@@ -2182,6 +2207,7 @@ bool CConf::getM17NetworkDebug() const
 {
 	return m_m17NetworkDebug;
 }
+#endif
 
 #if defined(USE_POCSAG)
 bool CConf::getPOCSAGNetworkEnabled() const

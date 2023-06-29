@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2018,2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018,2020,2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -29,13 +29,14 @@
 #include <cassert>
 #include <cstring>
 
-
+#if defined(USE_DSTAR)
 void CSync::addDStarSync(unsigned char* data)
 {
 	assert(data != NULL);
 
 	::memcpy(data + DSTAR_VOICE_FRAME_LENGTH_BYTES, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES);
 }
+#endif
 
 void CSync::addDMRDataSync(unsigned char* data, bool duplex)
 {
@@ -85,6 +86,7 @@ void CSync::addNXDNSync(unsigned char* data)
 		data[i] = (data[i] & ~NXDN_FSW_BYTES_MASK[i]) | NXDN_FSW_BYTES[i];
 }
 
+#if defined(USE_M17)
 void CSync::addM17LinkSetupSync(unsigned char* data)
 {
 	assert(data != NULL);
@@ -105,4 +107,5 @@ void CSync::addM17EOTSync(unsigned char* data)
 
 	::memcpy(data, M17_EOT_SYNC_BYTES, M17_SYNC_LENGTH_BYTES);
 }
+#endif
 

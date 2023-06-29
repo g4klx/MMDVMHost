@@ -39,7 +39,9 @@ enum REMOTE_COMMAND {
 	RCD_MODE_YSF,
 	RCD_MODE_P25,
 	RCD_MODE_NXDN,
+#if defined(USE_M17)
 	RCD_MODE_M17,
+#endif
 #if defined(USE_FM)
 	RCD_MODE_FM,
 #endif
@@ -50,7 +52,9 @@ enum REMOTE_COMMAND {
 	RCD_ENABLE_YSF,
 	RCD_ENABLE_P25,
 	RCD_ENABLE_NXDN,
+#if defined(USE_M17)
 	RCD_ENABLE_M17,
+#endif
 #if defined(USE_FM)
 	RCD_ENABLE_FM,
 #endif
@@ -64,7 +68,9 @@ enum REMOTE_COMMAND {
 	RCD_DISABLE_YSF,
 	RCD_DISABLE_P25,
 	RCD_DISABLE_NXDN,
+#if defined(USE_M17)
 	RCD_DISABLE_M17,
+#endif
 #if defined(USE_FM)
 	RCD_DISABLE_FM,
 #endif

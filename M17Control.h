@@ -29,6 +29,8 @@
 #include "Timer.h"
 #include "Modem.h"
 
+#if defined(USE_M17)
+
 #include <string>
 
 #include <nlohmann/json.hpp>
@@ -91,7 +93,6 @@ private:
 	unsigned int               m_bitsCount;
 	unsigned int               m_bitErrsAccum;
 	bool                       m_enabled;
-	FILE*                      m_fp;
 
 	bool processRFHeader(bool lateEntry);
 
@@ -127,10 +128,9 @@ private:
 	void writeJSONRF(nlohmann::json& json, const char* action, float duration, float ber);
 	void writeJSONNet(nlohmann::json& json, const char* action);
 	void writeJSONNet(nlohmann::json& json, const char* action, RPT_NET_STATE state, const std::string& source, const std::string& dest);
-
-	bool openFile();
-	bool writeFile(const unsigned char* data);
-	void closeFile();
 };
 
 #endif
+
+#endif
+

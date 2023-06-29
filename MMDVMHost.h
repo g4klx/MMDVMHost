@@ -68,7 +68,9 @@ private:
 	CYSFControl*    m_ysf;
 	CP25Control*    m_p25;
 	CNXDNControl*   m_nxdn;
+#if defined(USE_M17)
 	CM17Control*    m_m17;
+#endif
 #if defined(USE_POCSAG)
 	CPOCSAGControl* m_pocsag;
 #endif
@@ -85,7 +87,9 @@ private:
 	CYSFNetwork*    m_ysfNetwork;
 	CP25Network*    m_p25Network;
 	INXDNNetwork*   m_nxdnNetwork;
+#if defined(USE_M17)
 	CM17Network*    m_m17Network;
+#endif
 #if defined(USE_POCSAG)
 	CPOCSAGNetwork* m_pocsagNetwork;
 #endif
@@ -103,7 +107,9 @@ private:
 	unsigned int    m_ysfRFModeHang;
 	unsigned int    m_p25RFModeHang;
 	unsigned int    m_nxdnRFModeHang;
+#if defined(USE_M17)
 	unsigned int    m_m17RFModeHang;
+#endif
 #if defined(USE_FM)
 	unsigned int    m_fmRFModeHang;
 #endif
@@ -114,7 +120,9 @@ private:
 	unsigned int    m_ysfNetModeHang;
 	unsigned int    m_p25NetModeHang;
 	unsigned int    m_nxdnNetModeHang;
+#if defined(USE_M17)
 	unsigned int    m_m17NetModeHang;
+#endif
 #if defined(USE_POCSAG)
 	unsigned int    m_pocsagNetModeHang;
 #endif
@@ -155,7 +163,9 @@ private:
 	bool createYSFNetwork();
 	bool createP25Network();
 	bool createNXDNNetwork();
+#if defined(USE_M17)
 	bool createM17Network();
+#endif
 #if defined(USE_POCSAG)
 	bool createPOCSAGNetwork();
 #endif
