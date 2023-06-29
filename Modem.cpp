@@ -80,9 +80,13 @@ const unsigned char MMDVM_M17_PACKET     = 0x47U;
 const unsigned char MMDVM_M17_LOST       = 0x48U;
 const unsigned char MMDVM_M17_EOT        = 0x49U;
 
+#if defined(USE_POCSAG)
 const unsigned char MMDVM_POCSAG_DATA = 0x50U;
+#endif
 
+#if defined(USE_AX25)
 const unsigned char MMDVM_AX25_DATA   = 0x55U;
+#endif
 
 const unsigned char MMDVM_FM_PARAMS1  = 0x60U;
 const unsigned char MMDVM_FM_PARAMS2  = 0x61U;
@@ -118,9 +122,12 @@ const unsigned char CAP1_P25    = 0x08U;
 const unsigned char CAP1_NXDN   = 0x10U;
 const unsigned char CAP1_M17    = 0x20U;
 const unsigned char CAP1_FM     = 0x40U;
+#if defined(USE_POCSAG)
 const unsigned char CAP2_POCSAG = 0x01U;
+#endif
+#if defined(USE_AX25)
 const unsigned char CAP2_AX25   = 0x02U;
-
+#endif
 
 CModem::CModem(bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug) :
 m_protocolVersion(0U),
@@ -144,25 +151,35 @@ m_ysfTXLevel(0.0F),
 m_p25TXLevel(0.0F),
 m_nxdnTXLevel(0.0F),
 m_m17TXLevel(0.0F),
+#if defined(USE_POCSAG)
 m_pocsagTXLevel(0.0F),
+#endif
 m_fmTXLevel(0.0F),
+#if defined(USE_AX25)
 m_ax25TXLevel(0.0F),
+#endif
 m_rfLevel(0.0F),
 m_useCOSAsLockout(useCOSAsLockout),
 m_trace(trace),
 m_debug(debug),
 m_rxFrequency(0U),
 m_txFrequency(0U),
+#if defined(USE_POCSAG)
 m_pocsagFrequency(0U),
+#endif
 m_dstarEnabled(false),
 m_dmrEnabled(false),
 m_ysfEnabled(false),
 m_p25Enabled(false),
 m_nxdnEnabled(false),
 m_m17Enabled(false),
+#if defined(USE_POCSAG)
 m_pocsagEnabled(false),
+#endif
 m_fmEnabled(false),
+#if defined(USE_AX25)
 m_ax25Enabled(false),
+#endif
 m_rxDCOffset(0),
 m_txDCOffset(0),
 m_port(NULL),
@@ -185,11 +202,15 @@ m_rxNXDNData(1000U, "Modem RX NXDN"),
 m_txNXDNData(1000U, "Modem TX NXDN"),
 m_rxM17Data(1000U, "Modem RX M17"),
 m_txM17Data(1000U, "Modem TX M17"),
+#if defined(USE_POCSAG)
 m_txPOCSAGData(1000U, "Modem TX POCSAG"),
+#endif
 m_rxFMData(5000U, "Modem RX FM"),
 m_txFMData(5000U, "Modem TX FM"),
+#if defined(USE_AX25)
 m_rxAX25Data(1000U, "Modem RX AX.25"),
 m_txAX25Data(1000U, "Modem TX AX.25"),
+#endif
 m_rxSerialData(1000U, "Modem RX Serial"),
 m_txSerialData(1000U, "Modem TX Serial"),
 m_rxTransparentData(1000U, "Modem RX Transparent"),
@@ -205,19 +226,25 @@ m_ysfSpace(0U),
 m_p25Space(0U),
 m_nxdnSpace(0U),
 m_m17Space(0U),
+#if defined(USE_POCSAG)
 m_pocsagSpace(0U),
+#endif
 m_fmSpace(0U),
+#if defined(USE_AX25)
 m_ax25Space(0U),
+#endif
 m_tx(false),
 m_cd(false),
 m_lockout(false),
 m_error(false),
 m_mode(MODE_IDLE),
 m_hwType(HWT_UNKNOWN),
+#if defined(USE_AX25)
 m_ax25RXTwist(0),
 m_ax25TXDelay(300U),
 m_ax25SlotTime(30U),
 m_ax25PPersist(128U),
+#endif
 m_fmCallsign(),
 m_fmCallsignSpeed(20U),
 m_fmCallsignFrequency(1000U),
@@ -279,7 +306,9 @@ void CModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int tx
 	m_txDCOffset      = txDCOffset;
 	m_rxDCOffset      = rxDCOffset;
 	m_rfLevel         = rfLevel;
+#if defined(USE_POCSAG)
 	m_pocsagFrequency = pocsagFrequency + txOffset;
+#endif
 }
 
 void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool m17Enabled, bool pocsagEnabled, bool fmEnabled, bool ax25Enabled)
@@ -290,9 +319,13 @@ void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, 
 	m_p25Enabled    = p25Enabled;
 	m_nxdnEnabled   = nxdnEnabled;
 	m_m17Enabled    = m17Enabled;
+#if defined(USE_POCSAG)
 	m_pocsagEnabled = pocsagEnabled;
+#endif
 	m_fmEnabled     = fmEnabled;
+#if defined(USE_AX25)
 	m_ax25Enabled   = ax25Enabled;
+#endif
 }
 
 void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float m17TXLevel, float pocsagTXLevel, float fmTXLevel, float ax25TXLevel)
@@ -305,9 +338,13 @@ void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, flo
 	m_p25TXLevel    = p25TXLevel;
 	m_nxdnTXLevel   = nxdnTXLevel;
 	m_m17TXLevel    = m17TXLevel;
+#if defined(USE_POCSAG)
 	m_pocsagTXLevel = pocsagTXLevel;
+#endif
 	m_fmTXLevel     = fmTXLevel;
+#if defined(USE_AX25)
 	m_ax25TXLevel   = ax25TXLevel;
+#endif
 }
 
 void CModem::setDMRParams(unsigned int colorCode)
@@ -338,6 +375,7 @@ void CModem::setM17Params(unsigned int txHang)
 	m_m17TXHang = txHang;
 }
 
+#if defined(USE_AX25)
 void CModem::setAX25Params(int rxTwist, unsigned int txDelay, unsigned int slotTime, unsigned int pPersist)
 {
 	m_ax25RXTwist  = rxTwist;
@@ -345,6 +383,7 @@ void CModem::setAX25Params(int rxTwist, unsigned int txDelay, unsigned int slotT
 	m_ax25SlotTime = slotTime;
 	m_ax25PPersist = pPersist;
 }
+#endif
 
 void CModem::setTransparentDataParams(unsigned int sendFrameType)
 {
@@ -758,6 +797,7 @@ void CModem::clock(unsigned int ms)
 			}
 			break;
 
+#if defined(USE_AX25)
 			case MMDVM_AX25_DATA: {
 				if (m_trace)
 					CUtils::dump(1U, "RX AX.25 Data", m_buffer, m_length);
@@ -768,6 +808,7 @@ void CModem::clock(unsigned int ms)
 				m_rxAX25Data.addData(m_buffer + m_offset, m_length - m_offset);
 			}
 			break;
+#endif
 
 			case MMDVM_GET_STATUS:
 				// if (m_trace)
@@ -796,9 +837,13 @@ void CModem::clock(unsigned int ms)
 						m_p25Space    = 0U;
 						m_nxdnSpace   = 0U;
 						m_m17Space    = 0U;
+#if defined(USE_POCSAG)
 						m_pocsagSpace = 0U;
+#endif
 						m_fmSpace     = 0U;
+#if defined(USE_AX25)
 						m_ax25Space   = 0U;
+#endif
 
 						m_dstarSpace = m_buffer[m_offset + 3U];
 						m_dmrSpace1  = m_buffer[m_offset + 4U];
@@ -810,8 +855,10 @@ void CModem::clock(unsigned int ms)
 							m_p25Space    = m_buffer[m_offset + 7U];
 						if (m_length > (m_offset + 8U))
 							m_nxdnSpace   = m_buffer[m_offset + 8U];
+#if defined(USE_POCSAG)
 						if (m_length > (m_offset + 9U))
 							m_pocsagSpace = m_buffer[m_offset + 9U];
+#endif
 						if (m_length > (m_offset + 10U))
 							m_m17Space    = m_buffer[m_offset + 10U];
 					}
@@ -844,8 +891,12 @@ void CModem::clock(unsigned int ms)
 						m_nxdnSpace   = m_buffer[m_offset + 8U];
 						m_m17Space    = m_buffer[m_offset + 9U];
 						m_fmSpace     = m_buffer[m_offset + 10U];
+#if defined(USE_POCSAG)
 						m_pocsagSpace = m_buffer[m_offset + 11U];
+#endif
+#if defined(USE_AX25)
 						m_ax25Space   = m_buffer[m_offset + 12U];
+#endif
 					}
 					break;
 
@@ -857,9 +908,13 @@ void CModem::clock(unsigned int ms)
 					m_p25Space    = 0U;
 					m_nxdnSpace   = 0U;
 					m_m17Space    = 0U;
+#if defined(USE_POCSAG)
 					m_pocsagSpace = 0U;
+#endif
 					m_fmSpace     = 0U;
+#if defined(USE_AX25)
 					m_ax25Space   = 0U;
+#endif
 					break;
 				}
 
@@ -1075,6 +1130,7 @@ void CModem::clock(unsigned int ms)
 		m_m17Space--;
 	}
 
+#if defined(USE_POCSAG)
 	if (m_pocsagSpace > 1U && !m_txPOCSAGData.isEmpty()) {
 		unsigned char len = 0U;
 		m_txPOCSAGData.getData(&len, 1U);
@@ -1091,6 +1147,7 @@ void CModem::clock(unsigned int ms)
 
 		m_pocsagSpace--;
 	}
+#endif
 
 	if (m_fmSpace > 1U && !m_txFMData.isEmpty()) {
 		unsigned int len = 0U;
@@ -1113,6 +1170,7 @@ void CModem::clock(unsigned int ms)
 		m_fmSpace--;
 	}
 
+#if defined(USE_AX25)
 	if (m_ax25Space > 0U && !m_txAX25Data.isEmpty()) {
 		unsigned int len = 0U;
 		m_txAX25Data.getData((unsigned char*)&len, sizeof(unsigned int));
@@ -1129,6 +1187,7 @@ void CModem::clock(unsigned int ms)
 
 		m_ax25Space = 0U;
 	}
+#endif
 
 	if (!m_txTransparentData.isEmpty()) {
 		unsigned char len = 0U;
@@ -1278,6 +1337,7 @@ unsigned int CModem::readFMData(unsigned char* data)
 	return len;
 }
 
+#if defined(USE_AX25)
 unsigned int CModem::readAX25Data(unsigned char* data)
 {
 	assert(data != NULL);
@@ -1291,6 +1351,7 @@ unsigned int CModem::readAX25Data(unsigned char* data)
 
 	return len;
 }
+#endif
 
 unsigned int CModem::readTransparentData(unsigned char* data)
 {
@@ -1552,6 +1613,7 @@ bool CModem::writeM17Data(const unsigned char* data, unsigned int length)
 	return true;
 }
 
+#if defined(USE_POCSAG)
 bool CModem::hasPOCSAGSpace() const
 {
 	unsigned int space = m_txPOCSAGData.freeSpace() / (POCSAG_FRAME_LENGTH_BYTES + 4U);
@@ -1578,6 +1640,7 @@ bool CModem::writePOCSAGData(const unsigned char* data, unsigned int length)
 
 	return true;
 }
+#endif
 
 unsigned int CModem::getFMSpace() const
 {
@@ -1613,6 +1676,7 @@ bool CModem::writeFMData(const unsigned char* data, unsigned int length)
 	return true;
 }
 
+#if defined(USE_AX25)
 bool CModem::hasAX25Space() const
 {
 	unsigned int space = m_txAX25Data.freeSpace() / (AX25_MAX_FRAME_LENGTH_BYTES + 5U);
@@ -1648,6 +1712,7 @@ bool CModem::writeAX25Data(const unsigned char* data, unsigned int length)
 
 	return true;
 }
+#endif
 
 bool CModem::writeTransparentData(const unsigned char* data, unsigned int length)
 {
@@ -1840,6 +1905,7 @@ bool CModem::writeM17Info(const char* source, const char* dest, const char* type
 	return m_port->write(buffer, 23U) != 23;
 }
 
+#if defined(USE_POCSAG)
 bool CModem::writePOCSAGInfo(unsigned int ric, const std::string& message)
 {
 	assert(m_port != NULL);
@@ -1862,6 +1928,7 @@ bool CModem::writePOCSAGInfo(unsigned int ric, const std::string& message)
 
 	return ret != int(length + 11U);
 }
+#endif
 
 bool CModem::writeIPInfo(const std::string& address)
 {
@@ -1960,15 +2027,19 @@ bool CModem::hasFM() const
 	return (m_capabilities1 & CAP1_FM) == CAP1_FM;
 }
 
+#if defined(USE_POCSAG)
 bool CModem::hasPOCSAG() const
 {
 	return (m_capabilities2 & CAP2_POCSAG) == CAP2_POCSAG;
 }
+#endif
 
+#if defined(USE_AX25)
 bool CModem::hasAX25() const
 {
 	return (m_capabilities2 & CAP2_AX25) == CAP2_AX25;
 }
+#endif
 
 unsigned int CModem::getVersion() const
 {
@@ -2033,7 +2104,11 @@ bool CModem::readVersion()
 				case 1U:
 					LogInfo("MMDVM protocol version: 1, description: %.*s", m_length - 4U, m_buffer + 4U);
 					m_capabilities1 = CAP1_DSTAR | CAP1_DMR | CAP1_YSF | CAP1_P25 | CAP1_NXDN | CAP1_M17;
+#if defined(USE_POCSAG)
 					m_capabilities2 = CAP2_POCSAG;
+#else
+					m_capabilities2 = 0x00U;
+#endif
 					return true;
 
 				case 2U:
@@ -2070,10 +2145,14 @@ bool CModem::readVersion()
 						::strcat(modeText, " M17");
 					if (hasFM())
 						::strcat(modeText, " FM");
+#if defined(USE_POCSAG)
 					if (hasPOCSAG())
 						::strcat(modeText, " POCSAG");
+#endif
+#if defined(USE_AX25)
 					if (hasAX25())
 						::strcat(modeText, " AX.25");
+#endif
 					LogInfo(modeText);
 					return true;
 
@@ -2160,8 +2239,10 @@ bool CModem::setConfig1()
 		buffer[4U] |= 0x08U;
 	if (m_nxdnEnabled)
 		buffer[4U] |= 0x10U;
+#if defined(USE_POCSAG)
 	if (m_pocsagEnabled)
 		buffer[4U] |= 0x20U;
+#endif
 	if (m_m17Enabled)
 		buffer[4U] |= 0x40U;
 
@@ -2190,9 +2271,11 @@ bool CModem::setConfig1()
 	buffer[18U] = (unsigned char)(m_nxdnTXLevel * 2.55F + 0.5F);
 
 	buffer[19U] = (unsigned char)m_ysfTXHang;
-
+#if defined(USE_POCSAG)
 	buffer[20U] = (unsigned char)(m_pocsagTXLevel * 2.55F + 0.5F);
-
+#else
+	buffer[20U] = 0U;
+#endif
 	buffer[21U] = (unsigned char)(m_fmTXLevel * 2.55F + 0.5F);
 
 	buffer[22U] = (unsigned char)m_p25TXHang;
@@ -2281,11 +2364,14 @@ bool CModem::setConfig2()
 		buffer[4U] |= 0x40U;
 
 	buffer[5U] = 0x00U;
+#if defined(USE_POCSAG)
 	if (m_pocsagEnabled)
 		buffer[5U] |= 0x01U;
+#endif
+#if defined(USE_AX25)
 	if (m_ax25Enabled)
 		buffer[5U] |= 0x02U;
-
+#endif
 	buffer[6U] = m_txDelay / 10U;		// In 10ms units
 
 	buffer[7U] = MODE_IDLE;
@@ -2302,9 +2388,17 @@ bool CModem::setConfig2()
 	buffer[15U] = (unsigned char)(m_p25TXLevel * 2.55F + 0.5F);
 	buffer[16U] = (unsigned char)(m_nxdnTXLevel * 2.55F + 0.5F);
 	buffer[17U] = (unsigned char)(m_m17TXLevel * 2.55F + 0.5F);
+#if defined(USE_POCSAG)
 	buffer[18U] = (unsigned char)(m_pocsagTXLevel * 2.55F + 0.5F);
+#else
+	buffer[18U] = 0U;
+#endif
 	buffer[19U] = (unsigned char)(m_fmTXLevel * 2.55F + 0.5F);
+#if defined(USE_AX25)
 	buffer[20U] = (unsigned char)(m_ax25TXLevel * 2.55F + 0.5F);
+#else
+	buffer[20U] = 0U;
+#endif
 	buffer[21U] = 0x00U;
 	buffer[22U] = 0x00U;
 
@@ -2318,11 +2412,17 @@ bool CModem::setConfig2()
 	buffer[29U] = m_dmrColorCode;
 	buffer[30U] = m_dmrDelay;
 
+#if defined(USE_AX25)
 	buffer[31U] = (unsigned char)(m_ax25RXTwist + 128);
 	buffer[32U] = m_ax25TXDelay / 10U;		// In 10ms units
 	buffer[33U] = m_ax25SlotTime / 10U;		// In 10ms units
 	buffer[34U] = m_ax25PPersist;
-
+#else
+	buffer[31U] = 0U;
+	buffer[32U] = 0U;
+	buffer[33U] = 0U;
+	buffer[34U] = 0U;
+#endif
 	buffer[35U] = 0x00U;
 	buffer[36U] = 0x00U;
 	buffer[37U] = 0x00U;
@@ -2368,20 +2468,29 @@ bool CModem::setFrequency()
 
 	unsigned char buffer[20U];
 	unsigned char len;
-	unsigned int  pocsagFrequency = 433000000U;
 
+#if defined(USE_POCSAG)
+	unsigned int  pocsagFrequency = 433000000U;
 	if (m_pocsagEnabled)
 		pocsagFrequency = m_pocsagFrequency;
+#endif
 
 	if (m_hwType == HWT_DVMEGA)
 		len = 12U;
 	else {
 		buffer[12U]  = (unsigned char)(m_rfLevel * 2.55F + 0.5F);
 
+#if defined(USE_POCSAG)
 		buffer[13U] = (pocsagFrequency >> 0)  & 0xFFU;
 		buffer[14U] = (pocsagFrequency >> 8)  & 0xFFU;
 		buffer[15U] = (pocsagFrequency >> 16) & 0xFFU;
 		buffer[16U] = (pocsagFrequency >> 24) & 0xFFU;
+#else
+		buffer[13U] = 0U;
+		buffer[14U] = 0U;
+		buffer[15U] = 0U;
+		buffer[16U] = 0U;
+#endif
 
 		len = 17U;
 	}

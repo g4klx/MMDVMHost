@@ -54,7 +54,9 @@ public:
 	void setP25Params(unsigned int txHang);
 	void setNXDNParams(unsigned int txHang);
 	void setM17Params(unsigned int txHang);
+#if defined(USE_AX25)
 	void setAX25Params(int rxTwist, unsigned int txDelay, unsigned int slotTime, unsigned int pPersist);
+#endif
 	void setTransparentDataParams(unsigned int sendFrameType);
 
 	void setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch);
@@ -70,10 +72,13 @@ public:
 	bool hasP25() const;
 	bool hasNXDN() const;
 	bool hasM17() const;
+#if defined(USE_POCSAG)
 	bool hasPOCSAG() const;
+#endif
 	bool hasFM() const;
+#if defined(USE_AX25)
 	bool hasAX25() const;
-
+#endif
 	unsigned int getVersion() const;
 
 	unsigned int readDStarData(unsigned char* data);
@@ -84,7 +89,9 @@ public:
 	unsigned int readNXDNData(unsigned char* data);
 	unsigned int readM17Data(unsigned char* data);
 	unsigned int readFMData(unsigned char* data);
+#if defined(USE_AX25)
 	unsigned int readAX25Data(unsigned char* data);
+#endif
 
 	bool hasDStarSpace() const;
 	bool hasDMRSpace1() const;
@@ -93,9 +100,13 @@ public:
 	bool hasP25Space() const;
 	bool hasNXDNSpace() const;
 	bool hasM17Space() const;
+#if defined(USE_POCSAG)
 	bool hasPOCSAGSpace() const;
+#endif
 	unsigned int getFMSpace() const;
+#if defined(USE_AX25)
 	bool hasAX25Space() const;
+#endif
 
 	bool hasTX() const;
 	bool hasCD() const;
@@ -111,9 +122,13 @@ public:
 	bool writeP25Data(const unsigned char* data, unsigned int length);
 	bool writeNXDNData(const unsigned char* data, unsigned int length);
 	bool writeM17Data(const unsigned char* data, unsigned int length);
+#if defined(USE_POCSAG)
 	bool writePOCSAGData(const unsigned char* data, unsigned int length);
+#endif
 	bool writeFMData(const unsigned char* data, unsigned int length);
+#if defined(USE_AX25)
 	bool writeAX25Data(const unsigned char* data, unsigned int length);
+#endif
 
 	bool writeDStarInfo(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
 	bool writeDMRInfo(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
@@ -121,7 +136,9 @@ public:
 	bool writeP25Info(const char* source, bool group, unsigned int dest, const char* type);
 	bool writeNXDNInfo(const char* source, bool group, unsigned int dest, const char* type);
 	bool writeM17Info(const char* source, const char* dest, const char* type);
+#if defined(USE_POCSAG)
 	bool writePOCSAGInfo(unsigned int ric, const std::string& message);
+#endif
 	bool writeIPInfo(const std::string& address);
 
 	bool writeDMRStart(bool tx);
@@ -167,25 +184,35 @@ private:
 	float                      m_p25TXLevel;
 	float                      m_nxdnTXLevel;
 	float                      m_m17TXLevel;
+#if defined(USE_POCSAG)
 	float                      m_pocsagTXLevel;
+#endif
 	float                      m_fmTXLevel;
+#if defined(USE_AX25)
 	float                      m_ax25TXLevel;
+#endif
 	float                      m_rfLevel;
 	bool                       m_useCOSAsLockout;
 	bool                       m_trace;
 	bool                       m_debug;
 	unsigned int               m_rxFrequency;
 	unsigned int               m_txFrequency;
+#if defined(USE_POCSAG)
 	unsigned int               m_pocsagFrequency;
+#endif
 	bool                       m_dstarEnabled;
 	bool                       m_dmrEnabled;
 	bool                       m_ysfEnabled;
 	bool                       m_p25Enabled;
 	bool                       m_nxdnEnabled;
 	bool                       m_m17Enabled;
+#if defined(USE_POCSAG)
 	bool                       m_pocsagEnabled;
+#endif
 	bool                       m_fmEnabled;
+#if defined(USE_AX25)
 	bool                       m_ax25Enabled;
+#endif
 	int                        m_rxDCOffset;
 	int                        m_txDCOffset;
 	IModemPort*                m_port;
@@ -208,11 +235,15 @@ private:
 	CRingBuffer<unsigned char> m_txNXDNData;
 	CRingBuffer<unsigned char> m_rxM17Data;
 	CRingBuffer<unsigned char> m_txM17Data;
+#if defined(USE_POCSAG)
 	CRingBuffer<unsigned char> m_txPOCSAGData;
+#endif
 	CRingBuffer<unsigned char> m_rxFMData;
 	CRingBuffer<unsigned char> m_txFMData;
+#if defined(USE_AX25)
 	CRingBuffer<unsigned char> m_rxAX25Data;
 	CRingBuffer<unsigned char> m_txAX25Data;
+#endif
 	CRingBuffer<unsigned char> m_rxSerialData;
 	CRingBuffer<unsigned char> m_txSerialData;
 	CRingBuffer<unsigned char> m_rxTransparentData;
@@ -228,20 +259,25 @@ private:
 	unsigned int               m_p25Space;
 	unsigned int               m_nxdnSpace;
 	unsigned int               m_m17Space;
+#if defined(USE_POCSAG)
 	unsigned int               m_pocsagSpace;
+#endif
 	unsigned int               m_fmSpace;
+#if defined(USE_AX25)
 	unsigned int               m_ax25Space;
+#endif
 	bool                       m_tx;
 	bool                       m_cd;
 	bool                       m_lockout;
 	bool                       m_error;
 	unsigned char              m_mode;
 	HW_TYPE                    m_hwType;
+#if defined(USE_AX25)
 	int                        m_ax25RXTwist;
 	unsigned int               m_ax25TXDelay;
 	unsigned int               m_ax25SlotTime;
 	unsigned int               m_ax25PPersist;
-
+#endif
 	std::string                m_fmCallsign;
 	unsigned int               m_fmCallsignSpeed;
 	unsigned int               m_fmCallsignFrequency;
