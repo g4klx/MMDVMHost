@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2020 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2020,2023 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -16,14 +16,14 @@
 #include "Utils.h"
 #include "Log.h"
 
+#if defined(USE_AX25)
+
 #include <cstdio>
 #include <cassert>
 #include <cstring>
 #include <ctime>
 
 #include <nlohmann/json.hpp>
-
-// #define	DUMP_AX25
 
 const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
 
@@ -80,47 +80,6 @@ unsigned int CAX25Control::readModem(unsigned char* data)
 		CUtils::dump(1U, "AX.25 transmitted packet", data, length);
 
 	return length;
-}
-
-bool CAX25Control::openFile()
-{
-	if (m_fp != NULL)
-		return true;
-
-	time_t t;
-	::time(&t);
-
-	struct tm* tm = ::localtime(&t);
-
-	char name[100U];
-	::sprintf(name, "AX25_%04d%02d%02d_%02d%02d%02d.ambe", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
-
-	m_fp = ::fopen(name, "wb");
-	if (m_fp == NULL)
-		return false;
-
-	::fwrite("AX25", 1U, 4U, m_fp);
-
-	return true;
-}
-
-bool CAX25Control::writeFile(const unsigned char* data, unsigned int length)
-{
-	if (m_fp == NULL)
-		return false;
-
-	::fwrite(&length, 1U, sizeof(unsigned int), m_fp);
-	::fwrite(data, 1U, length, m_fp);
-
-	return true;
-}
-
-void CAX25Control::closeFile()
-{
-	if (m_fp != NULL) {
-		::fclose(m_fp);
-		m_fp = NULL;
-	}
 }
 
 void CAX25Control::enable(bool enabled)
@@ -423,4 +382,6 @@ bool CAX25Control::decodeAddressJSON(const unsigned char* data, std::string& tex
 
 	return (data[6U] & 0x01U) == 0x00U;
 }
+
+#endif
 

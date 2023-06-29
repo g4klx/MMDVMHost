@@ -101,7 +101,9 @@ public:
   float        getModemM17TXLevel() const;
   float        getModemPOCSAGTXLevel() const;
   float        getModemFMTXLevel() const;
+#if defined(USE_AX25)
   float        getModemAX25TXLevel() const;
+#endif
   std::string  getModemRSSIMappingFile() const;
   bool         getModemUseCOSAsLockout() const;
   bool         getModemTrace() const;
@@ -186,6 +188,7 @@ public:
   bool         getPOCSAGEnabled() const;
   unsigned int getPOCSAGFrequency() const;
 
+#if defined(USE_AX25)
   // The AX.25 section
   bool         getAX25Enabled() const;
   unsigned int getAX25TXDelay() const;
@@ -193,6 +196,7 @@ public:
   unsigned int getAX25SlotTime() const;
   unsigned int getAX25PPersist() const;
   bool         getAX25Trace() const;
+#endif
 
   // The FM Section
   bool         getFMEnabled() const;
@@ -313,11 +317,13 @@ public:
   unsigned int getFMNetworkModeHang() const;
   bool         getFMNetworkDebug() const;
 
+#if defined(USE_AX25)
   // The AX.25 Network section
   bool         getAX25NetworkEnabled() const;
   std::string  getAX25NetworkPort() const;
   unsigned int getAX25NetworkSpeed() const;
   bool         getAX25NetworkDebug() const;
+#endif
 
   // The Lock File section
   bool         getLockFileEnabled() const;

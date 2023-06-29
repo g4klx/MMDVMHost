@@ -46,7 +46,9 @@ enum SECTION {
 	SECTION_M17,
 	SECTION_POCSAG,
 	SECTION_FM,
+#if defined(USE_AX25)
 	SECTION_AX25,
+#endif
 	SECTION_DSTAR_NETWORK,
 	SECTION_DMR_NETWORK,
 	SECTION_FUSION_NETWORK,
@@ -55,7 +57,9 @@ enum SECTION {
 	SECTION_M17_NETWORK,
 	SECTION_POCSAG_NETWORK,
 	SECTION_FM_NETWORK,
+#if defined(USE_AX25)
 	SECTION_AX25_NETWORK,
+#endif
 	SECTION_LOCK_FILE,
 	SECTION_REMOTE_CONTROL
 };
@@ -222,12 +226,14 @@ m_fmRFAudioBoost(1U),
 m_fmMaxDevLevel(90.0F),
 m_fmExtAudioBoost(1U),
 m_fmModeHang(10U),
+#if defined(USE_AX25)
 m_ax25Enabled(false),
 m_ax25TXDelay(300U),
 m_ax25RXTwist(6),
 m_ax25SlotTime(30U),
 m_ax25PPersist(128U),
 m_ax25Trace(false),
+#endif
 m_dstarNetworkEnabled(false),
 m_dstarGatewayAddress(),
 m_dstarGatewayPort(0U),
@@ -293,10 +299,12 @@ m_fmTXAudioGain(1.0F),
 m_fmRXAudioGain(1.0F),
 m_fmNetworkModeHang(3U),
 m_fmNetworkDebug(false),
+#if defined(USE_AX25)
 m_ax25NetworkEnabled(false),
 m_ax25NetworkPort(),
 m_ax25NetworkSpeed(9600U),
 m_ax25NetworkDebug(false),
+#endif
 m_lockFileEnabled(false),
 m_lockFileName(),
 m_remoteControlEnabled(false)
@@ -357,8 +365,10 @@ bool CConf::read()
 				section = SECTION_POCSAG;
 			else if (::strncmp(buffer, "[FM]", 4U) == 0)
 				section = SECTION_FM;
+#if defined(USE_AX25)
 			else if (::strncmp(buffer, "[AX.25]", 7U) == 0)
 				section = SECTION_AX25;
+#endif
 			else if (::strncmp(buffer, "[D-Star Network]", 16U) == 0)
 				section = SECTION_DSTAR_NETWORK;
 			else if (::strncmp(buffer, "[DMR Network]", 13U) == 0)
@@ -375,8 +385,10 @@ bool CConf::read()
 				section = SECTION_POCSAG_NETWORK;
 			else if (::strncmp(buffer, "[FM Network]", 12U) == 0)
 				section = SECTION_FM_NETWORK;
+#if defined(USE_AX25)
 			else if (::strncmp(buffer, "[AX.25 Network]", 15U) == 0)
 				section = SECTION_AX25_NETWORK;
+#endif
 			else if (::strncmp(buffer, "[Lock File]", 11U) == 0)
 				section = SECTION_LOCK_FILE;
 			else if (::strncmp(buffer, "[Remote Control]", 16U) == 0)
@@ -851,6 +863,7 @@ bool CConf::read()
 				m_fmExtAudioBoost = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "ModeHang") == 0)
 				m_fmModeHang = (unsigned int)::atoi(value);
+#if defined(USE_AX25)
 		} else if (section == SECTION_AX25) {
 			if (::strcmp(key, "Enable") == 0)
 				m_ax25Enabled = ::atoi(value) == 1;
@@ -864,6 +877,7 @@ bool CConf::read()
 				m_ax25PPersist = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Trace") == 0)
 				m_ax25Trace = ::atoi(value) == 1;
+#endif
 		} else if (section == SECTION_DSTAR_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_dstarNetworkEnabled = ::atoi(value) == 1;
@@ -1000,6 +1014,7 @@ bool CConf::read()
 				m_fmNetworkModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Debug") == 0)
 				m_fmNetworkDebug = ::atoi(value) == 1;
+#if defined(USE_AX25)
 		} else if (section == SECTION_AX25_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_ax25NetworkEnabled = ::atoi(value) == 1;
@@ -1009,6 +1024,7 @@ bool CConf::read()
 				m_ax25NetworkSpeed = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Debug") == 0)
 				m_ax25NetworkDebug = ::atoi(value) == 1;
+#endif
 		} else if (section == SECTION_LOCK_FILE) {
 			if (::strcmp(key, "Enable") == 0)
 				m_lockFileEnabled = ::atoi(value) == 1;
@@ -1305,10 +1321,12 @@ float CConf::getModemFMTXLevel() const
 	return m_modemFMTXLevel;
 }
 
+#if defined(USE_AX25)
 float CConf::getModemAX25TXLevel() const
 {
 	return m_modemAX25TXLevel;
 }
+#endif
 
 std::string CConf::getModemRSSIMappingFile () const
 {
@@ -1825,6 +1843,7 @@ unsigned int CConf::getFMModeHang() const
 	return m_fmModeHang;
 }
 
+#if defined(USE_AX25)
 bool CConf::getAX25Enabled() const
 {
 	return m_ax25Enabled;
@@ -1854,6 +1873,7 @@ bool CConf::getAX25Trace() const
 {
 	return m_ax25Trace;
 }
+#endif
 
 bool CConf::getDStarNetworkEnabled() const
 {
@@ -2180,6 +2200,7 @@ bool CConf::getFMNetworkDebug() const
 	return m_fmNetworkDebug;
 }
 
+#if defined(USE_AX25)
 bool CConf::getAX25NetworkEnabled() const
 {
 	return m_ax25NetworkEnabled;
@@ -2199,6 +2220,7 @@ bool CConf::getAX25NetworkDebug() const
 {
 	return m_ax25NetworkDebug;
 }
+#endif
 
 bool CConf::getLockFileEnabled() const
 {

@@ -20,6 +20,9 @@
 #define	AX25Control_H
 
 #include "AX25Network.h"
+#include "Defines.h"
+
+#if defined(USE_AX25)
 
 #include <string>
 
@@ -44,10 +47,9 @@ private:
 	void decodeJSON(const char* source, const unsigned char* data, unsigned int length);
 	bool decodeAddress(const unsigned char* data, std::string& text, bool isDigi = false) const;
 	bool decodeAddressJSON(const unsigned char* data, std::string& text, bool& isDigi) const;
-
-	bool openFile();
-	bool writeFile(const unsigned char* data, unsigned int length);
-	void closeFile();
 };
 
 #endif
+
+#endif
+

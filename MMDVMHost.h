@@ -40,6 +40,7 @@
 #include "FMNetwork.h"
 #include "DMRLookup.h"
 #include "FMControl.h"
+#include "Defines.h"
 #include "Timer.h"
 #include "Modem.h"
 #include "Conf.h"
@@ -68,7 +69,9 @@ private:
 	CM17Control*    m_m17;
 	CPOCSAGControl* m_pocsag;
 	CFMControl*     m_fm;
+#if defined(USE_AX25)
 	CAX25Control*   m_ax25;
+#endif
 	CDStarNetwork*  m_dstarNetwork;
 	CDMRNetwork*    m_dmrNetwork;
 	CYSFNetwork*    m_ysfNetwork;
@@ -77,7 +80,9 @@ private:
 	CM17Network*    m_m17Network;
 	CPOCSAGNetwork* m_pocsagNetwork;
 	CFMNetwork*     m_fmNetwork;
+#if defined(USE_AX25)
 	CAX25Network*   m_ax25Network;
+#endif
 	unsigned char   m_mode;
 	unsigned int    m_dstarRFModeHang;
 	unsigned int    m_dmrRFModeHang;
@@ -129,7 +134,9 @@ private:
 	bool createM17Network();
 	bool createPOCSAGNetwork();
 	bool createFMNetwork();
+#if defined(USE_AX25)
 	bool createAX25Network();
+#endif
 
 	void writeSerial(const std::string& message);
 
