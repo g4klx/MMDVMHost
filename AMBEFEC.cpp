@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2010,2014,2016,2018,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2010,2014,2016,2018,2021,2023 by Jonathan Naylor G4KLX
  *   Copyright (C) 2016 Mathias Weyland, HB9FRV
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -574,6 +574,7 @@ unsigned int CAMBEFEC::regenerateDMR(unsigned char* bytes) const
 	return errors;
 }
 
+#if defined(USE_DSTAR)
 unsigned int CAMBEFEC::regenerateDStar(unsigned char* bytes) const
 {
 	assert(bytes != NULL);
@@ -605,6 +606,7 @@ unsigned int CAMBEFEC::regenerateDStar(unsigned char* bytes) const
 
 	return errors;
 }
+#endif
 
 unsigned int CAMBEFEC::regenerateYSFDN(unsigned char* bytes) const
 {
@@ -791,6 +793,7 @@ unsigned int CAMBEFEC::regenerateIMBE(unsigned char* bytes) const
 	return errors;
 }
 
+#if defined(USE_DSTAR)
 unsigned int CAMBEFEC::regenerateDStar(unsigned int& a, unsigned int& b) const
 {
 	unsigned int orig_a = a;
@@ -824,6 +827,7 @@ unsigned int CAMBEFEC::regenerateDStar(unsigned int& a, unsigned int& b) const
 
 	return errsA + errsB;
 }
+#endif
 
 unsigned int CAMBEFEC::regenerateDMR(unsigned int& a, unsigned int& b, unsigned int& c) const
 {

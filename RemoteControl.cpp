@@ -65,8 +65,10 @@ REMOTE_COMMAND CRemoteControl::getCommand(const std::string& command)
 			m_command = RCD_MODE_IDLE;
 		else if (m_args.at(1U) == "lockout")
 			m_command = RCD_MODE_LOCKOUT;
+#if defined(USE_DSTAR)
 		else if (m_args.at(1U) == "d-star")
 			m_command = RCD_MODE_DSTAR;
+#endif
 		else if (m_args.at(1U) == "dmr")
 			m_command = RCD_MODE_DMR;
 		else if (m_args.at(1U) == "ysf")
@@ -80,50 +82,67 @@ REMOTE_COMMAND CRemoteControl::getCommand(const std::string& command)
 		else
 			reply = "KO";
 	} else if (m_args.at(0U) == "enable" && m_args.size() >= ENABLE_ARGS) {
+#if defined(USE_DSTAR)
 		if (m_args.at(1U) == "dstar")
 			m_command = RCD_ENABLE_DSTAR;
-		else if (m_args.at(1U) == "dmr")
+		else
+#endif
+		if (m_args.at(1U) == "dmr")
 			m_command = RCD_ENABLE_DMR;
-		else if (m_args.at(1U) == "ysf")
+		else
+		if (m_args.at(1U) == "ysf")
 			m_command = RCD_ENABLE_YSF;
-		else if (m_args.at(1U) == "p25")
+		else
+		if (m_args.at(1U) == "p25")
 			m_command = RCD_ENABLE_P25;
-		else if (m_args.at(1U) == "nxdn")
+		else
+		if (m_args.at(1U) == "nxdn")
 			m_command = RCD_ENABLE_NXDN;
-		else if (m_args.at(1U) == "m17")
+		else
+		if (m_args.at(1U) == "m17")
 			m_command = RCD_ENABLE_M17;
 #if defined(USE_FM)
-		else if (m_args.at(1U) == "fm")
+		if (m_args.at(1U) == "fm")
 			m_command = RCD_ENABLE_FM;
+		else
 #endif
 #if defined(USE_AX25)
-		else if (m_args.at(1U) == "ax25")
+		if (m_args.at(1U) == "ax25")
 			m_command = RCD_ENABLE_AX25;
-#endif
 		else
+#endif
 			reply = "KO";
 	} else if (m_args.at(0U) == "disable" && m_args.size() >= DISABLE_ARGS) {
+#if defined(USE_DSTAR)
 		if (m_args.at(1U) == "dstar")
 			m_command = RCD_DISABLE_DSTAR;
-		else if (m_args.at(1U) == "dmr")
+		else
+#endif
+		if (m_args.at(1U) == "dmr")
 			m_command = RCD_DISABLE_DMR;
-		else if (m_args.at(1U) == "ysf")
+		else
+		if (m_args.at(1U) == "ysf")
 			m_command = RCD_DISABLE_YSF;
-		else if (m_args.at(1U) == "p25")
+		else
+		if (m_args.at(1U) == "p25")
 			m_command = RCD_DISABLE_P25;
-		else if (m_args.at(1U) == "nxdn")
+		else
+		if (m_args.at(1U) == "nxdn")
 			m_command = RCD_DISABLE_NXDN;
-		else if (m_args.at(1U) == "m17")
+		else
+		if (m_args.at(1U) == "m17")
 			m_command = RCD_DISABLE_M17;
+		else
 #if defined(USE_FM)
-		else if (m_args.at(1U) == "fm")
+		if (m_args.at(1U) == "fm")
 			m_command = RCD_DISABLE_FM;
+		else
 #endif
 #if defined(USE_AX25)
-		else if (m_args.at(1U) == "ax25")
+		if (m_args.at(1U) == "ax25")
 			m_command = RCD_DISABLE_AX25;
-#endif
 		else
+#endif
 			reply = "KO";
 #if defined(USE_POCSAG)
 	} else if (m_args.at(0U) == "page" && m_args.size() >= PAGE_ARGS) {
@@ -185,7 +204,9 @@ unsigned int CRemoteControl::getArgCount() const
 	switch (m_command) {
 		case RCD_MODE_IDLE:
 		case RCD_MODE_LOCKOUT:
+#if defined(USE_DSTAR)
 		case RCD_MODE_DSTAR:
+#endif
 		case RCD_MODE_DMR:
 		case RCD_MODE_YSF:
 		case RCD_MODE_P25:
@@ -211,7 +232,9 @@ std::string CRemoteControl::getArgString(unsigned int n) const
 	switch (m_command) {
 		case RCD_MODE_IDLE:
 		case RCD_MODE_LOCKOUT:
+#if defined(USE_DSTAR)
 		case RCD_MODE_DSTAR:
+#endif
 		case RCD_MODE_DMR:
 		case RCD_MODE_YSF:
 		case RCD_MODE_P25:

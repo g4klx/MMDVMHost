@@ -16,6 +16,8 @@
 #include "Sync.h"
 #include "Log.h"
 
+#if defined(USE_DSTAR)
+
 #include <cstdio>
 #include <cassert>
 #include <ctime>
@@ -37,8 +39,6 @@ bool CallsignCompare(const std::string& arg, const unsigned char* my)
 
 	return true;
 }
-
-// #define	DUMP_DSTAR
 
 CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool ackReply, unsigned int ackTime, DSTAR_ACK_MESSAGE ackMessage, bool errorReply, const std::vector<std::string>& blackList, const std::vector<std::string>& whiteList, CDStarNetwork* network, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
 m_callsign(NULL),
@@ -703,10 +703,6 @@ void CDStarControl::writeEndNet()
 
 	if (m_network != NULL)
 		m_network->reset();
-
-#if defined(DUMP_DSTAR)
-	closeFile();
-#endif
 }
 
 void CDStarControl::writeNetwork()
@@ -768,10 +764,6 @@ void CDStarControl::writeNetwork()
 
 		writeQueueHeaderNet(data);
 
-#if defined(DUMP_DSTAR)
-		openFile();
-		writeFile(data + 1U, length - 1U);
-#endif
 		m_netState = RS_NET_AUDIO;
 
 		LINK_STATUS status = LS_NONE;
@@ -797,10 +789,6 @@ void CDStarControl::writeNetwork()
 
 		data[1U] = TAG_EOT;
 
-#if defined(DUMP_DSTAR)
-		writeFile(data + 1U, length - 1U);
-		closeFile();
-#endif
 		m_netNextFrameIsFastData = false;
 		m_netSkipDTMFBlankingFrames = 0U;
 
@@ -852,12 +840,6 @@ void CDStarControl::writeNetwork()
 		m_packetTimer.start();
 		m_netFrames++;
 
-#if defined(DUMP_DSTAR)
-		if (n == 1U)
-			writeFile(m_netVoiceSyncData + 1U, m_netVoiceSyncDataLen - 1U);
-		if (n >= 1U)
-			writeFile(data + 1U, length - 1U);
-#endif
 		if (n == 1U)
 			writeQueueDataNet(m_netVoiceSyncData + 1U);
 		if (n >= 1U)
@@ -906,9 +888,6 @@ void CDStarControl::clock()
 			LogMessage("D-Star, network watchdog has expired, %.1f seconds,  %u%% packet loss", float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames);
 			writeJSONNet("lost", float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames);
 			writeEndNet();
-#if defined(DUMP_DSTAR)
-			closeFile();
-#endif
 		}
 	}
 
@@ -1086,46 +1065,6 @@ void CDStarControl::writeNetworkDataRF(const unsigned char* data, unsigned int e
 		return;
 
 	m_network->writeData(data + 1U, DSTAR_FRAME_LENGTH_BYTES, errors, end, m_netState != RS_NET_IDLE);
-}
-
-bool CDStarControl::openFile()
-{
-	if (m_fp != NULL)
-		return true;
-
-	time_t t;
-	::time(&t);
-
-	struct tm* tm = ::localtime(&t);
-
-	char name[100U];
-	::sprintf(name, "DStar_%04d%02d%02d_%02d%02d%02d.ambe", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
-
-	m_fp = ::fopen(name, "wb");
-	if (m_fp == NULL)
-		return false;
-
-	::fwrite("DSTAR", 1U, 4U, m_fp);
-
-	return true;
-}
-
-bool CDStarControl::writeFile(const unsigned char* data, unsigned int length)
-{
-	if (m_fp == NULL)
-		return false;
-
-	::fwrite(data, 1U, length, m_fp);
-
-	return true;
-}
-
-void CDStarControl::closeFile()
-{
-	if (m_fp != NULL) {
-		::fclose(m_fp);
-		m_fp = NULL;
-	}
 }
 
 bool CDStarControl::insertSilence(const unsigned char* data, unsigned char seqNo)
@@ -1558,4 +1497,6 @@ std::string CDStarControl::convertBuffer(const unsigned char* buffer, unsigned i
 
 	return callsign;
 }
+
+#endif
 

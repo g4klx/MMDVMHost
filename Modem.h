@@ -68,7 +68,9 @@ public:
 
 	bool open();
 
+#if defined(USE_DSTAR)
 	bool hasDStar() const;
+#endif
 	bool hasDMR() const;
 	bool hasYSF() const;
 	bool hasP25() const;
@@ -85,7 +87,9 @@ public:
 #endif
 	unsigned int getVersion() const;
 
+#if defined(USE_DSTAR)
 	unsigned int readDStarData(unsigned char* data);
+#endif
 	unsigned int readDMRData1(unsigned char* data);
 	unsigned int readDMRData2(unsigned char* data);
 	unsigned int readYSFData(unsigned char* data);
@@ -99,7 +103,9 @@ public:
 	unsigned int readAX25Data(unsigned char* data);
 #endif
 
+#if defined(USE_DSTAR)
 	bool hasDStarSpace() const;
+#endif
 	bool hasDMRSpace1() const;
 	bool hasDMRSpace2() const;
 	bool hasYSFSpace() const;
@@ -123,7 +129,10 @@ public:
 	bool hasError() const;
 
 	bool writeConfig();
+
+#if defined(USE_DSTAR)
 	bool writeDStarData(const unsigned char* data, unsigned int length);
+#endif
 	bool writeDMRData1(const unsigned char* data, unsigned int length);
 	bool writeDMRData2(const unsigned char* data, unsigned int length);
 	bool writeYSFData(const unsigned char* data, unsigned int length);
@@ -140,7 +149,9 @@ public:
 	bool writeAX25Data(const unsigned char* data, unsigned int length);
 #endif
 
+#if defined(USE_DSTAR)
 	bool writeDStarInfo(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
+#endif
 	bool writeDMRInfo(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
 	bool writeYSFInfo(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
 	bool writeP25Info(const char* source, bool group, unsigned int dest, const char* type);
@@ -188,7 +199,9 @@ private:
 	unsigned int               m_dmrDelay;
 	float                      m_rxLevel;
 	float                      m_cwIdTXLevel;
+#if defined(USE_DSTAR)
 	float                      m_dstarTXLevel;
+#endif
 	float                      m_dmrTXLevel;
 	float                      m_ysfTXLevel;
 	float                      m_p25TXLevel;
@@ -212,7 +225,9 @@ private:
 #if defined(USE_POCSAG)
 	unsigned int               m_pocsagFrequency;
 #endif
+#if defined(USE_DSTAR)
 	bool                       m_dstarEnabled;
+#endif
 	bool                       m_dmrEnabled;
 	bool                       m_ysfEnabled;
 	bool                       m_p25Enabled;
@@ -235,8 +250,11 @@ private:
 	unsigned int               m_offset;
 	SERIAL_STATE               m_state;
 	unsigned char              m_type;
+
+#if defined(USE_DSTAR)
 	CRingBuffer<unsigned char> m_rxDStarData;
 	CRingBuffer<unsigned char> m_txDStarData;
+#endif
 	CRingBuffer<unsigned char> m_rxDMRData1;
 	CRingBuffer<unsigned char> m_rxDMRData2;
 	CRingBuffer<unsigned char> m_txDMRData1;
@@ -268,7 +286,9 @@ private:
 	CTimer                     m_statusTimer;
 	CTimer                     m_inactivityTimer;
 	CTimer                     m_playoutTimer;
+#if defined(USE_DSTAR)
 	unsigned int               m_dstarSpace;
+#endif
 	unsigned int               m_dmrSpace1;
 	unsigned int               m_dmrSpace2;
 	unsigned int               m_ysfSpace;

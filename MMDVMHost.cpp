@@ -146,7 +146,9 @@ int main(int argc, char** argv)
 CMMDVMHost::CMMDVMHost(const std::string& confFile) :
 m_conf(confFile),
 m_modem(NULL),
+#if defined(USE_DSTAR)
 m_dstar(NULL),
+#endif
 m_dmr(NULL),
 m_ysf(NULL),
 m_p25(NULL),
@@ -161,7 +163,9 @@ m_fm(NULL),
 #if defined(USE_AX25)
 m_ax25(NULL),
 #endif
+#if defined(USE_DSTAR)
 m_dstarNetwork(NULL),
+#endif
 m_dmrNetwork(NULL),
 m_ysfNetwork(NULL),
 m_p25Network(NULL),
@@ -177,7 +181,9 @@ m_fmNetwork(NULL),
 m_ax25Network(NULL),
 #endif
 m_mode(MODE_IDLE),
+#if defined(USE_DSTAR)
 m_dstarRFModeHang(10U),
+#endif
 m_dmrRFModeHang(10U),
 m_ysfRFModeHang(10U),
 m_p25RFModeHang(10U),
@@ -186,7 +192,9 @@ m_m17RFModeHang(10U),
 #if defined(USE_FM)
 m_fmRFModeHang(10U),
 #endif
+#if defined(USE_DSTAR)
 m_dstarNetModeHang(3U),
+#endif
 m_dmrNetModeHang(3U),
 m_ysfNetModeHang(3U),
 m_p25NetModeHang(3U),
@@ -334,10 +342,12 @@ int CMMDVMHost::run()
 	if (!ret)
 		return 1;
 
+#if defined(USE_DSTAR)
 	if (m_dstarEnabled && !m_modem->hasDStar()) {
 		LogWarning("D-Star enabled in the host but not in the modem firmware, disabling");
 		m_dstarEnabled = false;
 	}
+#endif
 
 	if (m_dmrEnabled && !m_modem->hasDMR()) {
 		LogWarning("DMR enabled in the host but not in the modem firmware, disabling");
@@ -388,11 +398,13 @@ int CMMDVMHost::run()
 	LogInfo("Opening network connections");
 	writeJSONMessage("Opening network connections");
 
+#if defined(USE_DSTAR)
 	if (m_dstarEnabled && m_conf.getDStarNetworkEnabled()) {
 		ret = createDStarNetwork();
 		if (!ret)
 			return 1;
 	}
+#endif
 
 	if (m_dmrEnabled && m_conf.getDMRNetworkEnabled()) {
 		ret = createDMRNetwork();
@@ -535,6 +547,7 @@ int CMMDVMHost::run()
 	CStopWatch stopWatch;
 	stopWatch.start();
 
+#if defined(USE_DSTAR)
 	if (m_dstarEnabled) {
 		std::string module                 = m_conf.getDStarModule();
 		bool selfOnly                      = m_conf.getDStarSelfOnly();
@@ -564,6 +577,7 @@ int CMMDVMHost::run()
 
 		m_dstar = new CDStarControl(m_callsign, module, selfOnly, ackReply, ackTime, ackMessage, errorReply, blackList, whiteList, m_dstarNetwork, m_timeout, m_duplex, remoteGateway, rssi);
 	}
+#endif
 
 	DMR_BEACONS dmrBeacons = DMR_BEACONS_OFF;
 	CTimer dmrBeaconIntervalTimer(1000U);
@@ -822,6 +836,7 @@ int CMMDVMHost::run()
 		unsigned int len;
 		bool ret;
 
+#if defined(USE_DSTAR)
 		len = m_modem->readDStarData(data);
 		if (m_dstar != NULL && len > 0U) {
 			if (m_mode == MODE_IDLE) {
@@ -838,6 +853,7 @@ int CMMDVMHost::run()
 				LogWarning("D-Star modem data received when in mode %u", m_mode);
 			}
 		}
+#endif
 
 		len = m_modem->readDMRData1(data);
 		if (m_dmr != NULL && len > 0U) {
@@ -1020,6 +1036,7 @@ int CMMDVMHost::run()
 				setMode(MODE_IDLE);
 		}
 
+#if defined(USE_DSTAR)
 		if (m_dstar != NULL) {
 			ret = m_modem->hasDStarSpace();
 			if (ret) {
@@ -1038,6 +1055,7 @@ int CMMDVMHost::run()
 				}
 			}
 		}
+#endif
 
 		if (m_dmr != NULL) {
 			ret = m_modem->hasDMRSpace1();
@@ -1249,9 +1267,11 @@ int CMMDVMHost::run()
 
 			m_reload = false;
 		}
-		
+
+#if defined(USE_DSTAR)
 		if (m_dstar != NULL)
 			m_dstar->clock();
+#endif
 		if (m_dmr != NULL)
 			m_dmr->clock();
 		if (m_ysf != NULL)
@@ -1271,8 +1291,10 @@ int CMMDVMHost::run()
 			m_fm->clock(ms);
 #endif
 
+#if defined(USE_DSTAR)
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->clock(ms);
+#endif
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->clock(ms);
 		if (m_ysfNetwork != NULL)
@@ -1372,10 +1394,12 @@ int CMMDVMHost::run()
 	LogInfo("Closing network connections");
 	writeJSONMessage("Closing network connections");
 
+#if defined(USE_DSTAR)
 	if (m_dstarNetwork != NULL) {
 		m_dstarNetwork->close();
 		delete m_dstarNetwork;
 	}
+#endif
 
 	if (m_dmrNetwork != NULL) {
 		m_dmrNetwork->close(true);
@@ -1433,7 +1457,9 @@ int CMMDVMHost::run()
 	LogInfo("Stopping protocol handlers");
 	writeJSONMessage("Stopping protocol handlers");
 
+#if defined(USE_DSTAR)
 	delete m_dstar;
+#endif
 	delete m_dmr;
 	delete m_ysf;
 	delete m_p25;
@@ -1481,7 +1507,11 @@ bool CMMDVMHost::createModem()
 	unsigned int dmrDelay        = m_conf.getModemDMRDelay();
 	float rxLevel                = m_conf.getModemRXLevel();
 	float cwIdTXLevel            = m_conf.getModemCWIdTXLevel();
+#if defined(USE_DSTAR)
 	float dstarTXLevel           = m_conf.getModemDStarTXLevel();
+#else
+	float dstarTXLevel           = 0.0F;
+#endif
 	float dmrTXLevel             = m_conf.getModemDMRTXLevel();
 	float ysfTXLevel             = m_conf.getModemYSFTXLevel();
 	float p25TXLevel             = m_conf.getModemP25TXLevel();
@@ -1561,7 +1591,9 @@ bool CMMDVMHost::createModem()
 	LogInfo("    DMR Delay: %u (%.1fms)", dmrDelay, float(dmrDelay) * 0.0416666F);
 	LogInfo("    RX Level: %.1f%%", rxLevel);
 	LogInfo("    CW Id TX Level: %.1f%%", cwIdTXLevel);
+#if defined(USE_DSTAR)
 	LogInfo("    D-Star TX Level: %.1f%%", dstarTXLevel);
+#endif
 	LogInfo("    DMR TX Level: %.1f%%", dmrTXLevel);
 	LogInfo("    YSF TX Level: %.1f%%", ysfTXLevel);
 	LogInfo("    P25 TX Level: %.1f%%", p25TXLevel);
@@ -1709,6 +1741,7 @@ bool CMMDVMHost::createModem()
 	return true;
 }
 
+#if defined(USE_DSTAR)
 bool CMMDVMHost::createDStarNetwork()
 {
 	std::string gatewayAddress = m_conf.getDStarGatewayAddress();
@@ -1738,6 +1771,7 @@ bool CMMDVMHost::createDStarNetwork()
 
 	return true;
 }
+#endif
 
 bool CMMDVMHost::createDMRNetwork()
 {
@@ -2017,7 +2051,9 @@ bool CMMDVMHost::createAX25Network()
 
 void CMMDVMHost::readParams()
 {
+#if defined(USE_DSTAR)
 	m_dstarEnabled  = m_conf.getDStarEnabled();
+#endif
 	m_dmrEnabled    = m_conf.getDMREnabled();
 	m_ysfEnabled    = m_conf.getFusionEnabled();
 	m_p25Enabled    = m_conf.getP25Enabled();
@@ -2042,7 +2078,9 @@ void CMMDVMHost::readParams()
 	LogInfo("    Id: %u", m_id);
 	LogInfo("    Duplex: %s", m_duplex ? "yes" : "no");
 	LogInfo("    Timeout: %us", m_timeout);
+#if defined(USE_DSTAR)
 	LogInfo("    D-Star: %s", m_dstarEnabled ? "enabled" : "disabled");
+#endif
 	LogInfo("    DMR: %s", m_dmrEnabled ? "enabled" : "disabled");
 	LogInfo("    YSF: %s", m_ysfEnabled ? "enabled" : "disabled");
 	LogInfo("    P25: %s", m_p25Enabled ? "enabled" : "disabled");
@@ -2065,8 +2103,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 
 	switch (mode) {
 	case MODE_DSTAR:
+#if defined(USE_DSTAR)
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(true);
+#endif
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(false);
 		if (m_ysfNetwork != NULL)
@@ -2089,8 +2129,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_ax25Network != NULL)
 			m_ax25Network->enable(false);
 #endif
+#if defined(USE_DSTAR)
 		if (m_dstar != NULL)
 			m_dstar->enable(true);
+#endif
 		if (m_dmr != NULL)
 			m_dmr->enable(false);
 		if (m_ysf != NULL)
@@ -2122,8 +2164,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		break;
 
 	case MODE_DMR:
+#if defined(USE_DSTAR)
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(false);
+#endif
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(true);
 		if (m_ysfNetwork != NULL)
@@ -2146,8 +2190,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_ax25Network != NULL)
 			m_ax25Network->enable(false);
 #endif
+#if defined(USE_DSTAR)
 		if (m_dstar != NULL)
 			m_dstar->enable(false);
+#endif
 		if (m_dmr != NULL)
 			m_dmr->enable(true);
 		if (m_ysf != NULL)
@@ -2183,8 +2229,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		break;
 
 	case MODE_YSF:
+#if defined(USE_DSTAR)
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(false);
+#endif
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(false);
 		if (m_ysfNetwork != NULL)
@@ -2207,8 +2255,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_ax25Network != NULL)
 			m_ax25Network->enable(false);
 #endif
+#if defined(USE_DSTAR)
 		if (m_dstar != NULL)
 			m_dstar->enable(false);
+#endif
 		if (m_dmr != NULL)
 			m_dmr->enable(false);
 		if (m_ysf != NULL)
@@ -2240,8 +2290,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		break;
 
 	case MODE_P25:
+#if defined(USE_DSTAR)
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(false);
+#endif
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(false);
 		if (m_ysfNetwork != NULL)
@@ -2264,8 +2316,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_ax25Network != NULL)
 			m_ax25Network->enable(false);
 #endif
+#if defined(USE_DSTAR)
 		if (m_dstar != NULL)
 			m_dstar->enable(false);
+#endif
 		if (m_dmr != NULL)
 			m_dmr->enable(false);
 		if (m_ysf != NULL)
@@ -2297,8 +2351,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		break;
 
 	case MODE_NXDN:
+#if defined(USE_DSTAR)
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(false);
+#endif
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(false);
 		if (m_ysfNetwork != NULL)
@@ -2321,8 +2377,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_ax25Network != NULL)
 			m_ax25Network->enable(false);
 #endif
+#if defined(USE_DSTAR)
 		if (m_dstar != NULL)
 			m_dstar->enable(false);
+#endif
 		if (m_dmr != NULL)
 			m_dmr->enable(false);
 		if (m_ysf != NULL)
@@ -2354,8 +2412,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		break;
 
 	case MODE_M17:
+#if defined(USE_DSTAR)
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(false);
+#endif
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(false);
 		if (m_ysfNetwork != NULL)
@@ -2378,8 +2438,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_ax25Network != NULL)
 			m_ax25Network->enable(false);
 #endif
+#if defined(USE_DSTAR)
 		if (m_dstar != NULL)
 			m_dstar->enable(false);
+#endif
 		if (m_dmr != NULL)
 			m_dmr->enable(false);
 		if (m_ysf != NULL)
@@ -2411,8 +2473,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		break;
 
 	case MODE_POCSAG:
+#if defined(USE_DSTAR)
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(false);
+#endif
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(false);
 		if (m_ysfNetwork != NULL)
@@ -2435,8 +2499,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_ax25Network != NULL)
 			m_ax25Network->enable(false);
 #endif
+#if defined(USE_DSTAR)
 		if (m_dstar != NULL)
 			m_dstar->enable(false);
+#endif
 		if (m_dmr != NULL)
 			m_dmr->enable(false);
 		if (m_ysf != NULL)
@@ -2468,8 +2534,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		break;
 
 	case MODE_FM:
+#if defined(USE_DSTAR)
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(false);
+#endif
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(false);
 		if (m_ysfNetwork != NULL)
@@ -2492,8 +2560,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_ax25Network != NULL)
 			m_ax25Network->enable(true);
 #endif
+#if defined(USE_DSTAR)
 		if (m_dstar != NULL)
 			m_dstar->enable(false);
+#endif
 		if (m_dmr != NULL)
 			m_dmr->enable(false);
 		if (m_ysf != NULL)
@@ -2529,8 +2599,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		break;
 
 	case MODE_LOCKOUT:
+#if defined(USE_DSTAR)
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(false);
+#endif
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(false);
 		if (m_ysfNetwork != NULL)
@@ -2553,8 +2625,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_ax25Network != NULL)
 			m_ax25Network->enable(false);
 #endif
+#if defined(USE_DSTAR)
 		if (m_dstar != NULL)
 			m_dstar->enable(false);
+#endif
 		if (m_dmr != NULL)
 			m_dmr->enable(false);
 		if (m_ysf != NULL)
@@ -2591,8 +2665,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 
 	case MODE_ERROR:
 		LogMessage("Mode set to Error");
+#if defined(USE_DSTAR)
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(false);
+#endif
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(false);
 		if (m_ysfNetwork != NULL)
@@ -2615,8 +2691,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_ax25Network != NULL)
 			m_ax25Network->enable(false);
 #endif
+#if defined(USE_DSTAR)
 		if (m_dstar != NULL)
 			m_dstar->enable(false);
+#endif
 		if (m_dmr != NULL)
 			m_dmr->enable(false);
 		if (m_ysf != NULL)
@@ -2651,8 +2729,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		break;
 
 	default:
+#if defined(USE_DSTAR)
 		if (m_dstarNetwork != NULL)
 			m_dstarNetwork->enable(true);
+#endif
 		if (m_dmrNetwork != NULL)
 			m_dmrNetwork->enable(true);
 		if (m_ysfNetwork != NULL)
@@ -2675,8 +2755,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 		if (m_ax25Network != NULL)
 			m_ax25Network->enable(true);
 #endif
+#if defined(USE_DSTAR)
 		if (m_dstar != NULL)
 			m_dstar->enable(true);
+#endif
 		if (m_dmr != NULL)
 			m_dmr->enable(true);
 		if (m_ysf != NULL)
@@ -2752,10 +2834,12 @@ void CMMDVMHost::remoteControl(const std::string& commandString)
 			m_fixedMode = false;
 			setMode(MODE_LOCKOUT);
 			break;
+#if defined(USE_DSTAR)
 		case RCD_MODE_DSTAR:
 			if (m_dstar != NULL)
 				processModeCommand(MODE_DSTAR, m_dstarRFModeHang);
 			break;
+#endif
 		case RCD_MODE_DMR:
 			if (m_dmr != NULL)
 				processModeCommand(MODE_DMR, m_dmrRFModeHang);
@@ -2782,12 +2866,14 @@ void CMMDVMHost::remoteControl(const std::string& commandString)
 				processModeCommand(MODE_FM, 0);
 			break;
 #endif
+#if defined(USE_DSTAR)
 		case RCD_ENABLE_DSTAR:
 			if (m_dstar != NULL && !m_dstarEnabled)
 				processEnableCommand(m_dstarEnabled, true);
 			if (m_dstarNetwork != NULL)
 				m_dstarNetwork->enable(true);
 			break;
+#endif
 		case RCD_ENABLE_DMR:
 			if (m_dmr != NULL && !m_dmrEnabled)
 				processEnableCommand(m_dmrEnabled, true);
@@ -2830,12 +2916,14 @@ void CMMDVMHost::remoteControl(const std::string& commandString)
 				processEnableCommand(m_ax25Enabled, true);
 			break;
 #endif
+#if defined(USE_DSTAR)
 		case RCD_DISABLE_DSTAR:
 			if (m_dstar != NULL && m_dstarEnabled)
 				processEnableCommand(m_dstarEnabled, false);
 			if (m_dstarNetwork != NULL)
 				m_dstarNetwork->enable(false);
 			break;
+#endif
 		case RCD_DISABLE_DMR:
 			if (m_dmr != NULL && m_dmrEnabled)
 				processEnableCommand(m_dmrEnabled, false);
@@ -2974,12 +3062,15 @@ void CMMDVMHost::processEnableCommand(bool& mode, bool enabled)
 void CMMDVMHost::buildNetworkStatusString(std::string &str)
 {
 	str = "";
-	str += std::string("dstar:") + (((m_dstarNetwork == NULL) || (m_dstarEnabled == false)) ? "n/a" : (m_dstarNetwork->isConnected() ? "conn" : "disc"));
-	str += std::string(" dmr:") + (((m_dmrNetwork == NULL) || (m_dmrEnabled == false)) ? "n/a" : (m_dmrNetwork->isConnected() ? "conn" : "disc"));
-	str += std::string(" ysf:") + (((m_ysfNetwork == NULL) || (m_ysfEnabled == false)) ? "n/a" : (m_ysfNetwork->isConnected() ? "conn" : "disc"));
-	str += std::string(" p25:") + (((m_p25Network == NULL) || (m_p25Enabled == false)) ? "n/a" : (m_p25Network->isConnected() ? "conn" : "disc"));
-	str += std::string(" nxdn:") + (((m_nxdnNetwork == NULL) || (m_nxdnEnabled == false)) ? "n/a" : (m_nxdnNetwork->isConnected() ? "conn" : "disc"));
-	str += std::string(" m17:") + (((m_m17Network == NULL) || (m_m17Enabled == false)) ? "n/a" : (m_m17Network->isConnected() ? "conn" : "disc"));
+
+#if defined(USE_DSTAR)
+	str += std::string("dstar:") + (((m_dstarNetwork == NULL) || !m_dstarEnabled) ? "n/a" : (m_dstarNetwork->isConnected() ? "conn" : "disc"));
+#endif
+	str += std::string(" dmr:") + (((m_dmrNetwork == NULL) || !m_dmrEnabled) ? "n/a" : (m_dmrNetwork->isConnected() ? "conn" : "disc"));
+	str += std::string(" ysf:") + (((m_ysfNetwork == NULL) || !m_ysfEnabled) ? "n/a" : (m_ysfNetwork->isConnected() ? "conn" : "disc"));
+	str += std::string(" p25:") + (((m_p25Network == NULL) || !m_p25Enabled) ? "n/a" : (m_p25Network->isConnected() ? "conn" : "disc"));
+	str += std::string(" nxdn:") + (((m_nxdnNetwork == NULL) || !m_nxdnEnabled) ? "n/a" : (m_nxdnNetwork->isConnected() ? "conn" : "disc"));
+	str += std::string(" m17:") + (((m_m17Network == NULL) || !m_m17Enabled) ? "n/a" : (m_m17Network->isConnected() ? "conn" : "disc"));
 #if defined(USE_FM)
 	str += std::string(" fm:") + (m_fmEnabled ? "conn" : "n/a");
 #endif
@@ -2989,6 +3080,7 @@ void CMMDVMHost::buildNetworkHostsString(std::string &str)
 {
 	str = "";
 
+#if defined(USE_DSTAR)
 	std::string dstarReflector;
 	if (m_dstarEnabled && (m_dstarNetwork != NULL)) {
 		unsigned char ref[DSTAR_LONG_CALLSIGN_LENGTH + 1];
@@ -3010,7 +3102,9 @@ void CMMDVMHost::buildNetworkHostsString(std::string &str)
 			     break;
 		}
 	}
+
 	str += std::string("dstar:\"") + ((dstarReflector.length() == 0) ? "NONE" : dstarReflector) + "\"";
+#endif
 	str += std::string(" dmr:\"") + ((m_dmrEnabled && (m_dmrNetwork != NULL)) ? m_conf.getDMRNetworkGatewayAddress() : "NONE") + "\"";
 	str += std::string(" ysf:\"") + ((m_ysfEnabled && (m_ysfNetwork != NULL)) ? m_conf.getFusionNetworkGatewayAddress() : "NONE") + "\"";
 	str += std::string(" p25:\"") + ((m_p25Enabled && (m_p25Network != NULL)) ? m_conf.getP25GatewayAddress() : "NONE") + "\"";

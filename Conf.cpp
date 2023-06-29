@@ -38,7 +38,9 @@ enum SECTION {
 	SECTION_NXDNID_LOOKUP,
 	SECTION_MODEM,
 	SECTION_TRANSPARENT,
+#if defined(USE_DSTAR)
 	SECTION_DSTAR,
+#endif
 	SECTION_DMR,
 	SECTION_FUSION,
 	SECTION_P25,
@@ -53,7 +55,9 @@ enum SECTION {
 #if defined(USE_AX25)
 	SECTION_AX25,
 #endif
+#if defined(USE_DSTAR)
 	SECTION_DSTAR_NETWORK,
+#endif
 	SECTION_DMR_NETWORK,
 	SECTION_FUSION_NETWORK,
 	SECTION_P25_NETWORK,
@@ -140,6 +144,7 @@ m_transparentRemoteAddress(),
 m_transparentRemotePort(0U),
 m_transparentLocalPort(0U),
 m_transparentSendFrameType(0U),
+#if defined(USE_DSTAR)
 m_dstarEnabled(false),
 m_dstarModule("C"),
 m_dstarSelfOnly(false),
@@ -150,6 +155,7 @@ m_dstarAckTime(750U),
 m_dstarAckMessage(DSTAR_ACK_BER),
 m_dstarErrorReply(true),
 m_dstarRemoteGateway(false),
+#endif
 m_dstarModeHang(10U),
 m_dmrEnabled(false),
 m_dmrBeacons(DMR_BEACONS_OFF),
@@ -252,13 +258,17 @@ m_ax25SlotTime(30U),
 m_ax25PPersist(128U),
 m_ax25Trace(false),
 #endif
+#if defined(USE_DSTAR)
 m_dstarNetworkEnabled(false),
 m_dstarGatewayAddress(),
 m_dstarGatewayPort(0U),
 m_dstarLocalAddress(),
 m_dstarLocalPort(0U),
+#endif
 m_dstarNetworkModeHang(3U),
+#if defined(USE_DSTAR)
 m_dstarNetworkDebug(false),
+#endif
 m_dmrNetworkEnabled(false),
 m_dmrNetworkGatewayAddress(),
 m_dmrNetworkGatewayPort(0U),
@@ -373,8 +383,10 @@ bool CConf::read()
 				section = SECTION_MODEM;
 			else if (::strncmp(buffer, "[Transparent Data]", 18U) == 0)
 				section = SECTION_TRANSPARENT;
+#if defined(USE_DSTAR)
 			else if (::strncmp(buffer, "[D-Star]", 8U) == 0)
 				section = SECTION_DSTAR;
+#endif
 			else if (::strncmp(buffer, "[DMR]", 5U) == 0)
 				section = SECTION_DMR;
 			else if (::strncmp(buffer, "[System Fusion]", 15U) == 0)
@@ -397,8 +409,10 @@ bool CConf::read()
 			else if (::strncmp(buffer, "[AX.25]", 7U) == 0)
 				section = SECTION_AX25;
 #endif
+#if defined(USE_DSTAR)
 			else if (::strncmp(buffer, "[D-Star Network]", 16U) == 0)
 				section = SECTION_DSTAR_NETWORK;
+#endif
 			else if (::strncmp(buffer, "[DMR Network]", 13U) == 0)
 				section = SECTION_DMR_NETWORK;
 			else if (::strncmp(buffer, "[System Fusion Network]", 23U) == 0)
@@ -619,6 +633,7 @@ bool CConf::read()
 				m_transparentLocalPort = (unsigned short)::atoi(value);
 			else if (::strcmp(key, "SendFrameType") == 0)
 				m_transparentSendFrameType = (unsigned int)::atoi(value);
+#if defined(USE_DSTAR)
 		} else if (section == SECTION_DSTAR) {
 			if (::strcmp(key, "Enable") == 0)
 				m_dstarEnabled = ::atoi(value) == 1;
@@ -667,6 +682,7 @@ bool CConf::read()
 				m_dstarRemoteGateway = ::atoi(value) == 1;
 			else if (::strcmp(key, "ModeHang") == 0)
 				m_dstarModeHang = (unsigned int)::atoi(value);
+#endif
 		} else if (section == SECTION_DMR) {
 			if (::strcmp(key, "Enable") == 0)
 				m_dmrEnabled = ::atoi(value) == 1;
@@ -920,6 +936,7 @@ bool CConf::read()
 			else if (::strcmp(key, "Trace") == 0)
 				m_ax25Trace = ::atoi(value) == 1;
 #endif
+#if defined(USE_DSTAR)
 		} else if (section == SECTION_DSTAR_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_dstarNetworkEnabled = ::atoi(value) == 1;
@@ -935,6 +952,7 @@ bool CConf::read()
 				m_dstarNetworkModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Debug") == 0)
 				m_dstarNetworkDebug = ::atoi(value) == 1;
+#endif
 		} else if (section == SECTION_DMR_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_dmrNetworkEnabled = ::atoi(value) == 1;
@@ -1327,10 +1345,12 @@ float CConf::getModemCWIdTXLevel() const
 	return m_modemCWIdTXLevel;
 }
 
+#if defined(USE_DSTAR)
 float CConf::getModemDStarTXLevel() const
 {
 	return m_modemDStarTXLevel;
 }
+#endif
 
 float CConf::getModemDMRTXLevel() const
 {
@@ -1423,6 +1443,7 @@ unsigned int CConf::getTransparentSendFrameType() const
 	return m_transparentSendFrameType;
 }
 
+#if defined(USE_DSTAR)
 bool CConf::getDStarEnabled() const
 {
 	return m_dstarEnabled;
@@ -1477,6 +1498,7 @@ unsigned int CConf::getDStarModeHang() const
 {
 	return m_dstarModeHang;
 }
+#endif
 
 bool CConf::getDMREnabled() const
 {
@@ -1929,6 +1951,7 @@ bool CConf::getAX25Trace() const
 }
 #endif
 
+#if defined(USE_DSTAR)
 bool CConf::getDStarNetworkEnabled() const
 {
 	return m_dstarNetworkEnabled;
@@ -1963,6 +1986,7 @@ bool CConf::getDStarNetworkDebug() const
 {
 	return m_dstarNetworkDebug;
 }
+#endif
 
 bool CConf::getDMRNetworkEnabled() const
 {

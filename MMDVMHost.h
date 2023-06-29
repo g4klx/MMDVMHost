@@ -61,7 +61,9 @@ public:
 private:
 	CConf           m_conf;
 	CModem*         m_modem;
+#if defined(USE_DSTAR)
 	CDStarControl*  m_dstar;
+#endif
 	CDMRControl*    m_dmr;
 	CYSFControl*    m_ysf;
 	CP25Control*    m_p25;
@@ -76,7 +78,9 @@ private:
 #if defined(USE_AX25)
 	CAX25Control*   m_ax25;
 #endif
+#if defined(USE_DSTAR)
 	CDStarNetwork*  m_dstarNetwork;
+#endif
 	CDMRNetwork*    m_dmrNetwork;
 	CYSFNetwork*    m_ysfNetwork;
 	CP25Network*    m_p25Network;
@@ -92,7 +96,9 @@ private:
 	CAX25Network*   m_ax25Network;
 #endif
 	unsigned char   m_mode;
+#if defined(USE_DSTAR)
 	unsigned int    m_dstarRFModeHang;
+#endif
 	unsigned int    m_dmrRFModeHang;
 	unsigned int    m_ysfRFModeHang;
 	unsigned int    m_p25RFModeHang;
@@ -101,7 +107,9 @@ private:
 #if defined(USE_FM)
 	unsigned int    m_fmRFModeHang;
 #endif
+#if defined(USE_DSTAR)
 	unsigned int    m_dstarNetModeHang;
+#endif
 	unsigned int    m_dmrNetModeHang;
 	unsigned int    m_ysfNetModeHang;
 	unsigned int    m_p25NetModeHang;
@@ -140,7 +148,9 @@ private:
 
 	void readParams();
 	bool createModem();
+#if defined(USE_DSTAR)
 	bool createDStarNetwork();
+#endif
 	bool createDMRNetwork();
 	bool createYSFNetwork();
 	bool createP25Network();

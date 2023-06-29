@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2014,2016,2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2014,2016,2020,2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -22,7 +22,10 @@
 #include "DStarDefines.h"
 #include "RingBuffer.h"
 #include "UDPSocket.h"
+#include "Defines.h"
 #include "Timer.h"
+
+#if defined(USE_DSTAR)
 
 #include <cstdint>
 #include <string>
@@ -73,3 +76,6 @@ private:
 };
 
 #endif
+
+#endif
+

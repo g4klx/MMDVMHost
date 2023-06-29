@@ -31,6 +31,8 @@
 #include "Timer.h"
 #include "Modem.h"
 
+#if defined(USE_DSTAR)
+
 #include <string>
 #include <vector>
 
@@ -152,10 +154,6 @@ private:
 
 	std::string convertBuffer(const unsigned char* buffer, unsigned int length) const;
 
-	bool openFile();
-	bool writeFile(const unsigned char* data, unsigned int length);
-	void closeFile();
-
 	bool insertSilence(const unsigned char* data, unsigned char seqNo);
 	void insertSilence(unsigned int count);
 
@@ -166,3 +164,6 @@ private:
 };
 
 #endif
+
+#endif
+

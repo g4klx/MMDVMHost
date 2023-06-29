@@ -22,6 +22,8 @@
 #include "CRC.h"
 #include "Log.h"
 
+#if defined(USE_DSTAR)
+
 #include <cstdio>
 #include <cassert>
 #include <cstring>
@@ -233,3 +235,6 @@ void CDStarSlowData::getSlowData(unsigned char* data)
 		data[2U] = 'f' ^ DSTAR_SCRAMBLER_BYTES[2U];
 	}
 }
+
+#endif
+

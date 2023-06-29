@@ -51,10 +51,12 @@ const unsigned char MMDVM_SET_FREQ    = 0x04U;
 
 const unsigned char MMDVM_SEND_CWID   = 0x0AU;
 
+#if defined(USE_DSTAR)
 const unsigned char MMDVM_DSTAR_HEADER = 0x10U;
 const unsigned char MMDVM_DSTAR_DATA   = 0x11U;
 const unsigned char MMDVM_DSTAR_LOST   = 0x12U;
 const unsigned char MMDVM_DSTAR_EOT    = 0x13U;
+#endif
 
 const unsigned char MMDVM_DMR_DATA1   = 0x18U;
 const unsigned char MMDVM_DMR_LOST1   = 0x19U;
@@ -117,7 +119,9 @@ const unsigned int MAX_RESPONSES = 30U;
 
 const unsigned int BUFFER_LENGTH = 2000U;
 
+#if defined(USE_DSTAR)
 const unsigned char CAP1_DSTAR  = 0x01U;
+#endif
 const unsigned char CAP1_DMR    = 0x02U;
 const unsigned char CAP1_YSF    = 0x04U;
 const unsigned char CAP1_P25    = 0x08U;
@@ -149,7 +153,9 @@ m_txDelay(txDelay),
 m_dmrDelay(dmrDelay),
 m_rxLevel(0.0F),
 m_cwIdTXLevel(0.0F),
+#if defined(USE_DSTAR)
 m_dstarTXLevel(0.0F),
+#endif
 m_dmrTXLevel(0.0F),
 m_ysfTXLevel(0.0F),
 m_p25TXLevel(0.0F),
@@ -173,7 +179,9 @@ m_txFrequency(0U),
 #if defined(USE_POCSAG)
 m_pocsagFrequency(0U),
 #endif
+#if defined(USE_DSTAR)
 m_dstarEnabled(false),
+#endif
 m_dmrEnabled(false),
 m_ysfEnabled(false),
 m_p25Enabled(false),
@@ -196,8 +204,10 @@ m_length(0U),
 m_offset(0U),
 m_state(SS_START),
 m_type(0U),
+#if defined(USE_DSTAR)
 m_rxDStarData(1000U, "Modem RX D-Star"),
 m_txDStarData(1000U, "Modem TX D-Star"),
+#endif
 m_rxDMRData1(1000U, "Modem RX DMR1"),
 m_rxDMRData2(1000U, "Modem RX DMR2"),
 m_txDMRData1(1000U, "Modem TX DMR1"),
@@ -229,7 +239,9 @@ m_sendTransparentDataFrameType(0U),
 m_statusTimer(1000U, 0U, 250U),
 m_inactivityTimer(1000U, 2U),
 m_playoutTimer(1000U, 0U, 10U),
+#if defined(USE_DSTAR)
 m_dstarSpace(0U),
+#endif
 m_dmrSpace1(0U),
 m_dmrSpace2(0U),
 m_ysfSpace(0U),
@@ -327,7 +339,9 @@ void CModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int tx
 
 void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool m17Enabled, bool pocsagEnabled, bool fmEnabled, bool ax25Enabled)
 {
+#if defined(USE_DSTAR)
 	m_dstarEnabled  = dstarEnabled;
+#endif
 	m_dmrEnabled    = dmrEnabled;
 	m_ysfEnabled    = ysfEnabled;
 	m_p25Enabled    = p25Enabled;
@@ -348,7 +362,9 @@ void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, flo
 {
 	m_rxLevel       = rxLevel;
 	m_cwIdTXLevel   = cwIdTXLevel;
+#if defined(USE_DSTAR)
 	m_dstarTXLevel  = dstarTXLevel;
+#endif
 	m_dmrTXLevel    = dmrTXLevel;
 	m_ysfTXLevel    = ysfTXLevel;
 	m_p25TXLevel    = p25TXLevel;
@@ -521,6 +537,7 @@ void CModem::clock(unsigned int ms)
 	} else {
 		// type == RTM_OK
 		switch (m_type) {
+#if defined(USE_DSTAR)
 			case MMDVM_DSTAR_HEADER: {
 					if (m_trace)
 						CUtils::dump(1U, "RX D-Star Header", m_buffer, m_length);
@@ -572,6 +589,7 @@ void CModem::clock(unsigned int ms)
 					m_rxDStarData.addData(&data, 1U);
 				}
 				break;
+#endif
 
 			case MMDVM_DMR_DATA1: {
 					if (m_trace)
@@ -867,8 +885,9 @@ void CModem::clock(unsigned int ms)
 #if defined(USE_AX25)
 						m_ax25Space   = 0U;
 #endif
-
+#if defined(USE_DSTAR)
 						m_dstarSpace = m_buffer[m_offset + 3U];
+#endif
 						m_dmrSpace1  = m_buffer[m_offset + 4U];
 						m_dmrSpace2  = m_buffer[m_offset + 5U];
 						m_ysfSpace   = m_buffer[m_offset + 6U];
@@ -906,7 +925,9 @@ void CModem::clock(unsigned int ms)
 							LogError("MMDVM DAC levels have overflowed");
 						m_cd = (m_buffer[m_offset + 1U] & 0x40U) == 0x40U;
 
+#if defined(USE_DSTAR)
 						m_dstarSpace  = m_buffer[m_offset + 3U];
+#endif
 						m_dmrSpace1   = m_buffer[m_offset + 4U];
 						m_dmrSpace2   = m_buffer[m_offset + 5U];
 						m_ysfSpace    = m_buffer[m_offset + 6U];
@@ -926,7 +947,9 @@ void CModem::clock(unsigned int ms)
 					break;
 
 				default:
+#if defined(USE_DSTAR)
 					m_dstarSpace  = 0U;
+#endif
 					m_dmrSpace1   = 0U;
 					m_dmrSpace2   = 0U;
 					m_ysfSpace    = 0U;
@@ -1003,6 +1026,7 @@ void CModem::clock(unsigned int ms)
 	if (!m_playoutTimer.hasExpired())
 		return;
 
+#if defined(USE_DSTAR)
 	if (m_dstarSpace > 1U && !m_txDStarData.isEmpty()) {
 		unsigned char buffer[4U];
 		m_txDStarData.peek(buffer, 4U);
@@ -1039,6 +1063,7 @@ void CModem::clock(unsigned int ms)
 			m_playoutTimer.start();
 		}
 	}
+#endif
 
 	if (m_dmrSpace1 > 1U && !m_txDMRData1.isEmpty()) {
 		unsigned char len = 0U;
@@ -1254,6 +1279,7 @@ void CModem::close()
 	m_port->close();
 }
 
+#if defined(USE_DSTAR)
 unsigned int CModem::readDStarData(unsigned char* data)
 {
 	assert(data != NULL);
@@ -1267,6 +1293,7 @@ unsigned int CModem::readDStarData(unsigned char* data)
 
 	return len;
 }
+#endif
 
 unsigned int CModem::readDMRData1(unsigned char* data)
 {
@@ -1412,6 +1439,7 @@ unsigned int CModem::readSerialData(unsigned char* data)
 	return len;
 }
 
+#if defined(USE_DSTAR)
 bool CModem::hasDStarSpace() const
 {
 	unsigned int space = m_txDStarData.freeSpace() / (DSTAR_FRAME_LENGTH_BYTES + 4U);
@@ -1452,6 +1480,7 @@ bool CModem::writeDStarData(const unsigned char* data, unsigned int length)
 
 	return true;
 }
+#endif
 
 bool CModem::hasDMRSpace1() const
 {
@@ -1781,6 +1810,7 @@ bool CModem::writeTransparentData(const unsigned char* data, unsigned int length
 	return true;
 }
 
+#if defined(USE_DSTAR)
 bool CModem::writeDStarInfo(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
 	assert(m_port != NULL);
@@ -1809,6 +1839,7 @@ bool CModem::writeDStarInfo(const char* my1, const char* my2, const char* your, 
 
 	return m_port->write(buffer, 33U) != 33;
 }
+#endif
 
 bool CModem::writeDMRInfo(unsigned int slotNo, const std::string& src, bool group, const std::string& dest, const char* type)
 {
@@ -2025,10 +2056,12 @@ bool CModem::hasError() const
 	return m_error;
 }
 
+#if defined(USE_DSTAR)
 bool CModem::hasDStar() const
 {
 	return (m_capabilities1 & CAP1_DSTAR) == CAP1_DSTAR;
 }
+#endif
 
 bool CModem::hasDMR() const
 {
@@ -2138,11 +2171,14 @@ bool CModem::readVersion()
 				switch (m_protocolVersion) {
 				case 1U:
 					LogInfo("MMDVM protocol version: 1, description: %.*s", m_length - 4U, m_buffer + 4U);
-					m_capabilities1 = CAP1_DSTAR | CAP1_DMR | CAP1_YSF | CAP1_P25 | CAP1_NXDN | CAP1_M17;
-#if defined(USE_POCSAG)
-					m_capabilities2 = CAP2_POCSAG;
-#else
+					m_capabilities1 = 0x00U;
 					m_capabilities2 = 0x00U;
+#if defined(USE_DSTAR)
+					m_capabilities1 |= CAP1_DSTAR;
+#endif
+					m_capabilities1 |= CAP1_DMR | CAP1_YSF | CAP1_P25 | CAP1_NXDN | CAP1_M17;
+#if defined(USE_POCSAG)
+					m_capabilities2 |= CAP2_POCSAG;
 #endif
 					return true;
 
@@ -2166,8 +2202,10 @@ bool CModem::readVersion()
 					m_capabilities2 = m_buffer[5U];
 					char modeText[100U];
 					::strcpy(modeText, "Modes:");
+#if defined(USE_DSTAR)
 					if (hasDStar())
 						::strcat(modeText, " D-Star");
+#endif
 					if (hasDMR())
 						::strcat(modeText, " DMR");
 					if (hasYSF())
@@ -2266,8 +2304,10 @@ bool CModem::setConfig1()
 		buffer[3U] |= 0x80U;
 
 	buffer[4U] = 0x00U;
+#if defined(USE_DSTAR)
 	if (m_dstarEnabled)
 		buffer[4U] |= 0x01U;
+#endif
 	if (m_dmrEnabled)
 		buffer[4U] |= 0x02U;
 	if (m_ysfEnabled)
@@ -2297,7 +2337,11 @@ bool CModem::setConfig1()
 
 	buffer[11U] = 128U;           // Was OscOffset
 
+#if defined(USE_DSTAR)
 	buffer[12U] = (unsigned char)(m_dstarTXLevel * 2.55F + 0.5F);
+#else
+	buffer[12U] = 0U;
+#endif
 	buffer[13U] = (unsigned char)(m_dmrTXLevel * 2.55F + 0.5F);
 	buffer[14U] = (unsigned char)(m_ysfTXLevel * 2.55F + 0.5F);
 	buffer[15U] = (unsigned char)(m_p25TXLevel * 2.55F + 0.5F);
@@ -2388,8 +2432,10 @@ bool CModem::setConfig2()
 		buffer[3U] |= 0x80U;
 
 	buffer[4U] = 0x00U;
+#if defined(USE_DSTAR)
 	if (m_dstarEnabled)
 		buffer[4U] |= 0x01U;
+#endif
 	if (m_dmrEnabled)
 		buffer[4U] |= 0x02U;
 	if (m_ysfEnabled)
@@ -2424,7 +2470,11 @@ bool CModem::setConfig2()
 	buffer[10U] = (unsigned char)(m_rxLevel * 2.55F + 0.5F);
 
 	buffer[11U] = (unsigned char)(m_cwIdTXLevel * 2.55F + 0.5F);
+#if defined(USE_DSTAR)
 	buffer[12U] = (unsigned char)(m_dstarTXLevel * 2.55F + 0.5F);
+#else
+	buffer[12U] = 0U;
+#endif
 	buffer[13U] = (unsigned char)(m_dmrTXLevel * 2.55F + 0.5F);
 	buffer[14U] = (unsigned char)(m_ysfTXLevel * 2.55F + 0.5F);
 	buffer[15U] = (unsigned char)(m_p25TXLevel * 2.55F + 0.5F);

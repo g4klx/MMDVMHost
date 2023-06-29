@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -50,6 +50,7 @@ const uint8_t CRC8_TABLE[] = {
 	0xDE, 0xD9, 0xD0, 0xD7, 0xC2, 0xC5, 0xCC, 0xCB, 0xE6, 0xE1, 0xE8, 0xEF,
 	0xFA, 0xFD, 0xF4, 0xF3, 0x01 };
 
+#if defined(USE_DSTAR)
 const uint16_t CCITT16_TABLE1[] = {
 	0x0000U, 0x1189U, 0x2312U, 0x329bU, 0x4624U, 0x57adU, 0x6536U, 0x74bfU,
 	0x8c48U, 0x9dc1U, 0xaf5aU, 0xbed3U, 0xca6cU, 0xdbe5U, 0xe97eU, 0xf8f7U,
@@ -83,6 +84,7 @@ const uint16_t CCITT16_TABLE1[] = {
 	0x6b46U, 0x7acfU, 0x4854U, 0x59ddU, 0x2d62U, 0x3cebU, 0x0e70U, 0x1ff9U,
 	0xf78fU, 0xe606U, 0xd49dU, 0xc514U, 0xb1abU, 0xa022U, 0x92b9U, 0x8330U,
 	0x7bc7U, 0x6a4eU, 0x58d5U, 0x495cU, 0x3de3U, 0x2c6aU, 0x1ef1U, 0x0f78U };
+#endif
 
 const uint16_t CCITT16_TABLE2[] = {
 	0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50A5, 0x60C6, 0x70E7,
@@ -186,6 +188,7 @@ bool CCRC::checkCCITT162(const unsigned char *in, unsigned int length)
 	return crc8[0U] == in[length - 1U] && crc8[1U] == in[length - 2U];
 }
 
+#if defined(USE_DSTAR)
 void CCRC::addCCITT161(unsigned char *in, unsigned int length)
 {
 	assert(in != NULL);
@@ -226,6 +229,7 @@ bool CCRC::checkCCITT161(const unsigned char *in, unsigned int length)
 
 	return crc8[0U] == in[length - 2U] && crc8[1U] == in[length - 1U];
 }
+#endif
 
 unsigned char CCRC::crc8(const unsigned char *in, unsigned int length)
 {
