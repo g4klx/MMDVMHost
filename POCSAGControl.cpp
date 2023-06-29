@@ -68,8 +68,7 @@ m_buffer(),
 m_ric(0U),
 m_data(),
 m_state(PS_NONE),
-m_enabled(true),
-m_fp(NULL)
+m_enabled(true)
 {
 }
 

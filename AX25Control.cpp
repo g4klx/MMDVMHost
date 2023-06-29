@@ -33,8 +33,7 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 CAX25Control::CAX25Control(CAX25Network* network, bool trace) :
 m_network(network),
 m_trace(trace),
-m_enabled(true),
-m_fp(NULL)
+m_enabled(true)
 {
 }
 

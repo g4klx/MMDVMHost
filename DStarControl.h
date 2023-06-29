@@ -103,7 +103,6 @@ private:
 	unsigned int               m_bitErrsAccum;
 	unsigned int               m_bitsCount;
 	bool                       m_enabled;
-	FILE*                      m_fp;
 	unsigned char*             m_rfVoiceSyncData;
 	unsigned int               m_rfVoiceSyncDataLen;
 	unsigned char*             m_netVoiceSyncData;

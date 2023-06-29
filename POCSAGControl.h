@@ -75,7 +75,6 @@ private:
 	std::deque<POCSAGData*>    m_data;
 	POCSAG_STATE               m_state;
 	bool                       m_enabled;
-	FILE*                      m_fp;
 
 	bool readNetwork();
 	void writeQueue();

@@ -41,7 +41,6 @@ private:
 	CAX25Network* m_network;
 	bool          m_trace;
 	bool          m_enabled;
-	FILE*         m_fp;
 
 	void decode(const unsigned char* data, unsigned int length);
 	void decodeJSON(const char* source, const unsigned char* data, unsigned int length);
