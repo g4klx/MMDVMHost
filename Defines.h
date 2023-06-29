@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017,2018,2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017,2018,2020,2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -18,6 +18,17 @@
 
 #if !defined(Defines_H)
 #define	Defines_H
+
+// Define the wanted modes to compile into the host here
+#define	USE_DSTAR
+#define	USE_DMR
+#define	USE_YSF
+#define	USE_P25
+#define	USE_NXDN
+#define	USE_POCSAG
+#define	USE_FM
+#define	USE_AX25
+#define	USE_M17
 
 const unsigned char MODE_IDLE    = 0U;
 const unsigned char MODE_DSTAR   = 1U;
