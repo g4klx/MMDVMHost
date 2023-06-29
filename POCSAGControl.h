@@ -24,6 +24,8 @@
 #include "RingBuffer.h"
 #include "Defines.h"
 
+#if defined(USE_POCSAG)
+
 #include <cstdint>
 
 #include <string>
@@ -82,9 +84,6 @@ private:
 	void packASCII(const std::string& text, std::deque<uint32_t>& buffer) const;
 	void packNumeric(const std::string& text, std::deque<uint32_t>& buffer) const;
 	void addBCHAndParity(uint32_t& word) const;
-	bool openFile();
-	bool writeFile(const unsigned char* data);
-	void closeFile();
 
 	void decodeROT1(const std::string& in, unsigned int start, std::string& out) const;
 
@@ -93,3 +92,6 @@ private:
 };
 
 #endif
+
+#endif
+

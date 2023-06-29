@@ -44,7 +44,9 @@ enum SECTION {
 	SECTION_P25,
 	SECTION_NXDN,
 	SECTION_M17,
+#if defined(USE_POCSAG)
 	SECTION_POCSAG,
+#endif
 	SECTION_FM,
 #if defined(USE_AX25)
 	SECTION_AX25,
@@ -55,7 +57,9 @@ enum SECTION {
 	SECTION_P25_NETWORK,
 	SECTION_NXDN_NETWORK,
 	SECTION_M17_NETWORK,
+#if defined(USE_POCSAG)
 	SECTION_POCSAG_NETWORK,
+#endif
 	SECTION_FM_NETWORK,
 #if defined(USE_AX25)
 	SECTION_AX25_NETWORK,
@@ -188,7 +192,9 @@ m_m17SelfOnly(false),
 m_m17AllowEncryption(false),
 m_m17TXHang(5U),
 m_m17ModeHang(10U),
+#if defined(USE_POCSAG)
 m_pocsagEnabled(false),
+#endif
 m_pocsagFrequency(0U),
 m_fmEnabled(false),
 m_fmCallsign(),
@@ -228,7 +234,9 @@ m_fmExtAudioBoost(1U),
 m_fmModeHang(10U),
 #if defined(USE_AX25)
 m_ax25Enabled(false),
+#endif
 m_ax25TXDelay(300U),
+#if defined(USE_AX25)
 m_ax25RXTwist(6),
 m_ax25SlotTime(30U),
 m_ax25PPersist(128U),
@@ -280,6 +288,7 @@ m_m17LocalAddress(),
 m_m17LocalPort(0U),
 m_m17NetworkModeHang(3U),
 m_m17NetworkDebug(false),
+#if defined(USE_POCSAG)
 m_pocsagNetworkEnabled(false),
 m_pocsagGatewayAddress(),
 m_pocsagGatewayPort(0U),
@@ -287,6 +296,7 @@ m_pocsagLocalAddress(),
 m_pocsagLocalPort(0U),
 m_pocsagNetworkModeHang(3U),
 m_pocsagNetworkDebug(false),
+#endif
 m_fmNetworkEnabled(false),
 m_fmNetworkProtocol("USRP"),
 m_fmGatewayAddress(),
@@ -361,8 +371,10 @@ bool CConf::read()
 				section = SECTION_NXDN;
 			else if (::strncmp(buffer, "[M17]", 5U) == 0)
 				section = SECTION_M17;
+#if defined(USE_POCSAG)
 			else if (::strncmp(buffer, "[POCSAG]", 8U) == 0)
 				section = SECTION_POCSAG;
+#endif
 			else if (::strncmp(buffer, "[FM]", 4U) == 0)
 				section = SECTION_FM;
 #if defined(USE_AX25)
@@ -381,8 +393,10 @@ bool CConf::read()
 				section = SECTION_NXDN_NETWORK;
 			else if (::strncmp(buffer, "[M17 Network]", 13U) == 0)
 				section = SECTION_M17_NETWORK;
+#if defined(USE_POCSAG)
 			else if (::strncmp(buffer, "[POCSAG Network]", 16U) == 0)
 				section = SECTION_POCSAG_NETWORK;
+#endif
 			else if (::strncmp(buffer, "[FM Network]", 12U) == 0)
 				section = SECTION_FM_NETWORK;
 #if defined(USE_AX25)
@@ -772,11 +786,13 @@ bool CConf::read()
 				m_m17TXHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "ModeHang") == 0)
 				m_m17ModeHang = (unsigned int)::atoi(value);
+#if defined(USE_POCSAG)
 		} else if (section == SECTION_POCSAG) {
 			if (::strcmp(key, "Enable") == 0)
 				m_pocsagEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "Frequency") == 0)
 				m_pocsagFrequency = (unsigned int)::atoi(value);
+#endif
 		} else if (section == SECTION_FM) {
 			if (::strcmp(key, "Enable") == 0)
 				m_fmEnabled = ::atoi(value) == 1;
@@ -974,6 +990,7 @@ bool CConf::read()
 				m_m17NetworkModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Debug") == 0)
 				m_m17NetworkDebug = ::atoi(value) == 1;
+#if defined(USE_POCSAG)
 		} else if (section == SECTION_POCSAG_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_pocsagNetworkEnabled = ::atoi(value) == 1;
@@ -989,6 +1006,7 @@ bool CConf::read()
 				m_pocsagNetworkModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Debug") == 0)
 				m_pocsagNetworkDebug = ::atoi(value) == 1;
+#endif
 		} else if (section == SECTION_FM_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_fmNetworkEnabled = ::atoi(value) == 1;
@@ -1311,10 +1329,12 @@ float CConf::getModemM17TXLevel() const
 	return m_modemM17TXLevel;
 }
 
+#if defined(USE_POCSAG)
 float CConf::getModemPOCSAGTXLevel() const
 {
 	return m_modemPOCSAGTXLevel;
 }
+#endif
 
 float CConf::getModemFMTXLevel() const
 {
@@ -1653,6 +1673,7 @@ unsigned int CConf::getM17ModeHang() const
 	return m_m17ModeHang;
 }
 
+#if defined(USE_POCSAG)
 bool CConf::getPOCSAGEnabled() const
 {
 	return m_pocsagEnabled;
@@ -1662,6 +1683,7 @@ unsigned int CConf::getPOCSAGFrequency() const
 {
 	return m_pocsagFrequency;
 }
+#endif
 
 bool CConf::getFMEnabled() const
 {
@@ -2105,6 +2127,7 @@ bool CConf::getM17NetworkDebug() const
 	return m_m17NetworkDebug;
 }
 
+#if defined(USE_POCSAG)
 bool CConf::getPOCSAGNetworkEnabled() const
 {
 	return m_pocsagNetworkEnabled;
@@ -2139,6 +2162,7 @@ bool CConf::getPOCSAGNetworkDebug() const
 {
 	return m_pocsagNetworkDebug;
 }
+#endif
 
 bool CConf::getFMNetworkEnabled() const
 {

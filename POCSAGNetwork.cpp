@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2018,2019,2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2018,2019,2020,2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -18,9 +18,10 @@
 
 #include "POCSAGDefines.h"
 #include "POCSAGNetwork.h"
-#include "Defines.h"
 #include "Utils.h"
 #include "Log.h"
+
+#if defined(USE_POCSAG)
 
 #include <cstdio>
 #include <cassert>
@@ -124,3 +125,6 @@ void CPOCSAGNetwork::enable(bool enabled)
 	
 	m_enabled = enabled;
 }
+
+#endif
+

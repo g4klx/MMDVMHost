@@ -99,7 +99,9 @@ public:
   float        getModemP25TXLevel() const;
   float        getModemNXDNTXLevel() const;
   float        getModemM17TXLevel() const;
+#if defined(USE_POCSAG)
   float        getModemPOCSAGTXLevel() const;
+#endif
   float        getModemFMTXLevel() const;
 #if defined(USE_AX25)
   float        getModemAX25TXLevel() const;
@@ -184,9 +186,11 @@ public:
   unsigned int getM17TXHang() const;
   unsigned int getM17ModeHang() const;
 
+#if defined(USE_POCSAG)
   // The POCSAG section
   bool         getPOCSAGEnabled() const;
   unsigned int getPOCSAGFrequency() const;
+#endif
 
 #if defined(USE_AX25)
   // The AX.25 section
@@ -294,6 +298,7 @@ public:
   unsigned int getM17NetworkModeHang() const;
   bool         getM17NetworkDebug() const;
 
+#if defined(USE_POCSAG)
   // The POCSAG Network section
   bool         getPOCSAGNetworkEnabled() const;
   std::string  getPOCSAGGatewayAddress() const;
@@ -302,6 +307,7 @@ public:
   unsigned short getPOCSAGLocalPort() const;
   unsigned int getPOCSAGNetworkModeHang() const;
   bool         getPOCSAGNetworkDebug() const;
+#endif
 
   // The FM Network section
   bool         getFMNetworkEnabled() const;
@@ -471,7 +477,9 @@ private:
   unsigned int m_m17TXHang;
   unsigned int m_m17ModeHang;
 
+#if defined(USE_POCSAG)
   bool         m_pocsagEnabled;
+#endif
   unsigned int m_pocsagFrequency;
 
   bool         m_fmEnabled;
@@ -511,12 +519,16 @@ private:
   unsigned int m_fmExtAudioBoost;
   unsigned int m_fmModeHang;
 
+#if defined(USE_AX25)
   bool         m_ax25Enabled;
+#endif
   unsigned int m_ax25TXDelay;
+#if defined(USE_AX25)
   int          m_ax25RXTwist;
   unsigned int m_ax25SlotTime;
   unsigned int m_ax25PPersist;
   bool         m_ax25Trace;
+#endif
 
   bool         m_dstarNetworkEnabled;
   std::string  m_dstarGatewayAddress;
@@ -570,6 +582,7 @@ private:
   unsigned int m_m17NetworkModeHang;
   bool         m_m17NetworkDebug;
 
+#if defined(USE_POCSAG)
   bool         m_pocsagNetworkEnabled;
   std::string  m_pocsagGatewayAddress;
   unsigned short m_pocsagGatewayPort;
@@ -577,6 +590,7 @@ private:
   unsigned short m_pocsagLocalPort;
   unsigned int m_pocsagNetworkModeHang;
   bool         m_pocsagNetworkDebug;
+#endif
 
   bool         m_fmNetworkEnabled;
   std::string  m_fmNetworkProtocol;
@@ -591,10 +605,12 @@ private:
   unsigned int m_fmNetworkModeHang;
   bool         m_fmNetworkDebug;
 
+#if defined(USE_AX25)
   bool         m_ax25NetworkEnabled;
   std::string  m_ax25NetworkPort;
   unsigned int m_ax25NetworkSpeed;
   bool         m_ax25NetworkDebug;
+#endif
 
   bool         m_lockFileEnabled;
   std::string  m_lockFileName;

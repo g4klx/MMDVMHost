@@ -15,12 +15,12 @@
 #include "Utils.h"
 #include "Log.h"
 
+#if defined(USE_POCSAG)
+
 #include <cstdio>
 #include <cassert>
 #include <cstring>
 #include <ctime>
-
-// #define	DUMP_POCSAG
 
 const struct BCD {
 	char     m_c;
@@ -305,10 +305,6 @@ void CPOCSAGControl::clock(unsigned int ms)
 		m_state  = PS_WAITING;
 		m_frames = 0U;
 		m_count  = 1U;
-
-#if defined(DUMP_POCSAG)
-		openFile();
-#endif
 	}
 
 	m_output.clear();
@@ -363,10 +359,6 @@ void CPOCSAGControl::clock(unsigned int ms)
 	if (m_state == PS_ENDING) {
 		LogMessage("POCSAG, transmitted %u frame(s) of data from %u message(s)", m_frames, m_count);
 		m_state = PS_NONE;
-
-#if defined(DUMP_POCSAG)
-		closeFile();
-#endif
 	}
 }
 
@@ -503,10 +495,6 @@ void CPOCSAGControl::writeQueue()
 
 	m_output.clear();
 
-#if defined(DUMP_POCSAG)
-	writeFile(data);
-#endif
-
 	CUtils::dump(1U, "Data to MMDVM", data, len);
 
 	assert(len == POCSAG_FRAME_LENGTH_BYTES);
@@ -519,46 +507,6 @@ void CPOCSAGControl::writeQueue()
 
 	m_queue.addData(&len, 1U);
 	m_queue.addData(data, len);
-}
-
-bool CPOCSAGControl::openFile()
-{
-	if (m_fp != NULL)
-		return true;
-
-	time_t t;
-	::time(&t);
-
-	struct tm* tm = ::localtime(&t);
-
-	char name[100U];
-	::sprintf(name, "POCSAG_%04d%02d%02d_%02d%02d%02d.dat", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
-
-	m_fp = ::fopen(name, "wb");
-	if (m_fp == NULL)
-		return false;
-
-	::fwrite("POCSAG", 1U, 6U, m_fp);
-
-	return true;
-}
-
-bool CPOCSAGControl::writeFile(const unsigned char* data)
-{
-	if (m_fp == NULL)
-		return false;
-
-	::fwrite(data, 1U, POCSAG_FRAME_LENGTH_BYTES, m_fp);
-
-	return true;
-}
-
-void CPOCSAGControl::closeFile()
-{
-	if (m_fp != NULL) {
-		::fclose(m_fp);
-		m_fp = NULL;
-	}
 }
 
 void CPOCSAGControl::enable(bool enabled)
@@ -614,4 +562,5 @@ void CPOCSAGControl::writeJSON(const char* source, unsigned int ric, const char*
 	WriteJSON("POCSAG", json);
 }
 
+#endif
 

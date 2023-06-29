@@ -152,7 +152,9 @@ m_ysf(NULL),
 m_p25(NULL),
 m_nxdn(NULL),
 m_m17(NULL),
+#if defined(USE_POCSAG)
 m_pocsag(NULL),
+#endif
 m_fm(NULL),
 #if defined(USE_AX25)
 m_ax25(NULL),
@@ -163,7 +165,9 @@ m_ysfNetwork(NULL),
 m_p25Network(NULL),
 m_nxdnNetwork(NULL),
 m_m17Network(NULL),
+#if defined(USE_POCSAG)
 m_pocsagNetwork(NULL),
+#endif
 m_fmNetwork(NULL),
 #if defined(USE_AX25)
 m_ax25Network(NULL),
@@ -182,7 +186,9 @@ m_ysfNetModeHang(3U),
 m_p25NetModeHang(3U),
 m_nxdnNetModeHang(3U),
 m_m17NetModeHang(3U),
+#if defined(USE_POCSAG)
 m_pocsagNetModeHang(3U),
+#endif
 m_fmNetModeHang(3U),
 m_modeTimer(1000U),
 m_dmrTXTimer(1000U),
@@ -355,10 +361,12 @@ int CMMDVMHost::run()
 		m_fmEnabled = false;
 	}
 
+#if defined(USE_POCSAG)
 	if (m_pocsagEnabled && !m_modem->hasPOCSAG()) {
 		LogWarning("POCSAG enabled in the host but not in the modem firmware, disabling");
 		m_pocsagEnabled = false;
 	}
+#endif
 
 #if defined(USE_AX25)
 	if (m_ax25Enabled && !m_modem->hasAX25()) {
@@ -406,11 +414,13 @@ int CMMDVMHost::run()
 			return 1;
 	}
 
+#if defined(USE_POCSAG)
 	if (m_pocsagEnabled && m_conf.getPOCSAGNetworkEnabled()) {
 		ret = createPOCSAGNetwork();
 		if (!ret)
 			return 1;
 	}
+#endif
 
 	if (m_fmEnabled && m_conf.getFMNetworkEnabled()) {
 		ret = createFMNetwork();
@@ -726,6 +736,7 @@ int CMMDVMHost::run()
 		m_m17 = new CM17Control(m_callsign, can, selfOnly, allowEncryption, m_m17Network, m_timeout, m_duplex, rssi);
 	}
 
+#if defined(USE_POCSAG)
 	CTimer pocsagTimer(1000U, 30U);
 
 	if (m_pocsagEnabled) {
@@ -739,6 +750,7 @@ int CMMDVMHost::run()
 		if (m_pocsagNetwork != NULL)
 			pocsagTimer.start();
 	}
+#endif
 
 #if defined(USE_AX25)
 	if (m_ax25Enabled) {
@@ -1133,6 +1145,7 @@ int CMMDVMHost::run()
 			}
 		}
 
+#if defined(USE_POCSAG)
 		if (m_pocsag != NULL) {
 			ret = m_modem->hasPOCSAGSpace();
 			if (ret) {
@@ -1151,6 +1164,7 @@ int CMMDVMHost::run()
 				}
 			}
 		}
+#endif
 
 		if (m_fm != NULL) {
 			unsigned int space = m_modem->getFMSpace();
@@ -1230,8 +1244,10 @@ int CMMDVMHost::run()
 			m_nxdn->clock(ms);
 		if (m_m17 != NULL)
 			m_m17->clock(ms);
+#if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->clock(ms);
+#endif
 		if (m_fm != NULL)
 			m_fm->clock(ms);
 
@@ -1247,8 +1263,10 @@ int CMMDVMHost::run()
 			m_nxdnNetwork->clock(ms);
 		if (m_m17Network != NULL)
 			m_m17Network->clock(ms);
+#if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->clock(ms);
+#endif
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->clock(ms);
 
@@ -1308,12 +1326,14 @@ int CMMDVMHost::run()
 			m_dmrTXTimer.stop();
 		}
 
+#if defined(USE_POCSAG)
 		pocsagTimer.clock(ms);
 		if (pocsagTimer.isRunning() && pocsagTimer.hasExpired()) {
 			assert(m_pocsagNetwork != NULL);
 			m_pocsagNetwork->enable(m_mode == MODE_IDLE || m_mode == MODE_POCSAG);
 			pocsagTimer.start();
 		}
+#endif
 
 		if (ms < 5U)
 			CThread::sleep(5U);
@@ -1360,10 +1380,12 @@ int CMMDVMHost::run()
 		delete m_m17Network;
 	}
 
+#if defined(USE_POCSAG)
 	if (m_pocsagNetwork != NULL) {
 		m_pocsagNetwork->close();
 		delete m_pocsagNetwork;
 	}
+#endif
 
 	if (m_fmNetwork != NULL) {
 		m_fmNetwork->close();
@@ -1393,7 +1415,9 @@ int CMMDVMHost::run()
 	delete m_p25;
 	delete m_nxdn;
 	delete m_m17;
+#if defined(USE_POCSAG)
 	delete m_pocsag;
+#endif
 	delete m_fm;
 #if defined(USE_AX25)
 	delete m_ax25;
@@ -1437,7 +1461,11 @@ bool CMMDVMHost::createModem()
 	float p25TXLevel             = m_conf.getModemP25TXLevel();
 	float nxdnTXLevel            = m_conf.getModemNXDNTXLevel();
 	float m17TXLevel             = m_conf.getModemM17TXLevel();
+#if defined(USE_POCSAG)
 	float pocsagTXLevel          = m_conf.getModemPOCSAGTXLevel();
+#else
+	float pocsagTXLevel          = 0.0F;
+#endif
 	float fmTXLevel              = m_conf.getModemFMTXLevel();
 #if defined(USE_AX25)
 	float ax25TXLevel            = m_conf.getModemAX25TXLevel();
@@ -1454,7 +1482,11 @@ bool CMMDVMHost::createModem()
 	unsigned int m17TXHang       = m_conf.getM17TXHang();
 	unsigned int rxFrequency     = m_conf.getRXFrequency();
 	unsigned int txFrequency     = m_conf.getTXFrequency();
+#if defined(USE_POCSAG)
 	unsigned int pocsagFrequency = m_conf.getPOCSAGFrequency();
+#else
+	unsigned int pocsagFrequency = txFrequency;
+#endif
 	int rxOffset                 = m_conf.getModemRXOffset();
 	int txOffset                 = m_conf.getModemTXOffset();
 	int rxDCOffset               = m_conf.getModemRXDCOffset();
@@ -1505,7 +1537,9 @@ bool CMMDVMHost::createModem()
 	LogInfo("    P25 TX Level: %.1f%%", p25TXLevel);
 	LogInfo("    NXDN TX Level: %.1f%%", nxdnTXLevel);
 	LogInfo("    M17 TX Level: %.1f%%", m17TXLevel);
+#if defined(USE_POCSAG)
 	LogInfo("    POCSAG TX Level: %.1f%%", pocsagTXLevel);
+#endif
 	LogInfo("    FM TX Level: %.1f%%", fmTXLevel);
 #if defined(USE_AX25)
 	LogInfo("    AX.25 TX Level: %.1f%%", ax25TXLevel);
@@ -1846,6 +1880,7 @@ bool CMMDVMHost::createM17Network()
 	return true;
 }
 
+#if defined(USE_POCSAG)
 bool CMMDVMHost::createPOCSAGNetwork()
 {
 	std::string gatewayAddress = m_conf.getPOCSAGGatewayAddress();
@@ -1875,6 +1910,7 @@ bool CMMDVMHost::createPOCSAGNetwork()
 
 	return true;
 }
+#endif
 
 bool CMMDVMHost::createFMNetwork()
 {
@@ -1951,7 +1987,9 @@ void CMMDVMHost::readParams()
 	m_p25Enabled    = m_conf.getP25Enabled();
 	m_nxdnEnabled   = m_conf.getNXDNEnabled();
 	m_m17Enabled    = m_conf.getM17Enabled();
+#if defined(USE_POCSAG)
 	m_pocsagEnabled = m_conf.getPOCSAGEnabled();
+#endif
 	m_fmEnabled     = m_conf.getFMEnabled();
 #if defined(USE_AX25)
 	m_ax25Enabled   = m_conf.getAX25Enabled();
@@ -1972,7 +2010,9 @@ void CMMDVMHost::readParams()
 	LogInfo("    P25: %s", m_p25Enabled ? "enabled" : "disabled");
 	LogInfo("    NXDN: %s", m_nxdnEnabled ? "enabled" : "disabled");
 	LogInfo("    M17: %s", m_m17Enabled ? "enabled" : "disabled");
+#if defined(USE_POCSAG)
 	LogInfo("    POCSAG: %s", m_pocsagEnabled ? "enabled" : "disabled");
+#endif
 	LogInfo("    FM: %s", m_fmEnabled ? "enabled" : "disabled");
 #if defined(USE_AX25)
 	LogInfo("    AX.25: %s", m_ax25Enabled ? "enabled" : "disabled");
@@ -1997,8 +2037,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdnNetwork->enable(false);
 		if (m_m17Network != NULL)
 			m_m17Network->enable(false);
+#if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
+#endif
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->enable(false);
 #if defined(USE_AX25)
@@ -2017,8 +2059,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_m17 != NULL)
 			m_m17->enable(false);
+#if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+#endif
 		if (m_fm != NULL)
 			m_fm->enable(false);
 #if defined(USE_AX25)
@@ -2046,8 +2090,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdnNetwork->enable(false);
 		if (m_m17Network != NULL)
 			m_m17Network->enable(false);
+#if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
+#endif
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->enable(false);
 #if defined(USE_AX25)
@@ -2066,8 +2112,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_m17 != NULL)
 			m_m17->enable(false);
+#if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+#endif
 		if (m_fm != NULL)
 			m_fm->enable(false);
 #if defined(USE_AX25)
@@ -2099,8 +2147,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdnNetwork->enable(false);
 		if (m_m17Network != NULL)
 			m_m17Network->enable(false);
+#if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
+#endif
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->enable(false);
 #if defined(USE_AX25)
@@ -2119,8 +2169,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_m17 != NULL)
 			m_m17->enable(false);
+#if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+#endif
 		if (m_fm != NULL)
 			m_fm->enable(false);
 #if defined(USE_AX25)
@@ -2148,8 +2200,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdnNetwork->enable(false);
 		if (m_m17Network != NULL)
 			m_m17Network->enable(false);
+#if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
+#endif
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->enable(false);
 #if defined(USE_AX25)
@@ -2168,8 +2222,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_m17 != NULL)
 			m_m17->enable(false);
+#if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+#endif
 		if (m_fm != NULL)
 			m_fm->enable(false);
 #if defined(USE_AX25)
@@ -2197,8 +2253,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdnNetwork->enable(true);
 		if (m_m17Network != NULL)
 			m_m17Network->enable(false);
+#if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
+#endif
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->enable(false);
 #if defined(USE_AX25)
@@ -2217,8 +2275,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(true);
 		if (m_m17 != NULL)
 			m_m17->enable(false);
+#if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+#endif
 		if (m_fm != NULL)
 			m_fm->enable(false);
 #if defined(USE_AX25)
@@ -2246,8 +2306,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdnNetwork->enable(false);
 		if (m_m17Network != NULL)
 			m_m17Network->enable(true);
+#if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
+#endif
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->enable(false);
 #if defined(USE_AX25)
@@ -2266,8 +2328,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_m17 != NULL)
 			m_m17->enable(true);
+#if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+#endif
 		if (m_fm != NULL)
 			m_fm->enable(false);
 #if defined(USE_AX25)
@@ -2295,8 +2359,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdnNetwork->enable(false);
 		if (m_m17Network != NULL)
 			m_m17Network->enable(false);
+#if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(true);
+#endif
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->enable(false);
 #if defined(USE_AX25)
@@ -2315,8 +2381,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_m17 != NULL)
 			m_m17->enable(false);
+#if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(true);
+#endif
 		if (m_fm != NULL)
 			m_fm->enable(false);
 #if defined(USE_AX25)
@@ -2344,8 +2412,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdnNetwork->enable(false);
 		if (m_m17Network != NULL)
 			m_m17Network->enable(false);
+#if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
+#endif
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->enable(true);
 #if defined(USE_AX25)
@@ -2364,8 +2434,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_m17 != NULL)
 			m_m17->enable(false);
+#if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+#endif
 		if (m_fm != NULL)
 			m_fm->enable(true);
 #if defined(USE_AX25)
@@ -2397,8 +2469,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdnNetwork->enable(false);
 		if (m_m17Network != NULL)
 			m_m17Network->enable(false);
+#if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
+#endif
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->enable(false);
 #if defined(USE_AX25)
@@ -2417,8 +2491,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_m17 != NULL)
 			m_m17->enable(false);
+#if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+#endif
 		if (m_fm != NULL)
 			m_fm->enable(false);
 #if defined(USE_AX25)
@@ -2451,8 +2527,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdnNetwork->enable(false);
 		if (m_m17Network != NULL)
 			m_m17Network->enable(false);
+#if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(false);
+#endif
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->enable(false);
 #if defined(USE_AX25)
@@ -2471,8 +2549,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(false);
 		if (m_m17 != NULL)
 			m_m17->enable(false);
+#if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(false);
+#endif
 		if (m_fm != NULL)
 			m_fm->enable(false);
 #if defined(USE_AX25)
@@ -2503,8 +2583,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdnNetwork->enable(true);
 		if (m_m17Network != NULL)
 			m_m17Network->enable(true);
+#if defined(USE_POCSAG)
 		if (m_pocsagNetwork != NULL)
 			m_pocsagNetwork->enable(true);
+#endif
 		if (m_fmNetwork != NULL)
 			m_fmNetwork->enable(true);
 #if defined(USE_AX25)
@@ -2523,8 +2605,10 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_nxdn->enable(true);
 		if (m_m17 != NULL)
 			m_m17->enable(true);
+#if defined(USE_POCSAG)
 		if (m_pocsag != NULL)
 			m_pocsag->enable(true);
+#endif
 		if (m_fm != NULL)
 			m_fm->enable(true);
 #if defined(USE_AX25)
@@ -2704,6 +2788,7 @@ void CMMDVMHost::remoteControl(const std::string& commandString)
 				processEnableCommand(m_ax25Enabled, false);
 			break;
 #endif
+#if defined(USE_POCSAG)
 		case RCD_PAGE:
 			if (m_pocsag != NULL) {
 				unsigned int ric = m_remoteControl->getArgUInt(0U);
@@ -2746,6 +2831,7 @@ void CMMDVMHost::remoteControl(const std::string& commandString)
 				m_pocsag->sendPageAlert2(ric, text);
 			}
 			break;
+#endif
 		case RCD_CW:
 			setMode(MODE_IDLE); // Force the modem to go idle so that we can send the CW text.
 			if (!m_modem->hasTX()) {
