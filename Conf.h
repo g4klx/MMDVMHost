@@ -51,10 +51,6 @@ public:
   // The Log section
   unsigned int getLogMQTTLevel() const;
   unsigned int getLogDisplayLevel() const;
-  unsigned int getLogFileLevel() const;
-  std::string  getLogFilePath() const;
-  std::string  getLogFileRoot() const;
-  bool         getLogFileRotate() const;
 
   // The MQTT section
   std::string    getMQTTHost() const;
@@ -350,10 +346,6 @@ private:
 
   unsigned int m_logMQTTLevel;
   unsigned int m_logDisplayLevel;
-  unsigned int m_logFileLevel;
-  std::string  m_logFilePath;
-  std::string  m_logFileRoot;
-  bool         m_logFileRotate;
 
   std::string  m_mqttHost;
   unsigned short m_mqttPort;

@@ -78,10 +78,6 @@ m_description(),
 m_url(),
 m_logMQTTLevel(0U),
 m_logDisplayLevel(0U),
-m_logFileLevel(0U),
-m_logFilePath(),
-m_logFileRoot(),
-m_logFileRotate(true),
 m_mqttHost("127.0.0.1"),
 m_mqttPort(1883),
 m_mqttKeepalive(60U),
@@ -457,18 +453,10 @@ bool CConf::read()
 			else if (::strcmp(key, "URL") == 0)
 				m_url = value;
 		} else if (section == SECTION_LOG) {
-			if (::strcmp(key, "FilePath") == 0)
-				m_logFilePath = value;
-			else if (::strcmp(key, "FileRoot") == 0)
-				m_logFileRoot = value;
-			else if (::strcmp(key, "MQTTLevel") == 0)
+			if (::strcmp(key, "MQTTLevel") == 0)
 				m_logMQTTLevel = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "FileLevel") == 0)
-				m_logFileLevel = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "DisplayLevel") == 0)
 				m_logDisplayLevel = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "FileRotate") == 0)
-				m_logFileRotate = ::atoi(value) == 1;
 		} else if (section == SECTION_MQTT) {
 			if (::strcmp(key, "Host") == 0)
 				m_mqttHost = value;
@@ -1115,26 +1103,6 @@ unsigned int CConf::getLogMQTTLevel() const
 unsigned int CConf::getLogDisplayLevel() const
 {
 	return m_logDisplayLevel;
-}
-
-unsigned int CConf::getLogFileLevel() const
-{
-	return m_logFileLevel;
-}
-
-std::string CConf::getLogFilePath() const
-{
-	return m_logFilePath;
-}
-
-std::string CConf::getLogFileRoot() const
-{
-	return m_logFileRoot;
-}
-
-bool CConf::getLogFileRotate() const
-{
-	return m_logFileRotate;
 }
 
 std::string CConf::getMQTTHost() const

@@ -282,15 +282,7 @@ int CMMDVMHost::run()
 #endif
 #endif
 
-#if !defined(_WIN32) && !defined(_WIN64)
-	ret = ::LogInitialise(m_daemon, m_conf.getLogFilePath(), m_conf.getLogFileRoot(), m_conf.getLogFileLevel(), m_conf.getLogDisplayLevel(), m_conf.getLogMQTTLevel(), m_conf.getLogFileRotate());
-#else
-	ret = ::LogInitialise(false, m_conf.getLogFilePath(), m_conf.getLogFileRoot(), m_conf.getLogFileLevel(), m_conf.getLogDisplayLevel(), m_conf.getLogMQTTLevel(), m_conf.getLogFileRotate());
-#endif
-	if (!ret) {
-		::fprintf(stderr, "MMDVMHost: unable to open the log file\n");
-		return 1;
-	}
+	::LogInitialise(m_conf.getLogDisplayLevel(), m_conf.getLogMQTTLevel());
 
 	std::vector<std::pair<std::string, void (*)(const std::string&)>> subscriptions;
 	subscriptions.push_back(std::make_pair("display", CMMDVMHost::onDisplay));

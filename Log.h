@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2020,2022 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2020,2022,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@
 
 extern void Log(unsigned int level, const char* fmt, ...);
 
-extern bool LogInitialise(bool daemon, const std::string& filePath, const std::string& fileRoot, unsigned int fileLevel, unsigned int displayLevel, unsigned int mqttLevel, bool rotate);
+extern void LogInitialise(unsigned int displayLevel, unsigned int mqttLevel);
 extern void LogFinalise();
 
 extern void WriteJSON(const std::string& topLevel, nlohmann::json& json);
