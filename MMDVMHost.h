@@ -64,10 +64,18 @@ private:
 #if defined(USE_DSTAR)
 	CDStarControl*  m_dstar;
 #endif
+#if defined(USE_DMR)
 	CDMRControl*    m_dmr;
+#endif
+#if defined(USE_YSF)
 	CYSFControl*    m_ysf;
+#endif
+#if defined(USE_P25)
 	CP25Control*    m_p25;
+#endif
+#if defined(USE_NXDN)
 	CNXDNControl*   m_nxdn;
+#endif
 #if defined(USE_M17)
 	CM17Control*    m_m17;
 #endif
@@ -83,10 +91,18 @@ private:
 #if defined(USE_DSTAR)
 	CDStarNetwork*  m_dstarNetwork;
 #endif
+#if defined(USE_DMR)
 	CDMRNetwork*    m_dmrNetwork;
+#endif
+#if defined(USE_YSF)
 	CYSFNetwork*    m_ysfNetwork;
+#endif
+#if defined(USE_P25)
 	CP25Network*    m_p25Network;
+#endif
+#if defined(USE_NXDN)
 	INXDNNetwork*   m_nxdnNetwork;
+#endif
 #if defined(USE_M17)
 	CM17Network*    m_m17Network;
 #endif
@@ -103,10 +119,18 @@ private:
 #if defined(USE_DSTAR)
 	unsigned int    m_dstarRFModeHang;
 #endif
+#if defined(USE_DMR)
 	unsigned int    m_dmrRFModeHang;
+#endif
+#if defined(USE_YSF)
 	unsigned int    m_ysfRFModeHang;
+#endif
+#if defined(USE_P25)
 	unsigned int    m_p25RFModeHang;
+#endif
+#if defined(USE_NXDN)
 	unsigned int    m_nxdnRFModeHang;
+#endif
 #if defined(USE_M17)
 	unsigned int    m_m17RFModeHang;
 #endif
@@ -116,10 +140,18 @@ private:
 #if defined(USE_DSTAR)
 	unsigned int    m_dstarNetModeHang;
 #endif
+#if defined(USE_DMR)
 	unsigned int    m_dmrNetModeHang;
+#endif
+#if defined(USE_YSF)
 	unsigned int    m_ysfNetModeHang;
+#endif
+#if defined(USE_P25)
 	unsigned int    m_p25NetModeHang;
+#endif
+#if defined(USE_NXDN)
 	unsigned int    m_nxdnNetModeHang;
+#endif
 #if defined(USE_M17)
 	unsigned int    m_m17NetModeHang;
 #endif
@@ -130,7 +162,9 @@ private:
 	unsigned int    m_fmNetModeHang;
 #endif
 	CTimer          m_modeTimer;
+#if defined(USE_DMR)
 	CTimer          m_dmrTXTimer;
+#endif
 	CTimer          m_cwIdTimer;
 	bool            m_duplex;
 	unsigned int    m_timeout;
@@ -144,8 +178,12 @@ private:
 	bool            m_fmEnabled;
 	bool            m_ax25Enabled;
 	unsigned int    m_cwIdTime;
+#if defined(USE_DMR) || defined(USE_P25)
 	CDMRLookup*     m_dmrLookup;
+#endif
+#if defined(USE_NXDN)
 	CNXDNLookup*    m_nxdnLookup;
+#endif
 	std::string     m_callsign;
 	unsigned int    m_id;
 	std::string     m_cwCallsign;
@@ -159,10 +197,18 @@ private:
 #if defined(USE_DSTAR)
 	bool createDStarNetwork();
 #endif
+#if defined(USE_DMR)
 	bool createDMRNetwork();
+#endif
+#if defined(USE_YSF)
 	bool createYSFNetwork();
+#endif
+#if defined(USE_P25)
 	bool createP25Network();
+#endif
+#if defined(USE_NXDN)
 	bool createNXDNNetwork();
+#endif
 #if defined(USE_M17)
 	bool createM17Network();
 #endif
@@ -175,7 +221,6 @@ private:
 #if defined(USE_AX25)
 	bool createAX25Network();
 #endif
-
 	void writeSerial(const std::string& message);
 
 	void remoteControl(const std::string& commandString);

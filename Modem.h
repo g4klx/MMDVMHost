@@ -49,10 +49,19 @@ public:
 	void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency);
 	void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool m17Enabled, bool pocsagEnabled, bool fmEnabled, bool ax25Enabled);
 	void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float m17TXLevel, float pocsagLevel, float fmTXLevel, float ax25TXLevel);
+
+#if defined(USE_DMR)
 	void setDMRParams(unsigned int colorCode);
+#endif
+#if defined(USE_YSF)
 	void setYSFParams(bool loDev, unsigned int txHang);
+#endif
+#if defined(USE_P25)
 	void setP25Params(unsigned int txHang);
+#endif
+#if defined(USE_NXDN)
 	void setNXDNParams(unsigned int txHang);
+#endif
 #if defined(USE_M17)
 	void setM17Params(unsigned int txHang);
 #endif
@@ -73,10 +82,18 @@ public:
 #if defined(USE_DSTAR)
 	bool hasDStar() const;
 #endif
+#if defined(USE_DMR)
 	bool hasDMR() const;
+#endif
+#if defined(USE_YSF)
 	bool hasYSF() const;
+#endif
+#if defined(USE_P25)
 	bool hasP25() const;
+#endif
+#if defined(USE_NXDN)
 	bool hasNXDN() const;
+#endif
 #if defined(USE_M17)
 	bool hasM17() const;
 #endif
@@ -94,11 +111,19 @@ public:
 #if defined(USE_DSTAR)
 	unsigned int readDStarData(unsigned char* data);
 #endif
+#if defined(USE_DMR)
 	unsigned int readDMRData1(unsigned char* data);
 	unsigned int readDMRData2(unsigned char* data);
+#endif
+#if defined(USE_YSF)
 	unsigned int readYSFData(unsigned char* data);
+#endif
+#if defined(USE_P25)
 	unsigned int readP25Data(unsigned char* data);
+#endif
+#if defined(USE_NXDN)
 	unsigned int readNXDNData(unsigned char* data);
+#endif
 #if defined(USE_M17)
 	unsigned int readM17Data(unsigned char* data);
 #endif
@@ -112,11 +137,19 @@ public:
 #if defined(USE_DSTAR)
 	bool hasDStarSpace() const;
 #endif
+#if defined(USE_DMR)
 	bool hasDMRSpace1() const;
 	bool hasDMRSpace2() const;
+#endif
+#if defined(USE_YSF)
 	bool hasYSFSpace() const;
+#endif
+#if defined(USE_P25)
 	bool hasP25Space() const;
+#endif
+#if defined(USE_NXDN)
 	bool hasNXDNSpace() const;
+#endif
 #if defined(USE_M17)
 	bool hasM17Space() const;
 #endif
@@ -141,11 +174,19 @@ public:
 #if defined(USE_DSTAR)
 	bool writeDStarData(const unsigned char* data, unsigned int length);
 #endif
+#if defined(USE_DMR)
 	bool writeDMRData1(const unsigned char* data, unsigned int length);
 	bool writeDMRData2(const unsigned char* data, unsigned int length);
+#endif
+#if defined(USE_YSF)
 	bool writeYSFData(const unsigned char* data, unsigned int length);
+#endif
+#if defined(USE_P25)
 	bool writeP25Data(const unsigned char* data, unsigned int length);
+#endif
+#if defined(USE_NXDN)
 	bool writeNXDNData(const unsigned char* data, unsigned int length);
+#endif
 #if defined(USE_M17)
 	bool writeM17Data(const unsigned char* data, unsigned int length);
 #endif
@@ -162,10 +203,18 @@ public:
 #if defined(USE_DSTAR)
 	bool writeDStarInfo(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
 #endif
+#if defined(USE_DMR)
 	bool writeDMRInfo(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
+#endif
+#if defined(USE_YSF)
 	bool writeYSFInfo(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
+#endif
+#if defined(USE_P25)
 	bool writeP25Info(const char* source, bool group, unsigned int dest, const char* type);
+#endif
+#if defined(USE_NXDN)
 	bool writeNXDNInfo(const char* source, bool group, unsigned int dest, const char* type);
+#endif
 #if defined(USE_M17)
 	bool writeM17Info(const char* source, const char* dest, const char* type);
 #endif
@@ -174,10 +223,11 @@ public:
 #endif
 	bool writeIPInfo(const std::string& address);
 
+#if defined(USE_DMR)
 	bool writeDMRStart(bool tx);
 	bool writeDMRShortLC(const unsigned char* lc);
 	bool writeDMRAbort(unsigned int slotNo);
-
+#endif
 	bool writeTransparentData(const unsigned char* data, unsigned int length);
 	unsigned int readTransparentData(unsigned char* data);
 
@@ -197,11 +247,19 @@ public:
 
 private:
 	unsigned int               m_protocolVersion;
+#if defined(USE_DMR)
 	unsigned int               m_dmrColorCode;
+#endif
+#if defined(USE_YSF)
 	bool                       m_ysfLoDev;
 	unsigned int               m_ysfTXHang;
+#endif
+#if defined(USE_P25)
 	unsigned int               m_p25TXHang;
+#endif
+#if defined(USE_NXDN)
 	unsigned int               m_nxdnTXHang;
+#endif
 #if defined(USE_M17)
 	unsigned int               m_m17TXHang;
 #endif
@@ -210,16 +268,26 @@ private:
 	bool                       m_txInvert;
 	bool                       m_pttInvert;
 	unsigned int               m_txDelay;
+#if defined(USE_DMR)
 	unsigned int               m_dmrDelay;
+#endif
 	float                      m_rxLevel;
 	float                      m_cwIdTXLevel;
 #if defined(USE_DSTAR)
 	float                      m_dstarTXLevel;
 #endif
+#if defined(USE_DMR)
 	float                      m_dmrTXLevel;
+#endif
+#if defined(USE_YSF)
 	float                      m_ysfTXLevel;
+#endif
+#if defined(USE_P25)
 	float                      m_p25TXLevel;
+#endif
+#if defined(USE_NXDN)
 	float                      m_nxdnTXLevel;
+#endif
 #if defined(USE_M17)
 	float                      m_m17TXLevel;
 #endif
@@ -244,10 +312,18 @@ private:
 #if defined(USE_DSTAR)
 	bool                       m_dstarEnabled;
 #endif
+#if defined(USE_DMR)
 	bool                       m_dmrEnabled;
+#endif
+#if defined(USE_YSF)
 	bool                       m_ysfEnabled;
+#endif
+#if defined(USE_P25)
 	bool                       m_p25Enabled;
+#endif
+#if defined(USE_NXDN)
 	bool                       m_nxdnEnabled;
+#endif
 #if defined(USE_M17)
 	bool                       m_m17Enabled;
 #endif
@@ -273,16 +349,24 @@ private:
 	CRingBuffer<unsigned char> m_rxDStarData;
 	CRingBuffer<unsigned char> m_txDStarData;
 #endif
+#if defined(USE_DMR)
 	CRingBuffer<unsigned char> m_rxDMRData1;
 	CRingBuffer<unsigned char> m_rxDMRData2;
 	CRingBuffer<unsigned char> m_txDMRData1;
 	CRingBuffer<unsigned char> m_txDMRData2;
+#endif
+#if defined(USE_YSF)
 	CRingBuffer<unsigned char> m_rxYSFData;
 	CRingBuffer<unsigned char> m_txYSFData;
+#endif
+#if defined(USE_P25)
 	CRingBuffer<unsigned char> m_rxP25Data;
 	CRingBuffer<unsigned char> m_txP25Data;
+#endif
+#if defined(USE_NXDN)
 	CRingBuffer<unsigned char> m_rxNXDNData;
 	CRingBuffer<unsigned char> m_txNXDNData;
+#endif
 #if defined(USE_M17)
 	CRingBuffer<unsigned char> m_rxM17Data;
 	CRingBuffer<unsigned char> m_txM17Data;
@@ -309,11 +393,19 @@ private:
 #if defined(USE_DSTAR)
 	unsigned int               m_dstarSpace;
 #endif
+#if defined(USE_DMR)
 	unsigned int               m_dmrSpace1;
 	unsigned int               m_dmrSpace2;
+#endif
+#if defined(USE_YSF)
 	unsigned int               m_ysfSpace;
+#endif
+#if defined(USE_P25)
 	unsigned int               m_p25Space;
+#endif
+#if defined(USE_NXDN)
 	unsigned int               m_nxdnSpace;
+#endif
 #if defined(USE_M17)
 	unsigned int               m_m17Space;
 #endif

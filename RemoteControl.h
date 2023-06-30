@@ -35,10 +35,18 @@ enum REMOTE_COMMAND {
 #if defined(USE_DSTAR)
 	RCD_MODE_DSTAR,
 #endif
+#if defined(USE_DMR)
 	RCD_MODE_DMR,
+#endif
+#if defined(USE_YSF)
 	RCD_MODE_YSF,
+#endif
+#if defined(USE_P25)
 	RCD_MODE_P25,
+#endif
+#if defined(USE_NXDN)
 	RCD_MODE_NXDN,
+#endif
 #if defined(USE_M17)
 	RCD_MODE_M17,
 #endif
@@ -48,10 +56,18 @@ enum REMOTE_COMMAND {
 #if defined(USE_DSTAR)
 	RCD_ENABLE_DSTAR,
 #endif
+#if defined(USE_DMR)
 	RCD_ENABLE_DMR,
+#endif
+#if defined(USE_YSF)
 	RCD_ENABLE_YSF,
+#endif
+#if defined(USE_P25)
 	RCD_ENABLE_P25,
+#endif
+#if defined(USE_NXDN)
 	RCD_ENABLE_NXDN,
+#endif
 #if defined(USE_M17)
 	RCD_ENABLE_M17,
 #endif
@@ -64,10 +80,18 @@ enum REMOTE_COMMAND {
 #if defined(USE_DSTAR)
 	RCD_DISABLE_DSTAR,
 #endif
+#if defined(USE_DMR)
 	RCD_DISABLE_DMR,
+#endif
+#if defined(USE_YSF)
 	RCD_DISABLE_YSF,
+#endif
+#if defined(USE_P25)
 	RCD_DISABLE_P25,
+#endif
+#if defined(USE_NXDN)
 	RCD_DISABLE_NXDN,
+#endif
 #if defined(USE_M17)
 	RCD_DISABLE_M17,
 #endif

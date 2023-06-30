@@ -442,20 +442,24 @@ const unsigned int PRNG_TABLE[] = {
 	0xECDB0FU, 0xB542DAU, 0x9E5131U, 0xC7ABA5U, 0x8C38FEU, 0x97010BU, 0xDED290U, 0xA4CC7DU, 0xAD3D2EU, 0xF6B6B3U, 
 	0xF9A540U, 0x205ED9U, 0x634EB6U, 0x5A9567U, 0x11A6D8U, 0x0B3F09U};
 
+#if defined(USE_DMR) || defined(USE_YSF) || defined(USE_NXDN)
 const unsigned int DMR_A_TABLE[] = { 0U,  4U,  8U, 12U, 16U, 20U, 24U, 28U, 32U, 36U, 40U, 44U,
 									48U, 52U, 56U, 60U, 64U, 68U,  1U,  5U,  9U, 13U, 17U, 21U};
 const unsigned int DMR_B_TABLE[] = {25U, 29U, 33U, 37U, 41U, 45U, 49U, 53U, 57U, 61U, 65U, 69U,
 									 2U,  6U, 10U, 14U, 18U, 22U, 26U, 30U, 34U, 38U, 42U};
 const unsigned int DMR_C_TABLE[] = {46U, 50U, 54U, 58U, 62U, 66U, 70U,  3U,  7U, 11U, 15U, 19U,
 									23U, 27U, 31U, 35U, 39U, 43U, 47U, 51U, 55U, 59U, 63U, 67U, 71U};
-
+#endif
+#if defined(USE_DSTAR)
 const unsigned int DSTAR_A_TABLE[] = {0U,  6U, 12U, 18U, 24U, 30U, 36U, 42U, 48U, 54U, 60U, 66U,
 									  1U,  7U, 13U, 19U, 25U, 31U, 37U, 43U, 49U, 55U, 61U, 67U};
 const unsigned int DSTAR_B_TABLE[] = {2U,  8U, 14U, 20U, 26U, 32U, 38U, 44U, 50U, 56U, 62U, 68U,
 									  3U,  9U, 15U, 21U, 27U, 33U, 39U, 45U, 51U, 57U, 63U, 69U};
 const unsigned int DSTAR_C_TABLE[] = {4U, 10U, 16U, 22U, 28U, 34U, 40U, 46U, 52U, 58U, 64U, 70U,
 									  5U, 11U, 17U, 23U, 29U, 35U, 41U, 47U, 53U, 59U, 65U, 71U};
+#endif
 
+#if defined(USE_YSF) || defined(USE_P25)
 const unsigned int IMBE_INTERLEAVE[] = {
 	0,  7, 12, 19, 24, 31, 36, 43, 48, 55, 60, 67, 72, 79, 84, 91,  96, 103, 108, 115, 120, 127, 132, 139,
 	1,  6, 13, 18, 25, 30, 37, 42, 49, 54, 61, 66, 73, 78, 85, 90,  97, 102, 109, 114, 121, 126, 133, 138,
@@ -464,6 +468,7 @@ const unsigned int IMBE_INTERLEAVE[] = {
 	4, 11, 16, 23, 28, 35, 40, 47, 52, 59, 64, 71, 76, 83, 88, 95, 100, 107, 112, 119, 124, 131, 136, 143,
 	5, 10, 17, 22, 29, 34, 41, 46, 53, 58, 65, 70, 77, 82, 89, 94, 101, 106, 113, 118, 125, 130, 137, 142
 };
+#endif
 
 CAMBEFEC::CAMBEFEC()
 {
@@ -473,6 +478,7 @@ CAMBEFEC::~CAMBEFEC()
 {
 }
 
+#if defined(USE_DMR) || defined(USE_YSF) || defined(USE_NXDN)
 unsigned int CAMBEFEC::regenerateDMR(unsigned char* bytes) const
 {
 	assert(bytes != NULL);
@@ -573,6 +579,7 @@ unsigned int CAMBEFEC::regenerateDMR(unsigned char* bytes) const
 
 	return errors;
 }
+#endif
 
 #if defined(USE_DSTAR)
 unsigned int CAMBEFEC::regenerateDStar(unsigned char* bytes) const
@@ -608,6 +615,7 @@ unsigned int CAMBEFEC::regenerateDStar(unsigned char* bytes) const
 }
 #endif
 
+#if defined(USE_YSF)
 unsigned int CAMBEFEC::regenerateYSFDN(unsigned char* bytes) const
 {
 	assert(bytes != NULL);
@@ -658,7 +666,9 @@ unsigned int CAMBEFEC::regenerateYSFDN(unsigned char* bytes) const
 
 	return errors;
 }
+#endif
 
+#if defined(USE_YSF) || defined(USE_P25)
 unsigned int CAMBEFEC::regenerateIMBE(unsigned char* bytes) const
 {
 	assert(bytes != NULL);
@@ -792,6 +802,7 @@ unsigned int CAMBEFEC::regenerateIMBE(unsigned char* bytes) const
 
 	return errors;
 }
+#endif
 
 #if defined(USE_DSTAR)
 unsigned int CAMBEFEC::regenerateDStar(unsigned int& a, unsigned int& b) const
@@ -829,6 +840,7 @@ unsigned int CAMBEFEC::regenerateDStar(unsigned int& a, unsigned int& b) const
 }
 #endif
 
+#if defined(USE_DMR) || defined(USE_YSF) || defined(USE_NXDN)
 unsigned int CAMBEFEC::regenerateDMR(unsigned int& a, unsigned int& b, unsigned int& c) const
 {
 	unsigned int orig_a = a;
@@ -870,3 +882,5 @@ unsigned int CAMBEFEC::regenerateDMR(unsigned int& a, unsigned int& b, unsigned 
 
 	return errsA + errsB;
 }
+#endif
+

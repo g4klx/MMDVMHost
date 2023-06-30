@@ -58,6 +58,7 @@ const unsigned char MMDVM_DSTAR_LOST   = 0x12U;
 const unsigned char MMDVM_DSTAR_EOT    = 0x13U;
 #endif
 
+#if defined(USE_DMR)
 const unsigned char MMDVM_DMR_DATA1   = 0x18U;
 const unsigned char MMDVM_DMR_LOST1   = 0x19U;
 const unsigned char MMDVM_DMR_DATA2   = 0x1AU;
@@ -65,16 +66,23 @@ const unsigned char MMDVM_DMR_LOST2   = 0x1BU;
 const unsigned char MMDVM_DMR_SHORTLC = 0x1CU;
 const unsigned char MMDVM_DMR_START   = 0x1DU;
 const unsigned char MMDVM_DMR_ABORT   = 0x1EU;
+#endif
 
+#if defined(USE_YSF)
 const unsigned char MMDVM_YSF_DATA    = 0x20U;
 const unsigned char MMDVM_YSF_LOST    = 0x21U;
+#endif
 
+#if defined(USE_P25)
 const unsigned char MMDVM_P25_HDR     = 0x30U;
 const unsigned char MMDVM_P25_LDU     = 0x31U;
 const unsigned char MMDVM_P25_LOST    = 0x32U;
+#endif
 
+#if defined(USE_NXDN)
 const unsigned char MMDVM_NXDN_DATA   = 0x40U;
 const unsigned char MMDVM_NXDN_LOST   = 0x41U;
+#endif
 
 #if defined(USE_M17)
 const unsigned char MMDVM_M17_LINK_SETUP = 0x45U;
@@ -124,10 +132,18 @@ const unsigned int BUFFER_LENGTH = 2000U;
 #if defined(USE_DSTAR)
 const unsigned char CAP1_DSTAR  = 0x01U;
 #endif
+#if defined(USE_DMR)
 const unsigned char CAP1_DMR    = 0x02U;
+#endif
+#if defined(USE_YSF)
 const unsigned char CAP1_YSF    = 0x04U;
+#endif
+#if defined(USE_P25)
 const unsigned char CAP1_P25    = 0x08U;
+#endif
+#if defined(USE_NXDN)
 const unsigned char CAP1_NXDN   = 0x10U;
+#endif
 #if defined(USE_M17)
 const unsigned char CAP1_M17    = 0x20U;
 #endif
@@ -143,11 +159,19 @@ const unsigned char CAP2_AX25   = 0x02U;
 
 CModem::CModem(bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug) :
 m_protocolVersion(0U),
+#if defined(USE_DMR)
 m_dmrColorCode(0U),
+#endif
+#if defined(USE_YSF)
 m_ysfLoDev(false),
 m_ysfTXHang(4U),
+#endif
+#if defined(USE_P25)
 m_p25TXHang(5U),
+#endif
+#if defined(USE_NXDN)
 m_nxdnTXHang(5U),
+#endif
 #if defined(USE_M17)
 m_m17TXHang(5U),
 #endif
@@ -156,16 +180,26 @@ m_rxInvert(rxInvert),
 m_txInvert(txInvert),
 m_pttInvert(pttInvert),
 m_txDelay(txDelay),
+#if defined(USE_DMR)
 m_dmrDelay(dmrDelay),
+#endif
 m_rxLevel(0.0F),
 m_cwIdTXLevel(0.0F),
 #if defined(USE_DSTAR)
 m_dstarTXLevel(0.0F),
 #endif
+#if defined(USE_DMR)
 m_dmrTXLevel(0.0F),
+#endif
+#if defined(USE_YSF)
 m_ysfTXLevel(0.0F),
+#endif
+#if defined(USE_P25)
 m_p25TXLevel(0.0F),
+#endif
+#if defined(USE_NXDN)
 m_nxdnTXLevel(0.0F),
+#endif
 #if defined(USE_M17)
 m_m17TXLevel(0.0F),
 #endif
@@ -190,10 +224,18 @@ m_pocsagFrequency(0U),
 #if defined(USE_DSTAR)
 m_dstarEnabled(false),
 #endif
+#if defined(USE_DMR)
 m_dmrEnabled(false),
+#endif
+#if defined(USE_YSF)
 m_ysfEnabled(false),
+#endif
+#if defined(USE_P25)
 m_p25Enabled(false),
+#endif
+#if defined(USE_NXDN)
 m_nxdnEnabled(false),
+#endif
 #if defined(USE_M17)
 m_m17Enabled(false),
 #endif
@@ -218,16 +260,24 @@ m_type(0U),
 m_rxDStarData(1000U, "Modem RX D-Star"),
 m_txDStarData(1000U, "Modem TX D-Star"),
 #endif
+#if defined(USE_DMR)
 m_rxDMRData1(1000U, "Modem RX DMR1"),
 m_rxDMRData2(1000U, "Modem RX DMR2"),
 m_txDMRData1(1000U, "Modem TX DMR1"),
 m_txDMRData2(1000U, "Modem TX DMR2"),
+#endif
+#if defined(USE_YSF)
 m_rxYSFData(1000U, "Modem RX YSF"),
 m_txYSFData(1000U, "Modem TX YSF"),
+#endif
+#if defined(USE_P25)
 m_rxP25Data(1000U, "Modem RX P25"),
 m_txP25Data(1000U, "Modem TX P25"),
+#endif
+#if defined(USE_NXDN)
 m_rxNXDNData(1000U, "Modem RX NXDN"),
 m_txNXDNData(1000U, "Modem TX NXDN"),
+#endif
 #if defined(USE_M17)
 m_rxM17Data(1000U, "Modem RX M17"),
 m_txM17Data(1000U, "Modem TX M17"),
@@ -254,11 +304,19 @@ m_playoutTimer(1000U, 0U, 10U),
 #if defined(USE_DSTAR)
 m_dstarSpace(0U),
 #endif
+#if defined(USE_DMR)
 m_dmrSpace1(0U),
 m_dmrSpace2(0U),
+#endif
+#if defined(USE_YSF)
 m_ysfSpace(0U),
+#endif
+#if defined(USE_P25)
 m_p25Space(0U),
+#endif
+#if defined(USE_NXDN)
 m_nxdnSpace(0U),
+#endif
 #if defined(USE_M17)
 m_m17Space(0U),
 #endif
@@ -356,10 +414,18 @@ void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, 
 #if defined(USE_DSTAR)
 	m_dstarEnabled  = dstarEnabled;
 #endif
+#if defined(USE_DMR)
 	m_dmrEnabled    = dmrEnabled;
+#endif
+#if defined(USE_YSF)
 	m_ysfEnabled    = ysfEnabled;
+#endif
+#if defined(USE_P25)
 	m_p25Enabled    = p25Enabled;
+#endif
+#if defined(USE_NXDN)
 	m_nxdnEnabled   = nxdnEnabled;
+#endif
 #if defined(USE_M17)
 	m_m17Enabled    = m17Enabled;
 #endif
@@ -381,10 +447,18 @@ void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, flo
 #if defined(USE_DSTAR)
 	m_dstarTXLevel  = dstarTXLevel;
 #endif
+#if defined(USE_DMR)
 	m_dmrTXLevel    = dmrTXLevel;
+#endif
+#if defined(USE_YSF)
 	m_ysfTXLevel    = ysfTXLevel;
+#endif
+#if defined(USE_P25)
 	m_p25TXLevel    = p25TXLevel;
+#endif
+#if defined(USE_NXDN)
 	m_nxdnTXLevel   = nxdnTXLevel;
+#endif
 #if defined(USE_M17)
 	m_m17TXLevel    = m17TXLevel;
 #endif
@@ -399,28 +473,36 @@ void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, flo
 #endif
 }
 
+#if defined(USE_DMR)
 void CModem::setDMRParams(unsigned int colorCode)
 {
 	assert(colorCode < 16U);
 
 	m_dmrColorCode = colorCode;
 }
+#endif
 
+#if defined(USE_YSF)
 void CModem::setYSFParams(bool loDev, unsigned int txHang)
 {
 	m_ysfLoDev  = loDev;
 	m_ysfTXHang = txHang;
 }
+#endif
 
+#if defined(USE_P25)
 void CModem::setP25Params(unsigned int txHang)
 {
 	m_p25TXHang = txHang;
 }
+#endif
 
+#if defined(USE_NXDN)
 void CModem::setNXDNParams(unsigned int txHang)
 {
 	m_nxdnTXHang = txHang;
 }
+#endif
 
 #if defined(USE_M17)
 void CModem::setM17Params(unsigned int txHang)
@@ -611,6 +693,7 @@ void CModem::clock(unsigned int ms)
 				break;
 #endif
 
+#if defined(USE_DMR)
 			case MMDVM_DMR_DATA1: {
 					if (m_trace)
 						CUtils::dump(1U, "RX DMR Data 1", m_buffer, m_length);
@@ -668,7 +751,9 @@ void CModem::clock(unsigned int ms)
 					m_rxDMRData2.addData(&data, 1U);
 				}
 				break;
+#endif
 
+#if defined(USE_YSF)
 			case MMDVM_YSF_DATA: {
 					if (m_trace)
 						CUtils::dump(1U, "RX YSF Data", m_buffer, m_length);
@@ -694,7 +779,9 @@ void CModem::clock(unsigned int ms)
 					m_rxYSFData.addData(&data, 1U);
 				}
 				break;
+#endif
 
+#if defined(USE_P25)
 			case MMDVM_P25_HDR: {
 				if (m_trace)
 					CUtils::dump(1U, "RX P25 Header", m_buffer, m_length);
@@ -734,7 +821,9 @@ void CModem::clock(unsigned int ms)
 				m_rxP25Data.addData(&data, 1U);
 			}
 			break;
+#endif
 
+#if defined(USE_NXDN)
 			case MMDVM_NXDN_DATA: {
 				if (m_trace)
 					CUtils::dump(1U, "RX NXDN Data", m_buffer, m_length);
@@ -760,6 +849,7 @@ void CModem::clock(unsigned int ms)
 				m_rxNXDNData.addData(&data, 1U);
 			}
 			break;
+#endif
 
 #if defined(USE_M17)
 			case MMDVM_M17_LINK_SETUP: {
@@ -814,6 +904,7 @@ void CModem::clock(unsigned int ms)
 			}
 			break;
 #endif
+
 #if defined(USE_FM)
 			case MMDVM_FM_DATA: {
 				if (m_trace)
@@ -857,6 +948,7 @@ void CModem::clock(unsigned int ms)
 			}
 			break;
 #endif
+
 #if defined(USE_AX25)
 			case MMDVM_AX25_DATA: {
 				if (m_trace)
@@ -894,8 +986,12 @@ void CModem::clock(unsigned int ms)
 							LogError("MMDVM DAC levels have overflowed");
 						m_cd = (m_buffer[m_offset + 2U] & 0x40U) == 0x40U;
 
+#if defined(USE_P25)
 						m_p25Space    = 0U;
+#endif
+#if defined(USE_NXDN)
 						m_nxdnSpace   = 0U;
+#endif
 #if defined(USE_M17)
 						m_m17Space    = 0U;
 #endif
@@ -911,15 +1007,22 @@ void CModem::clock(unsigned int ms)
 #if defined(USE_DSTAR)
 						m_dstarSpace = m_buffer[m_offset + 3U];
 #endif
+#if defined(USE_DMR)
 						m_dmrSpace1  = m_buffer[m_offset + 4U];
 						m_dmrSpace2  = m_buffer[m_offset + 5U];
+#endif
+#if defined(USE_YSF)
 						m_ysfSpace   = m_buffer[m_offset + 6U];
-
+#endif
 						// The following depend on the version of the firmware
+#if defined(USE_P25)
 						if (m_length > (m_offset + 7U))
 							m_p25Space    = m_buffer[m_offset + 7U];
+#endif
+#if defined(USE_NXDN)
 						if (m_length > (m_offset + 8U))
 							m_nxdnSpace   = m_buffer[m_offset + 8U];
+#endif
 #if defined(USE_POCSAG)
 						if (m_length > (m_offset + 9U))
 							m_pocsagSpace = m_buffer[m_offset + 9U];
@@ -953,11 +1056,19 @@ void CModem::clock(unsigned int ms)
 #if defined(USE_DSTAR)
 						m_dstarSpace  = m_buffer[m_offset + 3U];
 #endif
+#if defined(USE_DMR)
 						m_dmrSpace1   = m_buffer[m_offset + 4U];
 						m_dmrSpace2   = m_buffer[m_offset + 5U];
+#endif
+#if defined(USE_YSF)
 						m_ysfSpace    = m_buffer[m_offset + 6U];
+#endif
+#if defined(USE_P25)
 						m_p25Space    = m_buffer[m_offset + 7U];
+#endif
+#if defined(USE_NXDN)
 						m_nxdnSpace   = m_buffer[m_offset + 8U];
+#endif
 #if defined(USE_M17)
 						m_m17Space    = m_buffer[m_offset + 9U];
 #endif
@@ -977,11 +1088,19 @@ void CModem::clock(unsigned int ms)
 #if defined(USE_DSTAR)
 					m_dstarSpace  = 0U;
 #endif
+#if defined(USE_DMR)
 					m_dmrSpace1   = 0U;
 					m_dmrSpace2   = 0U;
+#endif
+#if defined(USE_YSF)
 					m_ysfSpace    = 0U;
+#endif
+#if defined(USE_P25)
 					m_p25Space    = 0U;
+#endif
+#if defined(USE_NXDN)
 					m_nxdnSpace   = 0U;
+#endif
 #if defined(USE_M17)
 					m_m17Space    = 0U;
 #endif
@@ -1094,6 +1213,7 @@ void CModem::clock(unsigned int ms)
 	}
 #endif
 
+#if defined(USE_DMR)
 	if (m_dmrSpace1 > 1U && !m_txDMRData1.isEmpty()) {
 		unsigned char len = 0U;
 		m_txDMRData1.getData(&len, 1U);
@@ -1127,7 +1247,9 @@ void CModem::clock(unsigned int ms)
 
 		m_dmrSpace2--;
 	}
+#endif
 
+#if defined(USE_YSF)
 	if (m_ysfSpace > 1U && !m_txYSFData.isEmpty()) {
 		unsigned char len = 0U;
 		m_txYSFData.getData(&len, 1U);
@@ -1144,7 +1266,9 @@ void CModem::clock(unsigned int ms)
 
 		m_ysfSpace--;
 	}
+#endif
 
+#if defined(USE_P25)
 	if (m_p25Space > 1U && !m_txP25Data.isEmpty()) {
 		unsigned char len = 0U;
 		m_txP25Data.getData(&len, 1U);
@@ -1165,7 +1289,9 @@ void CModem::clock(unsigned int ms)
 
 		m_p25Space--;
 	}
+#endif
 
+#if defined(USE_NXDN)
 	if (m_nxdnSpace > 1U && !m_txNXDNData.isEmpty()) {
 		unsigned char len = 0U;
 		m_txNXDNData.getData(&len, 1U);
@@ -1182,6 +1308,7 @@ void CModem::clock(unsigned int ms)
 
 		m_nxdnSpace--;
 	}
+#endif
 
 #if defined(USE_M17)
 	if (m_m17Space > 1U && !m_txM17Data.isEmpty()) {
@@ -1326,6 +1453,7 @@ unsigned int CModem::readDStarData(unsigned char* data)
 }
 #endif
 
+#if defined(USE_DMR)
 unsigned int CModem::readDMRData1(unsigned char* data)
 {
 	assert(data != NULL);
@@ -1353,7 +1481,9 @@ unsigned int CModem::readDMRData2(unsigned char* data)
 
 	return len;
 }
+#endif
 
+#if defined(USE_YSF)
 unsigned int CModem::readYSFData(unsigned char* data)
 {
 	assert(data != NULL);
@@ -1367,7 +1497,9 @@ unsigned int CModem::readYSFData(unsigned char* data)
 
 	return len;
 }
+#endif
 
+#if defined(USE_P25)
 unsigned int CModem::readP25Data(unsigned char* data)
 {
 	assert(data != NULL);
@@ -1381,7 +1513,9 @@ unsigned int CModem::readP25Data(unsigned char* data)
 
 	return len;
 }
+#endif
 
+#if defined(USE_NXDN)
 unsigned int CModem::readNXDNData(unsigned char* data)
 {
 	assert(data != NULL);
@@ -1395,6 +1529,7 @@ unsigned int CModem::readNXDNData(unsigned char* data)
 
 	return len;
 }
+#endif
 
 #if defined(USE_M17)
 unsigned int CModem::readM17Data(unsigned char* data)
@@ -1515,6 +1650,7 @@ bool CModem::writeDStarData(const unsigned char* data, unsigned int length)
 }
 #endif
 
+#if defined(USE_DMR)
 bool CModem::hasDMRSpace1() const
 {
 	unsigned int space = m_txDMRData1.freeSpace() / (DMR_FRAME_LENGTH_BYTES + 4U);
@@ -1574,7 +1710,9 @@ bool CModem::writeDMRData2(const unsigned char* data, unsigned int length)
 
 	return true;
 }
+#endif
 
+#if defined(USE_YSF)
 bool CModem::hasYSFSpace() const
 {
 	unsigned int space = m_txYSFData.freeSpace() / (YSF_FRAME_LENGTH_BYTES + 4U);
@@ -1604,7 +1742,9 @@ bool CModem::writeYSFData(const unsigned char* data, unsigned int length)
 
 	return true;
 }
+#endif
 
+#if defined(USE_P25)
 bool CModem::hasP25Space() const
 {
 	unsigned int space = m_txP25Data.freeSpace() / (P25_LDU_FRAME_LENGTH_BYTES + 4U);
@@ -1634,7 +1774,9 @@ bool CModem::writeP25Data(const unsigned char* data, unsigned int length)
 
 	return true;
 }
+#endif
 
+#if defined(USE_NXDN)
 bool CModem::hasNXDNSpace() const
 {
 	unsigned int space = m_txNXDNData.freeSpace() / (NXDN_FRAME_LENGTH_BYTES + 4U);
@@ -1664,6 +1806,7 @@ bool CModem::writeNXDNData(const unsigned char* data, unsigned int length)
 
 	return true;
 }
+#endif
 
 #if defined(USE_M17)
 bool CModem::hasM17Space() const
@@ -1876,6 +2019,7 @@ bool CModem::writeDStarInfo(const char* my1, const char* my2, const char* your, 
 }
 #endif
 
+#if defined(USE_DMR)
 bool CModem::writeDMRInfo(unsigned int slotNo, const std::string& src, bool group, const std::string& dest, const char* type)
 {
 	assert(m_port != NULL);
@@ -1901,7 +2045,9 @@ bool CModem::writeDMRInfo(unsigned int slotNo, const std::string& src, bool grou
 
 	return m_port->write(buffer, 47U) != 47;
 }
+#endif
 
+#if defined(USE_YSF)
 bool CModem::writeYSFInfo(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
 	assert(m_port != NULL);
@@ -1929,7 +2075,9 @@ bool CModem::writeYSFInfo(const char* source, const char* dest, unsigned char dg
 
 	return m_port->write(buffer, 36U) != 36;
 }
+#endif
 
+#if defined(USE_P25)
 bool CModem::writeP25Info(const char* source, bool group, unsigned int dest, const char* type)
 {
 	assert(m_port != NULL);
@@ -1954,7 +2102,9 @@ bool CModem::writeP25Info(const char* source, bool group, unsigned int dest, con
 
 	return m_port->write(buffer, 31U) != 31;
 }
+#endif
 
+#if defined(USE_NXDN)
 bool CModem::writeNXDNInfo(const char* source, bool group, unsigned int dest, const char* type)
 {
 	assert(m_port != NULL);
@@ -1979,6 +2129,7 @@ bool CModem::writeNXDNInfo(const char* source, bool group, unsigned int dest, co
 
 	return m_port->write(buffer, 31U) != 31;
 }
+#endif
 
 #if defined(USE_M17)
 bool CModem::writeM17Info(const char* source, const char* dest, const char* type)
@@ -2100,25 +2251,33 @@ bool CModem::hasDStar() const
 }
 #endif
 
+#if defined(USE_DMR)
 bool CModem::hasDMR() const
 {
 	return (m_capabilities1 & CAP1_DMR) == CAP1_DMR;
 }
+#endif
 
+#if defined(USE_YSF)
 bool CModem::hasYSF() const
 {
 	return (m_capabilities1 & CAP1_YSF) == CAP1_YSF;
 }
+#endif
 
+#if defined(USE_P25)
 bool CModem::hasP25() const
 {
 	return (m_capabilities1 & CAP1_P25) == CAP1_P25;
 }
+#endif
 
+#if defined(USE_NXDN)
 bool CModem::hasNXDN() const
 {
 	return (m_capabilities1 & CAP1_NXDN) == CAP1_NXDN;
 }
+#endif
 
 #if defined(USE_M17)
 bool CModem::hasM17() const
@@ -2215,7 +2374,18 @@ bool CModem::readVersion()
 #if defined(USE_DSTAR)
 					m_capabilities1 |= CAP1_DSTAR;
 #endif
-					m_capabilities1 |= CAP1_DMR | CAP1_YSF | CAP1_P25 | CAP1_NXDN;
+#if defined(USE_DMR)
+					m_capabilities1 |= CAP1_DMR;
+#endif
+#if defined(USE_YSF)
+					m_capabilities1 |= CAP1_YSF;
+#endif
+#if defined(USE_P25)
+					m_capabilities1 |= CAP1_P25;
+#endif
+#if defined(USE_NXDN)
+					m_capabilities1 |= CAP1_NXDN;
+#endif
 #if defined(USE_M17)
 					m_capabilities1 |= CAP1_M17;
 #endif
@@ -2248,14 +2418,22 @@ bool CModem::readVersion()
 					if (hasDStar())
 						::strcat(modeText, " D-Star");
 #endif
+#if defined(USE_DMR)
 					if (hasDMR())
 						::strcat(modeText, " DMR");
+#endif
+#if defined(USE_YSF)
 					if (hasYSF())
 						::strcat(modeText, " YSF");
+#endif
+#if defined(USE_P25)
 					if (hasP25())
 						::strcat(modeText, " P25");
+#endif
+#if defined(USE_NXDN)
 					if (hasNXDN())
 						::strcat(modeText, " NXDN");
+#endif
 #if defined(USE_M17)
 					if (hasM17())
 						::strcat(modeText, " M17");
@@ -2352,14 +2530,22 @@ bool CModem::setConfig1()
 	if (m_dstarEnabled)
 		buffer[4U] |= 0x01U;
 #endif
+#if defined(USE_DMR)
 	if (m_dmrEnabled)
 		buffer[4U] |= 0x02U;
+#endif
+#if defined(USE_YSF)
 	if (m_ysfEnabled)
 		buffer[4U] |= 0x04U;
+#endif
+#if defined(USE_P25)
 	if (m_p25Enabled)
 		buffer[4U] |= 0x08U;
+#endif
+#if defined(USE_NXDN)
 	if (m_nxdnEnabled)
 		buffer[4U] |= 0x10U;
+#endif
 #if defined(USE_POCSAG)
 	if (m_pocsagEnabled)
 		buffer[4U] |= 0x20U;
@@ -2377,9 +2563,13 @@ bool CModem::setConfig1()
 
 	buffer[8U] = (unsigned char)(m_cwIdTXLevel * 2.55F + 0.5F);
 
-	buffer[9U] = m_dmrColorCode;
-
+#if defined(USE_DMR)
+	buffer[9U]  = m_dmrColorCode;
 	buffer[10U] = m_dmrDelay;
+#else
+	buffer[9U]  = 0U;
+	buffer[10U] = 0U;
+#endif
 
 	buffer[11U] = 128U;           // Was OscOffset
 
@@ -2388,16 +2578,35 @@ bool CModem::setConfig1()
 #else
 	buffer[12U] = 0U;
 #endif
+#if defined(USE_DMR)
 	buffer[13U] = (unsigned char)(m_dmrTXLevel * 2.55F + 0.5F);
+#else
+	buffer[13U] = 0U;
+#endif
+#if defined(USE_YSF)
 	buffer[14U] = (unsigned char)(m_ysfTXLevel * 2.55F + 0.5F);
+#else
+	buffer[14U] = 0U;
+#endif
+#if defined(USE_P25)
 	buffer[15U] = (unsigned char)(m_p25TXLevel * 2.55F + 0.5F);
+#else
+	buffer[15U] = 0U;
+#endif
 
 	buffer[16U] = (unsigned char)(m_txDCOffset + 128);
 	buffer[17U] = (unsigned char)(m_rxDCOffset + 128);
 
+#if defined(USE_NXDN)
 	buffer[18U] = (unsigned char)(m_nxdnTXLevel * 2.55F + 0.5F);
-
+#else
+	buffer[18U] = 0U;
+#endif
+#if defined(USE_YSF)
 	buffer[19U] = (unsigned char)m_ysfTXHang;
+#else
+	buffer[19U] = 0U;
+#endif
 #if defined(USE_POCSAG)
 	buffer[20U] = (unsigned char)(m_pocsagTXLevel * 2.55F + 0.5F);
 #else
@@ -2408,10 +2617,16 @@ bool CModem::setConfig1()
 #else
 	buffer[21U] = 0U;
 #endif
+#if defined(USE_P25)
 	buffer[22U] = (unsigned char)m_p25TXHang;
-
+#else
+	buffer[22U] = 0U;
+#endif
+#if defined(USE_NXDN)
 	buffer[23U] = (unsigned char)m_nxdnTXHang;
-
+#else
+	buffer[23U] = 0U;
+#endif
 #if defined(USE_M17)
 	buffer[24U] = (unsigned char)(m_m17TXLevel * 2.55F + 0.5F);
 	buffer[25U] = (unsigned char)m_m17TXHang;
@@ -2486,14 +2701,22 @@ bool CModem::setConfig2()
 	if (m_dstarEnabled)
 		buffer[4U] |= 0x01U;
 #endif
+#if defined(USE_DMR)
 	if (m_dmrEnabled)
 		buffer[4U] |= 0x02U;
+#endif
+#if defined(USE_YSF)
 	if (m_ysfEnabled)
 		buffer[4U] |= 0x04U;
+#endif
+#if defined(USE_P25)
 	if (m_p25Enabled)
 		buffer[4U] |= 0x08U;
+#endif
+#if defined(USE_NXDN)
 	if (m_nxdnEnabled)
 		buffer[4U] |= 0x10U;
+#endif
 #if defined(USE_FM)
 	if (m_fmEnabled)
 		buffer[4U] |= 0x20U;
@@ -2522,15 +2745,32 @@ bool CModem::setConfig2()
 	buffer[10U] = (unsigned char)(m_rxLevel * 2.55F + 0.5F);
 
 	buffer[11U] = (unsigned char)(m_cwIdTXLevel * 2.55F + 0.5F);
+
 #if defined(USE_DSTAR)
 	buffer[12U] = (unsigned char)(m_dstarTXLevel * 2.55F + 0.5F);
 #else
 	buffer[12U] = 0U;
 #endif
+#if defined(USE_DMR)
 	buffer[13U] = (unsigned char)(m_dmrTXLevel * 2.55F + 0.5F);
+#else
+	buffer[13U] = 0U;
+#endif
+#if defined(USE_YSF)
 	buffer[14U] = (unsigned char)(m_ysfTXLevel * 2.55F + 0.5F);
+#else
+	buffer[14U] = 0U;
+#endif
+#if defined(USE_P25)
 	buffer[15U] = (unsigned char)(m_p25TXLevel * 2.55F + 0.5F);
+#else
+	buffer[15U] = 0U;
+#endif
+#if defined(USE_NXDN)
 	buffer[16U] = (unsigned char)(m_nxdnTXLevel * 2.55F + 0.5F);
+#else
+	buffer[16U] = 0U;
+#endif
 #if defined(USE_M17)
 	buffer[17U] = (unsigned char)(m_m17TXLevel * 2.55F + 0.5F);
 #else
@@ -2551,22 +2791,41 @@ bool CModem::setConfig2()
 #else
 	buffer[20U] = 0U;
 #endif
+
 	buffer[21U] = 0x00U;
 	buffer[22U] = 0x00U;
 
+#if defined(USE_YSF)
 	buffer[23U] = (unsigned char)m_ysfTXHang;
+#else
+	buffer[23U] = 0U;
+#endif
+#if defined(USE_P25)
 	buffer[24U] = (unsigned char)m_p25TXHang;
+#else
+	buffer[24U] = 0U;
+#endif
+#if defined(USE_NXDN)
 	buffer[25U] = (unsigned char)m_nxdnTXHang;
+#else
+	buffer[25U] = 0U;
+#endif
 #if defined(USE_M17)
 	buffer[26U] = (unsigned char)m_m17TXHang;
 #else
 	buffer[26U] = 0U;
 #endif
+
 	buffer[27U] = 0x00U;
 	buffer[28U] = 0x00U;
 
+#if defined(USE_DMR)
 	buffer[29U] = m_dmrColorCode;
 	buffer[30U] = m_dmrDelay;
+#else
+	buffer[29U] = 0U;
+	buffer[30U] = 0U;
+#endif
 
 #if defined(USE_AX25)
 	buffer[31U] = (unsigned char)(m_ax25RXTwist + 128);
@@ -2579,6 +2838,7 @@ bool CModem::setConfig2()
 	buffer[33U] = 0U;
 	buffer[34U] = 0U;
 #endif
+
 	buffer[35U] = 0x00U;
 	buffer[36U] = 0x00U;
 	buffer[37U] = 0x00U;
@@ -2850,6 +3110,7 @@ bool CModem::sendCWId(const std::string& callsign)
 	return m_port->write(buffer, length + 3U) == int(length + 3U);
 }
 
+#if defined(USE_DMR)
 bool CModem::writeDMRStart(bool tx)
 {
 	assert(m_port != NULL);
@@ -2916,6 +3177,7 @@ bool CModem::writeDMRShortLC(const unsigned char* lc)
 
 	return m_port->write(buffer, 12U) == 12;
 }
+#endif
 
 #if defined(USE_FM)
 void CModem::setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch)

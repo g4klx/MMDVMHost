@@ -26,20 +26,29 @@ public:
 	CAMBEFEC();
 	~CAMBEFEC();
 
+#if defined(USE_DMR) || defined(USE_YSF) || defined(USE_NXDN)
 	unsigned int regenerateDMR(unsigned char* bytes) const;
+#endif
 
 #if defined(USE_DSTAR)
 	unsigned int regenerateDStar(unsigned char* bytes) const;
 #endif
-	unsigned int regenerateYSFDN(unsigned char* bytes) const;
 
+#if defined(USE_YSF)
+	unsigned int regenerateYSFDN(unsigned char* bytes) const;
+#endif
+
+#if defined(USE_YSF) || defined(USE_P25)
 	unsigned int regenerateIMBE(unsigned char* bytes) const;
+#endif
 
 private:
 #if defined(USE_DSTAR)
 	unsigned int regenerateDStar(unsigned int& a, unsigned int& b) const;
 #endif
+#if defined(USE_DMR) || defined(USE_YSF) || defined(USE_NXDN)
 	unsigned int regenerateDMR(unsigned int& a, unsigned int& b,unsigned int& c) const;
+#endif
 };
 
 #endif

@@ -27,14 +27,23 @@ public:
 #if defined(USE_DSTAR)
 	static void addDStarSync(unsigned char* data);
 #endif
+
+#if defined(USE_DMR)
 	static void addDMRDataSync(unsigned char* data, bool duplex);
 	static void addDMRAudioSync(unsigned char* data, bool duplex);
+#endif
 
+#if defined(USE_YSF)
 	static void addYSFSync(unsigned char* data);
+#endif
 
+#if defined(USE_P25)
 	static void addP25Sync(unsigned char* data);
+#endif
 
+#if defined(USE_NXDN)
 	static void addNXDNSync(unsigned char* data);
+#endif
 
 #if defined(USE_M17)
 	static void addM17LinkSetupSync(unsigned char* data);

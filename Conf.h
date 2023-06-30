@@ -63,13 +63,17 @@ public:
 	unsigned int getCWIdTime() const;
 	std::string  getCWIdCallsign() const;
 
+#if defined(USE_DMR) || defined(USE_P25)
 	// The DMR Id section
 	std::string  getDMRIdLookupFile() const;
 	unsigned int getDMRIdLookupTime() const;
+#endif
 
+#if defined(USE_NXDN)
 	// The NXDN Id section
 	std::string  getNXDNIdLookupFile() const;
 	unsigned int getNXDNIdLookupTime() const;
+#endif
 
 	// The Modem section
 	std::string  getModemProtocol() const;
@@ -85,7 +89,9 @@ public:
 	bool         getModemTXInvert() const;
 	bool         getModemPTTInvert() const;
 	unsigned int getModemTXDelay() const;
+#if defined(USE_DMR)
 	unsigned int getModemDMRDelay() const;
+#endif
 	int          getModemTXOffset() const;
 	int          getModemRXOffset() const;
 	int          getModemRXDCOffset() const;
@@ -96,10 +102,18 @@ public:
 #if defined(USE_DSTAR)
 	float        getModemDStarTXLevel() const;
 #endif
+#if defined(USE_DMR)
 	float        getModemDMRTXLevel() const;
+#endif
+#if defined(USE_YSF)
 	float        getModemYSFTXLevel() const;
+#endif
+#if defined(USE_P25)
 	float        getModemP25TXLevel() const;
+#endif
+#if defined(USE_NXDN)
 	float        getModemNXDNTXLevel() const;
+#endif
 #if defined(USE_M17)
 	float        getModemM17TXLevel() const;
 #endif
@@ -124,8 +138,8 @@ public:
 	unsigned short getTransparentLocalPort() const;
 	unsigned int getTransparentSendFrameType() const;
 
-	// The D-Star section
 #if defined(USE_DSTAR)
+	// The D-Star section
 	bool         getDStarEnabled() const;
 	std::string  getDStarModule() const;
 	bool         getDStarSelfOnly() const;
@@ -139,6 +153,7 @@ public:
 	unsigned int getDStarModeHang() const;
 #endif
 
+#if defined(USE_DMR)
 	// The DMR section
 	bool         getDMREnabled() const;
 	DMR_BEACONS  getDMRBeacons() const;
@@ -158,7 +173,9 @@ public:
 	unsigned int getDMRTXHang() const;
 	unsigned int getDMRModeHang() const;
 	DMR_OVCM_TYPES getDMROVCM() const;
+#endif
 
+#if defined(USE_YSF)
 	// The System Fusion section
 	bool          getFusionEnabled() const;
 	bool          getFusionLowDeviation() const;
@@ -166,7 +183,9 @@ public:
 	bool          getFusionSelfOnly() const;
 	unsigned int  getFusionTXHang() const;
 	unsigned int  getFusionModeHang() const;
+#endif
 
+#if defined(USE_P25)
 	// The P25 section
 	bool         getP25Enabled() const;
 	unsigned int getP25Id() const;
@@ -176,7 +195,9 @@ public:
 	bool         getP25RemoteGateway() const;
 	unsigned int getP25TXHang() const;
 	unsigned int getP25ModeHang() const;
+#endif
 
+#if defined(USE_NXDN)
 	// The NXDN section
 	bool         getNXDNEnabled() const;
 	unsigned int getNXDNId() const;
@@ -185,6 +206,7 @@ public:
 	bool         getNXDNRemoteGateway() const;
 	unsigned int getNXDNTXHang() const;
 	unsigned int getNXDNModeHang() const;
+#endif
 
 #if defined(USE_M17)
 	// The M17 section
@@ -263,6 +285,7 @@ public:
 	bool         getDStarNetworkDebug() const;
 #endif
 
+#if defined(USE_DMR)
 	// The DMR Network section
 	bool         getDMRNetworkEnabled() const;
 	std::string  getDMRNetworkGatewayAddress() const;
@@ -274,7 +297,9 @@ public:
 	bool         getDMRNetworkSlot1() const;
 	bool         getDMRNetworkSlot2() const;
 	unsigned int getDMRNetworkModeHang() const;
+#endif
 
+#if defined(USE_YSF)
 	// The System Fusion Network section
 	bool         getFusionNetworkEnabled() const;
 	std::string  getFusionNetworkLocalAddress() const;
@@ -283,7 +308,9 @@ public:
 	unsigned short getFusionNetworkGatewayPort() const;
 	unsigned int getFusionNetworkModeHang() const;
 	bool         getFusionNetworkDebug() const;
+#endif
 
+#if defined(USE_P25)
 	// The P25 Network section
 	bool         getP25NetworkEnabled() const;
 	std::string  getP25GatewayAddress() const;
@@ -292,7 +319,9 @@ public:
 	unsigned short getP25LocalPort() const;
 	unsigned int getP25NetworkModeHang() const;
 	bool         getP25NetworkDebug() const;
+#endif
 
+#if defined(USE_NXDN)
 	// The NXDN Network section
 	bool         getNXDNNetworkEnabled() const;
 	std::string  getNXDNNetworkProtocol() const;
@@ -302,6 +331,7 @@ public:
 	unsigned short getNXDNLocalPort() const;
 	unsigned int getNXDNNetworkModeHang() const;
 	bool         getNXDNNetworkDebug() const;
+#endif
 
 #if defined(USE_M17)
 	// The M17 Network section
@@ -386,11 +416,15 @@ private:
 	unsigned int m_cwIdTime;
 	std::string  m_cwIdCallsign;
 
+#if defined(USE_DMR) || defined(USE_P25)
 	std::string  m_dmrIdLookupFile;
 	unsigned int m_dmrIdLookupTime;
+#endif
 
+#if defined(USE_NXDN)
 	std::string  m_nxdnIdLookupFile;
 	unsigned int m_nxdnIdLookupTime;
+#endif
 
 	std::string  m_modemProtocol;
 	std::string  m_modemUARTPort;
@@ -405,7 +439,9 @@ private:
 	bool         m_modemTXInvert;
 	bool         m_modemPTTInvert;
 	unsigned int m_modemTXDelay;
+#if defined(USE_DMR)
 	unsigned int m_modemDMRDelay;
+#endif
 	int          m_modemTXOffset;
 	int          m_modemRXOffset;
 	int          m_modemRXDCOffset;
@@ -447,6 +483,7 @@ private:
 #endif
 	unsigned int m_dstarModeHang;
 
+#if defined(USE_DMR)
 	bool         m_dmrEnabled;
 	DMR_BEACONS  m_dmrBeacons;
 	unsigned int m_dmrBeaconInterval;
@@ -463,16 +500,22 @@ private:
 	std::vector<unsigned int> m_dmrSlot2TGWhiteList;
 	unsigned int m_dmrCallHang;
 	unsigned int m_dmrTXHang;
+#endif
 	unsigned int m_dmrModeHang;
+#if defined(USE_DMR)
 	DMR_OVCM_TYPES m_dmrOVCM;
+#endif
 
+#if defined(USE_YSF)
 	bool          m_fusionEnabled;
 	bool          m_fusionLowDeviation;
 	bool          m_fusionRemoteGateway;
 	bool          m_fusionSelfOnly;
 	unsigned int  m_fusionTXHang;
+#endif
 	unsigned int  m_fusionModeHang;
 
+#if defined(USE_P25)
 	bool         m_p25Enabled;
 	unsigned int m_p25Id;
 	unsigned int m_p25NAC;
@@ -480,14 +523,17 @@ private:
 	bool         m_p25OverrideUID;
 	bool         m_p25RemoteGateway;
 	unsigned int m_p25TXHang;
+#endif
 	unsigned int m_p25ModeHang;
 
+#if defined(USE_NXDN)
 	bool         m_nxdnEnabled;
 	unsigned int m_nxdnId;
 	unsigned int m_nxdnRAN;
 	bool         m_nxdnSelfOnly;
 	bool         m_nxdnRemoteGateway;
 	unsigned int m_nxdnTXHang;
+#endif
 	unsigned int m_nxdnModeHang;
 
 #if defined(USE_M17)
@@ -570,6 +616,7 @@ private:
 	bool         m_dstarNetworkDebug;
 #endif
 
+#if defined(USE_DMR)
 	bool         m_dmrNetworkEnabled;
 	std::string  m_dmrNetworkGatewayAddress;
 	unsigned short m_dmrNetworkGatewayPort;
@@ -579,32 +626,45 @@ private:
 	unsigned int m_dmrNetworkJitter;
 	bool         m_dmrNetworkSlot1;
 	bool         m_dmrNetworkSlot2;
+#endif
 	unsigned int m_dmrNetworkModeHang;
 
+#if defined(USE_YSF)
 	bool         m_fusionNetworkEnabled;
 	std::string  m_fusionNetworkLocalAddress;
 	unsigned short m_fusionNetworkLocalPort;
 	std::string  m_fusionNetworkGatewayAddress;
 	unsigned short m_fusionNetworkGatewayPort;
+#endif
 	unsigned int m_fusionNetworkModeHang;
+#if defined(USE_YSF)
 	bool         m_fusionNetworkDebug;
+#endif
 
+#if defined(USE_P25)
 	bool         m_p25NetworkEnabled;
 	std::string  m_p25GatewayAddress;
 	unsigned short m_p25GatewayPort;
 	std::string  m_p25LocalAddress;
 	unsigned short m_p25LocalPort;
+#endif
 	unsigned int m_p25NetworkModeHang;
+#if defined(USE_P25)
 	bool         m_p25NetworkDebug;
+#endif
 
+#if defined(USE_NXDN)
 	bool         m_nxdnNetworkEnabled;
 	std::string  m_nxdnNetworkProtocol;
 	std::string  m_nxdnGatewayAddress;
 	unsigned short m_nxdnGatewayPort;
 	std::string  m_nxdnLocalAddress;
 	unsigned short m_nxdnLocalPort;
+#endif
 	unsigned int m_nxdnNetworkModeHang;
+#if defined(USE_NXDN)
 	bool         m_nxdnNetworkDebug;
+#endif
 
 #if defined(USE_M17)
 	bool         m_m17NetworkEnabled;

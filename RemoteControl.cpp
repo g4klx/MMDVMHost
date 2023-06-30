@@ -69,14 +69,22 @@ REMOTE_COMMAND CRemoteControl::getCommand(const std::string& command)
 		else if (m_args.at(1U) == "d-star")
 			m_command = RCD_MODE_DSTAR;
 #endif
+#if defined(USE_DMR)
 		else if (m_args.at(1U) == "dmr")
 			m_command = RCD_MODE_DMR;
+#endif
+#if defined(USE_YSF)
 		else if (m_args.at(1U) == "ysf")
 			m_command = RCD_MODE_YSF;
+#endif
+#if defined(USE_P25)
 		else if (m_args.at(1U) == "p25")
 			m_command = RCD_MODE_P25;
+#endif
+#if defined(USE_NXDN)
 		else if (m_args.at(1U) == "nxdn")
 			m_command = RCD_MODE_NXDN;
+#endif
 #if defined(USE_M17)
 		else if (m_args.at(1U) == "m17")
 			m_command = RCD_MODE_M17;
@@ -89,18 +97,26 @@ REMOTE_COMMAND CRemoteControl::getCommand(const std::string& command)
 			m_command = RCD_ENABLE_DSTAR;
 		else
 #endif
+#if defined(USE_DMR)
 		if (m_args.at(1U) == "dmr")
 			m_command = RCD_ENABLE_DMR;
 		else
+#endif
+#if defined(USE_YSF)
 		if (m_args.at(1U) == "ysf")
 			m_command = RCD_ENABLE_YSF;
 		else
+#endif
+#if defined(USE_P25)
 		if (m_args.at(1U) == "p25")
 			m_command = RCD_ENABLE_P25;
 		else
+#endif
+#if defined(USE_NXDN)
 		if (m_args.at(1U) == "nxdn")
 			m_command = RCD_ENABLE_NXDN;
 		else
+#endif
 #if defined(USE_M17)
 		if (m_args.at(1U) == "m17")
 			m_command = RCD_ENABLE_M17;
@@ -123,18 +139,26 @@ REMOTE_COMMAND CRemoteControl::getCommand(const std::string& command)
 			m_command = RCD_DISABLE_DSTAR;
 		else
 #endif
+#if defined(USE_DMR)
 		if (m_args.at(1U) == "dmr")
 			m_command = RCD_DISABLE_DMR;
 		else
+#endif
+#if defined(USE_YSF)
 		if (m_args.at(1U) == "ysf")
 			m_command = RCD_DISABLE_YSF;
 		else
+#endif
+#if defined(USE_P25)
 		if (m_args.at(1U) == "p25")
 			m_command = RCD_DISABLE_P25;
 		else
+#endif
+#if defined(USE_NXDN)
 		if (m_args.at(1U) == "nxdn")
 			m_command = RCD_DISABLE_NXDN;
 		else
+#endif
 #if defined(USE_M17)
 		if (m_args.at(1U) == "m17")
 			m_command = RCD_DISABLE_M17;
@@ -214,10 +238,18 @@ unsigned int CRemoteControl::getArgCount() const
 #if defined(USE_DSTAR)
 		case RCD_MODE_DSTAR:
 #endif
+#if defined(USE_DMR)
 		case RCD_MODE_DMR:
+#endif
+#if defined(USE_YSF)
 		case RCD_MODE_YSF:
+#endif
+#if defined(USE_P25)
 		case RCD_MODE_P25:
+#endif
+#if defined(USE_NXDN)
 		case RCD_MODE_NXDN:
+#endif
 #if defined(USE_M17)
 		case RCD_MODE_M17:
 #endif
@@ -244,10 +276,18 @@ std::string CRemoteControl::getArgString(unsigned int n) const
 #if defined(USE_DSTAR)
 		case RCD_MODE_DSTAR:
 #endif
+#if defined(USE_DMR)
 		case RCD_MODE_DMR:
+#endif
+#if defined(USE_YSF)
 		case RCD_MODE_YSF:
+#endif
+#if defined(USE_P25)
 		case RCD_MODE_P25:
+#endif
+#if defined(USE_NXDN)
 		case RCD_MODE_NXDN:
+#endif
 #if defined(USE_M17)
 		case RCD_MODE_M17:
 #endif

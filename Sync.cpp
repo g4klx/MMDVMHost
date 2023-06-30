@@ -38,6 +38,7 @@ void CSync::addDStarSync(unsigned char* data)
 }
 #endif
 
+#if defined(USE_DMR)
 void CSync::addDMRDataSync(unsigned char* data, bool duplex)
 {
 	assert(data != NULL);
@@ -63,21 +64,27 @@ void CSync::addDMRAudioSync(unsigned char* data, bool duplex)
 			data[i + 13U] = (data[i + 13U] & ~SYNC_MASK[i]) | MS_SOURCED_AUDIO_SYNC[i];
 	}
 }
+#endif
 
+#if defined(USE_YSF)
 void CSync::addYSFSync(unsigned char* data)
 {
 	assert(data != NULL);
 
 	::memcpy(data, YSF_SYNC_BYTES, YSF_SYNC_LENGTH_BYTES);
 }
+#endif
 
+#if defined(USE_P25)
 void CSync::addP25Sync(unsigned char* data)
 {
 	assert(data != NULL);
 
 	::memcpy(data, P25_SYNC_BYTES, P25_SYNC_LENGTH_BYTES);
 }
+#endif
 
+#if defined(USE_NXDN)
 void CSync::addNXDNSync(unsigned char* data)
 {
 	assert(data != NULL);
@@ -85,6 +92,7 @@ void CSync::addNXDNSync(unsigned char* data)
 	for (unsigned int i = 0U; i < NXDN_FSW_BYTES_LENGTH; i++)
 		data[i] = (data[i] & ~NXDN_FSW_BYTES_MASK[i]) | NXDN_FSW_BYTES[i];
 }
+#endif
 
 #if defined(USE_M17)
 void CSync::addM17LinkSetupSync(unsigned char* data)

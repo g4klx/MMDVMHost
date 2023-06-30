@@ -34,17 +34,29 @@ enum SECTION {
 	SECTION_LOG,
 	SECTION_MQTT,
 	SECTION_CWID,
+#if defined(USE_DMR) || defined(USE_P25)
 	SECTION_DMRID_LOOKUP,
+#endif
+#if defined(USE_NXDN)
 	SECTION_NXDNID_LOOKUP,
+#endif
 	SECTION_MODEM,
 	SECTION_TRANSPARENT,
 #if defined(USE_DSTAR)
 	SECTION_DSTAR,
 #endif
+#if defined(USE_DMR)
 	SECTION_DMR,
+#endif
+#if defined(USE_YSF)
 	SECTION_FUSION,
+#endif
+#if defined(USE_P25)
 	SECTION_P25,
+#endif
+#if defined(USE_NXDN)
 	SECTION_NXDN,
+#endif
 #if defined(USE_M17)
 	SECTION_M17,
 #endif
@@ -60,10 +72,18 @@ enum SECTION {
 #if defined(USE_DSTAR)
 	SECTION_DSTAR_NETWORK,
 #endif
+#if defined(USE_DMR)
 	SECTION_DMR_NETWORK,
+#endif
+#if defined(USE_YSF)
 	SECTION_FUSION_NETWORK,
+#endif
+#if defined(USE_P25)
 	SECTION_P25_NETWORK,
+#endif
+#if defined(USE_NXDN)
 	SECTION_NXDN_NETWORK,
+#endif
 #if defined(USE_M17)
 	SECTION_M17_NETWORK,
 #endif
@@ -105,10 +125,14 @@ m_mqttName("mmdvm"),
 m_cwIdEnabled(false),
 m_cwIdTime(10U),
 m_cwIdCallsign(),
+#if defined(USE_DMR) || defined(USE_P25)
 m_dmrIdLookupFile(),
 m_dmrIdLookupTime(0U),
+#endif
+#if defined(USE_NXDN)
 m_nxdnIdLookupFile(),
 m_nxdnIdLookupTime(0U),
+#endif
 m_modemProtocol("uart"),
 m_modemUARTPort(),
 m_modemUARTSpeed(115200U),
@@ -122,7 +146,9 @@ m_modemRXInvert(false),
 m_modemTXInvert(false),
 m_modemPTTInvert(false),
 m_modemTXDelay(100U),
+#if defined(USE_DMR)
 m_modemDMRDelay(0U),
+#endif
 m_modemTXOffset(0),
 m_modemRXOffset(0),
 m_modemRXDCOffset(0),
@@ -161,6 +187,7 @@ m_dstarErrorReply(true),
 m_dstarRemoteGateway(false),
 #endif
 m_dstarModeHang(10U),
+#if defined(USE_DMR)
 m_dmrEnabled(false),
 m_dmrBeacons(DMR_BEACONS_OFF),
 m_dmrBeaconInterval(60U),
@@ -177,14 +204,20 @@ m_dmrSlot1TGWhiteList(),
 m_dmrSlot2TGWhiteList(),
 m_dmrCallHang(10U),
 m_dmrTXHang(4U),
+#endif
 m_dmrModeHang(10U),
+#if defined(USE_DMR)
 m_dmrOVCM(DMR_OVCM_OFF),
+#endif
+#if defined(USE_YSF)
 m_fusionEnabled(false),
 m_fusionLowDeviation(false),
 m_fusionRemoteGateway(false),
 m_fusionSelfOnly(false),
 m_fusionTXHang(4U),
+#endif
 m_fusionModeHang(10U),
+#if defined(USE_P25)
 m_p25Enabled(false),
 m_p25Id(0U),
 m_p25NAC(0x293U),
@@ -192,13 +225,16 @@ m_p25SelfOnly(false),
 m_p25OverrideUID(false),
 m_p25RemoteGateway(false),
 m_p25TXHang(5U),
+#endif
 m_p25ModeHang(10U),
+#if defined(USE_NXDN)
 m_nxdnEnabled(false),
 m_nxdnId(0U),
 m_nxdnRAN(1U),
 m_nxdnSelfOnly(false),
 m_nxdnRemoteGateway(false),
 m_nxdnTXHang(5U),
+#endif
 m_nxdnModeHang(10U),
 #if defined(USE_M17)
 m_m17Enabled(false),
@@ -275,6 +311,7 @@ m_dstarNetworkModeHang(3U),
 #if defined(USE_DSTAR)
 m_dstarNetworkDebug(false),
 #endif
+#if defined(USE_DMR)
 m_dmrNetworkEnabled(false),
 m_dmrNetworkGatewayAddress(),
 m_dmrNetworkGatewayPort(0U),
@@ -284,29 +321,42 @@ m_dmrNetworkDebug(false),
 m_dmrNetworkJitter(360U),
 m_dmrNetworkSlot1(true),
 m_dmrNetworkSlot2(true),
+#endif
 m_dmrNetworkModeHang(3U),
+#if defined(USE_YSF)
 m_fusionNetworkEnabled(false),
 m_fusionNetworkLocalAddress(),
 m_fusionNetworkLocalPort(0U),
 m_fusionNetworkGatewayAddress(),
 m_fusionNetworkGatewayPort(0U),
+#endif
 m_fusionNetworkModeHang(3U),
+#if defined(USE_YSF)
 m_fusionNetworkDebug(false),
+#endif
+#if defined(USE_P25)
 m_p25NetworkEnabled(false),
 m_p25GatewayAddress(),
 m_p25GatewayPort(0U),
 m_p25LocalAddress(),
 m_p25LocalPort(0U),
+#endif
 m_p25NetworkModeHang(3U),
+#if defined(USE_P25)
 m_p25NetworkDebug(false),
+#endif
+#if defined(USE_NXDN)
 m_nxdnNetworkEnabled(false),
 m_nxdnNetworkProtocol("Icom"),
 m_nxdnGatewayAddress(),
 m_nxdnGatewayPort(0U),
 m_nxdnLocalAddress(),
 m_nxdnLocalPort(0U),
+#endif
 m_nxdnNetworkModeHang(3U),
+#if defined(USE_NXDN)
 m_nxdnNetworkDebug(false),
+#endif
 #if defined(USE_M17)
 m_m17NetworkEnabled(false),
 m_m17GatewayAddress(),
@@ -385,10 +435,14 @@ bool CConf::read()
 				section = SECTION_MQTT;
 			else if (::strncmp(buffer, "[CW Id]", 7U) == 0)
 				section = SECTION_CWID;
+#if defined(USE_DMR) || defined(USE_P25)
 			else if (::strncmp(buffer, "[DMR Id Lookup]", 15U) == 0)
 				section = SECTION_DMRID_LOOKUP;
+#endif
+#if defined(USE_NXDN)
 			else if (::strncmp(buffer, "[NXDN Id Lookup]", 16U) == 0)
 				section = SECTION_NXDNID_LOOKUP;
+#endif
 			else if (::strncmp(buffer, "[Modem]", 7U) == 0)
 				section = SECTION_MODEM;
 			else if (::strncmp(buffer, "[Transparent Data]", 18U) == 0)
@@ -397,14 +451,22 @@ bool CConf::read()
 			else if (::strncmp(buffer, "[D-Star]", 8U) == 0)
 				section = SECTION_DSTAR;
 #endif
+#if defined(USE_DMR)
 			else if (::strncmp(buffer, "[DMR]", 5U) == 0)
 				section = SECTION_DMR;
+#endif
+#if defined(USE_YSF)
 			else if (::strncmp(buffer, "[System Fusion]", 15U) == 0)
 				section = SECTION_FUSION;
+#endif
+#if defined(USE_P25)
 			else if (::strncmp(buffer, "[P25]", 5U) == 0)
 				section = SECTION_P25;
+#endif
+#if defined(USE_NXDN)
 			else if (::strncmp(buffer, "[NXDN]", 6U) == 0)
 				section = SECTION_NXDN;
+#endif
 #if defined(USE_M17)
 			else if (::strncmp(buffer, "[M17]", 5U) == 0)
 				section = SECTION_M17;
@@ -425,14 +487,22 @@ bool CConf::read()
 			else if (::strncmp(buffer, "[D-Star Network]", 16U) == 0)
 				section = SECTION_DSTAR_NETWORK;
 #endif
+#if defined(USE_DMR)
 			else if (::strncmp(buffer, "[DMR Network]", 13U) == 0)
 				section = SECTION_DMR_NETWORK;
+#endif
+#if defined(USE_YSF)
 			else if (::strncmp(buffer, "[System Fusion Network]", 23U) == 0)
 				section = SECTION_FUSION_NETWORK;
+#endif
+#if defined(USE_P25)
 			else if (::strncmp(buffer, "[P25 Network]", 13U) == 0)
 				section = SECTION_P25_NETWORK;
+#endif
+#if defined(USE_NXDN)
 			else if (::strncmp(buffer, "[NXDN Network]", 14U) == 0)
 				section = SECTION_NXDN_NETWORK;
+#endif
 #if defined(USE_M17)
 			else if (::strncmp(buffer, "[M17 Network]", 13U) == 0)
 				section = SECTION_M17_NETWORK;
@@ -549,16 +619,20 @@ bool CConf::read()
 					value[i] = ::toupper(value[i]);
 				m_cwIdCallsign = value;
 			}
+#if defined(USE_DMR) || defined(USE_P25)
 		} else if (section == SECTION_DMRID_LOOKUP) {
 			if (::strcmp(key, "File") == 0)
 				m_dmrIdLookupFile = value;
 			else if (::strcmp(key, "Time") == 0)
 				m_dmrIdLookupTime = (unsigned int)::atoi(value);
+#endif
+#if defined(USE_NXDN)
 		} else if (section == SECTION_NXDNID_LOOKUP) {
 			if (::strcmp(key, "File") == 0)
 				m_nxdnIdLookupFile = value;
 			else if (::strcmp(key, "Time") == 0)
 				m_nxdnIdLookupTime = (unsigned int)::atoi(value);
+#endif
 		} else if (section == SECTION_MODEM) {
 			if (::strcmp(key, "Protocol") == 0)
 				m_modemProtocol = value;
@@ -586,8 +660,10 @@ bool CConf::read()
 				m_modemPTTInvert = ::atoi(value) == 1;
 			else if (::strcmp(key, "TXDelay") == 0)
 				m_ax25TXDelay = m_modemTXDelay = (unsigned int)::atoi(value);
+#if defined(USE_DMR)
 			else if (::strcmp(key, "DMRDelay") == 0)
 				m_modemDMRDelay = (unsigned int)::atoi(value);
+#endif
 			else if (::strcmp(key, "RXOffset") == 0)
 				m_modemRXOffset = ::atoi(value);
 			else if (::strcmp(key, "TXOffset") == 0)
@@ -604,16 +680,26 @@ bool CConf::read()
 				m_modemAX25TXLevel = m_modemFMTXLevel = m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = m_modemNXDNTXLevel = m_modemM17TXLevel = m_modemPOCSAGTXLevel = float(::atof(value));
 			else if (::strcmp(key, "CWIdTXLevel") == 0)
 				m_modemCWIdTXLevel = float(::atof(value));
+#if defined(USE_DSTAR)
 			else if (::strcmp(key, "D-StarTXLevel") == 0)
 				m_modemDStarTXLevel = float(::atof(value));
+#endif
+#if defined(USE_DMR)
 			else if (::strcmp(key, "DMRTXLevel") == 0)
 				m_modemDMRTXLevel = float(::atof(value));
+#endif
+#if defined(USE_YSF)
 			else if (::strcmp(key, "YSFTXLevel") == 0)
 				m_modemYSFTXLevel = float(::atof(value));
+#endif
+#if defined(USE_P25)
 			else if (::strcmp(key, "P25TXLevel") == 0)
 				m_modemP25TXLevel = float(::atof(value));
+#endif
+#if defined(USE_NXDN)
 			else if (::strcmp(key, "NXDNTXLevel") == 0)
 				m_modemNXDNTXLevel = float(::atof(value));
+#endif
 #if defined(USE_M17)
 			else if (::strcmp(key, "M17TXLevel") == 0)
 				m_modemM17TXLevel = float(::atof(value));
@@ -699,6 +785,7 @@ bool CConf::read()
 			else if (::strcmp(key, "ModeHang") == 0)
 				m_dstarModeHang = (unsigned int)::atoi(value);
 #endif
+#if defined(USE_DMR)
 		} else if (section == SECTION_DMR) {
 			if (::strcmp(key, "Enable") == 0)
 				m_dmrEnabled = ::atoi(value) == 1;
@@ -784,6 +871,8 @@ bool CConf::read()
 					break;
 				}
 			}
+#endif
+#if defined(USE_YSF)
 		} else if (section == SECTION_FUSION) {
 			if (::strcmp(key, "Enable") == 0)
 				m_fusionEnabled = ::atoi(value) == 1;
@@ -797,6 +886,8 @@ bool CConf::read()
 				m_fusionTXHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "ModeHang") == 0)
 				m_fusionModeHang = (unsigned int)::atoi(value);
+#endif
+#if defined(USE_P25)
 		} else if (section == SECTION_P25) {
 			if (::strcmp(key, "Enable") == 0)
 				m_p25Enabled = ::atoi(value) == 1;
@@ -814,6 +905,8 @@ bool CConf::read()
 				m_p25TXHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "ModeHang") == 0)
 				m_p25ModeHang = (unsigned int)::atoi(value);
+#endif
+#if defined(USE_NXDN)
 		} else if (section == SECTION_NXDN) {
 			if (::strcmp(key, "Enable") == 0)
 				m_nxdnEnabled = ::atoi(value) == 1;
@@ -829,6 +922,7 @@ bool CConf::read()
 				m_nxdnTXHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "ModeHang") == 0)
 				m_nxdnModeHang = (unsigned int)::atoi(value);
+#endif
 #if defined(USE_M17)
 		} else if (section == SECTION_M17) {
 			if (::strcmp(key, "Enable") == 0)
@@ -971,6 +1065,7 @@ bool CConf::read()
 			else if (::strcmp(key, "Debug") == 0)
 				m_dstarNetworkDebug = ::atoi(value) == 1;
 #endif
+#if defined(USE_DMR)
 		} else if (section == SECTION_DMR_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_dmrNetworkEnabled = ::atoi(value) == 1;
@@ -992,6 +1087,8 @@ bool CConf::read()
 				m_dmrNetworkSlot2 = ::atoi(value) == 1;
 			else if (::strcmp(key, "ModeHang") == 0)
 				m_dmrNetworkModeHang = (unsigned int)::atoi(value);
+#endif
+#if defined(USE_YSF)
 		} else if (section == SECTION_FUSION_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_fusionNetworkEnabled = ::atoi(value) == 1;
@@ -1007,6 +1104,8 @@ bool CConf::read()
 				m_fusionNetworkModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Debug") == 0)
 				m_fusionNetworkDebug = ::atoi(value) == 1;
+#endif
+#if defined(USE_P25)
 		} else if (section == SECTION_P25_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_p25NetworkEnabled = ::atoi(value) == 1;
@@ -1022,6 +1121,8 @@ bool CConf::read()
 				m_p25NetworkModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Debug") == 0)
 				m_p25NetworkDebug = ::atoi(value) == 1;
+#endif
+#if defined(USE_NXDN)
 		} else if (section == SECTION_NXDN_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_nxdnNetworkEnabled = ::atoi(value) == 1;
@@ -1037,6 +1138,7 @@ bool CConf::read()
 				m_nxdnNetworkModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Debug") == 0)
 				m_nxdnNetworkDebug = ::atoi(value) == 1;
+#endif
 #if defined(USE_M17)
 		} else if (section == SECTION_M17_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
@@ -1240,6 +1342,7 @@ std::string CConf::getCWIdCallsign() const
 	return m_cwIdCallsign;
 }
 
+#if defined(USE_DMR) || defined(USE_P25)
 std::string CConf::getDMRIdLookupFile() const
 {
 	return m_dmrIdLookupFile;
@@ -1249,7 +1352,9 @@ unsigned int CConf::getDMRIdLookupTime() const
 {
 	return m_dmrIdLookupTime;
 }
+#endif
 
+#if defined(USE_NXDN)
 std::string CConf::getNXDNIdLookupFile() const
 {
 	return m_nxdnIdLookupFile;
@@ -1259,6 +1364,7 @@ unsigned int CConf::getNXDNIdLookupTime() const
 {
 	return m_nxdnIdLookupTime;
 }
+#endif
 
 std::string CConf::getModemProtocol() const
 {
@@ -1325,10 +1431,12 @@ unsigned int CConf::getModemTXDelay() const
 	return m_modemTXDelay;
 }
 
+#if defined(USE_DMR)
 unsigned int CConf::getModemDMRDelay() const
 {
 	return m_modemDMRDelay;
 }
+#endif
 
 int CConf::getModemRXOffset() const
 {
@@ -1372,25 +1480,33 @@ float CConf::getModemDStarTXLevel() const
 }
 #endif
 
+#if defined(USE_DMR)
 float CConf::getModemDMRTXLevel() const
 {
 	return m_modemDMRTXLevel;
 }
+#endif
 
+#if defined(USE_YSF)
 float CConf::getModemYSFTXLevel() const
 {
 	return m_modemYSFTXLevel;
 }
+#endif
 
+#if defined(USE_P25)
 float CConf::getModemP25TXLevel() const
 {
 	return m_modemP25TXLevel;
 }
+#endif
 
+#if defined(USE_NXDN)
 float CConf::getModemNXDNTXLevel() const
 {
 	return m_modemNXDNTXLevel;
 }
+#endif
 
 #if defined(USE_M17)
 float CConf::getModemM17TXLevel() const
@@ -1522,6 +1638,7 @@ unsigned int CConf::getDStarModeHang() const
 }
 #endif
 
+#if defined(USE_DMR)
 bool CConf::getDMREnabled() const
 {
 	return m_dmrEnabled;
@@ -1611,7 +1728,9 @@ DMR_OVCM_TYPES CConf::getDMROVCM() const
 {
 	return m_dmrOVCM;
 }
+#endif
 
+#if defined(USE_YSF)
 bool CConf::getFusionEnabled() const
 {
 	return m_fusionEnabled;
@@ -1641,7 +1760,9 @@ unsigned int CConf::getFusionModeHang() const
 {
 	return m_fusionModeHang;
 }
+#endif
 
+#if defined(USE_P25)
 bool CConf::getP25Enabled() const
 {
 	return m_p25Enabled;
@@ -1681,7 +1802,9 @@ unsigned int CConf::getP25ModeHang() const
 {
 	return m_p25ModeHang;
 }
+#endif
 
+#if defined(USE_NXDN)
 bool CConf::getNXDNEnabled() const
 {
 	return m_nxdnEnabled;
@@ -1716,6 +1839,7 @@ unsigned int CConf::getNXDNModeHang() const
 {
 	return m_nxdnModeHang;
 }
+#endif
 
 #if defined(USE_M17)
 bool CConf::getM17Enabled() const
@@ -2012,6 +2136,7 @@ bool CConf::getDStarNetworkDebug() const
 }
 #endif
 
+#if defined(USE_DMR)
 bool CConf::getDMRNetworkEnabled() const
 {
 	return m_dmrNetworkEnabled;
@@ -2061,7 +2186,9 @@ bool CConf::getDMRNetworkSlot2() const
 {
 	return m_dmrNetworkSlot2;
 }
+#endif
 
+#if defined(USE_YSF)
 bool CConf::getFusionNetworkEnabled() const
 {
 	return m_fusionNetworkEnabled;
@@ -2096,7 +2223,9 @@ bool CConf::getFusionNetworkDebug() const
 {
 	return m_fusionNetworkDebug;
 }
+#endif
 
+#if defined(USE_P25)
 bool CConf::getP25NetworkEnabled() const
 {
 	return m_p25NetworkEnabled;
@@ -2131,7 +2260,9 @@ bool CConf::getP25NetworkDebug() const
 {
 	return m_p25NetworkDebug;
 }
+#endif
 
+#if defined(USE_NXDN)
 bool CConf::getNXDNNetworkEnabled() const
 {
 	return m_nxdnNetworkEnabled;
@@ -2171,6 +2302,7 @@ bool CConf::getNXDNNetworkDebug() const
 {
 	return m_nxdnNetworkDebug;
 }
+#endif
 
 #if defined(USE_M17)
 bool CConf::getM17NetworkEnabled() const
