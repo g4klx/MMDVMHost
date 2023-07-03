@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2018 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2018,2023 by Jonathan Naylor G4KLX
 *   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com>
 *
 *   This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,8 @@
 #include "P25Defines.h"
 #include "P25Utils.h"
 #include "BCH.h"
+
+#if defined(USE_P25)
 
 #include <cstdio>
 #include <cassert>
@@ -187,3 +189,6 @@ unsigned char CP25NID::getDUID() const
 {
 	return m_duid;
 }
+
+#endif
+

@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2018 by Jonathan Naylor G4KLX
+*   Copyright (C) 2018,2023 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -17,10 +17,11 @@
 */
 
 #include "NXDNFACCH1.h"
-
 #include "NXDNConvolution.h"
 #include "NXDNDefines.h"
 #include "NXDNCRC.h"
+
+#if defined(USE_NXDN)
 
 #include <cstdio>
 #include <cassert>
@@ -186,3 +187,6 @@ CNXDNFACCH1& CNXDNFACCH1::operator=(const CNXDNFACCH1& facch1)
 
 	return *this;
 }
+
+#endif
+

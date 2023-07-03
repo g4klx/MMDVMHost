@@ -26,6 +26,8 @@
 #include "CRC.h"
 #include "Log.h"
 
+#if defined(USE_DMR)
+
 #include <cassert>
 #include <ctime>
 #include <algorithm>
@@ -70,8 +72,6 @@ const unsigned int NO_PREAMBLE_CSBK   = 15U;
 
 const unsigned int RSSI_COUNT   = 4U;			// 4 * 360ms = 1440ms
 const unsigned int BER_COUNT    = 24U * 141U;		// 24 * 60ms = 1440ms
-
-// #define	DUMP_DMR
 
 CDMRSlot::CDMRSlot(unsigned int slotNo, unsigned int timeout) :
 m_slotNo(slotNo),
@@ -123,8 +123,7 @@ m_rssiAccum(0U),
 m_rssiCount(0U),
 m_bitErrsAccum(0U),
 m_bitsCount(0U),
-m_enabled(true),
-m_fp(NULL)
+m_enabled(true)
 {
 	m_lastFrame = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
 
@@ -1097,10 +1096,6 @@ void CDMRSlot::writeEndNet(bool writeEnd)
 
 	delete m_netLC;
 	m_netLC = NULL;
-
-#if defined(DUMP_DMR)
-	closeFile();
-#endif
 }
 
 void CDMRSlot::writeNetwork(const CDMRData& dmrData)
@@ -1203,11 +1198,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		class CUserDBentry cn;
 		m_lookup->findWithName(srcId, &cn);
 
-#if defined(DUMP_DMR)
-		openFile();
-		writeFile(data);
-#endif
-
 		LogMessage("DMR Slot %u, received network voice header from %s to %s%s", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str());
 		writeJSONNet("start", srcId, src, flco == FLCO_GROUP, dstId);
 	} else if (dataType == DT_VOICE_PI_HEADER) {
@@ -1261,9 +1251,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 					writeQueueRF(start);
 			}
 
-#if defined(DUMP_DMR)
-			openFile();
-#endif
 			m_netFrames = 0U;
 			m_netLost = 0U;
 			m_netBits = 1U;
@@ -1300,10 +1287,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		data[1U] = 0x00U;
 
 		writeQueueNet(data);
-
-#if defined(DUMP_DMR)
-		writeFile(data);
-#endif
 	} else if (dataType == DT_TERMINATOR_WITH_LC) {
 		if (m_netState != RS_NET_AUDIO)
 			return;
@@ -1334,10 +1317,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			}
 		}
 
-#if defined(DUMP_DMR)
-		writeFile(data);
-		closeFile();
-#endif
 		unsigned int srcId = m_netLC->getSrcId();
 		unsigned int dstId = m_netLC->getDstId();
 		std::string src = m_lookup->find(srcId);
@@ -1458,9 +1437,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 					writeQueueRF(start);
 			}
 
-#if defined(DUMP_DMR)
-			openFile();
-#endif
 			m_netFrames = 0U;
 			m_netLost = 0U;
 			m_netBits = 1U;
@@ -1520,10 +1496,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 			// Save details in case we need to infill data
 			m_netN = dmrData.getN();
-
-#if defined(DUMP_DMR)
-			writeFile(data);
-#endif
 		}
 	} else if (dataType == DT_VOICE) {
 		if (m_netState != RS_NET_AUDIO)
@@ -1675,10 +1647,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		// Save details in case we need to infill data
 		m_netN = dmrData.getN();
-
-#if defined(DUMP_DMR)
-		writeFile(data);
-#endif
 	} else if (dataType == DT_CSBK) {
 		CDMRCSBK csbk;
 		bool valid = csbk.put(data + 2U);
@@ -1738,12 +1706,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			}
 		} else
 			writeQueueNet(data);
-
-#if defined(DUMP_DMR)
-		openFile();
-		writeFile(data);
-		closeFile();
-#endif
 
 		std::string src = m_lookup->find(srcId);
 		std::string dst = m_lookup->find(dstId);
@@ -1823,9 +1785,6 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		data[0U] = m_netFrames == 0U ? TAG_EOT : TAG_DATA;
 		data[1U] = 0x00U;
 
-#if defined(DUMP_DMR)
-		writeFile(data);
-#endif
 		writeQueueNet(data);
 
 		if (m_netFrames == 0U) {
@@ -1919,16 +1878,10 @@ void CDMRSlot::clock()
 				LogMessage("DMR Slot %u, network watchdog has expired, %.1f seconds, %u%% packet loss, BER: %.1f%%", m_slotNo, float(m_netFrames) / 16.667F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
 				writeJSONNet("lost", float(m_netFrames) / 16.667F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
 				writeEndNet(true);
-#if defined(DUMP_DMR)
-				closeFile();
-#endif
 			} else {
 				LogMessage("DMR Slot %u, network watchdog has expired", m_slotNo);
 				writeJSONNet("lost");
 				writeEndNet();
-#if defined(DUMP_DMR)
-				closeFile();
-#endif
 			}
 		}
 	}
@@ -2145,46 +2098,6 @@ void CDMRSlot::setShortLC(unsigned int slotNo, unsigned int id, FLCO flco, ACTIV
 	shortLC.encode(lc, sLC);
 
 	m_modem->writeDMRShortLC(sLC);
-}
-
-bool CDMRSlot::openFile()
-{
-	if (m_fp != NULL)
-		return true;
-
-	time_t t;
-	::time(&t);
-
-	struct tm* tm = ::localtime(&t);
-
-	char name[100U];
-	::sprintf(name, "DMR_%u_%04d%02d%02d_%02d%02d%02d.ambe", m_slotNo, tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
-
-	m_fp = ::fopen(name, "wb");
-	if (m_fp == NULL)
-		return false;
-
-	::fwrite("DMR", 1U, 3U, m_fp);
-
-	return true;
-}
-
-bool CDMRSlot::writeFile(const unsigned char* data)
-{
-	if (m_fp == NULL)
-		return false;
-
-	::fwrite(data, 1U, DMR_FRAME_LENGTH_BYTES + 2U, m_fp);
-
-	return true;
-}
-
-void CDMRSlot::closeFile()
-{
-	if (m_fp != NULL) {
-		::fclose(m_fp);
-		m_fp = NULL;
-	}
 }
 
 bool CDMRSlot::insertSilence(const unsigned char* data, unsigned char seqNo)
@@ -2546,4 +2459,6 @@ void CDMRSlot::writeJSON(nlohmann::json& json, const char* source, const char* a
 	if (!srcInfo.empty())
 		json["source_info"] = srcInfo;
 }
+
+#endif
 

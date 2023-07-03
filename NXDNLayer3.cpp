@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2018 by Jonathan Naylor G4KLX
+*   Copyright (C) 2018,2023 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
 
 #include "NXDNDefines.h"
 #include "NXDNLayer3.h"
+
+#if defined(USE_NXDN)
 
 #include <cstdio>
 #include <cassert>
@@ -115,3 +117,6 @@ CNXDNLayer3& CNXDNLayer3::operator=(const CNXDNLayer3& layer3)
 
 	return *this;
 }
+
+#endif
+

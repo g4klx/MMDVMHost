@@ -21,6 +21,8 @@
 #include "Sync.h"
 #include "Log.h"
 
+#if defined(USE_NXDN)
+
 #include <cstdio>
 #include <cassert>
 #include <cstring>
@@ -31,8 +33,6 @@ const unsigned char SCRAMBLER[] = {
 	0x20U, 0x08U, 0x8AU, 0x20U, 0xAAU, 0xA2U, 0x82U, 0x08U, 0x22U, 0x8AU, 0xAAU, 0x08U, 0x28U, 0x88U,
 	0x28U, 0x28U, 0x00U, 0x0AU, 0x02U, 0x82U, 0x20U, 0x28U, 0x82U, 0x2AU, 0xAAU, 0x20U, 0x22U, 0x80U,
 	0xA8U, 0x8AU, 0x08U, 0xA0U, 0xAAU, 0x02U };
-
-// #define	DUMP_NXDN
 
 const unsigned int RSSI_COUNT  = 28U;		// 28 * 40ms = 1120ms
 const unsigned int BER_COUNT   = 28U;		// 28 * 40ms = 1120ms
@@ -77,8 +77,7 @@ m_rssiAccum(0U),
 m_rssiCount(0U),
 m_bitsCount(0U),
 m_bitErrsAccum(0U),
-m_enabled(true),
-m_fp(NULL)
+m_enabled(true)
 {
 	assert(lookup != NULL);
 	assert(rssiMapper != NULL);
@@ -268,9 +267,6 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 		writeNetwork(netData, data[0U] == TAG_EOT ? NNMT_VOICE_TRAILER : NNMT_VOICE_HEADER);
 
-#if defined(DUMP_NXDN)
-		writeFile(data + 2U);
-#endif
 		if (m_duplex)
 			writeQueueRF(data);
 
@@ -309,9 +305,6 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			m_bitErrsAccum = 0U;
 			m_bitsCount    = 0U;
 
-#if defined(DUMP_NXDN)
-			openFile();
-#endif
 			unsigned short dstId = m_rfLayer3.getDestinationGroupId();
 			bool grp             = m_rfLayer3.getIsGroup();
 			unsigned short srcId = m_rfLayer3.getSourceUnitId();
@@ -424,9 +417,6 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			m_bitErrsAccum = 0U;
 			m_bitsCount    = 0U;
 
-#if defined(DUMP_NXDN)
-			openFile();
-#endif
 			std::string source = m_lookup->find(srcId);
 			LogMessage("NXDN, received RF late entry from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
 			writeJSONRF("late_entry", srcId, source, grp, dstId);
@@ -475,9 +465,6 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 			writeNetwork(netData, NNMT_VOICE_HEADER);
 
-#if defined(DUMP_NXDN)
-			writeFile(start + 2U);
-#endif
 			if (m_duplex)
 				writeQueueRF(start);
 		}
@@ -581,10 +568,6 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 		writeNetwork(netData, NNMT_VOICE_BODY);
 
-#if defined(DUMP_NXDN)
-		writeFile(data + 2U);
-#endif
-
 		if (m_duplex)
 			writeQueueRF(data);
 
@@ -646,10 +629,6 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 		m_rfFrames = 0U;
 
 		m_rfState = RS_RF_DATA;
-
-#if defined(DUMP_NXDN)
-		openFile();
-#endif
 	}
 
 	if (m_rfState != RS_RF_DATA)
@@ -701,10 +680,6 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 
 	m_rfFrames++;
 
-#if defined(DUMP_NXDN)
-	writeFile(data + 2U);
-#endif
-
 	if (data[0U] == TAG_EOT) {
 		unsigned short dstId = m_rfLayer3.getDestinationGroupId();
 		bool grp             = m_rfLayer3.getIsGroup();
@@ -748,9 +723,6 @@ void CNXDNControl::writeEndRF()
 			m_network->reset();
 	}
 
-#if defined(DUMP_NXDN)
-	closeFile();
-#endif
 }
 
 void CNXDNControl::writeEndNet()
@@ -1104,46 +1076,6 @@ void CNXDNControl::scrambler(unsigned char* data) const
 		data[i] ^= SCRAMBLER[i];
 }
 
-bool CNXDNControl::openFile()
-{
-	if (m_fp != NULL)
-		return true;
-
-	time_t t;
-	::time(&t);
-
-	struct tm* tm = ::localtime(&t);
-
-	char name[100U];
-	::sprintf(name, "NXDN_%04d%02d%02d_%02d%02d%02d.ambe", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
-
-	m_fp = ::fopen(name, "wb");
-	if (m_fp == NULL)
-		return false;
-
-	::fwrite("NXDN", 1U, 4U, m_fp);
-
-	return true;
-}
-
-bool CNXDNControl::writeFile(const unsigned char* data)
-{
-	if (m_fp == NULL)
-		return false;
-
-	::fwrite(data, 1U, NXDN_FRAME_LENGTH_BYTES, m_fp);
-
-	return true;
-}
-
-void CNXDNControl::closeFile()
-{
-	if (m_fp != NULL) {
-		::fclose(m_fp);
-		m_fp = NULL;
-	}
-}
-
 bool CNXDNControl::isBusy() const
 {
 	return m_rfState != RS_RF_LISTENING || m_netState != RS_NET_IDLE;
@@ -1333,4 +1265,6 @@ void CNXDNControl::writeJSON(nlohmann::json& json, const char* source, const cha
 	if (!srcInfo.empty())
 		json["source_info"] = srcInfo;
 }
+
+#endif
 

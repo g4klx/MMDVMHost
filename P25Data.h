@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2017,2023 by Jonathan Naylor G4KLX
 *   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com>
 *
 *   This program is free software; you can redistribute it and/or modify
@@ -22,6 +22,9 @@
 
 #include "RS241213.h"
 #include "P25Trellis.h"
+#include "Defines.h"
+
+#if defined(USE_P25)
 
 class CP25Data {
 public:
@@ -85,3 +88,6 @@ private:
 };
 
 #endif
+
+#endif
+

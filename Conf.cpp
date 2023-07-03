@@ -192,7 +192,9 @@ m_dmrEnabled(false),
 m_dmrBeacons(DMR_BEACONS_OFF),
 m_dmrBeaconInterval(60U),
 m_dmrBeaconDuration(3U),
+#endif
 m_dmrId(0U),
+#if defined(USE_DMR)
 m_dmrColorCode(2U),
 m_dmrSelfOnly(false),
 m_dmrEmbeddedLCOnly(false),
@@ -219,7 +221,9 @@ m_fusionTXHang(4U),
 m_fusionModeHang(10U),
 #if defined(USE_P25)
 m_p25Enabled(false),
+#endif
 m_p25Id(0U),
+#if defined(USE_P25)
 m_p25NAC(0x293U),
 m_p25SelfOnly(false),
 m_p25OverrideUID(false),

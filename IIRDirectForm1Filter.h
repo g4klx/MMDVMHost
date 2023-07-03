@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2020,2023 by Jonathan Naylor G4KLX
  *   Copyright (C) 2020 by Geoffrey Merck - F4FXL KC3FRA
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -19,6 +19,10 @@
 
 #if !defined(IIRDIRECTFORM1FILTER_H)
 #define	IIRDIRECTFORM1FILTER_H
+
+#include "Defines.h"
+
+#if defined(USE_FM)
 
 class CIIRDirectForm1Filter
 {
@@ -46,5 +50,7 @@ private:
   float m_additionalGainLin;
 };
 
+#endif
 
 #endif
+

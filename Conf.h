@@ -488,7 +488,9 @@ private:
 	DMR_BEACONS  m_dmrBeacons;
 	unsigned int m_dmrBeaconInterval;
 	unsigned int m_dmrBeaconDuration;
+#endif
 	unsigned int m_dmrId;
+#if defined(USE_DMR)
 	unsigned int m_dmrColorCode;
 	bool         m_dmrSelfOnly;
 	bool         m_dmrEmbeddedLCOnly;
@@ -517,7 +519,9 @@ private:
 
 #if defined(USE_P25)
 	bool         m_p25Enabled;
+#endif
 	unsigned int m_p25Id;
+#if defined(USE_P25)
 	unsigned int m_p25NAC;
 	bool         m_p25SelfOnly;
 	bool         m_p25OverrideUID;

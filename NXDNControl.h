@@ -31,6 +31,8 @@
 #include "Timer.h"
 #include "Modem.h"
 
+#if defined(USE_NXDN)
+
 #include <string>
 
 #include <nlohmann/json.hpp>
@@ -86,7 +88,6 @@ private:
 	unsigned int               m_bitsCount;
 	unsigned int               m_bitErrsAccum;
 	bool                       m_enabled;
-	FILE*                      m_fp;
 
 	bool processVoice(unsigned char usc, unsigned char option, unsigned char *data);
 	bool processData(unsigned char option, unsigned char *data);
@@ -100,10 +101,6 @@ private:
 
 	void writeEndRF();
 	void writeEndNet();
-
-	bool openFile();
-	bool writeFile(const unsigned char* data);
-	void closeFile();
 
 	void writeJSONRSSI();
 	void writeJSONBER(unsigned int bits, unsigned int errs);
@@ -122,3 +119,6 @@ private:
 };
 
 #endif
+
+#endif
+

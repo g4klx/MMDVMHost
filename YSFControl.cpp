@@ -16,6 +16,8 @@
 #include "Sync.h"
 #include "Log.h"
 
+#if defined(USE_YSF)
+
 #include <cstdio>
 #include <cassert>
 #include <cstring>
@@ -23,8 +25,6 @@
 
 const unsigned int RSSI_COUNT   = 13U;		// 13 * 100ms = 1300ms
 const unsigned int BER_COUNT    = 13U;		// 13 * 100ms = 1300ms
-
-// #define	DUMP_YSF
 
 CYSFControl::CYSFControl(const std::string& callsign, bool selfOnly, CYSFNetwork* network, unsigned int timeout, bool duplex, bool lowDeviation, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
 m_callsign(NULL),
@@ -66,8 +66,7 @@ m_rssiAccum(0U),
 m_rssiCount(0U),
 m_bitsCount(0U),
 m_bitErrsAccum(0U),
-m_enabled(true),
-m_fp(NULL)
+m_enabled(true)
 {
 	assert(rssiMapper != NULL);
 
@@ -271,9 +270,6 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 			m_bitErrsAccum = 0U;
 			m_bitsCount    = 0U;
 
-#if defined(DUMP_YSF)
-			openFile();
-#endif
 			LogMessage("YSF, received RF header from %10.10s to DG-ID %u", m_rfSource, dgid);
 			writeJSONRF("start", "voice_vw", m_rfSource, dgid);
 
@@ -288,9 +284,6 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 
 			writeNetwork(data, m_rfFrames % 128U);
 
-#if defined(DUMP_YSF)
-			writeFile(data + 2U);
-#endif
 			if (m_duplex) {
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
@@ -323,9 +316,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 			data[1U] = 0x00U;
 
 			writeNetwork(data, m_rfFrames % 128U);
-#if defined(DUMP_YSF)
-			writeFile(data + 2U);
-#endif
+
 			if (m_duplex) {
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
@@ -390,9 +381,6 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 				writeQueueRF(data);
 			}
 
-#if defined(DUMP_YSF)
-			writeFile(data + 2U);
-#endif
 			m_rfFrames++;
 
 			writeJSONRSSI();
@@ -450,9 +438,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			m_bitErrsAccum = 0U;
 			m_bitsCount    = 0U;
 
-#if defined(DUMP_YSF)
-			openFile();
-#endif
 			LogMessage("YSF, received RF header from %10.10s to DG-ID %u", m_rfSource, dgid);
 			writeJSONRF("start", "voice_dn", m_rfSource, dgid);
 
@@ -467,9 +452,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			writeNetwork(data, m_rfFrames % 128U);
 
-#if defined(DUMP_YSF)
-			writeFile(data + 2U);
-#endif
 			if (m_duplex) {
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
@@ -502,9 +484,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			data[1U] = 0x00U;
 
 			writeNetwork(data, m_rfFrames % 128U);
-#if defined(DUMP_YSF)
-			writeFile(data + 2U);
-#endif
+
 			if (m_duplex) {
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
@@ -583,9 +563,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 				writeQueueRF(data);
 			}
 
-#if defined(DUMP_YSF)
-			writeFile(data + 2U);
-#endif
 			m_rfFrames++;
 
 			writeJSONRSSI();
@@ -651,9 +628,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			m_bitErrsAccum = 0U;
 			m_bitsCount    = 0U;
 
-#if defined(DUMP_YSF)
-			openFile();
-#endif
 			// Build a new header and transmit it
 			unsigned char buffer[YSF_FRAME_LENGTH_BYTES + 2U];
 
@@ -687,9 +661,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 				writeQueueRF(buffer);
 			}
 
-#if defined(DUMP_YSF)
-			writeFile(buffer + 2U);
-#endif
 			LogMessage("YSF, received RF late entry from %10.10s to DG-ID %u", m_rfSource, dgid);
 			writeJSONRF("late_entry", "voice_dn", m_rfSource, dgid);
 
@@ -711,9 +682,6 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 				writeQueueRF(data);
 			}
 
-#if defined(DUMP_YSF)
-			writeFile(data + 2U);
-#endif
 			m_rfFrames++;
 
 			writeJSONRSSI();
@@ -768,9 +736,6 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 			m_bitErrsAccum = 0U;
 			m_bitsCount    = 0U;
 
-#if defined(DUMP_YSF)
-			openFile();
-#endif
 			LogMessage("YSF, received RF header from %10.10s to DG-ID %u", m_rfSource, dgid);
 			writeJSONRF("start", "data_fr", m_rfSource, dgid);
 
@@ -784,9 +749,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 			data[1U] = 0x00U;
 
 			writeNetwork(data, m_rfFrames % 128U);
-#if defined(DUMP_YSF)
-			writeFile(data + 2U);
-#endif
+
 			if (m_duplex) {
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
@@ -819,9 +782,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 			data[1U] = 0x00U;
 
 			writeNetwork(data, m_rfFrames % 128U);
-#if defined(DUMP_YSF)
-			writeFile(data + 2U);
-#endif
+
 			if (m_duplex) {
 				fich.setMR(m_remoteGateway ? YSF_MR_NOT_BUSY : YSF_MR_BUSY);
 				fich.setDev(m_lowDeviation);
@@ -876,9 +837,6 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 				writeQueueRF(data);
 			}
 
-#if defined(DUMP_YSF)
-			writeFile(data + 2U);
-#endif
 			m_rfFrames++;
 
 			writeJSONRSSI();
@@ -920,10 +878,6 @@ void CYSFControl::writeEndRF()
 		if (m_network != NULL)
 			m_network->reset();
 	}
-
-#if defined(DUMP_YSF)
-	closeFile();
-#endif
 }
 
 void CYSFControl::writeEndNet()
@@ -1169,46 +1123,6 @@ void CYSFControl::writeNetwork(const unsigned char *data, unsigned int count)
 	m_network->write(m_rfSource, m_rfDest, data + 2U, count, data[0U] == TAG_EOT);
 }
 
-bool CYSFControl::openFile()
-{
-	if (m_fp != NULL)
-		return true;
-
-	time_t t;
-	::time(&t);
-
-	struct tm* tm = ::localtime(&t);
-
-	char name[100U];
-	::sprintf(name, "YSF_%04d%02d%02d_%02d%02d%02d.ambe", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
-
-	m_fp = ::fopen(name, "wb");
-	if (m_fp == NULL)
-		return false;
-
-	::fwrite("YSF", 1U, 3U, m_fp);
-
-	return true;
-}
-
-bool CYSFControl::writeFile(const unsigned char* data)
-{
-	if (m_fp == NULL)
-		return false;
-
-	::fwrite(data, 1U, YSF_FRAME_LENGTH_BYTES, m_fp);
-
-	return true;
-}
-
-void CYSFControl::closeFile()
-{
-	if (m_fp != NULL) {
-		::fclose(m_fp);
-		m_fp = NULL;
-	}
-}
-
 bool CYSFControl::checkCallsign(const unsigned char* callsign) const
 {
 	return ::memcmp(callsign, m_selfCallsign, ::strlen((char*)m_selfCallsign)) == 0;
@@ -1446,4 +1360,6 @@ std::string CYSFControl::convertBuffer(const unsigned char* buffer) const
 
 	return callsign;
 }
+
+#endif
 

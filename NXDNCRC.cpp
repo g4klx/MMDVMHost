@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2018,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
  */
 
 #include "NXDNCRC.h"
+
+#if defined(USE_NXDN)
 
 #include <cstdio>
 #include <cassert>
@@ -183,3 +185,6 @@ uint16_t CNXDNCRC::createCRC15(const unsigned char* in, unsigned int length)
 
 	return crc & 0x7FFFU;
 }
+
+#endif
+

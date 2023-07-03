@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2017,2018,2021 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2017,2018,2021,2023 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 #include "NXDNLookup.h"
 #include "Timer.h"
 #include "Log.h"
+
+#if defined(USE_NXDN)
 
 #include <cstdio>
 #include <cstdlib>
@@ -134,3 +136,6 @@ bool CNXDNLookup::exists(unsigned int id)
 {
 	return m_table.lookup(id, NULL);
 }
+
+#endif
+

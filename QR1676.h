@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,6 +19,10 @@
 #ifndef QR1676_H
 #define QR1676_H
 
+#include "Defines.h"
+
+#if defined(USE_DMR)
+
 class CQR1676 {
 public:
 	static void encode(unsigned char* data);
@@ -30,3 +34,6 @@ private:
 };
 
 #endif
+
+#endif
+

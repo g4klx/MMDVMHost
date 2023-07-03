@@ -17,9 +17,10 @@
  */
 
 #include "DMRNetwork.h"
-
 #include "Utils.h"
 #include "Log.h"
+
+#if defined(USE_DMR)
 
 #include <cstdio>
 #include <cassert>
@@ -444,3 +445,6 @@ bool CDMRNetwork::write(const unsigned char* data, unsigned int length)
 
 	return true;
 }
+
+#endif
+

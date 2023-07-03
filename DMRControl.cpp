@@ -13,9 +13,10 @@
 
 #include "DMRControl.h"
 #include "DMRAccessControl.h"
-#include "Defines.h"
 #include "DMRCSBK.h"
 #include "Log.h"
+
+#if defined(USE_DMR)
 
 #include <cstdio>
 #include <cassert>
@@ -135,3 +136,6 @@ void CDMRControl::enable(bool enabled)
 	m_slot1.enable(enabled);
 	m_slot2.enable(enabled);
 }
+
+#endif
+

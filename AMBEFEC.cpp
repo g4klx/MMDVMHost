@@ -615,7 +615,7 @@ unsigned int CAMBEFEC::regenerateDStar(unsigned char* bytes) const
 }
 #endif
 
-#if defined(USE_YSF)
+#if defined(USE_YSF) || defined(USE_NXDN)
 unsigned int CAMBEFEC::regenerateYSFDN(unsigned char* bytes) const
 {
 	assert(bytes != NULL);

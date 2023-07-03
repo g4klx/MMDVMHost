@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
 
 #include "QR1676.h"
 #include "Log.h"
+
+#if defined(USE_DMR)
 
 #include <cstdio>
 #include <cassert>
@@ -113,3 +115,6 @@ unsigned char CQR1676::decode(const unsigned char* data)
 
 	return code >> 7;
 }
+
+#endif
+

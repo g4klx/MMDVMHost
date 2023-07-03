@@ -26,6 +26,10 @@
 #include "DMRData.h"
 #include "Modem.h"
 
+#include "Defines.h"
+
+#if defined(USE_DMR)
+
 #include <vector>
 
 class CDMRControl {
@@ -57,3 +61,6 @@ private:
 };
 
 #endif
+
+#endif
+

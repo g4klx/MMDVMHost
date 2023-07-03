@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2023 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
 #include "P25Utils.h"
 #include "Golay24128.h"
 #include "Hamming.h"
+
+#if defined(USE_P25)
 
 #include <cstdio>
 #include <cassert>
@@ -337,3 +339,6 @@ void CP25Audio::encode(unsigned char* data, const unsigned char* imbe, unsigned 
 		return;
 	}
 }
+
+#endif
+

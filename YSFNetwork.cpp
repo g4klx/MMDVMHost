@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2014,2016,2019,2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2014,2016,2019,2020,2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -18,9 +18,10 @@
 
 #include "YSFDefines.h"
 #include "YSFNetwork.h"
-#include "Defines.h"
 #include "Utils.h"
 #include "Log.h"
+
+#if defined(USE_YSF)
 
 #include <cstdio>
 #include <cassert>
@@ -204,3 +205,6 @@ void CYSFNetwork::enable(bool enabled)
 
 	m_enabled = enabled;
 }
+
+#endif
+

@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2018 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2018,2023 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
 
 #include "P25Utils.h"
 #include "P25Defines.h"
+
+#if defined(USE_P25)
 
 #include <cstdio>
 #include <cassert>
@@ -130,3 +132,6 @@ unsigned int CP25Utils::compare(const unsigned char* data1, const unsigned char*
 
 	return errs;
 }
+
+#endif
+

@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2017,2023 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 #include "DMRLookup.h"
 #include "Timer.h"
 #include "Log.h"
+
+#if defined(USE_DMR) || defined(USE_P25)
 
 #include <cstdio>
 #include <cstdlib>
@@ -134,3 +136,6 @@ bool CDMRLookup::exists(unsigned int id)
 {
 	return m_table.lookup(id, NULL);
 }
+
+#endif
+

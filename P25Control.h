@@ -32,6 +32,8 @@
 #include "Modem.h"
 #include "Timer.h"
 
+#if defined(USE_P25)
+
 #include <cstdio>
 
 #include <nlohmann/json.hpp>
@@ -97,7 +99,6 @@ private:
 	unsigned int               m_bitsCount;
 	unsigned int               m_bitErrsAccum;
 	bool                       m_enabled;
-	FILE*                      m_fp;
 
 	void writeQueueRF(const unsigned char* data, unsigned int length);
 	void writeQueueNet(const unsigned char* data, unsigned int length);
@@ -119,10 +120,6 @@ private:
 	void createNetLDU2();
 	void createNetTerminator();
 
-	bool openFile();
-	bool writeFile(const unsigned char* data, unsigned char length);
-	void closeFile();
-
 	void writeJSONRSSI();
 	void writeJSONBER();
 
@@ -138,3 +135,6 @@ private:
 };
 
 #endif
+
+#endif
+

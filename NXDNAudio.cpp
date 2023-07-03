@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2018 by Jonathan Naylor G4KLX
+*   Copyright (C) 2018,2023 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
 
 #include "NXDNAudio.h"
 #include "Golay24128.h"
+
+#if defined(USE_NXDN)
 
 #include <cstdio>
 #include <cassert>
@@ -575,3 +577,6 @@ void CNXDNAudio::encode(const unsigned char* in, unsigned char* out, unsigned in
 		WRITE_BIT(out, cPos, cOrig & MASK);
 	}
 }
+
+#endif
+

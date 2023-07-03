@@ -34,6 +34,8 @@
 #include "Modem.h"
 #include "DMRLC.h"
 
+#if defined(USE_DMR)
+
 #include <vector>
 
 #include <nlohmann/json.hpp>
@@ -116,7 +118,6 @@ private:
 	unsigned int               m_bitErrsAccum;
 	unsigned int               m_bitsCount;
 	bool                       m_enabled;
-	FILE*                      m_fp;
 
 	static unsigned int        m_colorCode;
 
@@ -154,10 +155,6 @@ private:
 	void writeEndRF(bool writeEnd = false);
 	void writeEndNet(bool writeEnd = false);
 
-	bool openFile();
-	bool writeFile(const unsigned char* data);
-	void closeFile();
-
 	bool insertSilence(const unsigned char* data, unsigned char seqNo);
 	void insertSilence(unsigned int count);
 
@@ -185,3 +182,6 @@ private:
 };
 
 #endif
+
+#endif
+

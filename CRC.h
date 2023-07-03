@@ -24,20 +24,30 @@
 class CCRC
 {
 public:
+#if defined(USE_DMR)
 	static bool checkFiveBit(bool* in, unsigned int tcrc);
 	static void encodeFiveBit(const bool* in, unsigned int& tcrc);
+#endif
 
 #if defined(USE_DSTAR)
 	static void addCCITT161(unsigned char* in, unsigned int length);
 #endif
+
+#if defined(USE_DMR) || defined(USE_YSF) || defined(USE_P25)
 	static void addCCITT162(unsigned char* in, unsigned int length);
+#endif
 
 #if defined(USE_DSTAR)
 	static bool checkCCITT161(const unsigned char* in, unsigned int length);
 #endif
-	static bool checkCCITT162(const unsigned char* in, unsigned int length);
 
+#if defined(USE_DMR) || defined(USE_YSF) || defined(USE_P25)
+	static bool checkCCITT162(const unsigned char* in, unsigned int length);
+#endif
+
+#if defined(USE_DMR)
 	static unsigned char crc8(const unsigned char* in, unsigned int length);
+#endif
 };
 
 #endif

@@ -1650,6 +1650,8 @@ bool CMMDVMHost::createModem()
 	unsigned int txDelay         = m_conf.getModemTXDelay();
 #if defined(USE_DMR)
 	unsigned int dmrDelay        = m_conf.getModemDMRDelay();
+#else
+	unsigned int dmrDelay        = 0U;
 #endif
 	float rxLevel                = m_conf.getModemRXLevel();
 	float cwIdTXLevel            = m_conf.getModemCWIdTXLevel();

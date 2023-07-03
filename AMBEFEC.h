@@ -34,7 +34,7 @@ public:
 	unsigned int regenerateDStar(unsigned char* bytes) const;
 #endif
 
-#if defined(USE_YSF)
+#if defined(USE_YSF) || defined(USE_NXDN)
 	unsigned int regenerateYSFDN(unsigned char* bytes) const;
 #endif
 

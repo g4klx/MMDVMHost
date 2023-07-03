@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2018 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2018,2023 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -19,6 +19,10 @@
 #if !defined(P25Utils_H)
 #define	P25Utils_H
 
+#include "Defines.h"
+
+#if defined(USE_P25)
+
 class CP25Utils {
 public:
 	static unsigned int encode(const unsigned char* in, unsigned char* out, unsigned int start, unsigned int stop);
@@ -32,3 +36,6 @@ private:
 };
 
 #endif
+
+#endif
+

@@ -25,6 +25,8 @@
 #include "DMRData.h"
 #include "Defines.h"
 
+#if defined(USE_DMR)
+
 #include <string>
 #include <cstdint>
 #include <random>
@@ -89,3 +91,6 @@ private:
 };
 
 #endif
+
+#endif
+

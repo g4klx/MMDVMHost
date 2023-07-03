@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2017,2023 by Jonathan Naylor G4KLX
 *   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com>
 *
 *   This program is free software; you can redistribute it and/or modify
@@ -24,6 +24,8 @@
 #include "Hamming.h"
 #include "Utils.h"
 #include "Log.h"
+
+#if defined(USE_P25)
 
 #include <cstdio>
 #include <cassert>
@@ -467,3 +469,6 @@ void CP25Data::encodeLDUHamming(unsigned char* data, const unsigned char* raw)
 		}
 	}
 }
+
+#endif
+

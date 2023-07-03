@@ -1,5 +1,6 @@
 /*
  *   Copyright (C) 2020 by SASANO Takayoshi JG1UAA
+ *   Copyright (C) 2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -21,6 +22,9 @@
 
 #include "UserDBentry.h"
 #include "Mutex.h"
+#include "Defines.h"
+
+#if defined(USE_DMR) || defined(USE_P25) || defined(USE_NXDN)
 
 class CUserDB {
 public:
@@ -41,3 +45,6 @@ private:
 };
 	
 #endif
+
+#endif
+

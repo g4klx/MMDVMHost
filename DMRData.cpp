@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015,2016,2017 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015,2016,2017,2023 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -16,10 +16,11 @@
 #include "Utils.h"
 #include "Log.h"
 
+#if defined(USE_DMR)
+
 #include <cstdio>
 #include <cstring>
 #include <cassert>
-
 
 CDMRData::CDMRData(const CDMRData& data) :
 m_slotNo(data.m_slotNo),
@@ -183,3 +184,6 @@ void CDMRData::setData(const unsigned char* buffer)
 
 	::memcpy(m_data, buffer, DMR_FRAME_LENGTH_BYTES);
 }
+
+#endif
+

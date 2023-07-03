@@ -1,5 +1,5 @@
 /*
-*	Copyright (C) 2016 by Jonathan Naylor, G4KLX
+*	Copyright (C) 2016,2023 by Jonathan Naylor, G4KLX
 *
 *	This program is free software; you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -14,6 +14,8 @@
 #include "DMRTrellis.h"
 #include "DMRDefines.h"
 #include "Log.h"
+
+#if defined(USE_DMR)
 
 #include <cstdio>
 #include <cassert>
@@ -372,3 +374,6 @@ unsigned int CDMRTrellis::checkCode(const unsigned char* points, unsigned char* 
 
 	return 999U;
 }
+
+#endif
+

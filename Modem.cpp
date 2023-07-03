@@ -2441,8 +2441,10 @@ bool CModem::setConfig1()
 		buffer[3U] |= 0x02U;
 	if (m_pttInvert)
 		buffer[3U] |= 0x04U;
+#if defined(USE_YSF)
 	if (m_ysfLoDev)
 		buffer[3U] |= 0x08U;
+#endif
 	if (m_debug)
 		buffer[3U] |= 0x10U;
 	if (m_useCOSAsLockout)
@@ -2612,8 +2614,10 @@ bool CModem::setConfig2()
 		buffer[3U] |= 0x02U;
 	if (m_pttInvert)
 		buffer[3U] |= 0x04U;
+#if defined(USE_YSF)
 	if (m_ysfLoDev)
 		buffer[3U] |= 0x08U;
+#endif
 	if (m_debug)
 		buffer[3U] |= 0x10U;
 	if (m_useCOSAsLockout)

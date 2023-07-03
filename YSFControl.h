@@ -30,6 +30,8 @@
 #include "Timer.h"
 #include "Modem.h"
 
+#if defined(USE_YSF)
+
 #include <string>
 
 #include <nlohmann/json.hpp>
@@ -90,7 +92,6 @@ private:
 	unsigned int               m_bitsCount;
 	unsigned int               m_bitErrsAccum;
 	bool                       m_enabled;
-	FILE*                      m_fp;
 
 	bool processVWData(bool valid, unsigned char *data);
 	bool processDNData(bool valid, unsigned char *data);
@@ -122,12 +123,11 @@ private:
 
 	std::string convertBuffer(const unsigned char* buffer) const;
 
-	bool openFile();
-	bool writeFile(const unsigned char* data);
-	void closeFile();
-
 	bool checkCallsign(const unsigned char* callsign) const;
 	void processNetCallsigns(const unsigned char* data, unsigned char dgid);
 };
 
 #endif
+
+#endif
+

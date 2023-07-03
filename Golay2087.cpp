@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
  */
 
 #include "Golay2087.h"
+
+#if defined(USE_DMR)
 
 #include <cstdio>
 #include <cassert>
@@ -260,3 +262,6 @@ void CGolay2087::encode(unsigned char* data)
 	data[1U] = cksum & 0xFFU;
 	data[2U] = cksum >> 8;
 }
+
+#endif
+

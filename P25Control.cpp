@@ -26,6 +26,8 @@
 #include "CRC.h"
 #include "Log.h"
 
+#if defined(USE_P25)
+
 #include <cassert>
 #include <cstdio>
 #include <cstring>
@@ -33,8 +35,6 @@
 
 const unsigned int RSSI_COUNT   = 7U;			// 7 * 180ms = 1260ms
 const unsigned int BER_COUNT    = 7U * 1233U;		// 7 * 180ms = 1260ms
-
-// #define	DUMP_P25
 
 const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U};
 
@@ -86,8 +86,7 @@ m_rssiAccum(0U),
 m_rssiCount(0U),
 m_bitsCount(0U),
 m_bitErrsAccum(0U),
-m_enabled(true),
-m_fp(NULL)
+m_enabled(true)
 {
 	assert(lookup != NULL);
 	assert(rssiMapper != NULL);
@@ -145,9 +144,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		m_rfState = RS_RF_LISTENING;
 		m_rfTimeout.stop();
 		m_rfData.reset();
-#if defined(DUMP_P25)
-		closeFile();
-#endif
+
 		return false;
 	}
 
@@ -155,9 +152,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		m_rfState    = RS_RF_LISTENING;
 		m_rfPDUCount = 0U;
 		m_rfPDUBits  = 0U;
-#if defined(DUMP_P25)
-		closeFile();
-#endif
+
 		return false;
 	}
 
@@ -310,10 +305,6 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			// Add busy bits
 			addBusyBits(data + 2U, P25_LDU_FRAME_LENGTH_BITS, false, true);
 
-#if defined(DUMP_P25)
-			writeFile(data + 2U, len - 2U);
-#endif
-
 			::memcpy(m_rfLDU, data + 2U, P25_LDU_FRAME_LENGTH_BYTES);
 
 			if (m_duplex) {
@@ -357,10 +348,6 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 
 			// Add busy bits
 			addBusyBits(data + 2U, P25_LDU_FRAME_LENGTH_BITS, false, true);
-
-#if defined(DUMP_P25)
-			writeFile(data + 2U, len - 2U);
-#endif
 
 			::memcpy(m_rfLDU, data + 2U, P25_LDU_FRAME_LENGTH_BYTES);
 
@@ -486,10 +473,6 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 				LogMessage("P25, received RF end of voice transmission from %s to %s%u, %.1f seconds, BER: %.1f%%", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
 				writeJSONRF("end", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
 			}
-
-#if defined(DUMP_P25)
-			closeFile();
-#endif
 
 			writeNetwork(data + 2U, P25_DUID_TERM, true);
 
@@ -950,11 +933,6 @@ void CP25Control::createRFHeader()
 	m_lastDUID = P25_DUID_HEADER;
 	::memset(m_rfLDU, 0x00U, P25_LDU_FRAME_LENGTH_BYTES);
 
-#if defined(DUMP_P25)
-	openFile();
-	writeFile(buffer + 2U, buffer - 2U);
-#endif
-
 	if (m_duplex) {
 		buffer[0U] = TAG_HEADER;
 		buffer[1U] = 0x00U;
@@ -1151,48 +1129,6 @@ void CP25Control::createNetTerminator()
 	m_netState = RS_NET_IDLE;
 }
 
-bool CP25Control::openFile()
-{
-	if (m_fp != NULL)
-		return true;
-
-	time_t t;
-	::time(&t);
-
-	struct tm* tm = ::localtime(&t);
-
-	char name[100U];
-	::sprintf(name, "P25_%04d%02d%02d_%02d%02d%02d.ambe", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
-
-	m_fp = ::fopen(name, "wb");
-	if (m_fp == NULL)
-		return false;
-
-	::fwrite("P25", 1U, 3U, m_fp);
-
-	return true;
-}
-
-bool CP25Control::writeFile(const unsigned char* data, unsigned char length)
-{
-	if (m_fp == NULL)
-		return false;
-
-	::fwrite(&length, 1U, 1U, m_fp);
-
-	::fwrite(data, 1U, length, m_fp);
-
-	return true;
-}
-
-void CP25Control::closeFile()
-{
-	if (m_fp != NULL) {
-		::fclose(m_fp);
-		m_fp = NULL;
-	}
-}
-
 bool CP25Control::isBusy() const
 {
 	return m_rfState != RS_RF_LISTENING || m_netState != RS_NET_IDLE;
@@ -1349,4 +1285,6 @@ void CP25Control::writeJSON(nlohmann::json& json, const char* source, const char
 	if (!srcInfo.empty())
 		json["source_info"] = srcInfo;
 }
+
+#endif
 
