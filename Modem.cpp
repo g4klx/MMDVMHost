@@ -129,33 +129,15 @@ const unsigned int MAX_RESPONSES = 30U;
 
 const unsigned int BUFFER_LENGTH = 2000U;
 
-#if defined(USE_DSTAR)
 const unsigned char CAP1_DSTAR  = 0x01U;
-#endif
-#if defined(USE_DMR)
 const unsigned char CAP1_DMR    = 0x02U;
-#endif
-#if defined(USE_YSF)
 const unsigned char CAP1_YSF    = 0x04U;
-#endif
-#if defined(USE_P25)
 const unsigned char CAP1_P25    = 0x08U;
-#endif
-#if defined(USE_NXDN)
 const unsigned char CAP1_NXDN   = 0x10U;
-#endif
-#if defined(USE_M17)
 const unsigned char CAP1_M17    = 0x20U;
-#endif
-#if defined(USE_FM)
 const unsigned char CAP1_FM     = 0x40U;
-#endif
-#if defined(USE_POCSAG)
 const unsigned char CAP2_POCSAG = 0x01U;
-#endif
-#if defined(USE_AX25)
 const unsigned char CAP2_AX25   = 0x02U;
-#endif
 
 CModem::CModem(bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug) :
 m_protocolVersion(0U),
@@ -2244,68 +2226,50 @@ bool CModem::hasError() const
 	return m_error;
 }
 
-#if defined(USE_DSTAR)
 bool CModem::hasDStar() const
 {
 	return (m_capabilities1 & CAP1_DSTAR) == CAP1_DSTAR;
 }
-#endif
 
-#if defined(USE_DMR)
 bool CModem::hasDMR() const
 {
 	return (m_capabilities1 & CAP1_DMR) == CAP1_DMR;
 }
-#endif
 
-#if defined(USE_YSF)
 bool CModem::hasYSF() const
 {
 	return (m_capabilities1 & CAP1_YSF) == CAP1_YSF;
 }
-#endif
 
-#if defined(USE_P25)
 bool CModem::hasP25() const
 {
 	return (m_capabilities1 & CAP1_P25) == CAP1_P25;
 }
-#endif
 
-#if defined(USE_NXDN)
 bool CModem::hasNXDN() const
 {
 	return (m_capabilities1 & CAP1_NXDN) == CAP1_NXDN;
 }
-#endif
 
-#if defined(USE_M17)
 bool CModem::hasM17() const
 {
 	return (m_capabilities1 & CAP1_M17) == CAP1_M17;
 }
-#endif
 
-#if defined(USE_FM)
 bool CModem::hasFM() const
 {
 	return (m_capabilities1 & CAP1_FM) == CAP1_FM;
 }
-#endif
 
-#if defined(USE_POCSAG)
 bool CModem::hasPOCSAG() const
 {
 	return (m_capabilities2 & CAP2_POCSAG) == CAP2_POCSAG;
 }
-#endif
 
-#if defined(USE_AX25)
 bool CModem::hasAX25() const
 {
 	return (m_capabilities2 & CAP2_AX25) == CAP2_AX25;
 }
-#endif
 
 unsigned int CModem::getVersion() const
 {
@@ -2369,29 +2333,8 @@ bool CModem::readVersion()
 				switch (m_protocolVersion) {
 				case 1U:
 					LogInfo("MMDVM protocol version: 1, description: %.*s", m_length - 4U, m_buffer + 4U);
-					m_capabilities1 = 0x00U;
-					m_capabilities2 = 0x00U;
-#if defined(USE_DSTAR)
-					m_capabilities1 |= CAP1_DSTAR;
-#endif
-#if defined(USE_DMR)
-					m_capabilities1 |= CAP1_DMR;
-#endif
-#if defined(USE_YSF)
-					m_capabilities1 |= CAP1_YSF;
-#endif
-#if defined(USE_P25)
-					m_capabilities1 |= CAP1_P25;
-#endif
-#if defined(USE_NXDN)
-					m_capabilities1 |= CAP1_NXDN;
-#endif
-#if defined(USE_M17)
-					m_capabilities1 |= CAP1_M17;
-#endif
-#if defined(USE_POCSAG)
-					m_capabilities2 |= CAP2_POCSAG;
-#endif
+					m_capabilities1 = CAP1_DSTAR | CAP1_DMR | CAP1_YSF | CAP1_P25 | CAP1_NXDN | CAP1_M17;
+					m_capabilities2 = CAP2_POCSAG;
 					return true;
 
 				case 2U:
@@ -2414,42 +2357,24 @@ bool CModem::readVersion()
 					m_capabilities2 = m_buffer[5U];
 					char modeText[100U];
 					::strcpy(modeText, "Modes:");
-#if defined(USE_DSTAR)
 					if (hasDStar())
 						::strcat(modeText, " D-Star");
-#endif
-#if defined(USE_DMR)
 					if (hasDMR())
 						::strcat(modeText, " DMR");
-#endif
-#if defined(USE_YSF)
 					if (hasYSF())
 						::strcat(modeText, " YSF");
-#endif
-#if defined(USE_P25)
 					if (hasP25())
 						::strcat(modeText, " P25");
-#endif
-#if defined(USE_NXDN)
 					if (hasNXDN())
 						::strcat(modeText, " NXDN");
-#endif
-#if defined(USE_M17)
 					if (hasM17())
 						::strcat(modeText, " M17");
-#endif
-#if defined(USE_FM)
 					if (hasFM())
 						::strcat(modeText, " FM");
-#endif
-#if defined(USE_POCSAG)
 					if (hasPOCSAG())
 						::strcat(modeText, " POCSAG");
-#endif
-#if defined(USE_AX25)
 					if (hasAX25())
 						::strcat(modeText, " AX.25");
-#endif
 					LogInfo(modeText);
 					return true;
 

@@ -79,33 +79,16 @@ public:
 
 	bool open();
 
-#if defined(USE_DSTAR)
 	bool hasDStar() const;
-#endif
-#if defined(USE_DMR)
 	bool hasDMR() const;
-#endif
-#if defined(USE_YSF)
 	bool hasYSF() const;
-#endif
-#if defined(USE_P25)
 	bool hasP25() const;
-#endif
-#if defined(USE_NXDN)
 	bool hasNXDN() const;
-#endif
-#if defined(USE_M17)
 	bool hasM17() const;
-#endif
-#if defined(USE_POCSAG)
 	bool hasPOCSAG() const;
-#endif
-#if defined(USE_FM)
 	bool hasFM() const;
-#endif
-#if defined(USE_AX25)
 	bool hasAX25() const;
-#endif
+
 	unsigned int getVersion() const;
 
 #if defined(USE_DSTAR)
