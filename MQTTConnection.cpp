@@ -84,19 +84,14 @@ bool CMQTTConnection::publish(const char* topic, const char* text)
 	assert(topic != NULL);
 	assert(text != NULL);
 
-	if (!m_connected)
-		return false;
+	return publish(topic, (unsigned char*)text, ::strlen(text));
+}
 
-	char topicEx[100U];
-	::sprintf(topicEx, "%s/%s", m_name.c_str(), topic);
+bool CMQTTConnection::publish(const char* topic, const std::string& text)
+{
+	assert(topic != NULL);
 
-	int rc = ::mosquitto_publish(m_mosq, NULL, topicEx, ::strlen(text), text, static_cast<int>(m_qos), false);
-	if (rc != MOSQ_ERR_SUCCESS) {
-		::fprintf(stderr, "MQTT Error publishing: %s\n", ::mosquitto_strerror(rc));
-		return false;
-	}
-
-	return true;
+	return publish(topic, (unsigned char*)text.c_str(), text.size());
 }
 
 bool CMQTTConnection::publish(const char* topic, const unsigned char* data, unsigned int len)
@@ -107,13 +102,21 @@ bool CMQTTConnection::publish(const char* topic, const unsigned char* data, unsi
 	if (!m_connected)
 		return false;
 
-	char topicEx[100U];
-	::sprintf(topicEx, "%s/%s", m_name.c_str(), topic);
+	if (::strchr(topic, '/') == NULL) {
+		char topicEx[100U];
+		::sprintf(topicEx, "%s/%s", m_name.c_str(), topic);
 
-	int rc = ::mosquitto_publish(m_mosq, NULL, topicEx, len, data, static_cast<int>(m_qos), false);
-	if (rc != MOSQ_ERR_SUCCESS) {
-		::fprintf(stderr, "MQTT Error publishing: %s\n", ::mosquitto_strerror(rc));
-		return false;
+		int rc = ::mosquitto_publish(m_mosq, NULL, topicEx, len, data, static_cast<int>(m_qos), false);
+		if (rc != MOSQ_ERR_SUCCESS) {
+			::fprintf(stderr, "MQTT Error publishing: %s\n", ::mosquitto_strerror(rc));
+			return false;
+		}
+	} else {
+		int rc = ::mosquitto_publish(m_mosq, NULL, topic, len, data, static_cast<int>(m_qos), false);
+		if (rc != MOSQ_ERR_SUCCESS) {
+			::fprintf(stderr, "MQTT Error publishing: %s\n", ::mosquitto_strerror(rc));
+			return false;
+		}
 	}
 
 	return true;
