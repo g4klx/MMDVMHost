@@ -355,7 +355,7 @@ int CMMDVMHost::run()
 
 	::LogInitialise(m_conf.getLogDisplayLevel(), m_conf.getLogMQTTLevel());
 
-	std::vector<std::pair<std::string, void (*)(const std::string&)>> subscriptions;
+	std::vector<std::pair<std::string, void (*)(const unsigned char*, unsigned int)>> subscriptions;
 	subscriptions.push_back(std::make_pair("display", CMMDVMHost::onDisplay));
 	subscriptions.push_back(std::make_pair("command", CMMDVMHost::onCommand));
 
@@ -3621,24 +3621,27 @@ void CMMDVMHost::writeJSONMessage(const std::string& message)
 	WriteJSON("MMDVM", json);
 }
 
-void CMMDVMHost::writeSerial(const std::string& message)
+void CMMDVMHost::writeSerial(const unsigned char* message, unsigned int length)
 {
 	assert(m_modem != NULL);
+	assert(message != NULL);
 
-	m_modem->writeSerialData((unsigned char*)message.c_str(), message.length());
+	m_modem->writeSerialData(message, length);
 }
 
-void CMMDVMHost::onCommand(const std::string& command)
+void CMMDVMHost::onCommand(const unsigned char* command, unsigned int length)
 {
 	assert(host != NULL);
+	assert(command != NULL);
 
-	host->remoteControl(command);
+	host->remoteControl(std::string((char*)command, length));
 }
 
-void CMMDVMHost::onDisplay(const std::string& message)
+void CMMDVMHost::onDisplay(const unsigned char* message, unsigned int length)
 {
 	assert(host != NULL);
+	assert(message != NULL);
 
-	host->writeSerial(message);	
+	host->writeSerial(message, length);
 }
 

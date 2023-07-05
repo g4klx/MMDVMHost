@@ -23,7 +23,7 @@
 #include <cstring>
 
 
-CMQTTConnection::CMQTTConnection(const std::string& host, unsigned short port, const std::string& name, const std::vector<std::pair<std::string, void (*)(const std::string&)>>& subs, unsigned int keepalive, MQTT_QOS qos) :
+CMQTTConnection::CMQTTConnection(const std::string& host, unsigned short port, const std::string& name, const std::vector<std::pair<std::string, void (*)(const unsigned char*, unsigned int)>>& subs, unsigned int keepalive, MQTT_QOS qos) :
 m_host(host),
 m_port(port),
 m_name(name),
@@ -145,16 +145,24 @@ void CMQTTConnection::onConnect(mosquitto* mosq, void* obj, int rc)
 	CMQTTConnection* p = static_cast<CMQTTConnection*>(obj);
 	p->m_connected = true;
 
-	for (std::vector<std::pair<std::string, void (*)(const std::string&)>>::const_iterator it = p->m_subs.cbegin(); it != p->m_subs.cend(); ++it) {
+	for (std::vector<std::pair<std::string, void (*)(const unsigned char*, unsigned int)>>::const_iterator it = p->m_subs.cbegin(); it != p->m_subs.cend(); ++it) {
 		std::string topic = (*it).first;
 
-		char topicEx[100U];
-		::sprintf(topicEx, "%s/%s", p->m_name.c_str(), topic.c_str());
+		if (topic.find_first_of('/') == std::string::npos) {
+			char topicEx[100U];
+			::sprintf(topicEx, "%s/%s", p->m_name.c_str(), topic.c_str());
 
-		rc = ::mosquitto_subscribe(mosq, NULL, topicEx, MQTT_QOS_AT_LEAST_ONCE);
-		if (rc != MOSQ_ERR_SUCCESS) {
-			::fprintf(stderr, "MQTT: error subscribing to %s - %s\n", topicEx, ::mosquitto_strerror(rc));
-			::mosquitto_disconnect(mosq);
+			rc = ::mosquitto_subscribe(mosq, NULL, topicEx, static_cast<int>(p->m_qos));
+			if (rc != MOSQ_ERR_SUCCESS) {
+				::fprintf(stderr, "MQTT: error subscribing to %s - %s\n", topicEx, ::mosquitto_strerror(rc));
+				::mosquitto_disconnect(mosq);
+			}
+		} else {
+			rc = ::mosquitto_subscribe(mosq, NULL, topic.c_str(), static_cast<int>(p->m_qos));
+			if (rc != MOSQ_ERR_SUCCESS) {
+				::fprintf(stderr, "MQTT: error subscribing to %s - %s\n", topic.c_str(), ::mosquitto_strerror(rc));
+				::mosquitto_disconnect(mosq);
+			}
 		}
 	}
 }
@@ -177,14 +185,14 @@ void CMQTTConnection::onMessage(mosquitto* mosq, void* obj, const mosquitto_mess
 
 	CMQTTConnection* p = static_cast<CMQTTConnection*>(obj);
 
-	for (std::vector<std::pair<std::string, void (*)(const std::string&)>>::const_iterator it = p->m_subs.cbegin(); it != p->m_subs.cend(); ++it) {
+	for (std::vector<std::pair<std::string, void (*)(const unsigned char*, unsigned int)>>::const_iterator it = p->m_subs.cbegin(); it != p->m_subs.cend(); ++it) {
 		std::string topic = (*it).first;
 
 		char topicEx[100U];
 		::sprintf(topicEx, "%s/%s", p->m_name.c_str(), topic.c_str());
 
 		if (::strcmp(topicEx, message->topic) == 0) {
-			(*it).second(std::string((char*)message->payload, message->payloadlen));
+			(*it).second((unsigned char*)message->payload, message->payloadlen);
 			break;
 		}
 	}

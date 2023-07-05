@@ -221,7 +221,7 @@ private:
 #if defined(USE_AX25)
 	bool createAX25Network();
 #endif
-	void writeSerial(const std::string& message);
+	void writeSerial(const unsigned char* message, unsigned int length);
 
 	void remoteControl(const std::string& commandString);
 	void processModeCommand(unsigned char mode, unsigned int timeout);
@@ -235,8 +235,8 @@ private:
 	void writeJSONMode(const std::string& mode);
 	void writeJSONMessage(const std::string& message);
 
-	static void onDisplay(const std::string& message);
-	static void onCommand(const std::string& command);
+	static void onDisplay(const unsigned char* message, unsigned int length);
+	static void onCommand(const unsigned char* command, unsigned int length);
 };
 
 #endif
