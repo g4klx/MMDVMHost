@@ -357,7 +357,9 @@ int CMMDVMHost::run()
 
 	std::vector<std::pair<std::string, void (*)(const unsigned char*, unsigned int)>> subscriptions;
 	subscriptions.push_back(std::make_pair("display", CMMDVMHost::onDisplay));
-	subscriptions.push_back(std::make_pair("command", CMMDVMHost::onCommand));
+
+	if (m_conf.getRemoteControlEnabled())
+		subscriptions.push_back(std::make_pair("command", CMMDVMHost::onCommand));
 
 	m_mqtt = new CMQTTConnection(m_conf.getMQTTHost(), m_conf.getMQTTPort(), m_conf.getMQTTName(), subscriptions, m_conf.getMQTTKeepalive());
 	ret = m_mqtt->open();
