@@ -225,7 +225,7 @@ REMOTE_COMMAND CRemoteControl::getCommand(const std::string& command)
 		LogMessage(buffer);
 	}
 		
-	m_mqtt->publish("command", reply.c_str());
+	m_mqtt->publish("response", reply.c_str());
 	
 	return m_command;
 }
