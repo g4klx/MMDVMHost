@@ -895,8 +895,10 @@ int CMMDVMHost::run()
 
 	setMode(MODE_IDLE);
 
-	LogInfo("MMDVMHost-%s is running", VERSION);
-	writeJSONMessage("MMDVMHost is running");
+	LogInfo("MMDVMHost-%s is starting", VERSION);
+	LogInfo("Built %s %s (GitID #%.7s)", __TIME__, __DATE__, gitversion);
+
+	writeJSONMessage("MMDVMHost is starting");
 
 	while (!m_killed) {
 		bool lockout = m_modem->hasLockout();
@@ -1505,6 +1507,9 @@ int CMMDVMHost::run()
 		if (ms < 5U)
 			CThread::sleep(5U);
 	}
+
+	LogInfo("MMDVMHost is stopping");
+	writeJSONMessage("MMDVMHost is stopping");
 
 	setMode(MODE_QUIT);
 
