@@ -2333,9 +2333,11 @@ bool CModem::readVersion()
 				switch (m_protocolVersion) {
 				case 1U:
 					LogInfo("MMDVM protocol version: 1, description: %.*s", m_length - 4U, m_buffer + 4U);
-					m_capabilities1 = CAP1_DSTAR | CAP1_DMR | CAP1_YSF | CAP1_P25 | CAP1_NXDN | CAP1_M17;
+					m_capabilities1 = CAP1_DSTAR | CAP1_DMR | CAP1_YSF | CAP1_P25 | CAP1_NXDN;
 					m_capabilities2 = CAP2_POCSAG;
-					return true;
+					if (::strstr((char*)(m_buffer + 4U), "v1.6.") != NULL)
+						m_capabilities1 |= CAP1_M17;
+					break;
 
 				case 2U:
 					LogInfo("MMDVM protocol version: 2, description: %.*s", m_length - 23U, m_buffer + 23U);
@@ -2355,33 +2357,34 @@ bool CModem::readVersion()
 					}
 					m_capabilities1 = m_buffer[4U];
 					m_capabilities2 = m_buffer[5U];
-					char modeText[100U];
-					::strcpy(modeText, "Modes:");
-					if (hasDStar())
-						::strcat(modeText, " D-Star");
-					if (hasDMR())
-						::strcat(modeText, " DMR");
-					if (hasYSF())
-						::strcat(modeText, " YSF");
-					if (hasP25())
-						::strcat(modeText, " P25");
-					if (hasNXDN())
-						::strcat(modeText, " NXDN");
-					if (hasM17())
-						::strcat(modeText, " M17");
-					if (hasFM())
-						::strcat(modeText, " FM");
-					if (hasPOCSAG())
-						::strcat(modeText, " POCSAG");
-					if (hasAX25())
-						::strcat(modeText, " AX.25");
-					LogInfo(modeText);
-					return true;
+					break;
 
 				default:
 					LogError("MMDVM protocol version: %u, unsupported by this version of the MMDVM Host", m_protocolVersion);
 					return false;
 				}
+
+				char modeText[100U];
+				::strcpy(modeText, "Modes:");
+				if (hasDStar())
+					::strcat(modeText, " D-Star");
+				if (hasDMR())
+					::strcat(modeText, " DMR");
+				if (hasYSF())
+					::strcat(modeText, " YSF");
+				if (hasP25())
+					::strcat(modeText, " P25");
+				if (hasNXDN())
+					::strcat(modeText, " NXDN");
+				if (hasM17())
+					::strcat(modeText, " M17");
+				if (hasFM())
+					::strcat(modeText, " FM");
+				if (hasPOCSAG())
+					::strcat(modeText, " POCSAG");
+				if (hasAX25())
+					::strcat(modeText, " AX.25");
+				LogInfo(modeText);
 
 				return true;
 			}
