@@ -356,7 +356,7 @@ int CMMDVMHost::run()
 	::LogInitialise(m_conf.getLogDisplayLevel(), m_conf.getLogMQTTLevel());
 
 	std::vector<std::pair<std::string, void (*)(const unsigned char*, unsigned int)>> subscriptions;
-	subscriptions.push_back(std::make_pair("display", CMMDVMHost::onDisplay));
+	subscriptions.push_back(std::make_pair("display-in", CMMDVMHost::onDisplay));
 
 	if (m_conf.getRemoteControlEnabled())
 		subscriptions.push_back(std::make_pair("command", CMMDVMHost::onCommand));
@@ -1350,7 +1350,7 @@ int CMMDVMHost::run()
 
 		len = m_modem->readSerialData(data);
 		if (len > 0U)
-			m_mqtt->publish("display", data, len);
+			m_mqtt->publish("display-out", data, len);
 
 		unsigned int ms = stopWatch.elapsed();
 		stopWatch.start();
