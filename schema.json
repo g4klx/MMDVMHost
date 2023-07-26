@@ -1,6 +1,6 @@
 {
 	"$defs": {
-		"mmdvm_mode": {"type": "string", "enum": ["lockout", "idle", "error", "D-Star", "DMR", "YSF", "NXDN", "POCSAG", "FM", "M17"]},
+		"mmdvm_mode": {"type": "string", "enum": ["lockout", "idle", "error", "CW", "D-Star", "DMR", "YSF", "NXDN", "POCSAG", "FM", "M17"]},
 		"dstar_callsign": {"type": "string", "minLength": 8, "maxLength": 8},
 		"dstar_extension": {"type": "string", "minLength": 4, "maxLength": 4},
 		"ysf_callsign": {"type": "string", "minLength": 10, "maxLength": 10},
@@ -21,7 +21,7 @@
 		"m17_traffic_type": {"type": "string", "enum": ["audio", "audio_data", "data"]},
 		"ax25_pid": {"type": "string"},
 		"pocsag_source": {"type": "string", "enum": ["local", "network"]},
-		"pocsag_functional": {"type": "string", "enum": ["numeric", "alphanumeric", "alert_1", "alert_2"]},
+		"pocsag_functional": {"type": "string", "enum": ["numeric", "alphanumeric", "alert_1", "alert_2", "end"]},
 		"action": {"type": "string", "enum": ["invalid", "rejected", "start", "late_entry", "end", "lost"]},
 		"dmr_action": {"type": "string", "enum": ["csbk", "timeout", "invalid", "rejected", "start", "late_entry", "end", "lost"]},
 		"duration": {"type": "number", "minimum": 0.0},
@@ -175,7 +175,7 @@
 		"functional": {"$ref": "#/$defs/pocsag_functional"},
 		"source": {"$ref": "#/$defs/pocsag_source"},
 		"message": {"type": "string"},
-		"required": ["timestamp", "ric", "functional", "source"]
+		"required": ["timestamp", "ric", "source"]
 	},
 
 	"FM": {

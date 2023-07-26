@@ -357,6 +357,7 @@ void CPOCSAGControl::clock(unsigned int ms)
 
 	if (m_state == PS_ENDING) {
 		LogMessage("POCSAG, transmitted %u frame(s) of data from %u message(s)", m_frames, m_count);
+		writeJSON("network", 0U, "end");
 		m_state = PS_NONE;
 	}
 }
