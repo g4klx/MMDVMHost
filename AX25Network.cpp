@@ -18,6 +18,7 @@
 
 #include "AX25Network.h"
 #include "AX25Defines.h"
+#include "MQTTConnection.h"
 #include "Utils.h"
 #include "Log.h"
 
@@ -27,139 +28,126 @@
 #include <cassert>
 #include <cstring>
 
-const unsigned int BUFFER_LENGTH = 500U;
+// In Log.cpp
+extern CMQTTConnection* m_mqtt;
 
-
-CAX25Network::CAX25Network(const std::string& port, unsigned int speed, bool debug) :
-m_serial(port, speed, false),
-m_txData(NULL),
-m_rxData(NULL),
-m_rxLength(0U),
-m_rxLastChar(0U),
+CAX25Network::CAX25Network(bool debug) :
+m_buffer(1000U, "AX.25 buffer"),
 m_debug(debug),
 m_enabled(false)
 {
-	assert(!port.empty());
-	assert(speed > 0U);
-
-	m_txData = new unsigned char[BUFFER_LENGTH];
-	m_rxData = new unsigned char[BUFFER_LENGTH];
 }
 
 CAX25Network::~CAX25Network()
 {
-	delete[] m_txData;
-	delete[] m_rxData;
 }
 
 bool CAX25Network::open()
 {
-	LogMessage("Opening AX25 network connection");
+	LogMessage("Opening AX.25 network connection");
 
-	return m_serial.open();
+	return true;
 }
 
 bool CAX25Network::write(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
+	assert(m_mqtt != NULL);
 
 	if (!m_enabled)
 		return true;
 
+	unsigned char txData[500U];
 	unsigned int txLength = 0U;
 
-	m_txData[txLength++] = AX25_FEND;
-	m_txData[txLength++] = AX25_KISS_DATA;
+	txData[txLength++] = AX25_FEND;
+	txData[txLength++] = AX25_KISS_DATA;
 
 	for (unsigned int i = 0U; i < length; i++) {
 		unsigned char c = data[i];
 
 		switch (c) {
 		case AX25_FEND:
-			m_txData[txLength++] = AX25_FESC;
-			m_txData[txLength++] = AX25_TFEND;
+			txData[txLength++] = AX25_FESC;
+			txData[txLength++] = AX25_TFEND;
 			break;
 		case AX25_FESC:
-			m_txData[txLength++] = AX25_FESC;
-			m_txData[txLength++] = AX25_TFESC;
+			txData[txLength++] = AX25_FESC;
+			txData[txLength++] = AX25_TFESC;
 			break;
 		default:
-			m_txData[txLength++] = c;
+			txData[txLength++] = c;
 			break;
 		}
 	}
 
-	m_txData[txLength++] = AX25_FEND;
+	txData[txLength++] = AX25_FEND;
 
 	if (m_debug)
-		CUtils::dump(1U, "AX25 Network Data Sent", m_txData, txLength);
+		CUtils::dump(1U, "AX.25 Network Data Sent", txData, txLength);
 
-	return m_serial.write(m_txData, txLength);
+	m_mqtt->publish("ax25-out", txData, txLength);
+
+	return true;
 }
 
 unsigned int CAX25Network::read(unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
+	assert(length > 0U);
+
+	if (!m_buffer.isEmpty())
+		return 0U;
+
+	unsigned int dataLen = 0U;
+	m_buffer.getData((unsigned char*)&dataLen, sizeof(unsigned int));
+
+	assert(length >= dataLen);
+
+	m_buffer.getData(data, dataLen);
+
+	return dataLen;
+}
+
+void CAX25Network::setData(const unsigned char* data, unsigned int length)
+{
+	assert(data != NULL);
+	assert(length > 0U);
+
+	if (m_debug)
+		CUtils::dump(1U, "AX.25 Network Data Received", data, length);
+
+	if (data[0U] != AX25_FEND)
+		return;
 
 	bool complete = false;
 
-	unsigned char c;
-	while (m_serial.read(&c, 1U) > 0) {
-		if (m_rxLength == 0U && c == AX25_FEND)
-			m_rxData[m_rxLength++] = c;
-		else if (m_rxLength > 0U)
-			m_rxData[m_rxLength++] = c;
+	unsigned char rxData[500U];
+	unsigned int rxLength = 0U;
+	unsigned char lastChar = 0x00U;
 
-		if (m_rxLength > 1U && c == AX25_FEND) {
-			complete = true;
-			break;
-		}
-	}
-
-	if (!m_enabled)
-		return 0U;
-
-	if (!complete)
-		return 0U;
-
-	if (m_rxLength == 0U)
-		return 0U;
-
-	if (m_rxData[1U] != AX25_KISS_DATA) {
-		m_rxLength = 0U;
-		return 0U;
-	}
-
-	complete = false;
-
-	unsigned int dataLen = 0U;
-	for (unsigned int i = 2U; i < m_rxLength; i++) {
-		unsigned char c = m_rxData[i];
+	for (unsigned int i = 2U; i < length; i++) {
+		unsigned char c = data[i];
 
 		if (c == AX25_FEND) {
 			complete = true;
 			break;
-		} else if (c == AX25_TFEND && m_rxLastChar == AX25_FESC) {
-			data[dataLen++] = AX25_FEND;
-		} else if (c == AX25_TFESC && m_rxLastChar == AX25_FESC) {
-			data[dataLen++] = AX25_FESC;
+		} else if (c == AX25_TFEND && lastChar == AX25_FESC) {
+			rxData[rxLength++] = AX25_FEND;
+		} else if (c == AX25_TFESC && lastChar == AX25_FESC) {
+			rxData[rxLength++] = AX25_FESC;
 		} else {
-			data[dataLen++] = c;
+			rxData[rxLength++] = c;
 		}
 
-		m_rxLastChar = c;
+		lastChar = c;
 	}
 
 	if (!complete)
-		return 0U;
+		return;
 
-	if (m_debug)
-		CUtils::dump(1U, "AX25 Network Data Received", m_rxData, m_rxLength);
-
-	m_rxLength   = 0U;
-	m_rxLastChar = 0U;
-
-	return dataLen;
+	m_buffer.addData((unsigned char*)&rxLength, sizeof(unsigned int));
+	m_buffer.addData(rxData, rxLength);
 }
 
 void CAX25Network::reset()
@@ -168,19 +156,15 @@ void CAX25Network::reset()
 
 void CAX25Network::close()
 {
-	m_serial.close();
-
-	LogMessage("Closing AX25 network connection");
+	LogMessage("Closing AX.25 network connection");
 }
 
 void CAX25Network::enable(bool enabled)
 {
 	m_enabled = enabled;
 
-	if (enabled != m_enabled) {
-		m_rxLastChar = 0U;
-		m_rxLength   = 0U;
-	}
+	if (enabled != m_enabled)
+		m_buffer.clear();
 }
 
 #endif

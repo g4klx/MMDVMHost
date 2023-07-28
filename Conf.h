@@ -374,8 +374,6 @@ public:
 #if defined(USE_AX25)
 	// The AX.25 Network section
 	bool         getAX25NetworkEnabled() const;
-	std::string  getAX25NetworkPort() const;
-	unsigned int getAX25NetworkSpeed() const;
 	bool         getAX25NetworkDebug() const;
 #endif
 
@@ -711,8 +709,6 @@ private:
 
 #if defined(USE_AX25)
 	bool         m_ax25NetworkEnabled;
-	std::string  m_ax25NetworkPort;
-	unsigned int m_ax25NetworkSpeed;
 	bool         m_ax25NetworkDebug;
 #endif
 

@@ -13,7 +13,7 @@ OBJECTS = \
 		Hamming.o I2CController.o IIRDirectForm1Filter.o Log.o M17Control.o M17Convolution.o M17CRC.o M17LSF.o M17Network.o M17Utils.o MMDVMHost.o \
 		MQTTConnection.o Modem.o ModemPort.o Mutex.o NullController.o NXDNAudio.o NXDNControl.o \
 		NXDNConvolution.o NXDNCRC.o NXDNFACCH1.o NXDNIcomNetwork.o NXDNKenwoodNetwork.o NXDNLayer3.o NXDNLICH.o NXDNLookup.o NXDNNetwork.o NXDNSACCH.o \
-		NXDNUDCH.o P25Audio.o P25Control.o P25Data.o P25LowSpeedData.o P25Network.o P25NID.o P25Trellis.o P25Utils.o PseudoTTYController.o POCSAGControl.o \
+		NXDNUDCH.o P25Audio.o P25Control.o P25Data.o P25LowSpeedData.o P25Network.o P25NID.o P25Trellis.o P25Utils.o POCSAGControl.o \
 		POCSAGNetwork.o QR1676.o RemoteControl.o RS129.o RS241213.o RSSIInterpolator.o SerialPort.o StopWatch.o Sync.o Thread.o \
 		Timer.o UARTController.o UDPController.o UDPSocket.o UserDB.o UserDBentry.o Utils.o YSFControl.o YSFConvolution.o YSFFICH.o YSFNetwork.o YSFPayload.o
 

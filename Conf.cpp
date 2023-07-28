@@ -399,8 +399,6 @@ m_fmNetworkDebug(false),
 #endif
 #if defined(USE_AX25)
 m_ax25NetworkEnabled(false),
-m_ax25NetworkPort(),
-m_ax25NetworkSpeed(9600U),
 m_ax25NetworkDebug(false),
 #endif
 m_lockFileEnabled(false),
@@ -1208,10 +1206,6 @@ bool CConf::read()
 		} else if (section == SECTION_AX25_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_ax25NetworkEnabled = ::atoi(value) == 1;
-			else if (::strcmp(key, "Port") == 0)
-				m_ax25NetworkPort = value;
-			else if (::strcmp(key, "Speed") == 0)
-				m_ax25NetworkSpeed = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Debug") == 0)
 				m_ax25NetworkDebug = ::atoi(value) == 1;
 #endif
@@ -2448,16 +2442,6 @@ bool CConf::getFMNetworkDebug() const
 bool CConf::getAX25NetworkEnabled() const
 {
 	return m_ax25NetworkEnabled;
-}
-
-std::string CConf::getAX25NetworkPort() const
-{
-	return m_ax25NetworkPort;
-}
-
-unsigned int CConf::getAX25NetworkSpeed() const
-{
-	return m_ax25NetworkSpeed;
 }
 
 bool CConf::getAX25NetworkDebug() const

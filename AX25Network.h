@@ -23,18 +23,14 @@
 
 #if defined(USE_AX25)
 
-#if defined(_WIN32) || defined(_WIN64)
-#include "UARTController.h"
-#else
-#include "PseudoTTYController.h"
-#endif
+#include "RingBuffer.h"
 
 #include <cstdint>
 #include <string>
 
 class CAX25Network {
 public:
-	CAX25Network(const std::string& port, unsigned int speed, bool debug);
+	CAX25Network(bool debug);
 	~CAX25Network();
 
 	bool open();
@@ -45,22 +41,16 @@ public:
 
 	unsigned int read(unsigned char* data, unsigned int length);
 
+	void setData(const unsigned char* data, unsigned int length);
+
 	void reset();
 
 	void close();
 
 private:
-#if defined(_WIN32) || defined(_WIN64)
-	CUARTController      m_serial;
-#else
-	CPseudoTTYController m_serial;
-#endif
-	unsigned char*       m_txData;
-	unsigned char*       m_rxData;
-	unsigned int         m_rxLength;
-	unsigned char        m_rxLastChar;
-	bool                 m_debug;
-	bool                 m_enabled;
+	CRingBuffer<unsigned char> m_buffer;
+	bool                       m_debug;
+	bool                       m_enabled;
 };
 
 #endif

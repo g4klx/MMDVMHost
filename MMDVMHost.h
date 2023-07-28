@@ -222,7 +222,9 @@ private:
 	bool createAX25Network();
 #endif
 	void writeSerial(const unsigned char* message, unsigned int length);
-
+#if defined(USE_AX25)
+	void writeAX25(const unsigned char* message, unsigned int length);
+#endif
 	void remoteControl(const std::string& commandString);
 	void processModeCommand(unsigned char mode, unsigned int timeout);
 	void processEnableCommand(bool& mode, bool enabled);
@@ -237,6 +239,9 @@ private:
 
 	static void onDisplay(const unsigned char* message, unsigned int length);
 	static void onCommand(const unsigned char* command, unsigned int length);
+#if defined(USE_AX25)
+	static void onAX25(const unsigned char* message, unsigned int length);
+#endif
 };
 
 #endif

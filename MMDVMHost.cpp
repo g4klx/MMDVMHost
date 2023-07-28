@@ -361,6 +361,11 @@ int CMMDVMHost::run()
 	if (m_conf.getRemoteControlEnabled())
 		subscriptions.push_back(std::make_pair("command", CMMDVMHost::onCommand));
 
+#if defined(USE_AX25)
+	if (m_ax25Enabled && !m_modem->hasAX25())
+		subscriptions.push_back(std::make_pair("ax25-in", CMMDVMHost::onAX25));
+#endif
+
 	m_mqtt = new CMQTTConnection(m_conf.getMQTTHost(), m_conf.getMQTTPort(), m_conf.getMQTTName(), subscriptions, m_conf.getMQTTKeepalive());
 	ret = m_mqtt->open();
 	if (!ret) {
@@ -2243,15 +2248,11 @@ bool CMMDVMHost::createFMNetwork()
 #if defined(USE_AX25)
 bool CMMDVMHost::createAX25Network()
 {
-	std::string  port = m_conf.getAX25NetworkPort();
-	unsigned int speed = m_conf.getAX25NetworkSpeed();
 	bool debug = m_conf.getAX25NetworkDebug();
 
 	LogInfo("AX.25 Network Parameters");
-	LogInfo("    Port: %s", port.c_str());
-	LogInfo("    Speed: %u", speed);
 
-	m_ax25Network = new CAX25Network(port, speed, debug);
+	m_ax25Network = new CAX25Network(debug);
 
 	bool ret = m_ax25Network->open();
 	if (!ret) {
@@ -3638,6 +3639,17 @@ void CMMDVMHost::writeSerial(const unsigned char* message, unsigned int length)
 	m_modem->writeSerialData(message, length);
 }
 
+#if defined(USE_AX25)
+void CMMDVMHost::writeAX25(const unsigned char* message, unsigned int length)
+{
+	assert(host != NULL);
+	assert(message != NULL);
+	assert(m_ax25Network != NULL);
+
+	m_ax25Network->setData(message, length);
+}
+#endif
+
 void CMMDVMHost::onCommand(const unsigned char* command, unsigned int length)
 {
 	assert(host != NULL);
@@ -3653,4 +3665,14 @@ void CMMDVMHost::onDisplay(const unsigned char* message, unsigned int length)
 
 	host->writeSerial(message, length);
 }
+
+#if defined(USE_AX25)
+void CMMDVMHost::onAX25(const unsigned char* message, unsigned int length)
+{
+	assert(host != NULL);
+	assert(message != NULL);
+
+	host->writeAX25(message, length);
+}
+#endif
 
