@@ -52,10 +52,14 @@ bool CAX25Network::open()
 bool CAX25Network::write(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
+	assert(length > 0U);
 	assert(m_mqtt != NULL);
 
 	if (!m_enabled)
 		return true;
+
+	if (m_debug)
+		CUtils::dump(1U, "AX.25 Network Data Sent", data, length);
 
 	unsigned char txData[500U];
 	unsigned int txLength = 0U;
@@ -84,7 +88,7 @@ bool CAX25Network::write(const unsigned char* data, unsigned int length)
 	txData[txLength++] = AX25_FEND;
 
 	if (m_debug)
-		CUtils::dump(1U, "AX.25 Network Data Sent", txData, txLength);
+		CUtils::dump(1U, "AX.25 Network KISS Data Sent", txData, txLength);
 
 	m_mqtt->publish("ax25-out", txData, txLength);
 
@@ -96,17 +100,55 @@ unsigned int CAX25Network::read(unsigned char* data, unsigned int length)
 	assert(data != NULL);
 	assert(length > 0U);
 
-	if (!m_buffer.isEmpty())
+	if (m_buffer.isEmpty())
 		return 0U;
 
-	unsigned int dataLen = 0U;
-	m_buffer.getData((unsigned char*)&dataLen, sizeof(unsigned int));
+	unsigned char rxData[500U];
+	unsigned int rxLength = 0U;
+	m_buffer.getData((unsigned char*)&rxLength, sizeof(unsigned int));
+	m_buffer.getData(rxData, rxLength);
 
-	assert(length >= dataLen);
+	if (m_debug)
+		CUtils::dump(1U, "AX.25 Network KISS Data Received", rxData, rxLength);
 
-	m_buffer.getData(data, dataLen);
+	if (rxData[0U] != AX25_FEND) {
+		LogWarning("Missing FEND at start of a KISS frame - 0x%02X", rxData[0U]);
+		return 0U;
+	}
+	
+	if (rxData[1U] != AX25_KISS_DATA) {
+		LogWarning("Invalid KISS type byte received - 0x%02X", rxData[1U]);
+		return 0U;
+	}
 
-	return dataLen;
+	bool complete = false;
+
+	length = 0U;
+	unsigned char lastChar = 0x00U;
+	for (unsigned int i = 2U; i < rxLength; i++) {
+		unsigned char c = rxData[i];
+
+		if (c == AX25_FEND) {
+			complete = true;
+			break;
+		} else if (c == AX25_TFEND && lastChar == AX25_FESC) {
+			data[length++] = AX25_FEND;
+		} else if (c == AX25_TFESC && lastChar == AX25_FESC) {
+			data[length++] = AX25_FESC;
+		} else {
+			data[length++] = c;
+		}
+
+		lastChar = c;
+	}
+
+	if (!complete)
+		return 0U;
+
+	if (m_debug)
+		CUtils::dump(1U, "AX.25 Network Data Received", data, length);
+
+	return length;
 }
 
 void CAX25Network::setData(const unsigned char* data, unsigned int length)
@@ -114,40 +156,8 @@ void CAX25Network::setData(const unsigned char* data, unsigned int length)
 	assert(data != NULL);
 	assert(length > 0U);
 
-	if (m_debug)
-		CUtils::dump(1U, "AX.25 Network Data Received", data, length);
-
-	if (data[0U] != AX25_FEND)
-		return;
-
-	bool complete = false;
-
-	unsigned char rxData[500U];
-	unsigned int rxLength = 0U;
-	unsigned char lastChar = 0x00U;
-
-	for (unsigned int i = 2U; i < length; i++) {
-		unsigned char c = data[i];
-
-		if (c == AX25_FEND) {
-			complete = true;
-			break;
-		} else if (c == AX25_TFEND && lastChar == AX25_FESC) {
-			rxData[rxLength++] = AX25_FEND;
-		} else if (c == AX25_TFESC && lastChar == AX25_FESC) {
-			rxData[rxLength++] = AX25_FESC;
-		} else {
-			rxData[rxLength++] = c;
-		}
-
-		lastChar = c;
-	}
-
-	if (!complete)
-		return;
-
-	m_buffer.addData((unsigned char*)&rxLength, sizeof(unsigned int));
-	m_buffer.addData(rxData, rxLength);
+	m_buffer.addData((unsigned char*)&length, sizeof(unsigned int));
+	m_buffer.addData(data, length);
 }
 
 void CAX25Network::reset()
