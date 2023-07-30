@@ -24,6 +24,7 @@
 #if defined(USE_AX25)
 
 #include "RingBuffer.h"
+#include "Mutex.h"
 
 #include <cstdint>
 #include <string>
@@ -49,6 +50,7 @@ public:
 
 private:
 	CRingBuffer<unsigned char> m_buffer;
+	CMutex                     m_mutex;
 	bool                       m_debug;
 	bool                       m_enabled;
 };

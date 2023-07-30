@@ -33,6 +33,7 @@ extern CMQTTConnection* m_mqtt;
 
 CAX25Network::CAX25Network(bool debug) :
 m_buffer(1000U, "AX.25 buffer"),
+m_mutex(),
 m_debug(debug),
 m_enabled(false)
 {
@@ -57,9 +58,6 @@ bool CAX25Network::write(const unsigned char* data, unsigned int length)
 
 	if (!m_enabled)
 		return true;
-
-	if (m_debug)
-		CUtils::dump(1U, "AX.25 Network Data Sent", data, length);
 
 	unsigned char txData[500U];
 	unsigned int txLength = 0U;
@@ -88,7 +86,7 @@ bool CAX25Network::write(const unsigned char* data, unsigned int length)
 	txData[txLength++] = AX25_FEND;
 
 	if (m_debug)
-		CUtils::dump(1U, "AX.25 Network KISS Data Sent", txData, txLength);
+		CUtils::dump(1U, "AX.25 network KISS packet sent", txData, txLength);
 
 	m_mqtt->publish("ax25-out", txData, txLength);
 
@@ -105,11 +103,16 @@ unsigned int CAX25Network::read(unsigned char* data, unsigned int length)
 
 	unsigned char rxData[500U];
 	unsigned int rxLength = 0U;
+
+	m_mutex.lock();
+
 	m_buffer.getData((unsigned char*)&rxLength, sizeof(unsigned int));
 	m_buffer.getData(rxData, rxLength);
 
+	m_mutex.unlock();
+
 	if (m_debug)
-		CUtils::dump(1U, "AX.25 Network KISS Data Received", rxData, rxLength);
+		CUtils::dump(1U, "AX.25 network KISS packet received", rxData, rxLength);
 
 	if (rxData[0U] != AX25_FEND) {
 		LogWarning("Missing FEND at start of a KISS frame - 0x%02X", rxData[0U]);
@@ -145,9 +148,6 @@ unsigned int CAX25Network::read(unsigned char* data, unsigned int length)
 	if (!complete)
 		return 0U;
 
-	if (m_debug)
-		CUtils::dump(1U, "AX.25 Network Data Received", data, length);
-
 	return length;
 }
 
@@ -156,8 +156,12 @@ void CAX25Network::setData(const unsigned char* data, unsigned int length)
 	assert(data != NULL);
 	assert(length > 0U);
 
+	m_mutex.lock();
+
 	m_buffer.addData((unsigned char*)&length, sizeof(unsigned int));
 	m_buffer.addData(data, length);
+
+	m_mutex.unlock();
 }
 
 void CAX25Network::reset()
