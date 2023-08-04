@@ -198,6 +198,8 @@
 		},
 		"type": {"$ref": "#/$defs/ax25_type"},
 		"pid": {"$ref": "#/$defs/ax25_pid"},
+		"rssi": {"$ref": "#/$defs/rssi"},
+		"ber": {"$ref": "#/$defs/ber"},
 		"data": {"type": "string"},
 		"required": ["timestamp", "source", "destination", "source", "type"]
 	},

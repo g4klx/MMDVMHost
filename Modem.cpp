@@ -97,7 +97,8 @@ const unsigned char MMDVM_POCSAG_DATA = 0x50U;
 #endif
 
 #if defined(USE_AX25)
-const unsigned char MMDVM_AX25_DATA   = 0x55U;
+const unsigned char MMDVM_AX25_DATA    = 0x55U;
+const unsigned char MMDVM_AX25_DATA_EX = 0x56U;
 #endif
 
 #if defined(USE_FM)
@@ -108,6 +109,7 @@ const unsigned char MMDVM_FM_PARAMS4  = 0x63U;
 const unsigned char MMDVM_FM_DATA     = 0x65U;
 const unsigned char MMDVM_FM_STATUS   = 0x66U;
 const unsigned char MMDVM_FM_EOT      = 0x67U;
+const unsigned char MMDVM_FM_RSSI     = 0x68U;
 #endif
 
 const unsigned char MMDVM_ACK         = 0x70U;
@@ -929,6 +931,20 @@ void CModem::clock(unsigned int ms)
 				m_rxFMData.addData(m_buffer + m_offset, m_length - m_offset);
 			}
 			break;
+
+			case MMDVM_FM_RSSI: {
+				if(m_trace)
+					CUtils::dump(1U, "RX FM RSSI", m_buffer, m_length);
+
+				unsigned int data1 = m_length - m_offset + 1U;
+				m_rxFMData.addData((unsigned char*)&data1, sizeof(unsigned int));
+
+				unsigned char data2 = TAG_RSSI;
+				m_rxFMData.addData(&data2, 1U);
+
+				m_rxFMData.addData(m_buffer + m_offset, m_length - m_offset);
+			}
+			break;
 #endif
 
 #if defined(USE_AX25)
@@ -936,8 +952,25 @@ void CModem::clock(unsigned int ms)
 				if (m_trace)
 					CUtils::dump(1U, "RX AX.25 Data", m_buffer, m_length);
 
-				unsigned int data = m_length - m_offset;
-				m_rxAX25Data.addData((unsigned char*)&data, sizeof(unsigned int));
+				unsigned int data1 = m_length - m_offset + 1U;
+				m_rxAX25Data.addData((unsigned char*)&data1, sizeof(unsigned int));
+
+				unsigned char data2 = TAG_DATA;
+				m_rxFMData.addData(&data2, 1U);
+
+				m_rxAX25Data.addData(m_buffer + m_offset, m_length - m_offset);
+			}
+			break;
+
+			case MMDVM_AX25_DATA_EX: {
+				if (m_trace)
+					CUtils::dump(1U, "RX AX.25 Data Extended", m_buffer, m_length);
+
+				unsigned int data1 = m_length - m_offset + 1U;
+				m_rxAX25Data.addData((unsigned char*)&data1, sizeof(unsigned int));
+
+				unsigned char data2 = TAG_RSSI;
+				m_rxFMData.addData(&data2, 1U);
 
 				m_rxAX25Data.addData(m_buffer + m_offset, m_length - m_offset);
 			}

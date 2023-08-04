@@ -22,6 +22,7 @@
 #include "FMNetwork.h"
 #include "Defines.h"
 #include "IIRDirectForm1Filter.h"
+#include "RSSIInterpolator.h"
 
 #if defined(USE_FM)
 
@@ -34,7 +35,7 @@
 
 class CFMControl {
 public:
-	CFMControl(CFMNetwork* network, float txAudioGain, float rxAudioGain, bool preEmphasisOn, bool deEmphasisOn);
+	CFMControl(CFMNetwork* network, float txAudioGain, float rxAudioGain, bool preEmphasisOn, bool deEmphasisOn, CRSSIInterpolator* rssiMapper);
 	~CFMControl();
 
 	bool writeModem(const unsigned char* data, unsigned int length);
@@ -46,12 +47,13 @@ public:
 	void enable(bool enabled);
 
 private:
-	CFMNetwork* m_network;
-	float       m_txAudioGain;
-	float       m_rxAudioGain;
-	bool        m_preEmphasisOn;
-	bool        m_deEmphasisOn;
-	bool        m_enabled;
+	CFMNetwork*        m_network;
+	float              m_txAudioGain;
+	float              m_rxAudioGain;
+	bool               m_preEmphasisOn;
+	bool               m_deEmphasisOn;
+	CRSSIInterpolator* m_rssiMapper;
+	bool               m_enabled;
 	CRingBuffer<unsigned char> m_incomingRFAudio;
 	CIIRDirectForm1Filter* m_preEmphasis;
 	CIIRDirectForm1Filter* m_deEmphasis;
@@ -60,6 +62,7 @@ private:
 	CIIRDirectForm1Filter* m_filterStage3;
 
 	void writeJSON(const char* state);
+	void writeJSONRSSI(int rssi);
 };
 
 #endif

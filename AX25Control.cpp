@@ -30,11 +30,13 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 #define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
-CAX25Control::CAX25Control(CAX25Network* network, bool trace) :
+CAX25Control::CAX25Control(CAX25Network* network, bool trace, CRSSIInterpolator* rssiMapper) :
 m_network(network),
 m_trace(trace),
+m_rssiMapper(rssiMapper),
 m_enabled(true)
 {
+	assert(rssiMapper != NULL);
 }
 
 CAX25Control::~CAX25Control()
@@ -48,17 +50,33 @@ bool CAX25Control::writeModem(unsigned char *data, unsigned int len)
 	if (!m_enabled)
 		return false;
 
-	if (m_trace)
-		decode(data, len);
+	bool hasRSSI = data[0U] == TAG_RSSI;
 
-	decodeJSON("rf", data, len);
+	unsigned int offset = hasRSSI ? 3U : 1U;
+
+	int rssi = 0;
+	if (hasRSSI) {
+		uint16_t raw = 0U;
+		raw |= (data[1U] << 8) & 0xFF00U;
+		raw |= (data[2U] << 0) & 0x00FFU;
+
+		// Convert the raw RSSI to dBm
+		rssi = m_rssiMapper->interpolate(raw);
+		if (rssi != 0)
+			LogDebug("AX.25, raw RSSI: %u, reported RSSI: %d dBm", raw, rssi);
+	}
+
+	if (m_trace)
+		decode(data + offset, len - offset);
+
+	decodeJSON("rf", data + offset, len - offset, rssi);
 
 	CUtils::dump(1U, "AX.25 received packet", data, len);
 
 	if (m_network == NULL)
 		return true;
 
-	return m_network->write(data, len);
+	return m_network->write(data + offset, len - offset);
 }
 
 unsigned int CAX25Control::readModem(unsigned char* data)
@@ -185,7 +203,7 @@ void CAX25Control::decode(const unsigned char* data, unsigned int length)
 	LogMessage("AX.25, %s %.*s", text.c_str(), length - n, data + n);
 }
 
-void CAX25Control::decodeJSON(const char* source, const unsigned char* data, unsigned int length)
+void CAX25Control::decodeJSON(const char* source, const unsigned char* data, unsigned int length, int rssi)
 {
 	assert(source != NULL);
 	assert(data != NULL);
@@ -204,6 +222,9 @@ void CAX25Control::decodeJSON(const char* source, const unsigned char* data, uns
 
 	decodeAddressJSON(data + 0U, text, isDigi);
 	json["destination_cs"] = text;
+
+	if (rssi != 0)
+		json["rssi"] = rssi;
 
 	unsigned int n = 14U;
 

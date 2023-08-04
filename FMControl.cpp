@@ -43,12 +43,13 @@ const unsigned char FS_TIMEOUT_EXT       = 9U;
 const unsigned char FS_TIMEOUT_WAIT_EXT  = 10U;
 const unsigned char FS_HANG              = 11U;
 
-CFMControl::CFMControl(CFMNetwork* network, float txAudioGain, float rxAudioGain, bool preEmphasisOn, bool deEmphasisOn) :
+CFMControl::CFMControl(CFMNetwork* network, float txAudioGain, float rxAudioGain, bool preEmphasisOn, bool deEmphasisOn, CRSSIInterpolator* rssiMapper) :
 m_network(network),
 m_txAudioGain(txAudioGain),
 m_rxAudioGain(rxAudioGain),
 m_preEmphasisOn(preEmphasisOn),
 m_deEmphasisOn(deEmphasisOn),
+m_rssiMapper(rssiMapper),
 m_enabled(false),
 m_incomingRFAudio(1600U, "Incoming RF FM Audio"),
 m_preEmphasis(NULL),
@@ -57,160 +58,179 @@ m_filterStage1(NULL),
 m_filterStage2(NULL),
 m_filterStage3(NULL)
 {
-    assert(txAudioGain > 0.0F);
-    assert(rxAudioGain > 0.0F);
+	assert(txAudioGain > 0.0F);
+	assert(rxAudioGain > 0.0F);
+	assert(rssiMapper != NULL);
 
-    m_preEmphasis  = new CIIRDirectForm1Filter(8.315375384336983F, -7.03334621603483F,0.0F,1.0F, 0.282029168302153F,0.0F, PREEMPHASIS_GAIN_DB);
-    m_deEmphasis   = new CIIRDirectForm1Filter(0.07708787090460224F, 0.07708787090460224F,0.0F, 1.0F, -0.8458242581907955F,0.0F, DEEMPHASIS_GAIN_DB);
+	m_preEmphasis  = new CIIRDirectForm1Filter(8.315375384336983F, -7.03334621603483F,0.0F,1.0F, 0.282029168302153F,0.0F, PREEMPHASIS_GAIN_DB);
+	m_deEmphasis   = new CIIRDirectForm1Filter(0.07708787090460224F, 0.07708787090460224F,0.0F, 1.0F, -0.8458242581907955F,0.0F, DEEMPHASIS_GAIN_DB);
 
-    // Chebyshev type 1 0.2dB cheby type 1 3rd order 300-2700Hz fs=8000
-    m_filterStage1 = new CIIRDirectForm1Filter(0.29495028f, 0.0f, -0.29495028f, 1.0f, -0.61384624f, -0.057158668f, FILTER_GAIN_DB);
-    m_filterStage2 = new CIIRDirectForm1Filter(1.0f, 2.0f, 1.0f, 1.0f, 0.9946123f, 0.6050482f, FILTER_GAIN_DB);
-    m_filterStage3 = new CIIRDirectForm1Filter(1.0f, -2.0f, 1.0f, 1.0f, -1.8414584f, 0.8804949f, FILTER_GAIN_DB);
+	// Chebyshev type 1 0.2dB cheby type 1 3rd order 300-2700Hz fs=8000
+	m_filterStage1 = new CIIRDirectForm1Filter(0.29495028f, 0.0f, -0.29495028f, 1.0f, -0.61384624f, -0.057158668f, FILTER_GAIN_DB);
+	m_filterStage2 = new CIIRDirectForm1Filter(1.0f, 2.0f, 1.0f, 1.0f, 0.9946123f, 0.6050482f, FILTER_GAIN_DB);
+	m_filterStage3 = new CIIRDirectForm1Filter(1.0f, -2.0f, 1.0f, 1.0f, -1.8414584f, 0.8804949f, FILTER_GAIN_DB);
 }
 
 CFMControl::~CFMControl()
 {
-    delete m_preEmphasis;
-    delete m_deEmphasis;
+	delete m_preEmphasis;
+	delete m_deEmphasis;
 
-    delete m_filterStage1;
-    delete m_filterStage2;
-    delete m_filterStage3;
+	delete m_filterStage1;
+	delete m_filterStage2;
+	delete m_filterStage3;
 }
 
 bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
 {
-    assert(data != NULL);
-    assert(length > 0U);
+	assert(data != NULL);
+	assert(length > 0U);
 
-    if (m_network == NULL)
-        return true;
+	if (data[0U] == TAG_HEADER) {
+		switch (data[1U]) {
+			case FS_LISTENING:         writeJSON("listening");         break;
+			case FS_KERCHUNK_RF:       writeJSON("kerchunk_rf");       break;
+			case FS_RELAYING_RF:       writeJSON("relaying_rf");       break;
+			case FS_RELAYING_WAIT_RF:  writeJSON("relaying_wait_rf");  break;
+			case FS_TIMEOUT_RF:        writeJSON("timeout_rf");        break;
+			case FS_TIMEOUT_WAIT_RF:   writeJSON("timeout_wait_rf");   break;
+			case FS_KERCHUNK_EXT:      writeJSON("kerchunk_ext");      break;
+			case FS_RELAYING_EXT:      writeJSON("relaying_ext");      break;
+			case FS_RELAYING_WAIT_EXT: writeJSON("relaying_wait_ext"); break;
+			case FS_TIMEOUT_EXT:       writeJSON("timeout_ext");       break;
+			case FS_TIMEOUT_WAIT_EXT:  writeJSON("timeout_wait_ext");  break;
+			case FS_HANG:              writeJSON("hang");              break;
+			default:                   writeJSON("unknown");           break;
+		}
 
-    if (data[0U] == TAG_HEADER) {
-        switch (data[1U]) {
-            case FS_LISTENING:         writeJSON("listening");         break;
-            case FS_KERCHUNK_RF:       writeJSON("kerchunk_rf");       break;
-            case FS_RELAYING_RF:       writeJSON("relaying_rf");       break;
-            case FS_RELAYING_WAIT_RF:  writeJSON("relaying_wait_rf");  break;
-            case FS_TIMEOUT_RF:        writeJSON("timeout_rf");        break;
-            case FS_TIMEOUT_WAIT_RF:   writeJSON("timeout_wait_rf");   break;
-            case FS_KERCHUNK_EXT:      writeJSON("kerchunk_ext");      break;
-            case FS_RELAYING_EXT:      writeJSON("relaying_ext");      break;
-            case FS_RELAYING_WAIT_EXT: writeJSON("relaying_wait_ext"); break;
-            case FS_TIMEOUT_EXT:       writeJSON("timeout_ext");       break;
-            case FS_TIMEOUT_WAIT_EXT:  writeJSON("timeout_wait_ext");  break;
-            case FS_HANG:              writeJSON("hang");              break;
-            default:                   writeJSON("unknown");           break;
-        }
+		return true;
+	}
 
-        return true;
-    }
+	if (data[0U] == TAG_RSSI) {
+		uint16_t raw = 0U;
+		raw |= (data[0U] << 8) & 0xFF00U;
+		raw |= (data[1U] << 0) & 0x00FFU;
 
-    if (data[0U] == TAG_EOT)
-        return m_network->writeEnd();
+		// Convert the raw RSSI to dBm
+		int rssi = m_rssiMapper->interpolate(raw);
+		if (rssi != 0) {
+			LogDebug("FM, raw RSSI: %u, reported RSSI: %d dBm", raw, rssi);
+			writeJSONRSSI(rssi);
+		}
 
-    if (data[0U] != TAG_DATA)
-        return false;
+		return true;
+	}
 
-    m_incomingRFAudio.addData(data + 1U, length - 1U);
-    unsigned int bufferLength = m_incomingRFAudio.dataSize();
-    if (bufferLength > 240U)    // 160 samples 12-bit
-        bufferLength = 240U;    // 160 samples 12-bit
+	if (m_network == NULL)
+		return true;
 
-    if (bufferLength >= 3U) {
-        bufferLength = bufferLength - bufferLength % 3U;    // Round down to nearest multiple of 3
-        unsigned char bufferData[240U];                     // 160 samples 12-bit       
-        m_incomingRFAudio.getData(bufferData, bufferLength);
+	if (data[0U] == TAG_EOT)
+		return m_network->writeEnd();
 
-        unsigned int pack = 0U;
-        unsigned char* packPointer = (unsigned char*)&pack;
-        float out[160U];                                    // 160 samples 12-bit
-        unsigned int nOut = 0U;
-        short unpackedSamples[2U];
+	if (data[0U] != TAG_DATA)
+		return false;
 
-        for (unsigned int i = 0U; i < bufferLength; i += 3U) {
-            // Extract unsigned 12 bit unsigned sample pairs packed into 3 bytes to 16 bit signed
-            packPointer[0U] = bufferData[i + 0U];
-            packPointer[1U] = bufferData[i + 1U];
-            packPointer[2U] = bufferData[i + 2U];
+	m_incomingRFAudio.addData(data + 1U, length - 1U);
+	unsigned int bufferLength = m_incomingRFAudio.dataSize();
 
-            unpackedSamples[1U] = short(int(pack & FM_MASK) - 2048);
-            unpackedSamples[0U] = short(int(pack >> 12 & FM_MASK) - 2048); // 
+	if (bufferLength > 240U)		// 160 samples 12-bit
+		bufferLength = 240U;		// 160 samples 12-bit
 
-            // Process unpacked sample pair
-            for (unsigned char j = 0U; j < 2U; j++) {
-                // Convert to float (-1.0 to +1.0)
-                float sampleFloat = (float(unpackedSamples[j]) * m_rxAudioGain) / 2048.0F;
+	if (bufferLength >= 3U) {
+		bufferLength = bufferLength - bufferLength % 3U;	// Round down to nearest multiple of 3
 
-                // De-emphasise and remove CTCSS
-                if (m_deEmphasisOn)
-                    sampleFloat = m_deEmphasis->filter(sampleFloat);
+		unsigned char bufferData[240U];		// 160 samples 12-bit       
+		m_incomingRFAudio.getData(bufferData, bufferLength);
 
-                out[nOut++] = m_filterStage3->filter(m_filterStage2->filter(m_filterStage1->filter(sampleFloat)));
-            }
-        }
+		unsigned int pack = 0U;
+		unsigned char* packPointer = (unsigned char*)&pack;
 
-        return m_network->writeData(out, nOut);
-    }
+		float out[160U];			// 160 samples 12-bit
+		unsigned int nOut = 0U;
 
-    return true;
+		for (unsigned int i = 0U; i < bufferLength; i += 3U) {
+			// Extract unsigned 12 bit unsigned sample pairs packed into 3 bytes to 16 bit signed
+			packPointer[0U] = bufferData[i + 0U];
+			packPointer[1U] = bufferData[i + 1U];
+			packPointer[2U] = bufferData[i + 2U];
+
+			short unpackedSamples[2U];
+			unpackedSamples[1U] = short(int((pack >> 0)  & FM_MASK) - 2048);
+			unpackedSamples[0U] = short(int((pack >> 12) & FM_MASK) - 2048); // 
+
+			// Process unpacked sample pair
+			for (unsigned char j = 0U; j < 2U; j++) {
+				// Convert to float (-1.0 to +1.0)
+				float sampleFloat = (float(unpackedSamples[j]) * m_rxAudioGain) / 2048.0F;
+
+				// De-emphasise and remove CTCSS
+				if (m_deEmphasisOn)
+					sampleFloat = m_deEmphasis->filter(sampleFloat);
+
+				out[nOut++] = m_filterStage3->filter(m_filterStage2->filter(m_filterStage1->filter(sampleFloat)));
+			}
+		}
+
+		return m_network->writeData(out, nOut);
+	}
+
+	return true;
 }
 
 unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
 {
-    assert(data != NULL);
-    assert(space > 0U);
+	assert(data != NULL);
+	assert(space > 0U);
 
-    if (m_network == NULL)
-        return 0U;
+	if (m_network == NULL)
+		return 0U;
 
-    if (space > 240U)           // 160 samples 12-bit
-        space = 240U;           // 160 samples 12-bit
+	if (space > 240U)		// 160 samples 12-bit
+		space = 240U;		// 160 samples 12-bit
 
-    float netData[160U]; // Modem can handle up to 160 samples at a time
-    unsigned int length = m_network->read(netData, 160U);  // 160 samples 12-bit
-    if (length == 0U)
-        return 0U;
+	float netData[160U]; // Modem can handle up to 160 samples at a time
+	unsigned int length = m_network->read(netData, 160U);  // 160 samples 12-bit
+	if (length == 0U)
+		return 0U;
 
-    unsigned int pack = 0U;
-    unsigned char* packPointer = (unsigned char*)&pack;
-    unsigned int nData = 0U;
+	unsigned int pack = 0U;
+	unsigned char* packPointer = (unsigned char*)&pack;
+	unsigned int nData = 0U;
 
-    for (unsigned int i = 0; i < length; i++) {
-        float sampleFloat = netData[i] * m_txAudioGain;
+	for (unsigned int i = 0; i < length; i++) {
+		float sampleFloat = netData[i] * m_txAudioGain;
 
-        // Pre-emphasis
-        if (m_preEmphasisOn)
-            sampleFloat = m_preEmphasis->filter(sampleFloat);
+		// Pre-emphasis
+		if (m_preEmphasisOn)
+			sampleFloat = m_preEmphasis->filter(sampleFloat);
 
-        // Convert float to 12-bit samples (0 to 4095)
-        unsigned int sample12bit = (unsigned int)((sampleFloat + 1.0F) * 2048.0F + 0.5F);
+		// Convert float to 12-bit samples (0 to 4095)
+		unsigned int sample12bit = (unsigned int)((sampleFloat + 1.0F) * 2048.0F + 0.5F);
 
-        // Pack 2 samples into 3 bytes
-        if ((i & 1U) == 0) {
-            pack = 0U;
-            pack = sample12bit << 12;
-        } else {
-            pack |= sample12bit;
+		// Pack 2 samples into 3 bytes
+		if ((i & 1U) == 0U) {
+			pack = 0U;
+			pack = sample12bit << 12;
+		} else {
+			pack |= sample12bit;
 
-            data[nData++] = packPointer[0U];
-            data[nData++] = packPointer[1U];
-            data[nData++] = packPointer[2U];
-        }
-    }
+			data[nData++] = packPointer[0U];
+			data[nData++] = packPointer[1U];
+			data[nData++] = packPointer[2U];
+		}
+	}
 
-    return nData;
+	return nData;
 }
 
 void CFMControl::clock(unsigned int ms)
 {
-    // May not be needed
+	// May not be needed
 }
 
 void CFMControl::enable(bool enabled)
 {
-    // May not be needed
+	// May not be needed
 }
 
 void CFMControl::writeJSON(const char* state)
@@ -225,5 +245,15 @@ void CFMControl::writeJSON(const char* state)
 	WriteJSON("FM", json);
 }
 
+void CFMControl::writeJSONRSSI(int rssi)
+{
+	nlohmann::json json;
+
+	json["timestamp"] = CUtils::createTimestamp();
+	json["mode"]      = "FM";
+	json["value"]     = rssi;
+
+	WriteJSON("RSSI", json);
+}
 #endif
 

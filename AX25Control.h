@@ -19,6 +19,7 @@
 #if !defined(AX25Control_H)
 #define	AX25Control_H
 
+#include "RSSIInterpolator.h"
 #include "AX25Network.h"
 #include "Defines.h"
 
@@ -28,7 +29,7 @@
 
 class CAX25Control {
 public:
-	CAX25Control(CAX25Network* network, bool trace);
+	CAX25Control(CAX25Network* network, bool trace, CRSSIInterpolator* rssiMapper);
 	~CAX25Control();
 
 	bool writeModem(unsigned char* data, unsigned int len);
@@ -38,12 +39,13 @@ public:
 	void enable(bool enabled);
 
 private:
-	CAX25Network* m_network;
-	bool          m_trace;
-	bool          m_enabled;
+	CAX25Network*      m_network;
+	bool               m_trace;
+	CRSSIInterpolator* m_rssiMapper;
+	bool               m_enabled;
 
 	void decode(const unsigned char* data, unsigned int length);
-	void decodeJSON(const char* source, const unsigned char* data, unsigned int length);
+	void decodeJSON(const char* source, const unsigned char* data, unsigned int length, int rssi = 0);
 	bool decodeAddress(const unsigned char* data, std::string& text, bool isDigi = false) const;
 	bool decodeAddressJSON(const unsigned char* data, std::string& text, bool& isDigi) const;
 };

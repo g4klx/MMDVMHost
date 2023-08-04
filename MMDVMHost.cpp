@@ -352,7 +352,6 @@ int CMMDVMHost::run()
 	}
 #endif
 #endif
-
 	::LogInitialise(m_conf.getLogDisplayLevel(), m_conf.getLogMQTTLevel());
 
 	std::vector<std::pair<std::string, void (*)(const unsigned char*, unsigned int)>> subscriptions;
@@ -878,7 +877,7 @@ int CMMDVMHost::run()
 		LogInfo("    P-Persist: %u", pPersist);
 		LogInfo("    Trace: %s", trace ? "yes" : "no");
 
-		m_ax25 = new CAX25Control(m_ax25Network, trace);
+		m_ax25 = new CAX25Control(m_ax25Network, trace, rssi);
 	}
 #endif
 
@@ -890,7 +889,7 @@ int CMMDVMHost::run()
 		float rxAudioGain = m_conf.getFMRXAudioGain();
 		m_fmRFModeHang    = m_conf.getFMModeHang();
 
-		m_fm = new CFMControl(m_fmNetwork, txAudioGain, rxAudioGain, preEmphasis, deEmphasis);
+		m_fm = new CFMControl(m_fmNetwork, txAudioGain, rxAudioGain, preEmphasis, deEmphasis, rssi);
 	}
 #endif
 
@@ -1119,7 +1118,7 @@ int CMMDVMHost::run()
 			if (m_mode == MODE_IDLE || m_mode == MODE_FM) {
 				m_ax25->writeModem(data, len);
 			} else if (m_mode != MODE_LOCKOUT) {
-				LogWarning("NXDN modem data received when in mode %u", m_mode);
+				LogWarning("AX.25 modem data received when in mode %u", m_mode);
 			}
 		}
 #endif
