@@ -27,7 +27,7 @@
 		"duration": {"type": "number", "minimum": 0.0},
 		"loss": {"type": "number", "minimum": 0.0},
 		"ber": {"type": "number", "minimum": 0.0},
-		"rssi": {"type": "number", "minimum": -200.0, "maximum": -10.0},
+		"rssi": {"type": "integer", "minimum": -200, "maximum": -10},
 		"timestamp": {"type": "string"}
 	},
 

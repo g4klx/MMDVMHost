@@ -70,8 +70,8 @@ const unsigned int NO_HEADERS_SIMPLEX = 8U;
 const unsigned int NO_HEADERS_DUPLEX  = 3U;
 const unsigned int NO_PREAMBLE_CSBK   = 15U;
 
-const unsigned int RSSI_COUNT   = 4U;			// 4 * 360ms = 1440ms
-const unsigned int BER_COUNT    = 24U * 141U;		// 24 * 60ms = 1440ms
+const unsigned int RSSI_COUNT   = 3U;			// 3 * 360ms = 1080ms
+const unsigned int BER_COUNT    = 18U * 141U;		// 18 * 60ms = 1080ms
 
 CDMRSlot::CDMRSlot(unsigned int slotNo, unsigned int timeout) :
 m_slotNo(slotNo),
@@ -114,12 +114,12 @@ m_rfTimeout(false),
 m_netTimeout(false),
 m_lastFrame(NULL),
 m_lastFrameValid(false),
-m_rssi(0U),
-m_maxRSSI(0U),
-m_minRSSI(0U),
-m_aveRSSI(0U),
+m_rssi(0),
+m_maxRSSI(0),
+m_minRSSI(0),
+m_aveRSSI(0),
 m_rssiCountTotal(0U),
-m_rssiAccum(0U),
+m_rssiAccum(0),
 m_rssiCount(0U),
 m_bitErrsAccum(0U),
 m_bitsCount(0U),
@@ -154,9 +154,9 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 		std::string dst = m_lookup->find(dstId);
 		FLCO flco       = m_rfLC->getFLCO();
 
-		if (m_rssi != 0U) {
-			LogMessage("DMR Slot %u, RF voice transmission lost from %s to %s%s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
-			writeJSONRF("lost", float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
+		if (m_rssi != 0) {
+			LogMessage("DMR Slot %u, RF voice transmission lost from %s to %s%s, %.1f seconds, BER: %.1f%%, RSSI: %d/%d/%d dBm", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
+			writeJSONRF("lost", float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
 		} else {
 			LogMessage("DMR Slot %u, RF voice transmission lost from %s to %s%s, %.1f seconds, BER: %.1f%%", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
 			writeJSONRF("lost", float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
@@ -196,16 +196,13 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 		raw |= (data[36U] << 0) & 0x00FFU;
 
 		// Convert the raw RSSI to dBm
-		int rssi = m_rssiMapper->interpolate(raw);
-		if (rssi != 0)
-			LogDebug("DMR Slot %u, raw RSSI: %u, reported RSSI: %d dBm", m_slotNo, raw, rssi);
+		m_rssi = m_rssiMapper->interpolate(raw);
+		if (m_rssi != 0)
+			LogDebug("DMR Slot %u, raw RSSI: %u, reported RSSI: %d dBm", m_slotNo, raw, m_rssi);
 
-		// RSSI is always reported as positive
-		m_rssi = (rssi >= 0) ? rssi : -rssi;
-
-		if (m_rssi > m_minRSSI)
+		if (m_rssi < m_minRSSI)
 			m_minRSSI = m_rssi;
-		if (m_rssi < m_maxRSSI)
+		if (m_rssi > m_maxRSSI)
 			m_maxRSSI = m_rssi;
 
 		m_aveRSSI += m_rssi;
@@ -383,9 +380,9 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			std::string dst = m_lookup->find(dstId);
 			FLCO flco       = m_rfLC->getFLCO();
 
-			if (m_rssi != 0U) {
-				LogMessage("DMR Slot %u, received RF end of voice transmission from %s to %s%s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
-				writeJSONRF("end", float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
+			if (m_rssi != 0) {
+				LogMessage("DMR Slot %u, received RF end of voice transmission from %s to %s%s, %.1f seconds, BER: %.1f%%, RSSI: %d/%d/%d dBm", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
+				writeJSONRF("end", float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
 			} else {
 				LogMessage("DMR Slot %u, received RF end of voice transmission from %s to %s%s, %.1f seconds, BER: %.1f%%", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
 				writeJSONRF("end", float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
@@ -1940,7 +1937,7 @@ void CDMRSlot::writeNetworkRF(const unsigned char* data, unsigned char dataType,
 	dmrData.setN(m_rfN);
 	dmrData.setSeqNo(m_rfSeqNo);
 	dmrData.setBER(errors);
-	dmrData.setRSSI(m_rssi);
+	dmrData.setRSSI(-m_rssi);	// Always report as positive
 
 	m_rfSeqNo++;
 
@@ -2244,11 +2241,11 @@ void CDMRSlot::writeJSONRSSI()
 		json["mode"]      = "DMR";
 		json["slot"]      = int(m_slotNo);
 
-		json["value"]     = -int(m_rssiAccum / m_rssiCount);
+		json["value"]     = m_rssiAccum / int(m_rssiCount);
 
 		WriteJSON("RSSI", json);
 
-		m_rssiAccum = 0U;
+		m_rssiAccum = 0;
 		m_rssiCount = 0U;
 	}
 }
@@ -2349,7 +2346,7 @@ void CDMRSlot::writeJSONRF(const char* action, float duration, float ber)
 	WriteJSON("DMR", json);
 }
 
-void CDMRSlot::writeJSONRF(const char* action, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI)
+void CDMRSlot::writeJSONRF(const char* action, float duration, float ber, int minRSSI, int maxRSSI, int aveRSSI)
 {
 	assert(action != NULL);
 
@@ -2361,9 +2358,9 @@ void CDMRSlot::writeJSONRF(const char* action, float duration, float ber, unsign
 	json["ber"]      = ber;
 
 	nlohmann::json rssi;
-	rssi["min"] = -int(minRSSI);
-	rssi["max"] = -int(maxRSSI);
-	rssi["ave"] = -int(aveRSSI);
+	rssi["min"] = minRSSI;
+	rssi["max"] = maxRSSI;
+	rssi["ave"] = aveRSSI;
 
 	json["rssi"] = rssi;
 

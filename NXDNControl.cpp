@@ -34,8 +34,8 @@ const unsigned char SCRAMBLER[] = {
 	0x28U, 0x28U, 0x00U, 0x0AU, 0x02U, 0x82U, 0x20U, 0x28U, 0x82U, 0x2AU, 0xAAU, 0x20U, 0x22U, 0x80U,
 	0xA8U, 0x8AU, 0x08U, 0xA0U, 0xAAU, 0x02U };
 
-const unsigned int RSSI_COUNT  = 28U;		// 28 * 40ms = 1120ms
-const unsigned int BER_COUNT   = 28U;		// 28 * 40ms = 1120ms
+const unsigned int RSSI_COUNT  = 25U;		// 25 * 40ms = 1000ms
+const unsigned int BER_COUNT   = 25U;		// 25 * 40ms = 1000ms
 
 const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
 
@@ -68,12 +68,12 @@ m_netLayer3(),
 m_rfMask(0x00U),
 m_netMask(0x00U),
 m_rssiMapper(rssiMapper),
-m_rssi(0U),
-m_maxRSSI(0U),
-m_minRSSI(0U),
-m_aveRSSI(0U),
+m_rssi(0),
+m_maxRSSI(0),
+m_minRSSI(0),
+m_aveRSSI(0),
 m_rssiCountTotal(0U),
-m_rssiAccum(0U),
+m_rssiAccum(0),
 m_rssiCount(0U),
 m_bitsCount(0U),
 m_bitErrsAccum(0U),
@@ -102,9 +102,9 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 		unsigned short srcId = m_rfLayer3.getSourceUnitId();
 		std::string source = m_lookup->find(srcId);
 
-		if (m_rssi != 0U) {
-			LogMessage("NXDN, transmission lost from %s to %s%u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
-			writeJSONRF("lost", float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
+		if (m_rssi != 0) {
+			LogMessage("NXDN, transmission lost from %s to %s%u, %.1f seconds, BER: %.1f%%, RSSI: %d/%d/%ddBm", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
+			writeJSONRF("lost", float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
 		} else {
 			LogMessage("NXDN, transmission lost from %s to %s%u, %.1f seconds, BER: %.1f%%", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits));
 			writeJSONRF("lost", float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits));
@@ -132,16 +132,13 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 		raw |= (data[51U] << 0) & 0x00FFU;
 
 		// Convert the raw RSSI to dBm
-		int rssi = m_rssiMapper->interpolate(raw);
-		if (rssi != 0)
-			LogDebug("NXDN, raw RSSI: %u, reported RSSI: %d dBm", raw, rssi);
+		m_rssi = m_rssiMapper->interpolate(raw);
+		if (m_rssi != 0)
+			LogDebug("NXDN, raw RSSI: %u, reported RSSI: %d dBm", raw, m_rssi);
 
-		// RSSI is always reported as positive
-		m_rssi = (rssi >= 0) ? rssi : -rssi;
-
-		if (m_rssi > m_minRSSI)
+		if (m_rssi < m_minRSSI)
 			m_minRSSI = m_rssi;
-		if (m_rssi < m_maxRSSI)
+		if (m_rssi > m_maxRSSI)
 			m_maxRSSI = m_rssi;
 
 		m_aveRSSI += m_rssi;
@@ -277,9 +274,9 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			std::string source   = m_lookup->find(srcId);
 
 			m_rfFrames++;
-			if (m_rssi != 0U) {
-				LogMessage("NXDN, received RF end of transmission from %s to %s%u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
-				writeJSONRF("end", float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
+			if (m_rssi != 0) {
+				LogMessage("NXDN, received RF end of transmission from %s to %s%u, %.1f seconds, BER: %.1f%%, RSSI: %d/%d/%d dBm", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
+				writeJSONRF("end", float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
 			} else {
 				LogMessage("NXDN, received RF end of transmission from %s to %s%u, %.1f seconds, BER: %.1f%%", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits));
 				writeJSONRF("end", float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits));
@@ -1110,7 +1107,7 @@ void CNXDNControl::enable(bool enabled)
 
 void CNXDNControl::writeJSONRSSI()
 {
-	if (m_rssi == 0U)
+	if (m_rssi == 0)
 		return;
 
 	if (m_rssiCount >= RSSI_COUNT) {
@@ -1119,11 +1116,11 @@ void CNXDNControl::writeJSONRSSI()
 		json["timestamp"] = CUtils::createTimestamp();
 		json["mode"]      = "NXDN";
 
-		json["value"]     = -int(m_rssiAccum / m_rssiCount);
+		json["value"]     = m_rssiAccum / int(m_rssiCount);
 
 		WriteJSON("RSSI", json);
 
-		m_rssiAccum = 0U;
+		m_rssiAccum = 0;
 		m_rssiCount = 0U;
 	}
 }
@@ -1173,7 +1170,7 @@ void CNXDNControl::writeJSONRF(const char* action, float duration, float ber)
 	WriteJSON("NXDN", json);
 }
 
-void CNXDNControl::writeJSONRF(const char* action, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI)
+void CNXDNControl::writeJSONRF(const char* action, float duration, float ber, int minRSSI, int maxRSSI, int aveRSSI)
 {
 	assert(action != NULL);
 
@@ -1185,9 +1182,9 @@ void CNXDNControl::writeJSONRF(const char* action, float duration, float ber, un
 	json["ber"]      = ber;
 
 	nlohmann::json rssi;
-	rssi["min"] = -int(minRSSI);
-	rssi["max"] = -int(maxRSSI);
-	rssi["ave"] = -int(aveRSSI);
+	rssi["min"] = minRSSI;
+	rssi["max"] = maxRSSI;
+	rssi["ave"] = aveRSSI;
 
 	json["rssi"] = rssi;
 

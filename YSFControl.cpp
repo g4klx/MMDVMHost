@@ -23,8 +23,8 @@
 #include <cstring>
 #include <ctime>
 
-const unsigned int RSSI_COUNT   = 13U;		// 13 * 100ms = 1300ms
-const unsigned int BER_COUNT    = 13U;		// 13 * 100ms = 1300ms
+const unsigned int RSSI_COUNT   = 10U;		// 10 * 100ms = 1000ms
+const unsigned int BER_COUNT    = 10U;		// 10 * 100ms = 1000ms
 
 CYSFControl::CYSFControl(const std::string& callsign, bool selfOnly, CYSFNetwork* network, unsigned int timeout, bool duplex, bool lowDeviation, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
 m_callsign(NULL),
@@ -57,12 +57,12 @@ m_netN(0U),
 m_rfPayload(),
 m_netPayload(),
 m_rssiMapper(rssiMapper),
-m_rssi(0U),
-m_maxRSSI(0U),
-m_minRSSI(0U),
-m_aveRSSI(0U),
+m_rssi(0),
+m_maxRSSI(0),
+m_minRSSI(0),
+m_aveRSSI(0),
 m_rssiCountTotal(0U),
-m_rssiAccum(0U),
+m_rssiAccum(0),
 m_rssiCount(0U),
 m_bitsCount(0U),
 m_bitErrsAccum(0U),
@@ -111,9 +111,9 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 	unsigned char type = data[0U];
 
 	if (type == TAG_LOST && m_rfState == RS_RF_AUDIO) {
-		if (m_rssi != 0U) {
-			LogMessage("YSF, transmission lost from %10.10s to %10.10s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_rfSource, m_rfDest, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
-			writeJSONRF("lost", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
+		if (m_rssi != 0) {
+			LogMessage("YSF, transmission lost from %10.10s to %10.10s, %.1f seconds, BER: %.1f%%, RSSI: %d/%d/%d dBm", m_rfSource, m_rfDest, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
+			writeJSONRF("lost", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
 		} else {
 			LogMessage("YSF, transmission lost from %10.10s to %10.10s, %.1f seconds, BER: %.1f%%", m_rfSource, m_rfDest, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 			writeJSONRF("lost", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
@@ -143,16 +143,13 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 		raw |= (data[123U] << 0) & 0x00FFU;
 
 		// Convert the raw RSSI to dBm
-		int rssi = m_rssiMapper->interpolate(raw);
-		if (rssi != 0)
-			LogDebug("YSF, raw RSSI: %u, reported RSSI: %d dBm", raw, rssi);
+		m_rssi = m_rssiMapper->interpolate(raw);
+		if (m_rssi != 0)
+			LogDebug("YSF, raw RSSI: %u, reported RSSI: %d dBm", raw, m_rssi);
 
-		// RSSI is always reported as positive
-		m_rssi = (rssi >= 0) ? rssi : -rssi;
-
-		if (m_rssi > m_minRSSI)
+		if (m_rssi < m_minRSSI)
 			m_minRSSI = m_rssi;
-		if (m_rssi < m_maxRSSI)
+		if (m_rssi > m_maxRSSI)
 			m_maxRSSI = m_rssi;
 
 		m_aveRSSI += m_rssi;
@@ -326,9 +323,9 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 
 			m_rfFrames++;
 
-			if (m_rssi != 0U) {
-				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
-				writeJSONRF("end", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
+			if (m_rssi != 0) {
+				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds, BER: %.1f%%, RSSI: %d/%d/%d dBm", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
+				writeJSONRF("end", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
 			} else {
 				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds, BER: %.1f%%", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 				writeJSONRF("end", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
@@ -494,9 +491,9 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			m_rfFrames++;
 
-			if (m_rssi != 0U) {
-				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
-				writeJSONRF("end", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
+			if (m_rssi != 0) {
+				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds, BER: %.1f%%, RSSI: %d/%d/%d dBm", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
+				writeJSONRF("end", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
 			} else {
 				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds, BER: %.1f%%", m_rfSource, dgid, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 				writeJSONRF("end", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits));
@@ -792,9 +789,9 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 			m_rfFrames++;
 
-			if (m_rssi != 0U) {
-				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds, RSSI: -%u/-%u/-%u dBm", m_rfSource, dgid, float(m_rfFrames) / 10.0F, m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
-				writeJSONRF("end", float(m_rfFrames) / 10.0F, 0.0F, m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
+			if (m_rssi != 0) {
+				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds, RSSI: %d/%d/%d dBm", m_rfSource, dgid, float(m_rfFrames) / 10.0F, m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
+				writeJSONRF("end", float(m_rfFrames) / 10.0F, 0.0F, m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
 			} else {
 				LogMessage("YSF, received RF end of transmission from %10.10s to DG-ID %u, %.1f seconds", m_rfSource, dgid, float(m_rfFrames) / 10.0F);
 				writeJSONRF("end", float(m_rfFrames) / 10.0F, 0.0F);
@@ -1187,7 +1184,7 @@ void CYSFControl::enable(bool enabled)
 
 void CYSFControl::writeJSONRSSI()
 {
-	if (m_rssi == 0U)
+	if (m_rssi == 0)
 		return;
 
 	if (m_rssiCount >= RSSI_COUNT) {
@@ -1196,11 +1193,11 @@ void CYSFControl::writeJSONRSSI()
 		json["timestamp"] = CUtils::createTimestamp();
 		json["mode"]      = "YSF";
 
-		json["value"]     = -int(m_rssiAccum / m_rssiCount);
+		json["value"]     = m_rssiAccum / int(m_rssiCount);
 
 		WriteJSON("RSSI", json);
 
-		m_rssiAccum = 0U;
+		m_rssiAccum = 0;
 		m_rssiCount = 0U;
 	}
 }
@@ -1254,7 +1251,7 @@ void CYSFControl::writeJSONRF(const char* action, float duration, float ber)
 	WriteJSON("YSF", json);
 }
 
-void CYSFControl::writeJSONRF(const char* action, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI)
+void CYSFControl::writeJSONRF(const char* action, float duration, float ber, int minRSSI, int maxRSSI, int aveRSSI)
 {
 	assert(action != NULL);
 
@@ -1266,9 +1263,9 @@ void CYSFControl::writeJSONRF(const char* action, float duration, float ber, uns
 	json["ber"]      = ber;
 
 	nlohmann::json rssi;
-	rssi["min"] = -int(minRSSI);
-	rssi["max"] = -int(maxRSSI);
-	rssi["ave"] = -int(aveRSSI);
+	rssi["min"] = minRSSI;
+	rssi["max"] = maxRSSI;
+	rssi["ave"] = aveRSSI;
 
 	json["rssi"] = rssi;
 

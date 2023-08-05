@@ -33,8 +33,8 @@
 #include <cstring>
 #include <ctime>
 
-const unsigned int RSSI_COUNT   = 7U;			// 7 * 180ms = 1260ms
-const unsigned int BER_COUNT    = 7U * 1233U;		// 7 * 180ms = 1260ms
+const unsigned int RSSI_COUNT   = 6U;			// 6 * 180ms = 1080ms
+const unsigned int BER_COUNT    = 6U * 1233U;		// 6 * 180ms = 1080ms
 
 const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U};
 
@@ -77,12 +77,12 @@ m_rfPDU(NULL),
 m_rfPDUCount(0U),
 m_rfPDUBits(0U),
 m_rssiMapper(rssiMapper),
-m_rssi(0U),
-m_maxRSSI(0U),
-m_minRSSI(0U),
-m_aveRSSI(0U),
+m_rssi(0),
+m_maxRSSI(0),
+m_minRSSI(0),
+m_aveRSSI(0),
 m_rssiCountTotal(0U),
-m_rssiAccum(0U),
+m_rssiAccum(0),
 m_rssiCount(0U),
 m_bitsCount(0U),
 m_bitErrsAccum(0U),
@@ -131,9 +131,9 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		unsigned int srcId = m_rfData.getSrcId();
 		std::string source = m_lookup->find(srcId);
 
-		if (m_rssi != 0U) {
-			LogMessage("P25, transmission lost from %s to %s%u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
-			writeJSONRF("lost", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
+		if (m_rssi != 0) {
+			LogMessage("P25, transmission lost from %s to %s%u, %.1f seconds, BER: %.1f%%, RSSI: %d/%d/%d dBm", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
+			writeJSONRF("lost", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
 		} else {
 			LogMessage("P25, transmission lost from %s to %s%u, %.1f seconds, BER: %.1f%%", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
 			writeJSONRF("lost", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
@@ -198,16 +198,13 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		raw |= (data[219U] << 0) & 0x00FFU;
 
 		// Convert the raw RSSI to dBm
-		int rssi = m_rssiMapper->interpolate(raw);
-		if (rssi != 0)
-			LogDebug("P25, raw RSSI: %u, reported RSSI: %d dBm", raw, rssi);
+		m_rssi = m_rssiMapper->interpolate(raw);
+		if (m_rssi != 0)
+			LogDebug("P25, raw RSSI: %u, reported RSSI: %d dBm", raw, m_rssi);
 
-		// RSSI is always reported as positive
-		m_rssi = (rssi >= 0) ? rssi : -rssi;
-
-		if (m_rssi > m_minRSSI)
+		if (m_rssi < m_minRSSI)
 			m_minRSSI = m_rssi;
-		if (m_rssi < m_maxRSSI)
+		if (m_rssi > m_maxRSSI)
 			m_maxRSSI = m_rssi;
 
 		m_aveRSSI += m_rssi;
@@ -466,9 +463,9 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			m_rfData.reset();
 			m_lastDUID = duid;
 
-			if (m_rssi != 0U) {
-				LogMessage("P25, received RF end of voice transmission from %s to %s%u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
-				writeJSONRF("end", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
+			if (m_rssi != 0) {
+				LogMessage("P25, received RF end of voice transmission from %s to %s%u, %.1f seconds, BER: %.1f%%, RSSI: %d/%d/%d dBm", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
+				writeJSONRF("end", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
 			} else {
 				LogMessage("P25, received RF end of voice transmission from %s to %s%u, %.1f seconds, BER: %.1f%%", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
 				writeJSONRF("end", float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
@@ -1156,7 +1153,7 @@ void CP25Control::enable(bool enabled)
 
 void CP25Control::writeJSONRSSI()
 {
-	if (m_rssi == 0U)
+	if (m_rssi == 0)
 		return;
 
 	if (m_rssiCount >= RSSI_COUNT) {
@@ -1165,11 +1162,11 @@ void CP25Control::writeJSONRSSI()
 		json["timestamp"] = CUtils::createTimestamp();
 		json["mode"]      = "P25";
 
-		json["value"]     = -int(m_rssiAccum / m_rssiCount);
+		json["value"]     = m_rssiAccum / int(m_rssiCount);
 
 		WriteJSON("RSSI", json);
 
-		m_rssiAccum = 0U;
+		m_rssiAccum = 0;
 		m_rssiCount = 0U;
 	}
 }
@@ -1216,7 +1213,7 @@ void CP25Control::writeJSONRF(const char* action, float duration, float ber)
 	WriteJSON("P25", json);
 }
 
-void CP25Control::writeJSONRF(const char* action, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI)
+void CP25Control::writeJSONRF(const char* action, float duration, float ber, int minRSSI, int maxRSSI, int aveRSSI)
 {
 	assert(action != NULL);
 
@@ -1228,9 +1225,9 @@ void CP25Control::writeJSONRF(const char* action, float duration, float ber, uns
 	json["ber"]      = ber;
 
 	nlohmann::json rssi;
-	rssi["min"] = -int(minRSSI);
-	rssi["max"] = -int(maxRSSI);
-	rssi["ave"] = -int(aveRSSI);
+	rssi["min"] = minRSSI;
+	rssi["max"] = maxRSSI;
+	rssi["ave"] = aveRSSI;
 
 	json["rssi"] = rssi;
 

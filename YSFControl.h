@@ -82,12 +82,12 @@ private:
 	CYSFPayload                m_rfPayload;
 	CYSFPayload                m_netPayload;
 	CRSSIInterpolator*         m_rssiMapper;
-	unsigned char              m_rssi;
-	unsigned char              m_maxRSSI;
-	unsigned char              m_minRSSI;
-	unsigned int               m_aveRSSI;
+	int                        m_rssi;
+	int                        m_maxRSSI;
+	int                        m_minRSSI;
+	int                        m_aveRSSI;
 	unsigned int               m_rssiCountTotal;
-	unsigned int               m_rssiAccum;
+	int                        m_rssiAccum;
 	unsigned int               m_rssiCount;
 	unsigned int               m_bitsCount;
 	unsigned int               m_bitErrsAccum;
@@ -110,7 +110,7 @@ private:
 
 	void writeJSONRF(const char* action, const char* mode, const unsigned char* source, unsigned char dgid);
 	void writeJSONRF(const char* action, float duration, float ber);
-	void writeJSONRF(const char* action, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI);
+	void writeJSONRF(const char* action, float duration, float ber, int minRSSI, int maxRSSI, int aveRSSI);
 
 	void writeJSONNet(const char* action, const unsigned char* source, unsigned char dgid, const unsigned char* reflector);
 	void writeJSONNet(const char* action, float duration, unsigned int loss);

@@ -28,7 +28,7 @@ const unsigned int MAX_SYNC_BIT_ERRORS = 2U;
 const unsigned int FAST_DATA_BEEP_GRACE_FRAMES = 6U;
 
 const unsigned int RSSI_COUNT = 3U * 21U;	// 3 * 420ms = 1260ms
-const unsigned int BER_COUNT  = 63U * 48U;	// 63 * 20ms = 1260ms
+const unsigned int BER_COUNT  = 50U * 48U;	// 50 * 20ms = 1000ms
 
 bool CallsignCompare(const std::string& arg, const unsigned char* my)
 {
@@ -80,12 +80,12 @@ m_rfErrs(0U),
 m_lastFrame(NULL),
 m_lastFrameValid(false),
 m_rssiMapper(rssiMapper),
-m_rssi(0U),
-m_maxRSSI(0U),
-m_minRSSI(0U),
-m_aveRSSI(0U),
+m_rssi(0),
+m_maxRSSI(0),
+m_minRSSI(0),
+m_aveRSSI(0),
 m_rssiCountTotal(0U),
-m_rssiAccum(0U),
+m_rssiAccum(0),
 m_rssiCount(0U),
 m_bitErrsAccum(0U),
 m_bitsCount(0U),
@@ -229,9 +229,9 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		m_rfHeader.getMyCall2(my2);
 		m_rfHeader.getYourCall(your);
 
-		if (m_rssi != 0U) {
-			LogMessage("D-Star, transmission lost from %8.8s/%4.4s to %8.8s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
-			writeJSONRF("lost", float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
+		if (m_rssi != 0) {
+			LogMessage("D-Star, transmission lost from %8.8s/%4.4s to %8.8s, %.1f seconds, BER: %.1f%%, RSSI: %d/%d/%d dBm", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
+			writeJSONRF("lost", float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
 		} else {
 			LogMessage("D-Star, transmission lost from %8.8s/%4.4s to %8.8s, %.1f seconds, BER: %.1f%%", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 			writeJSONRF("lost", float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits));
@@ -266,16 +266,13 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		raw |= (data[43U] << 0) & 0x00FFU;
 
 		// Convert the raw RSSI to dBm
-		int rssi = m_rssiMapper->interpolate(raw);
-		if (rssi != 0)
-			LogDebug("D-Star, raw RSSI: %u, reported RSSI: %d dBm", raw, rssi);
+		int m_rssi = m_rssiMapper->interpolate(raw);
+		if (m_rssi != 0)
+			LogDebug("D-Star, raw RSSI: %u, reported RSSI: %d dBm", raw, m_rssi);
 
-		// RSSI is always reported as positive
-		m_rssi = (rssi >= 0) ? rssi : -rssi;
-
-		if (m_rssi > m_minRSSI)
+		if (m_rssi < m_minRSSI)
 			m_minRSSI = m_rssi;
-		if (m_rssi < m_maxRSSI)
+		if (m_rssi > m_maxRSSI)
 			m_maxRSSI = m_rssi;
 
 		m_aveRSSI += m_rssi;
@@ -292,16 +289,13 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		raw |= (data[14U] << 0) & 0x00FFU;
 
 		// Convert the raw RSSI to dBm
-		int rssi = m_rssiMapper->interpolate(raw);
-		if (rssi != 0)
-			LogDebug("D-Star, raw RSSI: %u, reported RSSI: %d dBm", raw, rssi);
+		int m_rssi = m_rssiMapper->interpolate(raw);
+		if (m_rssi != 0)
+			LogDebug("D-Star, raw RSSI: %u, reported RSSI: %d dBm", raw, m_rssi);
 
-		// RSSI is always reported as positive
-		m_rssi = (rssi >= 0) ? rssi : -rssi;
-
-		if (m_rssi > m_minRSSI)
+		if (m_rssi < m_minRSSI)
 			m_minRSSI = m_rssi;
-		if (m_rssi < m_maxRSSI)
+		if (m_rssi > m_maxRSSI)
 			m_maxRSSI = m_rssi;
 
 		m_aveRSSI += m_rssi;
@@ -444,9 +438,9 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			m_rfHeader.getMyCall2(my2);
 			m_rfHeader.getYourCall(your);
 
-			if (m_rssi != 0U) {
-				LogMessage("D-Star, received RF end of transmission from %8.8s/%4.4s to %8.8s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
-				writeJSONRF("end", float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
+			if (m_rssi != 0) {
+				LogMessage("D-Star, received RF end of transmission from %8.8s/%4.4s to %8.8s, %.1f seconds, BER: %.1f%%, RSSI: %d/%d/%d dBm", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
+				writeJSONRF("end", float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
 			} else {
 				LogMessage("D-Star, received RF end of transmission from %8.8s/%4.4s to %8.8s, %.1f seconds, BER: %.1f%%", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 				writeJSONRF("end", float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits));
@@ -1174,32 +1168,32 @@ void CDStarControl::sendAck()
 	if (m_ackMessage == DSTAR_ACK_RSSI && m_rssi != 0) {
 		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK) {
 			CUtils::removeChar(reflector, ' ');//remove space from reflector so all nicely fits onto 20 chars in case rssi < 99dBm
-			::sprintf(text, "%-8.8s %.1f%% -%udBm        ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCountTotal);
+			::sprintf(text, "%-8.8s %.1f%% %ddBm        ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / int(m_rssiCountTotal));
 		} else {
-			::sprintf(text, "BER:%.1f%% -%udBm           ", float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCountTotal);
+			::sprintf(text, "BER:%.1f%% %ddBm           ", float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / int(m_rssiCountTotal));
 		}
 	} else if (m_ackMessage == DSTAR_ACK_SMETER && m_rssi != 0) {
-		const unsigned int RSSI_S1 = 141U;
-		const unsigned int RSSI_S9 = 93U;
+		const int RSSI_S1 = -141;
+		const int RSSI_S9 = -93;
 
-		unsigned int signal = 0U;
-		unsigned int plus   = 0U;
-		unsigned int rssi   = m_aveRSSI / m_rssiCountTotal;
+		int signal = 0;
+		int plus   = 0;
+		int rssi   = m_aveRSSI / int(m_rssiCountTotal);
 
-		if (rssi > RSSI_S1) {
-			plus   = rssi - RSSI_S1;
-		} else if (rssi > RSSI_S9 && rssi <= RSSI_S1) {
-			signal = ((RSSI_S1 - rssi) / 6U) + 1U;
-			plus   = (RSSI_S1 - rssi) % 6U;
+		if (rssi < RSSI_S1) {
+			plus   = RSSI_S1 - rssi;
+		} else if (rssi < RSSI_S9 && rssi >= RSSI_S1) {
+			signal = ((rssi - RSSI_S1) / 6) + 1;
+			plus   = (rssi - RSSI_S1) % 6;
 		} else {
-			plus   = RSSI_S9 - rssi;
+			plus   = rssi - RSSI_S9;
 		}
 
 		char signalText[15U];
-		if (plus != 0U)
-			::sprintf(signalText, "S%u+%02u", signal, plus);
+		if (plus != 0)
+			::sprintf(signalText, "S%d+%02d", signal, plus);
 		else
-			::sprintf(signalText, "S%u", signal);
+			::sprintf(signalText, "S%d", signal);
 
 		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
 			::sprintf(text, "%-8.8s %.1f%% %s           ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), signalText);
@@ -1253,32 +1247,32 @@ void CDStarControl::sendError()
 	if (m_ackMessage == DSTAR_ACK_RSSI && m_rssi != 0) {
 		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK) {
 			CUtils::removeChar(reflector, ' ');//remove space from reflector so all nicely fits onto 20 chars in case rssi < 99dBm
-			::sprintf(text, "%-8.8s %.1f%% -%udBm        ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCountTotal);
+			::sprintf(text, "%-8.8s %.1f%% %ddBm        ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / int(m_rssiCountTotal));
 		} else {
-			::sprintf(text, "BER:%.1f%% -%udBm           ", float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCountTotal);
+			::sprintf(text, "BER:%.1f%% %ddBm           ", float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / int(m_rssiCountTotal));
 		}
 	} else if (m_ackMessage == DSTAR_ACK_SMETER && m_rssi != 0) {
-		const unsigned int RSSI_S1 = 141U;
-		const unsigned int RSSI_S9 = 93U;
+		const int RSSI_S1 = -141;
+		const int RSSI_S9 = -93;
 
-		unsigned int signal = 0U;
-		unsigned int plus   = 0U;
-		unsigned int rssi   = m_aveRSSI / m_rssiCountTotal;
+		int signal = 0;
+		int plus   = 0;
+		int rssi   = m_aveRSSI / int(m_rssiCountTotal);
 
-		if (rssi > RSSI_S1) {
-			plus   = rssi - RSSI_S1;
-		} else if (rssi > RSSI_S9 && rssi <= RSSI_S1) {
-			signal = ((RSSI_S1 - rssi) / 6U) + 1U;
-			plus   = (RSSI_S1 - rssi) % 6U;
+		if (rssi < RSSI_S1) {
+			plus   = RSSI_S1 - rssi;
+		} else if (rssi < RSSI_S9 && rssi >= RSSI_S1) {
+			signal = ((rssi - RSSI_S1) / 6) + 1;
+			plus   = (rssi - RSSI_S1) % 6;
 		} else {
-			plus   = RSSI_S9 - rssi;
+			plus   = rssi - RSSI_S9;
 		}
 
 		char signalText[15U];
 		if (plus != 0U)
-			::sprintf(signalText, "S%u+%02u", signal, plus);
+			::sprintf(signalText, "S%d+%02d", signal, plus);
 		else
-			::sprintf(signalText, "S%u", signal);
+			::sprintf(signalText, "S%d", signal);
 
 		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
 			::sprintf(text, "%-8.8s %.1f%% %s           ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), signalText);
@@ -1333,7 +1327,7 @@ void CDStarControl::enable(bool enabled)
 
 void CDStarControl::writeJSONRSSI()
 {
-	if (m_rssi == 0U)
+	if (m_rssi == 0)
 		return;
 
 	if (m_rssiCountTotal >= RSSI_COUNT) {
@@ -1342,11 +1336,11 @@ void CDStarControl::writeJSONRSSI()
 		json["timestamp"] = CUtils::createTimestamp();
 		json["mode"]      = "D-Star";
 
-		json["value"]     = -int(m_rssiAccum / m_rssiCountTotal);
+		json["value"]     = m_rssiAccum / int(m_rssiCountTotal);
 
 		WriteJSON("RSSI", json);
 
-		m_rssiAccum = 0U;
+		m_rssiAccum      = 0;
 		m_rssiCountTotal = 0U;
 	}
 }
@@ -1414,7 +1408,7 @@ void CDStarControl::writeJSONRF(const char* action, float duration, float ber)
 	WriteJSON("D-Star", json);
 }
 
-void CDStarControl::writeJSONRF(const char* action, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI)
+void CDStarControl::writeJSONRF(const char* action, float duration, float ber, int minRSSI, int maxRSSI, int aveRSSI)
 {
 	assert(action != NULL);
 
@@ -1423,9 +1417,9 @@ void CDStarControl::writeJSONRF(const char* action, float duration, float ber, u
 	writeJSONRF(json, action, duration, ber);
 
 	nlohmann::json rssi;
-	rssi["min"] = -int(minRSSI);
-	rssi["max"] = -int(maxRSSI);
-	rssi["ave"] = -int(aveRSSI);
+	rssi["min"] = minRSSI;
+	rssi["max"] = maxRSSI;
+	rssi["ave"] = aveRSSI;
 
 	json["rssi"] = rssi;
 

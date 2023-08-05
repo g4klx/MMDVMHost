@@ -108,12 +108,12 @@ private:
 	bool                       m_netTimeout;
 	unsigned char*             m_lastFrame;
 	bool                       m_lastFrameValid;
-	unsigned char              m_rssi;
-	unsigned char              m_maxRSSI;
-	unsigned char              m_minRSSI;
-	unsigned int               m_aveRSSI;
+	int                        m_rssi;
+	int                        m_maxRSSI;
+	int                        m_minRSSI;
+	int                        m_aveRSSI;
 	unsigned int               m_rssiCountTotal;
-	unsigned int               m_rssiAccum;
+	int                        m_rssiAccum;
 	unsigned int               m_rssiCount;
 	unsigned int               m_bitErrsAccum;
 	unsigned int               m_bitsCount;
@@ -169,7 +169,7 @@ private:
 	void writeJSONRF(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId, unsigned int frames);
 	void writeJSONRF(const char* action, const char* desc, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId);
 	void writeJSONRF(const char* action, float duration, float ber);
-	void writeJSONRF(const char* action, float duration, float ber, unsigned char minRSSI, unsigned char maxRSSI, unsigned int aveRSSI);
+	void writeJSONRF(const char* action, float duration, float ber, int minRSSI, int maxRSSI, int aveRSSI);
 
 	void writeJSONNet(const char* action);
 	void writeJSONNet(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId);
