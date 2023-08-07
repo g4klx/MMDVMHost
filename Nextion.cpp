@@ -485,11 +485,11 @@ void CNextion::writeDMRTAInt(unsigned int slotNo, const unsigned char* talkerAli
 	if (type[0] == ' ') {
 		if (slotNo == 1U) {
 			if (m_screenLayout & LAYOUT_TA_COLOUR)
-				 sendCommand("t0.pco=33808");
+				 sendCommand("t8.pco=33808");
 			sendCommandAction(64U);
 		} else {
 			if (m_screenLayout & LAYOUT_TA_COLOUR)
-				 sendCommand("t2.pco=33808");
+				 sendCommand("t9.pco=33808");
 			sendCommandAction(72U);
 		}
 
@@ -498,37 +498,37 @@ void CNextion::writeDMRTAInt(unsigned int slotNo, const unsigned char* talkerAli
 
 	if (slotNo == 1U) {
 		char text[50U];
-		::sprintf(text, "t0.txt=\"1 %s %s\"", type, talkerAlias);
+		::sprintf(text, "t8.txt=\"%s %s\"", type, talkerAlias);
 
 		if (m_screenLayout & LAYOUT_TA_FONTSIZE) {
 			if (::strlen((char*)talkerAlias) > (16U-4U))
-				sendCommand("t0.font=3");
+				sendCommand("t8.font=3");
 			if (::strlen((char*)talkerAlias) > (20U-4U))
-				sendCommand("t0.font=2");
+				sendCommand("t8.font=2");
 			if (::strlen((char*)talkerAlias) > (24U-4U))
-				sendCommand("t0.font=1");
+				sendCommand("t8.font=1");
 		}
 
 		if (m_screenLayout & LAYOUT_TA_COLOUR)
-			sendCommand("t0.pco=1024");
+			sendCommand("t8.pco=1024");
 
 		sendCommand(text);
 		sendCommandAction(63U);
 	} else {
 		char text[50U];
-		::sprintf(text, "t2.txt=\"2 %s %s\"", type, talkerAlias);
+		::sprintf(text, "t9.txt=\"%s %s\"", type, talkerAlias);
 
 		if (m_screenLayout & LAYOUT_TA_FONTSIZE) {
 			if (::strlen((char*)talkerAlias) > (16U-4U))
-				sendCommand("t2.font=3");
+				sendCommand("t9.font=3");
 			if (::strlen((char*)talkerAlias) > (20U-4U))
-				sendCommand("t2.font=2");
+				sendCommand("t9.font=2");
 			if (::strlen((char*)talkerAlias) > (24U-4U))
-				sendCommand("t2.font=1");
+				sendCommand("t9.font=1");
 		}
 
 		if (m_screenLayout & LAYOUT_TA_COLOUR)
-			sendCommand("t2.pco=1024");
+			sendCommand("t9.pco=1024");
 
 		sendCommand(text);
 		sendCommandAction(71U);
@@ -581,6 +581,7 @@ void CNextion::clearDMRInt(unsigned int slotNo)
 		sendCommand("t1.txt=\"\"");
 		sendCommand("t4.txt=\"\"");
 		sendCommand("t6.txt=\"\"");
+		sendCommand("t8.txt=\"\"");
 	} else {
 		sendCommand("t2.txt=\"2 Listening\"");
 		sendCommandAction(69U);
@@ -595,6 +596,7 @@ void CNextion::clearDMRInt(unsigned int slotNo)
 		sendCommand("t3.txt=\"\"");
 		sendCommand("t5.txt=\"\"");
 		sendCommand("t7.txt=\"\"");
+		sendCommand("t9.txt=\"\"");
 	}
 }
 
