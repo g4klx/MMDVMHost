@@ -98,7 +98,7 @@ bool CDMRTA::decodeTA()
 
 		case 1U:		// ISO 8 bit
 		case 2U:		// UTF8
-			::memcpy(m_ta, m_buf + 1U, sizeof(m_ta));
+			::memcpy(m_ta, m_buf + 1U, sizeof(m_ta) - 1);
 			break;
 
 		case 3U: {		// UTF16 poor man's conversion
