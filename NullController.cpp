@@ -20,6 +20,7 @@
 
 #include <cstdio>
 #include <cassert>
+#include <cstdint>
 
 const unsigned char MMDVM_FRAME_START = 0xE0U;
 
