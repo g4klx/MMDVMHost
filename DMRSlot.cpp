@@ -566,22 +566,30 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			if (m_rfState != RS_RF_DATA || m_rfFrames == 0U)
 				return false;
 
+			char title[80U];
 			// Regenerate the rate 1/2 payload
 			if (dataType == DT_RATE_12_DATA) {
 				CBPTC19696 bptc;
 				unsigned char payload[12U];
 				bptc.decode(data + 2U, payload);
+				::sprintf(title, "DMR Slot %u, Data 1/2", m_slotNo);
+				CUtils::dump(1U, title, payload, 12U);
 				bptc.encode(payload, data + 2U);
 			} else if (dataType == DT_RATE_34_DATA) {
 				CDMRTrellis trellis;
 				unsigned char payload[18U];
 				bool ret = trellis.decode(data + 2U, payload);
 				if (ret) {
+					::sprintf(title, "DMR Slot %u, Data 3/4", m_slotNo);
+					CUtils::dump(1U, title, payload, 18U);
 					trellis.encode(payload, data + 2U);
 				} else {
 					LogMessage("DMR Slot %u, unfixable RF rate 3/4 data", m_slotNo);
 					CUtils::dump(1U, "Data", data + 2U, DMR_FRAME_LENGTH_BYTES);
 				}
+			} else {
+				::sprintf(title, "DMR Slot %u, Data 1/1", m_slotNo);
+				CUtils::dump(1U, title, data + 2U, 24U);
 			}
 
 			// Regenerate the Slot Type
@@ -1750,23 +1758,32 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			return;
 		}
 
+		char title[80U];
 		// Regenerate the rate 1/2 payload
 		if (dataType == DT_RATE_12_DATA) {
 			CBPTC19696 bptc;
 			unsigned char payload[12U];
 			bptc.decode(data + 2U, payload);
+			::sprintf(title, "DMR Slot %u, Data 1/2", m_slotNo);
+			CUtils::dump(1U, title, payload, 12U);
 			bptc.encode(payload, data + 2U);
 		} else if (dataType == DT_RATE_34_DATA) {
 			CDMRTrellis trellis;
 			unsigned char payload[18U];
 			bool ret = trellis.decode(data + 2U, payload);
 			if (ret) {
+				::sprintf(title, "DMR Slot %u, Data 3/4", m_slotNo);
+				CUtils::dump(1U, title, payload, 18U);
 				trellis.encode(payload, data + 2U);
 			} else {
 				LogMessage("DMR Slot %u, unfixable network rate 3/4 data", m_slotNo);
 				CUtils::dump(1U, "Data", data + 2U, DMR_FRAME_LENGTH_BYTES);
 			}
+		} else {
+			::sprintf(title, "DMR Slot %u, Data 1/1", m_slotNo);
+			CUtils::dump(1U, title, data + 2U, 24U);
 		}
+
 
 		// Regenerate the Slot Type
 		CDMRSlotType slotType;
