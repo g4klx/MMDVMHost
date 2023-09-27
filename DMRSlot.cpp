@@ -552,9 +552,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					LogMessage("DMR Slot %u, unfixable RF rate 3/4 data", m_slotNo);
 					CUtils::dump(1U, "Data", data + 2U, DMR_FRAME_LENGTH_BYTES);
 				}
-			}
-			else
-			{
+			} else {
 				::sprintf(title, "DMR Slot %u, Data 1/1", m_slotNo);
 				CUtils::dump(1U, title, data + 2U, 24U);
 			}
@@ -1747,9 +1745,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				LogMessage("DMR Slot %u, unfixable network rate 3/4 data", m_slotNo);
 				CUtils::dump(1U, "Data", data + 2U, DMR_FRAME_LENGTH_BYTES);
 			}
-		}
-		else
-		{
+		} else {
 			::sprintf(title, "DMR Slot %u, Data 1/1", m_slotNo);
 			CUtils::dump(1U, title, data + 2U, 24U);
 		}
