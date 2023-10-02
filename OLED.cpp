@@ -251,18 +251,20 @@ bool COLED::open()
     return true;
 }
 
-float readTemperature(const std::string& filePath) {
+float COLED::readTemperature(const std::string& filePath)
+{
     std::ifstream file(filePath);
     if (!file.is_open()) {
         std::cerr << "Error: Could not open file " << filePath << std::endl;
-        return -1.0; // Return a negative value to indicate that CPU temp is not available
+        return -1.0F;			// Return a negative value to indicate that CPU temp is not available
     }
 
     float temperature;
     file >> temperature;
+
     file.close();
 
-    return temperature / 1000.0; // The temperature is stored in millidegrees Celsius, so a bit of conversion
+    return temperature / 1000.0F;	// The temperature is stored in millidegrees Celsius, so a bit of conversion
 }
 
 void COLED::setIdleInt()
@@ -338,16 +340,15 @@ void COLED::setIdleInt()
 	    m_display.print("        -IDLE-");
 	    m_display.setCursor(0, OLED_LINE4);
 	    m_display.printf("%s", m_ipaddress.c_str());
+
 	    // Display temperature
 	    float tempCelsius = readTemperature("/sys/class/thermal/thermal_zone0/temp");
-	    if (tempCelsius >= 0.0) {
-                // Round the temperature to the nearest whole number
-                int roundedTempCelsius = static_cast<int>(std::round(tempCelsius));
+	    if (tempCelsius >= 0.0F) {
                 // Convert to Fahrenheit
-                float tempFahrenheit = (roundedTempCelsius * 9/5) + 32;
+                float tempFahrenheit = (tempCelsius * 9.0F / 5.0F) + 32.0F;
                 m_display.setCursor(0, OLED_LINE5);
                 m_display.setTextSize(1);
-	        m_display.printf("Temp: %.0fF / %dC ",tempFahrenheit,roundedTempCelsius);
+	        m_display.printf("Temp: %.0fF / %.0fC ", tempFahrenheit, tempCelsius);
             }
         }
     }
@@ -788,16 +789,15 @@ void COLED::clearCWInt()
     m_display.print(" -IDLE-");
     m_display.setCursor(0,OLED_LINE3);
     m_display.printf("%s",m_ipaddress.c_str());
+
     // Display temperature
     float tempCelsius = readTemperature("/sys/class/thermal/thermal_zone0/temp");
-    if (tempCelsius >= 0.0) {
-        // Round the temperature to the nearest whole number
-        int roundedTempCelsius = static_cast<int>(std::round(tempCelsius));
+    if (tempCelsius >= 0.0F) {
         // Convert to Fahrenheit
-        float tempFahrenheit = (roundedTempCelsius * 9/5) + 32;
+        float tempFahrenheit = (tempCelsius * 9.0F / 5.0F) + 32.0F;
         m_display.setCursor(0, OLED_LINE5);
         m_display.setTextSize(1);
-        m_display.printf("Temp: %.0fF / %dC ",tempFahrenheit,roundedTempCelsius);
+        m_display.printf("Temp: %.0fF / %.0fC ", tempFahrenheit, tempCelsius);
     }
 
     if (m_displayScroll)

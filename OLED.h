@@ -99,6 +99,8 @@ private:
   std::string   m_ipaddress;
   ArduiPi_OLED  m_display;
 
+  float readTemperature(const std::string& filePath);
+
   void OLED_statusbar();
 };
 
