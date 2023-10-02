@@ -251,6 +251,20 @@ bool COLED::open()
     return true;
 }
 
+float readTemperature(const std::string& filePath) {
+    std::ifstream file(filePath);
+    if (!file.is_open()) {
+        std::cerr << "Error: Could not open file " << filePath << std::endl;
+        return -1.0; // Return a negative value to indicate that CPU temp is not available
+    }
+
+    float temperature;
+    file >> temperature;
+    file.close();
+
+    return temperature / 1000.0; // The temperature is stored in millidegrees Celsius, so a bit of conversion
+}
+
 void COLED::setIdleInt()
 {
     m_mode = MODE_IDLE;
@@ -292,14 +306,14 @@ void COLED::setIdleInt()
 	if (configFile.is_open()) {
 	    std::string line;
 	    while (std::getline(configFile, line)) {
-		if (line.find("ssid=") != std::string::npos) {
-		    std::istringstream iss(line);
-		    std::string key, value;
-		    if (std::getline(iss, key, '=') && std::getline(iss, value)) {
-			ssid = value;
-			break;
-		    }
-		}
+        if (line.find("ssid=") != std::string::npos) {
+            std::istringstream iss(line);
+            std::string key, value;
+            if (std::getline(iss, key, '=') && std::getline(iss, value)) {
+        	ssid = value;
+        	break;
+            }
+        }
 	    }
 	    configFile.close();
  	} else {
@@ -319,11 +333,22 @@ void COLED::setIdleInt()
 	}
     } else { // Connected to network - no Auto-AP mode; normal display layout...
 	if (m_displayLogoScreensaver) {
-	    m_display.setCursor(0,OLED_LINE3);
+	    m_display.setCursor(0,OLED_LINE2);
 	    m_display.setTextSize(1);
 	    m_display.print("        -IDLE-");
-	    m_display.setCursor(0, OLED_LINE5);
+	    m_display.setCursor(0, OLED_LINE4);
 	    m_display.printf("%s", m_ipaddress.c_str());
+	    // Display temperature
+	    float tempCelsius = readTemperature("/sys/class/thermal/thermal_zone0/temp");
+	    if (tempCelsius >= 0.0) {
+                // Round the temperature to the nearest whole number
+                int roundedTempCelsius = static_cast<int>(std::round(tempCelsius));
+                // Convert to Fahrenheit
+                float tempFahrenheit = (roundedTempCelsius * 9/5) + 32;
+                m_display.setCursor(0, OLED_LINE5);
+                m_display.setTextSize(1);
+	        m_display.printf("Temp: %.0fF / %dC ",tempFahrenheit,roundedTempCelsius);
+            }
         }
     }
     m_display.display();
@@ -744,7 +769,7 @@ void COLED::writeCWInt()
     m_display.clearDisplay();
 
     m_display.setCursor(0,30);
-    m_display.setTextSize(3);
+    m_display.setTextSize(2);
     m_display.print("CW ID TX");
 
     m_display.setTextSize(1);
@@ -763,6 +788,17 @@ void COLED::clearCWInt()
     m_display.print(" -IDLE-");
     m_display.setCursor(0,OLED_LINE3);
     m_display.printf("%s",m_ipaddress.c_str());
+    // Display temperature
+    float tempCelsius = readTemperature("/sys/class/thermal/thermal_zone0/temp");
+    if (tempCelsius >= 0.0) {
+        // Round the temperature to the nearest whole number
+        int roundedTempCelsius = static_cast<int>(std::round(tempCelsius));
+        // Convert to Fahrenheit
+        float tempFahrenheit = (roundedTempCelsius * 9/5) + 32;
+        m_display.setCursor(0, OLED_LINE5);
+        m_display.setTextSize(1);
+        m_display.printf("Temp: %.0fF / %dC ",tempFahrenheit,roundedTempCelsius);
+    }
 
     if (m_displayScroll)
         m_display.startscrolldiagleft(0x00,0x0f);
