@@ -341,13 +341,13 @@ void COLED::setIdleInt()
 	    // Display temperature
 	    float tempCelsius = readTemperature("/sys/class/thermal/thermal_zone0/temp");
 	    if (tempCelsius >= 0.0) {
-        // Round the temperature to the nearest whole number
-        int roundedTempCelsius = static_cast<int>(std::round(tempCelsius));
-        // Convert to Fahrenheit
-        float tempFahrenheit = (roundedTempCelsius * 9/5) + 32;
-        m_display.setCursor(0, OLED_LINE5);
-        m_display.setTextSize(1);
-        m_display.printf("Temp: %.0fF / %dC ",tempFahrenheit,roundedTempCelsius);
+		// Round the temperature to the nearest whole number
+		int roundedTempCelsius = static_cast<int>(std::round(tempCelsius));
+		// Convert to Fahrenheit
+		float tempFahrenheit = (roundedTempCelsius * 9/5) + 32;
+		m_display.setCursor(0, OLED_LINE5);
+		m_display.setTextSize(1);
+		m_display.printf("Temp: %.0fF / %dC ",tempFahrenheit,roundedTempCelsius);
 	    }
         }
     }
