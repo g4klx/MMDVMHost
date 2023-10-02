@@ -306,14 +306,14 @@ void COLED::setIdleInt()
 	if (configFile.is_open()) {
 	    std::string line;
 	    while (std::getline(configFile, line)) {
-		if (line.find("ssid=") != std::string::npos) {
-		    std::istringstream iss(line);
-		    std::string key, value;
-		    if (std::getline(iss, key, '=') && std::getline(iss, value)) {
-			ssid = value;
-			break;
-		    }
-		}
+        if (line.find("ssid=") != std::string::npos) {
+            std::istringstream iss(line);
+            std::string key, value;
+            if (std::getline(iss, key, '=') && std::getline(iss, value)) {
+        	ssid = value;
+        	break;
+            }
+        }
 	    }
 	    configFile.close();
  	} else {
@@ -341,13 +341,13 @@ void COLED::setIdleInt()
 	    // Display temperature
 	    float tempCelsius = readTemperature("/sys/class/thermal/thermal_zone0/temp");
 	    if (tempCelsius >= 0.0) {
-		// Round the temperature to the nearest whole number
-		int roundedTempCelsius = static_cast<int>(std::round(tempCelsius));
-		// Convert to Fahrenheit
-		float tempFahrenheit = (roundedTempCelsius * 9/5) + 32;
-		m_display.setCursor(0, OLED_LINE5);
-		m_display.setTextSize(1);
-		m_display.printf("Temp: %.0fF / %dC ",tempFahrenheit,roundedTempCelsius);
+        // Round the temperature to the nearest whole number
+        int roundedTempCelsius = static_cast<int>(std::round(tempCelsius));
+        // Convert to Fahrenheit
+        float tempFahrenheit = (roundedTempCelsius * 9/5) + 32;
+        m_display.setCursor(0, OLED_LINE5);
+        m_display.setTextSize(1);
+        m_display.printf("Temp: %.0fF / %dC ",tempFahrenheit,roundedTempCelsius);
 	    }
         }
     }
