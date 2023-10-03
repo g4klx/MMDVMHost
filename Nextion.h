@@ -29,87 +29,87 @@
 class CNextion : public CDisplay
 {
 public:
-  CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness, unsigned int screenLayout, unsigned int txFrequency, unsigned int rxFrequency, bool displayTempInF);
-  virtual ~CNextion();
+	CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness, unsigned int screenLayout, unsigned int txFrequency, unsigned int rxFrequency, bool displayTempInF);
+	virtual ~CNextion();
 
-  virtual bool open();
+	virtual bool open();
 
-  virtual void close();
+	virtual void close();
 
 protected:
-  virtual void setIdleInt();
-  virtual void setErrorInt(const char* text);
-  virtual void setLockoutInt();
-  virtual void setQuitInt();
-  virtual void setFMInt();
+	virtual void setIdleInt();
+	virtual void setErrorInt(const char* text);
+	virtual void setLockoutInt();
+	virtual void setQuitInt();
+	virtual void setFMInt();
 
-  virtual void writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
-  virtual void writeDStarRSSIInt(unsigned char rssi);
-  virtual void writeDStarBERInt(float ber);
-  virtual void clearDStarInt();
+	virtual void writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
+	virtual void writeDStarRSSIInt(unsigned char rssi);
+	virtual void writeDStarBERInt(float ber);
+	virtual void clearDStarInt();
 
-  virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
-  virtual void writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi);
-  virtual void writeDMRTAInt(unsigned int slotNo, const unsigned char* talkerAlias, const char* type);
-  virtual void writeDMRBERInt(unsigned int slotNo, float ber);
-  virtual void clearDMRInt(unsigned int slotNo);
+	virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
+	virtual void writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi);
+	virtual void writeDMRTAInt(unsigned int slotNo, const unsigned char* talkerAlias, const char* type);
+	virtual void writeDMRBERInt(unsigned int slotNo, float ber);
+	virtual void clearDMRInt(unsigned int slotNo);
 
-  virtual void writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
-  virtual void writeFusionRSSIInt(unsigned char rssi);
-  virtual void writeFusionBERInt(float ber);
-  virtual void clearFusionInt();
+	virtual void writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
+	virtual void writeFusionRSSIInt(unsigned char rssi);
+	virtual void writeFusionBERInt(float ber);
+	virtual void clearFusionInt();
 
-  virtual void writeP25Int(const char* source, bool group, unsigned int dest, const char* type);
-  virtual void writeP25RSSIInt(unsigned char rssi);
-  virtual void writeP25BERInt(float ber);
-  virtual void clearP25Int();
+	virtual void writeP25Int(const char* source, bool group, unsigned int dest, const char* type);
+	virtual void writeP25RSSIInt(unsigned char rssi);
+	virtual void writeP25BERInt(float ber);
+	virtual void clearP25Int();
 
-  virtual void writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type);
-  virtual void writeNXDNRSSIInt(unsigned char rssi);
-  virtual void writeNXDNBERInt(float ber);
-  virtual void clearNXDNInt();
+	virtual void writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type);
+	virtual void writeNXDNRSSIInt(unsigned char rssi);
+	virtual void writeNXDNBERInt(float ber);
+	virtual void clearNXDNInt();
 
-  virtual void writeM17Int(const char* source, const char* dest, const char* type);
-  virtual void writeM17RSSIInt(unsigned char rssi);
-  virtual void writeM17BERInt(float ber);
-  virtual void clearM17Int();
+	virtual void writeM17Int(const char* source, const char* dest, const char* type);
+	virtual void writeM17RSSIInt(unsigned char rssi);
+	virtual void writeM17BERInt(float ber);
+	virtual void clearM17Int();
 
-  virtual void writePOCSAGInt(uint32_t ric, const std::string& message);
-  virtual void clearPOCSAGInt();
+	virtual void writePOCSAGInt(uint32_t ric, const std::string& message);
+	virtual void clearPOCSAGInt();
 
-  virtual void writeCWInt();
-  virtual void clearCWInt();
+	virtual void writeCWInt();
+	virtual void clearCWInt();
 
-  virtual void clockInt(unsigned int ms);
+	virtual void clockInt(unsigned int ms);
 
 private:
-  std::string   m_callsign;
-  std::string   m_ipaddress;
-  unsigned int  m_dmrid;
-  ISerialPort*  m_serial;
-  unsigned int  m_brightness;
-  unsigned char m_mode;
-  bool          m_displayClock;
-  bool          m_utc;
-  unsigned int  m_idleBrightness;
-  unsigned int  m_screenLayout;
-  CTimer        m_clockDisplayTimer;
-  unsigned int  m_rssiAccum1;
-  unsigned int  m_rssiAccum2;
-  float         m_berAccum1;
-  float         m_berAccum2;
-  unsigned int  m_rssiCount1;
-  unsigned int  m_rssiCount2;
-  unsigned int  m_berCount1;
-  unsigned int  m_berCount2;
-  unsigned int  m_txFrequency;
-  unsigned int  m_rxFrequency;
-  double        m_fl_txFrequency;
-  double        m_fl_rxFrequency;
-  bool          m_displayTempInF;
-  
-  void sendCommand(const char* command);
-  void sendCommandAction(unsigned int status);
+	std::string   m_callsign;
+	std::string   m_ipaddress;
+	unsigned int  m_dmrid;
+	ISerialPort*  m_serial;
+	unsigned int  m_brightness;
+	unsigned char m_mode;
+	bool          m_displayClock;
+	bool          m_utc;
+	unsigned int  m_idleBrightness;
+	unsigned int  m_screenLayout;
+	CTimer        m_clockDisplayTimer;
+	unsigned int  m_rssiAccum1;
+	unsigned int  m_rssiAccum2;
+	float         m_berAccum1;
+	float         m_berAccum2;
+	unsigned int  m_rssiCount1;
+	unsigned int  m_rssiCount2;
+	unsigned int  m_berCount1;
+	unsigned int  m_berCount2;
+	unsigned int  m_txFrequency;
+	unsigned int  m_rxFrequency;
+	double        m_fl_txFrequency;
+	double        m_fl_rxFrequency;
+	bool          m_displayTempInF;
+
+	void sendCommand(const char* command);
+	void sendCommandAction(unsigned int status);
 };
 
 #endif
