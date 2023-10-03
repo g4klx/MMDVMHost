@@ -42,11 +42,11 @@ void CCASTInfo::setIdleInt()
     unsigned char info[100U];
     CNetworkInfo* m_network;
 
-    passCounter ++;
+    passCounter++;
     if (passCounter > 253U)
         networkInfoInitialized = false;
 
-    if (! networkInfoInitialized) {
+    if (!networkInfoInitialized) {
         //LogMessage("Initialize CNetworkInfo");
         info[0]=0;
         m_network = new CNetworkInfo;
@@ -60,8 +60,6 @@ void CCASTInfo::setIdleInt()
         networkInfoInitialized = true;
         passCounter = 0;
     }
-
-
 }
 
 void CCASTInfo::setErrorInt(const char* text)

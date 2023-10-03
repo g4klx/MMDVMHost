@@ -235,7 +235,7 @@ void CTFTSurenoo::writeDMRInt(unsigned int slotNo, const std::string& src, bool 
 	m_mode = MODE_DMR;
 }
 
-int CTFTSurenoo::writeDMRIntEx(unsigned int slotNo, const class CUserDBentry& src, bool group, const std::string& dst, const char* type)
+int CTFTSurenoo::writeDMRIntEx(unsigned int slotNo, const CUserDBentry& src, bool group, const std::string& dst, const char* type)
 {
 	assert(type != NULL);
 
@@ -335,7 +335,7 @@ void CTFTSurenoo::writeNXDNInt(const char* source, bool group, unsigned int dest
 	m_mode = MODE_NXDN;
 }
 
-int CTFTSurenoo::writeNXDNIntEx(const class CUserDBentry& source, bool group, unsigned int dest, const char* type)
+int CTFTSurenoo::writeNXDNIntEx(const CUserDBentry& source, bool group, unsigned int dest, const char* type)
 {
 	assert(type != NULL);
 

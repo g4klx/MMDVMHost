@@ -137,7 +137,7 @@ void CNextion::setIdleInt()
 	sendCommand("page MMDVM");
 	sendCommandAction(1U);
 
-	if (m_brightness>0) {
+	if (m_brightness > 0U) {
 		::sprintf(command, "dim=%u", m_idleBrightness);
 		sendCommand(command);
 	}
@@ -203,7 +203,7 @@ void CNextion::setErrorInt(const char* text)
 	sendCommandAction(1U);
 
 	char command[20];
-	if (m_brightness>0) {
+	if (m_brightness > 0U) {
 		::sprintf(command, "dim=%u", m_brightness);
 		sendCommand(command);
 	}
@@ -226,7 +226,7 @@ void CNextion::setLockoutInt()
 	sendCommandAction(1U);
 
 	char command[20];
-	if (m_brightness>0) {
+	if (m_brightness > 0U) {
 		::sprintf(command, "dim=%u", m_brightness);
 		sendCommand(command);
 	}
@@ -245,7 +245,7 @@ void CNextion::setQuitInt()
 	sendCommandAction(1U);
 
 	char command[100];
-	if (m_brightness>0) {
+	if (m_brightness > 0U) {
 		::sprintf(command, "dim=%u", m_idleBrightness);
 		sendCommand(command);
 	}
@@ -268,7 +268,7 @@ void CNextion::setFMInt()
 	sendCommandAction(1U);
 
 	char command[20];
-	if (m_brightness > 0) {
+	if (m_brightness > 0U) {
 		::sprintf(command, "dim=%u", m_brightness);
 		sendCommand(command);
 	}
@@ -295,7 +295,7 @@ void CNextion::writeDStarInt(const char* my1, const char* my2, const char* your,
 	}
 
 	char text[50U];
-	if (m_brightness>0) {
+	if (m_brightness > 0U) {
 		::sprintf(text, "dim=%u", m_brightness);
 		sendCommand(text);
 	}
@@ -396,7 +396,7 @@ void CNextion::writeDMRInt(unsigned int slotNo, const std::string& src, bool gro
 	}
 
 	char text[50U];
-	if (m_brightness>0) {
+	if (m_brightness > 0U) {
 		::sprintf(text, "dim=%u", m_brightness);
 		sendCommand(text);
 	}
@@ -614,7 +614,7 @@ void CNextion::writeFusionInt(const char* source, const char* dest, unsigned cha
 
 
 	char text[30U];
-	if (m_brightness>0) {
+	if (m_brightness > 0U) {
 		::sprintf(text, "dim=%u", m_brightness);
 		sendCommand(text);
 	}
@@ -693,7 +693,7 @@ void CNextion::writeP25Int(const char* source, bool group, unsigned int dest, co
 	}
 
 	char text[30U];
-	if (m_brightness>0) {
+	if (m_brightness > 0U) {
 		::sprintf(text, "dim=%u", m_brightness);
 		sendCommand(text);
 	}
@@ -765,7 +765,7 @@ void CNextion::writeNXDNInt(const char* source, bool group, unsigned int dest, c
 	}
 
 	char text[30U];
-	if (m_brightness>0) {
+	if (m_brightness > 0U) {
 		::sprintf(text, "dim=%u", m_brightness);
 		sendCommand(text);
 	}
@@ -838,7 +838,7 @@ void CNextion::writeM17Int(const char* source, const char* dest, const char* typ
 	}
 
 	char text[30U];
-	if (m_brightness > 0) {
+	if (m_brightness > 0U) {
 		::sprintf(text, "dim=%u", m_brightness);
 		sendCommand(text);
 	}
@@ -907,7 +907,7 @@ void CNextion::writePOCSAGInt(uint32_t ric, const std::string& message)
 	}
 
 	char text[200U];
-	if (m_brightness>0) {
+	if (m_brightness > 0U) {
 		::sprintf(text, "dim=%u", m_brightness);
 		sendCommand(text);
 	}
@@ -978,13 +978,14 @@ void CNextion::close()
 
 void CNextion::sendCommandAction(unsigned int status)
 {
-    if (!(m_screenLayout & LAYOUT_DIY))
+	if (!(m_screenLayout & LAYOUT_DIY))
 		return;
 
-    char text[30U];
-    ::sprintf(text, "MMDVM.status.val=%d", status);
-    sendCommand(text);
-    sendCommand("click S0,1");
+	char text[30U];
+	::sprintf(text, "MMDVM.status.val=%d", status);
+	sendCommand(text);
+
+	sendCommand("click S0,1");
 }
 
 void CNextion::sendCommand(const char* command)
@@ -993,8 +994,10 @@ void CNextion::sendCommand(const char* command)
 
 	m_serial->write((unsigned char*)command, (unsigned int)::strlen(command));
 	m_serial->write((unsigned char*)"\xFF\xFF\xFF", 3U);
+
 	// Since we just firing commands at the display, and not listening for the response,
 	// we must add a bit of a delay to allow the display to process the commands, else some are getting mangled.
 	// 10 ms is just a guess, but seems to be sufficient.
-    CThread::sleep(10U);
+	CThread::sleep(10U);
 }
+

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018,2020,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -45,63 +45,64 @@
 class COLED : public CDisplay 
 {
 public:
-  COLED(unsigned char displayType, unsigned char displayBrighness, bool displayInvert, bool displayScroll, bool displayRotate, bool displayLogoScreensaver, bool duplex);
-  virtual ~COLED();
+	COLED(char displayType, unsigned char displayBrighness, bool displayInvert, bool displayScroll, bool displayRotate, bool displayLogoScreensaver, bool duplex);
+	virtual ~COLED();
 
-  virtual bool open();
+	virtual bool open();
 
-  virtual void setIdleInt();
+	virtual void close();
 
-  virtual void setErrorInt(const char* text);
-  virtual void setLockoutInt();
-  virtual void setQuitInt();
-  virtual void setFMInt();
+protected:
+	virtual void setIdleInt();
+	virtual void setErrorInt(const char* text);
+	virtual void setLockoutInt();
+	virtual void setQuitInt();
+	virtual void setFMInt();
   
-  virtual void writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
-  virtual void clearDStarInt();
+	virtual void writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
+	virtual void clearDStarInt();
 
-  virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
-  virtual int writeDMRIntEx(unsigned int slotNo, const class CUserDBentry& src, bool group, const std::string& dst, const char* type);
-  virtual void clearDMRInt(unsigned int slotNo);
+	virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
+	virtual int  writeDMRIntEx(unsigned int slotNo, const CUserDBentry& src, bool group, const std::string& dst, const char* type);
+	virtual void clearDMRInt(unsigned int slotNo);
 
-  virtual void writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
-  virtual void clearFusionInt();
+	virtual void writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
+	virtual void clearFusionInt();
 
-  virtual void writeP25Int(const char* source, bool group, unsigned int dest, const char* type);
-  virtual void clearP25Int();
+	virtual void writeP25Int(const char* source, bool group, unsigned int dest, const char* type);
+	virtual void clearP25Int();
 
-  virtual void writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type);
-  virtual int  writeNXDNIntEx(const class CUserDBentry& source, bool group, unsigned int dest, const char* type);
-  virtual void clearNXDNInt();
+	virtual void writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type);
+	virtual int  writeNXDNIntEx(const CUserDBentry& source, bool group, unsigned int dest, const char* type);
+	virtual void clearNXDNInt();
 
-  virtual void writeM17Int(const char* source, const char* dest, const char* type);
-  virtual void clearM17Int();
+	virtual void writeM17Int(const char* source, const char* dest, const char* type);
+	virtual void clearM17Int();
 
-  virtual void writePOCSAGInt(uint32_t ric, const std::string& message);
-  virtual void clearPOCSAGInt();
+	virtual void writePOCSAGInt(uint32_t ric, const std::string& message);
+	virtual void clearPOCSAGInt();
 
-  virtual void writeCWInt();
-  virtual void clearCWInt();
-
-  virtual void close();
+	virtual void writeCWInt();
+	virtual void clearCWInt();
 
 private:
-  const char*   m_slot1_state;
-  const char*   m_slot2_state;
-  unsigned char m_mode;
-  unsigned char m_displayType;
-  unsigned char m_displayBrightness;
-  bool          m_displayInvert;
-  bool          m_displayScroll;
-  bool          m_displayRotate;
-  bool          m_displayLogoScreensaver;
-  bool          m_duplex;
-  std::string   m_ipaddress;
-  ArduiPi_OLED  m_display;
+	const char*   m_slot1_state;
+	const char*   m_slot2_state;
+	unsigned char m_mode;
+	unsigned char m_displayType;
+	unsigned char m_displayBrightness;
+	bool          m_displayInvert;
+	bool          m_displayScroll;
+	bool          m_displayRotate;
+	bool          m_displayLogoScreensaver;
+	bool          m_duplex;
+	std::string   m_ipaddress;
+	ArduiPi_OLED  m_display;
 
-  float readTemperature(const std::string& filePath);
+	float readTemperature(const char* filePath);
 
-  void OLED_statusbar();
+	void OLED_statusbar();
 };
 
 #endif
+
