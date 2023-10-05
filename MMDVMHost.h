@@ -192,6 +192,11 @@ private:
 	CRemoteControl* m_remoteControl;
 	bool            m_fixedMode;
 
+	CTimer          m_serialTimer;
+	unsigned char*  m_serialBuffer;
+	unsigned int    m_serialStart;
+	unsigned int    m_serialLength;
+
 	void readParams();
 	bool createModem();
 #if defined(USE_DSTAR)

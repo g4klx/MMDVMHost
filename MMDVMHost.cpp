@@ -275,14 +275,22 @@ m_cwCallsign(),
 m_lockFileEnabled(false),
 m_lockFileName(),
 m_remoteControl(NULL),
-m_fixedMode(false)
+m_fixedMode(false),
+m_serialTimer(1000U, 0U, 210U),	// 252 bytes at 9600 bps
+m_serialBuffer(NULL),
+m_serialStart(0U),
+m_serialLength(0U)
 {
 	CUDPSocket::startup();
+
+	m_serialBuffer = new unsigned char[5000U];
 }
 
 CMMDVMHost::~CMMDVMHost()
 {
 	CUDPSocket::shutdown();
+
+	delete[] m_serialBuffer;
 }
 
 int CMMDVMHost::run()
@@ -1360,6 +1368,24 @@ int CMMDVMHost::run()
 		stopWatch.start();
 
 		m_modem->clock(ms);
+
+		m_serialTimer.clock(ms);
+		if (m_serialTimer.isRunning() && m_serialTimer.hasExpired()) {
+			unsigned int length = m_serialLength - m_serialStart;
+			if (length > 252U) {
+				m_modem->writeSerialData(m_serialBuffer + m_serialStart, 252U);
+
+				m_serialStart += 252U;
+				m_serialTimer.start();
+			} else {
+				if (length > 0U)
+					m_modem->writeSerialData(m_serialBuffer + m_serialStart, length);
+
+				m_serialLength = 0U;
+				m_serialStart  = 0U;
+				m_serialTimer.stop();
+			}
+		}
 
 		if (!m_fixedMode)
 			m_modeTimer.clock(ms);
@@ -3635,7 +3661,18 @@ void CMMDVMHost::writeSerial(const unsigned char* message, unsigned int length)
 	assert(m_modem != NULL);
 	assert(message != NULL);
 
-	m_modem->writeSerialData(message, length);
+	if (length <= 252U) {
+		// Simple case of a short message, send it immediately to the modem
+		m_modem->writeSerialData(message, length);
+	} else {
+		::memcpy(m_serialBuffer, message, length);
+		m_serialLength = length;
+
+		m_modem->writeSerialData(m_serialBuffer, 252U);
+		m_serialStart = 252U;
+
+		m_serialTimer.start();
+	}
 }
 
 #if defined(USE_AX25)
