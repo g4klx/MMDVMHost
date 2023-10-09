@@ -247,7 +247,7 @@ bool COLED::open()
 	return true;
 }
 
-float COLED::readTemperature(const std::string& filePath)
+float COLED::readTemperature(const char* filePath)
 {
 	std::ifstream file(filePath);
 	if (!file.is_open()) {
@@ -454,7 +454,7 @@ void COLED::clearDStarInt()
 
 void COLED::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
-	CUserDB entry tmp;
+	CUserDBentry tmp;
 
 	tmp.set(keyCALLSIGN, src);
 
@@ -479,13 +479,13 @@ int COLED::writeDMRIntEx(unsigned int slotNo, const CUserDBentry& src, bool grou
 			m_display.setCursor(0, OLED_LINE2);
 			m_display.printf("%s", CALLandNAME(src).c_str());
 			m_display.setCursor(0, OLED_LINE3);
-			m_display.printf("Slot: %i %s %s%s", slotNo, type.c_str(), group ? "TG: " : "", dst.c_str());
+			m_display.printf("Slot: %i %s %s%s", slotNo, type, group ? "TG: " : "", dst.c_str());
 		} else {
 			m_display.fillRect(0, OLED_LINE4, m_display.width(), 40, BLACK);
 			m_display.setCursor(0, OLED_LINE4);
 			m_display.printf("%s", CALLandNAME(src).c_str());
 			m_display.setCursor(0, OLED_LINE5);
-			m_display.printf("Slot: %i %s %s%s", slotNo, type.c_str(), group ? "TG: " : "", dst.c_str());
+			m_display.printf("Slot: %i %s %s%s", slotNo, type, group ? "TG: " : "", dst.c_str());
 		}
 
 		m_display.fillRect(0, OLED_LINE6, m_display.width(), 20, BLACK);
@@ -496,7 +496,7 @@ int COLED::writeDMRIntEx(unsigned int slotNo, const CUserDBentry& src, bool grou
 		m_display.setCursor(0, OLED_LINE2);
 		m_display.printf("%s", CALLandNAME(src).c_str());
 		m_display.setCursor(0, OLED_LINE3);
-		m_display.printf("Slot: %i %s %s%s", slotNo, type.c_str(), group ? "TG: " : "", dst.c_str());
+		m_display.printf("Slot: %i %s %s%s", slotNo, type, group ? "TG: " : "", dst.c_str());
 		m_display.setCursor(0, OLED_LINE4);
 		m_display.printf("%s", src.get(keyCITY).c_str());
 		m_display.setCursor(0, OLED_LINE5);
