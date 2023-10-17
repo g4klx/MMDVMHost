@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -50,8 +50,10 @@ m_seqNo(0U)
 	if (pos != std::string::npos)
 		m_callsign = callsign.substr(0U, pos);
 
-	// if (protocol == "USRP")
-	//	m_protocol = FMNP_USRP;
+	if (protocol == "RAW")
+		m_protocol = FMNP_RAW;
+	else
+		m_protocol = FMNP_USRP;
 }
 
 CFMNetwork::~CFMNetwork()
@@ -75,8 +77,21 @@ bool CFMNetwork::writeData(float* data, unsigned int nSamples)
 	assert(data != NULL);
 	assert(nSamples > 0U);
 
+	if (m_protocol == FMNP_USRP)
+		return writeUSRPData(data, nSamples);
+	else if (m_protocol == FMNP_RAW)
+		return writeRawData(data, nSamples);
+	else
+		return false;
+}
+
+bool CFMNetwork::writeUSRPData(float* data, unsigned int nSamples)
+{
+	assert(data != NULL);
+	assert(nSamples > 0U);
+
 	if (m_seqNo == 0U) {
-		bool ret = writeStart();
+		bool ret = writeUSRPStart();
 		if (!ret)
 			return false;
 	}
@@ -86,53 +101,51 @@ bool CFMNetwork::writeData(float* data, unsigned int nSamples)
 
 	unsigned int length = 0U;
 
-	if (m_protocol == FMNP_USRP) {
-		buffer[length++] = 'U';
-		buffer[length++] = 'S';
-		buffer[length++] = 'R';
-		buffer[length++] = 'P';
+	buffer[length++] = 'U';
+	buffer[length++] = 'S';
+	buffer[length++] = 'R';
+	buffer[length++] = 'P';
 
-		// Sequence number
-		buffer[length++] = (m_seqNo >> 24) & 0xFFU;
-		buffer[length++] = (m_seqNo >> 16) & 0xFFU;
-		buffer[length++] = (m_seqNo >> 8)  & 0xFFU;
-		buffer[length++] = (m_seqNo >> 0)  & 0xFFU;
+	// Sequence number
+	buffer[length++] = (m_seqNo >> 24) & 0xFFU;
+	buffer[length++] = (m_seqNo >> 16) & 0xFFU;
+	buffer[length++] = (m_seqNo >> 8)  & 0xFFU;
+	buffer[length++] = (m_seqNo >> 0)  & 0xFFU;
 
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
 
-		// PTT on
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x01U;
+	// PTT on
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x01U;
 
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
 
-		// Type, 0 for audio
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
+	// Type, 0 for audio
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
 
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
 
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-	}
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
 
 	for (unsigned int i = 0U; i < nSamples; i++) {
-		 short val = short(data[i] * 32767.0F + 0.5F);			// Changing audio format from float to S16LE
+		short val = short(data[i] * 32767.0F + 0.5F);			// Changing audio format from float to S16LE
 
 		buffer[length++] = (val >> 0) & 0xFFU;
 		buffer[length++] = (val >> 8) & 0xFFU;
@@ -146,59 +159,91 @@ bool CFMNetwork::writeData(float* data, unsigned int nSamples)
 	return m_socket.write(buffer, length, m_addr, m_addrLen);
 }
 
+bool CFMNetwork::writeRawData(float* data, unsigned int nSamples)
+{
+	assert(data != NULL);
+	assert(nSamples > 0U);
+
+	unsigned char buffer[1000U];
+	::memset(buffer, 0x00U, 1000U);
+
+	unsigned int length = 0U;
+
+	for (unsigned int i = 0U; i < nSamples; i++) {
+		short val = short(data[i] * 32767.0F + 0.5F);			// Changing audio format from float to S16LE
+
+		buffer[length++] = (val >> 0) & 0xFFU;
+		buffer[length++] = (val >> 8) & 0xFFU;
+
+		buffer[length++] = (val >> 0) & 0xFFU;
+		buffer[length++] = (val >> 8) & 0xFFU;
+	}
+
+	if (m_debug)
+		CUtils::dump(1U, "FM Network Data Sent", buffer, length);
+
+	return m_socket.write(buffer, length, m_addr, m_addrLen);
+}
+
 bool CFMNetwork::writeEnd()
+{
+	if (m_protocol == FMNP_USRP)
+		return writeUSRPEnd();
+	else
+		return true;
+}
+
+bool CFMNetwork::writeUSRPEnd()
 {
 	unsigned char buffer[500U];
 	::memset(buffer, 0x00U, 500U);
 
 	unsigned int length = 0U;
 
-	if (m_protocol == FMNP_USRP) {
-		buffer[length++] = 'U';
-		buffer[length++] = 'S';
-		buffer[length++] = 'R';
-		buffer[length++] = 'P';
+	buffer[length++] = 'U';
+	buffer[length++] = 'S';
+	buffer[length++] = 'R';
+	buffer[length++] = 'P';
 
-		// Sequence number
-		buffer[length++] = (m_seqNo >> 24) & 0xFFU;
-		buffer[length++] = (m_seqNo >> 16) & 0xFFU;
-		buffer[length++] = (m_seqNo >> 8) & 0xFFU;
-		buffer[length++] = (m_seqNo >> 0) & 0xFFU;
+	// Sequence number
+	buffer[length++] = (m_seqNo >> 24) & 0xFFU;
+	buffer[length++] = (m_seqNo >> 16) & 0xFFU;
+	buffer[length++] = (m_seqNo >> 8) & 0xFFU;
+	buffer[length++] = (m_seqNo >> 0) & 0xFFU;
 
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
 
-		// PTT off
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
+	// PTT off
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
 
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
 
-		// Type, 0 for audio
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
+	// Type, 0 for audio
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
 
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
 
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
 
-		length += 320U;
-	}
+	length += 320U;
 
 	m_seqNo = 0U;
 
@@ -250,10 +295,19 @@ void CFMNetwork::clock(unsigned int ms)
 
 		if (type == 0U)
 			m_buffer.addData(buffer + 32U, length - 32U);
+	} else if (m_protocol == FMNP_RAW) {
+		for (int i = 0U; i < length; i += 4U) {
+			unsigned char data[2U];
+
+			data[0U] = buffer[i + 0];
+			data[1U] = buffer[i + 1];
+
+			m_buffer.addData(data, 2U);
+		}
 	}
 }
 
-unsigned int CFMNetwork::read(float* data, unsigned int nSamples)
+unsigned int CFMNetwork::readData(float* data, unsigned int nSamples)
 {
 	assert(data != NULL);
 	assert(nSamples > 0U);
@@ -298,94 +352,92 @@ void CFMNetwork::enable(bool enabled)
 	m_enabled = enabled;
 }
 
-bool CFMNetwork::writeStart()
+bool CFMNetwork::writeUSRPStart()
 {
 	unsigned char buffer[500U];
 	::memset(buffer, 0x00U, 500U);
 
 	unsigned int length = 0U;
 
-	if (m_protocol == FMNP_USRP) {
-		buffer[length++] = 'U';
-		buffer[length++] = 'S';
-		buffer[length++] = 'R';
-		buffer[length++] = 'P';
+	buffer[length++] = 'U';
+	buffer[length++] = 'S';
+	buffer[length++] = 'R';
+	buffer[length++] = 'P';
 
-		// Sequence number
-		buffer[length++] = (m_seqNo >> 24) & 0xFFU;
-		buffer[length++] = (m_seqNo >> 16) & 0xFFU;
-		buffer[length++] = (m_seqNo >> 8) & 0xFFU;
-		buffer[length++] = (m_seqNo >> 0) & 0xFFU;
+	// Sequence number
+	buffer[length++] = (m_seqNo >> 24) & 0xFFU;
+	buffer[length++] = (m_seqNo >> 16) & 0xFFU;
+	buffer[length++] = (m_seqNo >> 8) & 0xFFU;
+	buffer[length++] = (m_seqNo >> 0) & 0xFFU;
 
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
 
-		// PTT off
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
+	// PTT off
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
 
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
 
-		// Type, 2 for metadata
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x02U;
+	// Type, 2 for metadata
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x02U;
 
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
 
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
 
-		// TLV TAG for Metadata
-		buffer[length++] = 0x08U;
+	// TLV TAG for Metadata
+	buffer[length++] = 0x08U;
 
-		// TLV Length
-		buffer[length++] = 3U + 4U + 3U + 1U + 1U + m_callsign.size() + 1U;
+	// TLV Length
+	buffer[length++] = 3U + 4U + 3U + 1U + 1U + m_callsign.size() + 1U;
 
-		// DMR Id
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
+	// DMR Id
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
 
-		// Rpt Id
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
+	// Rpt Id
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
 
-		// Talk Group
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
-		buffer[length++] = 0x00U;
+	// Talk Group
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
 
-		// Time Slot
-		buffer[length++] = 0x00U;
+	// Time Slot
+	buffer[length++] = 0x00U;
 
-		// Color Code
-		buffer[length++] = 0x00U;
+	// Color Code
+	buffer[length++] = 0x00U;
 
-		// Callsign
-		for (std::string::const_iterator it = m_callsign.cbegin(); it != m_callsign.cend(); ++it)
-			buffer[length++] = *it;
+	// Callsign
+	for (std::string::const_iterator it = m_callsign.cbegin(); it != m_callsign.cend(); ++it)
+		buffer[length++] = *it;
 
-		// End of Metadata
-		buffer[length++] = 0x00U;
+	// End of Metadata
+	buffer[length++] = 0x00U;
 
-		length = 70U;
-	}
+	length = 70U;
 
 	if (length > 0U) {
 		if (m_debug)

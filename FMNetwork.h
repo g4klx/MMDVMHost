@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -26,7 +26,8 @@
 #include <string>
 
 enum FM_NETWORK_PROTOCOL {
-	FMNP_USRP
+	FMNP_USRP,
+	FMNP_RAW
 };
 
 class CFMNetwork {
@@ -42,7 +43,7 @@ public:
 
 	bool writeEnd();
 
-	unsigned int read(float* data, unsigned int nSamples);
+	unsigned int readData(float* data, unsigned int nSamples);
 
 	void reset();
 
@@ -61,7 +62,13 @@ private:
 	CRingBuffer<unsigned char> m_buffer;
 	unsigned int        m_seqNo;
 
-	bool writeStart();
+	bool writeUSRPStart();
+
+	bool writeUSRPData(float* data, unsigned int nSamples);
+	bool writeRawData(float* data, unsigned int nSamples);
+
+	bool writeUSRPEnd();
 };
 
 #endif
+

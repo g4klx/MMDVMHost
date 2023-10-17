@@ -147,7 +147,7 @@ unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
         space = 240U;           // 160 samples 12-bit
 
     float netData[160U]; // Modem can handle up to 160 samples at a time
-    unsigned int length = m_network->read(netData, 160U);  // 160 samples 12-bit
+    unsigned int length = m_network->readData(netData, 160U);  // 160 samples 12-bit
     if (length == 0U)
         return 0U;
 
