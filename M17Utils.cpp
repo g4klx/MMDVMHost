@@ -19,6 +19,7 @@
 #include "M17Utils.h"
 #include "M17Defines.h"
 
+#include <cstdint>
 #include <cassert>
 
 const std::string M17_CHARS = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-/.";

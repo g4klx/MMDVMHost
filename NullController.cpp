@@ -19,6 +19,7 @@
 #include "NullController.h"
 
 #include <cstdio>
+#include <cstdint>
 #include <cassert>
 
 const unsigned char MMDVM_FRAME_START = 0xE0U;
