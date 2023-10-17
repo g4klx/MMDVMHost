@@ -21,6 +21,7 @@
 
 #if defined(USE_M17)
 
+#include <cstdint>
 #include <cassert>
 
 const std::string M17_CHARS = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-/.";
