@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -290,6 +290,7 @@ m_pocsagNetworkModeHang(3U),
 m_pocsagNetworkDebug(false),
 m_fmNetworkEnabled(false),
 m_fmNetworkProtocol("USRP"),
+m_fmNetworkSampleRate(48000U),
 m_fmGatewayAddress(),
 m_fmGatewayPort(0U),
 m_fmLocalAddress(),
@@ -1033,6 +1034,8 @@ bool CConf::read()
 				m_fmNetworkEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "Protocol") == 0)
 				m_fmNetworkProtocol = value;
+			else if (::strcmp(key, "SampleRate") == 0)
+				m_fmNetworkSampleRate = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "LocalAddress") == 0)
 				m_fmLocalAddress = value;
 			else if (::strcmp(key, "LocalPort") == 0)
@@ -2271,6 +2274,11 @@ bool CConf::getFMNetworkEnabled() const
 std::string CConf::getFMNetworkProtocol() const
 {
 	return m_fmNetworkProtocol;
+}
+
+unsigned int CConf::getFMNetworkSampleRate() const
+{
+	return m_fmNetworkSampleRate;
 }
 
 std::string CConf::getFMGatewayAddress() const

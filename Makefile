@@ -3,7 +3,7 @@
 CC      = cc
 CXX     = c++
 CFLAGS  = -g -O3 -Wall -std=c++0x -pthread -DHAVE_LOG_H -I/usr/local/include
-LIBS    = -lpthread -lutil
+LIBS    = -lpthread -lutil -lsamplerate
 LDFLAGS = -g -L/usr/local/lib
 
 OBJECTS = \

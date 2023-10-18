@@ -25,22 +25,28 @@
 #include <cassert>
 #include <cstring>
 
+const unsigned int MMDVM_SAMPLERATE = 8000U;
+
 const unsigned int BUFFER_LENGTH = 1500U;
 
-CFMNetwork::CFMNetwork(const std::string& callsign, const std::string& protocol, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug) :
+CFMNetwork::CFMNetwork(const std::string& callsign, const std::string& protocol, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, unsigned int sampleRate, bool debug) :
 m_callsign(callsign),
 m_protocol(FMNP_USRP),
 m_socket(localAddress, localPort),
 m_addr(),
 m_addrLen(0U),
+m_sampleRate(sampleRate),
 m_debug(debug),
 m_enabled(false),
 m_buffer(2000U, "FM Network"),
-m_seqNo(0U)
+m_seqNo(0U),
+m_resampler(NULL),
+m_error(0)
 {
 	assert(!callsign.empty());
 	assert(gatewayPort > 0U);
 	assert(!gatewayAddress.empty());
+	assert(sampleRate > 0U);
 
 	if (CUDPSocket::lookup(gatewayAddress, gatewayPort, m_addr, m_addrLen) != 0)
 		m_addrLen = 0U;
@@ -54,10 +60,13 @@ m_seqNo(0U)
 		m_protocol = FMNP_RAW;
 	else
 		m_protocol = FMNP_USRP;
+
+	m_resampler = ::src_new(SRC_SINC_FASTEST, 1, &m_error);
 }
 
 CFMNetwork::~CFMNetwork()
 {
+	::src_delete(m_resampler);
 }
 
 bool CFMNetwork::open()
@@ -72,7 +81,7 @@ bool CFMNetwork::open()
 	return m_socket.open(m_addr);
 }
 
-bool CFMNetwork::writeData(float* data, unsigned int nSamples)
+bool CFMNetwork::writeData(const float* data, unsigned int nSamples)
 {
 	assert(data != NULL);
 	assert(nSamples > 0U);
@@ -85,7 +94,7 @@ bool CFMNetwork::writeData(float* data, unsigned int nSamples)
 		return false;
 }
 
-bool CFMNetwork::writeUSRPData(float* data, unsigned int nSamples)
+bool CFMNetwork::writeUSRPData(const float* data, unsigned int nSamples)
 {
 	assert(data != NULL);
 	assert(nSamples > 0U);
@@ -159,24 +168,47 @@ bool CFMNetwork::writeUSRPData(float* data, unsigned int nSamples)
 	return m_socket.write(buffer, length, m_addr, m_addrLen);
 }
 
-bool CFMNetwork::writeRawData(float* data, unsigned int nSamples)
+bool CFMNetwork::writeRawData(const float* in, unsigned int nIn)
 {
-	assert(data != NULL);
-	assert(nSamples > 0U);
+	assert(in != NULL);
+	assert(nIn > 0U);
 
-	unsigned char buffer[1000U];
-	::memset(buffer, 0x00U, 1000U);
+	unsigned char buffer[2000U];
 
 	unsigned int length = 0U;
 
-	for (unsigned int i = 0U; i < nSamples; i++) {
-		short val = short(data[i] * 32767.0F + 0.5F);			// Changing audio format from float to S16LE
+	if (m_sampleRate != MMDVM_SAMPLERATE) {
+		unsigned int nOut = (nIn * m_sampleRate) / MMDVM_SAMPLERATE;
 
-		buffer[length++] = (val >> 0) & 0xFFU;
-		buffer[length++] = (val >> 8) & 0xFFU;
+		float out[1000U];
 
-		buffer[length++] = (val >> 0) & 0xFFU;
-		buffer[length++] = (val >> 8) & 0xFFU;
+		SRC_DATA data;
+		data.data_in       = in;
+		data.data_out      = out;
+		data.input_frames  = nIn;
+		data.output_frames = nOut;
+		data.end_of_input  = 0;
+		data.src_ratio     = float(m_sampleRate) / float(MMDVM_SAMPLERATE);
+
+		int ret = ::src_process(m_resampler, &data);
+		if (ret != 0) {
+			LogError("Error from the write resampler - %d - %s", ret, ::src_strerror(ret));
+			return false;
+		}
+
+		for (unsigned int i = 0U; i < nOut; i++) {
+			short val = short(out[i] * 32767.0F + 0.5F);	// Changing audio format from float to S16LE
+
+			buffer[length++] = (val >> 0) & 0xFFU;
+			buffer[length++] = (val >> 8) & 0xFFU;
+		}
+	} else {
+		for (unsigned int i = 0U; i < nIn; i++) {
+			short val = short(in[i] * 32767.0F + 0.5F);	// Changing audio format from float to S16LE
+
+			buffer[length++] = (val >> 0) & 0xFFU;
+			buffer[length++] = (val >> 8) & 0xFFU;
+		}
 	}
 
 	if (m_debug)
@@ -296,38 +328,64 @@ void CFMNetwork::clock(unsigned int ms)
 		if (type == 0U)
 			m_buffer.addData(buffer + 32U, length - 32U);
 	} else if (m_protocol == FMNP_RAW) {
-		for (int i = 0U; i < length; i += 4U) {
-			unsigned char data[2U];
-
-			data[0U] = buffer[i + 0];
-			data[1U] = buffer[i + 1];
-
-			m_buffer.addData(data, 2U);
-		}
+		m_buffer.addData(buffer, length);
 	}
 }
 
-unsigned int CFMNetwork::readData(float* data, unsigned int nSamples)
+unsigned int CFMNetwork::readData(float* out, unsigned int nOut)
 {
-	assert(data != NULL);
-	assert(nSamples > 0U);
+	assert(out != NULL);
+	assert(nOut > 0U);
 
 	unsigned int bytes = m_buffer.dataSize() / sizeof(unsigned short);
 	if (bytes == 0U)
 		return 0U;
 
-	if (bytes < nSamples)
-		nSamples = bytes;
+	if ((m_protocol == FMNP_RAW) && (m_sampleRate != MMDVM_SAMPLERATE)) {
+		unsigned int nIn = (nOut * m_sampleRate) / MMDVM_SAMPLERATE;
 
-	unsigned char buffer[1500U];
-	m_buffer.getData(buffer, nSamples * sizeof(unsigned short));
+		if (bytes < nIn) {
+			nIn = bytes;
+			nOut = (nIn * MMDVM_SAMPLERATE) / m_sampleRate;
+		}
 
-	for (unsigned int i = 0U; i < nSamples; i++) {
-		short val = ((buffer[i * 2U + 0U] & 0xFFU) << 0) + ((buffer[i * 2U + 1U] & 0xFFU) << 8);
-		data[i] = float(val) / 65536.0F;
+		unsigned char buffer[2000U];
+		m_buffer.getData(buffer, nIn * sizeof(unsigned short));
+
+		float in[1000U];
+
+		for (unsigned int i = 0U; i < nIn; i++) {
+			short val = ((buffer[i * 2U + 0U] & 0xFFU) << 0) + ((buffer[i * 2U + 1U] & 0xFFU) << 8);
+			in[i] = float(val) / 65536.0F;
+		}
+
+		SRC_DATA data;
+		data.data_in       = in;
+		data.data_out      = out;
+		data.input_frames  = nIn;
+		data.output_frames = nOut;
+		data.end_of_input  = 0;
+		data.src_ratio     = float(MMDVM_SAMPLERATE) / float(m_sampleRate);
+
+		int ret = ::src_process(m_resampler, &data);
+		if (ret != 0) {
+			LogError("Error from the read resampler - %d - %s", ret, ::src_strerror(ret));
+			return false;
+		}
+	} else {
+		if (bytes < nOut)
+			nOut = bytes;
+
+		unsigned char buffer[1500U];
+		m_buffer.getData(buffer, nOut * sizeof(unsigned short));
+
+		for (unsigned int i = 0U; i < nOut; i++) {
+			short val = ((buffer[i * 2U + 0U] & 0xFFU) << 0) + ((buffer[i * 2U + 1U] & 0xFFU) << 8);
+			out[i] = float(val) / 65536.0F;
+		}
 	}
 
-	return nSamples;
+	return nOut;
 }
 
 void CFMNetwork::reset()
@@ -448,3 +506,4 @@ bool CFMNetwork::writeUSRPStart()
 		return true;
 	}
 }
+

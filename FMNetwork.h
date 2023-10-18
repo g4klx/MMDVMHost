@@ -22,6 +22,8 @@
 #include "RingBuffer.h"
 #include "UDPSocket.h"
 
+#include <samplerate.h>
+
 #include <cstdint>
 #include <string>
 
@@ -32,18 +34,18 @@ enum FM_NETWORK_PROTOCOL {
 
 class CFMNetwork {
 public:
-	CFMNetwork(const std::string& callsign, const std::string& protocol, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug);
+	CFMNetwork(const std::string& callsign, const std::string& protocol, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, unsigned int sampleRate, bool debug);
 	~CFMNetwork();
 
 	bool open();
 
 	void enable(bool enabled);
 
-	bool writeData(float* data, unsigned int nSamples);
+	bool writeData(const float* data, unsigned int nSamples);
 
 	bool writeEnd();
 
-	unsigned int readData(float* data, unsigned int nSamples);
+	unsigned int readData(float* out, unsigned int nOut);
 
 	void reset();
 
@@ -57,15 +59,18 @@ private:
 	CUDPSocket          m_socket;
 	sockaddr_storage    m_addr;
 	unsigned int        m_addrLen;
+	unsigned int        m_sampleRate;
 	bool                m_debug;
 	bool                m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
 	unsigned int        m_seqNo;
+	SRC_STATE*          m_resampler;
+	int                 m_error;
 
 	bool writeUSRPStart();
 
-	bool writeUSRPData(float* data, unsigned int nSamples);
-	bool writeRawData(float* data, unsigned int nSamples);
+	bool writeUSRPData(const float* data, unsigned int nSamples);
+	bool writeRawData(const float* in, unsigned int nIn);
 
 	bool writeUSRPEnd();
 };

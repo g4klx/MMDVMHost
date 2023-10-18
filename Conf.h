@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -303,6 +303,7 @@ public:
   // The FM Network section
   bool         getFMNetworkEnabled() const;
   std::string  getFMNetworkProtocol() const;
+  unsigned int getFMNetworkSampleRate() const;
   std::string  getFMGatewayAddress() const;
   unsigned short getFMGatewayPort() const;
   std::string  getFMLocalAddress() const;
@@ -620,6 +621,7 @@ private:
 
   bool         m_fmNetworkEnabled;
   std::string  m_fmNetworkProtocol;
+  unsigned int m_fmNetworkSampleRate;
   std::string  m_fmGatewayAddress;
   unsigned short m_fmGatewayPort;
   std::string  m_fmLocalAddress;
