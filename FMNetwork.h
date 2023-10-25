@@ -34,7 +34,7 @@ enum FM_NETWORK_PROTOCOL {
 
 class CFMNetwork {
 public:
-	CFMNetwork(const std::string& callsign, const std::string& protocol, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, unsigned int sampleRate, bool debug);
+	CFMNetwork(const std::string& callsign, const std::string& protocol, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, unsigned int sampleRate, const std::string& squelchFile, bool debug);
 	~CFMNetwork();
 
 	bool open();
@@ -60,19 +60,23 @@ private:
 	sockaddr_storage    m_addr;
 	unsigned int        m_addrLen;
 	unsigned int        m_sampleRate;
+	std::string         m_squelchFile;
 	bool                m_debug;
 	bool                m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
 	unsigned int        m_seqNo;
 	SRC_STATE*          m_resampler;
 	int                 m_error;
+	int                 m_fd;
 
 	bool writeUSRPStart();
+	bool writeRawStart();
 
 	bool writeUSRPData(const float* data, unsigned int nSamples);
 	bool writeRawData(const float* in, unsigned int nIn);
 
 	bool writeUSRPEnd();
+	bool writeRawEnd();
 };
 
 #endif

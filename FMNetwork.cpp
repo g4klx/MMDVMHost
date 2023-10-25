@@ -25,23 +25,30 @@
 #include <cassert>
 #include <cstring>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
+
 const unsigned int MMDVM_SAMPLERATE = 8000U;
 
 const unsigned int BUFFER_LENGTH = 1500U;
 
-CFMNetwork::CFMNetwork(const std::string& callsign, const std::string& protocol, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, unsigned int sampleRate, bool debug) :
+CFMNetwork::CFMNetwork(const std::string& callsign, const std::string& protocol, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, unsigned int sampleRate, const std::string& squelchFile, bool debug) :
 m_callsign(callsign),
 m_protocol(FMNP_USRP),
 m_socket(localAddress, localPort),
 m_addr(),
 m_addrLen(0U),
 m_sampleRate(sampleRate),
+m_squelchFile(squelchFile),
 m_debug(debug),
 m_enabled(false),
 m_buffer(2000U, "FM Network"),
 m_seqNo(0U),
 m_resampler(NULL),
-m_error(0)
+m_error(0),
+m_fd(-1)
 {
 	assert(!callsign.empty());
 	assert(gatewayPort > 0U);
@@ -77,6 +84,14 @@ bool CFMNetwork::open()
 	}
 
 	LogMessage("Opening FM network connection");
+
+	if (!m_squelchFile.empty()) {
+		m_fd = ::open(m_squelchFile.c_str(), O_WRONLY | O_SYNC);
+		if (m_fd == -1) {
+			LogError("Cannot open the squelch file: %s, errno=%d", m_squelchFile.c_str(), errno);
+			return false;
+		}
+	}
 
 	return m_socket.open(m_addr);
 }
@@ -173,6 +188,12 @@ bool CFMNetwork::writeRawData(const float* in, unsigned int nIn)
 	assert(in != NULL);
 	assert(nIn > 0U);
 
+	if (m_seqNo == 0U) {
+		bool ret = writeRawStart();
+		if (!ret)
+			return false;
+	}
+
 	unsigned char buffer[2000U];
 
 	unsigned int length = 0U;
@@ -214,6 +235,8 @@ bool CFMNetwork::writeRawData(const float* in, unsigned int nIn)
 	if (m_debug)
 		CUtils::dump(1U, "FM Network Data Sent", buffer, length);
 
+	m_seqNo++;
+
 	return m_socket.write(buffer, length, m_addr, m_addrLen);
 }
 
@@ -222,7 +245,7 @@ bool CFMNetwork::writeEnd()
 	if (m_protocol == FMNP_USRP)
 		return writeUSRPEnd();
 	else
-		return true;
+		return writeRawEnd();
 }
 
 bool CFMNetwork::writeUSRPEnd()
@@ -287,6 +310,21 @@ bool CFMNetwork::writeUSRPEnd()
 	} else {
 		return true;
 	}
+}
+
+bool CFMNetwork::writeRawEnd()
+{
+	m_seqNo = 0U;
+
+	if (m_fd != -1) {
+		size_t n = ::write(m_fd, "Z", 1);
+		if (n != 1) {
+			LogError("Cannot write to the squelch file: %s, errno=%d", m_squelchFile.c_str(), errno);
+			return false;
+		}
+	}
+
+	return true;
 }
 
 void CFMNetwork::clock(unsigned int ms)
@@ -404,6 +442,11 @@ void CFMNetwork::close()
 {
 	m_socket.close();
 
+	if (m_fd != -1) {
+		::close(m_fd);
+		m_fd = -1;
+	}
+
 	LogMessage("Closing FM network connection");
 }
 
@@ -512,5 +555,18 @@ bool CFMNetwork::writeUSRPStart()
 	} else {
 		return true;
 	}
+}
+
+bool CFMNetwork::writeRawStart()
+{
+	if (m_fd != -1) {
+		size_t n = ::write(m_fd, "O", 1);
+		if (n != 1) {
+			LogError("Cannot write to the squelch file: %s, errno=%d", m_squelchFile.c_str(), errno);
+			return false;
+		}
+	}
+
+	return true;
 }
 
