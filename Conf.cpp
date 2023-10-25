@@ -384,6 +384,8 @@ m_pocsagNetworkDebug(false),
 #if defined(USE_FM)
 m_fmNetworkEnabled(false),
 m_fmNetworkProtocol("USRP"),
+m_fmNetworkSampleRate(48000U),
+m_fmNetworkSquelchFile(),
 m_fmGatewayAddress(),
 m_fmGatewayPort(0U),
 m_fmLocalAddress(),
@@ -1181,6 +1183,10 @@ bool CConf::read()
 				m_fmNetworkEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "Protocol") == 0)
 				m_fmNetworkProtocol = value;
+			else if (::strcmp(key, "SampleRate") == 0)
+				m_fmNetworkSampleRate = (unsigned int)::atoi(value);
+			else if (::strcmp(key, "SquelchFile") == 0)
+				m_fmNetworkSquelchFile = value;
 			else if (::strcmp(key, "LocalAddress") == 0)
 				m_fmLocalAddress = value;
 			else if (::strcmp(key, "LocalPort") == 0)
@@ -2385,6 +2391,16 @@ bool CConf::getFMNetworkEnabled() const
 std::string CConf::getFMNetworkProtocol() const
 {
 	return m_fmNetworkProtocol;
+}
+
+unsigned int CConf::getFMNetworkSampleRate() const
+{
+	return m_fmNetworkSampleRate;
+}
+
+std::string CConf::getFMNetworkSquelchFile() const
+{
+	return m_fmNetworkSquelchFile;
 }
 
 std::string CConf::getFMGatewayAddress() const

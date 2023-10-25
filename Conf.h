@@ -359,6 +359,8 @@ public:
 	// The FM Network section
 	bool         getFMNetworkEnabled() const;
 	std::string  getFMNetworkProtocol() const;
+	unsigned int getFMNetworkSampleRate() const;
+	std::string  getFMNetworkSquelchFile() const;
 	std::string  getFMGatewayAddress() const;
 	unsigned short getFMGatewayPort() const;
 	std::string  getFMLocalAddress() const;
@@ -693,6 +695,8 @@ private:
 #if defined(USE_FM)
 	bool         m_fmNetworkEnabled;
 	std::string  m_fmNetworkProtocol;
+	unsigned int m_fmNetworkSampleRate;
+	std::string  m_fmNetworkSquelchFile;
 	std::string  m_fmGatewayAddress;
 	unsigned short m_fmGatewayPort;
 	std::string  m_fmLocalAddress;
