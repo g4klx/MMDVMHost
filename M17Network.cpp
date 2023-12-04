@@ -104,7 +104,7 @@ bool CM17Network::write(const unsigned char* data)
 	buffer[53U] = 0x00U;
 
 	if (m_debug)
-		CUtils::dump(1U, "M17 data transmitted", buffer, 54U);
+		CUtils::dump(1U, "M17 Network Transmitted", buffer, 54U);
 
 	return m_socket.write(buffer, 54U, m_addr, m_addrLen);
 }
@@ -131,7 +131,7 @@ void CM17Network::clock(unsigned int ms)
 	}
 
 	if (m_debug)
-		CUtils::dump(1U, "M17 Network Data Received", buffer, length);
+		CUtils::dump(1U, "M17 Network Received", buffer, length);
 
 	if (!m_enabled)
 		return;
@@ -209,7 +209,7 @@ void CM17Network::sendPing()
 	buffer[3U] = 'G';
 
 	if (m_debug)
-		CUtils::dump(1U, "M17 data transmitted", buffer, 4U);
+		CUtils::dump(1U, "M17 Network Transmitted", buffer, 4U);
 
 	m_socket.write(buffer, 4U, m_addr, m_addrLen);
 }
