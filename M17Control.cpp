@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2020,2021 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2020,2021,2023 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -553,7 +553,10 @@ void CM17Control::writeNetwork()
 	m_networkWatchdog.start();
 
 	if (!m_allowEncryption) {
-		unsigned char type = m_netLSF.getEncryptionType();
+		CM17LSF lsf;
+		lsf.setNetwork(netData);
+
+		unsigned char type = lsf.getEncryptionType();
 		if (type != M17_ENCRYPTION_TYPE_NONE) {
 			LogMessage("M17 encryption rejection");
 			m_network->reset();
