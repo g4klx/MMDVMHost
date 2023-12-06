@@ -133,10 +133,8 @@ void CM17Network::clock(unsigned int ms)
 	if (m_debug)
 		CUtils::dump(1U, "M17 Network Received", buffer, length);
 
-	if (!m_enabled) {
-		LogMessage("M17 Network not enabled");
+	if (!m_enabled)
 		return;
-	}
 
 	if (::memcmp(buffer + 0U, "PING", 4U) == 0)
 		return;
@@ -150,10 +148,8 @@ void CM17Network::clock(unsigned int ms)
 	if (m_inId == 0U) {
 		m_inId = id;
 	} else {
-		if (id != m_inId) {
-			LogMessage("M17 Network id rejection");
+		if (id != m_inId)
 			return;
-		}
 	}
 
 	unsigned char c = length - 6U;

@@ -539,13 +539,10 @@ void CM17Control::writeNetwork()
 	if (!exists)
 		return;
 
-	if (!m_enabled) {
-		LogMessage("M17 not enabled");
+	if (!m_enabled)
 		return;
-	}
 
 	if (m_rfState != RS_RF_LISTENING && m_rfState != RS_RF_LATE_ENTRY && m_netState == RS_NET_IDLE) {
-		LogMessage("M17 status is incorrect %d,%d", m_rfState, m_netState);
 		m_network->reset();
 		return;
 	}
@@ -558,7 +555,6 @@ void CM17Control::writeNetwork()
 
 		unsigned char type = lsf.getEncryptionType();
 		if (type != M17_ENCRYPTION_TYPE_NONE) {
-			LogMessage("M17 encryption rejection");
 			m_network->reset();
 			return;
 		}
@@ -623,8 +619,6 @@ void CM17Control::writeNetwork()
 		decorrelator(temp, start + 2U);
 
 		writeQueueNet(start);
-	} else {
-		LogMessage("M17 in an odd state 1 %d", m_netState);
 	}
 
 	if (m_netState == RS_NET_AUDIO || m_netState == RS_NET_DATA_AUDIO) {
@@ -737,8 +731,6 @@ void CM17Control::writeNetwork()
 
 			writeEndNet();
 		}
-	} else {
-		LogMessage("M17 in an odd state 2 %d", m_netState);
 	}
 }
 
