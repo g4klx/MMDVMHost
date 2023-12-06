@@ -40,6 +40,8 @@ m_lsf(NULL),
 m_valid(false)
 {
 	m_lsf = new unsigned char[M17_LSF_LENGTH_BYTES];
+
+	::memset(m_lsf, 0x00U, M17_LSF_LENGTH_BYTES);
 }
 
 CM17LSF::~CM17LSF()
