@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -133,8 +133,10 @@ void CM17Network::clock(unsigned int ms)
 	if (m_debug)
 		CUtils::dump(1U, "M17 Network Received", buffer, length);
 
-	if (!m_enabled)
+	if (!m_enabled) {
+		LogMessage("M17 Network not enabled");
 		return;
+	}
 
 	if (::memcmp(buffer + 0U, "PING", 4U) == 0)
 		return;
@@ -148,8 +150,10 @@ void CM17Network::clock(unsigned int ms)
 	if (m_inId == 0U) {
 		m_inId = id;
 	} else {
-		if (id != m_inId)
+		if (id != m_inId) {
+			LogMessage("M17 Network id rejection");
 			return;
+		}
 	}
 
 	unsigned char c = length - 6U;
@@ -188,7 +192,9 @@ void CM17Network::reset()
 
 void CM17Network::enable(bool enabled)
 {
-	if (!enabled && m_enabled)
+	if (enabled && !m_enabled)
+		reset();
+	else if (!enabled && m_enabled)
 		m_buffer.clear();
 
 	m_enabled = enabled;
