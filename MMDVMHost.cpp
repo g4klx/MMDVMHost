@@ -2638,7 +2638,7 @@ void CMMDVMHost::remoteControl()
 				m_nxdnNetwork->enable(true);
 			break;
 		case RCD_ENABLE_M17:
-			if (m_m17 != NULL && m_m17Enabled == false)
+			if (m_m17 != NULL && !m_m17Enabled)
 				processEnableCommand(m_m17Enabled, true);
 			if (m_m17Network != NULL)
 				m_m17Network->enable(true);
@@ -2682,7 +2682,7 @@ void CMMDVMHost::remoteControl()
 				m_nxdnNetwork->enable(false);
 			break;
 		case RCD_DISABLE_M17:
-			if (m_m17 != NULL && m_m17Enabled == true)
+			if (m_m17 != NULL && m_m17Enabled)
 				processEnableCommand(m_m17Enabled, false);
 			if (m_m17Network != NULL)
 				m_m17Network->enable(false);

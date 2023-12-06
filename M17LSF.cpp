@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -38,6 +38,8 @@ m_lsf(NULL),
 m_valid(false)
 {
 	m_lsf = new unsigned char[M17_LSF_LENGTH_BYTES];
+
+	::memset(m_lsf, 0x00U, M17_LSF_LENGTH_BYTES);
 }
 
 CM17LSF::~CM17LSF()

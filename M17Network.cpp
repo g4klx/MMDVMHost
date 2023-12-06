@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -104,7 +104,7 @@ bool CM17Network::write(const unsigned char* data)
 	buffer[53U] = 0x00U;
 
 	if (m_debug)
-		CUtils::dump(1U, "M17 data transmitted", buffer, 54U);
+		CUtils::dump(1U, "M17 Network Transmitted", buffer, 54U);
 
 	return m_socket.write(buffer, 54U, m_addr, m_addrLen);
 }
@@ -131,7 +131,7 @@ void CM17Network::clock(unsigned int ms)
 	}
 
 	if (m_debug)
-		CUtils::dump(1U, "M17 Network Data Received", buffer, length);
+		CUtils::dump(1U, "M17 Network Received", buffer, length);
 
 	if (!m_enabled)
 		return;
@@ -188,7 +188,9 @@ void CM17Network::reset()
 
 void CM17Network::enable(bool enabled)
 {
-	if (!enabled && m_enabled)
+	if (enabled && !m_enabled)
+		reset();
+	else if (!enabled && m_enabled)
 		m_buffer.clear();
 
 	m_enabled = enabled;
@@ -209,7 +211,7 @@ void CM17Network::sendPing()
 	buffer[3U] = 'G';
 
 	if (m_debug)
-		CUtils::dump(1U, "M17 data transmitted", buffer, 4U);
+		CUtils::dump(1U, "M17 Network Transmitted", buffer, 4U);
 
 	m_socket.write(buffer, 4U, m_addr, m_addrLen);
 }

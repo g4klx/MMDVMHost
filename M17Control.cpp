@@ -592,7 +592,10 @@ void CM17Control::writeNetwork()
 	m_networkWatchdog.start();
 
 	if (!m_allowEncryption) {
-		unsigned char type = m_netLSF.getEncryptionType();
+		CM17LSF lsf;
+		lsf.setNetwork(netData);
+
+		unsigned char type = lsf.getEncryptionType();
 		if (type != M17_ENCRYPTION_TYPE_NONE) {
 			m_network->reset();
 			return;
