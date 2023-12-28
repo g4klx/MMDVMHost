@@ -553,9 +553,11 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CModem* modem)
 	if (type == "TFT Surenoo") {
 		std::string port        = conf.getTFTSerialPort();
 		unsigned int brightness = conf.getTFTSerialBrightness();
+		unsigned int screenLayout = conf.getTFTSerialScreenLayout();
 
 		LogInfo("    Port: %s", port.c_str());
 		LogInfo("    Brightness: %u", brightness);
+		LogInfo("    Screen Layout: %u", screenLayout);
 
 		ISerialPort* serial = NULL;
 		if (port == "modem")
@@ -563,7 +565,7 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CModem* modem)
 		else
 			serial = new CUARTController(port, 115200U);
 
-		display = new CTFTSurenoo(conf.getCallsign(), dmrid, serial, brightness, conf.getDuplex());
+		display = new CTFTSurenoo(conf.getCallsign(), dmrid, serial, brightness, conf.getDuplex(), screenLayout);
 	} else if (type == "Nextion") {
 		std::string port            = conf.getNextionPort();
 		unsigned int brightness     = conf.getNextionBrightness();
