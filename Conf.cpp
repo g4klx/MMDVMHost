@@ -308,6 +308,7 @@ m_ax25NetworkSpeed(9600U),
 m_ax25NetworkDebug(false),
 m_tftSerialPort("/dev/ttyAMA0"),
 m_tftSerialBrightness(50U),
+m_tftSerialScreenLayout(0U),
 m_hd44780Rows(2U),
 m_hd44780Columns(16U),
 m_hd44780Pins(),
@@ -1073,6 +1074,8 @@ bool CConf::read()
 				m_tftSerialPort = value;
 			else if (::strcmp(key, "Brightness") == 0)
 				m_tftSerialBrightness = (unsigned int)::atoi(value);
+			else if (::strcmp(key, "ScreenLayout") == 0)
+				m_tftSerialScreenLayout = (unsigned int)::atoi(value);
 		} else if (section == SECTION_HD44780) {
 			if (::strcmp(key, "Rows") == 0)
 				m_hd44780Rows = (unsigned int)::atoi(value);
@@ -2367,6 +2370,11 @@ std::string CConf::getTFTSerialPort() const
 unsigned int CConf::getTFTSerialBrightness() const
 {
 	return m_tftSerialBrightness;
+}
+
+unsigned int CConf::getTFTSerialScreenLayout() const
+{
+	return m_tftSerialScreenLayout;
 }
 
 unsigned int CConf::getHD44780Rows() const

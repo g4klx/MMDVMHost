@@ -29,14 +29,32 @@
  * other Surenoo UART-LCD will be work, but display area is still 160x128
  * (tested with JC028-V03 240x320 module)
  */
-
-// x = 0 to 159, y = 0 to 127 - Landscape
-// x = 0 to 127, y = 0 to 159 - Portrait
-#define X_WIDTH			160
-#define Y_WIDTH			128
+struct layoutdef {
+	int x_width;
+	int y_width;
+	int rotation;
+	int mode_font_size;
+	int status_font_size;
+	int status_margin;
+};
 
 #define ROTATION_PORTRAIT	0
 #define ROTATION_LANDSCAPE	1
+
+#define FONT_SMALL		16	//  8x16
+#define FONT_MEDIUM		24	// 12x24
+#define FONT_LARGE		32	// 16x32
+
+static const struct layoutdef Layout[] = {
+	{160, 128, ROTATION_LANDSCAPE, FONT_MEDIUM, FONT_SMALL, 32},
+	{128, 160, ROTATION_PORTRAIT, FONT_MEDIUM, FONT_SMALL, 32},
+	{320, 240, ROTATION_LANDSCAPE, FONT_LARGE, FONT_MEDIUM, 48},
+	{240, 320, ROTATION_PORTRAIT, FONT_LARGE, FONT_MEDIUM, 48},
+};
+
+#define X_WIDTH			Layout[m_screenLayout].x_width
+#define Y_WIDTH			Layout[m_screenLayout].y_width
+#define ROTATION		Layout[m_screenLayout].rotation
 
 enum LcdColour {
 	COLOUR_BLACK, COLOUR_RED, COLOUR_GREEN, COLOUR_BLUE,
@@ -45,10 +63,6 @@ enum LcdColour {
 	COLOUR_DARK_YELLOW, COLOUR_DARK_CYAN, COLOUR_DARK_MAGENTA, COLOUR_WHITE
 };
 
-#define FONT_SMALL		16	//  8x16
-#define FONT_MEDIUM		24	// 12x24
-#define FONT_LARGE		32	// 16x32
-
 #define INFO_COLOUR		COLOUR_CYAN
 #define EXT_COLOUR		COLOUR_DARK_GREEN
 #define BG_COLOUR		COLOUR_BLACK
@@ -56,10 +70,10 @@ enum LcdColour {
 #define MODE_COLOUR   		COLOUR_YELLOW
 
 // MODE_FONT_SIZE should be equal or larger than STATUS_FONT_SIZE
-#define MODE_FONT_SIZE		FONT_MEDIUM
-#define STATUS_FONT_SIZE	FONT_SMALL
+#define MODE_FONT_SIZE		Layout[m_screenLayout].mode_font_size
+#define STATUS_FONT_SIZE	Layout[m_screenLayout].status_font_size
 
-#define STATUS_MARGIN		32	// pixel
+#define STATUS_MARGIN		Layout[m_screenLayout].status_margin
 
 #define MODE_CHARS		(X_WIDTH / (MODE_FONT_SIZE / 2))
 #define STATUS_CHARS		(X_WIDTH / (STATUS_FONT_SIZE / 2))
@@ -81,7 +95,7 @@ enum LcdColour {
 #define STR_P25			"P25"
 #define STR_YSF			"SystemFusion"
 
-CTFTSurenoo::CTFTSurenoo(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool duplex) :
+CTFTSurenoo::CTFTSurenoo(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool duplex, unsigned int screenLayout) :
 CDisplay(),
 m_callsign(callsign),
 m_dmrid(dmrid),
@@ -92,7 +106,8 @@ m_duplex(duplex),
 //m_duplex(true),                      // uncomment to force duplex display for testing!
 m_refresh(false),
 m_refreshTimer(1000U, 0U, REFRESH_PERIOD),
-m_lineBuf(NULL)
+m_lineBuf(NULL),
+m_screenLayout(screenLayout)
 {
 	assert(serial != NULL);
 	assert(brightness >= 0U && brightness <= 255U);
@@ -453,7 +468,7 @@ void CTFTSurenoo::refreshDisplay(void)
 	m_serial->write((unsigned char*)m_temp, (unsigned int)::strlen(m_temp));
 
 	// config display
-	setRotation(ROTATION_LANDSCAPE);
+	setRotation(ROTATION);
 	setBrightness(m_brightness);
 	setBackground(BG_COLOUR);
 	m_serial->write((unsigned char*)m_temp, (unsigned int)::strlen(m_temp));
