@@ -20,7 +20,7 @@ OBJECTS = \
 all:		MMDVMHost RemoteCommand
 
 MMDVMHost:	GitVersion.h $(OBJECTS) 
-		$(CXX) $(OBJECTS) $(CFLAGS) $(LIBS) -o MMDVMHost
+		$(CXX) $(OBJECTS) $(LDFLAGS) $(LIBS) -o MMDVMHost
 
 RemoteCommand:	Log.o MQTTPublisher.o RemoteCommand.o UDPSocket.o
 		$(CXX) Log.o MQTTPublisher.o RemoteCommand.o UDPSocket.o $(CFLAGS) $(LIBS) -o RemoteCommand
