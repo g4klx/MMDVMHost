@@ -20,7 +20,7 @@ OBJECTS = \
 all:		MMDVMHost
 
 MMDVMHost:	GitVersion.h $(OBJECTS) 
-		$(CXX) $(OBJECTS) $(CFLAGS) $(LIBS) -o MMDVMHost
+		$(CXX) $(OBJECTS) $(LDFLAGS) $(LIBS) -o MMDVMHost
 
 %.o: %.cpp
 		$(CXX) $(CFLAGS) -c -o $@ $<

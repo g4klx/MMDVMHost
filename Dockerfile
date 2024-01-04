@@ -5,6 +5,8 @@ RUN apk add --update --no-cache \
     make \
     g++ \
     git \
+    libsamplerate-dev \
+    linux-headers \
   && rm -rf /var/cache/apk/*
 
 ADD ./ /MMDVMHost
