@@ -159,8 +159,6 @@ bool CUDPSocket::open(const sockaddr_storage& address)
 
 bool CUDPSocket::open(unsigned int af)
 {
-	(void)af;
-
 	// determine protocol family, PF_INET or PF_INET6, by lookup the localAddress
 	struct sockaddr_storage	addr;
 	unsigned int			addrlen;
@@ -168,6 +166,7 @@ bool CUDPSocket::open(unsigned int af)
 	struct addrinfo hints;
 	::memset(&hints, 0, sizeof(hints));
 	hints.ai_flags  = AI_PASSIVE;
+	hints.ai_family = af;
 
 	int err = lookup(m_localAddress, m_localPort, addr, addrlen, hints);
 	if (err != 0) {
