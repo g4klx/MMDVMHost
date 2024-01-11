@@ -173,6 +173,9 @@ bool CUDPSocket::open(unsigned int af)
 	if (err != 0) {
 		LogError("The local address is invalid - %s", m_localAddress.c_str());
 		return false;
+	} else {
+		sockaddr_in* paddr = (sockaddr_in*)&addr;
+		LogMessage("resolved %s:%d, PF %d, %d", m_localAddress.c_str(), m_localPort, paddr->sin_family, ntohs(paddr->sin_port));
 	}
 
 	close();
