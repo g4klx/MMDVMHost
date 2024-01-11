@@ -34,33 +34,24 @@
 #endif
 
 CUDPSocket::CUDPSocket(const std::string& address, unsigned short port) :
-m_address_save(address),
-m_port_save(port),
-m_counter(0U)
+m_localAddress(address),
+m_localPort(port)
 {
-	for (int i = 0; i < UDP_SOCKET_MAX; i++) {
-		m_address[i] = "";
-		m_port[i] = 0U;
-		m_af[i] = 0U;
-		m_fd[i] = -1;
-	}
+	m_af = 0U;
+	m_fd = -1;
 }
 
 CUDPSocket::CUDPSocket(unsigned short port) :
-m_address_save(),
-m_port_save(port),
-m_counter(0U)
+m_localAddress(),
+m_localPort(port)
 {
-	for (int i = 0; i < UDP_SOCKET_MAX; i++) {
-		m_address[i] = "";
-		m_port[i] = 0U;
-		m_af[i] = 0U;
-		m_fd[i] = -1;
-	}
+	m_af = 0U;
+	m_fd = -1;
 }
 
 CUDPSocket::~CUDPSocket()
 {
+	close();
 }
 
 void CUDPSocket::startup()
@@ -168,30 +159,26 @@ bool CUDPSocket::open(const sockaddr_storage& address)
 
 bool CUDPSocket::open(unsigned int af)
 {
-	return open(0, af, m_address_save, m_port_save);
-}
+	(void)af;
 
-bool CUDPSocket::open(const unsigned int index, const unsigned int af, const std::string& address, const unsigned short port)
-{
-	sockaddr_storage addr;
-	unsigned int addrlen;
+	// determine protocol family, PF_INET or PF_INET6, by lookup the localAddress
+	struct sockaddr_storage	addr;
+	unsigned int			addrlen;
+
 	struct addrinfo hints;
-
 	::memset(&hints, 0, sizeof(hints));
 	hints.ai_flags  = AI_PASSIVE;
-	hints.ai_family = af;
 
-	/* to determine protocol family, call lookup() first. */
-	int err = lookup(address, port, addr, addrlen, hints);
+	int err = lookup(m_localAddress, m_localPort, addr, addrlen, hints);
 	if (err != 0) {
-		LogError("The local address is invalid - %s", address.c_str());
+		LogError("The local address is invalid - %s", m_localAddress.c_str());
 		return false;
 	}
 
-	close(index);
+	close();
 
-	int fd = ::socket(addr.ss_family, SOCK_DGRAM, 0);
-	if (fd < 0) {
+	m_fd = ::socket(addr.ss_family, SOCK_DGRAM, 0);
+	if (m_fd < 0) {
 #if defined(_WIN32) || defined(_WIN64)
 		LogError("Cannot create the UDP socket, err: %lu", ::GetLastError());
 #else
@@ -200,14 +187,11 @@ bool CUDPSocket::open(const unsigned int index, const unsigned int af, const std
 		return false;
 	}
 
-	m_address[index] = address;
-	m_port[index] = port;
-	m_af[index] = addr.ss_family;
-	m_fd[index] = fd;
+	m_af = addr.ss_family;
 
-	if (port > 0U) {
+	if (m_localPort > 0) {
 		int reuse = 1;
-		if (::setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) == -1) {
+		if (::setsockopt(m_fd, SOL_SOCKET, SO_REUSEADDR, (char *)&reuse, sizeof(reuse)) == -1) {
 #if defined(_WIN32) || defined(_WIN64)
 			LogError("Cannot set the UDP socket option, err: %lu", ::GetLastError());
 #else
@@ -216,7 +200,7 @@ bool CUDPSocket::open(const unsigned int index, const unsigned int af, const std
 			return false;
 		}
 
-		if (::bind(fd, (sockaddr*)&addr, addrlen) == -1) {
+		if (::bind(m_fd, (sockaddr*)&addr, addrlen) == -1) {
 #if defined(_WIN32) || defined(_WIN64)
 			LogError("Cannot bind the UDP address, err: %lu", ::GetLastError());
 #else
@@ -225,7 +209,7 @@ bool CUDPSocket::open(const unsigned int index, const unsigned int af, const std
 			return false;
 		}
 
-		LogInfo("Opening UDP port on %hu", port);
+		LogInfo("Opening UDP port on %hu", m_localPort);
 	}
 
 	return true;
@@ -236,26 +220,19 @@ int CUDPSocket::read(unsigned char* buffer, unsigned int length, sockaddr_storag
 	assert(buffer != NULL);
 	assert(length > 0U);
 
-	// Check that the readfrom() won't block
-	int i, n;
-	struct pollfd pfd[UDP_SOCKET_MAX];
-	for (i = n = 0; i < UDP_SOCKET_MAX; i++) {
-		if (m_fd[i] >= 0) {
-			pfd[n].fd = m_fd[i];
-			pfd[n].events = POLLIN;
-			n++;
-		}
-	}
-
-	// no socket descriptor to receive
-	if (n == 0)
+	if (m_fd < 0)
 		return 0;
+
+	// Check that the readfrom() won't block
+	struct pollfd pfd[1];
+	pfd[0].fd = m_fd;
+	pfd[0].events = POLLIN;
 
 	// Return immediately
 #if defined(_WIN32) || defined(_WIN64)
-	int ret = WSAPoll(pfd, n, 0);
+	int ret = WSAPoll(pfd, 1, 0);
 #else
-	int ret = ::poll(pfd, n, 0);
+	int ret = ::poll(pfd, 1, 0);
 #endif
 	if (ret < 0) {
 #if defined(_WIN32) || defined(_WIN64)
@@ -266,14 +243,7 @@ int CUDPSocket::read(unsigned char* buffer, unsigned int length, sockaddr_storag
 		return -1;
 	}
 
-	int index;
-	for (i = 0; i < n; i++) {
-		// round robin
-	  	index = (i + m_counter) % n;
-		if (pfd[index].revents & POLLIN)
-			break;
-	}
-	if (i == n)
+	if ((pfd[0].revents & POLLIN) != POLLIN)
 		return 0;
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -283,9 +253,9 @@ int CUDPSocket::read(unsigned char* buffer, unsigned int length, sockaddr_storag
 #endif
 
 #if defined(_WIN32) || defined(_WIN64)
-	int len = ::recvfrom(pfd[index].fd, (char*)buffer, length, 0, (sockaddr *)&address, &size);
+	int len = ::recvfrom(pfd[0].fd, (char*)buffer, length, 0, (sockaddr *)&address, &size);
 #else
-	ssize_t len = ::recvfrom(pfd[index].fd, (char*)buffer, length, 0, (sockaddr *)&address, &size);
+	ssize_t len = ::recvfrom(pfd[0].fd, (char*)buffer, length, 0, (sockaddr *)&address, &size);
 #endif
 	if (len <= 0) {
 #if defined(_WIN32) || defined(_WIN64)
@@ -294,7 +264,7 @@ int CUDPSocket::read(unsigned char* buffer, unsigned int length, sockaddr_storag
 		LogError("Error returned from recvfrom, err: %d", errno);
 
 		if (len == -1 && errno == ENOTSOCK) {
-			LogMessage("Re-opening UDP port on %hu", m_port[index]);
+			LogMessage("Re-opening UDP port on %hu", m_localPort);
 			close();
 			open();
 		}
@@ -302,7 +272,6 @@ int CUDPSocket::read(unsigned char* buffer, unsigned int length, sockaddr_storag
 		return -1;
 	}
 
-	m_counter++;
 	address_length = size;
 	return len;
 }
@@ -314,14 +283,13 @@ bool CUDPSocket::write(const unsigned char* buffer, unsigned int length, const s
 
 	bool result = false;
 
-	for (int i = 0; i < UDP_SOCKET_MAX; i++) {
-		if (m_fd[i] < 0 || m_af[i] != address.ss_family)
-			continue;
+		if (m_fd < 0 || m_af != address.ss_family)
+			return result;
 
 #if defined(_WIN32) || defined(_WIN64)
-		int ret = ::sendto(m_fd[i], (char *)buffer, length, 0, (sockaddr *)&address, address_length);
+		int ret = ::sendto(m_fd, (char *)buffer, length, 0, (sockaddr *)&address, address_length);
 #else
-		ssize_t ret = ::sendto(m_fd[i], (char *)buffer, length, 0, (sockaddr *)&address, address_length);
+		ssize_t ret = ::sendto(m_fd, (char *)buffer, length, 0, (sockaddr *)&address, address_length);
 #endif
 
 		if (ret < 0) {
@@ -339,25 +307,18 @@ bool CUDPSocket::write(const unsigned char* buffer, unsigned int length, const s
 				result = true;
 #endif
 		}
-	}
 
 	return result;
 }
 
 void CUDPSocket::close()
 {
-	for (unsigned int i = 0; i < UDP_SOCKET_MAX; i++)
-		close(i);
-}
-
-void CUDPSocket::close(const unsigned int index)
-{
-	if ((index < UDP_SOCKET_MAX) && (m_fd[index] >= 0)) {
+	if (m_fd >= 0) {
 #if defined(_WIN32) || defined(_WIN64)
-		::closesocket(m_fd[index]);
+		::closesocket(m_fd);
 #else
-		::close(m_fd[index]);
+		::close(m_fd);
 #endif
-		m_fd[index] = -1;
+		m_fd = -1;
 	}
 }
