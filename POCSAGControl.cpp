@@ -234,7 +234,7 @@ bool CPOCSAGControl::readNetwork()
 				output->m_display = rubric + out + "\"";
 				break;
 			default:
-				output->m_display = "\"" + output->m_text + "\"";
+				output->m_display = output->m_text;
 				break;
 			}
 			LogDebug("Message to %07u, func Alphanumeric: %s", output->m_ric, output->m_display.c_str());
