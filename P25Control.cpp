@@ -180,21 +180,21 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 	unsigned char duid = m_nid.getDUID();
 	if (!valid) {
 		switch (m_lastDUID) {
-		case P25_DUID_HEADER:
-		case P25_DUID_LDU2:
-			duid = P25_DUID_LDU1;
-			break;
-		case P25_DUID_LDU1:
-			duid = P25_DUID_LDU2;
-			break;
-		case P25_DUID_PDU:
-			duid = P25_DUID_PDU;
-			break;
-		case P25_DUID_TSDU:
-			duid = P25_DUID_TSDU;
-			break;
-		default:
-			break;
+			case P25_DUID_HEADER:
+			case P25_DUID_LDU2:
+				duid = P25_DUID_LDU1;
+				break;
+			case P25_DUID_LDU1:
+				duid = P25_DUID_LDU2;
+				break;
+			case P25_DUID_PDU:
+				duid = P25_DUID_PDU;
+				break;
+			case P25_DUID_TSDU:
+				duid = P25_DUID_TSDU;
+				break;
+			default:
+				break;
 		}
 	}
 
@@ -235,8 +235,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			m_lastDUID = duid;
 			return true;
 		}
-	}
-	else if (duid == P25_DUID_LDU1) {
+	} else if (duid == P25_DUID_LDU1) {
 		if (m_rfState == RS_RF_LISTENING) {
 			m_rfData.reset();
 			bool ret = m_rfData.decodeLDU1(data + 2U);
@@ -295,8 +294,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 				LogWarning("P25, LDU1 undecodable LC, using last LDU1 LC");
 				m_rfData = m_rfLastLDU1;
 				m_rfUndecodableLC++;
-			}
-			else {
+			} else {
 				m_rfLastLDU1 = m_rfData;
 			}
 
@@ -827,23 +825,23 @@ void CP25Control::writeNetwork(const unsigned char *data, unsigned char type, bo
 
 	switch (type)
 	{
-	case P25_DUID_LDU1:
-		m_network->writeLDU1(data, m_rfData, m_rfLSD, end);
-		break;
-	case P25_DUID_LDU2:
-		m_network->writeLDU2(data, m_rfData, m_rfLSD, end);
-		break;
-	default:
-		break;
+		case P25_DUID_LDU1:
+			m_network->writeLDU1(data, m_rfData, m_rfLSD, end);
+			break;
+		case P25_DUID_LDU2:
+			m_network->writeLDU2(data, m_rfData, m_rfLSD, end);
+			break;
+		default:
+			break;
 	}
 }
 
 void CP25Control::setBusyBits(unsigned char* data, unsigned int ssOffset, bool b1, bool b2)
 {
-    assert(data != NULL);
+	assert(data != NULL);
 
-    WRITE_BIT(data, ssOffset, b1);
-    WRITE_BIT(data, ssOffset + 1U, b2);
+	WRITE_BIT(data, ssOffset, b1);
+	WRITE_BIT(data, ssOffset + 1U, b2);
 }
 
 void CP25Control::addBusyBits(unsigned char* data, unsigned int length, bool b1, bool b2)
@@ -864,8 +862,8 @@ void CP25Control::checkNetLDU1()
 
 	// Check for an unflushed LDU1
 	if (m_netLDU1[0U]   != 0x00U || m_netLDU1[25U]  != 0x00U || m_netLDU1[50U]  != 0x00U ||
-		m_netLDU1[75U]  != 0x00U || m_netLDU1[100U] != 0x00U || m_netLDU1[125U] != 0x00U ||
-		m_netLDU1[150U] != 0x00U || m_netLDU1[175U] != 0x00U || m_netLDU1[200U] != 0x00U)
+	    m_netLDU1[75U]  != 0x00U || m_netLDU1[100U] != 0x00U || m_netLDU1[125U] != 0x00U ||
+	    m_netLDU1[150U] != 0x00U || m_netLDU1[175U] != 0x00U || m_netLDU1[200U] != 0x00U)
 		createNetLDU1();
 }
 
@@ -876,8 +874,8 @@ void CP25Control::checkNetLDU2()
 
 	// Check for an unflushed LDU1
 	if (m_netLDU2[0U]   != 0x00U || m_netLDU2[25U]  != 0x00U || m_netLDU2[50U]  != 0x00U ||
-		m_netLDU2[75U]  != 0x00U || m_netLDU2[100U] != 0x00U || m_netLDU2[125U] != 0x00U ||
-		m_netLDU2[150U] != 0x00U || m_netLDU2[175U] != 0x00U || m_netLDU2[200U] != 0x00U)
+	    m_netLDU2[75U]  != 0x00U || m_netLDU2[100U] != 0x00U || m_netLDU2[125U] != 0x00U ||
+	    m_netLDU2[150U] != 0x00U || m_netLDU2[175U] != 0x00U || m_netLDU2[200U] != 0x00U)
 		createNetLDU2();
 }
 

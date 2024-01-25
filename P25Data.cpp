@@ -96,16 +96,15 @@ bool CP25Data::decodeHeader(const unsigned char* data)
 		return false;
 	}
 
-	m_mfId = rs[9U];                                                                // Mfg Id.
-	m_algId = rs[10U];                                                              // Algorithm ID
+	m_mfId  = rs[9U];						// Mfg Id.
+	m_algId = rs[10U];						// Algorithm ID
+
 	if (m_algId != P25_ALGO_UNENCRYPT) {
 		m_mi = new unsigned char[P25_MI_LENGTH_BYTES];
-		::memset(m_mi, 0x00U, P25_MI_LENGTH_BYTES);
-		::memcpy(m_mi, rs, P25_MI_LENGTH_BYTES);                                    // Message Indicator
+		::memcpy(m_mi, rs, P25_MI_LENGTH_BYTES);		// Message Indicator
 
-		m_kId = (rs[11U] << 8) + rs[12U];                                           // Key ID
-	}
-	else {
+		m_kId = (rs[11U] << 8) + rs[12U];			// Key ID
+	} else {
 		m_mi = new unsigned char[P25_MI_LENGTH_BYTES];
 		::memset(m_mi, 0x00U, P25_MI_LENGTH_BYTES);
 
@@ -124,9 +123,9 @@ void CP25Data::encodeHeader(unsigned char* data)
 	::memset(rs, 0x00U, 81U);
 
 	for (unsigned int i = 0; i < P25_MI_LENGTH_BYTES; i++)
-		rs[i] = m_mi[i];                                                            // Message Indicator
+		rs[i] = m_mi[i];                                                        // Message Indicator
 
-	rs[9U] = m_mfId;                                                                // Mfg Id.
+	rs[9U]  = m_mfId;                                                               // Mfg Id.
 	rs[10U] = m_algId;                                                              // Algorithm ID
 	rs[11U] = (m_kId >> 8) & 0xFFU;                                                 // Key ID MSB
 	rs[12U] = (m_kId >> 0) & 0xFFU;                                                 // Key ID LSB
@@ -183,18 +182,18 @@ bool CP25Data::decodeLDU1(const unsigned char* data)
 	unsigned int srcId = (rs[6U] << 16) + (rs[7U] << 8) + rs[8U];
 
 	switch (rs[0U]) {
-	case P25_LCF_GROUP:
-		m_emergency = (rs[2U] & 0x80U) == 0x80U;
-		m_dstId = (rs[4U] << 8) + rs[5U];
-		m_srcId = srcId;
-		break;
-	case P25_LCF_PRIVATE:
-		m_emergency = false;
-		m_dstId = (rs[3U] << 16) + (rs[4U] << 8) + rs[5U];
-		m_srcId = srcId;
-		break;
-	default:
-		return false;
+		case P25_LCF_GROUP:
+			m_emergency = (rs[2U] & 0x80U) == 0x80U;
+			m_dstId = (rs[4U] << 8) + rs[5U];
+			m_srcId = srcId;
+			break;
+		case P25_LCF_PRIVATE:
+			m_emergency = false;
+			m_dstId = (rs[3U] << 16) + (rs[4U] << 8) + rs[5U];
+			m_srcId = srcId;
+			break;
+		default:
+			return false;
 	}
 
 	m_lcf  = rs[0U];
@@ -296,7 +295,6 @@ bool CP25Data::decodeLDU2(const unsigned char* data)
 	m_algId = rs[9U];                                                               // Algorithm ID
 	if (m_algId != P25_ALGO_UNENCRYPT) {
 		m_mi = new unsigned char[P25_MI_LENGTH_BYTES];
-		::memset(m_mi, 0x00U, P25_MI_LENGTH_BYTES);
 		::memcpy(m_mi, rs, P25_MI_LENGTH_BYTES);                                    // Message Indicator
 
 		m_kId = (rs[10U] << 8) + rs[11U];                                           // Key ID
@@ -388,18 +386,18 @@ bool CP25Data::decodeTSDU(const unsigned char* data)
     tsbkValue = (tsbkValue << 8) + tsbk[9U];
 
     switch (m_lcf) {
-    case P25_LCF_TSBK_CALL_ALERT:
-        m_dstId = (unsigned int)((tsbkValue >> 24) & 0xFFFFFFU);    // Target Radio Address
-        m_srcId = (unsigned int)(tsbkValue & 0xFFFFFFU);            // Source Radio Address
-        break;
-    case P25_LCF_TSBK_ACK_RSP_FNE:
-        m_serviceType = (unsigned char)((tsbkValue >> 56) & 0xFFU); // Service Type
-        m_dstId = (unsigned int)((tsbkValue >> 24) & 0xFFFFFFU);    // Target Radio Address
-        m_srcId = (unsigned int)(tsbkValue & 0xFFFFFFU);            // Source Radio Address
-        break;
-    default:
-        LogMessage("P25, unknown LCF value in TSDU - $%02X", m_lcf);
-        break;
+	    case P25_LCF_TSBK_CALL_ALERT:
+		m_dstId = (unsigned int)((tsbkValue >> 24) & 0xFFFFFFU);    // Target Radio Address
+		m_srcId = (unsigned int)(tsbkValue & 0xFFFFFFU);            // Source Radio Address
+		break;
+	    case P25_LCF_TSBK_ACK_RSP_FNE:
+		m_serviceType = (unsigned char)((tsbkValue >> 56) & 0xFFU); // Service Type
+		m_dstId = (unsigned int)((tsbkValue >> 24) & 0xFFFFFFU);    // Target Radio Address
+		m_srcId = (unsigned int)(tsbkValue & 0xFFFFFFU);            // Source Radio Address
+		break;
+	    default:
+		LogMessage("P25, unknown LCF value in TSDU - $%02X", m_lcf);
+		break;
     }
 
     return true;
@@ -419,22 +417,22 @@ void CP25Data::encodeTSDU(unsigned char* data)
     tsbk[1U] = m_mfId;
 
     switch (m_lcf) {
-    case P25_LCF_TSBK_CALL_ALERT:
-        tsbkValue = 0U;
-        tsbkValue = (tsbkValue << 16) + 0U;
-        tsbkValue = (tsbkValue << 24) + m_dstId;                    // Target Radio Address
-        tsbkValue = (tsbkValue << 24) + m_srcId;                    // Source Radio Address
-        break;
-    case P25_LCF_TSBK_ACK_RSP_FNE:
-        tsbkValue = 0U;                                             // Additional Info. Flag
-        tsbkValue = (tsbkValue << 1) + 0U;                          // Extended Address Flag
-        tsbkValue = (tsbkValue << 16) + (m_serviceType & 0xFF);     // Service Type
-        tsbkValue = (tsbkValue << 32) + m_dstId;                    // Target Radio Address
-        tsbkValue = (tsbkValue << 24) + m_srcId;                    // Source Radio Address
-        break;
-    default:
-        LogMessage("P25, unknown LCF value in TSDU - $%02X", m_lcf);
-        break;
+	    case P25_LCF_TSBK_CALL_ALERT:
+		tsbkValue = 0U;
+		tsbkValue = (tsbkValue << 16) + 0U;
+		tsbkValue = (tsbkValue << 24) + m_dstId;                    // Target Radio Address
+		tsbkValue = (tsbkValue << 24) + m_srcId;                    // Source Radio Address
+		break;
+	    case P25_LCF_TSBK_ACK_RSP_FNE:
+		tsbkValue = 0U;                                             // Additional Info. Flag
+		tsbkValue = (tsbkValue << 1) + 0U;                          // Extended Address Flag
+		tsbkValue = (tsbkValue << 16) + (m_serviceType & 0xFF);     // Service Type
+		tsbkValue = (tsbkValue << 32) + m_dstId;                    // Target Radio Address
+		tsbkValue = (tsbkValue << 24) + m_srcId;                    // Source Radio Address
+		break;
+	    default:
+		LogMessage("P25, unknown LCF value in TSDU - $%02X", m_lcf);
+		break;
     }
 
     // split rs value into bytes
