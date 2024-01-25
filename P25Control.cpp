@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016-2019,2021 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016-2019,2021,2024 by Jonathan Naylor G4KLX
 *   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com>
 *
 *   This program is free software; you can redistribute it and/or modify
@@ -998,9 +998,12 @@ void CP25Control::createNetHeader()
 	if (m_remoteGateway)
 		// Add busy bits, inbound/outbound
 		addBusyBits(buffer + 2U, P25_HDR_FRAME_LENGTH_BITS, true, false);
-	else
+	else if (m_duplex)
 		// Add busy bits, inbound idle
 		addBusyBits(buffer + 2U, P25_HDR_FRAME_LENGTH_BITS, true, true);
+	else
+		// Add busy bits, inbound busy
+		addBusyBits(buffer + 2U, P25_HDR_FRAME_LENGTH_BITS, false, true);
 
 	writeQueueNet(buffer, P25_HDR_FRAME_LENGTH_BYTES + 2U);
 }
@@ -1044,9 +1047,12 @@ void CP25Control::createNetLDU1()
 	if (m_remoteGateway)
 		// Add busy bits, inbound/outbound
 		addBusyBits(buffer + 2U, P25_LDU_FRAME_LENGTH_BITS, true, false);
-	else
+	else if (m_duplex)
 		// Add busy bits, inbound idle
 		addBusyBits(buffer + 2U, P25_LDU_FRAME_LENGTH_BITS, true, true);
+	else
+		// Add busy bits, inbound busy
+		addBusyBits(buffer + 2U, P25_LDU_FRAME_LENGTH_BITS, false, true);
 
 	writeQueueNet(buffer, P25_LDU_FRAME_LENGTH_BYTES + 2U);
 
@@ -1094,9 +1100,12 @@ void CP25Control::createNetLDU2()
 	if (m_remoteGateway)
 		// Add busy bits, inbound/outbound
 		addBusyBits(buffer + 2U, P25_LDU_FRAME_LENGTH_BITS, true, false);
-	else
+	else if (m_duplex)
 		// Add busy bits, inbound idle
 		addBusyBits(buffer + 2U, P25_LDU_FRAME_LENGTH_BITS, true, true);
+	else
+		// Add busy bits, inbound busy
+		addBusyBits(buffer + 2U, P25_LDU_FRAME_LENGTH_BITS, false, true);
 
 	writeQueueNet(buffer, P25_LDU_FRAME_LENGTH_BYTES + 2U);
 
@@ -1123,9 +1132,12 @@ void CP25Control::createNetTerminator()
 	if (m_remoteGateway)
 		// Add busy bits, inbound/outbound
 		addBusyBits(buffer + 2U, P25_TERM_FRAME_LENGTH_BITS, true, false);
-	else
+	else if (m_duplex)
 		// Add busy bits, inbound idle
 		addBusyBits(buffer + 2U, P25_TERM_FRAME_LENGTH_BITS, true, true);
+	else
+		// Add busy bits, inbound busy
+		addBusyBits(buffer + 2U, P25_TERM_FRAME_LENGTH_BITS, false, true);
 
 	writeQueueNet(buffer, P25_TERM_FRAME_LENGTH_BYTES + 2U);
 
