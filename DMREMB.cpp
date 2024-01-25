@@ -44,11 +44,11 @@ void CDMREMB::putData(const unsigned char* data)
 	DMREMB[1U]  = (data[18U] << 4) & 0xF0U;
 	DMREMB[1U] |= (data[19U] >> 4) & 0x0FU;
 
-	CQR1676::decode(DMREMB);
+	unsigned char code = CQR1676::decode(DMREMB);
 
-	m_colorCode = (DMREMB[0U] >> 4) & 0x0FU;
-	m_PI        = (DMREMB[0U] & 0x08U) == 0x08U;
-	m_LCSS      = (DMREMB[0U] >> 1) & 0x03U;
+	m_colorCode = (code >> 4) & 0x0FU;
+	m_PI        = (code & 0x08U) == 0x08U;
+	m_LCSS      = (code >> 1) & 0x03U;
 }
 
 void CDMREMB::getData(unsigned char* data) const

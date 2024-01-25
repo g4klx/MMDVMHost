@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2019,2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -99,10 +99,14 @@ bool CYSFFICH::decode(const unsigned char* bytes)
 	unsigned char output[13U];
 	viterbi.chainback(output, 96U);
 
-	unsigned int b0 = CGolay24128::decode24128(output + 0U);
-	unsigned int b1 = CGolay24128::decode24128(output + 3U);
-	unsigned int b2 = CGolay24128::decode24128(output + 6U);
-	unsigned int b3 = CGolay24128::decode24128(output + 9U);
+	unsigned int b0, b1, b2, b3;
+	bool valid0 = CGolay24128::decode24128(output + 0U, b0);
+	bool valid1 = CGolay24128::decode24128(output + 3U, b1);
+	bool valid2 = CGolay24128::decode24128(output + 6U, b2);
+	bool valid3 = CGolay24128::decode24128(output + 9U, b3);
+
+	if (!valid0 || !valid1 || !valid2 || !valid3)
+		return false;
 
 	m_fich[0U] = (b0 >> 4) & 0xFFU;
 	m_fich[1U] = ((b0 << 4) & 0xF0U) | ((b1 >> 8) & 0x0FU);
@@ -214,12 +218,7 @@ bool CYSFFICH::getDev() const
 	return (m_fich[2U] & 0x40U) == 0x40U;
 }
 
-bool CYSFFICH::getSQL() const
-{
-	return (m_fich[3U] & 0x80U) == 0x80U;
-}
-
-unsigned char CYSFFICH::getSQ() const
+unsigned char CYSFFICH::getDGId() const
 {
 	return m_fich[3U] & 0x7FU;
 }
@@ -228,6 +227,18 @@ void CYSFFICH::setFI(unsigned char fi)
 {
 	m_fich[0U] &= 0x3FU;
 	m_fich[0U] |= (fi << 6) & 0xC0U;
+}
+
+void CYSFFICH::setBN(unsigned char bn)
+{
+	m_fich[0U] &= 0xFCU;
+	m_fich[0U] |= bn & 0x03U;
+}
+
+void CYSFFICH::setBT(unsigned char bt)
+{
+	m_fich[1U] &= 0x3FU;
+	m_fich[1U] |= (bt << 6) & 0xC0U;
 }
 
 void CYSFFICH::setFN(unsigned char fn)
@@ -264,18 +275,10 @@ void CYSFFICH::setDev(bool on)
 		m_fich[2U] &= 0xBFU;
 }
 
-void CYSFFICH::setSQL(bool on)
-{
-	if (on)
-		m_fich[3U] |= 0x80U;
-	else
-		m_fich[3U] &= 0x7FU;
-}
-
-void CYSFFICH::setSQ(unsigned char sq)
+void CYSFFICH::setDGId(unsigned char id)
 {
 	m_fich[3U] &= 0x80U;
-	m_fich[3U] |= sq & 0x7FU;
+	m_fich[3U] |= id & 0x7FU;
 }
 
 CYSFFICH& CYSFFICH::operator=(const CYSFFICH& fich)

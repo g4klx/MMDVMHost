@@ -26,12 +26,18 @@
 #include <clocale>
 
 #include <sys/types.h>
-#if !defined(_WIN32) && !defined(_WIN64)
+#if defined(__linux__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__APPLE__)
 #include <ifaddrs.h>
+#include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <netdb.h>
-#else
+#if defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__APPLE__)
+#include <sys/sysctl.h>
+#include <net/if.h>
+#include <net/route.h>
+#endif
+#elif defined(_WIN32) || defined(_WIN64)
 #include <ws2tcpip.h>
 #include <iphlpapi.h>
 #pragma comment(lib, "iphlpapi.lib")
@@ -60,16 +66,15 @@ void CNetworkInfo::getNetworkInterface(unsigned char* info)
 
 	::strcpy((char*)info, "(address unknown)");
 
-#if !defined(_WIN32) && !defined(_WIN64)
-	const unsigned int IFLISTSIZ = 25U;
+#if defined(__linux__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__FreeBSD__) || defined(__APPLE__)
+	char* dflt = NULL;
 
-	FILE* fp = ::fopen("/proc/net/route" , "r");
+#if defined(__linux__)
+	FILE* fp = ::fopen("/proc/net/route" , "r");	// IPv4 routing
 	if (fp == NULL) {
 		LogError("Unabled to open /proc/route");
 		return;
 	}
-
-	char* dflt = NULL;
 
 	char line[100U];
 	while (::fgets(line, 100U, fp)) {
@@ -86,11 +91,60 @@ void CNetworkInfo::getNetworkInterface(unsigned char* info)
 
 	::fclose(fp);
 
+#elif defined(__OpenBSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(__APPLE__)
+	int mib[] = {
+		CTL_NET,
+		PF_ROUTE,
+		0,		// protocol
+		AF_INET,	// IPv4 routing
+		NET_RT_DUMP,
+		0,		// show all routes
+#if defined(__OpenBSD__) || defined(__FreeBSD__)
+		0,		// table id
+#endif
+	};
+	const int cnt = sizeof(mib) / sizeof(int);
+	size_t size;
+	char ifname[IF_NAMESIZE] = {};
+
+	if (::sysctl(mib, cnt, NULL, &size, NULL, 0) == -1 || size <= 0) {
+		LogError("Unable to estimate routing table size");
+		return;
+	}
+
+	char *buf = new char[size];
+	if (::sysctl(mib, cnt, buf, &size, NULL, 0) == -1) {
+		LogError("Unable to get routing table");
+		delete[] buf;
+		return;
+	}
+
+	struct rt_msghdr *rtm;
+	for (char *p = buf; p < buf + size; p += rtm->rtm_msglen) {
+		rtm = (struct rt_msghdr *)p;
+		if (rtm->rtm_version != RTM_VERSION)
+			continue;
+#if defined(__OpenBSD__)
+		struct sockaddr_in *sa = (struct sockaddr_in *)(p + rtm->rtm_hdrlen);
+#elif defined(__NetBSD__) || defined(__FreeBSD__) || defined(__APPLE__)
+		struct sockaddr_in *sa = (struct sockaddr_in *)(rtm + 1);
+#endif
+		if (sa->sin_addr.s_addr == INADDR_ANY) {
+			::if_indextoname(rtm->rtm_index, ifname);
+			break;
+		}
+	}
+
+	delete[] buf;
+	if (::strlen(ifname))
+		dflt = ifname;
+#endif
 	if (dflt == NULL) {
 		LogError("Unable to find the default route");
 		return;
 	}
 
+	const unsigned int IFLISTSIZ = 25U;
 	char interfacelist[IFLISTSIZ][50+INET6_ADDRSTRLEN];
 	for (unsigned int n = 0U; n < IFLISTSIZ; n++)
 		interfacelist[n][0] = 0;
@@ -118,12 +172,13 @@ void CNetworkInfo::getNetworkInterface(unsigned char* info)
 			if (family == AF_INET) {
 				::sprintf(interfacelist[ifnr], "%s:%s", ifa->ifa_name, host);
 				LogInfo("    IPv4: %s", interfacelist[ifnr]);
+				ifnr++;
 			} else {
 				::sprintf(interfacelist[ifnr], "%s:%s", ifa->ifa_name, host);
 				LogInfo("    IPv6: %s", interfacelist[ifnr]);
+				// due to default routing is for IPv4, other
+				// protocols are not candidate to display.
 			}
-
-			ifnr++;
 		}
 	}
 
@@ -143,7 +198,7 @@ void CNetworkInfo::getNetworkInterface(unsigned char* info)
 	}
 
 	LogInfo("    IP to show: %s", info);
-#else
+#elif defined(_WIN32) || defined(_WIN64)
 	PMIB_IPFORWARDTABLE pIpForwardTable = (MIB_IPFORWARDTABLE *)::malloc(sizeof(MIB_IPFORWARDTABLE));
 	if (pIpForwardTable == NULL) {
 		LogError("Error allocating memory");

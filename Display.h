@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018,2020,2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -20,6 +20,8 @@
 #define	DISPLAY_H
 
 #include "Timer.h"
+#include "UserDBentry.h"
+#include "Modem.h"
 
 #include <string>
 
@@ -27,7 +29,6 @@
 
 class CConf;
 class CModem;
-class CUMP;
 
 class CDisplay
 {
@@ -41,6 +42,7 @@ public:
 	void setLockout();
 	void setError(const char* text);
 	void setQuit();
+	void setFM();
 
 	void writeDStar(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
 	void writeDStarRSSI(unsigned char rssi);
@@ -48,12 +50,13 @@ public:
 	void clearDStar();
 
 	void writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
+	void writeDMR(unsigned int slotNo, const CUserDBentry& src, bool group, const std::string& dst, const char* type);
 	void writeDMRRSSI(unsigned int slotNo, unsigned char rssi);
 	void writeDMRBER(unsigned int slotNo, float ber);
-	void writeDMRTA(unsigned int slotNo, unsigned char* talkerAlias, const char* type);
+	void writeDMRTA(unsigned int slotNo, const unsigned char* talkerAlias, const char* type);
 	void clearDMR(unsigned int slotNo);
 
-	void writeFusion(const char* source, const char* dest, const char* type, const char* origin);
+	void writeFusion(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
 	void writeFusionRSSI(unsigned char rssi);
 	void writeFusionBER(float ber);
 	void clearFusion();
@@ -64,9 +67,15 @@ public:
 	void clearP25();
 
 	void writeNXDN(const char* source, bool group, unsigned int dest, const char* type);
+	void writeNXDN(const CUserDBentry& source, bool group, unsigned int dest, const char* type);
 	void writeNXDNRSSI(unsigned char rssi);
 	void writeNXDNBER(float ber);
 	void clearNXDN();
+
+	void writeM17(const char* source, const char* dest, const char* type);
+	void writeM17RSSI(unsigned char rssi);
+	void writeM17BER(float ber);
+	void clearM17();
 
 	void writePOCSAG(uint32_t ric, const std::string& message);
 	void clearPOCSAG();
@@ -77,13 +86,14 @@ public:
 
 	void clock(unsigned int ms);
 
-	static CDisplay* createDisplay(const CConf& conf, CUMP* ump, CModem* modem);
+	static CDisplay* createDisplay(const CConf& conf, CModem* modem);
 
 protected:
 	virtual void setIdleInt() = 0;
 	virtual void setLockoutInt() = 0;
 	virtual void setErrorInt(const char* text) = 0;
 	virtual void setQuitInt() = 0;
+	virtual void setFMInt() = 0;
 
 	virtual void writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector) = 0;
 	virtual void writeDStarRSSIInt(unsigned char rssi);
@@ -91,12 +101,13 @@ protected:
 	virtual void clearDStarInt() = 0;
 
 	virtual void writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type) = 0;
+	virtual int  writeDMRIntEx(unsigned int slotNo, const CUserDBentry& src, bool group, const std::string& dst, const char* type);
 	virtual void writeDMRRSSIInt(unsigned int slotNo, unsigned char rssi);
-	virtual void writeDMRTAInt(unsigned int slotNo, unsigned char* talkerAlias, const char* type);
+	virtual void writeDMRTAInt(unsigned int slotNo, const unsigned char* talkerAlias, const char* type);
 	virtual void writeDMRBERInt(unsigned int slotNo, float ber);
 	virtual void clearDMRInt(unsigned int slotNo) = 0;
 
-	virtual void writeFusionInt(const char* source, const char* dest, const char* type, const char* origin) = 0;
+	virtual void writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin) = 0;
 	virtual void writeFusionRSSIInt(unsigned char rssi);
 	virtual void writeFusionBERInt(float ber);
 	virtual void clearFusionInt() = 0;
@@ -106,10 +117,16 @@ protected:
 	virtual void writeP25BERInt(float ber);
 	virtual void clearP25Int() = 0;
 
-	virtual void writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type) = 0;
+  	virtual void writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type) = 0;
+	virtual int  writeNXDNIntEx(const CUserDBentry& source, bool group, unsigned int dest, const char* type);
 	virtual void writeNXDNRSSIInt(unsigned char rssi);
 	virtual void writeNXDNBERInt(float ber);
 	virtual void clearNXDNInt() = 0;
+
+	virtual void writeM17Int(const char* source, const char* dest, const char* type) = 0;
+	virtual void writeM17RSSIInt(unsigned char rssi);
+	virtual void writeM17BERInt(float ber);
+	virtual void clearM17Int() = 0;
 
 	virtual void writePOCSAGInt(uint32_t ric, const std::string& message) = 0;
 	virtual void clearPOCSAGInt() = 0;

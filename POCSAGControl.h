@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2018 by Jonathan Naylor G4KLX
+*   Copyright (C) 2018,2019,2020 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -30,14 +30,28 @@
 #include <string>
 #include <deque>
 
+struct POCSAGData {
+	unsigned int         m_ric;
+	std::string          m_text;
+	std::string          m_display;
+	std::deque<uint32_t> m_buffer;
+};
+
 class CPOCSAGControl {
 public:
 	CPOCSAGControl(CPOCSAGNetwork* network, CDisplay* display);
 	~CPOCSAGControl();
 
+	void sendPage(unsigned int ric, const std::string& text);
+	void sendPageBCD(unsigned int ric, const std::string& text);
+	void sendPageAlert1(unsigned int ric);
+	void sendPageAlert2(unsigned int ric, const std::string& text);
+
 	unsigned int readModem(unsigned char* data);
 
 	void clock(unsigned int ms);
+
+	void enable(bool enabled);
 
 private:
 	CPOCSAGNetwork*            m_network;
@@ -55,20 +69,24 @@ private:
 
 	std::deque<uint32_t>       m_output;
 	std::deque<uint32_t>       m_buffer;
-	uint32_t                   m_ric;
-	std::string                m_text;
+	unsigned int               m_ric;
+	std::deque<POCSAGData*>    m_data;
 	POCSAG_STATE               m_state;
+	bool                       m_enabled;
 	FILE*                      m_fp;
 
-	bool processData();
+	bool readNetwork();
 	void writeQueue();
-	void addAddress(unsigned char functional);
-	void packASCII();
-	void packNumeric();
+	bool processData();
+	void addAddress(unsigned char functional, unsigned int ric, std::deque<uint32_t>& buffer) const;
+	void packASCII(const std::string& text, std::deque<uint32_t>& buffer) const;
+	void packNumeric(const std::string& text, std::deque<uint32_t>& buffer) const;
 	void addBCHAndParity(uint32_t& word) const;
 	bool openFile();
 	bool writeFile(const unsigned char* data);
 	void closeFile();
+
+	void decodeROT1(const std::string& in, unsigned int start, std::string& out) const;
 };
 
 #endif

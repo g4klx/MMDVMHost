@@ -624,7 +624,10 @@ void CP25Data::decodeHeaderGolay(const unsigned char* data, unsigned char* raw)
 		unsigned int g0 = 0U;
 		for (unsigned int j = 0U; j < 18U; j++)
 			g0 = (g0 << 1) | (golay[j] ? 0x01U : 0x00U);
-		unsigned int c0data = CGolay24128::decode24128(g0);
+
+		unsigned int c0data = 0U;
+		CGolay24128::decode24128(g0, c0data);
+
 		for (int j = 5; j >= 0; j--) {
 			golay[j] = (c0data & 0x01U) == 0x01U;
 			c0data >>= 1;

@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2009,2014,2015 by Jonathan Naylor, G4KLX
+ *	Copyright (C) 2009,2014,2015,2021 by Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -30,7 +30,9 @@ public:
 	static void bitsToByteBE(const bool* bits, unsigned char& byte);
 	static void bitsToByteLE(const bool* bits, unsigned char& byte);
 
-	static unsigned int compare(const unsigned char* bytes1, const unsigned char* bytes2, unsigned int length);
+	static unsigned int countBits(unsigned int v);
+
+	static void removeChar(unsigned char * haystack, char needdle);
 
 private:
 };

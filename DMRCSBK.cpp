@@ -1,5 +1,6 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2020,2021,2022 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2019 by Patrick Maier DK5MP
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -33,7 +34,8 @@ m_bsId(0U),
 m_srcId(0U),
 m_dstId(0U),
 m_dataContent(false),
-m_CBF(0U)
+m_CBF(0U),
+m_OVCM(false)
 {
 	m_data = new unsigned char[12U];
 }
@@ -80,6 +82,7 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
 		m_dataContent = false;
 		m_CBF   = 0U;
+		m_OVCM  = (m_data[2U] & 0x04U) == 0x04U;
 		CUtils::dump(1U, "Unit to Unit Service Request CSBK", m_data, 12U);
 		break;
 
@@ -89,6 +92,7 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
 		m_dataContent = false;
 		m_CBF   = 0U;
+		m_OVCM  = (m_data[2U] & 0x04U) == 0x04U;
 		CUtils::dump(1U, "Unit to Unit Service Answer Response CSBK", m_data, 12U);
 		break;
 
@@ -108,6 +112,48 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 		m_dataContent = false;
 		m_CBF   = 0U;
 		CUtils::dump(1U, "Negative Acknowledge Response CSBK", m_data, 12U);
+		break;
+
+	case CSBKO_CALL_ALERT:
+		m_GI    = false;
+		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
+		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
+		m_dataContent = false;
+		m_CBF   = 0U;
+		CUtils::dump(1U, "Call Alert CSBK", m_data, 12U);
+		break;
+
+	case CSBKO_CALL_ALERT_ACK:
+		m_GI    = false;
+		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
+		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
+		m_dataContent = false;
+		m_CBF   = 0U;
+		CUtils::dump(1U, "Call Alert Ack CSBK", m_data, 12U);
+		break;
+
+	case CSBKO_RADIO_CHECK:
+		m_GI    = false;
+		if (m_data[3U] == 0x80) {
+			m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
+			m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
+			CUtils::dump(1U, "Radio Check Req CSBK", m_data, 12U);
+		} else {
+			m_srcId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
+			m_dstId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
+			CUtils::dump(1U, "Radio Check Ack CSBK", m_data, 12U);
+		}
+		m_dataContent = false;
+		m_CBF   = 0U;
+		break;
+
+	case CSBKO_CALL_EMERGENCY:
+		m_GI    = true;
+		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
+		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
+		m_dataContent = false;
+		m_CBF   = 0U;
+		CUtils::dump(1U, "Call Emergency CSBK", m_data, 12U);
 		break;
 
 	default:
@@ -147,6 +193,23 @@ CSBKO CDMRCSBK::getCSBKO() const
 unsigned char CDMRCSBK::getFID() const
 {
 	return m_FID;
+}
+
+bool CDMRCSBK::getOVCM() const
+{
+	return m_OVCM;
+}
+
+void CDMRCSBK::setOVCM(bool ovcm)
+{
+	if (m_CSBKO == CSBKO_UUVREQ || m_CSBKO == CSBKO_UUANSRSP) {
+		m_OVCM = ovcm;
+
+		if (ovcm)
+			m_data[2U] |= 0x04U;
+		else
+			m_data[2U] &= 0xFBU;
+	}
 }
 
 bool CDMRCSBK::getGI() const

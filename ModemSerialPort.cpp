@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2020,2021 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -21,22 +21,22 @@
 #include <cstdio>
 #include <cassert>
 
-CModemSerialPort::CModemSerialPort(CModem* modem) :
+IModemSerialPort::IModemSerialPort(CModem* modem) :
 m_modem(modem)
 {
 	assert(modem != NULL);
 }
 
-CModemSerialPort::~CModemSerialPort()
+IModemSerialPort::~IModemSerialPort()
 {
 }
 
-bool CModemSerialPort::open()
+bool IModemSerialPort::open()
 {
 	return true;
 }
 
-int CModemSerialPort::write(const unsigned char* data, unsigned int length)
+int IModemSerialPort::write(const unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
 	assert(length > 0U);
@@ -46,7 +46,7 @@ int CModemSerialPort::write(const unsigned char* data, unsigned int length)
 	return ret ? int(length) : -1;
 }
 
-int CModemSerialPort::read(unsigned char* data, unsigned int length)
+int IModemSerialPort::read(unsigned char* data, unsigned int length)
 {
 	assert(data != NULL);
 	assert(length > 0U);
@@ -54,6 +54,6 @@ int CModemSerialPort::read(unsigned char* data, unsigned int length)
 	return m_modem->readSerial(data, length);
 }
 
-void CModemSerialPort::close()
+void IModemSerialPort::close()
 {
 }

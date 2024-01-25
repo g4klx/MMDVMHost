@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -38,13 +38,15 @@ public:
 	CYSFControl(const std::string& callsign, bool selfOnly, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool lowDeviation, bool remoteGateway, CRSSIInterpolator* rssiMapper);
 	~CYSFControl();
 
-	void setSQL(bool on, unsigned char value);
-
 	bool writeModem(unsigned char* data, unsigned int len);
 
 	unsigned int readModem(unsigned char* data);
 
 	void clock(unsigned int ms);
+
+	bool isBusy() const;
+
+	void enable(bool enabled);
 
 private:
 	unsigned char*             m_callsign;
@@ -55,8 +57,6 @@ private:
 	bool                       m_duplex;
 	bool                       m_lowDeviation;
 	bool                       m_remoteGateway;
-	bool                       m_sqlEnabled;
-	unsigned char              m_sqlValue;
 	CRingBuffer<unsigned char> m_queue;
 	RPT_RF_STATE               m_rfState;
 	RPT_NET_STATE              m_netState;
@@ -86,6 +86,7 @@ private:
 	unsigned char              m_minRSSI;
 	unsigned int               m_aveRSSI;
 	unsigned int               m_rssiCount;
+	bool                       m_enabled;
 	FILE*                      m_fp;
 
 	bool processVWData(bool valid, unsigned char *data);
@@ -105,7 +106,7 @@ private:
 	void closeFile();
 
 	bool checkCallsign(const unsigned char* callsign) const;
-	void processNetCallsigns(const unsigned char* data);
+	void processNetCallsigns(const unsigned char* data, unsigned char dgid);
 };
 
 #endif

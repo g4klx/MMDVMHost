@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015,2016,2017,2018 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015-2019,2021,2023 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
 #include "Utils.h"
 #include "Sync.h"
 #include "Log.h"
+#include "SMeter.h"
 
 #include <cstdio>
 #include <cassert>
@@ -23,6 +24,7 @@
 #include <functional>
 
 const unsigned int MAX_SYNC_BIT_ERRORS = 2U;
+const unsigned int FAST_DATA_BEEP_GRACE_FRAMES = 6U;
 
 bool CallsignCompare(const std::string& arg, const unsigned char* my)
 {
@@ -36,7 +38,7 @@ bool CallsignCompare(const std::string& arg, const unsigned char* my)
 
 // #define	DUMP_DSTAR
 
-CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool ackReply, unsigned int ackTime, bool ackMessage, bool errorReply, const std::vector<std::string>& blackList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
+CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool ackReply, unsigned int ackTime, DSTAR_ACK_MESSAGE ackMessage, bool errorReply, const std::vector<std::string>& blackList, const std::vector<std::string>& whiteList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
 m_callsign(NULL),
 m_gateway(NULL),
 m_selfOnly(selfOnly),
@@ -45,6 +47,7 @@ m_ackMessage(ackMessage),
 m_errorReply(errorReply),
 m_remoteGateway(remoteGateway),
 m_blackList(blackList),
+m_whiteList(whiteList),
 m_network(network),
 m_display(display),
 m_duplex(duplex),
@@ -54,7 +57,8 @@ m_netHeader(),
 m_rfState(RS_RF_LISTENING),
 m_netState(RS_NET_IDLE),
 m_net(false),
-m_slowData(),
+m_rfSlowData(),
+m_netSlowData(),
 m_rfN(0U),
 m_netN(0U),
 m_networkWatchdog(1000U, 0U, 1500U),
@@ -81,7 +85,16 @@ m_maxRSSI(0U),
 m_minRSSI(0U),
 m_aveRSSI(0U),
 m_rssiCount(0U),
-m_fp(NULL)
+m_enabled(true),
+m_fp(NULL),
+m_rfVoiceSyncData(NULL),
+m_rfVoiceSyncDataLen(0U),
+m_netVoiceSyncData(NULL),
+m_netVoiceSyncDataLen(0U),
+m_rfNextFrameIsFastData(false),
+m_netNextFrameIsFastData(false),
+m_rfSkipDTMFBlankingFrames(0U),
+m_netSkipDTMFBlankingFrames(0U)
 {
 	assert(display != NULL);
 	assert(rssiMapper != NULL);
@@ -90,6 +103,8 @@ m_fp(NULL)
 	m_gateway  = new unsigned char[DSTAR_LONG_CALLSIGN_LENGTH];
 
 	m_lastFrame = new unsigned char[DSTAR_FRAME_LENGTH_BYTES + 1U];
+	m_rfVoiceSyncData = new unsigned char[DSTAR_MODEM_DATA_LEN];
+	m_netVoiceSyncData = new unsigned char[DSTAR_MODEM_DATA_LEN];
 
 	std::string call = callsign;
 	call.resize(DSTAR_LONG_CALLSIGN_LENGTH - 1U, ' ');
@@ -114,19 +129,107 @@ CDStarControl::~CDStarControl()
 	delete[] m_callsign;
 	delete[] m_gateway;
 	delete[] m_lastFrame;
+	delete[] m_rfVoiceSyncData;
+	delete[] m_netVoiceSyncData;
+}
+
+unsigned int CDStarControl::maybeFixupVoiceFrame(
+	unsigned char*  data,
+	unsigned int    len,
+	unsigned int    offset,
+	const char*     log_prefix,
+	unsigned char   n,
+	bool            blank_dtmf,
+	unsigned char*  voice_sync_data,
+	unsigned int&   voice_sync_data_len,
+	bool&           next_frame_is_fast_data,
+	unsigned int&   skip_dtmf_blanking_frames
+	)
+{
+	unsigned int errors = 0U;
+	unsigned int voice_sync_errors = 0U;
+	unsigned char mini_header = data[offset + 9U] ^ DSTAR_SCRAMBLER_BYTES[0U];
+	unsigned char mini_header_type = mini_header & DSTAR_SLOW_DATA_TYPE_MASK;
+
+	if (n == 0U) {
+		::memcpy(voice_sync_data, data, DSTAR_MODEM_DATA_LEN);
+		voice_sync_data_len = len;
+	} else if ((n % 2U != 0U) &&
+		   ((mini_header_type == DSTAR_SLOW_DATA_TYPE_FASTDATA01) ||
+		    (mini_header_type == DSTAR_SLOW_DATA_TYPE_FASTDATA16))) {
+		next_frame_is_fast_data = true;
+		if (blank_dtmf)
+			skip_dtmf_blanking_frames = FAST_DATA_BEEP_GRACE_FRAMES;
+		if (n == 1U)
+			LogDebug("D-Star, %s fastdata  sequence no. 0", log_prefix);
+		LogDebug("D-Star, %s fastdata  sequence no. %2u", log_prefix, n);
+	} else if (next_frame_is_fast_data) {
+		next_frame_is_fast_data = false;
+		if (blank_dtmf)
+			skip_dtmf_blanking_frames = FAST_DATA_BEEP_GRACE_FRAMES;
+		LogDebug("D-Star, %s fastdata  sequence no. %2u", log_prefix, n);
+	} else {
+		bool voice_sync_data_is_null_ambe_data = false;
+		bool data_is_null_ambe_data = false;
+
+		if ((n == 1U) && (::memcmp(voice_sync_data + offset, DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) == 0))
+			voice_sync_data_is_null_ambe_data = true;
+
+		if (::memcmp(data + offset, DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) == 0)
+			data_is_null_ambe_data = true;
+
+		if ((n == 1U) && !voice_sync_data_is_null_ambe_data)
+			voice_sync_errors += m_fec.regenerateDStar(voice_sync_data + offset);
+
+		if (!data_is_null_ambe_data)
+			errors += m_fec.regenerateDStar(data + offset);
+
+		if (blank_dtmf && skip_dtmf_blanking_frames > 0U) {
+			skip_dtmf_blanking_frames--;
+		} else if (blank_dtmf && skip_dtmf_blanking_frames == 0U) {
+			if ((n == 1U) && !voice_sync_data_is_null_ambe_data)
+				blankDTMF(voice_sync_data + offset);
+			if (!data_is_null_ambe_data)
+				blankDTMF(data + offset);
+		}
+
+		if (n == 1U) {
+			if (voice_sync_data_is_null_ambe_data)
+				LogDebug("D-Star, %s nullaudio sequence no. 0", log_prefix);
+			else
+				LogDebug("D-Star, %s audio     sequence no.  0, errs: %2u/48 (%5.1f%%)", log_prefix, voice_sync_errors, float(voice_sync_errors) / 0.48F);
+		}
+
+		if (data_is_null_ambe_data)
+			LogDebug("D-Star, %s nullaudio sequence no. %2u", log_prefix, n);
+		else
+			LogDebug("D-Star, %s audio     sequence no. %2u, errs: %2u/48 (%5.1f%%)", log_prefix, n, errors, float(errors) / 0.48F);
+	}
+
+	return voice_sync_errors + errors;
 }
 
 bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 {
 	assert(data != NULL);
 
+	if (!m_enabled)
+		return false;
+
 	unsigned char type = data[0U];
 
-	if (type == TAG_LOST && (m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA)) {
+	if (type == TAG_LOST && m_rfState == RS_RF_AUDIO) {
+		unsigned char my1[DSTAR_LONG_CALLSIGN_LENGTH];
+		unsigned char my2[DSTAR_SHORT_CALLSIGN_LENGTH];
+		unsigned char your[DSTAR_LONG_CALLSIGN_LENGTH];
+		m_rfHeader.getMyCall1(my1);
+		m_rfHeader.getMyCall2(my2);
+		m_rfHeader.getYourCall(your);
+
 		if (m_rssi != 0U)
-			LogMessage("D-Star, transmission lost, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			LogMessage("D-Star, transmission lost from %8.8s/%4.4s to %8.8s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 		else
-			LogMessage("D-Star, transmission lost, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+			LogMessage("D-Star, transmission lost from %8.8s/%4.4s to %8.8s, %.1f seconds, BER: %.1f%%", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 		writeEndRF();
 		return false;
 	}
@@ -207,7 +310,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		if (!header.isRepeater()) {
 			LogMessage("D-Star, non repeater RF header received from %8.8s", my1);
 			m_rfState = RS_RF_INVALID;
-			return false;
+			return true;
 		}
 
 		unsigned char callsign[DSTAR_LONG_CALLSIGN_LENGTH];
@@ -217,19 +320,19 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		if (::memcmp(callsign, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH) != 0) {
 			LogMessage("D-Star, received RF header for wrong repeater (%8.8s) from %8.8s", callsign, my1);
 			m_rfState = RS_RF_INVALID;
-			return false;
+			return true;
 		}
 
-		if (m_selfOnly && ::memcmp(my1, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH - 1U) != 0) {
+		if (m_selfOnly && ::memcmp(my1, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH - 1U) != 0 && !(std::find_if(m_whiteList.begin(), m_whiteList.end(), std::bind(CallsignCompare, std::placeholders::_1, my1)) != m_whiteList.end())) {
 			LogMessage("D-Star, invalid access attempt from %8.8s", my1);
 			m_rfState = RS_RF_REJECTED;
-			return false;
+			return true;
 		}
 
 		if (!m_selfOnly && std::find_if(m_blackList.begin(), m_blackList.end(), std::bind(CallsignCompare, std::placeholders::_1, my1)) != m_blackList.end()) {
 			LogMessage("D-Star, invalid access attempt from %8.8s", my1);
 			m_rfState = RS_RF_REJECTED;
-			return false;
+			return true;
 		}
 
 		unsigned char gateway[DSTAR_LONG_CALLSIGN_LENGTH];
@@ -260,6 +363,8 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		m_maxRSSI = m_rssi;
 		m_aveRSSI = m_rssi;
 		m_rssiCount = 1U;
+
+		m_rfSlowData.start();
 
 		if (m_duplex) {
 			// Modify the header
@@ -304,71 +409,51 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			}
 
 			return false;
-		} else if (m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA) {
+		} else if (m_rfState == RS_RF_AUDIO) {
 			if (m_net)
 				writeNetworkDataRF(DSTAR_END_PATTERN_BYTES, 0U, true);
 
 			if (m_duplex)
 				writeQueueEOTRF();
 
+			m_rfNextFrameIsFastData = false;
+			m_rfSkipDTMFBlankingFrames = 0U;
+
+			unsigned char my1[DSTAR_LONG_CALLSIGN_LENGTH];
+			unsigned char my2[DSTAR_SHORT_CALLSIGN_LENGTH];
+			unsigned char your[DSTAR_LONG_CALLSIGN_LENGTH];
+			m_rfHeader.getMyCall1(my1);
+			m_rfHeader.getMyCall2(my2);
+			m_rfHeader.getYourCall(your);
+
 			if (m_rssi != 0U)
-				LogMessage("D-Star, received RF end of transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				LogMessage("D-Star, received RF end of transmission from %8.8s/%4.4s to %8.8s, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			else
-				LogMessage("D-Star, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits));
+				LogMessage("D-Star, received RF end of transmission from %8.8s/%4.4s to %8.8s, %.1f seconds, BER: %.1f%%", my1, my2, your, float(m_rfFrames) / 50.0F, float(m_rfErrs * 100U) / float(m_rfBits));
 
 			writeEndRF();
 		}
 
 		return false;
 	} else if (type == TAG_DATA) {
-		if (m_rfState == RS_RF_REJECTED)
-			return false;
-
-		if (m_rfState == RS_RF_INVALID)
-			return false;
-
-		if (m_rfState == RS_RF_LISTENING) {
+		if (m_rfState == RS_RF_REJECTED) {
+			return true;
+		} else if (m_rfState == RS_RF_INVALID) {
+			return true;
+		} else if (m_rfState == RS_RF_LISTENING) {
 			// The sync is regenerated by the modem so can do exact match
 			if (::memcmp(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES) == 0) {
-				m_slowData.start();
+				m_rfSlowData.start();
 				m_rfState = RS_RF_LATE_ENTRY;
 			}
 
 			return false;
-		}
-
-		// Data signatures only appear at the beginning of the frame
-		if (m_rfState == RS_RF_AUDIO && m_rfFrames < 21U) {
-			if (CUtils::compare(data + 1U, DSTAR_KENWOOD_DATA_MODE_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U) {
-				LogMessage("D-Star, switching to data mode (Kenwood)");
-				m_rfState = RS_RF_DATA;
-			} else if (CUtils::compare(data + 1U, DSTAR_ICOM_DATA_MODE_BYTES1, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U) {
-				LogMessage("D-Star, switching to data mode (Icom)");
-				m_rfState = RS_RF_DATA;
-			} else if (CUtils::compare(data + 1U, DSTAR_ICOM_DATA_MODE_BYTES2, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U) {
-				LogMessage("D-Star, switching to data mode (Icom)");
-				m_rfState = RS_RF_DATA;
-			}
-		}
-
-		if (m_rfState == RS_RF_DATA) {
-			// Regenerate the data mode markers
-			if (m_rfFrames < 21U) {
-				if (CUtils::compare(data + 1U, DSTAR_KENWOOD_DATA_MODE_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U)
-					::memcpy(data + 1U, DSTAR_KENWOOD_DATA_MODE_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES);
-				else if (CUtils::compare(data + 1U, DSTAR_ICOM_DATA_MODE_BYTES1, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U)
-					::memcpy(data + 1U, DSTAR_ICOM_DATA_MODE_BYTES1, DSTAR_VOICE_FRAME_LENGTH_BYTES);
-				else if (CUtils::compare(data + 1U, DSTAR_ICOM_DATA_MODE_BYTES2, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U)
-					::memcpy(data + 1U, DSTAR_ICOM_DATA_MODE_BYTES2, DSTAR_VOICE_FRAME_LENGTH_BYTES);
-			}
-
-			m_rfBits += 72U;
-			m_rfErrs  = 0U;
-			m_rfFrames++;
-
+		} else if (m_rfState == RS_RF_AUDIO) {
 			// The sync is regenerated by the modem so can do exact match
-			if (::memcmp(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES) == 0)
+			if (::memcmp(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES) == 0) {
+				m_rfSlowData.start();
 				m_rfN = 0U;
+			}
 
 			// Regenerate the sync and send the RSSI data to the display
 			if (m_rfN == 0U) {
@@ -376,56 +461,43 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 				m_display->writeDStarRSSI(m_rssi);
 			}
 
-			if (m_net)
-				writeNetworkDataRF(data, 0U, false);
-
-			if (m_duplex)
-				writeQueueDataRF(data);
-
-			m_rfN = (m_rfN + 1U) % 21U;
-		} else if (m_rfState == RS_RF_AUDIO) {
 			unsigned int errors = 0U;
 			if (!m_rfHeader.isDataPacket()) {
-				errors = m_fec.regenerateDStar(data + 1U);
+				errors = maybeFixupVoiceFrame(data, len, 1U, "RF", m_rfN, m_duplex, m_rfVoiceSyncData, m_rfVoiceSyncDataLen, m_rfNextFrameIsFastData, m_rfSkipDTMFBlankingFrames);
 				m_display->writeDStarBER(float(errors) / 0.48F);
-				LogDebug("D-Star, audio sequence no. %u, errs: %u/48 (%.1f%%)", m_rfN, errors, float(errors) / 0.48F);
 				m_rfErrs += errors;
-
-				// The sync is regenerated by the modem so can do exact match
-				if (::memcmp(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES) == 0)
-					m_rfN = 0U;
 			}
 
 			m_rfBits += 48U;
 			m_rfFrames++;
 
-			// The sync is regenerated by the modem so can do exact match
-			if (::memcmp(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES) == 0)
-				m_rfN = 0U;
+			const unsigned char* text = m_rfSlowData.addText(data + 1U);
+			if (text != NULL)
+				LogMessage("D-Star, slow data text = \"%s\"", text);
 
-			// Regenerate the sync and send the RSSI data to the display
-			if (m_rfN == 0U) {
-				CSync::addDStarSync(data + 1U);
-				m_display->writeDStarRSSI(m_rssi);
+			if (m_net) {
+				if (m_rfN == 1U)
+					writeNetworkDataRF(m_rfVoiceSyncData, 0U, false);
+				if (m_rfN >= 1U)
+					writeNetworkDataRF(data, errors, false);
 			}
 
-			if (m_net)
-				writeNetworkDataRF(data, errors, false);
-
 			if (m_duplex) {
-				blankDTMF(data + 1U);
-				writeQueueDataRF(data);
+				if (m_rfN == 1U)
+					writeQueueDataRF(m_rfVoiceSyncData);
+				if (m_rfN >= 1U)
+					writeQueueDataRF(data);
 			}
 
 			m_rfN = (m_rfN + 1U) % 21U;
 		} else if (m_rfState == RS_RF_LATE_ENTRY) {
 			// The sync is regenerated by the modem so can do exact match
 			if (::memcmp(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES) == 0) {
-				m_slowData.reset();
+				m_rfSlowData.reset();
 				return false;
 			}
 
-			CDStarHeader* header = m_slowData.add(data + 1U);
+			CDStarHeader* header = m_rfSlowData.addHeader(data + 1U);
 			if (header == NULL)
 				return false;
 
@@ -439,7 +511,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 				LogMessage("D-Star, non repeater RF header received from %8.8s", my1);
 				m_rfState = RS_RF_INVALID;
 				delete header;
-				return false;
+				return true;
 			}
 
 			unsigned char callsign[DSTAR_LONG_CALLSIGN_LENGTH];
@@ -450,21 +522,21 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 				LogMessage("D-Star, received RF header for wrong repeater (%8.8s) from %8.8s", callsign, my1);
 				m_rfState = RS_RF_INVALID;
 				delete header;
-				return false;
+				return true;
 			}
 
-			if (m_selfOnly && ::memcmp(my1, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH - 1U) != 0) {
+			if (m_selfOnly && ::memcmp(my1, m_callsign, DSTAR_LONG_CALLSIGN_LENGTH - 1U) != 0 && !(std::find_if(m_whiteList.begin(), m_whiteList.end(), std::bind(CallsignCompare, std::placeholders::_1, my1)) != m_whiteList.end())) {
 				LogMessage("D-Star, invalid access attempt from %8.8s", my1);
 				m_rfState = RS_RF_REJECTED;
 				delete header;
-				return false;
+				return true;
 			}
 
 			if (!m_selfOnly && std::find_if(m_blackList.begin(), m_blackList.end(), std::bind(CallsignCompare, std::placeholders::_1, my1)) != m_blackList.end()) {
 				LogMessage("D-Star, invalid access attempt from %8.8s", my1);
 				m_rfState = RS_RF_REJECTED;
 				delete header;
-				return false;
+				return true;
 			}
 
 			unsigned char gateway[DSTAR_LONG_CALLSIGN_LENGTH];
@@ -527,8 +599,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 
 			unsigned int errors = 0U;
 			if (!m_rfHeader.isDataPacket()) {
-				errors = m_fec.regenerateDStar(data + 1U);
-				LogDebug("D-Star, audio sequence no. %u, errs: %u/48 (%.1f%%)", m_rfN, errors, float(errors) / 0.48F);
+				errors = maybeFixupVoiceFrame(data, len, 1U, "RF", m_rfN, m_duplex, m_rfVoiceSyncData, m_rfVoiceSyncDataLen, m_rfNextFrameIsFastData, m_rfSkipDTMFBlankingFrames);
 				m_rfErrs += errors;
 			}
 
@@ -537,10 +608,8 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			if (m_net)
 				writeNetworkDataRF(data, errors, false);
 
-			if (m_duplex) {
-				blankDTMF(data + 1U);
+			if (m_duplex)
 				writeQueueDataRF(data);
-			}
 
 			m_rfState = RS_RF_AUDIO;
 
@@ -580,6 +649,8 @@ void CDStarControl::writeEndRF()
 {
 	m_rfState = RS_RF_LISTENING;
 
+	m_rfTimeoutTimer.stop();
+
 	if (m_netState == RS_NET_IDLE) {
 		m_display->clearDStar();
 
@@ -587,8 +658,6 @@ void CDStarControl::writeEndRF()
 
 		if (m_network != NULL)
 			m_network->reset();
-	} else {
-		m_rfTimeoutTimer.stop();
 	}
 }
 
@@ -621,7 +690,10 @@ void CDStarControl::writeNetwork()
 	if (length == 0U)
 		return;
 
-	if ((m_rfState == RS_RF_AUDIO || m_rfState == RS_RF_DATA) && m_netState == RS_NET_IDLE)
+	if (!m_enabled)
+		return;
+
+	if (m_rfState == RS_RF_AUDIO && m_netState == RS_NET_IDLE)
 		return;
 
 	m_networkWatchdog.start();
@@ -691,100 +763,77 @@ void CDStarControl::writeNetwork()
 		m_elapsed.start();
 
 	} else if (type == TAG_EOT) {
-		if (m_netState == RS_NET_AUDIO || m_netState == RS_NET_DATA) {
-			writeQueueEOTNet();
+		if (m_netState != RS_NET_AUDIO)
+			return;
 
-			data[1U] = TAG_EOT;
+		writeQueueEOTNet();
+
+		data[1U] = TAG_EOT;
 
 #if defined(DUMP_DSTAR)
-			writeFile(data + 1U, length - 1U);
-			closeFile();
+		writeFile(data + 1U, length - 1U);
+		closeFile();
 #endif
-			// We've received the header and EOT haven't we?
-			m_netFrames += 2U;
-			LogMessage("D-Star, received network end of transmission, %.1f seconds, %u%% packet loss, BER: %.1f%%", float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
+		m_netNextFrameIsFastData = false;
+		m_netSkipDTMFBlankingFrames = 0U;
 
-			writeEndNet();
-		}
+		unsigned char my1[DSTAR_LONG_CALLSIGN_LENGTH];
+		unsigned char my2[DSTAR_SHORT_CALLSIGN_LENGTH];
+		unsigned char your[DSTAR_LONG_CALLSIGN_LENGTH];
+		m_netHeader.getMyCall1(my1);
+		m_netHeader.getMyCall2(my2);
+		m_netHeader.getYourCall(your);
+
+		// We've received the header and EOT haven't we?
+		m_netFrames += 2U;
+		LogMessage("D-Star, received network end of transmission from %8.8s/%4.4s to %8.8s, %.1f seconds, %u%% packet loss, BER: %.1f%%", my1, my2, your, float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
+
+		writeEndNet();
 	} else if (type == TAG_DATA) {
-		// Data signatures only appear at the beginning of the frame
-		if (m_netState == RS_NET_AUDIO && m_netFrames < 21U) {
-			if (CUtils::compare(data + 2U, DSTAR_KENWOOD_DATA_MODE_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U) {
-				LogMessage("D-Star, switching to data mode (Kenwood)");
-				m_netState = RS_NET_DATA;
-			} else if (CUtils::compare(data + 2U, DSTAR_ICOM_DATA_MODE_BYTES1, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U) {
-				LogMessage("D-Star, switching to data mode (Icom)");
-				m_netState = RS_NET_DATA;
-			} else if (CUtils::compare(data + 2U, DSTAR_ICOM_DATA_MODE_BYTES2, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U) {
-				LogMessage("D-Star, switching to data mode (Icom)");
-				m_netState = RS_NET_DATA;
-			}
+		if (m_netState != RS_NET_AUDIO)
+			return;
+
+		unsigned char n = data[1U];
+
+		data[1U] = TAG_DATA;
+
+		unsigned int errors = 0U;
+		if (!m_netHeader.isDataPacket())
+			errors = maybeFixupVoiceFrame(data, length, 2U, "Net", n, true, m_netVoiceSyncData, m_netVoiceSyncDataLen, m_netNextFrameIsFastData, m_netSkipDTMFBlankingFrames);
+
+		// Insert silence and reject if in the past
+		bool ret = insertSilence(data + 1U, n);
+		if (!ret)
+			return;
+
+		m_netErrs += errors;
+		m_netBits += 48U;
+
+		m_netN = n;
+
+		// Regenerate the sync
+		if (n == 0U) {
+			CSync::addDStarSync(data + 2U);
+			m_netSlowData.start();
 		}
 
-		if (m_netState == RS_NET_DATA) {
-			// Regenerate the data mode markers
-			if (m_netFrames < 21U) {
-				if (CUtils::compare(data + 2U, DSTAR_KENWOOD_DATA_MODE_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U)
-					::memcpy(data + 2U, DSTAR_KENWOOD_DATA_MODE_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES);
-				else if (CUtils::compare(data + 2U, DSTAR_ICOM_DATA_MODE_BYTES1, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U)
-					::memcpy(data + 2U, DSTAR_ICOM_DATA_MODE_BYTES1, DSTAR_VOICE_FRAME_LENGTH_BYTES);
-				else if (CUtils::compare(data + 2U, DSTAR_ICOM_DATA_MODE_BYTES2, DSTAR_VOICE_FRAME_LENGTH_BYTES) < 5U)
-					::memcpy(data + 2U, DSTAR_ICOM_DATA_MODE_BYTES2, DSTAR_VOICE_FRAME_LENGTH_BYTES);
-			}
+		const unsigned char* text = m_netSlowData.addText(data + 2U);
+		if (text != NULL)
+			LogMessage("D-Star, slow data text = \"%s\"", text);
 
-			unsigned char n = data[1U];
-
-			data[1U] = TAG_DATA;
-
-			m_netBits += 72U;
-			m_netErrs  = 0U;
-
-			m_netN = n;
-
-			// Regenerate the sync
-			if (n == 0U)
-				CSync::addDStarSync(data + 2U);
-
-			m_packetTimer.start();
-			m_netFrames++;
+		m_packetTimer.start();
+		m_netFrames++;
 
 #if defined(DUMP_DSTAR)
+		if (n == 1U)
+			writeFile(m_netVoiceSyncData + 1U, m_netVoiceSyncDataLen - 1U);
+		if (n >= 1U)
 			writeFile(data + 1U, length - 1U);
 #endif
+		if (n == 1U)
+			writeQueueDataNet(m_netVoiceSyncData + 1U);
+		if (n >= 1U)
 			writeQueueDataNet(data + 1U);
-		} else if (m_netState == RS_NET_AUDIO) {
-			unsigned char n = data[1U];
-
-			unsigned int errors = 0U;
-			if (!m_netHeader.isDataPacket())
-				errors = m_fec.regenerateDStar(data + 2U);
-
-			blankDTMF(data + 2U);
-
-			data[1U] = TAG_DATA;
-
-			// Insert silence and reject if in the past
-			bool ret = insertSilence(data + 1U, n);
-			if (!ret)
-				return;
-
-			m_netErrs += errors;
-			m_netBits += 48U;
-
-			m_netN = n;
-
-			// Regenerate the sync
-			if (n == 0U)
-				CSync::addDStarSync(data + 2U);
-
-			m_packetTimer.start();
-			m_netFrames++;
-
-#if defined(DUMP_DSTAR)
-			writeFile(data + 1U, length - 1U);
-#endif
-			writeQueueDataNet(data + 1U);
-		}
 	} else {
 		CUtils::dump("D-Star, unknown data from network", data, DSTAR_FRAME_LENGTH_BYTES + 1U);
 	}
@@ -813,7 +862,7 @@ void CDStarControl::clock()
 	m_rfTimeoutTimer.clock(ms);
 	m_netTimeoutTimer.clock(ms);
 
-	if (m_netState == RS_NET_AUDIO || m_netState == RS_NET_DATA) {
+	if (m_netState == RS_NET_AUDIO) {
 		m_networkWatchdog.clock(ms);
 
 		if (m_networkWatchdog.hasExpired()) {
@@ -1148,24 +1197,39 @@ void CDStarControl::sendAck()
 		m_network->getStatus(status, reflector);
 
 	char text[40U];
-	if (m_ackMessage && m_rssi != 0) {
-		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
-			::sprintf(text, "%-8.8s -%udBm          ", reflector, m_aveRSSI / m_rssiCount);
-		else
+	if (m_ackMessage == DSTAR_ACK_RSSI && m_rssi != 0) {
+		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK) {
+			CUtils::removeChar(reflector, ' ');//remove space from reflector so all nicely fits onto 20 chars in case rssi < 99dBm
+			::sprintf(text, "%-8.8s %.1f%% -%udBm        ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCount);
+		} else {
 			::sprintf(text, "BER:%.1f%% -%udBm           ", float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCount);
-	}
-	else {
+		}
+	} else if (m_ackMessage == DSTAR_ACK_SMETER && m_rssi != 0) {
+		unsigned int signal, plus;
+		char signalText[15U];
+		CSMeter::getSignal(m_aveRSSI / m_rssiCount, signal, plus);
+		if (plus != 0U)
+			::sprintf(signalText, "S%u+%02u", signal, plus);
+		else
+			::sprintf(signalText, "S%u", signal);
+
+		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
+			::sprintf(text, "%-8.8s %.1f%% %s           ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), signalText);
+		else
+			::sprintf(text, "BER:%.1f%% %s             ", float(m_rfErrs * 100U) / float(m_rfBits), signalText);
+	} else {
 		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
 			::sprintf(text, "%-8.8s  BER: %.1f%%         ", reflector, float(m_rfErrs * 100U) / float(m_rfBits));
 		else
 			::sprintf(text, "BER: %.1f%%                 ", float(m_rfErrs * 100U) / float(m_rfBits));
 	}
-	m_slowData.setText(text);
+
+	m_rfSlowData.setText(text);
 
 	::memcpy(data, DSTAR_NULL_FRAME_DATA_BYTES, DSTAR_FRAME_LENGTH_BYTES + 1U);
 
 	for (unsigned int i = 0U; i < 19U; i++) {
-		m_slowData.get(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES);
+		m_rfSlowData.getSlowData(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES);
 		writeQueueDataRF(data);
 	}
 
@@ -1198,27 +1262,69 @@ void CDStarControl::sendError()
 		m_network->getStatus(status, reflector);
 
 	char text[40U];
-	if (m_ackMessage && m_rssi != 0) {
-		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
-			::sprintf(text, "%-8.8s -%udBm          ", reflector, m_aveRSSI / m_rssiCount);
-		else
+	if (m_ackMessage == DSTAR_ACK_RSSI && m_rssi != 0) {
+		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK) {
+			CUtils::removeChar(reflector, ' ');//remove space from reflector so all nicely fits onto 20 chars in case rssi < 99dBm
+			::sprintf(text, "%-8.8s %.1f%% -%udBm        ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCount);
+		} else {
 			::sprintf(text, "BER:%.1f%% -%udBm           ", float(m_rfErrs * 100U) / float(m_rfBits), m_aveRSSI / m_rssiCount);
-	}
-	else {
+		}
+	} else if (m_ackMessage == DSTAR_ACK_SMETER && m_rssi != 0) {
+		unsigned int signal, plus;
+		char signalText[15U];
+		CSMeter::getSignal(m_aveRSSI / m_rssiCount, signal, plus);
+		if (plus != 0U)
+			::sprintf(signalText, "S%u+%02u", signal, plus);
+		else
+			::sprintf(signalText, "S%u", signal);
+
+		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
+			::sprintf(text, "%-8.8s %.1f%% %s           ", reflector, float(m_rfErrs * 100U) / float(m_rfBits), signalText);
+		else
+			::sprintf(text, "BER:%.1f%% %s             ", float(m_rfErrs * 100U) / float(m_rfBits), signalText);
+	} else {
 		if (status == LS_LINKED_DEXTRA || status == LS_LINKED_DPLUS || status == LS_LINKED_DCS || status == LS_LINKED_CCS || status == LS_LINKED_LOOPBACK)
 			::sprintf(text, "%-8.8s  BER: %.1f%%         ", reflector, float(m_rfErrs * 100U) / float(m_rfBits));
 		else
 			::sprintf(text, "BER: %.1f%%                 ", float(m_rfErrs * 100U) / float(m_rfBits));
 	}
-	m_slowData.setText(text);
+
+	m_rfSlowData.setText(text);
 
 	::memcpy(data, DSTAR_NULL_FRAME_DATA_BYTES, DSTAR_FRAME_LENGTH_BYTES + 1U);
 
 	for (unsigned int i = 0U; i < 19U; i++) {
-		m_slowData.get(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES);
+		m_rfSlowData.getSlowData(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES);
 		writeQueueDataRF(data);
 	}
 
 	writeQueueEOTRF();
 }
 
+bool CDStarControl::isBusy() const
+{
+	return m_rfState != RS_RF_LISTENING || m_netState != RS_NET_IDLE;
+}
+
+void CDStarControl::enable(bool enabled)
+{
+	if (!enabled && m_enabled) {
+		m_queue.clear();
+
+		// Reset the RF section
+		m_rfState = RS_RF_LISTENING;
+
+		m_rfTimeoutTimer.stop();
+
+		// Reset the networking section
+		m_netState = RS_NET_IDLE;
+
+		m_lastFrameValid = false;
+
+		m_netTimeoutTimer.stop();
+		m_networkWatchdog.stop();
+		m_packetTimer.stop();
+	}
+
+	m_enabled = enabled;
+}

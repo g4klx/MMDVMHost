@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018,2020,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include "Log.h"
 
 static bool networkInfoInitialized = false;
-static unsigned char passCounter = 0;
+static unsigned char passCounter = 0U;
 
 //Logo MMDVM for Idle Screen
 static unsigned char logo_glcd_bmp[] =
@@ -86,7 +86,7 @@ static unsigned char logo_dmr_bmp[] =
 };
 
 //Logo Fusion 128x16
-const unsigned char logo_fusion_bmp [] =
+const unsigned char logo_fusion_bmp[] =
 {
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0xF8, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -107,7 +107,7 @@ const unsigned char logo_fusion_bmp [] =
 };
 
 //Logo P25 128x16px
-const unsigned char logo_P25_bmp [] =
+const unsigned char logo_P25_bmp[] =
 {
 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 0x01, 0xff, 0xff, 0xff, 0xf0, 0x00, 0x03, 0xff, 0xff, 0xc0, 0x01, 0xff, 0xff, 0xff, 0xf8, 0x00,
@@ -128,7 +128,7 @@ const unsigned char logo_P25_bmp [] =
 };
 
 // Logo NXDN_sm, 128x16px
-const unsigned char logo_NXDN_bmp [] =
+const unsigned char logo_NXDN_bmp[] =
 {
 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
@@ -148,8 +148,29 @@ const unsigned char logo_NXDN_bmp [] =
 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
 };
 
+// Logo M17_sm, 128x16px
+const unsigned char logo_M17_bmp[] =
+{
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x62, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x67, 0x37, 0xf0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xe7, 0x33, 0xe0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xef, 0x70, 0xe0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0xee, 0xf0, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0xff, 0xf1, 0xc0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x7f, 0x31, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x07, 0x77, 0x33, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x06, 0x77, 0x37, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0e, 0x67, 0x36, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x60, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
+
 // Logo POCASG/DAPNET, 128x16px
-const unsigned char logo_POCSAG_bmp [] =
+const unsigned char logo_POCSAG_bmp[] =
 {
 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
 0xff, 0xff, 0xff, 0xf8, 0x7f, 0xfe, 0x03, 0xfe, 0xfe, 0x03, 0xdf, 0xf6, 0x00, 0x00, 0x1f, 0xff,
@@ -169,15 +190,15 @@ const unsigned char logo_POCSAG_bmp [] =
 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
 };
 
-COLED::COLED(unsigned char displayType, unsigned char displayBrightness, bool displayInvert, bool displayScroll, bool displayRotate, bool slot1Enabled, bool slot2Enabled, CModem* modem) :
+COLED::COLED(unsigned char displayType, unsigned char displayBrightness, bool displayInvert, bool displayScroll, bool displayRotate, bool displayLogoScreensaver, bool duplex) :
+CDisplay(),
 m_displayType(displayType),
 m_displayBrightness(displayBrightness),
 m_displayInvert(displayInvert),
 m_displayScroll(displayScroll),
 m_displayRotate(displayRotate),
-m_slot1Enabled(slot1Enabled),
-m_slot2Enabled(slot2Enabled),
-m_modem(modem),
+m_displayLogoScreensaver(displayLogoScreensaver),
+m_duplex(duplex),
 m_ipaddress(),
 m_display()
 {
@@ -189,436 +210,642 @@ COLED::~COLED()
 
 bool COLED::open()
 {
+	// SPI
+	if (m_display.oled_is_spi_proto(m_displayType)) {
+		// SPI change parameters to fit to your LCD
+		if (!m_display.init(OLED_SPI_DC, OLED_SPI_RESET, OLED_SPI_CS, m_displayType))
+			return false;
+	} else {
+		// I2C change parameters to fit to your LCD
+		if (!m_display.init(OLED_I2C_RESET, m_displayType))
+			return false;
+	}
 
-    // SPI
-    if (m_display.oled_is_spi_proto(m_displayType))
-    {
-        // SPI change parameters to fit to your LCD
-        if ( !m_display.init(OLED_SPI_DC,OLED_SPI_RESET,OLED_SPI_CS, m_displayType) )
-            return false;
-    }
-    else
-    {
-        // I2C change parameters to fit to your LCD
-        if ( !m_display.init(OLED_I2C_RESET, m_displayType) )
-            return false;
-    }
+	m_display.begin();
 
+	m_display.invertDisplay(m_displayInvert ? 1 : 0);
+	if (m_displayBrightness > 0U)
+		m_display.setBrightness(m_displayBrightness);
 
-    m_display.begin();
+	if (m_displayRotate > 0U) {
+		m_display.sendCommand(0xC0);
+		m_display.sendCommand(0xA0);
+	}
 
-    m_display.invertDisplay(m_displayInvert ? 1 : 0);
-    if (m_displayBrightness > 0U)
-        m_display.setBrightness(m_displayBrightness);
+	// Init done
+	m_display.setTextWrap(false);	// disable text wrap as default
+	m_display.clearDisplay();	// clears the screen  buffer
+	m_display.display();		// display it (clear display)
 
-    if (m_displayRotate > 0U) {
-      m_display.sendCommand(0xC0);
-      m_display.sendCommand(0xA0);
-    }
+	OLED_statusbar();
 
-    // init done
-    m_display.clearDisplay();   // clears the screen  buffer
-    m_display.display();        // display it (clear display)
+	m_display.setCursor(0, OLED_LINE4);
+	m_display.setTextSize(1);
+	m_display.print("   -Initializing-");
+	m_display.display();
 
-    OLED_statusbar();
-    m_display.setCursor(0,OLED_LINE3);
-    m_display.print("Startup");
-    m_display.display();
+	return true;
+}
 
-    return true;
+float COLED::readTemperature(const char* filePath)
+{
+	std::ifstream file(filePath);
+	if (!file.is_open()) {
+		std::cerr << "Error: Could not open file " << filePath << std::endl;
+		return -1.0F;			// Return a negative value to indicate that CPU temp is not available
+	}
+
+	float temperature;
+	file >> temperature;
+
+	file.close();
+
+	return temperature / 1000.0F;		// The temperature is stored in millidegrees Celsius, so a bit of conversion
 }
 
 void COLED::setIdleInt()
 {
-    m_mode = MODE_IDLE;
+	m_mode = MODE_IDLE;
 
-    m_display.clearDisplay();
-    OLED_statusbar();
+	m_display.clearDisplay();
 
-//    m_display.setCursor(0,30);
-//    m_display.setTextSize(3);
-//    m_display.print("Idle");
+	OLED_statusbar();
 
-//    m_display.setTextSize(1);
-    m_display.startscrolldiagright(0x00,0x0f);  //the MMDVM logo scrolls the whole screen
-    m_display.display();
+	if (m_displayScroll && m_displayLogoScreensaver)
+		m_display.startscrolldiagleft(0x00, 0x0f);  //the MMDVM logo scrolls the whole screen
 
-    unsigned char info[100U];
-    CNetworkInfo* m_network;
+	unsigned char info[100U];
+	CNetworkInfo* m_network;
 
-    passCounter ++;
-    if (passCounter > 253U)
-        networkInfoInitialized = false;
+	passCounter++;
+	if (passCounter > 253U)
+		networkInfoInitialized = false;
 
-    if (! networkInfoInitialized) {
-        //LogMessage("Initialize CNetworkInfo");
-        info[0]=0;
-        m_network = new CNetworkInfo;
-        m_network->getNetworkInterface(info);
-        m_ipaddress = (char*)info;
-        delete m_network;
+	if (!networkInfoInitialized) {
+		//LogMessage("Initialize CNetworkInfo");
+		info[0] = 0;
+		m_network = new CNetworkInfo;
+		m_network->getNetworkInterface(info);
+		m_ipaddress = (char*)info;
+		delete m_network;
 
-        if (m_modem != NULL)
-            m_modem->writeIPInfo(m_ipaddress);
+		networkInfoInitialized = true;
+		passCounter = 0U;
+	}
 
-        networkInfoInitialized = true;
-        passCounter = 0;
-    }
+	// Let's let the users know if they are in Auto-AP mode...
+	if (m_ipaddress.find("wlan0_ap") != std::string::npos) {
+		size_t pos = m_ipaddress.find("wlan0_ap");
+		if (pos != std::string::npos)
+			m_ipaddress.erase(pos, 9); // remove redundant/superfluous "wlan0_ap" from string
+
+		// Read ssid value from /etc/hostapd.conf if it exists...
+		std::string ssid;
+		std::ifstream configFile("/etc/hostapd/hostapd.conf");
+		if (configFile.is_open()) {
+			std::string line;
+			while (std::getline(configFile, line)) {
+				if (line.find("ssid=") != std::string::npos) {
+					std::istringstream iss(line);
+					std::string key, value;
+					if (std::getline(iss, key, '=') && std::getline(iss, value)) {
+						ssid = value;
+						break;
+					}
+				}
+			}
+
+			configFile.close();
+	 	} else {
+			ssid = "Unknown"; // `/etc/hostapd.conf` does not exist...
+		}
+
+	 	if (m_displayLogoScreensaver) {
+			m_display.setCursor(0, OLED_LINE3);
+			m_display.setTextSize(1);
+			m_display.printf("Auto-AP Running...");
+			m_display.setCursor(0, OLED_LINE5);
+			m_display.setTextSize(1);
+			m_display.printf("SSID: %s", ssid.c_str());
+			m_display.setCursor(0, OLED_LINE6);
+			m_display.setTextSize(1);
+			m_display.printf("IP: %s", m_ipaddress.c_str());
+		}
+	} else { // Connected to network - no Auto-AP mode; normal display layout...
+		if (m_displayLogoScreensaver) {
+			m_display.setCursor(0, OLED_LINE2);
+			m_display.setTextSize(1);
+			m_display.print("		-IDLE-");
+			m_display.setCursor(0, OLED_LINE4);
+			m_display.printf("%s", m_ipaddress.c_str());
+
+			// Display temperature
+			float tempCelsius = readTemperature("/sys/class/thermal/thermal_zone0/temp");
+			if (tempCelsius >= 0.0F) {
+				// Convert to Fahrenheit
+				float tempFahrenheit = (tempCelsius * 9.0F / 5.0F) + 32.0F;
+				m_display.setCursor(0, OLED_LINE5);
+				m_display.setTextSize(1);
+				m_display.printf("Temp: %.0fF / %.0fC ", tempFahrenheit, tempCelsius);
+			}
+		}
+	}
+
+	m_display.display();
 }
 
 void COLED::setErrorInt(const char* text)
 {
-    m_mode = MODE_ERROR;
+	m_mode = MODE_ERROR;
 
-    m_display.clearDisplay();
-    OLED_statusbar();
+	m_display.clearDisplay();
+	OLED_statusbar();
 
-    m_display.setCursor(0,OLED_LINE1);
-    m_display.printf("%s\n",text);
+	m_display.setTextWrap(true);	// text wrap temorally enable
+	m_display.setCursor(0, OLED_LINE1);
+	m_display.printf("%s\n", text);
+	m_display.setTextWrap(false);
 
-    m_display.display();
+	m_display.display();
 }
 
 void COLED::setLockoutInt()
 {
-    m_mode = MODE_LOCKOUT;
+	m_mode = MODE_LOCKOUT;
 
-    m_display.clearDisplay();
-    OLED_statusbar();
+	m_display.clearDisplay();
+	OLED_statusbar();
 
-    m_display.setCursor(0,30);
-    m_display.setTextSize(3);
-    m_display.print("Lockout");
+	m_display.setCursor(0, 30);
+	m_display.setTextSize(3);
+	m_display.print("Lockout");
 
-    m_display.setTextSize(1);
-    m_display.display();
+	m_display.setTextSize(1);
+	m_display.display();
 }
 
 void COLED::setQuitInt()
 {
-    m_mode = MODE_QUIT;
+	m_mode = MODE_QUIT;
 
-    m_display.clearDisplay();
-    OLED_statusbar();
+	m_display.clearDisplay();
+	OLED_statusbar();
 
-    m_display.setCursor(0,30);
-    m_display.setTextSize(3);
-    m_display.print("Stopped");
+	m_display.setCursor(0, 30);
+	m_display.setTextSize(2);
+	m_display.print(" Stopping");
 
-    m_display.setTextSize(1);
-    m_display.display();
+	m_display.setTextSize(1);
+	m_display.display();
+	sleep(2);
+}
+
+void COLED::setFMInt()
+{
+	m_mode = MODE_FM;
+
+	m_display.clearDisplay();
+	OLED_statusbar();
+
+	m_display.setCursor(0, 30);
+	m_display.setTextSize(3);
+	m_display.print("FM");
+
+	m_display.setTextSize(1);
+	m_display.display();
 }
 
 void COLED::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
-    m_mode = MODE_DSTAR;
+	m_mode = MODE_DSTAR;
 
-    m_display.clearDisplay();
-    m_display.fillRect(0,OLED_LINE3,m_display.width(),m_display.height(),BLACK); //clear everything beneath logo
+	m_display.clearDisplay();
+	m_display.fillRect(0, OLED_LINE3, m_display.width(), m_display.height(), BLACK); //clear everything beneath logo
 
-    m_display.setCursor(0,OLED_LINE3);
-    m_display.printf("%s %.8s/%4.4s",type,my1,my2);
+	m_display.setCursor(0, OLED_LINE3);
+	m_display.printf("%s %.8s/%4.4s", type, my1, my2);
 
-    m_display.setCursor(0,OLED_LINE4);
-    m_display.printf("-> %.8s",your);
+	m_display.setCursor(0, OLED_LINE4);
+	m_display.printf("-> %.8s", your);
 
-    m_display.setCursor(0,OLED_LINE5);
-    m_display.printf("via %.8s",reflector);
+	m_display.setCursor(0, OLED_LINE5);
+	m_display.printf("via %.8s", reflector);
 
-    m_display.setCursor(0,OLED_LINE6);
-    m_display.printf("%s",m_ipaddress.c_str());
+	m_display.setCursor(0, OLED_LINE6);
+	m_display.printf("%s", m_ipaddress.c_str());
 
-    OLED_statusbar();
-    m_display.display();
+	OLED_statusbar();
 
-    if (m_modem != NULL)
-        m_modem->writeDStarInfo(my1, my2, your, type, reflector);
+	m_display.display();
 }
 
 void COLED::clearDStarInt()
 {
-    m_display.fillRect(0,OLED_LINE3, m_display.width(),m_display.height(),BLACK); //clear everything beneath the logo
+	m_display.fillRect(0, OLED_LINE3, m_display.width(),m_display.height(), BLACK); //clear everything beneath the logo
 
-    m_display.setCursor(40,OLED_LINE3);
-    m_display.print("Listening");
+	m_display.setCursor(40, OLED_LINE3);
+	m_display.print("Standby");
 
-    m_display.setCursor(0,OLED_LINE5);
-    m_display.printf("%s",m_ipaddress.c_str());
+	m_display.setCursor(0, OLED_LINE5);
+	m_display.printf("%s", m_ipaddress.c_str());
 
-    m_display.display();
+	m_display.display();
 }
 
-void COLED::writeDMRInt(unsigned int slotNo,const std::string& src,bool group,const std::string& dst,const char* type)
+void COLED::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
+	CUserDBentry tmp;
 
-    if (m_mode != MODE_DMR) {
-        m_display.clearDisplay();
-        m_mode = MODE_DMR;
-        clearDMRInt(slotNo);
-    }
-    // if both slots, use lines 2-3 for slot 1, lines 4-5 for slot 2
-    // if single slot, use lines 3-4
-    if ( m_slot1Enabled && m_slot2Enabled ) {
+	tmp.set(keyCALLSIGN, src);
 
-        if (slotNo == 1U) {
-            m_display.fillRect(0,OLED_LINE2,m_display.width(),40,BLACK);
-            m_display.setCursor(0,OLED_LINE2);
-            m_display.printf("%s",src.c_str());
-            m_display.setCursor(0,OLED_LINE3);
-            m_display.printf("Slot: %i %s %s%s",slotNo,type,group ? "TG: " : "",dst.c_str());
-        }
-        else
-        {
-            m_display.fillRect(0,OLED_LINE4,m_display.width(),40,BLACK);
-            m_display.setCursor(0,OLED_LINE4);
-            m_display.printf("%s",src.c_str());
-            m_display.setCursor(0,OLED_LINE5);
-            m_display.printf("Slot: %i %s %s%s",slotNo,type,group ? "TG: " : "",dst.c_str());
-        }
+	writeDMRIntEx(slotNo, tmp, group, dst, type);
+}
 
-    }
-    else
-    {
-        m_display.fillRect(0,OLED_LINE3,m_display.width(),20,BLACK);
-        m_display.setCursor(0,OLED_LINE3);
-        m_display.printf("%s",src.c_str());
-        m_display.setCursor(0,OLED_LINE4);
-        m_display.printf("Slot: %i %s %s%s",slotNo,type,group ? "TG: " : "",dst.c_str());
-    }
+#define CALLandNAME(u) ((u).get(keyCALLSIGN) + " " + (u).get(keyFIRST_NAME))
 
-    m_display.fillRect(0,OLED_LINE6,m_display.width(),20,BLACK);
-    m_display.setCursor(0,OLED_LINE6);
-    m_display.printf("%s",m_ipaddress.c_str());
+int COLED::writeDMRIntEx(unsigned int slotNo, const CUserDBentry& src, bool group, const std::string& dst, const char* type)
+{
+	if (m_mode != MODE_DMR) {
+		m_display.clearDisplay();
+		m_mode = MODE_DMR;
+		clearDMRInt(slotNo);
+	}
 
-    OLED_statusbar();
-    m_display.display();
+	// if both slots, use lines 2-3 for slot 1, lines 4-5 for slot 2
+	// if single slot, use lines 2-3
+	if (m_duplex) {
+		if (slotNo == 1U) {
+			m_display.fillRect(0, OLED_LINE2, m_display.width(), 40, BLACK);
+			m_display.setCursor(0, OLED_LINE2);
+			m_display.printf("%s", CALLandNAME(src).c_str());
+			m_display.setCursor(0, OLED_LINE3);
+			m_display.printf("Slot: %i %s %s%s", slotNo, type, group ? "TG: " : "", dst.c_str());
+		} else {
+			m_display.fillRect(0, OLED_LINE4, m_display.width(), 40, BLACK);
+			m_display.setCursor(0, OLED_LINE4);
+			m_display.printf("%s", CALLandNAME(src).c_str());
+			m_display.setCursor(0, OLED_LINE5);
+			m_display.printf("Slot: %i %s %s%s", slotNo, type, group ? "TG: " : "", dst.c_str());
+		}
 
-    if (m_modem != NULL)
-        m_modem->writeDMRInfo(slotNo, src, group, dst, type);
+		m_display.fillRect(0, OLED_LINE6, m_display.width(), 20, BLACK);
+		m_display.setCursor(0, OLED_LINE6);
+		m_display.printf("%s", m_ipaddress.c_str());
+	} else {
+		m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
+		m_display.setCursor(0, OLED_LINE2);
+		m_display.printf("%s", CALLandNAME(src).c_str());
+		m_display.setCursor(0, OLED_LINE3);
+		m_display.printf("Slot: %i %s %s%s", slotNo, type, group ? "TG: " : "", dst.c_str());
+		m_display.setCursor(0, OLED_LINE4);
+		m_display.printf("%s", src.get(keyCITY).c_str());
+		m_display.setCursor(0, OLED_LINE5);
+		m_display.printf("%s", src.get(keySTATE).c_str());
+		m_display.setCursor(0, OLED_LINE6);
+		m_display.printf("%s", src.get(keyCOUNTRY).c_str());
+	}
+
+	OLED_statusbar();
+
+	m_display.display();
+
+	// must be 0, to avoid calling writeDMRInt() from CDisplay::writeDMR()
+	return 0;
 }
 
 void COLED::clearDMRInt(unsigned int slotNo)
 {
-    // if both slots, use lines 2-3 for slot 1, lines 4-5 for slot 2
-    // if single slot, use lines 3-4
-    if ( m_slot1Enabled && m_slot2Enabled ){
-        if (slotNo == 1U) {
-            m_display.fillRect(0, OLED_LINE3, m_display.width(), 40, BLACK);
-            m_display.setCursor(0,OLED_LINE3);
-            m_display.print("Slot: 1 Listening");
-        }
-        else {
-            m_display.fillRect(0, OLED_LINE5, m_display.width(), 40, BLACK);
-            m_display.setCursor(0, OLED_LINE5);
-            m_display.print("Slot: 2 Listening");
-        }
-    }
-    else {
-        m_display.fillRect(0, OLED_LINE4, m_display.width(), 40, BLACK);
-        m_display.setCursor(0,OLED_LINE4);
-        m_display.printf("Slot: %i Listening",slotNo);
-    }
+	// if both slots, use lines 2-3 for slot 1, lines 4-5 for slot 2
+	// if single slot, use lines 2-3
+	if (m_duplex){
+		if (slotNo == 1U) {
+			m_display.fillRect(0, OLED_LINE3, m_display.width(), 40, BLACK);
+			m_display.setCursor(0, OLED_LINE3);
+			m_display.print("Slot: 1 Standby");
+		} else {
+			m_display.fillRect(0, OLED_LINE5, m_display.width(), 40, BLACK);
+			m_display.setCursor(0, OLED_LINE5);
+			m_display.print("Slot: 2 Standby");
+		}
+	} else {
+		m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
+		m_display.setCursor(0, OLED_LINE3);
+		m_display.printf("Slot: %i Standby", slotNo);
+	}
 
-    m_display.fillRect(0, OLED_LINE6, m_display.width(), 20, BLACK);
-    m_display.setCursor(0,OLED_LINE6);
-    m_display.printf("%s",m_ipaddress.c_str());
-    m_display.display();
+	m_display.fillRect(0, OLED_LINE6, m_display.width(), 20, BLACK);
+	m_display.setCursor(0, OLED_LINE6);
+	m_display.printf("%s", m_ipaddress.c_str());
+
+	m_display.display();
 }
 
-void COLED::writeFusionInt(const char* source, const char* dest, const char* type, const char* origin)
+void COLED::writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
+	m_mode = MODE_YSF;
 
-    m_mode = MODE_YSF;
+	m_display.clearDisplay();
+	m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
-    m_display.clearDisplay();
-    m_display.fillRect(0,OLED_LINE2,m_display.width(),m_display.height(),BLACK);
+	m_display.setCursor(0, OLED_LINE4);
+	m_display.printf("%s %.10s", type, source);
 
-    m_display.setCursor(0,OLED_LINE4);
-    m_display.printf("%s %.10s", type, source);
+	m_display.setCursor(0, OLED_LINE5);
+	m_display.printf("  DG-ID %u", dgid);
 
-    m_display.setCursor(0,OLED_LINE5);
-    m_display.printf("  %.10s", dest);
+	OLED_statusbar();
 
-    OLED_statusbar();
-    m_display.display();
-
-    if (m_modem != NULL)
-        m_modem->writeYSFInfo(source, dest, type, origin);
+	m_display.display();
 }
 
 void COLED::clearFusionInt()
 {
-    m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
+	m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
-    m_display.setCursor(40,OLED_LINE4);
-    m_display.print("Listening");
+	m_display.setCursor(40, OLED_LINE4);
+	m_display.print("Standby");
 
-    m_display.setCursor(0,OLED_LINE6);
-    m_display.printf("%s",m_ipaddress.c_str());
+	m_display.setCursor(0, OLED_LINE6);
+	m_display.printf("%s", m_ipaddress.c_str());
 
-    m_display.display();
+	m_display.display();
 }
 
 void COLED::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
 {
-    m_mode = MODE_P25;
+	m_mode = MODE_P25;
 
-    m_display.clearDisplay();
-    m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
+	m_display.clearDisplay();
+	m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
-    m_display.setCursor(0,OLED_LINE3);
-    m_display.printf("%s %.10s", type, source);
+	m_display.setCursor(0, OLED_LINE3);
+	m_display.printf("%s %.10s", type, source);
 
-    m_display.setCursor(0,OLED_LINE4);
-    m_display.printf("  %s%u", group ? "TG" : "", dest);
+	m_display.setCursor(0, OLED_LINE4);
+	m_display.printf("  %s%u", group ? "TG" : "", dest);
 
-    OLED_statusbar();
-    m_display.display();
+	OLED_statusbar();
 
-    if (m_modem != NULL)
-        m_modem->writeP25Info(source, group, dest, type);
+	m_display.display();
 }
 
 void COLED::clearP25Int()
 {
-    m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
+	m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
-    m_display.setCursor(40,OLED_LINE4);
-    m_display.print("Listening");
+	m_display.setCursor(40, OLED_LINE4);
+	m_display.print("Standby");
 
-    m_display.setCursor(0,OLED_LINE6);
-    m_display.printf("%s",m_ipaddress.c_str());
+	m_display.setCursor(0, OLED_LINE6);
+	m_display.printf("%s", m_ipaddress.c_str());
 
-    m_display.display();
+	m_display.display();
 }
 
 void COLED::writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type)
 {
-    m_mode = MODE_NXDN;
+	CUserDBentry tmp;
 
-    m_display.clearDisplay();
-    m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
+	tmp.set(keyCALLSIGN, source);
 
-    m_display.setCursor(0,OLED_LINE3);
-    m_display.printf("%s %.10s", type, source);
+	writeNXDNIntEx(tmp, group, dest, type);
+}
 
-    m_display.setCursor(0,OLED_LINE5);
-    m_display.printf("  %s%u", group ? "TG" : "", dest);
+int COLED::writeNXDNIntEx(const CUserDBentry& source, bool group, unsigned int dest, const char* type)
+{
+	m_mode = MODE_NXDN;
 
-    OLED_statusbar();
-    m_display.display();
+	m_display.clearDisplay();
+	m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
-    if (m_modem != NULL)
-        m_modem->writeNXDNInfo(source, group, dest, type);
+	m_display.setCursor(0, OLED_LINE2);
+	m_display.printf("%s %s", type, CALLandNAME(source).c_str());
+
+	m_display.setCursor(0, OLED_LINE3);
+	m_display.printf("  %s%u", group ? "TG" : "", dest);
+
+	m_display.setCursor(0, OLED_LINE4);
+	m_display.printf("%s", source.get(keyCITY).c_str());
+ 
+	m_display.setCursor(0, OLED_LINE5);
+	m_display.printf("%s", source.get(keySTATE).c_str());
+ 
+	m_display.setCursor(0, OLED_LINE6);
+	m_display.printf("%s", source.get(keyCOUNTRY).c_str());
+
+	OLED_statusbar();
+
+	m_display.display();
+
+	// must be 0, to avoid calling writeNXDNInt() from CDisplay::writeNXDN()
+	return 0;
 }
 
 void COLED::clearNXDNInt()
 {
-    m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
+	m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
-    m_display.setCursor(40,OLED_LINE4);
-    m_display.print("Listening");
+	m_display.setCursor(40, OLED_LINE3);
+	m_display.print("Standby");
 
-    m_display.setCursor(0,OLED_LINE6);
-    m_display.printf("%s",m_ipaddress.c_str());
+	m_display.setCursor(0, OLED_LINE6);
+	m_display.printf("%s", m_ipaddress.c_str());
 
-    m_display.display();
+	m_display.display();
+}
+
+void COLED::writeM17Int(const char* source, const char* dest, const char* type)
+{
+	m_mode = MODE_M17;
+
+	m_display.clearDisplay();
+	m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
+
+	m_display.setCursor(0, OLED_LINE3);
+	m_display.printf("from: %s %s", type, source);
+
+	m_display.setCursor(0, OLED_LINE4);
+	m_display.printf("to:   %s", dest);
+
+	m_display.setCursor(0, OLED_LINE6);
+	m_display.printf("%s", m_ipaddress.c_str());
+
+	OLED_statusbar();
+
+	m_display.display();
+}
+
+void COLED::clearM17Int()
+{
+	m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
+
+	m_display.setCursor(40, OLED_LINE4);
+	m_display.print("Standby");
+
+	m_display.setCursor(0, OLED_LINE6);
+	m_display.printf("%s", m_ipaddress.c_str());
+
+	m_display.display();
 }
 
 void COLED::writePOCSAGInt(uint32_t ric, const std::string& message)
 {
-    m_mode = MODE_POCSAG;
+	int pos;
+	int length = message.length();
+	std::string rublic;
 
-    m_display.clearDisplay();
-    m_display.fillRect(0, OLED_LINE1, m_display.width(), m_display.height(), BLACK);
+	// extract rublic index "(xx-xx)"
+	switch (ric) {
+	case 4512U:
+	case 4520U:
+		if (length) {
+			std::string::size_type start = message.find("(");
+			std::string::size_type end = message.find(") ");
+			if (start != std::string::npos && end != std::string::npos) {
+				rublic = message.substr(start, end - start + 1);
+				pos = end + 2;
+				break;
+			}
+		}
+		/*FALLTHROUGH*/
+	default:
+		rublic = "";
+		pos = 0;
+		break;
+	}
 
-    m_display.setCursor(0,OLED_LINE3);
-    m_display.printf("RIC: %u", ric);
+	// remove double-quotation leading/trailing message
+	if (length && message.at(pos) == '\"' && message.at(length - 1) == '\"') {
+		pos++;
+		length--;
+	}
 
-    m_display.setCursor(0,OLED_LINE5);
-    m_display.printf("MSG: %s", message.c_str());
+	m_mode = MODE_POCSAG;
 
-    OLED_statusbar();
-    m_display.display();
+	m_display.clearDisplay();
+	m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
-    if (m_modem != NULL)
-        m_modem->writePOCSAGInfo(ric, message);
+	m_display.setCursor(0, OLED_LINE2);
+	m_display.printf("RIC: %u", ric);
+	if (!rublic.empty())
+		m_display.printf(" / %s", rublic.c_str());
+
+	m_display.setTextWrap(true);	// text wrap temorally enable
+	m_display.setCursor(0, OLED_LINE3);
+	// no room to display "MSG: " header
+
+	// due to limitation of AdaFruit_GFX::vprintf() (in ArduiPi_OLED),
+	// the maximum string length displayed by single printf() call is 63.
+	// to avoid this, divide POCSAG (max 80 chars) message into some pieces.
+	while (pos < length) {
+		int remain = length - pos;
+		int n = (remain < 40) ? remain : 40;
+		m_display.printf("%s", message.substr(pos, n).c_str());
+		pos += n;
+	}
+	m_display.setTextWrap(false);
+
+	OLED_statusbar();
+
+	m_display.display();
 }
 
 void COLED::clearPOCSAGInt()
 {
-    m_display.fillRect(0, OLED_LINE1, m_display.width(), m_display.height(), BLACK);
+	m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
-    m_display.setCursor(40,OLED_LINE4);
-    m_display.print("Listening");
+	m_display.setCursor(40, OLED_LINE3);
+	m_display.print("Standby");
 
-    m_display.setCursor(0,OLED_LINE6);
-    m_display.printf("%s",m_ipaddress.c_str());
+	m_display.setCursor(0, OLED_LINE6);
+	m_display.printf("%s", m_ipaddress.c_str());
 
-    m_display.display();
+	m_display.display();
 }
 
 void COLED::writeCWInt()
 {
-    m_display.clearDisplay();
+	m_display.clearDisplay();
 
-    m_display.setCursor(0,30);
-    m_display.setTextSize(3);
-    m_display.print("CW TX");
+	m_display.setCursor(0, 30);
+	m_display.setTextSize(2);
+	m_display.print("CW ID TX");
 
-    m_display.setTextSize(1);
-    m_display.display();
-    m_display.startscrollright(0x02,0x0f);
+	m_display.setTextSize(1);
+	m_display.display();
+
+	if (m_displayScroll)
+		m_display.startscrollleft(0x02, 0x0f);
 }
 
 void COLED::clearCWInt()
 {
-    m_display.clearDisplay();
+	m_display.clearDisplay();
 
-    m_display.setCursor(0,30);
-    m_display.setTextSize(3);
-    m_display.print("Idle");
+	m_display.setCursor(0, OLED_LINE1);
+	m_display.setTextSize(2);
+	m_display.setTextSize(1);
+	m_display.print(" -IDLE-");
+	m_display.setCursor(0, OLED_LINE3);
+	m_display.printf("%s", m_ipaddress.c_str());
 
-    m_display.setTextSize(1);
-    m_display.display();
-    m_display.startscrollleft(0x02,0x0f);
+	// Display temperature
+	float tempCelsius = readTemperature("/sys/class/thermal/thermal_zone0/temp");
+	if (tempCelsius >= 0.0F) {
+		// Convert to Fahrenheit
+		float tempFahrenheit = (tempCelsius * 9.0F / 5.0F) + 32.0F;
+		m_display.setCursor(0, OLED_LINE5);
+		m_display.setTextSize(1);
+		m_display.printf("Temp: %.0fF / %.0fC ", tempFahrenheit, tempCelsius);
+	}
+
+	if (m_displayScroll)
+		m_display.startscrolldiagleft(0x00, 0x0f);
+
+	m_display.display();
 }
 
 void COLED::close()
 {
-    m_display.clearDisplay();
-    m_display.fillRect(0, 0, m_display.width(), 16, BLACK);
-    m_display.startscrollright(0x00,0x01);
-    m_display.setCursor(0,00);
-    m_display.setTextSize(2);
-    m_display.print("-CLOSE-");
-    m_display.display();
+	m_display.clearDisplay();
+	m_display.fillRect(0, 0, m_display.width(), 16, BLACK);
 
-    m_display.close();
+	if (m_displayScroll)
+		m_display.startscrollleft(0x00, 0x01);
+
+	m_display.setCursor(0, OLED_LINE3);
+	m_display.setTextSize(2);
+	m_display.print(" -OFFLINE-");
+	m_display.display();
+
+	m_display.close();
 }
 
 void COLED::OLED_statusbar()
 {
-    m_display.stopscroll();
-    m_display.fillRect(0, 0, m_display.width(), 16, BLACK);
-    m_display.setTextColor(WHITE);
+	m_display.stopscroll();
+	m_display.fillRect(0, 0, m_display.width(), 16, BLACK);
+	m_display.setTextColor(WHITE);
 
-    m_display.setCursor(0,0);
-    if (m_mode == MODE_DMR)
-        m_display.drawBitmap(0, 0, logo_dmr_bmp, 128, 16, WHITE);
-    else if (m_mode == MODE_DSTAR)
-        m_display.drawBitmap(0, 0, logo_dstar_bmp, 128, 16, WHITE);
-    else if (m_mode == MODE_YSF)
-        m_display.drawBitmap(0, 0, logo_fusion_bmp, 128, 16, WHITE);
-    else if (m_mode == MODE_P25)
-        m_display.drawBitmap(0, 0, logo_P25_bmp, 128, 16, WHITE);
-    else if (m_mode == MODE_NXDN)
-        m_display.drawBitmap(0, 0, logo_NXDN_bmp, 128, 16, WHITE);
-    else if (m_mode == MODE_POCSAG)
-        m_display.drawBitmap(0, 0, logo_POCSAG_bmp, 128, 16, WHITE);
-    else
-        m_display.drawBitmap(0, 0, logo_glcd_bmp, 128, 16, WHITE);
+	m_display.setCursor(0,0);
+	if (m_mode == MODE_DMR)
+		m_display.drawBitmap(0, 0, logo_dmr_bmp, 128, 16, WHITE);
+	else if (m_mode == MODE_DSTAR)
+		m_display.drawBitmap(0, 0, logo_dstar_bmp, 128, 16, WHITE);
+	else if (m_mode == MODE_YSF)
+		m_display.drawBitmap(0, 0, logo_fusion_bmp, 128, 16, WHITE);
+	else if (m_mode == MODE_P25)
+		m_display.drawBitmap(0, 0, logo_P25_bmp, 128, 16, WHITE);
+	else if (m_mode == MODE_NXDN)
+		m_display.drawBitmap(0, 0, logo_NXDN_bmp, 128, 16, WHITE);
+	else if (m_mode == MODE_M17)
+		m_display.drawBitmap(0, 0, logo_M17_bmp, 128, 16, WHITE);
+	else if (m_mode == MODE_POCSAG)
+		m_display.drawBitmap(0, 0, logo_POCSAG_bmp, 128, 16, WHITE);
+	else if (m_displayLogoScreensaver)
+		m_display.drawBitmap(0, 0, logo_glcd_bmp, 128, 16, WHITE);
 
-    if (m_displayScroll)
-        m_display.startscrollright(0x00,0x02);
+	if (m_displayScroll)
+		m_display.startscrollleft(0x00, 0x01);
 }
+

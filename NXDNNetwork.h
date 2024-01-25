@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2014,2016,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -20,12 +20,8 @@
 #define	NXDNNetwork_H
 
 #include "NXDNDefines.h"
-#include "RingBuffer.h"
-#include "UDPSocket.h"
-#include "Timer.h"
 
 #include <cstdint>
-#include <string>
 
 enum NXDN_NETWORK_MESSAGE_TYPE {
 	NNMT_VOICE_HEADER,
@@ -36,32 +32,27 @@ enum NXDN_NETWORK_MESSAGE_TYPE {
 	NNMT_DATA_TRAILER
 };
 
-class CNXDNNetwork {
+class INXDNNetwork {
 public:
-	CNXDNNetwork(const std::string& localAddress, unsigned int localPort, const std::string& gatewayAddress, unsigned int gatewayPort, bool debug);
-	~CNXDNNetwork();
+	virtual ~INXDNNetwork() = 0;
 
-	bool open();
+	virtual bool open() = 0;
 
-	void enable(bool enabled);
+	virtual void enable(bool enabled) = 0;
 
-	bool write(const unsigned char* data, NXDN_NETWORK_MESSAGE_TYPE type);
+	virtual bool write(const unsigned char* data, NXDN_NETWORK_MESSAGE_TYPE type) = 0;
 
-	bool read(unsigned char* data);
+	virtual bool read(unsigned char* data) = 0;
 
-	void reset();
+	virtual void reset() = 0;
 
-	void close();
+	virtual bool isConnected() const = 0;
 
-	void clock(unsigned int ms);
+	virtual void close() = 0;
+
+	virtual void clock(unsigned int ms) = 0;
 
 private:
-	CUDPSocket                 m_socket;
-	in_addr                    m_address;
-	unsigned int               m_port;
-	bool                       m_debug;
-	bool                       m_enabled;
-	CRingBuffer<unsigned char> m_buffer;
 };
 
 #endif

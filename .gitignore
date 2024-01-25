@@ -2,6 +2,7 @@ Debug
 Release
 x64
 MMDVMHost
+RemoteCommand
 *.o
 *.opendb
 *.bak

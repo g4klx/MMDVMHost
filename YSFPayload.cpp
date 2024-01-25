@@ -1,5 +1,5 @@
 /*
-*	Copyright (C) 2016,2017 Jonathan Naylor, G4KLX
+*	Copyright (C) 2016,2017,2020 Jonathan Naylor, G4KLX
 *	Copyright (C) 2016 Mathias Weyland, HB9FRV
 *
 *	This program is free software; you can redistribute it and/or modify
@@ -326,23 +326,23 @@ bool CYSFPayload::processVDMode1Data(unsigned char* data, unsigned char fn, bool
 			break;
 
 		case 3U:
-			CUtils::dump(1U, "V/D Mode 1 Data, DT1", output, 20U);
+			// CUtils::dump(1U, "V/D Mode 1 Data, DT1", output, 20U);
 			break;
 
 		case 4U:
-			CUtils::dump(1U, "V/D Mode 1 Data, DT2", output, 20U);
+			// CUtils::dump(1U, "V/D Mode 1 Data, DT2", output, 20U);
 			break;
 
 		case 5U:
-			CUtils::dump(1U, "V/D Mode 1 Data, DT3", output, 20U);
+			// CUtils::dump(1U, "V/D Mode 1 Data, DT3", output, 20U);
 			break;
 
 		case 6U:
-			CUtils::dump(1U, "V/D Mode 1 Data, DT4", output, 20U);
+			// CUtils::dump(1U, "V/D Mode 1 Data, DT4", output, 20U);
 			break;
 
 		case 7U:
-			CUtils::dump(1U, "V/D Mode 1 Data, DT5", output, 20U);
+			// CUtils::dump(1U, "V/D Mode 1 Data, DT5", output, 20U);
 			break;
 
 		default:
@@ -526,11 +526,11 @@ bool CYSFPayload::processVDMode2Data(unsigned char* data, unsigned char fn, bool
 			break;
 
 		case 6U:
-			CUtils::dump(1U, "V/D Mode 2 Data, DT1", output, YSF_CALLSIGN_LENGTH);
+			// CUtils::dump(1U, "V/D Mode 2 Data, DT1", output, YSF_CALLSIGN_LENGTH);
 			break;
 
 		case 7U:
-			CUtils::dump(1U, "V/D Mode 2 Data, DT2", output, YSF_CALLSIGN_LENGTH);
+			// CUtils::dump(1U, "V/D Mode 2 Data, DT2", output, YSF_CALLSIGN_LENGTH);
 			break;
 
 		default:
@@ -612,7 +612,7 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn, b
 
 		switch (fn) {
 		case 0U:
-			CUtils::dump(1U, "FR Mode Data, CSD1", output, 20U);
+			// CUtils::dump(1U, "FR Mode Data, CSD1", output, 20U);
 
 			if (m_dest == NULL) {
 				m_dest = new unsigned char[YSF_CALLSIGN_LENGTH];
@@ -627,31 +627,31 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn, b
 			break;
 
 		case 1U:
-			CUtils::dump(1U, "FR Mode Data, CSD3", output, 20U);
+			// CUtils::dump(1U, "FR Mode Data, CSD3", output, 20U);
 			break;
 
 		case 2U:
-			CUtils::dump(1U, "FR Mode Data, DT2", output, 20U);
+			// CUtils::dump(1U, "FR Mode Data, DT2", output, 20U);
 			break;
 
 		case 3U:
-			CUtils::dump(1U, "FR Mode Data, DT4", output, 20U);
+			// CUtils::dump(1U, "FR Mode Data, DT4", output, 20U);
 			break;
 
 		case 4U:
-			CUtils::dump(1U, "FR Mode Data, DT6", output, 20U);
+			// CUtils::dump(1U, "FR Mode Data, DT6", output, 20U);
 			break;
 
 		case 5U:
-			CUtils::dump(1U, "FR Mode Data, DT8", output, 20U);
+			// CUtils::dump(1U, "FR Mode Data, DT8", output, 20U);
 			break;
 
 		case 6U:
-			CUtils::dump(1U, "FR Mode Data, DT10", output, 20U);
+			// CUtils::dump(1U, "FR Mode Data, DT10", output, 20U);
 			break;
 
 		case 7U:
-			CUtils::dump(1U, "FR Mode Data, DT12", output, 20U);
+			// CUtils::dump(1U, "FR Mode Data, DT12", output, 20U);
 			break;
 
 		default:
@@ -720,7 +720,7 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn, b
 
 		switch (fn) {
 		case 0U:
-			CUtils::dump(1U, "FR Mode Data, CSD2", output, 20U);
+			// CUtils::dump(1U, "FR Mode Data, CSD2", output, 20U);
 
 			if (m_downlink != NULL && !gateway)
 				::memcpy(output + 0U, m_downlink, YSF_CALLSIGN_LENGTH);
@@ -731,31 +731,31 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn, b
 			break;
 
 		case 1U:
-			CUtils::dump(1U, "FR Mode Data, DT1", output, 20U);
+			// CUtils::dump(1U, "FR Mode Data, DT1", output, 20U);
 			break;
 
 		case 2U:
-			CUtils::dump(1U, "FR Mode Data, DT3", output, 20U);
+			// CUtils::dump(1U, "FR Mode Data, DT3", output, 20U);
 			break;
 
 		case 3U:
-			CUtils::dump(1U, "FR Mode Data, DT5", output, 20U);
+			// CUtils::dump(1U, "FR Mode Data, DT5", output, 20U);
 			break;
 
 		case 4U:
-			CUtils::dump(1U, "FR Mode Data, DT7", output, 20U);
+			// CUtils::dump(1U, "FR Mode Data, DT7", output, 20U);
 			break;
 
 		case 5U:
-			CUtils::dump(1U, "FR Mode Data, DT9", output, 20U);
+			// CUtils::dump(1U, "FR Mode Data, DT9", output, 20U);
 			break;
 
 		case 6U:
-			CUtils::dump(1U, "FR Mode Data, DT11", output, 20U);
+			// CUtils::dump(1U, "FR Mode Data, DT11", output, 20U);
 			break;
 
 		case 7U:
-			CUtils::dump(1U, "FR Mode Data, DT13", output, 20U);
+			// CUtils::dump(1U, "FR Mode Data, DT13", output, 20U);
 			break;
 
 		default:
@@ -799,7 +799,21 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn, b
 	return ret1 && (fn == 0U);
 }
 
-unsigned int CYSFPayload::processVoiceFRModeAudio(unsigned char* data)
+unsigned int CYSFPayload::processVoiceFRModeAudio2(unsigned char* data)
+{
+	assert(data != NULL);
+
+	data += YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES;
+
+	// Regenerate the IMBE FEC
+	unsigned int errors = 0U;
+	errors += m_fec.regenerateIMBE(data + 54U);
+	errors += m_fec.regenerateIMBE(data + 72U);
+
+	return errors;
+}
+
+unsigned int CYSFPayload::processVoiceFRModeAudio5(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -814,6 +828,62 @@ unsigned int CYSFPayload::processVoiceFRModeAudio(unsigned char* data)
 	errors += m_fec.regenerateIMBE(data + 72U);
 
 	return errors;
+}
+
+bool CYSFPayload::processVoiceFRModeData(unsigned char* data)
+{
+	assert(data != NULL);
+
+	data += YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES;
+
+	unsigned char dch[45U];
+	::memcpy(dch, data, 45U);
+
+	CYSFConvolution conv;
+	conv.start();
+
+	for (unsigned int i = 0U; i < 180U; i++) {
+		unsigned int n = INTERLEAVE_TABLE_9_20[i];
+		uint8_t s0 = READ_BIT1(dch, n) ? 1U : 0U;
+
+		n++;
+		uint8_t s1 = READ_BIT1(dch, n) ? 1U : 0U;
+
+		conv.decode(s0, s1);
+	}
+
+	unsigned char output[23U];
+	conv.chainback(output, 176U);
+
+	bool ret = CCRC::checkCCITT162(output, 22U);
+	if (ret) {
+		CCRC::addCCITT162(output, 22U);
+		output[22U] = 0x00U;
+
+		unsigned char convolved[45U];
+		conv.encode(output, convolved, 180U);
+
+		unsigned char bytes[45U];
+		unsigned int j = 0U;
+		for (unsigned int i = 0U; i < 180U; i++) {
+			unsigned int n = INTERLEAVE_TABLE_9_20[i];
+
+			bool s0 = READ_BIT1(convolved, j) != 0U;
+			j++;
+
+			bool s1 = READ_BIT1(convolved, j) != 0U;
+			j++;
+
+			WRITE_BIT1(bytes, n, s0);
+
+			n++;
+			WRITE_BIT1(bytes, n, s1);
+		}
+
+		::memcpy(data, bytes, 45U);
+	}
+
+	return ret;
 }
 
 void CYSFPayload::writeHeader(unsigned char* data, const unsigned char* csd1, const unsigned char* csd2)

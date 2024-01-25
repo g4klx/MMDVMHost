@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2016,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -43,8 +43,8 @@ m_newMetrics(NULL),
 m_decisions(NULL),
 m_dp(NULL)
 {
-	m_metrics1  = new uint16_t[16U];
-	m_metrics2  = new uint16_t[16U];
+	m_metrics1  = new uint16_t[20U];
+	m_metrics2  = new uint16_t[20U];
 	m_decisions = new uint64_t[180U];
 }
 
@@ -96,7 +96,7 @@ void CYSFConvolution::decode(uint8_t s0, uint8_t s1)
   m_newMetrics = tmp;
 }
 
-void CYSFConvolution::chainback(unsigned char* out, unsigned int nBits)
+unsigned int CYSFConvolution::chainback(unsigned char* out, unsigned int nBits)
 {
 	assert(out != NULL);
 
@@ -111,6 +111,15 @@ void CYSFConvolution::chainback(unsigned char* out, unsigned int nBits)
 
 		WRITE_BIT1(out, nBits, bit != 0U);
 	}
+
+	unsigned int minCost = m_oldMetrics[0];
+
+	for (unsigned int i = 0U; i < NUM_OF_STATES; i++) {
+		if (m_oldMetrics[i] < minCost)
+			minCost = m_oldMetrics[i];
+	}
+
+	return minCost / (M >> 1);
 }
 
 void CYSFConvolution::encode(const unsigned char* in, unsigned char* out, unsigned int nBits) const

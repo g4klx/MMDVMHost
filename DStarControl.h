@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2019 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@
 
 class CDStarControl {
 public:
-	CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool ackReply, unsigned int ackTime, bool ackMessage, bool errorReply, const std::vector<std::string>& blackList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper);
+	CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool ackReply, unsigned int ackTime, DSTAR_ACK_MESSAGE ackMessage, bool errorReply, const std::vector<std::string>& blackList, const std::vector<std::string>& whiteList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper);
 	~CDStarControl();
 
 	bool writeModem(unsigned char* data, unsigned int len);
@@ -46,15 +46,20 @@ public:
 
 	void clock();
 
+	bool isBusy() const;
+
+	void enable(bool enabled);
+
 private:
 	unsigned char*             m_callsign;
 	unsigned char*             m_gateway;
 	bool                       m_selfOnly;
 	bool                       m_ackReply;
-	bool                       m_ackMessage;
+	DSTAR_ACK_MESSAGE          m_ackMessage;
 	bool                       m_errorReply;
 	bool                       m_remoteGateway;
 	std::vector<std::string>   m_blackList;
+	std::vector<std::string>   m_whiteList;
 	CDStarNetwork*             m_network;
 	CDisplay*                  m_display;
 	bool                       m_duplex;
@@ -64,7 +69,8 @@ private:
 	RPT_RF_STATE               m_rfState;
 	RPT_NET_STATE              m_netState;
 	bool                       m_net;
-	CDStarSlowData             m_slowData;
+	CDStarSlowData             m_rfSlowData;
+	CDStarSlowData             m_netSlowData;
 	unsigned char              m_rfN;
 	unsigned char              m_netN;
 	CTimer                     m_networkWatchdog;
@@ -91,7 +97,29 @@ private:
 	unsigned char              m_minRSSI;
 	unsigned int               m_aveRSSI;
 	unsigned int               m_rssiCount;
+	bool                       m_enabled;
 	FILE*                      m_fp;
+	unsigned char*             m_rfVoiceSyncData;
+	unsigned int               m_rfVoiceSyncDataLen;
+	unsigned char*             m_netVoiceSyncData;
+	unsigned int               m_netVoiceSyncDataLen;
+	bool                       m_rfNextFrameIsFastData;
+	bool                       m_netNextFrameIsFastData;
+	unsigned int               m_rfSkipDTMFBlankingFrames;
+	unsigned int               m_netSkipDTMFBlankingFrames;
+
+	unsigned int maybeFixupVoiceFrame(
+		unsigned char*  data,
+		unsigned int    len,
+		unsigned int    offset,
+		const char*     log_prefix,
+		unsigned char   n,
+		bool            blank_dtmf,
+		unsigned char*  voice_sync_data,
+		unsigned int&   voice_sync_data_len,
+		bool&           next_frame_is_fast_data,
+		unsigned int&   skip_dtmf_blanking_frames
+		);
 
 	void writeNetwork();
 

@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015,2016,2017,2018 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015-2021 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 #define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
-CNXDNControl::CNXDNControl(unsigned int ran, unsigned int id, bool selfOnly, CNXDNNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CNXDNLookup* lookup, CRSSIInterpolator* rssiMapper) :
+CNXDNControl::CNXDNControl(unsigned int ran, unsigned int id, bool selfOnly, INXDNNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CNXDNLookup* lookup, CRSSIInterpolator* rssiMapper) :
 m_ran(ran),
 m_id(id),
 m_selfOnly(selfOnly),
@@ -71,6 +71,7 @@ m_maxRSSI(0U),
 m_minRSSI(0U),
 m_aveRSSI(0U),
 m_rssiCount(0U),
+m_enabled(true),
 m_fp(NULL)
 {
 	assert(display != NULL);
@@ -86,13 +87,20 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 {
 	assert(data != NULL);
 
+	if (!m_enabled)
+		return false;
+
 	unsigned char type = data[0U];
 
 	if (type == TAG_LOST && m_rfState == RS_RF_AUDIO) {
+		unsigned short dstId = m_rfLayer3.getDestinationGroupId();
+		bool grp             = m_rfLayer3.getIsGroup();
+		std::string source = m_lookup->find(m_rfLayer3.getSourceUnitId());
+
 		if (m_rssi != 0U)
-			LogMessage("NXDN, transmission lost, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+			LogMessage("NXDN, transmission lost from %s to %s%u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 		else
-			LogMessage("NXDN, transmission lost, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits));
+			LogMessage("NXDN, transmission lost from %s to %s%u, %.1f seconds, BER: %.1f%%", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits));
 		writeEndRF();
 		return false;
 	}
@@ -206,7 +214,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 				unsigned short srcId = layer3.getSourceUnitId();
 				if (srcId != m_id) {
 					m_rfState = RS_RF_REJECTED;
-					return false;
+					return true;
 				}
 			}
 		} else {
@@ -255,11 +263,15 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			writeQueueRF(data);
 
 		if (data[0U] == TAG_EOT) {
+			unsigned short dstId = m_rfLayer3.getDestinationGroupId();
+			bool grp             = m_rfLayer3.getIsGroup();
+			std::string source   = m_lookup->find(m_rfLayer3.getSourceUnitId());
+
 			m_rfFrames++;
 			if (m_rssi != 0U)
-				LogMessage("NXDN, received RF end of transmission, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
+				LogMessage("NXDN, received RF end of transmission from %s to %s%u, %.1f seconds, BER: %.1f%%, RSSI: -%u/-%u/-%u dBm", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCount);
 			else
-				LogMessage("NXDN, received RF end of transmission, %.1f seconds, BER: %.1f%%", float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits));
+				LogMessage("NXDN, received RF end of transmission from %s to %s%u, %.1f seconds, BER: %.1f%%", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 12.5F, float(m_rfErrs * 100U) / float(m_rfBits));
 			writeEndRF();
 		} else {
 			m_rfFrames  = 0U;
@@ -363,7 +375,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			if (m_selfOnly) {
 				if (srcId != m_id) {
 					m_rfState = RS_RF_REJECTED;
-					return false;
+					return true;
 				}
 			}
 
@@ -659,7 +671,11 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 #endif
 
 	if (data[0U] == TAG_EOT) {
-		LogMessage("NXDN, ended RF data transmission");
+		unsigned short dstId = m_rfLayer3.getDestinationGroupId();
+		bool grp             = m_rfLayer3.getIsGroup();
+		std::string source   = m_lookup->find(m_rfLayer3.getSourceUnitId());
+
+		LogMessage("NXDN, ended RF data transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
 		writeEndRF();
 	}
 
@@ -721,9 +737,12 @@ void CNXDNControl::writeEndNet()
 
 void CNXDNControl::writeNetwork()
 {
-	unsigned char netData[40U];
+	unsigned char netData[100U];
 	bool exists = m_network->read(netData);
 	if (!exists)
+		return;
+
+	if (!m_enabled)
 		return;
 
 	if (m_rfState != RS_RF_LISTENING && m_netState == RS_NET_IDLE)
@@ -779,7 +798,11 @@ void CNXDNControl::writeNetwork()
 			writeQueueNet(data);
 
 			if (type == NXDN_MESSAGE_TYPE_TX_REL) {
-				LogMessage("NXDN, ended network data transmission");
+				unsigned short dstId = m_netLayer3.getDestinationGroupId();
+				bool grp             = m_netLayer3.getIsGroup();
+				std::string source   = m_lookup->find(m_netLayer3.getSourceUnitId());
+
+				LogMessage("NXDN, ended network data transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
 				writeEndNet();
 			}
 		}
@@ -810,18 +833,18 @@ void CNXDNControl::writeNetwork()
 
 		writeQueueNet(data);
 
+		unsigned short dstId = m_netLayer3.getDestinationGroupId();
+		bool grp             = m_netLayer3.getIsGroup();
+		class CUserDBentry source;
+		m_lookup->findWithName(m_netLayer3.getSourceUnitId(), &source);
+
 		if (type == NXDN_MESSAGE_TYPE_TX_REL) {
 			m_netFrames++;
-			LogMessage("NXDN, received network end of transmission, %.1f seconds", float(m_netFrames) / 12.5F);
+			LogMessage("NXDN, received network end of transmission from %s to %s%u, %.1f seconds", source.get(keyCALLSIGN).c_str(), grp ? "TG " : "", dstId, float(m_netFrames) / 12.5F);
 			writeEndNet();
 		} else if (type == NXDN_MESSAGE_TYPE_VCALL) {
-			unsigned short srcId = m_netLayer3.getSourceUnitId();
-			unsigned short dstId = m_netLayer3.getDestinationGroupId();
-			bool grp             = m_netLayer3.getIsGroup();
-
-			std::string source = m_lookup->find(srcId);
-			LogMessage("NXDN, received network transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
-			m_display->writeNXDN(source.c_str(), grp, dstId, "N");
+			LogMessage("NXDN, received network transmission from %s to %s%u", source.get(keyCALLSIGN).c_str(), grp ? "TG " : "", dstId);
+			m_display->writeNXDN(source, grp, dstId, "N");
 
 			m_netTimeoutTimer.start();
 			m_packetTimer.start();
@@ -870,9 +893,10 @@ void CNXDNControl::writeNetwork()
 			unsigned short dstId = m_netLayer3.getDestinationGroupId();
 			bool grp             = m_netLayer3.getIsGroup();
 
-			std::string source = m_lookup->find(srcId);
-			LogMessage("NXDN, received network transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
-			m_display->writeNXDN(source.c_str(), grp, dstId, "N");
+			class CUserDBentry source;
+			m_lookup->findWithName(srcId, &source);
+			LogMessage("NXDN, received network transmission from %s to %s%u", source.get(keyCALLSIGN).c_str(), grp ? "TG " : "", dstId);
+			m_display->writeNXDN(source, grp, dstId, "N");
 
 			m_netTimeoutTimer.start();
 			m_packetTimer.start();
@@ -1080,4 +1104,36 @@ void CNXDNControl::closeFile()
 		::fclose(m_fp);
 		m_fp = NULL;
 	}
+}
+
+bool CNXDNControl::isBusy() const
+{
+	return m_rfState != RS_RF_LISTENING || m_netState != RS_NET_IDLE;
+}
+
+void CNXDNControl::enable(bool enabled)
+{
+	if (!enabled && m_enabled) {
+		m_queue.clear();
+
+		// Reset the RF section
+		m_rfState = RS_RF_LISTENING;
+
+		m_rfMask = 0x00U;
+		m_rfLayer3.reset();
+
+		m_rfTimeoutTimer.stop();
+
+		// Reset the networking section
+		m_netState = RS_NET_IDLE;
+
+		m_netMask = 0x00U;
+		m_netLayer3.reset();
+
+		m_netTimeoutTimer.stop();
+		m_networkWatchdog.stop();
+		m_packetTimer.stop();
+	}
+
+	m_enabled = enabled;
 }

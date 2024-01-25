@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -58,7 +58,11 @@ public:
 
 	void clock();
 
-	static void init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData, unsigned int callHang, CModem* modem, CDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter);
+	bool isBusy() const;
+
+	void enable(bool enabled);
+
+	static void init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData, unsigned int callHang, CModem* modem, IDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter, DMR_OVCM_TYPES ovcm);
 
 private:
 	unsigned int               m_slotNo;
@@ -76,6 +80,7 @@ private:
 	unsigned int               m_netEmbeddedReadN;
 	unsigned int               m_netEmbeddedWriteN;
 	unsigned char              m_netTalkerId;
+	CDMRTA                     m_netTalkerAlias;
 	CDMRLC*                    m_rfLC;
 	CDMRLC*                    m_netLC;
 	unsigned char              m_rfSeqNo;
@@ -105,6 +110,7 @@ private:
 	unsigned char              m_minRSSI;
 	unsigned int               m_aveRSSI;
 	unsigned int               m_rssiCount;
+	bool                       m_enabled;
 	FILE*                      m_fp;
 
 	static unsigned int        m_colorCode;
@@ -113,11 +119,12 @@ private:
 	static bool                m_dumpTAData;
 
 	static CModem*             m_modem;
-	static CDMRNetwork*        m_network;
+	static IDMRNetwork*        m_network;
 	static CDisplay*           m_display;
 	static bool                m_duplex;
 	static CDMRLookup*         m_lookup;
 	static unsigned int        m_hangCount;
+	static DMR_OVCM_TYPES      m_ovcm;
 
 	static CRSSIInterpolator*  m_rssiMapper;
 
@@ -126,7 +133,7 @@ private:
 
 	static unsigned char*      m_idle;
 
-    static FLCO                m_flco1;
+	static FLCO                m_flco1;
 	static unsigned char       m_id1;
 	static ACTIVITY_TYPE       m_activity1;
 	static FLCO                m_flco2;

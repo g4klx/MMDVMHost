@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2020,2021,2022 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -22,13 +22,17 @@
 #include "DMRDefines.h"
 
 enum CSBKO {
-	CSBKO_NONE     = 0x00,
-	CSBKO_UUVREQ   = 0x04,
-	CSBKO_UUANSRSP = 0x05,
-	CSBKO_CTCSBK   = 0x07,
-	CSBKO_NACKRSP  = 0x26,
-	CSBKO_BSDWNACT = 0x38,
-	CSBKO_PRECCSBK = 0x3D
+	CSBKO_NONE           = 0x00,
+	CSBKO_UUVREQ         = 0x04,
+	CSBKO_UUANSRSP       = 0x05,
+	CSBKO_CTCSBK         = 0x07,
+	CSBKO_CALL_ALERT     = 0x1F,
+	CSBKO_CALL_ALERT_ACK = 0x20,
+	CSBKO_RADIO_CHECK    = 0x24,
+	CSBKO_NACKRSP        = 0x26,
+	CSBKO_CALL_EMERGENCY = 0x27,
+	CSBKO_BSDWNACT       = 0x38,
+	CSBKO_PRECCSBK       = 0x3D
 };
 
 class CDMRCSBK
@@ -44,6 +48,10 @@ public:
 	// Generic fields
 	CSBKO         getCSBKO() const;
 	unsigned char getFID() const;
+
+	// Set/Get the OVCM bit in the supported CSBKs
+	bool getOVCM() const;
+	void setOVCM(bool ovcm);
 
 	// For BS Dwn Act
 	unsigned int  getBSId() const;
@@ -69,6 +77,7 @@ private:
 	unsigned int   m_dstId;
 	bool           m_dataContent;
 	unsigned char  m_CBF;
+	bool           m_OVCM;
 };
 
 #endif

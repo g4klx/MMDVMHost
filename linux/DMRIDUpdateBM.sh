@@ -92,7 +92,10 @@ then
 fi
 
 # Generate new file
-curl 'http://registry.dstar.su/dmr/DMRIds.php' 2>/dev/null | sed -e 's/[[:space:]]\+/ /g' > ${DMRIDFILE}
+#curl 'http://registry.dstar.su/dmr/DMRIds.php' 2>/dev/null | sed -e 's/[[:space:]]\+/ /g' > ${DMRIDFILE}
+#curl 'http://registry.dstar.su/dmr/DMRIds2.php' 2>/dev/null | sed -e 's/[[:space:]]\+/ /g' > ${DMRIDFILE}
+# Generate new format of DMRIds.dat file 
+curl 'http://registry.dstar.su/dmr/DMRIds2.php' 2>/dev/null > ${DMRIDFILE}
 
 # Restart MMDVMHost
 eval ${RESTARTCOMMAND}

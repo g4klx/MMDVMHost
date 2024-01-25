@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2009,2014,2015,2016 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2009,2014,2015,2016,2021 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -145,21 +145,28 @@ void CUtils::bitsToByteLE(const bool* bits, unsigned char& byte)
 	byte |= bits[7U] ? 0x80U : 0x00U;
 }
 
-unsigned int CUtils::compare(const unsigned char* bytes1, const unsigned char* bytes2, unsigned int length)
+unsigned int CUtils::countBits(unsigned int v)
 {
-	assert(bytes1 != NULL);
-	assert(bytes2 != NULL);
+	unsigned int count = 0U;
 
-	unsigned int diffs = 0U;
-
-	for (unsigned int i = 0U; i < length; i++) {
-		unsigned char v = bytes1[i] ^ bytes2[i];
-		while (v != 0U) {
-			v &= v - 1U;
-			diffs++;
-		}
+	while (v != 0U) {
+		v &= v - 1U;
+		count++;
 	}
 
-	return diffs;
+	return count;
 }
 
+void CUtils::removeChar(unsigned char * haystack, char needdle)
+{
+    unsigned int i = 0;
+	unsigned int j = 0;
+
+    while (haystack[i] != '\0') {
+        if (haystack[i] != needdle)
+            haystack[j++] = haystack[i];
+		i++;
+	}
+ 
+    haystack[j] = '\0';
+}

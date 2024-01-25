@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016-2019 by Jonathan Naylor G4KLX
 *   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com> N2PLL
 *
 *   This program is free software; you can redistribute it and/or modify
@@ -46,6 +46,10 @@ public:
 
 	void clock(unsigned int ms);
 
+	bool isBusy() const;
+
+	void enable(bool enabled);
+
 private:
 	unsigned int               m_nac;
 	unsigned int               m_id;
@@ -91,6 +95,7 @@ private:
 	unsigned char              m_minRSSI;
 	unsigned int               m_aveRSSI;
 	unsigned int               m_rssiCount;
+	bool                       m_enabled;
 	FILE*                      m_fp;
 
 	void writeQueueRF(const unsigned char* data, unsigned int length);

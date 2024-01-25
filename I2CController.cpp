@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2002-2004,2007-2011,2013,2014-2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2002-2004,2007-2011,2013,2014-2017,2020 by Jonathan Naylor G4KLX
  *   Copyright (C) 1999-2001 by Thomas Sailor HB9JNX
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -17,6 +17,8 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#if defined(__linux__)
+
 #include "I2CController.h"
 #include "Log.h"
 
@@ -24,52 +26,18 @@
 #include <cassert>
 
 #include <sys/types.h>
-
-#if defined(_WIN32) || defined(_WIN64)
-
-#include <setupapi.h>
-#include <winioctl.h>
-
-CI2CController::CI2CController(const std::string& device, SERIAL_SPEED speed, unsigned int address, bool assertRTS) :
-CSerialController(device, speed, assertRTS),
-m_address(address)
-{
-}
-
-CI2CController::~CI2CController()
-{
-}
-
-bool CI2CController::open()
-{
-	return CSerialController::open();
-}
-
-int CI2CController::read(unsigned char* buffer, unsigned int length)
-{
-	return CSerialController::read(buffer, length);
-}
-
-int CI2CController::write(const unsigned char* buffer, unsigned int length)
-{
-	return CSerialController::write(buffer, length);
-}
-
-#else
-
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 #include <cerrno>
 #include <fcntl.h>
 #include <unistd.h>
 #include <termios.h>
-#if !defined(__APPLE__)
 #include <linux/i2c-dev.h>
-#endif
 
-CI2CController::CI2CController(const std::string& device, SERIAL_SPEED speed, unsigned int address, bool assertRTS) :
-CSerialController(device, speed, assertRTS),
-m_address(address)
+CI2CController::CI2CController(const std::string& device, unsigned int address) :
+m_device(device),
+m_address(address),
+m_fd(-1)
 {
 }
 
@@ -81,7 +49,6 @@ bool CI2CController::open()
 {
 	assert(m_fd == -1);
 
-#if !defined(__APPLE__)
 	m_fd = ::open(m_device.c_str(), O_RDWR);
 	if (m_fd < 0) {
 		LogError("Cannot open device - %s", m_device.c_str());
@@ -89,19 +56,16 @@ bool CI2CController::open()
 	}
 
 	if (::ioctl(m_fd, I2C_TENBIT, 0) < 0) {
-		LogError("CI2C: failed to set 7bitaddress");
+		LogError("I2C: failed to set 7bitaddress");
 		::close(m_fd);
 		return false;
 	}
 
 	if (::ioctl(m_fd, I2C_SLAVE, m_address) < 0) {
-		LogError("CI2C: Failed to acquire bus access/talk to slave 0x%02X", m_address);
+		LogError("I2C: Failed to acquire bus access/talk to slave 0x%02X", m_address);
 		::close(m_fd);
 		return false;
 	}
-#else
-	#warning "I2C controller does not support OSX"
-#endif
 
 	return true;
 }
@@ -117,7 +81,6 @@ int CI2CController::read(unsigned char* buffer, unsigned int length)
 	unsigned int offset = 0U;
 
 	while (offset < length) {
-#if !defined(__APPLE__)
 		ssize_t n = ::read(m_fd, buffer + offset, 1U);
 		if (n < 0) {
 			if (errno != EAGAIN) {
@@ -128,7 +91,6 @@ int CI2CController::read(unsigned char* buffer, unsigned int length)
 
 		if (n > 0)
 			offset += n;
-#endif
 	}
 
 	return length;
@@ -144,10 +106,7 @@ int CI2CController::write(const unsigned char* buffer, unsigned int length)
 
 	unsigned int ptr = 0U;
 	while (ptr < length) {
-		ssize_t n = 0U;
-#if !defined(__APPLE__)
-		n = ::write(m_fd, buffer + ptr, 1U);
-#endif
+		ssize_t n = ::write(m_fd, buffer + ptr, 1U);
 		if (n < 0) {
 			if (errno != EAGAIN) {
 				LogError("Error returned from write(), errno=%d", errno);
@@ -160,6 +119,14 @@ int CI2CController::write(const unsigned char* buffer, unsigned int length)
 	}
 
 	return length;
+}
+
+void CI2CController::close()
+{
+	assert(m_fd != -1);
+
+	::close(m_fd);
+	m_fd = -1;
 }
 
 #endif

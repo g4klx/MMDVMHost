@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017,2018,2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,101 +19,40 @@
 #if !defined(DMRNetwork_H)
 #define	DMRNetwork_H
 
-#include "UDPSocket.h"
-#include "Timer.h"
-#include "RingBuffer.h"
 #include "DMRData.h"
-#include "Defines.h"
 
 #include <string>
-#include <cstdint>
 
-class CDMRNetwork
+class IDMRNetwork
 {
 public:
-	CDMRNetwork(const std::string& address, unsigned int port, unsigned int local, unsigned int id, const std::string& password, bool duplex, const char* version, bool debug, bool slot1, bool slot2, HW_TYPE hwType);
-	~CDMRNetwork();
+	virtual ~IDMRNetwork() = 0;
 
-	void setOptions(const std::string& options);
+	virtual void setOptions(const std::string& options) = 0;
 
-	void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url);
+	virtual void setConfig(const std::string& callsign, unsigned int rxFrequency, unsigned int txFrequency, unsigned int power, unsigned int colorCode, float latitude, float longitude, int height, const std::string& location, const std::string& description, const std::string& url) = 0;
 
-	bool open();
+	virtual bool open() = 0;
 
-	void enable(bool enabled);
+	virtual void enable(bool enabled) = 0;
 
-	bool read(CDMRData& data);
+	virtual bool read(CDMRData& data) = 0;
 
-	bool write(const CDMRData& data);
+	virtual bool write(const CDMRData& data) = 0;
 
-	bool writeRadioPosition(unsigned int id, const unsigned char* data);
+	virtual bool writeRadioPosition(unsigned int id, const unsigned char* data) = 0;
 
-	bool writeTalkerAlias(unsigned int id, unsigned char type, const unsigned char* data);
+	virtual bool writeTalkerAlias(unsigned int id, unsigned char type, const unsigned char* data) = 0;
 
-	bool writeHomePosition(float latitude, float longitude);
+	virtual bool wantsBeacon() = 0;
 
-	bool wantsBeacon();
+	virtual void clock(unsigned int ms) = 0;
 
-	void clock(unsigned int ms);
+	virtual bool isConnected() const = 0;
 
-	void close();
+	virtual void close(bool sayGoodbye) = 0;
 
 private: 
-	std::string     m_addressStr;
-	in_addr         m_address;
-	unsigned int    m_port;
-	uint8_t*        m_id;
-	std::string     m_password;
-	bool            m_duplex;
-	const char*     m_version;
-	bool            m_debug;
-	CUDPSocket      m_socket;
-	bool            m_enabled;
-	bool            m_slot1;
-	bool            m_slot2;
-	HW_TYPE         m_hwType;
-
-	enum STATUS {
-		WAITING_CONNECT,
-		WAITING_LOGIN,
-		WAITING_AUTHORISATION,
-		WAITING_CONFIG,
-		WAITING_OPTIONS,
-		RUNNING
-	};
-
-	STATUS         m_status;
-	CTimer         m_retryTimer;
-	CTimer         m_timeoutTimer;
-	unsigned char* m_buffer;
-	unsigned char* m_salt;
-	uint32_t*      m_streamId;
-
-	CRingBuffer<unsigned char> m_rxData;
-
-	std::string    m_options;
-
-	std::string    m_callsign;
-	unsigned int   m_rxFrequency;
-	unsigned int   m_txFrequency;
-	unsigned int   m_power;
-	unsigned int   m_colorCode;
-	float          m_latitude;
-	float          m_longitude;
-	int            m_height;
-	std::string    m_location;
-	std::string    m_description;
-	std::string    m_url;
-
-	bool           m_beacon;
-
-	bool writeLogin();
-	bool writeAuthorisation();
-	bool writeOptions();
-	bool writeConfig();
-	bool writePing();
-
-	bool write(const unsigned char* data, unsigned int length);
 };
 
 #endif

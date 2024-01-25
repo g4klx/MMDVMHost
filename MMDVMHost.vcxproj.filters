@@ -56,13 +56,13 @@
     <ClInclude Include="MMDVMHost.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Modem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="NullDisplay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="QR1676.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RemoteControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RingBuffer.h">
@@ -71,16 +71,7 @@
     <ClInclude Include="RS129.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SerialController.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SHA256.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="StopWatch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TFTSerial.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Timer.h">
@@ -215,9 +206,6 @@
     <ClInclude Include="LCDproc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="UMP.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RSSIInterpolator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -272,16 +260,94 @@
     <ClInclude Include="POCSAGDefines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="I2CController.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MobileGPS.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NullModem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DMRTA.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CASTInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="TFTSurenoo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UserDB.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UserDBentry.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AX25Control.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AX25Network.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NXDNIcomNetwork.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NXDNKenwoodNetwork.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M17Defines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M17Control.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M17Network.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M17LSF.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M17CRC.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M17Convolution.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="M17Utils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AX25Defines.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FMNetwork.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FMControl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IIRDirectForm1Filter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="PseudoTTYController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DMRDirectNetwork.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DMRGatewayNetwork.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SHA256.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UARTController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="UDPController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="NullController.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Modem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ModemPort.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SMeter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -322,28 +388,19 @@
     <ClCompile Include="MMDVMHost.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Modem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="NullDisplay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="QR1676.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="RemoteControl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="RS129.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SerialController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SHA256.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="StopWatch.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TFTSerial.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Timer.cpp">
@@ -469,9 +526,6 @@
     <ClCompile Include="LCDproc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="UMP.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="RSSIInterpolator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -520,16 +574,88 @@
     <ClCompile Include="POCSAGControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="I2CController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MobileGPS.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NullModem.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DMRTA.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CASTInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TFTSurenoo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UserDB.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UserDBentry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AX25Control.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AX25Network.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NXDNIcomNetwork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NXDNKenwoodNetwork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M17Control.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M17Network.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M17CRC.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M17Utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M17LSF.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="M17Convolution.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FMNetwork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FMControl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IIRDirectForm1Filter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PseudoTTYController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DMRDirectNetwork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="DMRGatewayNetwork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SHA256.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UARTController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="UDPController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="NullController.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Modem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ModemPort.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SMeter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

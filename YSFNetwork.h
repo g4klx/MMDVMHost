@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2014,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2014,2016,2020,2021 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
 
 class CYSFNetwork {
 public:
-	CYSFNetwork(const std::string& myAddress, unsigned int myPort, const std::string& gatewayAddress, unsigned int gatewayPort, const std::string& callsign, bool debug);
+	CYSFNetwork(const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, const std::string& callsign, bool debug);
 	~CYSFNetwork();
 
 	bool open();
@@ -42,20 +42,22 @@ public:
 
 	void reset();
 
+	bool isConnected() const;
+
 	void close();
 
 	void clock(unsigned int ms);
 
 private:
-	CUDPSocket     m_socket;
-	in_addr        m_address;
-	unsigned int   m_port;
-	std::string    m_callsign;
-	bool           m_debug;
-	bool           m_enabled;
+	CUDPSocket       m_socket;
+	sockaddr_storage m_addr;
+	unsigned int     m_addrLen;
+	std::string      m_callsign;
+	bool             m_debug;
+	bool             m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
-	CTimer         m_pollTimer;
-	unsigned char* m_tag;
+	CTimer           m_pollTimer;
+	unsigned char*   m_tag;
 
 	bool writePoll();
 };
