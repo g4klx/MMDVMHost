@@ -57,7 +57,7 @@ m_networkWatchdog(1000U, 0U, 1500U),
 m_rfFrames(0U),
 m_rfBits(0U),
 m_rfErrs(0U),
-m_rfUndecodableLC(0U),
+// m_rfUndecodableLC(0U),
 m_netFrames(0U),
 m_netLost(0U),
 m_rfDataFrames(0U),
@@ -65,8 +65,8 @@ m_nid(nac),
 m_lastDUID(P25_DUID_TERM),
 m_audio(),
 m_rfData(),
-m_rfLastLDU1(),
-m_rfLastLDU2(),
+// m_rfLastLDU1(),
+// m_rfLastLDU2(),
 m_netData(),
 m_rfLSD(),
 m_netLSD(),
@@ -134,7 +134,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		else
 			LogMessage("P25, transmission lost from %s to %s%u, %.1f seconds, BER: %.1f%%", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
 
-		LogMessage("P25, total frames: %d, bits: %d, undecodable LC: %d, errors: %d, BER: %.4f%%", m_rfFrames, m_rfBits, m_rfUndecodableLC, m_rfErrs, float(m_rfErrs * 100U) / float(m_rfBits));
+		// LogMessage("P25, total frames: %d, bits: %d, undecodable LC: %d, errors: %d, BER: %.4f%%", m_rfFrames, m_rfBits, m_rfUndecodableLC, m_rfErrs, float(m_rfErrs * 100U) / float(m_rfBits));
 
 		if (m_netState == RS_NET_IDLE)
 			m_display->clearP25();
@@ -289,6 +289,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		}
 
 		if (m_rfState == RS_RF_AUDIO) {
+/*
 			bool ret = m_rfData.decodeLDU1(data + 2U);
 			if (!ret) {
 				LogWarning("P25, LDU1 undecodable LC, using last LDU1 LC");
@@ -297,7 +298,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			} else {
 				m_rfLastLDU1 = m_rfData;
 			}
-
+*/
 			// Regenerate Sync
 			CSync::addP25Sync(data + 2U);
 
@@ -342,16 +343,16 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		}
 	} else if (duid == P25_DUID_LDU2) {
 		if (m_rfState == RS_RF_AUDIO) {
+/*
 			bool ret = m_rfData.decodeLDU2(data + 2U);
 			if (!ret) {
 				LogWarning("P25, LDU2 undecodable LC, using last LDU2 LC");
 				m_rfData = m_rfLastLDU2;
 				m_rfUndecodableLC++;
-			}
-			else {
+			} else {
 				m_rfLastLDU2 = m_rfData;
 			}
-
+*/
 			writeNetwork(m_rfLDU, m_lastDUID, false);
 
 			// Regenerate Sync
@@ -505,7 +506,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			else
 				LogMessage("P25, received RF end of voice transmission from %s to %s%u, %.1f seconds, BER: %.1f%%", source.c_str(), grp ? "TG " : "", dstId, float(m_rfFrames) / 5.56F, float(m_rfErrs * 100U) / float(m_rfBits));
 
-			LogMessage("P25, total frames: %d, bits: %d, undecodable LC: %d, errors: %d, BER: %.4f%%", m_rfFrames, m_rfBits, m_rfUndecodableLC, m_rfErrs, float(m_rfErrs * 100U) / float(m_rfBits));
+			// LogMessage("P25, total frames: %d, bits: %d, undecodable LC: %d, errors: %d, BER: %.4f%%", m_rfFrames, m_rfBits, m_rfUndecodableLC, m_rfErrs, float(m_rfErrs * 100U) / float(m_rfBits));
 
 			m_display->clearP25();
 
@@ -967,9 +968,9 @@ void CP25Control::createRFHeader()
 
 	m_rfFrames = 0U;
 	m_rfErrs = 0U;
-	m_rfUndecodableLC = 0U;
-	m_rfLastLDU1.reset();
-	m_rfLastLDU2.reset();
+	// m_rfUndecodableLC = 0U;
+	// m_rfLastLDU1.reset();
+	// m_rfLastLDU2.reset();
 	m_rfBits = 1U;
 	m_rfTimeout.start();
 	m_lastDUID = P25_DUID_HEADER;
