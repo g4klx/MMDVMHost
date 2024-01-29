@@ -344,7 +344,7 @@ void CDMRDirectNetwork::clock(unsigned int ms)
 	if (m_retryTimer.isRunning() && m_retryTimer.hasExpired()) {
 		switch (m_status) {
 		case WAITING_CONNECT:
-			if (m_socket.open(m_addr.ss_family)) {
+			if (m_socket.open(m_addr)) {
 				if (writeLogin()) {
 					m_status = WAITING_LOGIN;
 				}
