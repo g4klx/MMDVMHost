@@ -1,6 +1,6 @@
 /*
 *   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
-*   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com>
+*   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com> N2PLL
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -27,12 +27,16 @@ class CP25Data {
 public:
 	CP25Data();
 	~CP25Data();
+	
+	CP25Data& operator=(const CP25Data& data);
 
+	bool decodeHeader(const unsigned char* data);
 	void encodeHeader(unsigned char* data);
 
 	bool decodeLDU1(const unsigned char* data);
 	void encodeLDU1(unsigned char* data);
 
+	bool decodeLDU2(const unsigned char* data);
 	void encodeLDU2(unsigned char* data);
 
 	bool decodeTSDU(const unsigned char* data);
@@ -82,6 +86,9 @@ private:
 
 	void decodeLDUHamming(const unsigned char* raw, unsigned char* data);
 	void encodeLDUHamming(unsigned char* data, const unsigned char* raw);
+
+	void decodeHeaderGolay(const unsigned char* raw, unsigned char* data);
+	void encodeHeaderGolay(unsigned char* data, const unsigned char* raw);
 };
 
 #endif
