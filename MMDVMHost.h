@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2021,2024 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -78,7 +78,7 @@ private:
   INXDNNetwork*   m_nxdnNetwork;
   CM17Network*    m_m17Network;
   CPOCSAGNetwork* m_pocsagNetwork;
-  CFMNetwork*     m_fmNetwork;
+  IFMNetwork*     m_fmNetwork;
   CAX25Network*   m_ax25Network;
   CDisplay*       m_display;
   unsigned char   m_mode;

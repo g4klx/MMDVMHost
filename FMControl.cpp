@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2024 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -24,6 +24,8 @@
 #include <cstdio>
 #endif
 
+#include <cassert>
+
 #define SWAP_BYTES_16(a) (((a >> 8) & 0x00FFU) | ((a << 8) & 0xFF00U))
 
 const float        DEEMPHASIS_GAIN_DB  = 8.0F;  // Audio gain  adjustment
@@ -31,7 +33,7 @@ const float        PREEMPHASIS_GAIN_DB = 0.0F;  // Audio gain  adjustment
 const float        FILTER_GAIN_DB      = 2.0F;  // Audio gain  adjustment
 const unsigned int FM_MASK             = 0x00000FFFU;
 
-CFMControl::CFMControl(CFMNetwork* network, float txAudioGain, float rxAudioGain, bool preEmphasisOn, bool deEmphasisOn) :
+CFMControl::CFMControl(IFMNetwork* network, float txAudioGain, float rxAudioGain, bool preEmphasisOn, bool deEmphasisOn) :
 m_network(network),
 m_txAudioGain(txAudioGain),
 m_rxAudioGain(rxAudioGain),

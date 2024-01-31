@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2021,2023 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2021,2023,2024 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -24,6 +24,9 @@
 #include "RSSIInterpolator.h"
 #include "NullController.h"
 #include "UARTController.h"
+#include "FMUSRPNetwork.h"
+#include "FMRAWNetwork.h"
+#include "FMIAXNetwork.h"
 #if defined(__linux__)
 #include "I2CController.h"
 #endif
@@ -1915,7 +1918,16 @@ bool CMMDVMHost::createFMNetwork()
 	LogInfo("    RX Audio Gain: %.2f", rxAudioGain);
 	LogInfo("    Mode Hang: %us", m_fmNetModeHang);
 
-	m_fmNetwork = new CFMNetwork(callsign, protocol, localAddress, localPort, gatewayAddress, gatewayPort, sampleRate, squelchFile, debug);
+	if (protocol == "USRP") {
+		m_fmNetwork = new CFMUSRPNetwork(callsign, localAddress, localPort, gatewayAddress, gatewayPort, debug);
+	} else if (protocol == "RAW") {
+		m_fmNetwork = new CFMRAWNetwork(localAddress, localPort, gatewayAddress, gatewayPort, sampleRate, squelchFile, debug);
+	} else if (protocol == "IAX") {
+		m_fmNetwork = new CFMIAXNetwork(callsign, localAddress, localPort, gatewayAddress, gatewayPort, debug);
+	} else {
+		LogError("Invalid FM network protocol specified - %s", protocol.c_str());
+		return false;
+	}
 
 	bool ret = m_fmNetwork->open();
 	if (!ret) {

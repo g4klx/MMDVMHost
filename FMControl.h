@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2024 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include "FMNetwork.h"
 #include "Defines.h"
 #include "IIRDirectForm1Filter.h"
+#include "RingBuffer.h"
 
 // Uncomment this to dump audio to a raw audio file
 // The file will be written in same folder as executable
@@ -30,7 +31,7 @@
 
 class CFMControl {
 public:
-	CFMControl(CFMNetwork* network, float txAudioGain, float rxAudioGain, bool preEmphasisOn, bool deEmphasisOn);
+	CFMControl(IFMNetwork* network, float txAudioGain, float rxAudioGain, bool preEmphasisOn, bool deEmphasisOn);
 	~CFMControl();
 
 	bool writeModem(const unsigned char* data, unsigned int length);
@@ -42,7 +43,7 @@ public:
 	void enable(bool enabled);
 
 private:
-	CFMNetwork* m_network;
+	IFMNetwork* m_network;
 	float       m_txAudioGain;
 	float       m_rxAudioGain;
 	bool        m_preEmphasisOn;

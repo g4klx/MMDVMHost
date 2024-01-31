@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021,2023 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2023,2024 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,64 +19,30 @@
 #ifndef	FMNetwork_H
 #define	FMNetwork_H
 
-#include "RingBuffer.h"
-#include "UDPSocket.h"
-
-#include <samplerate.h>
-
 #include <cstdint>
 #include <string>
 
-enum FM_NETWORK_PROTOCOL {
-	FMNP_USRP,
-	FMNP_RAW
-};
-
-class CFMNetwork {
+class IFMNetwork {
 public:
-	CFMNetwork(const std::string& callsign, const std::string& protocol, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, unsigned int sampleRate, const std::string& squelchFile, bool debug);
-	~CFMNetwork();
+	virtual ~IFMNetwork() = 0;
 
-	bool open();
+	virtual bool open() = 0;
 
-	void enable(bool enabled);
+	virtual void enable(bool enabled) = 0;
 
-	bool writeData(const float* data, unsigned int nSamples);
+	virtual bool writeData(const float* data, unsigned int nSamples) = 0;
 
-	bool writeEnd();
+	virtual bool writeEnd() = 0;
 
-	unsigned int readData(float* out, unsigned int nOut);
+	virtual unsigned int readData(float* out, unsigned int nOut) = 0;
 
-	void reset();
+	virtual void reset() = 0;
 
-	void close();
+	virtual void close() = 0;
 
-	void clock(unsigned int ms);
+	virtual void clock(unsigned int ms) = 0;
 
 private:
-	std::string         m_callsign;
-	FM_NETWORK_PROTOCOL m_protocol;
-	CUDPSocket          m_socket;
-	sockaddr_storage    m_addr;
-	unsigned int        m_addrLen;
-	unsigned int        m_sampleRate;
-	std::string         m_squelchFile;
-	bool                m_debug;
-	bool                m_enabled;
-	CRingBuffer<unsigned char> m_buffer;
-	unsigned int        m_seqNo;
-	SRC_STATE*          m_resampler;
-	int                 m_error;
-	int                 m_fd;
-
-	bool writeUSRPStart();
-	bool writeRawStart();
-
-	bool writeUSRPData(const float* data, unsigned int nSamples);
-	bool writeRawData(const float* in, unsigned int nIn);
-
-	bool writeUSRPEnd();
-	bool writeRawEnd();
 };
 
 #endif
