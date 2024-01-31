@@ -22,6 +22,7 @@
 #include "FMNetwork.h"
 #include "RingBuffer.h"
 #include "UDPSocket.h"
+#include "StopWatch.h"
 
 #include <cstdint>
 #include <string>
@@ -55,9 +56,21 @@ private:
 	bool                m_debug;
 	bool                m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
-	unsigned int        m_seqNo;
+	CStopWatch          m_timestamp;
+	unsigned short      m_sCallNo;
+	unsigned short      m_dCallNo;
+	unsigned char       m_iSeqNo;
+	unsigned char       m_oSeqNo;
+	unsigned int        m_rxJitter;
+	unsigned int        m_rxLoss;
+	unsigned int        m_rxFrames;
+	unsigned short      m_rxDelay;
+	unsigned int        m_rxDropped;
+	unsigned int        m_rxOOO;
 
 	bool writeStart();
+	bool writePing();
+	bool writePong();
 };
 
 #endif
