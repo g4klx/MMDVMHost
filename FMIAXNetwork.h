@@ -50,6 +50,9 @@ public:
 
 private:
 	std::string         m_callsign;
+	std::string         m_username;
+	std::string         m_password;
+	std::string         m_node;
 	CUDPSocket          m_socket;
 	sockaddr_storage    m_addr;
 	unsigned int        m_addrLen;
@@ -68,9 +71,13 @@ private:
 	unsigned int        m_rxDropped;
 	unsigned int        m_rxOOO;
 
-	bool writeStart();
+	bool writeCall();
+	bool writeAuth();
+	bool writeKey(bool key);
 	bool writePing();
-	bool writePong();
+	bool writePong(unsigned int ts);
+	bool writeAck(unsigned short sCallNo, unsigned short dCallNo, unsigned int ts, unsigned char oSeqNo, unsigned char iSeqNo);
+	bool writeDisconnect();
 };
 
 #endif

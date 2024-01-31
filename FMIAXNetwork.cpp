@@ -30,6 +30,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <md5.h>
+
 const unsigned char IAX_PROTO_VERSION   = 2U;
 
 const unsigned char AST_FRAME_DTMF      = 1U;
@@ -68,6 +70,24 @@ const unsigned char IAX_COMMAND_REGACK  = 15U;
 const unsigned char IAX_COMMAND_REGREJ  = 16U;
 const unsigned char IAX_COMMAND_VNAK    = 18U;
 
+const unsigned char IAX_IE_CALLED_NUMBER  = 1U;
+const unsigned char IAX_IE_CALLING_NUMBER = 2U;
+const unsigned char IAX_IE_CALLING_NAME   = 4U;
+const unsigned char IAX_IE_CALLED_CONTEXT = 5U;
+const unsigned char IAX_IE_USERNAME       = 6U;
+const unsigned char IAX_IE_PASSWORD       = 7U;
+const unsigned char IAX_IE_CAPABILITY     = 8U;
+const unsigned char IAX_IE_FORMAT         = 9U;
+const unsigned char IAX_IE_VERSION        = 11U;
+const unsigned char IAX_IE_DNID           = 13U;
+const unsigned char IAX_IE_AUTHMETHODS    = 14U;
+const unsigned char IAX_IE_CHALLENGE      = 15U;
+const unsigned char IAX_IE_MD5_RESULT     = 16U;
+const unsigned char IAX_IE_APPARENT_ADDR  = 18U;
+const unsigned char IAX_IE_REFRESH        = 19U;
+const unsigned char IAX_IE_CAUSE          = 22U;
+const unsigned char IAX_IE_DATETIME       = 31U;
+
 const unsigned char IAX_IE_RR_JITTER    = 46U;
 const unsigned char IAX_IE_RR_LOSS      = 47U;
 const unsigned char IAX_IE_RR_PKTS      = 48U;
@@ -79,6 +99,9 @@ const unsigned int BUFFER_LENGTH = 1500U;
 
 CFMIAXNetwork::CFMIAXNetwork(const std::string& callsign, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug) :
 m_callsign(callsign),
+m_username(),
+m_password(),
+m_node(),
 m_socket(localAddress, localPort),
 m_addr(),
 m_addrLen(0U),
@@ -137,131 +160,10 @@ bool CFMIAXNetwork::writeData(const float* data, unsigned int nSamples)
 			return false;
 	}
 
-	unsigned char buffer[500U];
-	::memset(buffer, 0x00U, 500U);
-
-	unsigned int length = 0U;
-
-	buffer[length++] = 'U';
-	buffer[length++] = 'S';
-	buffer[length++] = 'R';
-	buffer[length++] = 'P';
-
-	// Sequence number
-	buffer[length++] = (m_seqNo >> 24) & 0xFFU;
-	buffer[length++] = (m_seqNo >> 16) & 0xFFU;
-	buffer[length++] = (m_seqNo >> 8)  & 0xFFU;
-	buffer[length++] = (m_seqNo >> 0)  & 0xFFU;
-
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-
-	// PTT on
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x01U;
-
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-
-	// Type, 0 for audio
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-
-	for (unsigned int i = 0U; i < nSamples; i++) {
-		short val = short(data[i] * 32767.0F + 0.5F);			// Changing audio format from float to S16LE
-
-		buffer[length++] = (val >> 0) & 0xFFU;
-		buffer[length++] = (val >> 8) & 0xFFU;
-	}
-
-	if (m_debug)
-		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, length);
-
-	m_seqNo++;
-
-	return m_socket.write(buffer, length, m_addr, m_addrLen);
 }
 
 bool CFMIAXNetwork::writeEnd()
 {
-	unsigned char buffer[500U];
-	::memset(buffer, 0x00U, 500U);
-
-	unsigned int length = 0U;
-
-	buffer[length++] = 'U';
-	buffer[length++] = 'S';
-	buffer[length++] = 'R';
-	buffer[length++] = 'P';
-
-	// Sequence number
-	buffer[length++] = (m_seqNo >> 24) & 0xFFU;
-	buffer[length++] = (m_seqNo >> 16) & 0xFFU;
-	buffer[length++] = (m_seqNo >> 8) & 0xFFU;
-	buffer[length++] = (m_seqNo >> 0) & 0xFFU;
-
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-
-	// PTT off
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-
-	// Type, 0 for audio
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-
-	length += 320U;
-
-	m_seqNo = 0U;
-
-	if (length > 0U) {
-		if (m_debug)
-			CUtils::dump(1U, "FM IAX Network Data Sent", buffer, length);
-
-		return m_socket.write(buffer, length, m_addr, m_addrLen);
-	} else {
-		return true;
-	}
 }
 
 void CFMIAXNetwork::clock(unsigned int ms)
@@ -348,32 +250,21 @@ void CFMIAXNetwork::enable(bool enabled)
 	m_enabled = enabled;
 }
 
-bool CFMIAXNetwork::writeStart()
+bool CFMIAXNetwork::writeCall()
 {
-	unsigned char buffer[500U];
-	::memset(buffer, 0x00U, 500U);
+	unsigned short sCall = ++m_sCallNo | 0x8000;
+
+	m_timestamp.start();
+
+	m_oSeqNo = m_iSeqNo = 0U;
 
 	unsigned int length = 0U;
 
-	buffer[length++] = 'U';
-	buffer[length++] = 'S';
-	buffer[length++] = 'R';
-	buffer[length++] = 'P';
+	unsigned char buffer[100U];
 
-	// Sequence number
-	buffer[length++] = (m_seqNo >> 24) & 0xFFU;
-	buffer[length++] = (m_seqNo >> 16) & 0xFFU;
-	buffer[length++] = (m_seqNo >> 8) & 0xFFU;
-	buffer[length++] = (m_seqNo >> 0) & 0xFFU;
+	buffer[length++] = (sCall << 8) & 0xFFU;
+	buffer[length++] = (sCall << 0) & 0xFFU;
 
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-
-	// PTT off
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
 	buffer[length++] = 0x00U;
 	buffer[length++] = 0x00U;
 
@@ -382,67 +273,125 @@ bool CFMIAXNetwork::writeStart()
 	buffer[length++] = 0x00U;
 	buffer[length++] = 0x00U;
 
-	// Type, 2 for metadata
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x02U;
+	buffer[length++] = 0U;
 
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
+	buffer[length++] = 0U;
 
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
+	buffer[length++] = AST_FRAME_IAX;
 
-	// TLV TAG for Metadata
-	buffer[length++] = 0x08U;
+	buffer[length++] = IAX_COMMAND_NEW;
 
-	// TLV Length
-	buffer[length++] = 3U + 4U + 3U + 1U + 1U + m_callsign.size() + 1U;
+	buffer[length++] = IAX_IE_VERSION;
+	buffer[length++] = sizeof(unsigned short);
+	buffer[length++] = 0x00U;
+	buffer[length++] = IAX_PROTO_VERSION;
 
-	// DMR Id
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
+	buffer[length++] = IAX_IE_CALLED_NUMBER;
+	buffer[length++] = m_node.size();
+	for (std::string::const_iterator it = m_node.cbegin(); it != m_node.cend(); ++it)
+		buffer[length++] = *it;
 
-	// Rpt Id
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
+	buffer[length++] = IAX_IE_CALLING_NUMBER;
+	buffer[length++] = 0U;
 
-	// Talk Group
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-
-	// Time Slot
-	buffer[length++] = 0x00U;
-
-	// Color Code
-	buffer[length++] = 0x00U;
-
-	// Callsign
+	buffer[length++] = IAX_IE_CALLING_NAME;
+	buffer[length++] = m_callsign.size();
 	for (std::string::const_iterator it = m_callsign.cbegin(); it != m_callsign.cend(); ++it)
 		buffer[length++] = *it;
 
-	// End of Metadata
+	buffer[length++] = IAX_IE_USERNAME;
+	buffer[length++] = m_username.size();
+	for (std::string::const_iterator it = m_username.cbegin(); it != m_username.cend(); ++it)
+		buffer[length++] = *it;
+
+	buffer[length++] = IAX_IE_FORMAT;
+	buffer[length++] = sizeof(unsigned int);
 	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = AST_FORMAT_ULAW;
 
-	length = 70U;
+	if (m_debug)
+		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, length);
 
-	if (length > 0U) {
-		if (m_debug)
-			CUtils::dump(1U, "FM IAX Network Data Sent", buffer, length);
+	m_oSeqNo++;
 
-		return m_socket.write(buffer, length, m_addr, m_addrLen);
-	} else {
-		return true;
-	}
+	return m_socket.write(buffer, length, m_addr, m_addrLen);
+}
+
+bool CFMIAXNetwork::writeAuth()
+{
+	char hash[MD5_DIGEST_STRING_LENGTH];
+	::MD5Data((unsigned char*)m_password.c_str(), m_password.size(), hash);
+
+	unsigned short sCall = m_sCallNo | 0x8000;
+	unsigned int   ts    = m_timestamp.elapsed();
+
+	unsigned char buffer[50U];
+
+	buffer[0U] = (sCall << 8) & 0xFFU;
+	buffer[1U] = (sCall << 0) & 0xFFU;
+
+	buffer[2U] = (m_dCallNo << 8) & 0xFFU;
+	buffer[3U] = (m_dCallNo << 0) & 0xFFU;
+
+	buffer[4U] = (ts << 24) & 0xFFU;
+	buffer[5U] = (ts << 16) & 0xFFU;
+	buffer[6U] = (ts << 8)  & 0xFFU;
+	buffer[7U] = (ts << 0)  & 0xFFU;
+
+	buffer[8U] = m_oSeqNo;
+
+	buffer[9U] = m_iSeqNo;
+
+	buffer[10U] = AST_FRAME_IAX;
+
+	buffer[11U] = IAX_COMMAND_AUTHREP;
+
+	buffer[12U] = IAX_IE_MD5_RESULT;
+	buffer[13U] = MD5_DIGEST_STRING_LENGTH;
+	::memcpy(buffer + 14U, hash, MD5_DIGEST_STRING_LENGTH);
+
+	if (m_debug)
+		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, 14U + MD5_DIGEST_STRING_LENGTH);
+
+	m_oSeqNo++;
+
+	return m_socket.write(buffer, 14U + MD5_DIGEST_STRING_LENGTH, m_addr, m_addrLen);
+}
+
+bool CFMIAXNetwork::writeKey(bool key)
+{
+	unsigned short sCall = m_sCallNo | 0x8000U;
+	unsigned int   ts    = m_timestamp.elapsed();
+
+	unsigned char buffer[15U];
+
+	buffer[0U] = (sCall << 8) & 0xFFU;
+	buffer[1U] = (sCall << 0) & 0xFFU;
+
+	buffer[2U] = (m_dCallNo << 8) & 0xFFU;
+	buffer[3U] = (m_dCallNo << 0) & 0xFFU;
+
+	buffer[4U] = (ts << 24) & 0xFFU;
+	buffer[5U] = (ts << 16) & 0xFFU;
+	buffer[6U] = (ts << 8)  & 0xFFU;
+	buffer[7U] = (ts << 0)  & 0xFFU;
+
+	buffer[8U] = m_oSeqNo;
+
+	buffer[9U] = m_iSeqNo;
+
+	buffer[10U] = AST_FRAME_CONTROL;
+
+	buffer[11U] = key ? AST_CONTROL_KEY : AST_CONTROL_UNKEY;
+
+	if (m_debug)
+		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, 12U);
+
+	m_oSeqNo++;
+
+	return m_socket.write(buffer, 12U, m_addr, m_addrLen);
 }
 
 bool CFMIAXNetwork::writePing()
@@ -474,13 +423,14 @@ bool CFMIAXNetwork::writePing()
 	if (m_debug)
 		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, 12U);
 
+	m_oSeqNo++;
+
 	return m_socket.write(buffer, 12U, m_addr, m_addrLen);
 }
 
-bool CFMIAXNetwork::writePong()
+bool CFMIAXNetwork::writePong(unsigned int ts)
 {
 	unsigned short sCall = m_sCallNo | 0x8000U;
-	unsigned int   ts    = m_timestamp.elapsed();
 
 	unsigned char buffer[50U];
 
@@ -512,7 +462,7 @@ bool CFMIAXNetwork::writePong()
 
 	buffer[18U] = IAX_IE_RR_LOSS;
 	buffer[19U] = sizeof(unsigned int);
-	buffer[20U] = (m_rxLoss << 24) & 0xFFU;
+	buffer[20U] = (m_rxLoss * 100U) / m_rxFrames;
 	buffer[21U] = (m_rxLoss << 16) & 0xFFU;
 	buffer[22U] = (m_rxLoss << 8)  & 0xFFU;
 	buffer[23U] = (m_rxLoss << 0)  & 0xFFU;
@@ -546,6 +496,79 @@ bool CFMIAXNetwork::writePong()
 	if (m_debug)
 		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, 46U);
 
+	m_oSeqNo++;
+
 	return m_socket.write(buffer, 46U, m_addr, m_addrLen);
+}
+
+bool CFMIAXNetwork::writeAck(unsigned short sCallNo, unsigned short dCallNo, unsigned int ts, unsigned char oSeqNo, unsigned char iSeqNo)
+{
+	unsigned short sCall = sCallNo | 0x8000U;
+
+	unsigned char buffer[15U];
+
+	buffer[0U] = (sCall << 8) & 0xFFU;
+	buffer[1U] = (sCall << 0) & 0xFFU;
+
+	buffer[2U] = (dCallNo << 8) & 0xFFU;
+	buffer[3U] = (dCallNo << 0) & 0xFFU;
+
+	buffer[4U] = (ts << 24) & 0xFFU;
+	buffer[5U] = (ts << 16) & 0xFFU;
+	buffer[6U] = (ts << 8)  & 0xFFU;
+	buffer[7U] = (ts << 0)  & 0xFFU;
+
+	buffer[8U] = oSeqNo;
+
+	buffer[9U] = iSeqNo;
+
+	buffer[10U] = AST_FRAME_IAX;
+
+	buffer[11U] = IAX_COMMAND_ACK;
+
+	if (m_debug)
+		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, 12U);
+
+	return m_socket.write(buffer, 12U, m_addr, m_addrLen);
+}
+
+bool CFMIAXNetwork::writeDisconnect()
+{
+	const char* REASON = "MMDVM Out";
+
+	unsigned short sCall = m_sCallNo | 0x8000;
+	unsigned int   ts    = m_timestamp.elapsed();
+
+	unsigned char buffer[50U];
+
+	buffer[0U] = (sCall << 8) & 0xFFU;
+	buffer[1U] = (sCall << 0) & 0xFFU;
+
+	buffer[2U] = (m_dCallNo << 8) & 0xFFU;
+	buffer[3U] = (m_dCallNo << 0) & 0xFFU;
+
+	buffer[4U] = (ts << 24) & 0xFFU;
+	buffer[5U] = (ts << 16) & 0xFFU;
+	buffer[6U] = (ts << 8)  & 0xFFU;
+	buffer[7U] = (ts << 0)  & 0xFFU;
+
+	buffer[8U] = m_oSeqNo;
+
+	buffer[9U] = m_iSeqNo;
+
+	buffer[10U] = AST_FRAME_IAX;
+
+	buffer[11U] = IAX_COMMAND_HANGUP;
+
+	buffer[12U] = IAX_IE_CAUSE;
+	buffer[13U] = ::strlen(REASON);
+	::memcpy(buffer + 14U, REASON, ::strlen(REASON));
+
+	if (m_debug)
+		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, 14U + ::strlen(REASON));
+
+	m_oSeqNo++;
+
+	return m_socket.write(buffer, 14U + ::strlen(REASON), m_addr, m_addrLen);
 }
 
