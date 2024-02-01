@@ -30,6 +30,8 @@ public:
 
 	virtual void enable(bool enabled) = 0;
 
+	virtual bool writeStart() = 0;
+
 	virtual bool writeData(const float* data, unsigned int nSamples) = 0;
 
 	virtual bool writeEnd() = 0;

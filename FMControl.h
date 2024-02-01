@@ -48,8 +48,11 @@ private:
 	float       m_rxAudioGain;
 	bool        m_preEmphasisOn;
 	bool        m_deEmphasisOn;
-    bool        m_enabled;
+	bool        m_enabled;
+	bool        m_begin;
+
 	CRingBuffer<unsigned char> m_incomingRFAudio;
+
 	CIIRDirectForm1Filter* m_preEmphasis;
 	CIIRDirectForm1Filter* m_deEmphasis;
 	CIIRDirectForm1Filter* m_filterStage1;

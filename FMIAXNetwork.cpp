@@ -152,17 +152,16 @@ bool CFMIAXNetwork::open()
 	return m_socket.open(m_addr);
 }
 
+bool CFMIAXNetwork::writeStart()
+{
+	return true;
+}
+
 bool CFMIAXNetwork::writeData(const float* data, unsigned int nSamples)
 {
 	assert(data != NULL);
 	assert(nSamples > 0U);
-/*
-	if (m_iSeqNo == 0U) {
-		bool ret = writeStart();
-		if (!ret)
-			return false;
-	}
-*/
+
 	return true;
 }
 
@@ -193,21 +192,7 @@ void CFMIAXNetwork::clock(unsigned int ms)
 	if (m_debug)
 		CUtils::dump(1U, "FM IAX Network Data Received", buffer, length);
 
-	// Invalid packet type?
-	if (::memcmp(buffer, "USRP", 4U) != 0)
-		return;
-
-	if (length < 32)
-		return;
-
-	// The type is a big-endian 4-byte integer
-	unsigned int type = (buffer[20U] << 24) +
-			    (buffer[21U] << 16) +
-			    (buffer[22U] << 8)  +
-			    (buffer[23U] << 0);
-
-	if (type == 0U)
-		m_buffer.addData(buffer + 32U, length - 32U);
+	m_buffer.addData(buffer + 32U, length - 32U);
 }
 
 unsigned int CFMIAXNetwork::readData(float* out, unsigned int nOut)
@@ -257,7 +242,7 @@ void CFMIAXNetwork::enable(bool enabled)
 
 bool CFMIAXNetwork::writeCall()
 {
-	unsigned short sCall = ++m_sCallNo | 0x8000;
+	unsigned short sCall = ++m_sCallNo | 0x8000U;
 
 	m_timestamp.start();
 
@@ -329,7 +314,7 @@ bool CFMIAXNetwork::writeAuth()
 	char hash[MD5_DIGEST_STRING_LENGTH];
 	::MD5Data((unsigned char*)m_password.c_str(), m_password.size(), hash);
 
-	unsigned short sCall = m_sCallNo | 0x8000;
+	unsigned short sCall = m_sCallNo | 0x8000U;
 	unsigned int   ts    = m_timestamp.elapsed();
 
 	unsigned char buffer[50U];
@@ -543,7 +528,7 @@ bool CFMIAXNetwork::writeDisconnect()
 {
 	const char* REASON = "MMDVM Out";
 
-	unsigned short sCall = m_sCallNo | 0x8000;
+	unsigned short sCall = m_sCallNo | 0x8000U;
 	unsigned int   ts    = m_timestamp.elapsed();
 
 	unsigned char buffer[50U];

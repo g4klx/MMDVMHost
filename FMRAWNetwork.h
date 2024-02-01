@@ -37,6 +37,8 @@ public:
 
 	virtual void enable(bool enabled);
 
+	virtual bool writeStart();
+
 	virtual bool writeData(const float* in, unsigned int nIn);
 
 	virtual bool writeEnd();
@@ -58,12 +60,9 @@ private:
 	bool                m_debug;
 	bool                m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
-	unsigned int        m_seqNo;
 	SRC_STATE*          m_resampler;
 	int                 m_error;
 	int                 m_fd;
-
-	bool writeStart();
 };
 
 #endif

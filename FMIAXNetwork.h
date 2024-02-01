@@ -36,6 +36,8 @@ public:
 
 	virtual void enable(bool enabled);
 
+	virtual bool writeStart();
+
 	virtual bool writeData(const float* data, unsigned int nSamples);
 
 	virtual bool writeEnd();

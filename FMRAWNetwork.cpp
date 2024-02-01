@@ -43,7 +43,6 @@ m_squelchFile(squelchFile),
 m_debug(debug),
 m_enabled(false),
 m_buffer(2000U, "FM Network"),
-m_seqNo(0U),
 m_resampler(NULL),
 m_error(0),
 m_fd(-1)
@@ -83,16 +82,23 @@ bool CFMRAWNetwork::open()
 	return m_socket.open(m_addr);
 }
 
+bool CFMRAWNetwork::writeStart()
+{
+	if (m_fd != -1) {
+		size_t n = ::write(m_fd, "O", 1);
+		if (n != 1) {
+			LogError("Cannot write to the squelch file: %s, errno=%d", m_squelchFile.c_str(), errno);
+			return false;
+		}
+	}
+
+	return true;
+}
+
 bool CFMRAWNetwork::writeData(const float* in, unsigned int nIn)
 {
 	assert(in != NULL);
 	assert(nIn > 0U);
-
-	if (m_seqNo == 0U) {
-		bool ret = writeStart();
-		if (!ret)
-			return false;
-	}
 
 	unsigned char buffer[2000U];
 
@@ -135,15 +141,11 @@ bool CFMRAWNetwork::writeData(const float* in, unsigned int nIn)
 	if (m_debug)
 		CUtils::dump(1U, "FM RAW Network Data Sent", buffer, length);
 
-	m_seqNo++;
-
 	return m_socket.write(buffer, length, m_addr, m_addrLen);
 }
 
 bool CFMRAWNetwork::writeEnd()
 {
-	m_seqNo = 0U;
-
 	if (m_fd != -1) {
 		size_t n = ::write(m_fd, "Z", 1);
 		if (n != 1) {
@@ -260,18 +262,5 @@ void CFMRAWNetwork::enable(bool enabled)
 		reset();
 
 	m_enabled = enabled;
-}
-
-bool CFMRAWNetwork::writeStart()
-{
-	if (m_fd != -1) {
-		size_t n = ::write(m_fd, "O", 1);
-		if (n != 1) {
-			LogError("Cannot write to the squelch file: %s, errno=%d", m_squelchFile.c_str(), errno);
-			return false;
-		}
-	}
-
-	return true;
 }
 

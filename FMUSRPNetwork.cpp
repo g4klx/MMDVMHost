@@ -71,16 +71,107 @@ bool CFMUSRPNetwork::open()
 	return m_socket.open(m_addr);
 }
 
+bool CFMUSRPNetwork::writeStart()
+{
+	unsigned char buffer[500U];
+	::memset(buffer, 0x00U, 500U);
+
+	unsigned int length = 0U;
+
+	buffer[length++] = 'U';
+	buffer[length++] = 'S';
+	buffer[length++] = 'R';
+	buffer[length++] = 'P';
+
+	// Sequence number
+	buffer[length++] = (m_seqNo >> 24) & 0xFFU;
+	buffer[length++] = (m_seqNo >> 16) & 0xFFU;
+	buffer[length++] = (m_seqNo >> 8) & 0xFFU;
+	buffer[length++] = (m_seqNo >> 0) & 0xFFU;
+
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+
+	// PTT off
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+
+	// Type, 2 for metadata
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x02U;
+
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+
+	// TLV TAG for Metadata
+	buffer[length++] = 0x08U;
+
+	// TLV Length
+	buffer[length++] = 3U + 4U + 3U + 1U + 1U + m_callsign.size() + 1U;
+
+	// DMR Id
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+
+	// Rpt Id
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+
+	// Talk Group
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+
+	// Time Slot
+	buffer[length++] = 0x00U;
+
+	// Color Code
+	buffer[length++] = 0x00U;
+
+	// Callsign
+	for (std::string::const_iterator it = m_callsign.cbegin(); it != m_callsign.cend(); ++it)
+		buffer[length++] = *it;
+
+	// End of Metadata
+	buffer[length++] = 0x00U;
+
+	length = 70U;
+
+	if (length > 0U) {
+		if (m_debug)
+			CUtils::dump(1U, "FM USRP Network Data Sent", buffer, length);
+
+		return m_socket.write(buffer, length, m_addr, m_addrLen);
+	} else {
+		return true;
+	}
+}
+
 bool CFMUSRPNetwork::writeData(const float* data, unsigned int nSamples)
 {
 	assert(data != NULL);
 	assert(nSamples > 0U);
-
-	if (m_seqNo == 0U) {
-		bool ret = writeStart();
-		if (!ret)
-			return false;
-	}
 
 	unsigned char buffer[500U];
 	::memset(buffer, 0x00U, 500U);
@@ -291,102 +382,5 @@ void CFMUSRPNetwork::enable(bool enabled)
 		reset();
 
 	m_enabled = enabled;
-}
-
-bool CFMUSRPNetwork::writeStart()
-{
-	unsigned char buffer[500U];
-	::memset(buffer, 0x00U, 500U);
-
-	unsigned int length = 0U;
-
-	buffer[length++] = 'U';
-	buffer[length++] = 'S';
-	buffer[length++] = 'R';
-	buffer[length++] = 'P';
-
-	// Sequence number
-	buffer[length++] = (m_seqNo >> 24) & 0xFFU;
-	buffer[length++] = (m_seqNo >> 16) & 0xFFU;
-	buffer[length++] = (m_seqNo >> 8) & 0xFFU;
-	buffer[length++] = (m_seqNo >> 0) & 0xFFU;
-
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-
-	// PTT off
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-
-	// Type, 2 for metadata
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x02U;
-
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-
-	// TLV TAG for Metadata
-	buffer[length++] = 0x08U;
-
-	// TLV Length
-	buffer[length++] = 3U + 4U + 3U + 1U + 1U + m_callsign.size() + 1U;
-
-	// DMR Id
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-
-	// Rpt Id
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-
-	// Talk Group
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-	buffer[length++] = 0x00U;
-
-	// Time Slot
-	buffer[length++] = 0x00U;
-
-	// Color Code
-	buffer[length++] = 0x00U;
-
-	// Callsign
-	for (std::string::const_iterator it = m_callsign.cbegin(); it != m_callsign.cend(); ++it)
-		buffer[length++] = *it;
-
-	// End of Metadata
-	buffer[length++] = 0x00U;
-
-	length = 70U;
-
-	if (length > 0U) {
-		if (m_debug)
-			CUtils::dump(1U, "FM USRP Network Data Sent", buffer, length);
-
-		return m_socket.write(buffer, length, m_addr, m_addrLen);
-	} else {
-		return true;
-	}
 }
 

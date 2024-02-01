@@ -737,7 +737,7 @@ void CModem::clock(unsigned int ms)
 				unsigned int data1 = m_length - m_offset + 1U;
 				m_rxFMData.addData((unsigned char*)&data1, sizeof(unsigned int));
 
-				unsigned char data2= TAG_HEADER;
+				unsigned char data2 = TAG_HEADER;
 				m_rxFMData.addData(&data2, 1U);
 
 				m_rxFMData.addData(m_buffer + m_offset, m_length - m_offset);
