@@ -97,11 +97,11 @@ const unsigned char IAX_IE_RR_OOO       = 51U;
 
 const unsigned int BUFFER_LENGTH = 1500U;
 
-CFMIAXNetwork::CFMIAXNetwork(const std::string& callsign, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug) :
+CFMIAXNetwork::CFMIAXNetwork(const std::string& callsign, const std::string& username, const std::string& password, const std::string& node, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug) :
 m_callsign(callsign),
-m_username(),
-m_password(),
-m_node(),
+m_username(username),
+m_password(password),
+m_node(node),
 m_socket(localAddress, localPort),
 m_addr(),
 m_addrLen(0U),
@@ -121,6 +121,9 @@ m_rxDropped(0U),
 m_rxOOO(0U)
 {
 	assert(!callsign.empty());
+	assert(!username.empty());
+	assert(!password.empty());
+	assert(!node.empty());
 	assert(gatewayPort > 0U);
 	assert(!gatewayAddress.empty());
 
@@ -153,17 +156,19 @@ bool CFMIAXNetwork::writeData(const float* data, unsigned int nSamples)
 {
 	assert(data != NULL);
 	assert(nSamples > 0U);
-
-	if (m_seqNo == 0U) {
+/*
+	if (m_iSeqNo == 0U) {
 		bool ret = writeStart();
 		if (!ret)
 			return false;
 	}
-
+*/
+	return true;
 }
 
 bool CFMIAXNetwork::writeEnd()
 {
+	return true;
 }
 
 void CFMIAXNetwork::clock(unsigned int ms)
@@ -528,6 +533,8 @@ bool CFMIAXNetwork::writeAck(unsigned short sCallNo, unsigned short dCallNo, uns
 
 	if (m_debug)
 		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, 12U);
+
+	m_oSeqNo++;
 
 	return m_socket.write(buffer, 12U, m_addr, m_addrLen);
 }

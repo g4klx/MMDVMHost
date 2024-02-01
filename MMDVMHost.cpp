@@ -1888,6 +1888,9 @@ bool CMMDVMHost::createPOCSAGNetwork()
 bool CMMDVMHost::createFMNetwork()
 {
 	std::string callsign       = m_conf.getFMCallsign();
+	std::string username       = m_conf.getFMNetworkUsername();
+	std::string password       = m_conf.getFMNetworkPassword();
+	std::string node           = m_conf.getFMNetworkNode();
 	std::string protocol       = m_conf.getFMNetworkProtocol();
 	unsigned int sampleRate    = m_conf.getFMNetworkSampleRate();
 	std::string squelchFile    = m_conf.getFMNetworkSquelchFile();
@@ -1904,10 +1907,6 @@ bool CMMDVMHost::createFMNetwork()
 
 	LogInfo("FM Network Parameters");
 	LogInfo("    Protocol: %s", protocol.c_str());
-	if (protocol == "RAW") {
-		LogInfo("    Sample Rate: %u", sampleRate);
-		LogInfo("    Squelch File: %s", squelchFile.empty() ? "(none)" : squelchFile.c_str());
-	}
 	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
 	LogInfo("    Gateway Port: %hu", gatewayPort);
 	LogInfo("    Local Address: %s", localAddress.c_str());
@@ -1918,12 +1917,22 @@ bool CMMDVMHost::createFMNetwork()
 	LogInfo("    RX Audio Gain: %.2f", rxAudioGain);
 	LogInfo("    Mode Hang: %us", m_fmNetModeHang);
 
+	if (protocol == "RAW") {
+		LogInfo("    Sample Rate: %u", sampleRate);
+		LogInfo("    Squelch File: %s", squelchFile.empty() ? "(none)" : squelchFile.c_str());
+	}
+
+	if (protocol == "IAX") {
+		LogInfo("    Username: %s", username.c_str());
+		LogInfo("    Node: %s", node.c_str());
+	}
+
 	if (protocol == "USRP") {
 		m_fmNetwork = new CFMUSRPNetwork(callsign, localAddress, localPort, gatewayAddress, gatewayPort, debug);
 	} else if (protocol == "RAW") {
 		m_fmNetwork = new CFMRAWNetwork(localAddress, localPort, gatewayAddress, gatewayPort, sampleRate, squelchFile, debug);
 	} else if (protocol == "IAX") {
-		m_fmNetwork = new CFMIAXNetwork(callsign, localAddress, localPort, gatewayAddress, gatewayPort, debug);
+		m_fmNetwork = new CFMIAXNetwork(callsign, username, password, node, localAddress, localPort, gatewayAddress, gatewayPort, debug);
 	} else {
 		LogError("Invalid FM network protocol specified - %s", protocol.c_str());
 		return false;

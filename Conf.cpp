@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2023 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2024 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -290,6 +290,9 @@ m_pocsagNetworkModeHang(3U),
 m_pocsagNetworkDebug(false),
 m_fmNetworkEnabled(false),
 m_fmNetworkProtocol("USRP"),
+m_fmNetworkUsername("Dave"),
+m_fmNetworkPassword("PASSWORD"),
+m_fmNetworkNode("Node1"),
 m_fmNetworkSampleRate(48000U),
 m_fmNetworkSquelchFile(),
 m_fmGatewayAddress(),
@@ -1036,6 +1039,12 @@ bool CConf::read()
 				m_fmNetworkEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "Protocol") == 0)
 				m_fmNetworkProtocol = value;
+			else if (::strcmp(key, "Username") == 0)
+				m_fmNetworkUsername = value;
+			else if (::strcmp(key, "Password") == 0)
+				m_fmNetworkPassword = value;
+			else if (::strcmp(key, "Node") == 0)
+				m_fmNetworkNode = value;
 			else if (::strcmp(key, "SampleRate") == 0)
 				m_fmNetworkSampleRate = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "SquelchFile") == 0)
@@ -2280,6 +2289,21 @@ bool CConf::getFMNetworkEnabled() const
 std::string CConf::getFMNetworkProtocol() const
 {
 	return m_fmNetworkProtocol;
+}
+
+std::string CConf::getFMNetworkUsername() const
+{
+	return m_fmNetworkUsername;
+}
+
+std::string CConf::getFMNetworkPassword() const
+{
+	return m_fmNetworkPassword;
+}
+
+std::string CConf::getFMNetworkNode() const
+{
+	return m_fmNetworkNode;
 }
 
 unsigned int CConf::getFMNetworkSampleRate() const

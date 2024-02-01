@@ -29,7 +29,7 @@
 
 class CFMIAXNetwork : public IFMNetwork {
 public:
-	CFMIAXNetwork(const std::string& callsign, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug);
+	CFMIAXNetwork(const std::string& callsign, const std::string& username, const std::string& password, const std::string& node, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug);
 	virtual ~CFMIAXNetwork();
 
 	virtual bool open();
