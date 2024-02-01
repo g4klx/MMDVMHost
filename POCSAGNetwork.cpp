@@ -53,7 +53,7 @@ bool CPOCSAGNetwork::open()
 
 	LogMessage("Opening POCSAG network connection");
 
-	return m_socket.open();
+	return m_socket.open(m_addr);
 }
 
 void CPOCSAGNetwork::clock(unsigned int ms)

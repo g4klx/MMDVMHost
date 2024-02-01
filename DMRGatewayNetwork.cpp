@@ -105,7 +105,7 @@ void CDMRGatewayNetwork::setOptions(const std::string& options)
 bool CDMRGatewayNetwork::open()
 {
 	if (m_addrLen == 0U) {
-		LogError("Unable to resolve the address of the DMR Network");
+		LogError("DMR, Unable to resolve the address of the DMR Network");
 		return false;
 	}
 
