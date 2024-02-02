@@ -32,6 +32,8 @@
 
 #include <md5.h>
 
+#define	DEBUG_IAX
+
 const unsigned char IAX_PROTO_VERSION   = 2U;
 
 const unsigned char AST_FRAME_DTMF      = 1U;
@@ -108,6 +110,9 @@ m_addrLen(0U),
 m_debug(debug),
 m_enabled(false),
 m_buffer(2000U, "FM Network"),
+m_status(IAXS_DISCONNECTED),
+m_retryTimer(1000U, 0U, 500U),
+m_pingTimer(1000U, 20U),
 m_timestamp(),
 m_sCallNo(0U),
 m_dCallNo(0U),
@@ -149,12 +154,29 @@ bool CFMIAXNetwork::open()
 
 	LogMessage("Opening FM IAX network connection");
 
-	return m_socket.open(m_addr);
+	bool ret = m_socket.open(m_addr);
+	if (!ret)
+		return false;
+
+	ret = writeNew();
+	if (!ret) {
+		m_socket.close();
+		return false;
+	}
+
+	m_status = IAXS_CONNECTING;
+	m_retryTimer.start();
+	m_dCallNo = 0U;
+
+	return true;
 }
 
 bool CFMIAXNetwork::writeStart()
 {
-	return true;
+	if (m_status != IAXS_CONNECTED)
+		return false;
+
+	return writeKey(true);
 }
 
 bool CFMIAXNetwork::writeData(const float* data, unsigned int nSamples)
@@ -162,16 +184,44 @@ bool CFMIAXNetwork::writeData(const float* data, unsigned int nSamples)
 	assert(data != NULL);
 	assert(nSamples > 0U);
 
+	if (m_status != IAXS_CONNECTED)
+		return false;
+
 	return true;
 }
 
 bool CFMIAXNetwork::writeEnd()
 {
-	return true;
+	if (m_status != IAXS_CONNECTED)
+		return false;
+
+	return writeKey(false);
 }
 
 void CFMIAXNetwork::clock(unsigned int ms)
 {
+	m_retryTimer.clock(ms);
+	if (m_retryTimer.isRunning() && m_retryTimer.hasExpired()) {
+		switch (m_status) {
+			case IAXS_CONNECTING:
+				writeNew();
+				break;
+			case IAXS_AUTHORISING:
+				writeAuth();
+				break;
+			default:
+				break;
+		}
+
+		m_retryTimer.start();
+	}
+
+	m_pingTimer.clock(ms);
+	if (m_pingTimer.isRunning() && m_pingTimer.hasExpired()) {
+		writePing();
+		m_pingTimer.start();
+	}
+
 	unsigned char buffer[BUFFER_LENGTH];
 
 	sockaddr_storage addr;
@@ -186,13 +236,96 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		return;
 	}
 
-	if (!m_enabled)
-		return;
-
+#if !defined(DEBUG_IAX)
 	if (m_debug)
+#endif
 		CUtils::dump(1U, "FM IAX Network Data Received", buffer, length);
 
-	m_buffer.addData(buffer + 32U, length - 32U);
+	unsigned int ts = (buffer[4U] << 24) | (buffer[5U] << 16) | (buffer[6U] << 8) | (buffer[7U] << 0);
+
+	if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_ACK)) {
+#if defined(DEBUG_IAX)
+		LogDebug("IAX ACK received");
+#endif
+		// Grab the destination call number if we don't have it already
+		if (m_dCallNo == 0U)
+			m_dCallNo = ((buffer[0U] << 8) | (buffer[1U] << 0)) & 0x7FFFU;
+	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_PING)) {
+#if defined(DEBUG_IAX)
+		LogDebug("IAX PING received");
+#endif
+		writeAck(ts);
+		writePong(ts);
+	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_PONG)) {
+#if defined(DEBUG_IAX)
+		LogDebug("IAX PONG received");
+#endif
+		writeAck(ts);
+	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_ACCEPT)) {
+#if defined(DEBUG_IAX)
+		LogDebug("IAX ACCEPT received");
+#endif
+		// Grab the destination call number if we don't have it already
+		if (m_dCallNo == 0U)
+			m_dCallNo = ((buffer[0U] << 8) | (buffer[1U] << 0)) & 0x7FFFU;
+
+		writeAck(ts);
+	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_REGREJ)) {
+#if defined(DEBUG_IAX)
+		LogDebug("IAX REGREJ received");
+#endif
+		LogError("Registraton rejected by the IAX gateway");
+
+		m_status = IAXS_DISCONNECTED;
+		m_retryTimer.stop();
+		m_pingTimer.stop();
+	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_REJECT)) {
+#if defined(DEBUG_IAX)
+		LogDebug("IAX REJECT received");
+#endif
+		LogError("Command rejected by the IAX gateway");
+
+		m_status = IAXS_DISCONNECTED;
+		m_retryTimer.stop();
+		m_pingTimer.stop();
+	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_HANGUP)) {
+#if defined(DEBUG_IAX)
+		LogDebug("IAX HANGUP received");
+#endif
+		LogError("Hangup from the IAX gateway");
+		writeAck(ts);
+
+		m_status = IAXS_DISCONNECTED;
+		m_retryTimer.stop();
+		m_pingTimer.stop();
+	} else if (compareFrame(buffer, AST_FRAME_CONTROL, AST_CONTROL_ANSWER)) {
+#if defined(DEBUG_IAX)
+		LogDebug("IAX ANSWER received");
+#endif
+		// Grab the destination call number if we don't have it already
+		if (m_dCallNo == 0U)
+			m_dCallNo = ((buffer[0U] << 8) | (buffer[1U] << 0)) & 0x7FFFU;
+
+		writeAck(ts);
+
+		m_status = IAXS_CONNECTED;
+		m_retryTimer.stop();
+		m_pingTimer.start();
+	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_LAGRQ)) {
+#if defined(DEBUG_IAX)
+		LogDebug("IAX LAGRQ received");
+#endif
+		writeAck(ts);
+		writeLagRp();
+	} else if ((buffer[0U] & 0x80U) == 0x00U) {
+#if defined(DEBUG_IAX)
+		LogDebug("IAX audio received");
+#endif
+		if (!m_enabled)
+			return;
+
+		m_buffer.addData(buffer + 4U, length - 4U);
+	}
 }
 
 unsigned int CFMIAXNetwork::readData(float* out, unsigned int nOut)
@@ -225,7 +358,14 @@ void CFMIAXNetwork::reset()
 
 void CFMIAXNetwork::close()
 {
+	writeHangup();
+
 	m_socket.close();
+
+	m_status = IAXS_DISCONNECTED;
+
+	m_retryTimer.stop();
+	m_pingTimer.stop();
 
 	LogMessage("Closing FM IAX network connection");
 }
@@ -240,8 +380,11 @@ void CFMIAXNetwork::enable(bool enabled)
 	m_enabled = enabled;
 }
 
-bool CFMIAXNetwork::writeCall()
+bool CFMIAXNetwork::writeNew()
 {
+#if defined(DEBUG_IAX)
+	LogDebug("IAX NEW sent");
+#endif
 	unsigned short sCall = ++m_sCallNo | 0x8000U;
 
 	m_timestamp.start();
@@ -301,7 +444,9 @@ bool CFMIAXNetwork::writeCall()
 	buffer[length++] = 0x00U;
 	buffer[length++] = AST_FORMAT_ULAW;
 
+#if !defined(DEBUG_IAX)
 	if (m_debug)
+#endif
 		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, length);
 
 	m_oSeqNo++;
@@ -309,8 +454,11 @@ bool CFMIAXNetwork::writeCall()
 	return m_socket.write(buffer, length, m_addr, m_addrLen);
 }
 
-bool CFMIAXNetwork::writeAuth()
+bool CFMIAXNetwork::writeAuthRep()
 {
+#if defined(DEBUG_IAX)
+	LogDebug("IAX AUTHREP sent");
+#endif
 	char hash[MD5_DIGEST_STRING_LENGTH];
 	::MD5Data((unsigned char*)m_password.c_str(), m_password.size(), hash);
 
@@ -342,7 +490,9 @@ bool CFMIAXNetwork::writeAuth()
 	buffer[13U] = MD5_DIGEST_STRING_LENGTH;
 	::memcpy(buffer + 14U, hash, MD5_DIGEST_STRING_LENGTH);
 
+#if !defined(DEBUG_IAX)
 	if (m_debug)
+#endif
 		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, 14U + MD5_DIGEST_STRING_LENGTH);
 
 	m_oSeqNo++;
@@ -352,6 +502,9 @@ bool CFMIAXNetwork::writeAuth()
 
 bool CFMIAXNetwork::writeKey(bool key)
 {
+#if defined(DEBUG_IAX)
+	LogDebug("IAX KEY/UNKEY sent");
+#endif
 	unsigned short sCall = m_sCallNo | 0x8000U;
 	unsigned int   ts    = m_timestamp.elapsed();
 
@@ -376,7 +529,9 @@ bool CFMIAXNetwork::writeKey(bool key)
 
 	buffer[11U] = key ? AST_CONTROL_KEY : AST_CONTROL_UNKEY;
 
+#if !defined(DEBUG_IAX)
 	if (m_debug)
+#endif
 		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, 12U);
 
 	m_oSeqNo++;
@@ -386,6 +541,9 @@ bool CFMIAXNetwork::writeKey(bool key)
 
 bool CFMIAXNetwork::writePing()
 {
+#if defined(DEBUG_IAX)
+	LogDebug("IAX PING sent");
+#endif
 	unsigned short sCall = m_sCallNo | 0x8000U;
 	unsigned int   ts    = m_timestamp.elapsed();
 
@@ -410,7 +568,9 @@ bool CFMIAXNetwork::writePing()
 
 	buffer[11U] = IAX_COMMAND_PING;
 
+#if !defined(DEBUG_IAX)
 	if (m_debug)
+#endif
 		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, 12U);
 
 	m_oSeqNo++;
@@ -420,6 +580,9 @@ bool CFMIAXNetwork::writePing()
 
 bool CFMIAXNetwork::writePong(unsigned int ts)
 {
+#if defined(DEBUG_IAX)
+	LogDebug("IAX PONG sent");
+#endif
 	unsigned short sCall = m_sCallNo | 0x8000U;
 
 	unsigned char buffer[50U];
@@ -483,7 +646,9 @@ bool CFMIAXNetwork::writePong(unsigned int ts)
 	buffer[44U] = (m_rxOOO << 8)  & 0xFFU;
 	buffer[45U] = (m_rxOOO << 0)  & 0xFFU;
 
+#if !defined(DEBUG_IAX)
 	if (m_debug)
+#endif
 		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, 46U);
 
 	m_oSeqNo++;
@@ -491,32 +656,37 @@ bool CFMIAXNetwork::writePong(unsigned int ts)
 	return m_socket.write(buffer, 46U, m_addr, m_addrLen);
 }
 
-bool CFMIAXNetwork::writeAck(unsigned short sCallNo, unsigned short dCallNo, unsigned int ts, unsigned char oSeqNo, unsigned char iSeqNo)
+bool CFMIAXNetwork::writeAck(unsigned int ts)
 {
-	unsigned short sCall = sCallNo | 0x8000U;
+#if defined(DEBUG_IAX)
+	LogDebug("IAX ACK sent");
+#endif
+	unsigned short sCall = m_sCallNo | 0x8000U;
 
 	unsigned char buffer[15U];
 
 	buffer[0U] = (sCall << 8) & 0xFFU;
 	buffer[1U] = (sCall << 0) & 0xFFU;
 
-	buffer[2U] = (dCallNo << 8) & 0xFFU;
-	buffer[3U] = (dCallNo << 0) & 0xFFU;
+	buffer[2U] = (m_dCallNo << 8) & 0xFFU;
+	buffer[3U] = (m_dCallNo << 0) & 0xFFU;
 
 	buffer[4U] = (ts << 24) & 0xFFU;
 	buffer[5U] = (ts << 16) & 0xFFU;
 	buffer[6U] = (ts << 8)  & 0xFFU;
 	buffer[7U] = (ts << 0)  & 0xFFU;
 
-	buffer[8U] = oSeqNo;
+	buffer[8U] = m_oSeqNo;
 
-	buffer[9U] = iSeqNo;
+	buffer[9U] = m_iSeqNo;
 
 	buffer[10U] = AST_FRAME_IAX;
 
 	buffer[11U] = IAX_COMMAND_ACK;
 
+#if !defined(DEBUG_IAX)
 	if (m_debug)
+#endif
 		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, 12U);
 
 	m_oSeqNo++;
@@ -524,8 +694,50 @@ bool CFMIAXNetwork::writeAck(unsigned short sCallNo, unsigned short dCallNo, uns
 	return m_socket.write(buffer, 12U, m_addr, m_addrLen);
 }
 
-bool CFMIAXNetwork::writeDisconnect()
+bool CFMIAXNetwork::writeLagRp()
 {
+#if defined(DEBUG_IAX)
+	LogDebug("IAX LAGRP sent");
+#endif
+	unsigned short sCall = m_sCallNo | 0x8000U;
+	unsigned int   ts    = m_timestamp.elapsed();
+
+	unsigned char buffer[15U];
+
+	buffer[0U] = (sCall << 8) & 0xFFU;
+	buffer[1U] = (sCall << 0) & 0xFFU;
+
+	buffer[2U] = (m_dCallNo << 8) & 0xFFU;
+	buffer[3U] = (m_dCallNo << 0) & 0xFFU;
+
+	buffer[4U] = (ts << 24) & 0xFFU;
+	buffer[5U] = (ts << 16) & 0xFFU;
+	buffer[6U] = (ts << 8)  & 0xFFU;
+	buffer[7U] = (ts << 0)  & 0xFFU;
+
+	buffer[8U] = m_oSeqNo;
+
+	buffer[9U] = m_iSeqNo;
+
+	buffer[10U] = AST_FRAME_IAX;
+
+	buffer[11U] = IAX_COMMAND_LAGRP;
+
+#if !defined(DEBUG_IAX)
+	if (m_debug)
+#endif
+		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, 12U);
+
+	m_oSeqNo++;
+
+	return m_socket.write(buffer, 12U, m_addr, m_addrLen);
+}
+
+bool CFMIAXNetwork::writeHangup()
+{
+#if defined(DEBUG_IAX)
+	LogDebug("IAX HANGUP sent");
+#endif
 	const char* REASON = "MMDVM Out";
 
 	unsigned short sCall = m_sCallNo | 0x8000U;
@@ -556,11 +768,23 @@ bool CFMIAXNetwork::writeDisconnect()
 	buffer[13U] = ::strlen(REASON);
 	::memcpy(buffer + 14U, REASON, ::strlen(REASON));
 
+#if !defined(DEBUG_IAX)
 	if (m_debug)
+#endif
 		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, 14U + ::strlen(REASON));
 
 	m_oSeqNo++;
 
 	return m_socket.write(buffer, 14U + ::strlen(REASON), m_addr, m_addrLen);
+}
+
+bool CFMIAXNetwork::compareFrame(const unsigned char* buffer, unsigned char type1, unsigned char type2) const
+{
+	assert(buffer != NULL);
+
+	if ((buffer[0U] & 0x80U) == 0x00U)
+		return false;
+
+	return (buffer[10U] == type1) && (buffer[11U] == type2);
 }
 

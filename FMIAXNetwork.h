@@ -23,9 +23,17 @@
 #include "RingBuffer.h"
 #include "UDPSocket.h"
 #include "StopWatch.h"
+#include "Timer.h"
 
 #include <cstdint>
 #include <string>
+
+enum IAX_STATUS {
+	IAXS_DISCONNECTED,
+	IAXS_CONNECTING,
+	IAXS_AUTHORISING,
+	IAXS_CONNECTED
+};
 
 class CFMIAXNetwork : public IFMNetwork {
 public:
@@ -61,6 +69,9 @@ private:
 	bool                m_debug;
 	bool                m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
+	IAX_STATUS          m_status;
+	CTimer              m_retryTimer;
+	CTimer              m_pingTimer;
 	CStopWatch          m_timestamp;
 	unsigned short      m_sCallNo;
 	unsigned short      m_dCallNo;
@@ -73,13 +84,16 @@ private:
 	unsigned int        m_rxDropped;
 	unsigned int        m_rxOOO;
 
-	bool writeCall();
-	bool writeAuth();
+	bool writeNew();
+	bool writeAuthRep();
 	bool writeKey(bool key);
 	bool writePing();
 	bool writePong(unsigned int ts);
-	bool writeAck(unsigned short sCallNo, unsigned short dCallNo, unsigned int ts, unsigned char oSeqNo, unsigned char iSeqNo);
-	bool writeDisconnect();
+	bool writeAck(unsigned int ts);
+	bool writeLagRp();
+	bool writeHangup();
+
+	bool compareFrame(const unsigned char* buffer, unsigned char type1, unsigned char type2) const;
 };
 
 #endif
