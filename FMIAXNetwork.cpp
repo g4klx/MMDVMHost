@@ -49,6 +49,7 @@ const unsigned char AST_CONTROL_ANSWER  = 4U;
 const unsigned char AST_CONTROL_OPTION  = 11U;
 const unsigned char AST_CONTROL_KEY     = 12U;
 const unsigned char AST_CONTROL_UNKEY   = 13U;
+const unsigned char AST_CONTROL_STOP_SOUNDS = 255U;
 
 const unsigned char AST_FORMAT_ULAW     = 4U;
 
@@ -113,6 +114,7 @@ m_buffer(2000U, "FM Network"),
 m_status(IAXS_DISCONNECTED),
 m_retryTimer(1000U, 0U, 500U),
 m_pingTimer(1000U, 20U),
+m_seed(),
 m_timestamp(),
 m_sCallNo(0U),
 m_dCallNo(0U),
@@ -166,7 +168,9 @@ bool CFMIAXNetwork::open()
 
 	m_status = IAXS_CONNECTING;
 	m_retryTimer.start();
-	m_dCallNo = 0U;
+
+	m_dCallNo  = 0U;
+	m_rxFrames = 0U;
 
 	return true;
 }
@@ -174,6 +178,9 @@ bool CFMIAXNetwork::open()
 bool CFMIAXNetwork::writeStart()
 {
 	if (m_status != IAXS_CONNECTED)
+		return false;
+
+	if (!m_enabled)
 		return false;
 
 	return writeKey(true);
@@ -187,12 +194,42 @@ bool CFMIAXNetwork::writeData(const float* data, unsigned int nSamples)
 	if (m_status != IAXS_CONNECTED)
 		return false;
 
-	return true;
+	if (!m_enabled)
+		return false;
+
+	short audio[300U];
+	for (unsigned int i = 0U; i < nSamples; i++)
+		audio[i] = short(data[i] * 32767.0F + 0.5F);		// Changing audio format from float to S16LE
+
+#if defined(DEBUG_IAX)
+	LogDebug("IAX audio sent");
+#endif
+	unsigned short ts = m_timestamp.elapsed();
+
+	unsigned char buffer[300U];
+
+	buffer[0U] = (m_sCallNo << 8) & 0xFFU;
+	buffer[1U] = (m_sCallNo << 0) & 0xFFU;
+
+	buffer[2U] = (ts << 8) & 0xFFU;
+	buffer[3U] = (ts << 0) & 0xFFU;
+
+	uLawEncode(audio, buffer + 4U, nSamples);
+
+#if !defined(DEBUG_IAX)
+	if (m_debug)
+#endif
+		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, 4U + nSamples);
+
+	return m_socket.write(buffer, 4U + nSamples, m_addr, m_addrLen);
 }
 
 bool CFMIAXNetwork::writeEnd()
 {
 	if (m_status != IAXS_CONNECTED)
+		return false;
+
+	if (!m_enabled)
 		return false;
 
 	return writeKey(false);
@@ -207,7 +244,10 @@ void CFMIAXNetwork::clock(unsigned int ms)
 				writeNew();
 				break;
 			case IAXS_AUTHORISING:
-				writeAuth();
+				writeAuthRep();
+				break;
+			case IAXS_REGISTERING:
+				writeRegReq();
 				break;
 			default:
 				break;
@@ -254,12 +294,14 @@ void CFMIAXNetwork::clock(unsigned int ms)
 #if defined(DEBUG_IAX)
 		LogDebug("IAX PING received");
 #endif
+		m_rxFrames++;
 		writeAck(ts);
 		writePong(ts);
 	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_PONG)) {
 #if defined(DEBUG_IAX)
 		LogDebug("IAX PONG received");
 #endif
+		m_rxFrames++;
 		writeAck(ts);
 	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_ACCEPT)) {
 #if defined(DEBUG_IAX)
@@ -269,7 +311,9 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		if (m_dCallNo == 0U)
 			m_dCallNo = ((buffer[0U] << 8) | (buffer[1U] << 0)) & 0x7FFFU;
 
+		m_rxFrames++;
 		writeAck(ts);
+		m_retryTimer.stop();
 	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_REGREJ)) {
 #if defined(DEBUG_IAX)
 		LogDebug("IAX REGREJ received");
@@ -288,6 +332,59 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		m_status = IAXS_DISCONNECTED;
 		m_retryTimer.stop();
 		m_pingTimer.stop();
+	} else if (compareFrame(buffer, AST_FRAME_CONTROL, AST_CONTROL_RINGING)) {
+#if defined(DEBUG_IAX)
+		LogDebug("IAX RINGING received");
+#endif
+		m_rxFrames++;
+		writeAck(ts);
+	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_REGAUTH)) {
+#if defined(DEBUG_IAX)
+		LogDebug("IAX REGAUTH received");
+#endif
+		m_rxFrames++;
+
+		if ((buffer[12U] == IAX_IE_AUTHMETHODS) &&
+		    (buffer[15U] == IAX_AUTH_MD5) &&
+		    (buffer[16U] == IAX_IE_CHALLENGE)) {
+			// Grab the destination call number if we don't have it already
+			if (m_dCallNo == 0U)
+				m_dCallNo = ((buffer[0U] << 8) | (buffer[1U] << 0)) & 0x7FFFU;
+
+			m_seed = std::string((char*)(buffer + 18U), buffer[17U]);
+
+			m_status = IAXS_REGISTERING;
+			m_retryTimer.start();
+			writeRegReq();
+		}
+	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_AUTHREQ)) {
+#if defined(DEBUG_IAX)
+		LogDebug("IAX AUTHREQ received");
+#endif
+		m_rxFrames++;
+
+		if ((buffer[12U] == IAX_IE_AUTHMETHODS) &&
+		    (buffer[15U] == IAX_AUTH_MD5) &&
+		    (buffer[16U] == IAX_IE_CHALLENGE)) {
+			// Grab the destination call number if we don't have it already
+			if (m_dCallNo == 0U)
+				m_dCallNo = ((buffer[0U] << 8) | (buffer[1U] << 0)) & 0x7FFFU;
+
+			m_seed = std::string((char*)(buffer + 18U), buffer[17U]);
+
+			m_status = IAXS_AUTHORISING;
+			m_retryTimer.start();
+			writeAuthRep();
+		}
+	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_REGACK)) {
+#if defined(DEBUG_IAX)
+		LogDebug("IAX REGACK received");
+#endif
+		m_rxFrames++;
+		writeAck(ts);
+
+		if (m_status == IAXS_CONNECTING)
+			writeNew();
 	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_HANGUP)) {
 #if defined(DEBUG_IAX)
 		LogDebug("IAX HANGUP received");
@@ -308,15 +405,55 @@ void CFMIAXNetwork::clock(unsigned int ms)
 
 		writeAck(ts);
 
+		m_rxFrames++;
 		m_status = IAXS_CONNECTED;
 		m_retryTimer.stop();
 		m_pingTimer.start();
+	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_VNAK)) {
+#if defined(DEBUG_IAX)
+		LogDebug("IAX VNAK received");
+#endif
+		m_rxFrames++;
+		writeAck(ts);
+	} else if (compareFrame(buffer, AST_FRAME_CONTROL, AST_CONTROL_STOP_SOUNDS)) {
+#if defined(DEBUG_IAX)
+		LogDebug("IAX STOP SOUNDS received");
+#endif
+		m_rxFrames++;
+		writeAck(ts);
+	} else if (compareFrame(buffer, AST_FRAME_CONTROL, AST_CONTROL_OPTION)) {
+#if defined(DEBUG_IAX)
+		LogDebug("IAX OPTION received");
+#endif
+		m_rxFrames++;
+		writeAck(ts);
+	} else if (compareFrame(buffer, AST_FRAME_TEXT, 0U)) {
+#if defined(DEBUG_IAX)
+		LogDebug("IAX TEXT received - %s", buffer + 12U);
+#endif
+		writeAck(ts);
 	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_LAGRQ)) {
 #if defined(DEBUG_IAX)
 		LogDebug("IAX LAGRQ received");
 #endif
+		m_rxFrames++;
 		writeAck(ts);
-		writeLagRp();
+		writeLagRp(ts);
+	} else if (compareFrame(buffer, AST_FRAME_VOICE, AST_FORMAT_ULAW)) {
+#if defined(DEBUG_IAX)
+		LogDebug("IAX ULAW received");
+#endif
+		m_rxFrames++;
+		writeAck(ts);
+
+		if (!m_enabled)
+			return;
+
+		m_buffer.addData(buffer + 12U, length - 12U);
+
+		short audio[160U];
+		::memset(audio, 0x00U, 160U * sizeof(short));
+		writeAudio(audio, 160U);
 	} else if ((buffer[0U] & 0x80U) == 0x00U) {
 #if defined(DEBUG_IAX)
 		LogDebug("IAX audio received");
@@ -325,6 +462,8 @@ void CFMIAXNetwork::clock(unsigned int ms)
 			return;
 
 		m_buffer.addData(buffer + 4U, length - 4U);
+	} else {
+		CUtils::dump(2U, "Unknown IAX message received", buffer, length);
 	}
 }
 
@@ -333,7 +472,7 @@ unsigned int CFMIAXNetwork::readData(float* out, unsigned int nOut)
 	assert(out != NULL);
 	assert(nOut > 0U);
 
-	unsigned int bytes = m_buffer.dataSize() / sizeof(unsigned short);
+	unsigned int bytes = m_buffer.dataSize() / sizeof(unsigned char);
 	if (bytes == 0U)
 		return 0U;
 
@@ -341,12 +480,13 @@ unsigned int CFMIAXNetwork::readData(float* out, unsigned int nOut)
 		nOut = bytes;
 
 	unsigned char buffer[1500U];
-	m_buffer.getData(buffer, nOut * sizeof(unsigned short));
+	m_buffer.getData(buffer, nOut * sizeof(unsigned char));
 
-	for (unsigned int i = 0U; i < nOut; i++) {
-		short val = ((buffer[i * 2U + 0U] & 0xFFU) << 0) + ((buffer[i * 2U + 1U] & 0xFFU) << 8);
-		out[i] = float(val) / 65536.0F;
-	}
+	short audio[1500U];
+	uLawDecode(buffer, audio, nOut);
+
+	for (unsigned int i = 0U; i < nOut; i++)
+		out[i] = float(audio[i]) / 65536.0F;
 
 	return nOut;
 }
@@ -459,8 +599,10 @@ bool CFMIAXNetwork::writeAuthRep()
 #if defined(DEBUG_IAX)
 	LogDebug("IAX AUTHREP sent");
 #endif
+	std::string password = m_seed + m_password;
+
 	char hash[MD5_DIGEST_STRING_LENGTH];
-	::MD5Data((unsigned char*)m_password.c_str(), m_password.size(), hash);
+	::MD5Data((unsigned char*)password.c_str(), password.size(), hash);
 
 	unsigned short sCall = m_sCallNo | 0x8000U;
 	unsigned int   ts    = m_timestamp.elapsed();
@@ -694,13 +836,12 @@ bool CFMIAXNetwork::writeAck(unsigned int ts)
 	return m_socket.write(buffer, 12U, m_addr, m_addrLen);
 }
 
-bool CFMIAXNetwork::writeLagRp()
+bool CFMIAXNetwork::writeLagRp(unsigned int ts)
 {
 #if defined(DEBUG_IAX)
 	LogDebug("IAX LAGRP sent");
 #endif
 	unsigned short sCall = m_sCallNo | 0x8000U;
-	unsigned int   ts    = m_timestamp.elapsed();
 
 	unsigned char buffer[15U];
 
@@ -776,6 +917,170 @@ bool CFMIAXNetwork::writeHangup()
 	m_oSeqNo++;
 
 	return m_socket.write(buffer, 14U + ::strlen(REASON), m_addr, m_addrLen);
+}
+
+bool CFMIAXNetwork::writeRegReq()
+{
+	const unsigned short REFRESH_TIME = 60U;
+
+#if defined(DEBUG_IAX)
+	LogDebug("IAX REGREQ sent");
+#endif
+	unsigned short sCall = m_sCallNo | 0x8000U;
+	unsigned int   ts    = m_timestamp.elapsed();
+
+	unsigned char buffer[70U];
+
+	buffer[0U] = (sCall << 8) & 0xFFU;
+	buffer[1U] = (sCall << 0) & 0xFFU;
+
+	buffer[2U] = (m_dCallNo << 8) & 0xFFU;
+	buffer[3U] = (m_dCallNo << 0) & 0xFFU;
+
+	buffer[4U] = (ts << 24) & 0xFFU;
+	buffer[5U] = (ts << 16) & 0xFFU;
+	buffer[6U] = (ts << 8)  & 0xFFU;
+	buffer[7U] = (ts << 0)  & 0xFFU;
+
+	buffer[8U] = m_oSeqNo;
+
+	buffer[9U] = m_iSeqNo;
+
+	buffer[10U] = AST_FRAME_IAX;
+
+	buffer[11U] = IAX_COMMAND_REGREQ;
+
+	buffer[12U] = IAX_IE_USERNAME;
+	buffer[13U] = m_username.size();
+	::memcpy(buffer + 14U, m_username.c_str(), m_username.size());
+
+	unsigned int offset = 14U + m_username.size();
+
+	if (m_dCallNo > 0U) {
+		std::string password = m_seed + m_password;
+
+		char hash[MD5_DIGEST_STRING_LENGTH];
+		::MD5Data((unsigned char*)password.c_str(), password.size(), hash);
+
+		buffer[offset++] = IAX_IE_MD5_RESULT;
+		buffer[offset++] = MD5_DIGEST_STRING_LENGTH;
+
+		::memcpy(buffer + offset, hash, MD5_DIGEST_STRING_LENGTH);
+		offset += MD5_DIGEST_STRING_LENGTH;
+	}
+
+	buffer[offset++] = IAX_IE_REFRESH;
+	buffer[offset++] = sizeof(unsigned short);
+	buffer[offset++] = (REFRESH_TIME >> 8) & 0xFFU;
+	buffer[offset++] = (REFRESH_TIME >> 0) & 0xFFU;
+
+#if !defined(DEBUG_IAX)
+	if (m_debug)
+#endif
+		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, offset);
+
+	m_oSeqNo++;
+
+	return m_socket.write(buffer, offset, m_addr, m_addrLen);
+}
+
+void CFMIAXNetwork::uLawEncode(const short* audio, unsigned char* buffer, unsigned int length) const
+{
+	assert(audio != NULL);
+	assert(buffer != NULL);
+
+	const unsigned short MULAW_MAX  = 0x1FFFU;
+	const unsigned short MULAW_BIAS = 33U;
+
+	for (unsigned int i = 0U; i < length; i++) {
+		unsigned short mask = 0x1000U;
+		unsigned char  sign;
+		unsigned char position = 12U;
+		unsigned short number;
+
+		if (audio[i] < 0) {
+			number = -audio[i];
+			sign   = 0x80U;
+		} else {
+			number = audio[i];
+			sign   = 0x00U;
+		}
+
+		number += MULAW_BIAS;
+		if (number > MULAW_MAX)
+			number = MULAW_MAX;
+
+		for (; ((number & mask) != mask && position >= 5U); mask >>= 1, position--)
+			;
+
+		unsigned char lsb = (number >> (position - 4U)) & 0x0FU;
+		buffer[i] = ~(sign | ((position - 5U) << 4) | lsb);
+	}
+}
+
+void CFMIAXNetwork::uLawDecode(const unsigned char* buffer, short* audio, unsigned int length) const
+{
+	assert(buffer != NULL);
+	assert(audio != NULL);
+
+	const unsigned short MULAW_BIAS = 33U;
+
+	for (unsigned int i = 0U; i < length; i++) {
+		bool sign = true;
+
+		unsigned char number = ~buffer[i];
+		if (number & 0x80U) {
+			number &= 0x7FU;
+			sign = false;
+		}
+
+		unsigned char position = ((number & 0xF0U) >> 4) + 5U;
+		short decoded = ((1 << position) | ((number & 0x0FU) << (position - 4U))
+			 | (1 << (position - 5U))) - MULAW_BIAS;
+
+		audio[i] = sign ? decoded : -decoded;
+	}
+}
+
+bool CFMIAXNetwork::writeAudio(const short* audio, unsigned int length)
+{
+#if defined(DEBUG_IAX)
+	LogDebug("IAX ULAW sent");
+#endif
+	unsigned short sCall = m_sCallNo | 0x8000U;
+	unsigned int   ts    = m_timestamp.elapsed();
+
+	unsigned char buffer[300U];
+
+	buffer[0U] = (sCall << 8) & 0xFFU;
+	buffer[1U] = (sCall << 0) & 0xFFU;
+
+	buffer[2U] = (m_dCallNo << 8) & 0xFFU;
+	buffer[3U] = (m_dCallNo << 0) & 0xFFU;
+
+	buffer[4U] = (ts << 24) & 0xFFU;
+	buffer[5U] = (ts << 16) & 0xFFU;
+	buffer[6U] = (ts << 8)  & 0xFFU;
+	buffer[7U] = (ts << 0)  & 0xFFU;
+
+	buffer[8U] = m_oSeqNo;
+
+	buffer[9U] = m_iSeqNo;
+
+	buffer[10U] = AST_FRAME_VOICE;
+
+	buffer[11U] = AST_FORMAT_ULAW;
+
+	uLawEncode(audio, buffer + 12U, length);
+
+#if !defined(DEBUG_IAX)
+	if (m_debug)
+#endif
+		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, 12U + length);
+
+	m_oSeqNo++;
+
+	return m_socket.write(buffer, 12U + length, m_addr, m_addrLen);
 }
 
 bool CFMIAXNetwork::compareFrame(const unsigned char* buffer, unsigned char type1, unsigned char type2) const

@@ -32,6 +32,7 @@ enum IAX_STATUS {
 	IAXS_DISCONNECTED,
 	IAXS_CONNECTING,
 	IAXS_AUTHORISING,
+	IAXS_REGISTERING,
 	IAXS_CONNECTED
 };
 
@@ -72,6 +73,7 @@ private:
 	IAX_STATUS          m_status;
 	CTimer              m_retryTimer;
 	CTimer              m_pingTimer;
+	std::string         m_seed;
 	CStopWatch          m_timestamp;
 	unsigned short      m_sCallNo;
 	unsigned short      m_dCallNo;
@@ -90,8 +92,13 @@ private:
 	bool writePing();
 	bool writePong(unsigned int ts);
 	bool writeAck(unsigned int ts);
-	bool writeLagRp();
+	bool writeLagRp(unsigned int ts);
 	bool writeHangup();
+	bool writeRegReq();
+	bool writeAudio(const short* audio, unsigned int length);
+
+	void uLawEncode(const short* audio, unsigned char* buffer, unsigned int length) const;
+	void uLawDecode(const unsigned char* buffer, short* audio, unsigned int length) const;
 
 	bool compareFrame(const unsigned char* buffer, unsigned char type1, unsigned char type2) const;
 };
