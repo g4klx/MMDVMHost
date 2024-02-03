@@ -525,7 +525,8 @@ bool CFMIAXNetwork::writeNew()
 #if defined(DEBUG_IAX)
 	LogDebug("IAX NEW sent");
 #endif
-	unsigned short sCall = ++m_sCallNo | 0x8000U;
+	m_sCallNo++;
+	unsigned short sCall = m_sCallNo | 0x8000U;
 
 	m_timestamp.start();
 
