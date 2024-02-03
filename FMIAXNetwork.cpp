@@ -208,11 +208,11 @@ bool CFMIAXNetwork::writeData(const float* data, unsigned int nSamples)
 
 	unsigned char buffer[300U];
 
-	buffer[0U] = (m_sCallNo << 8) & 0xFFU;
-	buffer[1U] = (m_sCallNo << 0) & 0xFFU;
+	buffer[0U] = (m_sCallNo >> 8) & 0xFFU;
+	buffer[1U] = (m_sCallNo >> 0) & 0xFFU;
 
-	buffer[2U] = (ts << 8) & 0xFFU;
-	buffer[3U] = (ts << 0) & 0xFFU;
+	buffer[2U] = (ts >> 8) & 0xFFU;
+	buffer[3U] = (ts >> 0) & 0xFFU;
 
 	uLawEncode(audio, buffer + 4U, nSamples);
 
@@ -536,8 +536,8 @@ bool CFMIAXNetwork::writeNew()
 
 	unsigned char buffer[100U];
 
-	buffer[length++] = (sCall << 8) & 0xFFU;
-	buffer[length++] = (sCall << 0) & 0xFFU;
+	buffer[length++] = (sCall >> 8) & 0xFFU;
+	buffer[length++] = (sCall >> 0) & 0xFFU;
 
 	buffer[length++] = 0x00U;
 	buffer[length++] = 0x00U;
@@ -610,16 +610,16 @@ bool CFMIAXNetwork::writeAuthRep()
 
 	unsigned char buffer[50U];
 
-	buffer[0U] = (sCall << 8) & 0xFFU;
-	buffer[1U] = (sCall << 0) & 0xFFU;
+	buffer[0U] = (sCall >> 8) & 0xFFU;
+	buffer[1U] = (sCall >> 0) & 0xFFU;
 
-	buffer[2U] = (m_dCallNo << 8) & 0xFFU;
-	buffer[3U] = (m_dCallNo << 0) & 0xFFU;
+	buffer[2U] = (m_dCallNo >> 8) & 0xFFU;
+	buffer[3U] = (m_dCallNo >> 0) & 0xFFU;
 
-	buffer[4U] = (ts << 24) & 0xFFU;
-	buffer[5U] = (ts << 16) & 0xFFU;
-	buffer[6U] = (ts << 8)  & 0xFFU;
-	buffer[7U] = (ts << 0)  & 0xFFU;
+	buffer[4U] = (ts >> 24) & 0xFFU;
+	buffer[5U] = (ts >> 16) & 0xFFU;
+	buffer[6U] = (ts >> 8)  & 0xFFU;
+	buffer[7U] = (ts >> 0)  & 0xFFU;
 
 	buffer[8U] = m_oSeqNo;
 
@@ -653,16 +653,16 @@ bool CFMIAXNetwork::writeKey(bool key)
 
 	unsigned char buffer[15U];
 
-	buffer[0U] = (sCall << 8) & 0xFFU;
-	buffer[1U] = (sCall << 0) & 0xFFU;
+	buffer[0U] = (sCall >> 8) & 0xFFU;
+	buffer[1U] = (sCall >> 0) & 0xFFU;
 
-	buffer[2U] = (m_dCallNo << 8) & 0xFFU;
-	buffer[3U] = (m_dCallNo << 0) & 0xFFU;
+	buffer[2U] = (m_dCallNo >> 8) & 0xFFU;
+	buffer[3U] = (m_dCallNo >> 0) & 0xFFU;
 
-	buffer[4U] = (ts << 24) & 0xFFU;
-	buffer[5U] = (ts << 16) & 0xFFU;
-	buffer[6U] = (ts << 8)  & 0xFFU;
-	buffer[7U] = (ts << 0)  & 0xFFU;
+	buffer[4U] = (ts >> 24) & 0xFFU;
+	buffer[5U] = (ts >> 16) & 0xFFU;
+	buffer[6U] = (ts >> 8)  & 0xFFU;
+	buffer[7U] = (ts >> 0)  & 0xFFU;
 
 	buffer[8U] = m_oSeqNo;
 
@@ -692,16 +692,16 @@ bool CFMIAXNetwork::writePing()
 
 	unsigned char buffer[15U];
 
-	buffer[0U] = (sCall << 8) & 0xFFU;
-	buffer[1U] = (sCall << 0) & 0xFFU;
+	buffer[0U] = (sCall >> 8) & 0xFFU;
+	buffer[1U] = (sCall >> 0) & 0xFFU;
 
-	buffer[2U] = (m_dCallNo << 8) & 0xFFU;
-	buffer[3U] = (m_dCallNo << 0) & 0xFFU;
+	buffer[2U] = (m_dCallNo >> 8) & 0xFFU;
+	buffer[3U] = (m_dCallNo >> 0) & 0xFFU;
 
-	buffer[4U] = (ts << 24) & 0xFFU;
-	buffer[5U] = (ts << 16) & 0xFFU;
-	buffer[6U] = (ts << 8)  & 0xFFU;
-	buffer[7U] = (ts << 0)  & 0xFFU;
+	buffer[4U] = (ts >> 24) & 0xFFU;
+	buffer[5U] = (ts >> 16) & 0xFFU;
+	buffer[6U] = (ts >> 8)  & 0xFFU;
+	buffer[7U] = (ts >> 0)  & 0xFFU;
 
 	buffer[8U] = m_oSeqNo;
 
@@ -730,16 +730,16 @@ bool CFMIAXNetwork::writePong(unsigned int ts)
 
 	unsigned char buffer[50U];
 
-	buffer[0U] = (sCall << 8) & 0xFFU;
-	buffer[1U] = (sCall << 0) & 0xFFU;
+	buffer[0U] = (sCall >> 8) & 0xFFU;
+	buffer[1U] = (sCall >> 0) & 0xFFU;
 
-	buffer[2U] = (m_dCallNo << 8) & 0xFFU;
-	buffer[3U] = (m_dCallNo << 0) & 0xFFU;
+	buffer[2U] = (m_dCallNo >> 8) & 0xFFU;
+	buffer[3U] = (m_dCallNo >> 0) & 0xFFU;
 
-	buffer[4U] = (ts << 24) & 0xFFU;
-	buffer[5U] = (ts << 16) & 0xFFU;
-	buffer[6U] = (ts << 8)  & 0xFFU;
-	buffer[7U] = (ts << 0)  & 0xFFU;
+	buffer[4U] = (ts >> 24) & 0xFFU;
+	buffer[5U] = (ts >> 16) & 0xFFU;
+	buffer[6U] = (ts >> 8)  & 0xFFU;
+	buffer[7U] = (ts >> 0)  & 0xFFU;
 
 	buffer[8U] = m_oSeqNo;
 
@@ -751,43 +751,43 @@ bool CFMIAXNetwork::writePong(unsigned int ts)
 
 	buffer[12U] = IAX_IE_RR_JITTER;
 	buffer[13U] = sizeof(unsigned int);
-	buffer[14U] = (m_rxJitter << 24) & 0xFFU;
-	buffer[15U] = (m_rxJitter << 16) & 0xFFU;
-	buffer[16U] = (m_rxJitter << 8)  & 0xFFU;
-	buffer[17U] = (m_rxJitter << 0)  & 0xFFU;
+	buffer[14U] = (m_rxJitter >> 24) & 0xFFU;
+	buffer[15U] = (m_rxJitter >> 16) & 0xFFU;
+	buffer[16U] = (m_rxJitter >> 8)  & 0xFFU;
+	buffer[17U] = (m_rxJitter >> 0)  & 0xFFU;
 
 	buffer[18U] = IAX_IE_RR_LOSS;
 	buffer[19U] = sizeof(unsigned int);
 	buffer[20U] = (m_rxLoss * 100U) / m_rxFrames;
-	buffer[21U] = (m_rxLoss << 16) & 0xFFU;
-	buffer[22U] = (m_rxLoss << 8)  & 0xFFU;
-	buffer[23U] = (m_rxLoss << 0)  & 0xFFU;
+	buffer[21U] = (m_rxLoss >> 16) & 0xFFU;
+	buffer[22U] = (m_rxLoss >> 8)  & 0xFFU;
+	buffer[23U] = (m_rxLoss >> 0)  & 0xFFU;
 
 	buffer[24U] = IAX_IE_RR_PKTS;
 	buffer[25U] = sizeof(unsigned int);
-	buffer[26U] = (m_rxFrames << 24) & 0xFFU;
-	buffer[27U] = (m_rxFrames << 16) & 0xFFU;
-	buffer[28U] = (m_rxFrames << 8)  & 0xFFU;
-	buffer[29U] = (m_rxFrames << 0)  & 0xFFU;
+	buffer[26U] = (m_rxFrames >> 24) & 0xFFU;
+	buffer[27U] = (m_rxFrames >> 16) & 0xFFU;
+	buffer[28U] = (m_rxFrames >> 8)  & 0xFFU;
+	buffer[29U] = (m_rxFrames >> 0)  & 0xFFU;
 
 	buffer[30U] = IAX_IE_RR_DELAY;
 	buffer[31U] = sizeof(unsigned short);
-	buffer[32U] = (m_rxDelay << 8)  & 0xFFU;
-	buffer[33U] = (m_rxDelay << 0)  & 0xFFU;
+	buffer[32U] = (m_rxDelay >> 8)  & 0xFFU;
+	buffer[33U] = (m_rxDelay >> 0)  & 0xFFU;
 
 	buffer[34U] = IAX_IE_RR_DROPPED;
 	buffer[35U] = sizeof(unsigned int);
-	buffer[36U] = (m_rxDropped << 24) & 0xFFU;
-	buffer[37U] = (m_rxDropped << 16) & 0xFFU;
-	buffer[38U] = (m_rxDropped << 8)  & 0xFFU;
-	buffer[39U] = (m_rxDropped << 0)  & 0xFFU;
+	buffer[36U] = (m_rxDropped >> 24) & 0xFFU;
+	buffer[37U] = (m_rxDropped >> 16) & 0xFFU;
+	buffer[38U] = (m_rxDropped >> 8)  & 0xFFU;
+	buffer[39U] = (m_rxDropped >> 0)  & 0xFFU;
 
 	buffer[40U] = IAX_IE_RR_OOO;
 	buffer[41U] = sizeof(unsigned int);
-	buffer[42U] = (m_rxOOO << 24) & 0xFFU;
-	buffer[43U] = (m_rxOOO << 16) & 0xFFU;
-	buffer[44U] = (m_rxOOO << 8)  & 0xFFU;
-	buffer[45U] = (m_rxOOO << 0)  & 0xFFU;
+	buffer[42U] = (m_rxOOO >> 24) & 0xFFU;
+	buffer[43U] = (m_rxOOO >> 16) & 0xFFU;
+	buffer[44U] = (m_rxOOO >> 8)  & 0xFFU;
+	buffer[45U] = (m_rxOOO >> 0)  & 0xFFU;
 
 #if !defined(DEBUG_IAX)
 	if (m_debug)
@@ -808,16 +808,16 @@ bool CFMIAXNetwork::writeAck(unsigned int ts)
 
 	unsigned char buffer[15U];
 
-	buffer[0U] = (sCall << 8) & 0xFFU;
-	buffer[1U] = (sCall << 0) & 0xFFU;
+	buffer[0U] = (sCall >> 8) & 0xFFU;
+	buffer[1U] = (sCall >> 0) & 0xFFU;
 
-	buffer[2U] = (m_dCallNo << 8) & 0xFFU;
-	buffer[3U] = (m_dCallNo << 0) & 0xFFU;
+	buffer[2U] = (m_dCallNo >> 8) & 0xFFU;
+	buffer[3U] = (m_dCallNo >> 0) & 0xFFU;
 
-	buffer[4U] = (ts << 24) & 0xFFU;
-	buffer[5U] = (ts << 16) & 0xFFU;
-	buffer[6U] = (ts << 8)  & 0xFFU;
-	buffer[7U] = (ts << 0)  & 0xFFU;
+	buffer[4U] = (ts >> 24) & 0xFFU;
+	buffer[5U] = (ts >> 16) & 0xFFU;
+	buffer[6U] = (ts >> 8)  & 0xFFU;
+	buffer[7U] = (ts >> 0)  & 0xFFU;
 
 	buffer[8U] = m_oSeqNo;
 
@@ -846,16 +846,16 @@ bool CFMIAXNetwork::writeLagRp(unsigned int ts)
 
 	unsigned char buffer[15U];
 
-	buffer[0U] = (sCall << 8) & 0xFFU;
-	buffer[1U] = (sCall << 0) & 0xFFU;
+	buffer[0U] = (sCall >> 8) & 0xFFU;
+	buffer[1U] = (sCall >> 0) & 0xFFU;
 
-	buffer[2U] = (m_dCallNo << 8) & 0xFFU;
-	buffer[3U] = (m_dCallNo << 0) & 0xFFU;
+	buffer[2U] = (m_dCallNo >> 8) & 0xFFU;
+	buffer[3U] = (m_dCallNo >> 0) & 0xFFU;
 
-	buffer[4U] = (ts << 24) & 0xFFU;
-	buffer[5U] = (ts << 16) & 0xFFU;
-	buffer[6U] = (ts << 8)  & 0xFFU;
-	buffer[7U] = (ts << 0)  & 0xFFU;
+	buffer[4U] = (ts >> 24) & 0xFFU;
+	buffer[5U] = (ts >> 16) & 0xFFU;
+	buffer[6U] = (ts >> 8)  & 0xFFU;
+	buffer[7U] = (ts >> 0)  & 0xFFU;
 
 	buffer[8U] = m_oSeqNo;
 
@@ -887,16 +887,16 @@ bool CFMIAXNetwork::writeHangup()
 
 	unsigned char buffer[50U];
 
-	buffer[0U] = (sCall << 8) & 0xFFU;
-	buffer[1U] = (sCall << 0) & 0xFFU;
+	buffer[0U] = (sCall >> 8) & 0xFFU;
+	buffer[1U] = (sCall >> 0) & 0xFFU;
 
-	buffer[2U] = (m_dCallNo << 8) & 0xFFU;
-	buffer[3U] = (m_dCallNo << 0) & 0xFFU;
+	buffer[2U] = (m_dCallNo >> 8) & 0xFFU;
+	buffer[3U] = (m_dCallNo >> 0) & 0xFFU;
 
-	buffer[4U] = (ts << 24) & 0xFFU;
-	buffer[5U] = (ts << 16) & 0xFFU;
-	buffer[6U] = (ts << 8)  & 0xFFU;
-	buffer[7U] = (ts << 0)  & 0xFFU;
+	buffer[4U] = (ts >> 24) & 0xFFU;
+	buffer[5U] = (ts >> 16) & 0xFFU;
+	buffer[6U] = (ts >> 8)  & 0xFFU;
+	buffer[7U] = (ts >> 0)  & 0xFFU;
 
 	buffer[8U] = m_oSeqNo;
 
@@ -932,16 +932,16 @@ bool CFMIAXNetwork::writeRegReq()
 
 	unsigned char buffer[70U];
 
-	buffer[0U] = (sCall << 8) & 0xFFU;
-	buffer[1U] = (sCall << 0) & 0xFFU;
+	buffer[0U] = (sCall >> 8) & 0xFFU;
+	buffer[1U] = (sCall >> 0) & 0xFFU;
 
-	buffer[2U] = (m_dCallNo << 8) & 0xFFU;
-	buffer[3U] = (m_dCallNo << 0) & 0xFFU;
+	buffer[2U] = (m_dCallNo >> 8) & 0xFFU;
+	buffer[3U] = (m_dCallNo >> 0) & 0xFFU;
 
-	buffer[4U] = (ts << 24) & 0xFFU;
-	buffer[5U] = (ts << 16) & 0xFFU;
-	buffer[6U] = (ts << 8)  & 0xFFU;
-	buffer[7U] = (ts << 0)  & 0xFFU;
+	buffer[4U] = (ts >> 24) & 0xFFU;
+	buffer[5U] = (ts >> 16) & 0xFFU;
+	buffer[6U] = (ts >> 8)  & 0xFFU;
+	buffer[7U] = (ts >> 0)  & 0xFFU;
 
 	buffer[8U] = m_oSeqNo;
 
@@ -1053,16 +1053,16 @@ bool CFMIAXNetwork::writeAudio(const short* audio, unsigned int length)
 
 	unsigned char buffer[300U];
 
-	buffer[0U] = (sCall << 8) & 0xFFU;
-	buffer[1U] = (sCall << 0) & 0xFFU;
+	buffer[0U] = (sCall >> 8) & 0xFFU;
+	buffer[1U] = (sCall >> 0) & 0xFFU;
 
-	buffer[2U] = (m_dCallNo << 8) & 0xFFU;
-	buffer[3U] = (m_dCallNo << 0) & 0xFFU;
+	buffer[2U] = (m_dCallNo >> 8) & 0xFFU;
+	buffer[3U] = (m_dCallNo >> 0) & 0xFFU;
 
-	buffer[4U] = (ts << 24) & 0xFFU;
-	buffer[5U] = (ts << 16) & 0xFFU;
-	buffer[6U] = (ts << 8)  & 0xFFU;
-	buffer[7U] = (ts << 0)  & 0xFFU;
+	buffer[4U] = (ts >> 24) & 0xFFU;
+	buffer[5U] = (ts >> 16) & 0xFFU;
+	buffer[6U] = (ts >> 8)  & 0xFFU;
+	buffer[7U] = (ts >> 0)  & 0xFFU;
 
 	buffer[8U] = m_oSeqNo;
 
