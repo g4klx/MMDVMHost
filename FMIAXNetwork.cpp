@@ -183,7 +183,9 @@ bool CFMIAXNetwork::writeStart()
 	if (!m_enabled)
 		return false;
 
-	return writeKey(true);
+	short audio[160U];
+	::memset(audio, 0x00U, 160U * sizeof(short));
+	return writeAudio(audio, 160U);
 }
 
 bool CFMIAXNetwork::writeData(const float* data, unsigned int nSamples)
@@ -232,7 +234,8 @@ bool CFMIAXNetwork::writeEnd()
 	if (!m_enabled)
 		return false;
 
-	return writeKey(false);
+	// return writeKey(false);
+	return true;
 }
 
 void CFMIAXNetwork::clock(unsigned int ms)
@@ -450,10 +453,6 @@ void CFMIAXNetwork::clock(unsigned int ms)
 			return;
 
 		m_buffer.addData(buffer + 12U, length - 12U);
-
-		short audio[160U];
-		::memset(audio, 0x00U, 160U * sizeof(short));
-		writeAudio(audio, 160U);
 	} else if ((buffer[0U] & 0x80U) == 0x00U) {
 #if defined(DEBUG_IAX)
 		LogDebug("IAX audio received");
