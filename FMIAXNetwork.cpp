@@ -285,6 +285,7 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		CUtils::dump(1U, "FM IAX Network Data Received", buffer, length);
 
 	unsigned int ts = (buffer[4U] << 24) | (buffer[5U] << 16) | (buffer[6U] << 8) | (buffer[7U] << 0);
+	unsigned char iSeqNo = buffer[8U];
 
 	if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_ACK)) {
 #if defined(DEBUG_IAX)
@@ -298,6 +299,8 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		LogDebug("IAX PING received");
 #endif
 		m_rxFrames++;
+		m_iSeqNo = iSeqNo + 1U;
+
 		writeAck(ts);
 		writePong(ts);
 	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_PONG)) {
@@ -305,6 +308,8 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		LogDebug("IAX PONG received");
 #endif
 		m_rxFrames++;
+		m_iSeqNo = iSeqNo + 1U;
+
 		writeAck(ts);
 	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_ACCEPT)) {
 #if defined(DEBUG_IAX)
@@ -315,6 +320,8 @@ void CFMIAXNetwork::clock(unsigned int ms)
 			m_dCallNo = ((buffer[0U] << 8) | (buffer[1U] << 0)) & 0x7FFFU;
 
 		m_rxFrames++;
+		m_iSeqNo = iSeqNo + 1U;
+
 		writeAck(ts);
 		m_retryTimer.stop();
 	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_REGREJ)) {
@@ -340,6 +347,8 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		LogDebug("IAX RINGING received");
 #endif
 		m_rxFrames++;
+		m_iSeqNo = iSeqNo + 1U;
+
 		writeAck(ts);
 	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_REGAUTH)) {
 #if defined(DEBUG_IAX)
@@ -357,6 +366,8 @@ void CFMIAXNetwork::clock(unsigned int ms)
 			m_seed = std::string((char*)(buffer + 18U), buffer[17U]);
 
 			m_status = IAXS_REGISTERING;
+			m_iSeqNo = iSeqNo + 1U;
+
 			m_retryTimer.start();
 			writeRegReq();
 		}
@@ -376,6 +387,8 @@ void CFMIAXNetwork::clock(unsigned int ms)
 			m_seed = std::string((char*)(buffer + 18U), buffer[17U]);
 
 			m_status = IAXS_AUTHORISING;
+			m_iSeqNo = iSeqNo + 1U;
+
 			m_retryTimer.start();
 			writeAuthRep();
 		}
@@ -384,6 +397,8 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		LogDebug("IAX REGACK received");
 #endif
 		m_rxFrames++;
+		m_iSeqNo = iSeqNo + 1U;
+
 		writeAck(ts);
 
 		if (m_status == IAXS_CONNECTING)
@@ -393,6 +408,8 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		LogDebug("IAX HANGUP received");
 #endif
 		LogError("Hangup from the IAX gateway");
+		m_iSeqNo = iSeqNo + 1U;
+
 		writeAck(ts);
 
 		m_status = IAXS_DISCONNECTED;
@@ -406,6 +423,8 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		if (m_dCallNo == 0U)
 			m_dCallNo = ((buffer[0U] << 8) | (buffer[1U] << 0)) & 0x7FFFU;
 
+		m_iSeqNo = iSeqNo + 1U;
+
 		writeAck(ts);
 
 		m_rxFrames++;
@@ -417,29 +436,39 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		LogDebug("IAX VNAK received");
 #endif
 		m_rxFrames++;
+		m_iSeqNo = iSeqNo + 1U;
+
 		writeAck(ts);
 	} else if (compareFrame(buffer, AST_FRAME_CONTROL, AST_CONTROL_STOP_SOUNDS)) {
 #if defined(DEBUG_IAX)
 		LogDebug("IAX STOP SOUNDS received");
 #endif
 		m_rxFrames++;
+		m_iSeqNo = iSeqNo + 1U;
+
 		writeAck(ts);
 	} else if (compareFrame(buffer, AST_FRAME_CONTROL, AST_CONTROL_OPTION)) {
 #if defined(DEBUG_IAX)
 		LogDebug("IAX OPTION received");
 #endif
 		m_rxFrames++;
+		m_iSeqNo = iSeqNo + 1U;
+
 		writeAck(ts);
 	} else if (compareFrame(buffer, AST_FRAME_TEXT, 0U)) {
 #if defined(DEBUG_IAX)
 		LogDebug("IAX TEXT received - %s", buffer + 12U);
 #endif
+		m_iSeqNo = iSeqNo + 1U;
+
 		writeAck(ts);
 	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_LAGRQ)) {
 #if defined(DEBUG_IAX)
 		LogDebug("IAX LAGRQ received");
 #endif
 		m_rxFrames++;
+		m_iSeqNo = iSeqNo + 1U;
+
 		writeAck(ts);
 		writeLagRp(ts);
 	} else if (compareFrame(buffer, AST_FRAME_VOICE, AST_FORMAT_ULAW)) {
@@ -447,6 +476,8 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		LogDebug("IAX ULAW received");
 #endif
 		m_rxFrames++;
+		m_iSeqNo = iSeqNo + 1U;
+
 		writeAck(ts);
 
 		if (!m_enabled)
