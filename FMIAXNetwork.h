@@ -31,7 +31,6 @@
 enum IAX_STATUS {
 	IAXS_DISCONNECTED,
 	IAXS_CONNECTING,
-	IAXS_AUTHORISING,
 	IAXS_REGISTERING,
 	IAXS_CONNECTED
 };
@@ -86,15 +85,16 @@ private:
 	unsigned int        m_rxDropped;
 	unsigned int        m_rxOOO;
 
-	bool writeNew();
+	bool writeNew(bool retry);
 	bool writeAuthRep();
 	bool writeKey(bool key);
 	bool writePing();
 	bool writePong(unsigned int ts);
 	bool writeAck(unsigned int ts);
+	bool writeLagRq();
 	bool writeLagRp(unsigned int ts);
 	bool writeHangup();
-	bool writeRegReq();
+	bool writeRegReq(bool retry);
 	bool writeAudio(const short* audio, unsigned int length);
 
 	void uLawEncode(const short* audio, unsigned char* buffer, unsigned int length) const;
