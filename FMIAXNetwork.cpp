@@ -125,7 +125,8 @@ m_rxLoss(0U),
 m_rxFrames(0U),
 m_rxDelay(0U),
 m_rxDropped(0U),
-m_rxOOO(0U)
+m_rxOOO(0U),
+m_keyed(false)
 {
 	assert(!callsign.empty());
 	assert(!username.empty());
@@ -171,6 +172,7 @@ bool CFMIAXNetwork::open()
 
 	m_dCallNo  = 0U;
 	m_rxFrames = 0U;
+	m_keyed    = false;
 
 	return true;
 }
@@ -181,6 +183,10 @@ bool CFMIAXNetwork::writeStart()
 		return false;
 
 	if (!m_enabled)
+		return false;
+
+	bool ret = writeKey(true);
+	if (!ret)
 		return false;
 
 	short audio[160U];
@@ -234,8 +240,7 @@ bool CFMIAXNetwork::writeEnd()
 	if (!m_enabled)
 		return false;
 
-	// return writeKey(false);
-	return true;
+	return writeKey(false);
 }
 
 void CFMIAXNetwork::clock(unsigned int ms)
@@ -326,6 +331,10 @@ void CFMIAXNetwork::clock(unsigned int ms)
 #endif
 		LogError("Registraton rejected by the IAX gateway");
 
+		m_iSeqNo = iSeqNo + 1U;
+
+		writeAck(ts);
+
 		m_status = IAXS_DISCONNECTED;
 		m_retryTimer.stop();
 		m_pingTimer.stop();
@@ -334,6 +343,10 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		LogDebug("IAX REJECT received");
 #endif
 		LogError("Command rejected by the IAX gateway");
+
+		m_iSeqNo = iSeqNo + 1U;
+
+		writeAck(ts);
 
 		m_status = IAXS_DISCONNECTED;
 		m_retryTimer.stop();
@@ -414,10 +427,15 @@ void CFMIAXNetwork::clock(unsigned int ms)
 #if defined(DEBUG_IAX)
 		LogDebug("IAX VNAK received");
 #endif
-		m_rxFrames++;
+		LogError("Messages rejected by the IAX gateway");
+
 		m_iSeqNo = iSeqNo + 1U;
 
 		writeAck(ts);
+
+		m_status = IAXS_DISCONNECTED;
+		m_retryTimer.stop();
+		m_pingTimer.stop();
 	} else if (compareFrame(buffer, AST_FRAME_CONTROL, AST_CONTROL_STOP_SOUNDS)) {
 #if defined(DEBUG_IAX)
 		LogDebug("IAX STOP SOUNDS received");
@@ -451,6 +469,26 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		writeLagRq();
 		writeLagRp(ts);
 		writeAck(ts);
+	} else if (compareFrame(buffer, AST_FRAME_IAX, AST_CONTROL_KEY)) {
+#if defined(DEBUG_IAX)
+		LogDebug("IAX KEY received");
+#endif
+		m_rxFrames++;
+		m_iSeqNo = iSeqNo + 1U;
+
+		writeAck(ts);
+
+		m_keyed = true;
+	} else if (compareFrame(buffer, AST_FRAME_IAX, AST_CONTROL_UNKEY)) {
+#if defined(DEBUG_IAX)
+		LogDebug("IAX UNKEY received");
+#endif
+		m_rxFrames++;
+		m_iSeqNo = iSeqNo + 1U;
+
+		writeAck(ts);
+
+		m_keyed = false;
 	} else if (compareFrame(buffer, AST_FRAME_VOICE, AST_FORMAT_ULAW)) {
 #if defined(DEBUG_IAX)
 		LogDebug("IAX ULAW received");
@@ -463,6 +501,9 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		if (!m_enabled)
 			return;
 
+		if (!m_keyed)
+			return;
+
 		m_buffer.addData(buffer + 12U, length - 12U);
 	} else if ((buffer[0U] & 0x80U) == 0x00U) {
 #if defined(DEBUG_IAX)
@@ -471,9 +512,17 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		if (!m_enabled)
 			return;
 
+		if (!m_keyed)
+			return;
+
 		m_buffer.addData(buffer + 4U, length - 4U);
 	} else {
 		CUtils::dump(2U, "Unknown IAX message received", buffer, length);
+
+		m_rxFrames++;
+		m_iSeqNo = iSeqNo + 1U;
+
+		writeAck(ts);
 	}
 }
 
@@ -542,7 +591,9 @@ bool CFMIAXNetwork::writeNew(bool retry)
 
 	m_timestamp.start();
 
-	m_oSeqNo = m_iSeqNo = 0U;
+	m_oSeqNo  = m_iSeqNo = 0U;
+	m_dCallNo = 0U;
+	m_keyed   = false;
 
 	unsigned int length = 0U;
 
@@ -680,7 +731,7 @@ bool CFMIAXNetwork::writeKey(bool key)
 
 	buffer[9U] = m_iSeqNo;
 
-	buffer[10U] = AST_FRAME_CONTROL;
+	buffer[10U] = AST_FRAME_IAX;
 
 	buffer[11U] = key ? AST_CONTROL_KEY : AST_CONTROL_UNKEY;
 
