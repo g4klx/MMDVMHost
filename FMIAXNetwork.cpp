@@ -125,8 +125,7 @@ m_rxLoss(0U),
 m_rxFrames(0U),
 m_rxDelay(0U),
 m_rxDropped(0U),
-m_rxOOO(0U),
-m_keyed(false)
+m_rxOOO(0U)
 {
 	assert(!callsign.empty());
 	assert(!username.empty());
@@ -172,7 +171,6 @@ bool CFMIAXNetwork::open()
 
 	m_dCallNo  = 0U;
 	m_rxFrames = 0U;
-	m_keyed    = false;
 
 	return true;
 }
@@ -468,27 +466,14 @@ void CFMIAXNetwork::clock(unsigned int ms)
 
 		writeLagRq();
 		writeLagRp(ts);
-		writeAck(ts);
-	} else if (compareFrame(buffer, AST_FRAME_IAX, AST_CONTROL_KEY)) {
+	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_LAGRP)) {
 #if defined(DEBUG_IAX)
-		LogDebug("IAX KEY received");
+		LogDebug("IAX LAGRP received");
 #endif
 		m_rxFrames++;
 		m_iSeqNo = iSeqNo + 1U;
 
 		writeAck(ts);
-
-		m_keyed = true;
-	} else if (compareFrame(buffer, AST_FRAME_IAX, AST_CONTROL_UNKEY)) {
-#if defined(DEBUG_IAX)
-		LogDebug("IAX UNKEY received");
-#endif
-		m_rxFrames++;
-		m_iSeqNo = iSeqNo + 1U;
-
-		writeAck(ts);
-
-		m_keyed = false;
 	} else if (compareFrame(buffer, AST_FRAME_VOICE, AST_FORMAT_ULAW)) {
 #if defined(DEBUG_IAX)
 		LogDebug("IAX ULAW received");
@@ -501,18 +486,12 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		if (!m_enabled)
 			return;
 
-		if (!m_keyed)
-			return;
-
 		m_buffer.addData(buffer + 12U, length - 12U);
 	} else if ((buffer[0U] & 0x80U) == 0x00U) {
 #if defined(DEBUG_IAX)
 		LogDebug("IAX audio received");
 #endif
 		if (!m_enabled)
-			return;
-
-		if (!m_keyed)
 			return;
 
 		m_buffer.addData(buffer + 4U, length - 4U);
@@ -593,7 +572,6 @@ bool CFMIAXNetwork::writeNew(bool retry)
 
 	m_oSeqNo  = m_iSeqNo = 0U;
 	m_dCallNo = 0U;
-	m_keyed   = false;
 
 	unsigned int length = 0U;
 
@@ -731,7 +709,7 @@ bool CFMIAXNetwork::writeKey(bool key)
 
 	buffer[9U] = m_iSeqNo;
 
-	buffer[10U] = AST_FRAME_IAX;
+	buffer[10U] = AST_FRAME_CONTROL;
 
 	buffer[11U] = key ? AST_CONTROL_KEY : AST_CONTROL_UNKEY;
 
@@ -1031,6 +1009,9 @@ bool CFMIAXNetwork::writeRegReq(bool retry)
 		m_oSeqNo++;
 
 	unsigned short sCall = m_sCallNo | 0x8000U;
+	unsigned short dCall = m_dCallNo;
+	if (retry)
+		dCall |= 0x8000U;
 	unsigned int   ts    = m_timestamp.elapsed();
 
 	unsigned char buffer[70U];
@@ -1038,8 +1019,8 @@ bool CFMIAXNetwork::writeRegReq(bool retry)
 	buffer[0U] = (sCall >> 8) & 0xFFU;
 	buffer[1U] = (sCall >> 0) & 0xFFU;
 
-	buffer[2U] = (m_dCallNo >> 8) & 0xFFU;
-	buffer[3U] = (m_dCallNo >> 0) & 0xFFU;
+	buffer[2U] = (dCall >> 8) & 0xFFU;
+	buffer[3U] = (dCall >> 0) & 0xFFU;
 
 	buffer[4U] = (ts >> 24) & 0xFFU;
 	buffer[5U] = (ts >> 16) & 0xFFU;

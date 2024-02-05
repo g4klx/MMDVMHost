@@ -84,7 +84,6 @@ private:
 	unsigned short      m_rxDelay;
 	unsigned int        m_rxDropped;
 	unsigned int        m_rxOOO;
-	bool                m_keyed;
 
 	bool writeNew(bool retry);
 	bool writeAuthRep();
