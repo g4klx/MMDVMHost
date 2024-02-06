@@ -444,15 +444,10 @@ void CFMIAXNetwork::clock(unsigned int ms)
 #endif
 		LogError("Messages rejected by the IAX gateway");
 
+		m_rxFrames++;
 		m_iSeqNo = iSeqNo + 1U;
 
 		writeAck(ts);
-
-		m_status = IAXS_DISCONNECTED;
-		m_keyed  = false;
-
-		m_retryTimer.stop();
-		m_pingTimer.stop();
 	} else if (compareFrame(buffer, AST_FRAME_CONTROL, AST_CONTROL_STOP_SOUNDS)) {
 #if defined(DEBUG_IAX)
 		CUtils::dump(1U, "FM IAX Network Data Received", buffer, length);
@@ -896,8 +891,6 @@ bool CFMIAXNetwork::writeAck(unsigned int ts)
 #if defined(DEBUG_IAX)
 	LogDebug("IAX ACK sent");
 #endif
-	m_oSeqNo++;
-
 	unsigned short sCall = m_sCallNo | 0x8000U;
 
 	unsigned char buffer[15U];
