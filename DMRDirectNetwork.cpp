@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017,2018,2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017,2018,2020,2021,2024 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -72,6 +72,9 @@ m_beacon(false)
 	assert(id > 1000U);
 	assert(!password.empty());
 
+	if (CUDPSocket::lookup(m_address, m_port, m_addr, m_addrLen) != 0)
+		m_addrLen = 0U;
+
 	m_buffer   = new unsigned char[BUFFER_LENGTH];
 	m_salt     = new unsigned char[sizeof(uint32_t)];
 	m_id       = new uint8_t[4U];
@@ -121,18 +124,18 @@ void CDMRDirectNetwork::setConfig(const std::string& callsign, unsigned int rxFr
 
 bool CDMRDirectNetwork::open()
 {
-	if (CUDPSocket::lookup(m_address, m_port, m_addr, m_addrLen) != 0) {
+	if (m_addrLen == 0U) {
 		LogError("DMR, Could not lookup the address of the DMR Network");
 		return false;
 	}
 
-	LogMessage("Opening DMR Network");
+	LogMessage("DMR, Opening DMR Network");
 
 	m_status = WAITING_CONNECT;
 	m_timeoutTimer.stop();
 	m_retryTimer.start();
 
-	return true;
+	return m_socket.open(m_addr);
 }
 
 void CDMRDirectNetwork::enable(bool enabled)
@@ -323,7 +326,7 @@ bool CDMRDirectNetwork::isConnected() const
 
 void CDMRDirectNetwork::close(bool sayGoodbye)
 {
-	LogMessage("Closing DMR Network");
+	LogMessage("DMR, Closing DMR Network");
 
 	if (sayGoodbye && (m_status == RUNNING)) {
 		unsigned char buffer[9U];
@@ -344,11 +347,8 @@ void CDMRDirectNetwork::clock(unsigned int ms)
 	if (m_retryTimer.isRunning() && m_retryTimer.hasExpired()) {
 		switch (m_status) {
 		case WAITING_CONNECT:
-			if (m_socket.open(m_addr)) {
-				if (writeLogin()) {
-					m_status = WAITING_LOGIN;
-				}
-			}
+			writeLogin();
+			m_status = WAITING_LOGIN;
 			break;
 		case WAITING_LOGIN:
 			writeLogin();

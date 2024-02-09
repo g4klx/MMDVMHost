@@ -387,7 +387,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			// Regenerate NID
 			m_nid.encode(data + 2U, P25_DUID_LDU2);
 
-			// Add the dummy LDU2 data
+			// Add the LDU2 data
 			m_rfData.encodeLDU2(data + 2U);
 
 			// Regenerate the Low Speed Data
@@ -997,7 +997,7 @@ void CP25Control::createRFHeader()
 	// Add the NID
 	m_nid.encode(buffer + 2U, P25_DUID_HEADER);
 
-	// Add the dummy header
+	// Add the header
 	m_rfData.encodeHeader(buffer + 2U);
 
 	// Add busy bits, inbound busy
@@ -1032,18 +1032,18 @@ void CP25Control::createNetHeader()
 	unsigned int dstId = (m_netLDU1[76U] << 16) + (m_netLDU1[77U] << 8) + m_netLDU1[78U];
 	unsigned int srcId = (m_netLDU1[101U] << 16) + (m_netLDU1[102U] << 8) + m_netLDU1[103U];
 
-	unsigned char algId = m_netLDU2[126U];
-	unsigned int    kId = (m_netLDU2[127U] << 8) + m_netLDU2[128U];
+//	unsigned char algId = m_netLDU2[126U];
+//	unsigned int    kId = (m_netLDU2[127U] << 8) + m_netLDU2[128U];
 
-	unsigned char mi[P25_MI_LENGTH_BYTES];
-	::memcpy(mi + 0U, m_netLDU2 + 51U, 3U);
-	::memcpy(mi + 3U, m_netLDU2 + 76U, 3U);
-	::memcpy(mi + 6U, m_netLDU2 + 101U, 3U);
+//	unsigned char mi[P25_MI_LENGTH_BYTES];
+//	::memcpy(mi + 0U, m_netLDU2 + 51U, 3U);
+//	::memcpy(mi + 3U, m_netLDU2 + 76U, 3U);
+//	::memcpy(mi + 6U, m_netLDU2 + 101U, 3U);
 
 	m_netData.reset();
-	m_netData.setMI(mi);
-	m_netData.setAlgId(algId);
-	m_netData.setKId(kId);
+//	m_netData.setMI(mi);
+//	m_netData.setAlgId(algId);
+//	m_netData.setKId(kId);
 	m_netData.setLCF(lcf);
 	m_netData.setMFId(mfId);
 	m_netData.setSrcId(srcId);
@@ -1072,7 +1072,7 @@ void CP25Control::createNetHeader()
 	// Add the NID
 	m_nid.encode(buffer + 2U, P25_DUID_HEADER);
 
-	// Add the dummy header
+	// Add the header
 	m_netData.encodeHeader(buffer + 2U);
 
 	// Add busy bits
@@ -1158,7 +1158,7 @@ void CP25Control::createNetLDU2()
 	// Add the NID
 	m_nid.encode(buffer + 2U, P25_DUID_LDU2);
 
-	// Add the dummy LDU2 data
+	// Add the LDU2 data
 	m_netData.encodeLDU2(buffer + 2U);
 
 	// Add the Audio

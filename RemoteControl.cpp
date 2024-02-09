@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2019,2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2019,2020,2021,2024 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -36,10 +36,15 @@ const unsigned int BUFFER_LENGTH = 100U;
 CRemoteControl::CRemoteControl(CMMDVMHost *host, const std::string address, unsigned int port) :
 m_host(host),
 m_socket(address, port),
+m_addr(),
+m_addrLen(0U),
 m_command(RCD_NONE),
 m_args()
 {
 	assert(port > 0U);
+
+	if (CUDPSocket::lookup(address, port, m_addr, m_addrLen) != 0)
+		m_addrLen = 0U;
 }
 
 CRemoteControl::~CRemoteControl()
@@ -48,7 +53,12 @@ CRemoteControl::~CRemoteControl()
 
 bool CRemoteControl::open()
 {
-	return m_socket.open();
+	if (m_addrLen == 0U) {
+		LogError("Unable to resolve the address of the remote control port");
+		return false;
+	}
+
+	return m_socket.open(m_addr);
 }
 
 REMOTE_COMMAND CRemoteControl::getCommand()

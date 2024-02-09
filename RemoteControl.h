@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2019,2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2019,2020,2021,2024 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -83,6 +83,8 @@ public:
 private:
 	CMMDVMHost*              m_host;
 	CUDPSocket               m_socket;
+	sockaddr_storage         m_addr;
+	unsigned int             m_addrLen;
 	REMOTE_COMMAND           m_command;
 	std::vector<std::string> m_args;
 };
