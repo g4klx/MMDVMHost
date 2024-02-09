@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2017,2023 by Jonathan Naylor G4KLX
 *   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com> N2PLL
 *
 *   This program is free software; you can redistribute it and/or modify
@@ -38,7 +38,7 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 CP25Data::CP25Data() :
 m_mi(NULL),
 m_mfId(0U),
-m_algId(0x80U),
+m_algId(P25_ALGO_UNENCRYPT),
 m_kId(0U),
 m_lcf(0x00U),
 m_emergency(false),
@@ -48,6 +48,7 @@ m_rs241213(),
 m_trellis()
 {
 	m_mi = new unsigned char[P25_MI_LENGTH_BYTES];
+	::memset(m_mi, 0x00U, P25_MI_LENGTH_BYTES);
 }
 
 CP25Data::~CP25Data()
@@ -66,7 +67,7 @@ CP25Data& CP25Data::operator=(const CP25Data& data)
 		m_emergency = data.m_emergency;
 
 		m_algId = data.m_algId;
-		m_kId = data.m_kId;
+		m_kId   = data.m_kId;
 
 		::memcpy(m_mi, data.m_mi, P25_MI_LENGTH_BYTES);
 	}
@@ -97,20 +98,19 @@ bool CP25Data::decodeHeader(const unsigned char* data)
 	}
 
 	m_mfId  = rs[9U];						// Mfg Id.
+/*
 	m_algId = rs[10U];						// Algorithm ID
 
 	if (m_algId != P25_ALGO_UNENCRYPT) {
-		m_mi = new unsigned char[P25_MI_LENGTH_BYTES];
 		::memcpy(m_mi, rs, P25_MI_LENGTH_BYTES);		// Message Indicator
 
-		m_kId = (rs[11U] << 8) + rs[12U];			// Key ID
+		m_kId = (rs[11U] << 8) | (rs[12U] << 0);		// Key ID
 	} else {
-		m_mi = new unsigned char[P25_MI_LENGTH_BYTES];
 		::memset(m_mi, 0x00U, P25_MI_LENGTH_BYTES);
 
 		m_kId = 0x0000U;
 	}
-
+*/
 	return true;
 }
 
@@ -291,21 +291,20 @@ bool CP25Data::decodeLDU2(const unsigned char* data)
 		CUtils::dump(2U, "P25, RS crashed with input data", rs, 18U);
 		return false;
 	}
+/*
+	m_algId = rs[9U];                                                    // Algorithm ID
 
-	m_algId = rs[9U];                                                               // Algorithm ID
 	if (m_algId != P25_ALGO_UNENCRYPT) {
-		m_mi = new unsigned char[P25_MI_LENGTH_BYTES];
-		::memcpy(m_mi, rs, P25_MI_LENGTH_BYTES);                                    // Message Indicator
+		::memcpy(m_mi, rs, P25_MI_LENGTH_BYTES);                     // Message Indicator
 
-		m_kId = (rs[10U] << 8) + rs[11U];                                           // Key ID
+		m_kId = (rs[10U] << 8) + rs[11U];                            // Key ID
 	}
 	else {
-		m_mi = new unsigned char[P25_MI_LENGTH_BYTES];
 		::memset(m_mi, 0x00U, P25_MI_LENGTH_BYTES);
 
 		m_kId = 0x0000U;
 	}
-
+*/
 	return true;
 }
 
@@ -318,11 +317,11 @@ void CP25Data::encodeLDU2(unsigned char* data)
 	::memset(rs, 0x00U, 18U);
 
 	for (unsigned int i = 0; i < P25_MI_LENGTH_BYTES; i++)
-		rs[i] = m_mi[i];                                                            // Message Indicator
+		rs[i] = m_mi[i];                                             // Message Indicator
 
-	rs[9U] = m_algId;                                                               // Algorithm ID
-	rs[10U] = (m_kId >> 8) & 0xFFU;                                                 // Key ID MSB
-	rs[11U] = (m_kId >> 0) & 0xFFU;                                                 // Key ID LSB
+	rs[9U]  = m_algId;                                                   // Algorithm ID
+	rs[10U] = (m_kId >> 8) & 0xFFU;                                      // Key ID MSB
+	rs[11U] = (m_kId >> 0) & 0xFFU;                                      // Key ID LSB
 
 	// encode RS (24,16,9) FEC
 	m_rs241213.encode24169(rs);
@@ -370,7 +369,7 @@ bool CP25Data::decodeTSDU(const unsigned char* data)
         return false;
     }   
 
-    m_lcf = tsbk[0U] & 0x3F;
+    m_lcf  = tsbk[0U] & 0x3F;
     m_mfId = tsbk[1U];
 
     unsigned long long tsbkValue = 0U; 
@@ -556,7 +555,7 @@ void CP25Data::reset()
 {
 	::memset(m_mi, 0x00U, P25_MI_LENGTH_BYTES);
 
-	m_algId = 0x80U;
+	m_algId = P25_ALGO_UNENCRYPT;
 	m_kId   = 0x0000U;
 	m_lcf   = P25_LCF_GROUP;
 	m_mfId  = 0x00U;
