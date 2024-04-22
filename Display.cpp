@@ -22,6 +22,7 @@
 #include "ModemSerialPort.h"
 #include "NullDisplay.h"
 #include "TFTSurenoo.h"
+#include "UDPSocket.h"
 #include "LCDproc.h"
 #include "Nextion.h"
 #include "CASTInfo.h"

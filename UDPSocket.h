@@ -16,7 +16,7 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef UDPSocket_H
+#if !defined(UDPSocket_H)
 #define UDPSocket_H
 
 #include <string>
