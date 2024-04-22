@@ -38,7 +38,8 @@
 #include <net/route.h>
 #endif
 #elif defined(_WIN32) || defined(_WIN64)
-#include <ws2tcpip.h>
+// #include <ws2tcpip.h>
+// #include <WinSock2.h>
 #include <iphlpapi.h>
 #pragma comment(lib, "iphlpapi.lib")
 #ifndef NO_ERROR

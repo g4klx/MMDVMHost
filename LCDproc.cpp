@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2016,2017,2018 by Tony Corbett G0WFV
- *   Copyright (C) 2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2018,2020,2024 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -73,6 +73,7 @@
 #include <stdarg.h>
 #else
 #include <ws2tcpip.h>
+#include <WinSock2.h>
 #endif
 
 #define BUFFER_MAX_LEN 128
@@ -670,15 +671,19 @@ void CLCDproc::clockInt(unsigned int ms)
 	 * exceptfds = we are not waiting for exception fds
 	 */
 
-	if (select(m_socketfd + 1, &m_readfds, NULL, NULL, &m_timeout) == -1)
+	if (select(m_socketfd + 1, &m_readfds, NULL, NULL, &m_timeout) == -1) {
 		LogError("LCDproc, error on select");
+		return;
+	}
 
 	// If something was received from the server...
 	if (FD_ISSET(m_socketfd, &m_readfds)) {
 		m_recvsize = recv(m_socketfd, m_buffer, BUFFER_MAX_LEN, 0);
 
-		if (m_recvsize == -1)
+		if (m_recvsize == -1) {
 			LogError("LCDproc, cannot receive information");
+			return;
+		}
 
 		m_buffer[m_recvsize] = '\0';
 

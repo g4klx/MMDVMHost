@@ -20,6 +20,7 @@
 #if !defined(LCDproc_H)
 #define	LCDproc_H
 
+#include "UDPSocket.h"
 #include "Display.h"
 #include "Timer.h"
 

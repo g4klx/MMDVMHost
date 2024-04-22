@@ -21,6 +21,7 @@
 
 #include "Timer.h"
 #include "UserDBentry.h"
+#include "UDPSocket.h"
 #include "Modem.h"
 
 #include <string>

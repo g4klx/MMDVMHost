@@ -67,7 +67,7 @@ private:
 	unsigned int        m_seqNo;
 	SRC_STATE*          m_resampler;
 	int                 m_error;
-	int                 m_fd;
+	FILE*               m_fp;
 
 	bool writeUSRPStart();
 	bool writeRawStart();

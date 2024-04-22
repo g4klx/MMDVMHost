@@ -19,6 +19,8 @@
 #if !defined(NETWORKINFO_H)
 #define	NETWORKINFO_H
 
+#include "UDPSocket.h"
+
 class CNetworkInfo {
 public:
 	CNetworkInfo();

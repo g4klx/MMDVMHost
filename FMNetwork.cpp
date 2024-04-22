@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021,2023 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2023,2024 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -28,7 +28,6 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <unistd.h>
 
 const unsigned int MMDVM_SAMPLERATE = 8000U;
 
@@ -48,7 +47,7 @@ m_buffer(2000U, "FM Network"),
 m_seqNo(0U),
 m_resampler(NULL),
 m_error(0),
-m_fd(-1)
+m_fp(NULL)
 {
 	assert(!callsign.empty());
 	assert(gatewayPort > 0U);
@@ -86,9 +85,13 @@ bool CFMNetwork::open()
 	LogMessage("Opening FM network connection");
 
 	if (!m_squelchFile.empty()) {
-		m_fd = ::open(m_squelchFile.c_str(), O_WRONLY | O_SYNC);
-		if (m_fd == -1) {
+		m_fp = ::fopen(m_squelchFile.c_str(), "wb");
+		if (m_fp == NULL) {
+#if !defined(_WIN32) && !defined(_WIN64)
 			LogError("Cannot open the squelch file: %s, errno=%d", m_squelchFile.c_str(), errno);
+#else
+			LogError("Cannot open the squelch file: %s, errno=%lu", m_squelchFile.c_str(), ::GetLastError());
+#endif
 			return false;
 		}
 	}
@@ -316,12 +319,18 @@ bool CFMNetwork::writeRawEnd()
 {
 	m_seqNo = 0U;
 
-	if (m_fd != -1) {
-		size_t n = ::write(m_fd, "Z", 1);
+	if (m_fp != NULL) {
+		size_t n = ::fwrite("Z", 1, 1, m_fp);
 		if (n != 1) {
+#if !defined(_WIN32) && !defined(_WIN64)
 			LogError("Cannot write to the squelch file: %s, errno=%d", m_squelchFile.c_str(), errno);
+#else
+			LogError("Cannot write to the squelch file: %s, errno=%lu", m_squelchFile.c_str(), ::GetLastError());
+#endif
 			return false;
 		}
+
+		::fflush(m_fp);
 	}
 
 	return true;
@@ -442,9 +451,9 @@ void CFMNetwork::close()
 {
 	m_socket.close();
 
-	if (m_fd != -1) {
-		::close(m_fd);
-		m_fd = -1;
+	if (m_fp != NULL) {
+		::fclose(m_fp);
+		m_fp = NULL;
 	}
 
 	LogMessage("Closing FM network connection");
@@ -559,12 +568,18 @@ bool CFMNetwork::writeUSRPStart()
 
 bool CFMNetwork::writeRawStart()
 {
-	if (m_fd != -1) {
-		size_t n = ::write(m_fd, "O", 1);
+	if (m_fp != NULL) {
+		size_t n = ::fwrite("O", 1, 1, m_fp);
 		if (n != 1) {
+#if !defined(_WIN32) && !defined(_WIN64)
 			LogError("Cannot write to the squelch file: %s, errno=%d", m_squelchFile.c_str(), errno);
+#else
+			LogError("Cannot write to the squelch file: %s, errno=%lu", m_squelchFile.c_str(), ::GetLastError());
+#endif
 			return false;
 		}
+
+		::fflush(m_fp);
 	}
 
 	return true;
