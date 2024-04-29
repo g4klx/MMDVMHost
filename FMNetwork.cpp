@@ -45,7 +45,9 @@ m_debug(debug),
 m_enabled(false),
 m_buffer(2000U, "FM Network"),
 m_seqNo(0U),
+#if defined(HAS_SRC)
 m_resampler(NULL),
+#endif
 m_error(0),
 m_fp(NULL)
 {
@@ -67,12 +69,16 @@ m_fp(NULL)
 	else
 		m_protocol = FMNP_USRP;
 
+#if defined(HAS_SRC)
 	m_resampler = ::src_new(SRC_SINC_FASTEST, 1, &m_error);
+#endif
 }
 
 CFMNetwork::~CFMNetwork()
 {
+#if defined(HAS_SRC)
 	::src_delete(m_resampler);
+#endif
 }
 
 bool CFMNetwork::open()
@@ -84,16 +90,23 @@ bool CFMNetwork::open()
 
 	LogMessage("Opening FM network connection");
 
-	if (!m_squelchFile.empty()) {
-		m_fp = ::fopen(m_squelchFile.c_str(), "wb");
-		if (m_fp == NULL) {
+	if (m_protocol == FMNP_RAW) {
+		if (!m_squelchFile.empty()) {
+			m_fp = ::fopen(m_squelchFile.c_str(), "wb");
+			if (m_fp == NULL) {
 #if !defined(_WIN32) && !defined(_WIN64)
-			LogError("Cannot open the squelch file: %s, errno=%d", m_squelchFile.c_str(), errno);
+				LogError("Cannot open the squelch file: %s, errno=%d", m_squelchFile.c_str(), errno);
 #else
-			LogError("Cannot open the squelch file: %s, errno=%lu", m_squelchFile.c_str(), ::GetLastError());
+				LogError("Cannot open the squelch file: %s, errno=%lu", m_squelchFile.c_str(), ::GetLastError());
 #endif
-			return false;
+				return false;
+			}
 		}
+	}
+
+	if ((m_protocol == FMNP_RAW) && (m_sampleRate != MMDVM_SAMPLERATE)) {
+		LogError("The resampler needed for non-native sample rates has not been included");
+		return false;
 	}
 
 	return m_socket.open(m_addr);
@@ -201,6 +214,7 @@ bool CFMNetwork::writeRawData(const float* in, unsigned int nIn)
 
 	unsigned int length = 0U;
 
+#if defined(HAS_SRC)
 	if (m_sampleRate != MMDVM_SAMPLERATE) {
 		unsigned int nOut = (nIn * m_sampleRate) / MMDVM_SAMPLERATE;
 
@@ -227,13 +241,16 @@ bool CFMNetwork::writeRawData(const float* in, unsigned int nIn)
 			buffer[length++] = (val >> 8) & 0xFFU;
 		}
 	} else {
+#endif
 		for (unsigned int i = 0U; i < nIn; i++) {
 			short val = short(in[i] * 32767.0F + 0.5F);	// Changing audio format from float to S16LE
 
 			buffer[length++] = (val >> 0) & 0xFFU;
 			buffer[length++] = (val >> 8) & 0xFFU;
 		}
+#if defined(HAS_SRC)
 	}
+#endif
 
 	if (m_debug)
 		CUtils::dump(1U, "FM Network Data Sent", buffer, length);
@@ -395,6 +412,7 @@ unsigned int CFMNetwork::readData(float* out, unsigned int nOut)
 	if (bytes == 0U)
 		return 0U;
 
+#if defined(HAS_SRC)
 	if ((m_protocol == FMNP_RAW) && (m_sampleRate != MMDVM_SAMPLERATE)) {
 		unsigned int nIn = (nOut * m_sampleRate) / MMDVM_SAMPLERATE;
 
@@ -427,6 +445,7 @@ unsigned int CFMNetwork::readData(float* out, unsigned int nOut)
 			return false;
 		}
 	} else {
+#endif
 		if (bytes < nOut)
 			nOut = bytes;
 
@@ -437,7 +456,9 @@ unsigned int CFMNetwork::readData(float* out, unsigned int nOut)
 			short val = ((buffer[i * 2U + 0U] & 0xFFU) << 0) + ((buffer[i * 2U + 1U] & 0xFFU) << 8);
 			out[i] = float(val) / 65536.0F;
 		}
+#if defined(HAS_SRC)
 	}
+#endif
 
 	return nOut;
 }
