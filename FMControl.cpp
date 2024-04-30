@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2024 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -48,13 +48,13 @@ m_filterStage3(NULL)
     assert(txAudioGain > 0.0F);
     assert(rxAudioGain > 0.0F);
 
-    m_preEmphasis  = new CIIRDirectForm1Filter(8.315375384336983F, -7.03334621603483F,0.0F,1.0F, 0.282029168302153F,0.0F, PREEMPHASIS_GAIN_DB);
-    m_deEmphasis   = new CIIRDirectForm1Filter(0.07708787090460224F, 0.07708787090460224F,0.0F, 1.0F, -0.8458242581907955F,0.0F, DEEMPHASIS_GAIN_DB);
+    m_preEmphasis  = new CIIR(8.315375384336983F,  -7.03334621603483F,0.0F,    1.0F,  0.282029168302153F,  0.0F, PREEMPHASIS_GAIN_DB);
+    m_deEmphasis   = new CIIR(0.07708787090460224F, 0.07708787090460224F,0.0F, 1.0F, -0.8458242581907955F, 0.0F, DEEMPHASIS_GAIN_DB);
 
     // Chebyshev type 1 0.2dB cheby type 1 3rd order 300-2700Hz fs=8000
-    m_filterStage1 = new CIIRDirectForm1Filter(0.29495028f, 0.0f, -0.29495028f, 1.0f, -0.61384624f, -0.057158668f, FILTER_GAIN_DB);
-    m_filterStage2 = new CIIRDirectForm1Filter(1.0f, 2.0f, 1.0f, 1.0f, 0.9946123f, 0.6050482f, FILTER_GAIN_DB);
-    m_filterStage3 = new CIIRDirectForm1Filter(1.0f, -2.0f, 1.0f, 1.0f, -1.8414584f, 0.8804949f, FILTER_GAIN_DB);
+    m_filterStage1 = new CIIR(0.29495028f, 0.0f,  -0.29495028f, 1.0f, -0.61384624f, -0.057158668f, FILTER_GAIN_DB);
+    m_filterStage2 = new CIIR(1.0f,        2.0f,  1.0f,         1.0f, 0.9946123f,   0.6050482f,    FILTER_GAIN_DB);
+    m_filterStage3 = new CIIR(1.0f,        -2.0f, 1.0f,         1.0f, -1.8414584f,  0.8804949f,    FILTER_GAIN_DB);
 }
 
 CFMControl::~CFMControl()

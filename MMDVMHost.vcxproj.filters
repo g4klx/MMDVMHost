@@ -317,7 +317,7 @@
     <ClInclude Include="FMControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IIRDirectForm1Filter.h">
+    <ClInclude Include="IIR.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PseudoTTYController.h">
@@ -625,7 +625,7 @@
     <ClCompile Include="FMControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="IIRDirectForm1Filter.cpp">
+    <ClCompile Include="IIR.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PseudoTTYController.cpp">

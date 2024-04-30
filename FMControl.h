@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2024 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 
 #include "FMNetwork.h"
 #include "Defines.h"
-#include "IIRDirectForm1Filter.h"
+#include "IIR.h"
 
 // Uncomment this to dump audio to a raw audio file
 // The file will be written in same folder as executable
@@ -49,11 +49,11 @@ private:
 	bool        m_deEmphasisOn;
     bool        m_enabled;
 	CRingBuffer<unsigned char> m_incomingRFAudio;
-	CIIRDirectForm1Filter* m_preEmphasis;
-	CIIRDirectForm1Filter* m_deEmphasis;
-	CIIRDirectForm1Filter* m_filterStage1;
-	CIIRDirectForm1Filter* m_filterStage2;
-	CIIRDirectForm1Filter* m_filterStage3;
+	CIIR*       m_preEmphasis;
+	CIIR*       m_deEmphasis;
+	CIIR*       m_filterStage1;
+	CIIR*       m_filterStage2;
+	CIIR*       m_filterStage3;
 };
 
 #endif

@@ -204,7 +204,7 @@
     <ClInclude Include="Golay24128.h" />
     <ClInclude Include="Hamming.h" />
     <ClInclude Include="DMRLookup.h" />
-    <ClInclude Include="IIRDirectForm1Filter.h" />
+    <ClInclude Include="IIR.h" />
     <ClInclude Include="LCDproc.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="M17Control.h" />
@@ -315,7 +315,7 @@
     <ClCompile Include="Golay2087.cpp" />
     <ClCompile Include="Golay24128.cpp" />
     <ClCompile Include="Hamming.cpp" />
-    <ClCompile Include="IIRDirectForm1Filter.cpp" />
+    <ClCompile Include="IIR.cpp" />
     <ClCompile Include="LCDproc.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="M17Control.cpp" />
