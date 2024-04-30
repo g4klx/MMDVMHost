@@ -18,6 +18,7 @@
 
 #include "FIR.h"
 
+#include <cstddef>
 #include <cassert>
 
 CFIR::CFIR(const float* taps, unsigned int count) :
