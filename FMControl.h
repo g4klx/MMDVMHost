@@ -22,6 +22,7 @@
 #include "FMNetwork.h"
 #include "Defines.h"
 #include "IIR.h"
+#include "FIR.h"
 
 // Uncomment this to dump audio to a raw audio file
 // The file will be written in same folder as executable
@@ -49,11 +50,9 @@ private:
 	bool        m_deEmphasisOn;
     bool        m_enabled;
 	CRingBuffer<unsigned char> m_incomingRFAudio;
-	CIIR*       m_preEmphasis;
-	CIIR*       m_deEmphasis;
-	CIIR*       m_filterStage1;
-	CIIR*       m_filterStage2;
-	CIIR*       m_filterStage3;
+	CIIR        m_preEmphasis;
+	CIIR        m_deEmphasis;
+	CFIR        m_filter;
 };
 
 #endif

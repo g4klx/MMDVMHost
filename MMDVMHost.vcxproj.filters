@@ -350,6 +350,9 @@
     <ClInclude Include="SMeter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FIR.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -656,6 +659,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SMeter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FIR.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
