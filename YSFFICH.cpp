@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2019,2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2019,2020,2021,2024 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -178,6 +178,11 @@ unsigned char CYSFFICH::getFI() const
 	return (m_fich[0U] >> 6) & 0x03U;
 }
 
+unsigned char CYSFFICH::getCS() const
+{
+	return (m_fich[0U] >> 4) & 0x03U;
+}
+
 unsigned char CYSFFICH::getCM() const
 {
 	return (m_fich[0U] >> 2) & 0x03U;
@@ -203,9 +208,9 @@ unsigned char CYSFFICH::getFT() const
 	return m_fich[1U] & 0x07U;
 }
 
-unsigned char CYSFFICH::getDT() const
+bool CYSFFICH::getDev() const
 {
-	return m_fich[2U] & 0x03U;
+	return (m_fich[2U] & 0x40U) == 0x40U;
 }
 
 unsigned char CYSFFICH::getMR() const
@@ -213,9 +218,14 @@ unsigned char CYSFFICH::getMR() const
 	return (m_fich[2U] >> 3) & 0x03U;
 }
 
-bool CYSFFICH::getDev() const
+bool CYSFFICH::getVoIP() const
 {
-	return (m_fich[2U] & 0x40U) == 0x40U;
+	return (m_fich[2U] & 0x04U) == 0x04U;
+}
+
+unsigned char CYSFFICH::getDT() const
+{
+	return m_fich[2U] & 0x03U;
 }
 
 unsigned char CYSFFICH::getDGId() const
@@ -227,6 +237,18 @@ void CYSFFICH::setFI(unsigned char fi)
 {
 	m_fich[0U] &= 0x3FU;
 	m_fich[0U] |= (fi << 6) & 0xC0U;
+}
+
+void CYSFFICH::setCS(unsigned char cs)
+{
+	m_fich[0U] &= 0xCFU;
+	m_fich[0U] |= (cs << 4) & 0x30U;
+}
+
+void CYSFFICH::setCM(unsigned char cm)
+{
+	m_fich[0U] &= 0xF3U;
+	m_fich[0U] |= (cm << 2) & 0x0CU;
 }
 
 void CYSFFICH::setBN(unsigned char bn)
@@ -253,6 +275,14 @@ void CYSFFICH::setFT(unsigned char ft)
 	m_fich[1U] |= ft & 0x07U;
 }
 
+void CYSFFICH::setDev(bool on)
+{
+	if (on)
+		m_fich[2U] |= 0x40U;
+	else
+		m_fich[2U] &= 0xBFU;
+}
+
 void CYSFFICH::setMR(unsigned char mr)
 {
 	m_fich[2U] &= 0xC7U;
@@ -267,12 +297,10 @@ void CYSFFICH::setVoIP(bool on)
 		m_fich[2U] &= 0xFBU;
 }
 
-void CYSFFICH::setDev(bool on)
+void CYSFFICH::setDT(unsigned char dt)
 {
-	if (on)
-		m_fich[2U] |= 0x40U;
-	else
-		m_fich[2U] &= 0xBFU;
+	m_fich[2U] &= 0xFCU;
+	m_fich[2U] |= dt & 0x03U;
 }
 
 void CYSFFICH::setDGId(unsigned char id)

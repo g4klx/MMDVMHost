@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2019,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2019,2020,2024 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -30,24 +30,29 @@ public:
 	void encode(unsigned char* bytes);
 
 	unsigned char getFI() const;
+	unsigned char getCS() const;
 	unsigned char getCM() const;
 	unsigned char getBN() const;
 	unsigned char getBT() const;
 	unsigned char getFN() const;
 	unsigned char getFT() const;
-	unsigned char getDT() const;
+	bool          getDev() const;
 	unsigned char getMR() const;
-	bool getDev() const;
+	bool          getVoIP() const;
+	unsigned char getDT() const;
 	unsigned char getDGId() const;
 
 	void setFI(unsigned char fi);
+	void setCS(unsigned char cs);
+	void setCM(unsigned char cm);
 	void setBN(unsigned char bn);
 	void setBT(unsigned char bt);
 	void setFN(unsigned char fn);
 	void setFT(unsigned char ft);
+	void setDev(bool set);
 	void setMR(unsigned char mr);
 	void setVoIP(bool set);
-	void setDev(bool set);
+	void setDT(unsigned char dt);
 	void setDGId(unsigned char id);
 
 	CYSFFICH& operator=(const CYSFFICH& fich);
