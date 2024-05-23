@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021,2023 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2023,2024 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,13 +16,15 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef	FMNetwork_H
+#if !defined(FMNetwork_H)
 #define	FMNetwork_H
 
 #include "RingBuffer.h"
 #include "UDPSocket.h"
 
+#if defined(HAS_SRC)
 #include <samplerate.h>
+#endif
 
 #include <cstdint>
 #include <string>
@@ -65,9 +67,11 @@ private:
 	bool                m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
 	unsigned int        m_seqNo;
+#if defined(HAS_SRC)
 	SRC_STATE*          m_resampler;
+#endif
 	int                 m_error;
-	int                 m_fd;
+	FILE*               m_fp;
 
 	bool writeUSRPStart();
 	bool writeRawStart();

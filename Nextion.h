@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018,2020,2023 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018,2020,2023,2024 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include "Display.h"
 #include "Defines.h"
 #include "SerialPort.h"
+#include "UDPSocket.h"
 #include "Timer.h"
 #include "Thread.h"
 #include <string>
@@ -29,6 +30,7 @@
 class CNextion : public CDisplay
 {
 public:
+	CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness, unsigned int screenLayout, unsigned int txFrequency, unsigned int rxFrequency, bool displayTempInF, CUDPSocket* socket, struct sockaddr_storage& addr, unsigned int addrLength);
 	CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness, unsigned int screenLayout, unsigned int txFrequency, unsigned int rxFrequency, bool displayTempInF);
 	virtual ~CNextion();
 
@@ -107,6 +109,9 @@ private:
 	double        m_fl_txFrequency;
 	double        m_fl_rxFrequency;
 	bool          m_displayTempInF;
+	CUDPSocket*   m_socket;
+	struct sockaddr_storage m_addr;
+	unsigned int  m_addrLength;
 
 	void sendCommand(const char* command);
 	void sendCommandAction(unsigned int status);

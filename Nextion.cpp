@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018,2020,2023 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018,2020,2023,2024 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -49,6 +49,59 @@ const unsigned int M17_BER_COUNT    = 28U;		  // 28 * 40ms = 1120ms
 // 00:low, others:high-speed. bit[2] is overlapped with LAYOUT_COMPAT_MASK.
 #define LAYOUT_HIGHSPEED	(3 << 2)
 
+CNextion::CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness, unsigned int screenLayout, unsigned int txFrequency, unsigned int rxFrequency, bool displayTempInF, CUDPSocket* socket, struct sockaddr_storage& addr, unsigned int addrLength) :
+CDisplay(),
+m_callsign(callsign),
+m_ipaddress("(ip unknown)"),
+m_dmrid(dmrid),
+m_serial(serial),
+m_brightness(brightness),
+m_mode(MODE_IDLE),
+m_displayClock(displayClock),
+m_utc(utc),
+m_idleBrightness(idleBrightness),
+m_screenLayout(0),
+m_clockDisplayTimer(1000U, 0U, 400U),
+m_rssiAccum1(0U),
+m_rssiAccum2(0U),
+m_berAccum1(0.0F),
+m_berAccum2(0.0F),
+m_rssiCount1(0U),
+m_rssiCount2(0U),
+m_berCount1(0U),
+m_berCount2(0U),
+m_txFrequency(txFrequency),
+m_rxFrequency(rxFrequency),
+m_fl_txFrequency(0.0F),
+m_fl_rxFrequency(0.0F),
+m_displayTempInF(displayTempInF),
+m_socket(socket),
+m_addr(addr),
+m_addrLength(addrLength)
+{
+	assert(serial != NULL);
+	assert(brightness >= 0U && brightness <= 100U);
+	assert(socket != NULL);
+	assert(addrLength > 0U);
+
+	static const unsigned int feature_set[] = {
+		0,				// 0: G4KLX
+		0,				// 1: (reserved, low speed)
+						// 2: ON7LDS
+		LAYOUT_TA_ENABLE | LAYOUT_TA_COLOUR | LAYOUT_TA_FONTSIZE,
+		LAYOUT_TA_ENABLE | LAYOUT_DIY,	// 3: ON7LDS-DIY
+		LAYOUT_TA_ENABLE | LAYOUT_DIY,	// 4: ON7LDS-DIY (high speed)
+		0,				// 5: (reserved, high speed)
+		0,				// 6: (reserved, high speed)
+		0,				// 7: (reserved, high speed)
+	};
+
+	if (screenLayout & ~LAYOUT_COMPAT_MASK)
+		m_screenLayout = screenLayout & ~LAYOUT_COMPAT_MASK;
+	else
+		m_screenLayout = feature_set[screenLayout];
+}
+
 CNextion::CNextion(const std::string& callsign, unsigned int dmrid, ISerialPort* serial, unsigned int brightness, bool displayClock, bool utc, unsigned int idleBrightness, unsigned int screenLayout, unsigned int txFrequency, unsigned int rxFrequency, bool displayTempInF) :
 CDisplay(),
 m_callsign(callsign),
@@ -74,7 +127,10 @@ m_txFrequency(txFrequency),
 m_rxFrequency(rxFrequency),
 m_fl_txFrequency(0.0F),
 m_fl_rxFrequency(0.0F),
-m_displayTempInF(displayTempInF)
+m_displayTempInF(displayTempInF),
+m_socket(NULL),
+m_addr(),
+m_addrLength(0U)
 {
 	assert(serial != NULL);
 	assert(brightness >= 0U && brightness <= 100U);
@@ -968,12 +1024,25 @@ void CNextion::clockInt(unsigned int ms)
 
 		m_clockDisplayTimer.start(); // restart the clock display timer
 	}
+
+	if (m_socket != NULL) {
+		unsigned char buffer[200U];
+
+		int len = m_serial->read(buffer, 200U);
+		if (len > 0)
+			m_socket->write(buffer, len, m_addr, m_addrLength);
+	}
 }
 
 void CNextion::close()
 {
 	m_serial->close();
 	delete m_serial;
+
+	if (m_socket != NULL) {
+		m_socket->close();
+		delete m_socket;
+	}
 }
 
 void CNextion::sendCommandAction(unsigned int status)

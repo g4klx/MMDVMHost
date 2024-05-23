@@ -1,6 +1,8 @@
 # This makefile is for use with the Raspberry Pi when using an HD44780 compatible display. The wiringpi library is needed.
 # Support for the Adafruit i2c 16 x 2 RGB LCD Pi Plate
 
+# If you have the resampler library installed, add -DHAS_SRC to the CFLAGS line, and -lsamplerate to the LIBS line.
+
 CC      = cc
 CXX     = c++
 CFLAGS  = -g -O3 -Wall -std=c++0x -pthread -DHAVE_LOG_H -DHD44780 -DADAFRUIT_DISPLAY -I/usr/local/include
