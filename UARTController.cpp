@@ -295,7 +295,6 @@ bool CUARTController::setRaw()
 	termios.c_cc[VTIME] = 10;
 #endif
 
-#if !defined(B38400) || (B38400 != 38400)
 	switch (m_speed) {
 #if defined(B1200)
 		case 1200U:
@@ -368,10 +367,6 @@ bool CUARTController::setRaw()
 			::close(m_fd);
 			return false;
 	}
-#else
-	::cfsetospeed(&termios, m_speed);
-	::cfsetispeed(&termios, m_speed);
-#endif
 
 	if (::tcsetattr(m_fd, TCSANOW, &termios) < 0) {
 		LogError("Cannot set the attributes for %s", m_device.c_str());

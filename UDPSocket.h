@@ -16,7 +16,7 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef UDPSocket_H
+#if !defined(UDPSocket_H)
 #define UDPSocket_H
 
 #include <string>
@@ -33,6 +33,7 @@
 #include <errno.h>
 #else
 #include <ws2tcpip.h>
+#include <Winsock2.h>
 #endif
 
 enum IPMATCHTYPE {
@@ -69,10 +70,11 @@ private:
 	unsigned short m_localPort;
 #if defined(_WIN32) || defined(_WIN64)
 	SOCKET         m_fd;
+	int            m_af;
 #else
 	int            m_fd;
-#endif
 	sa_family_t    m_af;
+#endif
 };
 
 #endif
