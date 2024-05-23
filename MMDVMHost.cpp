@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2023 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2024 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -2230,10 +2230,6 @@ bool CMMDVMHost::createPOCSAGNetwork()
 #if defined(USE_FM)
 bool CMMDVMHost::createFMNetwork()
 {
-	std::string callsign       = m_conf.getFMCallsign();
-	std::string protocol       = m_conf.getFMNetworkProtocol();
-	unsigned int sampleRate    = m_conf.getFMNetworkSampleRate();
-	std::string squelchFile    = m_conf.getFMNetworkSquelchFile();
 	std::string gatewayAddress = m_conf.getFMGatewayAddress();
 	unsigned short gatewayPort = m_conf.getFMGatewayPort();
 	std::string localAddress   = m_conf.getFMLocalAddress();
@@ -2246,11 +2242,6 @@ bool CMMDVMHost::createFMNetwork()
 	bool debug                 = m_conf.getFMNetworkDebug();
 
 	LogInfo("FM Network Parameters");
-	LogInfo("    Protocol: %s", protocol.c_str());
-	if (protocol == "RAW") {
-		LogInfo("    Sample Rate: %u", sampleRate);
-		LogInfo("    Squelch File: %s", squelchFile.empty() ? "(none)" : squelchFile.c_str());
-	}
 	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
 	LogInfo("    Gateway Port: %hu", gatewayPort);
 	LogInfo("    Local Address: %s", localAddress.c_str());
@@ -2261,7 +2252,7 @@ bool CMMDVMHost::createFMNetwork()
 	LogInfo("    RX Audio Gain: %.2f", rxAudioGain);
 	LogInfo("    Mode Hang: %us", m_fmNetModeHang);
 
-	m_fmNetwork = new CFMNetwork(callsign, protocol, localAddress, localPort, gatewayAddress, gatewayPort, sampleRate, squelchFile, debug);
+	m_fmNetwork = new CFMNetwork(localAddress, localPort, gatewayAddress, gatewayPort, debug);
 
 	bool ret = m_fmNetwork->open();
 	if (!ret) {

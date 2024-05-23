@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2023 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2024 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -383,9 +383,6 @@ m_pocsagNetworkDebug(false),
 #endif
 #if defined(USE_FM)
 m_fmNetworkEnabled(false),
-m_fmNetworkProtocol("USRP"),
-m_fmNetworkSampleRate(48000U),
-m_fmNetworkSquelchFile(),
 m_fmGatewayAddress(),
 m_fmGatewayPort(0U),
 m_fmLocalAddress(),
@@ -1181,12 +1178,6 @@ bool CConf::read()
 		} else if (section == SECTION_FM_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_fmNetworkEnabled = ::atoi(value) == 1;
-			else if (::strcmp(key, "Protocol") == 0)
-				m_fmNetworkProtocol = value;
-			else if (::strcmp(key, "SampleRate") == 0)
-				m_fmNetworkSampleRate = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "SquelchFile") == 0)
-				m_fmNetworkSquelchFile = value;
 			else if (::strcmp(key, "LocalAddress") == 0)
 				m_fmLocalAddress = value;
 			else if (::strcmp(key, "LocalPort") == 0)
@@ -2386,21 +2377,6 @@ bool CConf::getPOCSAGNetworkDebug() const
 bool CConf::getFMNetworkEnabled() const
 {
 	return m_fmNetworkEnabled;
-}
-
-std::string CConf::getFMNetworkProtocol() const
-{
-	return m_fmNetworkProtocol;
-}
-
-unsigned int CConf::getFMNetworkSampleRate() const
-{
-	return m_fmNetworkSampleRate;
-}
-
-std::string CConf::getFMNetworkSquelchFile() const
-{
-	return m_fmNetworkSquelchFile;
 }
 
 std::string CConf::getFMGatewayAddress() const
