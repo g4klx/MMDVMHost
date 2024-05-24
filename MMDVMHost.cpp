@@ -2230,6 +2230,7 @@ bool CMMDVMHost::createPOCSAGNetwork()
 #if defined(USE_FM)
 bool CMMDVMHost::createFMNetwork()
 {
+	std::string callsign       = m_conf.getFMCallsign();
 	std::string gatewayAddress = m_conf.getFMGatewayAddress();
 	unsigned short gatewayPort = m_conf.getFMGatewayPort();
 	std::string localAddress   = m_conf.getFMLocalAddress();
@@ -2252,7 +2253,7 @@ bool CMMDVMHost::createFMNetwork()
 	LogInfo("    RX Audio Gain: %.2f", rxAudioGain);
 	LogInfo("    Mode Hang: %us", m_fmNetModeHang);
 
-	m_fmNetwork = new CFMNetwork(localAddress, localPort, gatewayAddress, gatewayPort, debug);
+	m_fmNetwork = new CFMNetwork(callsign, localAddress, localPort, gatewayAddress, gatewayPort, debug);
 
 	bool ret = m_fmNetwork->open();
 	if (!ret) {

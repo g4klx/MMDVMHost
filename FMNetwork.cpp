@@ -32,7 +32,8 @@
 
 const unsigned int BUFFER_LENGTH = 1500U;
 
-CFMNetwork::CFMNetwork(const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug) :
+CFMNetwork::CFMNetwork(const std::string& callsign, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug) :
+m_callsign(callsign),
 m_socket(localAddress, localPort),
 m_addr(),
 m_addrLen(0U),
@@ -42,11 +43,17 @@ m_buffer(2000U, "FM Network"),
 m_seqNo(0U),
 m_timer(1000U, 5U)
 {
+	assert(!callsign.empty());
 	assert(gatewayPort > 0U);
 	assert(!gatewayAddress.empty());
 
 	if (CUDPSocket::lookup(gatewayAddress, gatewayPort, m_addr, m_addrLen) != 0)
 		m_addrLen = 0U;
+
+	// Remove any trailing spaces/letters from the callsign
+	size_t pos = callsign.find_first_of(' ');
+	if (pos != std::string::npos)
+		m_callsign = callsign.substr(0U, pos);
 }
 
 CFMNetwork::~CFMNetwork()
@@ -113,14 +120,21 @@ bool CFMNetwork::writeStart()
 {
 	uint8_t buffer[5U];
 
-	buffer[0U] = 'F';
-	buffer[1U] = 'M';
-	buffer[2U] = 'S';
+	unsigned int length = 0U;
+
+	buffer[length++] = 'F';
+	buffer[length++] = 'M';
+	buffer[length++] = 'S';
+
+	for (unsigned int i = 0U; i < m_callsign.size(); i++)
+		buffer[length++] = m_callsign.at(i);
+
+	buffer[length++] = '\0';
 
 	if (m_debug)
-		CUtils::dump(1U, "FM Network Data Sent", buffer, 3U);
+		CUtils::dump(1U, "FM Network Data Sent", buffer, length);
 
-	return m_socket.write(buffer, 3U, m_addr, m_addrLen);
+	return m_socket.write(buffer, length, m_addr, m_addrLen);
 }
 
 bool CFMNetwork::writeEnd()

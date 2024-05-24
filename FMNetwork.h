@@ -32,7 +32,7 @@
 
 class CFMNetwork {
 public:
-	CFMNetwork(const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug);
+	CFMNetwork(const std::string& callsign, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug);
 	~CFMNetwork();
 
 	bool open();
@@ -52,6 +52,7 @@ public:
 	void clock(unsigned int ms);
 
 private:
+	std::string         m_callsign;
 	CUDPSocket          m_socket;
 	sockaddr_storage    m_addr;
 	unsigned int        m_addrLen;
