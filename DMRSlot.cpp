@@ -1331,7 +1331,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		// We've received the voice header and terminator haven't we?
 		m_netFrames += 2U;
 		LogMessage("DMR Slot %u, received network end of voice transmission from %s to %s%s, %.1f seconds, %u%% packet loss, BER: %.1f%%", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str(), float(m_netFrames) / 16.667F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
-		writeJSONNet("end", float(m_netFrames) / 16.667F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
+		writeJSONNet("end", float(m_netFrames) / 16.667F, float(m_netLost * 100U) / float(m_netFrames), float(m_netErrs * 100U) / float(m_netBits));
 		writeEndNet();
 	} else if (dataType == DT_DATA_HEADER) {
 		if (m_netState == RS_NET_DATA)
@@ -1890,7 +1890,7 @@ void CDMRSlot::clock()
 				// We've received the voice header haven't we?
 				m_netFrames += 1U;
 				LogMessage("DMR Slot %u, network watchdog has expired, %.1f seconds, %u%% packet loss, BER: %.1f%%", m_slotNo, float(m_netFrames) / 16.667F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
-				writeJSONNet("lost", float(m_netFrames) / 16.667F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
+				writeJSONNet("lost", float(m_netFrames) / 16.667F, float(m_netLost * 100U) / float(m_netFrames), float(m_netErrs * 100U) / float(m_netBits));
 				writeEndNet(true);
 			} else {
 				LogMessage("DMR Slot %u, network watchdog has expired", m_slotNo);

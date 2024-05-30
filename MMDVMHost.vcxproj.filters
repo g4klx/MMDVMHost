@@ -296,12 +296,6 @@
     <ClInclude Include="IIRDirectForm1Filter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PseudoTTYController.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SHA256.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="UARTController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -315,6 +309,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ModemPort.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MQTTConnection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -571,12 +568,6 @@
     <ClCompile Include="IIRDirectForm1Filter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PseudoTTYController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SHA256.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="UARTController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -590,6 +581,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ModemPort.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MQTTConnection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -52,12 +52,15 @@ REMOTE_COMMAND CRemoteControl::getCommand(const std::string& command)
 
 	std::string reply = "OK";
 
-	std::stringstream tokeniser(command);
-
 	// Parse the original command into a vector of strings.
-	std::string token;
-	while (std::getline(tokeniser, token, ' '))
-		m_args.push_back(token);
+	size_t start = command.find_first_not_of(' ');
+	while (start != std::string::npos) {
+		size_t end = command.find_first_of(' ', start);
+
+		m_args.push_back(command.substr(start, end - start));
+
+		start = command.find_first_not_of(' ', end);
+	}
 
 	if (m_args.at(0U) == "mode" && m_args.size() >= SET_MODE_ARGS) {
 		// Mode command is in the form of "mode <mode> [<timeout>|fixed]"

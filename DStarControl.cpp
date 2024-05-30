@@ -795,7 +795,7 @@ void CDStarControl::writeNetwork()
 		// We've received the header and EOT haven't we?
 		m_netFrames += 2U;
 		LogMessage("D-Star, received network end of transmission from %8.8s/%4.4s to %8.8s, %.1f seconds, %u%% packet loss", my1, my2, your, float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames);
-		writeJSONNet("end", float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames);
+		writeJSONNet("end", float(m_netFrames) / 50.0F, float(m_netLost * 100U) / float(m_netFrames));
 
 		writeEndNet();
 	} else if (type == TAG_DATA) {
@@ -879,7 +879,7 @@ void CDStarControl::clock()
 			m_netFrames += 1U;
 
 			LogMessage("D-Star, network watchdog has expired, %.1f seconds,  %u%% packet loss", float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames);
-			writeJSONNet("lost", float(m_netFrames) / 50.0F, (m_netLost * 100U) / m_netFrames);
+			writeJSONNet("lost", float(m_netFrames) / 50.0F, float(m_netLost * 100U) / float(m_netFrames));
 			writeEndNet();
 		}
 	}
