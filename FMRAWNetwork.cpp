@@ -25,10 +25,12 @@
 #include <cassert>
 #include <cstring>
 
+#if !defined(_WIN32) && !defined(_WIN64)
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#endif
 
 const unsigned int MMDVM_SAMPLERATE = 8000U;
 
@@ -276,9 +278,9 @@ void CFMRAWNetwork::close()
 {
 	m_socket.close();
 
-	if (m_fd != -1) {
-		::close(m_fd);
-		m_fd = -1;
+	if (m_fp != NULL) {
+		::fclose(m_fp);
+		m_fp = NULL;
 	}
 
 	LogMessage("Closing FM RAW network connection");

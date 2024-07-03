@@ -199,7 +199,10 @@
     <ClInclude Include="DStarNetwork.h" />
     <ClInclude Include="DStarSlowData.h" />
     <ClInclude Include="FMControl.h" />
+    <ClInclude Include="FMIAXNetwork.h" />
     <ClInclude Include="FMNetwork.h" />
+    <ClInclude Include="FMRAWNetwork.h" />
+    <ClInclude Include="FMUSRPNetwork.h" />
     <ClInclude Include="Golay2087.h" />
     <ClInclude Include="Golay24128.h" />
     <ClInclude Include="Hamming.h" />
@@ -311,7 +314,10 @@
     <ClCompile Include="DStarNetwork.cpp" />
     <ClCompile Include="DStarSlowData.cpp" />
     <ClCompile Include="FMControl.cpp" />
+    <ClCompile Include="FMIAXNetwork.cpp" />
     <ClCompile Include="FMNetwork.cpp" />
+    <ClCompile Include="FMRAWNetwork.cpp" />
+    <ClCompile Include="FMUSRPNetwork.cpp" />
     <ClCompile Include="Golay2087.cpp" />
     <ClCompile Include="Golay24128.cpp" />
     <ClCompile Include="Hamming.cpp" />

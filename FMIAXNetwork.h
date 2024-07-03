@@ -28,6 +28,12 @@
 #include <cstdint>
 #include <string>
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <wincrypt.h>
+#else
+#include <md5.h>
+#endif
+
 enum IAX_STATUS {
 	IAXS_DISCONNECTED,
 	IAXS_CONNECTING,
@@ -85,6 +91,9 @@ private:
 	unsigned int        m_rxDropped;
 	unsigned int        m_rxOOO;
 	bool                m_keyed;
+#if defined(_WIN32) || defined(_WIN64)
+	HCRYPTPROV          m_provider;
+#endif
 
 	bool writeNew(bool retry);
 	bool writeAuthRep();

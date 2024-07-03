@@ -25,12 +25,12 @@
 #include <cassert>
 #include <cstring>
 
+#if !defined(_WIN32) && !defined(_WIN64)
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-
-#include <md5.h>
+#endif
 
 #define	DEBUG_IAX
 
@@ -100,6 +100,10 @@ const unsigned char IAX_IE_RR_OOO       = 51U;
 
 const unsigned int BUFFER_LENGTH = 1500U;
 
+#if !defined(MD5_DIGEST_STRING_LENGTH)
+#define	MD5_DIGEST_STRING_LENGTH	16
+#endif
+
 CFMIAXNetwork::CFMIAXNetwork(const std::string& callsign, const std::string& username, const std::string& password, const std::string& node, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug) :
 m_callsign(callsign),
 m_username(username),
@@ -127,6 +131,9 @@ m_rxDelay(0U),
 m_rxDropped(0U),
 m_rxOOO(0U),
 m_keyed(false)
+#if defined(_WIN32) || defined(_WIN64)
+, m_provider(0UL)
+#endif
 {
 	assert(!callsign.empty());
 	assert(!username.empty());
@@ -156,6 +163,13 @@ bool CFMIAXNetwork::open()
 	}
 
 	LogMessage("Opening FM IAX network connection");
+
+#if defined(_WIN32) || defined(_WIN64)
+	if (!::CryptAcquireContext(&m_provider, nullptr, nullptr, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT)) {
+		LogError("CryptAcquireContext failed: %ld", ::GetLastError());
+		return false;
+	}
+#endif
 
 	bool ret = m_socket.open(m_addr);
 	if (!ret)
@@ -593,6 +607,11 @@ void CFMIAXNetwork::close()
 	m_retryTimer.stop();
 	m_pingTimer.stop();
 
+#if defined(_WIN32) || defined(_WIN64)
+	::CryptReleaseContext(m_provider, 0UL);
+	m_provider = 0UL;
+#endif
+
 	LogMessage("Closing FM IAX network connection");
 }
 
@@ -650,7 +669,7 @@ bool CFMIAXNetwork::writeNew(bool retry)
 	buffer[length++] = IAX_PROTO_VERSION;
 
 	buffer[length++] = IAX_IE_CALLED_NUMBER;
-	buffer[length++] = m_node.size();
+	buffer[length++] = (unsigned char)m_node.size();
 	for (std::string::const_iterator it = m_node.cbegin(); it != m_node.cend(); ++it)
 		buffer[length++] = *it;
 
@@ -658,12 +677,12 @@ bool CFMIAXNetwork::writeNew(bool retry)
 	buffer[length++] = 0U;
 
 	buffer[length++] = IAX_IE_CALLING_NAME;
-	buffer[length++] = m_callsign.size();
+	buffer[length++] = (unsigned char)m_callsign.size();
 	for (std::string::const_iterator it = m_callsign.cbegin(); it != m_callsign.cend(); ++it)
 		buffer[length++] = *it;
 
 	buffer[length++] = IAX_IE_USERNAME;
-	buffer[length++] = m_username.size();
+	buffer[length++] = (unsigned char)m_username.size();
 	for (std::string::const_iterator it = m_username.cbegin(); it != m_username.cend(); ++it)
 		buffer[length++] = *it;
 
@@ -692,7 +711,29 @@ bool CFMIAXNetwork::writeAuthRep()
 	std::string password = m_seed + m_password;
 
 	char hash[MD5_DIGEST_STRING_LENGTH];
+
+#if defined(_WIN32) || defined(_WIN64)
+	HCRYPTHASH hHash = 0;
+	if (!::CryptCreateHash(m_provider, CALG_MD5, 0, 0, &hHash)) {
+		LogError("CryptCreateHash failed: %ld", ::GetLastError());
+		return false;
+	}
+
+	if (!::CryptHashData(hHash, (BYTE*)password.c_str(), DWORD(password.size()), 0)) {
+		LogError("CryptHashData failed: %ld", ::GetLastError());
+		return false;
+	}
+
+	DWORD cbHash = MD5_DIGEST_STRING_LENGTH;
+	if (!::CryptGetHashParam(hHash, HP_HASHVAL, (BYTE*)hash, &cbHash, 0)) {
+		LogError("CryptGetHashParam failed: %ld", ::GetLastError());
+		return false;
+	}
+
+	::CryptDestroyHash(hHash);
+#else
 	::MD5Data((unsigned char*)password.c_str(), password.size(), hash);
+#endif
 
 	unsigned short sCall = m_sCallNo | 0x8000U;
 	unsigned int   ts    = m_timestamp.elapsed();
@@ -1033,15 +1074,16 @@ bool CFMIAXNetwork::writeHangup()
 	buffer[11U] = IAX_COMMAND_HANGUP;
 
 	buffer[12U] = IAX_IE_CAUSE;
-	buffer[13U] = ::strlen(REASON);
+	buffer[13U] = (unsigned char)::strlen(REASON);
 	::memcpy(buffer + 14U, REASON, ::strlen(REASON));
 
 #if !defined(DEBUG_IAX)
 	if (m_debug)
 #endif
-		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, 14U + ::strlen(REASON));
 
-	return m_socket.write(buffer, 14U + ::strlen(REASON), m_addr, m_addrLen);
+	CUtils::dump(1U, "FM IAX Network Data Sent", buffer, 14U + (unsigned int)::strlen(REASON));
+
+	return m_socket.write(buffer, 14U + ::strlen(REASON), m_addr, (unsigned int)m_addrLen);
 }
 
 bool CFMIAXNetwork::writeRegReq(bool retry)
@@ -1082,16 +1124,38 @@ bool CFMIAXNetwork::writeRegReq(bool retry)
 	buffer[11U] = IAX_COMMAND_REGREQ;
 
 	buffer[12U] = IAX_IE_USERNAME;
-	buffer[13U] = m_username.size();
+	buffer[13U] = (unsigned char)m_username.size();
 	::memcpy(buffer + 14U, m_username.c_str(), m_username.size());
 
-	unsigned int offset = 14U + m_username.size();
+	unsigned int offset = 14U + (unsigned int)m_username.size();
 
 	if (m_dCallNo > 0U) {
 		std::string password = m_seed + m_password;
 
 		char hash[MD5_DIGEST_STRING_LENGTH];
+
+#if defined(_WIN32) || defined(_WIN64)
+		HCRYPTHASH hHash = 0;
+		if (!::CryptCreateHash(m_provider, CALG_MD5, 0, 0, &hHash)) {
+			LogError("CryptCreateHash failed: %ld", ::GetLastError());
+			return false;
+		}
+
+		if (!::CryptHashData(hHash, (BYTE*)password.c_str(), DWORD(password.size()), 0)) {
+			LogError("CryptHashData failed: %ld", ::GetLastError());
+			return false;
+		}
+
+		DWORD cbHash = MD5_DIGEST_STRING_LENGTH;
+		if (!::CryptGetHashParam(hHash, HP_HASHVAL, (BYTE*)hash, &cbHash, 0)) {
+			LogError("CryptGetHashParam failed: %ld", ::GetLastError());
+			return false;
+		}
+
+		::CryptDestroyHash(hHash);
+#else
 		::MD5Data((unsigned char*)password.c_str(), password.size(), hash);
+#endif
 
 		buffer[offset++] = IAX_IE_MD5_RESULT;
 		buffer[offset++] = MD5_DIGEST_STRING_LENGTH;

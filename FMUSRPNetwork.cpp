@@ -25,10 +25,12 @@
 #include <cassert>
 #include <cstring>
 
+#if !defined(_WIN32) && !defined(_WIN64)
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#endif
 
 const unsigned int BUFFER_LENGTH = 1500U;
 
@@ -125,7 +127,7 @@ bool CFMUSRPNetwork::writeStart()
 	buffer[length++] = 0x08U;
 
 	// TLV Length
-	buffer[length++] = 3U + 4U + 3U + 1U + 1U + m_callsign.size() + 1U;
+	buffer[length++] = (unsigned char)(3U + 4U + 3U + 1U + 1U + m_callsign.size() + 1U);
 
 	// DMR Id
 	buffer[length++] = 0x00U;
