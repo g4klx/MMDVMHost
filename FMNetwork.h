@@ -16,7 +16,7 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#ifndef	FMNetwork_H
+#if !defined(FMNetwork_H)
 #define	FMNetwork_H
 
 #include <cstdint>
@@ -48,4 +48,3 @@ private:
 };
 
 #endif
-

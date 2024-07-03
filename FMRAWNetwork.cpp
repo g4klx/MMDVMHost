@@ -43,9 +43,11 @@ m_squelchFile(squelchFile),
 m_debug(debug),
 m_enabled(false),
 m_buffer(2000U, "FM Network"),
+#if defined(HAS_SRC)
 m_resampler(NULL),
 m_error(0),
-m_fd(-1)
+#endif
+m_fp(NULL)
 {
 	assert(gatewayPort > 0U);
 	assert(!gatewayAddress.empty());
@@ -54,12 +56,16 @@ m_fd(-1)
 	if (CUDPSocket::lookup(gatewayAddress, gatewayPort, m_addr, m_addrLen) != 0)
 		m_addrLen = 0U;
 
+#if defined(HAS_SRC)
 	m_resampler = ::src_new(SRC_SINC_FASTEST, 1, &m_error);
+#endif
 }
 
 CFMRAWNetwork::~CFMRAWNetwork()
 {
+#if defined(HAS_SRC)
 	::src_delete(m_resampler);
+#endif
 }
 
 bool CFMRAWNetwork::open()
@@ -72,9 +78,13 @@ bool CFMRAWNetwork::open()
 	LogMessage("Opening FM RAW network connection");
 
 	if (!m_squelchFile.empty()) {
-		m_fd = ::open(m_squelchFile.c_str(), O_WRONLY | O_SYNC);
-		if (m_fd == -1) {
+		m_fp = ::fopen(m_squelchFile.c_str(), "wb");
+		if (m_fp == NULL) {
+#if !defined(_WIN32) && !defined(_WIN64)
 			LogError("Cannot open the squelch file: %s, errno=%d", m_squelchFile.c_str(), errno);
+#else
+			LogError("Cannot open the squelch file: %s, errno=%lu", m_squelchFile.c_str(), ::GetLastError());
+#endif
 			return false;
 		}
 	}
@@ -84,12 +94,18 @@ bool CFMRAWNetwork::open()
 
 bool CFMRAWNetwork::writeStart()
 {
-	if (m_fd != -1) {
-		size_t n = ::write(m_fd, "O", 1);
+	if (m_fp != NULL) {
+		size_t n = ::fwrite("O", 1, 1, m_fp);
 		if (n != 1) {
+#if !defined(_WIN32) && !defined(_WIN64)
 			LogError("Cannot write to the squelch file: %s, errno=%d", m_squelchFile.c_str(), errno);
+#else
+			LogError("Cannot write to the squelch file: %s, errno=%lu", m_squelchFile.c_str(), ::GetLastError());
+#endif
 			return false;
 		}
+
+		::fflush(m_fp);
 	}
 
 	return true;
@@ -104,6 +120,7 @@ bool CFMRAWNetwork::writeData(const float* in, unsigned int nIn)
 
 	unsigned int length = 0U;
 
+#if defined(HAS_SRC)
 	if (m_sampleRate != MMDVM_SAMPLERATE) {
 		unsigned int nOut = (nIn * m_sampleRate) / MMDVM_SAMPLERATE;
 
@@ -130,13 +147,16 @@ bool CFMRAWNetwork::writeData(const float* in, unsigned int nIn)
 			buffer[length++] = (val >> 8) & 0xFFU;
 		}
 	} else {
+#endif
 		for (unsigned int i = 0U; i < nIn; i++) {
 			short val = short(in[i] * 32767.0F + 0.5F);	// Changing audio format from float to S16LE
 
 			buffer[length++] = (val >> 0) & 0xFFU;
 			buffer[length++] = (val >> 8) & 0xFFU;
 		}
+#if defined(HAS_SRC)
 	}
+#endif
 
 	if (m_debug)
 		CUtils::dump(1U, "FM RAW Network Data Sent", buffer, length);
@@ -146,12 +166,18 @@ bool CFMRAWNetwork::writeData(const float* in, unsigned int nIn)
 
 bool CFMRAWNetwork::writeEnd()
 {
-	if (m_fd != -1) {
-		size_t n = ::write(m_fd, "Z", 1);
+	if (m_fp != NULL) {
+		size_t n = ::fwrite("Z", 1, 1, m_fp);
 		if (n != 1) {
+#if !defined(_WIN32) && !defined(_WIN64)
 			LogError("Cannot write to the squelch file: %s, errno=%d", m_squelchFile.c_str(), errno);
+#else
+			LogError("Cannot write to the squelch file: %s, errno=%lu", m_squelchFile.c_str(), ::GetLastError());
+#endif
 			return false;
 		}
+
+		::fflush(m_fp);
 	}
 
 	return true;
@@ -190,6 +216,7 @@ unsigned int CFMRAWNetwork::readData(float* out, unsigned int nOut)
 	if (bytes == 0U)
 		return 0U;
 
+#if defined(HAS_SRC)
 	if (m_sampleRate != MMDVM_SAMPLERATE) {
 		unsigned int nIn = (nOut * m_sampleRate) / MMDVM_SAMPLERATE;
 
@@ -222,6 +249,7 @@ unsigned int CFMRAWNetwork::readData(float* out, unsigned int nOut)
 			return false;
 		}
 	} else {
+#endif
 		if (bytes < nOut)
 			nOut = bytes;
 
@@ -232,7 +260,9 @@ unsigned int CFMRAWNetwork::readData(float* out, unsigned int nOut)
 			short val = ((buffer[i * 2U + 0U] & 0xFFU) << 0) + ((buffer[i * 2U + 1U] & 0xFFU) << 8);
 			out[i] = float(val) / 65536.0F;
 		}
+#if defined(HAS_SRC)
 	}
+#endif
 
 	return nOut;
 }

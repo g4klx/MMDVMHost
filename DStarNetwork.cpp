@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2014,2016,2019,2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2014,2016,2019,2020,2021,2024 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -164,7 +164,7 @@ bool CDStarNetwork::writePoll(const char* text)
 	buffer[2] = 'R';
 	buffer[3] = 'P';
 
-	buffer[4] = 0x0A;				// Poll with text
+	buffer[4] = 0x0AU;				// Poll with text
 
 	unsigned int length = ::strlen(text);
 
@@ -226,6 +226,7 @@ void CDStarNetwork::clock(unsigned int ms)
 
 	case 0x01U:			// NETWORK_TEMPTEXT;
 	case 0x04U:			// NETWORK_STATUS1..5
+	case 0x0AU:			// POLL
 	case 0x24U:			// NETWORK_DD_DATA
 		return;
 

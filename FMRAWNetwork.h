@@ -23,7 +23,9 @@
 #include "RingBuffer.h"
 #include "UDPSocket.h"
 
+#if defined(HAS_SRC)
 #include <samplerate.h>
+#endif
 
 #include <cstdint>
 #include <string>
@@ -60,9 +62,11 @@ private:
 	bool                m_debug;
 	bool                m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
+#if defined(HAS_SRC)
 	SRC_STATE*          m_resampler;
 	int                 m_error;
-	int                 m_fd;
+#endif
+	FILE*               m_fp;
 };
 
 #endif
