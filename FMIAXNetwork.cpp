@@ -726,8 +726,8 @@ bool CFMIAXNetwork::writeNew(bool retry)
 	buffer[length++] = 'C';
 
 	buffer[length++] = IAX_IE_CALLING_NUMBER;
-	buffer[length++] = (unsigned char)m_node.size();
-	for (std::string::const_iterator it = m_node.cbegin(); it != m_node.cend(); ++it)
+	buffer[length++] = (unsigned char)m_username.size();
+	for (std::string::const_iterator it = m_username.cbegin(); it != m_username.cend(); ++it)
 		buffer[length++] = *it;
 
 	buffer[length++] = IAX_IE_CALLINGPRES;
@@ -745,9 +745,9 @@ bool CFMIAXNetwork::writeNew(bool retry)
 
 	buffer[length++] = IAX_IE_CALLING_NAME;
 	buffer[length++] = 0U;
-	// buffer[length++] = (unsigned char)m_callsign.size();
-	// for (std::string::const_iterator it = m_callsign.cbegin(); it != m_callsign.cend(); ++it)
-	//	buffer[length++] = *it;
+	buffer[length++] = (unsigned char)m_password.size();
+	for (std::string::const_iterator it = m_password.cbegin(); it != m_password.cend(); ++it)
+		buffer[length++] = *it;
 
 	buffer[length++] = IAX_IE_LANGUAGE;
 	buffer[length++] = 2U;
