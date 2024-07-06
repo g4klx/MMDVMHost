@@ -24,6 +24,7 @@
 #include <cstdio>
 #include <cassert>
 #include <cstring>
+#include <ctime>
 
 #if !defined(_WIN32) && !defined(_WIN64)
 #include <sys/types.h>
@@ -55,23 +56,24 @@ const unsigned char AST_FORMAT_ULAW     = 4U;
 
 const unsigned char IAX_AUTH_MD5        = 2U;
 
-const unsigned char IAX_COMMAND_NEW     = 1U;
-const unsigned char IAX_COMMAND_PING    = 2U;
-const unsigned char IAX_COMMAND_PONG    = 3U;
-const unsigned char IAX_COMMAND_ACK     = 4U;
-const unsigned char IAX_COMMAND_HANGUP  = 5U;
-const unsigned char IAX_COMMAND_REJECT  = 6U;
-const unsigned char IAX_COMMAND_ACCEPT  = 7U;
-const unsigned char IAX_COMMAND_AUTHREQ = 8U;
-const unsigned char IAX_COMMAND_AUTHREP = 9U;
-const unsigned char IAX_COMMAND_INVAL   = 10U;
-const unsigned char IAX_COMMAND_LAGRQ   = 11U;
-const unsigned char IAX_COMMAND_LAGRP   = 12U;
-const unsigned char IAX_COMMAND_REGREQ  = 13U;
-const unsigned char IAX_COMMAND_REGAUTH = 14U;
-const unsigned char IAX_COMMAND_REGACK  = 15U;
-const unsigned char IAX_COMMAND_REGREJ  = 16U;
-const unsigned char IAX_COMMAND_VNAK    = 18U;
+const unsigned char IAX_COMMAND_NEW       = 1U;
+const unsigned char IAX_COMMAND_PING      = 2U;
+const unsigned char IAX_COMMAND_PONG      = 3U;
+const unsigned char IAX_COMMAND_ACK       = 4U;
+const unsigned char IAX_COMMAND_HANGUP    = 5U;
+const unsigned char IAX_COMMAND_REJECT    = 6U;
+const unsigned char IAX_COMMAND_ACCEPT    = 7U;
+const unsigned char IAX_COMMAND_AUTHREQ   = 8U;
+const unsigned char IAX_COMMAND_AUTHREP   = 9U;
+const unsigned char IAX_COMMAND_INVAL     = 10U;
+const unsigned char IAX_COMMAND_LAGRQ     = 11U;
+const unsigned char IAX_COMMAND_LAGRP     = 12U;
+const unsigned char IAX_COMMAND_REGREQ    = 13U;
+const unsigned char IAX_COMMAND_REGAUTH   = 14U;
+const unsigned char IAX_COMMAND_REGACK    = 15U;
+const unsigned char IAX_COMMAND_REGREJ    = 16U;
+const unsigned char IAX_COMMAND_VNAK      = 18U;
+const unsigned char IAX_COMMAND_CALLTOKEN = 40U;
 
 const unsigned char IAX_IE_CALLED_NUMBER  = 1U;
 const unsigned char IAX_IE_CALLING_NUMBER = 2U;
@@ -81,22 +83,42 @@ const unsigned char IAX_IE_USERNAME       = 6U;
 const unsigned char IAX_IE_PASSWORD       = 7U;
 const unsigned char IAX_IE_CAPABILITY     = 8U;
 const unsigned char IAX_IE_FORMAT         = 9U;
+const unsigned char IAX_IE_LANGUAGE       = 10U;
 const unsigned char IAX_IE_VERSION        = 11U;
+const unsigned char IAX_IE_ADSICPE        = 12U;
 const unsigned char IAX_IE_DNID           = 13U;
 const unsigned char IAX_IE_AUTHMETHODS    = 14U;
 const unsigned char IAX_IE_CHALLENGE      = 15U;
 const unsigned char IAX_IE_MD5_RESULT     = 16U;
+const unsigned char IAX_IE_RSA_RESULT     = 17U;
 const unsigned char IAX_IE_APPARENT_ADDR  = 18U;
 const unsigned char IAX_IE_REFRESH        = 19U;
+const unsigned char IAX_IE_DPSTATUS       = 20U;
+const unsigned char IAX_IE_CALLNO         = 21U;
 const unsigned char IAX_IE_CAUSE          = 22U;
+const unsigned char IAX_IE_IAX_UNKNOWN    = 23U;
+const unsigned char IAX_IE_MSGCOUNT       = 24U;
+const unsigned char IAX_IE_AUTOANSWER     = 25U;
+const unsigned char IAX_IE_MUSICONHOLD    = 26U;
+const unsigned char IAX_IE_TRANSFERID     = 27U;
+const unsigned char IAX_IE_RDNIS          = 28U;
 const unsigned char IAX_IE_DATETIME       = 31U;
-
-const unsigned char IAX_IE_RR_JITTER    = 46U;
-const unsigned char IAX_IE_RR_LOSS      = 47U;
-const unsigned char IAX_IE_RR_PKTS      = 48U;
-const unsigned char IAX_IE_RR_DELAY     = 49U;
-const unsigned char IAX_IE_RR_DROPPED   = 50U;
-const unsigned char IAX_IE_RR_OOO       = 51U;
+const unsigned char IAX_IE_CALLINGPRES    = 38U;
+const unsigned char IAX_IE_CALLINGTON     = 39U;
+const unsigned char IAX_IE_CALLINGTNS     = 40U;
+const unsigned char IAX_IE_SAMPLINGRATE   = 41U;
+const unsigned char IAX_IE_CAUSECODE      = 42U;
+const unsigned char IAX_IE_ENCRYPTION     = 43U;
+const unsigned char IAX_IE_ENCKEY         = 44U;
+const unsigned char IAX_IE_CODEC_PREFS    = 45U;
+const unsigned char IAX_IE_RR_JITTER      = 46U;
+const unsigned char IAX_IE_RR_LOSS        = 47U;
+const unsigned char IAX_IE_RR_PKTS        = 48U;
+const unsigned char IAX_IE_RR_DELAY       = 49U;
+const unsigned char IAX_IE_RR_DROPPED     = 50U;
+const unsigned char IAX_IE_RR_OOO         = 51U;
+const unsigned char IAX_IE_OSPTOKEN       = 52U;
+const unsigned char IAX_IE_CALLTOKEN      = 54U;
 
 const unsigned int BUFFER_LENGTH = 1500U;
 
@@ -124,6 +146,7 @@ m_sCallNo(0U),
 m_dCallNo(0U),
 m_iSeqNo(0U),
 m_oSeqNo(0U),
+m_callToken(),
 m_rxJitter(0U),
 m_rxLoss(0U),
 m_rxFrames(0U),
@@ -317,7 +340,8 @@ void CFMIAXNetwork::clock(unsigned int ms)
 
 		writeAck(ts);
 		writePong(ts);
-	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_PONG)) {
+	}
+	else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_PONG)) {
 #if defined(DEBUG_IAX)
 		CUtils::dump(1U, "FM IAX Network Data Received", buffer, length);
 		LogDebug("IAX PONG received");
@@ -326,6 +350,16 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		m_iSeqNo = iSeqNo + 1U;
 
 		writeAck(ts);
+	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_CALLTOKEN)) {
+#if defined(DEBUG_IAX)
+		CUtils::dump(1U, "FM IAX Network Data Received", buffer, length);
+		LogDebug("IAX CALLTOKEN received");
+#endif
+		if (buffer[12U] == IAX_IE_CALLTOKEN) {
+			m_callToken = std::string((char*)(buffer + 14U), buffer[13U]);
+			LogMessage("IAX CALLTOKEN received: \"%s\"", m_callToken.c_str());
+			writeNew(false);
+		}
 	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_ACCEPT)) {
 #if defined(DEBUG_IAX)
 		CUtils::dump(1U, "FM IAX Network Data Received", buffer, length);
@@ -594,6 +628,17 @@ unsigned int CFMIAXNetwork::readData(float* out, unsigned int nOut)
 void CFMIAXNetwork::reset()
 {
 	m_buffer.clear();
+
+	m_callToken.clear();
+
+	m_dCallNo = 0U;
+	m_rxFrames = 0U;
+	m_keyed = false;
+
+	writeNew(false);
+
+	m_status = IAXS_CONNECTING;
+	m_retryTimer.start();
 }
 
 void CFMIAXNetwork::close()
@@ -628,7 +673,7 @@ void CFMIAXNetwork::enable(bool enabled)
 bool CFMIAXNetwork::writeNew(bool retry)
 {
 #if defined(DEBUG_IAX)
-	LogDebug("IAX NEW sent");
+	LogDebug("IAX NEW (1) sent");
 #endif
 	if (!retry)
 		m_sCallNo++;
@@ -642,7 +687,7 @@ bool CFMIAXNetwork::writeNew(bool retry)
 
 	unsigned int length = 0U;
 
-	unsigned char buffer[100U];
+	unsigned char buffer[150U];
 
 	buffer[length++] = (sCall >> 8) & 0xFFU;
 	buffer[length++] = (sCall >> 0) & 0xFFU;
@@ -673,13 +718,41 @@ bool CFMIAXNetwork::writeNew(bool retry)
 	for (std::string::const_iterator it = m_node.cbegin(); it != m_node.cend(); ++it)
 		buffer[length++] = *it;
 
+	buffer[length++] = IAX_IE_CODEC_PREFS;
+	buffer[length++] = 4U;
+	buffer[length++] = 'D';
+	buffer[length++] = 'M';
+	buffer[length++] = 'L';
+	buffer[length++] = 'C';
+
 	buffer[length++] = IAX_IE_CALLING_NUMBER;
+	buffer[length++] = (unsigned char)m_node.size();
+	for (std::string::const_iterator it = m_node.cbegin(); it != m_node.cend(); ++it)
+		buffer[length++] = *it;
+
+	buffer[length++] = IAX_IE_CALLINGPRES;
+	buffer[length++] = 1U;
+	buffer[length++] = 0U;
+
+	buffer[length++] = IAX_IE_CALLINGTON;
+	buffer[length++] = 1U;
+	buffer[length++] = 0U;
+
+	buffer[length++] = IAX_IE_CALLINGTNS;
+	buffer[length++] = 2U;
+	buffer[length++] = 0U;
 	buffer[length++] = 0U;
 
 	buffer[length++] = IAX_IE_CALLING_NAME;
-	buffer[length++] = (unsigned char)m_callsign.size();
-	for (std::string::const_iterator it = m_callsign.cbegin(); it != m_callsign.cend(); ++it)
-		buffer[length++] = *it;
+	buffer[length++] = 0U;
+	// buffer[length++] = (unsigned char)m_callsign.size();
+	// for (std::string::const_iterator it = m_callsign.cbegin(); it != m_callsign.cend(); ++it)
+	//	buffer[length++] = *it;
+
+	buffer[length++] = IAX_IE_LANGUAGE;
+	buffer[length++] = 2U;
+	buffer[length++] = 'e';
+	buffer[length++] = 'n';
 
 	buffer[length++] = IAX_IE_USERNAME;
 	buffer[length++] = (unsigned char)m_username.size();
@@ -692,6 +765,32 @@ bool CFMIAXNetwork::writeNew(bool retry)
 	buffer[length++] = 0x00U;
 	buffer[length++] = 0x00U;
 	buffer[length++] = AST_FORMAT_ULAW;
+
+	buffer[length++] = IAX_IE_CAPABILITY;
+	buffer[length++] = sizeof(unsigned int);
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = AST_FORMAT_ULAW;
+
+	buffer[length++] = IAX_IE_ADSICPE;
+	buffer[length++] = 2U;
+	buffer[length++] = 0x00U;
+	buffer[length++] = 0x02U;
+
+	unsigned int dt = iaxDateTime();
+
+	buffer[length++] = IAX_IE_DATETIME;
+	buffer[length++] = sizeof(unsigned int);
+	buffer[length++] = (dt >> 24) & 0xFFU;
+	buffer[length++] = (dt >> 16) & 0xFFU;
+	buffer[length++] = (dt >> 8) & 0xFFU;
+	buffer[length++] = (dt >> 0) & 0xFFU;
+
+	buffer[length++] = IAX_IE_CALLTOKEN;
+	buffer[length++] = (unsigned char)m_callToken.size();
+	for (std::string::const_iterator it = m_callToken.cbegin(); it != m_callToken.cend(); ++it)
+		buffer[length++] = *it;
 
 #if !defined(DEBUG_IAX)
 	if (m_debug)
@@ -1284,3 +1383,22 @@ bool CFMIAXNetwork::compareFrame(const unsigned char* buffer, unsigned char type
 	return (buffer[10U] == type1) && (buffer[11U] == type2);
 }
 
+unsigned int CFMIAXNetwork::iaxDateTime() const
+{
+	time_t now = ::time(NULL);
+
+	struct tm* tm = ::gmtime(&now);
+
+	unsigned int dt = 0U;
+	dt |= (tm->tm_sec  & 0x0000001FU) << 0;		// 5 bits
+	dt |= (tm->tm_min  & 0x0000003FU) << 5;		// 6 bits
+	dt |= (tm->tm_hour & 0x0000001FU) << 11;	// 5 bits
+
+	dt |= (tm->tm_mday & 0x0000001FU) << 16;	// 5 bits
+
+	dt |= ((tm->tm_mon + 1) & 0x0000000FU) << 21;	// 4 bits
+
+	dt |= ((tm->tm_year - 100) & 0x0000007FU) << 25;	// 7 bits
+
+	return dt;
+}

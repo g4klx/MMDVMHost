@@ -84,6 +84,7 @@ private:
 	unsigned short      m_dCallNo;
 	unsigned char       m_iSeqNo;
 	unsigned char       m_oSeqNo;
+	std::string         m_callToken;
 	unsigned int        m_rxJitter;
 	unsigned int        m_rxLoss;
 	unsigned int        m_rxFrames;
@@ -111,6 +112,8 @@ private:
 	void uLawDecode(const unsigned char* buffer, short* audio, unsigned int length) const;
 
 	bool compareFrame(const unsigned char* buffer, unsigned char type1, unsigned char type2) const;
+
+	unsigned int iaxDateTime() const;
 };
 
 #endif
