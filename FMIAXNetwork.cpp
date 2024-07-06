@@ -745,9 +745,6 @@ bool CFMIAXNetwork::writeNew(bool retry)
 
 	buffer[length++] = IAX_IE_CALLING_NAME;
 	buffer[length++] = 0U;
-	buffer[length++] = (unsigned char)m_password.size();
-	for (std::string::const_iterator it = m_password.cbegin(); it != m_password.cend(); ++it)
-		buffer[length++] = *it;
 
 	buffer[length++] = IAX_IE_LANGUAGE;
 	buffer[length++] = 2U;
@@ -755,8 +752,8 @@ bool CFMIAXNetwork::writeNew(bool retry)
 	buffer[length++] = 'n';
 
 	buffer[length++] = IAX_IE_USERNAME;
-	buffer[length++] = (unsigned char)m_username.size();
-	for (std::string::const_iterator it = m_username.cbegin(); it != m_username.cend(); ++it)
+	buffer[length++] = (unsigned char)m_password.size();
+	for (std::string::const_iterator it = m_password.cbegin(); it != m_password.cend(); ++it)
 		buffer[length++] = *it;
 
 	buffer[length++] = IAX_IE_FORMAT;
