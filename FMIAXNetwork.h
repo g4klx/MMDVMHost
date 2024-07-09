@@ -97,6 +97,7 @@ private:
 	bool writeLagRp(unsigned int ts);
 	bool writeHangup();
 	bool writeAudio(const short* audio, unsigned int length);
+	bool writeMiniFrame(const short* audio, unsigned int length);
 
 	void uLawEncode(const short* audio, unsigned char* buffer, unsigned int length) const;
 	void uLawDecode(const unsigned char* buffer, short* audio, unsigned int length) const;

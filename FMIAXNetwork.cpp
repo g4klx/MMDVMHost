@@ -247,25 +247,7 @@ bool CFMIAXNetwork::writeData(const float* data, unsigned int nSamples)
 	for (unsigned int i = 0U; i < nSamples; i++)
 		audio[i] = short(data[i] * 32767.0F + 0.5F);		// Changing audio format from float to S16LE
 
-#if defined(DEBUG_IAX)
-	LogDebug("IAX audio sent");
-#endif
-	unsigned short ts = m_timestamp.elapsed();
-
-	unsigned char buffer[300U];
-
-	buffer[0U] = (m_sCallNo >> 8) & 0xFFU;
-	buffer[1U] = (m_sCallNo >> 0) & 0xFFU;
-
-	buffer[2U] = (ts >> 8) & 0xFFU;
-	buffer[3U] = (ts >> 0) & 0xFFU;
-
-	uLawEncode(audio, buffer + 4U, nSamples);
-
-	if (m_debug)
-		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, 4U + nSamples);
-
-	return m_socket.write(buffer, 4U + nSamples, m_addr, m_addrLen);
+	return writeMiniFrame(audio, nSamples);
 }
 
 bool CFMIAXNetwork::writeEnd()
@@ -372,6 +354,11 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		m_status = IAXS_CONNECTED;
 		m_retryTimer.stop();
 		m_pingTimer.start();
+
+		short audio[160U];
+		::memset(audio, 0x00U, 160U * sizeof(short));
+
+		writeAudio(audio, 160U);
 	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_REJECT)) {
 #if defined(DEBUG_IAX)
 		CUtils::dump(1U, "FM IAX Network Data Received", buffer, length);
@@ -408,9 +395,15 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		m_rxFrames++;
 		m_iSeqNo = iSeqNo + 1U;
 
+		LogMessage("IAX ANSWER received");
+
 		writeAck(ts);
 
-		LogMessage("IAX ANSWER received");
+		short audio[160U];
+		::memset(audio, 0x00U, 160U * sizeof(short));
+
+		writeMiniFrame(audio, 160U);
+		writeEnd();
 	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_VNAK)) {
 #if defined(DEBUG_IAX)
 		CUtils::dump(1U, "FM IAX Network Data Received", buffer, length);
@@ -1006,10 +999,40 @@ bool CFMIAXNetwork::writeAudio(const short* audio, unsigned int length)
 
 	uLawEncode(audio, buffer + 12U, length);
 
+#if !defined(DEBUG_IAX)
 	if (m_debug)
+#endif
 		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, 12U + length);
 
 	return m_socket.write(buffer, 12U + length, m_addr, m_addrLen);
+}
+
+bool CFMIAXNetwork::writeMiniFrame(const short* audio, unsigned int length)
+{
+	assert(audio != NULL);
+	assert(length > 0U);
+
+#if defined(DEBUG_IAX)
+	LogDebug("IAX audio sent");
+#endif
+	unsigned short ts = m_timestamp.elapsed();
+
+	unsigned char buffer[300U];
+
+	buffer[0U] = (m_sCallNo >> 8) & 0xFFU;
+	buffer[1U] = (m_sCallNo >> 0) & 0xFFU;
+
+	buffer[2U] = (ts >> 8) & 0xFFU;
+	buffer[3U] = (ts >> 0) & 0xFFU;
+
+	uLawEncode(audio, buffer + 4U, length);
+
+#if !defined(DEBUG_IAX)
+	if (m_debug)
+#endif
+		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, 4U + length);
+
+	return m_socket.write(buffer, 4U + length, m_addr, m_addrLen);
 }
 
 bool CFMIAXNetwork::compareFrame(const unsigned char* buffer, unsigned char type1, unsigned char type2) const
