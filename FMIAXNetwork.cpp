@@ -354,11 +354,6 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		m_status = IAXS_CONNECTED;
 		m_retryTimer.stop();
 		m_pingTimer.start();
-
-		short audio[160U];
-		::memset(audio, 0x00U, 160U * sizeof(short));
-
-		writeAudio(audio, 160U);
 	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_REJECT)) {
 #if defined(DEBUG_IAX)
 		CUtils::dump(1U, "FM IAX Network Data Received", buffer, length);
@@ -398,12 +393,6 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		LogMessage("IAX ANSWER received");
 
 		writeAck(ts);
-
-		short audio[160U];
-		::memset(audio, 0x00U, 160U * sizeof(short));
-
-		writeMiniFrame(audio, 160U);
-		writeEnd();
 	} else if (compareFrame(buffer, AST_FRAME_IAX, IAX_COMMAND_VNAK)) {
 #if defined(DEBUG_IAX)
 		CUtils::dump(1U, "FM IAX Network Data Received", buffer, length);
