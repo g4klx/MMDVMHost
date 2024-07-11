@@ -29,8 +29,16 @@
 #include <string>
 #include <random>
 
+#if defined(_WIN32) || defined(_WIN64)
+#include <wincrypt.h>
+#else
+#include <md5.h>
+#endif
+
 enum IAX_STATUS {
 	IAXS_DISCONNECTED,
+	IAXS_REGISTERING,
+	IAXS_REGISTERED,
 	IAXS_CONNECTING,
 	IAXS_CONNECTED
 };
@@ -87,6 +95,9 @@ private:
 	unsigned int        m_rxOOO;
 	bool                m_keyed;
 	std::mt19937        m_random;
+#if defined(_WIN32) || defined(_WIN64)
+	HCRYPTPROV          m_provider;
+#endif
 
 	bool writeNew();
 	bool writeKey(bool key);
@@ -96,6 +107,7 @@ private:
 	bool writeLagRq();
 	bool writeLagRp(unsigned int ts);
 	bool writeHangup();
+	bool writeRegReq();
 	bool writeAudio(const short* audio, unsigned int length);
 	bool writeMiniFrame(const short* audio, unsigned int length);
 
@@ -107,6 +119,7 @@ private:
 	unsigned int iaxDateTime() const;
 
 	unsigned int setIEString(unsigned char* buffer, unsigned int& pos, unsigned char ie, const std::string& text) const;
+	unsigned int setIEString(unsigned char* buffer, unsigned int& pos, unsigned char ie, const char* text, unsigned char size) const;
 	unsigned int setIEUInt32(unsigned char* buffer, unsigned int& pos, unsigned char ie, uint32_t value) const;
 	unsigned int setIEUInt16(unsigned char* buffer, unsigned int& pos, unsigned char ie, uint16_t value) const;
 	unsigned int setIEUInt8(unsigned char* buffer,  unsigned int& pos, unsigned char ie, uint8_t value) const;
