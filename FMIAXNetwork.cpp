@@ -410,7 +410,7 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		writeAck(ts);
 
 		uint16_t method = getIEUInt16(buffer, length, IAX_IE_AUTHMETHODS);
-		if (method != IAX_AUTH_MD5) {
+		if ((method & IAX_AUTH_MD5) == 0x00U) {
 			LogError("IAX Gateway wanted something other than MD5 authentication = 0x%02X", method);
 			m_status = IAXS_DISCONNECTED;
 			m_retryTimer.stop();
@@ -638,8 +638,7 @@ bool CFMIAXNetwork::writeNew()
 
 	m_timestamp.start();
 
-	m_oSeqNo  = m_iSeqNo = 0U;
-	m_dCallNo = 0U;
+	m_oSeqNo = m_iSeqNo = 0U;
 
 	unsigned int length = 0U;
 
@@ -1074,10 +1073,12 @@ bool CFMIAXNetwork::writeRegReq()
 	unsigned int pos = 0U;
 	setIEString(buffer, pos, IAX_IE_USERNAME, m_username);
 
+	setIEUInt16(buffer, pos, IAX_IE_REFRESH, REFRESH_TIME);
+
 	if (m_dCallNo > 0U) {
 		std::string password = m_seed + m_password;
 
-		char hash[MD5_DIGEST_STRING_LENGTH];
+		uint8_t hash[MD5_DIGEST_STRING_LENGTH];
 
 #if defined(_WIN32) || defined(_WIN64)
 		HCRYPTHASH hHash = 0;
@@ -1102,10 +1103,17 @@ bool CFMIAXNetwork::writeRegReq()
 		::MD5Data((uint8_t*)password.c_str(), password.size(), hash);
 #endif
 
-		setIEString(buffer, pos, IAX_IE_MD5_RESULT, hash, MD5_DIGEST_STRING_LENGTH);
+		char text[MD5_DIGEST_STRING_LENGTH * 3U];
+		::sprintf(text, "%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X",
+			hash[0U], hash[1U], hash[2U], hash[3U],
+			hash[4U], hash[5U], hash[6U], hash[7U],
+			hash[8U], hash[9U], hash[10U], hash[11U],
+			hash[12U], hash[13U], hash[14U], hash[15U]);
+
+		setIEString(buffer, pos, IAX_IE_MD5_RESULT, text, MD5_DIGEST_STRING_LENGTH * 2U);
 	}
 
-	unsigned int length = setIEUInt16(buffer, pos, IAX_IE_REFRESH, REFRESH_TIME);
+	unsigned int length = setIEString(buffer, pos, IAX_IE_CALLTOKEN, m_callToken);
 
 #if !defined(DEBUG_IAX)
 	if (m_debug)
