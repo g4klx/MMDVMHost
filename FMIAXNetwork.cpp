@@ -1100,7 +1100,7 @@ bool CFMIAXNetwork::writeRegReq()
 
 		::CryptDestroyHash(hHash);
 #else
-		::MD5Data((uint8_t*)password.c_str(), password.size(), hash);
+		::MD5Data((uint8_t*)password.c_str(), password.size(), (char*)hash);
 #endif
 
 		char text[MD5_DIGEST_STRING_LENGTH * 3U];
