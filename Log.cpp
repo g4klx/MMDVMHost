@@ -149,25 +149,29 @@ void Log(unsigned int level, const char* fmt, ...)
 {
 	assert(fmt != NULL);
 
-	char buffer[501U];
+	size_t buffer_len = 501U;
+	char buffer[buffer_len];
+	int count;
 #if defined(_WIN32) || defined(_WIN64)
 	SYSTEMTIME st;
 	::GetSystemTime(&st);
 
-	::sprintf(buffer, "%c: %04u-%02u-%02u %02u:%02u:%02u.%03u ", LEVELS[level], st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+	count = ::snprintf(buffer, buffer_len, "%c: %04u-%02u-%02u %02u:%02u:%02u.%03u ", LEVELS[level], st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 #else
 	struct timeval now;
 	::gettimeofday(&now, NULL);
 
 	struct tm* tm = ::gmtime(&now.tv_sec);
 
-	::sprintf(buffer, "%c: %04d-%02d-%02d %02d:%02d:%02d.%03lld ", LEVELS[level], tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, now.tv_usec / 1000LL);
+	count = ::snprintf(buffer, buffer_len, "%c: %04d-%02d-%02d %02d:%02d:%02d.%03lld ", LEVELS[level], tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, now.tv_usec / 1000LL);
 #endif
+	assert(count >= 0);
+	buffer_len -= count;
 
 	va_list vl;
 	va_start(vl, fmt);
 
-	::vsnprintf(buffer + ::strlen(buffer), 500, fmt, vl);
+	::vsnprintf(buffer + count, buffer_len, fmt, vl);
 
 	va_end(vl);
 
