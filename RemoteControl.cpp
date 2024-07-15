@@ -192,7 +192,7 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 #endif
 		}
 		
-		m_socket.write((unsigned char*)replyStr.c_str(), replyStr.length(), address, addrlen);
+		m_socket.write((unsigned char*)replyStr.c_str(), (unsigned int)replyStr.length(), address, addrlen);
 	}
 	
 	return m_command;
@@ -209,14 +209,14 @@ unsigned int CRemoteControl::getArgCount() const
 		case RCD_MODE_P25:
 		case RCD_MODE_NXDN:
 		case RCD_MODE_M17:
-			return m_args.size() - SET_MODE_ARGS;
+			return (unsigned int)m_args.size() - SET_MODE_ARGS;
 		case RCD_PAGE:
 		case RCD_PAGE_BCD:
 		case RCD_PAGE_A1:
 		case RCD_PAGE_A2:
-			return m_args.size() - 1U;
+			return (unsigned int)m_args.size() - 1U;
 		case RCD_CW:
-                        return m_args.size() - 1U;
+			return (unsigned int)m_args.size() - 1U;
 		default:
 			return 0U;
 	}

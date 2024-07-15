@@ -104,10 +104,12 @@ bool CFMNetwork::open()
 		}
 	}
 
+#if !defined(HAS_SRC)
 	if ((m_protocol == FMNP_RAW) && (m_sampleRate != MMDVM_SAMPLERATE)) {
 		LogError("The resampler needed for non-native sample rates has not been included");
 		return false;
 	}
+#endif
 
 	return m_socket.open(m_addr);
 }
@@ -544,7 +546,7 @@ bool CFMNetwork::writeUSRPStart()
 	buffer[length++] = 0x08U;
 
 	// TLV Length
-	buffer[length++] = 3U + 4U + 3U + 1U + 1U + m_callsign.size() + 1U;
+	buffer[length++] = 3U + 4U + 3U + 1U + 1U + (unsigned char)m_callsign.size() + 1U;
 
 	// DMR Id
 	buffer[length++] = 0x00U;
