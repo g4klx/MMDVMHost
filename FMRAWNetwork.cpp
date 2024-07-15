@@ -79,6 +79,13 @@ bool CFMRAWNetwork::open()
 
 	LogMessage("Opening FM RAW network connection");
 
+#if !defined(HAS_SRC)
+	if (m_sampleRate != MMDVM_SAMPLERATE) {
+		LogError("The resampler needed for non-native sample rates has not been included");
+		return false;
+	}
+#endif
+
 	if (!m_squelchFile.empty()) {
 		m_fp = ::fopen(m_squelchFile.c_str(), "wb");
 		if (m_fp == NULL) {
