@@ -1100,8 +1100,8 @@ bool CFMIAXNetwork::writeRegReq()
 			return false;
 		}
 
-		DWORD cbHash = MD5_DIGEST_STRING_LENGTH;
-		if (!::CryptGetHashParam(hHash, HP_HASHVAL, (BYTE*)hash, &cbHash, 0)) {
+		DWORD cbHash = 16U;
+		if (!::CryptGetHashParam(hHash, HP_HASHVAL, hash, &cbHash, 0)) {
 			printf("CryptGetHashParam failed: %ld\n", ::GetLastError());
 			return false;
 		}
