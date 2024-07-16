@@ -1088,6 +1088,10 @@ bool CFMIAXNetwork::writeRegReq()
 
 	setIEUInt16(buffer, pos, IAX_IE_REFRESH, REFRESH_TIME);
 
+	m_dCallNo = 123U;
+	m_seed = "199125337";
+	m_password = "password01";
+
 	if (m_dCallNo > 0U) {
 		std::string password = m_seed + m_password;
 
@@ -1112,19 +1116,25 @@ bool CFMIAXNetwork::writeRegReq()
 		}
 
 		::CryptDestroyHash(hHash);
-#else
-		::MD5Data((uint8_t*)password.c_str(), password.size(), (char*)hash);
-#endif
 
 		char text[MD5_DIGEST_STRING_LENGTH * 3U];
-		::sprintf(text, "%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X%02X",
+		::sprintf(text, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
 			hash[0U], hash[1U], hash[2U], hash[3U],
 			hash[4U], hash[5U], hash[6U], hash[7U],
 			hash[8U], hash[9U], hash[10U], hash[11U],
 			hash[12U], hash[13U], hash[14U], hash[15U]);
 
 		setIEString(buffer, pos, IAX_IE_MD5_RESULT, text, MD5_DIGEST_STRING_LENGTH * 2U);
+#else
+		::MD5Data((uint8_t*)password.c_str(), password.size(), (char*)hash);
+
+		printf("Length=%u hash=%.32s\n", MD5_DIGEST_STRING_LENGTH, hash);
+
+		setIEString(buffer, pos, IAX_IE_MD5_RESULT, hash, MD5_DIGEST_STRING_LENGTH);
+#endif
 	}
+
+	// c6173b80a28b8303d70b6b9784961d4e
 
 	unsigned int length = setIEString(buffer, pos, IAX_IE_CALLTOKEN, m_callToken);
 
