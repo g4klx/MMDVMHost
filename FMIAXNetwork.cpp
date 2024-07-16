@@ -122,9 +122,6 @@ const unsigned char IAX_IE_CALLTOKEN      = 54U;
 
 const unsigned int BUFFER_LENGTH = 1500U;
 
-#if !defined(MD5_DIGEST_STRING_LENGTH)
-#define	MD5_DIGEST_STRING_LENGTH	16
-#endif
 
 CFMIAXNetwork::CFMIAXNetwork(const std::string& domain, const std::string& password, const std::string& source, const std::string& destination, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug) :
 m_password(password),
@@ -951,8 +948,6 @@ bool CFMIAXNetwork::writeHangup()
 #if defined(DEBUG_IAX)
 	LogDebug("IAX HANGUP sent");
 #endif
-	const char* REASON = "MMDVM Out";
-
 	m_oSeqNo++;
 
 	unsigned short sCall = m_sCallNo | 0x8000U;
@@ -1088,16 +1083,12 @@ bool CFMIAXNetwork::writeRegReq()
 
 	setIEUInt16(buffer, pos, IAX_IE_REFRESH, REFRESH_TIME);
 
-	m_dCallNo = 123U;
-	m_seed = "199125337";
-	m_password = "password01";
-
 	if (m_dCallNo > 0U) {
 		std::string password = m_seed + m_password;
 
-		uint8_t hash[MD5_DIGEST_STRING_LENGTH];
-
 #if defined(_WIN32) || defined(_WIN64)
+		uint8_t hash[16U];
+
 		HCRYPTHASH hHash = 0;
 		if (!::CryptCreateHash(m_provider, CALG_MD5, 0, 0, &hHash)) {
 			printf("CryptCreateHash failed: %ld\n", ::GetLastError());
@@ -1117,24 +1108,22 @@ bool CFMIAXNetwork::writeRegReq()
 
 		::CryptDestroyHash(hHash);
 
-		char text[MD5_DIGEST_STRING_LENGTH * 3U];
+		char text[33U];
 		::sprintf(text, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x",
 			hash[0U], hash[1U], hash[2U], hash[3U],
 			hash[4U], hash[5U], hash[6U], hash[7U],
 			hash[8U], hash[9U], hash[10U], hash[11U],
 			hash[12U], hash[13U], hash[14U], hash[15U]);
 
-		setIEString(buffer, pos, IAX_IE_MD5_RESULT, text, MD5_DIGEST_STRING_LENGTH * 2U);
+		setIEString(buffer, pos, IAX_IE_MD5_RESULT, text, 32U);
 #else
-		::MD5Data((uint8_t*)password.c_str(), password.size(), (char*)hash);
+		char hash[MD5_DIGEST_STRING_LENGTH];
 
-		printf("Length=%u hash=%.32s\n", MD5_DIGEST_STRING_LENGTH, hash);
+		::MD5Data((uint8_t*)password.c_str(), password.size(), hash);
 
-		setIEString(buffer, pos, IAX_IE_MD5_RESULT, hash, MD5_DIGEST_STRING_LENGTH);
+		setIEString(buffer, pos, IAX_IE_MD5_RESULT, hash, MD5_DIGEST_STRING_LENGTH - 1U);
 #endif
 	}
-
-	// c6173b80a28b8303d70b6b9784961d4e
 
 	unsigned int length = setIEString(buffer, pos, IAX_IE_CALLTOKEN, m_callToken);
 
