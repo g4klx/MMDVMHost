@@ -303,9 +303,10 @@ public:
   // The FM Network section
   bool         getFMNetworkEnabled() const;
   std::string  getFMNetworkProtocol() const;
-  std::string  getFMNetworkUsername() const;
+  std::string  getFMNetworkDomain() const;
   std::string  getFMNetworkPassword() const;
-  std::string  getFMNetworkNode() const;
+  std::string  getFMNetworkSource() const;
+  std::string  getFMNetworkDestination() const;
   unsigned int getFMNetworkSampleRate() const;
   std::string  getFMNetworkSquelchFile() const;
   std::string  getFMGatewayAddress() const;
@@ -628,9 +629,10 @@ private:
 
   bool         m_fmNetworkEnabled;
   std::string  m_fmNetworkProtocol;
-  std::string  m_fmNetworkUsername;
+  std::string  m_fmNetworkDomain;
   std::string  m_fmNetworkPassword;
-  std::string  m_fmNetworkNode;
+  std::string  m_fmNetworkSource;
+  std::string  m_fmNetworkDestination;
   unsigned int m_fmNetworkSampleRate;
   std::string  m_fmNetworkSquelchFile;
   std::string  m_fmGatewayAddress;

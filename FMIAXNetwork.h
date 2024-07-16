@@ -45,7 +45,7 @@ enum IAX_STATUS {
 
 class CFMIAXNetwork : public IFMNetwork {
 public:
-	CFMIAXNetwork(const std::string& callsign, const std::string& username, const std::string& password, const std::string& node, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug);
+	CFMIAXNetwork(const std::string& domain, const std::string& password, const std::string& source, const std::string& destination, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug);
 	virtual ~CFMIAXNetwork();
 
 	virtual bool open();
@@ -67,13 +67,14 @@ public:
 	virtual void clock(unsigned int ms);
 
 private:
-	std::string         m_callsign;
-	std::string         m_username;
 	std::string         m_password;
-	std::string         m_node;
+	std::string         m_source;
+	std::string         m_destination;
 	CUDPSocket          m_socket;
-	sockaddr_storage    m_addr;
-	unsigned int        m_addrLen;
+	sockaddr_storage    m_domainAddr;
+	unsigned int        m_domainAddrLen;
+	sockaddr_storage    m_serverAddr;
+	unsigned int        m_serverAddrLen;
 	bool                m_debug;
 	bool                m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
@@ -101,11 +102,11 @@ private:
 
 	bool writeNew();
 	bool writeKey(bool key);
-	bool writePing();
-	bool writePong(unsigned int ts);
-	bool writeAck(unsigned int ts);
-	bool writeLagRq();
-	bool writeLagRp(unsigned int ts);
+	bool writePing(const sockaddr_storage& addr, unsigned int addrLen);
+	bool writePong(const sockaddr_storage& addr, unsigned int addrLen, unsigned int ts);
+	bool writeAck(const sockaddr_storage& addr, unsigned int addrLen, unsigned int ts);
+	bool writeLagRq(const sockaddr_storage& addr, unsigned int addrLen);
+	bool writeLagRp(const sockaddr_storage& addr, unsigned int addrLen, unsigned int ts);
 	bool writeHangup();
 	bool writeRegReq();
 	bool writeAudio(const short* audio, unsigned int length);

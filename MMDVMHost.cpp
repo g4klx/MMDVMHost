@@ -1888,9 +1888,10 @@ bool CMMDVMHost::createPOCSAGNetwork()
 bool CMMDVMHost::createFMNetwork()
 {
 	std::string callsign       = m_conf.getFMCallsign();
-	std::string username       = m_conf.getFMNetworkUsername();
+	std::string domain         = m_conf.getFMNetworkDomain();
 	std::string password       = m_conf.getFMNetworkPassword();
-	std::string node           = m_conf.getFMNetworkNode();
+	std::string source         = m_conf.getFMNetworkSource();
+	std::string destination    = m_conf.getFMNetworkDestination();
 	std::string protocol       = m_conf.getFMNetworkProtocol();
 	unsigned int sampleRate    = m_conf.getFMNetworkSampleRate();
 	std::string squelchFile    = m_conf.getFMNetworkSquelchFile();
@@ -1923,8 +1924,9 @@ bool CMMDVMHost::createFMNetwork()
 	}
 
 	if (protocol == "IAX") {
-		LogInfo("    Username: %s", username.c_str());
-		LogInfo("    Node: %s", node.c_str());
+		LogInfo("    Domain: %s", domain.c_str());
+		LogInfo("    Source: %s", source.c_str());
+		LogInfo("    Destiation: %s", destination.c_str());
 	}
 
 	if (protocol == "USRP") {
@@ -1932,7 +1934,7 @@ bool CMMDVMHost::createFMNetwork()
 	} else if (protocol == "RAW") {
 		m_fmNetwork = new CFMRAWNetwork(localAddress, localPort, gatewayAddress, gatewayPort, sampleRate, squelchFile, debug);
 	} else if (protocol == "IAX") {
-		m_fmNetwork = new CFMIAXNetwork(callsign, username, password, node, localAddress, localPort, gatewayAddress, gatewayPort, debug);
+		m_fmNetwork = new CFMIAXNetwork(domain, password, source, destination, localAddress, localPort, gatewayAddress, gatewayPort, debug);
 	} else {
 		LogError("Invalid FM network protocol specified - %s", protocol.c_str());
 		return false;
