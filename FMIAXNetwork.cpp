@@ -409,8 +409,6 @@ void CFMIAXNetwork::clock(unsigned int ms)
 		m_rxFrames++;
 		m_iSeqNo = iSeqNo + 1U;
 
-		writeAck(addr, addrLen, ts);
-
 		uint16_t method = getIEUInt16(buffer, length, IAX_IE_AUTHMETHODS);
 		if ((method & IAX_AUTH_MD5) == 0x00U) {
 			LogError("IAX Gateway wanted something other than MD5 authentication = 0x%02X", method);
@@ -1091,18 +1089,18 @@ bool CFMIAXNetwork::writeRegReq()
 
 		HCRYPTHASH hHash = 0;
 		if (!::CryptCreateHash(m_provider, CALG_MD5, 0, 0, &hHash)) {
-			printf("CryptCreateHash failed: %ld\n", ::GetLastError());
+			LogError("CryptCreateHash failed: %ld", ::GetLastError());
 			return false;
 		}
 
 		if (!::CryptHashData(hHash, (BYTE*)password.c_str(), DWORD(password.size()), 0)) {
-			printf("CryptHashData failed: %ld\n", ::GetLastError());
+			LogError("CryptHashData failed: %ld", ::GetLastError());
 			return false;
 		}
 
 		DWORD cbHash = 16U;
 		if (!::CryptGetHashParam(hHash, HP_HASHVAL, hash, &cbHash, 0)) {
-			printf("CryptGetHashParam failed: %ld\n", ::GetLastError());
+			LogError("CryptGetHashParam failed: %ld", ::GetLastError());
 			return false;
 		}
 
@@ -1115,11 +1113,15 @@ bool CFMIAXNetwork::writeRegReq()
 			hash[8U], hash[9U], hash[10U], hash[11U],
 			hash[12U], hash[13U], hash[14U], hash[15U]);
 
+		LogMessage("FMIAXNetwork: \"%s\" + \"%s\" = \"%.*s\"", m_seed.c_str(), m_password.c_str(), 32, text);
+
 		setIEString(buffer, pos, IAX_IE_MD5_RESULT, text, 32U);
 #else
 		char hash[MD5_DIGEST_STRING_LENGTH];
 
 		::MD5Data((uint8_t*)password.c_str(), password.size(), hash);
+
+		LogMessage("FMIAXNetwork: \"%s\" + \"%s\" = \"%.*s\"", m_seed.c_str(), m_password.c_str(), MD5_DIGEST_STRING_LENGTH - 1U, hash);
 
 		setIEString(buffer, pos, IAX_IE_MD5_RESULT, hash, MD5_DIGEST_STRING_LENGTH - 1U);
 #endif
