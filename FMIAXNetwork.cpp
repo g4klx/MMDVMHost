@@ -1359,7 +1359,7 @@ std::string CFMIAXNetwork::getIEString(const unsigned char* buffer, unsigned int
 			return std::string((char*)(buffer + pos + 2U), len);
 		} else {
 			unsigned char len = buffer[pos + 1U];
-			pos += len + 1U;
+			pos += len + 2U;
 		}
 	}
 
@@ -1387,7 +1387,7 @@ uint32_t CFMIAXNetwork::getIEUInt32(const unsigned char* buffer, unsigned int le
 			return value;
 		} else {
 			unsigned char len = buffer[pos + 1U];
-			pos += len + 1U;
+			pos += len + 2U;
 		}
 	}
 
@@ -1413,7 +1413,7 @@ uint16_t CFMIAXNetwork::getIEUInt16(const unsigned char* buffer, unsigned int le
 			return value;
 		} else {
 			unsigned char len = buffer[pos + 1U];
-			pos += len + 1U;
+			pos += len + 2U;
 		}
 	}
 
@@ -1436,7 +1436,7 @@ uint8_t CFMIAXNetwork::getIEUInt8(const unsigned char* buffer, unsigned int leng
 			return buffer[pos + 2U];
 		} else {
 			unsigned char len = buffer[pos + 1U];
-			pos += len + 1U;
+			pos += len + 2U;
 		}
 	}
 
