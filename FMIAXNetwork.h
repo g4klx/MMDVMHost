@@ -83,8 +83,10 @@ private:
 	CTimer              m_pingTimer;
 	std::string         m_seed;
 	CStopWatch          m_timestamp;
-	unsigned short      m_sCallNo;
-	unsigned short      m_dCallNo;
+	unsigned short      m_sAuthCallNo;
+	unsigned short      m_dAuthCallNo;
+	unsigned short      m_sLinkCallNo;
+	unsigned short      m_dLinkCallNo;
 	unsigned char       m_iSeqNo;
 	unsigned char       m_oSeqNo;
 	std::string         m_callToken;
