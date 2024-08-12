@@ -1131,18 +1131,16 @@ bool CFMIAXNetwork::writeRegReq()
 			hash[8U], hash[9U], hash[10U], hash[11U],
 			hash[12U], hash[13U], hash[14U], hash[15U]);
 
-		LogMessage("FMIAXNetwork: \"%s\" + \"%s\" = \"%.*s\"", m_seed.c_str(), m_password.c_str(), 32, text);
-
 		setIEString(buffer, pos, IAX_IE_MD5_RESULT, text, 32U);
 #else
 		char hash[MD5_DIGEST_STRING_LENGTH];
 
 		::MD5Data((uint8_t*)password.c_str(), password.size(), hash);
 
-		LogMessage("FMIAXNetwork: \"%s\" + \"%s\" = \"%.*s\"", m_seed.c_str(), m_password.c_str(), MD5_DIGEST_STRING_LENGTH - 1U, hash);
-
 		setIEString(buffer, pos, IAX_IE_MD5_RESULT, hash, MD5_DIGEST_STRING_LENGTH - 1U);
 #endif
+	} else {
+		m_oSeqNo++;
 	}
 
 	unsigned int length = setIEString(buffer, pos, IAX_IE_CALLTOKEN, m_callToken);
@@ -1151,8 +1149,6 @@ bool CFMIAXNetwork::writeRegReq()
 	if (m_debug)
 #endif
 		CUtils::dump(1U, "FM IAX Network Data Sent", buffer, length);
-
-	m_oSeqNo++;
 
 	return m_socket.write(buffer, length, m_domainAddr, m_domainAddrLen);
 }
