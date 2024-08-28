@@ -256,16 +256,16 @@ unsigned int CRemoteControl::getArgCount() const
 #if defined(USE_M17)
 		case RCD_MODE_M17:
 #endif
-			return m_args.size() - SET_MODE_ARGS;
+			return (unsigned int)m_args.size() - SET_MODE_ARGS;
 #if defined(USE_POCSAG)
 		case RCD_PAGE:
 		case RCD_PAGE_BCD:
 		case RCD_PAGE_A1:
 		case RCD_PAGE_A2:
-			return m_args.size() - 1U;
+			return (unsigned int)m_args.size() - 1U;
 #endif
 		case RCD_CW:
-                        return m_args.size() - 1U;
+			return (unsigned int)m_args.size() - 1U;
 		default:
 			return 0U;
 	}
