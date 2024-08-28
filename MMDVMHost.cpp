@@ -60,15 +60,10 @@ static int  m_signal = 0;
 static bool m_reload = false;
 
 #if !defined(_WIN32) && !defined(_WIN64)
-static void sigHandler1(int signum)
+static void sigHandler(int signum)
 {
 	m_killed = true;
 	m_signal = signum;
-}
-
-static void sigHandler2(int signum)
-{
-	m_reload = true;
 }
 #endif
 
@@ -96,16 +91,16 @@ int main(int argc, char** argv)
 	}
 
 #if !defined(_WIN32) && !defined(_WIN64)
-	::signal(SIGINT,  sigHandler1);
-	::signal(SIGTERM, sigHandler1);
-	::signal(SIGHUP,  sigHandler1);
-	::signal(SIGUSR1, sigHandler2);
+	::signal(SIGINT,  sigHandler);
+	::signal(SIGTERM, sigHandler);
+	::signal(SIGHUP,  sigHandler);
 #endif
 
 	int ret = 0;
 
 	do {
 		m_signal = 0;
+		m_killed = false;
 
 		CMMDVMHost* host = new CMMDVMHost(std::string(iniFile));
 		ret = host->run();
@@ -113,6 +108,8 @@ int main(int argc, char** argv)
 		delete host;
 
 		switch (m_signal) {
+			case 0:
+				break;
 			case 2:
 				::LogInfo("MMDVMHost-%s exited on receipt of SIGINT", VERSION);
 				break;
@@ -120,16 +117,14 @@ int main(int argc, char** argv)
 				::LogInfo("MMDVMHost-%s exited on receipt of SIGTERM", VERSION);
 				break;
 			case 1:
-				::LogInfo("MMDVMHost-%s exited on receipt of SIGHUP", VERSION);
-				break;
-			case 10:
-				::LogInfo("MMDVMHost-%s is restarting on receipt of SIGUSR1", VERSION);
+				::LogInfo("MMDVMHost-%s is restarting on receipt of SIGHUP", VERSION);
+				m_reload = true;
 				break;
 			default:
 				::LogInfo("MMDVMHost-%s exited on receipt of an unknown signal", VERSION);
 				break;
 		}
-	} while (m_signal == 10);
+	} while (m_reload || (m_signal == 1));
 
 	::LogFinalise();
 
