@@ -251,8 +251,9 @@
     <ClInclude Include="QR1676.h" />
     <ClInclude Include="RemoteControl.h" />
     <ClInclude Include="RingBuffer.h" />
+    <ClInclude Include="RS.h" />
     <ClInclude Include="RS129.h" />
-    <ClInclude Include="RS241213.h" />
+    <ClInclude Include="RS634717.h" />
     <ClInclude Include="RSSIInterpolator.h" />
     <ClInclude Include="NXDNSACCH.h" />
     <ClInclude Include="UARTController.h" />
@@ -359,7 +360,7 @@
     <ClCompile Include="QR1676.cpp" />
     <ClCompile Include="RemoteControl.cpp" />
     <ClCompile Include="RS129.cpp" />
-    <ClCompile Include="RS241213.cpp" />
+    <ClCompile Include="RS634717.cpp" />
     <ClCompile Include="RSSIInterpolator.cpp" />
     <ClCompile Include="UARTController.cpp" />
     <ClCompile Include="Modem.cpp" />

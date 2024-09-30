@@ -191,9 +191,6 @@
     <ClInclude Include="BCH.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="RS241213.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="SerialPort.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -348,6 +345,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SMeter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RS634717.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="RS.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -511,9 +514,6 @@
     <ClCompile Include="BCH.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="RS241213.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="SerialPort.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -656,6 +656,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="SMeter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="RS634717.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

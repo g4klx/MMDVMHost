@@ -17,7 +17,7 @@ OBJECTS = \
 		MMDVMHost.o Modem.o ModemPort.o ModemSerialPort.o Mutex.o NetworkInfo.o Nextion.o NullController.o NullDisplay.o NXDNAudio.o \
 		NXDNControl.o NXDNConvolution.o NXDNCRC.o NXDNFACCH1.o NXDNIcomNetwork.o NXDNKenwoodNetwork.o NXDNLayer3.o NXDNLICH.o NXDNLookup.o NXDNNetwork.o \
 		NXDNSACCH.o NXDNUDCH.o P25Audio.o P25Control.o P25Data.o P25LowSpeedData.o P25Network.o P25NID.o P25Trellis.o P25Utils.o PseudoTTYController.o \
-		POCSAGControl.o POCSAGNetwork.o QR1676.o RemoteControl.o RS129.o RS241213.o RSSIInterpolator.o SerialPort.o SMeter.o StopWatch.o Sync.o SHA256.o \
+		POCSAGControl.o POCSAGNetwork.o QR1676.o RemoteControl.o RS129.o RS634717.o RSSIInterpolator.o SerialPort.o SMeter.o StopWatch.o Sync.o SHA256.o \
 		TFTSurenoo.o Thread.o Timer.o UARTController.o UDPController.o UDPSocket.o UserDB.o UserDBentry.o Utils.o YSFControl.o YSFConvolution.o YSFFICH.o \
 		YSFNetwork.o YSFPayload.o
 

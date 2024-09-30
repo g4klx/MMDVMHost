@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2017,2023 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2017,2023,2024 by Jonathan Naylor G4KLX
 *   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com> N2PLL
 *
 *   This program is free software; you can redistribute it and/or modify
@@ -44,7 +44,7 @@ m_lcf(0x00U),
 m_emergency(false),
 m_srcId(0U),
 m_dstId(0U),
-m_rs241213(),
+m_rs(),
 m_trellis()
 {
 	m_mi = new unsigned char[P25_MI_LENGTH_BYTES];
@@ -89,7 +89,7 @@ bool CP25Data::decodeHeader(const unsigned char* data)
 
 	// decode RS (36,20,17) FEC
 	try {
-		bool ret = m_rs241213.decode362017(rs);
+		bool ret = m_rs.decode362017(rs);
 		if (!ret)
 			return false;
 	} catch (...) {
@@ -133,7 +133,7 @@ void CP25Data::encodeHeader(unsigned char* data)
 	rs[14U] = (m_dstId >> 0) & 0xFFU;                                               // Talkgroup Address LSB
 
 	// encode RS (36,20,17) FEC
-	m_rs241213.encode362017(rs);
+	m_rs.encode362017(rs);
 
 	unsigned char raw[81U];
 	::memset(raw, 0x00U, 81U);
@@ -171,7 +171,7 @@ bool CP25Data::decodeLDU1(const unsigned char* data)
 	decodeLDUHamming(raw, rs + 15U);
 
 	try {
-		bool ret = m_rs241213.decode(rs);
+		bool ret = m_rs.decode241213(rs);
 		if (!ret)
 			return false;
 	} catch (...) {
@@ -234,7 +234,7 @@ void CP25Data::encodeLDU1(unsigned char* data)
 		break;
 	}
 
-	m_rs241213.encode(rs);
+	m_rs.encode241213(rs);
 
 	unsigned char raw[5U];
 	encodeLDUHamming(raw, rs + 0U);
@@ -284,7 +284,7 @@ bool CP25Data::decodeLDU2(const unsigned char* data)
 
 	// decode RS (24,16,9) FEC
 	try {
-		bool ret = m_rs241213.decode24169(rs);
+		bool ret = m_rs.decode24169(rs);
 		if (!ret)
 			return false;
 	} catch (...) {
@@ -324,7 +324,7 @@ void CP25Data::encodeLDU2(unsigned char* data)
 	rs[11U] = (m_kId >> 0) & 0xFFU;                                      // Key ID LSB
 
 	// encode RS (24,16,9) FEC
-	m_rs241213.encode24169(rs);
+	m_rs.encode24169(rs);
 
 	// encode Hamming (10,6,3) FEC and interleave for LC data
 	unsigned char raw[5U];

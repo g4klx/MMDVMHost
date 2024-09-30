@@ -1,6 +1,6 @@
 /*
-*   Copyright (C) 2016 by Jonathan Naylor G4KLX
-*	Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com> N2PLL
+*   Copyright (C) 2016,2024 by Jonathan Naylor G4KLX
+*	Copyright (C) 2018,2023 by Bryan Biedenkapp <gatekeep@gmail.com> N2PLL
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -17,26 +17,25 @@
 *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#if !defined(RS241213_H)
-#define	RS241213_H
+#if !defined(RS634717_H)
+#define	RS634717_H
 
-class CRS241213
+class CRS634717
 {
 public:
-	CRS241213();
-	~CRS241213();
+	CRS634717();
+	~CRS634717();
 
-	bool decode(unsigned char* data);
+	bool decode241213(unsigned char* data);
 	bool decode24169(unsigned char* data);
 	bool decode362017(unsigned char* data);
 
-	void encode(unsigned char* data);
+	void encode241213(unsigned char* data);
 	void encode24169(unsigned char* data);
 	void encode362017(unsigned char* data);
 
 private:
 	unsigned char gf6Mult(unsigned char a, unsigned char b) const;
-	bool decode(unsigned char* data, const unsigned int bitLength, const int firstData, const int roots);
 };
 
 #endif
