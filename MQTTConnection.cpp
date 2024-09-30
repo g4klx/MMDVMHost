@@ -84,14 +84,14 @@ bool CMQTTConnection::publish(const char* topic, const char* text)
 	assert(topic != NULL);
 	assert(text != NULL);
 
-	return publish(topic, (unsigned char*)text, ::strlen(text));
+	return publish(topic, (unsigned char*)text, (unsigned int)::strlen(text));
 }
 
 bool CMQTTConnection::publish(const char* topic, const std::string& text)
 {
 	assert(topic != NULL);
 
-	return publish(topic, (unsigned char*)text.c_str(), text.size());
+	return publish(topic, (unsigned char*)text.c_str(), (unsigned int)text.size());
 }
 
 bool CMQTTConnection::publish(const char* topic, const unsigned char* data, unsigned int len)

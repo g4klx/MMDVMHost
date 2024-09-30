@@ -1,6 +1,6 @@
 /*
-*   Copyright (C) 2016,2023 by Jonathan Naylor G4KLX
-*   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com> N2PLL
+*   Copyright (C) 2016,2023,2024 by Jonathan Naylor G4KLX
+*	Copyright (C) 2018,2023 by Bryan Biedenkapp <gatekeep@gmail.com> N2PLL
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -17,7 +17,10 @@
 *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 */
 
-#include "RS241213.h"
+#include "RS634717.h"
+#include "RS.h"
+
+#include <vector>
 
 #if defined(USE_P25)
 
@@ -25,7 +28,7 @@
 #include <cassert>
 #include <cstring>
 
-const unsigned char ENCODE_MATRIX[12U][24U] = {
+const unsigned char ENCODE_MATRIX_241213[12U][24U] = {
 	{1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 062, 044, 003, 025, 014, 016, 027, 003, 053, 004, 036, 047},
 	{0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 011, 012, 011, 011, 016, 064, 067, 055, 001, 076, 026, 073},
 	{0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 003, 001, 005, 075, 014, 006, 020, 044, 066, 006, 070, 066},
@@ -120,20 +123,69 @@ static void hex2Bin(unsigned char input, unsigned char* output, unsigned int off
 	WRITE_BIT(output, offset + 5U, input & 0x01U);
 }
 
-CRS241213::CRS241213()
+#define __RS(TYPE, SYMBOLS, PAYLOAD, POLY, FCR, PRIM)                           \
+            rs::reed_solomon<TYPE,                                        \
+            rs::log_<(SYMBOLS) + 1>::value,                               \
+            (SYMBOLS) - (PAYLOAD), FCR, PRIM,                                   \
+            rs::gfpoly<rs::log_<(SYMBOLS) + 1>::value, POLY>>
+
+#define __RS_63(PAYLOAD) __RS(unsigned char, 63, PAYLOAD, 0x43, 1, 1)
+
+class RS6347 : public __RS_63(47) {
+public:
+	RS6347() : __RS_63(47)() { /* stub */ }
+};
+RS6347 rs634717;    // 16 bit / 8 bit corrections max / 5 bytes total
+
+/**
+ * @brief Implements Reed-Solomon (24,12,13)
+ */
+class RS6351 : public __RS_63(51) {
+public:
+	RS6351() : __RS_63(51)() { /* stub */ }
+};
+RS6351 rs241213;    // 12 bit / 6 bit corrections max / 3 bytes total
+
+/**
+ * @brief Implements Reed-Solomon (24,16,9)
+ */
+class RS6355 : public __RS_63(55) {
+public:
+	RS6355() : __RS_63(55)() { /* stub */ }
+};
+RS6355 rs24169;     // 8 bit / 4 bit corrections max / 2 bytes total
+
+CRS634717::CRS634717()
 {
 }
 
-CRS241213::~CRS241213()
+CRS634717::~CRS634717()
 {
 }
 
-bool CRS241213::decode(unsigned char* data)
+bool CRS634717::decode241213(unsigned char* data)
 {
-	return decode(data, 24U, 39, 12);
+	assert(data != NULL);
+
+	std::vector<unsigned char> codeword(63, 0);
+
+	unsigned int offset = 0U;
+	for (unsigned int i = 0U; i < 24U; i++, offset += 6U)
+		codeword[39U + i] = bin2Hex(data, offset);
+
+	int ec = rs241213.decode(codeword);
+
+	offset = 0U;
+	for (unsigned int i = 0U; i < 12U; i++, offset += 6U)
+		hex2Bin(codeword[39U + i], data, offset);
+
+	if (ec == -1 || ec >= 6)
+		return false;
+
+	return true;
 }
 
-void CRS241213::encode(unsigned char* data)
+void CRS634717::encode241213(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -145,7 +197,7 @@ void CRS241213::encode(unsigned char* data)
 		unsigned int offset = 0U;
 		for (unsigned int j = 0U; j < 12U; j++, offset += 6U) {
 			unsigned char hexbit = bin2Hex(data, offset);
-			codeword[i] ^= gf6Mult(hexbit, ENCODE_MATRIX[j][i]);
+			codeword[i] ^= gf6Mult(hexbit, ENCODE_MATRIX_241213[j][i]);
 		}
 	}
 
@@ -154,12 +206,29 @@ void CRS241213::encode(unsigned char* data)
 		hex2Bin(codeword[i], data, offset);
 }
 
-bool CRS241213::decode24169(unsigned char* data)
+bool CRS634717::decode24169(unsigned char* data)
 {
-	return decode(data, 24U, 39, 8);
+	assert(data != NULL);
+
+	std::vector<unsigned char> codeword(63, 0);
+
+	unsigned int offset = 0U;
+	for (unsigned int i = 0U; i < 24U; i++, offset += 6U)
+		codeword[39U + i] = bin2Hex(data, offset);
+
+	int ec = rs24169.decode(codeword);
+
+	offset = 0U;
+	for (unsigned int i = 0U; i < 16U; i++, offset += 6U)
+		hex2Bin(codeword[39U + i], data, offset);
+
+	if (ec == -1 || ec >= 4)
+		return false;
+
+	return true;
 }
 
-void CRS241213::encode24169(unsigned char* data)
+void CRS634717::encode24169(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -180,12 +249,29 @@ void CRS241213::encode24169(unsigned char* data)
 		hex2Bin(codeword[i], data, offset);
 }
 
-bool CRS241213::decode362017(unsigned char* data)
+bool CRS634717::decode362017(unsigned char* data)
 {
-	return decode(data, 36U, 27, 16);
+	assert(data != NULL);
+
+	std::vector<unsigned char> codeword(63, 0);
+
+	unsigned int offset = 0U;
+	for (unsigned int i = 0U; i < 36U; i++, offset += 6U)
+		codeword[27U + i] = bin2Hex(data, offset);
+
+	int ec = rs634717.decode(codeword);
+
+	offset = 0U;
+	for (unsigned int i = 0U; i < 20U; i++, offset += 6U)
+		hex2Bin(codeword[27U + i], data, offset);
+
+	if (ec == -1 || ec >= 8)
+		return false;
+
+	return true;
 }
 
-void CRS241213::encode362017(unsigned char* data)
+void CRS634717::encode362017(unsigned char* data)
 {
 	assert(data != NULL);
 
@@ -207,7 +293,7 @@ void CRS241213::encode362017(unsigned char* data)
 }
 
 // GF(2 ^ 6) multiply(for Reed - Solomon encoder)
-unsigned char CRS241213::gf6Mult(unsigned char a, unsigned char b) const
+unsigned char CRS634717::gf6Mult(unsigned char a, unsigned char b) const
 {
 	unsigned char p = 0x00U;
 
@@ -226,264 +312,4 @@ unsigned char CRS241213::gf6Mult(unsigned char a, unsigned char b) const
 	return p;
 }
 
-bool CRS241213::decode(unsigned char* data, const unsigned int bitLength, const int firstData, const int roots)
-{
-	assert(data != NULL);
-
-	//unsigned char HB[24U];
-	unsigned char HB[63U];
-	::memset(HB, 0x00U, 63U);
-
-	unsigned int offset = 0U;
-	for (unsigned int i = 0U; i < bitLength; i++, offset += 6)
-		HB[i] = bin2Hex(data, offset);
-
-	//RS (63,63-nroots,nroots+1) decoder where nroots = number of parity bits
-	// rsDec(8, 39) rsDec(16, 27) rsDec(12, 39)
-
-	const int nroots = roots;
-	int lambda[18];	// Err+Eras Locator poly
-	int S[17];		// syndrome poly
-	int b[18];
-	int t[18];
-	int omega[18];
-	int root[17];
-	int reg[18];
-	int locn[17];
-
-	int i, j, count, r, el, SynError, DiscrR, q, DegOmega, tmp, num1, num2, den, DegLambda;
-
-	// form the syndromes; i.e., evaluate HB(x) at roots of g(x)
-	for (i = 0; i <= nroots - 1; i++) {
-		S[i] = HB[0];
-	}
-
-	//for (j = 1; j <= 24; j++) {		// XXX was 62
-	//for (j = 1; j <= (int)(bitLength - 1); j++) {
-	for (j = 1; j <= 62; j++) {
-		for (i = 0; i <= nroots - 1; i++) {
-			if (S[i] == 0) {
-				S[i] = HB[j];
-			}
-			else {
-				S[i] = HB[j] ^ rsGFexp[(rsGFlog[S[i]] + i + 1) % 63];
-			}
-		}
-	}
-
-	// convert syndromes to index form, checking for nonzero condition
-	SynError = 0;
-
-	for (i = 0; i <= nroots - 1; i++) {
-		SynError = SynError | S[i];
-		S[i] = rsGFlog[S[i]];
-	}
-
-	if (SynError == 0) {
-		// if syndrome is zero, rsData[] is a codeword and there are
-		// no errors to correct. So return rsData[] unmodified
-		count = 0;
-		return true;
-	}
-
-	for (i = 1; i <= nroots; i++) {
-		lambda[i] = 0;
-	}
-
-	lambda[0] = 1;
-
-	for (i = 0; i <= nroots; i++) {
-		b[i] = rsGFlog[lambda[i]];
-	}
-
-	// begin Berlekamp-Massey algorithm to determine error+erasure
-	// locator polynomial
-	r = 0;
-	el = 0;
-	while (++r <= nroots) {
-		// r is the step number
-		//r = r + 1;
-		// compute discrepancy at the r-th step in poly-form
-		DiscrR = 0;
-
-		for (i = 0; i <= r - 1; i++) {
-			if ((lambda[i] != 0) && (S[r - i - 1] != 63)) {
-				DiscrR = DiscrR ^ rsGFexp[(rsGFlog[lambda[i]] + S[r - i - 1]) % 63];
-			}
-		}
-
-		DiscrR = rsGFlog[DiscrR];	// index form
-
-		if (DiscrR == 63) {
-			// shift elements upward one step
-			for (i = nroots; i >= 1; i += -1) {
-				b[i] = b[i - 1];
-			}
-
-			b[0] = 63;
-		}
-		else {
-			// t(x) <-- lambda(x) - DiscrR*x*b(x)
-			t[0] = lambda[0];
-
-			for (i = 0; i <= nroots - 1; i++) {
-				if (b[i] != 63) {
-					t[i + 1] = lambda[i + 1] ^ rsGFexp[(DiscrR + b[i]) % 63];
-				}
-				else {
-					t[i + 1] = lambda[i + 1];
-				}
-			}
-
-			if (2 * el <= r - 1) {
-				el = r - el;
-				// b(x) <-- inv(DiscrR) * lambda(x)
-
-				for (i = 0; i <= nroots; i++) {
-					if (lambda[i]) {
-						b[i] = (rsGFlog[lambda[i]] - DiscrR + 63) % 63;
-					}
-					else {
-						b[i] = 63;
-					}
-				}
-			}
-			else {
-				// shift elements upward one step
-				for (i = nroots; i >= 1; i += -1) {
-					b[i] = b[i - 1];
-				}
-
-				b[0] = 63;
-			}
-
-			for (i = 0; i <= nroots; i++) {
-				lambda[i] = t[i];
-			}
-		}
-	} /* end while() */
-
-	  // convert lambda to index form and compute deg(lambda(x))
-	DegLambda = 0;
-	for (i = 0; i <= nroots; i++) {
-		lambda[i] = rsGFlog[lambda[i]];
-
-		if (lambda[i] != 63) {
-			DegLambda = i;
-		}
-	}
-
-	// Find roots of the error+erasure locator polynomial by Chien search
-	for (i = 1; i <= nroots; i++) {
-		reg[i] = lambda[i];
-	}
-
-	count = 0;// number of roots of lambda(x)
-
-	for (i = 1; i <= 63; i++) {
-		q = 1;// lambda[0] is always 0
-
-		for (j = DegLambda; j >= 1; j += -1) {
-			if (reg[j] != 63) {
-				reg[j] = (reg[j] + j) % 63;
-				q = q ^ rsGFexp[reg[j]];
-			}
-		}
-
-		// it is a root
-		if (q == 0) {
-			// store root (index-form) and error location number
-			root[count] = i;
-			locn[count] = i - 40;
-			// if we have max possible roots, abort search to save time
-			count = count + 1;
-
-			if (count == DegLambda) {
-				break;
-			}
-		}
-	}
-
-	if (DegLambda != count) {
-		// deg(lambda) unequal to number of roots => uncorrectable error detected
-		return false;
-	}
-
-	// compute err+eras evaluator poly omega(x)
-	// = s(x)*lambda(x) (modulo x**nroots). in index form. Also find deg(omega).
-	DegOmega = 0;
-	for (i = 0; i <= nroots - 1; i++) {
-		tmp = 0;
-		if (DegLambda < i) {
-			j = DegLambda;
-		}
-		else {
-			j = i;
-		}
-
-		for ( /* j = j */; j >= 0; j += -1) {
-			if ((S[i - j] != 63) && (lambda[j] != 63)) {
-				tmp = tmp ^ rsGFexp[(S[i - j] + lambda[j]) % 63];
-			}
-		}
-
-		if (tmp) {
-			DegOmega = i;
-		}
-
-		omega[i] = rsGFlog[tmp];
-	}
-
-	omega[nroots] = 63;
-
-	//compute error values in poly-form:
-	// num1 = omega(inv(X(l)))
-	// num2 = inv(X(l))**(FCR - 1)
-	// den = lambda_pr(inv(X(l)))
-	for (j = count - 1; j >= 0; j += -1) {
-		num1 = 0;
-
-		for (i = DegOmega; i >= 0; i += -1) {
-			if (omega[i] != 63) {
-				num1 = num1 ^ rsGFexp[(omega[i] + i * root[j]) % 63];
-			}
-		}
-
-		num2 = rsGFexp[0];
-		den = 0;
-
-		// lambda[i+1] for i even is the formal derivative lambda_pr of lambda[i]
-		if (DegLambda < nroots) {
-			i = DegLambda;
-		}
-		else {
-			i = nroots;
-		}
-
-		for (i = i & ~1; i >= 0; i += -2) {
-			if (lambda[i + 1] != 63) {
-				den = den ^ rsGFexp[(lambda[i + 1] + i * root[j]) % 63];
-			}
-		}
-
-		if (den == 0) {
-			return false;
-		}
-
-		// apply error to data
-		if (num1 != 0) {
-			if (locn[j] < firstData)
-				return false;
-			HB[locn[j]] = HB[locn[j]] ^ (rsGFexp[(rsGFlog[num1] + rsGFlog[num2] + 63 - rsGFlog[den]) % 63]);
-		}
-	}
-
-	offset = 0U;
-	for (unsigned int i = 0U; i < (unsigned int)nroots; i++, offset += 6)
-		hex2Bin(HB[i], data, offset);
-
-	return true;
-}
-
 #endif
-
