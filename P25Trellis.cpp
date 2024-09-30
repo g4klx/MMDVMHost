@@ -1,5 +1,5 @@
 /*
-*	Copyright (C) 2016,2018 by Jonathan Naylor, G4KLX
+*	Copyright (C) 2016,2018,2024 by Jonathan Naylor, G4KLX
 *
 *	This program is free software; you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -475,7 +475,7 @@ bool CP25Trellis::fixCode12(unsigned char* points, unsigned int failPos, unsigne
 		unsigned int bestPos = 0U;
 		unsigned int bestVal = 0U;
 
-		for (unsigned int i = 0U; i < 4U; i++) {
+		for (unsigned int i = 0U; i < 16U; i++) {
 			points[failPos] = i;
 
 			unsigned char dibits[49U];
