@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2017,2024 by Jonathan Naylor G4KLX
 *   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com> N2PLL
 *
 *   This program is free software; you can redistribute it and/or modify
@@ -20,7 +20,7 @@
 #if !defined(P25Data_H)
 #define  P25Data_H
 
-#include "RS241213.h"
+#include "RS634717.h"
 #include "P25Trellis.h"
 
 class CP25Data {
@@ -81,7 +81,7 @@ private:
 	unsigned int   m_srcId;
 	unsigned int   m_dstId;
 	unsigned char  m_serviceType;
-	CRS241213      m_rs241213;
+	CRS634717      m_rs;
 	CP25Trellis    m_trellis;
 
 	void decodeLDUHamming(const unsigned char* raw, unsigned char* data);
