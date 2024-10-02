@@ -21,7 +21,7 @@
 #define  P25Data_H
 
 #include "RS634717.h"
-#include "P25Trellis.h"
+#include "Trellis.h"
 #include "Defines.h"
 
 #if defined(USE_P25)
@@ -85,7 +85,7 @@ private:
 	unsigned int   m_dstId;
 	unsigned char  m_serviceType;
 	CRS634717      m_rs;
-	CP25Trellis    m_trellis;
+	CTrellis       m_trellis;
 
 	void decodeLDUHamming(const unsigned char* raw, unsigned char* data);
 	void encodeLDUHamming(unsigned char* data, const unsigned char* raw);

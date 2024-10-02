@@ -1,5 +1,5 @@
 /*
-*	Copyright (C) 2016,2023 by Jonathan Naylor, G4KLX
+*	Copyright (C) 2016,2018,2023,2024 by Jonathan Naylor, G4KLX
 *
 *	This program is free software; you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -11,20 +11,23 @@
 *	GNU General Public License for more details.
 */
 
-#ifndef	DMRTrellis_H
-#define	DMRTrellis_H
+#ifndef	Trellis_H
+#define	Trellis_H
 
 #include "Defines.h"
 
-#if defined(USE_DMR)
+#if defined(USE_P25) || defined(USE_DMR)
 
-class CDMRTrellis {
+class CTrellis {
 public:
-	CDMRTrellis();
-	~CDMRTrellis();
+	CTrellis();
+	~CTrellis();
 
-	bool decode(const unsigned char* data, unsigned char* payload);
-	void encode(const unsigned char* payload, unsigned char* data);
+	bool decode34(const unsigned char* data, unsigned char* payload);
+	void encode34(const unsigned char* payload, unsigned char* data);
+
+	bool decode12(const unsigned char* data, unsigned char* payload);
+	void encode12(const unsigned char* payload, unsigned char* data);
 
 private:
 	void deinterleave(const unsigned char* in, signed char* dibits) const;
@@ -32,9 +35,13 @@ private:
 	void dibitsToPoints(const signed char* dibits, unsigned char* points) const;
 	void pointsToDibits(const unsigned char* points, signed char* dibits) const;
 	void bitsToTribits(const unsigned char* payload, unsigned char* tribits) const;
+	void bitsToDibits(const unsigned char* payload, unsigned char* dibits) const;
 	void tribitsToBits(const unsigned char* tribits, unsigned char* payload) const;
-	bool fixCode(unsigned char* points, unsigned int failPos, unsigned char* payload) const;
-	unsigned int checkCode(const unsigned char* points, unsigned char* tribits) const;
+	void dibitsToBits(const unsigned char* dibits, unsigned char* payload) const;
+	bool fixCode34(unsigned char* points, unsigned int failPos, unsigned char* payload) const;
+	unsigned int checkCode34(const unsigned char* points, unsigned char* tribits) const;
+	bool fixCode12(unsigned char* points, unsigned int failPos, unsigned char* payload) const;
+	unsigned int checkCode12(const unsigned char* points, unsigned char* dibits) const;
 };
 
 #endif
