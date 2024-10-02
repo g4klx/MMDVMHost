@@ -477,7 +477,7 @@ void CTFTSurenoo::refreshDisplay(void)
 	// clear display
 	::snprintf(m_temp, sizeof(m_temp), "BOXF(%d,%d,%d,%d,%d);",
 		   0, 0, X_WIDTH - 1, Y_WIDTH - 1, BG_COLOUR);
-	m_serial->write((unsigned char*)m_temp, ::strlen(m_temp));
+	m_serial->write((unsigned char*)m_temp, (unsigned int)::strlen(m_temp));
 
 	// mode line
 	::snprintf(m_temp, sizeof(m_temp), "DCV%d(%d,%d,'%s',%d);",

@@ -192,7 +192,6 @@
     <ClInclude Include="DMRSlot.h" />
     <ClInclude Include="DMRSlotType.h" />
     <ClInclude Include="DMRTA.h" />
-    <ClInclude Include="DMRTrellis.h" />
     <ClInclude Include="DStarControl.h" />
     <ClInclude Include="DStarDefines.h" />
     <ClInclude Include="DStarHeader.h" />
@@ -242,7 +241,6 @@
     <ClInclude Include="P25LowSpeedData.h" />
     <ClInclude Include="P25Network.h" />
     <ClInclude Include="P25NID.h" />
-    <ClInclude Include="P25Trellis.h" />
     <ClInclude Include="P25Utils.h" />
     <ClInclude Include="POCSAGControl.h" />
     <ClInclude Include="POCSAGDefines.h" />
@@ -256,6 +254,7 @@
     <ClInclude Include="RS634717.h" />
     <ClInclude Include="RSSIInterpolator.h" />
     <ClInclude Include="NXDNSACCH.h" />
+    <ClInclude Include="Trellis.h" />
     <ClInclude Include="UARTController.h" />
     <ClInclude Include="Modem.h" />
     <ClInclude Include="SerialPort.h" />
@@ -306,7 +305,6 @@
     <ClCompile Include="DMRSlot.cpp" />
     <ClCompile Include="DMRSlotType.cpp" />
     <ClCompile Include="DMRTA.cpp" />
-    <ClCompile Include="DMRTrellis.cpp" />
     <ClCompile Include="DStarControl.cpp" />
     <ClCompile Include="DStarHeader.cpp" />
     <ClCompile Include="DStarNetwork.cpp" />
@@ -352,7 +350,6 @@
     <ClCompile Include="P25LowSpeedData.cpp" />
     <ClCompile Include="P25Network.cpp" />
     <ClCompile Include="P25NID.cpp" />
-    <ClCompile Include="P25Trellis.cpp" />
     <ClCompile Include="P25Utils.cpp" />
     <ClCompile Include="POCSAGControl.cpp" />
     <ClCompile Include="POCSAGNetwork.cpp" />
@@ -362,6 +359,7 @@
     <ClCompile Include="RS129.cpp" />
     <ClCompile Include="RS634717.cpp" />
     <ClCompile Include="RSSIInterpolator.cpp" />
+    <ClCompile Include="Trellis.cpp" />
     <ClCompile Include="UARTController.cpp" />
     <ClCompile Include="Modem.cpp" />
     <ClCompile Include="SerialPort.cpp" />

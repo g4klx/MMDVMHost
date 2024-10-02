@@ -19,8 +19,8 @@
 
 #include "P25Control.h"
 #include "P25Defines.h"
-#include "P25Trellis.h"
 #include "P25Utils.h"
+#include "Trellis.h"
 #include "Utils.h"
 #include "Sync.h"
 #include "CRC.h"
@@ -541,7 +541,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		}
 
 		if (m_rfPDUCount == 0U) {
-			CP25Trellis trellis;
+			CTrellis trellis;
 			unsigned char header[P25_PDU_HEADER_LENGTH_BYTES];
 			bool valid = trellis.decode12(m_rfPDU + P25_SYNC_LENGTH_BYTES + P25_NID_LENGTH_BYTES, header);
 			if (valid)
@@ -570,7 +570,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 				unsigned int offset = P25_SYNC_LENGTH_BYTES + P25_NID_LENGTH_BYTES;
 
 				// Regenerate the PDU header
-				CP25Trellis trellis;
+				CTrellis trellis;
 				unsigned char header[P25_PDU_HEADER_LENGTH_BYTES];
 				trellis.decode12(m_rfPDU + offset, header);
 				trellis.encode12(header, m_rfPDU + offset);
