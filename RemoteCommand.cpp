@@ -85,7 +85,7 @@ int CRemoteCommand::send(const std::string& command)
 	if (!ret)
 		return 1;
 
-	ret = socket.write((unsigned char*)command.c_str(), command.length(), addr, addrLen);
+	ret = socket.write((unsigned char*)command.c_str(), (unsigned int)command.length(), addr, addrLen);
 	if (!ret) {
 		socket.close();
 		return 1;

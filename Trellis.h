@@ -1,5 +1,5 @@
 /*
-*	Copyright (C) 2016,2018 by Jonathan Naylor, G4KLX
+*	Copyright (C) 2016,2018,2024 by Jonathan Naylor, G4KLX
 *
 *	This program is free software; you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -11,13 +11,13 @@
 *	GNU General Public License for more details.
 */
 
-#ifndef	P25Trellis_H
-#define	P25Trellis_H
+#ifndef	Trellis_H
+#define	Trellis_H
 
-class CP25Trellis {
+class CTrellis {
 public:
-	CP25Trellis();
-	~CP25Trellis();
+	CTrellis();
+	~CTrellis();
 
 	bool decode34(const unsigned char* data, unsigned char* payload);
 	void encode34(const unsigned char* payload, unsigned char* data);

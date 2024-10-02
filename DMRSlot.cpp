@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015-2021,2023 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015-2021,2023,2024 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -15,10 +15,10 @@
 #include "DMRDataHeader.h"
 #include "DMRSlotType.h"
 #include "DMRShortLC.h"
-#include "DMRTrellis.h"
 #include "DMRFullLC.h"
 #include "BPTC19696.h"
 #include "DMRSlot.h"
+#include "Trellis.h"
 #include "DMRCSBK.h"
 #include "DMREMB.h"
 #include "Utils.h"
@@ -541,13 +541,13 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				CUtils::dump(1U, title, payload, 12U);
 				bptc.encode(payload, data + 2U);
 			} else if (dataType == DT_RATE_34_DATA) {
-				CDMRTrellis trellis;
+				CTrellis trellis;
 				unsigned char payload[18U];
-				bool ret = trellis.decode(data + 2U, payload);
+				bool ret = trellis.decode34(data + 2U, payload);
 				if (ret) {
 					::sprintf(title, "DMR Slot %u, Data 3/4", m_slotNo);
 					CUtils::dump(1U, title, payload, 18U);
-					trellis.encode(payload, data + 2U);
+					trellis.encode34(payload, data + 2U);
 				} else {
 					LogMessage("DMR Slot %u, unfixable RF rate 3/4 data", m_slotNo);
 					CUtils::dump(1U, "Data", data + 2U, DMR_FRAME_LENGTH_BYTES);
@@ -1734,13 +1734,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			CUtils::dump(1U, title, payload, 12U);
 			bptc.encode(payload, data + 2U);
 		} else if (dataType == DT_RATE_34_DATA) {
-			CDMRTrellis trellis;
+			CTrellis trellis;
 			unsigned char payload[18U];
-			bool ret = trellis.decode(data + 2U, payload);
+			bool ret = trellis.decode34(data + 2U, payload);
 			if (ret) {
 				::sprintf(title, "DMR Slot %u, Data 3/4", m_slotNo);
 				CUtils::dump(1U, title, payload, 18U);
-				trellis.encode(payload, data + 2U);
+				trellis.encode34(payload, data + 2U);
 			} else {
 				LogMessage("DMR Slot %u, unfixable network rate 3/4 data", m_slotNo);
 				CUtils::dump(1U, "Data", data + 2U, DMR_FRAME_LENGTH_BYTES);

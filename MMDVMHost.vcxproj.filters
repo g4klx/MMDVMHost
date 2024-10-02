@@ -155,9 +155,6 @@
     <ClInclude Include="Thread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DMRTrellis.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DMRAccessControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -207,9 +204,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NetworkInfo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="P25Trellis.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NXDNDefines.h">
@@ -362,6 +356,9 @@
     <ClInclude Include="RS.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Trellis.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BPTC19696.cpp">
@@ -490,9 +487,6 @@
     <ClCompile Include="Thread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="DMRTrellis.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DMRAccessControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -539,9 +533,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NetworkInfo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="P25Trellis.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NXDNControl.cpp">
@@ -677,6 +668,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RS634717.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Trellis.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
