@@ -23,11 +23,6 @@
 #include "Display.h"
 #include "Timer.h"
 
-#if defined(_WIN32) || defined(_WIN64)
-#include <ws2tcpip.h>
-#include <WinSock2.h>
-#endif
-
 #include <string>
 
 class CLCDproc : public CDisplay
@@ -94,11 +89,7 @@ private:
 	unsigned int m_rssiCount1; 
 	unsigned int m_rssiCount2; 
 
-#if defined(_WIN32) || defined(_WIN64)
-	int  socketPrintf(SOCKET fd, const char* format, ...);
-#else
-	int  socketPrintf(int fd, const char* format, ...);
-#endif
+	int  socketPrintf(int fd, const char *format, ...);
 	void defineScreens();
 };
 
