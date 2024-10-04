@@ -166,7 +166,7 @@ bool CDStarNetwork::writePoll(const char* text)
 
 	buffer[4] = 0x0AU;				// Poll with text
 
-	unsigned int length = (unsigned int)::strlen(text);
+	unsigned int length = ::strlen(text);
 
 	// Include the nul at the end also
 	::memcpy(buffer + 5U, text, length + 1U);

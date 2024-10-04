@@ -71,15 +71,14 @@
 #include <errno.h>
 #include <unistd.h>
 #include <stdarg.h>
+#else
+#include <ws2tcpip.h>
+#include <WinSock2.h>
 #endif
 
 #define BUFFER_MAX_LEN 128
 
-#if defined(_WIN32) || defined(_WIN64)
-SOCKET         m_socketfd;
-#else
 int            m_socketfd;
-#endif
 char           m_buffer[BUFFER_MAX_LEN];
 fd_set         m_readfds, m_writefds;
 struct timeval m_timeout;
@@ -132,49 +131,45 @@ bool CLCDproc::open()
 
 	port      = std::to_string(m_port);
 	localPort = std::to_string(m_localPort);
-	::memset(&hints, 0, sizeof(hints));
+	memset(&hints, 0, sizeof(hints));
 
 	/* Lookup the hostname address */
 	hints.ai_flags = AI_NUMERICSERV;
 	hints.ai_socktype = SOCK_STREAM;
-	err = ::getaddrinfo(m_address.c_str(), port.c_str(), &hints, &res);
+	err = getaddrinfo(m_address.c_str(), port.c_str(), &hints, &res);
 	if (err) {
 		LogError("LCDproc, cannot lookup server");
 		return false;
 	}
-
-	addrlen = (unsigned int)res->ai_addrlen;
-	::memcpy(&serverAddress, res->ai_addr, addrlen);
-	::freeaddrinfo(res);
+	memcpy(&serverAddress, res->ai_addr, addrlen = res->ai_addrlen);
+	freeaddrinfo(res);
 
 	/* Lookup the client address (random port - need to specify manual port from ini file) */
 	hints.ai_flags = AI_NUMERICSERV | AI_PASSIVE;
 	hints.ai_family = serverAddress.ss_family;
-	err = ::getaddrinfo(NULL, localPort.c_str(), &hints, &res);
+	err = getaddrinfo(NULL, localPort.c_str(), &hints, &res);
 	if (err) {
 		LogError("LCDproc, cannot lookup client");
 		return false;
 	}
-
-	addrlen = (unsigned int)res->ai_addrlen;
-	::memcpy(&clientAddress, res->ai_addr, addrlen);
-	::freeaddrinfo(res);
+	memcpy(&clientAddress, res->ai_addr, res->ai_addrlen);
+	freeaddrinfo(res);
 
 	/* Create TCP socket */
-	m_socketfd = ::socket(clientAddress.ss_family, SOCK_STREAM, 0);
+	m_socketfd = socket(clientAddress.ss_family, SOCK_STREAM, 0);
 	if (m_socketfd == -1) {
 		LogError("LCDproc, failed to create socket");
 		return false;
 	}
 
 	/* Bind the address to the socket */
-	if (::bind(m_socketfd, (struct sockaddr *)&clientAddress, addrlen) == -1) {
+	if (bind(m_socketfd, (struct sockaddr *)&clientAddress, addrlen) == -1) {
 		LogError("LCDproc, error whilst binding address");
 		return false;
 	}
 
 	/* Connect to server */
-	if (::connect(m_socketfd, (struct sockaddr *)&serverAddress, addrlen) == -1) {
+	if (connect(m_socketfd, (struct sockaddr *)&serverAddress, addrlen) == -1) {
 		LogError("LCDproc, cannot connect to server");
 		return false;
 	}
@@ -676,14 +671,14 @@ void CLCDproc::clockInt(unsigned int ms)
 	 * exceptfds = we are not waiting for exception fds
 	 */
 
-	if (::select(int(m_socketfd) + 1, &m_readfds, NULL, NULL, &m_timeout) == -1) {
+	if (select(m_socketfd + 1, &m_readfds, NULL, NULL, &m_timeout) == -1) {
 		LogError("LCDproc, error on select");
 		return;
 	}
 
 	// If something was received from the server...
 	if (FD_ISSET(m_socketfd, &m_readfds)) {
-		m_recvsize = ::recv(m_socketfd, m_buffer, BUFFER_MAX_LEN, 0);
+		m_recvsize = recv(m_socketfd, m_buffer, BUFFER_MAX_LEN, 0);
 
 		if (m_recvsize == -1) {
 			LogError("LCDproc, cannot receive information");
@@ -693,7 +688,7 @@ void CLCDproc::clockInt(unsigned int ms)
 		m_buffer[m_recvsize] = '\0';
 
 		char *argv[256];
-		size_t len = ::strlen(m_buffer);
+		size_t len = strlen(m_buffer);
 
 		// Now split the string into tokens...
 		int argc = 0;
@@ -714,14 +709,14 @@ void CLCDproc::clockInt(unsigned int ms)
 				case '\n':
 					m_buffer[i] = 0;
 					if (argc > 0) {
-						if (0 == ::strcmp(argv[0], "listen")) {
+						if (0 == strcmp(argv[0], "listen")) {
 							LogDebug("LCDproc, the %s screen is displayed", argv[1]);
-						} else if (0 == ::strcmp(argv[0], "ignore")) {
+						} else if (0 == strcmp(argv[0], "ignore")) {
 							LogDebug("LCDproc, the %s screen is hidden", argv[1]);
-						} else if (0 == ::strcmp(argv[0], "key")) {
+						} else if (0 == strcmp(argv[0], "key")) {
 							LogDebug("LCDproc, Key %s", argv[1]);
-						} else if (0 == ::strcmp(argv[0], "menu")) {
-						} else if (0 == ::strcmp(argv[0], "connect")) {
+						} else if (0 == strcmp(argv[0], "menu")) {
+						} else if (0 == strcmp(argv[0], "connect")) {
 		 					// connect LCDproc 0.5.7 protocol 0.3 lcd wid 16 hgt 2 cellwid 5 cellhgt 8
 							int a;
 
@@ -772,11 +767,7 @@ void CLCDproc::close()
 {
 }
 
-#if defined(_WIN32) || defined(_WIN64)
-int  CLCDproc::socketPrintf(SOCKET fd, const char* format, ...)
-#else
-int  CLCDproc::socketPrintf(int fd, const char* format, ...)
-#endif
+int CLCDproc::socketPrintf(int fd, const char *format, ...)
 {
 	char buf[BUFFER_MAX_LEN];
 	va_list ap;
@@ -799,11 +790,11 @@ int  CLCDproc::socketPrintf(int fd, const char* format, ...)
 	m_timeout.tv_sec = 0;
 	m_timeout.tv_usec = 0;
 
-	if (::select(int(m_socketfd) + 1, NULL, &m_writefds, NULL, &m_timeout) == -1)
+	if (select(m_socketfd + 1, NULL, &m_writefds, NULL, &m_timeout) == -1)
 		LogError("LCDproc, error on select");
 
 	if (FD_ISSET(m_socketfd, &m_writefds)) {
-		if (::send(m_socketfd, buf, int(strlen(buf) + 1U), 0) == -1) {
+		if (send(m_socketfd, buf, int(strlen(buf) + 1U), 0) == -1) {
 			LogError("LCDproc, cannot send data");
 			return -1;
 		}
