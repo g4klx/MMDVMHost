@@ -11,7 +11,7 @@
 *	GNU General Public License for more details.
 */
 
-#include "Trellis.h"
+#include "P25Trellis.h"
 #include "Log.h"
 
 #if defined(USE_P25) || defined(USE_DMR)
@@ -46,15 +46,15 @@ const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U
 #define WRITE_BIT(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
-CTrellis::CTrellis()
+CP25Trellis::CP25Trellis()
 {
 }
 
-CTrellis::~CTrellis()
+CP25Trellis::~CP25Trellis()
 {
 }
 
-bool CTrellis::decode34(const unsigned char* data, unsigned char* payload)
+bool CP25Trellis::decode34(const unsigned char* data, unsigned char* payload)
 {
 	assert(data != NULL);
 	assert(payload != NULL);
@@ -88,7 +88,7 @@ bool CTrellis::decode34(const unsigned char* data, unsigned char* payload)
 	return fixCode34(savePoints, failPos - 1U, payload);
 }
 
-void CTrellis::encode34(const unsigned char* payload, unsigned char* data)
+void CP25Trellis::encode34(const unsigned char* payload, unsigned char* data)
 {
 	assert(payload != NULL);
 	assert(data != NULL);
@@ -113,7 +113,7 @@ void CTrellis::encode34(const unsigned char* payload, unsigned char* data)
 	interleave(dibits, data);
 }
 
-bool CTrellis::decode12(const unsigned char* data, unsigned char* payload)
+bool CP25Trellis::decode12(const unsigned char* data, unsigned char* payload)
 {
 	assert(data != NULL);
 	assert(payload != NULL);
@@ -147,7 +147,7 @@ bool CTrellis::decode12(const unsigned char* data, unsigned char* payload)
 	return fixCode12(savePoints, failPos - 1U, payload);
 }
 
-void CTrellis::encode12(const unsigned char* payload, unsigned char* data)
+void CP25Trellis::encode12(const unsigned char* payload, unsigned char* data)
 {
 	assert(payload != NULL);
 	assert(data != NULL);
@@ -172,7 +172,7 @@ void CTrellis::encode12(const unsigned char* payload, unsigned char* data)
 	interleave(dibits, data);
 }
 
-void CTrellis::deinterleave(const unsigned char* data, signed char* dibits) const
+void CP25Trellis::deinterleave(const unsigned char* data, signed char* dibits) const
 {
 	for (unsigned int i = 0U; i < 98U; i++) {
 		unsigned int n = i * 2U + 0U;
@@ -196,7 +196,7 @@ void CTrellis::deinterleave(const unsigned char* data, signed char* dibits) cons
 	}
 }
 
-void CTrellis::interleave(const signed char* dibits, unsigned char* data) const
+void CP25Trellis::interleave(const signed char* dibits, unsigned char* data) const
 {
 	for (unsigned int i = 0U; i < 98U; i++) {
 		unsigned int n = INTERLEAVE_TABLE[i];
@@ -229,7 +229,7 @@ void CTrellis::interleave(const signed char* dibits, unsigned char* data) const
 	}
 }
 
-void CTrellis::dibitsToPoints(const signed char* dibits, unsigned char* points) const
+void CP25Trellis::dibitsToPoints(const signed char* dibits, unsigned char* points) const
 {
 	for (unsigned int i = 0U; i < 49U; i++) {
 		if (dibits[i * 2U + 0U] == +1 && dibits[i * 2U + 1U] == -1)
@@ -267,7 +267,7 @@ void CTrellis::dibitsToPoints(const signed char* dibits, unsigned char* points) 
 	}
 }
 
-void CTrellis::pointsToDibits(const unsigned char* points, signed char* dibits) const
+void CP25Trellis::pointsToDibits(const unsigned char* points, signed char* dibits) const
 {
 	for (unsigned int i = 0U; i < 49U; i++) {
 		switch (points[i]) {
@@ -339,7 +339,7 @@ void CTrellis::pointsToDibits(const unsigned char* points, signed char* dibits) 
 	}
 }
 
-void CTrellis::bitsToTribits(const unsigned char* payload, unsigned char* tribits) const
+void CP25Trellis::bitsToTribits(const unsigned char* payload, unsigned char* tribits) const
 {
 	for (unsigned int i = 0U; i < 48U; i++) {
 		unsigned int n = i * 3U;
@@ -361,7 +361,7 @@ void CTrellis::bitsToTribits(const unsigned char* payload, unsigned char* tribit
 	tribits[48U] = 0U;
 }
 
-void CTrellis::bitsToDibits(const unsigned char* payload, unsigned char* dibits) const
+void CP25Trellis::bitsToDibits(const unsigned char* payload, unsigned char* dibits) const
 {
 	for (unsigned int i = 0U; i < 48U; i++) {
 		unsigned int n = i * 2U;
@@ -380,7 +380,7 @@ void CTrellis::bitsToDibits(const unsigned char* payload, unsigned char* dibits)
 	dibits[48U] = 0U;
 }
 
-void CTrellis::tribitsToBits(const unsigned char* tribits, unsigned char* payload) const
+void CP25Trellis::tribitsToBits(const unsigned char* tribits, unsigned char* payload) const
 {
 	for (unsigned int i = 0U; i < 48U; i++) {
 		unsigned char tribit = tribits[i];
@@ -399,7 +399,7 @@ void CTrellis::tribitsToBits(const unsigned char* tribits, unsigned char* payloa
 	}
 }
 
-void CTrellis::dibitsToBits(const unsigned char* dibits, unsigned char* payload) const
+void CP25Trellis::dibitsToBits(const unsigned char* dibits, unsigned char* payload) const
 {
 	for (unsigned int i = 0U; i < 48U; i++) {
 		unsigned char dibit = dibits[i];
@@ -415,7 +415,7 @@ void CTrellis::dibitsToBits(const unsigned char* dibits, unsigned char* payload)
 	}
 }
 
-bool CTrellis::fixCode34(unsigned char* points, unsigned int failPos, unsigned char* payload) const
+bool CP25Trellis::fixCode34(unsigned char* points, unsigned int failPos, unsigned char* payload) const
 {
 	for (unsigned j = 0U; j < 20U; j++) {
 		unsigned int bestPos = 0U;
@@ -444,7 +444,7 @@ bool CTrellis::fixCode34(unsigned char* points, unsigned int failPos, unsigned c
 	return false;
 }
 
-unsigned int CTrellis::checkCode34(const unsigned char* points, unsigned char* tribits) const
+unsigned int CP25Trellis::checkCode34(const unsigned char* points, unsigned char* tribits) const
 {
 	unsigned char state = 0U;
 
@@ -471,7 +471,7 @@ unsigned int CTrellis::checkCode34(const unsigned char* points, unsigned char* t
 }
 
 
-bool CTrellis::fixCode12(unsigned char* points, unsigned int failPos, unsigned char* payload) const
+bool CP25Trellis::fixCode12(unsigned char* points, unsigned int failPos, unsigned char* payload) const
 {
 	for (unsigned j = 0U; j < 20U; j++) {
 		unsigned int bestPos = 0U;
@@ -500,7 +500,7 @@ bool CTrellis::fixCode12(unsigned char* points, unsigned int failPos, unsigned c
 	return false;
 }
 
-unsigned int CTrellis::checkCode12(const unsigned char* points, unsigned char* dibits) const
+unsigned int CP25Trellis::checkCode12(const unsigned char* points, unsigned char* dibits) const
 {
 	unsigned char state = 0U;
 

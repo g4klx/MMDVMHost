@@ -1,5 +1,5 @@
 /*
-*	Copyright (C) 2016,2018,2023,2024 by Jonathan Naylor, G4KLX
+*	Copyright (C) 2016,2018,2023 by Jonathan Naylor, G4KLX
 *
 *	This program is free software; you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -11,17 +11,17 @@
 *	GNU General Public License for more details.
 */
 
-#ifndef	Trellis_H
-#define	Trellis_H
+#ifndef	P25Trellis_H
+#define	P25Trellis_H
 
 #include "Defines.h"
 
-#if defined(USE_P25) || defined(USE_DMR)
+#if defined(USE_P25)
 
-class CTrellis {
+class CP25Trellis {
 public:
-	CTrellis();
-	~CTrellis();
+	CP25Trellis();
+	~CP25Trellis();
 
 	bool decode34(const unsigned char* data, unsigned char* payload);
 	void encode34(const unsigned char* payload, unsigned char* data);
