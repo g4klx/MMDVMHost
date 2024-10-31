@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015-2021 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015-2021,2024 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -178,6 +178,12 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 		m_lastFICH = fich;
 	}
 
+/*
+	LogMessage("RF FICH: FI:%X CS:%X CM:%X BN:%u BT:%u FN:%u FT:%u Dev:%X MR:%X VOIP:%X DT:%X DGId:%X",
+		m_lastFICH.getFI(), m_lastFICH.getCS(), m_lastFICH.getCM(), m_lastFICH.getBN(), m_lastFICH.getBT(),
+		m_lastFICH.getFN(), m_lastFICH.getFT(), m_lastFICH.getDev() ? 1 : 0, m_lastFICH.getMR(), m_lastFICH.getVoIP() ? 1 : 0,
+		m_lastFICH.getDT(), m_lastFICH.getDGId());
+*/
 #ifdef notdef
 	// Stop repeater packets coming through, unless we're acting as a remote gateway
 	if (m_remoteGateway) {
@@ -238,7 +244,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 			}
 
 			unsigned char cm = m_lastFICH.getCM();
-			if (cm == YSF_CM_GROUP1 || cm == YSF_CM_GROUP2)
+			if (cm == YSF_CM_GROUP_CQ || cm == YSF_CM_RADIO_ID)
 				m_rfDest = (unsigned char*)"ALL       ";
 			else
 				m_rfDest = m_rfPayload.getDest();
@@ -407,7 +413,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			}
 
 			unsigned char cm = m_lastFICH.getCM();
-			if (cm == YSF_CM_GROUP1 || cm == YSF_CM_GROUP2)
+			if (cm == YSF_CM_GROUP_CQ || cm == YSF_CM_RADIO_ID)
 				m_rfDest = (unsigned char*)"ALL       ";
 			else
 				m_rfDest = m_rfPayload.getDest();
@@ -583,7 +589,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 				return false;
 
 			unsigned char cm = m_lastFICH.getCM();
-			if (cm == YSF_CM_GROUP1 || cm == YSF_CM_GROUP2)
+			if (cm == YSF_CM_GROUP_CQ || cm == YSF_CM_RADIO_ID)
 				m_rfDest = (unsigned char*)"ALL       ";
 			else
 				m_rfDest = m_rfPayload.getDest();
@@ -628,7 +634,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			memcpy(csd1 + YSF_CALLSIGN_LENGTH, m_rfSource, YSF_CALLSIGN_LENGTH);
 			memset(csd2, ' ', YSF_CALLSIGN_LENGTH + YSF_CALLSIGN_LENGTH);
 
-			if (cm == YSF_CM_GROUP1 || cm == YSF_CM_GROUP2)
+			if (cm == YSF_CM_GROUP_CQ || cm == YSF_CM_RADIO_ID)
 				memset(csd1 + 0U, '*', YSF_CALLSIGN_LENGTH);
 			else
 				memcpy(csd1 + 0U, m_rfDest, YSF_CALLSIGN_LENGTH);
@@ -709,7 +715,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 			}
 
 			unsigned char cm = m_lastFICH.getCM();
-			if (cm == YSF_CM_GROUP1 || cm == YSF_CM_GROUP2)
+			if (cm == YSF_CM_GROUP_CQ || cm == YSF_CM_RADIO_ID)
 				m_rfDest = (unsigned char*)"ALL       ";
 			else
 				m_rfDest = m_rfPayload.getDest();
@@ -921,6 +927,14 @@ void CYSFControl::writeNetwork()
 	if (valid)
 		dgid = fich.getDGId();
 
+/*
+	if (valid)
+		LogMessage("Net FICH: FI:%X CS:%X CM:%X BN:%u BT:%u FN:%u FT:%u Dev:%X MR:%X VOIP:%X DT:%X DGId:%X",
+			fich.getFI(), fich.getCS(), fich.getCM(), fich.getBN(), fich.getBT(),
+			fich.getFN(), fich.getFT(), fich.getDev() ? 1 : 0, fich.getMR(), fich.getVoIP() ? 1 : 0,
+			fich.getDT(), fich.getDGId());
+*/
+
 	if (!m_netTimeoutTimer.isRunning()) {
 		if (end)
 			return;
@@ -960,7 +974,7 @@ void CYSFControl::writeNetwork()
 		unsigned char cm = fich.getCM();
 
 		if (::memcmp(m_netDest, "          ", YSF_CALLSIGN_LENGTH) == 0) {
-			if (cm == YSF_CM_GROUP1 || cm == YSF_CM_GROUP2)
+			if (cm == YSF_CM_GROUP_CQ || cm == YSF_CM_RADIO_ID)
 				::memcpy(m_netDest, "ALL       ", YSF_CALLSIGN_LENGTH);
 		}
 

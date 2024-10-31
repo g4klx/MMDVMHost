@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017,2024 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -37,14 +37,20 @@ const unsigned char YSF_FI_COMMUNICATIONS = 0x01U;
 const unsigned char YSF_FI_TERMINATOR     = 0x02U;
 const unsigned char YSF_FI_TEST           = 0x03U;
 
+const unsigned char YSF_CS_RESERVE1 = 0x00U;
+const unsigned char YSF_CS_RESERVE2 = 0x01U;
+const unsigned char YSF_CS_ASSIGN   = 0x02U;
+const unsigned char YSF_CS_RESERVE3 = 0x03U;
+
+const unsigned char YSF_CM_GROUP_CQ   = 0x00U;
+const unsigned char YSF_CM_RADIO_ID   = 0x01U;
+const unsigned char YSF_CM_RESERVE    = 0x02U;
+const unsigned char YSF_CM_INDIVIDUAL = 0x03U;
+
 const unsigned char YSF_DT_VD_MODE1      = 0x00U;
 const unsigned char YSF_DT_DATA_FR_MODE  = 0x01U;
 const unsigned char YSF_DT_VD_MODE2      = 0x02U;
 const unsigned char YSF_DT_VOICE_FR_MODE = 0x03U;
-
-const unsigned char YSF_CM_GROUP1     = 0x00U;
-const unsigned char YSF_CM_GROUP2     = 0x01U;
-const unsigned char YSF_CM_INDIVIDUAL = 0x03U;
 
 const unsigned char YSF_MR_DIRECT   = 0x00U;
 const unsigned char YSF_MR_NOT_BUSY = 0x01U;

@@ -19,10 +19,11 @@
 #if !defined(FMControl_H)
 #define	FMControl_H
 
+#include "RingBuffer.h"
 #include "FMNetwork.h"
 #include "Defines.h"
-#include "IIRDirectForm1Filter.h"
-#include "RingBuffer.h"
+#include "IIR.h"
+#include "FIR.h"
 
 // Uncomment this to dump audio to a raw audio file
 // The file will be written in same folder as executable
@@ -52,12 +53,9 @@ private:
 	bool        m_begin;
 
 	CRingBuffer<unsigned char> m_incomingRFAudio;
-
-	CIIRDirectForm1Filter* m_preEmphasis;
-	CIIRDirectForm1Filter* m_deEmphasis;
-	CIIRDirectForm1Filter* m_filterStage1;
-	CIIRDirectForm1Filter* m_filterStage2;
-	CIIRDirectForm1Filter* m_filterStage3;
+	CIIR        m_preEmphasis;
+	CIIR        m_deEmphasis;
+	CFIR        m_filter;
 };
 
 #endif

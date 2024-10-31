@@ -314,7 +314,7 @@
     <ClInclude Include="FMControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="IIRDirectForm1Filter.h">
+    <ClInclude Include="IIR.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PseudoTTYController.h">
@@ -354,6 +354,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FMUSRPNetwork.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="FIR.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RS634717.h">
@@ -634,7 +637,7 @@
     <ClCompile Include="FMControl.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="IIRDirectForm1Filter.cpp">
+    <ClCompile Include="IIR.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PseudoTTYController.cpp">
@@ -674,6 +677,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FMUSRPNetwork.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="FIR.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RS634717.cpp">

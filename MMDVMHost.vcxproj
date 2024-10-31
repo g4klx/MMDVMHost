@@ -198,6 +198,7 @@
     <ClInclude Include="DStarHeader.h" />
     <ClInclude Include="DStarNetwork.h" />
     <ClInclude Include="DStarSlowData.h" />
+    <ClInclude Include="FIR.h" />
     <ClInclude Include="FMControl.h" />
     <ClInclude Include="FMIAXNetwork.h" />
     <ClInclude Include="FMNetwork.h" />
@@ -207,7 +208,7 @@
     <ClInclude Include="Golay24128.h" />
     <ClInclude Include="Hamming.h" />
     <ClInclude Include="DMRLookup.h" />
-    <ClInclude Include="IIRDirectForm1Filter.h" />
+    <ClInclude Include="IIR.h" />
     <ClInclude Include="LCDproc.h" />
     <ClInclude Include="Log.h" />
     <ClInclude Include="M17Control.h" />
@@ -314,6 +315,7 @@
     <ClCompile Include="DStarHeader.cpp" />
     <ClCompile Include="DStarNetwork.cpp" />
     <ClCompile Include="DStarSlowData.cpp" />
+    <ClCompile Include="FIR.cpp" />
     <ClCompile Include="FMControl.cpp" />
     <ClCompile Include="FMIAXNetwork.cpp" />
     <ClCompile Include="FMNetwork.cpp" />
@@ -322,7 +324,7 @@
     <ClCompile Include="Golay2087.cpp" />
     <ClCompile Include="Golay24128.cpp" />
     <ClCompile Include="Hamming.cpp" />
-    <ClCompile Include="IIRDirectForm1Filter.cpp" />
+    <ClCompile Include="IIR.cpp" />
     <ClCompile Include="LCDproc.cpp" />
     <ClCompile Include="Log.cpp" />
     <ClCompile Include="M17Control.cpp" />

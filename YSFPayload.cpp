@@ -1,5 +1,5 @@
 /*
-*	Copyright (C) 2016,2017,2020 Jonathan Naylor, G4KLX
+*	Copyright (C) 2016,2017,2020,2024 Jonathan Naylor, G4KLX
 *	Copyright (C) 2016 Mathias Weyland, HB9FRV
 *
 *	This program is free software; you can redistribute it and/or modify
@@ -304,6 +304,7 @@ bool CYSFPayload::processVDMode1Data(unsigned char* data, unsigned char fn, bool
 
 		switch (fn) {
 		case 0U:
+			// CUtils::dump(2U, "V/D Mode 1 Data, CSD1", output, 20U);
 			if (m_dest == NULL) {
 				m_dest = new unsigned char[YSF_CALLSIGN_LENGTH];
 				::memcpy(m_dest, output + 0U, YSF_CALLSIGN_LENGTH);
@@ -317,6 +318,7 @@ bool CYSFPayload::processVDMode1Data(unsigned char* data, unsigned char fn, bool
 			break;
 
 		case 1U:
+			// CUtils::dump(2U, "V/D Mode 1 Data, CSD2", output, 20U);
 			if (m_downlink != NULL && !gateway)
 				::memcpy(output + 0U, m_downlink, YSF_CALLSIGN_LENGTH);
 
@@ -325,24 +327,28 @@ bool CYSFPayload::processVDMode1Data(unsigned char* data, unsigned char fn, bool
 
 			break;
 
+		case 2U:
+			// CUtils::dump(2U, "V/D Mode 1 Data, CSD3", output, 20U);
+			break;
+
 		case 3U:
-			// CUtils::dump(1U, "V/D Mode 1 Data, DT1", output, 20U);
+			// CUtils::dump(2U, "V/D Mode 1 Data, DT1", output, 20U);
 			break;
 
 		case 4U:
-			// CUtils::dump(1U, "V/D Mode 1 Data, DT2", output, 20U);
+			// CUtils::dump(2U, "V/D Mode 1 Data, DT2", output, 20U);
 			break;
 
 		case 5U:
-			// CUtils::dump(1U, "V/D Mode 1 Data, DT3", output, 20U);
+			// CUtils::dump(2U, "V/D Mode 1 Data, DT3", output, 20U);
 			break;
 
 		case 6U:
-			// CUtils::dump(1U, "V/D Mode 1 Data, DT4", output, 20U);
+			// CUtils::dump(2U, "V/D Mode 1 Data, DT4", output, 20U);
 			break;
 
 		case 7U:
-			// CUtils::dump(1U, "V/D Mode 1 Data, DT5", output, 20U);
+			// CUtils::dump(2U, "V/D Mode 1 Data, DT5", output, 20U);
 			break;
 
 		default:
@@ -502,6 +508,7 @@ bool CYSFPayload::processVDMode2Data(unsigned char* data, unsigned char fn, bool
 
 		switch (fn) {
 		case 0U:
+			// CUtils::dump(2U, "V/D Mode 2 Data, Dest", output, YSF_CALLSIGN_LENGTH);
 			if (m_dest == NULL) {
 				m_dest = new unsigned char[YSF_CALLSIGN_LENGTH];
 				::memcpy(m_dest, output, YSF_CALLSIGN_LENGTH);
@@ -509,6 +516,7 @@ bool CYSFPayload::processVDMode2Data(unsigned char* data, unsigned char fn, bool
 			break;
 
 		case 1U:
+			// CUtils::dump(2U, "V/D Mode 2 Data, Src", output, YSF_CALLSIGN_LENGTH);
 			if (m_source == NULL) {
 				m_source = new unsigned char[YSF_CALLSIGN_LENGTH];
 				::memcpy(m_source, output, YSF_CALLSIGN_LENGTH);
@@ -516,21 +524,31 @@ bool CYSFPayload::processVDMode2Data(unsigned char* data, unsigned char fn, bool
 			break;
 
 		case 2U:
+			// CUtils::dump(2U, "V/D Mode 2 Data, Down", output, YSF_CALLSIGN_LENGTH);
 			if (m_downlink != NULL && !gateway)
 				::memcpy(output, m_downlink, YSF_CALLSIGN_LENGTH);
 			break;
 
 		case 3U:
+			// CUtils::dump(2U, "V/D Mode 2 Data, Up", output, YSF_CALLSIGN_LENGTH);
 			if (m_uplink != NULL && !gateway)
 				::memcpy(output, m_uplink, YSF_CALLSIGN_LENGTH);
 			break;
 
+		case 4U:
+			// CUtils::dump(2U, "V/D Mode 2 Data, Rem1+2", output, YSF_CALLSIGN_LENGTH);
+			break;
+
+		case 5U:
+			// CUtils::dump(2U, "V/D Mode 2 Data, Rem3+4", output, YSF_CALLSIGN_LENGTH);
+			break;
+
 		case 6U:
-			// CUtils::dump(1U, "V/D Mode 2 Data, DT1", output, YSF_CALLSIGN_LENGTH);
+			// CUtils::dump(2U, "V/D Mode 2 Data, DT1", output, YSF_CALLSIGN_LENGTH);
 			break;
 
 		case 7U:
-			// CUtils::dump(1U, "V/D Mode 2 Data, DT2", output, YSF_CALLSIGN_LENGTH);
+			// CUtils::dump(2U, "V/D Mode 2 Data, DT2", output, YSF_CALLSIGN_LENGTH);
 			break;
 
 		default:

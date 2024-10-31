@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2020,2024 by Jonathan Naylor G4KLX
  *   Copyright (C) 2020 by Geoffrey Merck - F4FXL KC3FRA
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -17,34 +17,33 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(IIRDIRECTFORM1FILTER_H)
-#define	IIRDIRECTFORM1FILTER_H
+#if !defined(IIR_H)
+#define	IIR_H
 
-class CIIRDirectForm1Filter
+class CIIR
 {
 public:
-  CIIRDirectForm1Filter(float b0, float b1, float b2, float, float a1, float a2, float additionalGaindB);
-  float filter(float sample);
-  void reset();
+	CIIR(float b0, float b1, float b2, float, float a1, float a2, float additionalGaindB);
+	~CIIR();
+
+	float filter(float sample);
+
+	void reset();
 
 private:
-// delay line
-  float m_x2; // x[n-2]
-  float m_y2; // y[n-2]
-  float m_x1; // x[n-1]
-  float m_y1; // y[n-1]
-  
-  // coefficients
-  // FIR
-  float m_b0;
-  float m_b1;
-  float m_b2;
-  // IIR
-  float m_a1;
-  float m_a2;
+	// Delay line
+	float m_x2;		// x[n-2]
+	float m_y2;		// y[n-2]
+	float m_x1;		// x[n-1]
+	float m_y1;		// y[n-1]
 
-  float m_additionalGainLin;
+	// Coefficients
+	float m_b0;
+	float m_b1;
+	float m_b2;
+	float m_a1;
+	float m_a2;
+	float m_additionalGainLin;
 };
-
 
 #endif
