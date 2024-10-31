@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2024 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -43,26 +43,30 @@ void CM17Utils::encodeCallsign(const std::string& callsign, unsigned char* encod
 		return;
 	}
 
-	unsigned int len = callsign.size();
+	unsigned int len = (unsigned int)callsign.size();
 	if (len > 9U)
 		len = 9U;
 
 	uint64_t enc = 0ULL;
 	for (int i = len - 1; i >= 0; i--) {
-		size_t pos = M17_CHARS.find(callsign[i]);
-		if (pos == std::string::npos)
-			pos = 0ULL;
+		if ((i == 0) && (callsign[i] == '#')) {
+			enc += 262144000000000ULL;
+		} else {
+			size_t pos = M17_CHARS.find(callsign[i]);
+			if (pos == std::string::npos)
+				pos = 0ULL;
 
-		enc *= 40ULL;
-		enc += pos;
+			enc *= 40ULL;
+			enc += pos;
+		}
 	}
 
 	encoded[0U] = (enc >> 40) & 0xFFU;
 	encoded[1U] = (enc >> 32) & 0xFFU;
 	encoded[2U] = (enc >> 24) & 0xFFU;
 	encoded[3U] = (enc >> 16) & 0xFFU;
-	encoded[4U] = (enc >> 8)  & 0xFFU;
-	encoded[5U] = (enc >> 0)  & 0xFFU;
+	encoded[4U] = (enc >> 8) & 0xFFU;
+	encoded[5U] = (enc >> 0) & 0xFFU;
 }
 
 void CM17Utils::decodeCallsign(const unsigned char* encoded, std::string& callsign)
@@ -71,22 +75,27 @@ void CM17Utils::decodeCallsign(const unsigned char* encoded, std::string& callsi
 
 	callsign.clear();
 
-	if (encoded[0U] == 0xFFU && encoded[1U] == 0xFFU && encoded[2U] == 0xFFU &&
-		encoded[3U] == 0xFFU && encoded[4U] == 0xFFU && encoded[5U] == 0xFFU) {
+	uint64_t enc = (uint64_t(encoded[0U]) << 40) +
+	               (uint64_t(encoded[1U]) << 32) +
+	               (uint64_t(encoded[2U]) << 24) +
+	               (uint64_t(encoded[3U]) << 16) +
+	               (uint64_t(encoded[4U]) << 8) +
+	               (uint64_t(encoded[5U]) << 0);
+
+	if (enc == 281474976710655ULL) {
 		callsign = "ALL";
 		return;
 	}
 
-	uint64_t enc =
-			(uint64_t(encoded[0U]) << 40) +
-			(uint64_t(encoded[1U]) << 32) +
-			(uint64_t(encoded[2U]) << 24) +
-			(uint64_t(encoded[3U]) << 16) +
-			(uint64_t(encoded[4U]) << 8) +
-			(uint64_t(encoded[5U]) << 0);
-
-	if (enc >= 262144000000000ULL)	// 40^9
+	if (enc >= 268697600000000ULL) {
+		callsign = "Invalid";
 		return;
+	}
+
+	if (enc >= 262144000000000ULL) {
+		callsign = "#";
+		enc -= 262144000000000ULL;
+	}
 
 	while (enc > 0ULL) {
 		callsign += " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-/."[enc % 40ULL];

@@ -36,7 +36,11 @@
 CUDPSocket::CUDPSocket(const std::string& address, unsigned short port) :
 m_localAddress(address),
 m_localPort(port),
+#if defined(_WIN32) || defined(_WIN64)
+m_fd(INVALID_SOCKET),
+#else
 m_fd(-1),
+#endif
 m_af(AF_UNSPEC)
 {
 }
@@ -44,7 +48,11 @@ m_af(AF_UNSPEC)
 CUDPSocket::CUDPSocket(unsigned short port) :
 m_localAddress(),
 m_localPort(port),
+#if defined(_WIN32) || defined(_WIN64)
+m_fd(INVALID_SOCKET),
+#else
 m_fd(-1),
+#endif
 m_af(AF_UNSPEC)
 {
 }
@@ -97,7 +105,9 @@ int CUDPSocket::lookup(const std::string& hostname, unsigned short port, sockadd
 		return err;
 	}
 
-	::memcpy(&addr, res->ai_addr, address_length = res->ai_addrlen);
+	address_length = (unsigned int)res->ai_addrlen;
+
+	::memcpy(&addr, res->ai_addr, address_length);
 
 	::freeaddrinfo(res);
 
@@ -160,7 +170,11 @@ bool CUDPSocket::open(const sockaddr_storage& address)
 
 bool CUDPSocket::open()
 {
+#if defined(_WIN32) || defined(_WIN64)
+	assert(m_fd == INVALID_SOCKET);
+#else
 	assert(m_fd == -1);
+#endif
 
 	sockaddr_storage addr;
 	unsigned int addrlen;
@@ -221,7 +235,14 @@ int CUDPSocket::read(unsigned char* buffer, unsigned int length, sockaddr_storag
 {
 	assert(buffer != NULL);
 	assert(length > 0U);
-	assert(m_fd >= 0);
+
+#if defined(_WIN32) || defined(_WIN64)
+	if (m_fd == INVALID_SOCKET)
+		return 0;
+#else
+	if (m_fd == -1)
+		return 0;
+#endif
 
 	// Check that the readfrom() won't block
 	struct pollfd pfd;
@@ -282,7 +303,11 @@ bool CUDPSocket::write(const unsigned char* buffer, unsigned int length, const s
 {
 	assert(buffer != NULL);
 	assert(length > 0U);
+#if defined(_WIN32) || defined(_WIN64)
+	assert(m_fd != INVALID_SOCKET);
+#else
 	assert(m_fd >= 0);
+#endif
 
 	bool result = false;
 
@@ -313,13 +338,16 @@ bool CUDPSocket::write(const unsigned char* buffer, unsigned int length, const s
 
 void CUDPSocket::close()
 {
-	if (m_fd >= 0) {
 #if defined(_WIN32) || defined(_WIN64)
+	if (m_fd != INVALID_SOCKET) {
 		::closesocket(m_fd);
+		m_fd = INVALID_SOCKET;
+	}
 #else
+	if (m_fd >= 0) {
 		::close(m_fd);
-#endif
 		m_fd = -1;
 	}
+#endif
 }
 
