@@ -78,7 +78,7 @@ const float FILTER_TAPS[] = {
 
 const unsigned int FILTER_TAPS_COUNT = 200U;
 
-CFMControl::CFMControl(CFMNetwork* network, float txAudioGain, float rxAudioGain, bool preEmphasisOn, bool deEmphasisOn) :
+CFMControl::CFMControl(IFMNetwork* network, float txAudioGain, float rxAudioGain, bool preEmphasisOn, bool deEmphasisOn) :
 m_network(network),
 m_txAudioGain(txAudioGain),
 m_rxAudioGain(rxAudioGain),
@@ -110,11 +110,18 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
     if (data[0U] == TAG_HEADER)
         return true;
 
-    if (data[0U] == TAG_EOT)
+    if (data[0U] == TAG_EOT) {
+        m_begin = true;
         return m_network->writeEnd();
+    }
 
     if (data[0U] != TAG_DATA)
         return false;
+
+    if (m_begin) {
+        m_begin = false;
+        m_network->writeStart();
+    }
 
     m_incomingRFAudio.addData(data + 1U, length - 1U);
     unsigned int bufferLength = m_incomingRFAudio.dataSize();
