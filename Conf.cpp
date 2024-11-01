@@ -54,6 +54,9 @@ enum SECTION {
 	SECTION_M17_NETWORK,
 	SECTION_POCSAG_NETWORK,
 	SECTION_FM_NETWORK,
+	SECTION_USRP_NETWORK,
+	SECTION_RAW_NETWORK,
+	SECTION_IAX_NETWORK,
 	SECTION_AX25_NETWORK,
 	SECTION_TFTSERIAL,
 	SECTION_HD44780,
@@ -290,22 +293,30 @@ m_pocsagNetworkModeHang(3U),
 m_pocsagNetworkDebug(false),
 m_fmNetworkEnabled(false),
 m_fmNetworkProtocol("USRP"),
-m_fmNetworkDomain("register.allstarlink.org"),
-m_fmNetworkPassword(),
-m_fmNetworkSource(),
-m_fmNetworkDestination(),
-m_fmNetworkSampleRate(48000U),
-m_fmNetworkSquelchFile(),
-m_fmGatewayAddress(),
-m_fmGatewayPort(0U),
-m_fmLocalAddress(),
-m_fmLocalPort(0U),
 m_fmPreEmphasis(true),
 m_fmDeEmphasis(true),
 m_fmTXAudioGain(1.0F),
 m_fmRXAudioGain(1.0F),
 m_fmNetworkModeHang(3U),
 m_fmNetworkDebug(false),
+m_usrpGatewayAddress(),
+m_usrpGatewayPort(0U),
+m_usrpLocalAddress("127.0.0.1"),
+m_usrpLocalPort(0U),
+m_rawGatewayAddress(),
+m_rawGatewayPort(0U),
+m_rawLocalAddress("127.0.0.1"),
+m_rawLocalPort(0U),
+m_rawSampleRate(48000U),
+m_rawSquelchFile(),
+m_iaxHostsFile1("IAXHosts.txt"),
+m_iaxHostsFile2(),
+m_iaxAuthAddress("register.allstarlink.org"),
+m_iaxAuthPort(4569U),
+m_iaxLocalPort(4569U),
+m_iaxPassword(),
+m_iaxSourceId(),
+m_iaxDestinationId(),
 m_ax25NetworkEnabled(false),
 m_ax25NetworkPort(),
 m_ax25NetworkSpeed(9600U),
@@ -422,6 +433,12 @@ bool CConf::read()
 				section = SECTION_POCSAG_NETWORK;
 			else if (::strncmp(buffer, "[FM Network]", 12U) == 0)
 				section = SECTION_FM_NETWORK;
+			else if (::strncmp(buffer, "[USRP Network]", 14U) == 0)
+				section = SECTION_USRP_NETWORK;
+			else if (::strncmp(buffer, "[RAW Network]", 13U) == 0)
+				section = SECTION_RAW_NETWORK;
+			else if (::strncmp(buffer, "[IAX Network]", 13U) == 0)
+				section = SECTION_IAX_NETWORK;
 			else if (::strncmp(buffer, "[AX.25 Network]", 15U) == 0)
 				section = SECTION_AX25_NETWORK;
 			else if (::strncmp(buffer, "[TFT Serial]", 12U) == 0)
@@ -1042,26 +1059,6 @@ bool CConf::read()
 				m_fmNetworkEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "Protocol") == 0)
 				m_fmNetworkProtocol = value;
-			else if (::strcmp(key, "Domain") == 0)
-				m_fmNetworkDomain = value;
-			else if (::strcmp(key, "Password") == 0)
-				m_fmNetworkPassword = value;
-			else if (::strcmp(key, "Source") == 0)
-				m_fmNetworkSource = value;
-			else if (::strcmp(key, "Destination") == 0)
-				m_fmNetworkDestination = value;
-			else if (::strcmp(key, "SampleRate") == 0)
-				m_fmNetworkSampleRate = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "SquelchFile") == 0)
-				m_fmNetworkSquelchFile = value;
-			else if (::strcmp(key, "LocalAddress") == 0)
-				m_fmLocalAddress = value;
-			else if (::strcmp(key, "LocalPort") == 0)
-				m_fmLocalPort = (unsigned short)::atoi(value);
-			else if (::strcmp(key, "GatewayAddress") == 0)
-				m_fmGatewayAddress = value;
-			else if (::strcmp(key, "GatewayPort") == 0)
-				m_fmGatewayPort = (unsigned short)::atoi(value);
 			else if (::strcmp(key, "PreEmphasis") == 0)
 				m_fmPreEmphasis = ::atoi(value) == 1;
 			else if (::strcmp(key, "DeEmphasis") == 0)
@@ -1074,6 +1071,45 @@ bool CConf::read()
 				m_fmNetworkModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Debug") == 0)
 				m_fmNetworkDebug = ::atoi(value) == 1;
+		} else if (section == SECTION_USRP_NETWORK) {
+			if (::strcmp(key, "GatewayAddress") == 0)
+				m_usrpGatewayAddress = value;
+			else if (::strcmp(key, "GatewayPort") == 0)
+				m_usrpGatewayPort = (unsigned short)::atoi(value);
+			else if (::strcmp(key, "LocalAddress") == 0)
+				m_usrpLocalAddress = value;
+			else if (::strcmp(key, "LocalPort") == 0)
+				m_usrpLocalPort = (unsigned short)::atoi(value);
+		} else if (section == SECTION_RAW_NETWORK) {
+			if (::strcmp(key, "GatewayAddress") == 0)
+				m_rawGatewayAddress = value;
+			else if (::strcmp(key, "GatewayPort") == 0)
+				m_rawGatewayPort = (unsigned short)::atoi(value);
+			else if (::strcmp(key, "LocalAddress") == 0)
+				m_rawLocalAddress = value;
+			else if (::strcmp(key, "LocalPort") == 0)
+				m_rawLocalPort = (unsigned short)::atoi(value);
+			else if (::strcmp(key, "SampleRate") == 0)
+				m_rawSampleRate = (unsigned int)::atoi(value);
+			else if (::strcmp(key, "SquelchFile") == 0)
+				m_rawSquelchFile = value;
+		} else if (section == SECTION_IAX_NETWORK) {
+			if (::strcmp(key, "HostsFile1") == 0)
+				m_iaxHostsFile1 = value;
+			else if (::strcmp(key, "HostsFile2") == 0)
+				m_iaxHostsFile2 = value;
+			else if (::strcmp(key, "AuthAddress") == 0)
+				m_iaxAuthAddress = value;
+			else if (::strcmp(key, "AuthPort") == 0)
+				m_iaxAuthPort = (unsigned short)::atoi(value);
+			else if (::strcmp(key, "LocalPort") == 0)
+				m_iaxLocalPort = (unsigned short)::atoi(value);
+			else if (::strcmp(key, "Password") == 0)
+				m_iaxPassword = value;
+			else if (::strcmp(key, "SourceId") == 0)
+				m_iaxSourceId = value;
+			else if (::strcmp(key, "DestinationId") == 0)
+				m_iaxDestinationId = value;
 		} else if (section == SECTION_AX25_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_ax25NetworkEnabled = ::atoi(value) == 1;
@@ -2300,56 +2336,6 @@ std::string CConf::getFMNetworkProtocol() const
 	return m_fmNetworkProtocol;
 }
 
-std::string CConf::getFMNetworkDomain() const
-{
-	return m_fmNetworkDomain;
-}
-
-std::string CConf::getFMNetworkPassword() const
-{
-	return m_fmNetworkPassword;
-}
-
-std::string CConf::getFMNetworkSource() const
-{
-	return m_fmNetworkSource;
-}
-
-std::string CConf::getFMNetworkDestination() const
-{
-	return m_fmNetworkDestination;
-}
-
-unsigned int CConf::getFMNetworkSampleRate() const
-{
-	return m_fmNetworkSampleRate;
-}
-
-std::string CConf::getFMNetworkSquelchFile() const
-{
-	return m_fmNetworkSquelchFile;
-}
-
-std::string CConf::getFMGatewayAddress() const
-{
-	return m_fmGatewayAddress;
-}
-
-unsigned short CConf::getFMGatewayPort() const
-{
-	return m_fmGatewayPort;
-}
-
-std::string CConf::getFMLocalAddress() const
-{
-	return m_fmLocalAddress;
-}
-
-unsigned short CConf::getFMLocalPort() const
-{
-	return m_fmLocalPort;
-}
-
 bool CConf::getFMPreEmphasis() const
 {
 	return m_fmPreEmphasis;
@@ -2378,6 +2364,96 @@ unsigned int CConf::getFMNetworkModeHang() const
 bool CConf::getFMNetworkDebug() const
 {
 	return m_fmNetworkDebug;
+}
+
+std::string CConf::getUSRPGatewayAddress() const
+{
+	return m_usrpGatewayAddress;
+}
+
+unsigned short CConf::getUSRPGatewayPort() const
+{
+	return m_usrpGatewayPort;
+}
+
+std::string CConf::getUSRPLocalAddress() const
+{
+	return m_usrpLocalAddress;
+}
+
+unsigned short CConf::getUSRPLocalPort() const
+{
+	return m_usrpLocalPort;
+}
+
+std::string CConf::getRAWGatewayAddress() const
+{
+	return m_rawGatewayAddress;
+}
+
+unsigned short CConf::getRAWGatewayPort() const
+{
+	return m_rawGatewayPort;
+}
+
+std::string CConf::getRAWLocalAddress() const
+{
+	return m_rawLocalAddress;
+}
+
+unsigned short CConf::getRAWLocalPort() const
+{
+	return m_rawLocalPort;
+}
+
+unsigned int CConf::getRAWSampleRate() const
+{
+	return m_rawSampleRate;
+}
+
+std::string CConf::getRAWSquelchFile() const
+{
+	return m_rawSquelchFile;
+}
+
+std::string CConf::getIAXHostsFile1() const
+{
+	return m_iaxHostsFile1;
+}
+
+std::string CConf::getIAXHostsFile2() const
+{
+	return m_iaxHostsFile2;
+}
+
+std::string CConf::getIAXAuthAddress() const
+{
+	return m_iaxAuthAddress;
+}
+
+unsigned short CConf::getIAXAuthPort() const
+{
+	return m_iaxAuthPort;
+}
+
+unsigned short CConf::getIAXLocalPort() const
+{
+	return m_iaxLocalPort;
+}
+
+std::string CConf::getIAXPassword() const
+{
+	return m_iaxPassword;
+}
+
+std::string CConf::getIAXSourceId() const
+{
+	return m_iaxSourceId;
+}
+
+std::string CConf::getIAXDestinationId() const
+{
+	return m_iaxDestinationId;
 }
 
 bool CConf::getAX25NetworkEnabled() const

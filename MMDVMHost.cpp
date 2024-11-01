@@ -1883,17 +1883,7 @@ bool CMMDVMHost::createPOCSAGNetwork()
 bool CMMDVMHost::createFMNetwork()
 {
 	std::string callsign       = m_conf.getFMCallsign();
-	std::string domain         = m_conf.getFMNetworkDomain();
-	std::string password       = m_conf.getFMNetworkPassword();
-	std::string source         = m_conf.getFMNetworkSource();
-	std::string destination    = m_conf.getFMNetworkDestination();
 	std::string protocol       = m_conf.getFMNetworkProtocol();
-	unsigned int sampleRate    = m_conf.getFMNetworkSampleRate();
-	std::string squelchFile    = m_conf.getFMNetworkSquelchFile();
-	std::string gatewayAddress = m_conf.getFMGatewayAddress();
-	unsigned short gatewayPort = m_conf.getFMGatewayPort();
-	std::string localAddress   = m_conf.getFMLocalAddress();
-	unsigned short localPort   = m_conf.getFMLocalPort();
 	bool preEmphasis           = m_conf.getFMPreEmphasis();
 	bool deEmphasis            = m_conf.getFMDeEmphasis();
 	float txAudioGain          = m_conf.getFMTXAudioGain();
@@ -1903,33 +1893,63 @@ bool CMMDVMHost::createFMNetwork()
 
 	LogInfo("FM Network Parameters");
 	LogInfo("    Protocol: %s", protocol.c_str());
-	LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
-	LogInfo("    Gateway Port: %hu", gatewayPort);
-	LogInfo("    Local Address: %s", localAddress.c_str());
-	LogInfo("    Local Port: %hu", localPort);
 	LogInfo("    Pre-Emphasis: %s", preEmphasis ? "yes" : "no");
 	LogInfo("    De-Emphasis: %s", deEmphasis ? "yes" : "no");
 	LogInfo("    TX Audio Gain: %.2f", txAudioGain);
 	LogInfo("    RX Audio Gain: %.2f", rxAudioGain);
 	LogInfo("    Mode Hang: %us", m_fmNetModeHang);
 
-	if (protocol == "RAW") {
-		LogInfo("    Sample Rate: %u", sampleRate);
-		LogInfo("    Squelch File: %s", squelchFile.empty() ? "(none)" : squelchFile.c_str());
-	}
-
-	if (protocol == "IAX") {
-		LogInfo("    Domain: %s", domain.c_str());
-		LogInfo("    Source: %s", source.c_str());
-		LogInfo("    Destiation: %s", destination.c_str());
-	}
-
 	if (protocol == "USRP") {
+		std::string gatewayAddress = m_conf.getUSRPGatewayAddress();
+		unsigned short gatewayPort = m_conf.getUSRPGatewayPort();
+		std::string localAddress   = m_conf.getUSRPLocalAddress();
+		unsigned short localPort   = m_conf.getUSRPLocalPort();
+
+		LogInfo("USRP Network Parameters");
+		LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
+		LogInfo("    Gateway Port: %hu", gatewayPort);
+		LogInfo("    Local Address: %s", localAddress.c_str());
+		LogInfo("    Local Port: %hu", localPort);
+
 		m_fmNetwork = new CFMUSRPNetwork(callsign, localAddress, localPort, gatewayAddress, gatewayPort, debug);
 	} else if (protocol == "RAW") {
+		std::string gatewayAddress = m_conf.getRAWGatewayAddress();
+		unsigned short gatewayPort = m_conf.getRAWGatewayPort();
+		std::string localAddress   = m_conf.getRAWLocalAddress();
+		unsigned short localPort   = m_conf.getRAWLocalPort();
+		unsigned int sampleRate    = m_conf.getRAWSampleRate();
+		std::string squelchFile    = m_conf.getRAWSquelchFile();
+
+		LogInfo("RAW Network Parameters");
+		LogInfo("    Gateway Address: %s", gatewayAddress.c_str());
+		LogInfo("    Gateway Port: %hu", gatewayPort);
+		LogInfo("    Local Address: %s", localAddress.c_str());
+		LogInfo("    Local Port: %hu", localPort);
+		LogInfo("    Sample Rate: %u", sampleRate);
+		LogInfo("    Squelch File: %s", squelchFile.empty() ? "(none)" : squelchFile.c_str());
+
 		m_fmNetwork = new CFMRAWNetwork(localAddress, localPort, gatewayAddress, gatewayPort, sampleRate, squelchFile, debug);
 	} else if (protocol == "IAX") {
-		m_fmNetwork = new CFMIAXNetwork(domain, password, source, destination, localAddress, localPort, gatewayAddress, gatewayPort, debug);
+		std::string hostsFile1    = m_conf.getIAXHostsFile1();
+		std::string hostsFile2    = m_conf.getIAXHostsFile2();
+		std::string authAddress   = m_conf.getIAXAuthAddress();
+		unsigned short authPort   = m_conf.getIAXAuthPort();
+		unsigned short localPort  = m_conf.getIAXLocalPort();
+		std::string password      = m_conf.getIAXPassword();
+		std::string sourceId      = m_conf.getIAXSourceId();
+		std::string destinationId = m_conf.getIAXDestinationId();
+
+		LogInfo("IAX Network Parameters");
+		LogInfo("    Hosts File 1: %s", hostsFile1.c_str());
+		if (!hostsFile2.empty())
+			LogInfo("    Hosts File 2: %s", hostsFile2.c_str());
+		LogInfo("    Auth Address: %s", authAddress.c_str());
+		LogInfo("    Auth Port: %u", authPort);
+		LogInfo("    Local Port: %u", localPort);
+		LogInfo("    Source Id: %s", sourceId.c_str());
+		LogInfo("    Destination Id: %s", destinationId.c_str());
+
+		m_fmNetwork = new CFMIAXNetwork(hostsFile1, hostsFile2, authAddress, authPort, localPort, password, sourceId, destinationId, debug);
 	} else {
 		LogError("Invalid FM network protocol specified - %s", protocol.c_str());
 		return false;
@@ -2822,5 +2842,5 @@ void CMMDVMHost::buildNetworkHostsString(std::string &str)
 	str += std::string(" p25:\"") + ((m_p25Enabled && (m_p25Network != NULL)) ? m_conf.getP25GatewayAddress() : "NONE") + "\"";
 	str += std::string(" nxdn:\"") + ((m_nxdnEnabled && (m_nxdnNetwork != NULL)) ? m_conf.getNXDNGatewayAddress() : "NONE") + "\"";
 	str += std::string(" m17:\"") + ((m_m17Enabled && (m_m17Network != NULL)) ? m_conf.getM17GatewayAddress() : "NONE") + "\"";
-	str += std::string(" fm:\"") + ((m_fmEnabled && (m_fmNetwork != NULL)) ? m_conf.getFMGatewayAddress() : "NONE") + "\"";
+	str += std::string(" fm:\"") + ((m_fmEnabled && (m_fmNetwork != NULL)) ? m_fmNetwork->getAddress() : "NONE") + "\"";
 }

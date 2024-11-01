@@ -28,6 +28,7 @@
 #include <cstdint>
 #include <string>
 #include <random>
+#include <map>
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <wincrypt.h>
@@ -45,7 +46,7 @@ enum IAX_STATUS {
 
 class CFMIAXNetwork : public IFMNetwork {
 public:
-	CFMIAXNetwork(const std::string& domain, const std::string& password, const std::string& source, const std::string& destination, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug);
+	CFMIAXNetwork(const std::string& hostFile1, const std::string& hostFile2, const std::string& authAddress, unsigned short authPort, unsigned short localPort, const std::string& password, const std::string& sourceId, const std::string& destinationId, bool debug);
 	virtual ~CFMIAXNetwork();
 
 	virtual bool open();
@@ -66,13 +67,17 @@ public:
 
 	virtual void clock(unsigned int ms);
 
+	virtual std::string getAddress();
+
 private:
+	std::string         m_hostFile1;
+	std::string         m_hostFile2;
+	sockaddr_storage    m_authAddr;
+	unsigned int        m_authAddrLen;
 	std::string         m_password;
-	std::string         m_source;
-	std::string         m_destination;
+	std::string         m_sourceId;
+	std::string         m_destinationId;
 	CUDPSocket          m_socket;
-	sockaddr_storage    m_domainAddr;
-	unsigned int        m_domainAddrLen;
 	sockaddr_storage    m_serverAddr;
 	unsigned int        m_serverAddrLen;
 	bool                m_debug;
@@ -98,9 +103,13 @@ private:
 	unsigned int        m_rxOOO;
 	bool                m_keyed;
 	std::mt19937        m_random;
+	std::map<std::string, std::pair<std::string, unsigned short>> m_hosts;
 #if defined(_WIN32) || defined(_WIN64)
 	HCRYPTPROV          m_provider;
 #endif
+
+	bool loadHostsFile(const std::string& fileName);
+	bool lookupHost();
 
 	bool writeNew();
 	bool writeKey(bool key);

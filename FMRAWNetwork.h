@@ -53,6 +53,8 @@ public:
 
 	virtual void clock(unsigned int ms);
 
+	virtual std::string getAddress();
+
 private:
 	CUDPSocket          m_socket;
 	sockaddr_storage    m_addr;

@@ -49,6 +49,8 @@ public:
 
 	virtual void clock(unsigned int ms);
 
+	virtual std::string getAddress();
+
 private:
 	std::string         m_callsign;
 	CUDPSocket          m_socket;

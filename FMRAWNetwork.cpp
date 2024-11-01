@@ -303,3 +303,17 @@ void CFMRAWNetwork::enable(bool enabled)
 	m_enabled = enabled;
 }
 
+std::string CFMRAWNetwork::getAddress()
+{
+	if (m_addrLen == 0U)
+		return "NONE";
+
+	char buffer1[250U];
+	char buffer2[250U];
+
+	int ret = ::getnameinfo((sockaddr*)&m_addr, m_addrLen, buffer1, 250, buffer2, 250, NI_NUMERICHOST | NI_NUMERICSERV);
+	if (ret != 0)
+		return "NONE";
+
+	return std::string(buffer1);
+}

@@ -303,22 +303,36 @@ public:
   // The FM Network section
   bool         getFMNetworkEnabled() const;
   std::string  getFMNetworkProtocol() const;
-  std::string  getFMNetworkDomain() const;
-  std::string  getFMNetworkPassword() const;
-  std::string  getFMNetworkSource() const;
-  std::string  getFMNetworkDestination() const;
-  unsigned int getFMNetworkSampleRate() const;
-  std::string  getFMNetworkSquelchFile() const;
-  std::string  getFMGatewayAddress() const;
-  unsigned short getFMGatewayPort() const;
-  std::string  getFMLocalAddress() const;
-  unsigned short getFMLocalPort() const;
   bool         getFMPreEmphasis() const;
   bool         getFMDeEmphasis() const;
   float        getFMTXAudioGain() const;
   float        getFMRXAudioGain() const;
   unsigned int getFMNetworkModeHang() const;
   bool         getFMNetworkDebug() const;
+
+  // The USRP Network section
+  std::string  getUSRPGatewayAddress() const;
+  unsigned short getUSRPGatewayPort() const;
+  std::string  getUSRPLocalAddress() const;
+  unsigned short getUSRPLocalPort() const;
+
+  // The RAW Network section
+  std::string  getRAWGatewayAddress() const;
+  unsigned short getRAWGatewayPort() const;
+  std::string  getRAWLocalAddress() const;
+  unsigned short getRAWLocalPort() const;
+  unsigned int getRAWSampleRate() const;
+  std::string  getRAWSquelchFile() const;
+
+  // The IAX Network section
+  std::string  getIAXHostsFile1() const;
+  std::string  getIAXHostsFile2() const;
+  std::string  getIAXAuthAddress() const;
+  unsigned short getIAXAuthPort() const;
+  unsigned short getIAXLocalPort() const;
+  std::string  getIAXPassword() const;
+  std::string  getIAXSourceId() const;
+  std::string  getIAXDestinationId() const;
 
   // The AX.25 Network section
   bool         getAX25NetworkEnabled() const;
@@ -629,22 +643,33 @@ private:
 
   bool         m_fmNetworkEnabled;
   std::string  m_fmNetworkProtocol;
-  std::string  m_fmNetworkDomain;
-  std::string  m_fmNetworkPassword;
-  std::string  m_fmNetworkSource;
-  std::string  m_fmNetworkDestination;
-  unsigned int m_fmNetworkSampleRate;
-  std::string  m_fmNetworkSquelchFile;
-  std::string  m_fmGatewayAddress;
-  unsigned short m_fmGatewayPort;
-  std::string  m_fmLocalAddress;
-  unsigned short m_fmLocalPort;
   bool         m_fmPreEmphasis;
   bool         m_fmDeEmphasis;
   float        m_fmTXAudioGain;
   float        m_fmRXAudioGain;
   unsigned int m_fmNetworkModeHang;
   bool         m_fmNetworkDebug;
+
+  std::string  m_usrpGatewayAddress;
+  unsigned short m_usrpGatewayPort;
+  std::string  m_usrpLocalAddress;
+  unsigned short m_usrpLocalPort;
+
+  std::string  m_rawGatewayAddress;
+  unsigned short m_rawGatewayPort;
+  std::string  m_rawLocalAddress;
+  unsigned short m_rawLocalPort;
+  unsigned int m_rawSampleRate;
+  std::string  m_rawSquelchFile;
+
+  std::string  m_iaxHostsFile1;
+  std::string  m_iaxHostsFile2;
+  std::string  m_iaxAuthAddress;
+  unsigned short m_iaxAuthPort;
+  unsigned short m_iaxLocalPort;
+  std::string  m_iaxPassword;
+  std::string  m_iaxSourceId;
+  std::string  m_iaxDestinationId;
 
   bool         m_ax25NetworkEnabled;
   std::string  m_ax25NetworkPort;

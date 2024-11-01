@@ -44,6 +44,8 @@ public:
 
 	virtual void clock(unsigned int ms) = 0;
 
+	virtual std::string getAddress() = 0;
+
 private:
 };
 
