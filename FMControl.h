@@ -50,7 +50,6 @@ private:
 	bool        m_preEmphasisOn;
 	bool        m_deEmphasisOn;
 	bool        m_enabled;
-	bool        m_begin;
 
 	CRingBuffer<unsigned char> m_incomingRFAudio;
 	CIIR        m_preEmphasis;

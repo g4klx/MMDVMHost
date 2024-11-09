@@ -85,7 +85,6 @@ m_rxAudioGain(rxAudioGain),
 m_preEmphasisOn(preEmphasisOn),
 m_deEmphasisOn(deEmphasisOn),
 m_enabled(false),
-m_begin(true),
 m_incomingRFAudio(1600U, "Incoming RF FM Audio"),
 m_preEmphasis(8.315375384336983F, -7.03334621603483F,    0.0F, 1.0F,  0.282029168302153F,  0.0F, PREEMPHASIS_GAIN_DB),
 m_deEmphasis(0.07708787090460224F, 0.07708787090460224F, 0.0F, 1.0F, -0.8458242581907955F, 0.0F, DEEMPHASIS_GAIN_DB),
@@ -108,20 +107,13 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
         return true;
 
     if (data[0U] == TAG_HEADER)
-        return true;
+        return m_network->writeStart();
 
-    if (data[0U] == TAG_EOT) {
-        m_begin = true;
+    if (data[0U] == TAG_EOT)
         return m_network->writeEnd();
-    }
 
     if (data[0U] != TAG_DATA)
         return false;
-
-    if (m_begin) {
-        m_begin = false;
-        m_network->writeStart();
-    }
 
     m_incomingRFAudio.addData(data + 1U, length - 1U);
     unsigned int bufferLength = m_incomingRFAudio.dataSize();
