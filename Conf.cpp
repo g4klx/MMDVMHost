@@ -1347,7 +1347,6 @@ std::string CConf::getMQTTPass() const
         return m_mqttPass;
 }
 
-
 bool CConf::getCWIdEnabled() const
 {
 	return m_cwIdEnabled;
