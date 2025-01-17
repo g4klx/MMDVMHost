@@ -61,7 +61,6 @@ public:
 	std::string    getMQTTUser() const;
 	std::string    getMQTTPass() const;
 
-
 	// The CW ID section
 	bool         getCWIdEnabled() const;
 	unsigned int getCWIdTime() const;
@@ -415,7 +414,6 @@ private:
 	bool         m_mqttAuthEnabled;
 	std::string  m_mqttUser;
 	std::string  m_mqttPass;
-
 
 	bool         m_cwIdEnabled;
 	unsigned int m_cwIdTime;
