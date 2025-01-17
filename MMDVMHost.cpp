@@ -368,7 +368,7 @@ int CMMDVMHost::run()
 		subscriptions.push_back(std::make_pair("ax25-in", CMMDVMHost::onAX25));
 #endif
 
-	m_mqtt = new CMQTTConnection(m_conf.getMQTTHost(), m_conf.getMQTTPort(), m_conf.getMQTTName(), subscriptions, m_conf.getMQTTKeepalive());
+	m_mqtt = new CMQTTConnection(m_conf.getMQTTHost(), m_conf.getMQTTPort(), m_conf.getMQTTName(), m_conf.getMQTTAuthEnabled(), m_conf.getMQTTUser(), m_conf.getMQTTPass(), subscriptions, m_conf.getMQTTKeepalive());
 	ret = m_mqtt->open();
 	if (!ret) {
 		::fprintf(stderr, "MMDVMHost: unable to start the MQTT Publisher\n");

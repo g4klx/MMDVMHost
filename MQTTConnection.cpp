@@ -23,10 +23,13 @@
 #include <cstring>
 
 
-CMQTTConnection::CMQTTConnection(const std::string& host, unsigned short port, const std::string& name, const std::vector<std::pair<std::string, void (*)(const unsigned char*, unsigned int)>>& subs, unsigned int keepalive, MQTT_QOS qos) :
+CMQTTConnection::CMQTTConnection(const std::string& host, unsigned short port, const std::string& name, const bool authEnabled, const std::string& user,  const std::string& pass, const std::vector<std::pair<std::string, void (*)(const unsigned char*, unsigned int)>>& subs, unsigned int keepalive, MQTT_QOS qos) :
 m_host(host),
 m_port(port),
 m_name(name),
+m_authEnabled(authEnabled),
+m_user(user),
+m_pass(pass),
 m_subs(subs),
 m_keepalive(keepalive),
 m_qos(qos),
@@ -54,6 +57,9 @@ bool CMQTTConnection::open()
 		return false;
 	}
 
+        if (m_authEnabled) {
+		::mosquitto_username_pw_set(m_mosq, m_user.c_str(), m_pass.c_str());
+	}
 	::mosquitto_connect_callback_set(m_mosq, onConnect);
 	::mosquitto_subscribe_callback_set(m_mosq, onSubscribe);
 	::mosquitto_message_callback_set(m_mosq, onMessage);

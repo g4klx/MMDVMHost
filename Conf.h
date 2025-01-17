@@ -57,6 +57,10 @@ public:
 	unsigned short getMQTTPort() const;
 	unsigned int   getMQTTKeepalive() const;
 	std::string    getMQTTName() const;
+	bool           getMQTTAuthEnabled() const;
+	std::string    getMQTTUser() const;
+	std::string    getMQTTPass() const;
+
 
 	// The CW ID section
 	bool         getCWIdEnabled() const;
@@ -408,6 +412,10 @@ private:
 	unsigned short m_mqttPort;
 	unsigned int m_mqttKeepalive;
 	std::string  m_mqttName;
+	bool         m_mqttAuthEnabled;
+	std::string  m_mqttUser;
+	std::string  m_mqttPass;
+
 
 	bool         m_cwIdEnabled;
 	unsigned int m_cwIdTime;
