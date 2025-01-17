@@ -122,6 +122,9 @@ m_mqttHost("127.0.0.1"),
 m_mqttPort(1883),
 m_mqttKeepalive(60U),
 m_mqttName("mmdvm"),
+m_mqttAuthEnabled(false),
+m_mqttUser("mqttuser"),
+m_mqttPass("mqttpass"),
 m_cwIdEnabled(false),
 m_cwIdTime(10U),
 m_cwIdCallsign(),
@@ -609,6 +612,13 @@ bool CConf::read()
 				m_mqttKeepalive = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Name") == 0)
 				m_mqttName = value;
+                        else if (::strcmp(key, "Auth") == 0)
+                                m_mqttAuthEnabled = ::atoi(value) == 1;
+                        else if (::strcmp(key, "User") == 0)
+                                m_mqttUser = value;
+                        else if (::strcmp(key, "Pass") == 0)
+                                m_mqttPass = value;
+
 		} else if (section == SECTION_CWID) {
 			if (::strcmp(key, "Enable") == 0)
 				m_cwIdEnabled = ::atoi(value) == 1;
@@ -1320,6 +1330,21 @@ unsigned int CConf::getMQTTKeepalive() const
 std::string CConf::getMQTTName() const
 {
 	return m_mqttName;
+}
+
+bool CConf::getMQTTAuthEnabled() const
+{
+        return m_mqttAuthEnabled;
+}
+
+std::string CConf::getMQTTUser() const
+{
+        return m_mqttUser;
+}
+
+std::string CConf::getMQTTPass() const
+{
+        return m_mqttPass;
 }
 
 bool CConf::getCWIdEnabled() const

@@ -32,7 +32,7 @@ enum MQTT_QOS {
 
 class CMQTTConnection {
 public:
-	CMQTTConnection(const std::string& host, unsigned short port, const std::string& name, const std::vector<std::pair<std::string, void (*)(const unsigned char*, unsigned int)>>& subs, unsigned int keepalive, MQTT_QOS qos = MQTT_QOS_EXACTLY_ONCE);
+	CMQTTConnection(const std::string& host, unsigned short port, const std::string& name, const bool authEnabled, const std::string& user, const std::string& pass, const std::vector<std::pair<std::string, void (*)(const unsigned char*, unsigned int)>>& subs, unsigned int keepalive, MQTT_QOS qos = MQTT_QOS_EXACTLY_ONCE);
 	~CMQTTConnection();
 
 	bool open();
@@ -47,6 +47,9 @@ private:
 	std::string    m_host;
 	unsigned short m_port;
 	std::string    m_name;
+	bool           m_authEnabled;
+	std::string    m_user;
+	std::string    m_pass;
 	std::vector<std::pair<std::string, void (*)(const unsigned char*, unsigned int)>> m_subs;
 	unsigned int   m_keepalive;
 	MQTT_QOS       m_qos;
