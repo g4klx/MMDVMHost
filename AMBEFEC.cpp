@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2010,2014,2016,2018,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2010,2014,2016,2018,2021,2025 by Jonathan Naylor G4KLX
  *   Copyright (C) 2016 Mathias Weyland, HB9FRV
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -798,8 +798,6 @@ unsigned int CAMBEFEC::regenerateDStar(unsigned int& a, unsigned int& b) const
 
 	unsigned int data;
 	bool valid1 = CGolay24128::decode24128(a, data);
-	if (!valid1)
-		return 10U;
 
 	// The PRNG
 	unsigned int p = PRNG_TABLE[data];
@@ -808,13 +806,14 @@ unsigned int CAMBEFEC::regenerateDStar(unsigned int& a, unsigned int& b) const
 
 	unsigned int datb;
 	bool valid2 = CGolay24128::decode24128(b, datb);
-	if (!valid2)
-		return 10U;
 
 	a = CGolay24128::encode24128(data);
 	b = CGolay24128::encode24128(datb);
 
 	b ^= p;
+
+	if (!valid1 || !valid2)
+		return 10U;
 
 	unsigned int v = a ^ orig_a;
 	unsigned int errsA = CUtils::countBits(v);
@@ -832,12 +831,6 @@ unsigned int CAMBEFEC::regenerateDMR(unsigned int& a, unsigned int& b, unsigned 
 
 	unsigned int data;
 	bool valid = CGolay24128::decode24128(a, data);
-	if (!valid) {
-		a = 0xF00292U;
-		b = 0x0E0B20U;
-		c = 0x000000U;
-		return 10U;		// An invalid A block gives an error count of 10
-	}
 
 	a = CGolay24128::encode24128(data);
 
@@ -851,6 +844,13 @@ unsigned int CAMBEFEC::regenerateDMR(unsigned int& a, unsigned int& b, unsigned 
 	b = CGolay24128::encode23127(datb) >> 1;
 
 	b ^= p;
+
+	if (!valid) {
+		a = 0xF00292U;
+		b = 0x0E0B20U;
+		c = 0x000000U;
+		return 10U;		// An invalid A block gives an error count of 10
+	}
 
 	unsigned int v = a ^ orig_a;
 	unsigned int errsA = CUtils::countBits(v);

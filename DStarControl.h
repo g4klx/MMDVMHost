@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2019 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2019,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -99,27 +99,6 @@ private:
 	unsigned int               m_rssiCount;
 	bool                       m_enabled;
 	FILE*                      m_fp;
-	unsigned char*             m_rfVoiceSyncData;
-	unsigned int               m_rfVoiceSyncDataLen;
-	unsigned char*             m_netVoiceSyncData;
-	unsigned int               m_netVoiceSyncDataLen;
-	bool                       m_rfNextFrameIsFastData;
-	bool                       m_netNextFrameIsFastData;
-	unsigned int               m_rfSkipDTMFBlankingFrames;
-	unsigned int               m_netSkipDTMFBlankingFrames;
-
-	unsigned int maybeFixupVoiceFrame(
-		unsigned char*  data,
-		unsigned int    len,
-		unsigned int    offset,
-		const char*     log_prefix,
-		unsigned char   n,
-		bool            blank_dtmf,
-		unsigned char*  voice_sync_data,
-		unsigned int&   voice_sync_data_len,
-		bool&           next_frame_is_fast_data,
-		unsigned int&   skip_dtmf_blanking_frames
-		);
 
 	void writeNetwork();
 
