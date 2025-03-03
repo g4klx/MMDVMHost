@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015-2019,2021,2023 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015-2019,2021,2023,2025 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@
 #include <functional>
 
 const unsigned int MAX_SYNC_BIT_ERRORS = 2U;
-const unsigned int FAST_DATA_BEEP_GRACE_FRAMES = 6U;
 
 const unsigned int RSSI_COUNT = 3U * 21U;	// 3 * 420ms = 1260ms
 const unsigned int BER_COUNT  = 50U * 48U;	// 50 * 20ms = 1000ms
@@ -89,15 +88,7 @@ m_rssiAccum(0),
 m_rssiCount(0U),
 m_bitErrsAccum(0U),
 m_bitsCount(0U),
-m_enabled(true),
-m_rfVoiceSyncData(NULL),
-m_rfVoiceSyncDataLen(0U),
-m_netVoiceSyncData(NULL),
-m_netVoiceSyncDataLen(0U),
-m_rfNextFrameIsFastData(false),
-m_netNextFrameIsFastData(false),
-m_rfSkipDTMFBlankingFrames(0U),
-m_netSkipDTMFBlankingFrames(0U)
+m_enabled(true)
 {
 	assert(rssiMapper != NULL);
 
@@ -105,8 +96,6 @@ m_netSkipDTMFBlankingFrames(0U)
 	m_gateway  = new unsigned char[DSTAR_LONG_CALLSIGN_LENGTH];
 
 	m_lastFrame = new unsigned char[DSTAR_FRAME_LENGTH_BYTES + 1U];
-	m_rfVoiceSyncData = new unsigned char[DSTAR_MODEM_DATA_LEN];
-	m_netVoiceSyncData = new unsigned char[DSTAR_MODEM_DATA_LEN];
 
 	std::string call = callsign;
 	call.resize(DSTAR_LONG_CALLSIGN_LENGTH - 1U, ' ');
@@ -131,85 +120,6 @@ CDStarControl::~CDStarControl()
 	delete[] m_callsign;
 	delete[] m_gateway;
 	delete[] m_lastFrame;
-	delete[] m_rfVoiceSyncData;
-	delete[] m_netVoiceSyncData;
-}
-
-unsigned int CDStarControl::maybeFixupVoiceFrame
-(
-	unsigned char*  data,
-	unsigned int    len,
-	unsigned int    offset,
-	const char*     log_prefix,
-	unsigned char   n,
-	bool            blank_dtmf,
-	unsigned char*  voice_sync_data,
-	unsigned int&   voice_sync_data_len,
-	bool&           next_frame_is_fast_data,
-	unsigned int&   skip_dtmf_blanking_frames
-	)
-{
-	unsigned int errors = 0U;
-	unsigned int voice_sync_errors = 0U;
-	unsigned char mini_header = data[offset + 9U] ^ DSTAR_SCRAMBLER_BYTES[0U];
-	unsigned char mini_header_type = mini_header & DSTAR_SLOW_DATA_TYPE_MASK;
-
-	if (n == 0U) {
-		::memcpy(voice_sync_data, data, DSTAR_MODEM_DATA_LEN);
-		voice_sync_data_len = len;
-	} else if ((n % 2U != 0U) &&
-		   ((mini_header_type == DSTAR_SLOW_DATA_TYPE_FASTDATA01) ||
-		    (mini_header_type == DSTAR_SLOW_DATA_TYPE_FASTDATA16))) {
-		next_frame_is_fast_data = true;
-		if (blank_dtmf)
-			skip_dtmf_blanking_frames = FAST_DATA_BEEP_GRACE_FRAMES;
-		if (n == 1U)
-			LogDebug("D-Star, %s fastdata  sequence no. 0", log_prefix);
-		LogDebug("D-Star, %s fastdata  sequence no. %2u", log_prefix, n);
-	} else if (next_frame_is_fast_data) {
-		next_frame_is_fast_data = false;
-		if (blank_dtmf)
-			skip_dtmf_blanking_frames = FAST_DATA_BEEP_GRACE_FRAMES;
-		LogDebug("D-Star, %s fastdata  sequence no. %2u", log_prefix, n);
-	} else {
-		bool voice_sync_data_is_null_ambe_data = false;
-		bool data_is_null_ambe_data = false;
-
-		if ((n == 1U) && (::memcmp(voice_sync_data + offset, DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) == 0))
-			voice_sync_data_is_null_ambe_data = true;
-
-		if (::memcmp(data + offset, DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) == 0)
-			data_is_null_ambe_data = true;
-
-		if ((n == 1U) && !voice_sync_data_is_null_ambe_data)
-			voice_sync_errors += m_fec.regenerateDStar(voice_sync_data + offset);
-
-		if (!data_is_null_ambe_data)
-			errors += m_fec.regenerateDStar(data + offset);
-
-		if (blank_dtmf && skip_dtmf_blanking_frames > 0U) {
-			skip_dtmf_blanking_frames--;
-		} else if (blank_dtmf && skip_dtmf_blanking_frames == 0U) {
-			if ((n == 1U) && !voice_sync_data_is_null_ambe_data)
-				blankDTMF(voice_sync_data + offset);
-			if (!data_is_null_ambe_data)
-				blankDTMF(data + offset);
-		}
-
-		if (n == 1U) {
-			if (voice_sync_data_is_null_ambe_data)
-				LogDebug("D-Star, %s nullaudio sequence no. 0", log_prefix);
-			else
-				LogDebug("D-Star, %s audio     sequence no.  0, errs: %2u/48 (%5.1f%%)", log_prefix, voice_sync_errors, float(voice_sync_errors) / 0.48F);
-		}
-
-		if (data_is_null_ambe_data)
-			LogDebug("D-Star, %s nullaudio sequence no. %2u", log_prefix, n);
-		else
-			LogDebug("D-Star, %s audio     sequence no. %2u, errs: %2u/48 (%5.1f%%)", log_prefix, n, errors, float(errors) / 0.48F);
-	}
-
-	return voice_sync_errors + errors;
 }
 
 bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
@@ -428,9 +338,6 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			if (m_duplex)
 				writeQueueEOTRF();
 
-			m_rfNextFrameIsFastData = false;
-			m_rfSkipDTMFBlankingFrames = 0U;
-
 			unsigned char my1[DSTAR_LONG_CALLSIGN_LENGTH];
 			unsigned char my2[DSTAR_SHORT_CALLSIGN_LENGTH];
 			unsigned char your[DSTAR_LONG_CALLSIGN_LENGTH];
@@ -451,11 +358,13 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 
 		return false;
 	} else if (type == TAG_DATA) {
-		if (m_rfState == RS_RF_REJECTED) {
+		if (m_rfState == RS_RF_REJECTED)
 			return true;
-		} else if (m_rfState == RS_RF_INVALID) {
+
+		if (m_rfState == RS_RF_INVALID)
 			return true;
-		} else if (m_rfState == RS_RF_LISTENING) {
+
+		if (m_rfState == RS_RF_LISTENING) {
 			// The sync is regenerated by the modem so can do exact match
 			if (::memcmp(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES) == 0) {
 				m_rfSlowData.start();
@@ -463,7 +372,9 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			}
 
 			return false;
-		} else if (m_rfState == RS_RF_AUDIO) {
+		}
+
+		if (m_rfState == RS_RF_AUDIO) {
 			// The sync is regenerated by the modem so can do exact match
 			if (::memcmp(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES) == 0) {
 				m_rfSlowData.start();
@@ -478,7 +389,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 
 			unsigned int errors = 0U;
 			if (!m_rfHeader.isDataPacket()) {
-				errors = maybeFixupVoiceFrame(data, len, 1U, "RF", m_rfN, m_duplex, m_rfVoiceSyncData, m_rfVoiceSyncDataLen, m_rfNextFrameIsFastData, m_rfSkipDTMFBlankingFrames);
+				errors = m_fec.regenerateDStar(data + 1U);
 				m_bitErrsAccum += errors;
 				m_rfErrs       += errors;
 				writeJSONBER();
@@ -494,18 +405,12 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 				writeJSONText(text);
 			}
 
-			if (m_net) {
-				if (m_rfN == 1U)
-					writeNetworkDataRF(m_rfVoiceSyncData, 0U, false);
-				if (m_rfN >= 1U)
-					writeNetworkDataRF(data, errors, false);
-			}
+			if (m_net)
+				writeNetworkDataRF(data, errors, false);
 
 			if (m_duplex) {
-				if (m_rfN == 1U)
-					writeQueueDataRF(m_rfVoiceSyncData);
-				if (m_rfN >= 1U)
-					writeQueueDataRF(data);
+				blankDTMF(data + 1U);
+				writeQueueDataRF(data);
 			}
 
 			m_rfN = (m_rfN + 1U) % 21U;
@@ -514,32 +419,32 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			if (::memcmp(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES) == 0) {
 				m_rfSlowData.reset();
 				return false;
+			} else {
+				CDStarHeader* header = m_rfSlowData.addHeader(data + 1U);
+				if (header == NULL)
+					return false;
+
+				m_rfHeader = *header;
+				delete header;
 			}
 
-			CDStarHeader* header = m_rfSlowData.addHeader(data + 1U);
-			if (header == NULL)
-				return false;
-
-			m_rfHeader = *header;
-
 			unsigned char my1[DSTAR_LONG_CALLSIGN_LENGTH];
-			header->getMyCall1(my1);
+			m_rfHeader.getMyCall1(my1);
 
 			unsigned char my2[DSTAR_SHORT_CALLSIGN_LENGTH];
-			header->getMyCall2(my2);
+			m_rfHeader.getMyCall2(my2);
 
 			unsigned char your[DSTAR_LONG_CALLSIGN_LENGTH];
-			header->getYourCall(your);
+			m_rfHeader.getYourCall(your);
 
 			unsigned char rpt1[DSTAR_LONG_CALLSIGN_LENGTH];
-			header->getRPTCall1(rpt1);
+			m_rfHeader.getRPTCall1(rpt1);
 
 			// Is this a transmission destined for a repeater?
-			if (!header->isRepeater()) {
+			if (!m_rfHeader.isRepeater()) {
 				LogMessage("D-Star, non repeater RF header received from %8.8s", my1);
 				m_rfState = RS_RF_INVALID;
 				writeJSONRF("invalid", my1, my2, your);
-				delete header;
 				return true;
 			}
 
@@ -548,7 +453,6 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 				LogMessage("D-Star, received RF header for wrong repeater (%8.8s) from %8.8s", rpt1, my1);
 				m_rfState = RS_RF_INVALID;
 				writeJSONRF("invalid", my1, my2, your);
-				delete header;
 				return true;
 			}
 
@@ -556,7 +460,6 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 				LogMessage("D-Star, invalid access attempt from %8.8s", my1);
 				m_rfState = RS_RF_REJECTED;
 				writeJSONRF("rejected", my1, my2, your);
-				delete header;
 				return true;
 			}
 
@@ -564,12 +467,11 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 				LogMessage("D-Star, invalid access attempt from %8.8s", my1);
 				m_rfState = RS_RF_REJECTED;
 				writeJSONRF("rejected", my1, my2, your);
-				delete header;
 				return true;
 			}
 
 			unsigned char gateway[DSTAR_LONG_CALLSIGN_LENGTH];
-			header->getRPTCall2(gateway);
+			m_rfHeader.getRPTCall2(gateway);
 
 			m_net = ::memcmp(gateway, m_gateway, DSTAR_LONG_CALLSIGN_LENGTH) == 0;
 
@@ -597,10 +499,11 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 				start[0U] = TAG_HEADER;
 
 				// Modify the header
-				header->setRepeater(false);
-				header->setRPTCall1(m_callsign);
-				header->setRPTCall2(m_callsign);
-				header->get(start + 1U);
+				CDStarHeader header(m_rfHeader);
+				header.setRepeater(false);
+				header.setRPTCall1(m_callsign);
+				header.setRPTCall2(m_callsign);
+				header.get(start + 1U);
 
 				writeQueueHeaderRF(start);
 			}
@@ -610,21 +513,21 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 				start[0U] = TAG_HEADER;
 
 				// Modify the header
-				header->setRepeater(false);
-				header->setRPTCall1(m_callsign);
-				header->setRPTCall2(m_gateway);
-				header->get(start + 1U);
+				CDStarHeader header(m_rfHeader);
+				header.setRepeater(false);
+				header.setRPTCall1(m_callsign);
+				header.setRPTCall2(m_gateway);
+				header.get(start + 1U);
 
 				writeNetworkHeaderRF(start);
 			}
 
-			delete header;
-
 			unsigned int errors = 0U;
 			if (!m_rfHeader.isDataPacket()) {
-				errors = maybeFixupVoiceFrame(data, len, 1U, "RF", m_rfN, m_duplex, m_rfVoiceSyncData, m_rfVoiceSyncDataLen, m_rfNextFrameIsFastData, m_rfSkipDTMFBlankingFrames);
+				errors = m_fec.regenerateDStar(data + 1U);
+				LogDebug("D-Star, audio sequence no. %u, errs: %u/48 (%.1f%%)", m_rfN, errors, float(errors) / 0.48F);
 				m_bitErrsAccum += errors;
-				m_rfErrs       += errors;
+				m_rfErrs += errors;
 			}
 
 			m_bitsCount += 48U;
@@ -633,8 +536,10 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			if (m_net)
 				writeNetworkDataRF(data, errors, false);
 
-			if (m_duplex)
+			if (m_duplex) {
+				blankDTMF(data + 1U);
 				writeQueueDataRF(data);
+			}
 
 			m_rfState = RS_RF_AUDIO;
 
@@ -782,9 +687,6 @@ void CDStarControl::writeNetwork()
 
 		data[1U] = TAG_EOT;
 
-		m_netNextFrameIsFastData = false;
-		m_netSkipDTMFBlankingFrames = 0U;
-
 		unsigned char my1[DSTAR_LONG_CALLSIGN_LENGTH];
 		unsigned char my2[DSTAR_SHORT_CALLSIGN_LENGTH];
 		unsigned char your[DSTAR_LONG_CALLSIGN_LENGTH];
@@ -802,12 +704,15 @@ void CDStarControl::writeNetwork()
 		if (m_netState != RS_NET_AUDIO)
 			return;
 
+		unsigned int errors = 0U;
 		unsigned char n = data[1U];
 
-		data[1U] = TAG_DATA;
-
 		if (!m_netHeader.isDataPacket())
-			maybeFixupVoiceFrame(data, length, 2U, "Net", n, true, m_netVoiceSyncData, m_netVoiceSyncDataLen, m_netNextFrameIsFastData, m_netSkipDTMFBlankingFrames);
+			errors = m_fec.regenerateDStar(data + 2U);
+
+		blankDTMF(data + 2U);
+
+		data[1U] = TAG_DATA;
 
 		// Insert silence and reject if in the past
 		bool ret = insertSilence(data + 1U, n);
@@ -833,10 +738,7 @@ void CDStarControl::writeNetwork()
 		m_packetTimer.start();
 		m_netFrames++;
 
-		if (n == 1U)
-			writeQueueDataNet(m_netVoiceSyncData + 1U);
-		if (n >= 1U)
-			writeQueueDataNet(data + 1U);
+		writeQueueDataNet(data + 1U);
 	} else {
 		CUtils::dump("D-Star, unknown data from network", data, DSTAR_FRAME_LENGTH_BYTES + 1U);
 	}
@@ -1492,4 +1394,3 @@ std::string CDStarControl::convertBuffer(const unsigned char* buffer, unsigned i
 }
 
 #endif
-
