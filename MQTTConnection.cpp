@@ -23,13 +23,13 @@
 #include <cstring>
 
 
-CMQTTConnection::CMQTTConnection(const std::string& host, unsigned short port, const std::string& name, const bool authEnabled, const std::string& user,  const std::string& pass, const std::vector<std::pair<std::string, void (*)(const unsigned char*, unsigned int)>>& subs, unsigned int keepalive, MQTT_QOS qos) :
+CMQTTConnection::CMQTTConnection(const std::string& host, unsigned short port, const std::string& name, const bool authEnabled, const std::string& username,  const std::string& password, const std::vector<std::pair<std::string, void (*)(const unsigned char*, unsigned int)>>& subs, unsigned int keepalive, MQTT_QOS qos) :
 m_host(host),
 m_port(port),
 m_name(name),
 m_authEnabled(authEnabled),
-m_user(user),
-m_pass(pass),
+m_username(username),
+m_password(password),
 m_subs(subs),
 m_keepalive(keepalive),
 m_qos(qos),
@@ -52,14 +52,14 @@ CMQTTConnection::~CMQTTConnection()
 bool CMQTTConnection::open()
 {
 	m_mosq = ::mosquitto_new(m_name.c_str(), true, this);
-	if (m_mosq == NULL){
+	if (m_mosq == NULL) {
 		::fprintf(stderr, "MQTT Error newing: Out of memory.\n");
 		return false;
 	}
 
-        if (m_authEnabled) {
-		::mosquitto_username_pw_set(m_mosq, m_user.c_str(), m_pass.c_str());
-	}
+	if (m_authEnabled)
+			::mosquitto_username_pw_set(m_mosq, m_username.c_str(), m_password.c_str());
+
 	::mosquitto_connect_callback_set(m_mosq, onConnect);
 	::mosquitto_subscribe_callback_set(m_mosq, onSubscribe);
 	::mosquitto_message_callback_set(m_mosq, onMessage);
