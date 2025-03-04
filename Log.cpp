@@ -167,7 +167,7 @@ void Log(unsigned int level, const char* fmt, ...)
 	va_list vl;
 	va_start(vl, fmt);
 
-	::vsnprintf(buffer + ::strlen(buffer), 500, fmt, vl);
+	::vsnprintf((buffer + ::strlen(buffer)), (500U - ::strlen(buffer)), fmt, vl);
 
 	va_end(vl);
 
