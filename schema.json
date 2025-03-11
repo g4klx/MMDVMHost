@@ -1,6 +1,6 @@
 {
 	"$defs": {
-		"mmdvm_mode": {"type": "string", "enum": ["lockout", "idle", "error", "CW", "D-Star", "DMR", "YSF", "NXDN", "POCSAG", "FM", "M17"]},
+		"mmdvm_mode": {"type": "string", "enum": ["lockout", "idle", "error", "CW", "D-Star", "DMR", "YSF", "P25", "NXDN", "POCSAG", "FM", "M17"]},
 		"dstar_callsign": {"type": "string", "minLength": 8, "maxLength": 8},
 		"dstar_extension": {"type": "string", "minLength": 4, "maxLength": 4},
 		"ysf_callsign": {"type": "string", "minLength": 10, "maxLength": 10},
