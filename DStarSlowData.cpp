@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2023 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2023,2025 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -33,7 +33,8 @@ m_buffer(NULL),
 m_text(NULL),
 m_textPtr(0U),
 m_textBits(0x00U),
-m_state(SDD_FIRST)
+m_type(0x00U),
+m_complete(false)
 {
 	m_header = new unsigned char[50U];		// DSTAR_HEADER_LENGTH_BYTES
 	m_buffer = new unsigned char[DSTAR_DATA_FRAME_LENGTH_BYTES * 2U];
@@ -47,24 +48,33 @@ CDStarSlowData::~CDStarSlowData()
 	delete[] m_text;
 }
 
-CDStarHeader* CDStarSlowData::addHeader(const unsigned char* data)
+void CDStarSlowData::peakSlowData(const unsigned char* data, unsigned int n)
 {
 	assert(data != NULL);
 
-	switch (m_state) {
-	case SDD_FIRST:
+	if ((n % 2U) == 0U) {
+		m_type = data[9U] ^ DSTAR_SCRAMBLER_BYTES[0U];
+		m_complete = false;
+	} else {
+		m_complete = true;
+	}
+}
+
+CDStarHeader* CDStarSlowData::addHeader(const unsigned char* data, unsigned int n)
+{
+	assert(data != NULL);
+
+	if ((n % 2U) == 0U) {
+		m_type       = data[9U]  ^ DSTAR_SCRAMBLER_BYTES[0U];
 		m_buffer[0U] = data[9U]  ^ DSTAR_SCRAMBLER_BYTES[0U];
 		m_buffer[1U] = data[10U] ^ DSTAR_SCRAMBLER_BYTES[1U];
 		m_buffer[2U] = data[11U] ^ DSTAR_SCRAMBLER_BYTES[2U];
-		m_state = SDD_SECOND;
-		return NULL;
-
-	case SDD_SECOND:
+		m_complete = false;
+	} else {
 		m_buffer[3U] = data[9U]  ^ DSTAR_SCRAMBLER_BYTES[0U];
 		m_buffer[4U] = data[10U] ^ DSTAR_SCRAMBLER_BYTES[1U];
 		m_buffer[5U] = data[11U] ^ DSTAR_SCRAMBLER_BYTES[2U];
-		m_state = SDD_FIRST;
-		break;
+		m_complete = true;
 	}
 
 	if ((m_buffer[0U] & DSTAR_SLOW_DATA_TYPE_MASK) != DSTAR_SLOW_DATA_TYPE_HEADER)
@@ -95,24 +105,21 @@ CDStarHeader* CDStarSlowData::addHeader(const unsigned char* data)
 	return new CDStarHeader(m_header);
 }
 
-const unsigned char* CDStarSlowData::addText(const unsigned char* data)
+const unsigned char* CDStarSlowData::addText(const unsigned char* data, unsigned int n)
 {
 	assert(data != NULL);
 
-	switch (m_state) {
-	case SDD_FIRST:
+	if ((n % 2U) == 0U) {
+		m_type       = data[9U]  ^ DSTAR_SCRAMBLER_BYTES[0U];
 		m_buffer[0U] = data[9U]  ^ DSTAR_SCRAMBLER_BYTES[0U];
 		m_buffer[1U] = data[10U] ^ DSTAR_SCRAMBLER_BYTES[1U];
 		m_buffer[2U] = data[11U] ^ DSTAR_SCRAMBLER_BYTES[2U];
-		m_state = SDD_SECOND;
-		return NULL;
-
-	case SDD_SECOND:
+		m_complete = false;
+	} else {
 		m_buffer[3U] = data[9U]  ^ DSTAR_SCRAMBLER_BYTES[0U];
 		m_buffer[4U] = data[10U] ^ DSTAR_SCRAMBLER_BYTES[1U];
 		m_buffer[5U] = data[11U] ^ DSTAR_SCRAMBLER_BYTES[2U];
-		m_state = SDD_FIRST;
-		break;
+		m_complete = true;
 	}
 
 	switch (m_buffer[0U]) {
@@ -160,7 +167,7 @@ const unsigned char* CDStarSlowData::addText(const unsigned char* data)
 	if (m_textBits != 0x0FU)
 		return NULL;
 
-	CUtils::dump(1U, "D-STar slow data text", m_text, 20U);
+	CUtils::dump(1U, "D-Star slow data text", m_text, 20U);
 
 	m_textBits = 0x00U;
 
@@ -172,14 +179,16 @@ void CDStarSlowData::start()
 	::memset(m_header, 0x00U, DSTAR_HEADER_LENGTH_BYTES);
 
 	m_ptr      = 0U;
-	m_state    = SDD_FIRST;
+	m_type     = 0x00U;
+	m_complete = false;
 	m_textBits = 0x00U;
 }
 
 void CDStarSlowData::reset()
 {
 	m_ptr      = 0U;
-	m_state    = SDD_FIRST;
+	m_type     = 0x00U;
+	m_complete = false;
 	m_textBits = 0x00U;
 }
 
@@ -232,4 +241,14 @@ void CDStarSlowData::getSlowData(unsigned char* data)
 		data[1U] = 'f' ^ DSTAR_SCRAMBLER_BYTES[1U];
 		data[2U] = 'f' ^ DSTAR_SCRAMBLER_BYTES[2U];
 	}
+}
+
+unsigned char CDStarSlowData::getType() const
+{
+	return m_type & DSTAR_SLOW_DATA_TYPE_MASK;
+}
+
+bool CDStarSlowData::isComplete() const
+{
+	return m_complete;
 }

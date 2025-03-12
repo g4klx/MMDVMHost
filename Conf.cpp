@@ -161,6 +161,7 @@ m_dmrCallHang(10U),
 m_dmrTXHang(4U),
 m_dmrModeHang(10U),
 m_dmrOVCM(DMR_OVCM_OFF),
+m_dmrProtect(false),
 m_fusionEnabled(false),
 m_fusionLowDeviation(false),
 m_fusionRemoteGateway(false),
@@ -753,7 +754,8 @@ bool CConf::read()
 					m_dmrOVCM = DMR_OVCM_OFF;
 					break;
 				}
-			}
+			} else if (::strcmp(key, "Protect") == 0)
+				m_dmrProtect = ::atoi(value) == 1;
 		} else if (section == SECTION_FUSION) {
 			if (::strcmp(key, "Enable") == 0)
 				m_fusionEnabled = ::atoi(value) == 1;
@@ -1641,6 +1643,11 @@ unsigned int CConf::getDMRModeHang() const
 DMR_OVCM_TYPES CConf::getDMROVCM() const
 {
 	return m_dmrOVCM;
+}
+
+bool CConf::getDMRProtect() const
+{
+	return m_dmrProtect;
 }
 
 bool CConf::getFusionEnabled() const

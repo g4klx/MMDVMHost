@@ -44,14 +44,14 @@ const unsigned int  DSTAR_DATA_FRAME_LENGTH_BYTES  = 3U;
 const unsigned int  DSTAR_LONG_CALLSIGN_LENGTH  = 8U;
 const unsigned int  DSTAR_SHORT_CALLSIGN_LENGTH = 4U;
 
-const unsigned char DSTAR_SLOW_DATA_TYPE_MASK       = 0xF0U;
-const unsigned char DSTAR_SLOW_DATA_TYPE_GPSDATA    = 0x30U;
-const unsigned char DSTAR_SLOW_DATA_TYPE_TEXT       = 0x40U;
-const unsigned char DSTAR_SLOW_DATA_TYPE_HEADER     = 0x50U;
-const unsigned char DSTAR_SLOW_DATA_TYPE_FASTDATA01 = 0x80U;
-const unsigned char DSTAR_SLOW_DATA_TYPE_FASTDATA16 = 0x90U;
-const unsigned char DSTAR_SLOW_DATA_TYPE_SQUELCH    = 0xC0U;
-const unsigned char DSTAR_SLOW_DATA_LENGTH_MASK     = 0x0FU;
+const unsigned char DSTAR_SLOW_DATA_TYPE_MASK           = 0xF0U;
+const unsigned char DSTAR_SLOW_DATA_TYPE_GPSDATA        = 0x30U;
+const unsigned char DSTAR_SLOW_DATA_TYPE_TEXT           = 0x40U;
+const unsigned char DSTAR_SLOW_DATA_TYPE_HEADER         = 0x50U;
+const unsigned char DSTAR_SLOW_DATA_TYPE_FASTDATA_END   = 0x80U;
+const unsigned char DSTAR_SLOW_DATA_TYPE_FASTDATA_BEGIN = 0x90U;
+const unsigned char DSTAR_SLOW_DATA_TYPE_SQUELCH        = 0xC0U;
+const unsigned char DSTAR_SLOW_DATA_LENGTH_MASK         = 0x0FU;
 
 // Data Frames are always scrambled using the first three bytes of
 // DSTAR_SCRAMBLER_BYTES, and Voice Frames are scrambled with all nine
