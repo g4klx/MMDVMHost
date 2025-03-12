@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2022,2023 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2022,2023,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -51,7 +51,7 @@ CMQTTConnection::~CMQTTConnection()
 
 bool CMQTTConnection::open()
 {
-	m_mosq = ::mosquitto_new(m_name.c_str(), true, this);
+	m_mosq = ::mosquitto_new(NULL, true, this);
 	if (m_mosq == NULL) {
 		::fprintf(stderr, "MQTT Error newing: Out of memory.\n");
 		return false;

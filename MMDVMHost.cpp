@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2021,2023,2024 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2021,2023,2024,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -76,7 +76,7 @@ static CMMDVMHost* host = NULL;
 const char* HEADER1 = "This software is for use on amateur radio networks only,";
 const char* HEADER2 = "it is to be used for educational purposes only. Its use on";
 const char* HEADER3 = "commercial networks is strictly prohibited.";
-const char* HEADER4 = "Copyright(C) 2015-2024 by Jonathan Naylor, G4KLX and others";
+const char* HEADER4 = "Copyright(C) 2015-2025 by Jonathan Naylor, G4KLX and others";
 
 int main(int argc, char** argv)
 {
@@ -390,6 +390,8 @@ int CMMDVMHost::run()
 
 	LogInfo("MMDVMHost-%s is starting", VERSION);
 	LogInfo("Built %s %s (GitID #%.7s)", __TIME__, __DATE__, gitversion);
+
+	writeJSONMessage("MMDVMHost is starting");
 
 	readParams();
 
@@ -901,11 +903,6 @@ int CMMDVMHost::run()
 		m_remoteControl = new CRemoteControl(this, m_mqtt);
 
 	setMode(MODE_IDLE);
-
-	LogInfo("MMDVMHost-%s is starting", VERSION);
-	LogInfo("Built %s %s (GitID #%.7s)", __TIME__, __DATE__, gitversion);
-
-	writeJSONMessage("MMDVMHost is starting");
 
 	while (!m_killed) {
 		bool lockout = m_modem->hasLockout();
