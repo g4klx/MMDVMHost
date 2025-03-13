@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -50,7 +50,7 @@ const unsigned char NXDN_LICH_RFCT_RTCH_C = 3U;
 const unsigned char NXDN_LICH_USC_SACCH_NS      = 0U;
 const unsigned char NXDN_LICH_USC_UDCH          = 1U;
 const unsigned char NXDN_LICH_USC_SACCH_SS      = 2U;
-const unsigned char NXDN_LICH_USC_SACCH_SS_IDLE = 3U;
+const unsigned char NXDN_LICH_USC_SACCH_IDLE = 3U;
 
 const unsigned char NXDN_LICH_STEAL_NONE     = 3U;
 const unsigned char NXDN_LICH_STEAL_FACCH1_2 = 2U;

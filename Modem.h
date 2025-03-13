@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2011-2018,2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2011-2018,2020,2021,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -26,18 +26,18 @@
 
 #include <string>
 
-enum RESP_TYPE_MMDVM {
-	RTM_OK,
-	RTM_TIMEOUT,
-	RTM_ERROR
+enum class RESP_TYPE_MMDVM {
+	OK,
+	TIMEOUT,
+	ERR
 };
 
-enum SERIAL_STATE {
-	SS_START,
-	SS_LENGTH1,
-	SS_LENGTH2,
-	SS_TYPE,
-	SS_DATA
+enum class SERIAL_STATE {
+	START,
+	LENGTH1,
+	LENGTH2,
+	TYPE,
+	DATA
 };
 
 class CModem {

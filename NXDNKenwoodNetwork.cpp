@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2014,2016,2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2014,2016,2018,2020,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -110,15 +110,15 @@ bool CNXDNKenwoodNetwork::write(const unsigned char* data, NXDN_NETWORK_MESSAGE_
 	assert(data != NULL);
 
 	switch (type) {
-	case NNMT_VOICE_HEADER:	// Voice header or trailer
-	case NNMT_VOICE_TRAILER:
+	case NXDN_NETWORK_MESSAGE_TYPE::VOICE_HEADER:	// Voice header or trailer
+	case NXDN_NETWORK_MESSAGE_TYPE::VOICE_TRAILER:
 		return processIcomVoiceHeader(data);
-	case NNMT_VOICE_BODY:	// Voice data
+	case NXDN_NETWORK_MESSAGE_TYPE::VOICE_BODY:	// Voice data
 		return processIcomVoiceData(data);
-	case NNMT_DATA_HEADER:	// Data header or trailer
-	case NNMT_DATA_TRAILER:
+	case NXDN_NETWORK_MESSAGE_TYPE::DATA_HEADER:	// Data header or trailer
+	case NXDN_NETWORK_MESSAGE_TYPE::DATA_TRAILER:
 		return processIcomDataHeader(data);
-	case NNMT_DATA_BODY:	// Data data
+	case NXDN_NETWORK_MESSAGE_TYPE::DATA_BODY:	// Data data
 		return processIcomDataData(data);
 	default:
 		return false;
@@ -774,7 +774,7 @@ unsigned int CNXDNKenwoodNetwork::readRTP(unsigned char* data)
 	if (length <= 0)
 		return 0U;
 
-	if (!CUDPSocket::match(m_rtpAddr, address, IMT_ADDRESS_ONLY)) {
+	if (!CUDPSocket::match(m_rtpAddr, address, IPMATCHTYPE::IMT_ADDREONLY)) {
 		LogMessage("NXDN, RTP packet received from an invalid source");
 		return 0U;
 	}
@@ -802,7 +802,7 @@ unsigned int CNXDNKenwoodNetwork::readRTCP(unsigned char* data)
 	if (length <= 0)
 		return 0U;
 
-	if (!CUDPSocket::match(m_rtpAddr, address, IMT_ADDRESS_ONLY)) {
+	if (!CUDPSocket::match(m_rtpAddr, address, IPMATCHTYPE::IMT_ADDREONLY)) {
 		LogMessage("NXDN, RTCP packet received from an invalid source");
 		return 0U;
 	}

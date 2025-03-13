@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -28,9 +28,9 @@
 
 CDMREmbeddedData::CDMREmbeddedData() :
 m_raw(NULL),
-m_state(LCS_NONE),
+m_state(LC_STATE::NONE),
 m_data(NULL),
-m_FLCO(FLCO_GROUP),
+m_FLCO(FLCO::GROUP),
 m_valid(false)
 {
 	m_raw  = new bool[128U];
@@ -61,41 +61,41 @@ bool CDMREmbeddedData::addData(const unsigned char* data, unsigned char lcss)
 			m_raw[a] = rawData[a + 4U];
 
 		// Show we are ready for the next LC block
-		m_state = LCS_FIRST;
+		m_state = LC_STATE::FIRST;
 		m_valid = false;
 
 		return false;
 	}
 
 	// Is this the 2nd block of a 4 block embedded LC ?
-	if (lcss == 3U && m_state == LCS_FIRST) {
+	if ((lcss == 3U) && (m_state == LC_STATE::FIRST)) {
 		for (unsigned int a = 0U; a < 32U; a++)
 			m_raw[a + 32U] = rawData[a + 4U];
 
 		// Show we are ready for the next LC block
-		m_state = LCS_SECOND;
+		m_state = LC_STATE::SECOND;
 
 		return false;
 	}
 
 	// Is this the 3rd block of a 4 block embedded LC ?
-	if (lcss == 3U && m_state == LCS_SECOND) {
+	if ((lcss == 3U) && (m_state == LC_STATE::SECOND)) {
 		for (unsigned int a = 0U; a < 32U; a++)
 			m_raw[a + 64U] = rawData[a + 4U];
 
 		// Show we are ready for the final LC block
-		m_state = LCS_THIRD;
+		m_state = LC_STATE::THIRD;
 
 		return false;
 	}
 
 	// Is this the final block of a 4 block embedded LC ?
-	if (lcss == 2U && m_state == LCS_THIRD)	{
+	if ((lcss == 2U) && (m_state == LC_STATE::THIRD))	{
 		for (unsigned int a = 0U; a < 32U; a++)
 			m_raw[a + 96U] = rawData[a + 4U];
 
 		// Show that we're not ready for any more data
-		m_state = LCS_NONE;
+		m_state = LC_STATE::NONE;
 
 		// Process the complete data block
 		decodeEmbeddedData();
@@ -279,7 +279,7 @@ CDMRLC* CDMREmbeddedData::getLC() const
 	if (!m_valid)
 		return NULL;
 
-	if (m_FLCO != FLCO_GROUP && m_FLCO != FLCO_USER_USER)
+	if ((m_FLCO != FLCO::GROUP) && (m_FLCO != FLCO::USER_USER))
 		return NULL;
 
 	return new CDMRLC(m_data);
@@ -297,7 +297,7 @@ FLCO CDMREmbeddedData::getFLCO() const
 
 void CDMREmbeddedData::reset()
 {
-	m_state = LCS_NONE;
+	m_state = LC_STATE::NONE;
 	m_valid = false;
 }
 

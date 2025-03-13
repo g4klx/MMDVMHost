@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017,2018,2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017,2018,2020,2021,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -75,7 +75,7 @@ private:
 	bool             m_slot2;
 	HW_TYPE          m_hwType;
 
-	enum STATUS {
+	enum class STATUS {
 		WAITING_CONNECT,
 		WAITING_LOGIN,
 		WAITING_AUTHORISATION,

@@ -1,4 +1,5 @@
 /*
+ *   Copyright (C) 2025 by Jonathan Naylor G4KLX
  *   Copyright (C) 2017 by Lieven De Samblanx ON7LDS
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -123,7 +124,7 @@ void CNetworkInfo::getNetworkInterface(unsigned char* info)
 	struct rt_msghdr *rtm;
 	for (char *p = buf; p < buf + size; p += rtm->rtm_msglen) {
 		rtm = (struct rt_msghdr *)p;
-		if (rtm->rtm_version != RTM_VERSION)
+		if (rtm->rtm_version != VERSION)
 			continue;
 #if defined(__OpenBSD__)
 		struct sockaddr_in *sa = (struct sockaddr_in *)(p + rtm->rtm_hdrlen);

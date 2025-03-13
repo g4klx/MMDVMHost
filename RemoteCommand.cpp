@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2019,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2019,2020,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -85,7 +85,7 @@ int CRemoteCommand::send(const std::string& command)
 	if (!ret)
 		return 1;
 
-	ret = socket.write((unsigned char*)command.c_str(), command.length(), addr, addrLen);
+	ret = socket.write((unsigned char*)command.c_str(), (unsigned int)command.length(), addr, addrLen);
 	if (!ret) {
 		socket.close();
 		return 1;

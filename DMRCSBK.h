@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2020,2021,2022 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2020,2021,2022,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -21,18 +21,18 @@
 
 #include "DMRDefines.h"
 
-enum CSBKO {
-	CSBKO_NONE           = 0x00,
-	CSBKO_UUVREQ         = 0x04,
-	CSBKO_UUANSRSP       = 0x05,
-	CSBKO_CTCSBK         = 0x07,
-	CSBKO_CALL_ALERT     = 0x1F,
-	CSBKO_CALL_ALERT_ACK = 0x20,
-	CSBKO_RADIO_CHECK    = 0x24,
-	CSBKO_NACKRSP        = 0x26,
-	CSBKO_CALL_EMERGENCY = 0x27,
-	CSBKO_BSDWNACT       = 0x38,
-	CSBKO_PRECCSBK       = 0x3D
+enum class CSBKO {
+	NONE           = 0x00,
+	UUVREQ         = 0x04,
+	UUANSRSP       = 0x05,
+	CTCSBK         = 0x07,
+	CALL_ALERT     = 0x1F,
+	CALL_ALERT_ACK = 0x20,
+	RADIO_CHECK    = 0x24,
+	NACKRSP        = 0x26,
+	CALL_EMERGENCY = 0x27,
+	BSDWNACT       = 0x38,
+	PRECCSBK       = 0x3D
 };
 
 class CDMRCSBK

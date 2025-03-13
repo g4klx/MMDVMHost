@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015,2016,2017 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015,2016,2017,2025 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ m_slotNo(1U),
 m_data(NULL),
 m_srcId(0U),
 m_dstId(0U),
-m_flco(FLCO_GROUP),
+m_flco(FLCO::GROUP),
 m_dataType(0U),
 m_seqNo(0U),
 m_n(0U),

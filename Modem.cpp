@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2011-2018,2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2011-2018,2020,2021,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -169,7 +169,7 @@ m_port(NULL),
 m_buffer(NULL),
 m_length(0U),
 m_offset(0U),
-m_state(SS_START),
+m_state(SERIAL_STATE::START),
 m_type(0U),
 m_rxDStarData(1000U, "Modem RX D-Star"),
 m_txDStarData(1000U, "Modem TX D-Star"),
@@ -213,7 +213,7 @@ m_cd(false),
 m_lockout(false),
 m_error(false),
 m_mode(MODE_IDLE),
-m_hwType(HWT_UNKNOWN),
+m_hwType(HW_TYPE::UNKNOWN),
 m_ax25RXTwist(0),
 m_ax25TXDelay(300U),
 m_ax25SlotTime(30U),
@@ -455,12 +455,12 @@ void CModem::clock(unsigned int ms)
 
 	RESP_TYPE_MMDVM type = getResponse();
 
-	if (type == RTM_TIMEOUT) {
+	if (type == RESP_TYPE_MMDVM::TIMEOUT) {
 		// Nothing to do
-	} else if (type == RTM_ERROR) {
+	} else if (type == RESP_TYPE_MMDVM::ERR) {
 		// Nothing to do
 	} else {
-		// type == RTM_OK
+		// type == OK
 		switch (m_type) {
 			case MMDVM_DSTAR_HEADER: {
 					if (m_trace)
@@ -1996,31 +1996,31 @@ bool CModem::readVersion()
 		for (unsigned int count = 0U; count < MAX_RESPONSES; count++) {
 			CThread::sleep(10U);
 			RESP_TYPE_MMDVM resp = getResponse();
-			if (resp == RTM_OK && m_buffer[2U] == MMDVM_GET_VERSION) {
+			if ((resp == RESP_TYPE_MMDVM::OK) && (m_buffer[2U] == MMDVM_GET_VERSION)) {
 				if (::memcmp(m_buffer + 4U, "MMDVM ", 6U) == 0)
-					m_hwType = HWT_MMDVM;
+					m_hwType = HW_TYPE::MMDVM;
 				else if (::memcmp(m_buffer + 23U, "MMDVM ", 6U) == 0)
-					m_hwType = HWT_MMDVM;
+					m_hwType = HW_TYPE::MMDVM;
 				else if (::memcmp(m_buffer + 4U, "DVMEGA", 6U) == 0)
-					m_hwType = HWT_DVMEGA;
+					m_hwType = HW_TYPE::DVMEGA;
 				else if (::memcmp(m_buffer + 4U, "ZUMspot", 7U) == 0)
-					m_hwType = HWT_MMDVM_ZUMSPOT;
+					m_hwType = HW_TYPE::MMDVM_ZUMSPOT;
 				else if (::memcmp(m_buffer + 4U, "MMDVM_HS_Hat", 12U) == 0)
-					m_hwType = HWT_MMDVM_HS_HAT;
+					m_hwType = HW_TYPE::MMDVM_HS_HAT;
 				else if (::memcmp(m_buffer + 4U, "MMDVM_HS_Dual_Hat", 17U) == 0)
-					m_hwType = HWT_MMDVM_HS_DUAL_HAT;
+					m_hwType = HW_TYPE::MMDVM_HS_DUAL_HAT;
 				else if (::memcmp(m_buffer + 4U, "Nano_hotSPOT", 12U) == 0)
-					m_hwType = HWT_NANO_HOTSPOT;
+					m_hwType = HW_TYPE::NANO_HOTSPOT;
 				else if (::memcmp(m_buffer + 4U, "Nano_DV", 7U) == 0)
-					m_hwType = HWT_NANO_DV;
+					m_hwType = HW_TYPE::NANO_DV;
 				else if (::memcmp(m_buffer + 4U, "D2RG_MMDVM_HS", 13U) == 0)
-					m_hwType = HWT_D2RG_MMDVM_HS;
+					m_hwType = HW_TYPE::D2RG_MMDVM_HS;
 				else if (::memcmp(m_buffer + 4U, "MMDVM_HS-", 9U) == 0)
-					m_hwType = HWT_MMDVM_HS;
+					m_hwType = HW_TYPE::MMDVM_HS;
 				else if (::memcmp(m_buffer + 4U, "OpenGD77_HS", 11U) == 0)
-					m_hwType = HWT_OPENGD77_HS;
+					m_hwType = HW_TYPE::OPENGD77_HS;
 				else if (::memcmp(m_buffer + 4U, "SkyBridge", 9U) == 0)
-					m_hwType = HWT_SKYBRIDGE;
+					m_hwType = HW_TYPE::SKYBRIDGE;
 
 				m_protocolVersion = m_buffer[3U];
 
@@ -2210,18 +2210,18 @@ bool CModem::setConfig1()
 		CThread::sleep(10U);
 
 		resp = getResponse();
-		if (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK) {
+		if ((resp == RESP_TYPE_MMDVM::OK) && (m_buffer[2U] != MMDVM_ACK) && (m_buffer[2U] != MMDVM_NAK)) {
 			count++;
 			if (count >= MAX_RESPONSES) {
 				LogError("The MMDVM is not responding to the SET_CONFIG command");
 				return false;
 			}
 		}
-	} while (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK);
+	} while ((resp == RESP_TYPE_MMDVM::OK) && (m_buffer[2U] != MMDVM_ACK) && (m_buffer[2U] != MMDVM_NAK));
 
 	// CUtils::dump(1U, "Response", m_buffer, m_length);
 
-	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
+	if ((resp == RESP_TYPE_MMDVM::OK) && (m_buffer[2U] == MMDVM_NAK)) {
 		LogError("Received a NAK to the SET_CONFIG command from the modem");
 		return false;
 	}
@@ -2336,18 +2336,18 @@ bool CModem::setConfig2()
 		CThread::sleep(10U);
 
 		resp = getResponse();
-		if (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK) {
+		if ((resp == RESP_TYPE_MMDVM::OK) && (m_buffer[2U] != MMDVM_ACK) && (m_buffer[2U] != MMDVM_NAK)) {
 			count++;
 			if (count >= MAX_RESPONSES) {
 				LogError("The MMDVM is not responding to the SET_CONFIG command");
 				return false;
 			}
 		}
-	} while (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK);
+	} while ((resp == RESP_TYPE_MMDVM::OK) && (m_buffer[2U] != MMDVM_ACK) && (m_buffer[2U] != MMDVM_NAK));
 
 	// CUtils::dump(1U, "Response", m_buffer, m_length);
 
-	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
+	if ((resp == RESP_TYPE_MMDVM::OK) && (m_buffer[2U] == MMDVM_NAK)) {
 		LogError("Received a NAK to the SET_CONFIG command from the modem");
 		return false;
 	}
@@ -2368,7 +2368,7 @@ bool CModem::setFrequency()
 	if (m_pocsagEnabled)
 		pocsagFrequency = m_pocsagFrequency;
 
-	if (m_hwType == HWT_DVMEGA)
+	if (m_hwType == HW_TYPE::DVMEGA)
 		len = 12U;
 	else {
 		buffer[12U]  = (unsigned char)(m_rfLevel * 2.55F + 0.5F);
@@ -2411,18 +2411,18 @@ bool CModem::setFrequency()
 		CThread::sleep(10U);
 
 		resp = getResponse();
-		if (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK) {
+		if ((resp == RESP_TYPE_MMDVM::OK) && (m_buffer[2U] != MMDVM_ACK) && (m_buffer[2U] != MMDVM_NAK)) {
 			count++;
 			if (count >= MAX_RESPONSES) {
 				LogError("The MMDVM is not responding to the SET_FREQ command");
 				return false;
 			}
 		}
-	} while (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK);
+	} while ((resp == RESP_TYPE_MMDVM::OK) && (m_buffer[2U] != MMDVM_ACK) && (m_buffer[2U] != MMDVM_NAK));
 
 	// CUtils::dump(1U, "Response", m_buffer, m_length);
 
-	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
+	if ((resp == RESP_TYPE_MMDVM::OK) && (m_buffer[2U] == MMDVM_NAK)) {
 		LogError("Received a NAK to the SET_FREQ command from the modem");
 		return false;
 	}
@@ -2434,90 +2434,90 @@ RESP_TYPE_MMDVM CModem::getResponse()
 {
 	assert(m_port != NULL);
 
-	if (m_state == SS_START) {
+	if (m_state == SERIAL_STATE::START) {
 		// Get the start of the frame or nothing at all
 		int ret = m_port->read(m_buffer + 0U, 1U);
 		if (ret < 0) {
 			LogError("Error when reading from the modem");
-			return RTM_ERROR;
+			return RESP_TYPE_MMDVM::ERR;
 		}
 
 		if (ret == 0)
-			return RTM_TIMEOUT;
+			return RESP_TYPE_MMDVM::TIMEOUT;
 
 		if (m_buffer[0U] != MMDVM_FRAME_START)
-			return RTM_TIMEOUT;
+			return RESP_TYPE_MMDVM::TIMEOUT;
 
-		m_state  = SS_LENGTH1;
+		m_state  = SERIAL_STATE::LENGTH1;
 		m_length = 1U;
 	}
 
-	if (m_state == SS_LENGTH1) {
+	if (m_state == SERIAL_STATE::LENGTH1) {
 		// Get the length of the frame, 1/2
 		int ret = m_port->read(m_buffer + 1U, 1U);
 		if (ret < 0) {
 			LogError("Error when reading from the modem");
-			m_state = SS_START;
-			return RTM_ERROR;
+			m_state = SERIAL_STATE::START;
+			return RESP_TYPE_MMDVM::ERR;
 		}
 
 		if (ret == 0)
-			return RTM_TIMEOUT;
+			return RESP_TYPE_MMDVM::TIMEOUT;
 
 		m_length = m_buffer[1U];
 		m_offset = 2U;
 
 		if (m_length == 0U)
-			m_state = SS_LENGTH2;
+			m_state = SERIAL_STATE::LENGTH2;
 		else
-			m_state = SS_TYPE;
+			m_state = SERIAL_STATE::TYPE;
 	}
 
-	if (m_state == SS_LENGTH2) {
+	if (m_state == SERIAL_STATE::LENGTH2) {
 		// Get the length of the frane, 2/2
 		int ret = m_port->read(m_buffer + 2U, 1U);
 		if (ret < 0) {
 			LogError("Error when reading from the modem");
-			m_state = SS_START;
-			return RTM_ERROR;
+			m_state = SERIAL_STATE::START;
+			return RESP_TYPE_MMDVM::ERR;
 		}
 
 		if (ret == 0)
-			return RTM_TIMEOUT;
+			return RESP_TYPE_MMDVM::TIMEOUT;
 
 		m_length = m_buffer[2U] + 255U;
 		m_offset = 3U;
-		m_state  = SS_TYPE;
+		m_state  = SERIAL_STATE::TYPE;
 	}
 
-	if (m_state == SS_TYPE) {
+	if (m_state == SERIAL_STATE::TYPE) {
 		// Get the frame type
 		int ret = m_port->read(&m_type, 1U);
 		if (ret < 0) {
 			LogError("Error when reading from the modem");
-			m_state = SS_START;
-			return RTM_ERROR;
+			m_state = SERIAL_STATE::START;
+			return RESP_TYPE_MMDVM::ERR;
 		}
 
 		if (ret == 0)
-			return RTM_TIMEOUT;
+			return RESP_TYPE_MMDVM::TIMEOUT;
 
 		m_buffer[m_offset++] = m_type;
 
-		m_state = SS_DATA;
+		m_state = SERIAL_STATE::DATA;
 	}
 
-	if (m_state == SS_DATA) {
+	if (m_state == SERIAL_STATE::DATA) {
 		while (m_offset < m_length) {
 			int ret = m_port->read(m_buffer + m_offset, m_length - m_offset);
 			if (ret < 0) {
 				LogError("Error when reading from the modem");
-				m_state = SS_START;
-				return RTM_ERROR;
+				m_state = SERIAL_STATE::START;
+				return RESP_TYPE_MMDVM::ERR;
 			}
 
 			if (ret == 0)
-				return RTM_TIMEOUT;
+				return RESP_TYPE_MMDVM::TIMEOUT;
 
 			if (ret > 0)
 				m_offset += ret;
@@ -2527,9 +2527,9 @@ RESP_TYPE_MMDVM CModem::getResponse()
 	// CUtils::dump(1U, "Received", m_buffer, m_length);
 
 	m_offset = m_length > 255U ? 4U : 3U;
-	m_state  = SS_START;
+	m_state  = SERIAL_STATE::START;
 
-	return RTM_OK;
+	return RESP_TYPE_MMDVM::OK;
 }
 
 HW_TYPE CModem::getHWType() const
@@ -2746,18 +2746,18 @@ bool CModem::setFMCallsignParams()
 		CThread::sleep(10U);
 
 		resp = getResponse();
-		if (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK) {
+		if ((resp == RESP_TYPE_MMDVM::OK) && (m_buffer[2U] != MMDVM_ACK) && (m_buffer[2U] != MMDVM_NAK)) {
 			count++;
 			if (count >= MAX_RESPONSES) {
 				LogError("The MMDVM is not responding to the SET_FM_PARAMS1 command");
 				return false;
 			}
 		}
-	} while (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK);
+	} while ((resp == RESP_TYPE_MMDVM::OK) && (m_buffer[2U] != MMDVM_ACK) && (m_buffer[2U] != MMDVM_NAK));
 
 	// CUtils::dump(1U, "Response", m_buffer, m_length);
 
-	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
+	if ((resp == RESP_TYPE_MMDVM::OK) && (m_buffer[2U] == MMDVM_NAK)) {
 		LogError("Received a NAK to the SET_FM_PARAMS1 command from the modem");
 		return false;
 	}
@@ -2798,18 +2798,18 @@ bool CModem::setFMAckParams()
 		CThread::sleep(10U);
 
 		resp = getResponse();
-		if (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK) {
+		if ((resp == RESP_TYPE_MMDVM::OK) && (m_buffer[2U] != MMDVM_ACK) && (m_buffer[2U] != MMDVM_NAK)) {
 			count++;
 			if (count >= MAX_RESPONSES) {
 				LogError("The MMDVM is not responding to the SET_FM_PARAMS2 command");
 				return false;
 			}
 		}
-	} while (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK);
+	} while ((resp == RESP_TYPE_MMDVM::OK) && (m_buffer[2U] != MMDVM_ACK) && (m_buffer[2U] != MMDVM_NAK));
 
 	// CUtils::dump(1U, "Response", m_buffer, m_length);
 
-	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
+	if ((resp == RESP_TYPE_MMDVM::OK) && (m_buffer[2U] == MMDVM_NAK)) {
 		LogError("Received a NAK to the SET_FM_PARAMS2 command from the modem");
 		return false;
 	}
@@ -2867,18 +2867,18 @@ bool CModem::setFMMiscParams()
 		CThread::sleep(10U);
 
 		resp = getResponse();
-		if (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK) {
+		if ((resp == RESP_TYPE_MMDVM::OK) && (m_buffer[2U] != MMDVM_ACK) && (m_buffer[2U] != MMDVM_NAK)) {
 			count++;
 			if (count >= MAX_RESPONSES) {
 				LogError("The MMDVM is not responding to the SET_FM_PARAMS3 command");
 				return false;
 			}
 		}
-	} while (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK);
+	} while ((resp == RESP_TYPE_MMDVM::OK) && (m_buffer[2U] != MMDVM_ACK) && (m_buffer[2U] != MMDVM_NAK));
 
 	// CUtils::dump(1U, "Response", m_buffer, m_length);
 
-	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
+	if ((resp == RESP_TYPE_MMDVM::OK) && (m_buffer[2U] == MMDVM_NAK)) {
 		LogError("Received a NAK to the SET_FM_PARAMS3 command from the modem");
 		return false;
 	}
@@ -2918,18 +2918,18 @@ bool CModem::setFMExtParams()
 		CThread::sleep(10U);
 
 		resp = getResponse();
-		if (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK) {
+		if ((resp == RESP_TYPE_MMDVM::OK) && (m_buffer[2U] != MMDVM_ACK) && (m_buffer[2U] != MMDVM_NAK)) {
 			count++;
 			if (count >= MAX_RESPONSES) {
 				LogError("The MMDVM is not responding to the SET_FM_PARAMS4 command");
 				return false;
 			}
 		}
-	} while (resp == RTM_OK && m_buffer[2U] != MMDVM_ACK && m_buffer[2U] != MMDVM_NAK);
+	} while ((resp == RESP_TYPE_MMDVM::OK) && (m_buffer[2U] != MMDVM_ACK) && (m_buffer[2U] != MMDVM_NAK));
 
 	// CUtils::dump(1U, "Response", m_buffer, m_length);
 
-	if (resp == RTM_OK && m_buffer[2U] == MMDVM_NAK) {
+	if ((resp == RESP_TYPE_MMDVM::OK) && (m_buffer[2U] == MMDVM_NAK)) {
 		LogError("Received a NAK to the SET_FM_PARAMS4 command from the modem");
 		return false;
 	}

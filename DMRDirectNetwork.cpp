@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017,2018,2020,2021,2024 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017,2018,2020,2021,2024,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ m_enabled(false),
 m_slot1(slot1),
 m_slot2(slot2),
 m_hwType(hwType),
-m_status(WAITING_CONNECT),
+m_status(STATUS::WAITING_CONNECT),
 m_retryTimer(1000U, 10U),
 m_timeoutTimer(1000U, 60U),
 m_buffer(NULL),
@@ -131,7 +131,7 @@ bool CDMRDirectNetwork::open()
 
 	LogMessage("DMR, Opening DMR Network");
 
-	m_status = WAITING_CONNECT;
+	m_status = STATUS::WAITING_CONNECT;
 	m_timeoutTimer.stop();
 	m_retryTimer.start();
 
@@ -148,7 +148,7 @@ void CDMRDirectNetwork::enable(bool enabled)
 
 bool CDMRDirectNetwork::read(CDMRData& data)
 {
-	if (m_status != RUNNING)
+	if (m_status != STATUS::RUNNING)
 		return false;
 
 	if (m_rxData.isEmpty())
@@ -180,7 +180,7 @@ bool CDMRDirectNetwork::read(CDMRData& data)
 	if (slotNo == 2U && !m_slot2)
 		return false;
 
-	FLCO flco = (m_buffer[15U] & 0x40U) == 0x40U ? FLCO_USER_USER : FLCO_GROUP;
+	FLCO flco = (m_buffer[15U] & 0x40U) == 0x40U ? FLCO::USER_USER : FLCO::GROUP;
 
 	data.setSeqNo(seqNo);
 	data.setSlotNo(slotNo);
@@ -212,7 +212,7 @@ bool CDMRDirectNetwork::read(CDMRData& data)
 
 bool CDMRDirectNetwork::write(const CDMRData& data)
 {
-	if (m_status != RUNNING)
+	if (m_status != STATUS::RUNNING)
 		return false;
 
 	unsigned char buffer[HOMEBREW_DATA_PACKET_LENGTH];
@@ -246,7 +246,7 @@ bool CDMRDirectNetwork::write(const CDMRData& data)
 	buffer[15U] = slotNo == 1U ? 0x00U : 0x80U;
 
 	FLCO flco = data.getFLCO();
-	buffer[15U] |= flco == FLCO_GROUP ? 0x00U : 0x40U;
+	buffer[15U] |= flco == FLCO::GROUP ? 0x00U : 0x40U;
 
 	unsigned int slotIndex = slotNo - 1U;
 
@@ -283,7 +283,7 @@ bool CDMRDirectNetwork::write(const CDMRData& data)
 
 bool CDMRDirectNetwork::writeRadioPosition(unsigned int id, const unsigned char* data)
 {
-	if (m_status != RUNNING)
+	if (m_status != STATUS::RUNNING)
 		return false;
 
 	unsigned char buffer[20U];
@@ -301,7 +301,7 @@ bool CDMRDirectNetwork::writeRadioPosition(unsigned int id, const unsigned char*
 
 bool CDMRDirectNetwork::writeTalkerAlias(unsigned int id, unsigned char type, const unsigned char* data)
 {
-	if (m_status != RUNNING)
+	if (m_status != STATUS::RUNNING)
 		return false;
 
 	unsigned char buffer[20U];
@@ -321,14 +321,14 @@ bool CDMRDirectNetwork::writeTalkerAlias(unsigned int id, unsigned char type, co
 
 bool CDMRDirectNetwork::isConnected() const
 {
-	return (m_status == RUNNING);
+	return (m_status == STATUS::RUNNING);
 }
 
 void CDMRDirectNetwork::close(bool sayGoodbye)
 {
 	LogMessage("DMR, Closing DMR Network");
 
-	if (sayGoodbye && (m_status == RUNNING)) {
+	if (sayGoodbye && (m_status == STATUS::RUNNING)) {
 		unsigned char buffer[9U];
 		::memcpy(buffer + 0U, "RPTCL", 5U);
 		::memcpy(buffer + 5U, m_id, 4U);
@@ -346,23 +346,23 @@ void CDMRDirectNetwork::clock(unsigned int ms)
 	m_retryTimer.clock(ms);
 	if (m_retryTimer.isRunning() && m_retryTimer.hasExpired()) {
 		switch (m_status) {
-		case WAITING_CONNECT:
+		case STATUS::WAITING_CONNECT:
 			writeLogin();
-			m_status = WAITING_LOGIN;
+			m_status = STATUS::WAITING_LOGIN;
 			break;
-		case WAITING_LOGIN:
+		case STATUS::WAITING_LOGIN:
 			writeLogin();
 			break;
-		case WAITING_AUTHORISATION:
+		case STATUS::WAITING_AUTHORISATION:
 			writeAuthorisation();
 			break;
-		case WAITING_OPTIONS:
+		case STATUS::WAITING_OPTIONS:
 			writeOptions();
 			break;
-		case WAITING_CONFIG:
+		case STATUS::WAITING_CONFIG:
 			writeConfig();
 			break;
-		case RUNNING:
+		case STATUS::RUNNING:
 			writePing();
 			break;
 		default:
@@ -398,9 +398,9 @@ void CDMRDirectNetwork::clock(unsigned int ms)
 				m_rxData.addData(m_buffer, len);
 			}
 		} else if (::memcmp(m_buffer, "MSTNAK", 6U) == 0) {
-			if (m_status == RUNNING) {
+			if (m_status == STATUS::RUNNING) {
 				LogWarning("DMR, Login to the master has failed, retrying login ...");
-				m_status = WAITING_LOGIN;
+				m_status = STATUS::WAITING_LOGIN;
 				m_timeoutTimer.start();
 				m_retryTimer.start();
 			} else {
@@ -414,36 +414,36 @@ void CDMRDirectNetwork::clock(unsigned int ms)
 			}
 		} else if (::memcmp(m_buffer, "RPTACK", 6U) == 0) {
 			switch (m_status) {
-			case WAITING_LOGIN:
+			case STATUS::WAITING_LOGIN:
 				LogDebug("DMR, Sending authorisation");
 				::memcpy(m_salt, m_buffer + 6U, sizeof(uint32_t));
 				writeAuthorisation();
-				m_status = WAITING_AUTHORISATION;
+				m_status = STATUS::WAITING_AUTHORISATION;
 				m_timeoutTimer.start();
 				m_retryTimer.start();
 				break;
-			case WAITING_AUTHORISATION:
+			case STATUS::WAITING_AUTHORISATION:
 				LogDebug("DMR, Sending configuration");
 				writeConfig();
-				m_status = WAITING_CONFIG;
+				m_status = STATUS::WAITING_CONFIG;
 				m_timeoutTimer.start();
 				m_retryTimer.start();
 				break;
-			case WAITING_CONFIG:
+			case STATUS::WAITING_CONFIG:
 				if (m_options.empty()) {
 					LogMessage("DMR, Logged into the master successfully");
-					m_status = RUNNING;
+					m_status = STATUS::RUNNING;
 				} else {
 					LogDebug("DMR, Sending options");
 					writeOptions();
-					m_status = WAITING_OPTIONS;
+					m_status = STATUS::WAITING_OPTIONS;
 				}
 				m_timeoutTimer.start();
 				m_retryTimer.start();
 				break;
-			case WAITING_OPTIONS:
+			case STATUS::WAITING_OPTIONS:
 				LogMessage("DMR, Logged into the master successfully");
-				m_status = RUNNING;
+				m_status = STATUS::RUNNING;
 				m_timeoutTimer.start();
 				m_retryTimer.start();
 				break;
@@ -526,16 +526,16 @@ bool CDMRDirectNetwork::writeConfig()
 			slots = '2';
 
 		switch (m_hwType) {
-		case HWT_MMDVM:
+		case HW_TYPE::MMDVM:
 			software = "MMDVM";
 			break;
-		case HWT_MMDVM_HS:
+		case HW_TYPE::MMDVM_HS:
 			software = "MMDVM_MMDVM_HS";
 			break;
-		case HWT_MMDVM_HS_DUAL_HAT:
+		case HW_TYPE::MMDVM_HS_DUAL_HAT:
 			software = "MMDVM_MMDVM_HS_Dual_Hat";
 			break;
-		case HWT_NANO_HOTSPOT:
+		case HW_TYPE::NANO_HOTSPOT:
 			software = "MMDVM_Nano_hotSPOT";
 			break;
 		default:
@@ -546,31 +546,31 @@ bool CDMRDirectNetwork::writeConfig()
 		slots = '4';
 
 		switch (m_hwType) {
-		case HWT_MMDVM:
+		case HW_TYPE::MMDVM:
 			software = "MMDVM_DMO";
 			break;
-		case HWT_DVMEGA:
+		case HW_TYPE::DVMEGA:
 			software = "MMDVM_DVMega";
 			break;
-		case HWT_MMDVM_ZUMSPOT:
+		case HW_TYPE::MMDVM_ZUMSPOT:
 			software = "MMDVM_ZUMspot";
 			break;
-		case HWT_MMDVM_HS_HAT:
+		case HW_TYPE::MMDVM_HS_HAT:
 			software = "MMDVM_MMDVM_HS_Hat";
 			break;
-		case HWT_MMDVM_HS_DUAL_HAT:
+		case HW_TYPE::MMDVM_HS_DUAL_HAT:
 			software = "MMDVM_MMDVM_HS_Dual_Hat";
 			break;
-		case HWT_NANO_HOTSPOT:
+		case HW_TYPE::NANO_HOTSPOT:
 			software = "MMDVM_Nano_hotSPOT";
 			break;
-		case HWT_NANO_DV:
+		case HW_TYPE::NANO_DV:
 			software = "MMDVM_Nano_DV";
 			break;
-		case HWT_D2RG_MMDVM_HS:
+		case HW_TYPE::D2RG_MMDVM_HS:
 			software = "MMDVM_D2RG_MMDVM_HS";
 			break;
-		case HWT_MMDVM_HS:
+		case HW_TYPE::MMDVM_HS:
 			software = "MMDVM_MMDVM_HS";
 			break;
 		default:

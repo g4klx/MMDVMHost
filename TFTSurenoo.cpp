@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2019 by SASANO Takayoshi JG1UAA
- *   Copyright (C) 2015,2016,2018,2019,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018,2019,2020,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -56,18 +56,28 @@ static const struct layoutdef Layout[] = {
 #define Y_WIDTH			Layout[m_screenLayout].y_width
 #define ROTATION		Layout[m_screenLayout].rotation
 
-enum LcdColour {
-	COLOUR_BLACK, COLOUR_RED, COLOUR_GREEN, COLOUR_BLUE,
-	COLOUR_YELLOW, COLOUR_CYAN, COLOUR_MAGENTA, COLOUR_GREY,
-	COLOUR_DARK_GREY, COLOUR_DARK_RED, COLOUR_DARK_GREEN, COLOUR_DARK_BLUE,
-	COLOUR_DARK_YELLOW, COLOUR_DARK_CYAN, COLOUR_DARK_MAGENTA, COLOUR_WHITE
-};
+#define	COLOUR_BLACK			0
+#define	COLOUR_RED				1
+#define	COLOUR_GREEN			2
+#define	COLOUR_BLUE				3
+#define	COLOUR_YELLOW			4
+#define	COLOUR_CYAN				5
+#define	COLOUR_MAGENTA			6
+#define	COLOUR_GREY				7
+#define	COLOUR_DARK_GREY		8
+#define	COLOUR_DARK_RED			9
+#define	COLOUR_DARK_GREEN		10
+#define	COLOUR_DARK_BLUE		11
+#define	COLOUR_DARK_YELLOW		12
+#define	COLOUR_DARK_CYAN		13
+#define	COLOUR_DARK_MAGENTA		14
+#define	COLOUR_WHITE			15
 
-#define INFO_COLOUR		COLOUR_CYAN
-#define EXT_COLOUR		COLOUR_DARK_GREEN
-#define BG_COLOUR		COLOUR_BLACK
-#define ERROR_COLOUR		COLOUR_DARK_RED
-#define MODE_COLOUR   		COLOUR_YELLOW
+#define INFO_COLOUR				COLOUR_CYAN
+#define EXT_COLOUR				COLOUR_DARK_GREEN
+#define BG_COLOUR				COLOUR_BLACK
+#define ERROR_COLOUR			COLOUR_DARK_RED
+#define MODE_COLOUR   			COLOUR_YELLOW
 
 // MODE_FONT_SIZE should be equal or larger than STATUS_FONT_SIZE
 #define MODE_FONT_SIZE		Layout[m_screenLayout].mode_font_size
@@ -107,6 +117,7 @@ m_duplex(duplex),
 m_refresh(false),
 m_refreshTimer(1000U, 0U, REFRESH_PERIOD),
 m_lineBuf(NULL),
+m_temp(),
 m_screenLayout(screenLayout)
 {
 	assert(serial != NULL);
@@ -127,12 +138,6 @@ bool CTFTSurenoo::open()
 	}
 
 	m_lineBuf = new char[statusLineOffset(STATUS_LINES)];
-	if (m_lineBuf == NULL) {
-		LogError("Cannot allocate line buffer");
-		m_serial->close();
-		delete m_serial;
-		return false;
-	}
 
 	lcdReset();
 	clearScreen(BG_COLOUR);
@@ -477,7 +482,7 @@ void CTFTSurenoo::refreshDisplay(void)
 	// clear display
 	::snprintf(m_temp, sizeof(m_temp), "BOXF(%d,%d,%d,%d,%d);",
 		   0, 0, X_WIDTH - 1, Y_WIDTH - 1, BG_COLOUR);
-	m_serial->write((unsigned char*)m_temp, ::strlen(m_temp));
+	m_serial->write((unsigned char*)m_temp, (unsigned int)::strlen(m_temp));
 
 	// mode line
 	::snprintf(m_temp, sizeof(m_temp), "DCV%d(%d,%d,'%s',%d);",

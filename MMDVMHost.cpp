@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2021,2023,2024 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2021,2023,2024,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -70,7 +70,7 @@ static void sigHandler(int signum)
 const char* HEADER1 = "This software is for use on amateur radio networks only,";
 const char* HEADER2 = "it is to be used for educational purposes only. Its use on";
 const char* HEADER3 = "commercial networks is strictly prohibited.";
-const char* HEADER4 = "Copyright(C) 2015-2024 by Jonathan Naylor, G4KLX and others";
+const char* HEADER4 = "Copyright(C) 2015-2025 by Jonathan Naylor, G4KLX and others";
 
 int main(int argc, char** argv)
 {
@@ -497,7 +497,7 @@ int CMMDVMHost::run()
 		std::vector<std::string> whiteList = m_conf.getDStarWhiteList();
 		bool ackReply                      = m_conf.getDStarAckReply();
 		unsigned int ackTime               = m_conf.getDStarAckTime();
-		DSTAR_ACK_MESSAGE ackMessage       = m_conf.getDStarAckMessage();
+		DSTAR_ACK ackMessage               = m_conf.getDStarAckMessage();
 		bool errorReply                    = m_conf.getDStarErrorReply();
 		bool remoteGateway                 = m_conf.getDStarRemoteGateway();
 		m_dstarRFModeHang                  = m_conf.getDStarModeHang();
@@ -506,7 +506,7 @@ int CMMDVMHost::run()
 		LogInfo("    Module: %s", module.c_str());
 		LogInfo("    Self Only: %s", selfOnly ? "yes" : "no");
 		LogInfo("    Ack Reply: %s", ackReply ? "yes" : "no");
-		LogInfo("    Ack message: %s", ackMessage == DSTAR_ACK_RSSI? "RSSI" : (ackMessage == DSTAR_ACK_SMETER ? "SMETER" : "BER"));
+		LogInfo("    Ack message: %s", ackMessage == DSTAR_ACK::RSSI? "RSSI" : (ackMessage == DSTAR_ACK::SMETER ? "SMETER" : "BER"));
 		LogInfo("    Ack Time: %ums", ackTime);
 		LogInfo("    Error Reply: %s", errorReply ? "yes" : "no");
 		LogInfo("    Remote Gateway: %s", remoteGateway ? "yes" : "no");
@@ -520,7 +520,7 @@ int CMMDVMHost::run()
 		m_dstar = new CDStarControl(m_callsign, module, selfOnly, ackReply, ackTime, ackMessage, errorReply, blackList, whiteList, m_dstarNetwork, m_display, m_timeout, m_duplex, remoteGateway, rssi);
 	}
 
-	DMR_BEACONS dmrBeacons = DMR_BEACONS_OFF;
+	DMR_BEACONS dmrBeacons = DMR_BEACONS::OFF;
 	CTimer dmrBeaconIntervalTimer(1000U);
 	CTimer dmrBeaconDurationTimer(1000U);
 
@@ -540,7 +540,7 @@ int CMMDVMHost::run()
 		unsigned int jitter         = m_conf.getDMRNetworkJitter();
 		m_dmrRFModeHang             = m_conf.getDMRModeHang();
 		dmrBeacons                  = m_conf.getDMRBeacons();
-		DMR_OVCM_TYPES ovcm         = m_conf.getDMROVCM();
+		DMR_OVCM ovcm               = m_conf.getDMROVCM();
 		bool protect                = m_conf.getDMRProtect();
 
 		if (txHang > m_dmrRFModeHang)
@@ -574,22 +574,22 @@ int CMMDVMHost::run()
 		LogInfo("    Call Hang: %us", callHang);
 		LogInfo("    TX Hang: %us", txHang);
 		LogInfo("    Mode Hang: %us", m_dmrRFModeHang);
-		if (ovcm == DMR_OVCM_OFF)
+		if (ovcm == DMR_OVCM::OFF)
 			LogInfo("    OVCM: off");
-		else if (ovcm == DMR_OVCM_RX_ON)
+		else if (ovcm == DMR_OVCM::RX_ON)
 			LogInfo("    OVCM: on(rx only)");
-		else if (ovcm == DMR_OVCM_TX_ON)
+		else if (ovcm == DMR_OVCM::TX_ON)
 			LogInfo("    OVCM: on(tx only)");
-		else if (ovcm == DMR_OVCM_ON)
+		else if (ovcm == DMR_OVCM::ON)
 			LogInfo("    OVCM: on");
-		else if (ovcm == DMR_OVCM_FORCE_OFF)
+		else if (ovcm == DMR_OVCM::FORCE_OFF)
 			LogInfo("    OVCM: off (forced)");
 
 		if (protect)
 			LogInfo("    Protect: yes");
 
 		switch (dmrBeacons) {
-			case DMR_BEACONS_NETWORK: {
+			case DMR_BEACONS::NETWORK: {
 					unsigned int dmrBeaconDuration = m_conf.getDMRBeaconDuration();
 
 					LogInfo("    DMR Roaming Beacons Type: network");
@@ -598,7 +598,7 @@ int CMMDVMHost::run()
 					dmrBeaconDurationTimer.setTimeout(dmrBeaconDuration);
 				}
 				break;
-			case DMR_BEACONS_TIMED: {
+			case DMR_BEACONS::TIMED: {
 					unsigned int dmrBeaconInterval = m_conf.getDMRBeaconInterval();
 					unsigned int dmrBeaconDuration = m_conf.getDMRBeaconDuration();
 
@@ -1253,7 +1253,7 @@ int CMMDVMHost::run()
 		}
 
 		switch (dmrBeacons) {
-			case DMR_BEACONS_TIMED:
+			case DMR_BEACONS::TIMED:
 				dmrBeaconIntervalTimer.clock(ms);
 				if (dmrBeaconIntervalTimer.isRunning() && dmrBeaconIntervalTimer.hasExpired()) {
 					if ((m_mode == MODE_IDLE || m_mode == MODE_DMR) && !m_modem->hasTX()) {
@@ -1266,7 +1266,7 @@ int CMMDVMHost::run()
 					}
 				}
 				break;
-			case DMR_BEACONS_NETWORK:
+			case DMR_BEACONS::NETWORK:
 				if (m_dmrNetwork != NULL) {
 					bool beacon = m_dmrNetwork->wantsBeacon();
 					if (beacon) {
@@ -2544,131 +2544,131 @@ void CMMDVMHost::remoteControl()
 
 	REMOTE_COMMAND command = m_remoteControl->getCommand();
 	switch (command) {
-		case RCD_MODE_IDLE:
+	case REMOTE_COMMAND::MODE_IDLE:
 			m_fixedMode = false;
 			setMode(MODE_IDLE);
 			break;
-		case RCD_MODE_LOCKOUT:
+		case REMOTE_COMMAND::MODE_LOCKOUT:
 			m_fixedMode = false;
 			setMode(MODE_LOCKOUT);
 			break;
-		case RCD_MODE_DSTAR:
+		case REMOTE_COMMAND::MODE_DSTAR:
 			if (m_dstar != NULL)
 				processModeCommand(MODE_DSTAR, m_dstarRFModeHang);
 			break;
-		case RCD_MODE_DMR:
+		case REMOTE_COMMAND::MODE_DMR:
 			if (m_dmr != NULL)
 				processModeCommand(MODE_DMR, m_dmrRFModeHang);
 			break;
-		case RCD_MODE_YSF:
+		case REMOTE_COMMAND::MODE_YSF:
 			if (m_ysf != NULL)
 				processModeCommand(MODE_YSF, m_ysfRFModeHang);
 			break;
-		case RCD_MODE_P25:
+		case REMOTE_COMMAND::MODE_P25:
 			if (m_p25 != NULL)
 				processModeCommand(MODE_P25, m_p25RFModeHang);
 			break;
-		case RCD_MODE_NXDN:
+		case REMOTE_COMMAND::MODE_NXDN:
 			if (m_nxdn != NULL)
 				processModeCommand(MODE_NXDN, m_nxdnRFModeHang);
 			break;
-		case RCD_MODE_M17:
+		case REMOTE_COMMAND::MODE_M17:
 			if (m_m17 != NULL)
 				processModeCommand(MODE_M17, m_m17RFModeHang);
 			break;
-		case RCD_MODE_FM:
+		case REMOTE_COMMAND::MODE_FM:
 			if (m_fmEnabled)
 				processModeCommand(MODE_FM, 0);
 			break;
-		case RCD_ENABLE_DSTAR:
+		case REMOTE_COMMAND::ENABLE_DSTAR:
 			if (m_dstar != NULL && !m_dstarEnabled)
 				processEnableCommand(m_dstarEnabled, true);
 			if (m_dstarNetwork != NULL)
 				m_dstarNetwork->enable(true);
 			break;
-		case RCD_ENABLE_DMR:
+		case REMOTE_COMMAND::ENABLE_DMR:
 			if (m_dmr != NULL && !m_dmrEnabled)
 				processEnableCommand(m_dmrEnabled, true);
 			if (m_dmrNetwork != NULL)
 				m_dmrNetwork->enable(true);
 			break;
-		case RCD_ENABLE_YSF:
+		case REMOTE_COMMAND::ENABLE_YSF:
 			if (m_ysf != NULL && !m_ysfEnabled)
 				processEnableCommand(m_ysfEnabled, true);
 			if (m_ysfNetwork != NULL)
 				m_ysfNetwork->enable(true);
 			break;
-		case RCD_ENABLE_P25:
+		case REMOTE_COMMAND::ENABLE_P25:
 			if (m_p25 != NULL && !m_p25Enabled)
 				processEnableCommand(m_p25Enabled, true);
 			if (m_p25Network != NULL)
 				m_p25Network->enable(true);
 			break;
-		case RCD_ENABLE_NXDN:
+		case REMOTE_COMMAND::ENABLE_NXDN:
 			if (m_nxdn != NULL && !m_nxdnEnabled)
 				processEnableCommand(m_nxdnEnabled, true);
 			if (m_nxdnNetwork != NULL)
 				m_nxdnNetwork->enable(true);
 			break;
-		case RCD_ENABLE_M17:
+		case REMOTE_COMMAND::ENABLE_M17:
 			if (m_m17 != NULL && !m_m17Enabled)
 				processEnableCommand(m_m17Enabled, true);
 			if (m_m17Network != NULL)
 				m_m17Network->enable(true);
 			break;
-		case RCD_ENABLE_FM:
+		case REMOTE_COMMAND::ENABLE_FM:
 			if (!m_fmEnabled)
 				processEnableCommand(m_fmEnabled, true);
 			break;
-		case RCD_ENABLE_AX25:
+		case REMOTE_COMMAND::ENABLE_AX25:
 			if (!m_ax25Enabled)
 				processEnableCommand(m_ax25Enabled, true);
 			break;
-		case RCD_DISABLE_DSTAR:
+		case REMOTE_COMMAND::DISABLE_DSTAR:
 			if (m_dstar != NULL && m_dstarEnabled)
 				processEnableCommand(m_dstarEnabled, false);
 			if (m_dstarNetwork != NULL)
 				m_dstarNetwork->enable(false);
 			break;
-		case RCD_DISABLE_DMR:
+		case REMOTE_COMMAND::DISABLE_DMR:
 			if (m_dmr != NULL && m_dmrEnabled)
 				processEnableCommand(m_dmrEnabled, false);
 			if (m_dmrNetwork != NULL)
 				m_dmrNetwork->enable(false);
 			break;
-		case RCD_DISABLE_YSF:
+		case REMOTE_COMMAND::DISABLE_YSF:
 			if (m_ysf != NULL && m_ysfEnabled)
 				processEnableCommand(m_ysfEnabled, false);
 			if (m_ysfNetwork != NULL)
 				m_ysfNetwork->enable(false);
 			break;
-		case RCD_DISABLE_P25:
+		case REMOTE_COMMAND::DISABLE_P25:
 			if (m_p25 != NULL && m_p25Enabled)
 				processEnableCommand(m_p25Enabled, false);
 			if (m_p25Network != NULL)
 				m_p25Network->enable(false);
 			break;
-		case RCD_DISABLE_NXDN:
+		case REMOTE_COMMAND::DISABLE_NXDN:
 			if (m_nxdn != NULL && m_nxdnEnabled)
 				processEnableCommand(m_nxdnEnabled, false);
 			if (m_nxdnNetwork != NULL)
 				m_nxdnNetwork->enable(false);
 			break;
-		case RCD_DISABLE_M17:
+		case REMOTE_COMMAND::DISABLE_M17:
 			if (m_m17 != NULL && m_m17Enabled)
 				processEnableCommand(m_m17Enabled, false);
 			if (m_m17Network != NULL)
 				m_m17Network->enable(false);
 			break;
-		case RCD_DISABLE_FM:
+		case REMOTE_COMMAND::DISABLE_FM:
 			if (m_fmEnabled)
 				processEnableCommand(m_fmEnabled, false);
 			break;
-		case RCD_DISABLE_AX25:
+		case REMOTE_COMMAND::DISABLE_AX25:
 			if (m_ax25Enabled == true)
 				processEnableCommand(m_ax25Enabled, false);
 			break;
-		case RCD_PAGE:
+		case REMOTE_COMMAND::PAGE:
 			if (m_pocsag != NULL) {
 				unsigned int ric = m_remoteControl->getArgUInt(0U);
 				std::string text;
@@ -2680,7 +2680,7 @@ void CMMDVMHost::remoteControl()
 				m_pocsag->sendPage(ric, text);
 			}
 			break;
-		case RCD_PAGE_BCD:
+		case REMOTE_COMMAND::PAGE_BCD:
 			if (m_pocsag != NULL) {
 				unsigned int ric = m_remoteControl->getArgUInt(0U);
 				std::string text;
@@ -2692,13 +2692,13 @@ void CMMDVMHost::remoteControl()
 				m_pocsag->sendPageBCD(ric, text);
 			}
 			break;
-		case RCD_PAGE_A1:
+		case REMOTE_COMMAND::PAGE_A1:
 			if (m_pocsag != NULL) {
 				unsigned int ric = m_remoteControl->getArgUInt(0U);
 				m_pocsag->sendPageAlert1(ric);
 			}
 			break;
-		case RCD_PAGE_A2:
+		case REMOTE_COMMAND::PAGE_A2:
 			if (m_pocsag != NULL) {
 				unsigned int ric = m_remoteControl->getArgUInt(0U);
 				std::string text;
@@ -2710,7 +2710,7 @@ void CMMDVMHost::remoteControl()
 				m_pocsag->sendPageAlert2(ric, text);
 			}
 			break;
-		case RCD_CW:
+		case REMOTE_COMMAND::CW:
 			setMode(MODE_IDLE); // Force the modem to go idle so that we can send the CW text.
 			if (!m_modem->hasTX()) {
 				std::string cwtext;
@@ -2723,7 +2723,7 @@ void CMMDVMHost::remoteControl()
 				m_modem->sendCWId(cwtext);
 			}
 			break;
-		case RCD_RELOAD:
+		case REMOTE_COMMAND::RELOAD:
 			m_reload = true;
 			break;
 		default:
@@ -2785,11 +2785,11 @@ void CMMDVMHost::buildNetworkHostsString(std::string &str)
 
 		m_dstarNetwork->getStatus(status, &ref[0]);
 		switch (status) {
-			case LINK_STATUS::LS_LINKED_LOOPBACK:
-			case LINK_STATUS::LS_LINKED_DEXTRA:
-			case LINK_STATUS::LS_LINKED_DPLUS:
-			case LINK_STATUS::LS_LINKED_DCS:
-			case LINK_STATUS::LS_LINKED_CCS:
+			case LINK_STATUS::LINKED_LOOPBACK:
+			case LINK_STATUS::LINKED_DEXTRA:
+			case LINK_STATUS::LINKED_DPLUS:
+			case LINK_STATUS::LINKED_DCS:
+			case LINK_STATUS::LINKED_CCS:
 			     dstarReflector = std::string((char *)ref);
 			     break;
 

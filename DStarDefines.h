@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2018,2019,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018,2019,2021,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -66,7 +66,7 @@ const unsigned char DSTAR_URGENT_MASK         = 0x08U;
 const unsigned char DSTAR_REPEATER_CONTROL    = 0x07U;
 const unsigned char DSTAR_AUTO_REPLY          = 0x06U;
 const unsigned char DSTAR_RESEND_REQUESTED    = 0x04U;
-const unsigned char DSTAR_ACK_FLAG            = 0x03U;
+const unsigned char FLAG            = 0x03U;
 const unsigned char DSTAR_NO_RESPONSE         = 0x02U;
 const unsigned char DSTAR_RELAY_UNAVAILABLE   = 0x01U;
 
@@ -77,19 +77,19 @@ const unsigned char DSTAR_DTMF_SIG[]  = { 0x82U, 0x08U, 0x20U, 0x82U, 0x00U, 0x0
 
 const unsigned int DSTAR_FRAME_TIME = 20U;
 
-enum LINK_STATUS {
-	LS_NONE,
-	LS_PENDING_IRCDDB,
-	LS_LINKING_LOOPBACK,
-	LS_LINKING_DEXTRA,
-	LS_LINKING_DPLUS,
-	LS_LINKING_DCS,
-	LS_LINKING_CCS,
-	LS_LINKED_LOOPBACK,
-	LS_LINKED_DEXTRA,
-	LS_LINKED_DPLUS,
-	LS_LINKED_DCS,
-	LS_LINKED_CCS
+enum class LINK_STATUS {
+	NONE,
+	PENDING_IRCDDB,
+	LINKING_LOOPBACK,
+	LINKING_DEXTRA,
+	LINKING_DPLUS,
+	LINKING_DCS,
+	LINKING_CCS,
+	LINKED_LOOPBACK,
+	LINKED_DEXTRA,
+	LINKED_DPLUS,
+	LINKED_DCS,
+	LINKED_CCS
 };
 
 #endif

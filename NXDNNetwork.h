@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -23,13 +23,13 @@
 
 #include <cstdint>
 
-enum NXDN_NETWORK_MESSAGE_TYPE {
-	NNMT_VOICE_HEADER,
-	NNMT_VOICE_BODY,
-	NNMT_VOICE_TRAILER,
-	NNMT_DATA_HEADER,
-	NNMT_DATA_BODY,
-	NNMT_DATA_TRAILER
+enum class NXDN_NETWORK_MESSAGE_TYPE {
+	VOICE_HEADER,
+	VOICE_BODY,
+	VOICE_TRAILER,
+	DATA_HEADER,
+	DATA_BODY,
+	DATA_TRAILER
 };
 
 class INXDNNetwork {

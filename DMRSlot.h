@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2021,2023 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2021,2023,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -37,12 +37,12 @@
 
 #include <vector>
 
-enum ACTIVITY_TYPE {
-	ACTIVITY_NONE,
-	ACTIVITY_VOICE,
-	ACTIVITY_DATA,
-	ACTIVITY_CSBK,
-	ACTIVITY_EMERG
+enum class ACTIVITY_TYPE {
+	NONE,
+	VOICE,
+	DATA,
+	CSBK,
+	EMERG
 };
 
 class CDMRSlot {
@@ -62,7 +62,7 @@ public:
 
 	void enable(bool enabled);
 
-	static void init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData, unsigned int callHang, CModem* modem, IDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter, DMR_OVCM_TYPES ovcm, bool protect);
+	static void init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData, unsigned int callHang, CModem* modem, IDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter, DMR_OVCM ovcm, bool protect);
 
 private:
 	unsigned int               m_slotNo;
@@ -124,7 +124,7 @@ private:
 	static bool                m_duplex;
 	static CDMRLookup*         m_lookup;
 	static unsigned int        m_hangCount;
-	static DMR_OVCM_TYPES      m_ovcm;
+	static DMR_OVCM            m_ovcm;
 	static bool                m_protect;
 
 	static CRSSIInterpolator*  m_rssiMapper;
@@ -158,7 +158,7 @@ private:
 	bool insertSilence(const unsigned char* data, unsigned char seqNo);
 	void insertSilence(unsigned int count);
 
-	static void setShortLC(unsigned int slotNo, unsigned int id, FLCO flco = FLCO_GROUP, ACTIVITY_TYPE type = ACTIVITY_NONE);
+	static void setShortLC(unsigned int slotNo, unsigned int id, FLCO flco = FLCO::GROUP, ACTIVITY_TYPE type = ACTIVITY_TYPE::NONE);
 };
 
 #endif

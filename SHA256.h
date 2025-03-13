@@ -1,6 +1,6 @@
 /*
- *   Copyright (C) 2005, 2006, 2008, 2009 Free Software Foundation, Inc.
- *   Copyright (C) 2011,2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2005,2006,2008,2009 Free Software Foundation, Inc.
+ *   Copyright (C) 2011,2015,2016,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -22,9 +22,7 @@
 
 #include <cstdint>
 
-enum {
-	SHA256_DIGEST_SIZE = 256 / 8
-};
+const unsigned int SHA256_DIGEST_SIZE = 256U / 8U;
 
 class CSHA256 {
 public:

@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015-2021 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015-2021,2025 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -49,8 +49,8 @@ m_duplex(duplex),
 m_remoteGateway(remoteGateway),
 m_lookup(lookup),
 m_queue(5000U, "NXDN Control"),
-m_rfState(RS_RF_LISTENING),
-m_netState(RS_NET_IDLE),
+m_rfState(RPT_RF_STATE::LISTENING),
+m_netState(RPT_NET_STATE::IDLE),
 m_rfTimeoutTimer(1000U, timeout),
 m_netTimeoutTimer(1000U, timeout),
 m_packetTimer(1000U, 0U, 200U),
@@ -92,7 +92,7 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 
 	unsigned char type = data[0U];
 
-	if (type == TAG_LOST && m_rfState == RS_RF_AUDIO) {
+	if ((type == TAG_LOST) && (m_rfState == RPT_RF_STATE::AUDIO)) {
 		unsigned short dstId = m_rfLayer3.getDestinationGroupId();
 		bool grp             = m_rfLayer3.getIsGroup();
 		std::string source = m_lookup->find(m_rfLayer3.getSourceUnitId());
@@ -105,13 +105,13 @@ bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 		return false;
 	}
 
-	if (type == TAG_LOST && m_rfState == RS_RF_DATA) {
+	if ((type == TAG_LOST) && (m_rfState == RPT_RF_STATE::DATA)) {
 		writeEndRF();
 		return false;
 	}
 
 	if (type == TAG_LOST) {
-		m_rfState = RS_RF_LISTENING;
+		m_rfState = RPT_RF_STATE::LISTENING;
 		m_rfMask  = 0x00U;
 		m_rfLayer3.reset();
 		return false;
@@ -179,7 +179,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		unsigned char ran = sacch.getRAN();
 		if (ran != m_ran && ran != 0U)
 			return false;
-	} else if (m_rfState == RS_RF_LISTENING) {
+	} else if (m_rfState == RPT_RF_STATE::LISTENING) {
 		return false;
 	}
 
@@ -203,17 +203,17 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 		unsigned char type = layer3.getMessageType();
 		if (type == NXDN_MESSAGE_TYPE_TX_REL) {
-			if (m_rfState != RS_RF_AUDIO) {
-				m_rfState = RS_RF_LISTENING;
+			if (m_rfState != RPT_RF_STATE::AUDIO) {
+				m_rfState = RPT_RF_STATE::LISTENING;
 				m_rfMask  = 0x00U;
 				m_rfLayer3.reset();
 				return false;
 			}
 		} else if (type == NXDN_MESSAGE_TYPE_VCALL) {
-			if (m_rfState == RS_RF_LISTENING && m_selfOnly) {
+			if ((m_rfState == RPT_RF_STATE::LISTENING) && m_selfOnly) {
 				unsigned short srcId = layer3.getSourceUnitId();
 				if (srcId != m_id) {
-					m_rfState = RS_RF_REJECTED;
+					m_rfState = RPT_RF_STATE::REJECTED;
 					return true;
 				}
 			}
@@ -254,7 +254,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 		scrambler(data + 2U);
 
-		writeNetwork(netData, data[0U] == TAG_EOT ? NNMT_VOICE_TRAILER : NNMT_VOICE_HEADER);
+		writeNetwork(netData, data[0U] == TAG_EOT ? NXDN_NETWORK_MESSAGE_TYPE::VOICE_TRAILER : NXDN_NETWORK_MESSAGE_TYPE::VOICE_HEADER);
 
 #if defined(DUMP_NXDN)
 		writeFile(data + 2U);
@@ -278,7 +278,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			m_rfErrs    = 0U;
 			m_rfBits    = 1U;
 			m_rfTimeoutTimer.start();
-			m_rfState   = RS_RF_AUDIO;
+			m_rfState   = RPT_RF_STATE::AUDIO;
 			m_minRSSI   = m_rssi;
 			m_maxRSSI   = m_rssi;
 			m_aveRSSI   = m_rssi;
@@ -297,7 +297,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 		return true;
 	} else {
-		if (m_rfState == RS_RF_LISTENING) {
+		if (m_rfState == RPT_RF_STATE::LISTENING) {
 			CNXDNFACCH1 facch;
 			bool valid = false;
 			switch (option) {
@@ -374,7 +374,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 			if (m_selfOnly) {
 				if (srcId != m_id) {
-					m_rfState = RS_RF_REJECTED;
+					m_rfState = RPT_RF_STATE::REJECTED;
 					return true;
 				}
 			}
@@ -383,7 +383,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			m_rfErrs = 0U;
 			m_rfBits = 1U;
 			m_rfTimeoutTimer.start();
-			m_rfState = RS_RF_AUDIO;
+			m_rfState = RPT_RF_STATE::AUDIO;
 
 			m_minRSSI = m_rssi;
 			m_maxRSSI = m_rssi;
@@ -396,7 +396,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 			LogMessage("NXDN, received RF late entry from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
 			m_display->writeNXDN(source.c_str(), grp, dstId, "R");
 
-			m_rfState = RS_RF_AUDIO;
+			m_rfState = RPT_RF_STATE::AUDIO;
 
 			// Create a dummy start message
 			unsigned char start[NXDN_FRAME_LENGTH_BYTES + 2U];
@@ -438,7 +438,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 			scrambler(start + 2U);
 
-			writeNetwork(netData, NNMT_VOICE_HEADER);
+			writeNetwork(netData, NXDN_NETWORK_MESSAGE_TYPE::VOICE_HEADER);
 
 #if defined(DUMP_NXDN)
 			writeFile(start + 2U);
@@ -448,7 +448,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 		}
 	}
 
-	if (m_rfState == RS_RF_AUDIO) {
+	if (m_rfState == RPT_RF_STATE::AUDIO) {
 		// Regenerate the sync
 		CSync::addNXDNSync(data + 2U);
 
@@ -544,7 +544,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 		scrambler(data + 2U);
 
-		writeNetwork(netData, NNMT_VOICE_BODY);
+		writeNetwork(netData, NXDN_NETWORK_MESSAGE_TYPE::VOICE_BODY);
 
 #if defined(DUMP_NXDN)
 		writeFile(data + 2U);
@@ -565,7 +565,7 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 {
 	CNXDNUDCH udch;
 	bool validUDCH = udch.decode(data + 2U);
-	if (m_rfState == RS_RF_LISTENING && !validUDCH)
+	if ((m_rfState == RPT_RF_STATE::LISTENING) && !validUDCH)
 		return false;
 
 	if (validUDCH) {
@@ -584,7 +584,7 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 	CNXDNLayer3 layer3;
 	layer3.decode(buffer, 184U);
 
-	if (m_rfState == RS_RF_LISTENING) {
+	if (m_rfState == RPT_RF_STATE::LISTENING) {
 		unsigned char type = layer3.getMessageType();
 		if (type != NXDN_MESSAGE_TYPE_DCALL_HDR)
 			return false;
@@ -610,14 +610,14 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 		m_rfLayer3 = layer3;
 		m_rfFrames = 0U;
 
-		m_rfState = RS_RF_DATA;
+		m_rfState = RPT_RF_STATE::DATA;
 
 #if defined(DUMP_NXDN)
 		openFile();
 #endif
 	}
 
-	if (m_rfState != RS_RF_DATA)
+	if (m_rfState != RPT_RF_STATE::DATA)
 		return false;
 
 	CSync::addNXDNSync(data + 2U);
@@ -651,13 +651,13 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 
 	switch (type) {
 	case NXDN_MESSAGE_TYPE_DCALL_HDR:
-		writeNetwork(netData, NNMT_DATA_HEADER);
+		writeNetwork(netData, NXDN_NETWORK_MESSAGE_TYPE::DATA_HEADER);
 		break;
 	case NXDN_MESSAGE_TYPE_TX_REL:
-		writeNetwork(netData, NNMT_DATA_TRAILER);
+		writeNetwork(netData, NXDN_NETWORK_MESSAGE_TYPE::DATA_TRAILER);
 		break;
 	default:
-		writeNetwork(netData, NNMT_DATA_BODY);
+		writeNetwork(netData, NXDN_NETWORK_MESSAGE_TYPE::DATA_BODY);
 		break;
 	}
 
@@ -699,14 +699,14 @@ unsigned int CNXDNControl::readModem(unsigned char* data)
 
 void CNXDNControl::writeEndRF()
 {
-	m_rfState = RS_RF_LISTENING;
+	m_rfState = RPT_RF_STATE::LISTENING;
 
 	m_rfMask = 0x00U;
 	m_rfLayer3.reset();
 
 	m_rfTimeoutTimer.stop();
 
-	if (m_netState == RS_NET_IDLE) {
+	if (m_netState == RPT_NET_STATE::IDLE) {
 		m_display->clearNXDN();
 
 		if (m_network != NULL)
@@ -720,7 +720,7 @@ void CNXDNControl::writeEndRF()
 
 void CNXDNControl::writeEndNet()
 {
-	m_netState = RS_NET_IDLE;
+	m_netState = RPT_NET_STATE::IDLE;
 
 	m_netMask = 0x00U;
 	m_netLayer3.reset();
@@ -745,7 +745,7 @@ void CNXDNControl::writeNetwork()
 	if (!m_enabled)
 		return;
 
-	if (m_rfState != RS_RF_LISTENING && m_netState == RS_NET_IDLE)
+	if ((m_rfState != RPT_RF_STATE::LISTENING) && (m_netState == RPT_NET_STATE::IDLE))
 		return;
 
 	m_networkWatchdog.start();
@@ -766,7 +766,7 @@ void CNXDNControl::writeNetwork()
 		layer3.setData(netData + 2U, 23U);
 		unsigned char type = layer3.getMessageType();
 
-		if (m_netState == RS_NET_IDLE) {
+		if (m_netState == RPT_NET_STATE::IDLE) {
 			if (type == NXDN_MESSAGE_TYPE_DCALL_HDR) {
 				unsigned short srcId = layer3.getSourceUnitId();
 				unsigned short dstId = layer3.getDestinationGroupId();
@@ -778,13 +778,13 @@ void CNXDNControl::writeNetwork()
 				m_display->writeNXDN(source.c_str(), grp, dstId, "N");
 				LogMessage("NXDN, received network data header from %s to %s%u, %u blocks", source.c_str(), grp ? "TG " : "", dstId, frames);
 
-				m_netState = RS_NET_DATA;
+				m_netState = RPT_NET_STATE::DATA;
 			} else {
 				return;
 			}
 		}
 
-		if (m_netState == RS_NET_DATA) {
+		if (m_netState == RPT_NET_STATE::DATA) {
 			data[0U] = type == NXDN_MESSAGE_TYPE_TX_REL ? TAG_EOT : TAG_DATA;
 			data[1U] = 0x00U;
 
@@ -810,9 +810,9 @@ void CNXDNControl::writeNetwork()
 		m_netLayer3.setData(netData + 5U + 0U, 10U);
 
 		unsigned char type = m_netLayer3.getMessageType();
-		if (type == NXDN_MESSAGE_TYPE_TX_REL && m_netState == RS_NET_IDLE)
+		if ((type == NXDN_MESSAGE_TYPE_TX_REL) && (m_netState == RPT_NET_STATE::IDLE))
 			return;
-		if (type == NXDN_MESSAGE_TYPE_VCALL && m_netState != RS_NET_IDLE)
+		if ((type == NXDN_MESSAGE_TYPE_VCALL) && (m_netState != RPT_NET_STATE::IDLE))
 			return;
 
 		CNXDNSACCH sacch;
@@ -849,14 +849,14 @@ void CNXDNControl::writeNetwork()
 			m_netTimeoutTimer.start();
 			m_packetTimer.start();
 			m_elapsed.start();
-			m_netState  = RS_NET_AUDIO;
+			m_netState  = RPT_NET_STATE::AUDIO;
 			m_netFrames = 1U;
 		} else {
 			CUtils::dump(2U, "NXDN, interesting non superblock network frame", netData, 33U);
 			return;
 		}
 	} else {
-		if (m_netState == RS_NET_IDLE) {
+		if (m_netState == RPT_NET_STATE::IDLE) {
 			unsigned char structure = (netData[1U] >> 6) & 0x03U;
 			switch (structure) {
 			case NXDN_SR_1_4:
@@ -901,7 +901,7 @@ void CNXDNControl::writeNetwork()
 			m_netTimeoutTimer.start();
 			m_packetTimer.start();
 			m_elapsed.start();
-			m_netState  = RS_NET_AUDIO;
+			m_netState  = RPT_NET_STATE::AUDIO;
 			m_netFrames = 1U;
 
 			// Create a dummy start message
@@ -992,7 +992,7 @@ void CNXDNControl::clock(unsigned int ms)
 	m_rfTimeoutTimer.clock(ms);
 	m_netTimeoutTimer.clock(ms);
 
-	if (m_netState == RS_NET_AUDIO) {
+	if (m_netState == RPT_NET_STATE::AUDIO) {
 		m_networkWatchdog.clock(ms);
 
 		if (m_networkWatchdog.hasExpired()) {
@@ -1006,7 +1006,7 @@ void CNXDNControl::writeQueueRF(const unsigned char *data)
 {
 	assert(data != NULL);
 
-	if (m_netState != RS_NET_IDLE)
+	if (m_netState != RPT_NET_STATE::IDLE)
 		return;
 
 	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired())
@@ -1108,7 +1108,7 @@ void CNXDNControl::closeFile()
 
 bool CNXDNControl::isBusy() const
 {
-	return m_rfState != RS_RF_LISTENING || m_netState != RS_NET_IDLE;
+	return (m_rfState != RPT_RF_STATE::LISTENING) || (m_netState != RPT_NET_STATE::IDLE);
 }
 
 void CNXDNControl::enable(bool enabled)
@@ -1117,7 +1117,7 @@ void CNXDNControl::enable(bool enabled)
 		m_queue.clear();
 
 		// Reset the RF section
-		m_rfState = RS_RF_LISTENING;
+		m_rfState = RPT_RF_STATE::LISTENING;
 
 		m_rfMask = 0x00U;
 		m_rfLayer3.reset();
@@ -1125,7 +1125,7 @@ void CNXDNControl::enable(bool enabled)
 		m_rfTimeoutTimer.stop();
 
 		// Reset the networking section
-		m_netState = RS_NET_IDLE;
+		m_netState = RPT_NET_STATE::IDLE;
 
 		m_netMask = 0x00U;
 		m_netLayer3.reset();

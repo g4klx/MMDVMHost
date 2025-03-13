@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021,2023,2024 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2023,2024,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ const unsigned int BUFFER_LENGTH = 1500U;
 
 CFMNetwork::CFMNetwork(const std::string& callsign, const std::string& protocol, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, unsigned int sampleRate, const std::string& squelchFile, bool debug) :
 m_callsign(callsign),
-m_protocol(FMNP_USRP),
+m_protocol(FM_NETWORK_PROTOCOL::USRP),
 m_socket(localAddress, localPort),
 m_addr(),
 m_addrLen(0U),
@@ -65,9 +65,9 @@ m_fp(NULL)
 		m_callsign = callsign.substr(0U, pos);
 
 	if (protocol == "RAW")
-		m_protocol = FMNP_RAW;
+		m_protocol = FM_NETWORK_PROTOCOL::RAW;
 	else
-		m_protocol = FMNP_USRP;
+		m_protocol = FM_NETWORK_PROTOCOL::USRP;
 
 #if defined(HAS_SRC)
 	m_resampler = ::src_new(SRC_SINC_FASTEST, 1, &m_error);
@@ -90,7 +90,7 @@ bool CFMNetwork::open()
 
 	LogMessage("Opening FM network connection");
 
-	if (m_protocol == FMNP_RAW) {
+	if (m_protocol == FM_NETWORK_PROTOCOL::RAW) {
 		if (!m_squelchFile.empty()) {
 			m_fp = ::fopen(m_squelchFile.c_str(), "wb");
 			if (m_fp == NULL) {
@@ -105,7 +105,7 @@ bool CFMNetwork::open()
 	}
 
 #if !defined(HAS_SRC)
-	if ((m_protocol == FMNP_RAW) && (m_sampleRate != MMDVM_SAMPLERATE)) {
+	if ((m_protocol == FM_NETWORK_PROTOCOL::RAW) && (m_sampleRate != MMDVM_SAMPLERATE)) {
 		LogError("The resampler needed for non-native sample rates has not been included");
 		return false;
 	}
@@ -119,9 +119,9 @@ bool CFMNetwork::writeData(const float* data, unsigned int nSamples)
 	assert(data != NULL);
 	assert(nSamples > 0U);
 
-	if (m_protocol == FMNP_USRP)
+	if (m_protocol == FM_NETWORK_PROTOCOL::USRP)
 		return writeUSRPData(data, nSamples);
-	else if (m_protocol == FMNP_RAW)
+	else if (m_protocol == FM_NETWORK_PROTOCOL::RAW)
 		return writeRawData(data, nSamples);
 	else
 		return false;
@@ -264,7 +264,7 @@ bool CFMNetwork::writeRawData(const float* in, unsigned int nIn)
 
 bool CFMNetwork::writeEnd()
 {
-	if (m_protocol == FMNP_USRP)
+	if (m_protocol == FM_NETWORK_PROTOCOL::USRP)
 		return writeUSRPEnd();
 	else
 		return writeRawEnd();
@@ -366,13 +366,13 @@ void CFMNetwork::clock(unsigned int ms)
 		return;
 
 	// Check if the data is for us
-	if (m_protocol == FMNP_USRP) {
-		if (!CUDPSocket::match(addr, m_addr, IMT_ADDRESS_AND_PORT)) {
+	if (m_protocol == FM_NETWORK_PROTOCOL::USRP) {
+		if (!CUDPSocket::match(addr, m_addr, IPMATCHTYPE::IMT_ADDREAND_PORT)) {
 			LogMessage("FM packet received from an invalid source");
 			return;
 		}
 	} else {
-		if (!CUDPSocket::match(addr, m_addr, IMT_ADDRESS_ONLY)) {
+		if (!CUDPSocket::match(addr, m_addr, IPMATCHTYPE::IMT_ADDREONLY)) {
 			LogMessage("FM packet received from an invalid source");
 			return;
 		}
@@ -384,7 +384,7 @@ void CFMNetwork::clock(unsigned int ms)
 	if (m_debug)
 		CUtils::dump(1U, "FM Network Data Received", buffer, length);
 
-	if (m_protocol == FMNP_USRP) {
+	if (m_protocol == FM_NETWORK_PROTOCOL::USRP) {
 		// Invalid packet type?
 		if (::memcmp(buffer, "USRP", 4U) != 0)
 			return;
@@ -400,7 +400,7 @@ void CFMNetwork::clock(unsigned int ms)
 
 		if (type == 0U)
 			m_buffer.addData(buffer + 32U, length - 32U);
-	} else if (m_protocol == FMNP_RAW) {
+	} else if (m_protocol == FM_NETWORK_PROTOCOL::RAW) {
 		m_buffer.addData(buffer, length);
 	}
 }
@@ -415,7 +415,7 @@ unsigned int CFMNetwork::readData(float* out, unsigned int nOut)
 		return 0U;
 
 #if defined(HAS_SRC)
-	if ((m_protocol == FMNP_RAW) && (m_sampleRate != MMDVM_SAMPLERATE)) {
+	if ((m_protocol == RAW) && (m_sampleRate != MMDVM_SAMPLERATE)) {
 		unsigned int nIn = (nOut * m_sampleRate) / MMDVM_SAMPLERATE;
 
 		if (bytes < nIn) {

@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2018 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2018,2025 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -37,16 +37,16 @@ unsigned int CP25Utils::decode(const unsigned char* in, unsigned char* out, unsi
 	unsigned int ss1Pos = P25_SS1_START;
 
 	while (ss0Pos < start) {
-		ss0Pos += P25_SS_INCREMENT;
-		ss1Pos += P25_SS_INCREMENT;
+		ss0Pos += P25_INCREMENT;
+		ss1Pos += P25_INCREMENT;
 	}
 
 	unsigned int n = 0U;
 	for (unsigned int i = start; i < stop; i++) {
 		if (i == ss0Pos) {
-			ss0Pos += P25_SS_INCREMENT;
+			ss0Pos += P25_INCREMENT;
 		} else if (i == ss1Pos) {
-			ss1Pos += P25_SS_INCREMENT;
+			ss1Pos += P25_INCREMENT;
 		} else {
 			bool b = READ_BIT(in, i);
 			WRITE_BIT(out, n, b);
@@ -67,16 +67,16 @@ unsigned int CP25Utils::encode(const unsigned char* in, unsigned char* out, unsi
 	unsigned int ss1Pos = P25_SS1_START;
 
 	while (ss0Pos < start) {
-		ss0Pos += P25_SS_INCREMENT;
-		ss1Pos += P25_SS_INCREMENT;
+		ss0Pos += P25_INCREMENT;
+		ss1Pos += P25_INCREMENT;
 	}
 
 	unsigned int n = 0U;
 	for (unsigned int i = start; i < stop; i++) {
 		if (i == ss0Pos) {
-			ss0Pos += P25_SS_INCREMENT;
+			ss0Pos += P25_INCREMENT;
 		} else if (i == ss1Pos) {
-			ss1Pos += P25_SS_INCREMENT;
+			ss1Pos += P25_INCREMENT;
 		} else {
 			bool b = READ_BIT(in, n);
 			WRITE_BIT(out, i, b);
@@ -100,9 +100,9 @@ unsigned int CP25Utils::encode(const unsigned char* in, unsigned char* out, unsi
 	unsigned int pos = 0U;
 	while (n < length) {
 		if (pos == ss0Pos) {
-			ss0Pos += P25_SS_INCREMENT;
+			ss0Pos += P25_INCREMENT;
 		} else if (pos == ss1Pos) {
-			ss1Pos += P25_SS_INCREMENT;
+			ss1Pos += P25_INCREMENT;
 		} else {
 			bool b = READ_BIT(in, n);
 			WRITE_BIT(out, pos, b);

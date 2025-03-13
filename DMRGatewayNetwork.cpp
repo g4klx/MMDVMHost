@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2021,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -157,7 +157,7 @@ bool CDMRGatewayNetwork::read(CDMRData& data)
 	if (slotNo == 2U && !m_slot2)
 		return false;
 
-	FLCO flco = (m_buffer[15U] & 0x40U) == 0x40U ? FLCO_USER_USER : FLCO_GROUP;
+	FLCO flco = (m_buffer[15U] & 0x40U) == 0x40U ? FLCO::USER_USER : FLCO::GROUP;
 
 	data.setSeqNo(seqNo);
 	data.setSlotNo(slotNo);
@@ -220,7 +220,7 @@ bool CDMRGatewayNetwork::write(const CDMRData& data)
 	buffer[15U] = slotNo == 1U ? 0x00U : 0x80U;
 
 	FLCO flco = data.getFLCO();
-	buffer[15U] |= flco == FLCO_GROUP ? 0x00U : 0x40U;
+	buffer[15U] |= flco == FLCO::GROUP ? 0x00U : 0x40U;
 
 	unsigned int slotIndex = slotNo - 1U;
 
@@ -349,16 +349,16 @@ bool CDMRGatewayNetwork::writeConfig()
 			slots = '2';
 
 		switch (m_hwType) {
-		case HWT_MMDVM:
+		case HW_TYPE::MMDVM:
 			software = "MMDVM";
 			break;
-		case HWT_MMDVM_HS:
+		case HW_TYPE::MMDVM_HS:
 			software = "MMDVM_MMDVM_HS";
 			break;
-		case HWT_MMDVM_HS_DUAL_HAT:
+		case HW_TYPE::MMDVM_HS_DUAL_HAT:
 			software = "MMDVM_MMDVM_HS_Dual_Hat";
 			break;
-		case HWT_NANO_HOTSPOT:
+		case HW_TYPE::NANO_HOTSPOT:
 			software = "MMDVM_Nano_hotSPOT";
 			break;
 		default:
@@ -369,37 +369,37 @@ bool CDMRGatewayNetwork::writeConfig()
 		slots = '4';
 
 		switch (m_hwType) {
-		case HWT_MMDVM:
+		case HW_TYPE::MMDVM:
 			software = "MMDVM_DMO";
 			break;
-		case HWT_DVMEGA:
+		case HW_TYPE::DVMEGA:
 			software = "MMDVM_DVMega";
 			break;
-		case HWT_MMDVM_ZUMSPOT:
+		case HW_TYPE::MMDVM_ZUMSPOT:
 			software = "MMDVM_ZUMspot";
 			break;
-		case HWT_MMDVM_HS_HAT:
+		case HW_TYPE::MMDVM_HS_HAT:
 			software = "MMDVM_MMDVM_HS_Hat";
 			break;
-		case HWT_MMDVM_HS_DUAL_HAT:
+		case HW_TYPE::MMDVM_HS_DUAL_HAT:
 			software = "MMDVM_MMDVM_HS_Dual_Hat";
 			break;
-		case HWT_NANO_HOTSPOT:
+		case HW_TYPE::NANO_HOTSPOT:
 			software = "MMDVM_Nano_hotSPOT";
 			break;
-		case HWT_NANO_DV:
+		case HW_TYPE::NANO_DV:
 			software = "MMDVM_Nano_DV";
 			break;
-		case HWT_D2RG_MMDVM_HS:
+		case HW_TYPE::D2RG_MMDVM_HS:
 			software = "MMDVM_D2RG_MMDVM_HS";
 			break;
-		case HWT_MMDVM_HS:
+		case HW_TYPE::MMDVM_HS:
 			software = "MMDVM_MMDVM_HS";
 			break;
-		case HWT_OPENGD77_HS:
+		case HW_TYPE::OPENGD77_HS:
 			software = "MMDVM_OpenGD77_HS";
 			break;
-		case HWT_SKYBRIDGE:
+		case HW_TYPE::SKYBRIDGE:
 			software = "MMDVM_SkyBridge";
 			break;
 		default:

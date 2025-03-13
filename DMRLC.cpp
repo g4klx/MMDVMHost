@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2019,2021,2022 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2019,2021,2022,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -37,7 +37,7 @@ m_dstId(dstId)
 CDMRLC::CDMRLC(const unsigned char* bytes) :
 m_PF(false),
 m_R(false),
-m_FLCO(FLCO_GROUP),
+m_FLCO(FLCO::GROUP),
 m_FID(0U),
 m_options(0U),
 m_srcId(0U),
@@ -61,7 +61,7 @@ m_dstId(0U)
 CDMRLC::CDMRLC(const bool* bits) :
 m_PF(false),
 m_R(false),
-m_FLCO(FLCO_GROUP),
+m_FLCO(FLCO::GROUP),
 m_FID(0U),
 m_options(0U),
 m_srcId(0U),
@@ -99,7 +99,7 @@ m_dstId(0U)
 CDMRLC::CDMRLC() :
 m_PF(false),
 m_R(false),
-m_FLCO(FLCO_GROUP),
+m_FLCO(FLCO::GROUP),
 m_FID(0U),
 m_options(0U),
 m_srcId(0U),

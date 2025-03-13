@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2016,2017,2018 by Tony Corbett G0WFV
- *   Copyright (C) 2018,2020,2024 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2018,2020,2024,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -78,7 +78,11 @@
 
 #define BUFFER_MAX_LEN 128
 
+#if defined(_WIN32) || defined(_WIN64)
+SOCKET         m_socketfd;
+#else
 int            m_socketfd;
+#endif
 char           m_buffer[BUFFER_MAX_LEN];
 fd_set         m_readfds, m_writefds;
 struct timeval m_timeout;
@@ -141,7 +145,7 @@ bool CLCDproc::open()
 		LogError("LCDproc, cannot lookup server");
 		return false;
 	}
-	memcpy(&serverAddress, res->ai_addr, addrlen = res->ai_addrlen);
+	memcpy(&serverAddress, res->ai_addr, addrlen = (unsigned int)res->ai_addrlen);
 	freeaddrinfo(res);
 
 	/* Lookup the client address (random port - need to specify manual port from ini file) */
@@ -671,7 +675,7 @@ void CLCDproc::clockInt(unsigned int ms)
 	 * exceptfds = we are not waiting for exception fds
 	 */
 
-	if (select(m_socketfd + 1, &m_readfds, NULL, NULL, &m_timeout) == -1) {
+	if (select(int(m_socketfd) + 1, &m_readfds, NULL, NULL, &m_timeout) == -1) {
 		LogError("LCDproc, error on select");
 		return;
 	}
@@ -767,7 +771,11 @@ void CLCDproc::close()
 {
 }
 
+#if defined(_WIN32) || defined(_WIN64)
+int CLCDproc::socketPrintf(SOCKET fd, const char* format, ...)
+#else
 int CLCDproc::socketPrintf(int fd, const char *format, ...)
+#endif
 {
 	char buf[BUFFER_MAX_LEN];
 	va_list ap;
@@ -790,7 +798,7 @@ int CLCDproc::socketPrintf(int fd, const char *format, ...)
 	m_timeout.tv_sec = 0;
 	m_timeout.tv_usec = 0;
 
-	if (select(m_socketfd + 1, NULL, &m_writefds, NULL, &m_timeout) == -1)
+	if (select(int(m_socketfd) + 1, NULL, &m_writefds, NULL, &m_timeout) == -1)
 		LogError("LCDproc, error on select");
 
 	if (FD_ISSET(m_socketfd, &m_writefds)) {

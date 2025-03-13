@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2006-2016,2020,2024 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2006-2016,2020,2024,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -119,7 +119,7 @@ bool CUDPSocket::match(const sockaddr_storage& addr1, const sockaddr_storage& ad
 	if (addr1.ss_family != addr2.ss_family)
 		return false;
 
-	if (type == IMT_ADDRESS_AND_PORT) {
+	if (type == IPMATCHTYPE::IMT_ADDREAND_PORT) {
 		switch (addr1.ss_family) {
 			case AF_INET:
 				struct sockaddr_in *in_1, *in_2;
@@ -134,7 +134,7 @@ bool CUDPSocket::match(const sockaddr_storage& addr1, const sockaddr_storage& ad
 			default:
 				return false;
 		}
-	} else if (type == IMT_ADDRESS_ONLY) {
+	} else if (type == IPMATCHTYPE::IMT_ADDREONLY) {
 		switch (addr1.ss_family) {
 			case AF_INET:
 				struct sockaddr_in *in_1, *in_2;

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2014,2016,2019,2020,2021,2024 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2014,2016,2019,2020,2021,2024,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ m_outSeq(0U),
 m_inId(0U),
 m_buffer(1000U, "D-Star Network"),
 m_pollTimer(1000U, 60U),
-m_linkStatus(LS_NONE),
+m_linkStatus(LINK_STATUS::NONE),
 m_linkReflector(NULL),
 m_random()
 {
@@ -166,7 +166,7 @@ bool CDStarNetwork::writePoll(const char* text)
 
 	buffer[4] = 0x0AU;				// Poll with text
 
-	unsigned int length = ::strlen(text);
+	unsigned int length = (unsigned int)::strlen(text);
 
 	// Include the nul at the end also
 	::memcpy(buffer + 5U, text, length + 1U);

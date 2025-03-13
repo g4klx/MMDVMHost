@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021,2023,2024 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2023,2024,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -29,9 +29,9 @@
 #include <cstdint>
 #include <string>
 
-enum FM_NETWORK_PROTOCOL {
-	FMNP_USRP,
-	FMNP_RAW
+enum class FM_NETWORK_PROTOCOL {
+	USRP,
+	RAW
 };
 
 class CFMNetwork {

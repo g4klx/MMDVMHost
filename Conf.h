@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2023 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2023,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -120,7 +120,7 @@ public:
   std::vector<std::string> getDStarWhiteList() const;
   bool         getDStarAckReply() const;
   unsigned int getDStarAckTime() const;
-  DSTAR_ACK_MESSAGE getDStarAckMessage() const;
+  DSTAR_ACK    getDStarAckMessage() const;
   bool         getDStarErrorReply() const;
   bool         getDStarRemoteGateway() const;
   unsigned int getDStarModeHang() const;
@@ -143,7 +143,7 @@ public:
   unsigned int getDMRCallHang() const;
   unsigned int getDMRTXHang() const;
   unsigned int getDMRModeHang() const;
-  DMR_OVCM_TYPES getDMROVCM() const;
+  DMR_OVCM     getDMROVCM() const;
   bool         getDMRProtect() const;
 
   // The System Fusion section
@@ -459,7 +459,7 @@ private:
   std::vector<std::string> m_dstarWhiteList;
   bool         m_dstarAckReply;
   unsigned int m_dstarAckTime;
-  DSTAR_ACK_MESSAGE      m_dstarAckMessage;
+  DSTAR_ACK    m_dstarAckMessage;
   bool         m_dstarErrorReply;
   bool         m_dstarRemoteGateway;
   unsigned int m_dstarModeHang;
@@ -481,7 +481,7 @@ private:
   unsigned int m_dmrCallHang;
   unsigned int m_dmrTXHang;
   unsigned int m_dmrModeHang;
-  DMR_OVCM_TYPES m_dmrOVCM;
+  DMR_OVCM     m_dmrOVCM;
   bool         m_dmrProtect;
 
   bool          m_fusionEnabled;

@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2018,2019,2020 by Jonathan Naylor G4KLX
+*   Copyright (C) 2018,2019,2020,2025 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -60,11 +60,11 @@ private:
 	unsigned int               m_frames;
 	unsigned int               m_count;
 
-	enum POCSAG_STATE {
-		PS_NONE,
-		PS_WAITING,
-		PS_SENDING,
-		PS_ENDING
+	enum class POCSAG_STATE {
+		NONE,
+		WAITING,
+		SENDING,
+		ENDING
 	};
 
 	std::deque<uint32_t>       m_output;
