@@ -179,11 +179,11 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
 
 unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
 {
-    assert(data != nullptr);
-    assert(space > 0U);
+	assert(data != nullptr);
+	assert(space > 0U);
 
-    if (m_network == nullptr)
-        return 0U;
+	if (m_network == nullptr)
+		return 0U;
 
 	if (space > 240U)		// 160 samples 12-bit
 		space = 240U;		// 160 samples 12-bit

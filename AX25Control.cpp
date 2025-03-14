@@ -23,7 +23,6 @@
 #include <cstring>
 #include <ctime>
 
-// #define	DUMP_AX25
 
 const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
 
@@ -73,18 +72,18 @@ bool CAX25Control::writeModem(unsigned char *data, unsigned int len)
 
 	CUtils::dump(1U, "AX.25 received packet", data, len);
 
-    if (m_network == nullptr)
-        return true;
+	if (m_network == nullptr)
+		return true;
 
 	return m_network->write(data + offset, len - offset);
 }
 
 unsigned int CAX25Control::readModem(unsigned char* data)
 {
-    assert(data != nullptr);
+	assert(data != nullptr);
 
-    if (m_network == nullptr)
-        return 0U;
+	if (m_network == nullptr)
+		return 0U;
 
 	if (!m_enabled)
 		return 0U;
@@ -106,8 +105,8 @@ void CAX25Control::enable(bool enabled)
 
 void CAX25Control::decode(const unsigned char* data, unsigned int length)
 {
-    assert(data != nullptr);
-    assert(length >= 15U);
+	assert(data != nullptr);
+	assert(length >= 15U);
 
 	std::string text;
 
