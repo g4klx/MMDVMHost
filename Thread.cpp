@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2020,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -31,9 +31,9 @@ CThread::~CThread()
 
 bool CThread::run()
 {
-	m_handle = ::CreateThread(NULL, 0, &helper, this, 0, NULL);
+	m_handle = ::CreateThread(nullptr, 0, &helper, this, 0, nullptr);
 
-	return m_handle != NULL;
+	return m_handle != nullptr;
 }
 
 
@@ -74,13 +74,13 @@ CThread::~CThread()
 
 bool CThread::run()
 {
-	return ::pthread_create(&m_thread, NULL, helper, this) == 0;
+	return ::pthread_create(&m_thread, nullptr, helper, this) == 0;
 }
 
 
 void CThread::wait()
 {
-	::pthread_join(m_thread, NULL);
+	::pthread_join(m_thread, nullptr);
 }
 
 
@@ -90,7 +90,7 @@ void* CThread::helper(void* arg)
 
 	p->entry();
 
-	return NULL;
+	return nullptr;
 }
 
 void CThread::sleep(unsigned int ms)
@@ -100,7 +100,7 @@ void CThread::sleep(unsigned int ms)
 	ts.tv_sec  = ms / 1000U;
 	ts.tv_nsec = (ms % 1000U) * 1000000U;
 
-	::nanosleep(&ts, NULL);
+	::nanosleep(&ts, nullptr);
 }
 
 #endif

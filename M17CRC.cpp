@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ const uint16_t CRC16_TABLE[] = {0x0000U, 0x5935U, 0xB26AU, 0xEB5FU, 0x3DE1U, 0x6
 
 bool CM17CRC::checkCRC16(const unsigned char* in, unsigned int nBytes)
 {
-	assert(in != NULL);
+	assert(in != nullptr);
 	assert(nBytes > 2U);
 
 	uint16_t crc = createCRC16(in, nBytes - 2U);
@@ -62,7 +62,7 @@ bool CM17CRC::checkCRC16(const unsigned char* in, unsigned int nBytes)
 
 void CM17CRC::encodeCRC16(unsigned char* in, unsigned int nBytes)
 {
-	assert(in != NULL);
+	assert(in != nullptr);
 	assert(nBytes > 2U);
 
 	uint16_t crc = createCRC16(in, nBytes - 2U);
@@ -73,7 +73,7 @@ void CM17CRC::encodeCRC16(unsigned char* in, unsigned int nBytes)
 
 uint16_t CM17CRC::createCRC16(const unsigned char* in, unsigned int nBytes)
 {
-	assert(in != NULL);
+	assert(in != nullptr);
 
 	uint16_t crc = 0xFFFFU;
 

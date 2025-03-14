@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018,2020,2023,2024 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018,2020,2023,2024,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -79,9 +79,9 @@ m_socket(socket),
 m_addr(addr),
 m_addrLength(addrLength)
 {
-	assert(serial != NULL);
+	assert(serial != nullptr);
 	assert(brightness >= 0U && brightness <= 100U);
-	assert(socket != NULL);
+	assert(socket != nullptr);
 	assert(addrLength > 0U);
 
 	static const unsigned int feature_set[] = {
@@ -128,11 +128,11 @@ m_rxFrequency(rxFrequency),
 m_fl_txFrequency(0.0F),
 m_fl_rxFrequency(0.0F),
 m_displayTempInF(displayTempInF),
-m_socket(NULL),
+m_socket(nullptr),
 m_addr(),
 m_addrLength(0U)
 {
-	assert(serial != NULL);
+	assert(serial != nullptr);
 	assert(brightness >= 0U && brightness <= 100U);
 
 	static const unsigned int feature_set[] = {
@@ -218,7 +218,7 @@ void CNextion::setIdleInt()
 	
 		// CPU temperature
 		FILE* fp = ::fopen("/sys/class/thermal/thermal_zone0/temp", "rt");
-		if (fp != NULL) {
+		if (fp != nullptr) {
 			double val = 0.0;
 			int n = ::fscanf(fp, "%lf", &val);
 			::fclose(fp);
@@ -253,7 +253,7 @@ void CNextion::setIdleInt()
 
 void CNextion::setErrorInt(const char* text)
 {
-	assert(text != NULL);
+	assert(text != nullptr);
 
 	sendCommand("page MMDVM");
 	sendCommandAction(1U);
@@ -339,11 +339,11 @@ void CNextion::setFMInt()
 
 void CNextion::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
-	assert(my1 != NULL);
-	assert(my2 != NULL);
-	assert(your != NULL);
-	assert(type != NULL);
-	assert(reflector != NULL);
+	assert(my1 != nullptr);
+	assert(my2 != nullptr);
+	assert(your != nullptr);
+	assert(type != nullptr);
+	assert(reflector != nullptr);
 
 	if (m_mode != MODE_DSTAR) {
 		sendCommand("page DStar");
@@ -421,7 +421,7 @@ void CNextion::clearDStarInt()
 
 void CNextion::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
-	assert(type != NULL);
+	assert(type != nullptr);
 
 	if (m_mode != MODE_DMR) {
 		sendCommand("page DMR");
@@ -658,10 +658,10 @@ void CNextion::clearDMRInt(unsigned int slotNo)
 
 void CNextion::writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
-	assert(source != NULL);
-	assert(dest != NULL);
-	assert(type != NULL);
-	assert(origin != NULL);
+	assert(source != nullptr);
+	assert(dest != nullptr);
+	assert(type != nullptr);
+	assert(origin != nullptr);
 
 	if (m_mode != MODE_YSF) {
 		sendCommand("page YSF");
@@ -740,8 +740,8 @@ void CNextion::clearFusionInt()
 
 void CNextion::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
 {
-	assert(source != NULL);
-	assert(type != NULL);
+	assert(source != nullptr);
+	assert(type != nullptr);
 
 	if (m_mode != MODE_P25) {
 		sendCommand("page P25");
@@ -812,8 +812,8 @@ void CNextion::clearP25Int()
 
 void CNextion::writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type)
 {
-	assert(source != NULL);
-	assert(type != NULL);
+	assert(source != nullptr);
+	assert(type != nullptr);
 
 	if (m_mode != MODE_NXDN) {
 		sendCommand("page NXDN");
@@ -884,9 +884,9 @@ void CNextion::clearNXDNInt()
 
 void CNextion::writeM17Int(const char* source, const char* dest, const char* type)
 {
-	assert(source != NULL);
-	assert(dest != NULL);
-	assert(type != NULL);
+	assert(source != nullptr);
+	assert(dest != nullptr);
+	assert(type != nullptr);
 
 	if (m_mode != MODE_M17) {
 		sendCommand("page M17");
@@ -1025,7 +1025,7 @@ void CNextion::clockInt(unsigned int ms)
 		m_clockDisplayTimer.start(); // restart the clock display timer
 	}
 
-	if (m_socket != NULL) {
+	if (m_socket != nullptr) {
 		unsigned char buffer[200U];
 
 		int len = m_serial->read(buffer, 200U);
@@ -1039,7 +1039,7 @@ void CNextion::close()
 	m_serial->close();
 	delete m_serial;
 
-	if (m_socket != NULL) {
+	if (m_socket != nullptr) {
 		m_socket->close();
 		delete m_socket;
 	}
@@ -1059,7 +1059,7 @@ void CNextion::sendCommandAction(unsigned int status)
 
 void CNextion::sendCommand(const char* command)
 {
-	assert(command != NULL);
+	assert(command != nullptr);
 
 	m_serial->write((unsigned char*)command, (unsigned int)::strlen(command));
 	m_serial->write((unsigned char*)"\xFF\xFF\xFF", 3U);

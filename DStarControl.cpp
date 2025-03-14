@@ -38,8 +38,8 @@ bool CallsignCompare(const std::string& arg, const unsigned char* my)
 // #define	DUMP_DSTAR
 
 CDStarControl::CDStarControl(const std::string& callsign, const std::string& module, bool selfOnly, bool ackReply, unsigned int ackTime, DSTAR_ACK ackMessage, bool errorReply, const std::vector<std::string>& blackList, const std::vector<std::string>& whiteList, CDStarNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
-m_callsign(NULL),
-m_gateway(NULL),
+m_callsign(nullptr),
+m_gateway(nullptr),
 m_selfOnly(selfOnly),
 m_ackReply(ackReply),
 m_ackMessage(ackMessage),
@@ -76,7 +76,7 @@ m_rfBits(1U),
 m_netBits(1U),
 m_rfErrs(0U),
 m_netErrs(0U),
-m_lastFrame(NULL),
+m_lastFrame(nullptr),
 m_lastFrameValid(false),
 m_rssiMapper(rssiMapper),
 m_rssi(0U),
@@ -85,10 +85,10 @@ m_minRSSI(0U),
 m_aveRSSI(0U),
 m_rssiCount(0U),
 m_enabled(true),
-m_fp(NULL)
+m_fp(nullptr)
 {
-	assert(display != NULL);
-	assert(rssiMapper != NULL);
+	assert(display != nullptr);
+	assert(rssiMapper != nullptr);
 
 	m_callsign = new unsigned char[DSTAR_LONG_CALLSIGN_LENGTH];
 	m_gateway  = new unsigned char[DSTAR_LONG_CALLSIGN_LENGTH];
@@ -122,7 +122,7 @@ CDStarControl::~CDStarControl()
 
 bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (!m_enabled)
 		return false;
@@ -152,7 +152,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			if (m_errorReply)
 				m_errTimer.start();
 
-			if (m_network != NULL)
+			if (m_network != nullptr)
 				m_network->reset();
 		}
 
@@ -315,7 +315,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 				if (m_errorReply)
 					m_errTimer.start();
 
-				if (m_network != NULL)
+				if (m_network != nullptr)
 					m_network->reset();
 			}
 
@@ -409,7 +409,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 				m_display->writeDStarRSSI(m_rssi);
 
 			unsigned int errors = 0U;
-			if (::memcmp(data + 1U, DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) == 0) {
+			if (::memcmp(data + 1U, DSTAR_nullptr_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) == 0) {
 				LogDebug("D-Star, audio sequence no. %u, null audio", m_rfN);
 			} else {
 				errors = m_fec.regenerateDStar(data + 1U);
@@ -423,7 +423,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 
 			if (m_rfN != 0U) {
 				const unsigned char* text = m_rfSlowData.addText(data + 1U, m_rfN);
-				if (text != NULL)
+				if (text != nullptr)
 					LogMessage("D-Star, RF slow data text = \"%s\"", text);
 			}
 
@@ -446,7 +446,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 				return false;
 			} else {
 				CDStarHeader* header = m_rfSlowData.addHeader(data + 1U, m_rfN);
-				if (header == NULL) {
+				if (header == nullptr) {
 					m_rfN = (m_rfN + 1U) % 21U;
 					return false;
 				}
@@ -546,7 +546,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			}
 
 			unsigned int errors = 0U;
-			if (::memcmp(data + 1U, DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) == 0) {
+			if (::memcmp(data + 1U, DSTAR_nullptr_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) == 0) {
 				LogDebug("D-Star, audio sequence no. %u, null audio", m_rfN);
 			} else {
 				errors = m_fec.regenerateDStar(data + 1U);
@@ -585,7 +585,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 
 unsigned int CDStarControl::readModem(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_queue.isEmpty())
 		return 0U;
@@ -609,7 +609,7 @@ void CDStarControl::writeEndRF()
 
 		m_ackTimer.start();
 
-		if (m_network != NULL)
+		if (m_network != nullptr)
 			m_network->reset();
 	}
 }
@@ -626,7 +626,7 @@ void CDStarControl::writeEndNet()
 	m_networkWatchdog.stop();
 	m_packetTimer.stop();
 
-	if (m_network != NULL)
+	if (m_network != nullptr)
 		m_network->reset();
 
 #if defined(DUMP_DSTAR)
@@ -636,7 +636,7 @@ void CDStarControl::writeEndNet()
 
 void CDStarControl::writeNetwork()
 {
-	assert(m_network != NULL);
+	assert(m_network != nullptr);
 
 	unsigned char data[DSTAR_HEADER_LENGTH_BYTES + 2U];
 	unsigned int length = m_network->read(data, DSTAR_HEADER_LENGTH_BYTES + 2U);
@@ -760,7 +760,7 @@ void CDStarControl::writeNetwork()
 			unsigned char n = data[1U];
 
 			unsigned int errors = 0U;
-			if (::memcmp(data + 2U, DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) != 0) {
+			if (::memcmp(data + 2U, DSTAR_nullptr_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) != 0) {
 				errors = m_fec.regenerateDStar(data + 2U);
 				blankDTMF(data + 2U);
 			}
@@ -783,7 +783,7 @@ void CDStarControl::writeNetwork()
 				m_netSlowData.start();
 			} else {
 				const unsigned char* text = m_netSlowData.addText(data + 2U, m_netN);
-				if (text != NULL)
+				if (text != nullptr)
 					LogMessage("D-Star, network slow data text = \"%s\"", text);
 			}
 
@@ -837,7 +837,7 @@ void CDStarControl::clock()
 	unsigned int ms = m_interval.elapsed();
 	m_interval.start();
 
-	if (m_network != NULL)
+	if (m_network != nullptr)
 		writeNetwork();
 
 	m_ackTimer.clock(ms);
@@ -892,7 +892,7 @@ void CDStarControl::clock()
 
 void CDStarControl::writeQueueHeaderRF(const unsigned char *data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_netState != RPT_NET_STATE::IDLE)
 		return;
@@ -915,7 +915,7 @@ void CDStarControl::writeQueueHeaderRF(const unsigned char *data)
 
 void CDStarControl::writeQueueDataRF(const unsigned char *data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_netState != RPT_NET_STATE::IDLE)
 		return;
@@ -960,7 +960,7 @@ void CDStarControl::writeQueueEOTRF()
 
 void CDStarControl::writeQueueHeaderNet(const unsigned char *data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_netTimeoutTimer.isRunning() && m_netTimeoutTimer.hasExpired())
 		return;
@@ -980,7 +980,7 @@ void CDStarControl::writeQueueHeaderNet(const unsigned char *data)
 
 void CDStarControl::writeQueueDataNet(const unsigned char *data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_netTimeoutTimer.isRunning() && m_netTimeoutTimer.hasExpired())
 		return;
@@ -1019,9 +1019,9 @@ void CDStarControl::writeQueueEOTNet()
 
 void CDStarControl::writeNetworkHeaderRF(const unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
-	if (m_network == NULL)
+	if (m_network == nullptr)
 		return;
 
 	// Don't send to the network if the timeout has expired
@@ -1033,9 +1033,9 @@ void CDStarControl::writeNetworkHeaderRF(const unsigned char* data)
 
 void CDStarControl::writeNetworkDataRF(const unsigned char* data, unsigned int errors, bool end)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
-	if (m_network == NULL)
+	if (m_network == nullptr)
 		return;
 
 	// Don't send to the network if the timeout has expired
@@ -1047,7 +1047,7 @@ void CDStarControl::writeNetworkDataRF(const unsigned char* data, unsigned int e
 
 bool CDStarControl::openFile()
 {
-	if (m_fp != NULL)
+	if (m_fp != nullptr)
 		return true;
 
 	time_t t;
@@ -1059,7 +1059,7 @@ bool CDStarControl::openFile()
 	::sprintf(name, "DStar_%04d%02d%02d_%02d%02d%02d.ambe", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
 
 	m_fp = ::fopen(name, "wb");
-	if (m_fp == NULL)
+	if (m_fp == nullptr)
 		return false;
 
 	::fwrite("DSTAR", 1U, 4U, m_fp);
@@ -1069,7 +1069,7 @@ bool CDStarControl::openFile()
 
 bool CDStarControl::writeFile(const unsigned char* data, unsigned int length)
 {
-	if (m_fp == NULL)
+	if (m_fp == nullptr)
 		return false;
 
 	::fwrite(data, 1U, length, m_fp);
@@ -1079,15 +1079,15 @@ bool CDStarControl::writeFile(const unsigned char* data, unsigned int length)
 
 void CDStarControl::closeFile()
 {
-	if (m_fp != NULL) {
+	if (m_fp != nullptr) {
 		::fclose(m_fp);
-		m_fp = NULL;
+		m_fp = nullptr;
 	}
 }
 
 bool CDStarControl::insertSilence(const unsigned char* data, unsigned char seqNo)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	// Check to see if we have any spaces to fill?
 	unsigned int oldSeqNo = (m_netN + 1U) % 21U;
@@ -1122,19 +1122,19 @@ void CDStarControl::insertSilence(unsigned int count)
 	for (unsigned int i = 0U; i < count; i++) {
 		if (i < 3U && m_lastFrameValid) {
 			if (n == 0U) {
-				::memcpy(m_lastFrame + DSTAR_VOICE_FRAME_LENGTH_BYTES + 1U, DSTAR_NULL_SLOW_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES);
+				::memcpy(m_lastFrame + DSTAR_VOICE_FRAME_LENGTH_BYTES + 1U, DSTAR_nullptr_SLOW_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES);
 				writeQueueDataNet(m_lastFrame);
 			} else {
-				::memcpy(m_lastFrame + DSTAR_VOICE_FRAME_LENGTH_BYTES + 1U, DSTAR_NULL_SLOW_DATA_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES);
+				::memcpy(m_lastFrame + DSTAR_VOICE_FRAME_LENGTH_BYTES + 1U, DSTAR_nullptr_SLOW_DATA_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES);
 				writeQueueDataNet(m_lastFrame);
 			}
 		} else {
 			m_lastFrameValid = false;
 
 			if (n == 0U)
-				writeQueueDataNet(DSTAR_NULL_FRAME_SYNC_BYTES);
+				writeQueueDataNet(DSTAR_nullptr_FRAME_SYNC_BYTES);
 			else
-				writeQueueDataNet(DSTAR_NULL_FRAME_DATA_BYTES);
+				writeQueueDataNet(DSTAR_nullptr_FRAME_DATA_BYTES);
 		}
 
 		m_netN = n;
@@ -1148,7 +1148,7 @@ void CDStarControl::insertSilence(unsigned int count)
 
 void CDStarControl::blankDTMF(unsigned char* data) const
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	// DTMF begins with these byte values
 	if ((data[0] & DSTAR_DTMF_MASK[0]) == DSTAR_DTMF_SIG[0] && (data[1] & DSTAR_DTMF_MASK[1]) == DSTAR_DTMF_SIG[1] &&
@@ -1156,7 +1156,7 @@ void CDStarControl::blankDTMF(unsigned char* data) const
 		(data[4] & DSTAR_DTMF_MASK[4]) == DSTAR_DTMF_SIG[4] && (data[5] & DSTAR_DTMF_MASK[5]) == DSTAR_DTMF_SIG[5] &&
 		(data[6] & DSTAR_DTMF_MASK[6]) == DSTAR_DTMF_SIG[6] && (data[7] & DSTAR_DTMF_MASK[7]) == DSTAR_DTMF_SIG[7] &&
 		(data[8] & DSTAR_DTMF_MASK[8]) == DSTAR_DTMF_SIG[8])
-		::memcpy(data, DSTAR_NULL_AMBE_DATA_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES);
+		::memcpy(data, DSTAR_nullptr_AMBE_DATA_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES);
 }
 
 void CDStarControl::sendAck()
@@ -1182,11 +1182,11 @@ void CDStarControl::sendAck()
 
 	writeQueueHeaderRF(data);
 
-	writeQueueDataRF(DSTAR_NULL_FRAME_SYNC_BYTES);
+	writeQueueDataRF(DSTAR_nullptr_FRAME_SYNC_BYTES);
 
 	LINK_STATUS status = LINK_STATUS::NONE;
 	unsigned char reflector[DSTAR_LONG_CALLSIGN_LENGTH];
-	if (m_network != NULL)
+	if (m_network != nullptr)
 		m_network->getStatus(status, reflector);
 
 	char text[40U];
@@ -1219,7 +1219,7 @@ void CDStarControl::sendAck()
 
 	m_rfSlowData.setText(text);
 
-	::memcpy(data, DSTAR_NULL_FRAME_DATA_BYTES, DSTAR_FRAME_LENGTH_BYTES + 1U);
+	::memcpy(data, DSTAR_nullptr_FRAME_DATA_BYTES, DSTAR_FRAME_LENGTH_BYTES + 1U);
 
 	for (unsigned int i = 0U; i < 19U; i++) {
 		m_rfSlowData.getSlowData(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES);
@@ -1247,11 +1247,11 @@ void CDStarControl::sendError()
 
 	writeQueueHeaderRF(data);
 
-	writeQueueDataRF(DSTAR_NULL_FRAME_SYNC_BYTES);
+	writeQueueDataRF(DSTAR_nullptr_FRAME_SYNC_BYTES);
 
 	LINK_STATUS status = LINK_STATUS::NONE;
 	unsigned char reflector[DSTAR_LONG_CALLSIGN_LENGTH];
-	if (m_network != NULL)
+	if (m_network != nullptr)
 		m_network->getStatus(status, reflector);
 
 	char text[40U];
@@ -1284,7 +1284,7 @@ void CDStarControl::sendError()
 
 	m_rfSlowData.setText(text);
 
-	::memcpy(data, DSTAR_NULL_FRAME_DATA_BYTES, DSTAR_FRAME_LENGTH_BYTES + 1U);
+	::memcpy(data, DSTAR_nullptr_FRAME_DATA_BYTES, DSTAR_FRAME_LENGTH_BYTES + 1U);
 
 	for (unsigned int i = 0U; i < 19U; i++) {
 		m_rfSlowData.getSlowData(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES);

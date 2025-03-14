@@ -29,8 +29,8 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 
 unsigned int CP25Utils::decode(const unsigned char* in, unsigned char* out, unsigned int start, unsigned int stop)
 {
-	assert(in != NULL);
-	assert(out != NULL);
+	assert(in != nullptr);
+	assert(out != nullptr);
 
 	// Move the SSx positions to the range needed
 	unsigned int ss0Pos = P25_SS0_START;
@@ -59,8 +59,8 @@ unsigned int CP25Utils::decode(const unsigned char* in, unsigned char* out, unsi
 
 unsigned int CP25Utils::encode(const unsigned char* in, unsigned char* out, unsigned int start, unsigned int stop)
 {
-	assert(in != NULL);
-	assert(out != NULL);
+	assert(in != nullptr);
+	assert(out != nullptr);
 
 	// Move the SSx positions to the range needed
 	unsigned int ss0Pos = P25_SS0_START;
@@ -89,8 +89,8 @@ unsigned int CP25Utils::encode(const unsigned char* in, unsigned char* out, unsi
 
 unsigned int CP25Utils::encode(const unsigned char* in, unsigned char* out, unsigned int length)
 {
-	assert(in != NULL);
-	assert(out != NULL);
+	assert(in != nullptr);
+	assert(out != nullptr);
 
 	// Move the SSx positions to the range needed
 	unsigned int ss0Pos = P25_SS0_START;
@@ -116,8 +116,8 @@ unsigned int CP25Utils::encode(const unsigned char* in, unsigned char* out, unsi
 
 unsigned int CP25Utils::compare(const unsigned char* data1, const unsigned char* data2, unsigned int length)
 {
-	assert(data1 != NULL);
-	assert(data2 != NULL);
+	assert(data1 != nullptr);
+	assert(data2 != nullptr);
 
 	unsigned int errs = 0U;
 	for (unsigned int i = 0U; i < length; i++) {

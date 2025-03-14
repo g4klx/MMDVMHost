@@ -356,7 +356,7 @@ CConf::~CConf()
 bool CConf::read()
 {
 	FILE* fp = ::fopen(m_file.c_str(), "rt");
-	if (fp == NULL) {
+	if (fp == nullptr) {
 		::fprintf(stderr, "Couldn't open the .ini file - %s\n", m_file.c_str());
 		return false;
 	}
@@ -364,7 +364,7 @@ bool CConf::read()
 	SECTION section = SECTION::NONE;
 
 	char buffer[BUFFER_SIZE];
-	while (::fgets(buffer, BUFFER_SIZE, fp) != NULL) {
+	while (::fgets(buffer, BUFFER_SIZE, fp) != nullptr) {
 		if (buffer[0U] == '#')
 			continue;
 
@@ -442,11 +442,11 @@ bool CConf::read()
 		}
 
 		char* key = ::strtok(buffer, " \t=\r\n");
-		if (key == NULL)
+		if (key == nullptr)
 			continue;
 
-		char* value = ::strtok(NULL, "\r\n");
-		if (value == NULL)
+		char* value = ::strtok(nullptr, "\r\n");
+		if (value == nullptr)
 			continue;
 
 		// Remove quotes from the value
@@ -458,7 +458,7 @@ bool CConf::read()
 			char *p;
 
 			// if value is not quoted, remove after # (to make comment)
-			if ((p = strchr(value, '#')) != NULL)
+			if ((p = strchr(value, '#')) != nullptr)
 				*p = '\0';
 
 			// remove trailing tab/space
@@ -550,7 +550,7 @@ bool CConf::read()
 			else if (::strcmp(key, "I2CPort") == 0)
 				m_modemI2CPort = value;
 			else if (::strcmp(key, "I2CAddress") == 0)
-				m_modemI2CAddress = (unsigned int)::strtoul(value, NULL, 16);
+				m_modemI2CAddress = (unsigned int)::strtoul(value, nullptr, 16);
 			else if (::strcmp(key, "ModemAddress") == 0)
 				m_modemModemAddress = value;
 			else if (::strcmp(key, "ModemPort") == 0)
@@ -634,7 +634,7 @@ bool CConf::read()
 				m_dstarSelfOnly = ::atoi(value) == 1;
 			else if (::strcmp(key, "BlackList") == 0) {
 				char* p = ::strtok(value, ",\r\n");
-				while (p != NULL) {
+				while (p != nullptr) {
 					if (::strlen(p) > 0U) {
 						for (unsigned int i = 0U; p[i] != 0; i++)
 							p[i] = ::toupper(p[i]);
@@ -642,11 +642,11 @@ bool CConf::read()
 						callsign.resize(DSTAR_LONG_CALLSIGN_LENGTH, ' ');
 						m_dstarBlackList.push_back(callsign);
 					}
-					p = ::strtok(NULL, ",\r\n");
+					p = ::strtok(nullptr, ",\r\n");
 				}
 			} else if (::strcmp(key, "WhiteList") == 0) {
 				char* p = ::strtok(value, ",\r\n");
-				while (p != NULL) {
+				while (p != nullptr) {
 					if (::strlen(p) > 0U) {
 						for (unsigned int i = 0U; p[i] != 0; i++)
 							p[i] = ::toupper(p[i]);
@@ -654,7 +654,7 @@ bool CConf::read()
 						callsign.resize(DSTAR_LONG_CALLSIGN_LENGTH, ' ');
 						m_dstarWhiteList.push_back(callsign);
 					}
-					p = ::strtok(NULL, ",\r\n");
+					p = ::strtok(nullptr, ",\r\n");
 				}
 			} else if (::strcmp(key, "AckReply") == 0)
 				m_dstarAckReply = ::atoi(value) == 1;
@@ -692,43 +692,43 @@ bool CConf::read()
 				m_dmrDumpTAData = ::atoi(value) == 1;
 			else if (::strcmp(key, "Prefixes") == 0) {
 				char* p = ::strtok(value, ",\r\n");
-				while (p != NULL) {
+				while (p != nullptr) {
 					unsigned int prefix = (unsigned int)::atoi(p);
 					if (prefix > 0U && prefix <= 999U)
 						m_dmrPrefixes.push_back(prefix);
-					p = ::strtok(NULL, ",\r\n");
+					p = ::strtok(nullptr, ",\r\n");
 				}
 			} else if (::strcmp(key, "BlackList") == 0) {
 				char* p = ::strtok(value, ",\r\n");
-				while (p != NULL) {
+				while (p != nullptr) {
 					unsigned int id = (unsigned int)::atoi(p);
 					if (id > 0U)
 						m_dmrBlackList.push_back(id);
-					p = ::strtok(NULL, ",\r\n");
+					p = ::strtok(nullptr, ",\r\n");
 				}
 			} else if (::strcmp(key, "WhiteList") == 0) {
 				char* p = ::strtok(value, ",\r\n");
-				while (p != NULL) {
+				while (p != nullptr) {
 					unsigned int id = (unsigned int)::atoi(p);
 					if (id > 0U)
 						m_dmrWhiteList.push_back(id);
-					p = ::strtok(NULL, ",\r\n");
+					p = ::strtok(nullptr, ",\r\n");
 				}
 			} else if (::strcmp(key, "Slot1TGWhiteList") == 0) {
 				char* p = ::strtok(value, ",\r\n");
-				while (p != NULL) {
+				while (p != nullptr) {
 					unsigned int id = (unsigned int)::atoi(p);
 					if (id > 0U)
 						m_dmrSlot1TGWhiteList.push_back(id);
-					p = ::strtok(NULL, ",\r\n");
+					p = ::strtok(nullptr, ",\r\n");
 				}
 			} else if (::strcmp(key, "Slot2TGWhiteList") == 0) {
 				char* p = ::strtok(value, ",\r\n");
-				while (p != NULL) {
+				while (p != nullptr) {
 					unsigned int id = (unsigned int)::atoi(p);
 					if (id > 0U)
 						m_dmrSlot2TGWhiteList.push_back(id);
-					p = ::strtok(NULL, ",\r\n");
+					p = ::strtok(nullptr, ",\r\n");
 				}
 			} else if (::strcmp(key, "TXHang") == 0)
 				m_dmrTXHang = (unsigned int)::atoi(value);
@@ -775,7 +775,7 @@ bool CConf::read()
 			else if (::strcmp(key, "Id") == 0)
 				m_p25Id = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "NAC") == 0)
-				m_p25NAC = (unsigned int)::strtoul(value, NULL, 16);
+				m_p25NAC = (unsigned int)::strtoul(value, nullptr, 16);
 			else if (::strcmp(key, "OverrideUIDCheck") == 0)
 				m_p25OverrideUID = ::atoi(value) == 1;
 			else if (::strcmp(key, "SelfOnly") == 0)
@@ -1086,7 +1086,7 @@ bool CConf::read()
 			else if (::strcmp(key, "Columns") == 0)
 				m_hd44780Columns = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "I2CAddress") == 0)
-				m_hd44780i2cAddress = (unsigned int)::strtoul(value, NULL, 16);
+				m_hd44780i2cAddress = (unsigned int)::strtoul(value, nullptr, 16);
 			else if (::strcmp(key, "PWM") == 0)
 				m_hd44780PWM = ::atoi(value) == 1;
 			else if (::strcmp(key, "PWMPin") == 0)
@@ -1101,10 +1101,10 @@ bool CConf::read()
 				m_hd44780UTC = ::atoi(value) == 1;
 			else if (::strcmp(key, "Pins") == 0) {
 				char* p = ::strtok(value, ",\r\n");
-				while (p != NULL) {
+				while (p != nullptr) {
 					unsigned int pin = (unsigned int)::atoi(p);
 					m_hd44780Pins.push_back(pin);
-					p = ::strtok(NULL, ",\r\n");
+					p = ::strtok(nullptr, ",\r\n");
 				}
 			}
 		} else if (section == SECTION::NEXTION) {
@@ -1119,7 +1119,7 @@ bool CConf::read()
 			else if (::strcmp(key, "IdleBrightness") == 0)
 				m_nextionIdleBrightness = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "ScreenLayout") == 0)
-				m_nextionScreenLayout = (unsigned int)::strtoul(value, NULL, 0);
+				m_nextionScreenLayout = (unsigned int)::strtoul(value, nullptr, 0);
 			else if (::strcmp(key, "DisplayTempInFahrenheit") == 0)
 				m_nextionTempInFahrenheit = ::atoi(value) == 1;
 			else if (::strcmp(key, "NextionOutput") == 0)

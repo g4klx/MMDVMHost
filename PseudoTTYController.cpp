@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@ bool CPseudoTTYController::open()
 
 	int slavefd;
 	char slave[300];
-	int result = ::openpty(&m_fd, &slavefd, slave, NULL, NULL);
+	int result = ::openpty(&m_fd, &slavefd, slave, nullptr, nullptr);
 	if (result < 0) {
 		LogError("Cannot open the pseudo tty - errno : %d", errno);
 		return false;

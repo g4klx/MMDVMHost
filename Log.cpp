@@ -37,7 +37,7 @@ static std::string m_filePath;
 static std::string m_fileRoot;
 static bool m_fileRotate = true;
 
-static FILE* m_fpLog = NULL;
+static FILE* m_fpLog = nullptr;
 static bool m_daemon = false;
 
 static unsigned int m_displayLevel = 2U;
@@ -59,10 +59,10 @@ static bool logOpenRotate()
 	struct tm* tm = ::gmtime(&now);
 
 	if (tm->tm_mday == m_tm.tm_mday && tm->tm_mon == m_tm.tm_mon && tm->tm_year == m_tm.tm_year) {
-		if (m_fpLog != NULL)
+		if (m_fpLog != nullptr)
 		    return true;
 	} else {
-		if (m_fpLog != NULL)
+		if (m_fpLog != nullptr)
 			::fclose(m_fpLog);
 	}
 
@@ -73,7 +73,7 @@ static bool logOpenRotate()
 	::sprintf(filename, "%s/%s-%04d-%02d-%02d.log", m_filePath.c_str(), m_fileRoot.c_str(), tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
 #endif
 
-	if ((m_fpLog = ::fopen(filename, "a+t")) != NULL) {
+	if ((m_fpLog = ::fopen(filename, "a+t")) != nullptr) {
 		status = true;
 
 #if !defined(_WIN32) && !defined(_WIN64)
@@ -94,7 +94,7 @@ static bool logOpenNoRotate()
 	if (m_fileLevel == 0U)
 		return true;
 
-	if (m_fpLog != NULL)
+	if (m_fpLog != nullptr)
 		return true;
 
 	char filename[200U];
@@ -104,7 +104,7 @@ static bool logOpenNoRotate()
 	::sprintf(filename, "%s/%s.log", m_filePath.c_str(), m_fileRoot.c_str());
 #endif
 
-	if ((m_fpLog = ::fopen(filename, "a+t")) != NULL) {
+	if ((m_fpLog = ::fopen(filename, "a+t")) != nullptr) {
 		status = true;
 
 #if !defined(_WIN32) && !defined(_WIN64)
@@ -141,13 +141,13 @@ bool LogInitialise(bool daemon, const std::string& filePath, const std::string& 
 
 void LogFinalise()
 {
-	if (m_fpLog != NULL)
+	if (m_fpLog != nullptr)
 		::fclose(m_fpLog);
 }
 
 void Log(unsigned int level, const char* fmt, ...)
 {
-	assert(fmt != NULL);
+	assert(fmt != nullptr);
 
 	char buffer[501U];
 #if defined(_WIN32) || defined(_WIN64)
@@ -157,7 +157,7 @@ void Log(unsigned int level, const char* fmt, ...)
 	::sprintf(buffer, "%c: %04u-%02u-%02u %02u:%02u:%02u.%03u ", LEVELS[level], st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 #else
 	struct timeval now;
-	::gettimeofday(&now, NULL);
+	::gettimeofday(&now, nullptr);
 
 	struct tm* tm = ::gmtime(&now.tv_sec);
 

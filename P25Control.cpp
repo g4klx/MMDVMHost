@@ -70,11 +70,11 @@ m_rfData(),
 m_netData(),
 m_rfLSD(),
 m_netLSD(),
-m_netLDU1(NULL),
-m_netLDU2(NULL),
-m_lastIMBE(NULL),
-m_rfLDU(NULL),
-m_rfPDU(NULL),
+m_netLDU1(nullptr),
+m_netLDU2(nullptr),
+m_lastIMBE(nullptr),
+m_rfLDU(nullptr),
+m_rfPDU(nullptr),
 m_rfPDUCount(0U),
 m_rfPDUBits(0U),
 m_rssiMapper(rssiMapper),
@@ -84,11 +84,11 @@ m_minRSSI(0U),
 m_aveRSSI(0U),
 m_rssiCount(0U),
 m_enabled(true),
-m_fp(NULL)
+m_fp(nullptr)
 {
-	assert(display != NULL);
-	assert(lookup != NULL);
-	assert(rssiMapper != NULL);
+	assert(display != nullptr);
+	assert(lookup != nullptr);
+	assert(rssiMapper != nullptr);
 
 	m_netLDU1 = new unsigned char[9U * 25U];
 	m_netLDU2 = new unsigned char[9U * 25U];
@@ -97,7 +97,7 @@ m_fp(NULL)
 	::memset(m_netLDU2, 0x00U, 9U * 25U);
 
 	m_lastIMBE = new unsigned char[11U];
-	::memcpy(m_lastIMBE, P25_NULL_IMBE, 11U);
+	::memcpy(m_lastIMBE, P25_nullptr_IMBE, 11U);
 
 	m_rfLDU = new unsigned char[P25_LDU_FRAME_LENGTH_BYTES];
 	::memset(m_rfLDU, 0x00U, P25_LDU_FRAME_LENGTH_BYTES);
@@ -117,7 +117,7 @@ CP25Control::~CP25Control()
 
 bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (!m_enabled)
 		return false;
@@ -633,7 +633,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 
 unsigned int CP25Control::readModem(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_queue.isEmpty())
 		return 0U;
@@ -650,7 +650,7 @@ void CP25Control::writeNetwork()
 {
 	unsigned char data[100U];
 
-	if (m_network == NULL)
+	if (m_network == nullptr)
 		return;
 
 	unsigned int length = m_network->read(data, 100U);
@@ -756,7 +756,7 @@ void CP25Control::writeNetwork()
 
 void CP25Control::clock(unsigned int ms)
 {
-	if (m_network != NULL)
+	if (m_network != nullptr)
 		writeNetwork();
 
 	m_rfTimeout.clock(ms);
@@ -778,7 +778,7 @@ void CP25Control::clock(unsigned int ms)
 
 void CP25Control::writeQueueRF(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_rfTimeout.isRunning() && m_rfTimeout.hasExpired())
 		return;
@@ -797,7 +797,7 @@ void CP25Control::writeQueueRF(const unsigned char* data, unsigned int length)
 
 void CP25Control::writeQueueNet(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_netTimeout.isRunning() && m_netTimeout.hasExpired())
 		return;
@@ -816,9 +816,9 @@ void CP25Control::writeQueueNet(const unsigned char* data, unsigned int length)
 
 void CP25Control::writeNetwork(const unsigned char *data, unsigned char type, bool end)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
-	if (m_network == NULL)
+	if (m_network == nullptr)
 		return;
 
 	if (m_rfTimeout.isRunning() && m_rfTimeout.hasExpired())
@@ -839,7 +839,7 @@ void CP25Control::writeNetwork(const unsigned char *data, unsigned char type, bo
 
 void CP25Control::setBusyBits(unsigned char* data, unsigned int ssOffset, bool b1, bool b2)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	WRITE_BIT(data, ssOffset, b1);
 	WRITE_BIT(data, ssOffset + 1U, b2);
@@ -847,7 +847,7 @@ void CP25Control::setBusyBits(unsigned char* data, unsigned int ssOffset, bool b
 
 void CP25Control::addBusyBits(unsigned char* data, unsigned int length, bool b1, bool b2)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	for (unsigned int ss0Pos = P25_SS0_START; ss0Pos < length; ss0Pos += P25_INCREMENT) {
 		unsigned int ss1Pos = ss0Pos + 1U;
@@ -1198,7 +1198,7 @@ void CP25Control::createNetTerminator()
 
 bool CP25Control::openFile()
 {
-	if (m_fp != NULL)
+	if (m_fp != nullptr)
 		return true;
 
 	time_t t;
@@ -1210,7 +1210,7 @@ bool CP25Control::openFile()
 	::sprintf(name, "P25_%04d%02d%02d_%02d%02d%02d.ambe", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
 
 	m_fp = ::fopen(name, "wb");
-	if (m_fp == NULL)
+	if (m_fp == nullptr)
 		return false;
 
 	::fwrite("P25", 1U, 3U, m_fp);
@@ -1220,7 +1220,7 @@ bool CP25Control::openFile()
 
 bool CP25Control::writeFile(const unsigned char* data, unsigned char length)
 {
-	if (m_fp == NULL)
+	if (m_fp == nullptr)
 		return false;
 
 	::fwrite(&length, 1U, 1U, m_fp);
@@ -1232,9 +1232,9 @@ bool CP25Control::writeFile(const unsigned char* data, unsigned char length)
 
 void CP25Control::closeFile()
 {
-	if (m_fp != NULL) {
+	if (m_fp != nullptr) {
 		::fclose(m_fp);
-		m_fp = NULL;
+		m_fp = nullptr;
 	}
 }
 

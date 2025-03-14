@@ -151,7 +151,7 @@ bool CLCDproc::open()
 	/* Lookup the client address (random port - need to specify manual port from ini file) */
 	hints.ai_flags = AI_NUMERICSERV | AI_PASSIVE;
 	hints.ai_family = serverAddress.ss_family;
-	err = getaddrinfo(NULL, localPort.c_str(), &hints, &res);
+	err = getaddrinfo(nullptr, localPort.c_str(), &hints, &res);
 	if (err) {
 		LogError("LCDproc, cannot lookup client");
 		return false;
@@ -204,7 +204,7 @@ void CLCDproc::setIdleInt()
 
 void CLCDproc::setErrorInt(const char* text)
 {
-	assert(text != NULL);
+	assert(text != nullptr);
 
 	m_clockDisplayTimer.stop();           // Stop the clock display
 
@@ -280,11 +280,11 @@ void CLCDproc::setFMInt()
 
 void CLCDproc::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
-	assert(my1 != NULL);
-	assert(my2 != NULL);
-	assert(your != NULL);
-	assert(type != NULL);
-	assert(reflector != NULL);
+	assert(my1 != nullptr);
+	assert(my2 != nullptr);
+	assert(your != nullptr);
+	assert(type != nullptr);
+	assert(reflector != nullptr);
 
 	m_clockDisplayTimer.stop();           // Stop the clock display
 
@@ -341,7 +341,7 @@ void CLCDproc::clearDStarInt()
 
 void CLCDproc::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
-	assert(type != NULL);
+	assert(type != nullptr);
 
 	if (!m_dmr) {
 		m_clockDisplayTimer.stop();          // Stop the clock display
@@ -435,10 +435,10 @@ void CLCDproc::clearDMRInt(unsigned int slotNo)
 
 void CLCDproc::writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
-	assert(source != NULL);
-	assert(dest != NULL);
-	assert(type != NULL);
-	assert(origin != NULL);
+	assert(source != nullptr);
+	assert(dest != nullptr);
+	assert(type != nullptr);
+	assert(origin != nullptr);
 
 	m_clockDisplayTimer.stop();           // Stop the clock display
 
@@ -481,8 +481,8 @@ void CLCDproc::clearFusionInt()
 
 void CLCDproc::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
 {
-	assert(source != NULL);
-	assert(type != NULL);
+	assert(source != nullptr);
+	assert(type != nullptr);
 
 	m_clockDisplayTimer.stop();           // Stop the clock display
 
@@ -526,8 +526,8 @@ void CLCDproc::clearP25Int()
 
 void CLCDproc::writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type)
 {
-	assert(source != NULL);
-	assert(type != NULL);
+	assert(source != nullptr);
+	assert(type != nullptr);
 
 	m_clockDisplayTimer.stop();           // Stop the clock display
 
@@ -569,9 +569,9 @@ void CLCDproc::clearNXDNInt()
 
 void CLCDproc::writeM17Int(const char* source, const char* dest, const char* type)
 {
-	assert(source != NULL);
-	assert(dest != NULL);
-	assert(type != NULL);
+	assert(source != nullptr);
+	assert(dest != nullptr);
+	assert(type != nullptr);
 
 	m_clockDisplayTimer.stop();           // Stop the clock display
 
@@ -675,7 +675,7 @@ void CLCDproc::clockInt(unsigned int ms)
 	 * exceptfds = we are not waiting for exception fds
 	 */
 
-	if (select(int(m_socketfd) + 1, &m_readfds, NULL, NULL, &m_timeout) == -1) {
+	if (select(int(m_socketfd) + 1, &m_readfds, nullptr, nullptr, &m_timeout) == -1) {
 		LogError("LCDproc, error on select");
 		return;
 	}
@@ -798,7 +798,7 @@ int CLCDproc::socketPrintf(int fd, const char *format, ...)
 	m_timeout.tv_sec = 0;
 	m_timeout.tv_usec = 0;
 
-	if (select(int(m_socketfd) + 1, NULL, &m_writefds, NULL, &m_timeout) == -1)
+	if (select(int(m_socketfd) + 1, nullptr, &m_writefds, nullptr, &m_timeout) == -1)
 		LogError("LCDproc, error on select");
 
 	if (FD_ISSET(m_socketfd, &m_writefds)) {

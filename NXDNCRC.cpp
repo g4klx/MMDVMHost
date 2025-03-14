@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2018,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@ const uint8_t  BIT_MASK_TABLE1[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0
 
 bool CNXDNCRC::checkCRC6(const unsigned char* in, unsigned int length)
 {
-	assert(in != NULL);
+	assert(in != nullptr);
 
 	uint8_t crc = createCRC6(in, length);
 
@@ -45,7 +45,7 @@ bool CNXDNCRC::checkCRC6(const unsigned char* in, unsigned int length)
 
 void CNXDNCRC::encodeCRC6(unsigned char* in, unsigned int length)
 {
-	assert(in != NULL);
+	assert(in != nullptr);
 
 	uint8_t crc[1U];
 	crc[0U] = createCRC6(in, length);
@@ -59,7 +59,7 @@ void CNXDNCRC::encodeCRC6(unsigned char* in, unsigned int length)
 
 bool CNXDNCRC::checkCRC12(const unsigned char* in, unsigned int length)
 {
-	assert(in != NULL);
+	assert(in != nullptr);
 
 	uint16_t crc = createCRC12(in, length);
 	uint8_t temp1[2U];
@@ -80,7 +80,7 @@ bool CNXDNCRC::checkCRC12(const unsigned char* in, unsigned int length)
 
 void CNXDNCRC::encodeCRC12(unsigned char* in, unsigned int length)
 {
-	assert(in != NULL);
+	assert(in != nullptr);
 
 	uint16_t crc = createCRC12(in, length);
 
@@ -97,7 +97,7 @@ void CNXDNCRC::encodeCRC12(unsigned char* in, unsigned int length)
 
 bool CNXDNCRC::checkCRC15(const unsigned char* in, unsigned int length)
 {
-	assert(in != NULL);
+	assert(in != nullptr);
 
 	uint16_t crc = createCRC15(in, length);
 	uint8_t temp1[2U];
@@ -118,7 +118,7 @@ bool CNXDNCRC::checkCRC15(const unsigned char* in, unsigned int length)
 
 void CNXDNCRC::encodeCRC15(unsigned char* in, unsigned int length)
 {
-	assert(in != NULL);
+	assert(in != nullptr);
 
 	uint16_t crc = createCRC15(in, length);
 

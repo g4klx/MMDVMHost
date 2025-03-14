@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2012 by Ian Wraith
- *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@
 const unsigned char UDTF_NMEA = 0x05U;
 
 CDMRDataHeader::CDMRDataHeader() :
-m_data(NULL),
+m_data(nullptr),
 m_GI(false),
 m_A(false),
 m_srcId(0U),
@@ -52,7 +52,7 @@ CDMRDataHeader::~CDMRDataHeader()
 
 bool CDMRDataHeader::put(const unsigned char* bytes)
 {
-	assert(bytes != NULL);
+	assert(bytes != nullptr);
 
 	CBPTC19696 bptc;
 	bptc.decode(bytes, m_data);
@@ -131,7 +131,7 @@ bool CDMRDataHeader::put(const unsigned char* bytes)
 
 void CDMRDataHeader::get(unsigned char* bytes) const
 {
-	assert(bytes != NULL);
+	assert(bytes != nullptr);
 
 	CBPTC19696 bptc;
 	bptc.encode(m_data, bytes);

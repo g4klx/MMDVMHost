@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -237,7 +237,7 @@ unsigned int CGolay2087::getSyndrome1987(unsigned int pattern)
 
 unsigned char CGolay2087::decode(const unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned int code = (data[0U] << 11) + (data[1U] << 3) + (data[2U] >> 5);
 	unsigned int syndrome = getSyndrome1987(code);
@@ -251,7 +251,7 @@ unsigned char CGolay2087::decode(const unsigned char* data)
 
 void CGolay2087::encode(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned int value = data[0U];
 

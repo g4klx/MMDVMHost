@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021,2024 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2024,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -31,7 +31,7 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 
 void CM17Utils::encodeCallsign(const std::string& callsign, unsigned char* encoded)
 {
-	assert(encoded != NULL);
+	assert(encoded != nullptr);
 
 	if (callsign == "ALL" || callsign == "ALL      ") {
 		encoded[0U] = 0xFFU;
@@ -71,7 +71,7 @@ void CM17Utils::encodeCallsign(const std::string& callsign, unsigned char* encod
 
 void CM17Utils::decodeCallsign(const unsigned char* encoded, std::string& callsign)
 {
-	assert(encoded != NULL);
+	assert(encoded != nullptr);
 
 	callsign.clear();
 
@@ -105,7 +105,7 @@ void CM17Utils::decodeCallsign(const unsigned char* encoded, std::string& callsi
 
 void CM17Utils::splitFragmentLICH(const unsigned char* data, unsigned int& frag1, unsigned int& frag2, unsigned int& frag3, unsigned int& frag4)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	frag1 = frag2 = frag3 = frag4 = 0x00U;
 
@@ -141,7 +141,7 @@ void CM17Utils::splitFragmentLICH(const unsigned char* data, unsigned int& frag1
 
 void CM17Utils::splitFragmentLICHFEC(const unsigned char* data, unsigned int& frag1, unsigned int& frag2, unsigned int& frag3, unsigned int& frag4)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	frag1 = frag2 = frag3 = frag4 = 0x00U;
 
@@ -177,7 +177,7 @@ void CM17Utils::splitFragmentLICHFEC(const unsigned char* data, unsigned int& fr
 
 void CM17Utils::combineFragmentLICH(unsigned int frag1, unsigned int frag2, unsigned int frag3, unsigned int frag4, unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned int offset = 0U;
 	unsigned int MASK = 0x800U;
@@ -207,7 +207,7 @@ void CM17Utils::combineFragmentLICH(unsigned int frag1, unsigned int frag2, unsi
 
 void CM17Utils::combineFragmentLICHFEC(unsigned int frag1, unsigned int frag2, unsigned int frag3, unsigned int frag4, unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned int offset = 0U;
 	unsigned int MASK = 0x800000U;

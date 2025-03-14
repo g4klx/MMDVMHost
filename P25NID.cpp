@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2018 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2018,2025 by Jonathan Naylor G4KLX
 *   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com>
 *
 *   This program is free software; you can redistribute it and/or modify
@@ -29,13 +29,13 @@ const unsigned int MAX_NID_ERRS = 5U;
 
 CP25NID::CP25NID(unsigned int nac) :
 m_duid(0U),
-m_hdr(NULL),
-m_ldu1(NULL),
-m_ldu2(NULL),
-m_termlc(NULL),
-m_term(NULL),
-m_tsdu(NULL),
-m_pdu(NULL)
+m_hdr(nullptr),
+m_ldu1(nullptr),
+m_ldu2(nullptr),
+m_termlc(nullptr),
+m_term(nullptr),
+m_tsdu(nullptr),
+m_pdu(nullptr)
 {
 	CBCH bch;
 
@@ -102,7 +102,7 @@ CP25NID::~CP25NID()
 
 bool CP25NID::decode(const unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char nid[P25_NID_LENGTH_BYTES];
 	CP25Utils::decode(data, nid, 48U, 114U);
@@ -154,7 +154,7 @@ bool CP25NID::decode(const unsigned char* data)
 
 void CP25NID::encode(unsigned char* data, unsigned char duid) const
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	switch (duid) {
 	case P25_DUID_HEADER:

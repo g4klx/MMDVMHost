@@ -1,6 +1,6 @@
 /*
- *   Copyright (C) 2005, 2006, 2008 Free Software Foundation, Inc.
- *   Copyright (C) 2011,2015 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2005,2006,2008 Free Software Foundation, Inc.
+ *   Copyright (C) 2011,2015,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -46,10 +46,10 @@ static const unsigned char fillbuf[64] = { 0x80, 0 /* , 0, 0, ...  */ };
   must be called before using hash in the call to sha256_hash
 */
 CSHA256::CSHA256() :
-m_state(NULL),
-m_total(NULL),
+m_state(nullptr),
+m_total(nullptr),
 m_buflen(0U),
-m_buffer(NULL)
+m_buffer(nullptr)
 {
 	m_state  = new uint32_t[8U];
 	m_total  = new uint32_t[2U];
@@ -85,7 +85,7 @@ void CSHA256::init()
    * (uint32_t *) cp = v  */
 static inline void set_uint32(unsigned char* cp, uint32_t v)
 {
-	assert(cp != NULL);
+	assert(cp != nullptr);
 
 	::memcpy(cp, &v, sizeof v);
 }
@@ -94,7 +94,7 @@ static inline void set_uint32(unsigned char* cp, uint32_t v)
    must be in little endian byte order.  */
 unsigned char* CSHA256::read(unsigned char* resbuf)
 {
-	assert(resbuf != NULL);
+	assert(resbuf != nullptr);
 
 	for (unsigned int i = 0U; i < 8U; i++)
 		set_uint32(resbuf + i * sizeof(m_state[0]), SWAP(m_state[i]));
@@ -129,7 +129,7 @@ void CSHA256::conclude()
 
 unsigned char* CSHA256::finish(unsigned char* resbuf)
 {
-	assert(resbuf != NULL);
+	assert(resbuf != nullptr);
 
 	conclude();
 
@@ -142,8 +142,8 @@ unsigned char* CSHA256::finish(unsigned char* resbuf)
    digest.  */
 unsigned char* CSHA256::buffer(const unsigned char* buffer, unsigned int len, unsigned char* resblock)
 {
-	assert(buffer != NULL);
-	assert(resblock != NULL);
+	assert(buffer != nullptr);
+	assert(resblock != nullptr);
 
 	/* Initialize the computation context.  */
 	init();
@@ -157,7 +157,7 @@ unsigned char* CSHA256::buffer(const unsigned char* buffer, unsigned int len, un
 
 void CSHA256::processBytes(const unsigned char* buffer, unsigned int len)
 {
-	assert(buffer != NULL);
+	assert(buffer != nullptr);
 
 	/* When we already have some bits in our internal buffer concatenate
 	   both inputs first.  */
@@ -252,7 +252,7 @@ static const uint32_t roundConstants[64] = {
 
 void CSHA256::processBlock(const unsigned char* buffer, unsigned int len)
 {
-	assert(buffer != NULL);
+	assert(buffer != nullptr);
 
 	const uint32_t* words = (uint32_t*)buffer;
 	unsigned int nwords = len / sizeof(uint32_t);

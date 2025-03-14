@@ -94,7 +94,7 @@ int CUDPSocket::lookup(const std::string& hostname, unsigned short port, sockadd
 	/* Port is always digits, no needs to lookup service */
 	hints.ai_flags |= AI_NUMERICSERV;
 
-	int err = ::getaddrinfo(hostname.empty() ? NULL : hostname.c_str(), portstr.c_str(), &hints, &res);
+	int err = ::getaddrinfo(hostname.empty() ? nullptr : hostname.c_str(), portstr.c_str(), &hints, &res);
 	if (err != 0) {
 		sockaddr_in* paddr = (sockaddr_in*)&addr;
 		::memset(paddr, 0x00U, address_length = sizeof(sockaddr_in));
@@ -233,7 +233,7 @@ bool CUDPSocket::open()
 
 int CUDPSocket::read(unsigned char* buffer, unsigned int length, sockaddr_storage& address, unsigned int &addressLength)
 {
-	assert(buffer != NULL);
+	assert(buffer != nullptr);
 	assert(length > 0U);
 
 #if defined(_WIN32) || defined(_WIN64)
@@ -301,7 +301,7 @@ int CUDPSocket::read(unsigned char* buffer, unsigned int length, sockaddr_storag
 
 bool CUDPSocket::write(const unsigned char* buffer, unsigned int length, const sockaddr_storage& address, unsigned int addressLength)
 {
-	assert(buffer != NULL);
+	assert(buffer != nullptr);
 	assert(length > 0U);
 #if defined(_WIN32) || defined(_WIN64)
 	assert(m_fd != INVALID_SOCKET);

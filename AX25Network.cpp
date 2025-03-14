@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -31,8 +31,8 @@ const unsigned int BUFFER_LENGTH = 500U;
 
 CAX25Network::CAX25Network(const std::string& port, unsigned int speed, bool debug) :
 m_serial(port, speed, false),
-m_txData(NULL),
-m_rxData(NULL),
+m_txData(nullptr),
+m_rxData(nullptr),
 m_rxLength(0U),
 m_rxLastChar(0U),
 m_debug(debug),
@@ -60,7 +60,7 @@ bool CAX25Network::open()
 
 bool CAX25Network::write(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (!m_enabled)
 		return true;
@@ -98,7 +98,7 @@ bool CAX25Network::write(const unsigned char* data, unsigned int length)
 
 unsigned int CAX25Network::read(unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	bool complete = false;
 

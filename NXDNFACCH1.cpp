@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2018 by Jonathan Naylor G4KLX
+*   Copyright (C) 2018,2025 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -49,14 +49,14 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 #define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
 CNXDNFACCH1::CNXDNFACCH1(const CNXDNFACCH1& facch1) :
-m_data(NULL)
+m_data(nullptr)
 {
 	m_data = new unsigned char[10U + 2U];
 	::memcpy(m_data, facch1.m_data, 10U + 2U);
 }
 
 CNXDNFACCH1::CNXDNFACCH1() :
-m_data(NULL)
+m_data(nullptr)
 {
 	m_data = new unsigned char[10U + 2U];
 }
@@ -68,7 +68,7 @@ CNXDNFACCH1::~CNXDNFACCH1()
 
 bool CNXDNFACCH1::decode(const unsigned char* data, unsigned int offset)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char temp1[18U];
 
@@ -114,7 +114,7 @@ bool CNXDNFACCH1::decode(const unsigned char* data, unsigned int offset)
 
 void CNXDNFACCH1::encode(unsigned char* data, unsigned int offset) const
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char temp1[12U];
 	::memset(temp1, 0x00U, 12U);
@@ -150,14 +150,14 @@ void CNXDNFACCH1::encode(unsigned char* data, unsigned int offset) const
 
 void CNXDNFACCH1::getData(unsigned char* data) const
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	::memcpy(data, m_data, 10U);
 }
 
 void CNXDNFACCH1::getRaw(unsigned char* data) const
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	::memset(data, 0x00U, 12U);
 	::memcpy(data, m_data, 10U);
@@ -167,14 +167,14 @@ void CNXDNFACCH1::getRaw(unsigned char* data) const
 
 void CNXDNFACCH1::setData(const unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	::memcpy(m_data, data, 10U);
 }
 
 void CNXDNFACCH1::setRaw(const unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	::memcpy(m_data, data, 12U);
 }

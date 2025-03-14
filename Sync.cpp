@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2018,2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018,2020,2021,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -32,14 +32,14 @@
 
 void CSync::addDStarSync(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	::memcpy(data + DSTAR_VOICE_FRAME_LENGTH_BYTES, DSTAR_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES);
 }
 
 void CSync::addDMRDataSync(unsigned char* data, bool duplex)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (duplex) {
 		for (unsigned int i = 0U; i < 7U; i++)
@@ -52,7 +52,7 @@ void CSync::addDMRDataSync(unsigned char* data, bool duplex)
 
 void CSync::addDMRAudioSync(unsigned char* data, bool duplex)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (duplex) {
 		for (unsigned int i = 0U; i < 7U; i++)
@@ -65,21 +65,21 @@ void CSync::addDMRAudioSync(unsigned char* data, bool duplex)
 
 void CSync::addYSFSync(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	::memcpy(data, YSF_SYNC_BYTES, YSF_SYNC_LENGTH_BYTES);
 }
 
 void CSync::addP25Sync(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	::memcpy(data, P25_SYNC_BYTES, P25_SYNC_LENGTH_BYTES);
 }
 
 void CSync::addNXDNSync(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	for (unsigned int i = 0U; i < NXDN_FSW_BYTES_LENGTH; i++)
 		data[i] = (data[i] & ~NXDN_FSW_BYTES_MASK[i]) | NXDN_FSW_BYTES[i];
@@ -87,21 +87,21 @@ void CSync::addNXDNSync(unsigned char* data)
 
 void CSync::addM17LinkSetupSync(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	::memcpy(data, M17_LINK_SETUP_SYNC_BYTES, M17_SYNC_LENGTH_BYTES);
 }
 
 void CSync::addM17StreamSync(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	::memcpy(data, M17_STREAM_SYNC_BYTES, M17_SYNC_LENGTH_BYTES);
 }
 
 void CSync::addM17EOTSync(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	::memcpy(data, M17_EOT_SYNC_BYTES, M17_SYNC_LENGTH_BYTES);
 }

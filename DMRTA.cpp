@@ -1,5 +1,5 @@
 /*
-*	Copyright (C) 2015,2016,2017,2018,2023 Jonathan Naylor, G4KLX
+*	Copyright (C) 2015,2016,2017,2018,2023,2025 Jonathan Naylor, G4KLX
 *	Copyright (C) 2018 by Shawn Chain, BG5HHP
 *
 *	This program is free software; you can redistribute it and/or modify
@@ -31,7 +31,7 @@ CDMRTA::~CDMRTA()
 
 bool CDMRTA::add(unsigned int blockId, const unsigned char* data, unsigned int len)
 {
-    assert(data != NULL);
+    assert(data != nullptr);
 
     if (blockId > 3U) {
         // invalid block id

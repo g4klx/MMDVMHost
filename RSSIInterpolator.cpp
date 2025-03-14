@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -38,20 +38,20 @@ CRSSIInterpolator::~CRSSIInterpolator()
 bool CRSSIInterpolator::load(const std::string& filename)
 {
 	FILE* fp = ::fopen(filename.c_str(), "rt");
-	if (fp == NULL) {
+	if (fp == nullptr) {
 		LogWarning("Cannot open the RSSI data file - %s", filename.c_str());
 		return false;
 	}
 	
 	char buffer[100U];
-	while (::fgets(buffer, 100, fp) != NULL) {
+	while (::fgets(buffer, 100, fp) != nullptr) {
 		if (buffer[0U] == '#')
 			continue;
 
 		char* p1 = ::strtok(buffer, " \t\r\n");
-		char* p2 = ::strtok(NULL,   " \t\r\n");
+		char* p2 = ::strtok(nullptr,   " \t\r\n");
 
-		if (p1 != NULL && p2 != NULL) {
+		if (p1 != nullptr && p2 != nullptr) {
 			uint16_t raw = uint16_t(::atoi(p1));
 			int     rssi = ::atoi(p2);
 			m_map.insert(std::pair<uint16_t, int>(raw, rssi));

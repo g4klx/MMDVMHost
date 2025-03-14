@@ -30,10 +30,10 @@ m_slot2(2U, timeout),
 m_lookup(lookup)
 {
 	assert(id != 0U);
-	assert(modem != NULL);
-	assert(display != NULL);
-	assert(lookup != NULL);
-	assert(rssi != NULL);
+	assert(modem != nullptr);
+	assert(display != nullptr);
+	assert(lookup != nullptr);
+	assert(rssi != nullptr);
 
 	// Load black and white lists to DMRAccessControl
 	CDMRAccessControl::init(blacklist, whitelist, slot1TGWhitelist, slot2TGWhitelist, selfOnly, prefixes, id);
@@ -47,7 +47,7 @@ CDMRControl::~CDMRControl()
 
 bool CDMRControl::processWakeup(const unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	// Wakeups always come in on slot 1
 	if (data[0U] != TAG_DATA || data[1U] != (DMR_IDLE_RX | DMR_SYNC_DATA | DT_CSBK))
@@ -78,35 +78,35 @@ bool CDMRControl::processWakeup(const unsigned char* data)
 
 bool CDMRControl::writeModemSlot1(unsigned char *data, unsigned int len)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	return m_slot1.writeModem(data, len);
 }
 
 bool CDMRControl::writeModemSlot2(unsigned char *data, unsigned int len)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	return m_slot2.writeModem(data, len);
 }
 
 unsigned int CDMRControl::readModemSlot1(unsigned char *data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	return m_slot1.readModem(data);
 }
 
 unsigned int CDMRControl::readModemSlot2(unsigned char *data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	return m_slot2.readModem(data);
 }
 
 void CDMRControl::clock()
 {
-	if (m_network != NULL) {
+	if (m_network != nullptr) {
 		CDMRData data;
 		bool ret = m_network->read(data);
 		if (ret) {

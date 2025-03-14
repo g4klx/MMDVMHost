@@ -46,10 +46,10 @@ m_enabled(false),
 m_buffer(2000U, "FM Network"),
 m_seqNo(0U),
 #if defined(HAS_SRC)
-m_resampler(NULL),
+m_resampler(nullptr),
 #endif
 m_error(0),
-m_fp(NULL)
+m_fp(nullptr)
 {
 	assert(!callsign.empty());
 	assert(gatewayPort > 0U);
@@ -93,7 +93,7 @@ bool CFMNetwork::open()
 	if (m_protocol == FM_NETWORK_PROTOCOL::RAW) {
 		if (!m_squelchFile.empty()) {
 			m_fp = ::fopen(m_squelchFile.c_str(), "wb");
-			if (m_fp == NULL) {
+			if (m_fp == nullptr) {
 #if !defined(_WIN32) && !defined(_WIN64)
 				LogError("Cannot open the squelch file: %s, errno=%d", m_squelchFile.c_str(), errno);
 #else
@@ -116,7 +116,7 @@ bool CFMNetwork::open()
 
 bool CFMNetwork::writeData(const float* data, unsigned int nSamples)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 	assert(nSamples > 0U);
 
 	if (m_protocol == FM_NETWORK_PROTOCOL::USRP)
@@ -129,7 +129,7 @@ bool CFMNetwork::writeData(const float* data, unsigned int nSamples)
 
 bool CFMNetwork::writeUSRPData(const float* data, unsigned int nSamples)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 	assert(nSamples > 0U);
 
 	if (m_seqNo == 0U) {
@@ -203,7 +203,7 @@ bool CFMNetwork::writeUSRPData(const float* data, unsigned int nSamples)
 
 bool CFMNetwork::writeRawData(const float* in, unsigned int nIn)
 {
-	assert(in != NULL);
+	assert(in != nullptr);
 	assert(nIn > 0U);
 
 	if (m_seqNo == 0U) {
@@ -338,7 +338,7 @@ bool CFMNetwork::writeRawEnd()
 {
 	m_seqNo = 0U;
 
-	if (m_fp != NULL) {
+	if (m_fp != nullptr) {
 		size_t n = ::fwrite("Z", 1, 1, m_fp);
 		if (n != 1) {
 #if !defined(_WIN32) && !defined(_WIN64)
@@ -407,7 +407,7 @@ void CFMNetwork::clock(unsigned int ms)
 
 unsigned int CFMNetwork::readData(float* out, unsigned int nOut)
 {
-	assert(out != NULL);
+	assert(out != nullptr);
 	assert(nOut > 0U);
 
 	unsigned int bytes = m_buffer.dataSize() / sizeof(unsigned short);
@@ -474,9 +474,9 @@ void CFMNetwork::close()
 {
 	m_socket.close();
 
-	if (m_fp != NULL) {
+	if (m_fp != nullptr) {
 		::fclose(m_fp);
-		m_fp = NULL;
+		m_fp = nullptr;
 	}
 
 	LogMessage("Closing FM network connection");
@@ -591,7 +591,7 @@ bool CFMNetwork::writeUSRPStart()
 
 bool CFMNetwork::writeRawStart()
 {
-	if (m_fp != NULL) {
+	if (m_fp != nullptr) {
 		size_t n = ::fwrite("O", 1, 1, m_fp);
 		if (n != 1) {
 #if !defined(_WIN32) && !defined(_WIN64)

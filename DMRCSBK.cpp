@@ -26,7 +26,7 @@
 #include <cassert>
 
 CDMRCSBK::CDMRCSBK() :
-m_data(NULL),
+m_data(nullptr),
 m_CSBKO(CSBKO::NONE),
 m_FID(0x00U),
 m_GI(false),
@@ -47,7 +47,7 @@ CDMRCSBK::~CDMRCSBK()
 
 bool CDMRCSBK::put(const unsigned char* bytes)
 {
-	assert(bytes != NULL);
+	assert(bytes != nullptr);
 
 	CBPTC19696 bptc;
 	bptc.decode(bytes, m_data);
@@ -171,7 +171,7 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 
 void CDMRCSBK::get(unsigned char* bytes) const
 {
-	assert(bytes != NULL);
+	assert(bytes != nullptr);
 
 	m_data[10U] ^= CSBK_CRC_MASK[0U];
 	m_data[11U] ^= CSBK_CRC_MASK[1U];

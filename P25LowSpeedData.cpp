@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2025 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ CP25LowSpeedData::~CP25LowSpeedData()
 
 void CP25LowSpeedData::process(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char lsd[4U];
 	CP25Utils::decode(data, lsd, 1546U, 1578U);
@@ -93,7 +93,7 @@ void CP25LowSpeedData::process(unsigned char* data)
 
 void CP25LowSpeedData::encode(unsigned char* data) const
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char lsd[4U];
 	lsd[0U] = m_lsd1;

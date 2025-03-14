@@ -43,7 +43,7 @@ m_options(0U),
 m_srcId(0U),
 m_dstId(0U)
 {
-	assert(bytes != NULL);
+	assert(bytes != nullptr);
 
 	m_PF = (bytes[0U] & 0x80U) == 0x80U;
 	m_R  = (bytes[0U] & 0x40U) == 0x40U;
@@ -67,7 +67,7 @@ m_options(0U),
 m_srcId(0U),
 m_dstId(0U)
 {
-	assert(bits != NULL);
+	assert(bits != nullptr);
 
 	m_PF = bits[0U];
 	m_R  = bits[1U];
@@ -113,7 +113,7 @@ CDMRLC::~CDMRLC()
 
 void CDMRLC::getData(unsigned char* bytes) const
 {
-	assert(bytes != NULL);
+	assert(bytes != nullptr);
 
 	bytes[0U] = (unsigned char)m_FLCO;
 
@@ -138,7 +138,7 @@ void CDMRLC::getData(unsigned char* bytes) const
 
 void CDMRLC::getData(bool* bits) const
 {
-	assert(bits != NULL);
+	assert(bits != nullptr);
 
 	unsigned char bytes[9U];
 	getData(bytes);

@@ -72,11 +72,11 @@ m_minRSSI(0U),
 m_aveRSSI(0U),
 m_rssiCount(0U),
 m_enabled(true),
-m_fp(NULL)
+m_fp(nullptr)
 {
-	assert(display != NULL);
-	assert(lookup != NULL);
-	assert(rssiMapper != NULL);
+	assert(display != nullptr);
+	assert(lookup != nullptr);
+	assert(rssiMapper != nullptr);
 }
 
 CNXDNControl::~CNXDNControl()
@@ -85,7 +85,7 @@ CNXDNControl::~CNXDNControl()
 
 bool CNXDNControl::writeModem(unsigned char *data, unsigned int len)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (!m_enabled)
 		return false;
@@ -684,7 +684,7 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 
 unsigned int CNXDNControl::readModem(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_queue.isEmpty())
 		return 0U;
@@ -709,7 +709,7 @@ void CNXDNControl::writeEndRF()
 	if (m_netState == RPT_NET_STATE::IDLE) {
 		m_display->clearNXDN();
 
-		if (m_network != NULL)
+		if (m_network != nullptr)
 			m_network->reset();
 	}
 
@@ -731,7 +731,7 @@ void CNXDNControl::writeEndNet()
 
 	m_display->clearNXDN();
 
-	if (m_network != NULL)
+	if (m_network != nullptr)
 		m_network->reset();
 }
 
@@ -986,7 +986,7 @@ void CNXDNControl::writeNetwork()
 
 void CNXDNControl::clock(unsigned int ms)
 {
-	if (m_network != NULL)
+	if (m_network != nullptr)
 		writeNetwork();
 
 	m_rfTimeoutTimer.clock(ms);
@@ -1004,7 +1004,7 @@ void CNXDNControl::clock(unsigned int ms)
 
 void CNXDNControl::writeQueueRF(const unsigned char *data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_netState != RPT_NET_STATE::IDLE)
 		return;
@@ -1027,7 +1027,7 @@ void CNXDNControl::writeQueueRF(const unsigned char *data)
 
 void CNXDNControl::writeQueueNet(const unsigned char *data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_netTimeoutTimer.isRunning() && m_netTimeoutTimer.hasExpired())
 		return;
@@ -1047,9 +1047,9 @@ void CNXDNControl::writeQueueNet(const unsigned char *data)
 
 void CNXDNControl::writeNetwork(const unsigned char *data, NXDN_NETWORK_MESSAGE_TYPE type)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
-	if (m_network == NULL)
+	if (m_network == nullptr)
 		return;
 
 	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired())
@@ -1060,7 +1060,7 @@ void CNXDNControl::writeNetwork(const unsigned char *data, NXDN_NETWORK_MESSAGE_
 
 void CNXDNControl::scrambler(unsigned char* data) const
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	for (unsigned int i = 0U; i < NXDN_FRAME_LENGTH_BYTES; i++)
 		data[i] ^= SCRAMBLER[i];
@@ -1068,7 +1068,7 @@ void CNXDNControl::scrambler(unsigned char* data) const
 
 bool CNXDNControl::openFile()
 {
-	if (m_fp != NULL)
+	if (m_fp != nullptr)
 		return true;
 
 	time_t t;
@@ -1080,7 +1080,7 @@ bool CNXDNControl::openFile()
 	::sprintf(name, "NXDN_%04d%02d%02d_%02d%02d%02d.ambe", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
 
 	m_fp = ::fopen(name, "wb");
-	if (m_fp == NULL)
+	if (m_fp == nullptr)
 		return false;
 
 	::fwrite("NXDN", 1U, 4U, m_fp);
@@ -1090,7 +1090,7 @@ bool CNXDNControl::openFile()
 
 bool CNXDNControl::writeFile(const unsigned char* data)
 {
-	if (m_fp == NULL)
+	if (m_fp == nullptr)
 		return false;
 
 	::fwrite(data, 1U, NXDN_FRAME_LENGTH_BYTES, m_fp);
@@ -1100,9 +1100,9 @@ bool CNXDNControl::writeFile(const unsigned char* data)
 
 void CNXDNControl::closeFile()
 {
-	if (m_fp != NULL) {
+	if (m_fp != nullptr) {
 		::fclose(m_fp);
-		m_fp = NULL;
+		m_fp = nullptr;
 	}
 }
 

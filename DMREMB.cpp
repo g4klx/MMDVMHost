@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -36,7 +36,7 @@ CDMREMB::~CDMREMB()
 
 void CDMREMB::putData(const unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char DMREMB[2U];
 	DMREMB[0U]  = (data[13U] << 4) & 0xF0U;
@@ -53,7 +53,7 @@ void CDMREMB::putData(const unsigned char* data)
 
 void CDMREMB::getData(unsigned char* data) const
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char DMREMB[2U];
 	DMREMB[0U]  = (m_colorCode << 4) & 0xF0U;

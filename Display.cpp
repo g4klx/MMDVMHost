@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018,2020,2021,2023,2024 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018,2020,2021,2023,2024,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -78,7 +78,7 @@ void CDisplay::setLockout()
 
 void CDisplay::setError(const char* text)
 {
-	assert(text != NULL);
+	assert(text != nullptr);
 
 	m_timer1.stop();
 	m_timer2.stop();
@@ -113,11 +113,11 @@ void CDisplay::setFM()
 
 void CDisplay::writeDStar(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
-	assert(my1 != NULL);
-	assert(my2 != NULL);
-	assert(your != NULL);
-	assert(type != NULL);
-	assert(reflector != NULL);
+	assert(my1 != nullptr);
+	assert(my2 != nullptr);
+	assert(your != nullptr);
+	assert(type != nullptr);
+	assert(reflector != nullptr);
 
 	m_timer1.start();
 	m_mode1 = MODE_IDLE;
@@ -149,7 +149,7 @@ void CDisplay::clearDStar()
 
 void CDisplay::writeDMR(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
-	assert(type != NULL);
+	assert(type != nullptr);
 
 	if (slotNo == 1U) {
 		m_timer1.start();
@@ -163,7 +163,7 @@ void CDisplay::writeDMR(unsigned int slotNo, const std::string& src, bool group,
 
 void CDisplay::writeDMR(unsigned int slotNo, const class CUserDBentry& src, bool group, const std::string& dst, const char* type)
 {
-	assert(type != NULL);
+	assert(type != nullptr);
 
 	if (slotNo == 1U) {
 		m_timer1.start();
@@ -229,10 +229,10 @@ void CDisplay::clearDMR(unsigned int slotNo)
 
 void CDisplay::writeFusion(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
-	assert(source != NULL);
-	assert(dest != NULL);
-	assert(type != NULL);
-	assert(origin != NULL);
+	assert(source != nullptr);
+	assert(dest != nullptr);
+	assert(type != nullptr);
+	assert(origin != nullptr);
 
 	m_timer1.start();
 	m_mode1 = MODE_IDLE;
@@ -264,8 +264,8 @@ void CDisplay::clearFusion()
 
 void CDisplay::writeP25(const char* source, bool group, unsigned int dest, const char* type)
 {
-	assert(source != NULL);
-	assert(type != NULL);
+	assert(source != nullptr);
+	assert(type != nullptr);
 
 	m_timer1.start();
 	m_mode1 = MODE_IDLE;
@@ -297,8 +297,8 @@ void CDisplay::clearP25()
 
 void CDisplay::writeNXDN(const char* source, bool group, unsigned int dest, const char* type)
 {
-	assert(source != NULL);
-	assert(type != NULL);
+	assert(source != nullptr);
+	assert(type != nullptr);
 
 	m_timer1.start();
 	m_mode1 = MODE_IDLE;
@@ -308,7 +308,7 @@ void CDisplay::writeNXDN(const char* source, bool group, unsigned int dest, cons
 
 void CDisplay::writeNXDN(const class CUserDBentry& source, bool group, unsigned int dest, const char* type)
 {
-	assert(type != NULL);
+	assert(type != nullptr);
 
 	m_timer1.start();
 	m_mode1 = MODE_IDLE;
@@ -341,9 +341,9 @@ void CDisplay::clearNXDN()
 
 void CDisplay::writeM17(const char* source, const char* dest, const char* type)
 {
-	assert(source != NULL);
-	assert(dest != NULL);
-	assert(type != NULL);
+	assert(source != nullptr);
+	assert(dest != nullptr);
+	assert(type != nullptr);
 
 	m_timer1.start();
 	m_mode1 = MODE_IDLE;
@@ -543,7 +543,7 @@ int CDisplay::writeNXDNIntEx(const class CUserDBentry& source, bool group, unsig
 /* Factory method extracted from MMDVMHost.cpp - BG5HHP */
 CDisplay* CDisplay::createDisplay(const CConf& conf, CModem* modem)
 {
-	CDisplay *display = NULL;
+	CDisplay *display = nullptr;
 
 	std::string type   = conf.getDisplay();
 	unsigned int dmrid = conf.getDMRId();
@@ -560,7 +560,7 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CModem* modem)
 		LogInfo("    Brightness: %u", brightness);
 		LogInfo("    Screen Layout: %u", screenLayout);
 
-		ISerialPort* serial = NULL;
+		ISerialPort* serial = nullptr;
 		if (port == "modem")
 			serial = new IModemSerialPort(modem);
 		else
@@ -605,7 +605,7 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CModem* modem)
 		}
 
 		if (port == "modem") {
-			CUDPSocket* socket = NULL;
+			CUDPSocket* socket = nullptr;
 			struct sockaddr_storage addr;
 			unsigned int addrLength = 0U;
 
@@ -622,12 +622,12 @@ CDisplay* CDisplay::createDisplay(const CConf& conf, CModem* modem)
 					bool ret = socket->open(addr);
 					if (!ret) {
 						delete socket;
-						socket = NULL;
+						socket = nullptr;
 					}
 				}
 			}
 
-			if (socket == NULL) {
+			if (socket == nullptr) {
 				ISerialPort* serial = new IModemSerialPort(modem);
 				display = new CNextion(conf.getCallsign(), dmrid, serial, brightness, displayClock, utc, idleBrightness, screenLayout, txFrequency, rxFrequency, displayTempInF);
 			} else {

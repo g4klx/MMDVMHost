@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2006-2009,2012,2013,2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2006-2009,2012,2013,2015,2016,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -30,12 +30,12 @@ public:
 	CRingBuffer(unsigned int length, const char* name) :
 	m_length(length),
 	m_name(name),
-	m_buffer(NULL),
+	m_buffer(nullptr),
 	m_iPtr(0U),
 	m_oPtr(0U)
 	{
 		assert(length > 0U);
-		assert(name != NULL);
+		assert(name != nullptr);
 
 		m_buffer = new T[length];
 

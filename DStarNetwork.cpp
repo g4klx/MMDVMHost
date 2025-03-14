@@ -44,7 +44,7 @@ m_inId(0U),
 m_buffer(1000U, "D-Star Network"),
 m_pollTimer(1000U, 60U),
 m_linkStatus(LINK_STATUS::NONE),
-m_linkReflector(NULL),
+m_linkReflector(nullptr),
 m_random()
 {
 	if (CUDPSocket::lookup(gatewayAddress, gatewayPort, m_addr, m_addrLen) != 0)
@@ -79,7 +79,7 @@ bool CDStarNetwork::open()
 
 bool CDStarNetwork::writeHeader(const unsigned char* header, unsigned int length, bool busy)
 {
-	assert(header != NULL);
+	assert(header != nullptr);
 
 	unsigned char buffer[50U];
 
@@ -117,7 +117,7 @@ bool CDStarNetwork::writeHeader(const unsigned char* header, unsigned int length
 
 bool CDStarNetwork::writeData(const unsigned char* data, unsigned int length, unsigned int errors, bool end, bool busy)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char buffer[30U];
 
@@ -155,7 +155,7 @@ bool CDStarNetwork::writeData(const unsigned char* data, unsigned int length, un
 
 bool CDStarNetwork::writePoll(const char* text)
 {
-	assert(text != NULL);
+	assert(text != nullptr);
 
 	unsigned char buffer[40U];
 
@@ -285,7 +285,7 @@ void CDStarNetwork::clock(unsigned int ms)
 
 unsigned int CDStarNetwork::read(unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_buffer.isEmpty())
 		return 0U;
@@ -340,7 +340,7 @@ void CDStarNetwork::enable(bool enabled)
 
 void CDStarNetwork::getStatus(LINK_STATUS& status, unsigned char* reflector)
 {
-	assert(reflector != NULL);
+	assert(reflector != nullptr);
 
 	status = m_linkStatus;
 

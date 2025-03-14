@@ -1,6 +1,6 @@
 /*
  *	 Copyright (C) 2012 by Ian Wraith
- *   Copyright (C) 2015 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -27,8 +27,8 @@
 #include <cstring>
 
 CBPTC19696::CBPTC19696() :
-m_rawData(NULL),
-m_deInterData(NULL)
+m_rawData(nullptr),
+m_deInterData(nullptr)
 {
 	m_rawData     = new bool[196];
 	m_deInterData = new bool[196];
@@ -43,8 +43,8 @@ CBPTC19696::~CBPTC19696()
 // The main decode function
 void CBPTC19696::decode(const unsigned char* in, unsigned char* out)
 {
-	assert(in != NULL);
-	assert(out != NULL);
+	assert(in != nullptr);
+	assert(out != nullptr);
 
 	//  Get the raw binary
 	decodeExtractBinary(in);
@@ -62,8 +62,8 @@ void CBPTC19696::decode(const unsigned char* in, unsigned char* out)
 // The main encode function
 void CBPTC19696::encode(const unsigned char* in, unsigned char* out)
 {
-	assert(in != NULL);
-	assert(out != NULL);
+	assert(in != nullptr);
+	assert(out != nullptr);
 
 	// Extract Data
 	encodeExtractData(in);

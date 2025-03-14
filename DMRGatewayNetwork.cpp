@@ -36,7 +36,7 @@ m_addressStr(address),
 m_addr(),
 m_addrLen(0U),
 m_port(port),
-m_id(NULL),
+m_id(nullptr),
 m_duplex(duplex),
 m_version(version),
 m_debug(debug),
@@ -45,8 +45,8 @@ m_enabled(false),
 m_slot1(slot1),
 m_slot2(slot2),
 m_hwType(hwType),
-m_buffer(NULL),
-m_streamId(NULL),
+m_buffer(nullptr),
+m_streamId(nullptr),
 m_rxData(1000U, "DMR Network"),
 m_beacon(false),
 m_random(),
@@ -434,7 +434,7 @@ bool CDMRGatewayNetwork::wantsBeacon()
 
 bool CDMRGatewayNetwork::write(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 	assert(length > 0U);
 
 	if (m_debug)

@@ -1,6 +1,6 @@
 /*
  *	 Copyright (C) 2012 by Ian Wraith
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ CDMRFullLC::~CDMRFullLC()
 
 CDMRLC* CDMRFullLC::decode(const unsigned char* data, unsigned char type)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char lcData[12U];
 	m_bptc.decode(data, lcData);
@@ -58,18 +58,18 @@ CDMRLC* CDMRFullLC::decode(const unsigned char* data, unsigned char type)
 
 		default:
 			::LogError("Unsupported LC type - %d", int(type));
-			return NULL;
+			return nullptr;
 	}
 
 	if (!CRS129::check(lcData))
-		return NULL;
+		return nullptr;
 
 	return new CDMRLC(lcData);
 }
 
 void CDMRFullLC::encode(const CDMRLC& lc, unsigned char* data, unsigned char type)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char lcData[12U];
 	lc.getData(lcData);

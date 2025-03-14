@@ -61,7 +61,7 @@ bool CNXDNIcomNetwork::open()
 
 bool CNXDNIcomNetwork::write(const unsigned char* data, NXDN_NETWORK_MESSAGE_TYPE type)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char buffer[110U];
 	::memset(buffer, 0x00U, 110U);
@@ -139,7 +139,7 @@ void CNXDNIcomNetwork::clock(unsigned int ms)
 
 bool CNXDNIcomNetwork::read(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_buffer.isEmpty())
 		return false;

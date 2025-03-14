@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2018 by Jonathan Naylor G4KLX
+*   Copyright (C) 2018,2025 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -42,14 +42,14 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 #define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
 CNXDNSACCH::CNXDNSACCH(const CNXDNSACCH& sacch) :
-m_data(NULL)
+m_data(nullptr)
 {
 	m_data = new unsigned char[5U];
 	::memcpy(m_data, sacch.m_data, 5U);
 }
 
 CNXDNSACCH::CNXDNSACCH() :
-m_data(NULL)
+m_data(nullptr)
 {
 	m_data = new unsigned char[5U];
 }
@@ -61,7 +61,7 @@ CNXDNSACCH::~CNXDNSACCH()
 
 bool CNXDNSACCH::decode(const unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char temp1[8U];
 
@@ -107,7 +107,7 @@ bool CNXDNSACCH::decode(const unsigned char* data)
 
 void CNXDNSACCH::encode(unsigned char* data) const
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char temp1[5U];
 	::memset(temp1, 0x00U, 5U);
@@ -157,7 +157,7 @@ unsigned char CNXDNSACCH::getStructure() const
 
 void CNXDNSACCH::getData(unsigned char* data) const
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned int offset = 8U;
 	for (unsigned int i = 0U; i < 18U; i++, offset++) {
@@ -168,7 +168,7 @@ void CNXDNSACCH::getData(unsigned char* data) const
 
 void CNXDNSACCH::getRaw(unsigned char* data) const
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	::memcpy(data, m_data, 4U);
 
@@ -189,7 +189,7 @@ void CNXDNSACCH::setStructure(unsigned char structure)
 
 void CNXDNSACCH::setData(const unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned int offset = 8U;
 	for (unsigned int i = 0U; i < 18U; i++, offset++) {
@@ -200,7 +200,7 @@ void CNXDNSACCH::setData(const unsigned char* data)
 
 void CNXDNSACCH::setRaw(const unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	::memcpy(m_data, data, 4U);
 }

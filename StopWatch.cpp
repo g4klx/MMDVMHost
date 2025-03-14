@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -77,7 +77,7 @@ CStopWatch::~CStopWatch()
 unsigned long long CStopWatch::time() const
 {
 	struct timeval now;
-	::gettimeofday(&now, NULL);
+	::gettimeofday(&now, nullptr);
 
 	return now.tv_sec * 1000ULL + now.tv_usec / 1000ULL;
 }

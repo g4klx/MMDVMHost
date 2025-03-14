@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2019,2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2019,2020,2021,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -55,7 +55,7 @@ const unsigned int INTERLEAVE_TABLE[] = {
   38U, 78U, 118U, 158U, 198U};
 
 CYSFFICH::CYSFFICH(const CYSFFICH& fich) :
-m_fich(NULL)
+m_fich(nullptr)
 {
 	m_fich = new unsigned char[6U];
 
@@ -63,7 +63,7 @@ m_fich(NULL)
 }
 
 CYSFFICH::CYSFFICH() :
-m_fich(NULL)
+m_fich(nullptr)
 {
 	m_fich  = new unsigned char[6U];
 
@@ -77,7 +77,7 @@ CYSFFICH::~CYSFFICH()
 
 bool CYSFFICH::decode(const unsigned char* bytes)
 {
-	assert(bytes != NULL);
+	assert(bytes != nullptr);
 
 	// Skip the sync bytes
 	bytes += YSF_SYNC_LENGTH_BYTES;
@@ -120,7 +120,7 @@ bool CYSFFICH::decode(const unsigned char* bytes)
 
 void CYSFFICH::encode(unsigned char* bytes)
 {
-	assert(bytes != NULL);
+	assert(bytes != nullptr);
 
 	// Skip the sync bytes
 	bytes += YSF_SYNC_LENGTH_BYTES;

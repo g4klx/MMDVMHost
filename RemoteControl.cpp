@@ -80,9 +80,9 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 
 		// Parse the original command into a vector of strings.
 		char* b = buffer;
-		char* p = NULL;
-		while ((p = ::strtok(b, " ")) != NULL) {
-			b = NULL;
+		char* p = nullptr;
+		while ((p = ::strtok(b, " ")) != nullptr) {
+			b = nullptr;
 			m_args.push_back(std::string(p));
 		}
 
@@ -163,7 +163,7 @@ REMOTE_COMMAND CRemoteControl::getCommand()
                         // Reload command is in the form of "reload"
                         m_command = REMOTE_COMMAND::RELOAD;
 		} else if (m_args.at(0U) == "status") {
-			if (m_host != NULL) {
+			if (m_host != nullptr) {
 				m_host->buildNetworkStatusString(replyStr);
 			} else {
 				replyStr = "KO";
@@ -171,7 +171,7 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 
 			m_command = REMOTE_COMMAND::CONNECTION_STATUS;
 		} else if (m_args.at(0U) == "hosts") {
-			if (m_host != NULL) {
+			if (m_host != nullptr) {
 				m_host->buildNetworkHostsString(replyStr);
 			} else {
 				replyStr = "KO";

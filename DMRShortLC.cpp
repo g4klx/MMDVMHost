@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -26,8 +26,8 @@
 #include <cstring>
 
 CDMRShortLC::CDMRShortLC() :
-m_rawData(NULL),
-m_deInterData(NULL)
+m_rawData(nullptr),
+m_deInterData(nullptr)
 {
 	m_rawData     = new bool[72U];
 	m_deInterData = new bool[68U];
@@ -42,8 +42,8 @@ CDMRShortLC::~CDMRShortLC()
 // The main decode function
 bool CDMRShortLC::decode(const unsigned char* in, unsigned char* out)
 {
-	assert(in != NULL);
-	assert(out != NULL);
+	assert(in != nullptr);
+	assert(out != nullptr);
 
 	//  Get the raw binary
 	decodeExtractBinary(in);
@@ -65,8 +65,8 @@ bool CDMRShortLC::decode(const unsigned char* in, unsigned char* out)
 // The main encode function
 void CDMRShortLC::encode(const unsigned char* in, unsigned char* out)
 {
-	assert(in != NULL);
-	assert(out != NULL);
+	assert(in != nullptr);
+	assert(out != nullptr);
 
 	// Extract Data
 	encodeExtractData(in);
@@ -83,7 +83,7 @@ void CDMRShortLC::encode(const unsigned char* in, unsigned char* out)
 
 void CDMRShortLC::decodeExtractBinary(const unsigned char* in)
 {
-	assert(in != NULL);
+	assert(in != nullptr);
 
 	CUtils::byteToBitsBE(in[0U], m_rawData + 0U);
 	CUtils::byteToBitsBE(in[1U], m_rawData + 8U);
@@ -133,7 +133,7 @@ bool CDMRShortLC::decodeErrorCheck()
 // Extract the 36 bits of payload
 void CDMRShortLC::decodeExtractData(unsigned char* data) const
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	bool bData[40U];
 
@@ -160,7 +160,7 @@ void CDMRShortLC::decodeExtractData(unsigned char* data) const
 // Extract the 36 bits of payload
 void CDMRShortLC::encodeExtractData(const unsigned char* in) const
 {
-	assert(in != NULL);
+	assert(in != nullptr);
 
 	bool bData[40U];
 	CUtils::byteToBitsBE(in[0U], bData + 0U);
@@ -214,7 +214,7 @@ void CDMRShortLC::encodeInterleave()
 
 void CDMRShortLC::encodeExtractBinary(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	CUtils::bitsToByteBE(m_rawData + 0U,  data[0U]);
 	CUtils::bitsToByteBE(m_rawData + 8U,  data[1U]);

@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2009,2014,2015,2016,2021 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2009,2014,2015,2016,2021,2025 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -19,14 +19,14 @@
 
 void CUtils::dump(const std::string& title, const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	dump(2U, title, data, length);
 }
 
 void CUtils::dump(int level, const std::string& title, const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	::Log(level, "%s", title.c_str());
 
@@ -72,14 +72,14 @@ void CUtils::dump(int level, const std::string& title, const unsigned char* data
 
 void CUtils::dump(const std::string& title, const bool* bits, unsigned int length)
 {
-	assert(bits != NULL);
+	assert(bits != nullptr);
 
 	dump(2U, title, bits, length);
 }
 
 void CUtils::dump(int level, const std::string& title, const bool* bits, unsigned int length)
 {
-	assert(bits != NULL);
+	assert(bits != nullptr);
 
 	unsigned char bytes[100U];
 	unsigned int nBytes = 0U;
@@ -91,7 +91,7 @@ void CUtils::dump(int level, const std::string& title, const bool* bits, unsigne
 
 void CUtils::byteToBitsBE(unsigned char byte, bool* bits)
 {
-	assert(bits != NULL);
+	assert(bits != nullptr);
 
 	bits[0U] = (byte & 0x80U) == 0x80U;
 	bits[1U] = (byte & 0x40U) == 0x40U;
@@ -105,7 +105,7 @@ void CUtils::byteToBitsBE(unsigned char byte, bool* bits)
 
 void CUtils::byteToBitsLE(unsigned char byte, bool* bits)
 {
-	assert(bits != NULL);
+	assert(bits != nullptr);
 
 	bits[0U] = (byte & 0x01U) == 0x01U;
 	bits[1U] = (byte & 0x02U) == 0x02U;
@@ -119,7 +119,7 @@ void CUtils::byteToBitsLE(unsigned char byte, bool* bits)
 
 void CUtils::bitsToByteBE(const bool* bits, unsigned char& byte)
 {
-	assert(bits != NULL);
+	assert(bits != nullptr);
 
 	byte  = bits[0U] ? 0x80U : 0x00U;
 	byte |= bits[1U] ? 0x40U : 0x00U;
@@ -133,7 +133,7 @@ void CUtils::bitsToByteBE(const bool* bits, unsigned char& byte)
 
 void CUtils::bitsToByteLE(const bool* bits, unsigned char& byte)
 {
-	assert(bits != NULL);
+	assert(bits != nullptr);
 
 	byte  = bits[0U] ? 0x01U : 0x00U;
 	byte |= bits[1U] ? 0x02U : 0x00U;

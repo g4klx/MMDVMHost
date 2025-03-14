@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -121,7 +121,7 @@ const uint16_t CCITT16_TABLE2[] = {
 
 bool CCRC::checkFiveBit(bool* in, unsigned int tcrc)
 {
-	assert(in != NULL);
+	assert(in != nullptr);
 
 	unsigned int crc;
 	encodeFiveBit(in, crc);
@@ -131,7 +131,7 @@ bool CCRC::checkFiveBit(bool* in, unsigned int tcrc)
 
 void CCRC::encodeFiveBit(const bool* in, unsigned int& tcrc)
 {
-	assert(in != NULL);
+	assert(in != nullptr);
 
 	unsigned short total = 0U;
 	for (unsigned int i = 0U; i < 72U; i += 8U) {
@@ -147,7 +147,7 @@ void CCRC::encodeFiveBit(const bool* in, unsigned int& tcrc)
 
 void CCRC::addCCITT162(unsigned char *in, unsigned int length)
 {
-	assert(in != NULL);
+	assert(in != nullptr);
 	assert(length > 2U);
 
 	union {
@@ -168,7 +168,7 @@ void CCRC::addCCITT162(unsigned char *in, unsigned int length)
 
 bool CCRC::checkCCITT162(const unsigned char *in, unsigned int length)
 {
-	assert(in != NULL);
+	assert(in != nullptr);
 	assert(length > 2U);
 
 	union {
@@ -188,7 +188,7 @@ bool CCRC::checkCCITT162(const unsigned char *in, unsigned int length)
 
 void CCRC::addCCITT161(unsigned char *in, unsigned int length)
 {
-	assert(in != NULL);
+	assert(in != nullptr);
 	assert(length > 2U);
 
 	union {
@@ -209,7 +209,7 @@ void CCRC::addCCITT161(unsigned char *in, unsigned int length)
 
 bool CCRC::checkCCITT161(const unsigned char *in, unsigned int length)
 {
-	assert(in != NULL);
+	assert(in != nullptr);
 	assert(length > 2U);
 
 	union {
@@ -229,7 +229,7 @@ bool CCRC::checkCCITT161(const unsigned char *in, unsigned int length)
 
 unsigned char CCRC::crc8(const unsigned char *in, unsigned int length)
 {
-	assert(in != NULL);
+	assert(in != nullptr);
 
 	uint8_t crc = 0U;
 

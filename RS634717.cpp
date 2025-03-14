@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2024 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2024,2025 by Jonathan Naylor G4KLX
 *	Copyright (C) 2018,2023 by Bryan Biedenkapp <gatekeep@gmail.com> N2PLL
 *
 *   This program is free software; you can redistribute it and/or modify
@@ -163,7 +163,7 @@ CRS634717::~CRS634717()
 
 bool CRS634717::decode241213(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	std::vector<unsigned char> codeword(63, 0);
 
@@ -185,7 +185,7 @@ bool CRS634717::decode241213(unsigned char* data)
 
 void CRS634717::encode241213(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char codeword[24U];
 
@@ -206,7 +206,7 @@ void CRS634717::encode241213(unsigned char* data)
 
 bool CRS634717::decode24169(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	std::vector<unsigned char> codeword(63, 0);
 
@@ -228,7 +228,7 @@ bool CRS634717::decode24169(unsigned char* data)
 
 void CRS634717::encode24169(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char codeword[24U];
 
@@ -249,7 +249,7 @@ void CRS634717::encode24169(unsigned char* data)
 
 bool CRS634717::decode362017(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	std::vector<unsigned char> codeword(63, 0);
 
@@ -271,7 +271,7 @@ bool CRS634717::decode362017(unsigned char* data)
 
 void CRS634717::encode362017(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char codeword[36U];
 

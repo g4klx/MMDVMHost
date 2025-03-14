@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -53,12 +53,12 @@ const uint32_t     M = 4U;
 const unsigned int K = 5U;
 
 CM17Convolution::CM17Convolution() :
-m_metrics1(NULL),
-m_metrics2(NULL),
-m_oldMetrics(NULL),
-m_newMetrics(NULL),
-m_decisions(NULL),
-m_dp(NULL)
+m_metrics1(nullptr),
+m_metrics2(nullptr),
+m_oldMetrics(nullptr),
+m_newMetrics(nullptr),
+m_decisions(nullptr),
+m_dp(nullptr)
 {
 	m_metrics1  = new uint16_t[20U];
 	m_metrics2  = new uint16_t[20U];
@@ -74,8 +74,8 @@ CM17Convolution::~CM17Convolution()
 
 void CM17Convolution::encodeLinkSetup(const unsigned char* in, unsigned char* out) const
 {
-	assert(in != NULL);
-	assert(out != NULL);
+	assert(in != nullptr);
+	assert(out != nullptr);
 
 	unsigned char temp1[31U];
 	::memset(temp1, 0x00U, 31U);
@@ -99,8 +99,8 @@ void CM17Convolution::encodeLinkSetup(const unsigned char* in, unsigned char* ou
 
 void CM17Convolution::encodeData(const unsigned char* in, unsigned char* out) const
 {
-	assert(in != NULL);
-	assert(out != NULL);
+	assert(in != nullptr);
+	assert(out != nullptr);
 
 	unsigned char temp1[19U];
 	::memset(temp1, 0x00U, 19U);
@@ -124,8 +124,8 @@ void CM17Convolution::encodeData(const unsigned char* in, unsigned char* out) co
 
 unsigned int CM17Convolution::decodeLinkSetup(const unsigned char* in, unsigned char* out)
 {
-	assert(in != NULL);
-	assert(out != NULL);
+	assert(in != nullptr);
+	assert(out != nullptr);
 
 	uint8_t temp[500U];
 	::memset(temp, 0x00U, 500U);
@@ -157,8 +157,8 @@ unsigned int CM17Convolution::decodeLinkSetup(const unsigned char* in, unsigned 
 
 unsigned int CM17Convolution::decodeData(const unsigned char* in, unsigned char* out)
 {
-	assert(in != NULL);
-	assert(out != NULL);
+	assert(in != nullptr);
+	assert(out != nullptr);
 
 	uint8_t temp[300U];
 	::memset(temp, 0x00U, 300U);
@@ -231,7 +231,7 @@ void CM17Convolution::decode(uint8_t s0, uint8_t s1)
 
 unsigned int CM17Convolution::chainback(unsigned char* out, unsigned int nBits)
 {
-	assert(out != NULL);
+	assert(out != nullptr);
 
 	uint32_t state = 0U;
 
@@ -257,8 +257,8 @@ unsigned int CM17Convolution::chainback(unsigned char* out, unsigned int nBits)
 
 void CM17Convolution::encode(const unsigned char* in, unsigned char* out, unsigned int nBits) const
 {
-	assert(in != NULL);
-	assert(out != NULL);
+	assert(in != nullptr);
+	assert(out != nullptr);
 	assert(nBits > 0U);
 
 	uint8_t d1 = 0U, d2 = 0U, d3 = 0U, d4 = 0U;

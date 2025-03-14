@@ -70,9 +70,9 @@ m_ric(0U),
 m_data(),
 m_state(POCSAG_STATE::NONE),
 m_enabled(true),
-m_fp(NULL)
+m_fp(nullptr)
 {
-	assert(display != NULL);
+	assert(display != nullptr);
 }
 
 CPOCSAGControl::~CPOCSAGControl()
@@ -87,7 +87,7 @@ CPOCSAGControl::~CPOCSAGControl()
 
 unsigned int CPOCSAGControl::readModem(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_queue.isEmpty())
 		return 0U;
@@ -194,7 +194,7 @@ void CPOCSAGControl::sendPageAlert2(unsigned int ric, const std::string& text)
 
 bool CPOCSAGControl::readNetwork()
 {
-	if (m_network == NULL)
+	if (m_network == nullptr)
 		return true;
 
 	unsigned char data[300U];
@@ -431,7 +431,7 @@ void CPOCSAGControl::packNumeric(const std::string& text, std::deque<uint32_t>& 
 	for (std::string::const_iterator it = text.cbegin(); it != text.cend(); ++it) {
 		char c = *it;
 
-		const BCD* bcd = NULL;
+		const BCD* bcd = nullptr;
 		for (unsigned int i = 0U; BCD_VALUES[i].m_c != 0; i++) {
 			if (BCD_VALUES[i].m_c == c) {
 				bcd = BCD_VALUES + i;
@@ -439,7 +439,7 @@ void CPOCSAGControl::packNumeric(const std::string& text, std::deque<uint32_t>& 
 			}
 		}
 
-		if (bcd != NULL) {
+		if (bcd != nullptr) {
 			word |= bcd->m_bcd[n];
 			n++;
 
@@ -520,7 +520,7 @@ void CPOCSAGControl::writeQueue()
 
 bool CPOCSAGControl::openFile()
 {
-	if (m_fp != NULL)
+	if (m_fp != nullptr)
 		return true;
 
 	time_t t;
@@ -532,7 +532,7 @@ bool CPOCSAGControl::openFile()
 	::sprintf(name, "POCSAG_%04d%02d%02d_%02d%02d%02d.dat", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
 
 	m_fp = ::fopen(name, "wb");
-	if (m_fp == NULL)
+	if (m_fp == nullptr)
 		return false;
 
 	::fwrite("POCSAG", 1U, 6U, m_fp);
@@ -542,7 +542,7 @@ bool CPOCSAGControl::openFile()
 
 bool CPOCSAGControl::writeFile(const unsigned char* data)
 {
-	if (m_fp == NULL)
+	if (m_fp == nullptr)
 		return false;
 
 	::fwrite(data, 1U, POCSAG_FRAME_LENGTH_BYTES, m_fp);
@@ -552,9 +552,9 @@ bool CPOCSAGControl::writeFile(const unsigned char* data)
 
 void CPOCSAGControl::closeFile()
 {
-	if (m_fp != NULL) {
+	if (m_fp != nullptr) {
 		::fclose(m_fp);
-		m_fp = NULL;
+		m_fp = nullptr;
 	}
 }
 

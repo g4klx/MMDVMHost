@@ -165,8 +165,8 @@ m_fmEnabled(false),
 m_ax25Enabled(false),
 m_rxDCOffset(0),
 m_txDCOffset(0),
-m_port(NULL),
-m_buffer(NULL),
+m_port(nullptr),
+m_buffer(nullptr),
 m_length(0U),
 m_offset(0U),
 m_state(SERIAL_STATE::START),
@@ -267,7 +267,7 @@ CModem::~CModem()
 
 void CModem::setPort(IModemPort* port)
 {
-	assert(port != NULL);
+	assert(port != nullptr);
 
 	m_port = port;
 }
@@ -363,7 +363,7 @@ bool CModem::open()
 	if (!ret) {
 		m_port->close();
 		delete m_port;
-		m_port = NULL;
+		m_port = nullptr;
 		return false;
 	} else {
 		/* Stopping the inactivity timer here when a firmware version has been
@@ -375,7 +375,7 @@ bool CModem::open()
 	if (!ret) {
 		m_port->close();
 		delete m_port;
-		m_port = NULL;
+		m_port = nullptr;
 		return false;
 	}
 
@@ -383,7 +383,7 @@ bool CModem::open()
 	if (!ret) {
 		m_port->close();
 		delete m_port;
-		m_port = NULL;
+		m_port = nullptr;
 		return false;
 	}
 
@@ -392,7 +392,7 @@ bool CModem::open()
 		if (!ret) {
 			m_port->close();
 			delete m_port;
-			m_port = NULL;
+			m_port = nullptr;
 			return false;
 		}
 
@@ -400,7 +400,7 @@ bool CModem::open()
 		if (!ret) {
 			m_port->close();
 			delete m_port;
-			m_port = NULL;
+			m_port = nullptr;
 			return false;
 		}
 
@@ -408,7 +408,7 @@ bool CModem::open()
 		if (!ret) {
 			m_port->close();
 			delete m_port;
-			m_port = NULL;
+			m_port = nullptr;
 			return false;
 		}
 
@@ -417,7 +417,7 @@ bool CModem::open()
 			if (!ret) {
 				m_port->close();
 				delete m_port;
-				m_port = NULL;
+				m_port = nullptr;
 				return false;
 			}
 		}
@@ -433,7 +433,7 @@ bool CModem::open()
 
 void CModem::clock(unsigned int ms)
 {
-	assert(m_port != NULL);
+	assert(m_port != nullptr);
 
 	// Poll the modem status every 250ms
 	m_statusTimer.clock(ms);
@@ -1154,7 +1154,7 @@ void CModem::clock(unsigned int ms)
 
 void CModem::close()
 {
-	assert(m_port != NULL);
+	assert(m_port != nullptr);
 
 	::LogMessage("Closing the MMDVM");
 
@@ -1163,7 +1163,7 @@ void CModem::close()
 
 unsigned int CModem::readDStarData(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_rxDStarData.isEmpty())
 		return 0U;
@@ -1177,7 +1177,7 @@ unsigned int CModem::readDStarData(unsigned char* data)
 
 unsigned int CModem::readDMRData1(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_rxDMRData1.isEmpty())
 		return 0U;
@@ -1191,7 +1191,7 @@ unsigned int CModem::readDMRData1(unsigned char* data)
 
 unsigned int CModem::readDMRData2(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_rxDMRData2.isEmpty())
 		return 0U;
@@ -1205,7 +1205,7 @@ unsigned int CModem::readDMRData2(unsigned char* data)
 
 unsigned int CModem::readYSFData(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_rxYSFData.isEmpty())
 		return 0U;
@@ -1219,7 +1219,7 @@ unsigned int CModem::readYSFData(unsigned char* data)
 
 unsigned int CModem::readP25Data(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_rxP25Data.isEmpty())
 		return 0U;
@@ -1233,7 +1233,7 @@ unsigned int CModem::readP25Data(unsigned char* data)
 
 unsigned int CModem::readNXDNData(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_rxNXDNData.isEmpty())
 		return 0U;
@@ -1247,7 +1247,7 @@ unsigned int CModem::readNXDNData(unsigned char* data)
 
 unsigned int CModem::readM17Data(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_rxM17Data.isEmpty())
 		return 0U;
@@ -1261,7 +1261,7 @@ unsigned int CModem::readM17Data(unsigned char* data)
 
 unsigned int CModem::readFMData(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_rxFMData.isEmpty())
 		return 0U;
@@ -1275,7 +1275,7 @@ unsigned int CModem::readFMData(unsigned char* data)
 
 unsigned int CModem::readAX25Data(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_rxAX25Data.isEmpty())
 		return 0U;
@@ -1289,7 +1289,7 @@ unsigned int CModem::readAX25Data(unsigned char* data)
 
 unsigned int CModem::readTransparentData(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_rxTransparentData.isEmpty())
 		return 0U;
@@ -1303,7 +1303,7 @@ unsigned int CModem::readTransparentData(unsigned char* data)
 
 unsigned int CModem::readSerial(unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 	assert(length > 0U);
 
 	unsigned int n = 0U;
@@ -1324,7 +1324,7 @@ bool CModem::hasDStarSpace() const
 
 bool CModem::writeDStarData(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 	assert(length > 0U);
 
 	unsigned char buffer[50U];
@@ -1372,7 +1372,7 @@ bool CModem::hasDMRSpace2() const
 
 bool CModem::writeDMRData1(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 	assert(length > 0U);
 
 	if (data[0U] != TAG_DATA && data[0U] != TAG_EOT)
@@ -1395,7 +1395,7 @@ bool CModem::writeDMRData1(const unsigned char* data, unsigned int length)
 
 bool CModem::writeDMRData2(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 	assert(length > 0U);
 
 	if (data[0U] != TAG_DATA && data[0U] != TAG_EOT)
@@ -1425,7 +1425,7 @@ bool CModem::hasYSFSpace() const
 
 bool CModem::writeYSFData(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 	assert(length > 0U);
 
 	if (data[0U] != TAG_DATA && data[0U] != TAG_EOT)
@@ -1455,7 +1455,7 @@ bool CModem::hasP25Space() const
 
 bool CModem::writeP25Data(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 	assert(length > 0U);
 
 	if (data[0U] != TAG_HEADER && data[0U] != TAG_DATA && data[0U] != TAG_EOT)
@@ -1485,7 +1485,7 @@ bool CModem::hasNXDNSpace() const
 
 bool CModem::writeNXDNData(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 	assert(length > 0U);
 
 	if (data[0U] != TAG_DATA && data[0U] != TAG_EOT)
@@ -1515,7 +1515,7 @@ bool CModem::hasM17Space() const
 
 bool CModem::writeM17Data(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 	assert(length > 0U);
 
 	unsigned char buffer[130U];
@@ -1556,7 +1556,7 @@ bool CModem::hasPOCSAGSpace() const
 
 bool CModem::writePOCSAGData(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 	assert(length > 0U);
 
 	unsigned char buffer[130U];
@@ -1581,7 +1581,7 @@ unsigned int CModem::getFMSpace() const
 
 bool CModem::writeFMData(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 	assert(length > 0U);
 
 	unsigned char buffer[500U];
@@ -1617,7 +1617,7 @@ bool CModem::hasAX25Space() const
 
 bool CModem::writeAX25Data(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 	assert(length > 0U);
 
 	unsigned char buffer[500U];
@@ -1646,7 +1646,7 @@ bool CModem::writeAX25Data(const unsigned char* data, unsigned int length)
 
 bool CModem::writeTransparentData(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 	assert(length > 0U);
 
 	unsigned char buffer[250U];
@@ -1680,12 +1680,12 @@ bool CModem::writeTransparentData(const unsigned char* data, unsigned int length
 
 bool CModem::writeDStarInfo(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
-	assert(m_port != NULL);
-	assert(my1 != NULL);
-	assert(my2 != NULL);
-	assert(your != NULL);
-	assert(type != NULL);
-	assert(reflector != NULL);
+	assert(m_port != nullptr);
+	assert(my1 != nullptr);
+	assert(my2 != nullptr);
+	assert(your != nullptr);
+	assert(type != nullptr);
+	assert(reflector != nullptr);
 
 	unsigned char buffer[50U];
 
@@ -1709,8 +1709,8 @@ bool CModem::writeDStarInfo(const char* my1, const char* my2, const char* your, 
 
 bool CModem::writeDMRInfo(unsigned int slotNo, const std::string& src, bool group, const std::string& dest, const char* type)
 {
-	assert(m_port != NULL);
-	assert(type != NULL);
+	assert(m_port != nullptr);
+	assert(type != nullptr);
 
 	unsigned char buffer[50U];
 
@@ -1735,11 +1735,11 @@ bool CModem::writeDMRInfo(unsigned int slotNo, const std::string& src, bool grou
 
 bool CModem::writeYSFInfo(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
-	assert(m_port != NULL);
-	assert(source != NULL);
-	assert(dest != NULL);
-	assert(type != NULL);
-	assert(origin != NULL);
+	assert(m_port != nullptr);
+	assert(source != nullptr);
+	assert(dest != nullptr);
+	assert(type != nullptr);
+	assert(origin != nullptr);
 
 	unsigned char buffer[40U];
 
@@ -1763,9 +1763,9 @@ bool CModem::writeYSFInfo(const char* source, const char* dest, unsigned char dg
 
 bool CModem::writeP25Info(const char* source, bool group, unsigned int dest, const char* type)
 {
-	assert(m_port != NULL);
-	assert(source != NULL);
-	assert(type != NULL);
+	assert(m_port != nullptr);
+	assert(source != nullptr);
+	assert(type != nullptr);
 
 	unsigned char buffer[40U];
 
@@ -1788,9 +1788,9 @@ bool CModem::writeP25Info(const char* source, bool group, unsigned int dest, con
 
 bool CModem::writeNXDNInfo(const char* source, bool group, unsigned int dest, const char* type)
 {
-	assert(m_port != NULL);
-	assert(source != NULL);
-	assert(type != NULL);
+	assert(m_port != nullptr);
+	assert(source != nullptr);
+	assert(type != nullptr);
 
 	unsigned char buffer[40U];
 
@@ -1813,10 +1813,10 @@ bool CModem::writeNXDNInfo(const char* source, bool group, unsigned int dest, co
 
 bool CModem::writeM17Info(const char* source, const char* dest, const char* type)
 {
-	assert(m_port != NULL);
-	assert(source != NULL);
-	assert(dest != NULL);
-	assert(type != NULL);
+	assert(m_port != nullptr);
+	assert(source != nullptr);
+	assert(dest != nullptr);
+	assert(type != nullptr);
 
 	unsigned char buffer[40U];
 
@@ -1837,7 +1837,7 @@ bool CModem::writeM17Info(const char* source, const char* dest, const char* type
 
 bool CModem::writePOCSAGInfo(unsigned int ric, const std::string& message)
 {
-	assert(m_port != NULL);
+	assert(m_port != nullptr);
 
 	size_t length = message.size();
 
@@ -1860,7 +1860,7 @@ bool CModem::writePOCSAGInfo(unsigned int ric, const std::string& message)
 
 bool CModem::writeIPInfo(const std::string& address)
 {
-	assert(m_port != NULL);
+	assert(m_port != nullptr);
 
 	size_t length = address.size();
 
@@ -1881,8 +1881,8 @@ bool CModem::writeIPInfo(const std::string& address)
 
 bool CModem::writeSerial(const unsigned char* data, unsigned int length)
 {
-	assert(m_port != NULL);
-	assert(data != NULL);
+	assert(m_port != nullptr);
+	assert(data != nullptr);
 	assert(length > 0U);
 
 	unsigned char buffer[255U];
@@ -1972,7 +1972,7 @@ unsigned int CModem::getVersion() const
 
 bool CModem::readVersion()
 {
-	assert(m_port != NULL);
+	assert(m_port != nullptr);
 
 	CThread::sleep(2000U);	// 2s
 
@@ -2091,7 +2091,7 @@ bool CModem::readVersion()
 
 bool CModem::readStatus()
 {
-	assert(m_port != NULL);
+	assert(m_port != nullptr);
 
 	unsigned char buffer[3U];
 
@@ -2118,7 +2118,7 @@ bool CModem::writeConfig()
 
 bool CModem::setConfig1()
 {
-	assert(m_port != NULL);
+	assert(m_port != nullptr);
 
 	unsigned char buffer[30U];
 
@@ -2233,7 +2233,7 @@ bool CModem::setConfig1()
 
 bool CModem::setConfig2()
 {
-	assert(m_port != NULL);
+	assert(m_port != nullptr);
 
 	unsigned char buffer[50U];
 
@@ -2359,7 +2359,7 @@ bool CModem::setConfig2()
 
 bool CModem::setFrequency()
 {
-	assert(m_port != NULL);
+	assert(m_port != nullptr);
 
 	unsigned char buffer[20U];
 	unsigned char len;
@@ -2432,7 +2432,7 @@ bool CModem::setFrequency()
 
 RESP_TYPE_MMDVM CModem::getResponse()
 {
-	assert(m_port != NULL);
+	assert(m_port != nullptr);
 
 	if (m_state == SERIAL_STATE::START) {
 		// Get the start of the frame or nothing at all
@@ -2544,7 +2544,7 @@ unsigned char CModem::getMode() const
 
 bool CModem::setMode(unsigned char mode)
 {
-	assert(m_port != NULL);
+	assert(m_port != nullptr);
 
 	unsigned char buffer[4U];
 
@@ -2560,7 +2560,7 @@ bool CModem::setMode(unsigned char mode)
 
 bool CModem::sendCWId(const std::string& callsign)
 {
-	assert(m_port != NULL);
+	assert(m_port != nullptr);
 
 	unsigned int length = (unsigned int)callsign.length();
 	if (length > 200U)
@@ -2582,7 +2582,7 @@ bool CModem::sendCWId(const std::string& callsign)
 
 bool CModem::writeDMRStart(bool tx)
 {
-	assert(m_port != NULL);
+	assert(m_port != nullptr);
 
 	if (tx && m_tx)
 		return true;
@@ -2603,7 +2603,7 @@ bool CModem::writeDMRStart(bool tx)
 
 bool CModem::writeDMRAbort(unsigned int slotNo)
 {
-	assert(m_port != NULL);
+	assert(m_port != nullptr);
 
 	if (slotNo == 1U)
 		m_txDMRData1.clear();
@@ -2624,8 +2624,8 @@ bool CModem::writeDMRAbort(unsigned int slotNo)
 
 bool CModem::writeDMRShortLC(const unsigned char* lc)
 {
-	assert(m_port != NULL);
-	assert(lc != NULL);
+	assert(m_port != nullptr);
+	assert(lc != nullptr);
 
 	unsigned char buffer[12U];
 
@@ -2706,7 +2706,7 @@ void CModem::setFMExtParams(const std::string& ack, unsigned int audioBoost)
 
 bool CModem::setFMCallsignParams()
 {
-	assert(m_port != NULL);
+	assert(m_port != nullptr);
 
 	unsigned char buffer[80U];
 	unsigned char len = 10U + (unsigned char)m_fmCallsign.size();
@@ -2767,7 +2767,7 @@ bool CModem::setFMCallsignParams()
 
 bool CModem::setFMAckParams()
 {
-	assert(m_port != NULL);
+	assert(m_port != nullptr);
 
 	unsigned char buffer[80U];
 	unsigned char len = 8U + (unsigned char)m_fmRfAck.size();
@@ -2819,7 +2819,7 @@ bool CModem::setFMAckParams()
 
 bool CModem::setFMMiscParams()
 {
-	assert(m_port != NULL);
+	assert(m_port != nullptr);
 
 	unsigned char buffer[20U];
 
@@ -2888,7 +2888,7 @@ bool CModem::setFMMiscParams()
 
 bool CModem::setFMExtParams()
 {
-	assert(m_port != NULL);
+	assert(m_port != nullptr);
 
 	unsigned char buffer[80U];
 	unsigned char len = 7U + (unsigned char)m_fmExtAck.size();

@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2018 by Jonathan Naylor G4KLX
+*   Copyright (C) 2018,2025 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -457,8 +457,8 @@ CNXDNAudio::~CNXDNAudio()
 
 void CNXDNAudio::decode(const unsigned char* in, unsigned char* out) const
 {
-	assert(in != NULL);
-	assert(out != NULL);
+	assert(in != nullptr);
+	assert(out != nullptr);
 
 	decode(in + 0U, out, 0U);
 	decode(in + 9U, out, 49U);
@@ -466,8 +466,8 @@ void CNXDNAudio::decode(const unsigned char* in, unsigned char* out) const
 
 void CNXDNAudio::encode(const unsigned char* in, unsigned char* out) const
 {
-	assert(in != NULL);
-	assert(out != NULL);
+	assert(in != nullptr);
+	assert(out != nullptr);
 
 	encode(in, out + 0U, 0U);
 	encode(in, out + 9U, 49U);
@@ -475,8 +475,8 @@ void CNXDNAudio::encode(const unsigned char* in, unsigned char* out) const
 
 void CNXDNAudio::decode(const unsigned char* in, unsigned char* out, unsigned int offset) const
 {
-	assert(in != NULL);
-	assert(out != NULL);
+	assert(in != nullptr);
+	assert(out != nullptr);
 
 	unsigned int a = 0U;
 	unsigned int MASK = 0x800000U;
@@ -525,8 +525,8 @@ void CNXDNAudio::decode(const unsigned char* in, unsigned char* out, unsigned in
 
 void CNXDNAudio::encode(const unsigned char* in, unsigned char* out, unsigned int offset) const
 {
-	assert(in != NULL);
-	assert(out != NULL);
+	assert(in != nullptr);
+	assert(out != nullptr);
 
 	unsigned int aOrig = 0U;
 	unsigned int bOrig = 0U;

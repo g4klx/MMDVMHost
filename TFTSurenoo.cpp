@@ -116,11 +116,11 @@ m_duplex(duplex),
 //m_duplex(true),                      // uncomment to force duplex display for testing!
 m_refresh(false),
 m_refreshTimer(1000U, 0U, REFRESH_PERIOD),
-m_lineBuf(NULL),
+m_lineBuf(nullptr),
 m_temp(),
 m_screenLayout(screenLayout)
 {
-	assert(serial != NULL);
+	assert(serial != nullptr);
 	assert(brightness >= 0U && brightness <= 255U);
 }
 
@@ -161,7 +161,7 @@ void CTFTSurenoo::setIdleInt()
 
 void CTFTSurenoo::setErrorInt(const char* text)
 {
-	assert(text != NULL);
+	assert(text != nullptr);
 
 	setModeLine(STR_MMDVM);
 	setStatusLine(statusLineNo(0), text);
@@ -201,11 +201,11 @@ void CTFTSurenoo::setFMInt()
 
 void CTFTSurenoo::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
-	assert(my1 != NULL);
-	assert(my2 != NULL);
-	assert(your != NULL);
-	assert(type != NULL);
-	assert(reflector != NULL);
+	assert(my1 != nullptr);
+	assert(my2 != nullptr);
+	assert(your != nullptr);
+	assert(type != nullptr);
+	assert(reflector != nullptr);
 
 	setModeLine(STR_MMDVM);
 
@@ -233,7 +233,7 @@ void CTFTSurenoo::clearDStarInt()
 
 void CTFTSurenoo::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
-	assert(type != NULL);
+	assert(type != nullptr);
 
 	if (m_mode != MODE_DMR) {
 		setModeLine(STR_DMR);
@@ -257,7 +257,7 @@ void CTFTSurenoo::writeDMRInt(unsigned int slotNo, const std::string& src, bool 
 
 int CTFTSurenoo::writeDMRIntEx(unsigned int slotNo, const CUserDBentry& src, bool group, const std::string& dst, const char* type)
 {
-	assert(type != NULL);
+	assert(type != nullptr);
 
 	// duplex mode is not supported
 	if (m_duplex)
@@ -290,10 +290,10 @@ void CTFTSurenoo::clearDMRInt(unsigned int slotNo)
 
 void CTFTSurenoo::writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
-	assert(source != NULL);
-	assert(dest != NULL);
-	assert(type != NULL);
-	assert(origin != NULL);
+	assert(source != nullptr);
+	assert(dest != nullptr);
+	assert(type != nullptr);
+	assert(origin != nullptr);
 
 	setModeLine(STR_YSF);
 
@@ -319,8 +319,8 @@ void CTFTSurenoo::clearFusionInt()
 
 void CTFTSurenoo::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
 {
-	assert(source != NULL);
-	assert(type != NULL);
+	assert(source != nullptr);
+	assert(type != nullptr);
 
 	setModeLine(STR_P25);
 
@@ -340,8 +340,8 @@ void CTFTSurenoo::clearP25Int()
 
 void CTFTSurenoo::writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type)
 {
-	assert(source != NULL);
-	assert(type != NULL);
+	assert(source != nullptr);
+	assert(type != nullptr);
 
 	if (m_mode != MODE_NXDN)
 		setModeLine(STR_NXDN);
@@ -357,7 +357,7 @@ void CTFTSurenoo::writeNXDNInt(const char* source, bool group, unsigned int dest
 
 int CTFTSurenoo::writeNXDNIntEx(const CUserDBentry& source, bool group, unsigned int dest, const char* type)
 {
-	assert(type != NULL);
+	assert(type != nullptr);
 
 	setModeLine(STR_NXDN);
 	setStatusLine(statusLineNo(2), (source.get(keyFIRST_NAME) + " " + source.get(keyLAST_NAME)).c_str());
@@ -377,9 +377,9 @@ void CTFTSurenoo::clearNXDNInt()
 
 void CTFTSurenoo::writeM17Int(const char* source, const char* dest, const char* type)
 {
-	assert(source != NULL);
-	assert(dest != NULL);
-	assert(type != NULL);
+	assert(source != nullptr);
+	assert(dest != nullptr);
+	assert(type != nullptr);
 
 	if (m_mode != MODE_M17)
 		setModeLine(STR_M17);

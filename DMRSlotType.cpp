@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@ CDMRSlotType::~CDMRSlotType()
 
 void CDMRSlotType::putData(const unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char DMRSlotType[3U];
 	DMRSlotType[0U]  = (data[12U] << 2) & 0xFCU;
@@ -55,7 +55,7 @@ void CDMRSlotType::putData(const unsigned char* data)
 
 void CDMRSlotType::getData(unsigned char* data) const
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char DMRSlotType[3U];
 	DMRSlotType[0U]  = (m_colorCode << 4) & 0xF0U;

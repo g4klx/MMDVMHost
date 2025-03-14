@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2025 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ CP25Audio::~CP25Audio()
 
 unsigned int CP25Audio::process(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned int errs = 0U;
 
@@ -95,8 +95,8 @@ unsigned int CP25Audio::process(unsigned char* data)
 
 void CP25Audio::decode(const unsigned char* data, unsigned char* imbe, unsigned int n)
 {
-	assert(data != NULL);
-	assert(imbe != NULL);
+	assert(data != nullptr);
+	assert(imbe != nullptr);
 
 	unsigned char temp[18U];
 
@@ -204,8 +204,8 @@ void CP25Audio::decode(const unsigned char* data, unsigned char* imbe, unsigned 
 
 void CP25Audio::encode(unsigned char* data, const unsigned char* imbe, unsigned int n)
 {
-	assert(data != NULL);
-	assert(imbe != NULL);
+	assert(data != nullptr);
+	assert(imbe != nullptr);
 
 	bool bTemp[144U];
 	bool* bit = bTemp;

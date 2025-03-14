@@ -88,8 +88,8 @@ m_netLSF(),
 m_netLSFn(0U),
 m_rfTextBits(0x00U),
 m_netTextBits(0x00U),
-m_rfText(NULL),
-m_netText(NULL),
+m_rfText(nullptr),
+m_netText(nullptr),
 m_rssiMapper(rssiMapper),
 m_rssi(0U),
 m_maxRSSI(0U),
@@ -97,10 +97,10 @@ m_minRSSI(0U),
 m_aveRSSI(0U),
 m_rssiCount(0U),
 m_enabled(true),
-m_fp(NULL)
+m_fp(nullptr)
 {
-	assert(display != NULL);
-	assert(rssiMapper != NULL);
+	assert(display != nullptr);
+	assert(rssiMapper != nullptr);
 
 	m_rfText  = new char[4U * M17_META_LENGTH_BYTES];
 	m_netText = new char[4U * M17_META_LENGTH_BYTES];
@@ -114,7 +114,7 @@ CM17Control::~CM17Control()
 
 bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (!m_enabled)
 		return false;
@@ -395,7 +395,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			writeQueueRF(rfData);
 		}
 
-		if (m_network != NULL && m_rfTimeoutTimer.isRunning() && !m_rfTimeoutTimer.hasExpired()) {
+		if (m_network != nullptr && m_rfTimeoutTimer.isRunning() && !m_rfTimeoutTimer.hasExpired()) {
 			unsigned char netData[M17_LSF_LENGTH_BYTES + M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
 
 			m_rfCurrentNetLSF.getNetwork(netData + 0U);
@@ -436,7 +436,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 			writeQueueRF(rfData);
 		}
 
-		if (m_network != NULL && m_rfTimeoutTimer.isRunning() && !m_rfTimeoutTimer.hasExpired()) {
+		if (m_network != nullptr && m_rfTimeoutTimer.isRunning() && !m_rfTimeoutTimer.hasExpired()) {
 			unsigned char netData[M17_LSF_LENGTH_BYTES + M17_FN_LENGTH_BYTES + M17_PAYLOAD_LENGTH_BYTES + M17_CRC_LENGTH_BYTES];
 
 			m_rfCurrentNetLSF.getNetwork(netData + 0U);
@@ -475,7 +475,7 @@ bool CM17Control::writeModem(unsigned char* data, unsigned int len)
 
 unsigned int CM17Control::readModem(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_queue.isEmpty())
 		return 0U;
@@ -505,7 +505,7 @@ void CM17Control::writeEndRF()
 	if (m_netState == RPT_NET_STATE::IDLE) {
 		m_display->clearM17();
 
-		if (m_network != NULL)
+		if (m_network != nullptr)
 			m_network->reset();
 	}
 
@@ -528,7 +528,7 @@ void CM17Control::writeEndNet()
 
 	m_display->clearM17();
 
-	if (m_network != NULL)
+	if (m_network != nullptr)
 		m_network->reset();
 }
 
@@ -835,7 +835,7 @@ void CM17Control::createRFLSF(bool addCallsign)
 
 void CM17Control::clock(unsigned int ms)
 {
-	if (m_network != NULL)
+	if (m_network != nullptr)
 		writeNetwork();
 
 	m_rfTimeoutTimer.clock(ms);
@@ -853,7 +853,7 @@ void CM17Control::clock(unsigned int ms)
 
 void CM17Control::writeQueueRF(const unsigned char *data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_netState != RPT_NET_STATE::IDLE)
 		return;
@@ -876,7 +876,7 @@ void CM17Control::writeQueueRF(const unsigned char *data)
 
 void CM17Control::writeQueueNet(const unsigned char *data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_netTimeoutTimer.isRunning() && m_netTimeoutTimer.hasExpired())
 		return;
@@ -896,8 +896,8 @@ void CM17Control::writeQueueNet(const unsigned char *data)
 
 void CM17Control::interleaver(const unsigned char* in, unsigned char* out) const
 {
-	assert(in != NULL);
-	assert(out != NULL);
+	assert(in != nullptr);
+	assert(out != nullptr);
 
 	for (unsigned int i = 0U; i < (M17_FRAME_LENGTH_BITS - M17_SYNC_LENGTH_BITS); i++) {
 		unsigned int n1 = i + M17_SYNC_LENGTH_BITS;
@@ -909,8 +909,8 @@ void CM17Control::interleaver(const unsigned char* in, unsigned char* out) const
 
 void CM17Control::decorrelator(const unsigned char* in, unsigned char* out) const
 {
-	assert(in != NULL);
-	assert(out != NULL);
+	assert(in != nullptr);
+	assert(out != nullptr);
 
 	for (unsigned int i = M17_SYNC_LENGTH_BYTES; i < M17_FRAME_LENGTH_BYTES; i++) {
 		out[i] = in[i] ^ SCRAMBLER[i];
@@ -926,7 +926,7 @@ bool CM17Control::checkCallsign(const std::string& callsign) const
 
 bool CM17Control::openFile()
 {
-	if (m_fp != NULL)
+	if (m_fp != nullptr)
 		return true;
 
 	time_t t;
@@ -938,7 +938,7 @@ bool CM17Control::openFile()
 	::sprintf(name, "M17_%04d%02d%02d_%02d%02d%02d.ambe", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
 
 	m_fp = ::fopen(name, "wb");
-	if (m_fp == NULL)
+	if (m_fp == nullptr)
 		return false;
 
 	::fwrite("M17", 1U, 3U, m_fp);
@@ -948,7 +948,7 @@ bool CM17Control::openFile()
 
 bool CM17Control::writeFile(const unsigned char* data)
 {
-	if (m_fp == NULL)
+	if (m_fp == nullptr)
 		return false;
 
 	::fwrite(data, 1U, M17_FRAME_LENGTH_BYTES, m_fp);
@@ -958,9 +958,9 @@ bool CM17Control::writeFile(const unsigned char* data)
 
 void CM17Control::closeFile()
 {
-	if (m_fp != NULL) {
+	if (m_fp != nullptr) {
 		::fclose(m_fp);
-		m_fp = NULL;
+		m_fp = nullptr;
 	}
 }
 

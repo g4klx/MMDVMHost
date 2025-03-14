@@ -27,10 +27,10 @@
 #include <cstring>
 
 CDStarSlowData::CDStarSlowData() :
-m_header(NULL),
+m_header(nullptr),
 m_ptr(0U),
-m_buffer(NULL),
-m_text(NULL),
+m_buffer(nullptr),
+m_text(nullptr),
 m_textPtr(0U),
 m_textBits(0x00U),
 m_type(0x00U),
@@ -50,7 +50,7 @@ CDStarSlowData::~CDStarSlowData()
 
 void CDStarSlowData::peakSlowData(const unsigned char* data, unsigned int n)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if ((n % 2U) == 0U) {
 		m_type = data[9U] ^ DSTAR_SCRAMBLER_BYTES[0U];
@@ -62,7 +62,7 @@ void CDStarSlowData::peakSlowData(const unsigned char* data, unsigned int n)
 
 CDStarHeader* CDStarSlowData::addHeader(const unsigned char* data, unsigned int n)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if ((n % 2U) == 0U) {
 		m_type       = data[9U]  ^ DSTAR_SCRAMBLER_BYTES[0U];
@@ -78,10 +78,10 @@ CDStarHeader* CDStarSlowData::addHeader(const unsigned char* data, unsigned int 
 	}
 
 	if ((m_buffer[0U] & DSTAR_SLOW_DATA_TYPE_MASK) != DSTAR_SLOW_DATA_TYPE_HEADER)
-		return NULL;
+		return nullptr;
 
 	if (m_ptr >= 45U)
-		return NULL;
+		return nullptr;
 
 	::memcpy(m_header + m_ptr, m_buffer + 1U, 5U);
 	m_ptr += 5U;
@@ -99,7 +99,7 @@ CDStarHeader* CDStarSlowData::addHeader(const unsigned char* data, unsigned int 
 	if (!ret) {
 		if (m_ptr == 45U)
 			LogMessage("D-Star, invalid slow data header");
-		return NULL;
+		return nullptr;
 	}
 
 	return new CDStarHeader(m_header);
@@ -107,7 +107,7 @@ CDStarHeader* CDStarSlowData::addHeader(const unsigned char* data, unsigned int 
 
 const unsigned char* CDStarSlowData::addText(const unsigned char* data, unsigned int n)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if ((n % 2U) == 0U) {
 		m_type       = data[9U]  ^ DSTAR_SCRAMBLER_BYTES[0U];
@@ -161,11 +161,11 @@ const unsigned char* CDStarSlowData::addText(const unsigned char* data, unsigned
 			m_textBits |= 0x08U;
 			break;
 		default:
-			return NULL;
+			return nullptr;
 	}
 
 	if (m_textBits != 0x0FU)
-		return NULL;
+		return nullptr;
 
 	CUtils::dump(1U, "D-Star slow data text", m_text, 20U);
 
@@ -194,7 +194,7 @@ void CDStarSlowData::reset()
 
 void CDStarSlowData::setText(const char* text)
 {
-	assert(text != NULL);
+	assert(text != nullptr);
 
 	m_text[0U] = DSTAR_SLOW_DATA_TYPE_TEXT | 0U;
 	m_text[1U] = text[0U];
@@ -230,7 +230,7 @@ void CDStarSlowData::setText(const char* text)
 
 void CDStarSlowData::getSlowData(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_textPtr < 24U) {
 		data[0U] = m_text[m_textPtr++] ^ DSTAR_SCRAMBLER_BYTES[0U];

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -101,8 +101,8 @@ static unsigned char gmult(unsigned char a, unsigned char b)
  */
 void CRS129::encode(const unsigned char* msg, unsigned int nbytes, unsigned char* parity)
 {
-  assert(msg != NULL);
-  assert(parity != NULL);
+  assert(msg != nullptr);
+  assert(parity != nullptr);
 
   for (unsigned int i = 0U; i < NPAR + 1U; i++)
 	  parity[i] = 0x00U;
@@ -120,7 +120,7 @@ void CRS129::encode(const unsigned char* msg, unsigned int nbytes, unsigned char
 // Reed-Solomon (12,9) check
 bool CRS129::check(const unsigned char* in)
 {
-	assert(in != NULL);
+	assert(in != nullptr);
 
 	unsigned char parity[4U];
 	encode(in, 9U, parity);

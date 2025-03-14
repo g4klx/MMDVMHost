@@ -35,7 +35,7 @@ m_address(address),
 m_port(port),
 m_addr(),
 m_addrLen(0U),
-m_id(NULL),
+m_id(nullptr),
 m_password(password),
 m_duplex(duplex),
 m_version(version),
@@ -48,9 +48,9 @@ m_hwType(hwType),
 m_status(STATUS::WAITING_CONNECT),
 m_retryTimer(1000U, 10U),
 m_timeoutTimer(1000U, 60U),
-m_buffer(NULL),
-m_streamId(NULL),
-m_salt(NULL),
+m_buffer(nullptr),
+m_streamId(nullptr),
+m_salt(nullptr),
 m_rxData(1000U, "DMR Network"),
 m_options(),
 m_random(),
@@ -626,7 +626,7 @@ bool CDMRDirectNetwork::wantsBeacon()
 
 bool CDMRDirectNetwork::write(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 	assert(length > 0U);
 
 	if (m_debug)

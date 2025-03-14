@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2021,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ bool CUDPController::open()
 
 int CUDPController::read(unsigned char* buffer, unsigned int length)
 {
-    assert(buffer != NULL);
+    assert(buffer != nullptr);
     assert(length > 0U);
 
     unsigned char data[BUFFER_LENGTH];
@@ -85,7 +85,7 @@ int CUDPController::read(unsigned char* buffer, unsigned int length)
 
 int CUDPController::write(const unsigned char* buffer, unsigned int length)
 {
-	assert(buffer != NULL);
+	assert(buffer != nullptr);
 	assert(length > 0U);
 
 	return m_socket.write(buffer, length, m_addr, m_addrLen) ? int(length) : -1;

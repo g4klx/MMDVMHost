@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2016,2018,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2016,2018,2021,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -37,12 +37,12 @@ const uint32_t     M = 4U;
 const unsigned int K = 5U;
 
 CNXDNConvolution::CNXDNConvolution() :
-m_metrics1(NULL),
-m_metrics2(NULL),
-m_oldMetrics(NULL),
-m_newMetrics(NULL),
-m_decisions(NULL),
-m_dp(NULL)
+m_metrics1(nullptr),
+m_metrics2(nullptr),
+m_oldMetrics(nullptr),
+m_newMetrics(nullptr),
+m_decisions(nullptr),
+m_dp(nullptr)
 {
 	m_metrics1  = new uint16_t[20U];
 	m_metrics2  = new uint16_t[20U];
@@ -99,7 +99,7 @@ void CNXDNConvolution::decode(uint8_t s0, uint8_t s1)
 
 unsigned int CNXDNConvolution::chainback(unsigned char* out, unsigned int nBits)
 {
-	assert(out != NULL);
+	assert(out != nullptr);
 
 	uint32_t state = 0U;
 
@@ -125,8 +125,8 @@ unsigned int CNXDNConvolution::chainback(unsigned char* out, unsigned int nBits)
 
 void CNXDNConvolution::encode(const unsigned char* in, unsigned char* out, unsigned int nBits) const
 {
-	assert(in != NULL);
-	assert(out != NULL);
+	assert(in != nullptr);
+	assert(out != nullptr);
 	assert(nBits > 0U);
 
 	uint8_t d1 = 0U, d2 = 0U, d3 = 0U, d4 = 0U;

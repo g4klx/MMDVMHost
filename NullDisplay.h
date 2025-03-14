@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2018,2020,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,8 +16,8 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#if !defined(NULLDISPLAY_H)
-#define	NULLDISPLAY_H
+#if !defined(nullptrDISPLAY_H)
+#define	nullptrDISPLAY_H
 
 #include "Display.h"
 

@@ -24,8 +24,8 @@
 // #define	DUMP_YSF
 
 CYSFControl::CYSFControl(const std::string& callsign, bool selfOnly, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool lowDeviation, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
-m_callsign(NULL),
-m_selfCallsign(NULL),
+m_callsign(nullptr),
+m_selfCallsign(nullptr),
 m_selfOnly(selfOnly),
 m_network(network),
 m_display(display),
@@ -47,10 +47,10 @@ m_rfErrs(0U),
 m_rfBits(1U),
 m_netErrs(0U),
 m_netBits(1U),
-m_rfSource(NULL),
-m_rfDest(NULL),
-m_netSource(NULL),
-m_netDest(NULL),
+m_rfSource(nullptr),
+m_rfDest(nullptr),
+m_netSource(nullptr),
+m_netDest(nullptr),
 m_lastFICH(),
 m_netN(0U),
 m_rfPayload(),
@@ -62,10 +62,10 @@ m_minRSSI(0U),
 m_aveRSSI(0U),
 m_rssiCount(0U),
 m_enabled(true),
-m_fp(NULL)
+m_fp(nullptr)
 {
-	assert(display != NULL);
-	assert(rssiMapper != NULL);
+	assert(display != nullptr);
+	assert(rssiMapper != nullptr);
 
 	m_rfPayload.setUplink(callsign);
 	m_rfPayload.setDownlink(callsign);
@@ -100,7 +100,7 @@ CYSFControl::~CYSFControl()
 
 bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (!m_enabled)
 		return false;
@@ -118,8 +118,8 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 
 	if ((type == TAG_LOST) && (m_rfState == RPT_RF_STATE::REJECTED)) {
 		m_rfPayload.reset();
-		m_rfSource = NULL;
-		m_rfDest   = NULL;
+		m_rfSource = nullptr;
+		m_rfDest   = nullptr;
 		m_rfState  = RPT_RF_STATE::LISTENING;
 		return false;
 	}
@@ -289,8 +289,8 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 	} else if (valid && (fi == YSF_FI_TERMINATOR)) {
 		if (m_rfState == RPT_RF_STATE::REJECTED) {
 			m_rfPayload.reset();
-			m_rfSource = NULL;
-			m_rfDest   = NULL;
+			m_rfSource = nullptr;
+			m_rfDest   = nullptr;
 			m_rfState  = RPT_RF_STATE::LISTENING;
 		} else if (m_rfState == RPT_RF_STATE::AUDIO) {
 			m_rfPayload.processHeaderData(data + 2U);
@@ -458,8 +458,8 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 	} else if (valid && (fi == YSF_FI_TERMINATOR)) {
 		if (m_rfState == RPT_RF_STATE::REJECTED) {
 			m_rfPayload.reset();
-			m_rfSource = NULL;
-			m_rfDest   = NULL;
+			m_rfSource = nullptr;
+			m_rfDest   = nullptr;
 			m_rfState  = RPT_RF_STATE::LISTENING;
 		} else if (m_rfState == RPT_RF_STATE::AUDIO) {
 			m_rfPayload.processHeaderData(data + 2U);
@@ -590,7 +590,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			m_rfSource = m_rfPayload.getSource();
 
-			if (m_rfSource == NULL || m_rfDest == NULL)
+			if (m_rfSource == nullptr || m_rfDest == nullptr)
 				return false;
 
 			if (m_selfOnly) {
@@ -756,8 +756,8 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 	} else if (valid && fi == YSF_FI_TERMINATOR) {
 		if (m_rfState == RPT_RF_STATE::REJECTED) {
 			m_rfPayload.reset();
-			m_rfSource = NULL;
-			m_rfDest   = NULL;
+			m_rfSource = nullptr;
+			m_rfDest   = nullptr;
 			m_rfState  = RPT_RF_STATE::LISTENING;
 		} else if (m_rfState == RPT_RF_STATE::DATA) {
 			m_rfPayload.processHeaderData(data + 2U);
@@ -842,7 +842,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 unsigned int CYSFControl::readModem(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_queue.isEmpty())
 		return 0U;
@@ -863,13 +863,13 @@ void CYSFControl::writeEndRF()
 	m_rfPayload.reset();
 
 	// These variables are free'd by YSFPayload
-	m_rfSource = NULL;
-	m_rfDest = NULL;
+	m_rfSource = nullptr;
+	m_rfDest = nullptr;
 
 	if (m_netState == RPT_NET_STATE::IDLE) {
 		m_display->clearFusion();
 
-		if (m_network != NULL)
+		if (m_network != nullptr)
 			m_network->reset();
 	}
 
@@ -890,7 +890,7 @@ void CYSFControl::writeEndNet()
 
 	m_display->clearFusion();
 
-	if (m_network != NULL)
+	if (m_network != nullptr)
 		m_network->reset();
 }
 
@@ -1054,7 +1054,7 @@ void CYSFControl::writeNetwork()
 
 void CYSFControl::clock(unsigned int ms)
 {
-	if (m_network != NULL)
+	if (m_network != nullptr)
 		writeNetwork();
 
 	m_rfTimeoutTimer.clock(ms);
@@ -1072,7 +1072,7 @@ void CYSFControl::clock(unsigned int ms)
 
 void CYSFControl::writeQueueRF(const unsigned char *data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_netState != RPT_NET_STATE::IDLE)
 		return;
@@ -1095,7 +1095,7 @@ void CYSFControl::writeQueueRF(const unsigned char *data)
 
 void CYSFControl::writeQueueNet(const unsigned char *data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_netTimeoutTimer.isRunning() && m_netTimeoutTimer.hasExpired())
 		return;
@@ -1115,9 +1115,9 @@ void CYSFControl::writeQueueNet(const unsigned char *data)
 
 void CYSFControl::writeNetwork(const unsigned char *data, unsigned int count)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
-	if (m_network == NULL)
+	if (m_network == nullptr)
 		return;
 
 	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired())
@@ -1128,7 +1128,7 @@ void CYSFControl::writeNetwork(const unsigned char *data, unsigned int count)
 
 bool CYSFControl::openFile()
 {
-	if (m_fp != NULL)
+	if (m_fp != nullptr)
 		return true;
 
 	time_t t;
@@ -1140,7 +1140,7 @@ bool CYSFControl::openFile()
 	::sprintf(name, "YSF_%04d%02d%02d_%02d%02d%02d.ambe", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
 
 	m_fp = ::fopen(name, "wb");
-	if (m_fp == NULL)
+	if (m_fp == nullptr)
 		return false;
 
 	::fwrite("YSF", 1U, 3U, m_fp);
@@ -1150,7 +1150,7 @@ bool CYSFControl::openFile()
 
 bool CYSFControl::writeFile(const unsigned char* data)
 {
-	if (m_fp == NULL)
+	if (m_fp == nullptr)
 		return false;
 
 	::fwrite(data, 1U, YSF_FRAME_LENGTH_BYTES, m_fp);
@@ -1160,9 +1160,9 @@ bool CYSFControl::writeFile(const unsigned char* data)
 
 void CYSFControl::closeFile()
 {
-	if (m_fp != NULL) {
+	if (m_fp != nullptr) {
 		::fclose(m_fp);
-		m_fp = NULL;
+		m_fp = nullptr;
 	}
 }
 
@@ -1173,18 +1173,18 @@ bool CYSFControl::checkCallsign(const unsigned char* callsign) const
 
 void CYSFControl::processNetCallsigns(const unsigned char* data, unsigned char dgid)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (::memcmp(m_netSource, "          ", 10U) == 0 || ::memcmp(m_netDest, "          ", 10U) == 0) {
 		if (::memcmp(m_netSource, "          ", YSF_CALLSIGN_LENGTH) == 0) {
 			unsigned char* source = m_netPayload.getSource();
-			if (source != NULL)
+			if (source != nullptr)
 				::memcpy(m_netSource, source, YSF_CALLSIGN_LENGTH);
 		}
 
 		if (::memcmp(m_netDest, "          ", YSF_CALLSIGN_LENGTH) == 0) {
 			unsigned char* dest = m_netPayload.getDest();
-			if (dest != NULL)
+			if (dest != nullptr)
 				::memcpy(m_netDest, dest, YSF_CALLSIGN_LENGTH);
 		}
 
@@ -1212,8 +1212,8 @@ void CYSFControl::enable(bool enabled)
 		m_rfPayload.reset();
 
 		// These variables are free'd by YSFPayload
-		m_rfSource = NULL;
-		m_rfDest   = NULL;
+		m_rfSource = nullptr;
+		m_rfDest   = nullptr;
 
 		// Reset the networking section
 		m_netState = RPT_NET_STATE::IDLE;

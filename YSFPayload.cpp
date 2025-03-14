@@ -1,5 +1,5 @@
 /*
-*	Copyright (C) 2016,2017,2020 Jonathan Naylor, G4KLX
+*	Copyright (C) 2016,2017,2020,2025 Jonathan Naylor, G4KLX
 *	Copyright (C) 2016 Mathias Weyland, HB9FRV
 *
 *	This program is free software; you can redistribute it and/or modify
@@ -84,10 +84,10 @@ const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U
 #define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
 CYSFPayload::CYSFPayload() :
-m_uplink(NULL),
-m_downlink(NULL),
-m_source(NULL),
-m_dest(NULL),
+m_uplink(nullptr),
+m_downlink(nullptr),
+m_source(nullptr),
+m_dest(nullptr),
 m_fec()
 {
 }
@@ -102,7 +102,7 @@ CYSFPayload::~CYSFPayload()
 
 bool CYSFPayload::processHeaderData(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	data += YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES;
 
@@ -136,12 +136,12 @@ bool CYSFPayload::processHeaderData(unsigned char* data)
 		for (unsigned int i = 0U; i < 20U; i++)
 			output[i] ^= WHITENING_DATA[i];
 
-		if (m_dest == NULL) {
+		if (m_dest == nullptr) {
 			m_dest = new unsigned char[YSF_CALLSIGN_LENGTH];
 			::memcpy(m_dest, output + 0U, YSF_CALLSIGN_LENGTH);
 		}
 
-		if (m_source == NULL) {
+		if (m_source == nullptr) {
 			m_source = new unsigned char[YSF_CALLSIGN_LENGTH];
 			::memcpy(m_source, output + YSF_CALLSIGN_LENGTH, YSF_CALLSIGN_LENGTH);
 		}
@@ -206,10 +206,10 @@ bool CYSFPayload::processHeaderData(unsigned char* data)
 		for (unsigned int i = 0U; i < 20U; i++)
 			output[i] ^= WHITENING_DATA[i];
 
-		if (m_downlink != NULL)
+		if (m_downlink != nullptr)
 			::memcpy(output + 0U, m_downlink, YSF_CALLSIGN_LENGTH);
 
-		if (m_uplink != NULL)
+		if (m_uplink != nullptr)
 			::memcpy(output + YSF_CALLSIGN_LENGTH, m_uplink, YSF_CALLSIGN_LENGTH);
 
 		for (unsigned int i = 0U; i < 20U; i++)
@@ -251,7 +251,7 @@ bool CYSFPayload::processHeaderData(unsigned char* data)
 
 unsigned int CYSFPayload::processVDMode1Audio(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	data += YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES;
 
@@ -268,7 +268,7 @@ unsigned int CYSFPayload::processVDMode1Audio(unsigned char* data)
 
 bool CYSFPayload::processVDMode1Data(unsigned char* data, unsigned char fn, bool gateway)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	data += YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES;
 
@@ -304,12 +304,12 @@ bool CYSFPayload::processVDMode1Data(unsigned char* data, unsigned char fn, bool
 
 		switch (fn) {
 		case 0U:
-			if (m_dest == NULL) {
+			if (m_dest == nullptr) {
 				m_dest = new unsigned char[YSF_CALLSIGN_LENGTH];
 				::memcpy(m_dest, output + 0U, YSF_CALLSIGN_LENGTH);
 			}
 
-			if (m_source == NULL) {
+			if (m_source == nullptr) {
 				m_source = new unsigned char[YSF_CALLSIGN_LENGTH];
 				::memcpy(m_source, output + YSF_CALLSIGN_LENGTH, YSF_CALLSIGN_LENGTH);
 			}
@@ -317,10 +317,10 @@ bool CYSFPayload::processVDMode1Data(unsigned char* data, unsigned char fn, bool
 			break;
 
 		case 1U:
-			if (m_downlink != NULL && !gateway)
+			if (m_downlink != nullptr && !gateway)
 				::memcpy(output + 0U, m_downlink, YSF_CALLSIGN_LENGTH);
 
-			if (m_uplink != NULL && !gateway)
+			if (m_uplink != nullptr && !gateway)
 				::memcpy(output + YSF_CALLSIGN_LENGTH, m_uplink, YSF_CALLSIGN_LENGTH);
 
 			break;
@@ -388,7 +388,7 @@ bool CYSFPayload::processVDMode1Data(unsigned char* data, unsigned char fn, bool
 
 unsigned int CYSFPayload::processVDMode2Audio(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	data += YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES;
 
@@ -466,7 +466,7 @@ unsigned int CYSFPayload::processVDMode2Audio(unsigned char* data)
 
 bool CYSFPayload::processVDMode2Data(unsigned char* data, unsigned char fn, bool gateway)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	data += YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES;
 
@@ -502,26 +502,26 @@ bool CYSFPayload::processVDMode2Data(unsigned char* data, unsigned char fn, bool
 
 		switch (fn) {
 		case 0U:
-			if (m_dest == NULL) {
+			if (m_dest == nullptr) {
 				m_dest = new unsigned char[YSF_CALLSIGN_LENGTH];
 				::memcpy(m_dest, output, YSF_CALLSIGN_LENGTH);
 			}
 			break;
 
 		case 1U:
-			if (m_source == NULL) {
+			if (m_source == nullptr) {
 				m_source = new unsigned char[YSF_CALLSIGN_LENGTH];
 				::memcpy(m_source, output, YSF_CALLSIGN_LENGTH);
 			}
 			break;
 
 		case 2U:
-			if (m_downlink != NULL && !gateway)
+			if (m_downlink != nullptr && !gateway)
 				::memcpy(output, m_downlink, YSF_CALLSIGN_LENGTH);
 			break;
 
 		case 3U:
-			if (m_uplink != NULL && !gateway)
+			if (m_uplink != nullptr && !gateway)
 				::memcpy(output, m_uplink, YSF_CALLSIGN_LENGTH);
 			break;
 
@@ -576,7 +576,7 @@ bool CYSFPayload::processVDMode2Data(unsigned char* data, unsigned char fn, bool
 
 bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn, bool gateway)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	data += YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES;
 
@@ -614,12 +614,12 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn, b
 		case 0U:
 			// CUtils::dump(1U, "FR Mode Data, CSD1", output, 20U);
 
-			if (m_dest == NULL) {
+			if (m_dest == nullptr) {
 				m_dest = new unsigned char[YSF_CALLSIGN_LENGTH];
 				::memcpy(m_dest, output + 0U, YSF_CALLSIGN_LENGTH);
 			}
 
-			if (m_source == NULL) {
+			if (m_source == nullptr) {
 				m_source = new unsigned char[YSF_CALLSIGN_LENGTH];
 				::memcpy(m_source, output + YSF_CALLSIGN_LENGTH, YSF_CALLSIGN_LENGTH);
 			}
@@ -722,10 +722,10 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn, b
 		case 0U:
 			// CUtils::dump(1U, "FR Mode Data, CSD2", output, 20U);
 
-			if (m_downlink != NULL && !gateway)
+			if (m_downlink != nullptr && !gateway)
 				::memcpy(output + 0U, m_downlink, YSF_CALLSIGN_LENGTH);
 
-			if (m_uplink != NULL && !gateway)
+			if (m_uplink != nullptr && !gateway)
 				::memcpy(output + YSF_CALLSIGN_LENGTH, m_uplink, YSF_CALLSIGN_LENGTH);
 
 			break;
@@ -801,7 +801,7 @@ bool CYSFPayload::processDataFRModeData(unsigned char* data, unsigned char fn, b
 
 unsigned int CYSFPayload::processVoiceFRModeAudio2(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	data += YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES;
 
@@ -815,7 +815,7 @@ unsigned int CYSFPayload::processVoiceFRModeAudio2(unsigned char* data)
 
 unsigned int CYSFPayload::processVoiceFRModeAudio5(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	data += YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES;
 
@@ -832,7 +832,7 @@ unsigned int CYSFPayload::processVoiceFRModeAudio5(unsigned char* data)
 
 bool CYSFPayload::processVoiceFRModeData(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	data += YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES;
 
@@ -888,9 +888,9 @@ bool CYSFPayload::processVoiceFRModeData(unsigned char* data)
 
 void CYSFPayload::writeHeader(unsigned char* data, const unsigned char* csd1, const unsigned char* csd2)
 {
-	assert(data != NULL);
-	assert(csd1 != NULL);
-	assert(csd2 != NULL);
+	assert(data != nullptr);
+	assert(csd1 != nullptr);
+	assert(csd2 != nullptr);
 
 	writeDataFRModeData1(csd1, data);
 
@@ -899,8 +899,8 @@ void CYSFPayload::writeHeader(unsigned char* data, const unsigned char* csd1, co
 
 void CYSFPayload::writeDataFRModeData1(const unsigned char* dt, unsigned char* data)
 {
-	assert(dt != NULL);
-	assert(data != NULL);
+	assert(dt != nullptr);
+	assert(data != nullptr);
 
 	data += YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES;
 
@@ -943,8 +943,8 @@ void CYSFPayload::writeDataFRModeData1(const unsigned char* dt, unsigned char* d
 
 void CYSFPayload::writeDataFRModeData2(const unsigned char* dt, unsigned char* data)
 {
-	assert(dt != NULL);
-	assert(data != NULL);
+	assert(dt != nullptr);
+	assert(data != nullptr);
 
 	data += YSF_SYNC_LENGTH_BYTES + YSF_FICH_LENGTH_BYTES;
 
@@ -1022,6 +1022,6 @@ void CYSFPayload::reset()
 	delete[] m_source;
 	delete[] m_dest;
 
-	m_source = NULL;
-	m_dest = NULL;
+	m_source = nullptr;
+	m_dest = nullptr;
 }

@@ -27,9 +27,9 @@
 #include <cstring>
 
 CDMREmbeddedData::CDMREmbeddedData() :
-m_raw(NULL),
+m_raw(nullptr),
 m_state(LC_STATE::NONE),
-m_data(NULL),
+m_data(nullptr),
 m_FLCO(FLCO::GROUP),
 m_valid(false)
 {
@@ -46,7 +46,7 @@ CDMREmbeddedData::~CDMREmbeddedData()
 // Add LC data (which may consist of 4 blocks) to the data store
 bool CDMREmbeddedData::addData(const unsigned char* data, unsigned char lcss)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	bool rawData[40U];
 	CUtils::byteToBitsBE(data[14U], rawData + 0U);
@@ -168,7 +168,7 @@ void CDMREmbeddedData::encodeEmbeddedData()
 
 unsigned char CDMREmbeddedData::getData(unsigned char* data, unsigned char n) const
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (n >= 1U && n < 5U) {
 		n--;
@@ -277,10 +277,10 @@ void CDMREmbeddedData::decodeEmbeddedData()
 CDMRLC* CDMREmbeddedData::getLC() const
 {
 	if (!m_valid)
-		return NULL;
+		return nullptr;
 
 	if ((m_FLCO != FLCO::GROUP) && (m_FLCO != FLCO::USER_USER))
-		return NULL;
+		return nullptr;
 
 	return new CDMRLC(m_data);
 }
@@ -303,7 +303,7 @@ void CDMREmbeddedData::reset()
 
 bool CDMREmbeddedData::getRawData(unsigned char* data) const
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (!m_valid)
 		return false;

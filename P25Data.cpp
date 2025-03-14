@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2017,2023,2024 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2017,2023,2024,2025 by Jonathan Naylor G4KLX
 *   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com> N2PLL
 *
 *   This program is free software; you can redistribute it and/or modify
@@ -36,7 +36,7 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 #define READ_BIT(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
 CP25Data::CP25Data() :
-m_mi(NULL),
+m_mi(nullptr),
 m_mfId(0U),
 m_algId(P25_ALGO_UNENCRYPT),
 m_kId(0U),
@@ -77,7 +77,7 @@ CP25Data& CP25Data::operator=(const CP25Data& data)
 
 bool CP25Data::decodeHeader(const unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	// deinterleave
 	unsigned char rs[81U];
@@ -116,8 +116,8 @@ bool CP25Data::decodeHeader(const unsigned char* data)
 
 void CP25Data::encodeHeader(unsigned char* data)
 {
-	assert(data != NULL);
-	assert(m_mi != NULL);
+	assert(data != nullptr);
+	assert(m_mi != nullptr);
 
 	unsigned char rs[81U];
 	::memset(rs, 0x00U, 81U);
@@ -147,7 +147,7 @@ void CP25Data::encodeHeader(unsigned char* data)
 
 bool CP25Data::decodeLDU1(const unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char rs[18U];
 
@@ -204,7 +204,7 @@ bool CP25Data::decodeLDU1(const unsigned char* data)
 
 void CP25Data::encodeLDU1(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char rs[18U];
 	::memset(rs, 0x00U, 18U);
@@ -258,7 +258,7 @@ void CP25Data::encodeLDU1(unsigned char* data)
 
 bool CP25Data::decodeLDU2(const unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char rs[18U];
 
@@ -310,8 +310,8 @@ bool CP25Data::decodeLDU2(const unsigned char* data)
 
 void CP25Data::encodeLDU2(unsigned char* data)
 {
-	assert(data != NULL);
-	assert(m_mi != NULL);
+	assert(data != nullptr);
+	assert(m_mi != nullptr);
 
 	unsigned char rs[18U];
 	::memset(rs, 0x00U, 18U);
@@ -349,7 +349,7 @@ void CP25Data::encodeLDU2(unsigned char* data)
 
 bool CP25Data::decodeTSDU(const unsigned char* data)
 {
-    assert(data != NULL);
+    assert(data != nullptr);
 
     // deinterleave
     unsigned char tsbk[12U];
@@ -404,7 +404,7 @@ bool CP25Data::decodeTSDU(const unsigned char* data)
 
 void CP25Data::encodeTSDU(unsigned char* data)
 {
-    assert(data != NULL);
+    assert(data != nullptr);
 
     unsigned char tsbk[12U];
     ::memset(tsbk, 0x00U, 12U);
@@ -459,14 +459,14 @@ void CP25Data::encodeTSDU(unsigned char* data)
 
 void CP25Data::setMI(const unsigned char* mi)
 {
-	assert(mi != NULL);
+	assert(mi != nullptr);
 
 	::memcpy(m_mi, mi, P25_MI_LENGTH_BYTES);
 }
 
 void CP25Data::getMI(unsigned char* mi) const
 {
-	assert(mi != NULL);
+	assert(mi != nullptr);
 
 	::memcpy(mi, m_mi, P25_MI_LENGTH_BYTES);
 }

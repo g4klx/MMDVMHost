@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2018,2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2018,2020,2021,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -54,7 +54,7 @@ void CCASTInfo::setIdleInt()
         m_ipaddress = (char*)info;
         delete m_network;
 
-        if (m_modem != NULL)
+        if (m_modem != nullptr)
             m_modem->writeIPInfo(m_ipaddress);
 
         networkInfoInitialized = true;
@@ -80,7 +80,7 @@ void CCASTInfo::setFMInt()
 
 void CCASTInfo::writeDStarInt(const char* my1, const char* my2, const char* your, const char* type, const char* reflector)
 {
-   if (m_modem != NULL)
+   if (m_modem != nullptr)
         m_modem->writeDStarInfo(my1, my2, your, type, reflector);
 }
 
@@ -90,7 +90,7 @@ void CCASTInfo::clearDStarInt()
 
 void CCASTInfo::writeDMRInt(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type)
 {
-   if (m_modem != NULL)
+   if (m_modem != nullptr)
         m_modem->writeDMRInfo(slotNo, src, group, dst, type);
 }
 
@@ -100,7 +100,7 @@ void CCASTInfo::clearDMRInt(unsigned int slotNo)
 
 void CCASTInfo::writeFusionInt(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin)
 {
-    if (m_modem != NULL)
+    if (m_modem != nullptr)
         m_modem->writeYSFInfo(source, dest, dgid, type, origin);
 }
 
@@ -110,7 +110,7 @@ void CCASTInfo::clearFusionInt()
 
 void CCASTInfo::writeP25Int(const char* source, bool group, unsigned int dest, const char* type)
 {
-    if (m_modem != NULL)
+    if (m_modem != nullptr)
         m_modem->writeP25Info(source, group, dest, type);
 }
 
@@ -120,7 +120,7 @@ void CCASTInfo::clearP25Int()
 
 void CCASTInfo::writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type)
 {
-    if (m_modem != NULL)
+    if (m_modem != nullptr)
         m_modem->writeNXDNInfo(source, group, dest, type);
 }
 
@@ -130,7 +130,7 @@ void CCASTInfo::clearNXDNInt()
 
 void CCASTInfo::writeM17Int(const char* source, const char* dest, const char* type)
 {
-    if (m_modem != NULL)
+    if (m_modem != nullptr)
         m_modem->writeM17Info(source, dest, type);
 }
 
@@ -140,7 +140,7 @@ void CCASTInfo::clearM17Int()
 
 void CCASTInfo::writePOCSAGInt(uint32_t ric, const std::string& message)
 {
-    if (m_modem != NULL)
+    if (m_modem != nullptr)
         m_modem->writePOCSAGInfo(ric, message);
 }
 

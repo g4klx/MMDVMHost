@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2018,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -29,14 +29,14 @@ const unsigned char BIT_MASK_TABLE[] = {0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U
 #define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
 CNXDNLICH::CNXDNLICH(const CNXDNLICH& lich) :
-m_lich(NULL)
+m_lich(nullptr)
 {
 	m_lich = new unsigned char[1U];
 	m_lich[0U] = lich.m_lich[0U];
 }
 
 CNXDNLICH::CNXDNLICH() :
-m_lich(NULL)
+m_lich(nullptr)
 {
 	m_lich = new unsigned char[1U];
 }
@@ -48,7 +48,7 @@ CNXDNLICH::~CNXDNLICH()
 
 bool CNXDNLICH::decode(const unsigned char* bytes)
 {
-	assert(bytes != NULL);
+	assert(bytes != nullptr);
 
 	unsigned int offset = NXDN_FSW_LENGTH_BITS;
 	for (unsigned int i = 0U; i < (NXDN_LICH_LENGTH_BITS / 2U); i++, offset += 2U) {
@@ -64,7 +64,7 @@ bool CNXDNLICH::decode(const unsigned char* bytes)
 
 void CNXDNLICH::encode(unsigned char* bytes)
 {
-	assert(bytes != NULL);
+	assert(bytes != nullptr);
 
 	bool parity = getParity();
 	if (parity)

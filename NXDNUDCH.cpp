@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2018 by Jonathan Naylor G4KLX
+*   Copyright (C) 2018,2025 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -70,14 +70,14 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 #define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
 CNXDNUDCH::CNXDNUDCH(const CNXDNUDCH& udch) :
-m_data(NULL)
+m_data(nullptr)
 {
 	m_data = new unsigned char[23U + 3U];
 	::memcpy(m_data, udch.m_data, 23U + 3U);
 }
 
 CNXDNUDCH::CNXDNUDCH() :
-m_data(NULL)
+m_data(nullptr)
 {
 	m_data = new unsigned char[23U + 3U];
 }
@@ -89,7 +89,7 @@ CNXDNUDCH::~CNXDNUDCH()
 
 bool CNXDNUDCH::decode(const unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char temp1[44U];
 
@@ -135,7 +135,7 @@ bool CNXDNUDCH::decode(const unsigned char* data)
 
 void CNXDNUDCH::encode(unsigned char* data) const
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char temp1[25U];
 	::memset(temp1, 0x00U, 25U);
@@ -176,14 +176,14 @@ unsigned char CNXDNUDCH::getRAN() const
 
 void CNXDNUDCH::getData(unsigned char* data) const
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	::memcpy(data, m_data + 1U, 22U);
 }
 
 void CNXDNUDCH::getRaw(unsigned char* data) const
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	::memset(data, 0x00U, 25U);
 	::memcpy(data, m_data, 23U);
@@ -196,14 +196,14 @@ void CNXDNUDCH::setRAN(unsigned char ran)
 
 void CNXDNUDCH::setData(const unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	::memcpy(m_data + 1U, data, 22U);
 }
 
 void CNXDNUDCH::setRaw(const unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	::memcpy(m_data, data, 25U);
 }
