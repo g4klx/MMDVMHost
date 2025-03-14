@@ -79,8 +79,8 @@ m_bitsCount(0U),
 m_bitErrsAccum(0U),
 m_enabled(true)
 {
-	assert(lookup != NULL);
-	assert(rssiMapper != NULL);
+	assert(lookup != nullptr);
+	assert(rssiMapper != nullptr);
 }
 
 CNXDNControl::~CNXDNControl()
@@ -289,7 +289,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 			m_rfTimeoutTimer.start();
 
-			m_rfState   = RS_RF_AUDIO;
+			m_rfState   = RPT_RF_STATE::AUDIO;
 
 			m_minRSSI   = m_rssi;
 			m_maxRSSI   = m_rssi;
@@ -401,7 +401,7 @@ bool CNXDNControl::processVoice(unsigned char usc, unsigned char option, unsigne
 
 			m_rfTimeoutTimer.start();
 
-			m_rfState = RS_RF_AUDIO;
+			m_rfState = RPT_RF_STATE::AUDIO;
 
 			m_minRSSI = m_rssi;
 			m_maxRSSI = m_rssi;
@@ -625,7 +625,7 @@ bool CNXDNControl::processData(unsigned char option, unsigned char *data)
 		m_rfLayer3 = layer3;
 		m_rfFrames = 0U;
 
-		m_rfState = RS_RF_DATA;
+		m_rfState = RPT_RF_STATE::DATA;
 	}
 
 	if (m_rfState != RPT_RF_STATE::DATA)
@@ -715,8 +715,8 @@ void CNXDNControl::writeEndRF()
 
 	m_rfTimeoutTimer.stop();
 
-	if (m_netState == RS_NET_IDLE) {
-		if (m_network != NULL)
+	if (m_netState == RPT_NET_STATE::IDLE) {
+		if (m_network != nullptr)
 			m_network->reset();
 	}
 
@@ -733,7 +733,7 @@ void CNXDNControl::writeEndNet()
 	m_networkWatchdog.stop();
 	m_packetTimer.stop();
 
-	if (m_network != NULL)
+	if (m_network != nullptr)
 		m_network->reset();
 }
 
@@ -1075,7 +1075,7 @@ void CNXDNControl::scrambler(unsigned char* data) const
 
 bool CNXDNControl::isBusy() const
 {
-	return m_rfState != RS_RF_LISTENING || m_netState != RS_NET_IDLE;
+	return (m_rfState != RPT_RF_STATE::LISTENING) || (m_netState != RPT_NET_STATE::IDLE);
 }
 
 void CNXDNControl::enable(bool enabled)
@@ -1084,7 +1084,7 @@ void CNXDNControl::enable(bool enabled)
 		m_queue.clear();
 
 		// Reset the RF section
-		m_rfState = RS_RF_LISTENING;
+		m_rfState = RPT_RF_STATE::LISTENING;
 
 		m_rfMask = 0x00U;
 		m_rfLayer3.reset();
@@ -1092,7 +1092,7 @@ void CNXDNControl::enable(bool enabled)
 		m_rfTimeoutTimer.stop();
 
 		// Reset the networking section
-		m_netState = RS_NET_IDLE;
+		m_netState = RPT_NET_STATE::IDLE;
 
 		m_netMask = 0x00U;
 		m_netLayer3.reset();
@@ -1147,7 +1147,7 @@ void CNXDNControl::writeJSONBER(unsigned int bits, unsigned int errs)
 
 void CNXDNControl::writeJSONRF(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -1158,7 +1158,7 @@ void CNXDNControl::writeJSONRF(const char* action, unsigned short srcId, const s
 
 void CNXDNControl::writeJSONRF(const char* action, float duration, float ber)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -1172,7 +1172,7 @@ void CNXDNControl::writeJSONRF(const char* action, float duration, float ber)
 
 void CNXDNControl::writeJSONRF(const char* action, float duration, float ber, int minRSSI, int maxRSSI, int aveRSSI)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -1193,7 +1193,7 @@ void CNXDNControl::writeJSONRF(const char* action, float duration, float ber, in
 
 void CNXDNControl::writeJSONNet(const char* action)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -1204,7 +1204,7 @@ void CNXDNControl::writeJSONNet(const char* action)
 
 void CNXDNControl::writeJSONNet(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -1215,7 +1215,7 @@ void CNXDNControl::writeJSONNet(const char* action, unsigned short srcId, const 
 
 void CNXDNControl::writeJSONNet(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId, unsigned char frames)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -1228,7 +1228,7 @@ void CNXDNControl::writeJSONNet(const char* action, unsigned short srcId, const 
 
 void CNXDNControl::writeJSONNet(const char* action, float duration)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -1241,7 +1241,7 @@ void CNXDNControl::writeJSONNet(const char* action, float duration)
 
 void CNXDNControl::writeJSON(nlohmann::json& json, const char* action)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	json["timestamp"] = CUtils::createTimestamp();
 	json["action"]    = action;
@@ -1249,8 +1249,8 @@ void CNXDNControl::writeJSON(nlohmann::json& json, const char* action)
 
 void CNXDNControl::writeJSON(nlohmann::json& json, const char* source, const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId)
 {
-	assert(source != NULL);
-	assert(action != NULL);
+	assert(source != nullptr);
+	assert(action != nullptr);
 
 	json["timestamp"]        = CUtils::createTimestamp();
 	json["source"]           = source;

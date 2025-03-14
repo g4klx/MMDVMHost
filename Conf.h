@@ -150,7 +150,7 @@ public:
 	std::vector<std::string> getDStarWhiteList() const;
 	bool         getDStarAckReply() const;
 	unsigned int getDStarAckTime() const;
-	DSTAR_ACK_MESSAGE getDStarAckMessage() const;
+	DSTAR_ACK    getDStarAckMessage() const;
 	bool         getDStarErrorReply() const;
 	bool         getDStarRemoteGateway() const;
 	unsigned int getDStarModeHang() const;
@@ -175,7 +175,8 @@ public:
 	unsigned int getDMRCallHang() const;
 	unsigned int getDMRTXHang() const;
 	unsigned int getDMRModeHang() const;
-	DMR_OVCM_TYPES getDMROVCM() const;
+	DMR_OVCM     getDMROVCM() const;
+	bool         getDMRProtect() const;
 #endif
 
 #if defined(USE_YSF)
@@ -480,7 +481,7 @@ private:
 	std::vector<std::string> m_dstarWhiteList;
 	bool         m_dstarAckReply;
 	unsigned int m_dstarAckTime;
-	DSTAR_ACK_MESSAGE      m_dstarAckMessage;
+	DSTAR_ACK    m_dstarAckMessage;
 	bool         m_dstarErrorReply;
 	bool         m_dstarRemoteGateway;
 #endif
@@ -508,7 +509,8 @@ private:
 #endif
 	unsigned int m_dmrModeHang;
 #if defined(USE_DMR)
-	DMR_OVCM_TYPES m_dmrOVCM;
+	DMR_OVCM     m_dmrOVCM;
+	bool         m_dmrProtect;
 #endif
 
 #if defined(USE_YSF)

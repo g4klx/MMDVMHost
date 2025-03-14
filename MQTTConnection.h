@@ -24,15 +24,15 @@
 #include <vector>
 #include <string>
 
-enum MQTT_QOS {
-	MQTT_QOS_AT_MODE_ONCE  = 0U,
-	MQTT_QOS_AT_LEAST_ONCE = 1U,
-	MQTT_QOS_EXACTLY_ONCE  = 2U
+enum class MQTT_QOS {
+	AT_MODE_ONCE  = 0U,
+	AT_LEAST_ONCE = 1U,
+	EXACTLY_ONCE  = 2U
 };
 
 class CMQTTConnection {
 public:
-	CMQTTConnection(const std::string& host, unsigned short port, const std::string& name, const bool authEnabled, const std::string& username, const std::string& password, const std::vector<std::pair<std::string, void (*)(const unsigned char*, unsigned int)>>& subs, unsigned int keepalive, MQTT_QOS qos = MQTT_QOS_EXACTLY_ONCE);
+	CMQTTConnection(const std::string& host, unsigned short port, const std::string& name, const bool authEnabled, const std::string& username, const std::string& password, const std::vector<std::pair<std::string, void (*)(const unsigned char*, unsigned int)>>& subs, unsigned int keepalive, MQTT_QOS qos = MQTT_QOS::EXACTLY_ONCE);
 	~CMQTTConnection();
 
 	bool open();

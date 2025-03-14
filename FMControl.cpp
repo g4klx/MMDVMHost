@@ -60,7 +60,7 @@ m_filterStage3(nullptr)
 {
 	assert(txAudioGain > 0.0F);
 	assert(rxAudioGain > 0.0F);
-	assert(rssiMapper != NULL);
+	assert(rssiMapper != nullptr);
 
 	m_preEmphasis  = new CIIRDirectForm1Filter(8.315375384336983F, -7.03334621603483F,0.0F,1.0F, 0.282029168302153F,0.0F, PREEMPHASIS_GAIN_DB);
 	m_deEmphasis   = new CIIRDirectForm1Filter(0.07708787090460224F, 0.07708787090460224F,0.0F, 1.0F, -0.8458242581907955F,0.0F, DEEMPHASIS_GAIN_DB);
@@ -121,7 +121,7 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
 		return true;
 	}
 
-	if (m_network == NULL)
+	if (m_network == nullptr)
 		return true;
 
 	if (data[0U] == TAG_EOT)
@@ -235,7 +235,7 @@ void CFMControl::enable(bool enabled)
 
 void CFMControl::writeJSON(const char* state)
 {
-	assert(state != NULL);
+	assert(state != nullptr);
 
 	nlohmann::json json;
 

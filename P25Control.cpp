@@ -91,8 +91,8 @@ m_bitsCount(0U),
 m_bitErrsAccum(0U),
 m_enabled(true)
 {
-	assert(lookup != NULL);
-	assert(rssiMapper != NULL);
+	assert(lookup != nullptr);
+	assert(rssiMapper != nullptr);
 
 	m_netLDU1 = new unsigned char[9U * 25U];
 	m_netLDU2 = new unsigned char[9U * 25U];
@@ -153,8 +153,8 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		return false;
 	}
 
-	if (data[0U] == TAG_LOST && m_rfState == RS_RF_DATA) {
-		m_rfState    = RS_RF_LISTENING;
+	if ((data[0U] == TAG_LOST) && (m_rfState == RPT_RF_STATE::DATA)) {
+		m_rfState    = RPT_RF_STATE::LISTENING;
 		m_rfPDUCount = 0U;
 		m_rfPDUBits  = 0U;
 
@@ -1010,7 +1010,7 @@ void CP25Control::createNetHeader()
 	LogMessage("P25, received network transmission from %s to %s%u", source.c_str(), lcf == P25_LCF_GROUP ? "TG " : "", dstId);
 	writeJSONNet("start", srcId, source, lcf == P25_LCF_GROUP, dstId);
 
-	m_netState = RS_NET_AUDIO;
+	m_netState = RPT_NET_STATE::AUDIO;
 	m_netTimeout.start();
 	m_netFrames = 0U;
 	m_netLost = 0U;
@@ -1187,12 +1187,12 @@ void CP25Control::createNetTerminator()
 	m_netTimeout.stop();
 	m_networkWatchdog.stop();
 	m_netData.reset();
-	m_netState = RS_NET_IDLE;
+	m_netState = RPT_NET_STATE::IDLE;
 }
 
 bool CP25Control::isBusy() const
 {
-	return m_rfState != RS_RF_LISTENING || m_netState != RS_NET_IDLE;
+	return (m_rfState != RPT_RF_STATE::LISTENING) || (m_netState != RPT_NET_STATE::IDLE);
 }
 
 void CP25Control::enable(bool enabled)
@@ -1201,7 +1201,7 @@ void CP25Control::enable(bool enabled)
 		m_queue.clear();
 
 		// Reset the RF section
-		m_rfState = RS_RF_LISTENING;
+		m_rfState = RPT_RF_STATE::LISTENING;
 		m_rfTimeout.stop();
 		m_rfData.reset();
 
@@ -1209,7 +1209,7 @@ void CP25Control::enable(bool enabled)
 		m_netTimeout.stop();
 		m_networkWatchdog.stop();
 		m_netData.reset();
-		m_netState = RS_NET_IDLE;
+		m_netState = RPT_NET_STATE::IDLE;
 	}
 
 	m_enabled = enabled;
@@ -1254,7 +1254,7 @@ void CP25Control::writeJSONBER()
 
 void CP25Control::writeJSONRF(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -1265,7 +1265,7 @@ void CP25Control::writeJSONRF(const char* action, unsigned int srcId, const std:
 
 void CP25Control::writeJSONRF(const char* action, float duration, float ber)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -1279,7 +1279,7 @@ void CP25Control::writeJSONRF(const char* action, float duration, float ber)
 
 void CP25Control::writeJSONRF(const char* action, float duration, float ber, int minRSSI, int maxRSSI, int aveRSSI)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -1300,7 +1300,7 @@ void CP25Control::writeJSONRF(const char* action, float duration, float ber, int
 
 void CP25Control::writeJSONNet(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -1311,7 +1311,7 @@ void CP25Control::writeJSONNet(const char* action, unsigned int srcId, const std
 
 void CP25Control::writeJSONNet(const char* action, float duration, float loss)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -1325,7 +1325,7 @@ void CP25Control::writeJSONNet(const char* action, float duration, float loss)
 
 void CP25Control::writeJSON(nlohmann::json& json, const char* action)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	json["timestamp"] = CUtils::createTimestamp();
 	json["action"]    = action;
@@ -1333,8 +1333,8 @@ void CP25Control::writeJSON(nlohmann::json& json, const char* action)
 
 void CP25Control::writeJSON(nlohmann::json& json, const char* source, const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId)
 {
-	assert(source != NULL);
-	assert(action != NULL);
+	assert(source != nullptr);
+	assert(action != nullptr);
 
 	json["timestamp"]        = CUtils::createTimestamp();
 	json["source"]           = source;

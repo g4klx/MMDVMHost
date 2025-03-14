@@ -117,7 +117,7 @@ enum class FLCO {
 	TALKER_ALIAS_BLOCK1 = 5,
 	TALKER_ALIAS_BLOCK2 = 6,
 	TALKER_ALIAS_BLOCK3 = 7,
-	GINFO            = 8
+	GPS_INFO            = 8
 };
 
 #endif

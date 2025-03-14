@@ -23,6 +23,8 @@
 #include "Defines.h"
 #include "DMRLC.h"
 
+#if defined(USE_DMR)
+
 enum class LC_STATE {
 	NONE,
 	FIRST,
@@ -64,4 +66,3 @@ private:
 #endif
 
 #endif
-

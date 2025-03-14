@@ -37,8 +37,8 @@
 #endif
 
 enum class IPMATCHTYPE {
-	IMT_ADDREAND_PORT,
-	IMT_ADDREONLY
+	ADDRESS_AND_PORT,
+	ADDRESS_ONLY
 };
 
 class CUDPSocket {
@@ -61,7 +61,7 @@ public:
 	static int lookup(const std::string& hostName, unsigned short port, sockaddr_storage& address, unsigned int& addressLength);
 	static int lookup(const std::string& hostName, unsigned short port, sockaddr_storage& address, unsigned int& addressLength, struct addrinfo& hints);
 
-	static bool match(const sockaddr_storage& addr1, const sockaddr_storage& addr2, IPMATCHTYPE type = IPMATCHTYPE::IMT_ADDREAND_PORT);
+	static bool match(const sockaddr_storage& addr1, const sockaddr_storage& addr2, IPMATCHTYPE type = IPMATCHTYPE::ADDRESS_AND_PORT);
 
 	static bool isNone(const sockaddr_storage& addr);
 

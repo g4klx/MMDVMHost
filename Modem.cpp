@@ -318,7 +318,7 @@ m_cd(false),
 m_lockout(false),
 m_error(false),
 m_mode(MODE_IDLE),
-m_hwType(HWT_UNKNOWN),
+m_hwType(HW_TYPE::UNKNOWN),
 #if defined(USE_AX25)
 m_ax25RXTwist(0),
 m_ax25TXDelay(300U),
@@ -1610,7 +1610,7 @@ unsigned int CModem::readTransparentData(unsigned char* data)
 
 unsigned int CModem::readSerialData(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_rxSerialData.isEmpty())
 		return 0U;
@@ -2368,7 +2368,7 @@ bool CModem::readVersion()
 					LogInfo("MMDVM protocol version: 1, description: %.*s", m_length - 4U, m_buffer + 4U);
 					m_capabilities1 = CAP1_DSTAR | CAP1_DMR | CAP1_YSF | CAP1_P25 | CAP1_NXDN;
 					m_capabilities2 = CAP2_POCSAG;
-					if (::strstr((char*)(m_buffer + 4U), "v1.6.") != NULL)
+					if (::strstr((char*)(m_buffer + 4U), "v1.6.") != nullptr)
 						m_capabilities1 |= CAP1_M17;
 					break;
 

@@ -67,7 +67,7 @@ m_output(),
 m_buffer(),
 m_ric(0U),
 m_data(),
-m_state(PS_NONE),
+m_state(POCSAG_STATE::NONE),
 m_enabled(true)
 {
 }
@@ -358,7 +358,7 @@ void CPOCSAGControl::clock(unsigned int ms)
 	if (m_state == POCSAG_STATE::ENDING) {
 		LogMessage("POCSAG, transmitted %u frame(s) of data from %u message(s)", m_frames, m_count);
 		writeJSON("network", 0U, "end");
-		m_state = PS_NONE;
+		m_state = POCSAG_STATE::NONE;
 	}
 }
 
@@ -533,8 +533,8 @@ void CPOCSAGControl::decodeROT1(const std::string& in, unsigned int start, std::
 
 void CPOCSAGControl::writeJSON(const char* source, unsigned int ric, const char* functional)
 {
-	assert(source != NULL);
-	assert(functional != NULL);
+	assert(source != nullptr);
+	assert(functional != nullptr);
 
 	nlohmann::json json;
 
@@ -548,8 +548,8 @@ void CPOCSAGControl::writeJSON(const char* source, unsigned int ric, const char*
 
 void CPOCSAGControl::writeJSON(const char* source, unsigned int ric, const char* functional, const std::string& message)
 {
-	assert(source != NULL);
-	assert(functional != NULL);
+	assert(source != nullptr);
+	assert(functional != nullptr);
 
 	nlohmann::json json;
 

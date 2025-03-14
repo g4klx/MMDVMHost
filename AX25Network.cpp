@@ -52,9 +52,9 @@ bool CAX25Network::open()
 
 bool CAX25Network::write(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 	assert(length > 0U);
-	assert(m_mqtt != NULL);
+	assert(m_mqtt != nullptr);
 
 	if (!m_enabled)
 		return true;
@@ -95,7 +95,7 @@ bool CAX25Network::write(const unsigned char* data, unsigned int length)
 
 unsigned int CAX25Network::read(unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 	assert(length > 0U);
 
 	if (m_buffer.isEmpty())
@@ -153,7 +153,7 @@ unsigned int CAX25Network::read(unsigned char* data, unsigned int length)
 
 void CAX25Network::setData(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 	assert(length > 0U);
 
 	m_mutex.lock();

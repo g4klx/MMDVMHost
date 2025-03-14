@@ -29,88 +29,88 @@
 class CMMDVMHost;
 
 enum class REMOTE_COMMAND {
-	RCD_NONE,
-	RCD_MODE_IDLE,
-	RCD_MODE_LOCKOUT,
+	NONE,
+	MODE_IDLE,
+	MODE_LOCKOUT,
 #if defined(USE_DSTAR)
-	RCD_MODE_DSTAR,
+	MODE_DSTAR,
 #endif
 #if defined(USE_DMR)
-	RCD_MODE_DMR,
+	MODE_DMR,
 #endif
 #if defined(USE_YSF)
-	RCD_MODE_YSF,
+	MODE_YSF,
 #endif
 #if defined(USE_P25)
-	RCD_MODE_P25,
+	MODE_P25,
 #endif
 #if defined(USE_NXDN)
-	RCD_MODE_NXDN,
+	MODE_NXDN,
 #endif
 #if defined(USE_M17)
-	RCD_MODE_M17,
+	MODE_M17,
 #endif
 #if defined(USE_FM)
-	RCD_MODE_FM,
+	MODE_FM,
 #endif
 #if defined(USE_DSTAR)
-	RCD_ENABLE_DSTAR,
+	ENABLE_DSTAR,
 #endif
 #if defined(USE_DMR)
-	RCD_ENABLE_DMR,
+	ENABLE_DMR,
 #endif
 #if defined(USE_YSF)
-	RCD_ENABLE_YSF,
+	ENABLE_YSF,
 #endif
 #if defined(USE_P25)
-	RCD_ENABLE_P25,
+	ENABLE_P25,
 #endif
 #if defined(USE_NXDN)
-	RCD_ENABLE_NXDN,
+	ENABLE_NXDN,
 #endif
 #if defined(USE_M17)
-	RCD_ENABLE_M17,
+	ENABLE_M17,
 #endif
 #if defined(USE_FM)
-	RCD_ENABLE_FM,
+	ENABLE_FM,
 #endif
 #if defined(USE_AX25)
-	RCD_ENABLE_AX25,
+	ENABLE_AX25,
 #endif
 #if defined(USE_DSTAR)
-	RCD_DISABLE_DSTAR,
+	DISABLE_DSTAR,
 #endif
 #if defined(USE_DMR)
-	RCD_DISABLE_DMR,
+	DISABLE_DMR,
 #endif
 #if defined(USE_YSF)
-	RCD_DISABLE_YSF,
+	DISABLE_YSF,
 #endif
 #if defined(USE_P25)
-	RCD_DISABLE_P25,
+	DISABLE_P25,
 #endif
 #if defined(USE_NXDN)
-	RCD_DISABLE_NXDN,
+	DISABLE_NXDN,
 #endif
 #if defined(USE_M17)
-	RCD_DISABLE_M17,
+	DISABLE_M17,
 #endif
 #if defined(USE_FM)
-	RCD_DISABLE_FM,
+	DISABLE_FM,
 #endif
 #if defined(USE_AX25)
-	RCD_DISABLE_AX25,
+	DISABLE_AX25,
 #endif
 #if defined(USE_POCSAG)
-	RCD_PAGE,
-	RCD_PAGE_BCD,
-	RCD_PAGE_A1,
-	RCD_PAGE_A2,
+	PAGE,
+	PAGE_BCD,
+	PAGE_A1,
+	PAGE_A2,
 #endif
-	RCD_CW,
-	RCD_RELOAD,
-	RCD_CONNECTION_STATUS,
-	RCD_CONFIG_HOSTS
+	CW,
+	RELOAD,
+	CONNECTION_STATUS,
+	CONFIG_HOSTS
 };
 
 class CRemoteControl {

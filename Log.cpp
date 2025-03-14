@@ -33,7 +33,7 @@
 #include <cassert>
 #include <cstring>
 
-CMQTTConnection* m_mqtt = NULL;
+CMQTTConnection* m_mqtt = nullptr;
 
 static unsigned int m_mqttLevel = 2U;
 
@@ -49,10 +49,10 @@ void LogInitialise(unsigned int displayLevel, unsigned int mqttLevel)
 
 void LogFinalise()
 {
-	if (m_mqtt != NULL) {
+	if (m_mqtt != nullptr) {
 		m_mqtt->close();
 		delete m_mqtt;
-		m_mqtt = NULL;
+		m_mqtt = nullptr;
 	}
 }
 
@@ -82,7 +82,7 @@ void Log(unsigned int level, const char* fmt, ...)
 
 	va_end(vl);
 
-	if (m_mqtt != NULL && level >= m_mqttLevel && m_mqttLevel != 0U)
+	if (m_mqtt != nullptr && level >= m_mqttLevel && m_mqttLevel != 0U)
 		m_mqtt->publish("log", buffer);
 
 	if (level >= m_displayLevel && m_displayLevel != 0U) {
@@ -96,7 +96,7 @@ void Log(unsigned int level, const char* fmt, ...)
 
 void WriteJSON(const std::string& topLevel, nlohmann::json& json)
 {
-	if (m_mqtt != NULL) {
+	if (m_mqtt != nullptr) {
 		nlohmann::json top;
 
 		top[topLevel] = json;

@@ -27,8 +27,8 @@ const unsigned int RSSI_COUNT   = 10U;		// 10 * 100ms = 1000ms
 const unsigned int BER_COUNT    = 10U;		// 10 * 100ms = 1000ms
 
 CYSFControl::CYSFControl(const std::string& callsign, bool selfOnly, CYSFNetwork* network, unsigned int timeout, bool duplex, bool lowDeviation, bool remoteGateway, CRSSIInterpolator* rssiMapper) :
-m_callsign(NULL),
-m_selfCallsign(NULL),
+m_callsign(nullptr),
+m_selfCallsign(nullptr),
 m_selfOnly(selfOnly),
 m_network(network),
 m_duplex(duplex),
@@ -68,7 +68,7 @@ m_bitsCount(0U),
 m_bitErrsAccum(0U),
 m_enabled(true)
 {
-	assert(rssiMapper != NULL);
+	assert(rssiMapper != nullptr);
 
 	m_rfPayload.setUplink(callsign);
 	m_rfPayload.setDownlink(callsign);
@@ -110,7 +110,7 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 
 	unsigned char type = data[0U];
 
-	if (type == TAG_LOST && m_rfState == RS_RF_AUDIO) {
+	if ((type == TAG_LOST) && (m_rfState == RPT_RF_STATE::AUDIO)) {
 		if (m_rssi != 0) {
 			LogMessage("YSF, transmission lost from %10.10s to %10.10s, %.1f seconds, BER: %.1f%%, RSSI: %d/%d/%d dBm", m_rfSource, m_rfDest, float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
 			writeJSONRF("lost", float(m_rfFrames) / 10.0F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
@@ -238,7 +238,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 				bool ret = checkCallsign(m_rfSource);
 				if (!ret) {
 					LogMessage("YSF, invalid access attempt from %10.10s to DG-ID %u", m_rfSource, dgid);
-					m_rfState = RS_RF_REJECTED;
+					m_rfState = RPT_RF_STATE::REJECTED;
 					writeJSONRF("rejected", "voice_vw", m_rfSource, dgid);
 					return true;
 				}
@@ -406,7 +406,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 				bool ret = checkCallsign(m_rfSource);
 				if (!ret) {
 					LogMessage("YSF, invalid access attempt from %10.10s to DG-ID %u", m_rfSource, dgid);
-					m_rfState = RS_RF_REJECTED;
+					m_rfState = RPT_RF_STATE::REJECTED;
 					writeJSONRF("rejected", "voice_dn", m_rfSource, dgid);
 					return true;
 				}
@@ -602,7 +602,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 				bool ret = checkCallsign(m_rfSource);
 				if (!ret) {
 					LogMessage("YSF, invalid access attempt from %10.10s to DG-ID %u", m_rfSource, dgid);
-					m_rfState = RS_RF_REJECTED;
+					m_rfState = RPT_RF_STATE::REJECTED;
 					writeJSONRF("rejected", "voice_dn", m_rfSource, dgid);
 					return true;
 				}
@@ -707,7 +707,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 				bool ret = checkCallsign(m_rfSource);
 				if (!ret) {
 					LogMessage("YSF, invalid access attempt from %10.10s to DG-ID %u", m_rfSource, dgid);
-					m_rfState = RS_RF_REJECTED;
+					m_rfState = RPT_RF_STATE::REJECTED;
 					writeJSONRF("rejected", "data_fr", m_rfSource, dgid);
 					return true;
 				}
@@ -871,8 +871,8 @@ void CYSFControl::writeEndRF()
 	m_rfSource = nullptr;
 	m_rfDest = nullptr;
 
-	if (m_netState == RS_NET_IDLE) {
-		if (m_network != NULL)
+	if (m_netState == RPT_NET_STATE::IDLE) {
+		if (m_network != nullptr)
 			m_network->reset();
 	}
 }
@@ -887,7 +887,7 @@ void CYSFControl::writeEndNet()
 
 	m_netPayload.reset();
 
-	if (m_network != NULL)
+	if (m_network != nullptr)
 		m_network->reset();
 }
 
@@ -1224,9 +1224,9 @@ void CYSFControl::writeJSONBER(unsigned int bits, unsigned int errs)
 
 void CYSFControl::writeJSONRF(const char* action, const char* mode, const unsigned char* source, unsigned char dgid)
 {
-	assert(action != NULL);
-	assert(mode != NULL);
-	assert(source != NULL);
+	assert(action != nullptr);
+	assert(mode != nullptr);
+	assert(source != nullptr);
 
 	nlohmann::json json;
 
@@ -1239,7 +1239,7 @@ void CYSFControl::writeJSONRF(const char* action, const char* mode, const unsign
 
 void CYSFControl::writeJSONRF(const char* action, float duration, float ber)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -1253,7 +1253,7 @@ void CYSFControl::writeJSONRF(const char* action, float duration, float ber)
 
 void CYSFControl::writeJSONRF(const char* action, float duration, float ber, int minRSSI, int maxRSSI, int aveRSSI)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -1274,9 +1274,9 @@ void CYSFControl::writeJSONRF(const char* action, float duration, float ber, int
 
 void CYSFControl::writeJSONNet(const char* action, const unsigned char* source, unsigned char dgid, const unsigned char* reflector)
 {
-	assert(action != NULL);
-	assert(source != NULL);
-	assert(reflector != NULL);
+	assert(action != nullptr);
+	assert(source != nullptr);
+	assert(reflector != nullptr);
 
 	nlohmann::json json;
 
@@ -1289,7 +1289,7 @@ void CYSFControl::writeJSONNet(const char* action, const unsigned char* source, 
 
 void CYSFControl::writeJSONNet(const char* action, float duration, unsigned int loss)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -1303,7 +1303,7 @@ void CYSFControl::writeJSONNet(const char* action, float duration, unsigned int 
 
 void CYSFControl::writeJSONRF(nlohmann::json& json, const char* action)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	json["timestamp"] = CUtils::createTimestamp();
 	json["action"]    = action;
@@ -1311,8 +1311,8 @@ void CYSFControl::writeJSONRF(nlohmann::json& json, const char* action)
 
 void CYSFControl::writeJSONRF(nlohmann::json& json, const char* action, const unsigned char* source, unsigned char dgid)
 {
-	assert(action != NULL);
-	assert(source != NULL);
+	assert(action != nullptr);
+	assert(source != nullptr);
 
 	json["timestamp"] = CUtils::createTimestamp();
 
@@ -1325,7 +1325,7 @@ void CYSFControl::writeJSONRF(nlohmann::json& json, const char* action, const un
 
 void CYSFControl::writeJSONNet(nlohmann::json& json, const char* action)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	json["timestamp"] = CUtils::createTimestamp();
 	json["action"]    = action;
@@ -1333,8 +1333,8 @@ void CYSFControl::writeJSONNet(nlohmann::json& json, const char* action)
 
 void CYSFControl::writeJSONNet(nlohmann::json& json, const char* action, const unsigned char* source, unsigned char dgid)
 {
-	assert(action != NULL);
-	assert(source != NULL);
+	assert(action != nullptr);
+	assert(source != nullptr);
 
 	json["timestamp"] = CUtils::createTimestamp();
 
@@ -1347,7 +1347,7 @@ void CYSFControl::writeJSONNet(nlohmann::json& json, const char* action, const u
 
 std::string CYSFControl::convertBuffer(const unsigned char* buffer) const
 {
-	assert(buffer != NULL);
+	assert(buffer != nullptr);
 
 	std::string callsign((char*)buffer, 10U);
 

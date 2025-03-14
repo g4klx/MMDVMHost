@@ -184,7 +184,7 @@ void CFMNetwork::clock(unsigned int ms)
 		return;
 
 	// Check if the data is for us
-	if (!CUDPSocket::match(addr, m_addr, IMT_ADDRESS_AND_PORT)) {
+	if (!CUDPSocket::match(addr, m_addr, IPMATCHTYPE::ADDRESS_AND_PORT)) {
 		LogMessage("FM packet received from an invalid source");
 		return;
 	}

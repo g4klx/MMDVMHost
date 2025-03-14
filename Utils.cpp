@@ -189,7 +189,7 @@ std::string CUtils::createTimestamp()
 	::sprintf(buffer, "%04u-%02u-%02u %02u:%02u:%02u.%03u", st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 #else
 	struct timeval now;
-	::gettimeofday(&now, NULL);
+	::gettimeofday(&now, nullptr);
 
 	struct tm* tm = ::gmtime(&now.tv_sec);
 

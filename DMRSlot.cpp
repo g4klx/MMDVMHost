@@ -39,8 +39,8 @@ unsigned int   CDMRSlot::m_colorCode = 0U;
 bool           CDMRSlot::m_embeddedLCOnly = false;
 bool           CDMRSlot::m_dumpTAData = true;
 
-CModem*        CDMRSlot::m_modem = NULL;
-CDMRNetwork*   CDMRSlot::m_network = NULL;
+CModem*        CDMRSlot::m_modem = nullptr;
+CDMRNetwork*   CDMRSlot::m_network = nullptr;
 bool           CDMRSlot::m_duplex = true;
 CDMRLookup*    CDMRSlot::m_lookup = nullptr;
 unsigned int   CDMRSlot::m_hangCount = 3U * 17U;
@@ -148,7 +148,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 	if (!m_enabled)
 		return false;
 
-	if (data[0U] == TAG_LOST && m_rfState == RS_RF_AUDIO) {
+	if ((data[0U] == TAG_LOST) && (m_rfState == RPT_RF_STATE::AUDIO)) {
 		unsigned int srcId = m_rfLC->getSrcId();
 		unsigned int dstId = m_rfLC->getDstId();
 		std::string src = m_lookup->find(srcId);
@@ -156,10 +156,10 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 		FLCO flco       = m_rfLC->getFLCO();
 
 		if (m_rssi != 0) {
-			LogMessage("DMR Slot %u, RF voice transmission lost from %s to %s%s, %.1f seconds, BER: %.1f%%, RSSI: %d/%d/%d dBm", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
+			LogMessage("DMR Slot %u, RF voice transmission lost from %s to %s%s, %.1f seconds, BER: %.1f%%, RSSI: %d/%d/%d dBm", m_slotNo, src.c_str(), flco == FLCO::GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / m_rssiCountTotal);
 			writeJSONRF("lost", float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
 		} else {
-			LogMessage("DMR Slot %u, RF voice transmission lost from %s to %s%s, %.1f seconds, BER: %.1f%%", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
+			LogMessage("DMR Slot %u, RF voice transmission lost from %s to %s%s, %.1f seconds, BER: %.1f%%", m_slotNo, src.c_str(), flco == FLCO::GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
 			writeJSONRF("lost", float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
 		}
 
@@ -172,14 +172,14 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 		}
 	}
 
-	if (data[0U] == TAG_LOST && m_rfState == RS_RF_DATA) {
+	if ((data[0U] == TAG_LOST) && (m_rfState == RPT_RF_STATE::DATA)) {
 		unsigned int srcId = m_rfLC->getSrcId();
 		unsigned int dstId = m_rfLC->getDstId();
 		std::string src = m_lookup->find(srcId);
 		std::string dst = m_lookup->find(dstId);
 		FLCO flco       = m_rfLC->getFLCO();
 
-		LogMessage("DMR Slot %u, RF data transmission lost from %s to %s%s", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str());
+		LogMessage("DMR Slot %u, RF data transmission lost from %s to %s%s", m_slotNo, src.c_str(), flco == FLCO::GROUP ? "TG " : "", dst.c_str());
 		writeJSONRF("lost");
 		writeEndRF();
 		return false;
@@ -250,7 +250,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			if (!CDMRAccessControl::validateSrcId(srcId)) {
 				LogMessage("DMR Slot %u, RF user %u rejected", m_slotNo, srcId);
-				writeJSONRF("rejected", srcId, src, flco == FLCO_GROUP, dstId);
+				writeJSONRF("rejected", srcId, src, flco == FLCO::GROUP, dstId);
 				delete lc;
 				m_rfState = RPT_RF_STATE::LISTENING;
 				return false;
@@ -258,7 +258,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			if (!CDMRAccessControl::validateTGId(m_slotNo, flco == FLCO::GROUP, dstId)) {
 				LogMessage("DMR Slot %u, RF user %u rejected for using TG %u", m_slotNo, srcId, dstId);
-				writeJSONRF("rejected", srcId, src, flco == FLCO_GROUP, dstId);
+				writeJSONRF("rejected", srcId, src, flco == FLCO::GROUP, dstId);
 				delete lc;
 				m_rfState = RPT_RF_STATE::LISTENING;
 				return false;
@@ -323,14 +323,14 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			m_rfState = RPT_RF_STATE::AUDIO;
 
-			if (m_netState == RS_NET_IDLE) {
-				setShortLC(m_slotNo, dstId, flco, ACTIVITY_VOICE);
+			if (m_netState == RPT_NET_STATE::IDLE) {
+				setShortLC(m_slotNo, dstId, flco, ACTIVITY_TYPE::VOICE);
 				writeJSONRSSI();
 				writeJSONBER();
 			}
 
-			LogMessage("DMR Slot %u, received RF voice header from %s to %s%s", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str());
-			writeJSONRF("start", srcId, src, flco == FLCO_GROUP, dstId);
+			LogMessage("DMR Slot %u, received RF voice header from %s to %s%s", m_slotNo, src.c_str(), flco == FLCO::GROUP ? "TG " : "", dst.c_str());
+			writeJSONRF("start", srcId, src, flco == FLCO::GROUP, dstId);
 
 			return true;
 		} else if (dataType == DT_VOICE_PI_HEADER) {
@@ -393,10 +393,10 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			FLCO flco       = m_rfLC->getFLCO();
 
 			if (m_rssi != 0) {
-				LogMessage("DMR Slot %u, received RF end of voice transmission from %s to %s%s, %.1f seconds, BER: %.1f%%, RSSI: %d/%d/%d dBm", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
+				LogMessage("DMR Slot %u, received RF end of voice transmission from %s to %s%s, %.1f seconds, BER: %.1f%%, RSSI: %d/%d/%d dBm", m_slotNo, src.c_str(), flco == FLCO::GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
 				writeJSONRF("end", float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits), m_minRSSI, m_maxRSSI, m_aveRSSI / int(m_rssiCountTotal));
 			} else {
-				LogMessage("DMR Slot %u, received RF end of voice transmission from %s to %s%s, %.1f seconds, BER: %.1f%%", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
+				LogMessage("DMR Slot %u, received RF end of voice transmission from %s to %s%s, %.1f seconds, BER: %.1f%%", m_slotNo, src.c_str(), flco == FLCO::GROUP ? "TG " : "", dst.c_str(), float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
 				writeJSONRF("end", float(m_rfFrames) / 16.667F, float(m_rfErrs * 100U) / float(m_rfBits));
 			}
 
@@ -425,14 +425,14 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			if (!CDMRAccessControl::validateSrcId(srcId)) {
 				LogMessage("DMR Slot %u, RF user %u rejected", m_slotNo, srcId);
 				writeJSONRF("rejected", srcId, src, gi, dstId);
-				m_rfState = RS_RF_LISTENING;
+				m_rfState = RPT_RF_STATE::LISTENING;
 				return false;
 			}
 
 			if (!CDMRAccessControl::validateTGId(m_slotNo, gi, dstId)) {
 				LogMessage("DMR Slot %u, RF user %u rejected for using TG %u", m_slotNo, srcId, dstId);
 				writeJSONRF("rejected", srcId, src, gi, dstId);
-				m_rfState = RS_RF_LISTENING;
+				m_rfState = RPT_RF_STATE::LISTENING;
 				return false;
 			}
 
@@ -459,8 +459,8 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 			m_rfState = RPT_RF_STATE::DATA;
 
-			if (m_netState == RS_NET_IDLE) {
-				setShortLC(m_slotNo, dstId, gi ? FLCO_GROUP : FLCO_USER_USER, ACTIVITY_DATA);
+			if (m_netState == RPT_NET_STATE::IDLE) {
+				setShortLC(m_slotNo, dstId, gi ? FLCO::GROUP : FLCO::USER_USER, ACTIVITY_TYPE::DATA);
 				writeJSONRSSI();
 			}
 
@@ -500,14 +500,14 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				if (!CDMRAccessControl::validateSrcId(srcId)) {
 					LogMessage("DMR Slot %u, RF user %u rejected", m_slotNo, srcId);
 					writeJSONRF("rejected", srcId, src, gi, dstId);
-					m_rfState = RS_RF_LISTENING;
+					m_rfState = RPT_RF_STATE::LISTENING;
 					return false;
 				}
 
 				if (!CDMRAccessControl::validateTGId(m_slotNo, gi, dstId)) {
 					LogMessage("DMR Slot %u, RF user %u rejected for using TG %u", m_slotNo, srcId, dstId);
 					writeJSONRF("rejected", srcId, src, gi, dstId);
-					m_rfState = RS_RF_LISTENING;
+					m_rfState = RPT_RF_STATE::LISTENING;
 					return false;
 				}
 			}
@@ -568,8 +568,8 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			}
 
 			// If data preamble, signal its existence
-			if (m_netState == RS_NET_IDLE && csbko == CSBKO_PRECCSBK && csbk.getDataContent()) {
-				setShortLC(m_slotNo, dstId, gi ? FLCO_GROUP : FLCO_USER_USER, ACTIVITY_DATA);
+			if ((m_netState == RPT_NET_STATE::IDLE) && (csbko == CSBKO::PRECCSBK) && csbk.getDataContent()) {
+				setShortLC(m_slotNo, dstId, gi ? FLCO::GROUP : FLCO::USER_USER, ACTIVITY_TYPE::DATA);
 				writeJSONRSSI();
 			}
 
@@ -721,7 +721,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					// CUtils::dump(1U, text, data, 9U);
 					break;
 
-				case FLCO::GINFO:
+				case FLCO::GPS_INFO:
 					if (m_dumpTAData) {
 						::sprintf(text, "DMR Slot %u, Embedded GPS Info", m_slotNo);
 						CUtils::dump(1U, text, data, 9U);
@@ -885,7 +885,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 				if (!CDMRAccessControl::validateSrcId(srcId)) {
 					LogMessage("DMR Slot %u, RF user %u rejected", m_slotNo, srcId);
-					writeJSONRF("rejected", srcId, src, flco == FLCO_GROUP, dstId);
+					writeJSONRF("rejected", srcId, src, flco == FLCO::GROUP, dstId);
 					delete lc;
 					m_rfState = RPT_RF_STATE::LISTENING;
 					return false;
@@ -893,7 +893,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 				if (!CDMRAccessControl::validateTGId(m_slotNo, flco == FLCO::GROUP, dstId)) {
 					LogMessage("DMR Slot %u, RF user %u rejected for using TG %u", m_slotNo, srcId, dstId);
-					writeJSONRF("rejected", srcId, src, flco == FLCO_GROUP, dstId);
+					writeJSONRF("rejected", srcId, src, flco == FLCO::GROUP, dstId);
 					delete lc;
 					m_rfState = RPT_RF_STATE::LISTENING;
 					return false;
@@ -994,14 +994,14 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 
 				m_rfState = RPT_RF_STATE::AUDIO;
 
-				if (m_netState == RS_NET_IDLE) {
-					setShortLC(m_slotNo, dstId, flco, ACTIVITY_VOICE);
+				if (m_netState == RPT_NET_STATE::IDLE) {
+					setShortLC(m_slotNo, dstId, flco, ACTIVITY_TYPE::VOICE);
 					writeJSONRSSI();
 					writeJSONBER();
 				}
 
-				LogMessage("DMR Slot %u, received RF late entry from %s to %s%s", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str());
-				writeJSONRF("late_entry", srcId, src, flco == FLCO_GROUP, dstId);
+				LogMessage("DMR Slot %u, received RF late entry from %s to %s%s", m_slotNo, src.c_str(), flco == FLCO::GROUP ? "TG " : "", dst.c_str());
+				writeJSONRF("late_entry", srcId, src, flco == FLCO::GROUP, dstId);
 
 				return true;
 			}
@@ -1030,7 +1030,7 @@ void CDMRSlot::writeEndRF(bool writeEnd)
 {
 	m_rfState = RPT_RF_STATE::LISTENING;
 
-	if (m_netState == RS_NET_IDLE)
+	if (m_netState == RPT_NET_STATE::IDLE)
 		setShortLC(m_slotNo, 0U);
 
 	if (writeEnd) {
@@ -1121,7 +1121,7 @@ void CDMRSlot::writeEndNet(bool writeEnd)
 	m_netN = 0U;
 
 	delete m_netLC;
-	m_netLC = NULL;
+	m_netLC = nullptr;
 }
 
 void CDMRSlot::writeNetwork(const CDMRData& dmrData)
@@ -1224,8 +1224,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		class CUserDBentry cn;
 		m_lookup->findWithName(srcId, &cn);
 
-		LogMessage("DMR Slot %u, received network voice header from %s to %s%s", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str());
-		writeJSONNet("start", srcId, src, flco == FLCO_GROUP, dstId);
+		LogMessage("DMR Slot %u, received network voice header from %s to %s%s", m_slotNo, src.c_str(), flco == FLCO::GROUP ? "TG " : "", dst.c_str());
+		writeJSONNet("start", srcId, src, flco == FLCO::GROUP, dstId);
 	} else if (dataType == DT_VOICE_PI_HEADER) {
 		if (m_netState != RPT_NET_STATE::AUDIO) {
 			CDMRLC* lc = new CDMRLC(dmrData.getFLCO(), dmrData.getSrcId(), dmrData.getDstId());
@@ -1290,8 +1290,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			class CUserDBentry cn;
 			m_lookup->findWithName(srcId, &cn);
 
-			LogMessage("DMR Slot %u, received network late entry from %s to %s%s", m_slotNo, src.c_str(), m_netLC->getFLCO() == FLCO_GROUP ? "TG " : "", dst.c_str());
-			writeJSONNet("late_entry", srcId, src, m_netLC->getFLCO() == FLCO_GROUP, dstId);
+			LogMessage("DMR Slot %u, received network late entry from %s to %s%s", m_slotNo, src.c_str(), m_netLC->getFLCO() == FLCO::GROUP ? "TG " : "", dst.c_str());
+			writeJSONNet("late_entry", srcId, src, m_netLC->getFLCO() == FLCO::GROUP, dstId);
 		}
 
 		// Regenerate the Slot Type
@@ -1351,7 +1351,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		// We've received the voice header and terminator haven't we?
 		m_netFrames += 2U;
-		LogMessage("DMR Slot %u, received network end of voice transmission from %s to %s%s, %.1f seconds, %u%% packet loss, BER: %.1f%%", m_slotNo, src.c_str(), flco == FLCO_GROUP ? "TG " : "", dst.c_str(), float(m_netFrames) / 16.667F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
+		LogMessage("DMR Slot %u, received network end of voice transmission from %s to %s%s, %.1f seconds, %u%% packet loss, BER: %.1f%%", m_slotNo, src.c_str(), flco == FLCO::GROUP ? "TG " : "", dst.c_str(), float(m_netFrames) / 16.667F, (m_netLost * 100U) / m_netFrames, float(m_netErrs * 100U) / float(m_netBits));
 		writeJSONNet("end", float(m_netFrames) / 16.667F, float(m_netLost * 100U) / float(m_netFrames), float(m_netErrs * 100U) / float(m_netBits));
 		writeEndNet();
 	} else if (dataType == DT_DATA_HEADER) {
@@ -1481,8 +1481,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			class CUserDBentry cn;
 			m_lookup->findWithName(srcId, &cn);
 
-			LogMessage("DMR Slot %u, received network late entry from %s to %s%s", m_slotNo, src.c_str(), m_netLC->getFLCO() == FLCO_GROUP ? "TG " : "", dst.c_str());
-			writeJSONNet("late_entry", srcId, src, m_netLC->getFLCO() == FLCO_GROUP, dstId);
+			LogMessage("DMR Slot %u, received network late entry from %s to %s%s", m_slotNo, src.c_str(), m_netLC->getFLCO() == FLCO::GROUP ? "TG " : "", dst.c_str());
+			writeJSONNet("late_entry", srcId, src, m_netLC->getFLCO() == FLCO::GROUP, dstId);
 		}
 
 		if (m_netState == RPT_NET_STATE::AUDIO) {
@@ -1552,7 +1552,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				// ::sprintf(text, "DMR Slot %u, Embedded LC", m_slotNo);
 				// CUtils::dump(1U, text, data, 9U);
 				break;
-			case FLCO::GINFO:
+			case FLCO::GPS_INFO:
 				if (m_dumpTAData) {
 					::sprintf(text, "DMR Slot %u, Embedded GPS Info", m_slotNo);
 					CUtils::dump(1U, text, data, 9U);
@@ -1771,10 +1771,10 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		}
 
 		// If data preamble, signal its existence
-		if (csbko == CSBKO_PRECCSBK && csbk.getDataContent())
-			setShortLC(m_slotNo, dstId, gi ? FLCO_GROUP : FLCO_USER_USER, ACTIVITY_DATA);
+		if ((csbko == CSBKO::PRECCSBK) && csbk.getDataContent())
+			setShortLC(m_slotNo, dstId, gi ? FLCO::GROUP : FLCO::USER_USER, ACTIVITY_TYPE::DATA);
 	} else if (dataType == DT_RATE_12_DATA || dataType == DT_RATE_34_DATA || dataType == DT_RATE_1_DATA) {
-		if (m_netState != RS_NET_DATA || m_netFrames == 0U) {
+		if ((m_netState != RPT_NET_STATE::DATA) || (m_netFrames == 0U)) {
 			writeEndNet();
 			return;
 		}
@@ -2008,11 +2008,11 @@ void CDMRSlot::writeQueueNet(const unsigned char *data)
 	m_queue.addData(data, len);
 }
 
-void CDMRSlot::init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData, unsigned int callHang, CModem* modem, CDMRNetwork* network, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter, DMR_OVCM_TYPES ovcm)
+void CDMRSlot::init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData, unsigned int callHang, CModem* modem, CDMRNetwork* network, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter, DMR_OVCM ovcm, bool protect)
 {
-	assert(modem != NULL);
-	assert(lookup != NULL);
-	assert(rssiMapper != NULL);
+	assert(modem != nullptr);
+	assert(lookup != nullptr);
+	assert(rssiMapper != nullptr);
 
 	m_colorCode      = colorCode;
 	m_embeddedLCOnly = embeddedLCOnly;
@@ -2309,7 +2309,7 @@ void CDMRSlot::writeJSONBER()
 
 void CDMRSlot::writeJSONText(const unsigned char* text)
 {
-	assert(text != NULL);
+	assert(text != nullptr);
 
 	nlohmann::json json;
 
@@ -2324,7 +2324,7 @@ void CDMRSlot::writeJSONText(const unsigned char* text)
 
 void CDMRSlot::writeJSONRF(const char* action)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -2335,7 +2335,7 @@ void CDMRSlot::writeJSONRF(const char* action)
 
 void CDMRSlot::writeJSONRF(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -2346,8 +2346,8 @@ void CDMRSlot::writeJSONRF(const char* action, unsigned int srcId, const std::st
 
 void CDMRSlot::writeJSONRF(const char* action, const char* desc, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId)
 {
-	assert(action != NULL);
-	assert(desc != NULL);
+	assert(action != nullptr);
+	assert(desc != nullptr);
 
 	nlohmann::json json;
 
@@ -2360,7 +2360,7 @@ void CDMRSlot::writeJSONRF(const char* action, const char* desc, unsigned int sr
 
 void CDMRSlot::writeJSONRF(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId, unsigned int frames)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -2373,7 +2373,7 @@ void CDMRSlot::writeJSONRF(const char* action, unsigned int srcId, const std::st
 
 void CDMRSlot::writeJSONRF(const char* action, float duration, float ber)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -2387,7 +2387,7 @@ void CDMRSlot::writeJSONRF(const char* action, float duration, float ber)
 
 void CDMRSlot::writeJSONRF(const char* action, float duration, float ber, int minRSSI, int maxRSSI, int aveRSSI)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -2408,7 +2408,7 @@ void CDMRSlot::writeJSONRF(const char* action, float duration, float ber, int mi
 
 void CDMRSlot::writeJSONNet(const char* action)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -2419,7 +2419,7 @@ void CDMRSlot::writeJSONNet(const char* action)
 
 void CDMRSlot::writeJSONNet(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -2430,8 +2430,8 @@ void CDMRSlot::writeJSONNet(const char* action, unsigned int srcId, const std::s
 
 void CDMRSlot::writeJSONNet(const char* action, const char* desc, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId)
 {
-	assert(action != NULL);
-	assert(desc != NULL);
+	assert(action != nullptr);
+	assert(desc != nullptr);
 
 	nlohmann::json json;
 
@@ -2444,7 +2444,7 @@ void CDMRSlot::writeJSONNet(const char* action, const char* desc, unsigned int s
 
 void CDMRSlot::writeJSONNet(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId, unsigned int frames)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -2457,7 +2457,7 @@ void CDMRSlot::writeJSONNet(const char* action, unsigned int srcId, const std::s
 
 void CDMRSlot::writeJSONNet(const char* action, float duration, float loss, float ber)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	nlohmann::json json;
 
@@ -2472,7 +2472,7 @@ void CDMRSlot::writeJSONNet(const char* action, float duration, float loss, floa
 
 void CDMRSlot::writeJSON(nlohmann::json& json, const char* action)
 {
-	assert(action != NULL);
+	assert(action != nullptr);
 
 	json["timestamp"] = CUtils::createTimestamp();
 	json["action"]    = action;
@@ -2481,8 +2481,8 @@ void CDMRSlot::writeJSON(nlohmann::json& json, const char* action)
 
 void CDMRSlot::writeJSON(nlohmann::json& json, const char* source, const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId)
 {
-	assert(source != NULL);
-	assert(action != NULL);
+	assert(source != nullptr);
+	assert(action != nullptr);
 
 	json["timestamp"]        = CUtils::createTimestamp();
 	json["source"]           = source;

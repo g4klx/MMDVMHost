@@ -16,6 +16,8 @@
 #include "Utils.h"
 #include "Log.h"
 
+#if defined(USE_AX25)
+
 #include <cstdio>
 #include <cassert>
 #include <cstring>
@@ -28,13 +30,13 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 #define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
-CAX25Control::CAX25Control(CAX25Network* network, bool trace) :
+CAX25Control::CAX25Control(CAX25Network* network, bool trace, CRSSIInterpolator* rssiMapper) :
 m_network(network),
 m_trace(trace),
 m_rssiMapper(rssiMapper),
 m_enabled(true)
 {
-	assert(rssiMapper != NULL);
+	assert(rssiMapper != nullptr);
 }
 
 CAX25Control::~CAX25Control()
@@ -203,8 +205,8 @@ void CAX25Control::decode(const unsigned char* data, unsigned int length)
 
 void CAX25Control::decodeJSON(const char* source, const unsigned char* data, unsigned int length, int rssi)
 {
-	assert(source != NULL);
-	assert(data != NULL);
+	assert(source != nullptr);
+	assert(data != nullptr);
 	assert(length >= 15U);
 
 	nlohmann::json json;
@@ -375,7 +377,7 @@ bool CAX25Control::decodeAddress(const unsigned char* data, std::string& text, b
 
 bool CAX25Control::decodeAddressJSON(const unsigned char* data, std::string& text, bool& isDigi) const
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	text.clear();
 
@@ -402,4 +404,3 @@ bool CAX25Control::decodeAddressJSON(const unsigned char* data, std::string& tex
 }
 
 #endif
-

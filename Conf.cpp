@@ -27,77 +27,77 @@
 
 const int BUFFER_SIZE = 500;
 
-enum SECTION {
-	SECTION_NONE,
-	SECTION_GENERAL,
-	SECTION_INFO,
-	SECTION_LOG,
-	SECTION_MQTT,
-	SECTION_CWID,
+enum class SECTION {
+	NONE,
+	GENERAL,
+	INFO,
+	LOG,
+	MQTT,
+	CWID,
 #if defined(USE_DMR) || defined(USE_P25)
-	SECTION_DMRID_LOOKUP,
+	DMRID_LOOKUP,
 #endif
 #if defined(USE_NXDN)
-	SECTION_NXDNID_LOOKUP,
+	NXDNID_LOOKUP,
 #endif
-	SECTION_MODEM,
-	SECTION_TRANSPARENT,
+	MODEM,
+	TRANSPARENT,
 #if defined(USE_DSTAR)
-	SECTION_DSTAR,
+	DSTAR,
 #endif
 #if defined(USE_DMR)
-	SECTION_DMR,
+	DMR,
 #endif
 #if defined(USE_YSF)
-	SECTION_FUSION,
+	FUSION,
 #endif
 #if defined(USE_P25)
-	SECTION_P25,
+	P25,
 #endif
 #if defined(USE_NXDN)
-	SECTION_NXDN,
+	NXDN,
 #endif
 #if defined(USE_M17)
-	SECTION_M17,
+	M17,
 #endif
 #if defined(USE_POCSAG)
-	SECTION_POCSAG,
+	POCSAG,
 #endif
 #if defined(USE_FM)
-	SECTION_FM,
+	FM,
 #endif
 #if defined(USE_AX25)
-	SECTION_AX25,
+	AX25,
 #endif
 #if defined(USE_DSTAR)
-	SECTION_DSTAR_NETWORK,
+	DSTAR_NETWORK,
 #endif
 #if defined(USE_DMR)
-	SECTION_DMR_NETWORK,
+	DMR_NETWORK,
 #endif
 #if defined(USE_YSF)
-	SECTION_FUSION_NETWORK,
+	FUSION_NETWORK,
 #endif
 #if defined(USE_P25)
-	SECTION_P25_NETWORK,
+	P25_NETWORK,
 #endif
 #if defined(USE_NXDN)
-	SECTION_NXDN_NETWORK,
+	NXDN_NETWORK,
 #endif
 #if defined(USE_M17)
-	SECTION_M17_NETWORK,
+	M17_NETWORK,
 #endif
 #if defined(USE_POCSAG)
-	SECTION_POCSAG_NETWORK,
+	POCSAG_NETWORK,
 #endif
 #if defined(USE_FM)
-	SECTION_FM_NETWORK,
+	FM_NETWORK,
 #endif
 #if defined(USE_AX25)
-	SECTION_AX25_NETWORK,
+	AX25_NETWORK,
 #endif
-	SECTION_LOCK_FILE,
-	SECTION_REMOTE_CONTROL
+	LOCK_FILE,
+	REMOTE_CONTROL
 };
 
 CConf::CConf(const std::string& file) :
@@ -212,7 +212,8 @@ m_dmrTXHang(4U),
 #endif
 m_dmrModeHang(10U),
 #if defined(USE_DMR)
-m_dmrOVCM(DMR_OVCM_OFF),
+m_dmrOVCM(DMR_OVCM::OFF),
+m_dmrProtect(false),
 #endif
 #if defined(USE_YSF)
 m_fusionEnabled(false),
@@ -434,94 +435,94 @@ bool CConf::read()
 			else if (::strncmp(buffer, "[Info]", 6U) == 0)
 				section = SECTION::INFO;
 			else if (::strncmp(buffer, "[Log]", 5U) == 0)
-				section = SECTION_LOG;
+				section = SECTION::LOG;
 			else if (::strncmp(buffer, "[MQTT]", 6U) == 0)
-				section = SECTION_MQTT;
+				section = SECTION::MQTT;
 			else if (::strncmp(buffer, "[CW Id]", 7U) == 0)
-				section = SECTION_CWID;
+				section = SECTION::CWID;
 #if defined(USE_DMR) || defined(USE_P25)
 			else if (::strncmp(buffer, "[DMR Id Lookup]", 15U) == 0)
-				section = SECTION_DMRID_LOOKUP;
+				section = SECTION::DMRID_LOOKUP;
 #endif
 #if defined(USE_NXDN)
 			else if (::strncmp(buffer, "[NXDN Id Lookup]", 16U) == 0)
-				section = SECTION_NXDNID_LOOKUP;
+				section = SECTION::NXDNID_LOOKUP;
 #endif
 			else if (::strncmp(buffer, "[Modem]", 7U) == 0)
 				section = SECTION::MODEM;
 			else if (::strncmp(buffer, "[Transparent Data]", 18U) == 0)
-				section = SECTION_TRANSPARENT;
+				section = SECTION::TRANSPARENT;
 #if defined(USE_DSTAR)
 			else if (::strncmp(buffer, "[D-Star]", 8U) == 0)
-				section = SECTION_DSTAR;
+				section = SECTION::DSTAR;
 #endif
 #if defined(USE_DMR)
 			else if (::strncmp(buffer, "[DMR]", 5U) == 0)
-				section = SECTION_DMR;
+				section = SECTION::DMR;
 #endif
 #if defined(USE_YSF)
 			else if (::strncmp(buffer, "[System Fusion]", 15U) == 0)
-				section = SECTION_FUSION;
+				section = SECTION::FUSION;
 #endif
 #if defined(USE_P25)
 			else if (::strncmp(buffer, "[P25]", 5U) == 0)
-				section = SECTION_P25;
+				section = SECTION::P25;
 #endif
 #if defined(USE_NXDN)
 			else if (::strncmp(buffer, "[NXDN]", 6U) == 0)
-				section = SECTION_NXDN;
+				section = SECTION::NXDN;
 #endif
 #if defined(USE_M17)
 			else if (::strncmp(buffer, "[M17]", 5U) == 0)
-				section = SECTION_M17;
+				section = SECTION::M17;
 #endif
 #if defined(USE_POCSAG)
 			else if (::strncmp(buffer, "[POCSAG]", 8U) == 0)
-				section = SECTION_POCSAG;
+				section = SECTION::POCSAG;
 #endif
 #if defined(USE_FM)
 			else if (::strncmp(buffer, "[FM]", 4U) == 0)
-				section = SECTION_FM;
+				section = SECTION::FM;
 #endif
 #if defined(USE_AX25)
 			else if (::strncmp(buffer, "[AX.25]", 7U) == 0)
-				section = SECTION_AX25;
+				section = SECTION::AX25;
 #endif
 #if defined(USE_DSTAR)
 			else if (::strncmp(buffer, "[D-Star Network]", 16U) == 0)
-				section = SECTION_DSTAR_NETWORK;
+				section = SECTION::DSTAR_NETWORK;
 #endif
 #if defined(USE_DMR)
 			else if (::strncmp(buffer, "[DMR Network]", 13U) == 0)
-				section = SECTION_DMR_NETWORK;
+				section = SECTION::DMR_NETWORK;
 #endif
 #if defined(USE_YSF)
 			else if (::strncmp(buffer, "[System Fusion Network]", 23U) == 0)
-				section = SECTION_FUSION_NETWORK;
+				section = SECTION::FUSION_NETWORK;
 #endif
 #if defined(USE_P25)
 			else if (::strncmp(buffer, "[P25 Network]", 13U) == 0)
-				section = SECTION_P25_NETWORK;
+				section = SECTION::P25_NETWORK;
 #endif
 #if defined(USE_NXDN)
 			else if (::strncmp(buffer, "[NXDN Network]", 14U) == 0)
-				section = SECTION_NXDN_NETWORK;
+				section = SECTION::NXDN_NETWORK;
 #endif
 #if defined(USE_M17)
 			else if (::strncmp(buffer, "[M17 Network]", 13U) == 0)
-				section = SECTION_M17_NETWORK;
+				section = SECTION::M17_NETWORK;
 #endif
 #if defined(USE_POCSAG)
 			else if (::strncmp(buffer, "[POCSAG Network]", 16U) == 0)
-				section = SECTION_POCSAG_NETWORK;
+				section = SECTION::POCSAG_NETWORK;
 #endif
 #if defined(USE_FM)
 			else if (::strncmp(buffer, "[FM Network]", 12U) == 0)
-				section = SECTION_FM_NETWORK;
+				section = SECTION::FM_NETWORK;
 #endif
 #if defined(USE_AX25)
 			else if (::strncmp(buffer, "[AX.25 Network]", 15U) == 0)
-				section = SECTION_AX25_NETWORK;
+				section = SECTION::AX25_NETWORK;
 #endif
 			else if (::strncmp(buffer, "[Lock File]", 11U) == 0)
 				section = SECTION::LOCK_FILE;
@@ -598,12 +599,12 @@ bool CConf::read()
 				m_description = value;
 			else if (::strcmp(key, "URL") == 0)
 				m_url = value;
-		} else if (section == SECTION_LOG) {
+		} else if (section == SECTION::LOG) {
 			if (::strcmp(key, "MQTTLevel") == 0)
 				m_logMQTTLevel = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "DisplayLevel") == 0)
 				m_logDisplayLevel = (unsigned int)::atoi(value);
-		} else if (section == SECTION_MQTT) {
+		} else if (section == SECTION::MQTT) {
 			if (::strcmp(key, "Host") == 0)
 				m_mqttHost = value;
 			else if (::strcmp(key, "Port") == 0)
@@ -618,7 +619,7 @@ bool CConf::read()
 				m_mqttUsername = value;
 			else if (::strcmp(key, "Password") == 0)
 				m_mqttPassword = value;
-		} else if (section == SECTION_CWID) {
+		} else if (section == SECTION::CWID) {
 			if (::strcmp(key, "Enable") == 0)
 				m_cwIdEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "Time") == 0)
@@ -630,20 +631,20 @@ bool CConf::read()
 				m_cwIdCallsign = value;
 			}
 #if defined(USE_DMR) || defined(USE_P25)
-		} else if (section == SECTION_DMRID_LOOKUP) {
+		} else if (section == SECTION::DMRID_LOOKUP) {
 			if (::strcmp(key, "File") == 0)
 				m_dmrIdLookupFile = value;
 			else if (::strcmp(key, "Time") == 0)
 				m_dmrIdLookupTime = (unsigned int)::atoi(value);
 #endif
 #if defined(USE_NXDN)
-		} else if (section == SECTION_NXDNID_LOOKUP) {
+		} else if (section == SECTION::NXDNID_LOOKUP) {
 			if (::strcmp(key, "File") == 0)
 				m_nxdnIdLookupFile = value;
 			else if (::strcmp(key, "Time") == 0)
 				m_nxdnIdLookupTime = (unsigned int)::atoi(value);
 #endif
-		} else if (section == SECTION_MODEM) {
+		} else if (section == SECTION::MODEM) {
 			if (::strcmp(key, "Protocol") == 0)
 				m_modemProtocol = value;
 			else if (::strcmp(key, "UARTPort") == 0)
@@ -746,7 +747,7 @@ bool CConf::read()
 			else if (::strcmp(key, "SendFrameType") == 0)
 				m_transparentSendFrameType = (unsigned int)::atoi(value);
 #if defined(USE_DSTAR)
-		} else if (section == SECTION_DSTAR) {
+		} else if (section == SECTION::DSTAR) {
 			if (::strcmp(key, "Enable") == 0)
 				m_dstarEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "Module") == 0) {
@@ -797,7 +798,7 @@ bool CConf::read()
 		} else if (section == SECTION::DMR) {
 #endif
 #if defined(USE_DMR)
-		} else if (section == SECTION_DMR) {
+		} else if (section == SECTION::DMR) {
 			if (::strcmp(key, "Enable") == 0)
 				m_dmrEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "Beacons") == 0)
@@ -881,10 +882,11 @@ bool CConf::read()
 					m_dmrOVCM = DMR_OVCM::OFF;
 					break;
 				}
-			}
+			} else if (::strcmp(key, "Protect") == 0)
+				m_dmrProtect = ::atoi(value) == 1;
 #endif
 #if defined(USE_YSF)
-		} else if (section == SECTION_FUSION) {
+		} else if (section == SECTION::FUSION) {
 			if (::strcmp(key, "Enable") == 0)
 				m_fusionEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "LowDeviation") == 0)
@@ -899,7 +901,7 @@ bool CConf::read()
 				m_fusionModeHang = (unsigned int)::atoi(value);
 #endif
 #if defined(USE_P25)
-		} else if (section == SECTION_P25) {
+		} else if (section == SECTION::P25) {
 			if (::strcmp(key, "Enable") == 0)
 				m_p25Enabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "Id") == 0)
@@ -918,7 +920,7 @@ bool CConf::read()
 				m_p25ModeHang = (unsigned int)::atoi(value);
 #endif
 #if defined(USE_NXDN)
-		} else if (section == SECTION_NXDN) {
+		} else if (section == SECTION::NXDN) {
 			if (::strcmp(key, "Enable") == 0)
 				m_nxdnEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "Id") == 0)
@@ -935,7 +937,7 @@ bool CConf::read()
 				m_nxdnModeHang = (unsigned int)::atoi(value);
 #endif
 #if defined(USE_M17)
-		} else if (section == SECTION_M17) {
+		} else if (section == SECTION::M17) {
 			if (::strcmp(key, "Enable") == 0)
 				m_m17Enabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "CAN") == 0)
@@ -950,14 +952,14 @@ bool CConf::read()
 				m_m17ModeHang = (unsigned int)::atoi(value);
 #endif
 #if defined(USE_POCSAG)
-		} else if (section == SECTION_POCSAG) {
+		} else if (section == SECTION::POCSAG) {
 			if (::strcmp(key, "Enable") == 0)
 				m_pocsagEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "Frequency") == 0)
 				m_pocsagFrequency = (unsigned int)::atoi(value);
 #endif
 #if defined(USE_FM)
-		} else if (section == SECTION_FM) {
+		} else if (section == SECTION::FM) {
 			if (::strcmp(key, "Enable") == 0)
 				m_fmEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "Callsign") == 0) {
@@ -1045,7 +1047,7 @@ bool CConf::read()
 				m_fmModeHang = (unsigned int)::atoi(value);
 #endif
 #if defined(USE_AX25)
-		} else if (section == SECTION_AX25) {
+		} else if (section == SECTION::AX25) {
 			if (::strcmp(key, "Enable") == 0)
 				m_ax25Enabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "TXDelay") == 0)
@@ -1060,7 +1062,7 @@ bool CConf::read()
 				m_ax25Trace = ::atoi(value) == 1;
 #endif
 #if defined(USE_DSTAR)
-		} else if (section == SECTION_DSTAR_NETWORK) {
+		} else if (section == SECTION::DSTAR_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_dstarNetworkEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "GatewayAddress") == 0)
@@ -1077,7 +1079,7 @@ bool CConf::read()
 				m_dstarNetworkDebug = ::atoi(value) == 1;
 #endif
 #if defined(USE_DMR)
-		} else if (section == SECTION_DMR_NETWORK) {
+		} else if (section == SECTION::DMR_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_dmrNetworkEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "GatewayAddress") == 0)
@@ -1100,7 +1102,7 @@ bool CConf::read()
 				m_dmrNetworkModeHang = (unsigned int)::atoi(value);
 #endif
 #if defined(USE_YSF)
-		} else if (section == SECTION_FUSION_NETWORK) {
+		} else if (section == SECTION::FUSION_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_fusionNetworkEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "LocalAddress") == 0)
@@ -1117,7 +1119,7 @@ bool CConf::read()
 				m_fusionNetworkDebug = ::atoi(value) == 1;
 #endif
 #if defined(USE_P25)
-		} else if (section == SECTION_P25_NETWORK) {
+		} else if (section == SECTION::P25_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_p25NetworkEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "GatewayAddress") == 0)
@@ -1134,7 +1136,7 @@ bool CConf::read()
 				m_p25NetworkDebug = ::atoi(value) == 1;
 #endif
 #if defined(USE_NXDN)
-		} else if (section == SECTION_NXDN_NETWORK) {
+		} else if (section == SECTION::NXDN_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_nxdnNetworkEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "LocalAddress") == 0)
@@ -1151,7 +1153,7 @@ bool CConf::read()
 				m_nxdnNetworkDebug = ::atoi(value) == 1;
 #endif
 #if defined(USE_M17)
-		} else if (section == SECTION_M17_NETWORK) {
+		} else if (section == SECTION::M17_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_m17NetworkEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "LocalAddress") == 0)
@@ -1168,7 +1170,7 @@ bool CConf::read()
 				m_m17NetworkDebug = ::atoi(value) == 1;
 #endif
 #if defined(USE_POCSAG)
-		} else if (section == SECTION_POCSAG_NETWORK) {
+		} else if (section == SECTION::POCSAG_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_pocsagNetworkEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "LocalAddress") == 0)
@@ -1185,7 +1187,7 @@ bool CConf::read()
 				m_pocsagNetworkDebug = ::atoi(value) == 1;
 #endif
 #if defined(USE_FM)
-		} else if (section == SECTION_FM_NETWORK) {
+		} else if (section == SECTION::FM_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_fmNetworkEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "LocalAddress") == 0)
@@ -1210,13 +1212,13 @@ bool CConf::read()
 				m_fmNetworkDebug = ::atoi(value) == 1;
 #endif
 #if defined(USE_AX25)
-		} else if (section == SECTION_AX25_NETWORK) {
+		} else if (section == SECTION::AX25_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_ax25NetworkEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "Debug") == 0)
 				m_ax25NetworkDebug = ::atoi(value) == 1;
 #endif
-		} else if (section == SECTION_LOCK_FILE) {
+		} else if (section == SECTION::LOCK_FILE) {
 			if (::strcmp(key, "Enable") == 0)
 				m_lockFileEnabled = ::atoi(value) == 1;
 			else if (::strcmp(key, "File") == 0)
@@ -1747,6 +1749,11 @@ unsigned int CConf::getDMRModeHang() const
 DMR_OVCM CConf::getDMROVCM() const
 {
 	return m_dmrOVCM;
+}
+
+bool CConf::getDMRProtect() const
+{
+	return m_dmrProtect;
 }
 #endif
 
