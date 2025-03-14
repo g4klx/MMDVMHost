@@ -24,7 +24,7 @@
 
 #if defined(USE_DMR)
 
-enum class CSBKO {
+enum class CSBKO : unsigned char {
 	NONE           = 0x00,
 	UUVREQ         = 0x04,
 	UUANSRSP       = 0x05,

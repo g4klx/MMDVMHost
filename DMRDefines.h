@@ -110,7 +110,7 @@ const unsigned char DPF_PROPRIETARY      = 0x0FU;
 const unsigned char FID_ETSI = 0U;
 const unsigned char FID_DMRA = 16U;
 
-enum class FLCO {
+enum class FLCO : unsigned char {
 	GROUP               = 0,
 	USER_USER           = 3,
 	TALKER_ALIAS_HEADER = 4,
