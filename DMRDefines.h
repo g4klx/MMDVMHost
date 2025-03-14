@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2021,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -110,14 +110,14 @@ const unsigned char DPF_PROPRIETARY      = 0x0FU;
 const unsigned char FID_ETSI = 0U;
 const unsigned char FID_DMRA = 16U;
 
-enum FLCO {
-	FLCO_GROUP               = 0,
-	FLCO_USER_USER           = 3,
-	FLCO_TALKER_ALIAS_HEADER = 4,
-	FLCO_TALKER_ALIAS_BLOCK1 = 5,
-	FLCO_TALKER_ALIAS_BLOCK2 = 6,
-	FLCO_TALKER_ALIAS_BLOCK3 = 7,
-	FLCO_GPS_INFO            = 8
+enum class FLCO {
+	GROUP               = 0,
+	USER_USER           = 3,
+	TALKER_ALIAS_HEADER = 4,
+	TALKER_ALIAS_BLOCK1 = 5,
+	TALKER_ALIAS_BLOCK2 = 6,
+	TALKER_ALIAS_BLOCK3 = 7,
+	GINFO            = 8
 };
 
 #endif

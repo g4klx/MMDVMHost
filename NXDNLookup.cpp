@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2017,2018,2021,2023 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2017,2018,2021,2023,2025 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -134,7 +134,7 @@ std::string CNXDNLookup::find(unsigned int id)
 
 bool CNXDNLookup::exists(unsigned int id)
 {
-	return m_table.lookup(id, NULL);
+	return m_table.lookup(id, nullptr);
 }
 
 #endif

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2014,2016,2018-2020,2023 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2014,2016,2018-2020,2023,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -62,7 +62,7 @@ bool CNXDNIcomNetwork::open()
 
 bool CNXDNIcomNetwork::write(const unsigned char* data, NXDN_NETWORK_MESSAGE_TYPE type)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char buffer[110U];
 	::memset(buffer, 0x00U, 110U);
@@ -77,20 +77,20 @@ bool CNXDNIcomNetwork::write(const unsigned char* data, NXDN_NETWORK_MESSAGE_TYP
 	buffer[7U] = 0xE0U;
 
 	switch (type) {
-	case NNMT_VOICE_HEADER:
-	case NNMT_VOICE_TRAILER:
+	case NXDN_NETWORK_MESSAGE_TYPE::VOICE_HEADER:
+	case NXDN_NETWORK_MESSAGE_TYPE::VOICE_TRAILER:
 		buffer[37U] = 0x23U;
 		buffer[38U] = 0x1CU;
 		buffer[39U] = 0x21U;
 		break;
-	case NNMT_VOICE_BODY:
+	case NXDN_NETWORK_MESSAGE_TYPE::VOICE_BODY:
 		buffer[37U] = 0x23U;
 		buffer[38U] = 0x10U;
 		buffer[39U] = 0x21U;
 		break;
-	case NNMT_DATA_HEADER:
-	case NNMT_DATA_BODY:
-	case NNMT_DATA_TRAILER:
+	case NXDN_NETWORK_MESSAGE_TYPE::DATA_HEADER:
+	case NXDN_NETWORK_MESSAGE_TYPE::DATA_BODY:
+	case NXDN_NETWORK_MESSAGE_TYPE::DATA_TRAILER:
 		buffer[37U] = 0x23U;
 		buffer[38U] = 0x02U;
 		buffer[39U] = 0x18U;
@@ -140,7 +140,7 @@ void CNXDNIcomNetwork::clock(unsigned int ms)
 
 bool CNXDNIcomNetwork::read(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_buffer.isEmpty())
 		return false;

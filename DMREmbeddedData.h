@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017,2023 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017,2023,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -23,13 +23,11 @@
 #include "Defines.h"
 #include "DMRLC.h"
 
-#if defined(USE_DMR)
-
-enum LC_STATE {
-	LCS_NONE,
-	LCS_FIRST,
-	LCS_SECOND,
-	LCS_THIRD
+enum class LC_STATE {
+	NONE,
+	FIRST,
+	SECOND,
+	THIRD
 };
 
 class CDMREmbeddedData

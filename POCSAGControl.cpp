@@ -1,5 +1,5 @@
 /*
-*	Copyright (C) 2018,2019,2020,2023 Jonathan Naylor, G4KLX
+*	Copyright (C) 2018,2019,2020,2023,2025 Jonathan Naylor, G4KLX
 *
 *	This program is free software; you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -84,7 +84,7 @@ CPOCSAGControl::~CPOCSAGControl()
 
 unsigned int CPOCSAGControl::readModem(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_queue.isEmpty())
 		return 0U;
@@ -195,7 +195,7 @@ void CPOCSAGControl::sendPageAlert2(unsigned int ric, const std::string& text)
 
 bool CPOCSAGControl::readNetwork()
 {
-	if (m_network == NULL)
+	if (m_network == nullptr)
 		return true;
 
 	unsigned char data[300U];
@@ -292,7 +292,7 @@ bool CPOCSAGControl::processData()
 
 void CPOCSAGControl::clock(unsigned int ms)
 {
-	if (m_state == PS_NONE) {
+	if (m_state == POCSAG_STATE::NONE) {
 		bool ret = readNetwork();
 		if (!ret)
 			return;
@@ -301,7 +301,7 @@ void CPOCSAGControl::clock(unsigned int ms)
 		if (!ret)
 			return;
 
-		m_state  = PS_WAITING;
+		m_state  = POCSAG_STATE::WAITING;
 		m_frames = 0U;
 		m_count  = 1U;
 	}
@@ -310,7 +310,7 @@ void CPOCSAGControl::clock(unsigned int ms)
 	m_output.push_back(POCSAG_SYNC_WORD);
 
 	for (unsigned int i = 0U; i < POCSAG_FRAME_ADDRESSES; i++) {
-		if (m_state == PS_WAITING) {
+		if (m_state == POCSAG_STATE::WAITING) {
 			if (i == (m_ric % POCSAG_FRAME_ADDRESSES)) {
 				uint32_t w1 = m_buffer.front();
 				m_buffer.pop_front();
@@ -320,22 +320,22 @@ void CPOCSAGControl::clock(unsigned int ms)
 				m_output.push_back(w1);
 				m_output.push_back(w2);
 
-				m_state = PS_SENDING;
+				m_state = POCSAG_STATE::SENDING;
 			} else {
 				m_output.push_back(POCSAG_IDLE_WORD);
 				m_output.push_back(POCSAG_IDLE_WORD);
 			}
-		} else if (m_state == PS_SENDING) {
+		} else if (m_state == POCSAG_STATE::SENDING) {
 			if (m_buffer.empty()) {
 				m_output.push_back(POCSAG_IDLE_WORD);
 				m_output.push_back(POCSAG_IDLE_WORD);
 
 				bool ret = processData();
 				if (ret) {
-					m_state = PS_WAITING;
+					m_state = POCSAG_STATE::WAITING;
 					m_count++;
 				} else {
-					m_state = PS_ENDING;
+					m_state = POCSAG_STATE::ENDING;
 				}
 			} else {
 				uint32_t w1 = m_buffer.front();
@@ -346,7 +346,7 @@ void CPOCSAGControl::clock(unsigned int ms)
 				m_output.push_back(w1);
 				m_output.push_back(w2);
 			}
-		} else {		// PS_ENDING
+		} else {		// ENDING
 			m_output.push_back(POCSAG_IDLE_WORD);
 			m_output.push_back(POCSAG_IDLE_WORD);
 		}
@@ -355,7 +355,7 @@ void CPOCSAGControl::clock(unsigned int ms)
 	writeQueue();
 	m_frames++;
 
-	if (m_state == PS_ENDING) {
+	if (m_state == POCSAG_STATE::ENDING) {
 		LogMessage("POCSAG, transmitted %u frame(s) of data from %u message(s)", m_frames, m_count);
 		writeJSON("network", 0U, "end");
 		m_state = PS_NONE;
@@ -426,7 +426,7 @@ void CPOCSAGControl::packNumeric(const std::string& text, std::deque<uint32_t>& 
 	for (std::string::const_iterator it = text.cbegin(); it != text.cend(); ++it) {
 		char c = *it;
 
-		const BCD* bcd = NULL;
+		const BCD* bcd = nullptr;
 		for (unsigned int i = 0U; BCD_VALUES[i].m_c != 0; i++) {
 			if (BCD_VALUES[i].m_c == c) {
 				bcd = BCD_VALUES + i;
@@ -434,7 +434,7 @@ void CPOCSAGControl::packNumeric(const std::string& text, std::deque<uint32_t>& 
 			}
 		}
 
-		if (bcd != NULL) {
+		if (bcd != nullptr) {
 			word |= bcd->m_bcd[n];
 			n++;
 
@@ -519,7 +519,7 @@ void CPOCSAGControl::enable(bool enabled)
 			delete *it;
 		m_data.clear();
 
-		m_state = PS_NONE;
+		m_state = POCSAG_STATE::NONE;
 	}
 
 	m_enabled = enabled;

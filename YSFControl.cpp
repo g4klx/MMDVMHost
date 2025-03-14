@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015-2021,2023 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015-2021,2023,2025 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -35,8 +35,8 @@ m_duplex(duplex),
 m_lowDeviation(lowDeviation),
 m_remoteGateway(remoteGateway),
 m_queue(5000U, "YSF Control"),
-m_rfState(RS_RF_LISTENING),
-m_netState(RS_NET_IDLE),
+m_rfState(RPT_RF_STATE::LISTENING),
+m_netState(RPT_NET_STATE::IDLE),
 m_rfTimeoutTimer(1000U, timeout),
 m_netTimeoutTimer(1000U, timeout),
 m_packetTimer(1000U, 0U, 200U),
@@ -48,10 +48,10 @@ m_netLost(0U),
 m_rfErrs(0U),
 m_rfBits(1U),
 m_netBits(1U),
-m_rfSource(NULL),
-m_rfDest(NULL),
-m_netSource(NULL),
-m_netDest(NULL),
+m_rfSource(nullptr),
+m_rfDest(nullptr),
+m_netSource(nullptr),
+m_netDest(nullptr),
 m_lastFICH(),
 m_netN(0U),
 m_rfPayload(),
@@ -103,7 +103,7 @@ CYSFControl::~CYSFControl()
 
 bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (!m_enabled)
 		return false;
@@ -122,17 +122,17 @@ bool CYSFControl::writeModem(unsigned char *data, unsigned int len)
 		return false;
 	}
 
-	if (type == TAG_LOST && m_rfState == RS_RF_REJECTED) {
+	if ((type == TAG_LOST) && (m_rfState == RPT_RF_STATE::REJECTED)) {
 		m_rfPayload.reset();
-		m_rfSource = NULL;
-		m_rfDest   = NULL;
-		m_rfState  = RS_RF_LISTENING;
+		m_rfSource = nullptr;
+		m_rfDest   = nullptr;
+		m_rfState  = RPT_RF_STATE::LISTENING;
 		return false;
 	}
 
 	if (type == TAG_LOST) {
 		m_rfPayload.reset();
-		m_rfState = RS_RF_LISTENING;
+		m_rfState = RPT_RF_STATE::LISTENING;
 		return false;
 	}
 
@@ -227,7 +227,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 	unsigned char dgid = m_lastFICH.getDGId();
 
 	if (valid && fi == YSF_FI_HEADER) {
-		if (m_rfState == RS_RF_LISTENING) {
+		if (m_rfState == RPT_RF_STATE::LISTENING) {
 			bool valid = m_rfPayload.processHeaderData(data + 2U);
 			if (!valid)
 				return false;
@@ -254,7 +254,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 			m_rfErrs = 0U;
 			m_rfBits = 1U;
 			m_rfTimeoutTimer.start();
-			m_rfState = RS_RF_AUDIO;
+			m_rfState = RPT_RF_STATE::AUDIO;
 
 			m_minRSSI = m_rssi;
 			m_maxRSSI = m_rssi;
@@ -294,13 +294,13 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 
 			return true;
 		}
-	} else if (valid && fi == YSF_FI_TERMINATOR) {
-		if (m_rfState == RS_RF_REJECTED) {
+	} else if (valid && (fi == YSF_FI_TERMINATOR)) {
+		if (m_rfState == RPT_RF_STATE::REJECTED) {
 			m_rfPayload.reset();
-			m_rfSource = NULL;
-			m_rfDest   = NULL;
-			m_rfState  = RS_RF_LISTENING;
-		} else if (m_rfState == RS_RF_AUDIO) {
+			m_rfSource = nullptr;
+			m_rfDest   = nullptr;
+			m_rfState  = RPT_RF_STATE::LISTENING;
+		} else if (m_rfState == RPT_RF_STATE::AUDIO) {
 			m_rfPayload.processHeaderData(data + 2U);
 
 			CSync::addYSFSync(data + 2U);
@@ -334,7 +334,7 @@ bool CYSFControl::processVWData(bool valid, unsigned char *data)
 			writeEndRF();
 		}
 	} else {
-		if (m_rfState == RS_RF_AUDIO) {
+		if (m_rfState == RPT_RF_STATE::AUDIO) {
 			// If valid is false, update the m_lastFICH for this transmission
 			if (!valid) {
 				// XXX Check these values
@@ -395,7 +395,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 	unsigned char dgid = m_lastFICH.getDGId();
 
 	if (valid && fi == YSF_FI_HEADER) {
-		if (m_rfState == RS_RF_LISTENING) {
+		if (m_rfState == RPT_RF_STATE::LISTENING) {
 			bool valid = m_rfPayload.processHeaderData(data + 2U);
 			if (!valid)
 				return false;
@@ -422,7 +422,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			m_rfErrs = 0U;
 			m_rfBits = 1U;
 			m_rfTimeoutTimer.start();
-			m_rfState = RS_RF_AUDIO;
+			m_rfState = RPT_RF_STATE::AUDIO;
 
 			m_minRSSI = m_rssi;
 			m_maxRSSI = m_rssi;
@@ -462,13 +462,13 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			return true;
 		}
-	} else if (valid && fi == YSF_FI_TERMINATOR) {
-		if (m_rfState == RS_RF_REJECTED) {
+	} else if (valid && (fi == YSF_FI_TERMINATOR)) {
+		if (m_rfState == RPT_RF_STATE::REJECTED) {
 			m_rfPayload.reset();
-			m_rfSource = NULL;
-			m_rfDest   = NULL;
-			m_rfState  = RS_RF_LISTENING;
-		} else if (m_rfState == RS_RF_AUDIO) {
+			m_rfSource = nullptr;
+			m_rfDest   = nullptr;
+			m_rfState  = RPT_RF_STATE::LISTENING;
+		} else if (m_rfState == RPT_RF_STATE::AUDIO) {
 			m_rfPayload.processHeaderData(data + 2U);
 
 			CSync::addYSFSync(data + 2U);
@@ -502,7 +502,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			writeEndRF();
 		}
 	} else {
-		if (m_rfState == RS_RF_AUDIO) {
+		if (m_rfState == RPT_RF_STATE::AUDIO) {
 			// If valid is false, update the m_lastFICH for this transmission
 			if (!valid) {
 				unsigned char ft = m_lastFICH.getFT();
@@ -565,7 +565,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			writeJSONRSSI();
 
 			return true;
-		} else if (valid && m_rfState == RS_RF_LISTENING) {
+		} else if (valid && (m_rfState == RPT_RF_STATE::LISTENING)) {
 			// Only use clean frames for late entry.
 			unsigned char fn = m_lastFICH.getFN();
 			unsigned char dt = m_lastFICH.getDT();
@@ -595,7 +595,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 
 			m_rfSource = m_rfPayload.getSource();
 
-			if (m_rfSource == NULL || m_rfDest == NULL)
+			if (m_rfSource == nullptr || m_rfDest == nullptr)
 				return false;
 
 			if (m_selfOnly) {
@@ -612,7 +612,7 @@ bool CYSFControl::processDNData(bool valid, unsigned char *data)
 			m_rfErrs = 0U;
 			m_rfBits = 1U;
 			m_rfTimeoutTimer.start();
-			m_rfState = RS_RF_AUDIO;
+			m_rfState = RPT_RF_STATE::AUDIO;
 
 			m_minRSSI = m_rssi;
 			m_maxRSSI = m_rssi;
@@ -696,7 +696,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 	unsigned char dgid = m_lastFICH.getDGId();
 
 	if (valid && fi == YSF_FI_HEADER) {
-		if (m_rfState == RS_RF_LISTENING) {
+		if (m_rfState == RPT_RF_STATE::LISTENING) {
 			valid = m_rfPayload.processHeaderData(data + 2U);
 			if (!valid)
 				return false;
@@ -720,7 +720,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 				m_rfDest = m_rfPayload.getDest();
 
 			m_rfFrames = 0U;
-			m_rfState = RS_RF_DATA;
+			m_rfState = RPT_RF_STATE::DATA;
 
 			m_minRSSI = m_rssi;
 			m_maxRSSI = m_rssi;
@@ -761,12 +761,12 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 			return true;
 		}
 	} else if (valid && fi == YSF_FI_TERMINATOR) {
-		if (m_rfState == RS_RF_REJECTED) {
+		if (m_rfState == RPT_RF_STATE::REJECTED) {
 			m_rfPayload.reset();
-			m_rfSource = NULL;
-			m_rfDest   = NULL;
-			m_rfState  = RS_RF_LISTENING;
-		} else if (m_rfState == RS_RF_DATA) {
+			m_rfSource = nullptr;
+			m_rfDest   = nullptr;
+			m_rfState  = RPT_RF_STATE::LISTENING;
+		} else if (m_rfState == RPT_RF_STATE::DATA) {
 			m_rfPayload.processHeaderData(data + 2U);
 
 			CSync::addYSFSync(data + 2U);
@@ -800,7 +800,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 			writeEndRF();
 		}
 	} else {
-		if (m_rfState == RS_RF_DATA) {
+		if (m_rfState == RPT_RF_STATE::DATA) {
 			// If valid is false, update the m_lastFICH for this transmission
 			if (!valid) {
 				unsigned char ft = m_lastFICH.getFT();
@@ -847,7 +847,7 @@ bool CYSFControl::processFRData(bool valid, unsigned char *data)
 
 unsigned int CYSFControl::readModem(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_queue.isEmpty())
 		return 0U;
@@ -862,14 +862,14 @@ unsigned int CYSFControl::readModem(unsigned char* data)
 
 void CYSFControl::writeEndRF()
 {
-	m_rfState = RS_RF_LISTENING;
+	m_rfState = RPT_RF_STATE::LISTENING;
 
 	m_rfTimeoutTimer.stop();
 	m_rfPayload.reset();
 
 	// These variables are free'd by YSFPayload
-	m_rfSource = NULL;
-	m_rfDest = NULL;
+	m_rfSource = nullptr;
+	m_rfDest = nullptr;
 
 	if (m_netState == RS_NET_IDLE) {
 		if (m_network != NULL)
@@ -879,7 +879,7 @@ void CYSFControl::writeEndRF()
 
 void CYSFControl::writeEndNet()
 {
-	m_netState = RS_NET_IDLE;
+	m_netState = RPT_NET_STATE::IDLE;
 
 	m_netTimeoutTimer.stop();
 	m_networkWatchdog.stop();
@@ -901,7 +901,7 @@ void CYSFControl::writeNetwork()
 	if (!m_enabled)
 		return;
 
-	if (m_rfState != RS_RF_LISTENING && m_netState == RS_NET_IDLE)
+	if ((m_rfState != RPT_RF_STATE::LISTENING) && (m_netState == RPT_NET_STATE::IDLE))
 		return;
 
 	m_networkWatchdog.start();
@@ -934,7 +934,7 @@ void CYSFControl::writeNetwork()
 		m_netPayload.reset();
 		m_packetTimer.start();
 		m_elapsed.start();
-		m_netState  = RS_NET_AUDIO;
+		m_netState  = RPT_NET_STATE::AUDIO;
 		m_netFrames = 0U;
 		m_netLost   = 0U;
 		m_netBits   = 1U;
@@ -1047,13 +1047,13 @@ void CYSFControl::writeNetwork()
 
 void CYSFControl::clock(unsigned int ms)
 {
-	if (m_network != NULL)
+	if (m_network != nullptr)
 		writeNetwork();
 
 	m_rfTimeoutTimer.clock(ms);
 	m_netTimeoutTimer.clock(ms);
 
-	if (m_netState == RS_NET_AUDIO) {
+	if (m_netState == RPT_NET_STATE::AUDIO) {
 		m_networkWatchdog.clock(ms);
 
 		if (m_networkWatchdog.hasExpired()) {
@@ -1066,9 +1066,9 @@ void CYSFControl::clock(unsigned int ms)
 
 void CYSFControl::writeQueueRF(const unsigned char *data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
-	if (m_netState != RS_NET_IDLE)
+	if (m_netState != RPT_NET_STATE::IDLE)
 		return;
 
 	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired())
@@ -1089,7 +1089,7 @@ void CYSFControl::writeQueueRF(const unsigned char *data)
 
 void CYSFControl::writeQueueNet(const unsigned char *data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_netTimeoutTimer.isRunning() && m_netTimeoutTimer.hasExpired())
 		return;
@@ -1109,9 +1109,9 @@ void CYSFControl::writeQueueNet(const unsigned char *data)
 
 void CYSFControl::writeNetwork(const unsigned char *data, unsigned int count)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
-	if (m_network == NULL)
+	if (m_network == nullptr)
 		return;
 
 	if (m_rfTimeoutTimer.isRunning() && m_rfTimeoutTimer.hasExpired())
@@ -1127,18 +1127,18 @@ bool CYSFControl::checkCallsign(const unsigned char* callsign) const
 
 void CYSFControl::processNetCallsigns(const unsigned char* data, unsigned char dgid)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (::memcmp(m_netSource, "          ", 10U) == 0 || ::memcmp(m_netDest, "          ", 10U) == 0) {
 		if (::memcmp(m_netSource, "          ", YSF_CALLSIGN_LENGTH) == 0) {
 			unsigned char* source = m_netPayload.getSource();
-			if (source != NULL)
+			if (source != nullptr)
 				::memcpy(m_netSource, source, YSF_CALLSIGN_LENGTH);
 		}
 
 		if (::memcmp(m_netDest, "          ", YSF_CALLSIGN_LENGTH) == 0) {
 			unsigned char* dest = m_netPayload.getDest();
-			if (dest != NULL)
+			if (dest != nullptr)
 				::memcpy(m_netDest, dest, YSF_CALLSIGN_LENGTH);
 		}
 
@@ -1151,7 +1151,7 @@ void CYSFControl::processNetCallsigns(const unsigned char* data, unsigned char d
 
 bool CYSFControl::isBusy() const
 {
-	return m_rfState != RS_RF_LISTENING || m_netState != RS_NET_IDLE;
+	return (m_rfState != RPT_RF_STATE::LISTENING) || (m_netState != RPT_NET_STATE::IDLE);
 }
 
 void CYSFControl::enable(bool enabled)
@@ -1160,17 +1160,17 @@ void CYSFControl::enable(bool enabled)
 		m_queue.clear();
 
 		// Reset the RF section
-		m_rfState = RS_RF_LISTENING;
+		m_rfState = RPT_RF_STATE::LISTENING;
 
 		m_rfTimeoutTimer.stop();
 		m_rfPayload.reset();
 
 		// These variables are free'd by YSFPayload
-		m_rfSource = NULL;
-		m_rfDest   = NULL;
+		m_rfSource = nullptr;
+		m_rfDest   = nullptr;
 
 		// Reset the networking section
-		m_netState = RS_NET_IDLE;
+		m_netState = RPT_NET_STATE::IDLE;
 
 		m_netTimeoutTimer.stop();
 		m_networkWatchdog.stop();

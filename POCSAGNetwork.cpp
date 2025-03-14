@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2018,2019,2020,2021,2023 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2018,2019,2020,2021,2023,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -89,7 +89,7 @@ void CPOCSAGNetwork::clock(unsigned int ms)
 
 unsigned int CPOCSAGNetwork::read(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_buffer.isEmpty())
 		return 0U;

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
  // Hamming (15,11,3) check a boolean data array
 bool CHamming::decode15113_1(bool* d)
 {
-	assert(d != NULL);
+	assert(d != nullptr);
 
 	// Calculate the parity it should have
 	bool c0 = d[0] ^ d[1] ^ d[2] ^ d[3] ^ d[4] ^ d[5] ^ d[6];
@@ -66,7 +66,7 @@ bool CHamming::decode15113_1(bool* d)
 
 void CHamming::encode15113_1(bool* d)
 {
-	assert(d != NULL);
+	assert(d != nullptr);
 
 	// Calculate the checksum this row should have
 	d[11] = d[0] ^ d[1] ^ d[2] ^ d[3] ^ d[4] ^ d[5] ^ d[6];
@@ -78,7 +78,7 @@ void CHamming::encode15113_1(bool* d)
 // Hamming (15,11,3) check a boolean data array
 bool CHamming::decode15113_2(bool* d)
 {
-	assert(d != NULL);
+	assert(d != nullptr);
 
 	// Calculate the checksum this row should have
 	bool c0 = d[0] ^ d[1] ^ d[2] ^ d[3] ^ d[5] ^ d[7] ^ d[8];
@@ -119,7 +119,7 @@ bool CHamming::decode15113_2(bool* d)
 
 void CHamming::encode15113_2(bool* d)
 {
-	assert(d != NULL);
+	assert(d != nullptr);
 
 	// Calculate the checksum this row should have
 	d[11] = d[0] ^ d[1] ^ d[2] ^ d[3] ^ d[5] ^ d[7] ^ d[8];
@@ -131,7 +131,7 @@ void CHamming::encode15113_2(bool* d)
 // Hamming (13,9,3) check a boolean data array
 bool CHamming::decode1393(bool* d)
 {
-	assert(d != NULL);
+	assert(d != nullptr);
 
 	// Calculate the checksum this column should have
 	bool c0 = d[0] ^ d[1] ^ d[3] ^ d[5] ^ d[6];
@@ -170,7 +170,7 @@ bool CHamming::decode1393(bool* d)
 
 void CHamming::encode1393(bool* d)
 {
-	assert(d != NULL);
+	assert(d != nullptr);
 
 	// Calculate the checksum this column should have
 	d[9]  = d[0] ^ d[1] ^ d[3] ^ d[5] ^ d[6];
@@ -182,7 +182,7 @@ void CHamming::encode1393(bool* d)
 // Hamming (10,6,3) check a boolean data array
 bool CHamming::decode1063(bool* d)
 {
-	assert(d != NULL);
+	assert(d != nullptr);
 
 	// Calculate the checksum this column should have
 	bool c0 = d[0] ^ d[1] ^ d[2] ^ d[5];
@@ -218,7 +218,7 @@ bool CHamming::decode1063(bool* d)
 
 void CHamming::encode1063(bool* d)
 {
-	assert(d != NULL);
+	assert(d != nullptr);
 
 	// Calculate the checksum this column should have
 	d[6] = d[0] ^ d[1] ^ d[2] ^ d[5];
@@ -230,7 +230,7 @@ void CHamming::encode1063(bool* d)
 // A Hamming (16,11,4) Check
 bool CHamming::decode16114(bool* d)
 {
-	assert(d != NULL);
+	assert(d != nullptr);
 
 	// Calculate the checksum this column should have
 	bool c0 = d[0] ^ d[1] ^ d[2] ^ d[3] ^ d[5] ^ d[7] ^ d[8];
@@ -278,7 +278,7 @@ bool CHamming::decode16114(bool* d)
 
 void CHamming::encode16114(bool* d)
 {
-	assert(d != NULL);
+	assert(d != nullptr);
 
 	d[11] = d[0] ^ d[1] ^ d[2] ^ d[3] ^ d[5] ^ d[7] ^ d[8];
 	d[12] = d[1] ^ d[2] ^ d[3] ^ d[4] ^ d[6] ^ d[8] ^ d[9];
@@ -290,7 +290,7 @@ void CHamming::encode16114(bool* d)
 // A Hamming (17,12,3) Check
 bool CHamming::decode17123(bool* d)
 {
-	assert(d != NULL);
+	assert(d != nullptr);
 
 	// Calculate the checksum this column should have
 	bool c0 = d[0] ^ d[1] ^ d[2] ^ d[3] ^ d[6] ^ d[7] ^ d[9];
@@ -339,7 +339,7 @@ bool CHamming::decode17123(bool* d)
 
 void CHamming::encode17123(bool* d)
 {
-	assert(d != NULL);
+	assert(d != nullptr);
 
 	d[12] = d[0] ^ d[1] ^ d[2] ^ d[3] ^ d[6] ^ d[7] ^ d[9];
 	d[13] = d[0] ^ d[1] ^ d[2] ^ d[3] ^ d[4] ^ d[7] ^ d[8] ^ d[10];

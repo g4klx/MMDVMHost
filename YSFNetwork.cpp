@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2014,2016,2019,2020,2021,2023 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2014,2016,2019,2020,2021,2023,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ m_debug(debug),
 m_enabled(false),
 m_buffer(1000U, "YSF Network"),
 m_pollTimer(1000U, 5U),
-m_tag(NULL)
+m_tag(nullptr)
 {
 	m_callsign = callsign;
 	m_callsign.resize(YSF_CALLSIGN_LENGTH, ' ');
@@ -71,7 +71,7 @@ bool CYSFNetwork::open()
 
 bool CYSFNetwork::write(const unsigned char* src, const unsigned char* dest, const unsigned char* data, unsigned int count, bool end)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	unsigned char buffer[200U];
 
@@ -83,12 +83,12 @@ bool CYSFNetwork::write(const unsigned char* src, const unsigned char* dest, con
 	for (unsigned int i = 0U; i < YSF_CALLSIGN_LENGTH; i++)
 		buffer[i + 4U] = m_callsign.at(i);
 
-	if (src != NULL)
+	if (src != nullptr)
 		::memcpy(buffer + 14U, src, YSF_CALLSIGN_LENGTH);
 	else
 		::memset(buffer + 14U, ' ', YSF_CALLSIGN_LENGTH);
 
-	if (dest != NULL)
+	if (dest != nullptr)
 		::memcpy(buffer + 24U, dest, YSF_CALLSIGN_LENGTH);
 	else
 		::memset(buffer + 24U, ' ', YSF_CALLSIGN_LENGTH);
@@ -169,7 +169,7 @@ void CYSFNetwork::clock(unsigned int ms)
 
 unsigned int CYSFNetwork::read(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_buffer.isEmpty())
 		return 0U;

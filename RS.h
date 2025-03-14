@@ -1,7 +1,7 @@
 /*
  *   Copyright (C) 2014 Hard Consulting Corporation
  *   Copyright (C) 2023 Bryan Biedenkapp, N2PLL
- *   Copyright (C) 2024 Jonathan Naylor, G4KLX
+ *   Copyright (C) 2024,2025 Jonathan Naylor, G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -1044,16 +1044,16 @@
                         TYP cor = alpha_to[modnn(index_of[num1] + index_of[num2] + NN - index_of[den])];
 
                         // Store the error correction pattern, if a correction buffer is available
-                        if (corr != NULL)
+                        if (corr != nullptr)
                             corr[j] = cor;
 
                         // If a data/parity buffer is given and the error is inside the message or
                         // parity data, correct it
                         if (loc[j] < (NN - NROOTS)) {
-                            if (data != NULL)
+                            if (data != nullptr)
                                 data[loc[j] - pad] ^= cor;
                         } else if (loc[j] < NN) {
-                            if (parity != NULL)
+                            if (parity != nullptr)
                                 parity[loc[j] - (NN - NROOTS)] ^= cor;
                         }
                     }
@@ -1082,7 +1082,7 @@
                     LogDebug(LOG_HOST, "%s", ss.str().c_str());
                 }
 #endif
-                if (eras_pos != NULL) {
+                if (eras_pos != nullptr) {
                     for (int i = 0; i < count; i++)
                         eras_pos[i] = loc[i] - pad;
                 }

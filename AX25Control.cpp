@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2020,2023 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2020,2023,2025 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -16,21 +16,19 @@
 #include "Utils.h"
 #include "Log.h"
 
-#if defined(USE_AX25)
-
 #include <cstdio>
 #include <cassert>
 #include <cstring>
 #include <ctime>
 
-#include <nlohmann/json.hpp>
+// #define	DUMP_AX25
 
 const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04U, 0x02U, 0x01U };
 
 #define WRITE_BIT1(p,i,b) p[(i)>>3] = (b) ? (p[(i)>>3] | BIT_MASK_TABLE[(i)&7]) : (p[(i)>>3] & ~BIT_MASK_TABLE[(i)&7])
 #define READ_BIT1(p,i)    (p[(i)>>3] & BIT_MASK_TABLE[(i)&7])
 
-CAX25Control::CAX25Control(CAX25Network* network, bool trace, CRSSIInterpolator* rssiMapper) :
+CAX25Control::CAX25Control(CAX25Network* network, bool trace) :
 m_network(network),
 m_trace(trace),
 m_rssiMapper(rssiMapper),
@@ -45,7 +43,7 @@ CAX25Control::~CAX25Control()
 
 bool CAX25Control::writeModem(unsigned char *data, unsigned int len)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (!m_enabled)
 		return false;
@@ -73,18 +71,18 @@ bool CAX25Control::writeModem(unsigned char *data, unsigned int len)
 
 	CUtils::dump(1U, "AX.25 received packet", data, len);
 
-	if (m_network == NULL)
-		return true;
+    if (m_network == nullptr)
+        return true;
 
 	return m_network->write(data + offset, len - offset);
 }
 
 unsigned int CAX25Control::readModem(unsigned char* data)
 {
-	assert(data != NULL);
+    assert(data != nullptr);
 
-	if (m_network == NULL)
-		return 0U;
+    if (m_network == nullptr)
+        return 0U;
 
 	if (!m_enabled)
 		return 0U;
@@ -106,8 +104,8 @@ void CAX25Control::enable(bool enabled)
 
 void CAX25Control::decode(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
-	assert(length >= 15U);
+    assert(data != nullptr);
+    assert(length >= 15U);
 
 	std::string text;
 
@@ -348,7 +346,7 @@ void CAX25Control::decodeJSON(const char* source, const unsigned char* data, uns
 
 bool CAX25Control::decodeAddress(const unsigned char* data, std::string& text, bool isDigi) const
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	for (unsigned int i = 0U; i < 6U; i++) {
 		char c = data[i] >> 1;

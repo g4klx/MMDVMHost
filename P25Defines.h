@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2025 by Jonathan Naylor G4KLX
  *   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com>
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -65,7 +65,7 @@ const unsigned char P25_LCF_TSBK_ACK_RSP_FNE = 0x20U;
 
 const unsigned int  P25_SS0_START    = 70U;
 const unsigned int  P25_SS1_START    = 71U;
-const unsigned int  P25_SS_INCREMENT = 72U;
+const unsigned int  P25_INCREMENT = 72U;
 
 const unsigned char P25_DUID_HEADER  = 0x00U;
 const unsigned char P25_DUID_TERM    = 0x03U;
@@ -75,6 +75,6 @@ const unsigned char P25_DUID_LDU2    = 0x0AU;
 const unsigned char P25_DUID_PDU     = 0x0CU;
 const unsigned char P25_DUID_TERM_LC = 0x0FU;
 
-const unsigned char P25_NULL_IMBE[] = {0x04U, 0x0CU, 0xFDU, 0x7BU, 0xFBU, 0x7DU, 0xF2U, 0x7BU, 0x3DU, 0x9EU, 0x45U};
+const unsigned char P25_nullptr_IMBE[] = {0x04U, 0x0CU, 0xFDU, 0x7BU, 0xFBU, 0x7DU, 0xF2U, 0x7BU, 0x3DU, 0x9EU, 0x45U};
 
 #endif

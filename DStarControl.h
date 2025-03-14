@@ -58,7 +58,7 @@ private:
 	unsigned char*             m_gateway;
 	bool                       m_selfOnly;
 	bool                       m_ackReply;
-	DSTAR_ACK_MESSAGE          m_ackMessage;
+	DSTAR_ACK                  m_ackMessage;
 	bool                       m_errorReply;
 	bool                       m_remoteGateway;
 	std::vector<std::string>   m_blackList;

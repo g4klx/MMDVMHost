@@ -1,5 +1,5 @@
 /*
-*	Copyright (C) 2016,2018,2023,2024 by Jonathan Naylor, G4KLX
+*	Copyright (C) 2016,2018,2023,2024,2025 by Jonathan Naylor, G4KLX
 *
 *	This program is free software; you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -56,8 +56,8 @@ CP25Trellis::~CP25Trellis()
 
 bool CP25Trellis::decode34(const unsigned char* data, unsigned char* payload)
 {
-	assert(data != NULL);
-	assert(payload != NULL);
+	assert(data != nullptr);
+	assert(payload != nullptr);
 
 	signed char dibits[98U];
 	deinterleave(data, dibits);
@@ -90,8 +90,8 @@ bool CP25Trellis::decode34(const unsigned char* data, unsigned char* payload)
 
 void CP25Trellis::encode34(const unsigned char* payload, unsigned char* data)
 {
-	assert(payload != NULL);
-	assert(data != NULL);
+	assert(payload != nullptr);
+	assert(data != nullptr);
 
 	unsigned char tribits[49U];
 	bitsToTribits(payload, tribits);
@@ -115,8 +115,8 @@ void CP25Trellis::encode34(const unsigned char* payload, unsigned char* data)
 
 bool CP25Trellis::decode12(const unsigned char* data, unsigned char* payload)
 {
-	assert(data != NULL);
-	assert(payload != NULL);
+	assert(data != nullptr);
+	assert(payload != nullptr);
 
 	signed char dibits[98U];
 	deinterleave(data, dibits);
@@ -149,8 +149,8 @@ bool CP25Trellis::decode12(const unsigned char* data, unsigned char* payload)
 
 void CP25Trellis::encode12(const unsigned char* payload, unsigned char* data)
 {
-	assert(payload != NULL);
-	assert(data != NULL);
+	assert(payload != nullptr);
+	assert(data != nullptr);
 
 	unsigned char bits[49U];
 	bitsToDibits(payload, bits);

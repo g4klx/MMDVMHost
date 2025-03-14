@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021,2023,2024 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2023,2024,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -80,7 +80,7 @@ bool CFMNetwork::open()
 
 bool CFMNetwork::writeData(const float* data, unsigned int nSamples)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 	assert(nSamples > 0U);
 
 	if (m_seqNo == 0U) {
@@ -210,7 +210,7 @@ void CFMNetwork::clock(unsigned int ms)
 
 unsigned int CFMNetwork::readData(float* out, unsigned int nOut)
 {
-	assert(out != NULL);
+	assert(out != nullptr);
 	assert(nOut > 0U);
 
 	unsigned int bytes = m_buffer.dataSize() / sizeof(unsigned short);

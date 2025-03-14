@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015,2016,2017,2023 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015,2016,2017,2023,2025 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 
 CDMRData::CDMRData(const CDMRData& data) :
 m_slotNo(data.m_slotNo),
-m_data(NULL),
+m_data(nullptr),
 m_srcId(data.m_srcId),
 m_dstId(data.m_dstId),
 m_flco(data.m_flco),
@@ -40,10 +40,10 @@ m_rssi(data.m_rssi)
 
 CDMRData::CDMRData() :
 m_slotNo(1U),
-m_data(NULL),
+m_data(nullptr),
 m_srcId(0U),
 m_dstId(0U),
-m_flco(FLCO_GROUP),
+m_flco(FLCO::GROUP),
 m_dataType(0U),
 m_seqNo(0U),
 m_n(0U),
@@ -171,7 +171,7 @@ void CDMRData::setRSSI(unsigned char rssi)
 
 unsigned int CDMRData::getData(unsigned char* buffer) const
 {
-	assert(buffer != NULL);
+	assert(buffer != nullptr);
 
 	::memcpy(buffer, m_data, DMR_FRAME_LENGTH_BYTES);
 
@@ -180,7 +180,7 @@ unsigned int CDMRData::getData(unsigned char* buffer) const
 
 void CDMRData::setData(const unsigned char* buffer)
 {
-	assert(buffer != NULL);
+	assert(buffer != nullptr);
 
 	::memcpy(m_data, buffer, DMR_FRAME_LENGTH_BYTES);
 }

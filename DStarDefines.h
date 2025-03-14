@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2018,2019,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018,2019,2021,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -27,16 +27,16 @@ const unsigned int DSTAR_FRAME_LENGTH_BYTES  = 12U;
 const unsigned char DSTAR_END_PATTERN_BYTES[] = { TAG_EOT, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0xC8, 0x7A };
 const unsigned int  DSTAR_END_PATTERN_LENGTH_BYTES = 6U;
 
-const unsigned char DSTAR_NULL_AMBE_DATA_BYTES[] = { 0x9E, 0x8D, 0x32, 0x88, 0x26, 0x1A, 0x3F, 0x61, 0xE8 };
-// DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED is DSTAR_NULL_AMBE_DATA_BYTES XORed with DSTAR_SCRAMBLER_BYTES.
-const unsigned char DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED[] = { 0xEEU, 0xC2U, 0xA1U, 0xC8U, 0x42U, 0x6EU, 0x52U, 0x51U, 0xC3U };
+const unsigned char DSTAR_nullptr_AMBE_DATA_BYTES[] = { 0x9E, 0x8D, 0x32, 0x88, 0x26, 0x1A, 0x3F, 0x61, 0xE8 };
+// DSTAR_nullptr_AMBE_DATA_BYTES_SCRAMBLED is DSTAR_nullptr_AMBE_DATA_BYTES XORed with DSTAR_SCRAMBLER_BYTES.
+const unsigned char DSTAR_nullptr_AMBE_DATA_BYTES_SCRAMBLED[] = { 0xEEU, 0xC2U, 0xA1U, 0xC8U, 0x42U, 0x6EU, 0x52U, 0x51U, 0xC3U };
 
-const unsigned char DSTAR_NULL_SLOW_SYNC_BYTES[] = { 0x55, 0x2D, 0x16 };
+const unsigned char DSTAR_nullptr_SLOW_SYNC_BYTES[] = { 0x55, 0x2D, 0x16 };
 // Note that these are already scrambled, 0x66 0x66 0x66 otherwise
-const unsigned char DSTAR_NULL_SLOW_DATA_BYTES[] = { 0x16, 0x29, 0xF5 };
+const unsigned char DSTAR_nullptr_SLOW_DATA_BYTES[] = { 0x16, 0x29, 0xF5 };
 
-const unsigned char DSTAR_NULL_FRAME_SYNC_BYTES[] = { TAG_DATA, 0x9E, 0x8D, 0x32, 0x88, 0x26, 0x1A, 0x3F, 0x61, 0xE8, 0x55, 0x2D, 0x16 };
-const unsigned char DSTAR_NULL_FRAME_DATA_BYTES[] = { TAG_DATA, 0x9E, 0x8D, 0x32, 0x88, 0x26, 0x1A, 0x3F, 0x61, 0xE8, 0x16, 0x29, 0xF5 };
+const unsigned char DSTAR_nullptr_FRAME_SYNC_BYTES[] = { TAG_DATA, 0x9E, 0x8D, 0x32, 0x88, 0x26, 0x1A, 0x3F, 0x61, 0xE8, 0x55, 0x2D, 0x16 };
+const unsigned char DSTAR_nullptr_FRAME_DATA_BYTES[] = { TAG_DATA, 0x9E, 0x8D, 0x32, 0x88, 0x26, 0x1A, 0x3F, 0x61, 0xE8, 0x16, 0x29, 0xF5 };
 
 const unsigned int  DSTAR_VOICE_FRAME_LENGTH_BYTES = 9U;
 const unsigned int  DSTAR_DATA_FRAME_LENGTH_BYTES  = 3U;
@@ -44,14 +44,14 @@ const unsigned int  DSTAR_DATA_FRAME_LENGTH_BYTES  = 3U;
 const unsigned int  DSTAR_LONG_CALLSIGN_LENGTH  = 8U;
 const unsigned int  DSTAR_SHORT_CALLSIGN_LENGTH = 4U;
 
-const unsigned char DSTAR_SLOW_DATA_TYPE_MASK       = 0xF0U;
-const unsigned char DSTAR_SLOW_DATA_TYPE_GPSDATA    = 0x30U;
-const unsigned char DSTAR_SLOW_DATA_TYPE_TEXT       = 0x40U;
-const unsigned char DSTAR_SLOW_DATA_TYPE_HEADER     = 0x50U;
-const unsigned char DSTAR_SLOW_DATA_TYPE_FASTDATA01 = 0x80U;
-const unsigned char DSTAR_SLOW_DATA_TYPE_FASTDATA16 = 0x90U;
-const unsigned char DSTAR_SLOW_DATA_TYPE_SQUELCH    = 0xC0U;
-const unsigned char DSTAR_SLOW_DATA_LENGTH_MASK     = 0x0FU;
+const unsigned char DSTAR_SLOW_DATA_TYPE_MASK           = 0xF0U;
+const unsigned char DSTAR_SLOW_DATA_TYPE_GPSDATA        = 0x30U;
+const unsigned char DSTAR_SLOW_DATA_TYPE_TEXT           = 0x40U;
+const unsigned char DSTAR_SLOW_DATA_TYPE_HEADER         = 0x50U;
+const unsigned char DSTAR_SLOW_DATA_TYPE_FASTDATA_END   = 0x80U;
+const unsigned char DSTAR_SLOW_DATA_TYPE_FASTDATA_BEGIN = 0x90U;
+const unsigned char DSTAR_SLOW_DATA_TYPE_SQUELCH        = 0xC0U;
+const unsigned char DSTAR_SLOW_DATA_LENGTH_MASK         = 0x0FU;
 
 // Data Frames are always scrambled using the first three bytes of
 // DSTAR_SCRAMBLER_BYTES, and Voice Frames are scrambled with all nine
@@ -66,7 +66,7 @@ const unsigned char DSTAR_URGENT_MASK         = 0x08U;
 const unsigned char DSTAR_REPEATER_CONTROL    = 0x07U;
 const unsigned char DSTAR_AUTO_REPLY          = 0x06U;
 const unsigned char DSTAR_RESEND_REQUESTED    = 0x04U;
-const unsigned char DSTAR_ACK_FLAG            = 0x03U;
+const unsigned char FLAG            = 0x03U;
 const unsigned char DSTAR_NO_RESPONSE         = 0x02U;
 const unsigned char DSTAR_RELAY_UNAVAILABLE   = 0x01U;
 
@@ -77,19 +77,19 @@ const unsigned char DSTAR_DTMF_SIG[]  = { 0x82U, 0x08U, 0x20U, 0x82U, 0x00U, 0x0
 
 const unsigned int DSTAR_FRAME_TIME = 20U;
 
-enum LINK_STATUS {
-	LS_NONE,
-	LS_PENDING_IRCDDB,
-	LS_LINKING_LOOPBACK,
-	LS_LINKING_DEXTRA,
-	LS_LINKING_DPLUS,
-	LS_LINKING_DCS,
-	LS_LINKING_CCS,
-	LS_LINKED_LOOPBACK,
-	LS_LINKED_DEXTRA,
-	LS_LINKED_DPLUS,
-	LS_LINKED_DCS,
-	LS_LINKED_CCS
+enum class LINK_STATUS {
+	NONE,
+	PENDING_IRCDDB,
+	LINKING_LOOPBACK,
+	LINKING_DEXTRA,
+	LINKING_DPLUS,
+	LINKING_DCS,
+	LINKING_CCS,
+	LINKED_LOOPBACK,
+	LINKED_DEXTRA,
+	LINKED_DPLUS,
+	LINKED_DCS,
+	LINKED_CCS
 };
 
 #endif

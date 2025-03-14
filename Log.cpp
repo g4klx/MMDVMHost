@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2020,2022,2023 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2020,2022,2023,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -58,7 +58,7 @@ void LogFinalise()
 
 void Log(unsigned int level, const char* fmt, ...)
 {
-	assert(fmt != NULL);
+	assert(fmt != nullptr);
 
 	char buffer[501U];
 #if defined(_WIN32) || defined(_WIN64)
@@ -68,7 +68,7 @@ void Log(unsigned int level, const char* fmt, ...)
 	::sprintf(buffer, "%c: %04u-%02u-%02u %02u:%02u:%02u.%03u ", LEVELS[level], st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
 #else
 	struct timeval now;
-	::gettimeofday(&now, NULL);
+	::gettimeofday(&now, nullptr);
 
 	struct tm* tm = ::gmtime(&now.tv_sec);
 
@@ -78,7 +78,7 @@ void Log(unsigned int level, const char* fmt, ...)
 	va_list vl;
 	va_start(vl, fmt);
 
-	::vsnprintf(buffer + ::strlen(buffer), 500, fmt, vl);
+	::vsnprintf(buffer + ::strlen(buffer), 500 - ::strlen(buffer), fmt, vl);
 
 	va_end(vl);
 

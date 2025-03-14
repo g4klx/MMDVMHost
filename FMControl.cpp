@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2020,2021,2023 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2020,2021,2023,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -52,11 +52,11 @@ m_deEmphasisOn(deEmphasisOn),
 m_rssiMapper(rssiMapper),
 m_enabled(false),
 m_incomingRFAudio(1600U, "Incoming RF FM Audio"),
-m_preEmphasis(NULL),
-m_deEmphasis(NULL),
-m_filterStage1(NULL),
-m_filterStage2(NULL),
-m_filterStage3(NULL)
+m_preEmphasis(nullptr),
+m_deEmphasis(nullptr),
+m_filterStage1(nullptr),
+m_filterStage2(nullptr),
+m_filterStage3(nullptr)
 {
 	assert(txAudioGain > 0.0F);
 	assert(rxAudioGain > 0.0F);
@@ -83,8 +83,8 @@ CFMControl::~CFMControl()
 
 bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
-	assert(length > 0U);
+    assert(data != nullptr);
+    assert(length > 0U);
 
 	if (data[0U] == TAG_HEADER) {
 		switch (data[1U]) {
@@ -179,11 +179,11 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
 
 unsigned int CFMControl::readModem(unsigned char* data, unsigned int space)
 {
-	assert(data != NULL);
-	assert(space > 0U);
+    assert(data != nullptr);
+    assert(space > 0U);
 
-	if (m_network == NULL)
-		return 0U;
+    if (m_network == nullptr)
+        return 0U;
 
 	if (space > 240U)		// 160 samples 12-bit
 		space = 240U;		// 160 samples 12-bit

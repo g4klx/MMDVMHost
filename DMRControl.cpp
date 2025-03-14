@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015-2021,2023 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015-2021,2023,2025 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ CDMRControl::~CDMRControl()
 
 bool CDMRControl::processWakeup(const unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	// Wakeups always come in on slot 1
 	if (data[0U] != TAG_DATA || data[1U] != (DMR_IDLE_RX | DMR_SYNC_DATA | DT_CSBK))
@@ -59,7 +59,7 @@ bool CDMRControl::processWakeup(const unsigned char* data)
 		return false;
 
 	CSBKO csbko = csbk.getCSBKO();
-	if (csbko != CSBKO_BSDWNACT)
+	if (csbko != CSBKO::BSDWNACT)
 		return false;
 
 	unsigned int srcId = csbk.getSrcId();
@@ -78,35 +78,35 @@ bool CDMRControl::processWakeup(const unsigned char* data)
 
 bool CDMRControl::writeModemSlot1(unsigned char *data, unsigned int len)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	return m_slot1.writeModem(data, len);
 }
 
 bool CDMRControl::writeModemSlot2(unsigned char *data, unsigned int len)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	return m_slot2.writeModem(data, len);
 }
 
 unsigned int CDMRControl::readModemSlot1(unsigned char *data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	return m_slot1.readModem(data);
 }
 
 unsigned int CDMRControl::readModemSlot2(unsigned char *data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	return m_slot2.readModem(data);
 }
 
 void CDMRControl::clock()
 {
-	if (m_network != NULL) {
+	if (m_network != nullptr) {
 		CDMRData data;
 		bool ret = m_network->read(data);
 		if (ret) {

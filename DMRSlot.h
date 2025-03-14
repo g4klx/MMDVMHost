@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2021,2023 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2021,2023,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -40,12 +40,12 @@
 
 #include <nlohmann/json.hpp>
 
-enum ACTIVITY_TYPE {
-	ACTIVITY_NONE,
-	ACTIVITY_VOICE,
-	ACTIVITY_DATA,
-	ACTIVITY_CSBK,
-	ACTIVITY_EMERG
+enum class ACTIVITY_TYPE {
+	NONE,
+	VOICE,
+	DATA,
+	CSBK,
+	EMERG
 };
 
 class CDMRSlot {
@@ -129,7 +129,8 @@ private:
 	static bool                m_duplex;
 	static CDMRLookup*         m_lookup;
 	static unsigned int        m_hangCount;
-	static DMR_OVCM_TYPES      m_ovcm;
+	static DMR_OVCM            m_ovcm;
+	static bool                m_protect;
 
 	static CRSSIInterpolator*  m_rssiMapper;
 

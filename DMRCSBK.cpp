@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2020,2021,2022,2023 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2020,2021,2022,2023,2025 by Jonathan Naylor G4KLX
  *   Copyright (C) 2019 by Patrick Maier DK5MP
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -28,8 +28,8 @@
 #include <cassert>
 
 CDMRCSBK::CDMRCSBK() :
-m_data(NULL),
-m_CSBKO(CSBKO_NONE),
+m_data(nullptr),
+m_CSBKO(CSBKO::NONE),
 m_FID(0x00U),
 m_GI(false),
 m_bsId(0U),
@@ -49,7 +49,7 @@ CDMRCSBK::~CDMRCSBK()
 
 bool CDMRCSBK::put(const unsigned char* bytes)
 {
-	assert(bytes != NULL);
+	assert(bytes != nullptr);
 
 	CBPTC19696 bptc;
 	bptc.decode(bytes, m_data);
@@ -69,7 +69,7 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 	m_FID   = m_data[1U];
 
 	switch (m_CSBKO) {
-	case CSBKO_BSDWNACT:
+	case CSBKO::BSDWNACT:
 		m_GI    = false;
 		m_bsId  = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
 		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U]; 
@@ -78,7 +78,7 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 		CUtils::dump(1U, "Downlink Activate CSBK", m_data, 12U);
 		break;
 
-	case CSBKO_UUVREQ:
+	case CSBKO::UUVREQ:
 		m_GI    = false;
 		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
 		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
@@ -88,7 +88,7 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 		CUtils::dump(1U, "Unit to Unit Service Request CSBK", m_data, 12U);
 		break;
 
-	case CSBKO_UUANSRSP:
+	case CSBKO::UUANSRSP:
 		m_GI    = false;
 		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
 		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
@@ -98,7 +98,7 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 		CUtils::dump(1U, "Unit to Unit Service Answer Response CSBK", m_data, 12U);
 		break;
 
-	case CSBKO_PRECCSBK:
+	case CSBKO::PRECCSBK:
 		m_GI    = (m_data[2U] & 0x40U) == 0x40U;
 		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
 		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
@@ -107,7 +107,7 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 		CUtils::dump(1U, "Preamble CSBK", m_data, 12U);
 		break;
 
-	case CSBKO_NACKRSP:
+	case CSBKO::NACKRSP:
 		m_GI    = false;
 		m_srcId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
 		m_dstId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
@@ -116,7 +116,7 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 		CUtils::dump(1U, "Negative Acknowledge Response CSBK", m_data, 12U);
 		break;
 
-	case CSBKO_CALL_ALERT:
+	case CSBKO::CALL_ALERT:
 		m_GI    = false;
 		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
 		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
@@ -125,7 +125,7 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 		CUtils::dump(1U, "Call Alert CSBK", m_data, 12U);
 		break;
 
-	case CSBKO_CALL_ALERT_ACK:
+	case CSBKO::CALL_ALERT_ACK:
 		m_GI    = false;
 		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
 		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
@@ -134,7 +134,7 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 		CUtils::dump(1U, "Call Alert Ack CSBK", m_data, 12U);
 		break;
 
-	case CSBKO_RADIO_CHECK:
+	case CSBKO::RADIO_CHECK:
 		m_GI    = false;
 		if (m_data[3U] == 0x80) {
 			m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
@@ -149,7 +149,7 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 		m_CBF   = 0U;
 		break;
 
-	case CSBKO_CALL_EMERGENCY:
+	case CSBKO::CALL_EMERGENCY:
 		m_GI    = true;
 		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
 		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
@@ -173,7 +173,7 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 
 void CDMRCSBK::get(unsigned char* bytes) const
 {
-	assert(bytes != NULL);
+	assert(bytes != nullptr);
 
 	m_data[10U] ^= CSBK_CRC_MASK[0U];
 	m_data[11U] ^= CSBK_CRC_MASK[1U];
@@ -204,7 +204,7 @@ bool CDMRCSBK::getOVCM() const
 
 void CDMRCSBK::setOVCM(bool ovcm)
 {
-	if (m_CSBKO == CSBKO_UUVREQ || m_CSBKO == CSBKO_UUANSRSP) {
+	if ((m_CSBKO == CSBKO::UUVREQ) || (m_CSBKO == CSBKO::UUANSRSP)) {
 		m_OVCM = ovcm;
 
 		if (ovcm)

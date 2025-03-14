@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016-2019,2021,2023,2024 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016-2019,2021,2023,2024,2025 by Jonathan Naylor G4KLX
 *   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com> N2PLL
 *
 *   This program is free software; you can redistribute it and/or modify
@@ -51,8 +51,8 @@ m_network(network),
 m_duplex(duplex),
 m_lookup(lookup),
 m_queue(1000U, "P25 Control"),
-m_rfState(RS_RF_LISTENING),
-m_netState(RS_NET_IDLE),
+m_rfState(RPT_RF_STATE::LISTENING),
+m_netState(RPT_NET_STATE::IDLE),
 m_rfTimeout(1000U, timeout),
 m_netTimeout(1000U, timeout),
 m_networkWatchdog(1000U, 0U, 1500U),
@@ -72,11 +72,11 @@ m_rfData(),
 m_netData(),
 m_rfLSD(),
 m_netLSD(),
-m_netLDU1(NULL),
-m_netLDU2(NULL),
-m_lastIMBE(NULL),
-m_rfLDU(NULL),
-m_rfPDU(NULL),
+m_netLDU1(nullptr),
+m_netLDU2(nullptr),
+m_lastIMBE(nullptr),
+m_rfLDU(nullptr),
+m_rfPDU(nullptr),
 m_rfPDUCount(0U),
 m_rfPDUBits(0U),
 m_rssiMapper(rssiMapper),
@@ -101,7 +101,7 @@ m_enabled(true)
 	::memset(m_netLDU2, 0x00U, 9U * 25U);
 
 	m_lastIMBE = new unsigned char[11U];
-	::memcpy(m_lastIMBE, P25_NULL_IMBE, 11U);
+	::memcpy(m_lastIMBE, P25_nullptr_IMBE, 11U);
 
 	m_rfLDU = new unsigned char[P25_LDU_FRAME_LENGTH_BYTES];
 	::memset(m_rfLDU, 0x00U, P25_LDU_FRAME_LENGTH_BYTES);
@@ -121,14 +121,14 @@ CP25Control::~CP25Control()
 
 bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (!m_enabled)
 		return false;
 
 	bool sync = data[1U] == 0x01U;
 
-	if (data[0U] == TAG_LOST && m_rfState == RS_RF_AUDIO) {
+	if ((data[0U] == TAG_LOST) && (m_rfState == RPT_RF_STATE::AUDIO)) {
 		bool           grp = m_rfData.getLCF() == P25_LCF_GROUP;
 		unsigned int dstId = m_rfData.getDstId();
 		unsigned int srcId = m_rfData.getSrcId();
@@ -146,7 +146,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 
 		writeNetwork(m_rfLDU, m_lastDUID, true);
 		writeNetwork(data + 2U, P25_DUID_TERM, true);
-		m_rfState = RS_RF_LISTENING;
+		m_rfState = RPT_RF_STATE::LISTENING;
 		m_rfTimeout.stop();
 		m_rfData.reset();
 
@@ -162,17 +162,17 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 	}
 
 	if (data[0U] == TAG_LOST) {
-		m_rfState = RS_RF_LISTENING;
+		m_rfState = RPT_RF_STATE::LISTENING;
 		return false;
 	}
 
-	if (!sync && m_rfState == RS_RF_LISTENING)
+	if (!sync && (m_rfState == RPT_RF_STATE::LISTENING))
 		return false;
 
 	// Decode the NID
 	bool valid = m_nid.decode(data + 2U);
 
-	if (m_rfState == RS_RF_LISTENING && !valid)
+	if ((m_rfState == RPT_RF_STATE::LISTENING) && !valid)
 		return false;
 
 	unsigned char duid = m_nid.getDUID();
@@ -220,7 +220,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 	}
 
 	if (duid == P25_DUID_HEADER) {
-		if (m_rfState == RS_RF_LISTENING) {
+		if (m_rfState == RPT_RF_STATE::LISTENING) {
 			m_rfData.reset();
 			bool ret = m_rfData.decodeHeader(data + 2U);
 			if (!ret) {
@@ -234,7 +234,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			return true;
 		}
 	} else if (duid == P25_DUID_LDU1) {
-		if (m_rfState == RS_RF_LISTENING) {
+		if (m_rfState == RPT_RF_STATE::LISTENING) {
 			m_rfData.reset();
 			bool ret = m_rfData.decodeLDU1(data + 2U);
 			if (!ret) {
@@ -273,7 +273,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			LogMessage("P25, received RF voice transmission from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
 			writeJSONRF("start", srcId, source, grp, dstId);
 
-			m_rfState = RS_RF_AUDIO;
+			m_rfState = RPT_RF_STATE::AUDIO;
 
 			m_minRSSI = m_rssi;
 			m_maxRSSI = m_rssi;
@@ -288,11 +288,11 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 
 			createRFHeader();
 			writeNetwork(data + 2U, P25_DUID_HEADER, false);
-		} else if (m_rfState == RS_RF_AUDIO) {
+		} else if (m_rfState == RPT_RF_STATE::AUDIO) {
 			writeNetwork(m_rfLDU, m_lastDUID, false);
 		}
 
-		if (m_rfState == RS_RF_AUDIO) {
+		if (m_rfState == RPT_RF_STATE::AUDIO) {
 /*
 			bool ret = m_rfData.decodeLDU1(data + 2U);
 			if (!ret) {
@@ -344,7 +344,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			return true;
 		}
 	} else if (duid == P25_DUID_LDU2) {
-		if (m_rfState == RS_RF_AUDIO) {
+		if (m_rfState == RPT_RF_STATE::AUDIO) {
 /*
 			bool ret = m_rfData.decodeLDU2(data + 2U);
 			if (!ret) {
@@ -398,10 +398,10 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			return true;
 		}
 	} else if (duid == P25_DUID_TSDU) {
-		if (m_rfState != RS_RF_DATA) {
+		if (m_rfState != RPT_RF_STATE::DATA) {
 			m_rfPDUCount = 0U;
 			m_rfPDUBits = 0U;
-			m_rfState = RS_RF_DATA;
+			m_rfState = RPT_RF_STATE::DATA;
 			m_rfDataFrames = 0U;
 		}
 	
@@ -475,10 +475,10 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			break;
 		}
 
-		m_rfState = RS_RF_LISTENING;
+		m_rfState = RPT_RF_STATE::LISTENING;
 		return true;
 	} else if (duid == P25_DUID_TERM || duid == P25_DUID_TERM_LC) {
-		if (m_rfState == RS_RF_AUDIO) {
+		if (m_rfState == RPT_RF_STATE::AUDIO) {
 			writeNetwork(m_rfLDU, m_lastDUID, true);
 
 			::memset(data + 2U, 0x00U, P25_TERM_FRAME_LENGTH_BYTES);
@@ -497,7 +497,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			unsigned int srcId = m_rfData.getSrcId();
 			std::string source = m_lookup->find(srcId);
 
-			m_rfState = RS_RF_LISTENING;
+			m_rfState = RPT_RF_STATE::LISTENING;
 			m_rfTimeout.stop();
 			m_rfData.reset();
 			m_lastDUID = duid;
@@ -521,10 +521,10 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			}
 		}
 	} else if (duid == P25_DUID_PDU) {
-		if (m_rfState != RS_RF_DATA) {
+		if (m_rfState != RPT_RF_STATE::DATA) {
 			m_rfPDUCount   = 0U;
 			m_rfPDUBits    = 0U;
-			m_rfState      = RS_RF_DATA;
+			m_rfState      = RPT_RF_STATE::DATA;
 			m_rfDataFrames = 0U;
 		}
 
@@ -554,12 +554,12 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			} else {
 				m_rfPDUCount   = 0U;
 				m_rfPDUBits    = 0U;
-				m_rfState      = RS_RF_LISTENING;
+				m_rfState      = RPT_RF_STATE::LISTENING;
 				m_rfDataFrames = 0U;
 			}
 		}
 
-		if (m_rfState == RS_RF_DATA) {
+		if (m_rfState == RPT_RF_STATE::DATA) {
 			m_rfPDUCount++;
 
 			unsigned int bitLength = ((m_rfDataFrames + 1U) * P25_PDU_FEC_LENGTH_BITS) + P25_SYNC_LENGTH_BITS + P25_NID_LENGTH_BITS;
@@ -617,7 +617,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 
 				m_rfPDUCount = 0U;
 				m_rfPDUBits = 0U;
-				m_rfState = RS_RF_LISTENING;
+				m_rfState = RPT_RF_STATE::LISTENING;
 				m_rfDataFrames = 0U;
 			}
 
@@ -630,7 +630,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 
 unsigned int CP25Control::readModem(unsigned char* data)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_queue.isEmpty())
 		return 0U;
@@ -647,7 +647,7 @@ void CP25Control::writeNetwork()
 {
 	unsigned char data[100U];
 
-	if (m_network == NULL)
+	if (m_network == nullptr)
 		return;
 
 	unsigned int length = m_network->read(data, 100U);
@@ -657,7 +657,7 @@ void CP25Control::writeNetwork()
 	if (!m_enabled)
 		return;
 
-	if (m_rfState != RS_RF_LISTENING && m_netState == RS_NET_IDLE)
+	if ((m_rfState != RPT_RF_STATE::LISTENING) && (m_netState == RPT_NET_STATE::IDLE))
 		return;
 
 	m_networkWatchdog.start();
@@ -698,7 +698,7 @@ void CP25Control::writeNetwork()
 	case 0x6AU:
 		::memcpy(m_netLDU1 + 200U, data, 16U);
 		checkNetLDU2();
-		if (m_netState != RS_NET_IDLE)
+		if (m_netState != RPT_NET_STATE::IDLE)
 			createNetLDU1();
 		break;
 	case 0x6BU:
@@ -735,7 +735,7 @@ void CP25Control::writeNetwork()
 		break;
 	case 0x73U:
 		::memcpy(m_netLDU2 + 200U, data, 16U);
-		if (m_netState == RS_NET_IDLE) {
+		if (m_netState == RPT_NET_STATE::IDLE) {
 			createNetHeader();
 			createNetLDU1();
 		} else {
@@ -753,13 +753,13 @@ void CP25Control::writeNetwork()
 
 void CP25Control::clock(unsigned int ms)
 {
-	if (m_network != NULL)
+	if (m_network != nullptr)
 		writeNetwork();
 
 	m_rfTimeout.clock(ms);
 	m_netTimeout.clock(ms);
 
-	if (m_netState == RS_NET_AUDIO) {
+	if (m_netState == RPT_NET_STATE::AUDIO) {
 		m_networkWatchdog.clock(ms);
 
 		if (m_networkWatchdog.hasExpired()) {
@@ -767,7 +767,7 @@ void CP25Control::clock(unsigned int ms)
 			writeJSONNet("lost", float(m_netFrames) / 50.0F, float(m_netLost * 100U) / float(m_netFrames));
 
 			m_networkWatchdog.stop();
-			m_netState = RS_NET_IDLE;
+			m_netState = RPT_NET_STATE::IDLE;
 			m_netData.reset();
 			m_netTimeout.stop();
 		}
@@ -776,7 +776,7 @@ void CP25Control::clock(unsigned int ms)
 
 void CP25Control::writeQueueRF(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_rfTimeout.isRunning() && m_rfTimeout.hasExpired())
 		return;
@@ -795,7 +795,7 @@ void CP25Control::writeQueueRF(const unsigned char* data, unsigned int length)
 
 void CP25Control::writeQueueNet(const unsigned char* data, unsigned int length)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	if (m_netTimeout.isRunning() && m_netTimeout.hasExpired())
 		return;
@@ -814,9 +814,9 @@ void CP25Control::writeQueueNet(const unsigned char* data, unsigned int length)
 
 void CP25Control::writeNetwork(const unsigned char *data, unsigned char type, bool end)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
-	if (m_network == NULL)
+	if (m_network == nullptr)
 		return;
 
 	if (m_rfTimeout.isRunning() && m_rfTimeout.hasExpired())
@@ -837,7 +837,7 @@ void CP25Control::writeNetwork(const unsigned char *data, unsigned char type, bo
 
 void CP25Control::setBusyBits(unsigned char* data, unsigned int ssOffset, bool b1, bool b2)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
 	WRITE_BIT(data, ssOffset, b1);
 	WRITE_BIT(data, ssOffset + 1U, b2);
@@ -845,9 +845,9 @@ void CP25Control::setBusyBits(unsigned char* data, unsigned int ssOffset, bool b
 
 void CP25Control::addBusyBits(unsigned char* data, unsigned int length, bool b1, bool b2)
 {
-	assert(data != NULL);
+	assert(data != nullptr);
 
-	for (unsigned int ss0Pos = P25_SS0_START; ss0Pos < length; ss0Pos += P25_SS_INCREMENT) {
+	for (unsigned int ss0Pos = P25_SS0_START; ss0Pos < length; ss0Pos += P25_INCREMENT) {
 		unsigned int ss1Pos = ss0Pos + 1U;
 		WRITE_BIT(data, ss0Pos, b1);
 		WRITE_BIT(data, ss1Pos, b2);
@@ -856,7 +856,7 @@ void CP25Control::addBusyBits(unsigned char* data, unsigned int length, bool b1,
 
 void CP25Control::checkNetLDU1()
 {
-	if (m_netState == RS_NET_IDLE)
+	if (m_netState == RPT_NET_STATE::IDLE)
 		return;
 
 	// Check for an unflushed LDU1
@@ -868,7 +868,7 @@ void CP25Control::checkNetLDU1()
 
 void CP25Control::checkNetLDU2()
 {
-	if (m_netState == RS_NET_IDLE)
+	if (m_netState == RPT_NET_STATE::IDLE)
 		return;
 
 	// Check for an unflushed LDU1

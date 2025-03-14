@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2019,2021,2022,2023 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2019,2021,2022,2023,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -38,13 +38,13 @@ m_dstId(dstId)
 CDMRLC::CDMRLC(const unsigned char* bytes) :
 m_PF(false),
 m_R(false),
-m_FLCO(FLCO_GROUP),
+m_FLCO(FLCO::GROUP),
 m_FID(0U),
 m_options(0U),
 m_srcId(0U),
 m_dstId(0U)
 {
-	assert(bytes != NULL);
+	assert(bytes != nullptr);
 
 	m_PF = (bytes[0U] & 0x80U) == 0x80U;
 	m_R  = (bytes[0U] & 0x40U) == 0x40U;
@@ -62,13 +62,13 @@ m_dstId(0U)
 CDMRLC::CDMRLC(const bool* bits) :
 m_PF(false),
 m_R(false),
-m_FLCO(FLCO_GROUP),
+m_FLCO(FLCO::GROUP),
 m_FID(0U),
 m_options(0U),
 m_srcId(0U),
 m_dstId(0U)
 {
-	assert(bits != NULL);
+	assert(bits != nullptr);
 
 	m_PF = bits[0U];
 	m_R  = bits[1U];
@@ -100,7 +100,7 @@ m_dstId(0U)
 CDMRLC::CDMRLC() :
 m_PF(false),
 m_R(false),
-m_FLCO(FLCO_GROUP),
+m_FLCO(FLCO::GROUP),
 m_FID(0U),
 m_options(0U),
 m_srcId(0U),
@@ -114,7 +114,7 @@ CDMRLC::~CDMRLC()
 
 void CDMRLC::getData(unsigned char* bytes) const
 {
-	assert(bytes != NULL);
+	assert(bytes != nullptr);
 
 	bytes[0U] = (unsigned char)m_FLCO;
 
@@ -139,7 +139,7 @@ void CDMRLC::getData(unsigned char* bytes) const
 
 void CDMRLC::getData(bool* bits) const
 {
-	assert(bits != NULL);
+	assert(bits != nullptr);
 
 	unsigned char bytes[9U];
 	getData(bytes);

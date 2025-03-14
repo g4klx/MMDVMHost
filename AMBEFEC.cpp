@@ -481,7 +481,7 @@ CAMBEFEC::~CAMBEFEC()
 #if defined(USE_DMR) || defined(USE_YSF) || defined(USE_NXDN)
 unsigned int CAMBEFEC::regenerateDMR(unsigned char* bytes) const
 {
-	assert(bytes != NULL);
+	assert(bytes != nullptr);
 
 	unsigned int a1 = 0U, a2 = 0U, a3 = 0U;
 	unsigned int MASK = 0x800000U;
@@ -584,7 +584,7 @@ unsigned int CAMBEFEC::regenerateDMR(unsigned char* bytes) const
 #if defined(USE_DSTAR)
 unsigned int CAMBEFEC::regenerateDStar(unsigned char* bytes) const
 {
-	assert(bytes != NULL);
+	assert(bytes != nullptr);
 
 	unsigned int a = 0U;
 	unsigned int b = 0U;
@@ -618,7 +618,7 @@ unsigned int CAMBEFEC::regenerateDStar(unsigned char* bytes) const
 #if defined(USE_YSF) || defined(USE_NXDN)
 unsigned int CAMBEFEC::regenerateYSFDN(unsigned char* bytes) const
 {
-	assert(bytes != NULL);
+	assert(bytes != nullptr);
 
 	unsigned int a = 0U;
 	unsigned int MASK = 0x800000U;
@@ -671,7 +671,7 @@ unsigned int CAMBEFEC::regenerateYSFDN(unsigned char* bytes) const
 #if defined(USE_YSF) || defined(USE_P25)
 unsigned int CAMBEFEC::regenerateIMBE(unsigned char* bytes) const
 {
-	assert(bytes != NULL);
+	assert(bytes != nullptr);
 
 	bool orig[144U];
 	bool temp[144U];
