@@ -679,7 +679,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					// CUtils::dump(1U, text, data, 9U);
 					break;
 
-				case FLCO::GINFO:
+				case FLCO::GPS_INFO:
 					if (m_dumpTAData) {
 						::sprintf(text, "DMR Slot %u, Embedded GPS Info", m_slotNo);
 						CUtils::dump(1U, text, data, 9U);
@@ -1522,7 +1522,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 				// ::sprintf(text, "DMR Slot %u, Embedded LC", m_slotNo);
 				// CUtils::dump(1U, text, data, 9U);
 				break;
-			case FLCO::GINFO:
+			case FLCO::GPS_INFO:
 				if (m_dumpTAData) {
 					::sprintf(text, "DMR Slot %u, Embedded GPS Info", m_slotNo);
 					CUtils::dump(1U, text, data, 9U);

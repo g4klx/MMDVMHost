@@ -119,7 +119,7 @@ bool CUDPSocket::match(const sockaddr_storage& addr1, const sockaddr_storage& ad
 	if (addr1.ss_family != addr2.ss_family)
 		return false;
 
-	if (type == IPMATCHTYPE::IMT_ADDREAND_PORT) {
+	if (type == IPMATCHTYPE::ADDRESS_AND_PORT) {
 		switch (addr1.ss_family) {
 			case AF_INET:
 				struct sockaddr_in *in_1, *in_2;
@@ -134,7 +134,7 @@ bool CUDPSocket::match(const sockaddr_storage& addr1, const sockaddr_storage& ad
 			default:
 				return false;
 		}
-	} else if (type == IPMATCHTYPE::IMT_ADDREONLY) {
+	} else if (type == IPMATCHTYPE::ADDRESS_ONLY) {
 		switch (addr1.ss_family) {
 			case AF_INET:
 				struct sockaddr_in *in_1, *in_2;

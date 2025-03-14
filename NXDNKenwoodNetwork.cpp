@@ -774,7 +774,7 @@ unsigned int CNXDNKenwoodNetwork::readRTP(unsigned char* data)
 	if (length <= 0)
 		return 0U;
 
-	if (!CUDPSocket::match(m_rtpAddr, address, IPMATCHTYPE::IMT_ADDREONLY)) {
+	if (!CUDPSocket::match(m_rtpAddr, address, IPMATCHTYPE::ADDRESS_ONLY)) {
 		LogMessage("NXDN, RTP packet received from an invalid source");
 		return 0U;
 	}
@@ -802,7 +802,7 @@ unsigned int CNXDNKenwoodNetwork::readRTCP(unsigned char* data)
 	if (length <= 0)
 		return 0U;
 
-	if (!CUDPSocket::match(m_rtpAddr, address, IPMATCHTYPE::IMT_ADDREONLY)) {
+	if (!CUDPSocket::match(m_rtpAddr, address, IPMATCHTYPE::ADDRESS_ONLY)) {
 		LogMessage("NXDN, RTCP packet received from an invalid source");
 		return 0U;
 	}
