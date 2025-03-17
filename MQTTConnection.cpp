@@ -21,6 +21,7 @@
 #include <cassert>
 #include <cstdio>
 #include <cstring>
+#include <ctime>
 
 
 CMQTTConnection::CMQTTConnection(const std::string& host, unsigned short port, const std::string& name, const bool authEnabled, const std::string& username,  const std::string& password, const std::vector<std::pair<std::string, void (*)(const unsigned char*, unsigned int)>>& subs, unsigned int keepalive, MQTT_QOS qos) :
@@ -51,7 +52,12 @@ CMQTTConnection::~CMQTTConnection()
 
 bool CMQTTConnection::open()
 {
-	m_mosq = ::mosquitto_new(nullptr, true, this);
+	char name[50U];
+	::sprintf(name, "MMDVM.%lld", ::time(nullptr));
+
+	::fprintf(stdout, "MMDVMHost (%s) connecting to MQTT as %s\n", m_name.c_str(), name);
+
+	m_mosq = ::mosquitto_new(name, true, this);
 	if (m_mosq == nullptr) {
 		::fprintf(stderr, "MQTT Error newing: Out of memory.\n");
 		return false;
