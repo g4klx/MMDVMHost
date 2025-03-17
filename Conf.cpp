@@ -55,11 +55,11 @@ enum class SECTION {
 	POCSAG_NETWORK,
 	FM_NETWORK,
 	AX25_NETWORK,
-	TFTSERIAL,
-	HD44780,
-	NEXTION,
-	OLED,
-	LCDPROC,
+	TFTSERIAL_DISPLAY,
+	HD44780_DISPLAY,
+	NEXTION_DISPLAY,
+	OLED_DISPLAY,
+	LCDPROC_DISPLAY,
 	LOCK_FILE,
 	REMOTE_CONTROL
 };
@@ -422,15 +422,15 @@ bool CConf::read()
 			else if (::strncmp(buffer, "[AX.25 Network]", 15U) == 0)
 				section = SECTION::AX25_NETWORK;
 			else if (::strncmp(buffer, "[TFT Serial]", 12U) == 0)
-				section = SECTION::TFTSERIAL;
+				section = SECTION::TFTSERIAL_DISPLAY;
 			else if (::strncmp(buffer, "[HD44780]", 9U) == 0)
-				section = SECTION::HD44780;
+				section = SECTION::HD44780_DISPLAY;
 			else if (::strncmp(buffer, "[Nextion]", 9U) == 0)
-				section = SECTION::NEXTION;
+				section = SECTION::NEXTION_DISPLAY;
 			else if (::strncmp(buffer, "[OLED]", 6U) == 0)
-				section = SECTION::OLED;
+				section = SECTION::OLED_DISPLAY;
 			else if (::strncmp(buffer, "[LCDproc]", 9U) == 0)
-				section = SECTION::LCDPROC;
+				section = SECTION::LCDPROC_DISPLAY;
 			else if (::strncmp(buffer, "[Lock File]", 11U) == 0)
 				section = SECTION::LOCK_FILE;
 			else if (::strncmp(buffer, "[Remote Control]", 16U) == 0)
@@ -1073,14 +1073,14 @@ bool CConf::read()
 				m_ax25NetworkSpeed = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Debug") == 0)
 				m_ax25NetworkDebug = ::atoi(value) == 1;
-		} else if (section == SECTION::TFTSERIAL) {
+		} else if (section == SECTION::TFTSERIAL_DISPLAY) {
 			if (::strcmp(key, "Port") == 0)
 				m_tftSerialPort = value;
 			else if (::strcmp(key, "Brightness") == 0)
 				m_tftSerialBrightness = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "ScreenLayout") == 0)
 				m_tftSerialScreenLayout = (unsigned int)::atoi(value);
-		} else if (section == SECTION::HD44780) {
+		} else if (section == SECTION::HD44780_DISPLAY) {
 			if (::strcmp(key, "Rows") == 0)
 				m_hd44780Rows = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Columns") == 0)
@@ -1107,7 +1107,7 @@ bool CConf::read()
 					p = ::strtok(nullptr, ",\r\n");
 				}
 			}
-		} else if (section == SECTION::NEXTION) {
+		} else if (section == SECTION::NEXTION_DISPLAY) {
 			if (::strcmp(key, "Port") == 0)
 				m_nextionPort = value;
 			else if (::strcmp(key, "Brightness") == 0)
@@ -1126,7 +1126,7 @@ bool CConf::read()
 				m_nextionOutput = ::atoi(value) == 1;
 			else if (::strcmp(key, "NextionUDPPort") == 0)
 				m_nextionUDPPort = (unsigned short)::atoi(value);
-		} else if (section == SECTION::OLED) {
+		} else if (section == SECTION::OLED_DISPLAY) {
 			if (::strcmp(key, "Type") == 0)
 				m_oledType = (unsigned char)::atoi(value);
 			else if (::strcmp(key, "Brightness") == 0)
@@ -1139,7 +1139,7 @@ bool CConf::read()
 				m_oledRotate = ::atoi(value) == 1;
 			else if (::strcmp(key, "LogoScreensaver") == 0)
 				m_oledLogoScreensaver = ::atoi(value) == 1;
-		} else if (section == SECTION::LCDPROC) {
+		} else if (section == SECTION::LCDPROC_DISPLAY) {
 			if (::strcmp(key, "Address") == 0)
 				m_lcdprocAddress = value;
 			else if (::strcmp(key, "Port") == 0)
