@@ -415,7 +415,7 @@ unsigned int CFMNetwork::readData(float* out, unsigned int nOut)
 		return 0U;
 
 #if defined(HAS_SRC)
-	if ((m_protocol == RAW) && (m_sampleRate != MMDVM_SAMPLERATE)) {
+	if ((m_protocol == FM_NETWORK_PROTOCOL::RAW) && (m_sampleRate != MMDVM_SAMPLERATE)) {
 		unsigned int nIn = (nOut * m_sampleRate) / MMDVM_SAMPLERATE;
 
 		if (bytes < nIn) {
