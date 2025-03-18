@@ -53,7 +53,7 @@ CMQTTConnection::~CMQTTConnection()
 bool CMQTTConnection::open()
 {
 	char name[50U];
-	::sprintf(name, "MMDVM.%ld", ::time(nullptr));
+	::sprintf(name, "MMDVMHost.%ld", ::time(nullptr));
 
 	::fprintf(stdout, "MMDVMHost (%s) connecting to MQTT as %s\n", m_name.c_str(), name);
 
