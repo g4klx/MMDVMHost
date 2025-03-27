@@ -33,8 +33,8 @@ m_buffer(nullptr),
 m_text(nullptr),
 m_textPtr(0U),
 m_textBits(0x00U),
-m_type(0x00U),
-m_complete(false)
+m_state(SDD_STATE::FIRST),
+m_type(0x00U)
 {
 	m_header = new unsigned char[50U];		// DSTAR_HEADER_LENGTH_BYTES
 	m_buffer = new unsigned char[DSTAR_DATA_FRAME_LENGTH_BYTES * 2U];
@@ -48,33 +48,41 @@ CDStarSlowData::~CDStarSlowData()
 	delete[] m_text;
 }
 
-void CDStarSlowData::peakSlowData(const unsigned char* data, unsigned int n)
+void CDStarSlowData::peakSlowData(const unsigned char* data)
 {
 	assert(data != nullptr);
 
-	if ((n % 2U) == 0U) {
+	switch (m_state) {
+	case SDD_STATE::FIRST:
 		m_type = data[9U] ^ DSTAR_SCRAMBLER_BYTES[0U];
-		m_complete = false;
-	} else {
-		m_complete = true;
+		m_state = SDD_STATE::SECOND;
+		break;
+
+	case SDD_STATE::SECOND:
+		m_state = SDD_STATE::FIRST;
+		break;
 	}
 }
 
-CDStarHeader* CDStarSlowData::addHeader(const unsigned char* data, unsigned int n)
+CDStarHeader* CDStarSlowData::addHeader(const unsigned char* data)
 {
 	assert(data != nullptr);
 
-	if ((n % 2U) == 0U) {
+	switch (m_state) {
+	case SDD_STATE::FIRST:
 		m_type       = data[9U]  ^ DSTAR_SCRAMBLER_BYTES[0U];
 		m_buffer[0U] = data[9U]  ^ DSTAR_SCRAMBLER_BYTES[0U];
 		m_buffer[1U] = data[10U] ^ DSTAR_SCRAMBLER_BYTES[1U];
 		m_buffer[2U] = data[11U] ^ DSTAR_SCRAMBLER_BYTES[2U];
-		m_complete = false;
-	} else {
+		m_state = SDD_STATE::SECOND;
+		return nullptr;
+
+	case SDD_STATE::SECOND:
 		m_buffer[3U] = data[9U]  ^ DSTAR_SCRAMBLER_BYTES[0U];
 		m_buffer[4U] = data[10U] ^ DSTAR_SCRAMBLER_BYTES[1U];
 		m_buffer[5U] = data[11U] ^ DSTAR_SCRAMBLER_BYTES[2U];
-		m_complete = true;
+		m_state = SDD_STATE::FIRST;
+		break;
 	}
 
 	if ((m_buffer[0U] & DSTAR_SLOW_DATA_TYPE_MASK) != DSTAR_SLOW_DATA_TYPE_HEADER)
@@ -105,21 +113,25 @@ CDStarHeader* CDStarSlowData::addHeader(const unsigned char* data, unsigned int 
 	return new CDStarHeader(m_header);
 }
 
-const unsigned char* CDStarSlowData::addText(const unsigned char* data, unsigned int n)
+const unsigned char* CDStarSlowData::addText(const unsigned char* data)
 {
 	assert(data != nullptr);
 
-	if ((n % 2U) == 0U) {
+	switch (m_state) {
+	case SDD_STATE::FIRST:
 		m_type       = data[9U]  ^ DSTAR_SCRAMBLER_BYTES[0U];
 		m_buffer[0U] = data[9U]  ^ DSTAR_SCRAMBLER_BYTES[0U];
 		m_buffer[1U] = data[10U] ^ DSTAR_SCRAMBLER_BYTES[1U];
 		m_buffer[2U] = data[11U] ^ DSTAR_SCRAMBLER_BYTES[2U];
-		m_complete = false;
-	} else {
+		m_state = SDD_STATE::SECOND;
+		return nullptr;
+
+	case SDD_STATE::SECOND:
 		m_buffer[3U] = data[9U]  ^ DSTAR_SCRAMBLER_BYTES[0U];
 		m_buffer[4U] = data[10U] ^ DSTAR_SCRAMBLER_BYTES[1U];
 		m_buffer[5U] = data[11U] ^ DSTAR_SCRAMBLER_BYTES[2U];
-		m_complete = true;
+		m_state = SDD_STATE::FIRST;
+		break;
 	}
 
 	switch (m_buffer[0U]) {
@@ -179,16 +191,16 @@ void CDStarSlowData::start()
 	::memset(m_header, 0x00U, DSTAR_HEADER_LENGTH_BYTES);
 
 	m_ptr      = 0U;
+	m_state    = SDD_STATE::FIRST;
 	m_type     = 0x00U;
-	m_complete = false;
 	m_textBits = 0x00U;
 }
 
 void CDStarSlowData::reset()
 {
 	m_ptr      = 0U;
+	m_state    = SDD_STATE::FIRST;
 	m_type     = 0x00U;
-	m_complete = false;
 	m_textBits = 0x00U;
 }
 
@@ -250,5 +262,5 @@ unsigned char CDStarSlowData::getType() const
 
 bool CDStarSlowData::isComplete() const
 {
-	return m_complete;
+	return m_state == SDD_STATE::FIRST;
 }

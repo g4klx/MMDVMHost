@@ -26,11 +26,11 @@ public:
 	CDStarSlowData();
 	~CDStarSlowData();
 
-	void peakSlowData(const unsigned char* data, unsigned int n);
+	void peakSlowData(const unsigned char* data);
 
-	CDStarHeader* addHeader(const unsigned char* data, unsigned int n);
+	CDStarHeader* addHeader(const unsigned char* data);
 
-	const unsigned char* addText(const unsigned char* data, unsigned int n);
+	const unsigned char* addText(const unsigned char* data);
 
 	unsigned char getType() const;
 	bool isComplete() const;
@@ -48,8 +48,14 @@ private:
 	unsigned char* m_text;
 	unsigned int   m_textPtr;
 	unsigned char  m_textBits;
+
+	enum class SDD_STATE {
+		FIRST,
+		SECOND
+	};
+
+	SDD_STATE      m_state;
 	unsigned char  m_type;
-	bool           m_complete;
 };
 
 #endif
