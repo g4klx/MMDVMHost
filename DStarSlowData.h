@@ -26,13 +26,12 @@ public:
 	CDStarSlowData();
 	~CDStarSlowData();
 
-	void peakSlowData(const unsigned char* data);
+	void add(const unsigned char* data);
 
-	CDStarHeader* addHeader(const unsigned char* data);
+	CDStarHeader*        getHeader();
+	const unsigned char* getText();
+	unsigned char        getType() const;
 
-	const unsigned char* addText(const unsigned char* data);
-
-	unsigned char getType() const;
 	bool isComplete() const;
 
 	void start();
@@ -55,7 +54,10 @@ private:
 	};
 
 	SDD_STATE      m_state;
-	unsigned char  m_type;
+	bool           m_complete;
+
+	void loadHeader();
+	void loadText();
 };
 
 #endif
