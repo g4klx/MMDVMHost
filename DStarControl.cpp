@@ -409,7 +409,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 				m_display->writeDStarRSSI(m_rssi);
 
 			unsigned int errors = 0U;
-			if (::memcmp(data + 1U, DSTAR_nullptr_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) == 0) {
+			if (::memcmp(data + 1U, DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) == 0) {
 				LogDebug("D-Star, audio sequence no. %u, null audio", m_rfN);
 			} else {
 				errors = m_fec.regenerateDStar(data + 1U);
@@ -543,7 +543,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			}
 
 			unsigned int errors = 0U;
-			if (::memcmp(data + 1U, DSTAR_nullptr_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) == 0) {
+			if (::memcmp(data + 1U, DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) == 0) {
 				LogDebug("D-Star, audio sequence no. %u, null audio", m_rfN);
 			} else {
 				errors = m_fec.regenerateDStar(data + 1U);
@@ -735,8 +735,6 @@ void CDStarControl::writeNetwork()
 		writeEndNet();
 	} else if (type == TAG_DATA) {
 		if ((m_netState == RPT_NET_STATE::AUDIO) || (m_netState == RPT_NET_STATE::DATA)) {
-			m_netN = data[1U];
-
 			if (m_netN == 0U) {
 				CSync::addDStarSync(data + 2U);
 				m_netSlowData.start();
@@ -754,8 +752,10 @@ void CDStarControl::writeNetwork()
 		}
 
 		if (m_netState == RPT_NET_STATE::AUDIO) {
+			unsigned char n = data[1U];
+
 			unsigned int errors = 0U;
-			if (::memcmp(data + 2U, DSTAR_nullptr_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) != 0) {
+			if (::memcmp(data + 2U, DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) != 0) {
 				errors = m_fec.regenerateDStar(data + 2U);
 				blankDTMF(data + 2U);
 			}
@@ -763,12 +763,14 @@ void CDStarControl::writeNetwork()
 			data[1U] = TAG_DATA;
 
 			// Insert silence and reject if in the past
-			bool ret = insertSilence(data + 1U, m_netN);
+			bool ret = insertSilence(data + 1U, n);
 			if (!ret)
 				return;
 
 			m_netErrs += errors;
 			m_netBits += 48U;
+
+			m_netN = n;
 
 			if (m_netN != 0U) {
 				const unsigned char* text = m_netSlowData.getText();
@@ -786,6 +788,8 @@ void CDStarControl::writeNetwork()
 		}
 
 		if (m_netState == RPT_NET_STATE::DATA) {
+			m_netN = data[1U];
+
 			data[1U] = TAG_DATA;
 
 			m_netBits += 48U;
@@ -1104,19 +1108,19 @@ void CDStarControl::insertSilence(unsigned int count)
 	for (unsigned int i = 0U; i < count; i++) {
 		if (i < 3U && m_lastFrameValid) {
 			if (n == 0U) {
-				::memcpy(m_lastFrame + DSTAR_VOICE_FRAME_LENGTH_BYTES + 1U, DSTAR_nullptr_SLOW_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES);
+				::memcpy(m_lastFrame + DSTAR_VOICE_FRAME_LENGTH_BYTES + 1U, DSTAR_NULL_SLOW_SYNC_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES);
 				writeQueueDataNet(m_lastFrame);
 			} else {
-				::memcpy(m_lastFrame + DSTAR_VOICE_FRAME_LENGTH_BYTES + 1U, DSTAR_nullptr_SLOW_DATA_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES);
+				::memcpy(m_lastFrame + DSTAR_VOICE_FRAME_LENGTH_BYTES + 1U, DSTAR_NULL_SLOW_DATA_BYTES, DSTAR_DATA_FRAME_LENGTH_BYTES);
 				writeQueueDataNet(m_lastFrame);
 			}
 		} else {
 			m_lastFrameValid = false;
 
 			if (n == 0U)
-				writeQueueDataNet(DSTAR_nullptr_FRAME_SYNC_BYTES);
+				writeQueueDataNet(DSTAR_NULL_FRAME_SYNC_BYTES);
 			else
-				writeQueueDataNet(DSTAR_nullptr_FRAME_DATA_BYTES);
+				writeQueueDataNet(DSTAR_NULL_FRAME_DATA_BYTES);
 		}
 
 		m_netN = n;
@@ -1138,7 +1142,7 @@ void CDStarControl::blankDTMF(unsigned char* data) const
 		(data[4] & DSTAR_DTMF_MASK[4]) == DSTAR_DTMF_SIG[4] && (data[5] & DSTAR_DTMF_MASK[5]) == DSTAR_DTMF_SIG[5] &&
 		(data[6] & DSTAR_DTMF_MASK[6]) == DSTAR_DTMF_SIG[6] && (data[7] & DSTAR_DTMF_MASK[7]) == DSTAR_DTMF_SIG[7] &&
 		(data[8] & DSTAR_DTMF_MASK[8]) == DSTAR_DTMF_SIG[8])
-		::memcpy(data, DSTAR_nullptr_AMBE_DATA_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES);
+		::memcpy(data, DSTAR_NULL_AMBE_DATA_BYTES, DSTAR_VOICE_FRAME_LENGTH_BYTES);
 }
 
 void CDStarControl::sendAck()
@@ -1164,7 +1168,7 @@ void CDStarControl::sendAck()
 
 	writeQueueHeaderRF(data);
 
-	writeQueueDataRF(DSTAR_nullptr_FRAME_SYNC_BYTES);
+	writeQueueDataRF(DSTAR_NULL_FRAME_SYNC_BYTES);
 
 	LINK_STATUS status = LINK_STATUS::NONE;
 	unsigned char reflector[DSTAR_LONG_CALLSIGN_LENGTH];
@@ -1201,7 +1205,7 @@ void CDStarControl::sendAck()
 
 	m_rfSlowData.setText(text);
 
-	::memcpy(data, DSTAR_nullptr_FRAME_DATA_BYTES, DSTAR_FRAME_LENGTH_BYTES + 1U);
+	::memcpy(data, DSTAR_NULL_FRAME_DATA_BYTES, DSTAR_FRAME_LENGTH_BYTES + 1U);
 
 	for (unsigned int i = 0U; i < 19U; i++) {
 		m_rfSlowData.getSlowData(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES);
@@ -1229,7 +1233,7 @@ void CDStarControl::sendError()
 
 	writeQueueHeaderRF(data);
 
-	writeQueueDataRF(DSTAR_nullptr_FRAME_SYNC_BYTES);
+	writeQueueDataRF(DSTAR_NULL_FRAME_SYNC_BYTES);
 
 	LINK_STATUS status = LINK_STATUS::NONE;
 	unsigned char reflector[DSTAR_LONG_CALLSIGN_LENGTH];
@@ -1266,7 +1270,7 @@ void CDStarControl::sendError()
 
 	m_rfSlowData.setText(text);
 
-	::memcpy(data, DSTAR_nullptr_FRAME_DATA_BYTES, DSTAR_FRAME_LENGTH_BYTES + 1U);
+	::memcpy(data, DSTAR_NULL_FRAME_DATA_BYTES, DSTAR_FRAME_LENGTH_BYTES + 1U);
 
 	for (unsigned int i = 0U; i < 19U; i++) {
 		m_rfSlowData.getSlowData(data + 1U + DSTAR_VOICE_FRAME_LENGTH_BYTES);
