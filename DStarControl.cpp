@@ -735,7 +735,9 @@ void CDStarControl::writeNetwork()
 		writeEndNet();
 	} else if (type == TAG_DATA) {
 		if ((m_netState == RPT_NET_STATE::AUDIO) || (m_netState == RPT_NET_STATE::DATA)) {
-			if (m_netN == 0U) {
+			unsigned char n = data[1U];
+
+			if (n == 0U) {
 				CSync::addDStarSync(data + 2U);
 				m_netSlowData.start();
 			} else {
