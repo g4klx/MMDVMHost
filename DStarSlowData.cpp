@@ -67,6 +67,7 @@ void CDStarSlowData::add(const unsigned char* data)
 		m_buffer[5U] = data[11U] ^ DSTAR_SCRAMBLER_BYTES[2U];
 		m_state = SDD_STATE::FIRST;
 		m_complete = true;
+		CUtils::dump(1U, "D-Star slow data element", m_buffer, 6U);
 		loadHeader();
 		loadText();
 		break;
