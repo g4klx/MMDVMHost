@@ -101,7 +101,7 @@ m_enabled(true)
 	::memset(m_netLDU2, 0x00U, 9U * 25U);
 
 	m_lastIMBE = new unsigned char[11U];
-	::memcpy(m_lastIMBE, P25_nullptr_IMBE, 11U);
+	::memcpy(m_lastIMBE, P25_NULL_IMBE, 11U);
 
 	m_rfLDU = new unsigned char[P25_LDU_FRAME_LENGTH_BYTES];
 	::memset(m_rfLDU, 0x00U, P25_LDU_FRAME_LENGTH_BYTES);
