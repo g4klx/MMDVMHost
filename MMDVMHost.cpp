@@ -2639,48 +2639,72 @@ void CMMDVMHost::remoteControl()
 				processEnableCommand(m_ax25Enabled, true);
 			break;
 		case REMOTE_COMMAND::DISABLE_DSTAR:
-			if (m_dstar != nullptr && m_dstarEnabled)
+			if (m_dstar != nullptr && m_dstarEnabled) {
+				if (m_mode == MODE_DSTAR)
+					setMode(MODE_IDLE);
 				processEnableCommand(m_dstarEnabled, false);
+			}
 			if (m_dstarNetwork != nullptr)
 				m_dstarNetwork->enable(false);
 			break;
 		case REMOTE_COMMAND::DISABLE_DMR:
-			if (m_dmr != nullptr && m_dmrEnabled)
+			if (m_dmr != nullptr && m_dmrEnabled) {
+				if (m_mode == MODE_DMR)
+					setMode(MODE_IDLE);
 				processEnableCommand(m_dmrEnabled, false);
+			}
 			if (m_dmrNetwork != nullptr)
 				m_dmrNetwork->enable(false);
 			break;
 		case REMOTE_COMMAND::DISABLE_YSF:
-			if (m_ysf != nullptr && m_ysfEnabled)
+			if (m_ysf != nullptr && m_ysfEnabled) {
+				if (m_mode == MODE_YSF)
+					setMode(MODE_IDLE);
 				processEnableCommand(m_ysfEnabled, false);
+			}
 			if (m_ysfNetwork != nullptr)
 				m_ysfNetwork->enable(false);
 			break;
 		case REMOTE_COMMAND::DISABLE_P25:
-			if (m_p25 != nullptr && m_p25Enabled)
+			if (m_p25 != nullptr && m_p25Enabled) {
+				if (m_mode == MODE_P25)
+					setMode(MODE_IDLE);
 				processEnableCommand(m_p25Enabled, false);
+			}
 			if (m_p25Network != nullptr)
 				m_p25Network->enable(false);
 			break;
 		case REMOTE_COMMAND::DISABLE_NXDN:
-			if (m_nxdn != nullptr && m_nxdnEnabled)
+			if (m_nxdn != nullptr && m_nxdnEnabled) {
+				if (m_mode == MODE_NXDN)
+					setMode(MODE_IDLE);
 				processEnableCommand(m_nxdnEnabled, false);
+			}
 			if (m_nxdnNetwork != nullptr)
 				m_nxdnNetwork->enable(false);
 			break;
 		case REMOTE_COMMAND::DISABLE_M17:
-			if (m_m17 != nullptr && m_m17Enabled)
+			if (m_m17 != nullptr && m_m17Enabled) {
+				if (m_mode == MODE_M17)
+					setMode(MODE_IDLE);
 				processEnableCommand(m_m17Enabled, false);
+			}
 			if (m_m17Network != nullptr)
 				m_m17Network->enable(false);
 			break;
 		case REMOTE_COMMAND::DISABLE_FM:
-			if (m_fmEnabled)
+			if (m_fmEnabled) {
+				if (m_mode == MODE_FM)
+					setMode(MODE_IDLE);
 				processEnableCommand(m_fmEnabled, false);
+			}
 			break;
 		case REMOTE_COMMAND::DISABLE_AX25:
-			if (m_ax25Enabled == true)
+			if (m_ax25Enabled == true) {
+				if (m_mode == MODE_FM)
+					setMode(MODE_IDLE);
 				processEnableCommand(m_ax25Enabled, false);
+			}
 			break;
 		case REMOTE_COMMAND::PAGE:
 			if (m_pocsag != nullptr) {
