@@ -139,6 +139,7 @@ private:
   void processEnableCommand(bool& mode, bool enabled);
 
   void setMode(unsigned char mode);
+  void switchToIDLEIfCurrentModeIs(unsigned char mode);
 
   void createLockFile(const char* mode) const;
   void removeLockFile() const;

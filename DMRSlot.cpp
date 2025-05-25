@@ -1975,8 +1975,10 @@ void CDMRSlot::writeQueueNet(const unsigned char *data)
 		return;
 	}
 
-	m_queue.addData(&len, 1U);
-	m_queue.addData(data, len);
+	if (m_enabled) {
+		m_queue.addData(&len, 1U);
+		m_queue.addData(data, len);
+	}
 }
 
 void CDMRSlot::init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData, unsigned int callHang, CModem* modem, IDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter, DMR_OVCM ovcm, bool protect)
