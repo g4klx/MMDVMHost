@@ -136,9 +136,11 @@ private:
 
   void remoteControl();
   void processModeCommand(unsigned char mode, unsigned int timeout);
-  void processEnableCommand(bool& mode, bool enabled);
 
   void setMode(unsigned char mode);
+  void enableModemMode(bool& mode, bool enabled);
+  void enableMode(unsigned char mode, bool hasController, bool& modeEnabled, bool isAX25 = false);
+  void disableMode(unsigned char mode, bool hasController, bool& modeEnabled, bool isAX25 = false);
 
   void createLockFile(const char* mode) const;
   void removeLockFile() const;

@@ -1870,6 +1870,9 @@ void CDMRSlot::clock()
 		}
 	}
 
+	if (!m_enabled)
+		return;
+
 	if ((m_netState == RPT_NET_STATE::AUDIO) || (m_netState == RPT_NET_STATE::DATA)) {
 		m_networkWatchdog.clock(ms);
 
@@ -2238,6 +2241,19 @@ void CDMRSlot::enable(bool enabled)
 		m_queue.clear();
 
 		// Reset the RF section
+		switch (m_rfState) {
+		case RPT_RF_STATE::LISTENING:
+		case RPT_RF_STATE::REJECTED:
+		case RPT_RF_STATE::INVALID:
+			break;
+
+		default:
+			if (m_rfTimeoutTimer.isRunning()) {
+				if (!m_rfTimeout)
+					LogMessage("DMR Slot %u, RF user has timed out", m_slotNo);
+			}
+			break;
+		}
 		m_rfState = RPT_RF_STATE::LISTENING;
 
 		m_rfTimeoutTimer.stop();
@@ -2254,6 +2270,17 @@ void CDMRSlot::enable(bool enabled)
 		m_rfLC = nullptr;
 
 		// Reset the networking section
+		switch(m_netState) {
+		case RPT_NET_STATE::IDLE:
+			break;
+
+		default:
+			if (m_netTimeoutTimer.isRunning()) {
+				if (!m_netTimeout)
+					LogMessage("DMR Slot %u, network user has timed out", m_slotNo);
+			}
+			break;
+		}
 		m_netState = RPT_NET_STATE::IDLE;
 
 		m_lastFrameValid = false;
