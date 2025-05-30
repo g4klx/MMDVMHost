@@ -1995,50 +1995,52 @@ void CMMDVMHost::enableModemMode(bool& mode, bool enabled)
 		LogError("Cannot write Config to MMDVM");
 }
 
-void CMMDVMHost::enableMode(unsigned char mode, bool hasController, bool& modeEnabled, bool isAX25)
+void CMMDVMHost::processEnableModeCommand(unsigned char mode, bool hasController, bool& modeEnabled, bool enableMode, bool isAX25)
 {
-	if (hasController && !modeEnabled) {
+	if (hasController && (modeEnabled != enableMode)) {
 		unsigned char data[500U];
+		bool switchToOrInIDLE = (enableMode ? (m_mode == MODE_IDLE) : (m_mode == mode));
 
-		// Try to recover ASAP when mode is currently set to IDLE,
+		// Enable or disable Controller and Network.
+		// When re-enabling, it tries to recover ASAP when mode is currently set to IDLE,
 		// as Controller and Network will ::clock() immediatly after.
-		if (m_mode == MODE_IDLE) {
+		if (switchToOrInIDLE) {
 			switch (mode) {
 			case MODE_DSTAR:
 				if (m_dstarNetwork != nullptr)
-					m_dstarNetwork->enable(true);
-				m_dstar->enable(true);
+					m_dstarNetwork->enable(enableMode);
+				m_dstar->enable(enableMode);
 				break;
 			case MODE_DMR:
 				if (m_dmrNetwork != nullptr)
-					m_dmrNetwork->enable(true);
-				m_dmr->enable(true);
+					m_dmrNetwork->enable(enableMode);
+				m_dmr->enable(enableMode);
 				break;
 			case MODE_YSF:
 				if (m_ysfNetwork != nullptr)
-					m_ysfNetwork->enable(true);
-				m_ysf->enable(true);
+					m_ysfNetwork->enable(enableMode);
+				m_ysf->enable(enableMode);
 				break;
 			case MODE_P25:
 				if (m_p25Network != nullptr)
-					m_p25Network->enable(true);
-				m_p25->enable(true);
+					m_p25Network->enable(enableMode);
+				m_p25->enable(enableMode);
 				break;
 			case MODE_NXDN:
 				if (m_nxdnNetwork != nullptr)
-					m_nxdnNetwork->enable(true);
-				m_nxdn->enable(true);
+					m_nxdnNetwork->enable(enableMode);
+				m_nxdn->enable(enableMode);
 				break;
 			case MODE_M17:
 				if (m_m17Network != nullptr)
-					m_m17Network->enable(true);
-				m_m17->enable(true);
+					m_m17Network->enable(enableMode);
+				m_m17->enable(enableMode);
 				break;
 			case MODE_FM:
 				if (isAX25)
-					m_ax25->enable(true);
+					m_ax25->enable(enableMode);
 				else
-					m_fm->enable(true);
+					m_fm->enable(enableMode);
 				break;
 			default:
 				break;
@@ -2072,95 +2074,13 @@ void CMMDVMHost::enableMode(unsigned char mode, bool hasController, bool& modeEn
 			break;
 		}
 
-		enableModemMode(modeEnabled, true);
-	}
-}
+		enableModemMode(modeEnabled, enableMode);
 
-void CMMDVMHost::disableMode(unsigned char mode, bool hasController, bool& modeEnabled, bool isAX25)
-{
-	if (hasController && modeEnabled) {
-		unsigned char data[500U];
-		bool switchToIDLE = (m_mode == mode);
-
-		// Disable Network and Controller
-		if (switchToIDLE) {
-			switch (mode) {
-			case MODE_DSTAR:
-				if (m_dstarNetwork != nullptr)
-					m_dstarNetwork->enable(false);
-				m_dstar->enable(false);
-				break;
-			case MODE_DMR:
-				if (m_dmrNetwork != nullptr)
-					m_dmrNetwork->enable(false);
-				m_dmr->enable(false);
-				break;
-			case MODE_YSF:
-				if (m_ysfNetwork != nullptr)
-					m_ysfNetwork->enable(false);
-				m_ysf->enable(false);
-				break;
-			case MODE_P25:
-				if (m_p25Network != nullptr)
-					m_p25Network->enable(false);
-				m_p25->enable(false);
-				break;
-			case MODE_NXDN:
-				if (m_nxdnNetwork != nullptr)
-					m_nxdnNetwork->enable(false);
-				m_nxdn->enable(false);
-				break;
-			case MODE_M17:
-				if (m_m17Network != nullptr)
-					m_m17Network->enable(false);
-				m_m17->enable(false);
-				break;
-			case MODE_FM:
-				if (isAX25) {
-					m_ax25->enable(false);
-				}
-				else {
-					m_fm->enable(false);
-				}
-				break;
-			default:
-				break;
-			}
-		}
-
-		// Flush modem data for the given mode
-		switch (mode) {
-		case MODE_DSTAR:
-			while (m_modem->readDStarData(data) > 0U);
-			break;
-		case MODE_DMR:
-			while (m_modem->readDMRData1(data) > 0U || m_modem->readDMRData2(data) > 0U);
-			break;
-		case MODE_YSF:
-			while (m_modem->readYSFData(data) > 0U);
-			break;
-		case MODE_P25:
-			while (m_modem->readP25Data(data) > 0U);
-			break;
-		case MODE_NXDN:
-			while (m_modem->readNXDNData(data) > 0U);
-			break;
-		case MODE_M17:
-			while (m_modem->readM17Data(data) > 0U);
-			break;
-		case MODE_FM:
-			while ((isAX25 ? m_modem->readAX25Data(data) : m_modem->readFMData(data)) > 0U);
-			break;
-		default:
-			break;
-		}
-
-		enableModemMode(modeEnabled, false);
-
-		if (switchToIDLE)
+		if (!enableMode && switchToOrInIDLE)
 			setMode(MODE_IDLE);
 	}
 }
+
 void CMMDVMHost::setMode(unsigned char mode)
 {
 	assert(m_modem != nullptr);
@@ -2772,52 +2692,52 @@ void CMMDVMHost::remoteControl()
 			processModeCommand(MODE_FM, 0);
 		break;
 	case REMOTE_COMMAND::ENABLE_DSTAR:
-		enableMode(MODE_DSTAR, (m_dstar != nullptr), m_dstarEnabled);
+		processEnableModeCommand(MODE_DSTAR, (m_dstar != nullptr), m_dstarEnabled, true);
 		break;
 	case REMOTE_COMMAND::ENABLE_DMR:
-		enableMode(MODE_DMR, (m_dmr != nullptr), m_dmrEnabled);
+		processEnableModeCommand(MODE_DMR, (m_dmr != nullptr), m_dmrEnabled, true);
 		break;
 	case REMOTE_COMMAND::ENABLE_YSF:
-		enableMode(MODE_YSF, (m_ysf != nullptr), m_ysfEnabled);
+		processEnableModeCommand(MODE_YSF, (m_ysf != nullptr), m_ysfEnabled, true);
 		break;
 	case REMOTE_COMMAND::ENABLE_P25:
-		enableMode(MODE_P25, (m_p25 != nullptr), m_p25Enabled);
+		processEnableModeCommand(MODE_P25, (m_p25 != nullptr), m_p25Enabled, true);
 		break;
 	case REMOTE_COMMAND::ENABLE_NXDN:
-		enableMode(MODE_NXDN, (m_nxdn != nullptr), m_nxdnEnabled);
+		processEnableModeCommand(MODE_NXDN, (m_nxdn != nullptr), m_nxdnEnabled, true);
 		break;
 	case REMOTE_COMMAND::ENABLE_M17:
-		enableMode(MODE_M17, (m_m17 != nullptr), m_m17Enabled);
+		processEnableModeCommand(MODE_M17, (m_m17 != nullptr), m_m17Enabled, true);
 		break;
 	case REMOTE_COMMAND::ENABLE_FM:
-		enableMode(MODE_FM, (m_fm != nullptr), m_fmEnabled);
+		processEnableModeCommand(MODE_FM, (m_fm != nullptr), m_fmEnabled, true);
 		break;
 	case REMOTE_COMMAND::ENABLE_AX25:
-		enableMode(MODE_FM, (m_ax25 != nullptr), m_ax25Enabled, true);
+		processEnableModeCommand(MODE_FM, (m_ax25 != nullptr), m_ax25Enabled, true, true);
 		break;
 	case REMOTE_COMMAND::DISABLE_DSTAR:
-		disableMode(MODE_DSTAR, (m_dstar != nullptr), m_dstarEnabled);
+		processEnableModeCommand(MODE_DSTAR, (m_dstar != nullptr), m_dstarEnabled, false);
 		break;
 	case REMOTE_COMMAND::DISABLE_DMR:
-		disableMode(MODE_DMR, (m_dmr != nullptr), m_dmrEnabled);
+		processEnableModeCommand(MODE_DMR, (m_dmr != nullptr), m_dmrEnabled, false);
 		break;
 	case REMOTE_COMMAND::DISABLE_YSF:
-		disableMode(MODE_YSF, (m_ysf != nullptr), m_ysfEnabled);
+		processEnableModeCommand(MODE_YSF, (m_ysf != nullptr), m_ysfEnabled, false);
 		break;
 	case REMOTE_COMMAND::DISABLE_P25:
-		disableMode(MODE_P25, (m_p25), m_p25Enabled);
+		processEnableModeCommand(MODE_P25, (m_p25), m_p25Enabled, false);
 		break;
 	case REMOTE_COMMAND::DISABLE_NXDN:
-		disableMode(MODE_NXDN, (m_nxdn != nullptr), m_nxdnEnabled);
+		processEnableModeCommand(MODE_NXDN, (m_nxdn != nullptr), m_nxdnEnabled, false);
 		break;
 	case REMOTE_COMMAND::DISABLE_M17:
-		disableMode(MODE_M17, (m_m17 != nullptr), m_m17Enabled);
+		processEnableModeCommand(MODE_M17, (m_m17 != nullptr), m_m17Enabled, false);
 		break;
 	case REMOTE_COMMAND::DISABLE_FM:
-		disableMode(MODE_FM, (m_fm != nullptr), m_fmEnabled);
+		processEnableModeCommand(MODE_FM, (m_fm != nullptr), m_fmEnabled, false);
 		break;
 	case REMOTE_COMMAND::DISABLE_AX25:
-		disableMode(MODE_FM, (m_ax25 != nullptr), m_ax25Enabled, true);
+		processEnableModeCommand(MODE_FM, (m_ax25 != nullptr), m_ax25Enabled, false, true);
 		break;
 	case REMOTE_COMMAND::PAGE:
 		if (m_pocsag != nullptr) {
