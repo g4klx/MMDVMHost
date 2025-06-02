@@ -834,6 +834,9 @@ void CDStarControl::clock()
 	if (m_network != nullptr)
 		writeNetwork();
 
+	if (!m_enabled)
+		return;
+
 	m_ackTimer.clock(ms);
 	if (m_ackTimer.isRunning() && m_ackTimer.hasExpired()) {
 		sendAck();
@@ -1299,11 +1302,33 @@ void CDStarControl::enable(bool enabled)
 		m_queue.clear();
 
 		// Reset the RF section
+		switch (m_rfState) {
+		case RPT_RF_STATE::LISTENING:
+		case RPT_RF_STATE::REJECTED:
+		case RPT_RF_STATE::INVALID:
+			break;
+
+		default:
+			if (m_rfTimeoutTimer.isRunning()) {
+				LogMessage("D-Star, RF user has timed out");
+			}
+			break;
+		}
 		m_rfState = RPT_RF_STATE::LISTENING;
 
 		m_rfTimeoutTimer.stop();
 
 		// Reset the networking section
+		switch(m_netState) {
+		case RPT_NET_STATE::IDLE:
+			break;
+
+		default:
+			if (m_netTimeoutTimer.isRunning()) {
+				LogMessage("D-Star, network user has timed out");
+			}
+			break;
+		}
 		m_netState = RPT_NET_STATE::IDLE;
 
 		m_lastFrameValid = false;

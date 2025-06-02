@@ -759,6 +759,9 @@ void CP25Control::clock(unsigned int ms)
 	if (m_network != nullptr)
 		writeNetwork();
 
+	if (!m_enabled)
+	  return;
+
 	m_rfTimeout.clock(ms);
 	m_netTimeout.clock(ms);
 
@@ -1249,11 +1252,33 @@ void CP25Control::enable(bool enabled)
 		m_queue.clear();
 
 		// Reset the RF section
+		switch (m_rfState) {
+		case RPT_RF_STATE::LISTENING:
+		case RPT_RF_STATE::REJECTED:
+		case RPT_RF_STATE::INVALID:
+			break;
+
+		default:
+			if (m_rfTimeout.isRunning()) {
+				LogMessage("P25, RF user has timed out");
+			}
+			break;
+		}
 		m_rfState = RPT_RF_STATE::LISTENING;
 		m_rfTimeout.stop();
 		m_rfData.reset();
 
 		// Reset the networking section
+		switch(m_netState) {
+		case RPT_NET_STATE::IDLE:
+			break;
+
+		default:
+			if (m_netTimeout.isRunning()) {
+				LogMessage("P25, network user has timed out");
+			}
+			break;
+		}
 		m_netTimeout.stop();
 		m_networkWatchdog.stop();
 		m_netData.reset();
