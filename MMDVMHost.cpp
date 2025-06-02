@@ -1402,7 +1402,9 @@ bool CMMDVMHost::createModem()
 	std::string uartPort         = m_conf.getModemUARTPort();
 	unsigned int uartSpeed       = m_conf.getModemUARTSpeed();
 	std::string i2cPort          = m_conf.getModemI2CPort();
+#if defined(__linux__)
 	unsigned int i2cAddress      = m_conf.getModemI2CAddress();
+#endif
 	std::string modemAddress     = m_conf.getModemModemAddress();
 	unsigned short modemPort     = m_conf.getModemModemPort();
 	std::string localAddress     = m_conf.getModemLocalAddress();

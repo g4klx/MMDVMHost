@@ -161,7 +161,11 @@ bool CLCDproc::open()
 
 	/* Create TCP socket */
 	m_socketfd = socket(clientAddress.ss_family, SOCK_STREAM, 0);
+#if defined(_WIN32) || defined(_WIN64)
+	if (m_socketfd == INVALID_SOCKET) {
+#else
 	if (m_socketfd == -1) {
+#endif
 		LogError("LCDproc, failed to create socket");
 		return false;
 	}
