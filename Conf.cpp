@@ -993,6 +993,8 @@ bool CConf::read()
 		} else if (section == SECTION::NXDN_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_nxdnNetworkEnabled = ::atoi(value) == 1;
+			else if (::strcmp(key, "Protocol") == 0)
+				m_nxdnNetworkProtocol = value;
 			else if (::strcmp(key, "LocalAddress") == 0)
 				m_nxdnLocalAddress = value;
 			else if (::strcmp(key, "LocalPort") == 0)
