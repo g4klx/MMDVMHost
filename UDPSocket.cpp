@@ -94,7 +94,7 @@ int CUDPSocket::lookup(const std::string& hostname, unsigned short port, sockadd
 	/* Port is always digits, no needs to lookup service */
 	hints.ai_flags |= AI_NUMERICSERV;
 
-	int err = ::getaddrinfo(hostname.empty() ? nullptr : hostname.c_str(), portstr.c_str(), &hints, &res);
+	int err = ::getaddrinfo(hostname.empty() ? NULL : hostname.c_str(), portstr.c_str(), &hints, &res);
 	if (err != 0) {
 		sockaddr_in* paddr = (sockaddr_in*)&addr;
 		::memset(paddr, 0x00U, address_length = sizeof(sockaddr_in));
