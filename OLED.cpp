@@ -239,9 +239,9 @@ bool COLED::open()
 
 	OLED_statusbar();
 
-	m_display.setCursor(0, OLED_LINE4);
+	m_display.setCursor(22, OLED_LINE4);
 	m_display.setTextSize(1);
-	m_display.print("   -Initializing-");
+	m_display.print("-Initializing-");
 	m_display.display();
 
 	return true;
@@ -333,9 +333,9 @@ void COLED::setIdleInt()
 		}
 	} else { // Connected to network - no Auto-AP mode; normal display layout...
 		if (m_displayLogoScreensaver) {
-			m_display.setCursor(0, OLED_LINE2);
+			m_display.setCursor(42, OLED_LINE2);
 			m_display.setTextSize(1);
-			m_display.print("		-IDLE-");
+			m_display.print("-IDLE-");
 			m_display.setCursor(0, OLED_LINE4);
 			m_display.printf("%s", m_ipaddress.c_str());
 
@@ -391,9 +391,9 @@ void COLED::setQuitInt()
 	m_display.clearDisplay();
 	OLED_statusbar();
 
-	m_display.setCursor(0, 30);
-	m_display.setTextSize(2);
-	m_display.print(" Stopping");
+	m_display.setCursor(28, 30);
+	m_display.setTextSize(1);
+	m_display.print("Stopping...");
 
 	m_display.setTextSize(1);
 	m_display.display();
@@ -443,7 +443,7 @@ void COLED::clearDStarInt()
 {
 	m_display.fillRect(0, OLED_LINE3, m_display.width(),m_display.height(), BLACK); //clear everything beneath the logo
 
-	m_display.setCursor(40, OLED_LINE3);
+	m_display.setCursor(37, OLED_LINE3);
 	m_display.print("Standby");
 
 	m_display.setCursor(0, OLED_LINE5);
@@ -562,7 +562,7 @@ void COLED::clearFusionInt()
 {
 	m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
-	m_display.setCursor(40, OLED_LINE4);
+	m_display.setCursor(37, OLED_LINE4);
 	m_display.print("Standby");
 
 	m_display.setCursor(0, OLED_LINE6);
@@ -593,7 +593,7 @@ void COLED::clearP25Int()
 {
 	m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
-	m_display.setCursor(40, OLED_LINE4);
+	m_display.setCursor(37, OLED_LINE4);
 	m_display.print("Standby");
 
 	m_display.setCursor(0, OLED_LINE6);
@@ -645,7 +645,7 @@ void COLED::clearNXDNInt()
 {
 	m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
-	m_display.setCursor(40, OLED_LINE3);
+	m_display.setCursor(37, OLED_LINE3);
 	m_display.print("Standby");
 
 	m_display.setCursor(0, OLED_LINE6);
@@ -679,7 +679,7 @@ void COLED::clearM17Int()
 {
 	m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
-	m_display.setCursor(40, OLED_LINE4);
+	m_display.setCursor(37, OLED_LINE4);
 	m_display.print("Standby");
 
 	m_display.setCursor(0, OLED_LINE6);
@@ -754,7 +754,7 @@ void COLED::clearPOCSAGInt()
 {
 	m_display.fillRect(0, OLED_LINE2, m_display.width(), m_display.height(), BLACK);
 
-	m_display.setCursor(40, OLED_LINE3);
+	m_display.setCursor(37, OLED_LINE3);
 	m_display.print("Standby");
 
 	m_display.setCursor(0, OLED_LINE6);
@@ -767,7 +767,7 @@ void COLED::writeCWInt()
 {
 	m_display.clearDisplay();
 
-	m_display.setCursor(0, 30);
+	m_display.setCursor(15, 30);
 	m_display.setTextSize(2);
 	m_display.print("CW ID TX");
 
@@ -782,12 +782,11 @@ void COLED::clearCWInt()
 {
 	m_display.clearDisplay();
 
-	m_display.setCursor(0, OLED_LINE1);
-	m_display.setTextSize(2);
+	m_display.setCursor(17,OLED_LINE1);
 	m_display.setTextSize(1);
-	m_display.print(" -IDLE-");
-	m_display.setCursor(0, OLED_LINE3);
-	m_display.printf("%s", m_ipaddress.c_str());
+	m_display.print("-IDLE-");
+	m_display.setCursor(0,OLED_LINE3);
+	m_display.printf("%s",m_ipaddress.c_str());
 
 	// Display temperature
 	float tempCelsius = readTemperature("/sys/class/thermal/thermal_zone0/temp");
@@ -796,13 +795,14 @@ void COLED::clearCWInt()
 		float tempFahrenheit = (tempCelsius * 9.0F / 5.0F) + 32.0F;
 		m_display.setCursor(0, OLED_LINE5);
 		m_display.setTextSize(1);
-		m_display.printf("Temp: %.0fF / %.0fC ", tempFahrenheit, tempCelsius);
+		m_display.printf("CPU Temp: %.0fF/%.0fC ", tempFahrenheit, tempCelsius);
 	}
 
-	if (m_displayScroll)
-		m_display.startscrolldiagleft(0x00, 0x0f);
-
+	m_display.setTextSize(1);
 	m_display.display();
+
+	if (m_displayScroll)
+	    m_display.startscrolldiagleft(0x00,0x0f);
 }
 
 void COLED::close()
@@ -813,9 +813,9 @@ void COLED::close()
 	if (m_displayScroll)
 		m_display.startscrollleft(0x00, 0x01);
 
-	m_display.setCursor(0, OLED_LINE3);
+	m_display.setCursor(11, OLED_LINE3);
 	m_display.setTextSize(2);
-	m_display.print(" -OFFLINE-");
+	m_display.print("-OFFLINE-");
 	m_display.display();
 
 	m_display.close();
