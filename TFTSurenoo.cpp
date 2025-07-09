@@ -101,7 +101,6 @@ static const struct layoutdef Layout[] = {
 #define STR_DSTAR		"D-STAR"
 #define STR_MMDVM		"MMDVM"
 #define STR_NXDN		"NXDN"
-#define STR_M17			"M17"
 #define STR_P25			"P25"
 #define STR_YSF			"SystemFusion"
 
@@ -371,29 +370,6 @@ int CTFTSurenoo::writeNXDNIntEx(const CUserDBentry& source, bool group, unsigned
 }
 
 void CTFTSurenoo::clearNXDNInt()
-{
-	clearDStarInt();
-}
-
-void CTFTSurenoo::writeM17Int(const char* source, const char* dest, const char* type)
-{
-	assert(source != nullptr);
-	assert(dest != nullptr);
-	assert(type != nullptr);
-
-	if (m_mode != MODE_M17)
-		setModeLine(STR_M17);
-
-	::snprintf(m_temp, sizeof(m_temp), "%s %s", type, source);
-	setStatusLine(statusLineNo(0), m_temp);
-
-	::snprintf(m_temp, sizeof(m_temp), "%s", dest);
-	setStatusLine(statusLineNo(1), m_temp);
-
-	m_mode = MODE_M17;
-}
-
-void CTFTSurenoo::clearM17Int()
 {
 	clearDStarInt();
 }

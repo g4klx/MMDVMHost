@@ -36,8 +36,6 @@ const unsigned int P25_RSSI_COUNT   = 7U;		  // 7 * 180ms = 1260ms
 const unsigned int P25_BER_COUNT    = 7U;		  // 7 * 180ms = 1260ms
 const unsigned int NXDN_RSSI_COUNT  = 28U;		  // 28 * 40ms = 1120ms
 const unsigned int NXDN_BER_COUNT   = 28U;		  // 28 * 40ms = 1120ms
-const unsigned int M17_RSSI_COUNT   = 28U;		  // 28 * 40ms = 1120ms
-const unsigned int M17_BER_COUNT    = 28U;		  // 28 * 40ms = 1120ms
 
 #define LAYOUT_COMPAT_MASK	(7 << 0) // compatibility for old setting
 #define LAYOUT_TA_ENABLE	(1 << 4) // enable Talker Alias (TA) display
@@ -877,79 +875,6 @@ void CNextion::clearNXDNInt()
 {
 	sendCommand("t0.txt=\"Listening\"");
 	sendCommandAction(121U);
-	sendCommand("t1.txt=\"\"");
-	sendCommand("t2.txt=\"\"");
-	sendCommand("t3.txt=\"\"");
-}
-
-void CNextion::writeM17Int(const char* source, const char* dest, const char* type)
-{
-	assert(source != nullptr);
-	assert(dest != nullptr);
-	assert(type != nullptr);
-
-	if (m_mode != MODE_M17) {
-		sendCommand("page M17");
-		sendCommandAction(8U);
-	}
-
-	char text[30U];
-	if (m_brightness > 0U) {
-		::sprintf(text, "dim=%u", m_brightness);
-		sendCommand(text);
-	}
-
-	::sprintf(text, "t0.txt=\"%s %.10s\"", type, source);
-	sendCommand(text);
-	sendCommandAction(142U);
-
-	::sprintf(text, "t1.txt=\"%s\"", dest);
-	sendCommand(text);
-	sendCommandAction(143U);
-
-	m_clockDisplayTimer.stop();
-
-	m_mode = MODE_M17;
-	m_rssiAccum1 = 0U;
-	m_berAccum1 = 0.0F;
-	m_rssiCount1 = 0U;
-	m_berCount1 = 0U;
-}
-
-void CNextion::writeM17RSSIInt(unsigned char rssi)
-{
-	m_rssiAccum1 += rssi;
-	m_rssiCount1++;
-
-	if (m_rssiCount1 == M17_RSSI_COUNT) {
-		char text[25U];
-		::sprintf(text, "t2.txt=\"-%udBm\"", m_rssiAccum1 / M17_RSSI_COUNT);
-		sendCommand(text);
-		sendCommandAction(144U);
-		m_rssiAccum1 = 0U;
-		m_rssiCount1 = 0U;
-	}
-}
-
-void CNextion::writeM17BERInt(float ber)
-{
-	m_berAccum1 += ber;
-	m_berCount1++;
-
-	if (m_berCount1 == M17_BER_COUNT) {
-		char text[25U];
-		::sprintf(text, "t3.txt=\"%.1f%%\"", m_berAccum1 / float(M17_BER_COUNT));
-		sendCommand(text);
-		sendCommandAction(145U);
-		m_berAccum1 = 0.0F;
-		m_berCount1 = 0U;
-	}
-}
-
-void CNextion::clearM17Int()
-{
-	sendCommand("t0.txt=\"Listening\"");
-	sendCommandAction(141U);
 	sendCommand("t1.txt=\"\"");
 	sendCommand("t2.txt=\"\"");
 	sendCommand("t3.txt=\"\"");

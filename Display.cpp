@@ -339,40 +339,6 @@ void CDisplay::clearNXDN()
 	}
 }
 
-void CDisplay::writeM17(const char* source, const char* dest, const char* type)
-{
-	assert(source != nullptr);
-	assert(dest != nullptr);
-	assert(type != nullptr);
-
-	m_timer1.start();
-	m_mode1 = MODE_IDLE;
-
-	writeM17Int(source, dest, type);
-}
-
-void CDisplay::writeM17RSSI(unsigned char rssi)
-{
-	if (rssi != 0U)
-		writeM17RSSIInt(rssi);
-}
-
-void CDisplay::writeM17BER(float ber)
-{
-	writeM17BERInt(ber);
-}
-
-void CDisplay::clearM17()
-{
-	if (m_timer1.hasExpired()) {
-		clearM17Int();
-		m_timer1.stop();
-		m_mode1 = MODE_IDLE;
-	} else {
-		m_mode1 = MODE_M17;
-	}
-}
-
 void CDisplay::writePOCSAG(uint32_t ric, const std::string& message)
 {
 	m_timer1.start();
@@ -427,11 +393,6 @@ void CDisplay::clock(unsigned int ms)
 			break;
 		case MODE_NXDN:
 			clearNXDNInt();
-			m_mode1 = MODE_IDLE;
-			m_timer1.stop();
-			break;
-		case MODE_M17:
-			clearM17Int();
 			m_mode1 = MODE_IDLE;
 			m_timer1.stop();
 			break;
@@ -522,14 +483,6 @@ void CDisplay::writeNXDNRSSIInt(unsigned char rssi)
 }
 
 void CDisplay::writeNXDNBERInt(float ber)
-{
-}
-
-void CDisplay::writeM17RSSIInt(unsigned char rssi)
-{
-}
-
-void CDisplay::writeM17BERInt(float ber)
 {
 }
 

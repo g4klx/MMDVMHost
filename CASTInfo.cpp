@@ -128,16 +128,6 @@ void CCASTInfo::clearNXDNInt()
 {
 }
 
-void CCASTInfo::writeM17Int(const char* source, const char* dest, const char* type)
-{
-    if (m_modem != nullptr)
-        m_modem->writeM17Info(source, dest, type);
-}
-
-void CCASTInfo::clearM17Int()
-{
-}
-
 void CCASTInfo::writePOCSAGInt(uint32_t ric, const std::string& message)
 {
     if (m_modem != nullptr)

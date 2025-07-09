@@ -102,8 +102,6 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 				m_command = REMOTE_COMMAND::MODE_P25;
 			else if (m_args.at(1U) == "nxdn")
 				m_command = REMOTE_COMMAND::MODE_NXDN;
-			else if (m_args.at(1U) == "m17")
-				m_command = REMOTE_COMMAND::MODE_M17;
 			else
 				replyStr = "KO";
 		} else if (m_args.at(0U) == "enable" && m_args.size() >= ENABLE_ARGS) {
@@ -117,8 +115,6 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 				m_command = REMOTE_COMMAND::ENABLE_P25;
 			else if (m_args.at(1U) == "nxdn")
 				m_command = REMOTE_COMMAND::ENABLE_NXDN;
-			else if (m_args.at(1U) == "m17")
-				m_command = REMOTE_COMMAND::ENABLE_M17;
 			else if (m_args.at(1U) == "fm")
 				m_command = REMOTE_COMMAND::ENABLE_FM;
 			else if (m_args.at(1U) == "ax25")
@@ -136,8 +132,6 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 				m_command = REMOTE_COMMAND::DISABLE_P25;
 			else if (m_args.at(1U) == "nxdn")
 				m_command = REMOTE_COMMAND::DISABLE_NXDN;
-			else if (m_args.at(1U) == "m17")
-				m_command = REMOTE_COMMAND::DISABLE_M17;
 			else if (m_args.at(1U) == "fm")
 				m_command = REMOTE_COMMAND::DISABLE_FM;
 			else if (m_args.at(1U) == "ax25")
@@ -208,7 +202,6 @@ unsigned int CRemoteControl::getArgCount() const
 		case REMOTE_COMMAND::MODE_YSF:
 		case REMOTE_COMMAND::MODE_P25:
 		case REMOTE_COMMAND::MODE_NXDN:
-		case REMOTE_COMMAND::MODE_M17:
 			return (unsigned int)m_args.size() - SET_MODE_ARGS;
 		case REMOTE_COMMAND::PAGE:
 		case REMOTE_COMMAND::PAGE_BCD:
@@ -232,7 +225,6 @@ std::string CRemoteControl::getArgString(unsigned int n) const
 		case REMOTE_COMMAND::MODE_YSF:
 		case REMOTE_COMMAND::MODE_P25:
 		case REMOTE_COMMAND::MODE_NXDN:
-		case REMOTE_COMMAND::MODE_M17:
 			n += SET_MODE_ARGS;
 			break;
 		case REMOTE_COMMAND::PAGE:

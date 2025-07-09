@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018,2020,2021,2023 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2018,2020,2021,2023,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -72,11 +72,6 @@ public:
 	void writeNXDNBER(float ber);
 	void clearNXDN();
 
-	void writeM17(const char* source, const char* dest, const char* type);
-	void writeM17RSSI(unsigned char rssi);
-	void writeM17BER(float ber);
-	void clearM17();
-
 	void writePOCSAG(uint32_t ric, const std::string& message);
 	void clearPOCSAG();
 
@@ -122,11 +117,6 @@ protected:
 	virtual void writeNXDNRSSIInt(unsigned char rssi);
 	virtual void writeNXDNBERInt(float ber);
 	virtual void clearNXDNInt() = 0;
-
-	virtual void writeM17Int(const char* source, const char* dest, const char* type) = 0;
-	virtual void writeM17RSSIInt(unsigned char rssi);
-	virtual void writeM17BERInt(float ber);
-	virtual void clearM17Int() = 0;
 
 	virtual void writePOCSAGInt(uint32_t ric, const std::string& message) = 0;
 	virtual void clearPOCSAGInt() = 0;

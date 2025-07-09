@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2018,2020,2021 by Jonathan Naylor G4KLX & Tony Corbett G0WFV
+ *   Copyright (C) 2016,2017,2018,2020,2021,2025 by Jonathan Naylor G4KLX & Tony Corbett G0WFV
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -122,10 +122,6 @@ protected:
 	virtual void writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type);
 	virtual void writeNXDNRSSIInt(unsigned char rssi); 
 	virtual void clearNXDNInt();
-
-	virtual void writeM17Int(const char* source, const char* dest, const char* type);
-	virtual void writeM17RSSIInt(unsigned char rssi);
-	virtual void clearM17Int();
 
 	virtual void writePOCSAGInt(uint32_t ric, const std::string& message);
 	virtual void clearPOCSAGInt();

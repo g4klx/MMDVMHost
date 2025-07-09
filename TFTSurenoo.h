@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2019 by SASANO Takayoshi JG1UAA
- *   Copyright (C) 2015,2016,2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018,2020,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -60,9 +60,6 @@ protected:
 	virtual void writeNXDNInt(const char* source, bool group, unsigned int dest, const char* type);
 	virtual int writeNXDNIntEx(const CUserDBentry& source, bool group, unsigned int dest, const char* type);
 	virtual void clearNXDNInt();
-
-	virtual void writeM17Int(const char* source, const char* dest, const char* type);
-	virtual void clearM17Int();
 
 	virtual void writePOCSAGInt(uint32_t ric, const std::string& message);
 	virtual void clearPOCSAGInt();

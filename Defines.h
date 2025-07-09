@@ -26,7 +26,6 @@ const unsigned char MODE_YSF     = 3U;
 const unsigned char MODE_P25     = 4U;
 const unsigned char MODE_NXDN    = 5U;
 const unsigned char MODE_POCSAG  = 6U;
-const unsigned char MODE_M17     = 7U;
 
 const unsigned char MODE_FM      = 10U;
 

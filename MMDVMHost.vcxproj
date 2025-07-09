@@ -207,13 +207,6 @@
     <ClInclude Include="IIRDirectForm1Filter.h" />
     <ClInclude Include="LCDproc.h" />
     <ClInclude Include="Log.h" />
-    <ClInclude Include="M17Control.h" />
-    <ClInclude Include="M17Convolution.h" />
-    <ClInclude Include="M17CRC.h" />
-    <ClInclude Include="M17Defines.h" />
-    <ClInclude Include="M17LSF.h" />
-    <ClInclude Include="M17Network.h" />
-    <ClInclude Include="M17Utils.h" />
     <ClInclude Include="MMDVMHost.h" />
     <ClInclude Include="ModemPort.h" />
     <ClInclude Include="ModemSerialPort.h" />
@@ -319,12 +312,6 @@
     <ClCompile Include="IIRDirectForm1Filter.cpp" />
     <ClCompile Include="LCDproc.cpp" />
     <ClCompile Include="Log.cpp" />
-    <ClCompile Include="M17Control.cpp" />
-    <ClCompile Include="M17Convolution.cpp" />
-    <ClCompile Include="M17CRC.cpp" />
-    <ClCompile Include="M17LSF.cpp" />
-    <ClCompile Include="M17Network.cpp" />
-    <ClCompile Include="M17Utils.cpp" />
     <ClCompile Include="MMDVMHost.cpp" />
     <ClCompile Include="ModemPort.cpp" />
     <ClCompile Include="ModemSerialPort.cpp" />

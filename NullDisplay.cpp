@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2018,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2018,2020,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -128,20 +128,6 @@ void CNullDisplay::writeNXDNInt(const char* source, bool group, unsigned int des
 }
 
 void CNullDisplay::clearNXDNInt()
-{
-#if defined(RASPBERRY_PI)
-	::digitalWrite(LED_STATUS, 0);
-#endif
-}
-
-void CNullDisplay::writeM17Int(const char* source, const char* dest, const char* type)
-{
-#if defined(RASPBERRY_PI)
-	::digitalWrite(LED_STATUS, 1);
-#endif
-}
-
-void CNullDisplay::clearM17Int()
 {
 #if defined(RASPBERRY_PI)
 	::digitalWrite(LED_STATUS, 0);
