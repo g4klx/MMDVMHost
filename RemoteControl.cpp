@@ -117,8 +117,6 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 				m_command = REMOTE_COMMAND::ENABLE_NXDN;
 			else if (m_args.at(1U) == "fm")
 				m_command = REMOTE_COMMAND::ENABLE_FM;
-			else if (m_args.at(1U) == "ax25")
-				m_command = REMOTE_COMMAND::ENABLE_AX25;
 			else
 				replyStr = "KO";
 		} else if (m_args.at(0U) == "disable" && m_args.size() >= DISABLE_ARGS) {
@@ -134,8 +132,6 @@ REMOTE_COMMAND CRemoteControl::getCommand()
 				m_command = REMOTE_COMMAND::DISABLE_NXDN;
 			else if (m_args.at(1U) == "fm")
 				m_command = REMOTE_COMMAND::DISABLE_FM;
-			else if (m_args.at(1U) == "ax25")
-				m_command = REMOTE_COMMAND::DISABLE_AX25;
 			else
 				replyStr = "KO";
 		} else if (m_args.at(0U) == "page" && m_args.size() >= PAGE_ARGS) {

@@ -272,19 +272,10 @@
     <ClInclude Include="UserDBentry.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="AX25Control.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AX25Network.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="NXDNIcomNetwork.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="NXDNKenwoodNetwork.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AX25Defines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FMNetwork.h">
@@ -566,12 +557,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="UserDBentry.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AX25Control.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AX25Network.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="NXDNIcomNetwork.cpp">

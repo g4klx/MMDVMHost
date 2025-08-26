@@ -44,7 +44,6 @@ enum class SECTION {
 	NXDN,
 	POCSAG,
 	FM,
-	AX25,
 	DSTAR_NETWORK,
 	DMR_NETWORK,
 	FUSION_NETWORK,
@@ -52,7 +51,6 @@ enum class SECTION {
 	NXDN_NETWORK,
 	POCSAG_NETWORK,
 	FM_NETWORK,
-	AX25_NETWORK,
 	TFTSERIAL_DISPLAY,
 	HD44780_DISPLAY,
 	NEXTION_DISPLAY,
@@ -119,7 +117,6 @@ m_modemP25TXLevel(50.0F),
 m_modemNXDNTXLevel(50.0F),
 m_modemPOCSAGTXLevel(50.0F),
 m_modemFMTXLevel(50.0F),
-m_modemAX25TXLevel(50.0F),
 m_modemRSSIMappingFile(),
 m_modemUseCOSAsLockout(false),
 m_modemTrace(false),
@@ -218,12 +215,6 @@ m_fmRFAudioBoost(1U),
 m_fmMaxDevLevel(90.0F),
 m_fmExtAudioBoost(1U),
 m_fmModeHang(10U),
-m_ax25Enabled(false),
-m_ax25TXDelay(300U),
-m_ax25RXTwist(6),
-m_ax25SlotTime(30U),
-m_ax25PPersist(128U),
-m_ax25Trace(false),
 m_dstarNetworkEnabled(false),
 m_dstarGatewayAddress(),
 m_dstarGatewayPort(0U),
@@ -287,10 +278,6 @@ m_fmTXAudioGain(1.0F),
 m_fmRXAudioGain(1.0F),
 m_fmNetworkModeHang(3U),
 m_fmNetworkDebug(false),
-m_ax25NetworkEnabled(false),
-m_ax25NetworkPort(),
-m_ax25NetworkSpeed(9600U),
-m_ax25NetworkDebug(false),
 m_tftSerialPort("/dev/ttyAMA0"),
 m_tftSerialBrightness(50U),
 m_tftSerialScreenLayout(0U),
@@ -383,8 +370,6 @@ bool CConf::read()
 				section = SECTION::POCSAG;
 			else if (::strncmp(buffer, "[FM]", 4U) == 0)
 				section = SECTION::FM;
-			else if (::strncmp(buffer, "[AX.25]", 7U) == 0)
-				section = SECTION::AX25;
 			else if (::strncmp(buffer, "[D-Star Network]", 16U) == 0)
 				section = SECTION::DSTAR_NETWORK;
 			else if (::strncmp(buffer, "[DMR Network]", 13U) == 0)
@@ -399,8 +384,6 @@ bool CConf::read()
 				section = SECTION::POCSAG_NETWORK;
 			else if (::strncmp(buffer, "[FM Network]", 12U) == 0)
 				section = SECTION::FM_NETWORK;
-			else if (::strncmp(buffer, "[AX.25 Network]", 15U) == 0)
-				section = SECTION::AX25_NETWORK;
 			else if (::strncmp(buffer, "[TFT Serial]", 12U) == 0)
 				section = SECTION::TFTSERIAL_DISPLAY;
 			else if (::strncmp(buffer, "[HD44780]", 9U) == 0)
@@ -546,7 +529,7 @@ bool CConf::read()
 			else if (::strcmp(key, "PTTInvert") == 0)
 				m_modemPTTInvert = ::atoi(value) == 1;
 			else if (::strcmp(key, "TXDelay") == 0)
-				m_ax25TXDelay = m_modemTXDelay = (unsigned int)::atoi(value);
+				m_modemTXDelay = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "DMRDelay") == 0)
 				m_modemDMRDelay = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "RXOffset") == 0)
@@ -562,7 +545,7 @@ bool CConf::read()
 			else if (::strcmp(key, "RXLevel") == 0)
 				m_modemRXLevel = float(::atof(value));
 			else if (::strcmp(key, "TXLevel") == 0)
-				m_modemAX25TXLevel = m_modemFMTXLevel = m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = m_modemNXDNTXLevel = m_modemPOCSAGTXLevel = float(::atof(value));
+				m_modemFMTXLevel = m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = m_modemNXDNTXLevel = m_modemPOCSAGTXLevel = float(::atof(value));
 			else if (::strcmp(key, "CWIdTXLevel") == 0)
 				m_modemCWIdTXLevel = float(::atof(value));
 			else if (::strcmp(key, "D-StarTXLevel") == 0)
@@ -579,8 +562,6 @@ bool CConf::read()
 				m_modemPOCSAGTXLevel = float(::atof(value));
 			else if (::strcmp(key, "FMTXLevel") == 0)
 				m_modemFMTXLevel = float(::atof(value));
-			else if (::strcmp(key, "AX25TXLevel") == 0)
-				m_modemAX25TXLevel = float(::atof(value));
 			else if (::strcmp(key, "RSSIMappingFile") == 0)
 				m_modemRSSIMappingFile = value;
 			else if (::strcmp(key, "UseCOSAsLockout") == 0)
@@ -870,19 +851,6 @@ bool CConf::read()
 				m_fmExtAudioBoost = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "ModeHang") == 0)
 				m_fmModeHang = (unsigned int)::atoi(value);
-		} else if (section == SECTION::AX25) {
-			if (::strcmp(key, "Enable") == 0)
-				m_ax25Enabled = ::atoi(value) == 1;
-			else if (::strcmp(key, "TXDelay") == 0)
-				m_ax25TXDelay = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "RXTwist") == 0)
-				m_ax25RXTwist = ::atoi(value);
-			else if (::strcmp(key, "SlotTime") == 0)
-				m_ax25SlotTime = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "PPersist") == 0)
-				m_ax25PPersist = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "Trace") == 0)
-				m_ax25Trace = ::atoi(value) == 1;
 		} else if (section == SECTION::DSTAR_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_dstarNetworkEnabled = ::atoi(value) == 1;
@@ -1016,15 +984,6 @@ bool CConf::read()
 				m_fmNetworkModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Debug") == 0)
 				m_fmNetworkDebug = ::atoi(value) == 1;
-		} else if (section == SECTION::AX25_NETWORK) {
-			if (::strcmp(key, "Enable") == 0)
-				m_ax25NetworkEnabled = ::atoi(value) == 1;
-			else if (::strcmp(key, "Port") == 0)
-				m_ax25NetworkPort = value;
-			else if (::strcmp(key, "Speed") == 0)
-				m_ax25NetworkSpeed = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "Debug") == 0)
-				m_ax25NetworkDebug = ::atoi(value) == 1;
 		} else if (section == SECTION::TFTSERIAL_DISPLAY) {
 			if (::strcmp(key, "Port") == 0)
 				m_tftSerialPort = value;
@@ -1395,11 +1354,6 @@ float CConf::getModemPOCSAGTXLevel() const
 float CConf::getModemFMTXLevel() const
 {
 	return m_modemFMTXLevel;
-}
-
-float CConf::getModemAX25TXLevel() const
-{
-	return m_modemAX25TXLevel;
 }
 
 std::string CConf::getModemRSSIMappingFile () const
@@ -1892,36 +1846,6 @@ unsigned int CConf::getFMModeHang() const
 	return m_fmModeHang;
 }
 
-bool CConf::getAX25Enabled() const
-{
-	return m_ax25Enabled;
-}
-
-unsigned int CConf::getAX25TXDelay() const
-{
-	return m_ax25TXDelay;
-}
-
-int CConf::getAX25RXTwist() const
-{
-	return m_ax25RXTwist;
-}
-
-unsigned int CConf::getAX25SlotTime() const
-{
-	return m_ax25SlotTime;
-}
-
-unsigned int CConf::getAX25PPersist() const
-{
-	return m_ax25PPersist;
-}
-
-bool CConf::getAX25Trace() const
-{
-	return m_ax25Trace;
-}
-
 bool CConf::getDStarNetworkEnabled() const
 {
 	return m_dstarNetworkEnabled;
@@ -2235,26 +2159,6 @@ unsigned int CConf::getFMNetworkModeHang() const
 bool CConf::getFMNetworkDebug() const
 {
 	return m_fmNetworkDebug;
-}
-
-bool CConf::getAX25NetworkEnabled() const
-{
-	return m_ax25NetworkEnabled;
-}
-
-std::string CConf::getAX25NetworkPort() const
-{
-	return m_ax25NetworkPort;
-}
-
-unsigned int CConf::getAX25NetworkSpeed() const
-{
-	return m_ax25NetworkSpeed;
-}
-
-bool CConf::getAX25NetworkDebug() const
-{
-	return m_ax25NetworkDebug;
 }
 
 std::string CConf::getTFTSerialPort() const

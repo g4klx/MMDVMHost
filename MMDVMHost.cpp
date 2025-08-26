@@ -141,7 +141,6 @@ m_p25(nullptr),
 m_nxdn(nullptr),
 m_pocsag(nullptr),
 m_fm(nullptr),
-m_ax25(nullptr),
 m_dstarNetwork(nullptr),
 m_dmrNetwork(nullptr),
 m_ysfNetwork(nullptr),
@@ -149,7 +148,6 @@ m_p25Network(nullptr),
 m_nxdnNetwork(nullptr),
 m_pocsagNetwork(nullptr),
 m_fmNetwork(nullptr),
-m_ax25Network(nullptr),
 m_display(nullptr),
 m_mode(MODE_IDLE),
 m_dstarRFModeHang(10U),
@@ -177,7 +175,6 @@ m_p25Enabled(false),
 m_nxdnEnabled(false),
 m_pocsagEnabled(false),
 m_fmEnabled(false),
-m_ax25Enabled(false),
 m_cwIdTime(0U),
 m_dmrLookup(nullptr),
 m_nxdnLookup(nullptr),
@@ -331,11 +328,6 @@ int CMMDVMHost::run()
 		m_pocsagEnabled = false;
 	}
 
-	if (m_ax25Enabled && !m_modem->hasAX25()) {
-		LogWarning("AX.25 enabled in the host but not in the modem firmware, disabling");
-		m_ax25Enabled = false;
-	}
-
 	m_display = CDisplay::createDisplay(m_conf, m_modem);
 
 	LogInfo("Opening network connections");
@@ -378,12 +370,6 @@ int CMMDVMHost::run()
 
 	if (m_fmEnabled && m_conf.getFMNetworkEnabled()) {
 		ret = createFMNetwork();
-		if (!ret)
-			return 1;
-	}
-
-	if (m_ax25Enabled && m_conf.getAX25NetworkEnabled()) {
-		ret = createAX25Network();
 		if (!ret)
 			return 1;
 	}
@@ -688,23 +674,6 @@ int CMMDVMHost::run()
 			pocsagTimer.start();
 	}
 
-	if (m_ax25Enabled) {
-		unsigned int txDelay  = m_conf.getAX25TXDelay();
-		int  rxTwist          = m_conf.getAX25RXTwist();
-		unsigned int slotTime = m_conf.getAX25SlotTime();
-		unsigned int pPersist = m_conf.getAX25PPersist();
-		bool trace            = m_conf.getAX25Trace();
-
-		LogInfo("AX.25 RF Parameters");
-		LogInfo("    TX Delay: %ums", txDelay);
-		LogInfo("    RX Twist: %d", rxTwist);
-		LogInfo("    Slot Time: %ums", slotTime);
-		LogInfo("    P-Persist: %u", pPersist);
-		LogInfo("    Trace: %s", trace ? "yes" : "no");
-
-		m_ax25 = new CAX25Control(m_ax25Network, trace);
-	}
-
 	if (m_fmEnabled) {
 		bool preEmphasis  = m_conf.getFMPreEmphasis();
 		bool deEmphasis   = m_conf.getFMDeEmphasis();
@@ -914,15 +883,6 @@ int CMMDVMHost::run()
 			}
 		}
 
-		len = m_modem->readAX25Data(data);
-		if (m_ax25 != nullptr && m_ax25Enabled && len > 0U) {
-			if (m_mode == MODE_IDLE || m_mode == MODE_FM) {
-				m_ax25->writeModem(data, len);
-			} else if (m_mode != MODE_LOCKOUT) {
-				LogWarning("NXDN modem data received when in mode %u", m_mode);
-			}
-		}
-
 		len = m_modem->readTransparentData(data);
 		if (transparentSocket != nullptr && len > 0U)
 			transparentSocket->write(data, len, transparentAddress, transparentAddrLen);
@@ -1087,21 +1047,6 @@ int CMMDVMHost::run()
 						m_modeTimer.start();
 					} else if (m_mode != MODE_LOCKOUT) {
 						LogWarning("FM data received when in mode %u", m_mode);
-					}
-				}
-			}
-		}
-
-		if (m_ax25 != nullptr && m_ax25Enabled) {
-			ret = m_modem->hasAX25Space();
-			if (ret) {
-				len = m_ax25->readModem(data);
-				if (len > 0U) {
-					if (m_mode == MODE_IDLE || m_mode == MODE_FM) {
-						m_modem->writeAX25Data(data, len);
-					}
-					else if (m_mode != MODE_LOCKOUT) {
-						LogWarning("AX.25 data received when in mode %u", m_mode);
 					}
 				}
 			}
@@ -1280,11 +1225,6 @@ int CMMDVMHost::run()
 		delete m_fmNetwork;
 	}
 
-	if (m_ax25Network != nullptr) {
-		m_ax25Network->close();
-		delete m_ax25Network;
-	}
-
 	if (transparentSocket != nullptr) {
 		transparentSocket->close();
 		delete transparentSocket;
@@ -1304,7 +1244,6 @@ int CMMDVMHost::run()
 	delete m_nxdn;
 	delete m_pocsag;
 	delete m_fm;
-	delete m_ax25;
 
 	LogInfo("MMDVMHost-%s has stopped", VERSION);
 
@@ -1344,7 +1283,6 @@ bool CMMDVMHost::createModem()
 	float nxdnTXLevel            = m_conf.getModemNXDNTXLevel();
 	float pocsagTXLevel          = m_conf.getModemPOCSAGTXLevel();
 	float fmTXLevel              = m_conf.getModemFMTXLevel();
-	float ax25TXLevel            = m_conf.getModemAX25TXLevel();
 	bool trace                   = m_conf.getModemTrace();
 	bool debug                   = m_conf.getModemDebug();
 	unsigned int colorCode       = m_conf.getDMRColorCode();
@@ -1360,10 +1298,6 @@ bool CMMDVMHost::createModem()
 	int rxDCOffset               = m_conf.getModemRXDCOffset();
 	int txDCOffset               = m_conf.getModemTXDCOffset();
 	float rfLevel                = m_conf.getModemRFLevel();
-	int rxTwist                  = m_conf.getAX25RXTwist();
-	unsigned int ax25TXDelay     = m_conf.getAX25TXDelay();
-	unsigned int ax25SlotTime    = m_conf.getAX25SlotTime();
-	unsigned int ax25PPersist    = m_conf.getAX25PPersist();
 	bool useCOSAsLockout         = m_conf.getModemUseCOSAsLockout();
 
 	LogInfo("Modem Parameters");
@@ -1404,7 +1338,6 @@ bool CMMDVMHost::createModem()
 	LogInfo("    NXDN TX Level: %.1f%%", nxdnTXLevel);
 	LogInfo("    POCSAG TX Level: %.1f%%", pocsagTXLevel);
 	LogInfo("    FM TX Level: %.1f%%", fmTXLevel);
-	LogInfo("    AX.25 TX Level: %.1f%%", ax25TXLevel);
 	LogInfo("    TX Frequency: %uHz (%uHz)", txFrequency, txFrequency + txOffset);
 	LogInfo("    Use COS as Lockout: %s", useCOSAsLockout ? "yes" : "no");
 
@@ -1425,14 +1358,13 @@ bool CMMDVMHost::createModem()
 		return false;
 
 	m_modem->setPort(port);
-	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_pocsagEnabled, m_fmEnabled, m_ax25Enabled);
-	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, fmTXLevel, ax25TXLevel);
+	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_pocsagEnabled, m_fmEnabled);
+	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, fmTXLevel);
 	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel, pocsagFrequency);
 	m_modem->setDMRParams(colorCode);
 	m_modem->setYSFParams(lowDeviation, ysfTXHang);
 	m_modem->setP25Params(p25TXHang);
 	m_modem->setNXDNParams(nxdnTXHang);
-	m_modem->setAX25Params(rxTwist, ax25TXDelay, ax25SlotTime, ax25PPersist);
 
 	if (m_fmEnabled) {
 		std::string  callsign             = m_conf.getFMCallsign();
@@ -1818,30 +1750,6 @@ bool CMMDVMHost::createFMNetwork()
 	return true;
 }
 
-bool CMMDVMHost::createAX25Network()
-{
-	std::string  port = m_conf.getAX25NetworkPort();
-	unsigned int speed = m_conf.getAX25NetworkSpeed();
-	bool debug = m_conf.getAX25NetworkDebug();
-
-	LogInfo("AX.25 Network Parameters");
-	LogInfo("    Port: %s", port.c_str());
-	LogInfo("    Speed: %u", speed);
-
-	m_ax25Network = new CAX25Network(port, speed, debug);
-
-	bool ret = m_ax25Network->open();
-	if (!ret) {
-		delete m_ax25Network;
-		m_ax25Network = nullptr;
-		return false;
-	}
-
-	m_ax25Network->enable(true);
-
-	return true;
-}
-
 void CMMDVMHost::readParams()
 {
 	m_dstarEnabled  = m_conf.getDStarEnabled();
@@ -1851,7 +1759,6 @@ void CMMDVMHost::readParams()
 	m_nxdnEnabled   = m_conf.getNXDNEnabled();
 	m_pocsagEnabled = m_conf.getPOCSAGEnabled();
 	m_fmEnabled     = m_conf.getFMEnabled();
-	m_ax25Enabled   = m_conf.getAX25Enabled();
 	m_duplex        = m_conf.getDuplex();
 	m_callsign      = m_conf.getCallsign();
 	m_id            = m_conf.getId();
@@ -1869,7 +1776,6 @@ void CMMDVMHost::readParams()
 	LogInfo("    NXDN: %s", m_nxdnEnabled ? "enabled" : "disabled");
 	LogInfo("    POCSAG: %s", m_pocsagEnabled ? "enabled" : "disabled");
 	LogInfo("    FM: %s", m_fmEnabled ? "enabled" : "disabled");
-	LogInfo("    AX.25: %s", m_ax25Enabled ? "enabled" : "disabled");
 }
 
 void CMMDVMHost::enableModemMode(bool& mode, bool enabled)
@@ -1878,12 +1784,12 @@ void CMMDVMHost::enableModemMode(bool& mode, bool enabled)
 
 	mode = enabled;
 
-	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_pocsagEnabled, m_fmEnabled, m_ax25Enabled);
+	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_pocsagEnabled, m_fmEnabled);
 	if (!m_modem->writeConfig())
 		LogError("Cannot write Config to MMDVM");
 }
 
-void CMMDVMHost::processEnableModeCommand(unsigned char mode, bool hasController, bool& modeEnabled, bool enableMode, bool isAX25)
+void CMMDVMHost::processEnableModeCommand(unsigned char mode, bool hasController, bool& modeEnabled, bool enableMode)
 {
 	if (hasController && (modeEnabled != enableMode)) {
 		unsigned char data[500U];
@@ -1920,10 +1826,9 @@ void CMMDVMHost::processEnableModeCommand(unsigned char mode, bool hasController
 				m_nxdn->enable(enableMode);
 				break;
 			case MODE_FM:
-				if (isAX25)
-					m_ax25->enable(enableMode);
-				else
-					m_fm->enable(enableMode);
+				if (m_fmNetwork != nullptr)
+					m_fmNetwork->enable(enableMode);
+				m_fm->enable(enableMode);
 				break;
 			default:
 				break;
@@ -1948,7 +1853,7 @@ void CMMDVMHost::processEnableModeCommand(unsigned char mode, bool hasController
 			while (m_modem->readNXDNData(data) > 0U);
 			break;
 		case MODE_FM:
-			while ((isAX25 ? m_modem->readAX25Data(data) : m_modem->readFMData(data)) > 0U);
+			while (m_modem->readFMData(data) > 0U);
 			break;
 		default:
 			break;
@@ -1982,8 +1887,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_pocsagNetwork->enable(false);
 		if (m_fmNetwork != nullptr)
 			m_fmNetwork->enable(false);
-		if (m_ax25Network != nullptr)
-			m_ax25Network->enable(false);
 		if (m_dstar != nullptr && m_dstarEnabled)
 			m_dstar->enable(true);
 		if (m_dmr != nullptr)
@@ -1998,8 +1901,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_pocsag->enable(false);
 		if (m_fm != nullptr)
 			m_fm->enable(false);
-		if (m_ax25 != nullptr)
-			m_ax25->enable(false);
 		if (m_dstarEnabled) {
 			m_modem->setMode(MODE_DSTAR);
 			m_mode = MODE_DSTAR;
@@ -2025,8 +1926,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_pocsagNetwork->enable(false);
 		if (m_fmNetwork != nullptr)
 			m_fmNetwork->enable(false);
-		if (m_ax25Network != nullptr)
-			m_ax25Network->enable(false);
 		if (m_dstar != nullptr)
 			m_dstar->enable(false);
 		if (m_dmr != nullptr && m_dmrEnabled)
@@ -2041,8 +1940,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_pocsag->enable(false);
 		if (m_fm != nullptr)
 			m_fm->enable(false);
-		if (m_ax25 != nullptr)
-			m_ax25->enable(false);
 		if (m_dmrEnabled) {
 			m_modem->setMode(MODE_DMR);
 			if (m_duplex) {
@@ -2072,8 +1969,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_pocsagNetwork->enable(false);
 		if (m_fmNetwork != nullptr)
 			m_fmNetwork->enable(false);
-		if (m_ax25Network != nullptr)
-			m_ax25Network->enable(false);
 		if (m_dstar != nullptr)
 			m_dstar->enable(false);
 		if (m_dmr != nullptr)
@@ -2088,8 +1983,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_pocsag->enable(false);
 		if (m_fm != nullptr)
 			m_fm->enable(false);
-		if (m_ax25 != nullptr)
-			m_ax25->enable(false);
 		if (m_ysfEnabled) {
 			m_modem->setMode(MODE_YSF);
 			m_mode = MODE_YSF;
@@ -2115,8 +2008,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_pocsagNetwork->enable(false);
 		if (m_fmNetwork != nullptr)
 			m_fmNetwork->enable(false);
-		if (m_ax25Network != nullptr)
-			m_ax25Network->enable(false);
 		if (m_dstar != nullptr)
 			m_dstar->enable(false);
 		if (m_dmr != nullptr)
@@ -2131,8 +2022,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_pocsag->enable(false);
 		if (m_fm != nullptr)
 			m_fm->enable(false);
-		if (m_ax25 != nullptr)
-			m_ax25->enable(false);
 		if (m_p25Enabled) {
 			m_modem->setMode(MODE_P25);
 			m_mode = MODE_P25;
@@ -2158,8 +2047,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_pocsagNetwork->enable(false);
 		if (m_fmNetwork != nullptr)
 			m_fmNetwork->enable(false);
-		if (m_ax25Network != nullptr)
-			m_ax25Network->enable(false);
 		if (m_dstar != nullptr)
 			m_dstar->enable(false);
 		if (m_dmr != nullptr)
@@ -2174,8 +2061,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_pocsag->enable(false);
 		if (m_fm != nullptr)
 			m_fm->enable(false);
-		if (m_ax25 != nullptr)
-			m_ax25->enable(false);
 		if (m_nxdnEnabled) {
 			m_modem->setMode(MODE_NXDN);
 			m_mode = MODE_NXDN;
@@ -2201,8 +2086,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_pocsagNetwork->enable(true);
 		if (m_fmNetwork != nullptr)
 			m_fmNetwork->enable(false);
-		if (m_ax25Network != nullptr)
-			m_ax25Network->enable(false);
 		if (m_dstar != nullptr)
 			m_dstar->enable(false);
 		if (m_dmr != nullptr)
@@ -2217,8 +2100,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_pocsag->enable(true);
 		if (m_fm != nullptr)
 			m_fm->enable(false);
-		if (m_ax25 != nullptr)
-			m_ax25->enable(false);
 		m_modem->setMode(MODE_POCSAG);
 		m_mode = MODE_POCSAG;
 		m_modeTimer.start();
@@ -2242,8 +2123,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_pocsagNetwork->enable(false);
 		if (m_fmNetwork != nullptr && m_fmEnabled)
 			m_fmNetwork->enable(true);
-		if (m_ax25Network != nullptr && m_ax25Enabled)
-			m_ax25Network->enable(true);
 		if (m_dstar != nullptr)
 			m_dstar->enable(false);
 		if (m_dmr != nullptr)
@@ -2258,8 +2137,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_pocsag->enable(false);
 		if (m_fm != nullptr && m_fmEnabled)
 			m_fm->enable(true);
-		if (m_ax25 != nullptr && m_ax25Enabled)
-			m_ax25->enable(true);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
@@ -2290,8 +2167,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_pocsagNetwork->enable(false);
 		if (m_fmNetwork != nullptr)
 			m_fmNetwork->enable(false);
-		if (m_ax25Network != nullptr)
-			m_ax25Network->enable(false);
 		if (m_dstar != nullptr)
 			m_dstar->enable(false);
 		if (m_dmr != nullptr)
@@ -2306,8 +2181,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_pocsag->enable(false);
 		if (m_fm != nullptr)
 			m_fm->enable(false);
-		if (m_ax25 != nullptr)
-			m_ax25->enable(false);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
@@ -2337,8 +2210,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_pocsagNetwork->enable(false);
 		if (m_fmNetwork != nullptr)
 			m_fmNetwork->enable(false);
-		if (m_ax25Network != nullptr)
-			m_ax25Network->enable(false);
 		if (m_dstar != nullptr)
 			m_dstar->enable(false);
 		if (m_dmr != nullptr)
@@ -2353,8 +2224,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_pocsag->enable(false);
 		if (m_fm != nullptr)
 			m_fm->enable(false);
-		if (m_ax25 != nullptr)
-			m_ax25->enable(false);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX()) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
@@ -2382,8 +2251,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_pocsagNetwork->enable(true);
 		if (m_fmNetwork != nullptr && m_fmEnabled)
 			m_fmNetwork->enable(true);
-		if (m_ax25Network != nullptr && m_fmEnabled)
-			m_ax25Network->enable(true);
 		if (m_dstar != nullptr && m_dstarEnabled)
 			m_dstar->enable(true);
 		if (m_dmr != nullptr && m_dmrEnabled)
@@ -2398,8 +2265,6 @@ void CMMDVMHost::setMode(unsigned char mode)
 			m_pocsag->enable(true);
 		if (m_fm != nullptr && m_fmEnabled)
 			m_fm->enable(true);
-		if (m_ax25 != nullptr && m_fmEnabled)
-			m_ax25->enable(true);
 		if (m_mode == MODE_DMR && m_duplex && m_modem->hasTX() && m_dmrEnabled) {
 			m_modem->writeDMRStart(false);
 			m_dmrTXTimer.stop();
@@ -2498,9 +2363,6 @@ void CMMDVMHost::remoteControl()
 	case REMOTE_COMMAND::ENABLE_FM:
 		processEnableModeCommand(MODE_FM, (m_fm != nullptr), m_fmEnabled, true);
 		break;
-	case REMOTE_COMMAND::ENABLE_AX25:
-		processEnableModeCommand(MODE_FM, (m_ax25 != nullptr), m_ax25Enabled, true, true);
-		break;
 	case REMOTE_COMMAND::DISABLE_DSTAR:
 		processEnableModeCommand(MODE_DSTAR, (m_dstar != nullptr), m_dstarEnabled, false);
 		break;
@@ -2518,9 +2380,6 @@ void CMMDVMHost::remoteControl()
 		break;
 	case REMOTE_COMMAND::DISABLE_FM:
 		processEnableModeCommand(MODE_FM, (m_fm != nullptr), m_fmEnabled, false);
-		break;
-	case REMOTE_COMMAND::DISABLE_AX25:
-		processEnableModeCommand(MODE_FM, (m_ax25 != nullptr), m_ax25Enabled, false, true);
 		break;
 	case REMOTE_COMMAND::PAGE:
 		if (m_pocsag != nullptr) {

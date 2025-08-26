@@ -47,13 +47,12 @@ public:
 
 	void setPort(IModemPort* port);
 	void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency);
-	void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool pocsagEnabled, bool fmEnabled, bool ax25Enabled);
-	void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagLevel, float fmTXLevel, float ax25TXLevel);
+	void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool pocsagEnabled, bool fmEnabled);
+	void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagLevel, float fmTXLevel);
 	void setDMRParams(unsigned int colorCode);
 	void setYSFParams(bool loDev, unsigned int txHang);
 	void setP25Params(unsigned int txHang);
 	void setNXDNParams(unsigned int txHang);
-	void setAX25Params(int rxTwist, unsigned int txDelay, unsigned int slotTime, unsigned int pPersist);
 	void setTransparentDataParams(unsigned int sendFrameType);
 
 	void setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch);
@@ -70,7 +69,6 @@ public:
 	bool hasNXDN() const;
 	bool hasPOCSAG() const;
 	bool hasFM() const;
-	bool hasAX25() const;
 
 	unsigned int getVersion() const;
 
@@ -81,7 +79,6 @@ public:
 	unsigned int readP25Data(unsigned char* data);
 	unsigned int readNXDNData(unsigned char* data);
 	unsigned int readFMData(unsigned char* data);
-	unsigned int readAX25Data(unsigned char* data);
 
 	bool hasDStarSpace() const;
 	bool hasDMRSpace1() const;
@@ -91,7 +88,6 @@ public:
 	bool hasNXDNSpace() const;
 	bool hasPOCSAGSpace() const;
 	unsigned int getFMSpace() const;
-	bool hasAX25Space() const;
 
 	bool hasTX() const;
 	bool hasCD() const;
@@ -108,7 +104,6 @@ public:
 	bool writeNXDNData(const unsigned char* data, unsigned int length);
 	bool writePOCSAGData(const unsigned char* data, unsigned int length);
 	bool writeFMData(const unsigned char* data, unsigned int length);
-	bool writeAX25Data(const unsigned char* data, unsigned int length);
 
 	bool writeDStarInfo(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
 	bool writeDMRInfo(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
@@ -161,7 +156,6 @@ private:
 	float                      m_nxdnTXLevel;
 	float                      m_pocsagTXLevel;
 	float                      m_fmTXLevel;
-	float                      m_ax25TXLevel;
 	float                      m_rfLevel;
 	bool                       m_useCOSAsLockout;
 	bool                       m_trace;
@@ -176,7 +170,6 @@ private:
 	bool                       m_nxdnEnabled;
 	bool                       m_pocsagEnabled;
 	bool                       m_fmEnabled;
-	bool                       m_ax25Enabled;
 	int                        m_rxDCOffset;
 	int                        m_txDCOffset;
 	IModemPort*                m_port;
@@ -200,8 +193,6 @@ private:
 	CRingBuffer<unsigned char> m_txPOCSAGData;
 	CRingBuffer<unsigned char> m_rxFMData;
 	CRingBuffer<unsigned char> m_txFMData;
-	CRingBuffer<unsigned char> m_rxAX25Data;
-	CRingBuffer<unsigned char> m_txAX25Data;
 	CRingBuffer<unsigned char> m_rxSerialData;
 	CRingBuffer<unsigned char> m_txSerialData;
 	CRingBuffer<unsigned char> m_rxTransparentData;
@@ -218,17 +209,12 @@ private:
 	unsigned int               m_nxdnSpace;
 	unsigned int               m_pocsagSpace;
 	unsigned int               m_fmSpace;
-	unsigned int               m_ax25Space;
 	bool                       m_tx;
 	bool                       m_cd;
 	bool                       m_lockout;
 	bool                       m_error;
 	unsigned char              m_mode;
 	HW_TYPE                    m_hwType;
-	int                        m_ax25RXTwist;
-	unsigned int               m_ax25TXDelay;
-	unsigned int               m_ax25SlotTime;
-	unsigned int               m_ax25PPersist;
 
 	std::string                m_fmCallsign;
 	unsigned int               m_fmCallsignSpeed;
