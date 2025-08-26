@@ -749,7 +749,7 @@ void CModem::clock(unsigned int ms)
 				}
 
 				m_inactivityTimer.start();
-				// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u,%u,%u,%u,%u lockout=%d, cd=%d", m_buffer[m_offset + 2U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, m_nxdnSpace, m_pocsagSpace, m_fmSpace, m_ax25Space, int(m_lockout), int(m_cd));
+				// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u,%u,%u,%u lockout=%d, cd=%d", m_buffer[m_offset + 2U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, m_nxdnSpace, m_pocsagSpace, m_fmSpace, int(m_lockout), int(m_cd));
 				break;
 
 			case MMDVM_TRANSPARENT: {
