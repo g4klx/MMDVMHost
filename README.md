@@ -12,7 +12,7 @@ NXCore talk groups. It uses the DAPNET Gateway to access DAPNET to receive
 paging messages.
 
 It builds on 32-bit and 64-bit Linux as well as on Windows using Visual Studio
-2019 on x86 and x64. It can optionally control various Displays. Currently
+2022 on x86 and x64. It can optionally control various Displays. Currently
 these are:
 
 - HD44780 (sizes 2x16, 2x40, 4x16, 4x20)
