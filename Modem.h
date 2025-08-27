@@ -84,10 +84,8 @@ public:
 	bool hasYSF() const;
 	bool hasP25() const;
 	bool hasNXDN() const;
-	bool hasM17() const;
 	bool hasPOCSAG() const;
 	bool hasFM() const;
-	bool hasAX25() const;
 
 	unsigned int getVersion() const;
 

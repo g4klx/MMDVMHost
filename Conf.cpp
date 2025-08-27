@@ -164,10 +164,8 @@ m_modemDMRTXLevel(50.0F),
 m_modemYSFTXLevel(50.0F),
 m_modemP25TXLevel(50.0F),
 m_modemNXDNTXLevel(50.0F),
-m_modemM17TXLevel(50.0F),
 m_modemPOCSAGTXLevel(50.0F),
 m_modemFMTXLevel(50.0F),
-m_modemAX25TXLevel(50.0F),
 m_modemRSSIMappingFile(),
 m_modemUseCOSAsLockout(false),
 m_modemTrace(false),
@@ -572,10 +570,10 @@ bool CConf::read()
 			else if (::strcmp(key, "Duplex") == 0)
 				m_duplex = ::atoi(value) == 1;
 			else if (::strcmp(key, "ModeHang") == 0)
-				m_dstarNetworkModeHang = m_dmrNetworkModeHang = m_fusionNetworkModeHang = m_p25NetworkModeHang = m_nxdnNetworkModeHang = m_m17NetworkModeHang = m_fmNetworkModeHang = 
-				m_dstarModeHang        = m_dmrModeHang        = m_fusionModeHang        = m_p25ModeHang        = m_nxdnModeHang        = m_m17ModeHang        = m_fmModeHang        = (unsigned int)::atoi(value);
+				m_dstarNetworkModeHang = m_dmrNetworkModeHang = m_fusionNetworkModeHang = m_p25NetworkModeHang = m_nxdnNetworkModeHang = m_fmNetworkModeHang = 
+				m_dstarModeHang        = m_dmrModeHang        = m_fusionModeHang        = m_p25ModeHang        = m_nxdnModeHang        = m_fmModeHang        = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "RFModeHang") == 0)
-				m_dstarModeHang = m_dmrModeHang = m_fusionModeHang = m_p25ModeHang = m_nxdnModeHang = m_m17ModeHang = m_fmModeHang = (unsigned int)::atoi(value);
+				m_dstarModeHang = m_dmrModeHang = m_fusionModeHang = m_p25ModeHang = m_nxdnModeHang = m_fmModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "NetModeHang") == 0)
 				m_dstarNetworkModeHang = m_dmrNetworkModeHang = m_fusionNetworkModeHang = m_p25NetworkModeHang = m_nxdnNetworkModeHang = m_m17NetworkModeHang = m_fmNetworkModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Daemon") == 0)
@@ -688,7 +686,7 @@ bool CConf::read()
 			else if (::strcmp(key, "RXLevel") == 0)
 				m_modemRXLevel = float(::atof(value));
 			else if (::strcmp(key, "TXLevel") == 0)
-				m_modemAX25TXLevel = m_modemFMTXLevel = m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = m_modemNXDNTXLevel = m_modemM17TXLevel = m_modemPOCSAGTXLevel = float(::atof(value));
+				m_modemFMTXLevel = m_modemCWIdTXLevel = m_modemDStarTXLevel = m_modemDMRTXLevel = m_modemYSFTXLevel = m_modemP25TXLevel = m_modemNXDNTXLevel = m_modemPOCSAGTXLevel = float(::atof(value));
 			else if (::strcmp(key, "CWIdTXLevel") == 0)
 				m_modemCWIdTXLevel = float(::atof(value));
 #if defined(USE_DSTAR)
@@ -1139,6 +1137,8 @@ bool CConf::read()
 		} else if (section == SECTION::NXDN_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
 				m_nxdnNetworkEnabled = ::atoi(value) == 1;
+			else if (::strcmp(key, "Protocol") == 0)
+				m_nxdnNetworkProtocol = value;
 			else if (::strcmp(key, "LocalAddress") == 0)
 				m_nxdnLocalAddress = value;
 			else if (::strcmp(key, "LocalPort") == 0)

@@ -756,6 +756,9 @@ void CP25Control::clock(unsigned int ms)
 	if (m_network != nullptr)
 		writeNetwork();
 
+	if (!m_enabled)
+	  return;
+
 	m_rfTimeout.clock(ms);
 	m_netTimeout.clock(ms);
 

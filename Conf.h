@@ -117,17 +117,11 @@ public:
 #if defined(USE_NXDN)
 	float        getModemNXDNTXLevel() const;
 #endif
-#if defined(USE_M17)
-	float        getModemM17TXLevel() const;
-#endif
 #if defined(USE_POCSAG)
 	float        getModemPOCSAGTXLevel() const;
 #endif
 #if defined(USE_FM)
 	float        getModemFMTXLevel() const;
-#endif
-#if defined(USE_AX25)
-	float        getModemAX25TXLevel() const;
 #endif
 	std::string  getModemRSSIMappingFile() const;
 	bool         getModemUseCOSAsLockout() const;
@@ -212,30 +206,10 @@ public:
 	unsigned int getNXDNModeHang() const;
 #endif
 
-#if defined(USE_M17)
-	// The M17 section
-	bool         getM17Enabled() const;
-	unsigned int getM17CAN() const;
-	bool         getM17SelfOnly() const;
-	bool         getM17AllowEncryption() const;
-	unsigned int getM17TXHang() const;
-	unsigned int getM17ModeHang() const;
-#endif
-
 #if defined(USE_POCSAG)
 	// The POCSAG section
 	bool         getPOCSAGEnabled() const;
 	unsigned int getPOCSAGFrequency() const;
-#endif
-
-#if defined(USE_AX25)
-	// The AX.25 section
-	bool         getAX25Enabled() const;
-	unsigned int getAX25TXDelay() const;
-	int          getAX25RXTwist() const;
-	unsigned int getAX25SlotTime() const;
-	unsigned int getAX25PPersist() const;
-	bool         getAX25Trace() const;
 #endif
 
 #if defined(USE_FM)
@@ -337,17 +311,6 @@ public:
 	bool         getNXDNNetworkDebug() const;
 #endif
 
-#if defined(USE_M17)
-	// The M17 Network section
-	bool         getM17NetworkEnabled() const;
-	std::string  getM17GatewayAddress() const;
-	unsigned short getM17GatewayPort() const;
-	std::string  getM17LocalAddress() const;
-	unsigned short getM17LocalPort() const;
-	unsigned int getM17NetworkModeHang() const;
-	bool         getM17NetworkDebug() const;
-#endif
-
 #if defined(USE_POCSAG)
 	// The POCSAG Network section
 	bool         getPOCSAGNetworkEnabled() const;
@@ -372,12 +335,6 @@ public:
 	float        getFMRXAudioGain() const;
 	unsigned int getFMNetworkModeHang() const;
 	bool         getFMNetworkDebug() const;
-#endif
-
-#if defined(USE_AX25)
-	// The AX.25 Network section
-	bool         getAX25NetworkEnabled() const;
-	bool         getAX25NetworkDebug() const;
 #endif
 
 	// The Lock File section
@@ -458,10 +415,8 @@ private:
 	float        m_modemYSFTXLevel;
 	float        m_modemP25TXLevel;
 	float        m_modemNXDNTXLevel;
-	float        m_modemM17TXLevel;
 	float        m_modemPOCSAGTXLevel;
 	float        m_modemFMTXLevel;
-	float        m_modemAX25TXLevel;
 	std::string  m_modemRSSIMappingFile;
 	bool         m_modemUseCOSAsLockout;
 	bool         m_modemTrace;
@@ -545,15 +500,6 @@ private:
 #endif
 	unsigned int m_nxdnModeHang;
 
-#if defined(USE_M17)
-	bool         m_m17Enabled;
-	unsigned int m_m17CAN;
-	bool         m_m17SelfOnly;
-	bool         m_m17AllowEncryption;
-	unsigned int m_m17TXHang;
-#endif
-	unsigned int m_m17ModeHang;
-
 #if defined(USE_POCSAG)
 	bool         m_pocsagEnabled;
 #endif
@@ -601,17 +547,6 @@ private:
 	unsigned int m_fmExtAudioBoost;
 #endif
 	unsigned int m_fmModeHang;
-
-#if defined(USE_AX25)
-	bool         m_ax25Enabled;
-#endif
-	unsigned int m_ax25TXDelay;
-#if defined(USE_AX25)
-	int          m_ax25RXTwist;
-	unsigned int m_ax25SlotTime;
-	unsigned int m_ax25PPersist;
-	bool         m_ax25Trace;
-#endif
 
 #if defined(USE_DSTAR)
 	bool         m_dstarNetworkEnabled;
@@ -675,18 +610,6 @@ private:
 	bool         m_nxdnNetworkDebug;
 #endif
 
-#if defined(USE_M17)
-	bool         m_m17NetworkEnabled;
-	std::string  m_m17GatewayAddress;
-	unsigned short m_m17GatewayPort;
-	std::string  m_m17LocalAddress;
-	unsigned short m_m17LocalPort;
-#endif
-	unsigned int m_m17NetworkModeHang;
-#if defined(USE_M17)
-	bool         m_m17NetworkDebug;
-#endif
-
 #if defined(USE_POCSAG)
 	bool         m_pocsagNetworkEnabled;
 	std::string  m_pocsagGatewayAddress;
@@ -711,11 +634,6 @@ private:
 	unsigned int m_fmNetworkModeHang;
 #if defined(USE_FM)
 	bool         m_fmNetworkDebug;
-#endif
-
-#if defined(USE_AX25)
-	bool         m_ax25NetworkEnabled;
-	bool         m_ax25NetworkDebug;
 #endif
 
 	bool         m_lockFileEnabled;

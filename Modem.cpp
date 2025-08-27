@@ -21,9 +21,7 @@
 #include "YSFDefines.h"
 #include "P25Defines.h"
 #include "NXDNDefines.h"
-#include "AX25Defines.h"
 #include "POCSAGDefines.h"
-#include "M17Defines.h"
 #include "Thread.h"
 #include "Modem.h"
 #include "Utils.h"
@@ -136,10 +134,8 @@ const unsigned char CAP1_DMR    = 0x02U;
 const unsigned char CAP1_YSF    = 0x04U;
 const unsigned char CAP1_P25    = 0x08U;
 const unsigned char CAP1_NXDN   = 0x10U;
-const unsigned char CAP1_M17    = 0x20U;
 const unsigned char CAP1_FM     = 0x40U;
 const unsigned char CAP2_POCSAG = 0x01U;
-const unsigned char CAP2_AX25   = 0x02U;
 
 CModem::CModem(bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug) :
 m_protocolVersion(0U),
@@ -393,7 +389,7 @@ void CModem::setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int tx
 #endif
 }
 
-void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool m17Enabled, bool pocsagEnabled, bool fmEnabled, bool ax25Enabled)
+void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool pocsagEnabled, bool fmEnabled)
 {
 #if defined(USE_DSTAR)
 	m_dstarEnabled  = dstarEnabled;
@@ -424,7 +420,7 @@ void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, 
 #endif
 }
 
-void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float m17TXLevel, float pocsagTXLevel, float fmTXLevel, float ax25TXLevel)
+void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagTXLevel, float fmTXLevel)
 {
 	m_rxLevel       = rxLevel;
 	m_cwIdTXLevel   = cwIdTXLevel;
@@ -1132,7 +1128,7 @@ void CModem::clock(unsigned int ms)
 				}
 
 				m_inactivityTimer.start();
-				// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u,%u,%u,%u,%u,%u lockout=%d, cd=%d", m_buffer[m_offset + 2U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, m_nxdnSpace, m_m17Space, m_pocsagSpace, m_fmSpace, m_ax25Space, int(m_lockout), int(m_cd));
+				// LogMessage("status=%02X, tx=%d, space=%u,%u,%u,%u,%u,%u,%u,%u lockout=%d, cd=%d", m_buffer[m_offset + 2U], int(m_tx), m_dstarSpace, m_dmrSpace1, m_dmrSpace2, m_ysfSpace, m_p25Space, m_nxdnSpace, m_pocsagSpace, m_fmSpace, int(m_lockout), int(m_cd));
 				break;
 
 			case MMDVM_TRANSPARENT: {
@@ -2284,11 +2280,6 @@ bool CModem::hasNXDN() const
 	return (m_capabilities1 & CAP1_NXDN) == CAP1_NXDN;
 }
 
-bool CModem::hasM17() const
-{
-	return (m_capabilities1 & CAP1_M17) == CAP1_M17;
-}
-
 bool CModem::hasFM() const
 {
 	return (m_capabilities1 & CAP1_FM) == CAP1_FM;
@@ -2297,11 +2288,6 @@ bool CModem::hasFM() const
 bool CModem::hasPOCSAG() const
 {
 	return (m_capabilities2 & CAP2_POCSAG) == CAP2_POCSAG;
-}
-
-bool CModem::hasAX25() const
-{
-	return (m_capabilities2 & CAP2_AX25) == CAP2_AX25;
 }
 
 unsigned int CModem::getVersion() const

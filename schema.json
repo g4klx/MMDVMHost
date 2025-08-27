@@ -1,11 +1,9 @@
 {
 	"$defs": {
-		"mmdvm_mode": {"type": "string", "enum": ["lockout", "idle", "error", "CW", "D-Star", "DMR", "YSF", "P25", "NXDN", "POCSAG", "FM", "M17"]},
+		"mmdvm_mode": {"type": "string", "enum": ["lockout", "idle", "error", "CW", "D-Star", "DMR", "YSF", "P25", "NXDN", "POCSAG", "FM"]},
 		"dstar_callsign": {"type": "string", "minLength": 8, "maxLength": 8},
 		"dstar_extension": {"type": "string", "minLength": 4, "maxLength": 4},
 		"ysf_callsign": {"type": "string", "minLength": 10, "maxLength": 10},
-		"ax25_callsign": {"type": "string", "minLength": 1, "maxLength": 9},
-		"m17_callsign": {"type": "string", "minLength": 9, "maxLength": 9},
 		"dmr_id": {"type": "integer", "minimum": 1, "maximum": 16777215},
 		"p25_id": {"type": "integer", "minimum": 1, "maximum": 65535},
 		"nxdn_id": {"type": "integer", "minimum": 1, "maximum": 65535},
@@ -14,12 +12,9 @@
 		"mode": {"type": "string", "enum": ["voice", "data"]},
 		"ysf_mode": {"type": "string", "enum": ["voice_vw", "voice_dn", "data_fr"]},
 		"dg-id": {"type": "integer", "minimum": 0, "maximum": 99},
-		"ax25_type": {"type": "string"},
 		"dmr_slot": {"type": "integer", "enum": [1, 2]},
 		"source": {"type": "string", "enum": ["rf", "network"]},
 		"fm_state": {"type": "string", "enum": ["listening", "kerchunk_rf", "relaying_rf", "relaying_wait_rf", "timeout_rf", "timeout_wait_rf", "kerchunk_ext", "relaying_ext", "relaying_wait_ext", "timeout_ext", "timeout_wait_ext", "hang", "unknown"]},
-		"m17_traffic_type": {"type": "string", "enum": ["audio", "audio_data", "data"]},
-		"ax25_pid": {"type": "string"},
 		"pocsag_source": {"type": "string", "enum": ["local", "network"]},
 		"pocsag_functional": {"type": "string", "enum": ["numeric", "alphanumeric", "alert_1", "alert_2", "end"]},
 		"action": {"type": "string", "enum": ["invalid", "rejected", "start", "late_entry", "end", "lost"]},
@@ -183,42 +178,5 @@
 		"timestamp": {"$ref": "#/$defs/timestamp"},
 		"state": {"$ref": "#/$defs/fm_state"},
 		"required": ["timestamp", "state"]
-	},
-
-	"AX.25": {
-		"type": "object",
-		"timestamp": {"$ref": "#/$defs/timestamp"},
-		"source": {"$ref": "#/$defs/source"},
-		"source_cs": {"$ref": "#/$defs/ax25_callsign"},
-		"destination_cs": {"$ref": "#/$defs/ax25_callsign"},
-		"digipeaters": {
-			"type": "array",
-			"callsign": {"$ref": "#/$defs/ax25_callsign"},
-			"repeated": {"type": "boolean"}
-		},
-		"type": {"$ref": "#/$defs/ax25_type"},
-		"pid": {"$ref": "#/$defs/ax25_pid"},
-		"rssi": {"$ref": "#/$defs/rssi"},
-		"ber": {"$ref": "#/$defs/ber"},
-		"data": {"type": "string"},
-		"required": ["timestamp", "source", "destination", "source", "type"]
-	},
-
-	"M17": {
-		"type": "object",
-		"timestamp": {"$ref": "#/$defs/timestamp"},
-		"source_cs": {"$ref": "#/$defs/m17_callsign"},
-		"destination_cs": {"$ref": "#/$defs/m17_callsign"},
-		"source": {"$ref": "#/$defs/source"},
-		"action": {"$ref": "#/$defs/action"},
-		"traffic_type": {"$ref": "#/$defs/m17_traffic_type"},
-		"duration": {"$ref": "#/$defs/duration"},
-		"ber": {"$ref": "#/$defs/ber"},
-		"rssi": {
-			"min": {"$ref": "#/$defs/rssi"},
-			"max": {"$ref": "#/$defs/rssi"},
-			"ave": {"$ref": "#/$defs/rssi"}
-		},
-		"required": ["timestamp", "action"]
 	}
 }

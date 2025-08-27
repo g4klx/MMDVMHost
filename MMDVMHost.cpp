@@ -253,10 +253,8 @@ m_dmrEnabled(false),
 m_ysfEnabled(false),
 m_p25Enabled(false),
 m_nxdnEnabled(false),
-m_m17Enabled(false),
 m_pocsagEnabled(false),
 m_fmEnabled(false),
-m_ax25Enabled(false),
 m_cwIdTime(0U),
 #if defined(USE_DMR) || defined(USE_P25)
 m_dmrLookup(nullptr),
@@ -928,7 +926,7 @@ int CMMDVMHost::run()
 
 #if defined(USE_DSTAR)
 		len = m_modem->readDStarData(data);
-		if (m_dstar != nullptr && len > 0U) {
+		if (m_dstar != nullptr && m_dstarEnabled && len > 0U) {
 			if (m_mode == MODE_IDLE) {
 				bool ret = m_dstar->writeModem(data, len);
 				if (ret) {
@@ -947,7 +945,7 @@ int CMMDVMHost::run()
 
 #if defined(USE_DMR)
 		len = m_modem->readDMRData1(data);
-		if (m_dmr != nullptr && len > 0U) {
+		if (m_dmr != nullptr && m_dmrEnabled && len > 0U) {
 			if (m_mode == MODE_IDLE) {
 				if (m_duplex) {
 					bool ret = m_dmr->processWakeup(data);
@@ -984,7 +982,7 @@ int CMMDVMHost::run()
 		}
 
 		len = m_modem->readDMRData2(data);
-		if (m_dmr != nullptr && len > 0U) {
+		if (m_dmr != nullptr && m_dmrEnabled && len > 0U) {
 			if (m_mode == MODE_IDLE) {
 				if (m_duplex) {
 					bool ret = m_dmr->processWakeup(data);
@@ -1023,7 +1021,7 @@ int CMMDVMHost::run()
 
 #if defined(USE_YSF)
 		len = m_modem->readYSFData(data);
-		if (m_ysf != nullptr && len > 0U) {
+		if (m_ysf != nullptr && m_ysfEnabled && len > 0U) {
 			if (m_mode == MODE_IDLE) {
 				bool ret = m_ysf->writeModem(data, len);
 				if (ret) {
@@ -1042,7 +1040,7 @@ int CMMDVMHost::run()
 
 #if defined(USE_P25)
 		len = m_modem->readP25Data(data);
-		if (m_p25 != nullptr && len > 0U) {
+		if (m_p25 != nullptr && m_p25Enabled && len > 0U) {
 			if (m_mode == MODE_IDLE) {
 				bool ret = m_p25->writeModem(data, len);
 				if (ret) {
@@ -1061,7 +1059,7 @@ int CMMDVMHost::run()
 
 #if defined(USE_NXDN)
 		len = m_modem->readNXDNData(data);
-		if (m_nxdn != nullptr && len > 0U) {
+		if (m_nxdn != nullptr && m_nxdnEnabled && len > 0U) {
 			if (m_mode == MODE_IDLE) {
 				bool ret = m_nxdn->writeModem(data, len);
 				if (ret) {
@@ -1099,7 +1097,7 @@ int CMMDVMHost::run()
 
 #if defined(USE_FM)
 		len = m_modem->readFMData(data);
-		if (m_fm != nullptr && len > 0U) {
+		if (m_fm != nullptr && m_fmEnabled && len > 0U) {
 			if (m_mode == MODE_IDLE) {
 				bool ret = m_fm->writeModem(data, len);
 				if (ret) {
@@ -1491,7 +1489,7 @@ int CMMDVMHost::run()
 				}
 				break;
 			case DMR_BEACONS::NETWORK:
-				if (m_dmrNetwork != nullptr) {
+				if (m_dmrNetwork != nullptr && m_dmrEnabled) {
 					bool beacon = m_dmrNetwork->wantsBeacon();
 					if (beacon) {
 						if ((m_mode == MODE_IDLE || m_mode == MODE_DMR) && !m_modem->hasTX()) {
@@ -1526,7 +1524,7 @@ int CMMDVMHost::run()
 		pocsagTimer.clock(ms);
 		if (pocsagTimer.isRunning() && pocsagTimer.hasExpired()) {
 			assert(m_pocsagNetwork != nullptr);
-			m_pocsagNetwork->enable(m_mode == MODE_IDLE || m_mode == MODE_POCSAG);
+			m_pocsagNetwork->enable((m_mode == MODE_IDLE || m_mode == MODE_POCSAG) && m_pocsagEnabled);
 			pocsagTimer.start();
 		}
 #endif
@@ -1673,7 +1671,9 @@ bool CMMDVMHost::createModem()
 	std::string uartPort         = m_conf.getModemUARTPort();
 	unsigned int uartSpeed       = m_conf.getModemUARTSpeed();
 	std::string i2cPort          = m_conf.getModemI2CPort();
+#if defined(__linux__)
 	unsigned int i2cAddress      = m_conf.getModemI2CAddress();
+#endif
 	std::string modemAddress     = m_conf.getModemModemAddress();
 	unsigned short modemPort     = m_conf.getModemModemPort();
 	std::string localAddress     = m_conf.getModemLocalAddress();
@@ -1852,8 +1852,8 @@ bool CMMDVMHost::createModem()
 		return false;
 
 	m_modem->setPort(port);
-	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_m17Enabled, m_pocsagEnabled, m_fmEnabled, m_ax25Enabled);
-	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, m17TXLevel, pocsagTXLevel, fmTXLevel, ax25TXLevel);
+	m_modem->setModeParams(m_dstarEnabled, m_dmrEnabled, m_ysfEnabled, m_p25Enabled, m_nxdnEnabled, m_pocsagEnabled, m_fmEnabled);
+	m_modem->setLevels(rxLevel, cwIdTXLevel, dstarTXLevel, dmrTXLevel, ysfTXLevel, p25TXLevel, nxdnTXLevel, pocsagTXLevel, fmTXLevel);
 	m_modem->setRFParams(rxFrequency, rxOffset, txFrequency, txOffset, txDCOffset, rxDCOffset, rfLevel, pocsagFrequency);
 #if defined(USE_DMR)
 	m_modem->setDMRParams(colorCode);

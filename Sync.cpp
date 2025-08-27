@@ -23,7 +23,6 @@
 #include "YSFDefines.h"
 #include "P25Defines.h"
 #include "NXDNDefines.h"
-#include "M17Defines.h"
 
 #include <cstdio>
 #include <cassert>
@@ -93,27 +92,3 @@ void CSync::addNXDNSync(unsigned char* data)
 		data[i] = (data[i] & ~NXDN_FSW_BYTES_MASK[i]) | NXDN_FSW_BYTES[i];
 }
 #endif
-
-#if defined(USE_M17)
-void CSync::addM17LinkSetupSync(unsigned char* data)
-{
-	assert(data != nullptr);
-
-	::memcpy(data, M17_LINK_SETUP_SYNC_BYTES, M17_SYNC_LENGTH_BYTES);
-}
-
-void CSync::addM17StreamSync(unsigned char* data)
-{
-	assert(data != nullptr);
-
-	::memcpy(data, M17_STREAM_SYNC_BYTES, M17_SYNC_LENGTH_BYTES);
-}
-
-void CSync::addM17EOTSync(unsigned char* data)
-{
-	assert(data != nullptr);
-
-	::memcpy(data, M17_EOT_SYNC_BYTES, M17_SYNC_LENGTH_BYTES);
-}
-#endif
-

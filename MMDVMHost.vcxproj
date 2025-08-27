@@ -28,26 +28,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -161,9 +161,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AMBEFEC.h" />
-    <ClInclude Include="AX25Control.h" />
-    <ClInclude Include="AX25Defines.h" />
-    <ClInclude Include="AX25Network.h" />
     <ClInclude Include="BCH.h" />
     <ClInclude Include="BPTC19696.h" />
     <ClInclude Include="Conf.h" />
@@ -198,13 +195,6 @@
     <ClInclude Include="DMRLookup.h" />
     <ClInclude Include="IIRDirectForm1Filter.h" />
     <ClInclude Include="Log.h" />
-    <ClInclude Include="M17Control.h" />
-    <ClInclude Include="M17Convolution.h" />
-    <ClInclude Include="M17CRC.h" />
-    <ClInclude Include="M17Defines.h" />
-    <ClInclude Include="M17LSF.h" />
-    <ClInclude Include="M17Network.h" />
-    <ClInclude Include="M17Utils.h" />
     <ClInclude Include="MMDVMHost.h" />
     <ClInclude Include="ModemPort.h" />
     <ClInclude Include="MQTTConnection.h" />
@@ -265,8 +255,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AMBEFEC.cpp" />
-    <ClCompile Include="AX25Control.cpp" />
-    <ClCompile Include="AX25Network.cpp" />
     <ClCompile Include="BCH.cpp" />
     <ClCompile Include="BPTC19696.cpp" />
     <ClCompile Include="Conf.cpp" />
@@ -298,12 +286,6 @@
     <ClCompile Include="Hamming.cpp" />
     <ClCompile Include="IIRDirectForm1Filter.cpp" />
     <ClCompile Include="Log.cpp" />
-    <ClCompile Include="M17Control.cpp" />
-    <ClCompile Include="M17Convolution.cpp" />
-    <ClCompile Include="M17CRC.cpp" />
-    <ClCompile Include="M17LSF.cpp" />
-    <ClCompile Include="M17Network.cpp" />
-    <ClCompile Include="M17Utils.cpp" />
     <ClCompile Include="MMDVMHost.cpp" />
     <ClCompile Include="ModemPort.cpp" />
     <ClCompile Include="MQTTConnection.cpp" />
