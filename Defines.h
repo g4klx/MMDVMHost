@@ -27,8 +27,6 @@
 #define	USE_NXDN
 #define	USE_POCSAG
 #define	USE_FM
-#define	USE_AX25
-#define	USE_M17
 
 const unsigned char MODE_IDLE    = 0U;
 const unsigned char MODE_DSTAR   = 1U;

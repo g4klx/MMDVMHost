@@ -82,21 +82,8 @@ const unsigned char MMDVM_NXDN_DATA   = 0x40U;
 const unsigned char MMDVM_NXDN_LOST   = 0x41U;
 #endif
 
-#if defined(USE_M17)
-const unsigned char MMDVM_M17_LINK_SETUP = 0x45U;
-const unsigned char MMDVM_M17_STREAM     = 0x46U;
-const unsigned char MMDVM_M17_PACKET     = 0x47U;
-const unsigned char MMDVM_M17_LOST       = 0x48U;
-const unsigned char MMDVM_M17_EOT        = 0x49U;
-#endif
-
 #if defined(USE_POCSAG)
 const unsigned char MMDVM_POCSAG_DATA = 0x50U;
-#endif
-
-#if defined(USE_AX25)
-const unsigned char MMDVM_AX25_DATA    = 0x55U;
-const unsigned char MMDVM_AX25_DATA_EX = 0x56U;
 #endif
 
 #if defined(USE_FM)
@@ -152,9 +139,6 @@ m_p25TXHang(5U),
 #if defined(USE_NXDN)
 m_nxdnTXHang(5U),
 #endif
-#if defined(USE_M17)
-m_m17TXHang(5U),
-#endif
 m_duplex(duplex),
 m_rxInvert(rxInvert),
 m_txInvert(txInvert),
@@ -180,17 +164,11 @@ m_p25TXLevel(0.0F),
 #if defined(USE_NXDN)
 m_nxdnTXLevel(0.0F),
 #endif
-#if defined(USE_M17)
-m_m17TXLevel(0.0F),
-#endif
 #if defined(USE_POCSAG)
 m_pocsagTXLevel(0.0F),
 #endif
 #if defined(USE_FM)
 m_fmTXLevel(0.0F),
-#endif
-#if defined(USE_AX25)
-m_ax25TXLevel(0.0F),
 #endif
 m_rfLevel(0.0F),
 m_useCOSAsLockout(useCOSAsLockout),
@@ -216,17 +194,11 @@ m_p25Enabled(false),
 #if defined(USE_NXDN)
 m_nxdnEnabled(false),
 #endif
-#if defined(USE_M17)
-m_m17Enabled(false),
-#endif
 #if defined(USE_POCSAG)
 m_pocsagEnabled(false),
 #endif
 #if defined(USE_FM)
 m_fmEnabled(false),
-#endif
-#if defined(USE_AX25)
-m_ax25Enabled(false),
 #endif
 m_rxDCOffset(0),
 m_txDCOffset(0),
@@ -258,20 +230,12 @@ m_txP25Data(1000U, "Modem TX P25"),
 m_rxNXDNData(1000U, "Modem RX NXDN"),
 m_txNXDNData(1000U, "Modem TX NXDN"),
 #endif
-#if defined(USE_M17)
-m_rxM17Data(1000U, "Modem RX M17"),
-m_txM17Data(1000U, "Modem TX M17"),
-#endif
 #if defined(USE_POCSAG)
 m_txPOCSAGData(1000U, "Modem TX POCSAG"),
 #endif
 #if defined(USE_FM)
 m_rxFMData(5000U, "Modem RX FM"),
 m_txFMData(5000U, "Modem TX FM"),
-#endif
-#if defined(USE_AX25)
-m_rxAX25Data(1000U, "Modem RX AX.25"),
-m_txAX25Data(1000U, "Modem TX AX.25"),
 #endif
 m_rxSerialData(1000U, "Modem RX Serial"),
 m_txSerialData(1000U, "Modem TX Serial"),
@@ -297,17 +261,11 @@ m_p25Space(0U),
 #if defined(USE_NXDN)
 m_nxdnSpace(0U),
 #endif
-#if defined(USE_M17)
-m_m17Space(0U),
-#endif
 #if defined(USE_POCSAG)
 m_pocsagSpace(0U),
 #endif
 #if defined(USE_FM)
 m_fmSpace(0U),
-#endif
-#if defined(USE_AX25)
-m_ax25Space(0U),
 #endif
 m_tx(false),
 m_cd(false),
@@ -315,12 +273,6 @@ m_lockout(false),
 m_error(false),
 m_mode(MODE_IDLE),
 m_hwType(HW_TYPE::UNKNOWN),
-#if defined(USE_AX25)
-m_ax25RXTwist(0),
-m_ax25TXDelay(300U),
-m_ax25SlotTime(30U),
-m_ax25PPersist(128U),
-#endif
 #if defined(USE_FM)
 m_fmCallsign(),
 m_fmCallsignSpeed(20U),
@@ -406,17 +358,11 @@ void CModem::setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, 
 #if defined(USE_NXDN)
 	m_nxdnEnabled   = nxdnEnabled;
 #endif
-#if defined(USE_M17)
-	m_m17Enabled    = m17Enabled;
-#endif
 #if defined(USE_POCSAG)
 	m_pocsagEnabled = pocsagEnabled;
 #endif
 #if defined(USE_FM)
 	m_fmEnabled     = fmEnabled;
-#endif
-#if defined(USE_AX25)
-	m_ax25Enabled   = ax25Enabled;
 #endif
 }
 
@@ -439,17 +385,11 @@ void CModem::setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, flo
 #if defined(USE_NXDN)
 	m_nxdnTXLevel   = nxdnTXLevel;
 #endif
-#if defined(USE_M17)
-	m_m17TXLevel    = m17TXLevel;
-#endif
 #if defined(USE_POCSAG)
 	m_pocsagTXLevel = pocsagTXLevel;
 #endif
 #if defined(USE_FM)
 	m_fmTXLevel     = fmTXLevel;
-#endif
-#if defined(USE_AX25)
-	m_ax25TXLevel   = ax25TXLevel;
 #endif
 }
 
@@ -481,23 +421,6 @@ void CModem::setP25Params(unsigned int txHang)
 void CModem::setNXDNParams(unsigned int txHang)
 {
 	m_nxdnTXHang = txHang;
-}
-#endif
-
-#if defined(USE_M17)
-void CModem::setM17Params(unsigned int txHang)
-{
-	m_m17TXHang = txHang;
-}
-#endif
-
-#if defined(USE_AX25)
-void CModem::setAX25Params(int rxTwist, unsigned int txDelay, unsigned int slotTime, unsigned int pPersist)
-{
-	m_ax25RXTwist  = rxTwist;
-	m_ax25TXDelay  = txDelay;
-	m_ax25SlotTime = slotTime;
-	m_ax25PPersist = pPersist;
 }
 #endif
 
@@ -831,60 +754,6 @@ void CModem::clock(unsigned int ms)
 			break;
 #endif
 
-#if defined(USE_M17)
-			case MMDVM_M17_LINK_SETUP: {
-				if (m_trace)
-					CUtils::dump(1U, "RX M17 Link Setup", m_buffer, m_length);
-
-				unsigned char data = m_length - 2U;
-				m_rxM17Data.addData(&data, 1U);
-
-				data = TAG_HEADER;
-				m_rxM17Data.addData(&data, 1U);
-
-				m_rxM17Data.addData(m_buffer + 3U, m_length - 3U);
-			}
-			break;
-
-			case MMDVM_M17_STREAM: {
-				if (m_trace)
-					CUtils::dump(1U, "RX M17 Stream Data", m_buffer, m_length);
-
-				unsigned char data = m_length - 2U;
-				m_rxM17Data.addData(&data, 1U);
-
-				data = TAG_DATA;
-				m_rxM17Data.addData(&data, 1U);
-
-				m_rxM17Data.addData(m_buffer + 3U, m_length - 3U);
-			}
-			break;
-
-			case MMDVM_M17_EOT: {
-				if (m_trace)
-					CUtils::dump(1U, "RX M17 EOT", m_buffer, m_length);
-
-				unsigned char data = 1U;
-				m_rxM17Data.addData(&data, 1U);
-
-				data = TAG_EOT;
-				m_rxM17Data.addData(&data, 1U);
-			}
-			break;
-
-			case MMDVM_M17_LOST: {
-				if (m_trace)
-					CUtils::dump(1U, "RX M17 Lost", m_buffer, m_length);
-
-				unsigned char data = 1U;
-				m_rxM17Data.addData(&data, 1U);
-
-				data = TAG_LOST;
-				m_rxM17Data.addData(&data, 1U);
-			}
-			break;
-#endif
-
 #if defined(USE_FM)
 			case MMDVM_FM_DATA: {
 				if (m_trace)
@@ -943,36 +812,6 @@ void CModem::clock(unsigned int ms)
 			break;
 #endif
 
-#if defined(USE_AX25)
-			case MMDVM_AX25_DATA: {
-				if (m_trace)
-					CUtils::dump(1U, "RX AX.25 Data", m_buffer, m_length);
-
-				unsigned int data1 = m_length - m_offset + 1U;
-				m_rxAX25Data.addData((unsigned char*)&data1, sizeof(unsigned int));
-
-				unsigned char data2 = TAG_DATA;
-				m_rxFMData.addData(&data2, 1U);
-
-				m_rxAX25Data.addData(m_buffer + m_offset, m_length - m_offset);
-			}
-			break;
-
-			case MMDVM_AX25_DATA_EX: {
-				if (m_trace)
-					CUtils::dump(1U, "RX AX.25 Data Extended", m_buffer, m_length);
-
-				unsigned int data1 = m_length - m_offset + 1U;
-				m_rxAX25Data.addData((unsigned char*)&data1, sizeof(unsigned int));
-
-				unsigned char data2 = TAG_RSSI;
-				m_rxFMData.addData(&data2, 1U);
-
-				m_rxAX25Data.addData(m_buffer + m_offset, m_length - m_offset);
-			}
-			break;
-#endif
-
 			case MMDVM_GET_STATUS:
 				// if (m_trace)
 				//	CUtils::dump(1U, "GET_STATUS", m_buffer, m_length);
@@ -1003,17 +842,11 @@ void CModem::clock(unsigned int ms)
 #if defined(USE_NXDN)
 						m_nxdnSpace   = 0U;
 #endif
-#if defined(USE_M17)
-						m_m17Space    = 0U;
-#endif
 #if defined(USE_POCSAG)
 						m_pocsagSpace = 0U;
 #endif
 #if defined(USE_FM)
 						m_fmSpace     = 0U;
-#endif
-#if defined(USE_AX25)
-						m_ax25Space   = 0U;
 #endif
 #if defined(USE_DSTAR)
 						m_dstarSpace = m_buffer[m_offset + 3U];
@@ -1037,10 +870,6 @@ void CModem::clock(unsigned int ms)
 #if defined(USE_POCSAG)
 						if (m_length > (m_offset + 9U))
 							m_pocsagSpace = m_buffer[m_offset + 9U];
-#endif
-#if defined(USE_M17)
-						if (m_length > (m_offset + 10U))
-							m_m17Space    = m_buffer[m_offset + 10U];
 #endif
 					}
 					break;
@@ -1080,17 +909,11 @@ void CModem::clock(unsigned int ms)
 #if defined(USE_NXDN)
 						m_nxdnSpace   = m_buffer[m_offset + 8U];
 #endif
-#if defined(USE_M17)
-						m_m17Space    = m_buffer[m_offset + 9U];
-#endif
 #if defined(USE_FM)
 						m_fmSpace     = m_buffer[m_offset + 10U];
 #endif
 #if defined(USE_POCSAG)
 						m_pocsagSpace = m_buffer[m_offset + 11U];
-#endif
-#if defined(USE_AX25)
-						m_ax25Space   = m_buffer[m_offset + 12U];
 #endif
 					}
 					break;
@@ -1112,17 +935,11 @@ void CModem::clock(unsigned int ms)
 #if defined(USE_NXDN)
 					m_nxdnSpace   = 0U;
 #endif
-#if defined(USE_M17)
-					m_m17Space    = 0U;
-#endif
 #if defined(USE_POCSAG)
 					m_pocsagSpace = 0U;
 #endif
 #if defined(USE_FM)
 					m_fmSpace     = 0U;
-#endif
-#if defined(USE_AX25)
-					m_ax25Space   = 0U;
 #endif
 					break;
 				}
@@ -1321,36 +1138,6 @@ void CModem::clock(unsigned int ms)
 	}
 #endif
 
-#if defined(USE_M17)
-	if (m_m17Space > 1U && !m_txM17Data.isEmpty()) {
-		unsigned char len = 0U;
-		m_txM17Data.getData(&len, 1U);
-		m_txM17Data.getData(m_buffer, len);
-
-		if (m_trace) {
-			switch (m_buffer[2U]) {
-			case MMDVM_M17_LINK_SETUP:
-				CUtils::dump(1U, "TX M17 Link Setup", m_buffer, len);
-				break;
-			case MMDVM_M17_STREAM:
-				CUtils::dump(1U, "TX M17 Stream Data", m_buffer, len);
-				break;
-			case MMDVM_M17_EOT:
-				CUtils::dump(1U, "TX M17 EOT", m_buffer, len);
-				break;
-			}
-		}
-
-		int ret = m_port->write(m_buffer, len);
-		if (ret != int(len))
-			LogWarning("Error when writing M17 data to the MMDVM");
-
-		m_playoutTimer.start();
-
-		m_m17Space--;
-	}
-#endif
-
 #if defined(USE_POCSAG)
 	if (m_pocsagSpace > 1U && !m_txPOCSAGData.isEmpty()) {
 		unsigned char len = 0U;
@@ -1390,25 +1177,6 @@ void CModem::clock(unsigned int ms)
 		m_playoutTimer.start();
 
 		m_fmSpace--;
-	}
-#endif
-
-#if defined(USE_AX25)
-	if (m_ax25Space > 0U && !m_txAX25Data.isEmpty()) {
-		unsigned int len = 0U;
-		m_txAX25Data.getData((unsigned char*)&len, sizeof(unsigned int));
-		m_txAX25Data.getData(m_buffer, len);
-
-		if (m_trace)
-			CUtils::dump(1U, "TX AX.25 Data", m_buffer, len);
-
-		int ret = m_port->write(m_buffer, len);
-		if (ret != int(len))
-			LogWarning("Error when writing AX.25 data to the MMDVM");
-
-		m_playoutTimer.start();
-
-		m_ax25Space = 0U;
 	}
 #endif
 
@@ -1542,22 +1310,6 @@ unsigned int CModem::readNXDNData(unsigned char* data)
 }
 #endif
 
-#if defined(USE_M17)
-unsigned int CModem::readM17Data(unsigned char* data)
-{
-	assert(data != nullptr);
-
-	if (m_rxM17Data.isEmpty())
-		return 0U;
-
-	unsigned char len = 0U;
-	m_rxM17Data.getData(&len, 1U);
-	m_rxM17Data.getData(data, len);
-
-	return len;
-}
-#endif
-
 #if defined(USE_FM)
 unsigned int CModem::readFMData(unsigned char* data)
 {
@@ -1569,22 +1321,6 @@ unsigned int CModem::readFMData(unsigned char* data)
 	unsigned int len = 0U;
 	m_rxFMData.getData((unsigned char*)&len, sizeof(unsigned int));
 	m_rxFMData.getData(data, len);
-
-	return len;
-}
-#endif
-
-#if defined(USE_AX25)
-unsigned int CModem::readAX25Data(unsigned char* data)
-{
-	assert(data != nullptr);
-
-	if (m_rxAX25Data.isEmpty())
-		return 0U;
-
-	unsigned int len = 0U;
-	m_rxAX25Data.getData((unsigned char*)&len, sizeof(unsigned int));
-	m_rxAX25Data.getData(data, len);
 
 	return len;
 }
@@ -1819,49 +1555,6 @@ bool CModem::writeNXDNData(const unsigned char* data, unsigned int length)
 }
 #endif
 
-#if defined(USE_M17)
-bool CModem::hasM17Space() const
-{
-	unsigned int space = m_txM17Data.freeSpace() / (M17_FRAME_LENGTH_BYTES + 4U);
-
-	return space > 1U;
-}
-
-bool CModem::writeM17Data(const unsigned char* data, unsigned int length)
-{
-	assert(data != nullptr);
-	assert(length > 0U);
-
-	unsigned char buffer[130U];
-
-	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = length + 2U;
-
-	switch (data[0U]) {
-		case TAG_HEADER:
-			buffer[2U] = MMDVM_M17_LINK_SETUP;
-			::memcpy(buffer + 3U, data + 1U, length - 1U);
-			break;
-		case TAG_DATA:
-			buffer[2U] = MMDVM_M17_STREAM;
-			::memcpy(buffer + 3U, data + 1U, length - 1U);
-			break;
-		case TAG_EOT:
-			buffer[2U] = MMDVM_M17_EOT;
-			::memcpy(buffer + 3U, data + 1U, length - 1U);
-			break;
-		default:
-			return false;
-	}
-
-	unsigned char len = length + 2U;
-	m_txM17Data.addData(&len, 1U);
-	m_txM17Data.addData(buffer, len);
-
-	return true;
-}
-#endif
-
 #if defined(USE_POCSAG)
 bool CModem::hasPOCSAGSpace() const
 {
@@ -1922,44 +1615,6 @@ bool CModem::writeFMData(const unsigned char* data, unsigned int length)
 
 	m_txFMData.addData((unsigned char*)&len, sizeof(unsigned int));
 	m_txFMData.addData(buffer, len);
-
-	return true;
-}
-#endif
-
-#if defined(USE_AX25)
-bool CModem::hasAX25Space() const
-{
-	unsigned int space = m_txAX25Data.freeSpace() / (AX25_MAX_FRAME_LENGTH_BYTES + 5U);
-
-	return space > 1U;
-}
-
-bool CModem::writeAX25Data(const unsigned char* data, unsigned int length)
-{
-	assert(data != nullptr);
-	assert(length > 0U);
-
-	unsigned char buffer[500U];
-
-	unsigned int len;
-	if (length > 252U) {
-		buffer[0U] = MMDVM_FRAME_START;
-		buffer[1U] = 0U;
-		buffer[2U] = (length + 4U) - 255U;
-		buffer[3U] = MMDVM_AX25_DATA;
-		::memcpy(buffer + 4U, data, length);
-		len = length + 4U;
-	} else {
-		buffer[0U] = MMDVM_FRAME_START;
-		buffer[1U] = length + 3U;
-		buffer[2U] = MMDVM_AX25_DATA;
-		::memcpy(buffer + 3U, data, length);
-		len = length + 3U;
-	}
-
-	m_txAX25Data.addData((unsigned char*)&len, sizeof(unsigned int));
-	m_txAX25Data.addData(buffer, len);
 
 	return true;
 }
@@ -2139,32 +1794,6 @@ bool CModem::writeNXDNInfo(const char* source, bool group, unsigned int dest, co
 	::memcpy(buffer + 30U, type, 1U);
 
 	return m_port->write(buffer, 31U) != 31;
-}
-#endif
-
-#if defined(USE_M17)
-bool CModem::writeM17Info(const char* source, const char* dest, const char* type)
-{
-	assert(m_port != nullptr);
-	assert(source != nullptr);
-	assert(dest != nullptr);
-	assert(type != nullptr);
-
-	unsigned char buffer[40U];
-
-	buffer[0U] = MMDVM_FRAME_START;
-	buffer[1U] = 31U;
-	buffer[2U] = MMDVM_QSO_INFO;
-
-	buffer[3U] = MODE_M17;
-
-	::sprintf((char*)(buffer + 4U), "%9.9s", source);
-
-	::sprintf((char*)(buffer + 13U), "%9.9s", dest);
-
-	::memcpy(buffer + 22U, type, 1U);
-
-	return m_port->write(buffer, 23U) != 23;
 }
 #endif
 
@@ -2354,8 +1983,6 @@ bool CModem::readVersion()
 					LogInfo("MMDVM protocol version: 1, description: %.*s", m_length - 4U, m_buffer + 4U);
 					m_capabilities1 = CAP1_DSTAR | CAP1_DMR | CAP1_YSF | CAP1_P25 | CAP1_NXDN;
 					m_capabilities2 = CAP2_POCSAG;
-					if (::strstr((char*)(m_buffer + 4U), "v1.6.") != nullptr)
-						m_capabilities1 |= CAP1_M17;
 					break;
 
 				case 2U:
@@ -2395,14 +2022,10 @@ bool CModem::readVersion()
 					::strcat(modeText, " P25");
 				if (hasNXDN())
 					::strcat(modeText, " NXDN");
-				if (hasM17())
-					::strcat(modeText, " M17");
 				if (hasFM())
 					::strcat(modeText, " FM");
 				if (hasPOCSAG())
 					::strcat(modeText, " POCSAG");
-				if (hasAX25())
-					::strcat(modeText, " AX.25");
 				LogInfo(modeText);
 
 				return true;
@@ -2499,10 +2122,6 @@ bool CModem::setConfig1()
 	if (m_pocsagEnabled)
 		buffer[4U] |= 0x20U;
 #endif
-#if defined(USE_M17)
-	if (m_m17Enabled)
-		buffer[4U] |= 0x40U;
-#endif
 
 	buffer[5U] = m_txDelay / 10U;		// In 10ms units
 
@@ -2576,13 +2195,9 @@ bool CModem::setConfig1()
 #else
 	buffer[23U] = 0U;
 #endif
-#if defined(USE_M17)
-	buffer[24U] = (unsigned char)(m_m17TXLevel * 2.55F + 0.5F);
-	buffer[25U] = (unsigned char)m_m17TXHang;
-#else
+
 	buffer[24U] = 0U;
 	buffer[25U] = 0U;
-#endif
 
 	// CUtils::dump(1U, "Written", buffer, 26U);
 
@@ -2672,19 +2287,11 @@ bool CModem::setConfig2()
 	if (m_fmEnabled)
 		buffer[4U] |= 0x20U;
 #endif
-#if defined(USE_M17)
-	if (m_m17Enabled)
-		buffer[4U] |= 0x40U;
-#endif
 
 	buffer[5U] = 0x00U;
 #if defined(USE_POCSAG)
 	if (m_pocsagEnabled)
 		buffer[5U] |= 0x01U;
-#endif
-#if defined(USE_AX25)
-	if (m_ax25Enabled)
-		buffer[5U] |= 0x02U;
 #endif
 	buffer[6U] = m_txDelay / 10U;		// In 10ms units
 
@@ -2722,11 +2329,9 @@ bool CModem::setConfig2()
 #else
 	buffer[16U] = 0U;
 #endif
-#if defined(USE_M17)
-	buffer[17U] = (unsigned char)(m_m17TXLevel * 2.55F + 0.5F);
-#else
+
 	buffer[17U] = 0U;
-#endif
+
 #if defined(USE_POCSAG)
 	buffer[18U] = (unsigned char)(m_pocsagTXLevel * 2.55F + 0.5F);
 #else
@@ -2737,12 +2342,8 @@ bool CModem::setConfig2()
 #else
 	buffer[19U] = 0U;
 #endif
-#if defined(USE_AX25)
-	buffer[20U] = (unsigned char)(m_ax25TXLevel * 2.55F + 0.5F);
-#else
-	buffer[20U] = 0U;
-#endif
 
+	buffer[20U] = 0U;
 	buffer[21U] = 0x00U;
 	buffer[22U] = 0x00U;
 
@@ -2761,12 +2362,8 @@ bool CModem::setConfig2()
 #else
 	buffer[25U] = 0U;
 #endif
-#if defined(USE_M17)
-	buffer[26U] = (unsigned char)m_m17TXHang;
-#else
-	buffer[26U] = 0U;
-#endif
 
+	buffer[26U] = 0U;
 	buffer[27U] = 0x00U;
 	buffer[28U] = 0x00U;
 
@@ -2778,18 +2375,10 @@ bool CModem::setConfig2()
 	buffer[30U] = 0U;
 #endif
 
-#if defined(USE_AX25)
-	buffer[31U] = (unsigned char)(m_ax25RXTwist + 128);
-	buffer[32U] = m_ax25TXDelay / 10U;		// In 10ms units
-	buffer[33U] = m_ax25SlotTime / 10U;		// In 10ms units
-	buffer[34U] = m_ax25PPersist;
-#else
 	buffer[31U] = 0U;
 	buffer[32U] = 0U;
 	buffer[33U] = 0U;
 	buffer[34U] = 0U;
-#endif
-
 	buffer[35U] = 0x00U;
 	buffer[36U] = 0x00U;
 	buffer[37U] = 0x00U;

@@ -73,17 +73,11 @@ private:
 #if defined(USE_NXDN)
 	CNXDNControl*   m_nxdn;
 #endif
-#if defined(USE_M17)
-	CM17Control*    m_m17;
-#endif
 #if defined(USE_POCSAG)
 	CPOCSAGControl* m_pocsag;
 #endif
 #if defined(USE_FM)
 	CFMControl*     m_fm;
-#endif
-#if defined(USE_AX25)
-	CAX25Control*   m_ax25;
 #endif
 #if defined(USE_DSTAR)
 	CDStarNetwork*  m_dstarNetwork;
@@ -100,17 +94,11 @@ private:
 #if defined(USE_NXDN)
 	INXDNNetwork*   m_nxdnNetwork;
 #endif
-#if defined(USE_M17)
-	CM17Network*    m_m17Network;
-#endif
 #if defined(USE_POCSAG)
 	CPOCSAGNetwork* m_pocsagNetwork;
 #endif
 #if defined(USE_FM)
 	CFMNetwork*     m_fmNetwork;
-#endif
-#if defined(USE_AX25)
-	CAX25Network*   m_ax25Network;
 #endif
 	unsigned char   m_mode;
 #if defined(USE_DSTAR)
@@ -127,9 +115,6 @@ private:
 #endif
 #if defined(USE_NXDN)
 	unsigned int    m_nxdnRFModeHang;
-#endif
-#if defined(USE_M17)
-	unsigned int    m_m17RFModeHang;
 #endif
 #if defined(USE_FM)
 	unsigned int    m_fmRFModeHang;
@@ -149,9 +134,6 @@ private:
 #if defined(USE_NXDN)
 	unsigned int    m_nxdnNetModeHang;
 #endif
-#if defined(USE_M17)
-	unsigned int    m_m17NetModeHang;
-#endif
 #if defined(USE_POCSAG)
 	unsigned int    m_pocsagNetModeHang;
 #endif
@@ -170,10 +152,8 @@ private:
 	bool            m_ysfEnabled;
 	bool            m_p25Enabled;
 	bool            m_nxdnEnabled;
-	bool            m_m17Enabled;
 	bool            m_pocsagEnabled;
 	bool            m_fmEnabled;
-	bool            m_ax25Enabled;
 	unsigned int    m_cwIdTime;
 #if defined(USE_DMR) || defined(USE_P25)
 	CDMRLookup*     m_dmrLookup;
@@ -188,59 +168,6 @@ private:
 	std::string     m_lockFileName;
 	CRemoteControl* m_remoteControl;
 	bool            m_fixedMode;
-  CConf           m_conf;
-  CModem*         m_modem;
-  CDStarControl*  m_dstar;
-  CDMRControl*    m_dmr;
-  CYSFControl*    m_ysf;
-  CP25Control*    m_p25;
-  CNXDNControl*   m_nxdn;
-  CPOCSAGControl* m_pocsag;
-  CFMControl*     m_fm;
-  CDStarNetwork*  m_dstarNetwork;
-  IDMRNetwork*    m_dmrNetwork;
-  CYSFNetwork*    m_ysfNetwork;
-  CP25Network*    m_p25Network;
-  INXDNNetwork*   m_nxdnNetwork;
-  CPOCSAGNetwork* m_pocsagNetwork;
-  CFMNetwork*     m_fmNetwork;
-  CDisplay*       m_display;
-  unsigned char   m_mode;
-  unsigned int    m_dstarRFModeHang;
-  unsigned int    m_dmrRFModeHang;
-  unsigned int    m_ysfRFModeHang;
-  unsigned int    m_p25RFModeHang;
-  unsigned int    m_nxdnRFModeHang;
-  unsigned int    m_fmRFModeHang;
-  unsigned int    m_dstarNetModeHang;
-  unsigned int    m_dmrNetModeHang;
-  unsigned int    m_ysfNetModeHang;
-  unsigned int    m_p25NetModeHang;
-  unsigned int    m_nxdnNetModeHang;
-  unsigned int    m_pocsagNetModeHang;
-  unsigned int    m_fmNetModeHang;
-  CTimer          m_modeTimer;
-  CTimer          m_dmrTXTimer;
-  CTimer          m_cwIdTimer;
-  bool            m_duplex;
-  unsigned int    m_timeout;
-  bool            m_dstarEnabled;
-  bool            m_dmrEnabled;
-  bool            m_ysfEnabled;
-  bool            m_p25Enabled;
-  bool            m_nxdnEnabled;
-  bool            m_pocsagEnabled;
-  bool            m_fmEnabled;
-  unsigned int    m_cwIdTime;
-  CDMRLookup*     m_dmrLookup;
-  CNXDNLookup*    m_nxdnLookup;
-  std::string     m_callsign;
-  unsigned int    m_id;
-  std::string     m_cwCallsign;
-  bool            m_lockFileEnabled;
-  std::string     m_lockFileName;
-  CRemoteControl* m_remoteControl;
-  bool            m_fixedMode;
 
 	CTimer          m_serialTimer;
 	unsigned char*  m_serialBuffer;
@@ -264,42 +191,18 @@ private:
 #if defined(USE_NXDN)
 	bool createNXDNNetwork();
 #endif
-#if defined(USE_M17)
-	bool createM17Network();
-#endif
 #if defined(USE_POCSAG)
 	bool createPOCSAGNetwork();
 #endif
 #if defined(USE_FM)
 	bool createFMNetwork();
 #endif
-#if defined(USE_AX25)
-	bool createAX25Network();
-#endif
 	void writeSerial(const unsigned char* message, unsigned int length);
-#if defined(USE_AX25)
-	void writeAX25(const unsigned char* message, unsigned int length);
-#endif
 	void remoteControl(const std::string& commandString);
 	void processModeCommand(unsigned char mode, unsigned int timeout);
 	void processEnableCommand(bool& mode, bool enabled);
-  void readParams();
-  bool createModem();
-  bool createDStarNetwork();
-  bool createDMRNetwork();
-  bool createYSFNetwork();
-  bool createP25Network();
-  bool createNXDNNetwork();
-  bool createPOCSAGNetwork();
-  bool createFMNetwork();
-
-  void remoteControl();
-  void processModeCommand(unsigned char mode, unsigned int timeout);
 
 	void setMode(unsigned char mode);
-  void setMode(unsigned char mode);
-  void enableModemMode(bool& mode, bool enabled);
-  void processEnableModeCommand(unsigned char mode, bool hasController, bool& modeEnabled, bool enableMode);
 
 	void createLockFile(const char* mode) const;
 	void removeLockFile() const;
@@ -309,9 +212,6 @@ private:
 
 	static void onDisplay(const unsigned char* message, unsigned int length);
 	static void onCommand(const unsigned char* command, unsigned int length);
-#if defined(USE_AX25)
-	static void onAX25(const unsigned char* message, unsigned int length);
-#endif
 };
 
 #endif

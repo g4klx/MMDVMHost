@@ -47,9 +47,6 @@ enum class REMOTE_COMMAND {
 #if defined(USE_NXDN)
 	MODE_NXDN,
 #endif
-#if defined(USE_M17)
-	MODE_M17,
-#endif
 #if defined(USE_FM)
 	MODE_FM,
 #endif
@@ -68,14 +65,8 @@ enum class REMOTE_COMMAND {
 #if defined(USE_NXDN)
 	ENABLE_NXDN,
 #endif
-#if defined(USE_M17)
-	ENABLE_M17,
-#endif
 #if defined(USE_FM)
 	ENABLE_FM,
-#endif
-#if defined(USE_AX25)
-	ENABLE_AX25,
 #endif
 #if defined(USE_DSTAR)
 	DISABLE_DSTAR,
@@ -92,14 +83,8 @@ enum class REMOTE_COMMAND {
 #if defined(USE_NXDN)
 	DISABLE_NXDN,
 #endif
-#if defined(USE_M17)
-	DISABLE_M17,
-#endif
 #if defined(USE_FM)
 	DISABLE_FM,
-#endif
-#if defined(USE_AX25)
-	DISABLE_AX25,
 #endif
 #if defined(USE_POCSAG)
 	PAGE,

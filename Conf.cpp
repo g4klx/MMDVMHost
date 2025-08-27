@@ -57,17 +57,11 @@ enum class SECTION {
 #if defined(USE_NXDN)
 	NXDN,
 #endif
-#if defined(USE_M17)
-	M17,
-#endif
 #if defined(USE_POCSAG)
 	POCSAG,
 #endif
 #if defined(USE_FM)
 	FM,
-#endif
-#if defined(USE_AX25)
-	AX25,
 #endif
 #if defined(USE_DSTAR)
 	DSTAR_NETWORK,
@@ -84,17 +78,11 @@ enum class SECTION {
 #if defined(USE_NXDN)
 	NXDN_NETWORK,
 #endif
-#if defined(USE_M17)
-	M17_NETWORK,
-#endif
 #if defined(USE_POCSAG)
 	POCSAG_NETWORK,
 #endif
 #if defined(USE_FM)
 	FM_NETWORK,
-#endif
-#if defined(USE_AX25)
-	AX25_NETWORK,
 #endif
 	LOCK_FILE,
 	REMOTE_CONTROL
@@ -242,14 +230,6 @@ m_nxdnRemoteGateway(false),
 m_nxdnTXHang(5U),
 #endif
 m_nxdnModeHang(10U),
-#if defined(USE_M17)
-m_m17Enabled(false),
-m_m17CAN(0U),
-m_m17SelfOnly(false),
-m_m17AllowEncryption(false),
-m_m17TXHang(5U),
-#endif
-m_m17ModeHang(10U),
 #if defined(USE_POCSAG)
 m_pocsagEnabled(false),
 #endif
@@ -296,16 +276,6 @@ m_fmMaxDevLevel(90.0F),
 m_fmExtAudioBoost(1U),
 #endif
 m_fmModeHang(10U),
-#if defined(USE_AX25)
-m_ax25Enabled(false),
-#endif
-m_ax25TXDelay(300U),
-#if defined(USE_AX25)
-m_ax25RXTwist(6),
-m_ax25SlotTime(30U),
-m_ax25PPersist(128U),
-m_ax25Trace(false),
-#endif
 #if defined(USE_DSTAR)
 m_dstarNetworkEnabled(false),
 m_dstarGatewayAddress(),
@@ -363,17 +333,6 @@ m_nxdnNetworkModeHang(3U),
 #if defined(USE_NXDN)
 m_nxdnNetworkDebug(false),
 #endif
-#if defined(USE_M17)
-m_m17NetworkEnabled(false),
-m_m17GatewayAddress(),
-m_m17GatewayPort(0U),
-m_m17LocalAddress(),
-m_m17LocalPort(0U),
-#endif
-m_m17NetworkModeHang(3U),
-#if defined(USE_M17)
-m_m17NetworkDebug(false),
-#endif
 #if defined(USE_POCSAG)
 m_pocsagNetworkEnabled(false),
 m_pocsagGatewayAddress(),
@@ -397,10 +356,6 @@ m_fmRXAudioGain(1.0F),
 m_fmNetworkModeHang(3U),
 #if defined(USE_FM)
 m_fmNetworkDebug(false),
-#endif
-#if defined(USE_AX25)
-m_ax25NetworkEnabled(false),
-m_ax25NetworkDebug(false),
 #endif
 m_lockFileEnabled(false),
 m_lockFileName(),
@@ -470,10 +425,6 @@ bool CConf::read()
 			else if (::strncmp(buffer, "[NXDN]", 6U) == 0)
 				section = SECTION::NXDN;
 #endif
-#if defined(USE_M17)
-			else if (::strncmp(buffer, "[M17]", 5U) == 0)
-				section = SECTION::M17;
-#endif
 #if defined(USE_POCSAG)
 			else if (::strncmp(buffer, "[POCSAG]", 8U) == 0)
 				section = SECTION::POCSAG;
@@ -481,10 +432,6 @@ bool CConf::read()
 #if defined(USE_FM)
 			else if (::strncmp(buffer, "[FM]", 4U) == 0)
 				section = SECTION::FM;
-#endif
-#if defined(USE_AX25)
-			else if (::strncmp(buffer, "[AX.25]", 7U) == 0)
-				section = SECTION::AX25;
 #endif
 #if defined(USE_DSTAR)
 			else if (::strncmp(buffer, "[D-Star Network]", 16U) == 0)
@@ -506,10 +453,6 @@ bool CConf::read()
 			else if (::strncmp(buffer, "[NXDN Network]", 14U) == 0)
 				section = SECTION::NXDN_NETWORK;
 #endif
-#if defined(USE_M17)
-			else if (::strncmp(buffer, "[M17 Network]", 13U) == 0)
-				section = SECTION::M17_NETWORK;
-#endif
 #if defined(USE_POCSAG)
 			else if (::strncmp(buffer, "[POCSAG Network]", 16U) == 0)
 				section = SECTION::POCSAG_NETWORK;
@@ -517,10 +460,6 @@ bool CConf::read()
 #if defined(USE_FM)
 			else if (::strncmp(buffer, "[FM Network]", 12U) == 0)
 				section = SECTION::FM_NETWORK;
-#endif
-#if defined(USE_AX25)
-			else if (::strncmp(buffer, "[AX.25 Network]", 15U) == 0)
-				section = SECTION::AX25_NETWORK;
 #endif
 			else if (::strncmp(buffer, "[Lock File]", 11U) == 0)
 				section = SECTION::LOCK_FILE;
@@ -575,7 +514,7 @@ bool CConf::read()
 			else if (::strcmp(key, "RFModeHang") == 0)
 				m_dstarModeHang = m_dmrModeHang = m_fusionModeHang = m_p25ModeHang = m_nxdnModeHang = m_fmModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "NetModeHang") == 0)
-				m_dstarNetworkModeHang = m_dmrNetworkModeHang = m_fusionNetworkModeHang = m_p25NetworkModeHang = m_nxdnNetworkModeHang = m_m17NetworkModeHang = m_fmNetworkModeHang = (unsigned int)::atoi(value);
+				m_dstarNetworkModeHang = m_dmrNetworkModeHang = m_fusionNetworkModeHang = m_p25NetworkModeHang = m_nxdnNetworkModeHang = m_fmNetworkModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Daemon") == 0)
 				m_daemon = ::atoi(value) == 1;
 		} else if (section == SECTION::INFO) {
@@ -668,7 +607,7 @@ bool CConf::read()
 			else if (::strcmp(key, "PTTInvert") == 0)
 				m_modemPTTInvert = ::atoi(value) == 1;
 			else if (::strcmp(key, "TXDelay") == 0)
-				m_ax25TXDelay = m_modemTXDelay = (unsigned int)::atoi(value);
+				m_modemTXDelay = (unsigned int)::atoi(value);
 #if defined(USE_DMR)
 			else if (::strcmp(key, "DMRDelay") == 0)
 				m_modemDMRDelay = (unsigned int)::atoi(value);
@@ -709,10 +648,6 @@ bool CConf::read()
 			else if (::strcmp(key, "NXDNTXLevel") == 0)
 				m_modemNXDNTXLevel = float(::atof(value));
 #endif
-#if defined(USE_M17)
-			else if (::strcmp(key, "M17TXLevel") == 0)
-				m_modemM17TXLevel = float(::atof(value));
-#endif
 #if defined(USE_POCSAG)
 			else if (::strcmp(key, "POCSAGTXLevel") == 0)
 				m_modemPOCSAGTXLevel = float(::atof(value));
@@ -720,10 +655,6 @@ bool CConf::read()
 #if defined(USE_FM)
 			else if (::strcmp(key, "FMTXLevel") == 0)
 				m_modemFMTXLevel = float(::atof(value));
-#endif
-#if defined(USE_AX25)
-			else if (::strcmp(key, "AX25TXLevel") == 0)
-				m_modemAX25TXLevel = float(::atof(value));
 #endif
 			else if (::strcmp(key, "RSSIMappingFile") == 0)
 				m_modemRSSIMappingFile = value;
@@ -934,21 +865,6 @@ bool CConf::read()
 			else if (::strcmp(key, "ModeHang") == 0)
 				m_nxdnModeHang = (unsigned int)::atoi(value);
 #endif
-#if defined(USE_M17)
-		} else if (section == SECTION::M17) {
-			if (::strcmp(key, "Enable") == 0)
-				m_m17Enabled = ::atoi(value) == 1;
-			else if (::strcmp(key, "CAN") == 0)
-				m_m17CAN = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "SelfOnly") == 0)
-				m_m17SelfOnly = ::atoi(value) == 1;
-			else if (::strcmp(key, "AllowEncryption") == 0)
-				m_m17AllowEncryption = ::atoi(value) == 1;
-			else if (::strcmp(key, "TXHang") == 0)
-				m_m17TXHang = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "ModeHang") == 0)
-				m_m17ModeHang = (unsigned int)::atoi(value);
-#endif
 #if defined(USE_POCSAG)
 		} else if (section == SECTION::POCSAG) {
 			if (::strcmp(key, "Enable") == 0)
@@ -1044,21 +960,6 @@ bool CConf::read()
 			else if (::strcmp(key, "ModeHang") == 0)
 				m_fmModeHang = (unsigned int)::atoi(value);
 #endif
-#if defined(USE_AX25)
-		} else if (section == SECTION::AX25) {
-			if (::strcmp(key, "Enable") == 0)
-				m_ax25Enabled = ::atoi(value) == 1;
-			else if (::strcmp(key, "TXDelay") == 0)
-				m_ax25TXDelay = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "RXTwist") == 0)
-				m_ax25RXTwist = ::atoi(value);
-			else if (::strcmp(key, "SlotTime") == 0)
-				m_ax25SlotTime = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "PPersist") == 0)
-				m_ax25PPersist = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "Trace") == 0)
-				m_ax25Trace = ::atoi(value) == 1;
-#endif
 #if defined(USE_DSTAR)
 		} else if (section == SECTION::DSTAR_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
@@ -1152,23 +1053,6 @@ bool CConf::read()
 			else if (::strcmp(key, "Debug") == 0)
 				m_nxdnNetworkDebug = ::atoi(value) == 1;
 #endif
-#if defined(USE_M17)
-		} else if (section == SECTION::M17_NETWORK) {
-			if (::strcmp(key, "Enable") == 0)
-				m_m17NetworkEnabled = ::atoi(value) == 1;
-			else if (::strcmp(key, "LocalAddress") == 0)
-				m_m17LocalAddress = value;
-			else if (::strcmp(key, "LocalPort") == 0)
-				m_m17LocalPort = (unsigned short)::atoi(value);
-			else if (::strcmp(key, "GatewayAddress") == 0)
-				m_m17GatewayAddress = value;
-			else if (::strcmp(key, "GatewayPort") == 0)
-				m_m17GatewayPort = (unsigned short)::atoi(value);
-			else if (::strcmp(key, "ModeHang") == 0)
-				m_m17NetworkModeHang = (unsigned int)::atoi(value);
-			else if (::strcmp(key, "Debug") == 0)
-				m_m17NetworkDebug = ::atoi(value) == 1;
-#endif
 #if defined(USE_POCSAG)
 		} else if (section == SECTION::POCSAG_NETWORK) {
 			if (::strcmp(key, "Enable") == 0)
@@ -1210,13 +1094,6 @@ bool CConf::read()
 				m_fmNetworkModeHang = (unsigned int)::atoi(value);
 			else if (::strcmp(key, "Debug") == 0)
 				m_fmNetworkDebug = ::atoi(value) == 1;
-#endif
-#if defined(USE_AX25)
-		} else if (section == SECTION::AX25_NETWORK) {
-			if (::strcmp(key, "Enable") == 0)
-				m_ax25NetworkEnabled = ::atoi(value) == 1;
-			else if (::strcmp(key, "Debug") == 0)
-				m_ax25NetworkDebug = ::atoi(value) == 1;
 #endif
 		} else if (section == SECTION::LOCK_FILE) {
 			if (::strcmp(key, "Enable") == 0)
@@ -1530,13 +1407,6 @@ float CConf::getModemNXDNTXLevel() const
 }
 #endif
 
-#if defined(USE_M17)
-float CConf::getModemM17TXLevel() const
-{
-	return m_modemM17TXLevel;
-}
-#endif
-
 #if defined(USE_POCSAG)
 float CConf::getModemPOCSAGTXLevel() const
 {
@@ -1548,13 +1418,6 @@ float CConf::getModemPOCSAGTXLevel() const
 float CConf::getModemFMTXLevel() const
 {
 	return m_modemFMTXLevel;
-}
-#endif
-
-#if defined(USE_AX25)
-float CConf::getModemAX25TXLevel() const
-{
-	return m_modemAX25TXLevel;
 }
 #endif
 
@@ -1868,38 +1731,6 @@ unsigned int CConf::getNXDNModeHang() const
 }
 #endif
 
-#if defined(USE_M17)
-bool CConf::getM17Enabled() const
-{
-	return m_m17Enabled;
-}
-
-unsigned int CConf::getM17CAN() const
-{
-	return m_m17CAN;
-}
-
-bool CConf::getM17SelfOnly() const
-{
-	return m_m17SelfOnly;
-}
-
-bool CConf::getM17AllowEncryption() const
-{
-	return m_m17AllowEncryption;
-}
-
-unsigned int CConf::getM17TXHang() const
-{
-	return m_m17TXHang;
-}
-
-unsigned int CConf::getM17ModeHang() const
-{
-	return m_m17ModeHang;
-}
-#endif
-
 #if defined(USE_POCSAG)
 bool CConf::getPOCSAGEnabled() const
 {
@@ -2091,38 +1922,6 @@ unsigned int CConf::getFMExtAudioBoost() const
 unsigned int CConf::getFMModeHang() const
 {
 	return m_fmModeHang;
-}
-#endif
-
-#if defined(USE_AX25)
-bool CConf::getAX25Enabled() const
-{
-	return m_ax25Enabled;
-}
-
-unsigned int CConf::getAX25TXDelay() const
-{
-	return m_ax25TXDelay;
-}
-
-int CConf::getAX25RXTwist() const
-{
-	return m_ax25RXTwist;
-}
-
-unsigned int CConf::getAX25SlotTime() const
-{
-	return m_ax25SlotTime;
-}
-
-unsigned int CConf::getAX25PPersist() const
-{
-	return m_ax25PPersist;
-}
-
-bool CConf::getAX25Trace() const
-{
-	return m_ax25Trace;
 }
 #endif
 
@@ -2331,43 +2130,6 @@ bool CConf::getNXDNNetworkDebug() const
 }
 #endif
 
-#if defined(USE_M17)
-bool CConf::getM17NetworkEnabled() const
-{
-	return m_m17NetworkEnabled;
-}
-
-std::string CConf::getM17GatewayAddress() const
-{
-	return m_m17GatewayAddress;
-}
-
-unsigned short CConf::getM17GatewayPort() const
-{
-	return m_m17GatewayPort;
-}
-
-std::string CConf::getM17LocalAddress() const
-{
-	return m_m17LocalAddress;
-}
-
-unsigned short CConf::getM17LocalPort() const
-{
-	return m_m17LocalPort;
-}
-
-unsigned int CConf::getM17NetworkModeHang() const
-{
-	return m_m17NetworkModeHang;
-}
-
-bool CConf::getM17NetworkDebug() const
-{
-	return m_m17NetworkDebug;
-}
-#endif
-
 #if defined(USE_POCSAG)
 bool CConf::getPOCSAGNetworkEnabled() const
 {
@@ -2459,18 +2221,6 @@ unsigned int CConf::getFMNetworkModeHang() const
 bool CConf::getFMNetworkDebug() const
 {
 	return m_fmNetworkDebug;
-}
-#endif
-
-#if defined(USE_AX25)
-bool CConf::getAX25NetworkEnabled() const
-{
-	return m_ax25NetworkEnabled;
-}
-
-bool CConf::getAX25NetworkDebug() const
-{
-	return m_ax25NetworkDebug;
 }
 #endif
 
