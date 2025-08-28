@@ -2004,7 +2004,7 @@ bool CModem::setConfig2()
 	buffer[29U] = m_dmrColorCode;
 	buffer[30U] = m_dmrDelay;
 
-	buffer[31U] = 0x00U;
+	buffer[31U] = 128U;
 	buffer[32U] = 0x00U;
 	buffer[33U] = 0x00U;
 	buffer[34U] = 0x00U;
