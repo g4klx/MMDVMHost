@@ -2375,10 +2375,11 @@ bool CModem::setConfig2()
 	buffer[30U] = 0U;
 #endif
 
-	buffer[31U] = 0U;
+	buffer[31U] = 128U;
 	buffer[32U] = 0U;
 	buffer[33U] = 0U;
 	buffer[34U] = 0U;
+
 	buffer[35U] = 0x00U;
 	buffer[36U] = 0x00U;
 	buffer[37U] = 0x00U;
