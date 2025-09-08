@@ -19,6 +19,8 @@
 #ifndef	DStarHeader_H
 #define	DStarHeader_H
 
+#include "DStarDefines.h"
+
 class CDStarHeader {
 public:
 	CDStarHeader(const unsigned char* header);
@@ -52,7 +54,7 @@ public:
 	CDStarHeader& operator=(const CDStarHeader& header);
 
 private:
-	unsigned char* m_header;
+	unsigned char m_header[DSTAR_HEADER_LENGTH_BYTES];
 };
 
 #endif
