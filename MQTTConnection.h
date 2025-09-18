@@ -25,7 +25,7 @@
 #include <string>
 
 enum MQTT_QOS {
-	MQTT_QOS_AT_MODE_ONCE  = 0U,
+	MQTT_QOS_AT_MOST_ONCE  = 0U,
 	MQTT_QOS_AT_LEAST_ONCE = 1U,
 	MQTT_QOS_EXACTLY_ONCE  = 2U
 };
