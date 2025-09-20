@@ -34,6 +34,8 @@
 #include <termios.h>
 #if defined(__linux__)
 	#include <pty.h>
+#elif defined(__FreeBSD__)
+	#include <libutil.h>
 #else
 	#include <util.h>
 #endif
