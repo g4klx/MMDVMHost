@@ -124,7 +124,7 @@ void CNetworkInfo::getNetworkInterface(unsigned char* info)
 	struct rt_msghdr *rtm;
 	for (char *p = buf; p < buf + size; p += rtm->rtm_msglen) {
 		rtm = (struct rt_msghdr *)p;
-		if (rtm->rtm_version != VERSION)
+		if (rtm->rtm_version != RTM_VERSION)
 			continue;
 #if defined(__OpenBSD__)
 		struct sockaddr_in *sa = (struct sockaddr_in *)(p + rtm->rtm_hdrlen);
