@@ -368,8 +368,6 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			m_rfSlowData.add(data + 1U);
 		}
 
-#ifdef notdef
-		// Switch off D-Star fast data for RF
 		if (m_rfState == RPT_RF_STATE::AUDIO) {
 			unsigned char type = m_rfSlowData.getType();
 
@@ -378,7 +376,6 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 				m_rfState = RPT_RF_STATE::DATA;
 			}
 		}
-#endif
 
 		if (m_rfState == RPT_RF_STATE::DATA) {
 			// Send the RSSI data to the display
@@ -746,8 +743,6 @@ void CDStarControl::writeNetwork()
 			} else {
 				m_netSlowData.add(data + 2U);
 
-#ifdef notdef
-				// Switch off D-Star fast data for network traffic
 				if (m_netState == RPT_NET_STATE::AUDIO) {
 					unsigned char type = m_netSlowData.getType();
 					if (type == DSTAR_SLOW_DATA_TYPE_FASTDATA_BEGIN) {
@@ -755,7 +750,6 @@ void CDStarControl::writeNetwork()
 						m_netState = RPT_NET_STATE::DATA;
 					}
 				}
-#endif
 			}
 		}
 
