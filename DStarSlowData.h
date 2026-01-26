@@ -30,7 +30,7 @@ public:
 
 	CDStarHeader*        getHeader();
 	const unsigned char* getText();
-	unsigned char        getType() const;
+	unsigned char        getType(bool unmasked = false) const;
 
 	bool isComplete() const;
 
