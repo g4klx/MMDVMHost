@@ -48,8 +48,8 @@ const unsigned char DSTAR_SLOW_DATA_TYPE_MASK           = 0xF0U;
 const unsigned char DSTAR_SLOW_DATA_TYPE_GPSDATA        = 0x30U;
 const unsigned char DSTAR_SLOW_DATA_TYPE_TEXT           = 0x40U;
 const unsigned char DSTAR_SLOW_DATA_TYPE_HEADER         = 0x50U;
-const unsigned char DSTAR_SLOW_DATA_TYPE_FASTDATA_END   = 0x80U;
-const unsigned char DSTAR_SLOW_DATA_TYPE_FASTDATA_BEGIN = 0x90U;
+const unsigned char DSTAR_SLOW_DATA_TYPE_FASTDATA       = 0x80U;
+const unsigned char DSTAR_SLOW_DATA_TYPE_FASTDATA_MASK  = 0xE0U;
 const unsigned char DSTAR_SLOW_DATA_TYPE_SQUELCH        = 0xC0U;
 const unsigned char DSTAR_SLOW_DATA_LENGTH_MASK         = 0x0FU;
 
