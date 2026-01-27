@@ -824,8 +824,7 @@ void CDStarControl::writeNetworkData(unsigned char* data, unsigned int length)
 
 			if (m_netState == RPT_NET_STATE::AUDIO){
 				unsigned char type = m_netSlowData.getType(false);
-				LogMessage("A D-Star, slow data type: 0x%02X 0x%02X %i", type, type & DSTAR_SLOW_DATA_TYPE_FASTDATA_MASK, m_netN);
-				// as per specs, this could be any value bewtween 0x80 and 0x9C
+				// as per specs chapter 6.1.3, this could be any value bewtween 0x81 and 0x9C as one fast data block can only contain 28 bytes 0x80 + 28d = 0x9C 
 				if ((type & DSTAR_SLOW_DATA_TYPE_FASTDATA_MASK) == DSTAR_SLOW_DATA_TYPE_FASTDATA){
 					LogMessage("D-Star, starting fast data mode (Net)");
 					m_netState = RPT_NET_STATE::DATA;
