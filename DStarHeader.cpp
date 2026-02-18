@@ -27,20 +27,15 @@
 #include <cstring>
 
 CDStarHeader::CDStarHeader(const unsigned char* header) :
-m_header(nullptr)
+m_header()
 {
 	assert(header != nullptr);
-
-	m_header = new unsigned char[DSTAR_HEADER_LENGTH_BYTES];
-
 	::memcpy(m_header, header, DSTAR_HEADER_LENGTH_BYTES);
 }
 
 CDStarHeader::CDStarHeader() :
-m_header(nullptr)
+m_header()
 {
-	m_header = new unsigned char[DSTAR_HEADER_LENGTH_BYTES];
-
 	::memset(m_header, ' ', DSTAR_HEADER_LENGTH_BYTES);
 
 	m_header[0U] = 0x00U;
@@ -50,7 +45,6 @@ m_header(nullptr)
 
 CDStarHeader::~CDStarHeader()
 {
-	delete[] m_header;
 }
 
 CDStarHeader& CDStarHeader::operator=(const CDStarHeader& header)

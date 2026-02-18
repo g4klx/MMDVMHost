@@ -403,6 +403,10 @@ private:
 	void printDebug();
 
 	RESP_TYPE_MMDVM getResponse();
+
+	// Added these for buffering serial data from display:
+    unsigned char              m_serialDataBuffer[256];
+    unsigned int               m_serialDataLen;
 };
 
 #endif
