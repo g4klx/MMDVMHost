@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2015-2019,2021,2023,2025 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2015-2019,2021,2023,2025,2026 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -766,9 +766,8 @@ void CDStarControl::writeNetwork()
 		if (m_netState == RPT_NET_STATE::AUDIO) {
 			unsigned char n = data[1U];
 
-			unsigned int errors = 0U;
 			if (::memcmp(data + 2U, DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) != 0) {
-				errors = m_fec.regenerateDStar(data + 2U);
+				m_fec.regenerateDStar(data + 2U);
 				blankDTMF(data + 2U);
 			}
 
