@@ -1,5 +1,5 @@
 /*
-*	Copyright (C) 2018,2019,2020,2025 Jonathan Naylor, G4KLX
+*	Copyright (C) 2018,2019,2020,2023,2025 Jonathan Naylor, G4KLX
 *
 *	This program is free software; you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -15,12 +15,12 @@
 #include "Utils.h"
 #include "Log.h"
 
+#if defined(USE_POCSAG)
+
 #include <cstdio>
 #include <cassert>
 #include <cstring>
 #include <ctime>
-
-// #define	DUMP_POCSAG
 
 const struct BCD {
 	char     m_c;
@@ -58,9 +58,8 @@ const unsigned char FUNCTIONAL_ALERT1       = 1U;
 const unsigned char FUNCTIONAL_ALERT2       = 2U;
 const unsigned char FUNCTIONAL_ALPHANUMERIC = 3U;
 
-CPOCSAGControl::CPOCSAGControl(CPOCSAGNetwork* network, CDisplay* display) :
+CPOCSAGControl::CPOCSAGControl(CPOCSAGNetwork* network) :
 m_network(network),
-m_display(display),
 m_queue(5000U, "POCSAG Control"),
 m_frames(0U),
 m_count(0U),
@@ -69,10 +68,8 @@ m_buffer(),
 m_ric(0U),
 m_data(),
 m_state(POCSAG_STATE::NONE),
-m_enabled(true),
-m_fp(nullptr)
+m_enabled(true)
 {
-	assert(display != nullptr);
 }
 
 CPOCSAGControl::~CPOCSAGControl()
@@ -113,6 +110,7 @@ void CPOCSAGControl::sendPage(unsigned int ric, const std::string& text)
 	addAddress(FUNCTIONAL_ALPHANUMERIC, ric, output->m_buffer);
 
 	LogDebug("Local message to %07u, func Alphanumeric: \"%s\"", ric, text.c_str());
+	writeJSON("local", ric, "alphanumeric", text);
 
 	packASCII(text, output->m_buffer);
 
@@ -137,6 +135,7 @@ void CPOCSAGControl::sendPageBCD(unsigned int ric, const std::string& text)
 	addAddress(FUNCTIONAL_NUMERIC, ric, output->m_buffer);
 
 	LogDebug("Local message to %07u, func NUMERIC: \"%s\"", ric, text.c_str());
+	writeJSON("local", ric, "numeric", text);
 
 	packNumeric(text, output->m_buffer);
 
@@ -160,6 +159,7 @@ void CPOCSAGControl::sendPageAlert1(unsigned int ric)
 	addAddress(FUNCTIONAL_ALERT1, ric, output->m_buffer);
 
 	LogDebug("Local message to %07u, func Alert1", ric);
+	writeJSON("local", ric, "alert_1");
 
 	// Ensure data is an even number of words
 	if ((output->m_buffer.size() % 2U) == 1U)
@@ -182,6 +182,7 @@ void CPOCSAGControl::sendPageAlert2(unsigned int ric, const std::string& text)
 	addAddress(FUNCTIONAL_ALERT2, ric, output->m_buffer);
 
 	LogDebug("Local message to %07u, func Alert2: \"%s\"", ric, text.c_str());
+	writeJSON("local", ric, "alert_2", text);
 
 	packASCII(text, output->m_buffer);
 
@@ -238,22 +239,26 @@ bool CPOCSAGControl::readNetwork()
 				break;
 			}
 			LogDebug("Message to %07u, func Alphanumeric: %s", output->m_ric, output->m_display.c_str());
+			writeJSON("network", output->m_ric, "alphanumeric", output->m_display);
 			packASCII(output->m_text, output->m_buffer);
 			break;
 		case FUNCTIONAL_NUMERIC:
 			output->m_text    = std::string((char*)(data + 4U), length - 4U);
 			output->m_display = output->m_text;
 			LogDebug("Message to %07u, func Numeric: \"%s\"", output->m_ric, output->m_display.c_str());
+			writeJSON("network", output->m_ric, "numeric", output->m_display);
 			packNumeric(output->m_text, output->m_buffer);
 			break;
 		case FUNCTIONAL_ALERT1:
 			output->m_display = "Func alert 1";
 			LogDebug("Message to %07u, func Alert 1", output->m_ric);
+			writeJSON("network", output->m_ric, "alert_1");
 			break;
 		case FUNCTIONAL_ALERT2:
 			output->m_text    = std::string((char*)(data + 4U), length - 4U);
 			output->m_display = "Func alert 2: " + output->m_text;
 			LogDebug("Message to %07u, func Alert 2: \"%s\"", output->m_ric, output->m_display.c_str());
+			writeJSON("network", output->m_ric, "alert_2", output->m_display);
 			packASCII(output->m_text, output->m_buffer);
 			break;
 		default:
@@ -277,8 +282,6 @@ bool CPOCSAGControl::processData()
 	POCSAGData* output = m_data.front();
 	m_data.pop_front();
 
-	m_display->writePOCSAG(output->m_ric, output->m_display);
-
 	m_buffer = output->m_buffer;
 	m_ric    = output->m_ric;
 
@@ -301,10 +304,6 @@ void CPOCSAGControl::clock(unsigned int ms)
 		m_state  = POCSAG_STATE::WAITING;
 		m_frames = 0U;
 		m_count  = 1U;
-
-#if defined(DUMP_POCSAG)
-		openFile();
-#endif
 	}
 
 	m_output.clear();
@@ -358,12 +357,8 @@ void CPOCSAGControl::clock(unsigned int ms)
 
 	if (m_state == POCSAG_STATE::ENDING) {
 		LogMessage("POCSAG, transmitted %u frame(s) of data from %u message(s)", m_frames, m_count);
-		m_display->clearPOCSAG();
+		writeJSON("network", 0U, "end");
 		m_state = POCSAG_STATE::NONE;
-
-#if defined(DUMP_POCSAG)
-		closeFile();
-#endif
 	}
 }
 
@@ -500,10 +495,6 @@ void CPOCSAGControl::writeQueue()
 
 	m_output.clear();
 
-#if defined(DUMP_POCSAG)
-	writeFile(data);
-#endif
-
 	CUtils::dump(1U, "Data to MMDVM", data, len);
 
 	assert(len == POCSAG_FRAME_LENGTH_BYTES);
@@ -516,46 +507,6 @@ void CPOCSAGControl::writeQueue()
 
 	m_queue.addData(&len, 1U);
 	m_queue.addData(data, len);
-}
-
-bool CPOCSAGControl::openFile()
-{
-	if (m_fp != nullptr)
-		return true;
-
-	time_t t;
-	::time(&t);
-
-	struct tm* tm = ::localtime(&t);
-
-	char name[100U];
-	::sprintf(name, "POCSAG_%04d%02d%02d_%02d%02d%02d.dat", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
-
-	m_fp = ::fopen(name, "wb");
-	if (m_fp == nullptr)
-		return false;
-
-	::fwrite("POCSAG", 1U, 6U, m_fp);
-
-	return true;
-}
-
-bool CPOCSAGControl::writeFile(const unsigned char* data)
-{
-	if (m_fp == nullptr)
-		return false;
-
-	::fwrite(data, 1U, POCSAG_FRAME_LENGTH_BYTES, m_fp);
-
-	return true;
-}
-
-void CPOCSAGControl::closeFile()
-{
-	if (m_fp != nullptr) {
-		::fclose(m_fp);
-		m_fp = nullptr;
-	}
 }
 
 void CPOCSAGControl::enable(bool enabled)
@@ -579,3 +530,37 @@ void CPOCSAGControl::decodeROT1(const std::string& in, unsigned int start, std::
 	for (size_t i = start; i < in.length(); i++)
 		out += in.at(i) - 1U;
 }
+
+void CPOCSAGControl::writeJSON(const char* source, unsigned int ric, const char* functional)
+{
+	assert(source != nullptr);
+	assert(functional != nullptr);
+
+	nlohmann::json json;
+
+	json["timestamp"]  = CUtils::createTimestamp();
+	json["source"]     = source;
+	json["ric"]        = int(ric);
+	json["functional"] = functional;
+
+	WriteJSON("POCSAG", json);
+}
+
+void CPOCSAGControl::writeJSON(const char* source, unsigned int ric, const char* functional, const std::string& message)
+{
+	assert(source != nullptr);
+	assert(functional != nullptr);
+
+	nlohmann::json json;
+
+	json["timestamp"]  = CUtils::createTimestamp();
+	json["source"]     = source;
+	json["ric"]        = int(ric);
+	json["functional"] = functional;
+	json["message"]    = message;
+
+	WriteJSON("POCSAG", json);
+}
+
+#endif
+

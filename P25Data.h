@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2017,2024 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2017,2023,2024 by Jonathan Naylor G4KLX
 *   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com> N2PLL
 *
 *   This program is free software; you can redistribute it and/or modify
@@ -19,6 +19,10 @@
 
 #if !defined(P25Data_H)
 #define  P25Data_H
+
+#include "Defines.h"
+
+#if defined(USE_P25)
 
 #include "RS634717.h"
 #include "P25Trellis.h"
@@ -92,3 +96,6 @@ private:
 };
 
 #endif
+
+#endif
+

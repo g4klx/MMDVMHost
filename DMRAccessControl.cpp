@@ -1,6 +1,6 @@
 /*
  *   Copyright (C) 2016 by Simon Rune G7RZU
- *   Copyright (C) 2016,2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
 
 #include "DMRAccessControl.h"
 #include "Log.h"
+
+#if defined(USE_DMR)
 
 #include <algorithm>
 #include <vector>
@@ -97,3 +99,6 @@ bool CDMRAccessControl::validateTGId(unsigned int slotNo, bool group, unsigned i
 		return std::find(m_slot2TGWhiteList.begin(), m_slot2TGWhiteList.end(), id) != m_slot2TGWhiteList.end();
 	}
 }
+
+#endif
+

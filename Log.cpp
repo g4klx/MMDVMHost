@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2020,2025 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2020,2022,2023,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 
 #include "Log.h"
+#include "MQTTConnection.h"
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <Windows.h>
@@ -32,117 +33,27 @@
 #include <cassert>
 #include <cstring>
 
-static unsigned int m_fileLevel = 2U;
-static std::string m_filePath;
-static std::string m_fileRoot;
-static bool m_fileRotate = true;
+CMQTTConnection* m_mqtt = nullptr;
 
-static FILE* m_fpLog = nullptr;
-static bool m_daemon = false;
+static unsigned int m_mqttLevel = 2U;
 
 static unsigned int m_displayLevel = 2U;
 
-static struct tm m_tm;
-
 static char LEVELS[] = " DMIWEF";
 
-static bool logOpenRotate()
+void LogInitialise(unsigned int displayLevel, unsigned int mqttLevel)
 {
-	bool status = false;
-	
-	if (m_fileLevel == 0U)
-		return true;
-
-	time_t now;
-	::time(&now);
-
-	struct tm* tm = ::gmtime(&now);
-
-	if (tm->tm_mday == m_tm.tm_mday && tm->tm_mon == m_tm.tm_mon && tm->tm_year == m_tm.tm_year) {
-		if (m_fpLog != nullptr)
-		    return true;
-	} else {
-		if (m_fpLog != nullptr)
-			::fclose(m_fpLog);
-	}
-
-	char filename[200U];
-#if defined(_WIN32) || defined(_WIN64)
-	::sprintf(filename, "%s\\%s-%04d-%02d-%02d.log", m_filePath.c_str(), m_fileRoot.c_str(), tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
-#else
-	::sprintf(filename, "%s/%s-%04d-%02d-%02d.log", m_filePath.c_str(), m_fileRoot.c_str(), tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday);
-#endif
-
-	if ((m_fpLog = ::fopen(filename, "a+t")) != nullptr) {
-		status = true;
-
-#if !defined(_WIN32) && !defined(_WIN64)
-		if (m_daemon)
-			dup2(fileno(m_fpLog), fileno(stderr));
-#endif
-	}
-	
-	m_tm = *tm;
-
-	return status;
-}
-
-static bool logOpenNoRotate()
-{
-	bool status = false;
-
-	if (m_fileLevel == 0U)
-		return true;
-
-	if (m_fpLog != nullptr)
-		return true;
-
-	char filename[200U];
-#if defined(_WIN32) || defined(_WIN64)
-	::sprintf(filename, "%s\\%s.log", m_filePath.c_str(), m_fileRoot.c_str());
-#else
-	::sprintf(filename, "%s/%s.log", m_filePath.c_str(), m_fileRoot.c_str());
-#endif
-
-	if ((m_fpLog = ::fopen(filename, "a+t")) != nullptr) {
-		status = true;
-
-#if !defined(_WIN32) && !defined(_WIN64)
-		if (m_daemon)
-			dup2(fileno(m_fpLog), fileno(stderr));
-#endif
-	}
-
-	return status;
-}
-
-bool LogOpen()
-{
-	if (m_fileRotate)
-		return logOpenRotate();
-	else
-		return logOpenNoRotate();
-}
-
-bool LogInitialise(bool daemon, const std::string& filePath, const std::string& fileRoot, unsigned int fileLevel, unsigned int displayLevel, bool rotate)
-{
-	m_filePath     = filePath;
-	m_fileRoot     = fileRoot;
-	m_fileLevel    = fileLevel;
+	m_mqttLevel    = mqttLevel;
 	m_displayLevel = displayLevel;
-	m_daemon       = daemon;
-	m_fileRotate   = rotate;
-
-	if (m_daemon)
-		m_displayLevel = 0U;
-
-	return ::LogOpen();
 }
 
 void LogFinalise()
 {
-	if (m_fpLog != nullptr)
-		::fclose(m_fpLog);
+	if (m_mqtt != nullptr) {
+		m_mqtt->close();
+		delete m_mqtt;
+		m_mqtt = nullptr;
+	}
 }
 
 void Log(unsigned int level, const char* fmt, ...)
@@ -171,22 +82,26 @@ void Log(unsigned int level, const char* fmt, ...)
 
 	va_end(vl);
 
-	if (level >= m_fileLevel && m_fileLevel != 0U) {
-		bool ret = ::LogOpen();
-		if (!ret)
-			return;
-
-		::fprintf(m_fpLog, "%s\n", buffer);
-		::fflush(m_fpLog);
-	}
+	if (m_mqtt != nullptr && level >= m_mqttLevel && m_mqttLevel != 0U)
+		m_mqtt->publish("log", buffer);
 
 	if (level >= m_displayLevel && m_displayLevel != 0U) {
 		::fprintf(stdout, "%s\n", buffer);
 		::fflush(stdout);
 	}
 
-	if (level == 6U) {		// Fatal
-		::fclose(m_fpLog);
+	if (level == 6U)		// Fatal
 		exit(1);
+}
+
+void WriteJSON(const std::string& topLevel, nlohmann::json& json)
+{
+	if (m_mqtt != nullptr) {
+		nlohmann::json top;
+
+		top[topLevel] = json;
+
+		m_mqtt->publish("json", top.dump());
 	}
 }
+

@@ -1,5 +1,5 @@
 /*
-*	Copyright (C) 2016,2018,2024,2025 by Jonathan Naylor, G4KLX
+*	Copyright (C) 2016,2018,2023,2024,2025 by Jonathan Naylor, G4KLX
 *
 *	This program is free software; you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -13,6 +13,8 @@
 
 #include "P25Trellis.h"
 #include "Log.h"
+
+#if defined(USE_P25) || defined(USE_DMR)
 
 #include <cstdio>
 #include <cassert>
@@ -523,3 +525,6 @@ unsigned int CP25Trellis::checkCode12(const unsigned char* points, unsigned char
 
 	return 999U;
 }
+
+#endif
+

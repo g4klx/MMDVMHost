@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2019,2020,2021,2025 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2019,2020,2021,2023,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 #include "YSFFICH.h"
 #include "CRC.h"
 #include "Log.h"
+
+#if defined(USE_YSF)
 
 #include <cstdio>
 #include <cassert>
@@ -288,3 +290,6 @@ CYSFFICH& CYSFFICH::operator=(const CYSFFICH& fich)
 
 	return *this;
 }
+
+#endif
+

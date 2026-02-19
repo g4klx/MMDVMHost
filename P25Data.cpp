@@ -26,6 +26,8 @@
 #include "Utils.h"
 #include "Log.h"
 
+#if defined(USE_P25)
+
 #include <cstdio>
 #include <cassert>
 #include <cstring>
@@ -664,3 +666,6 @@ void CP25Data::encodeHeaderGolay(unsigned char* data, const unsigned char* raw)
 		}
 	}
 }
+
+#endif
+

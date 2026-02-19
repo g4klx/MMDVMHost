@@ -1,5 +1,5 @@
 /*
-*	Copyright (C) 2016,2017,2020,2025 Jonathan Naylor, G4KLX
+*	Copyright (C) 2016,2017,2020,2023,2025 Jonathan Naylor, G4KLX
 *	Copyright (C) 2016 Mathias Weyland, HB9FRV
 *
 *	This program is free software; you can redistribute it and/or modify
@@ -18,6 +18,8 @@
 #include "Utils.h"
 #include "CRC.h"
 #include "Log.h"
+
+#if defined(USE_YSF)
 
 #include <cstdio>
 #include <cassert>
@@ -1025,3 +1027,6 @@ void CYSFPayload::reset()
 	m_source = nullptr;
 	m_dest = nullptr;
 }
+
+#endif
+

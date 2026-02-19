@@ -1,5 +1,5 @@
 /*
- *	Copyright (C) 2009,2014,2015,2016,2021,2025 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2009,2014,2015,2016,2021,2022,2023,2025 Jonathan Naylor, G4KLX
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -16,6 +16,13 @@
 
 #include <cstdio>
 #include <cassert>
+
+#if defined(_WIN32) || defined(_WIN64)
+#include <Windows.h>
+#else
+#include <sys/time.h>
+#include <unistd.h>
+#endif
 
 void CUtils::dump(const std::string& title, const unsigned char* data, unsigned int length)
 {
@@ -170,3 +177,25 @@ void CUtils::removeChar(unsigned char * haystack, char needdle)
  
     haystack[j] = '\0';
 }
+
+std::string CUtils::createTimestamp()
+{
+	char buffer[100U];
+
+#if defined(_WIN32) || defined(_WIN64)
+	SYSTEMTIME st;
+	::GetSystemTime(&st);
+
+	::sprintf(buffer, "%04u-%02u-%02u %02u:%02u:%02u.%03u", st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
+#else
+	struct timeval now;
+	::gettimeofday(&now, nullptr);
+
+	struct tm* tm = ::gmtime(&now.tv_sec);
+
+	::sprintf(buffer, "%04d-%02d-%02d %02d:%02d:%02d.%03lld", tm->tm_year + 1900, tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, now.tv_usec / 1000LL);
+#endif
+
+	return buffer;
+}
+

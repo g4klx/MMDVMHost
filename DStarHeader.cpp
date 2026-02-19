@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2025 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2023,2025 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -20,25 +20,22 @@
 #include "DStarHeader.h"
 #include "CRC.h"
 
+#if defined(USE_DSTAR)
+
 #include <cstdio>
 #include <cassert>
 #include <cstring>
 
 CDStarHeader::CDStarHeader(const unsigned char* header) :
-m_header(nullptr)
+m_header()
 {
 	assert(header != nullptr);
-
-	m_header = new unsigned char[DSTAR_HEADER_LENGTH_BYTES];
-
 	::memcpy(m_header, header, DSTAR_HEADER_LENGTH_BYTES);
 }
 
 CDStarHeader::CDStarHeader() :
-m_header(nullptr)
+m_header()
 {
-	m_header = new unsigned char[DSTAR_HEADER_LENGTH_BYTES];
-
 	::memset(m_header, ' ', DSTAR_HEADER_LENGTH_BYTES);
 
 	m_header[0U] = 0x00U;
@@ -48,7 +45,6 @@ m_header(nullptr)
 
 CDStarHeader::~CDStarHeader()
 {
-	delete[] m_header;
 }
 
 CDStarHeader& CDStarHeader::operator=(const CDStarHeader& header)
@@ -163,3 +159,6 @@ void CDStarHeader::get(unsigned char* header) const
 
 	CCRC::addCCITT161(header, DSTAR_HEADER_LENGTH_BYTES);
 }
+
+#endif
+

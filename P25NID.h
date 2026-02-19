@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2018 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2018,2023 by Jonathan Naylor G4KLX
 *   Copyright (C) 2018 by Bryan Biedenkapp <gatekeep@gmail.com>
 *
 *   This program is free software; you can redistribute it and/or modify
@@ -19,6 +19,10 @@
 
 #if !defined(P25NID_H)
 #define  P25NID_H
+
+#include "Defines.h"
+
+#if defined(USE_P25)
 
 class CP25NID {
 public:
@@ -43,3 +47,6 @@ private:
 };
 
 #endif
+
+#endif
+

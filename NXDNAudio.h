@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2018 by Jonathan Naylor G4KLX
+*   Copyright (C) 2018,2023 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -19,6 +19,10 @@
 #if !defined(NXDNAudio_H)
 #define	NXDNAudio_H
 
+#include "Defines.h"
+
+#if defined(USE_NXDN)
+
 class CNXDNAudio {
 public:
 	CNXDNAudio();
@@ -35,3 +39,6 @@ private:
 };
 
 #endif
+
+#endif
+

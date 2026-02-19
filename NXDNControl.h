@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2020,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -27,16 +27,19 @@
 #include "RingBuffer.h"
 #include "StopWatch.h"
 #include "NXDNLICH.h"
-#include "Display.h"
 #include "Defines.h"
 #include "Timer.h"
 #include "Modem.h"
 
+#if defined(USE_NXDN)
+
 #include <string>
+
+#include <nlohmann/json.hpp>
 
 class CNXDNControl {
 public:
-	CNXDNControl(unsigned int ran, unsigned int id, bool selfOnly, INXDNNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool remoteGateway, CNXDNLookup* lookup, CRSSIInterpolator* rssiMapper);
+	CNXDNControl(unsigned int ran, unsigned int id, bool selfOnly, INXDNNetwork* network, unsigned int timeout, bool duplex, bool remoteGateway, CNXDNLookup* lookup, CRSSIInterpolator* rssiMapper);
 	~CNXDNControl();
 
 	bool writeModem(unsigned char* data, unsigned int len);
@@ -54,7 +57,6 @@ private:
 	unsigned int               m_id;
 	bool                       m_selfOnly;
 	INXDNNetwork*              m_network;
-	CDisplay*                  m_display;
 	bool                       m_duplex;
 	bool                       m_remoteGateway;
 	CNXDNLookup*               m_lookup;
@@ -76,13 +78,16 @@ private:
 	unsigned char              m_rfMask;
 	unsigned char              m_netMask;
 	CRSSIInterpolator*         m_rssiMapper;
-	unsigned char              m_rssi;
-	unsigned char              m_maxRSSI;
-	unsigned char              m_minRSSI;
-	unsigned int               m_aveRSSI;
+	int                        m_rssi;
+	int                        m_maxRSSI;
+	int                        m_minRSSI;
+	int                        m_aveRSSI;
+	unsigned int               m_rssiCountTotal;
+	int                        m_rssiAccum;
 	unsigned int               m_rssiCount;
+	unsigned int               m_bitsCount;
+	unsigned int               m_bitErrsAccum;
 	bool                       m_enabled;
-	FILE*                      m_fp;
 
 	bool processVoice(unsigned char usc, unsigned char option, unsigned char *data);
 	bool processData(unsigned char option, unsigned char *data);
@@ -97,9 +102,23 @@ private:
 	void writeEndRF();
 	void writeEndNet();
 
-	bool openFile();
-	bool writeFile(const unsigned char* data);
-	void closeFile();
+	void writeJSONRSSI();
+	void writeJSONBER(unsigned int bits, unsigned int errs);
+
+	void writeJSONRF(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId);
+	void writeJSONRF(const char* action, float duration, float ber);
+	void writeJSONRF(const char* action, float duration, float ber, int minRSSI, int maxRSSI, int aveRSSI);
+
+	void writeJSONNet(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId);
+	void writeJSONNet(const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId, unsigned char frames);
+	void writeJSONNet(const char* action);
+	void writeJSONNet(const char* action, float duration);
+
+	void writeJSON(nlohmann::json& json, const char* action);
+	void writeJSON(nlohmann::json& json, const char* source, const char* action, unsigned short srcId, const std::string& srcInfo, bool grp, unsigned short dstId);
 };
 
 #endif
+
+#endif
+

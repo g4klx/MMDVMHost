@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2024,2025 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2023,2024,2025 by Jonathan Naylor G4KLX
 *	Copyright (C) 2018,2023 by Bryan Biedenkapp <gatekeep@gmail.com> N2PLL
 *
 *   This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,8 @@
 #include "RS.h"
 
 #include <vector>
+
+#if defined(USE_P25)
 
 #include <cstdio>
 #include <cassert>
@@ -309,3 +311,5 @@ unsigned char CRS634717::gf6Mult(unsigned char a, unsigned char b) const
 
 	return p;
 }
+
+#endif

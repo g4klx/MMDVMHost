@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2025 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2023,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
  */
 
 #include "RS129.h"
+
+#if defined(USE_DMR)
 
 #include <cstdio>
 #include <cassert>
@@ -127,4 +129,6 @@ bool CRS129::check(const unsigned char* in)
 
 	return in[9U] == parity[2U] && in[10U] == parity[1U] && in[11U] == parity[0U];
 }
+
+#endif
 

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2019,2020,2021,2024,2025 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2019,2020,2021,2023,2024,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,10 +19,12 @@
 #ifndef	RemoteControl_H
 #define	RemoteControl_H
 
-#include "UDPSocket.h"
+#include "Defines.h"
 
 #include <vector>
 #include <string>
+
+#include "MQTTConnection.h"
 
 class CMMDVMHost;
 
@@ -30,33 +32,66 @@ enum class REMOTE_COMMAND {
 	NONE,
 	MODE_IDLE,
 	MODE_LOCKOUT,
+#if defined(USE_DSTAR)
 	MODE_DSTAR,
+#endif
+#if defined(USE_DMR)
 	MODE_DMR,
+#endif
+#if defined(USE_YSF)
 	MODE_YSF,
+#endif
+#if defined(USE_P25)
 	MODE_P25,
+#endif
+#if defined(USE_NXDN)
 	MODE_NXDN,
-	MODE_M17,
+#endif
+#if defined(USE_FM)
 	MODE_FM,
+#endif
+#if defined(USE_DSTAR)
 	ENABLE_DSTAR,
+#endif
+#if defined(USE_DMR)
 	ENABLE_DMR,
+#endif
+#if defined(USE_YSF)
 	ENABLE_YSF,
+#endif
+#if defined(USE_P25)
 	ENABLE_P25,
+#endif
+#if defined(USE_NXDN)
 	ENABLE_NXDN,
-	ENABLE_M17,
+#endif
+#if defined(USE_FM)
 	ENABLE_FM,
-	ENABLE_AX25,
+#endif
+#if defined(USE_DSTAR)
 	DISABLE_DSTAR,
+#endif
+#if defined(USE_DMR)
 	DISABLE_DMR,
+#endif
+#if defined(USE_YSF)
 	DISABLE_YSF,
+#endif
+#if defined(USE_P25)
 	DISABLE_P25,
+#endif
+#if defined(USE_NXDN)
 	DISABLE_NXDN,
-	DISABLE_M17,
+#endif
+#if defined(USE_FM)
 	DISABLE_FM,
-	DISABLE_AX25,
+#endif
+#if defined(USE_POCSAG)
 	PAGE,
 	PAGE_BCD,
 	PAGE_A1,
 	PAGE_A2,
+#endif
 	CW,
 	RELOAD,
 	CONNECTION_STATUS,
@@ -65,12 +100,10 @@ enum class REMOTE_COMMAND {
 
 class CRemoteControl {
 public:
-	CRemoteControl(class CMMDVMHost *host, const std::string address, unsigned int port);
+	CRemoteControl(class CMMDVMHost *host, CMQTTConnection* mqtt);
 	~CRemoteControl();
 
-	bool open();
-
-	REMOTE_COMMAND getCommand();
+	REMOTE_COMMAND getCommand(const std::string& command);
 
 	unsigned int getArgCount() const;
 
@@ -78,13 +111,9 @@ public:
 	unsigned int getArgUInt(unsigned int n) const;
 	signed int   getArgInt(unsigned int n) const;
 
-	void close();
-
 private:
 	CMMDVMHost*              m_host;
-	CUDPSocket               m_socket;
-	sockaddr_storage         m_addr;
-	unsigned int             m_addrLen;
+	CMQTTConnection*         m_mqtt;
 	REMOTE_COMMAND           m_command;
 	std::vector<std::string> m_args;
 };

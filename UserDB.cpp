@@ -1,5 +1,6 @@
 /*
- *   Copyright (C) 2020,2025 by SASANO Takayoshi JG1UAA
+ *   Copyright (C) 2020 by SASANO Takayoshi JG1UAA
+ *   Copyright (C) 2023,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,6 +18,8 @@
  */
 #include "UserDB.h"
 #include "Log.h"
+
+#if defined(USE_DMR) || defined(USE_P25) || defined(USE_NXDN)
 
 #include <cstdio>
 #include <cstring>
@@ -187,3 +190,6 @@ char* CUserDB::tokenize(char* str, char** next)
 
 	return str;
 }
+
+#endif
+

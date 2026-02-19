@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2016,2025 by Jonathan Naylor G4KLX
+*   Copyright (C) 2016,2023,2025 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
 
 #include "P25LowSpeedData.h"
 #include "P25Utils.h"
+
+#if defined(USE_P25)
 
 #include <cstdio>
 #include <cassert>
@@ -128,3 +130,6 @@ unsigned char CP25LowSpeedData::encode(unsigned char in) const
 {
 	return CCS_PARITY[in];
 }
+
+#endif
+

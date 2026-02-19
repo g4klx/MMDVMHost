@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2016,2018,2021,2025 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2016,2018,2021,2023,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
  */
 
 #include "NXDNConvolution.h"
+
+#if defined(USE_NXDN)
 
 #include <cstdio>
 #include <cassert>
@@ -149,3 +151,6 @@ void CNXDNConvolution::encode(const unsigned char* in, unsigned char* out, unsig
 		k++;
 	}
 }
+
+#endif
+

@@ -15,6 +15,10 @@
 #ifndef	DMRTA_H
 #define	DMRTA_H
 
+#include "Defines.h"
+
+#if defined(USE_DMR)
+
 class CDMRTA {
 public:
 	CDMRTA(unsigned int slotNo);
@@ -36,3 +40,6 @@ private:
 };
 
 #endif
+
+#endif
+

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2010,2014,2016,2018 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2010,2014,2016,2018,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,22 +19,36 @@
 #if !defined(AMBEFEC_H)
 #define	AMBEFEC_H
 
+#include "Defines.h"
+
 class CAMBEFEC {
 public:
 	CAMBEFEC();
 	~CAMBEFEC();
 
+#if defined(USE_DMR) || defined(USE_YSF) || defined(USE_NXDN)
 	unsigned int regenerateDMR(unsigned char* bytes) const;
+#endif
 
+#if defined(USE_DSTAR)
 	unsigned int regenerateDStar(unsigned char* bytes) const;
+#endif
 
+#if defined(USE_YSF) || defined(USE_NXDN)
 	unsigned int regenerateYSFDN(unsigned char* bytes) const;
+#endif
 
+#if defined(USE_YSF) || defined(USE_P25)
 	unsigned int regenerateIMBE(unsigned char* bytes) const;
+#endif
 
 private:
+#if defined(USE_DSTAR)
 	unsigned int regenerateDStar(unsigned int& a, unsigned int& b) const;
+#endif
+#if defined(USE_DMR) || defined(USE_YSF) || defined(USE_NXDN)
 	unsigned int regenerateDMR(unsigned int& a, unsigned int& b,unsigned int& c) const;
+#endif
 };
 
 #endif

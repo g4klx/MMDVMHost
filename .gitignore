@@ -3,6 +3,7 @@ Release
 x64
 MMDVMHost
 RemoteCommand
+Images
 *.o
 *.opendb
 *.bak
@@ -15,5 +16,6 @@ RemoteCommand
 *.user
 *.VC.db
 .vs
+.vscode
 *.ambe
 GitVersion.h

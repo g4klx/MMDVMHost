@@ -15,6 +15,8 @@
 #include "DMRTA.h"
 #include "Log.h"
 
+#if defined(USE_DMR)
+
 #include <cstring>
 #include <cassert>
 
@@ -133,4 +135,6 @@ bool CDMRTA::decodeTA()
 
 	return taLen >= taSize;
 }
+
+#endif
 
