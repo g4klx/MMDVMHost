@@ -387,6 +387,11 @@ bool CP25Data::decodeTSDU(const unsigned char* data)
     tsbkValue = (tsbkValue << 8) + tsbk[9U];
 
     switch (m_lcf) {
+		case P25_LCF_GROUP:
+		m_emergency = ((tsbkValue >> 63) & 0x01U) == 0x01U;         // Emergency flag (bit 63)
+		m_dstId = (unsigned int)((tsbkValue >> 24) & 0xFFFFU);      // Group Address (16 bits)
+		m_srcId = (unsigned int)(tsbkValue & 0xFFFFFFU);            // Source Radio Address (24 bits)
+		break;
 	    case P25_LCF_TSBK_CALL_ALERT:
 		m_dstId = (unsigned int)((tsbkValue >> 24) & 0xFFFFFFU);    // Target Radio Address
 		m_srcId = (unsigned int)(tsbkValue & 0xFFFFFFU);            // Source Radio Address
@@ -418,6 +423,11 @@ void CP25Data::encodeTSDU(unsigned char* data)
     tsbk[1U] = m_mfId;
 
     switch (m_lcf) {
+		case P25_LCF_GROUP:
+		tsbkValue = (unsigned long long)(m_serviceType & 0xFFU);    // Service Options (8 bits)
+		tsbkValue = (tsbkValue << 16) + 0U;                         // Channel ID/Number (16 bits) - 0 for conventional
+		tsbkValue = (tsbkValue << 16) + (m_dstId & 0xFFFFU);        // Group Address (16 bits)
+		tsbkValue = (tsbkValue << 24) + (m_srcId & 0xFFFFFFU);      // Source Radio Address (24 bits)
 	    case P25_LCF_TSBK_CALL_ALERT:
 		tsbkValue = 0U;
 		tsbkValue = (tsbkValue << 16) + 0U;

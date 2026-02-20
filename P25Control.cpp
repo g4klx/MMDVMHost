@@ -418,6 +418,42 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 		unsigned char data[P25_TSDU_FRAME_LENGTH_BYTES + 2U];
 	
 		switch (m_rfData.getLCF()) {
+		case P25_LCF_GROUP:
+			// Handle Group Voice Channel User - respond with Group Voice Channel Grant for talk permit
+			LogMessage("P25, received RF TSDU transmission, GROUP VOICE CH USER from %s to TG %u", source.c_str(), dstId);
+			::memset(data + 2U, 0x00U, P25_TSDU_FRAME_LENGTH_BYTES);
+
+			// Regenerate Sync
+			CSync::addP25Sync(data + 2U);
+
+			// Regenerate NID
+			m_nid.encode(data + 2U, P25_DUID_TSDU);
+
+			// Build a Group Voice Channel Grant response
+			// Save original LCF and set Grant LCF for encoding
+			unsigned char originalLcf = m_rfData.getLCF();
+			m_rfData.setLCF(P25_LCF_GRP_VCH_GRANT);
+			m_rfData.setServiceType(0x00U);  // Service options: 0x00 = routine priority, no emergency
+
+			// Encode TSDU with Grant response
+			m_rfData.encodeTSDU(data + 2U);
+
+			// Restore original LCF
+			m_rfData.setLCF(originalLcf);
+
+			// Add busy bits - outbound busy (channel granted)
+			addBusyBits(data + 2U, P25_TSDU_FRAME_LENGTH_BITS, true, false);
+
+			// Set first busy bits to 1,0 (outbound busy)
+			setBusyBits(data + 2U, P25_SS0_START, true, false);
+
+			if (m_duplex) {
+				data[0U] = TAG_DATA;
+				data[1U] = 0x00U;
+
+				writeQueueRF(data, P25_TSDU_FRAME_LENGTH_BYTES + 2U);
+			}
+			break;
 		case P25_LCF_TSBK_CALL_ALERT:
 			LogMessage("P25, received RF TSDU transmission, CALL ALERT from %s to %s%u", source.c_str(), grp ? "TG " : "", dstId);
 			::memset(data + 2U, 0x00U, P25_TSDU_FRAME_LENGTH_BYTES);
