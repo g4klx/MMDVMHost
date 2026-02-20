@@ -432,7 +432,7 @@ bool CP25Control::writeModem(unsigned char* data, unsigned int len)
 			// Build a Group Voice Channel Grant response
 			// Save original LCF and set Grant LCF for encoding
 			unsigned char originalLcf = m_rfData.getLCF();
-			m_rfData.setLCF(P25_LCF_GRP_VCH_GRANT);
+			m_rfData.setLCF(P25_LCF_GROUP);
 			m_rfData.setServiceType(0x00U);  // Service options: 0x00 = routine priority, no emergency
 
 			// Encode TSDU with Grant response
