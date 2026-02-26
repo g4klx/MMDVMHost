@@ -22,6 +22,8 @@
 #include "CRC.h"
 #include "Log.h"
 
+#if defined(USE_DSTAR)
+
 #include <cstdio>
 #include <cassert>
 #include <cstring>
@@ -246,3 +248,6 @@ bool CDStarSlowData::isComplete() const
 {
 	return m_complete;
 }
+
+#endif
+

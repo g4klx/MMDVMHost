@@ -1,5 +1,5 @@
 /*
-*   Copyright (C) 2018,2019,2020,2025 by Jonathan Naylor G4KLX
+*   Copyright (C) 2018,2019,2020,2023,2025 by Jonathan Naylor G4KLX
 *
 *   This program is free software; you can redistribute it and/or modify
 *   it under the terms of the GNU General Public License as published by
@@ -22,13 +22,16 @@
 #include "POCSAGNetwork.h"
 #include "POCSAGDefines.h"
 #include "RingBuffer.h"
-#include "Display.h"
 #include "Defines.h"
+
+#if defined(USE_POCSAG)
 
 #include <cstdint>
 
 #include <string>
 #include <deque>
+
+#include <nlohmann/json.hpp>
 
 struct POCSAGData {
 	unsigned int         m_ric;
@@ -39,7 +42,7 @@ struct POCSAGData {
 
 class CPOCSAGControl {
 public:
-	CPOCSAGControl(CPOCSAGNetwork* network, CDisplay* display);
+	CPOCSAGControl(CPOCSAGNetwork* network);
 	~CPOCSAGControl();
 
 	void sendPage(unsigned int ric, const std::string& text);
@@ -55,7 +58,6 @@ public:
 
 private:
 	CPOCSAGNetwork*            m_network;
-	CDisplay*                  m_display;
 	CRingBuffer<unsigned char> m_queue;
 	unsigned int               m_frames;
 	unsigned int               m_count;
@@ -73,7 +75,6 @@ private:
 	std::deque<POCSAGData*>    m_data;
 	POCSAG_STATE               m_state;
 	bool                       m_enabled;
-	FILE*                      m_fp;
 
 	bool readNetwork();
 	void writeQueue();
@@ -82,11 +83,14 @@ private:
 	void packASCII(const std::string& text, std::deque<uint32_t>& buffer) const;
 	void packNumeric(const std::string& text, std::deque<uint32_t>& buffer) const;
 	void addBCHAndParity(uint32_t& word) const;
-	bool openFile();
-	bool writeFile(const unsigned char* data);
-	void closeFile();
 
 	void decodeROT1(const std::string& in, unsigned int start, std::string& out) const;
+
+	void writeJSON(const char* source, unsigned int ric, const char* functional);
+	void writeJSON(const char* source, unsigned int ric, const char* functional, const std::string& message);
 };
 
 #endif
+
+#endif
+

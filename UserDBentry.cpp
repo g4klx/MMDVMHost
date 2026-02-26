@@ -1,5 +1,6 @@
 /*
  *   Copyright (C) 2020 by SASANO Takayoshi JG1UAA
+ *   Copyright (C) 2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -16,6 +17,9 @@
  *   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 #include "UserDBentry.h"
+
+#if defined(USE_DMR) || defined(USE_P25) || defined(USE_NXDN)
+
 #include <algorithm>
 
 CUserDBentry::CUserDBentry() :
@@ -57,3 +61,6 @@ void CUserDBentry::clear(void)
 {
 	m_db.clear();
 }
+
+#endif
+

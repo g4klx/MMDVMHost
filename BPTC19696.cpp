@@ -1,6 +1,6 @@
 /*
  *	 Copyright (C) 2012 by Ian Wraith
- *   Copyright (C) 2015,2025 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2023,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
  */
 
 #include "BPTC19696.h"
+
+#if defined(USE_DMR)
 
 #include "Hamming.h"
 #include "Utils.h"
@@ -345,3 +347,6 @@ void CBPTC19696::encodeExtractBinary(unsigned char* data)
 	CUtils::bitsToByteBE(m_rawData + 180U,  data[31U]);
 	CUtils::bitsToByteBE(m_rawData + 188U,  data[32U]);
 }
+
+#endif
+

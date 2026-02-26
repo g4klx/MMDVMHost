@@ -21,22 +21,18 @@
 
 #include "RingBuffer.h"
 #include "UDPSocket.h"
+#include "Defines.h"
+#include "Timer.h"
 
-#if defined(HAS_SRC)
-#include <samplerate.h>
-#endif
+#if defined(USE_FM)
 
 #include <cstdint>
 #include <string>
 
-enum class FM_NETWORK_PROTOCOL {
-	USRP,
-	RAW
-};
 
 class CFMNetwork {
 public:
-	CFMNetwork(const std::string& callsign, const std::string& protocol, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, unsigned int sampleRate, const std::string& squelchFile, bool debug);
+	CFMNetwork(const std::string& callsign, const std::string& localAddress, unsigned short localPort, const std::string& gatewayAddress, unsigned short gatewayPort, bool debug);
 	~CFMNetwork();
 
 	bool open();
@@ -57,31 +53,20 @@ public:
 
 private:
 	std::string         m_callsign;
-	FM_NETWORK_PROTOCOL m_protocol;
 	CUDPSocket          m_socket;
 	sockaddr_storage    m_addr;
 	unsigned int        m_addrLen;
-	unsigned int        m_sampleRate;
-	std::string         m_squelchFile;
 	bool                m_debug;
 	bool                m_enabled;
 	CRingBuffer<unsigned char> m_buffer;
 	unsigned int        m_seqNo;
-#if defined(HAS_SRC)
-	SRC_STATE*          m_resampler;
-#endif
-	int                 m_error;
-	FILE*               m_fp;
+	CTimer              m_timer;
 
-	bool writeUSRPStart();
-	bool writeRawStart();
-
-	bool writeUSRPData(const float* data, unsigned int nSamples);
-	bool writeRawData(const float* in, unsigned int nIn);
-
-	bool writeUSRPEnd();
-	bool writeRawEnd();
+	bool writeStart();
+	bool writePing();
 };
+
+#endif
 
 #endif
 

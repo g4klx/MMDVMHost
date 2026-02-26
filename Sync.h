@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2018,2020,2021,2025 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2018,2020,2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,19 +19,31 @@
 #if !defined(SYNC_H)
 #define	SYNC_H
 
+#include "Defines.h"
+
 class CSync
 {
 public:
+#if defined(USE_DSTAR)
 	static void addDStarSync(unsigned char* data);
+#endif
 
+#if defined(USE_DMR)
 	static void addDMRDataSync(unsigned char* data, bool duplex);
 	static void addDMRAudioSync(unsigned char* data, bool duplex);
+#endif
 
+#if defined(USE_YSF)
 	static void addYSFSync(unsigned char* data);
+#endif
 
+#if defined(USE_P25)
 	static void addP25Sync(unsigned char* data);
+#endif
 
+#if defined(USE_NXDN)
 	static void addNXDNSync(unsigned char* data);
+#endif
 
 private:
 };

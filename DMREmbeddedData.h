@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017,2025 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017,2023,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -20,7 +20,10 @@
 #define DMREmbeddedData_H
 
 #include "DMRDefines.h"
+#include "Defines.h"
 #include "DMRLC.h"
+
+#if defined(USE_DMR)
 
 enum class LC_STATE {
 	NONE,
@@ -59,5 +62,7 @@ private:
 	void decodeEmbeddedData();
 	void encodeEmbeddedData();
 };
+
+#endif
 
 #endif

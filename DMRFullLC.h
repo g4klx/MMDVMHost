@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -21,8 +21,10 @@
 
 #include "DMRLC.h"
 #include "DMRSlotType.h"
-
 #include "BPTC19696.h"
+#include "Defines.h"
+
+#if defined(USE_DMR)
 
 class CDMRFullLC
 {
@@ -37,6 +39,8 @@ public:
 private:
 	CBPTC19696 m_bptc;
 };
+
+#endif
 
 #endif
 

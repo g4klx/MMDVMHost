@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2016,2017,2019,2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2016,2017,2019,2020,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -18,6 +18,10 @@
 
 #if !defined(YSFFICH_H)
 #define  YSFFICH_H
+
+#include "Defines.h"
+
+#if defined(USE_YSF)
 
 class CYSFFICH {
 public:
@@ -57,3 +61,6 @@ private:
 };
 
 #endif
+
+#endif
+

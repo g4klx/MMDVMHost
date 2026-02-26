@@ -23,9 +23,6 @@
     <ClInclude Include="Defines.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Display.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DMRControl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -54,9 +51,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="MMDVMHost.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NullDisplay.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="QR1676.h">
@@ -143,9 +137,6 @@
     <ClInclude Include="YSFPayload.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Nextion.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="DMRLookup.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -194,19 +185,10 @@
     <ClInclude Include="SerialPort.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ModemSerialPort.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Mutex.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="LCDproc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RSSIInterpolator.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NetworkInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="P25Trellis.h">
@@ -260,12 +242,6 @@
     <ClInclude Include="DMRTA.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="CASTInfo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="TFTSurenoo.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="UserDB.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -287,18 +263,6 @@
     <ClInclude Include="IIRDirectForm1Filter.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="PseudoTTYController.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DMRDirectNetwork.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DMRGatewayNetwork.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="SHA256.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="UARTController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -314,7 +278,7 @@
     <ClInclude Include="ModemPort.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="SMeter.h">
+    <ClInclude Include="MQTTConnection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="RS634717.h">
@@ -332,9 +296,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CRC.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Display.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DMRControl.cpp">
@@ -359,9 +320,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MMDVMHost.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NullDisplay.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="QR1676.cpp">
@@ -439,9 +397,6 @@
     <ClCompile Include="YSFPayload.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Nextion.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="DMRLookup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -487,19 +442,10 @@
     <ClCompile Include="SerialPort.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ModemSerialPort.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Mutex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="LCDproc.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="RSSIInterpolator.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NetworkInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="P25Trellis.cpp">
@@ -547,12 +493,6 @@
     <ClCompile Include="DMRTA.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CASTInfo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="TFTSurenoo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="UserDB.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -574,18 +514,6 @@
     <ClCompile Include="IIRDirectForm1Filter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PseudoTTYController.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DMRDirectNetwork.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="DMRGatewayNetwork.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SHA256.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="UARTController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -601,7 +529,7 @@
     <ClCompile Include="ModemPort.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="SMeter.cpp">
+    <ClCompile Include="MQTTConnection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RS634717.cpp">

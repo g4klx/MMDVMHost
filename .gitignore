@@ -3,6 +3,7 @@ Release
 x64
 MMDVMHost
 RemoteCommand
+Images
 *.o
 *.opendb
 *.bak

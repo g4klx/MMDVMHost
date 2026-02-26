@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2020,2021,2022,2025 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2020,2021,2022,2023,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -20,6 +20,9 @@
 #define DMRCSBK_H
 
 #include "DMRDefines.h"
+#include "Defines.h"
+
+#if defined(USE_DMR)
 
 enum class CSBKO : unsigned char {
 	NONE           = 0x00,
@@ -81,3 +84,6 @@ private:
 };
 
 #endif
+
+#endif
+

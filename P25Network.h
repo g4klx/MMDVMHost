@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2014,2016,2020,2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2014,2016,2020,2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -24,6 +24,9 @@
 #include "UDPSocket.h"
 #include "P25Audio.h"
 #include "P25Data.h"
+#include "Defines.h"
+
+#if defined(USE_P25)
 
 #include <cstdint>
 #include <string>
@@ -60,3 +63,6 @@ private:
 };
 
 #endif
+
+#endif
+

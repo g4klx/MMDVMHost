@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2020,2021,2022,2025 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2020,2021,2022,2023,2025 by Jonathan Naylor G4KLX
  *   Copyright (C) 2019 by Patrick Maier DK5MP
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -21,6 +21,8 @@
 #include "BPTC19696.h"
 #include "Utils.h"
 #include "CRC.h"
+
+#if defined(USE_DMR)
 
 #include <cstdio>
 #include <cassert>
@@ -246,3 +248,6 @@ void CDMRCSBK::setCBF(unsigned char cbf)
 {
 	m_CBF = m_data[3U] = cbf;
 }
+
+#endif
+

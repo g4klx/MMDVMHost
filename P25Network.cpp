@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2014,2016,2019,2020,2021,2025 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2014,2016,2019,2020,2021,2023,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -18,9 +18,10 @@
 
 #include "P25Network.h"
 #include "P25Defines.h"
-#include "Defines.h"
 #include "Utils.h"
 #include "Log.h"
+
+#if defined(USE_P25)
 
 #include <cstdio>
 #include <cassert>
@@ -443,3 +444,6 @@ void CP25Network::enable(bool enabled)
 
 	m_enabled = enabled;
 }
+
+#endif
+

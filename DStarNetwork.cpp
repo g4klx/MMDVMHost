@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2014,2016,2019,2020,2021,2024,2025 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2014,2016,2019,2020,2021,2023,2024,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@
 #include "Defines.h"
 #include "Utils.h"
 #include "Log.h"
+
+#if defined(USE_DSTAR)
 
 #include <cstdio>
 #include <cassert>
@@ -346,3 +348,6 @@ void CDStarNetwork::getStatus(LINK_STATUS& status, unsigned char* reflector)
 
 	::memcpy(reflector, m_linkReflector, DSTAR_LONG_CALLSIGN_LENGTH);
 }
+
+#endif
+

@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -19,19 +19,35 @@
 #if !defined(CRC_H)
 #define	CRC_H
 
+#include "Defines.h"
+
 class CCRC
 {
 public:
+#if defined(USE_DMR)
 	static bool checkFiveBit(bool* in, unsigned int tcrc);
 	static void encodeFiveBit(const bool* in, unsigned int& tcrc);
+#endif
 
+#if defined(USE_DSTAR)
 	static void addCCITT161(unsigned char* in, unsigned int length);
+#endif
+
+#if defined(USE_DMR) || defined(USE_YSF) || defined(USE_P25)
 	static void addCCITT162(unsigned char* in, unsigned int length);
+#endif
 
+#if defined(USE_DSTAR)
 	static bool checkCCITT161(const unsigned char* in, unsigned int length);
-	static bool checkCCITT162(const unsigned char* in, unsigned int length);
+#endif
 
+#if defined(USE_DMR) || defined(USE_YSF) || defined(USE_P25)
+	static bool checkCCITT162(const unsigned char* in, unsigned int length);
+#endif
+
+#if defined(USE_DMR)
 	static unsigned char crc8(const unsigned char* in, unsigned int length);
+#endif
 };
 
 #endif

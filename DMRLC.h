@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2019,2021,2022 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2019,2021,2022,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -20,6 +20,9 @@
 #define DMRLC_H
 
 #include "DMRDefines.h"
+#include "Defines.h"
+
+#if defined(USE_DMR)
 
 class CDMRLC
 {
@@ -60,6 +63,8 @@ private:
 	unsigned int  m_srcId;
 	unsigned int  m_dstId;
 };
+
+#endif
 
 #endif
 

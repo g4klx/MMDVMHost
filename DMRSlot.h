@@ -29,13 +29,16 @@
 #include "AMBEFEC.h"
 #include "DMRSlot.h"
 #include "DMRData.h"
-#include "Display.h"
 #include "Defines.h"
 #include "Timer.h"
 #include "Modem.h"
 #include "DMRLC.h"
 
+#if defined(USE_DMR)
+
 #include <vector>
+
+#include <nlohmann/json.hpp>
 
 enum class ACTIVITY_TYPE {
 	NONE,
@@ -62,7 +65,7 @@ public:
 
 	void enable(bool enabled);
 
-	static void init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData, unsigned int callHang, CModem* modem, IDMRNetwork* network, CDisplay* display, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter, DMR_OVCM ovcm, bool protect);
+	static void init(unsigned int colorCode, bool embeddedLCOnly, bool dumpTAData, unsigned int callHang, CModem* modem, CDMRNetwork* network, bool duplex, CDMRLookup* lookup, CRSSIInterpolator* rssiMapper, unsigned int jitter, DMR_OVCM ovcm, bool protect);
 
 private:
 	unsigned int               m_slotNo;
@@ -105,13 +108,16 @@ private:
 	bool                       m_netTimeout;
 	unsigned char*             m_lastFrame;
 	bool                       m_lastFrameValid;
-	unsigned char              m_rssi;
-	unsigned char              m_maxRSSI;
-	unsigned char              m_minRSSI;
-	unsigned int               m_aveRSSI;
+	int                        m_rssi;
+	int                        m_maxRSSI;
+	int                        m_minRSSI;
+	int                        m_aveRSSI;
+	unsigned int               m_rssiCountTotal;
+	int                        m_rssiAccum;
 	unsigned int               m_rssiCount;
+	unsigned int               m_bitErrsAccum;
+	unsigned int               m_bitsCount;
 	bool                       m_enabled;
-	FILE*                      m_fp;
 
 	static unsigned int        m_colorCode;
 
@@ -119,8 +125,7 @@ private:
 	static bool                m_dumpTAData;
 
 	static CModem*             m_modem;
-	static IDMRNetwork*        m_network;
-	static CDisplay*           m_display;
+	static CDMRNetwork*        m_network;
 	static bool                m_duplex;
 	static CDMRLookup*         m_lookup;
 	static unsigned int        m_hangCount;
@@ -151,14 +156,33 @@ private:
 	void writeEndRF(bool writeEnd = false);
 	void writeEndNet(bool writeEnd = false);
 
-	bool openFile();
-	bool writeFile(const unsigned char* data);
-	void closeFile();
-
 	bool insertSilence(const unsigned char* data, unsigned char seqNo);
 	void insertSilence(unsigned int count);
 
 	static void setShortLC(unsigned int slotNo, unsigned int id, FLCO flco = FLCO::GROUP, ACTIVITY_TYPE type = ACTIVITY_TYPE::NONE);
+
+	void writeJSONRSSI();
+	void writeJSONBER();
+	void writeJSONText(const unsigned char* text);
+
+	void writeJSONRF(const char* action);
+	void writeJSONRF(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId);
+	void writeJSONRF(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId, unsigned int frames);
+	void writeJSONRF(const char* action, const char* desc, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId);
+	void writeJSONRF(const char* action, float duration, float ber);
+	void writeJSONRF(const char* action, float duration, float ber, int minRSSI, int maxRSSI, int aveRSSI);
+
+	void writeJSONNet(const char* action);
+	void writeJSONNet(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId);
+	void writeJSONNet(const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId, unsigned int frames);
+	void writeJSONNet(const char* action, float duration, float loss, float ber);
+	void writeJSONNet(const char* action, const char* desc, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId);
+
+	void writeJSON(nlohmann::json& json, const char* action);
+	void writeJSON(nlohmann::json& json, const char* source, const char* action, unsigned int srcId, const std::string& srcInfo, bool grp, unsigned int dstId);
 };
 
 #endif
+
+#endif
+

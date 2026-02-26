@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016.2021 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016.2021,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -18,6 +18,10 @@
 
 #if !defined(YSFConvolution_H)
 #define  YSFConvolution_H
+
+#include "Defines.h"
+
+#if defined(USE_YSF)
 
 #include <cstdint>
 
@@ -41,6 +45,8 @@ private:
 	uint64_t* m_decisions;
 	uint64_t* m_dp;
 };
+
+#endif
 
 #endif
 

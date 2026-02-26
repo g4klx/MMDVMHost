@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2020,2023 by Jonathan Naylor G4KLX
  *   Copyright (C) 2020 by Geoffrey Merck - F4FXL KC3FRA
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,9 @@
  */
 
 #include "IIRDirectForm1Filter.h"
-#include "math.h"
+#include <cmath>
+
+#if defined(USE_FM)
 
 CIIRDirectForm1Filter::CIIRDirectForm1Filter(float b0, float b1, float b2, float , float a1, float a2, float addtionalGaindB) :
 m_x2(0.0F),
@@ -58,3 +60,6 @@ void CIIRDirectForm1Filter::reset()
   m_y1 = 0.0f;
   m_y2 = 0.0f;
 }
+
+#endif
+

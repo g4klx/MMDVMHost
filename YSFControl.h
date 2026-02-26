@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2020 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2020,2023 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -26,16 +26,19 @@
 #include "RingBuffer.h"
 #include "StopWatch.h"
 #include "YSFFICH.h"
-#include "Display.h"
 #include "Defines.h"
 #include "Timer.h"
 #include "Modem.h"
 
+#if defined(USE_YSF)
+
 #include <string>
+
+#include <nlohmann/json.hpp>
 
 class CYSFControl {
 public:
-	CYSFControl(const std::string& callsign, bool selfOnly, CYSFNetwork* network, CDisplay* display, unsigned int timeout, bool duplex, bool lowDeviation, bool remoteGateway, CRSSIInterpolator* rssiMapper);
+	CYSFControl(const std::string& callsign, bool selfOnly, CYSFNetwork* network, unsigned int timeout, bool duplex, bool lowDeviation, bool remoteGateway, CRSSIInterpolator* rssiMapper);
 	~CYSFControl();
 
 	bool writeModem(unsigned char* data, unsigned int len);
@@ -53,7 +56,6 @@ private:
 	unsigned char*             m_selfCallsign;
 	bool                       m_selfOnly;
 	CYSFNetwork*               m_network;
-	CDisplay*                  m_display;
 	bool                       m_duplex;
 	bool                       m_lowDeviation;
 	bool                       m_remoteGateway;
@@ -70,7 +72,6 @@ private:
 	unsigned int               m_netLost;
 	unsigned int               m_rfErrs;
 	unsigned int               m_rfBits;
-	unsigned int               m_netErrs;
 	unsigned int               m_netBits;
 	unsigned char*             m_rfSource;
 	unsigned char*             m_rfDest;
@@ -81,13 +82,16 @@ private:
 	CYSFPayload                m_rfPayload;
 	CYSFPayload                m_netPayload;
 	CRSSIInterpolator*         m_rssiMapper;
-	unsigned char              m_rssi;
-	unsigned char              m_maxRSSI;
-	unsigned char              m_minRSSI;
-	unsigned int               m_aveRSSI;
+	int                        m_rssi;
+	int                        m_maxRSSI;
+	int                        m_minRSSI;
+	int                        m_aveRSSI;
+	unsigned int               m_rssiCountTotal;
+	int                        m_rssiAccum;
 	unsigned int               m_rssiCount;
+	unsigned int               m_bitsCount;
+	unsigned int               m_bitErrsAccum;
 	bool                       m_enabled;
-	FILE*                      m_fp;
 
 	bool processVWData(bool valid, unsigned char *data);
 	bool processDNData(bool valid, unsigned char *data);
@@ -101,12 +105,29 @@ private:
 	void writeEndRF();
 	void writeEndNet();
 
-	bool openFile();
-	bool writeFile(const unsigned char* data);
-	void closeFile();
+	void writeJSONRSSI();
+	void writeJSONBER(unsigned int bits, unsigned int errs);
+
+	void writeJSONRF(const char* action, const char* mode, const unsigned char* source, unsigned char dgid);
+	void writeJSONRF(const char* action, float duration, float ber);
+	void writeJSONRF(const char* action, float duration, float ber, int minRSSI, int maxRSSI, int aveRSSI);
+
+	void writeJSONNet(const char* action, const unsigned char* source, unsigned char dgid, const unsigned char* reflector);
+	void writeJSONNet(const char* action, float duration, unsigned int loss);
+
+	void writeJSONRF(nlohmann::json& json, const char* action);
+	void writeJSONRF(nlohmann::json& json, const char* action, const unsigned char* source, unsigned char dgid);
+
+	void writeJSONNet(nlohmann::json& json, const char* action);
+	void writeJSONNet(nlohmann::json& json, const char* action, const unsigned char* source, unsigned char dgid);
+
+	std::string convertBuffer(const unsigned char* buffer) const;
 
 	bool checkCallsign(const unsigned char* callsign) const;
 	void processNetCallsigns(const unsigned char* data, unsigned char dgid);
 };
 
 #endif
+
+#endif
+

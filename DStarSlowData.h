@@ -20,6 +20,9 @@
 #define	DStarSlowData_H
 
 #include "DStarHeader.h"
+#include "Defines.h"
+
+#if defined(USE_DSTAR)
 
 class CDStarSlowData {
 public:
@@ -61,3 +64,6 @@ private:
 };
 
 #endif
+
+#endif
+

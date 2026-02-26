@@ -1,6 +1,6 @@
 /*
- *	 Copyright (C) 2012 by Ian Wraith
- *   Copyright (C) 2015,2016,2025 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2012 by Ian Wraith
+ *   Copyright (C) 2015,2016,2023,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -18,11 +18,12 @@
  */
 
 #include "DMRFullLC.h"
-
 #include "DMRDefines.h"
 #include "RS129.h"
 #include "Utils.h"
 #include "Log.h"
+
+#if defined(USE_DMR)
 
 #include <cstdio>
 #include <cassert>
@@ -97,3 +98,6 @@ void CDMRFullLC::encode(const CDMRLC& lc, unsigned char* data, unsigned char typ
 
 	m_bptc.encode(lcData, data);
 }
+
+#endif
+

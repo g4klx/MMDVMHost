@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2011-2018,2020,2021,2025 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2011-2018,2020,2021,2023,2025 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -49,16 +49,27 @@ public:
 	void setRFParams(unsigned int rxFrequency, int rxOffset, unsigned int txFrequency, int txOffset, int txDCOffset, int rxDCOffset, float rfLevel, unsigned int pocsagFrequency);
 	void setModeParams(bool dstarEnabled, bool dmrEnabled, bool ysfEnabled, bool p25Enabled, bool nxdnEnabled, bool pocsagEnabled, bool fmEnabled);
 	void setLevels(float rxLevel, float cwIdTXLevel, float dstarTXLevel, float dmrTXLevel, float ysfTXLevel, float p25TXLevel, float nxdnTXLevel, float pocsagLevel, float fmTXLevel);
+
+#if defined(USE_DMR)
 	void setDMRParams(unsigned int colorCode);
+#endif
+#if defined(USE_YSF)
 	void setYSFParams(bool loDev, unsigned int txHang);
+#endif
+#if defined(USE_P25)
 	void setP25Params(unsigned int txHang);
+#endif
+#if defined(USE_NXDN)
 	void setNXDNParams(unsigned int txHang);
+#endif
 	void setTransparentDataParams(unsigned int sendFrameType);
 
+#if defined(USE_FM)
 	void setFMCallsignParams(const std::string& callsign, unsigned int callsignSpeed, unsigned int callsignFrequency, unsigned int callsignTime, unsigned int callsignHoldoff, float callsignHighLevel, float callsignLowLevel, bool callsignAtStart, bool callsignAtEnd, bool callsignAtLatch);
 	void setFMAckParams(const std::string& rfAck, unsigned int ackSpeed, unsigned int ackFrequency, unsigned int ackMinTime, unsigned int ackDelay, float ackLevel);
 	void setFMMiscParams(unsigned int timeout, float timeoutLevel, float ctcssFrequency, unsigned int ctcssHighThreshold, unsigned int ctcssLowThreshold, float ctcssLevel, unsigned int kerchunkTime, unsigned int hangTime, unsigned int accessMode, bool linkMode, bool cosInvert, bool noiseSquelch, unsigned int squelchHighThreshold, unsigned int squelchLowThreshold, unsigned int rfAudioBoost, float maxDevLevel);
 	void setFMExtParams(const std::string& ack, unsigned int audioBoost);
+#endif
 
 	bool open();
 
@@ -72,22 +83,48 @@ public:
 
 	unsigned int getVersion() const;
 
+#if defined(USE_DSTAR)
 	unsigned int readDStarData(unsigned char* data);
+#endif
+#if defined(USE_DMR)
 	unsigned int readDMRData1(unsigned char* data);
 	unsigned int readDMRData2(unsigned char* data);
+#endif
+#if defined(USE_YSF)
 	unsigned int readYSFData(unsigned char* data);
+#endif
+#if defined(USE_P25)
 	unsigned int readP25Data(unsigned char* data);
+#endif
+#if defined(USE_NXDN)
 	unsigned int readNXDNData(unsigned char* data);
+#endif
+#if defined(USE_FM)
 	unsigned int readFMData(unsigned char* data);
+#endif
 
+#if defined(USE_DSTAR)
 	bool hasDStarSpace() const;
+#endif
+#if defined(USE_DMR)
 	bool hasDMRSpace1() const;
 	bool hasDMRSpace2() const;
+#endif
+#if defined(USE_YSF)
 	bool hasYSFSpace() const;
+#endif
+#if defined(USE_P25)
 	bool hasP25Space() const;
+#endif
+#if defined(USE_NXDN)
 	bool hasNXDNSpace() const;
+#endif
+#if defined(USE_POCSAG)
 	bool hasPOCSAGSpace() const;
+#endif
+#if defined(USE_FM)
 	unsigned int getFMSpace() const;
+#endif
 
 	bool hasTX() const;
 	bool hasCD() const;
@@ -96,32 +133,60 @@ public:
 	bool hasError() const;
 
 	bool writeConfig();
+
+#if defined(USE_DSTAR)
 	bool writeDStarData(const unsigned char* data, unsigned int length);
+#endif
+#if defined(USE_DMR)
 	bool writeDMRData1(const unsigned char* data, unsigned int length);
 	bool writeDMRData2(const unsigned char* data, unsigned int length);
+#endif
+#if defined(USE_YSF)
 	bool writeYSFData(const unsigned char* data, unsigned int length);
+#endif
+#if defined(USE_P25)
 	bool writeP25Data(const unsigned char* data, unsigned int length);
+#endif
+#if defined(USE_NXDN)
 	bool writeNXDNData(const unsigned char* data, unsigned int length);
+#endif
+#if defined(USE_POCSAG)
 	bool writePOCSAGData(const unsigned char* data, unsigned int length);
+#endif
+#if defined(USE_FM)
 	bool writeFMData(const unsigned char* data, unsigned int length);
+#endif
 
+#if defined(USE_DSTAR)
 	bool writeDStarInfo(const char* my1, const char* my2, const char* your, const char* type, const char* reflector);
+#endif
+#if defined(USE_DMR)
 	bool writeDMRInfo(unsigned int slotNo, const std::string& src, bool group, const std::string& dst, const char* type);
+#endif
+#if defined(USE_YSF)
 	bool writeYSFInfo(const char* source, const char* dest, unsigned char dgid, const char* type, const char* origin);
+#endif
+#if defined(USE_P25)
 	bool writeP25Info(const char* source, bool group, unsigned int dest, const char* type);
+#endif
+#if defined(USE_NXDN)
 	bool writeNXDNInfo(const char* source, bool group, unsigned int dest, const char* type);
+#endif
+#if defined(USE_POCSAG)
 	bool writePOCSAGInfo(unsigned int ric, const std::string& message);
+#endif
 	bool writeIPInfo(const std::string& address);
 
+#if defined(USE_DMR)
 	bool writeDMRStart(bool tx);
 	bool writeDMRShortLC(const unsigned char* lc);
 	bool writeDMRAbort(unsigned int slotNo);
-
+#endif
 	bool writeTransparentData(const unsigned char* data, unsigned int length);
 	unsigned int readTransparentData(unsigned char* data);
 
-	bool writeSerial(const unsigned char* data, unsigned int length);
-	unsigned int readSerial(unsigned char* data, unsigned int length);
+	bool writeSerialData(const unsigned char* data, unsigned int length);
+	unsigned int readSerialData(unsigned char* data);
 
 	unsigned char getMode() const;
 	bool setMode(unsigned char mode);
@@ -136,40 +201,80 @@ public:
 
 private:
 	unsigned int               m_protocolVersion;
+#if defined(USE_DMR)
 	unsigned int               m_dmrColorCode;
+#endif
+#if defined(USE_YSF)
 	bool                       m_ysfLoDev;
 	unsigned int               m_ysfTXHang;
+#endif
+#if defined(USE_P25)
 	unsigned int               m_p25TXHang;
+#endif
+#if defined(USE_NXDN)
 	unsigned int               m_nxdnTXHang;
+#endif
 	bool                       m_duplex;
 	bool                       m_rxInvert;
 	bool                       m_txInvert;
 	bool                       m_pttInvert;
 	unsigned int               m_txDelay;
+#if defined(USE_DMR)
 	unsigned int               m_dmrDelay;
+#endif
 	float                      m_rxLevel;
 	float                      m_cwIdTXLevel;
+#if defined(USE_DSTAR)
 	float                      m_dstarTXLevel;
+#endif
+#if defined(USE_DMR)
 	float                      m_dmrTXLevel;
+#endif
+#if defined(USE_YSF)
 	float                      m_ysfTXLevel;
+#endif
+#if defined(USE_P25)
 	float                      m_p25TXLevel;
+#endif
+#if defined(USE_NXDN)
 	float                      m_nxdnTXLevel;
+#endif
+#if defined(USE_POCSAG)
 	float                      m_pocsagTXLevel;
+#endif
+#if defined(USE_FM)
 	float                      m_fmTXLevel;
+#endif
 	float                      m_rfLevel;
 	bool                       m_useCOSAsLockout;
 	bool                       m_trace;
 	bool                       m_debug;
 	unsigned int               m_rxFrequency;
 	unsigned int               m_txFrequency;
+#if defined(USE_POCSAG)
 	unsigned int               m_pocsagFrequency;
+#endif
+#if defined(USE_DSTAR)
 	bool                       m_dstarEnabled;
+#endif
+#if defined(USE_DMR)
 	bool                       m_dmrEnabled;
+#endif
+#if defined(USE_YSF)
 	bool                       m_ysfEnabled;
+#endif
+#if defined(USE_P25)
 	bool                       m_p25Enabled;
+#endif
+#if defined(USE_NXDN)
 	bool                       m_nxdnEnabled;
+#endif
+#if defined(USE_POCSAG)
 	bool                       m_pocsagEnabled;
+#endif
+#if defined(USE_FM)
 	bool                       m_fmEnabled;
+#endif
 	int                        m_rxDCOffset;
 	int                        m_txDCOffset;
 	IModemPort*                m_port;
@@ -178,21 +283,36 @@ private:
 	unsigned int               m_offset;
 	SERIAL_STATE               m_state;
 	unsigned char              m_type;
+
+#if defined(USE_DSTAR)
 	CRingBuffer<unsigned char> m_rxDStarData;
 	CRingBuffer<unsigned char> m_txDStarData;
+#endif
+#if defined(USE_DMR)
 	CRingBuffer<unsigned char> m_rxDMRData1;
 	CRingBuffer<unsigned char> m_rxDMRData2;
 	CRingBuffer<unsigned char> m_txDMRData1;
 	CRingBuffer<unsigned char> m_txDMRData2;
+#endif
+#if defined(USE_YSF)
 	CRingBuffer<unsigned char> m_rxYSFData;
 	CRingBuffer<unsigned char> m_txYSFData;
+#endif
+#if defined(USE_P25)
 	CRingBuffer<unsigned char> m_rxP25Data;
 	CRingBuffer<unsigned char> m_txP25Data;
+#endif
+#if defined(USE_NXDN)
 	CRingBuffer<unsigned char> m_rxNXDNData;
 	CRingBuffer<unsigned char> m_txNXDNData;
+#endif
+#if defined(USE_POCSAG)
 	CRingBuffer<unsigned char> m_txPOCSAGData;
+#endif
+#if defined(USE_FM)
 	CRingBuffer<unsigned char> m_rxFMData;
 	CRingBuffer<unsigned char> m_txFMData;
+#endif
 	CRingBuffer<unsigned char> m_rxSerialData;
 	CRingBuffer<unsigned char> m_txSerialData;
 	CRingBuffer<unsigned char> m_rxTransparentData;
@@ -201,21 +321,35 @@ private:
 	CTimer                     m_statusTimer;
 	CTimer                     m_inactivityTimer;
 	CTimer                     m_playoutTimer;
+#if defined(USE_DSTAR)
 	unsigned int               m_dstarSpace;
+#endif
+#if defined(USE_DMR)
 	unsigned int               m_dmrSpace1;
 	unsigned int               m_dmrSpace2;
+#endif
+#if defined(USE_YSF)
 	unsigned int               m_ysfSpace;
+#endif
+#if defined(USE_P25)
 	unsigned int               m_p25Space;
+#endif
+#if defined(USE_NXDN)
 	unsigned int               m_nxdnSpace;
+#endif
+#if defined(USE_POCSAG)
 	unsigned int               m_pocsagSpace;
+#endif
+#if defined(USE_FM)
 	unsigned int               m_fmSpace;
+#endif
 	bool                       m_tx;
 	bool                       m_cd;
 	bool                       m_lockout;
 	bool                       m_error;
 	unsigned char              m_mode;
 	HW_TYPE                    m_hwType;
-
+#if defined(USE_FM)
 	std::string                m_fmCallsign;
 	unsigned int               m_fmCallsignSpeed;
 	unsigned int               m_fmCallsignFrequency;
@@ -251,6 +385,7 @@ private:
 	unsigned int               m_fmExtAudioBoost;
 	float                      m_fmMaxDevLevel;
 	bool                       m_fmExtEnable;
+#endif
 	unsigned char              m_capabilities1;
 	unsigned char              m_capabilities2;
 
@@ -259,11 +394,12 @@ private:
 	bool setConfig1();
 	bool setConfig2();
 	bool setFrequency();
+#if defined(USE_FM)
 	bool setFMCallsignParams();
 	bool setFMAckParams();
 	bool setFMMiscParams();
 	bool setFMExtParams();
-
+#endif
 	void printDebug();
 
 	RESP_TYPE_MMDVM getResponse();
