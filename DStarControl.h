@@ -103,13 +103,12 @@ private:
 	unsigned int               m_bitErrsAccum;
 	unsigned int               m_bitsCount;
 	bool                       m_enabled;
-	FILE*                      m_fp;
-	unsigned char *            m_RFdataLookBack;
-	unsigned int               m_RFdataLookBackLen;
-	unsigned int               m_RFdataLookBackIndex;
-	unsigned char *            m_NetdataLookBack;
-	unsigned int               m_NetdataLookBackLen;
-	unsigned int               m_NetdataLookBackIndex;
+	unsigned char*             m_rfDataLookBack;
+	unsigned int               m_rfDataLookBackLen;
+	unsigned int               m_rfDataLookBackIndex;
+	unsigned char*             m_netDataLookBack;
+	unsigned int               m_netDataLookBackLen;
+	unsigned int               m_netDataLookBackIndex;
 
 	void writeNetwork();
 	void writeNetworkData(unsigned char* data, unsigned int length);

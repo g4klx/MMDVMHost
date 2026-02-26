@@ -86,17 +86,15 @@ m_aveRSSI(0),
 m_rssiCountTotal(0U),
 m_rssiAccum(0),
 m_rssiCount(0U),
-m_enabled(true),
-m_fp(nullptr),
-m_RFdataLookBack(nullptr),
-m_RFdataLookBackLen(0U),
-m_RFdataLookBackIndex(0U),
-m_NetdataLookBack(nullptr),
-m_NetdataLookBackLen(0U),
-m_NetdataLookBackIndex(0U),
 m_bitErrsAccum(0U),
 m_bitsCount(0U),
-m_enabled(true)
+m_enabled(true),
+m_rfDataLookBack(nullptr),
+m_rfDataLookBackLen(0U),
+m_rfDataLookBackIndex(0U),
+m_netDataLookBack(nullptr),
+m_netDataLookBackLen(0U),
+m_netDataLookBackIndex(0U)
 {
 	assert(rssiMapper != nullptr);
 
@@ -286,7 +284,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 
 		m_rfFrames = 1U;
 		m_rfN = 0U;
-		m_RFdataLookBackIndex = 0U;
+		m_rfDataLookBackIndex = 0U;
 
 		m_minRSSI = m_rssi;
 		m_maxRSSI = m_rssi;
@@ -381,14 +379,14 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			m_rfSlowData.add(data + 1U);
 		}
 
-		if(m_RFdataLookBackIndex == 0U) {
-			m_RFdataLookBack = new unsigned char[len];
-			::memcpy(m_RFdataLookBack, data, len);
-			m_RFdataLookBackLen = len;
-			m_RFdataLookBackIndex ++;
+		if (m_rfDataLookBackIndex == 0U) {
+			m_rfDataLookBack = new unsigned char[len];
+			::memcpy(m_rfDataLookBack, data, len);
+			m_rfDataLookBackLen = len;
+			m_rfDataLookBackIndex ++;
 			return true;
-		} else if (m_RFdataLookBackIndex == 1U) {
-			m_RFdataLookBackIndex ++;
+		} else if (m_rfDataLookBackIndex == 1U) {
+			m_rfDataLookBackIndex ++;
 
 			if (m_rfState == RPT_RF_STATE::AUDIO){
 				unsigned char type = m_rfSlowData.getType(false);
@@ -400,11 +398,11 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 			}
 
 			LogDebug("D-Star, processing lookback data (RF)");
-			bool res1 = writeModem(m_RFdataLookBack, m_RFdataLookBackLen);
+			bool res1 = writeModem(m_rfDataLookBack, m_rfDataLookBackLen);
 			bool res2 = writeModem(data, len);
-			delete[] m_RFdataLookBack;
-			m_RFdataLookBack = nullptr;
-			m_RFdataLookBackLen = 0U;
+			delete[] m_rfDataLookBack;
+			m_rfDataLookBack = nullptr;
+			m_rfDataLookBackLen = 0U;
 			return res1 && res2;
 		}
 
@@ -581,7 +579,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 
 			m_rfN = 0U;
 			m_rfFrames = 1U;
-			m_RFdataLookBackIndex = 0U;
+			m_rfDataLookBackIndex = 0U;
 
 			m_minRSSI = m_rssi;
 			m_maxRSSI = m_rssi;
@@ -744,7 +742,7 @@ void CDStarControl::writeNetwork()
 
 		m_netFrames = 0U;
 		m_netLost   = 0U;
-		m_NetdataLookBackIndex = 0U;
+		m_netDataLookBackIndex = 0U;
 
 		m_netN      = 20U;
 
@@ -821,14 +819,14 @@ void CDStarControl::writeNetworkData(unsigned char* data, unsigned int length)
 			m_netSlowData.add(data + 2U);
 		}
 
-		if(m_NetdataLookBackIndex == 0U) {
-			m_NetdataLookBack = new unsigned char[length];
-			::memcpy(m_NetdataLookBack, data, length);
-			m_NetdataLookBackLen = length;
-			m_NetdataLookBackIndex ++;
+		if (m_netDataLookBackIndex == 0U) {
+			m_netDataLookBack = new unsigned char[length];
+			::memcpy(m_netDataLookBack, data, length);
+			m_netDataLookBackLen = length;
+			m_netDataLookBackIndex ++;
 			return;
-		} else if (m_NetdataLookBackIndex == 1U) {
-			m_NetdataLookBackIndex ++;
+		} else if (m_netDataLookBackIndex == 1U) {
+			m_netDataLookBackIndex ++;
 
 			if (m_netState == RPT_NET_STATE::AUDIO){
 				unsigned char type = m_netSlowData.getType(false);
@@ -839,11 +837,11 @@ void CDStarControl::writeNetworkData(unsigned char* data, unsigned int length)
 				}
 			}
 			LogDebug("D-Star, processing lookback data (Net)");
-			writeNetworkData(m_NetdataLookBack, m_NetdataLookBackLen);
+			writeNetworkData(m_netDataLookBack, m_netDataLookBackLen);
 			writeNetworkData(data, length);
-			delete[] m_NetdataLookBack;
-			m_NetdataLookBack = nullptr;
-			m_NetdataLookBackLen = 0U;
+			delete[] m_netDataLookBack;
+			m_netDataLookBack = nullptr;
+			m_netDataLookBackLen = 0U;
 			return;
 		}
 	}
@@ -870,9 +868,8 @@ void CDStarControl::writeNetworkData(unsigned char* data, unsigned int length)
 	if (m_netState == RPT_NET_STATE::AUDIO) {
 		unsigned char n = data[1U];
 
-		unsigned int errors = 0U;
 		if (::memcmp(data + 2U, DSTAR_NULL_AMBE_DATA_BYTES_SCRAMBLED, DSTAR_VOICE_FRAME_LENGTH_BYTES) != 0) {
-			errors = m_fec.regenerateDStar(data + 2U);
+			unsigned int errors = m_fec.regenerateDStar(data + 2U);
 			LogDebug("D-Star, Net audio sequence no. %u, errs: %u/48 (%.1f%%)", n, errors, float(errors) / 0.48F);
 			blankDTMF(data + 2U);
 		}
@@ -884,7 +881,6 @@ void CDStarControl::writeNetworkData(unsigned char* data, unsigned int length)
 		if (!ret)
 			return;
 
-		m_netErrs += errors;
 		m_netBits += 48U;
 
 		m_netN = n;
