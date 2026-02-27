@@ -724,7 +724,6 @@ bool CConf::read()
 				m_dstarRemoteGateway = ::atoi(value) == 1;
 			else if (::strcmp(key, "ModeHang") == 0)
 				m_dstarModeHang = (unsigned int)::atoi(value);
-		} else if (section == SECTION::DMR) {
 #endif
 #if defined(USE_DMR)
 		} else if (section == SECTION::DMR) {
