@@ -21,7 +21,12 @@
 #include <cassert>
 #include <cstdio>
 #include <cstring>
-#include <ctime>
+
+#if defined(_WIN32) || defined(_WIN64)
+#include <process.h>
+#else
+#include <unistd.h>
+#endif
 
 
 CMQTTConnection::CMQTTConnection(const std::string& host, unsigned short port, const std::string& name, const bool authEnabled, const std::string& username,  const std::string& password, const std::vector<std::pair<std::string, void (*)(const unsigned char*, unsigned int)>>& subs, unsigned int keepalive, MQTT_QOS qos) :
@@ -53,7 +58,11 @@ CMQTTConnection::~CMQTTConnection()
 bool CMQTTConnection::open()
 {
 	char name[50U];
-	::sprintf(name, "MMDVMHost.%ld", ::time(nullptr));
+#if defined(_WIN32) || defined(_WIN64)
+	::sprintf(name, "MMDVMHost.%u", (unsigned)::_getpid());
+#else
+	::sprintf(name, "MMDVMHost.%u", (unsigned)::getpid());
+#endif
 
 	::fprintf(stdout, "MMDVMHost (%s) connecting to MQTT as %s\n", m_name.c_str(), name);
 
@@ -138,6 +147,7 @@ void CMQTTConnection::close()
 {
 	if (m_mosq != nullptr) {
 		::mosquitto_disconnect(m_mosq);
+		::mosquitto_loop_stop(m_mosq, true);
 		::mosquitto_destroy(m_mosq);
 		m_mosq = nullptr;
 	}
