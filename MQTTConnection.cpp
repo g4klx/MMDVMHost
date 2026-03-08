@@ -147,6 +147,7 @@ void CMQTTConnection::close()
 {
 	if (m_mosq != nullptr) {
 		::mosquitto_disconnect(m_mosq);
+		::mosquitto_loop_stop(m_mosq, true);
 		::mosquitto_destroy(m_mosq);
 		m_mosq = nullptr;
 	}
