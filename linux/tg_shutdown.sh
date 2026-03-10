@@ -24,7 +24,7 @@
 ### CONFIG VARIABLES ###
 
 sysopCallsign=XX0XXX
-iniFile=/path/to/MMDVM.ini
+iniFile=/path/to/MMDVMHost.ini
 shutdownTG=999999
 rebootTG=888888
 allowShutdown=1

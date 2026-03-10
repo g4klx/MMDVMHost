@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015-2021,2023,2024,2025 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015-2021,2023,2024,2025,2026 by Jonathan Naylor G4KLX
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -51,9 +51,9 @@
 #endif
 
 #if defined(_WIN32) || defined(_WIN64)
-const char* DEFAULT_INI_FILE = "MMDVM.ini";
+const char* DEFAULT_INI_FILE = "MMDVMHost.ini";
 #else
-const char* DEFAULT_INI_FILE = "/etc/MMDVM.ini";
+const char* DEFAULT_INI_FILE = "/etc/MMDVMHost.ini";
 #endif
 
 static bool m_killed = false;

@@ -1,7 +1,7 @@
 # DMRplus - Startup Options
 
 ## Introduction
-This file is to give an overview over the Options-parameter in MMDVM.ini [DMR Network]-section.
+This file is to give an overview over the Options-parameter in MMDVMHost.ini [DMR Network]-section.
 
 ## Example
 You can pull some conection-info at startup to the DMRplus-Network to define the behavior of TS1 and TS2 in DMR-mode. 

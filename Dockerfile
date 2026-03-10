@@ -17,5 +17,5 @@ RUN make \
 VOLUME /MMDVMHost
 WORKDIR /MMDVMHost
 
-CMD ["MMDVMHost", "/MMDVMHost/MMDVM.ini"]
+CMD ["MMDVMHost", "/MMDVMHost/MMDVMHost.ini"]
 

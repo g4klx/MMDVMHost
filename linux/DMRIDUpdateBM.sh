@@ -58,7 +58,7 @@ DMRFILEBACKUP=1
 #
 # Command line to restart MMDVMHost
 RESTARTCOMMAND="systemctl restart mmdvmhost.service"
-# RESTARTCOMMAND="killall MMDVMHost ; /path/to/MMDVMHost/executable/MMDVMHost /path/to/MMDVM/ini/file/MMDVM.ini"
+# RESTARTCOMMAND="killall MMDVMHost ; /path/to/MMDVMHost/executable/MMDVMHost /path/to/MMDVM/ini/file/MMDVMHost.ini"
 
 ###############################################################################
 #

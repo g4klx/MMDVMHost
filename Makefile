@@ -29,7 +29,7 @@ install: all
 		install -m 755 MMDVMHost /usr/local/bin/
 
 .PHONY install-service:
-install-service: install /etc/MMDVM.ini
+install-service: install /etc/MMDVMHost.ini
 		@useradd --user-group -M --system mmdvm --shell /bin/false || true
 		@usermod --groups dialout --append mmdvm || true
 		@mkdir /var/log/mmdvm || true
@@ -37,11 +37,11 @@ install-service: install /etc/MMDVM.ini
 		@cp ./linux/systemd/mmdvmhost.service /lib/systemd/system/
 		@systemctl enable mmdvmhost.service
 
-/etc/MMDVM.ini:
-		@cp -n MMDVM.ini /etc/MMDVM.ini
-		@sed -i 's/FilePath=./FilePath=\/var\/log\/mmdvm\//' /etc/MMDVM.ini
-		@sed -i 's/Daemon=0/Daemon=1/' /etc/MMDVM.ini
-		@chown mmdvm:mmdvm /etc/MMDVM.ini
+/etc/MMDVMHost.ini:
+		@cp -n MMDVMHost.ini /etc/MMDVMHost.ini
+		@sed -i 's/FilePath=./FilePath=\/var\/log\/mmdvm\//' /etc/MMDVMHost.ini
+		@sed -i 's/Daemon=0/Daemon=1/' /etc/MMDVMHost.ini
+		@chown mmdvm:mmdvm /etc/MMDVMHost.ini
 
 .PHONY uninstall-service:
 uninstall-service:
