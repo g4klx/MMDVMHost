@@ -2,27 +2,22 @@
 
 CC      = cc
 CXX     = c++
-CFLAGS  = -g -O3 -Wall -std=c++0x -pthread -I/usr/local/include
-LIBS    = -lpthread -lutil -lsamplerate -lmosquitto
+CFLAGS  = -g -O3 -Wall -std=c++0x -pthread -MMD -MD -I/usr/local/include
+LIBS    = -lpthread -lutil -lmosquitto
 LDFLAGS = -g -L/usr/local/lib
 
-OBJECTS = \
-		AMBEFEC.o BCH.o BPTC19696.o Conf.o CRC.o DMRAccessControl.o DMRControl.o DMRCSBK.o DMRData.o DMRDataHeader.o DMREMB.o \
-		DMREmbeddedData.o DMRFullLC.o DMRLookup.o DMRLC.o DMRNetwork.o DMRShortLC.o DMRSlot.o DMRSlotType.o DMRTA.o DMRTrellis.o DStarControl.o DStarHeader.o \
-		DStarNetwork.o DStarSlowData.o FMControl.o FMNetwork.o Golay2087.o Golay24128.o Hamming.o I2CController.o IIRDirectForm1Filter.o Log.o \
-		MMDVMHost.o MQTTConnection.o Modem.o ModemPort.o Mutex.o NullController.o NXDNAudio.o \
-		NXDNControl.o NXDNConvolution.o NXDNCRC.o NXDNFACCH1.o NXDNIcomNetwork.o NXDNKenwoodNetwork.o NXDNLayer3.o NXDNLICH.o NXDNLookup.o NXDNNetwork.o \
-		NXDNSACCH.o NXDNUDCH.o P25Audio.o P25Control.o P25Data.o P25LowSpeedData.o P25Network.o P25NID.o P25Trellis.o P25Utils.o POCSAGControl.o \
-		POCSAGNetwork.o QR1676.o RemoteControl.o RS129.o RS634717.o RSSIInterpolator.o SerialPort.o StopWatch.o Sync.o Thread.o Timer.o UARTController.o \
-		UDPController.o UDPSocket.o UserDB.o UserDBentry.o Utils.o YSFControl.o YSFConvolution.o YSFFICH.o YSFNetwork.o YSFPayload.o
+SRCS = $(wildcard *.cpp)
+OBJS = $(SRCS:.cpp=.o)
+DEPS = $(SRCS:.cpp=.d)
 
 all:	MMDVMHost
 
-MMDVMHost:	GitVersion.h $(OBJECTS) 
-		$(CXX) $(OBJECTS) $(LDFLAGS) $(LIBS) -o MMDVMHost
+MMDVMHost:	GitVersion.h $(OBJS) 
+		$(CXX) $(OBJS) $(LDFLAGS) $(LIBS) -o MMDVMHost
 
 %.o: %.cpp
 		$(CXX) $(CFLAGS) -c -o $@ $<
+-include $(DEPS)
 
 .PHONY install:
 install: all

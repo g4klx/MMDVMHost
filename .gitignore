@@ -5,6 +5,7 @@ MMDVMHost
 RemoteCommand
 Images
 *.o
+*.d
 *.opendb
 *.bak
 *.obj
