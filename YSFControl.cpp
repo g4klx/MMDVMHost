@@ -1343,9 +1343,10 @@ void CYSFControl::writeJSONRF(nlohmann::json& json, const char* action, const un
 
 	json["source_cs"] = convertBuffer(source);
 
-	json["source"] = "rf";
-	json["action"] = action;
-	json["dg-id"]  = int(dgid);
+	json["source"]    = "rf";
+	json["action"]    = action;
+	json["dg-id"]     = int(dgid);
+	json["reflector"] = "";
 }
 
 void CYSFControl::writeJSONNet(nlohmann::json& json, const char* action)

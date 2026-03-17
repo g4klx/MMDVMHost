@@ -1284,8 +1284,7 @@ void CNXDNControl::writeJSON(nlohmann::json& json, const char* source, const cha
 	json["destination_id"]   = int(dstId);
 	json["destination_type"] = grp ? "group" : "individual";
 
-	if (!srcInfo.empty())
-		json["source_info"] = srcInfo;
+	json["source_info"] = srcInfo;
 }
 
 #endif
