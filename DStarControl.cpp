@@ -1499,8 +1499,9 @@ void CDStarControl::writeJSONRF(const char* action, const unsigned char* my1, co
 	json["source_ext"]     = convertBuffer(my2, DSTAR_SHORT_CALLSIGN_LENGTH);
 	json["destination_cs"] = convertBuffer(your, DSTAR_LONG_CALLSIGN_LENGTH);
 
-	json["source"] = "rf";
-	json["action"] = action;
+	json["source"]    = "rf";
+	json["action"]    = action;
+	json["reflector"] = "";
 
 	WriteJSON("D-Star", json);
 }
@@ -1554,6 +1555,8 @@ void CDStarControl::writeJSONNet(const char* action, const unsigned char* my1, c
 
 	if (reflector != nullptr)
 		json["reflector"] = convertBuffer(reflector, DSTAR_LONG_CALLSIGN_LENGTH);
+	else
+		json["reflector"] = "";
 
 	WriteJSON("D-Star", json);
 }
