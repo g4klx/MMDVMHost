@@ -1298,7 +1298,7 @@ int CMMDVMHost::run()
 		if (m_cwIdTimer.isRunning() && m_cwIdTimer.hasExpired()) {
 			if (!m_modem->hasTX()){
 				LogDebug("sending CW ID");
-				writeJSONMode("CW");
+				writeJSONMessage("Sending CW ID");
 				m_modem->sendCWId(m_cwCallsign);
 
 				m_cwIdTimer.setTimeout(m_cwIdTime);
@@ -2970,7 +2970,7 @@ void CMMDVMHost::remoteControl(const std::string& commandString)
 						cwtext += " ";
 					cwtext += m_remoteControl->getArgString(i);
 				}
-				writeJSONMode("CW");
+				writeJSONMessage("Sending CW ID");
 				m_modem->sendCWId(cwtext);
 			}
 			break;
