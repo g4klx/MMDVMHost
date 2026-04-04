@@ -428,6 +428,7 @@ void CP25Data::encodeTSDU(unsigned char* data)
 		tsbkValue = (tsbkValue << 16) + 0U;                         // Channel ID/Number (16 bits) - 0 for conventional
 		tsbkValue = (tsbkValue << 16) + (m_dstId & 0xFFFFU);        // Group Address (16 bits)
 		tsbkValue = (tsbkValue << 24) + (m_srcId & 0xFFFFFFU);      // Source Radio Address (24 bits)
+		break;
 	    case P25_LCF_TSBK_CALL_ALERT:
 		tsbkValue = 0U;
 		tsbkValue = (tsbkValue << 16) + 0U;
