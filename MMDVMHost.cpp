@@ -1473,6 +1473,7 @@ int CMMDVMHost::run()
 	if (m_mqtt != nullptr) {
 		m_mqtt->close();
 		delete m_mqtt;
+		m_mqtt = nullptr;
 	}
 
 	return 0;
