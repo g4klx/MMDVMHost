@@ -118,7 +118,7 @@ bool CFMNetwork::writeData(const float* data, unsigned int nSamples)
 
 bool CFMNetwork::writeStart()
 {
-	uint8_t buffer[5U];
+	uint8_t buffer[20U];
 
 	unsigned int length = 0U;
 
