@@ -2,7 +2,7 @@
 
 CC      = cc
 CXX     = c++
-CFLAGS  = -g -O3 -Wall -std=c++0x -pthread -MMD -MD -I/usr/local/include
+CFLAGS  = -g -O3 -Wall -std=c++17 -Wno-psabi -pthread -MMD -MD -I/usr/local/include
 LIBS    = -lpthread -lutil -lmosquitto
 LDFLAGS = -g -L/usr/local/lib
 
