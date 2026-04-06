@@ -199,9 +199,9 @@ REMOTE_COMMAND CRemoteControl::getCommand(const std::string& command)
 
 	if (m_command == REMOTE_COMMAND::NONE) {
 		m_args.clear();
-		LogWarning(buffer);
+		LogWarning("%s", buffer);
 	} else {
-		LogMessage(buffer);
+		LogMessage("%s", buffer);
 	}
 		
 	m_mqtt->publish("response", reply.c_str());
