@@ -3108,6 +3108,9 @@ void CMMDVMHost::writeSerial(const unsigned char* message, unsigned int length)
 	assert(m_modem != nullptr);
 	assert(message != nullptr);
 
+	if (length > 5000U)
+		return;
+
 	if (length <= 252U) {
 		// Simple case of a short message, send it immediately to the modem
 		m_modem->writeSerialData(message, length);
