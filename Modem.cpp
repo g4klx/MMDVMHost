@@ -1871,7 +1871,7 @@ bool CModem::writeIPInfo(const std::string& address)
 
 	size_t length = address.size();
 
-	unsigned char buffer[25U];
+	unsigned char buffer[60U];
 
 	buffer[0U] = MMDVM_FRAME_START;
 	buffer[1U] = (unsigned char)length + 4U;
