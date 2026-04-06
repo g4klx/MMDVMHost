@@ -1799,7 +1799,7 @@ bool CModem::writeP25Info(const char* source, bool group, unsigned int dest, con
 	buffer[1U] = 31U;
 	buffer[2U] = MMDVM_QSO_INFO;
 
-	buffer[3U] = MODE_DMR;
+	buffer[3U] = MODE_P25;
 
 	::sprintf((char*)(buffer + 4U), "%20.20s", source);
 
