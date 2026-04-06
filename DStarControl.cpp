@@ -182,7 +182,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		raw |= (data[43U] << 0) & 0x00FFU;
 
 		// Convert the raw RSSI to dBm
-		int m_rssi = m_rssiMapper->interpolate(raw);
+		m_rssi = m_rssiMapper->interpolate(raw);
 		if (m_rssi != 0)
 			LogDebug("D-Star, raw RSSI: %u, reported RSSI: %d dBm", raw, m_rssi);
 
@@ -195,7 +195,6 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		m_rssiCountTotal++;
 
 		m_rssiAccum += m_rssi;
-		m_rssiCountTotal++;
 	}
 
 	// Have we got RSSI bytes on the end of D-Star data?
@@ -205,7 +204,7 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		raw |= (data[14U] << 0) & 0x00FFU;
 
 		// Convert the raw RSSI to dBm
-		int m_rssi = m_rssiMapper->interpolate(raw);
+		m_rssi = m_rssiMapper->interpolate(raw);
 		if (m_rssi != 0)
 			LogDebug("D-Star, raw RSSI: %u, reported RSSI: %d dBm", raw, m_rssi);
 
@@ -218,7 +217,6 @@ bool CDStarControl::writeModem(unsigned char *data, unsigned int len)
 		m_rssiCountTotal++;
 
 		m_rssiAccum += m_rssi;
-		m_rssiCountTotal++;
 	}
 
 	if (type == TAG_HEADER) {
