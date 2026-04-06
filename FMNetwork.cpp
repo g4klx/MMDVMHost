@@ -225,7 +225,7 @@ unsigned int CFMNetwork::readData(float* out, unsigned int nOut)
 
 	for (unsigned int i = 0U; i < nOut; i++) {
 		short val = ((buffer[i * 2U + 0U] & 0xFFU) << 0) + ((buffer[i * 2U + 1U] & 0xFFU) << 8);
-		out[i] = float(val) / 65536.0F;
+		out[i] = float(val) / 32767.0F;
 	}
 
 	return nOut;
