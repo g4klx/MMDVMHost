@@ -33,15 +33,15 @@ const unsigned char BIT_MASK_TABLE[] = { 0x80U, 0x40U, 0x20U, 0x10U, 0x08U, 0x04
 CNXDNLayer3::CNXDNLayer3(const CNXDNLayer3& layer3) :
 m_data(nullptr)
 {
-	m_data = new unsigned char[22U];
-	::memcpy(m_data, layer3.m_data, 22U);
+	m_data = new unsigned char[23U];
+	::memcpy(m_data, layer3.m_data, 23U);
 }
 
 CNXDNLayer3::CNXDNLayer3() :
 m_data(nullptr)
 {
-	m_data = new unsigned char[22U];
-	::memset(m_data, 0x00U, 22U);
+	m_data = new unsigned char[23U];
+	::memset(m_data, 0x00U, 23U);
 }
 
 CNXDNLayer3::~CNXDNLayer3()
@@ -101,19 +101,19 @@ void CNXDNLayer3::getData(unsigned char* data) const
 
 void CNXDNLayer3::setData(const unsigned char* data, unsigned int length)
 {
-	::memset(m_data, 0x00U, 22U);
+	::memset(m_data, 0x00U, 23U);
 	::memcpy(m_data, data, length);
 }
 
 void CNXDNLayer3::reset()
 {
-	::memset(m_data, 0x00U, 22U);
+	::memset(m_data, 0x00U, 23U);
 }
 
 CNXDNLayer3& CNXDNLayer3::operator=(const CNXDNLayer3& layer3)
 {
 	if (&layer3 != this)
-		::memcpy(m_data, layer3.m_data, 22U);
+		::memcpy(m_data, layer3.m_data, 23U);
 
 	return *this;
 }
