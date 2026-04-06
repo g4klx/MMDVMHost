@@ -108,8 +108,8 @@ bool CFMControl::writeModem(const unsigned char* data, unsigned int length)
 
 	if (data[0U] == TAG_RSSI) {
 		uint16_t raw = 0U;
-		raw |= (data[0U] << 8) & 0xFF00U;
-		raw |= (data[1U] << 0) & 0x00FFU;
+		raw |= (data[1U] << 8) & 0xFF00U;
+		raw |= (data[2U] << 0) & 0x00FFU;
 
 		// Convert the raw RSSI to dBm
 		int rssi = m_rssiMapper->interpolate(raw);
