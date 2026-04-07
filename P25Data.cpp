@@ -423,11 +423,20 @@ void CP25Data::encodeTSDU(unsigned char* data)
     tsbk[1U] = m_mfId;
 
     switch (m_lcf) {
-		case P25_LCF_GROUP:
+		case P25_LCF_GRP_VCH_GRANT:
+		// Group Voice Channel Grant - format: ServiceOptions(8) + Channel(16) + GroupAddr(16) + SourceAddr(24) = 64 bits
+		// For conventional P25, channel identifier/number is 0 (no trunking)
 		tsbkValue = (unsigned long long)(m_serviceType & 0xFFU);    // Service Options (8 bits)
 		tsbkValue = (tsbkValue << 16) + 0U;                         // Channel ID/Number (16 bits) - 0 for conventional
 		tsbkValue = (tsbkValue << 16) + (m_dstId & 0xFFFFU);        // Group Address (16 bits)
 		tsbkValue = (tsbkValue << 24) + (m_srcId & 0xFFFFFFU);      // Source Radio Address (24 bits)
+		break;
+	    case P25_LCF_GROUP:
+		// Group Voice Channel User - format: Options(16) + GroupAddr(16) + SourceAddr(24) + Reserved(8)
+		tsbkValue = 0U;                                             // Options (16 bits)
+		tsbkValue = (tsbkValue << 16) + (m_dstId & 0xFFFFU);        // Group Address (16 bits)
+		tsbkValue = (tsbkValue << 24) + (m_srcId & 0xFFFFFFU);      // Source Radio Address (24 bits)
+		tsbkValue = (tsbkValue << 8) + 0U;                          // Reserved (8 bits)
 		break;
 	    case P25_LCF_TSBK_CALL_ALERT:
 		tsbkValue = 0U;
