@@ -1,5 +1,6 @@
 /*
  *	Copyright (C) 2015-2021,2023,2025 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2026 Adrian Musceac, YO8RZZ
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -108,13 +109,39 @@ void CDMRControl::clock()
 {
 	if (m_network != nullptr) {
 		CDMRData data;
-		bool ret = m_network->read(data);
+		TrunkingCommandParameters command;
+		bool ret = m_network->read(data, command);
 		if (ret) {
-			unsigned int slotNo = data.getSlotNo();
-			switch (slotNo) {
-				case 1U: m_slot1.writeNetwork(data); break;
-				case 2U: m_slot2.writeNetwork(data); break;
-				default: LogError("Invalid slot no %u", slotNo); break;
+			if(m_modem->getDMRTrunking() && command.trunkingParams) {
+				switch(command.commandType) {
+					case DMRCommand::ChannelEnableDisable:
+					{
+						if(command.slot == 1) {
+							if(!m_modem->getControlChannel())
+								m_slot1.enable(command.channelEnable);
+						}
+						else {
+							m_slot2.enable(command.channelEnable);
+						}
+					}
+					break;
+					default:
+					{
+						if(command.slot == 1)
+							m_slot1.setReverseChannelCommand(command.commandType);
+						else
+							m_slot2.setReverseChannelCommand(command.commandType);
+					}
+					break;
+				}
+			}
+			else {
+				unsigned int slotNo = data.getSlotNo();
+				switch (slotNo) {
+					case 1U: m_slot1.writeNetwork(data); break;
+					case 2U: m_slot2.writeNetwork(data); break;
+					default: LogError("Invalid slot no %u", slotNo); break;
+				}
 			}
 		}
 	}

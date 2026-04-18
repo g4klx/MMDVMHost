@@ -704,6 +704,18 @@ int CMMDVMHost::run()
 		m_dmr = new CDMRControl(id, colorCode, callHang, selfOnly, embeddedLCOnly, dumpTAData, prefixes, blackList, whiteList, slot1TGWhiteList, slot2TGWhiteList, m_timeout, m_modem, m_dmrNetwork, m_duplex, m_dmrLookup, rssi, jitter, ovcm, protect);
 
 		m_dmrTXTimer.setTimeout(txHang);
+
+		// Tier III options
+		if(m_conf.getDMRTrunking())
+		{
+			setMode(MODE_DMR);
+			m_modem->setShortLC(m_conf.getDMRSystemCode(), m_conf.getDMRControlChannel(), m_conf.getDMRRegistrationRequired());
+			if(m_conf.getDMRControlChannel())
+			{
+				m_modem->writeDMRAloha(m_conf.getDMRSystemCode(), m_conf.getDMRRegistrationRequired(), m_conf.getDMRControlChannelAlternateSlot());
+			}
+		}
+
 	}
 #endif
 
@@ -812,8 +824,8 @@ int CMMDVMHost::run()
 	bool remoteControlEnabled = m_conf.getRemoteControlEnabled();
 	if (remoteControlEnabled)
 		m_remoteControl = new CRemoteControl(this, m_mqtt);
-
-	setMode(MODE_IDLE);
+	if(!m_conf.getDMRTrunking())
+		setMode(MODE_IDLE);
 
 	while (!m_killed) {
 		bool lockout = m_modem->hasLockout();
@@ -895,7 +907,7 @@ int CMMDVMHost::run()
 			if (m_mode == MODE_IDLE) {
 				if (m_duplex) {
 					bool ret = m_dmr->processWakeup(data);
-					if (ret) {
+					if (ret || m_conf.getDMRTrunking()) {
 						m_modeTimer.setTimeout(m_dmrRFModeHang);
 						setMode(MODE_DMR);
 						dmrBeaconDurationTimer.stop();
@@ -909,7 +921,7 @@ int CMMDVMHost::run()
 			} else if (m_mode == MODE_DMR) {
 				if (m_duplex && !m_modem->hasTX()) {
 					bool ret = m_dmr->processWakeup(data);
-					if (ret) {
+					if (ret || m_conf.getDMRTrunking()) {
 						m_modem->writeDMRStart(true);
 						m_dmrTXTimer.start();
 					}
@@ -1008,7 +1020,7 @@ int CMMDVMHost::run()
 		if (transparentSocket != nullptr && len > 0U)
 			transparentSocket->write(data, len, transparentAddress, transparentAddrLen);
 
-		if (!m_fixedMode) {
+		if (!m_fixedMode && !m_conf.getDMRTrunking()) {
 			if (m_modeTimer.isRunning() && m_modeTimer.hasExpired())
 				setMode(MODE_IDLE);
 		}
@@ -1341,14 +1353,24 @@ int CMMDVMHost::run()
 
 		dmrBeaconDurationTimer.clock(ms);
 		if (dmrBeaconDurationTimer.isRunning() && dmrBeaconDurationTimer.hasExpired()) {
-			if (!m_fixedMode)
+			if (!m_fixedMode && !m_conf.getDMRTrunking())
 				setMode(MODE_IDLE);
 			dmrBeaconDurationTimer.stop();
 		}
 
 		m_dmrTXTimer.clock(ms);
 		if (m_dmrTXTimer.isRunning() && m_dmrTXTimer.hasExpired()) {
-			m_modem->writeDMRStart(false);
+			if(m_conf.getDMRTrunking())
+			{
+				if(!m_conf.getDMRControlChannel())
+				{
+					m_modem->writeDMRStart(false);
+				}
+			}
+			else
+			{
+				m_modem->writeDMRStart(false);
+			}
 			m_dmrTXTimer.stop();
 		}
 #endif
@@ -1566,6 +1588,8 @@ bool CMMDVMHost::createModem()
 	int txDCOffset               = m_conf.getModemTXDCOffset();
 	float rfLevel                = m_conf.getModemRFLevel();
 	bool useCOSAsLockout         = m_conf.getModemUseCOSAsLockout();
+	bool trunking                = m_conf.getDMRTrunking();
+	bool controlChannel          = m_conf.getDMRControlChannel();
 
 	LogInfo("Modem Parameters");
 	LogInfo("    Protocol: %s", protocol.c_str());
@@ -1625,7 +1649,7 @@ bool CMMDVMHost::createModem()
 	LogInfo("    RX Frequency: %uHz (%uHz)", rxFrequency, rxFrequency + rxOffset);
 	LogInfo("    Use COS as Lockout: %s", useCOSAsLockout ? "yes" : "no");
 
-	m_modem = new CModem(m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, useCOSAsLockout, trace, debug);
+	m_modem = new CModem(m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, useCOSAsLockout, trace, debug, trunking, controlChannel);
 
 	IModemPort* port = nullptr;
 	if (protocol == "uart")

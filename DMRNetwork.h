@@ -43,7 +43,7 @@ public:
 
 	void enable(bool enabled);
 
-	bool read(CDMRData& data);
+	bool read(CDMRData& data, TrunkingCommandParameters &command);
 
 	bool write(const CDMRData& data);
 

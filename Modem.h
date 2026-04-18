@@ -23,6 +23,9 @@
 #include "RingBuffer.h"
 #include "Defines.h"
 #include "Timer.h"
+#include "DMRCSBK.h"
+#include "DMRSlotType.h"
+#include "Sync.h"
 
 #include <string>
 
@@ -42,7 +45,7 @@ enum class SERIAL_STATE {
 
 class CModem {
 public:
-	CModem(bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug);
+	CModem(bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug, bool trunking, bool controlChannel);
 	~CModem();
 
 	void setPort(IModemPort* port);
@@ -179,7 +182,9 @@ public:
 
 #if defined(USE_DMR)
 	bool writeDMRStart(bool tx);
-	bool writeDMRShortLC(const unsigned char* lc);
+	bool writeDMRAloha(unsigned int systemCode, bool registrationRequired, bool alternateSlot);
+	void setShortLC(unsigned int systemCode, bool isControlChannel, bool registrationRequired);
+	bool writeDMRShortLC(const unsigned char* lc, bool control);
 	bool writeDMRAbort(unsigned int slotNo);
 #endif
 	bool writeTransparentData(const unsigned char* data, unsigned int length);
@@ -198,6 +203,8 @@ public:
 	void clock(unsigned int ms);
 
 	void close();
+	bool getDMRTrunking() const;
+	bool getControlChannel() const;
 
 private:
 	unsigned int               m_protocolVersion;
@@ -388,6 +395,8 @@ private:
 #endif
 	unsigned char              m_capabilities1;
 	unsigned char              m_capabilities2;
+	bool                       m_trunking;
+	bool                       m_controlChannel;
 
 	bool readVersion();
 	bool readStatus();

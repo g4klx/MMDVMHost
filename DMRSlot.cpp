@@ -1,5 +1,6 @@
 /*
  *	Copyright (C) 2015-2021,2023,2025 Jonathan Naylor, G4KLX
+ *	Copyright (C) 2026 Adrian Musceac, YO8RZZ
  *
  *	This program is free software; you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -20,7 +21,6 @@
 #include "BPTC19696.h"
 #include "DMRSlot.h"
 #include "DMRCSBK.h"
-#include "DMREMB.h"
 #include "Utils.h"
 #include "Sync.h"
 #include "CRC.h"
@@ -70,6 +70,14 @@ const unsigned char TALKER_ID_BLOCK3 = 0x08U;
 const unsigned int NO_HEADERS_SIMPLEX = 8U;
 const unsigned int NO_HEADERS_DUPLEX  = 3U;
 const unsigned int NO_PREAMBLE_CSBK   = 15U;
+
+
+const unsigned int RC_CEASE_TRANSMIT[5]         = {0x07, 0x0D, 0x04, 0xF1, 0xF0};
+const unsigned int RC_REQUEST_CEASE_TRANSMIT[5] = {0x02, 0x7B, 0x4E, 0x48, 0x70 };
+const unsigned int RC_MAX_POWER[5]              = {0x01, 0xC3, 0xDD, 0x3C, 0x10 };
+const unsigned int RC_MIN_POWER[5]              = {0x04, 0xB5, 0x97, 0x85, 0x90 };
+const unsigned int RC_POWER_INCREASE[5]         = {0x04, 0x5B, 0xA7, 0x58, 0xA0 };
+const unsigned int RC_POWER_DECREASE[5]         = {0x01, 0x2D, 0xED, 0xE1, 0x20 };
 
 const unsigned int RSSI_COUNT   = 3U;			// 3 * 360ms = 1080ms
 const unsigned int BER_COUNT    = 18U * 141U;		// 18 * 60ms = 1080ms
@@ -124,7 +132,8 @@ m_rssiAccum(0),
 m_rssiCount(0U),
 m_bitErrsAccum(0U),
 m_bitsCount(0U),
-m_enabled(true)
+m_enabled(true),
+m_reverseChannelCommand(0)
 {
 	m_lastFrame = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
 
@@ -227,6 +236,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 		if (dataType == DT_VOICE_LC_HEADER) {
 			if (m_rfState == RPT_RF_STATE::AUDIO)
 				return true;
+			m_reverseChannelCommand = DMRCommand::RCNoCommand;
 
 			CDMRFullLC fullLC;
 			CDMRLC* lc = fullLC.decode(data + 2U, DT_VOICE_LC_HEADER);
@@ -363,7 +373,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 		} else if (dataType == DT_TERMINATOR_WITH_LC) {
 			if (m_rfState != RPT_RF_STATE::AUDIO)
 				return false;
-
+			m_reverseChannelCommand = DMRCommand::RCNoCommand;
 			// Regenerate the LC data
 			CDMRFullLC fullLC;
 			fullLC.encode(*m_rfLC, data + 2U, DT_TERMINATOR_WITH_LC);
@@ -381,7 +391,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				writeNetworkRF(data, DT_TERMINATOR_WITH_LC);
 
 				if (m_duplex) {
-					for (unsigned int i = 0U; i < m_hangCount; i++)
+					for (unsigned int i = 0U; i <= m_hangCount; i++)
 						writeQueueRF(data);
 				}
 			}
@@ -485,10 +495,13 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				return false;
 
 			// set the OVCM bit for the supported csbk
-			if ((m_ovcm == DMR_OVCM::TX_ON) || (m_ovcm == DMR_OVCM::ON))
-				csbk.setOVCM(true);
-			else if (m_ovcm == DMR_OVCM::FORCE_OFF)
-				csbk.setOVCM(false);
+			if(!m_modem->getDMRTrunking())
+			{
+				if ((m_ovcm == DMR_OVCM::TX_ON) || (m_ovcm == DMR_OVCM::ON))
+					csbk.setOVCM(true);
+				else if (m_ovcm == DMR_OVCM::FORCE_OFF)
+					csbk.setOVCM(false);
+			}
 
 			bool gi = csbk.getGI();
 			unsigned int srcId = csbk.getSrcId();
@@ -524,7 +537,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
 
-			if (m_duplex)
+			if (m_duplex && !m_modem->getDMRTrunking())
 				writeQueueRF(data);
 
 			writeNetworkRF(data, DT_CSBK, gi ? FLCO::GROUP : FLCO::USER_USER, srcId, dstId);
@@ -563,7 +576,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 				writeJSONRF("csbk", "Call Emergency", srcId, src, gi, dstId);
 				break;
 			default:
-				LogWarning("DMR Slot %u, unhandled RF CSBK type - 0x%02X", m_slotNo, csbko);
+				LogMessage("DMR Slot %u, received unhandled CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG " : "", dst.c_str());
 				break;
 			}
 
@@ -848,7 +861,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 					emb.setLCSS(lcss);
 					emb.getData(data + 2U);
 				}
-
+				createReverseChannel(data, emb);
 				if (m_duplex)
 					writeQueueRF(data);
 
@@ -1051,7 +1064,7 @@ void CDMRSlot::writeEndRF(bool writeEnd)
 			data[0U] = TAG_EOT;
 			data[1U] = 0x00U;
 
-			for (unsigned int i = 0U; i < m_hangCount; i++)
+			for (unsigned int i = 0U; i <= m_hangCount; i++)
 				writeQueueRF(data);
 		}
 	}
@@ -1099,7 +1112,7 @@ void CDMRSlot::writeEndNet(bool writeEnd)
 		data[1U] = 0x00U;
 
 		if (m_duplex) {
-			for (unsigned int i = 0U; i < m_hangCount; i++)
+			for (unsigned int i = 0U; i <= m_hangCount; i++)
 				writeQueueNet(data);
 		} else {
 			for (unsigned int i = 0U; i < 3U; i++)
@@ -1129,7 +1142,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 	if (!m_enabled)
 		return;
 
-	if ((m_rfState != RPT_RF_STATE::LISTENING) && (m_netState == RPT_NET_STATE::IDLE))
+	if ((m_rfState != RPT_RF_STATE::LISTENING) && (m_netState == RPT_NET_STATE::IDLE) && !m_modem->getDMRTrunking())
 		return;
 
 	m_networkWatchdog.start();
@@ -1335,7 +1348,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			data[1U] = 0x00U;
 
 			if (m_duplex) {
-				for (unsigned int i = 0U; i < m_hangCount; i++)
+				for (unsigned int i = 0U; i <= m_hangCount; i++)
 					writeQueueNet(data);
 			} else {
 				for (unsigned int i = 0U; i < 3U; i++)
@@ -1686,10 +1699,13 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			return;
 
 		// set the OVCM bit for the supported csbk
-		if ((m_ovcm == DMR_OVCM::RX_ON) || (m_ovcm == DMR_OVCM::ON))
-			csbk.setOVCM(true);
-		else if (m_ovcm == DMR_OVCM::FORCE_OFF)
-			csbk.setOVCM(false);
+		if(!m_modem->getDMRTrunking())
+		{
+			if ((m_ovcm == DMR_OVCM::RX_ON) || (m_ovcm == DMR_OVCM::ON))
+				csbk.setOVCM(true);
+			else if (m_ovcm == DMR_OVCM::FORCE_OFF)
+				csbk.setOVCM(false);
+		}
 
 		bool gi = csbk.getGI();
 		unsigned int srcId = csbk.getSrcId();
@@ -1700,6 +1716,216 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 
 		// Regenerate the Slot Type
 		CDMRSlotType slotType;
+		slotType.putData(data + 2U);
+		slotType.setColorCode(m_colorCode);
+		slotType.getData(data + 2U);
+
+		// Convert the Data Sync to be from the BS or MS as needed
+		CSync::addDMRDataSync(data + 2U, m_duplex);
+
+		data[0U] = TAG_DATA;
+		data[1U] = 0x00U;
+
+		if ((csbko == CSBKO::PRECCSBK) && csbk.getDataContent()) {
+			unsigned int cbf = NO_PREAMBLE_CSBK + csbk.getCBF() - 1U;
+			for (unsigned int i = 0U; i < NO_PREAMBLE_CSBK; i++, cbf--) {
+				// Change blocks to follow
+				csbk.setCBF(cbf);
+
+				// Regenerate the CSBK data
+				csbk.get(data + 2U);
+
+				// Regenerate the Slot Type
+				CDMRSlotType slotType;
+				slotType.putData(data + 2U);
+				slotType.setColorCode(m_colorCode);
+				slotType.getData(data + 2U);
+
+				// Convert the Data Sync to be from the BS or MS as needed
+				CSync::addDMRDataSync(data + 2U, m_duplex);
+
+				writeQueueNet(data);
+			}
+		} else
+			writeQueueNet(data);
+
+		std::string src = m_lookup->find(srcId);
+		std::string dst = m_lookup->find(dstId);
+
+		switch (csbko) {
+		case CSBKO::UUVREQ:
+			LogMessage("DMR Slot %u, received network Unit to Unit Voice Service Request CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG ": "", dst.c_str());
+			writeJSONNet("csbk", "Unit to Unit Voice Service Request", srcId, src, gi, dstId);
+			break;
+		case CSBKO::UUANSRSP:
+			LogMessage("DMR Slot %u, received network Unit to Unit Voice Service Answer Response CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG ": "", dst.c_str());
+			writeJSONNet("csbk", "Unit to Unit Voice Service Answer Response", srcId, src, gi, dstId);
+			break;
+		case CSBKO::NACKRSP:
+			LogMessage("DMR Slot %u, received network Negative Acknowledgment Response CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG ": "", dst.c_str());
+			writeJSONNet("csbk", "UNegative Acknowledgment Response", srcId, src, gi, dstId);
+			break;
+		case CSBKO::PRECCSBK:
+			LogMessage("DMR Slot %u, received network %s Preamble CSBK (%u to follow) from %s to %s%s", m_slotNo, csbk.getDataContent() ? "Data" : "CSBK", csbk.getCBF(), src.c_str(), gi ? "TG " : "", dst.c_str());
+			writeJSONNet("csbk", "Preamble", srcId, src, gi, dstId);
+			break;
+		case CSBKO::CALL_ALERT:
+			LogMessage("DMR Slot %u, received network Call Alert CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG " : "", dst.c_str());
+			writeJSONNet("csbk", "Call Alert", srcId, src, gi, dstId);
+			break;
+		case CSBKO::CALL_ALERT_ACK:
+			LogMessage("DMR Slot %u, received network Call Alert Ack CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG " : "", dst.c_str());
+			writeJSONNet("csbk", "Call Alert Ack", srcId, src, gi, dstId);
+			break;
+		case CSBKO::RADIO_CHECK:
+			LogMessage("DMR Slot %u, received network Radio Check %s CSBK from %s to %s%s", m_slotNo, /* TBD */ 1 ? "Req" : "Ack", src.c_str(), gi ? "TG " : "", dst.c_str());
+			writeJSONNet("csbk", "Radio Check", srcId, src, gi, dstId);
+			break;
+		default:
+			LogWarning("DMR Slot %u, unhandled network CSBK type - 0x%02X", m_slotNo, csbko);
+			break;
+		}
+
+		// If data preamble, signal its existence
+		if ((csbko == CSBKO::PRECCSBK) && csbk.getDataContent())
+			setShortLC(m_slotNo, dstId, gi ? FLCO::GROUP : FLCO::USER_USER, ACTIVITY_TYPE::DATA);
+		} else if (dataType == DT_MBC_HEADER) {
+		CDMRCSBK csbk;
+		csbk.setDataType(DT_MBC_HEADER);
+		bool valid = csbk.put(data + 2U);
+		if (!valid) {
+			LogMessage("DMR Slot %u, unable to decode the network CSBK", m_slotNo);
+			return;
+		}
+
+		CSBKO csbko = csbk.getCSBKO();
+		if (csbko == CSBKO::BSDWNACT)
+			return;
+
+		// set the OVCM bit for the supported csbk
+		if(!m_modem->getDMRTrunking())
+		{
+			if ((m_ovcm == DMR_OVCM::RX_ON) || (m_ovcm == DMR_OVCM::ON))
+				csbk.setOVCM(true);
+			else if (m_ovcm == DMR_OVCM::FORCE_OFF)
+				csbk.setOVCM(false);
+		}
+
+		bool gi = csbk.getGI();
+		unsigned int srcId = csbk.getSrcId();
+		unsigned int dstId = csbk.getDstId();
+
+		// Regenerate the CSBK data
+		csbk.get(data + 2U);
+
+		// Regenerate the Slot Type
+		CDMRSlotType slotType;
+		slotType.setDataType(DT_MBC_HEADER);
+		slotType.putData(data + 2U);
+		slotType.setColorCode(m_colorCode);
+		slotType.getData(data + 2U);
+
+		// Convert the Data Sync to be from the BS or MS as needed
+		CSync::addDMRDataSync(data + 2U, m_duplex);
+
+		data[0U] = TAG_DATA;
+		data[1U] = 0x00U;
+
+		if ((csbko == CSBKO::PRECCSBK) && csbk.getDataContent()) {
+			unsigned int cbf = NO_PREAMBLE_CSBK + csbk.getCBF() - 1U;
+			for (unsigned int i = 0U; i < NO_PREAMBLE_CSBK; i++, cbf--) {
+				// Change blocks to follow
+				csbk.setCBF(cbf);
+
+				// Regenerate the CSBK data
+				csbk.get(data + 2U);
+
+				// Regenerate the Slot Type
+				CDMRSlotType slotType;
+				slotType.putData(data + 2U);
+				slotType.setColorCode(m_colorCode);
+				slotType.getData(data + 2U);
+
+				// Convert the Data Sync to be from the BS or MS as needed
+				CSync::addDMRDataSync(data + 2U, m_duplex);
+
+				writeQueueNet(data);
+			}
+		} else
+			writeQueueNet(data);
+
+		std::string src = m_lookup->find(srcId);
+		std::string dst = m_lookup->find(dstId);
+
+		switch (csbko) {
+		case CSBKO::UUVREQ:
+			LogMessage("DMR Slot %u, received network Unit to Unit Voice Service Request CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG ": "", dst.c_str());
+			writeJSONNet("csbk", "Unit to Unit Voice Service Request", srcId, src, gi, dstId);
+			break;
+		case CSBKO::UUANSRSP:
+			LogMessage("DMR Slot %u, received network Unit to Unit Voice Service Answer Response CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG ": "", dst.c_str());
+			writeJSONNet("csbk", "Unit to Unit Voice Service Answer Response", srcId, src, gi, dstId);
+			break;
+		case CSBKO::NACKRSP:
+			LogMessage("DMR Slot %u, received network Negative Acknowledgment Response CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG ": "", dst.c_str());
+			writeJSONNet("csbk", "UNegative Acknowledgment Response", srcId, src, gi, dstId);
+			break;
+		case CSBKO::PRECCSBK:
+			LogMessage("DMR Slot %u, received network %s Preamble CSBK (%u to follow) from %s to %s%s", m_slotNo, csbk.getDataContent() ? "Data" : "CSBK", csbk.getCBF(), src.c_str(), gi ? "TG " : "", dst.c_str());
+			writeJSONNet("csbk", "Preamble", srcId, src, gi, dstId);
+			break;
+		case CSBKO::CALL_ALERT:
+			LogMessage("DMR Slot %u, received network Call Alert CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG " : "", dst.c_str());
+			writeJSONNet("csbk", "Call Alert", srcId, src, gi, dstId);
+			break;
+		case CSBKO::CALL_ALERT_ACK:
+			LogMessage("DMR Slot %u, received network Call Alert Ack CSBK from %s to %s%s", m_slotNo, src.c_str(), gi ? "TG " : "", dst.c_str());
+			writeJSONNet("csbk", "Call Alert Ack", srcId, src, gi, dstId);
+			break;
+		case CSBKO::RADIO_CHECK:
+			LogMessage("DMR Slot %u, received network Radio Check %s CSBK from %s to %s%s", m_slotNo, /* TBD */ 1 ? "Req" : "Ack", src.c_str(), gi ? "TG " : "", dst.c_str());
+			writeJSONNet("csbk", "Radio Check", srcId, src, gi, dstId);
+			break;
+		default:
+			LogWarning("DMR Slot %u, unhandled network CSBK type - 0x%02X", m_slotNo, csbko);
+			break;
+		}
+
+		// If data preamble, signal its existence
+		if ((csbko == CSBKO::PRECCSBK) && csbk.getDataContent())
+			setShortLC(m_slotNo, dstId, gi ? FLCO::GROUP : FLCO::USER_USER, ACTIVITY_TYPE::DATA);
+		} else if (dataType == DT_MBC_CONTINUATION) {
+		CDMRCSBK csbk;
+		csbk.setDataType(DT_MBC_CONTINUATION);
+		bool valid = csbk.put(data + 2U);
+		if (!valid) {
+			LogMessage("DMR Slot %u, unable to decode the network CSBK", m_slotNo);
+			return;
+		}
+
+		CSBKO csbko = csbk.getCSBKO();
+		if (csbko == CSBKO::BSDWNACT)
+			return;
+
+		// set the OVCM bit for the supported csbk
+		if(!m_modem->getDMRTrunking())
+		{
+			if ((m_ovcm == DMR_OVCM::RX_ON) || (m_ovcm == DMR_OVCM::ON))
+				csbk.setOVCM(true);
+			else if (m_ovcm == DMR_OVCM::FORCE_OFF)
+				csbk.setOVCM(false);
+		}
+
+		bool gi = csbk.getGI();
+		unsigned int srcId = csbk.getSrcId();
+		unsigned int dstId = csbk.getDstId();
+
+		// Regenerate the CSBK data
+		csbk.get(data + 2U);
+
+		// Regenerate the Slot Type
+		CDMRSlotType slotType;
+		slotType.setDataType(DT_MBC_CONTINUATION);
 		slotType.putData(data + 2U);
 		slotType.setColorCode(m_colorCode);
 		slotType.getData(data + 2U);
@@ -2136,7 +2362,7 @@ void CDMRSlot::setShortLC(unsigned int slotNo, unsigned int id, FLCO flco, ACTIV
 	CDMRShortLC shortLC;
 	shortLC.encode(lc, sLC);
 
-	m_modem->writeDMRShortLC(sLC);
+	m_modem->writeDMRShortLC(sLC, false);
 }
 
 bool CDMRSlot::insertSilence(const unsigned char* data, unsigned char seqNo)
@@ -2293,6 +2519,81 @@ void CDMRSlot::enable(bool enabled)
 	}
 
 	m_enabled = enabled;
+}
+
+void CDMRSlot::setReverseChannelCommand(unsigned int rc_command) {
+	m_reverseChannelCommand = rc_command;
+}
+
+void CDMRSlot::createReverseChannel(unsigned char *data, CDMREMB &emb) {
+	if(m_rfN == 5U) {
+		if (m_reverseChannelCommand == DMRCommand::RCCeaseTransmission) {
+			data[16U] = (data[16U] & 0xF0U) | (RC_CEASE_TRANSMIT[0U] & 0x0FU);
+			data[17U] = RC_CEASE_TRANSMIT[1U];
+			data[18U] = RC_CEASE_TRANSMIT[2U];
+			data[19U] = RC_CEASE_TRANSMIT[3U];
+			data[20U] = (data[20U] & 0x0FU) | (RC_CEASE_TRANSMIT[4U] & 0xF0U);
+			emb.setColorCode(m_colorCode);
+			emb.setLCSS(0);
+			emb.setPI(true);
+			emb.getData(data + 2U);
+		}
+		else if (m_reverseChannelCommand == DMRCommand::RCRequestCeaseTransmission) {
+			data[16U] = (data[16U] & 0xF0U) | (RC_REQUEST_CEASE_TRANSMIT[0U] & 0x0FU);
+			data[17U] = RC_REQUEST_CEASE_TRANSMIT[1U];
+			data[18U] = RC_REQUEST_CEASE_TRANSMIT[2U];
+			data[19U] = RC_REQUEST_CEASE_TRANSMIT[3U];
+			data[20U] = (data[20U] & 0x0FU) | (RC_REQUEST_CEASE_TRANSMIT[4U] & 0xF0U);
+			emb.setColorCode(m_colorCode);
+			emb.setLCSS(0);
+			emb.setPI(true);
+			emb.getData(data + 2U);
+		}
+		else if (m_reverseChannelCommand == DMRCommand::RCMaximumPower) {
+			data[16U] = (data[16U] & 0xF0U) | (RC_MAX_POWER[0U] & 0x0FU);
+			data[17U] = RC_MAX_POWER[1U];
+			data[18U] = RC_MAX_POWER[2U];
+			data[19U] = RC_MAX_POWER[3U];
+			data[20U] = (data[20U] & 0x0FU) | (RC_MAX_POWER[4U] & 0xF0U);
+			emb.setColorCode(m_colorCode);
+			emb.setLCSS(0);
+			emb.setPI(true);
+			emb.getData(data + 2U);
+		}
+		else if (m_reverseChannelCommand == DMRCommand::RCMinimumPower) {
+			data[16U] = (data[16U] & 0xF0U) | (RC_MIN_POWER[0U] & 0x0FU);
+			data[17U] = RC_MIN_POWER[1U];
+			data[18U] = RC_MIN_POWER[2U];
+			data[19U] = RC_MIN_POWER[3U];
+			data[20U] = (data[20U] & 0x0FU) | (RC_MIN_POWER[4U] & 0xF0U);
+			emb.setColorCode(m_colorCode);
+			emb.setLCSS(0);
+			emb.setPI(true);
+			emb.getData(data + 2U);
+		}
+		else if (m_reverseChannelCommand == DMRCommand::RCPowerIncreaseOneStep) {
+			data[16U] = (data[16U] & 0xF0U) | (RC_POWER_INCREASE[0U] & 0x0FU);
+			data[17U] = RC_POWER_INCREASE[1U];
+			data[18U] = RC_POWER_INCREASE[2U];
+			data[19U] = RC_POWER_INCREASE[3U];
+			data[20U] = (data[20U] & 0x0FU) | (RC_POWER_INCREASE[4U] & 0xF0U);
+			emb.setColorCode(m_colorCode);
+			emb.setLCSS(0);
+			emb.setPI(true);
+			emb.getData(data + 2U);
+		}
+		else if (m_reverseChannelCommand == DMRCommand::RCPowerDecreaseOneStep) {
+			data[16U] = (data[16U] & 0xF0U) | (RC_POWER_DECREASE[0U] & 0x0FU);
+			data[17U] = RC_POWER_DECREASE[1U];
+			data[18U] = RC_POWER_DECREASE[2U];
+			data[19U] = RC_POWER_DECREASE[3U];
+			data[20U] = (data[20U] & 0x0FU) | (RC_POWER_DECREASE[4U] & 0xF0U);
+			emb.setColorCode(m_colorCode);
+			emb.setLCSS(0);
+			emb.setPI(true);
+			emb.getData(data + 2U);
+		}
+	}
 }
 
 void CDMRSlot::writeJSONRSSI()

@@ -52,6 +52,7 @@ private:
 	bool           m_F;
 	bool           m_S;
 	unsigned char  m_Ns;
+	bool           m_UDT;
 };
 
 #endif
