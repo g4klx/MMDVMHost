@@ -60,12 +60,12 @@ const unsigned char MMDVM_DSTAR_EOT    = 0x13U;
 #endif
 
 #if defined(USE_DMR)
+const unsigned char MMDVM_DMR_ALOHA   = 0x17U;
 const unsigned char MMDVM_DMR_DATA1   = 0x18U;
 const unsigned char MMDVM_DMR_LOST1   = 0x19U;
 const unsigned char MMDVM_DMR_DATA2   = 0x1AU;
 const unsigned char MMDVM_DMR_LOST2   = 0x1BU;
 const unsigned char MMDVM_DMR_SHORTLC = 0x1CU;
-const unsigned char MMDVM_DMR_ALOHA   = 0x14U;
 const unsigned char MMDVM_DMR_START   = 0x1DU;
 const unsigned char MMDVM_DMR_ABORT   = 0x1EU;
 #endif
