@@ -181,6 +181,11 @@ m_dmrEnabled(false),
 m_dmrBeacons(DMR_BEACONS::OFF),
 m_dmrBeaconInterval(60U),
 m_dmrBeaconDuration(3U),
+m_dmrTrunking(false),
+m_dmrControlChannel(false),
+m_dmrControlChannelAlternateSlot(false),
+m_dmrSystemCode(0),
+m_dmrRegistrationRequired(true),
 #endif
 m_dmrId(0U),
 #if defined(USE_DMR)
@@ -729,6 +734,16 @@ bool CConf::read()
 		} else if (section == SECTION::DMR) {
 			if (::strcmp(key, "Enable") == 0)
 				m_dmrEnabled = ::atoi(value) == 1;
+			if (::strcmp(key, "Trunking") == 0)
+				m_dmrTrunking = ::atoi(value) == 1;
+			if (::strcmp(key, "ControlChannel") == 0)
+				m_dmrControlChannel = ::atoi(value) == 1;
+			if (::strcmp(key, "ControlChannelAlternateSlot") == 0)
+				m_dmrControlChannelAlternateSlot = ::atoi(value) == 1;
+			if (::strcmp(key, "SystemCode") == 0)
+				m_dmrSystemCode = (unsigned int)::atoi(value);
+			if (::strcmp(key, "RegistrationRequired") == 0)
+				m_dmrRegistrationRequired = ::atoi(value) == 1;
 			else if (::strcmp(key, "Beacons") == 0)
 				m_dmrBeacons = ::atoi(value) == 1 ? DMR_BEACONS::NETWORK : DMR_BEACONS::OFF;
 			else if (::strcmp(key, "BeaconInterval") == 0) {
@@ -1526,6 +1541,31 @@ unsigned int CConf::getDStarModeHang() const
 bool CConf::getDMREnabled() const
 {
 	return m_dmrEnabled;
+}
+
+bool CConf::getDMRTrunking() const
+{
+	return m_dmrTrunking;
+}
+
+bool CConf::getDMRControlChannel() const
+{
+	return m_dmrControlChannel;
+}
+
+bool CConf::getDMRControlChannelAlternateSlot() const
+{
+	return m_dmrControlChannelAlternateSlot;
+}
+
+unsigned int CConf::getDMRSystemCode() const
+{
+	return m_dmrSystemCode;
+}
+
+bool CConf::getDMRRegistrationRequired() const
+{
+	return m_dmrRegistrationRequired;
 }
 
 DMR_BEACONS CConf::getDMRBeacons() const

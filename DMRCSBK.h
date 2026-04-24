@@ -35,7 +35,14 @@ enum class CSBKO : unsigned char {
 	NACKRSP        = 0x26,
 	CALL_EMERGENCY = 0x27,
 	BSDWNACT       = 0x38,
-	PRECCSBK       = 0x3D
+	PRECCSBK       = 0x3D,
+	MAINT          = 0x2A,
+	TV_GRANT       = 0x31,
+	PV_GRANT       = 0x30,
+	AHOY           = 0x1C,
+	ACKU           = 0x21,
+	P_CLEAR        = 0x2E,
+	C_BCAST        = 0x28
 };
 
 class CDMRCSBK
@@ -47,6 +54,7 @@ public:
 	bool put(const unsigned char* bytes);
 
 	void get(unsigned char* bytes) const;
+	void setCSBKData(unsigned char* bytes);
 
 	// Generic fields
 	CSBKO         getCSBKO() const;
@@ -69,6 +77,8 @@ public:
 	unsigned char getCBF() const;
 
 	void          setCBF(unsigned char cbf);
+	void          setDataType(unsigned char dataType);
+	unsigned char getDataType();
 
 private:
 	unsigned char* m_data;
@@ -81,6 +91,7 @@ private:
 	bool           m_dataContent;
 	unsigned char  m_CBF;
 	bool           m_OVCM;
+	unsigned char  m_dataType;
 };
 
 #endif

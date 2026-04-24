@@ -1,5 +1,6 @@
 /*
  *   Copyright (C) 2011-2018,2020,2021,2023,2025 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2026 by Adrian Musceac YO8RZZ
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -26,6 +27,8 @@
 #include "Modem.h"
 #include "Utils.h"
 #include "Log.h"
+#include "CRC.h"
+#include "DMRShortLC.h"
 
 #include <cmath>
 #include <cstdio>
@@ -57,6 +60,7 @@ const unsigned char MMDVM_DSTAR_EOT    = 0x13U;
 #endif
 
 #if defined(USE_DMR)
+const unsigned char MMDVM_DMR_ALOHA   = 0x17U;
 const unsigned char MMDVM_DMR_DATA1   = 0x18U;
 const unsigned char MMDVM_DMR_LOST1   = 0x19U;
 const unsigned char MMDVM_DMR_DATA2   = 0x1AU;
@@ -124,7 +128,7 @@ const unsigned char CAP1_NXDN   = 0x10U;
 const unsigned char CAP1_FM     = 0x40U;
 const unsigned char CAP2_POCSAG = 0x01U;
 
-CModem::CModem(bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug) :
+CModem::CModem(bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug, bool trunking, bool controlChannel) :
 m_protocolVersion(0U),
 #if defined(USE_DMR)
 m_dmrColorCode(0U),
@@ -312,6 +316,8 @@ m_fmExtEnable(false),
 #endif
 m_capabilities1(0x00U),
 m_capabilities2(0x00U),
+m_trunking(trunking),
+m_controlChannel(controlChannel),
 m_serialDataLen(0U)
 {
 	m_buffer = new unsigned char[BUFFER_LENGTH];
@@ -2408,7 +2414,7 @@ bool CModem::setConfig2()
 
 	buffer[26U] = 0U;
 	buffer[27U] = 0x00U;
-	buffer[28U] = 0x00U;
+	buffer[28U] = (m_trunking ? 1 : 0) << 7;
 
 #if defined(USE_DMR)
 	buffer[29U] = m_dmrColorCode;
@@ -2737,8 +2743,78 @@ bool CModem::writeDMRAbort(unsigned int slotNo)
 	return m_port->write(buffer, 4U) == 4;
 }
 
-bool CModem::writeDMRShortLC(const unsigned char* lc)
+bool CModem::writeDMRAloha(unsigned int systemCode, bool registrationRequired, bool alternateSlot)
 {
+	// 7.1.1.1.4 Aloha (C_ALOHA) CSBK PDU
+	assert(m_port != NULL);
+	CDMRCSBK csbk;
+	unsigned char data[DMR_FRAME_LENGTH_BYTES + 2U];
+	unsigned int tsccas = alternateSlot ? 1 : 0; 
+	unsigned int timeslot_synchronization = 0;
+	unsigned int version = 2; // 3 bits
+	unsigned int offset_timing = 0; // MMDVM uses aligned timing
+	unsigned int net_connection = 1;
+	unsigned int mask = 0; // 5 bits
+	unsigned int service_function = 0; // 2 bits (ALL)
+	unsigned int n_rand_wait = 5; // 4 bits
+	unsigned int backoff = 4; // 4 bits
+	unsigned int ALLMSI = 0xFFFED4;
+	
+	data[2U] = 0x99;
+	data[3U] = 0x00; // FID
+	data[4U] = (unsigned char)((tsccas << 6) | (timeslot_synchronization << 5) | ((version & 0x07) << 2) | (offset_timing << 1) | net_connection);
+	data[5U] = (unsigned char)(((mask & 0x1F)  << 3) | ((service_function & 0x03) << 1) | ((n_rand_wait & 0x0F) >> 3)); // TODO
+	data[6U] = (unsigned char)(((n_rand_wait & 0x0F) << 5) | (((unsigned int)registrationRequired) << 4) | (backoff & 0xF)); // TODO
+	data[7U] = (unsigned char)((systemCode >> 6) & 0xFF);
+	data[8U] = (unsigned char)(((systemCode << 2) | 0x03) & 0xFF);  // PAR hardcoded to 11
+	// MS Address
+	data[9U] = (unsigned char)(ALLMSI >> 16);
+	data[10U] = (unsigned char)((ALLMSI >> 8) & 0xFF);
+	data[11U] = (unsigned char)(ALLMSI & 0xFF);
+	csbk.setCSBKData(data + 2U);
+	csbk.get(data + 2U);
+
+	CDMRSlotType slotType;
+	slotType.setColorCode(m_dmrColorCode);
+	slotType.setDataType(DT_CSBK);
+	slotType.getData(data + 2U);
+
+	CSync::addDMRDataSync(data + 2U, m_duplex);
+	unsigned char buffer[DMR_FRAME_LENGTH_BYTES + 3U];
+
+	buffer[0U]  = MMDVM_FRAME_START;
+	buffer[1U]  = DMR_FRAME_LENGTH_BYTES + 3U;
+	buffer[2U]  = MMDVM_DMR_ALOHA;
+	for(unsigned int i=0; i<DMR_FRAME_LENGTH_BYTES; i++)
+	{
+		buffer[i + 3U]  = data[i+ 2U];
+	}
+
+	return m_port->write(buffer, DMR_FRAME_LENGTH_BYTES + 3U) == 12;
+}
+
+void CModem::setShortLC(unsigned int systemCode, bool isControlChannel, bool registrationRequired)
+{
+	// Used for setting CACH (C_SysParm and P_SysParm) on TSCC and Payload Ch
+	unsigned char lc[5U];
+	// 7.1.2.1 Control Channel System Parameters
+	// 7.1.2.2 Payload Channel System Parameters
+	lc[0U] = isControlChannel? 0x2U : 0x3U;
+	lc[1U] = (unsigned char)((systemCode >> 6) & 0XFF);
+	unsigned int regi = (unsigned int) registrationRequired;
+	lc[2U] = (unsigned char)(((systemCode << 2) & 0xFF) | (regi << 1)); // 6 bit System code, 1 bit Reg_Required, rest of bits CSC
+	lc[3U] = 0x01U; // CSC: This should increment from 1 to 511, but not implemented yet
+	lc[4U] = CCRC::crc8(lc, 4U);
+	unsigned char sLC[9U];
+	CDMRShortLC shortLC;
+	shortLC.encode(lc, sLC);
+	this->writeDMRShortLC(sLC, true);
+}
+
+bool CModem::writeDMRShortLC(const unsigned char* lc, bool control)
+{
+	if(!control && m_trunking)
+		return true;
 	assert(m_port != nullptr);
 	assert(lc != nullptr);
 
@@ -3081,3 +3157,14 @@ void CModem::printDebug()
 		CUtils::dump(1U, "Debug: Data", m_buffer + m_offset, m_length - m_offset);
 	}
 }
+
+bool CModem::getDMRTrunking() const
+{
+	return m_trunking;
+}
+
+bool CModem::getControlChannel() const
+{
+	return m_controlChannel;
+}
+

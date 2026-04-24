@@ -73,6 +73,7 @@ const unsigned char TERMINATOR_WITH_LC_CRC_MASK[] = {0x99U, 0x99U, 0x99U};
 const unsigned char PI_HEADER_CRC_MASK[]          = {0x69U, 0x69U};
 const unsigned char DATA_HEADER_CRC_MASK[]        = {0xCCU, 0xCCU};
 const unsigned char CSBK_CRC_MASK[]               = {0xA5U, 0xA5U};
+const unsigned char MBC_CRC_MASK[]                = {0xAAU, 0xAAU};
 
 const unsigned int DMR_SLOT_TIME = 60U;
 const unsigned int AMBE_PER_SLOT = 3U;
@@ -82,6 +83,8 @@ const unsigned char DT_VOICE_PI_HEADER    = 0x00U;
 const unsigned char DT_VOICE_LC_HEADER    = 0x01U;
 const unsigned char DT_TERMINATOR_WITH_LC = 0x02U;
 const unsigned char DT_CSBK               = 0x03U;
+const unsigned char DT_MBC_HEADER         = 0x04U;
+const unsigned char DT_MBC_CONTINUATION   = 0x05U;
 const unsigned char DT_DATA_HEADER        = 0x06U;
 const unsigned char DT_RATE_12_DATA       = 0x07U;
 const unsigned char DT_RATE_34_DATA       = 0x08U;

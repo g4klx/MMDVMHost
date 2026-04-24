@@ -19,6 +19,25 @@
 
 #if defined(USE_DMR)
 
+struct TrunkingCommandParameters {
+	unsigned int commandType = 0;
+	bool trunkingParams = false;
+	bool channelEnable = false;
+	unsigned int slot = 1;
+	bool ceaseTransmission = false;
+};
+
+enum DMRCommand {
+	ChannelEnableDisable = 1,
+	RCCeaseTransmission = 2,
+	RCRequestCeaseTransmission = 3,
+	RCPowerIncreaseOneStep = 4,
+	RCPowerDecreaseOneStep = 5,
+	RCMaximumPower = 6,
+	RCMinimumPower = 7,
+	RCNoCommand = 0,
+};
+
 class CDMRData {
 public:
 	CDMRData(const CDMRData& data);

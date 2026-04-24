@@ -173,6 +173,11 @@ public:
 	unsigned int getDMRModeHang() const;
 	DMR_OVCM     getDMROVCM() const;
 	bool         getDMRProtect() const;
+	bool         getDMRTrunking() const;
+	bool         getDMRControlChannel() const;
+	bool         getDMRControlChannelAlternateSlot() const;
+	unsigned int getDMRSystemCode() const;
+	bool         getDMRRegistrationRequired() const;
 #endif
 
 #if defined(USE_YSF)
@@ -449,6 +454,11 @@ private:
 	DMR_BEACONS  m_dmrBeacons;
 	unsigned int m_dmrBeaconInterval;
 	unsigned int m_dmrBeaconDuration;
+	bool         m_dmrTrunking;
+	bool         m_dmrControlChannel;
+	bool         m_dmrControlChannelAlternateSlot;
+	unsigned int m_dmrSystemCode;
+	bool         m_dmrRegistrationRequired;
 #endif
 	unsigned int m_dmrId;
 #if defined(USE_DMR)

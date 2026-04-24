@@ -1,6 +1,7 @@
 /*
  *   Copyright (C) 2015,2016,2020,2021,2022,2023,2025 by Jonathan Naylor G4KLX
  *   Copyright (C) 2019 by Patrick Maier DK5MP
+ *   Copyright (C) 2026 by Adrian Musceac YO8RZZ
  *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License as published by
@@ -37,7 +38,8 @@ m_srcId(0U),
 m_dstId(0U),
 m_dataContent(false),
 m_CBF(0U),
-m_OVCM(false)
+m_OVCM(false),
+m_dataType(DT_CSBK)
 {
 	m_data = new unsigned char[12U];
 }
@@ -47,23 +49,46 @@ CDMRCSBK::~CDMRCSBK()
 	delete[] m_data;
 }
 
+void CDMRCSBK::setCSBKData(unsigned char* bytes)
+{
+	for(unsigned int i=0; i<10; i++)
+	{
+		m_data[i] = bytes[i];
+	}
+}
+
 bool CDMRCSBK::put(const unsigned char* bytes)
 {
 	assert(bytes != nullptr);
 
 	CBPTC19696 bptc;
 	bptc.decode(bytes, m_data);
-
-	m_data[10U] ^= CSBK_CRC_MASK[0U];
-	m_data[11U] ^= CSBK_CRC_MASK[1U];
+	if(m_dataType == DT_CSBK)
+	{
+		m_data[10U] ^= CSBK_CRC_MASK[0U];
+		m_data[11U] ^= CSBK_CRC_MASK[1U];
+	}
+	else if(m_dataType == DT_MBC_HEADER)
+	{
+		m_data[10U] ^= MBC_CRC_MASK[0U];
+		m_data[11U] ^= MBC_CRC_MASK[1U];
+	}
 
 	bool valid = CCRC::checkCCITT162(m_data, 12U);
 	if (!valid)
 		return false;
 
 	// Restore the checksum
-	m_data[10U] ^= CSBK_CRC_MASK[0U];
-	m_data[11U] ^= CSBK_CRC_MASK[1U];
+	if(m_dataType == DT_CSBK)
+	{
+		m_data[10U] ^= CSBK_CRC_MASK[0U];
+		m_data[11U] ^= CSBK_CRC_MASK[1U];
+	}
+	else if(m_dataType == DT_MBC_HEADER)
+	{
+		m_data[10U] ^= MBC_CRC_MASK[0U];
+		m_data[11U] ^= MBC_CRC_MASK[1U];
+	}
 
 	m_CSBKO = CSBKO(m_data[0U] & 0x3FU);
 	m_FID   = m_data[1U];
@@ -148,6 +173,22 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 		m_dataContent = false;
 		m_CBF   = 0U;
 		break;
+	case CSBKO::ACKU:
+		m_GI    = false;
+		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
+		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
+		m_dataContent = false;
+		m_CBF   = m_data[3U];
+		CUtils::dump(1U, "ACKU CSBK", m_data, 12U);
+		break;
+	case CSBKO::MAINT:
+		m_GI    = false;
+		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
+		m_srcId = m_data[7U] << 16 | m_data[8U] << 8 | m_data[9U];
+		m_dataContent = false;
+		m_CBF   = m_data[3U];
+		CUtils::dump(1U, "MAINT CSBK", m_data, 12U);
+		break;
 
 	case CSBKO::CALL_EMERGENCY:
 		m_GI    = true;
@@ -174,14 +215,30 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 void CDMRCSBK::get(unsigned char* bytes) const
 {
 	assert(bytes != nullptr);
+	if(m_dataType == DT_CSBK)
+	{
+		m_data[10U] ^= CSBK_CRC_MASK[0U];
+		m_data[11U] ^= CSBK_CRC_MASK[1U];
 
-	m_data[10U] ^= CSBK_CRC_MASK[0U];
-	m_data[11U] ^= CSBK_CRC_MASK[1U];
+		CCRC::addCCITT162(m_data, 12U);
 
-	CCRC::addCCITT162(m_data, 12U);
+		m_data[10U] ^= CSBK_CRC_MASK[0U];
+		m_data[11U] ^= CSBK_CRC_MASK[1U];
+	}
+	else if(m_dataType == DT_MBC_HEADER)
+	{
+		m_data[10U] ^= MBC_CRC_MASK[0U];
+		m_data[11U] ^= MBC_CRC_MASK[1U];
 
-	m_data[10U] ^= CSBK_CRC_MASK[0U];
-	m_data[11U] ^= CSBK_CRC_MASK[1U];
+		CCRC::addCCITT162(m_data, 12U);
+
+		m_data[10U] ^= MBC_CRC_MASK[0U];
+		m_data[11U] ^= MBC_CRC_MASK[1U];
+	}
+	else if(m_dataType == DT_MBC_CONTINUATION)
+	{
+		CCRC::addCCITT162(m_data, 12U);
+	}
 
 	CBPTC19696 bptc;
 	bptc.encode(m_data, bytes);
@@ -247,6 +304,16 @@ unsigned char CDMRCSBK::getCBF() const
 void CDMRCSBK::setCBF(unsigned char cbf)
 {
 	m_CBF = m_data[3U] = cbf;
+}
+
+void CDMRCSBK::setDataType(unsigned char dataType)
+{
+	m_dataType = dataType;
+}
+
+unsigned char CDMRCSBK::getDataType()
+{
+	return m_dataType;
 }
 
 #endif
