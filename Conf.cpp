@@ -47,6 +47,7 @@ enum class SECTION {
 #endif
 #if defined(USE_DMR)
 	DMR,
+	DMR_TRUNKING,
 #endif
 #if defined(USE_YSF)
 	FUSION,
@@ -181,11 +182,6 @@ m_dmrEnabled(false),
 m_dmrBeacons(DMR_BEACONS::OFF),
 m_dmrBeaconInterval(60U),
 m_dmrBeaconDuration(3U),
-m_dmrTrunking(false),
-m_dmrControlChannel(false),
-m_dmrControlChannelAlternateSlot(false),
-m_dmrSystemCode(0U),
-m_dmrRegistrationRequired(true),
 #endif
 m_dmrId(0U),
 #if defined(USE_DMR)
@@ -205,6 +201,11 @@ m_dmrModeHang(10U),
 #if defined(USE_DMR)
 m_dmrOVCM(DMR_OVCM::OFF),
 m_dmrProtect(false),
+m_dmrTrunkingEnabled(false),
+m_dmrControlChannel(false),
+m_dmrControlChannelAlternateSlot(false),
+m_dmrSystemCode(0U),
+m_dmrRegistrationRequired(true),
 #endif
 #if defined(USE_YSF)
 m_fusionEnabled(false),
@@ -417,6 +418,8 @@ bool CConf::read()
 #if defined(USE_DMR)
 			else if (::strncmp(buffer, "[DMR]", 5U) == 0)
 				section = SECTION::DMR;
+			else if (::strncmp(buffer, "[DMR Trunking]", 14U) == 0)
+				section = SECTION::DMR_TRUNKING;
 #endif
 #if defined(USE_YSF)
 			else if (::strncmp(buffer, "[System Fusion]", 15U) == 0)
@@ -734,16 +737,6 @@ bool CConf::read()
 		} else if (section == SECTION::DMR) {
 			if (::strcmp(key, "Enable") == 0)
 				m_dmrEnabled = ::atoi(value) == 1;
-			if (::strcmp(key, "Trunking") == 0)
-				m_dmrTrunking = ::atoi(value) == 1;
-			if (::strcmp(key, "ControlChannel") == 0)
-				m_dmrControlChannel = ::atoi(value) == 1;
-			if (::strcmp(key, "ControlChannelAlternateSlot") == 0)
-				m_dmrControlChannelAlternateSlot = ::atoi(value) == 1;
-			if (::strcmp(key, "SystemCode") == 0)
-				m_dmrSystemCode = (unsigned int)::atoi(value);
-			if (::strcmp(key, "RegistrationRequired") == 0)
-				m_dmrRegistrationRequired = ::atoi(value) == 1;
 			else if (::strcmp(key, "Beacons") == 0)
 				m_dmrBeacons = ::atoi(value) == 1 ? DMR_BEACONS::NETWORK : DMR_BEACONS::OFF;
 			else if (::strcmp(key, "BeaconInterval") == 0) {
@@ -827,6 +820,17 @@ bool CConf::read()
 				}
 			} else if (::strcmp(key, "Protect") == 0)
 				m_dmrProtect = ::atoi(value) == 1;
+		} else if (section == SECTION::DMR_TRUNKING) {
+			if (::strcmp(key, "Enable") == 0)
+				m_dmrTrunkingEnabled = ::atoi(value) == 1;
+			else if (::strcmp(key, "ControlChannel") == 0)
+				m_dmrControlChannel = ::atoi(value) == 1;
+			else if (::strcmp(key, "ControlChannelAlternateSlot") == 0)
+				m_dmrControlChannelAlternateSlot = ::atoi(value) == 1;
+			else if (::strcmp(key, "SystemCode") == 0)
+				m_dmrSystemCode = (unsigned int)::atoi(value);
+			else if (::strcmp(key, "RegistrationRequired") == 0)
+				m_dmrRegistrationRequired = ::atoi(value) == 1;
 #endif
 #if defined(USE_YSF)
 		} else if (section == SECTION::FUSION) {
@@ -1543,9 +1547,9 @@ bool CConf::getDMREnabled() const
 	return m_dmrEnabled;
 }
 
-bool CConf::getDMRTrunking() const
+bool CConf::getDMRTrunkingEnabled() const
 {
-	return m_dmrTrunking;
+	return m_dmrTrunkingEnabled;
 }
 
 bool CConf::getDMRControlChannel() const

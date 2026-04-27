@@ -627,7 +627,7 @@ int CMMDVMHost::run()
 		DMR_OVCM ovcm               = m_conf.getDMROVCM();
 		bool protect                = m_conf.getDMRProtect();
 
-		bool trunking               = m_conf.getDMRTrunking();
+		bool trunking               = m_conf.getDMRTrunkingEnabled();
 		bool controlChannel         = m_conf.getDMRControlChannel();
 		unsigned int systemCode     = m_conf.getDMRSystemCode();
 		bool registrationRequired   = m_conf.getDMRRegistrationRequired();
@@ -839,7 +839,8 @@ int CMMDVMHost::run()
 	bool remoteControlEnabled = m_conf.getRemoteControlEnabled();
 	if (remoteControlEnabled)
 		m_remoteControl = new CRemoteControl(this, m_mqtt);
-	if(!m_conf.getDMRTrunking())
+
+	if (!m_conf.getDMRTrunkingEnabled())
 		setMode(MODE_IDLE);
 
 	while (!m_killed) {
@@ -922,7 +923,7 @@ int CMMDVMHost::run()
 			if (m_mode == MODE_IDLE) {
 				if (m_duplex) {
 					bool ret = m_dmr->processWakeup(data);
-					if (ret || m_conf.getDMRTrunking()) {
+					if (ret || m_conf.getDMRTrunkingEnabled()) {
 						m_modeTimer.setTimeout(m_dmrRFModeHang);
 						setMode(MODE_DMR);
 						dmrBeaconDurationTimer.stop();
@@ -936,7 +937,7 @@ int CMMDVMHost::run()
 			} else if (m_mode == MODE_DMR) {
 				if (m_duplex && !m_modem->hasTX()) {
 					bool ret = m_dmr->processWakeup(data);
-					if (ret || m_conf.getDMRTrunking()) {
+					if (ret || m_conf.getDMRTrunkingEnabled()) {
 						m_modem->writeDMRStart(true);
 						m_dmrTXTimer.start();
 					}
@@ -1035,7 +1036,7 @@ int CMMDVMHost::run()
 		if (transparentSocket != nullptr && len > 0U)
 			transparentSocket->write(data, len, transparentAddress, transparentAddrLen);
 
-		if (!m_fixedMode && !m_conf.getDMRTrunking()) {
+		if (!m_fixedMode && !m_conf.getDMRTrunkingEnabled()) {
 			if (m_modeTimer.isRunning() && m_modeTimer.hasExpired())
 				setMode(MODE_IDLE);
 		}
@@ -1368,22 +1369,17 @@ int CMMDVMHost::run()
 
 		dmrBeaconDurationTimer.clock(ms);
 		if (dmrBeaconDurationTimer.isRunning() && dmrBeaconDurationTimer.hasExpired()) {
-			if (!m_fixedMode && !m_conf.getDMRTrunking())
+			if (!m_fixedMode && !m_conf.getDMRTrunkingEnabled())
 				setMode(MODE_IDLE);
 			dmrBeaconDurationTimer.stop();
 		}
 
 		m_dmrTXTimer.clock(ms);
 		if (m_dmrTXTimer.isRunning() && m_dmrTXTimer.hasExpired()) {
-			if(m_conf.getDMRTrunking())
-			{
-				if(!m_conf.getDMRControlChannel())
-				{
+			if (m_conf.getDMRTrunkingEnabled()) {
+				if (!m_conf.getDMRControlChannel())
 					m_modem->writeDMRStart(false);
-				}
-			}
-			else
-			{
+			} else {
 				m_modem->writeDMRStart(false);
 			}
 			m_dmrTXTimer.stop();
