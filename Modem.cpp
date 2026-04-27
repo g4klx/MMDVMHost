@@ -128,7 +128,7 @@ const unsigned char CAP1_NXDN   = 0x10U;
 const unsigned char CAP1_FM     = 0x40U;
 const unsigned char CAP2_POCSAG = 0x01U;
 
-CModem::CModem(bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug, bool trunking, bool controlChannel) :
+CModem::CModem(bool duplex, bool rxInvert, bool txInvert, bool pttInvert, unsigned int txDelay, unsigned int dmrDelay, bool useCOSAsLockout, bool trace, bool debug) :
 m_protocolVersion(0U),
 #if defined(USE_DMR)
 m_dmrColorCode(0U),
@@ -188,6 +188,8 @@ m_dstarEnabled(false),
 #endif
 #if defined(USE_DMR)
 m_dmrEnabled(false),
+m_dmrTrunkingEnabled(false),
+m_dmrControlChannel(false),
 #endif
 #if defined(USE_YSF)
 m_ysfEnabled(false),
@@ -316,8 +318,6 @@ m_fmExtEnable(false),
 #endif
 m_capabilities1(0x00U),
 m_capabilities2(0x00U),
-m_trunking(trunking),
-m_controlChannel(controlChannel),
 m_serialDataLen(0U)
 {
 	m_buffer = new unsigned char[BUFFER_LENGTH];
@@ -406,6 +406,12 @@ void CModem::setDMRParams(unsigned int colorCode)
 	assert(colorCode < 16U);
 
 	m_dmrColorCode = colorCode;
+}
+
+void CModem::setDMRTrunkingParams(bool controlChannel)
+{
+	m_dmrTrunkingEnabled = true;
+	m_dmrControlChannel  = controlChannel;
 }
 #endif
 
@@ -2414,12 +2420,13 @@ bool CModem::setConfig2()
 
 	buffer[26U] = 0U;
 	buffer[27U] = 0x00U;
-	buffer[28U] = (m_trunking ? 1 : 0) << 7;
 
 #if defined(USE_DMR)
+	buffer[28U] = m_dmrTrunkingEnabled ? 0x80U : 0x00U;
 	buffer[29U] = m_dmrColorCode;
 	buffer[30U] = m_dmrDelay;
 #else
+	buffer[28U] = 0U;
 	buffer[29U] = 0U;
 	buffer[30U] = 0U;
 #endif
@@ -2793,7 +2800,7 @@ bool CModem::writeDMRAloha(unsigned int systemCode, bool registrationRequired, b
 	return m_port->write(buffer, DMR_FRAME_LENGTH_BYTES + 3U) == 12;
 }
 
-void CModem::setShortLC(unsigned int systemCode, bool isControlChannel, bool registrationRequired)
+void CModem::setDMRShortLC(unsigned int systemCode, bool isControlChannel, bool registrationRequired)
 {
 	// Used for setting CACH (C_SysParm and P_SysParm) on TSCC and Payload Ch
 	unsigned char lc[5U];
@@ -2813,8 +2820,9 @@ void CModem::setShortLC(unsigned int systemCode, bool isControlChannel, bool reg
 
 bool CModem::writeDMRShortLC(const unsigned char* lc, bool control)
 {
-	if(!control && m_trunking)
+	if (!control && m_dmrTrunkingEnabled)
 		return true;
+
 	assert(m_port != nullptr);
 	assert(lc != nullptr);
 
@@ -3158,13 +3166,14 @@ void CModem::printDebug()
 	}
 }
 
-bool CModem::getDMRTrunking() const
+#if defined(USE_DMR)
+bool CModem::getDMRTrunkingEnabled() const
 {
-	return m_trunking;
+	return m_dmrTrunkingEnabled;
 }
 
-bool CModem::getControlChannel() const
+bool CModem::getDMRControlChannel() const
 {
-	return m_controlChannel;
+	return m_dmrControlChannel;
 }
-
+#endif

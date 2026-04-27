@@ -184,7 +184,7 @@ m_dmrBeaconDuration(3U),
 m_dmrTrunking(false),
 m_dmrControlChannel(false),
 m_dmrControlChannelAlternateSlot(false),
-m_dmrSystemCode(0),
+m_dmrSystemCode(0U),
 m_dmrRegistrationRequired(true),
 #endif
 m_dmrId(0U),

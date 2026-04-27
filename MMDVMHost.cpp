@@ -627,6 +627,12 @@ int CMMDVMHost::run()
 		DMR_OVCM ovcm               = m_conf.getDMROVCM();
 		bool protect                = m_conf.getDMRProtect();
 
+		bool trunking               = m_conf.getDMRTrunking();
+		bool controlChannel         = m_conf.getDMRControlChannel();
+		unsigned int systemCode     = m_conf.getDMRSystemCode();
+		bool registrationRequired   = m_conf.getDMRRegistrationRequired();
+		bool alternateSlot          = m_conf.getDMRControlChannelAlternateSlot();
+
 		if (txHang > m_dmrRFModeHang)
 			txHang = m_dmrRFModeHang;
 
@@ -672,6 +678,16 @@ int CMMDVMHost::run()
 		if (protect)
 			LogInfo("    Protect: yes");
 
+		if (trunking) {
+			LogInfo("    Trunking: yes");
+			LogInfo("    Control Channel: %s", controlChannel ? "yes" : "no");
+			LogInfo("    System Code: %u", systemCode);
+			LogInfo("    Registration Required: %s", registrationRequired ? "yes" : "no");
+			LogInfo("    Alternate Slot: %s", alternateSlot ? "yes" : "no");
+		} else {
+			LogInfo("    Trunking: no");
+		}
+
 		switch (dmrBeacons) {
 			case DMR_BEACONS::NETWORK: {
 					unsigned int dmrBeaconDuration = m_conf.getDMRBeaconDuration();
@@ -706,16 +722,15 @@ int CMMDVMHost::run()
 		m_dmrTXTimer.setTimeout(txHang);
 
 		// Tier III options
-		if(m_conf.getDMRTrunking())
-		{
+		if (trunking) {
 			setMode(MODE_DMR);
-			m_modem->setShortLC(m_conf.getDMRSystemCode(), m_conf.getDMRControlChannel(), m_conf.getDMRRegistrationRequired());
-			if(m_conf.getDMRControlChannel())
-			{
-				m_modem->writeDMRAloha(m_conf.getDMRSystemCode(), m_conf.getDMRRegistrationRequired(), m_conf.getDMRControlChannelAlternateSlot());
-			}
-		}
 
+			m_modem->setDMRTrunkingParams(controlChannel);
+			m_modem->setDMRShortLC(systemCode, controlChannel, registrationRequired);
+
+			if (controlChannel)
+				m_modem->writeDMRAloha(systemCode, registrationRequired, alternateSlot);
+		}
 	}
 #endif
 
@@ -1414,7 +1429,7 @@ int CMMDVMHost::run()
 
 #if defined(USE_DMR)
 	if (m_dmrNetwork != nullptr) {
-		m_dmrNetwork->close(true);
+		m_dmrNetwork->close();
 		delete m_dmrNetwork;
 	}
 #endif
@@ -1588,8 +1603,6 @@ bool CMMDVMHost::createModem()
 	int txDCOffset               = m_conf.getModemTXDCOffset();
 	float rfLevel                = m_conf.getModemRFLevel();
 	bool useCOSAsLockout         = m_conf.getModemUseCOSAsLockout();
-	bool trunking                = m_conf.getDMRTrunking();
-	bool controlChannel          = m_conf.getDMRControlChannel();
 
 	LogInfo("Modem Parameters");
 	LogInfo("    Protocol: %s", protocol.c_str());
@@ -1649,7 +1662,7 @@ bool CMMDVMHost::createModem()
 	LogInfo("    RX Frequency: %uHz (%uHz)", rxFrequency, rxFrequency + rxOffset);
 	LogInfo("    Use COS as Lockout: %s", useCOSAsLockout ? "yes" : "no");
 
-	m_modem = new CModem(m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, useCOSAsLockout, trace, debug, trunking, controlChannel);
+	m_modem = new CModem(m_duplex, rxInvert, txInvert, pttInvert, txDelay, dmrDelay, useCOSAsLockout, trace, debug);
 
 	IModemPort* port = nullptr;
 	if (protocol == "uart")

@@ -43,7 +43,7 @@ public:
 
 	void enable(bool enabled);
 
-	bool read(CDMRData& data, TrunkingCommandParameters &command);
+	bool read(CDMRData& data, TrunkingCommandParameters& command);
 
 	bool write(const CDMRData& data);
 
@@ -57,7 +57,7 @@ public:
 
 	bool isConnected() const;
 
-	void close(bool sayGoodbye);
+	void close();
 
 private: 
 	std::string      m_addressStr;
@@ -93,4 +93,3 @@ private:
 #endif
 
 #endif
-

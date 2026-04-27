@@ -25,24 +25,24 @@
 #if defined(USE_DMR)
 
 enum class CSBKO : unsigned char {
-	NONE           = 0x00,
-	UUVREQ         = 0x04,
-	UUANSRSP       = 0x05,
-	CTCSBK         = 0x07,
-	CALL_ALERT     = 0x1F,
-	CALL_ALERT_ACK = 0x20,
-	RADIO_CHECK    = 0x24,
-	NACKRSP        = 0x26,
-	CALL_EMERGENCY = 0x27,
-	BSDWNACT       = 0x38,
-	PRECCSBK       = 0x3D,
-	MAINT          = 0x2A,
-	TV_GRANT       = 0x31,
-	PV_GRANT       = 0x30,
-	AHOY           = 0x1C,
-	ACKU           = 0x21,
-	P_CLEAR        = 0x2E,
-	C_BCAST        = 0x28
+	NONE           = 0x00U,
+	UUVREQ         = 0x04U,
+	UUANSRSP       = 0x05U,
+	CTCSBK         = 0x07U,
+	CALL_ALERT     = 0x1FU,
+	CALL_ALERT_ACK = 0x20U,
+	RADIO_CHECK    = 0x24U,
+	NACKRSP        = 0x26U,
+	CALL_EMERGENCY = 0x27U,
+	BSDWNACT       = 0x38U,
+	PRECCSBK       = 0x3DU,
+	MAINT          = 0x2AU,
+	TV_GRANT       = 0x31U,
+	PV_GRANT       = 0x30U,
+	AHOY           = 0x1CU,
+	ACKU           = 0x21U,
+	P_CLEAR        = 0x2EU,
+	C_BCAST        = 0x28U
 };
 
 class CDMRCSBK
@@ -78,7 +78,8 @@ public:
 
 	void          setCBF(unsigned char cbf);
 	void          setDataType(unsigned char dataType);
-	unsigned char getDataType();
+
+	unsigned char getDataType() const;
 
 private:
 	unsigned char* m_data;

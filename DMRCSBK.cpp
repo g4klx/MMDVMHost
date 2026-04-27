@@ -22,6 +22,7 @@
 #include "BPTC19696.h"
 #include "Utils.h"
 #include "CRC.h"
+#include "Log.h"
 
 #if defined(USE_DMR)
 
@@ -51,10 +52,9 @@ CDMRCSBK::~CDMRCSBK()
 
 void CDMRCSBK::setCSBKData(unsigned char* bytes)
 {
-	for(unsigned int i=0; i<10; i++)
-	{
-		m_data[i] = bytes[i];
-	}
+	assert(bytes != nullptr);
+
+	::memcpy(m_data, bytes, 10U);
 }
 
 bool CDMRCSBK::put(const unsigned char* bytes)
@@ -63,15 +63,21 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 
 	CBPTC19696 bptc;
 	bptc.decode(bytes, m_data);
-	if(m_dataType == DT_CSBK)
-	{
+
+	switch (m_dataType) {
+	case DT_CSBK:
 		m_data[10U] ^= CSBK_CRC_MASK[0U];
 		m_data[11U] ^= CSBK_CRC_MASK[1U];
-	}
-	else if(m_dataType == DT_MBC_HEADER)
-	{
+		break;
+
+	case DT_MBC_HEADER:
 		m_data[10U] ^= MBC_CRC_MASK[0U];
 		m_data[11U] ^= MBC_CRC_MASK[1U];
+		break;
+
+	default:
+		LogError("Unknown DMR CSBK data type: 0x%02X", m_dataType);
+		return false;
 	}
 
 	bool valid = CCRC::checkCCITT162(m_data, 12U);
@@ -79,15 +85,20 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 		return false;
 
 	// Restore the checksum
-	if(m_dataType == DT_CSBK)
-	{
+	switch (m_dataType) {
+	case DT_CSBK:
 		m_data[10U] ^= CSBK_CRC_MASK[0U];
 		m_data[11U] ^= CSBK_CRC_MASK[1U];
-	}
-	else if(m_dataType == DT_MBC_HEADER)
-	{
+		break;
+
+	case DT_MBC_HEADER:
 		m_data[10U] ^= MBC_CRC_MASK[0U];
 		m_data[11U] ^= MBC_CRC_MASK[1U];
+		break;
+
+	default:
+		LogError("Unknown DMR CSBK data type: 0x%02X", m_dataType);
+		return false;
 	}
 
 	m_CSBKO = CSBKO(m_data[0U] & 0x3FU);
@@ -173,6 +184,7 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 		m_dataContent = false;
 		m_CBF   = 0U;
 		break;
+
 	case CSBKO::ACKU:
 		m_GI    = false;
 		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
@@ -181,6 +193,7 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 		m_CBF   = m_data[3U];
 		CUtils::dump(1U, "ACKU CSBK", m_data, 12U);
 		break;
+
 	case CSBKO::MAINT:
 		m_GI    = false;
 		m_dstId = m_data[4U] << 16 | m_data[5U] << 8 | m_data[6U];
@@ -215,8 +228,9 @@ bool CDMRCSBK::put(const unsigned char* bytes)
 void CDMRCSBK::get(unsigned char* bytes) const
 {
 	assert(bytes != nullptr);
-	if(m_dataType == DT_CSBK)
-	{
+
+	switch (m_dataType) {
+	case DT_CSBK:
 		m_data[10U] ^= CSBK_CRC_MASK[0U];
 		m_data[11U] ^= CSBK_CRC_MASK[1U];
 
@@ -224,9 +238,9 @@ void CDMRCSBK::get(unsigned char* bytes) const
 
 		m_data[10U] ^= CSBK_CRC_MASK[0U];
 		m_data[11U] ^= CSBK_CRC_MASK[1U];
-	}
-	else if(m_dataType == DT_MBC_HEADER)
-	{
+		break;
+
+	case DT_MBC_HEADER:
 		m_data[10U] ^= MBC_CRC_MASK[0U];
 		m_data[11U] ^= MBC_CRC_MASK[1U];
 
@@ -234,10 +248,15 @@ void CDMRCSBK::get(unsigned char* bytes) const
 
 		m_data[10U] ^= MBC_CRC_MASK[0U];
 		m_data[11U] ^= MBC_CRC_MASK[1U];
-	}
-	else if(m_dataType == DT_MBC_CONTINUATION)
-	{
+		break;
+
+	case DT_MBC_CONTINUATION:
 		CCRC::addCCITT162(m_data, 12U);
+		break;
+
+	default:
+		LogError("Unknown DMR CSBK data type: 0x%02X", m_dataType);
+		return;
 	}
 
 	CBPTC19696 bptc;
@@ -311,10 +330,9 @@ void CDMRCSBK::setDataType(unsigned char dataType)
 	m_dataType = dataType;
 }
 
-unsigned char CDMRCSBK::getDataType()
+unsigned char CDMRCSBK::getDataType() const
 {
 	return m_dataType;
 }
 
 #endif
-

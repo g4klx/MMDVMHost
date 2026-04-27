@@ -133,7 +133,7 @@ m_rssiCount(0U),
 m_bitErrsAccum(0U),
 m_bitsCount(0U),
 m_enabled(true),
-m_reverseChannelCommand(0)
+m_rcCommand(0U)
 {
 	m_lastFrame = new unsigned char[DMR_FRAME_LENGTH_BYTES + 2U];
 
@@ -236,7 +236,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 		if (dataType == DT_VOICE_LC_HEADER) {
 			if (m_rfState == RPT_RF_STATE::AUDIO)
 				return true;
-			m_reverseChannelCommand = DMRCommand::RCNoCommand;
+			m_rcCommand = DMRCommand::RCNoCommand;
 
 			CDMRFullLC fullLC;
 			CDMRLC* lc = fullLC.decode(data + 2U, DT_VOICE_LC_HEADER);
@@ -373,7 +373,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 		} else if (dataType == DT_TERMINATOR_WITH_LC) {
 			if (m_rfState != RPT_RF_STATE::AUDIO)
 				return false;
-			m_reverseChannelCommand = DMRCommand::RCNoCommand;
+			m_rcCommand = DMRCommand::RCNoCommand;
 			// Regenerate the LC data
 			CDMRFullLC fullLC;
 			fullLC.encode(*m_rfLC, data + 2U, DT_TERMINATOR_WITH_LC);
@@ -494,9 +494,8 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			if (csbko == CSBKO::BSDWNACT)
 				return false;
 
-			// set the OVCM bit for the supported csbk
-			if(!m_modem->getDMRTrunking())
-			{
+			// Set the OVCM bit for the supported CSBK
+			if (!m_modem->getDMRTrunkingEnabled()) {
 				if ((m_ovcm == DMR_OVCM::TX_ON) || (m_ovcm == DMR_OVCM::ON))
 					csbk.setOVCM(true);
 				else if (m_ovcm == DMR_OVCM::FORCE_OFF)
@@ -537,7 +536,7 @@ bool CDMRSlot::writeModem(unsigned char *data, unsigned int len)
 			data[0U] = TAG_DATA;
 			data[1U] = 0x00U;
 
-			if (m_duplex && !m_modem->getDMRTrunking())
+			if (m_duplex && !m_modem->getDMRTrunkingEnabled())
 				writeQueueRF(data);
 
 			writeNetworkRF(data, DT_CSBK, gi ? FLCO::GROUP : FLCO::USER_USER, srcId, dstId);
@@ -1142,7 +1141,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 	if (!m_enabled)
 		return;
 
-	if ((m_rfState != RPT_RF_STATE::LISTENING) && (m_netState == RPT_NET_STATE::IDLE) && !m_modem->getDMRTrunking())
+	if ((m_rfState != RPT_RF_STATE::LISTENING) && (m_netState == RPT_NET_STATE::IDLE) && !m_modem->getDMRTrunkingEnabled())
 		return;
 
 	m_networkWatchdog.start();
@@ -1698,9 +1697,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		if (csbko == CSBKO::BSDWNACT)
 			return;
 
-		// set the OVCM bit for the supported csbk
-		if(!m_modem->getDMRTrunking())
-		{
+		// Set the OVCM bit for the supported CSBK
+		if (!m_modem->getDMRTrunkingEnabled()) {
 			if ((m_ovcm == DMR_OVCM::RX_ON) || (m_ovcm == DMR_OVCM::ON))
 				csbk.setOVCM(true);
 			else if (m_ovcm == DMR_OVCM::FORCE_OFF)
@@ -1803,8 +1801,7 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 			return;
 
 		// set the OVCM bit for the supported csbk
-		if(!m_modem->getDMRTrunking())
-		{
+		if (!m_modem->getDMRTrunkingEnabled()) {
 			if ((m_ovcm == DMR_OVCM::RX_ON) || (m_ovcm == DMR_OVCM::ON))
 				csbk.setOVCM(true);
 			else if (m_ovcm == DMR_OVCM::FORCE_OFF)
@@ -1894,7 +1891,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		// If data preamble, signal its existence
 		if ((csbko == CSBKO::PRECCSBK) && csbk.getDataContent())
 			setShortLC(m_slotNo, dstId, gi ? FLCO::GROUP : FLCO::USER_USER, ACTIVITY_TYPE::DATA);
-		} else if (dataType == DT_MBC_CONTINUATION) {
+
+	} else if (dataType == DT_MBC_CONTINUATION) {
 		CDMRCSBK csbk;
 		csbk.setDataType(DT_MBC_CONTINUATION);
 		bool valid = csbk.put(data + 2U);
@@ -1907,9 +1905,8 @@ void CDMRSlot::writeNetwork(const CDMRData& dmrData)
 		if (csbko == CSBKO::BSDWNACT)
 			return;
 
-		// set the OVCM bit for the supported csbk
-		if(!m_modem->getDMRTrunking())
-		{
+		// Set the OVCM bit for the supported CSBK
+		if (!m_modem->getDMRTrunkingEnabled()) {
 			if ((m_ovcm == DMR_OVCM::RX_ON) || (m_ovcm == DMR_OVCM::ON))
 				csbk.setOVCM(true);
 			else if (m_ovcm == DMR_OVCM::FORCE_OFF)
@@ -2521,13 +2518,14 @@ void CDMRSlot::enable(bool enabled)
 	m_enabled = enabled;
 }
 
-void CDMRSlot::setReverseChannelCommand(unsigned int rc_command) {
-	m_reverseChannelCommand = rc_command;
+void CDMRSlot::setRCCommand(unsigned int command)
+{
+	m_rcCommand = command;
 }
 
 void CDMRSlot::createReverseChannel(unsigned char *data, CDMREMB &emb) {
 	if(m_rfN == 5U) {
-		if (m_reverseChannelCommand == DMRCommand::RCCeaseTransmission) {
+		if (m_rcCommand == DMRCommand::RCCeaseTransmission) {
 			data[16U] = (data[16U] & 0xF0U) | (RC_CEASE_TRANSMIT[0U] & 0x0FU);
 			data[17U] = RC_CEASE_TRANSMIT[1U];
 			data[18U] = RC_CEASE_TRANSMIT[2U];
@@ -2538,7 +2536,7 @@ void CDMRSlot::createReverseChannel(unsigned char *data, CDMREMB &emb) {
 			emb.setPI(true);
 			emb.getData(data + 2U);
 		}
-		else if (m_reverseChannelCommand == DMRCommand::RCRequestCeaseTransmission) {
+		else if (m_rcCommand == DMRCommand::RCRequestCeaseTransmission) {
 			data[16U] = (data[16U] & 0xF0U) | (RC_REQUEST_CEASE_TRANSMIT[0U] & 0x0FU);
 			data[17U] = RC_REQUEST_CEASE_TRANSMIT[1U];
 			data[18U] = RC_REQUEST_CEASE_TRANSMIT[2U];
@@ -2549,7 +2547,7 @@ void CDMRSlot::createReverseChannel(unsigned char *data, CDMREMB &emb) {
 			emb.setPI(true);
 			emb.getData(data + 2U);
 		}
-		else if (m_reverseChannelCommand == DMRCommand::RCMaximumPower) {
+		else if (m_rcCommand == DMRCommand::RCMaximumPower) {
 			data[16U] = (data[16U] & 0xF0U) | (RC_MAX_POWER[0U] & 0x0FU);
 			data[17U] = RC_MAX_POWER[1U];
 			data[18U] = RC_MAX_POWER[2U];
@@ -2560,7 +2558,7 @@ void CDMRSlot::createReverseChannel(unsigned char *data, CDMREMB &emb) {
 			emb.setPI(true);
 			emb.getData(data + 2U);
 		}
-		else if (m_reverseChannelCommand == DMRCommand::RCMinimumPower) {
+		else if (m_rcCommand == DMRCommand::RCMinimumPower) {
 			data[16U] = (data[16U] & 0xF0U) | (RC_MIN_POWER[0U] & 0x0FU);
 			data[17U] = RC_MIN_POWER[1U];
 			data[18U] = RC_MIN_POWER[2U];
@@ -2571,7 +2569,7 @@ void CDMRSlot::createReverseChannel(unsigned char *data, CDMREMB &emb) {
 			emb.setPI(true);
 			emb.getData(data + 2U);
 		}
-		else if (m_reverseChannelCommand == DMRCommand::RCPowerIncreaseOneStep) {
+		else if (m_rcCommand == DMRCommand::RCPowerIncreaseOneStep) {
 			data[16U] = (data[16U] & 0xF0U) | (RC_POWER_INCREASE[0U] & 0x0FU);
 			data[17U] = RC_POWER_INCREASE[1U];
 			data[18U] = RC_POWER_INCREASE[2U];
@@ -2582,7 +2580,7 @@ void CDMRSlot::createReverseChannel(unsigned char *data, CDMREMB &emb) {
 			emb.setPI(true);
 			emb.getData(data + 2U);
 		}
-		else if (m_reverseChannelCommand == DMRCommand::RCPowerDecreaseOneStep) {
+		else if (m_rcCommand == DMRCommand::RCPowerDecreaseOneStep) {
 			data[16U] = (data[16U] & 0xF0U) | (RC_POWER_DECREASE[0U] & 0x0FU);
 			data[17U] = RC_POWER_DECREASE[1U];
 			data[18U] = RC_POWER_DECREASE[2U];
@@ -2824,4 +2822,3 @@ void CDMRSlot::writeJSON(nlohmann::json& json, const char* source, const char* a
 }
 
 #endif
-
