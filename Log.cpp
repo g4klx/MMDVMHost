@@ -101,7 +101,7 @@ void WriteJSON(const std::string& topLevel, nlohmann::json& json)
 
 		top[topLevel] = json;
 
-		m_mqtt->publish("json", top.dump());
+		m_mqtt->publish("json", top.dump(-1, ' ', false, nlohmann::json::error_handler_t::ignore));
 	}
 }
 
